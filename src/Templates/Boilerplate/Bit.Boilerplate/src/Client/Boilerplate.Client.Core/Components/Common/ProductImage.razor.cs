@@ -8,6 +8,4 @@ public partial class ProductImage
     [Parameter] public string? Class { get; set; }
 
     public const string PlaceholderSrc = "_content/Boilerplate.Client.Core/images/car_placeholder.png";
-
-    private string EffectiveSrc => Src ?? PlaceholderSrc;
 }

@@ -432,6 +432,18 @@ code {
     }
 }
 
+// A type or member name is one long word with no break opportunity in it, and the prose names parameters run
+// together (<b>MinTime</b>/<b>MaxTime</b>), so a line of the docs would otherwise run past the edge of a phone's
+// screen and scroll the whole page or the preview. Only a word wider than its line is broken; nothing that fits is
+// laid out any differently. Inline code anywhere in the docs chrome, and in a live preview the blocks of prose
+// written above its components - only those holding no component at all, since what a component renders (a
+// BitMarkdownViewer's code, a BitText's word) is laid out there exactly as it would be in an app. A highlighted
+// block in a <pre> does not wrap, so the first rule only ever reaches inline code.
+code:not(:where(.example-container *)),
+.example-container > :is(div, p):not(:has([class*="bit-"])) {
+    overflow-wrap: break-word;
+}
+
 
 // ── Syntax highlighting ───────────────────────────────────────────────────────────────────────
 // Prism ships one palette, tuned for a dark background. The vendored stylesheet does carry a light

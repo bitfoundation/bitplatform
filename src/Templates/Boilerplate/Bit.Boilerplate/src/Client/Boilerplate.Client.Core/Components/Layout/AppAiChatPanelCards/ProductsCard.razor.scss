@@ -13,11 +13,6 @@
 }
 
 ::deep {
-    .products-icon {
-        font-size: 1rem;
-        color: $bit-color-primary;
-    }
-
     // The whole car shows on a backdrop, rather than a crop of it.
     .product-cover {
         background-color: $bit-color-background-secondary;

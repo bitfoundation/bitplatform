@@ -259,8 +259,12 @@ $tln-private-properties: clr, clr-fg, clr-focus, clr-dis-bg, clr-dis-text, dot-s
     position: relative;
     align-items: center;
     overflow: var(--bit-tln-cn-overflow);
-    min-width: calc(50% - var(--bit-tln-dot-size));
-    min-height: calc(50% - var(--bit-tln-dot-size));
+    // Each half keeps the room the divider between them does not take: half of the dot and the content gap on its
+    // side. With the default gap (half the dot) that is the whole dot, as it always was; a wider gap set through
+    // --bit-Timeline-content-gap is taken off as well, or the two halves and the divider would add up to more than
+    // the item and push it past the side of the timeline.
+    min-width: calc(50% - var(--bit-tln-dot-size) / 2 - var(--bit-Timeline-content-gap, calc(var(--bit-tln-dot-size) / 2)));
+    min-height: calc(50% - var(--bit-tln-dot-size) / 2 - var(--bit-Timeline-content-gap, calc(var(--bit-tln-dot-size) / 2)));
     font-size: var(--bit-tln-fs, var(--bit-Timeline-font-size, #{$tg-fs-sm}));
     padding: var(--bit-tln-pad) 0;
 }

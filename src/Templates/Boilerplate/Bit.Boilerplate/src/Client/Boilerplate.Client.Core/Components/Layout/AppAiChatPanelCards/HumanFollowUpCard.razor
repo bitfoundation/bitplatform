@@ -2,7 +2,7 @@
 
 @if (IsSent)
 {
-    <BitMessage DelayedAnnouncement Color="BitColor.Success">
+    <BitMessage DelayedAnnouncement AutoMultiline Color="BitColor.Success">
         @Localizer[nameof(AppStrings.AiChatHumanFollowUpSent)]
     </BitMessage>
 }
@@ -50,8 +50,6 @@ else
 
                     <BitStack Gap="0">
                         <BitPhoneInput @bind-Value="request.PhoneNumber"
-                                       FullWidth
-                                       DefaultCountry="@BitCountries.Current"
                                        Immediate DebounceTime="500"
                                        Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                        Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />

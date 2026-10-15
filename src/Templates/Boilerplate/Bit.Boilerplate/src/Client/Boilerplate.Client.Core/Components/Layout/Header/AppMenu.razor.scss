@@ -3,9 +3,6 @@
 
 ::deep {
     .app-menu-callout {
-        width: 20rem;
-        max-width: calc(100vw - 1rem);
-
         @include lt-sm {
             height: unset;
             box-shadow: none;
@@ -39,7 +36,6 @@
     }
 
     .time-zone-list {
-        width: 100%;
         height: min(50vh, 25rem);
 
         @include lt-sm {
@@ -51,12 +47,7 @@
     .time-zone-item {
         height: 44px;
         flex-shrink: 0;
-        align-items: center;
         padding: 0 0.5rem;
-
-        .bit-acb-inn {
-            width: 100%;
-        }
     }
 
     .time-zone-item-text {
@@ -75,30 +66,26 @@
     }
 
     .time-zone-empty {
-        display: block;
         padding: 1rem 0.5rem;
     }
 
     .push-blocked-hint {
-        display: block;
         padding: 0 0.5rem 0.25rem;
     }
 
     .accent-color-switcher {
+        gap: 8px;
         width: 100%;
         padding: 0 8px;
-        --bit-acs-gap: 8px;
-        --bit-acs-size: 20px;
+    }
+
+    .accent-color-swatch {
+        width: 20px;
+        height: 20px;
     }
 
     .menu-icon {
         width: 32px;
         height: 32px;
-        display: flex;
-        border-radius: 50%;
-        align-items: center;
-        justify-content: center;
-        color: $bit-color-info-text;
-        background: $bit-color-info;
     }
 }

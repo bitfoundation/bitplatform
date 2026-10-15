@@ -128,6 +128,7 @@ private static (int, int)[] GenerateRandomNumbers(int min, int max)
 <style>
     .mobile-frame {
         width: 300px;
+        max-width: 100%;
         height: 600px;
         overflow: hidden;
         position: relative;

@@ -98,7 +98,7 @@ Apply changes to `.razor`, `.razor.cs`, and `.razor.scss`:
 - Wrap all event handlers with `WrapHandled`: `OnClick="WrapHandled(MyMethod)"`
 - Use `BitButtonType.Button` on non-submit buttons inside forms to prevent accidental form submission
 - Use `Variant`, `Color`, `Size` parameters for visual styling instead of custom CSS classes
-- Disable with `IsEnabled="false"` (never the native `disabled` attribute) and hide with
+- Disable with `Disabled` (never the native `disabled` attribute) and hide with
   `Visibility="BitVisibility.Hidden"` or `BitVisibility.Collapsed` (never `display:none`) - both are
   `BitComponentBase` parameters that every component has, and both keep the accessibility behavior the component
   implements
@@ -117,12 +117,9 @@ Apply changes to `.razor`, `.razor.cs`, and `.razor.scss`:
   - `$bit-color-foreground-primary`, `$bit-color-foreground-secondary`
   - `$bit-color-background-primary`, `$bit-color-background-secondary`
   - `$bit-color-border-primary`, `$bit-color-border-secondary`
-- Use `::deep` to style child elements inside Bit.BlazorUI components:
-  ```scss
-  .my-component {
-      ::deep .bit-btn-pri { ... }
-  }
-  ```
+- Style a component through its API first: a parameter, then its `Classes` / `Styles` part bag, then its public
+  `--bit-<Component>-*` CSS variables, then a theme token. A `::deep` rule only targets a class you passed in through
+  `Class` or `Classes`, never the library's own `.bit-*` class names or its private `--bit-<abbr>-*` variables
 - Remove CSS that duplicates what the component already provides. An app-wide change is a `--bit-*` token
   override, not a rule that selects a `.bit-<component>` class - the latter breaks on the next release
 
@@ -146,7 +143,7 @@ non-token color only shows up in one of them.
   `SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIType` and `FindBitBlazorUIIcons`.
 - **Never hardcode colors** in Razor or SCSS. Use `BitColor` enum, `BitCss.Class`, `BitCss.Var`, or `$bit-color-*` SCSS variables.
 - **Always use `WrapHandled`** for event handlers in Razor to prevent unhandled exceptions from crashing the page.
-- **Use `::deep`** for all Bit.BlazorUI component style overrides in SCSS.
+- **Style through the component API** (parameters, `Classes` / `Styles`, public `--bit-<Component>-*` variables) before any `::deep` rule, and never select the library's own `.bit-*` classes.
 - **Prefer component parameters** over CSS classes for visual variants (`Variant`, `Color`, `Size`, `FullWidth`, etc.).
 - **Use code-behind files** (`.razor.cs`) for logic - do not add `@code` blocks to `.razor` files.
 

@@ -1,11 +1,17 @@
 //+:cnd:noEmit
 
+import { AndroidAppWebOtp } from './AndroidAppWebOtp';
+
 export class App {
     // For additional details, see the JsBridge.cs file.
     private static jsBridgeObj: DotNetObject;
 
-    public static registerJsBridge(dotnetObj: DotNetObject) {
+    public static registerJsBridge(dotnetObj: DotNetObject, hasAndroidAppWebOtp: boolean) {
         App.jsBridgeObj = dotnetObj;
+
+        if (hasAndroidAppWebOtp) {
+            AndroidAppWebOtp.provide(dotnetObj);
+        }
     }
 
     public static showDiagnostic() {

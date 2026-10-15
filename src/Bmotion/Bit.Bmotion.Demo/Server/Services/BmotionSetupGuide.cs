@@ -101,8 +101,11 @@ public static class BmotionSetupGuide
         ```
 
         The element fades in and slides up on first render. If it appears without moving, the page is
-        still prerendered markup: Bmotion is inert during prerendering by design and starts once the
-        runtime is interactive.
+        still prerendered markup: by default Bmotion renders the Initial state during prerendering and
+        starts once the runtime is interactive. To play enter animations straight from the served HTML
+        instead, set `o.Prerender = BmPrerenderMode.Animate` in `AddBitBmotionServices` (both
+        containers) and link `_content/Bit.Bmotion/bit-bmotion.css` in the page head;
+        `BmPrerenderMode.Final` serves elements at rest with no animation.
         """;
 
     // -- InteractiveWebAssembly ------------------------------------------------

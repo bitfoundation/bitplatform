@@ -79,10 +79,6 @@
         {
             "id": "advancedTests",
             "isVisible": false
-        },
-        {
-            "id": "realProject",
-            "isVisible": false
         }
     ]
 }

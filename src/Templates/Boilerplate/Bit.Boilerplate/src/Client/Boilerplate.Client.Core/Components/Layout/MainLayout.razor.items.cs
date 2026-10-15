@@ -226,15 +226,7 @@ public partial class MainLayout
                 Text = localizer[nameof(AppStrings.Settings)],
                 IconName = BitIconName.Equalizer,
                 Url = PageUrls.Settings,
-                AdditionalUrls =
-                [
-                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.Profile}",
-                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.Account}",
-                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.Tfa}",
-                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.Sessions}",
-                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.Privacy}",
-                    $"{PageUrls.Settings}/{PageUrls.SettingsSections.UpgradeAccount}",
-                ]
+                Match = BitNavMatch.Prefix
             });
         }
 

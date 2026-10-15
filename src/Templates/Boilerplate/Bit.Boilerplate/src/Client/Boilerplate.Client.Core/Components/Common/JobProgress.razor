@@ -10,9 +10,10 @@
                FloatOffset="2rem"
                Variant="BitVariant.Text"
                Color="BitColor.TertiaryBackground"
-               FloatPosition="BitPosition.BottomLeft"
+               FloatPosition="BitPosition.BottomStart"
                OnClick="WrapHandled(Ignore)">
         <BitProgress Circular
+                     AriaLabel="@currentJobTitle"
                      Percent="@currentJobProgressPercentage"
                      ShowPercentNumber />
     </BitButton>

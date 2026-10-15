@@ -15,9 +15,11 @@ public partial class ProductsPercentageWidget
         Options = new BitChartOptions
         {
             AspectRatio = 1.1,
+            Culture = CultureInfo.CurrentCulture,
             Plugins = new BitChartPluginOptions
             {
-                Legend = new BitChartLegendOptions { Position = BitChartPosition.Right }
+                Legend = new BitChartLegendOptions { Placement = BitPlacement.Right },
+                Tooltip = new() { LabelFormatter = (_, value) => (value / 100).ToString("P1", CultureInfo.CurrentCulture) }
             }
         }
     };

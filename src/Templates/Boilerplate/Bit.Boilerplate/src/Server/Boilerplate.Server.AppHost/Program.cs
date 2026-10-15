@@ -128,25 +128,8 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
             .WithExplicitStart();
     }
 
-    // By default every container is created from scratch on each run and is destroyed as soon as the app host stops.
-    // UsePersistentContainers keeps them alive and reuses them instead, which makes starting the project
-    // (F5 / `aspire start`) and running the automated tests considerably faster, at the cost of the memory they keep
-    // consuming while you're not debugging (stop them from Docker Desktop whenever you need it back).
-    //#if (realProject != true)
-    // It is always on in environments that exist only for this project (Dev Container, GitHub Codespaces, GitHub Actions,
-    // Azure DevOps pipelines - See IsDedicatedEnvironment), where it also speeds up CI jobs that run the tests several times.
-    // If this is your real project that you work on every day, remove the `if` below and keep a bare `builder.UsePersistentContainers();`.
-    //#endif
-    // Check out the `.docs/20- .NET Aspire.md` file for more details.
-
-    //#if (realProject == true)
+    // Keeps the containers alive between runs and stops them once the app host hasn't run for 15 minutes. See `.docs/20- .NET Aspire.md`.
     builder.UsePersistentContainers();
-    //#else
-    if (builder.IsDedicatedEnvironment)
-    {
-        builder.UsePersistentContainers();
-    }
-    //#endif
 
     builder.RemoveWildcardEndpoints();
 }

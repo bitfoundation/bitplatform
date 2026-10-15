@@ -2,7 +2,7 @@
 
 <header>
     <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
-        <BitLink NoUnderline OnClick="HandleGoHomeLink">
+        <BitLink NoUnderline Href="@PageUrls.Home" PreventDefault OnClick="HandleGoHomeLink">
             <BitStack Horizontal Gap="0.5rem" VerticalAlign="BitAlignment.Center">
                 <BitIcon IconName="@(BitIconName.Home)" Size="BitSize.Small" />
                 <BitText Typography="BitTypography.Body2">@Localizer[nameof(AppStrings.BackToHome)]</BitText>
@@ -24,6 +24,8 @@
         {
             <BitDropdown Items="cultures"
                          FitWidth NoBorder Transparent
+                         Title="@Localizer[nameof(AppStrings.SelectLanguage)]"
+                         AriaLabel="@Localizer[nameof(AppStrings.SelectLanguage)]"
                          DefaultValue="@CultureInfo.CurrentUICulture.Name"
                          OnChange="WrapHandled((string c) => OnCultureChanged(c))">
                 <TextTemplate Context="item">
@@ -32,7 +34,7 @@
                 <ItemTemplate Context="item">
                     <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                         <BitFlag Iso2="@CultureInfoManager.FindRegionIso2(item.Value)" />
-                        <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
+                        <BitText Typography="BitTypography.Body1" Weight="@(item.IsSelected ? BitFontWeight.Bold : null)">
                             @item.Text
                         </BitText>
                     </BitStack>

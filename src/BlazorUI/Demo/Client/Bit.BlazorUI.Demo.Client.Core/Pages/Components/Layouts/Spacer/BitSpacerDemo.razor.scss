@@ -11,6 +11,17 @@
     border: 1px solid $bit-color-border-secondary;
 }
 
+// A fixed spacer never shrinks, so a row of boxes and fixed spaces wider than its container moves what no
+// longer fits onto another line instead of running past it - which only ever happens where the row is out of
+// room, so a row that fits is laid out as if it could not wrap. Only the rows whose spacers all hold a size of
+// their own (a fixed one, or the minimum width the Style & Class row gives them) wrap: a spacer that only flexes
+// has nothing to push once its neighbour is alone on the next line. Only the row gap is set, since a column gap
+// would add to every spacer's own space.
+.demo-wrap {
+    row-gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
 .demo-col {
     height: 20rem;
     display: flex;

@@ -108,15 +108,15 @@ private async Task SimulateLoading(int duration)
 
     private readonly string example8RazorCode = @"
 <BitShimmer Overlay Loaded=""@isOverlayLoaded"" Radius=""0.5rem"">
-    <BitCard Style=""width:18rem"">
+    <BitCard Style=""width:18rem;max-width:100%"">
         <BitText Typography=""BitTypography.H6"">Monthly revenue</BitText>
         <BitText Typography=""BitTypography.H3"">$48,120</BitText>
         <BitText Typography=""BitTypography.Caption1"">Up 12% on the previous month.</BitText>
     </BitCard>
 </BitShimmer>
 
-<BitShimmer Loaded=""@isOverlayLoaded"" Height=""8rem"" Width=""18rem"" Radius=""0.5rem"">
-    <BitCard Style=""width:18rem"">
+<BitShimmer Loaded=""@isOverlayLoaded"" Height=""8rem"" Width=""18rem"" Radius=""0.5rem"" Style=""max-width:100%"">
+    <BitCard Style=""width:18rem;max-width:100%"">
         <BitText Typography=""BitTypography.H6"">Monthly revenue</BitText>
         <BitText Typography=""BitTypography.H3"">$48,120</BitText>
         <BitText Typography=""BitTypography.Caption1"">Up 12% on the previous month.</BitText>
@@ -197,6 +197,10 @@ private readonly BitShimmerParams[] shimmerParams =
         display: grid;
         align-items: center;
         grid-template-columns: auto 1fr 1fr;
+    }
+
+    .color-grid > div {
+        overflow-wrap: anywhere;
     }
 </style>
 

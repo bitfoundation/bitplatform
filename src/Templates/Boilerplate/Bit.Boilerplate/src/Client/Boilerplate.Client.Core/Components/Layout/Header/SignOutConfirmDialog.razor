@@ -6,12 +6,11 @@
     <NavigationLock OnBeforeInternalNavigation="HandleNavigation" />
 }
 
-<BitDialog IsBlocking="true"
+<BitDialog Blocking
            @bind-IsOpen="IsOpen"
            OnDismiss="CloseModal"
            ShowCloseButton="false"
            OnOk="WrapHandled(SignOut)"
-           ShowCancelButton="isSigningOut is false"
            Title="@Localizer[nameof(AppStrings.SignOut)]"
            OkText="@Localizer[nameof(AppStrings.SignOut)]"
            CancelText="@Localizer[nameof(AppStrings.Cancel)]"

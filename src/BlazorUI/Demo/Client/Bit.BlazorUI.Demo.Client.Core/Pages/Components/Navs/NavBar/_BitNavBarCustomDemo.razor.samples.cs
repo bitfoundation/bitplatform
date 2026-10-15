@@ -532,7 +532,7 @@ private static readonly List<MenuItem> basicNavBarCustoms =
 ];";
 
     private readonly string example15RazorCode = @"
-<BitStack Horizontal>
+<BitStack Horizontal Wrap>
     <BitButton OnClick=""AddDynamicCustom"">Add item</BitButton>
     <BitButton OnClick=""RemoveDynamicCustom"">Remove item</BitButton>
     <BitButton OnClick=""ReverseDynamicCustoms"">Reverse items</BitButton>

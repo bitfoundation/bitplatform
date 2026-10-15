@@ -329,6 +329,7 @@ private bool isPreviewOpen;";
 </style>
 
 <BitImage Rounded
+          Fluid
           Width=""20rem""
           AspectRatio=""16/9""
           ImageFit=""BitImageFit.Cover""

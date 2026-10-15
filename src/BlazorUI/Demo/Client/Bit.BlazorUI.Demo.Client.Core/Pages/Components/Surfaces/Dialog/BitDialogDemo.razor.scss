@@ -9,7 +9,20 @@
 .position-grid {
     gap: 0.5rem;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+// The nine places keep their three by three grid in the narrowest previews too, where a column is narrower than
+// the longest name and its button's padding: the buttons give up their minimum width and most of their inset.
+@container demo-preview (max-width: #{rem2(400px)}) {
+    .position-grid {
+        gap: 0.25rem;
+    }
+
+    .position-grid ::deep .bit-btn {
+        min-width: 0;
+        padding-inline: 0.125rem;
+    }
 }
 
 .dialog-title {

@@ -29,6 +29,7 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
 - [Scroll timelines](#scroll-timelines)
 - [Programmatic API](#programmatic-api)
 - [Motion values](#motion-values)
+- [Prerendering & static SSR](#prerendering--static-ssr)
 - [MCP server (for AI agents)](#mcp-server-for-ai-agents)
 - [Accessibility](#accessibility)
 
@@ -167,6 +168,7 @@ literals, single-quote the attribute: `WhileHover='Bm.To(backgroundColor: "#8a66
 | `LayoutId` | `string?` | Shared-element transitions (see [Layout & shared elements](#layout--shared-elements)) |
 | `Once` / `Viewport` | `bool` / `BmViewport?` | Viewport tracking for `WhileInView` (`Viewport.Root` measures against a scroll container instead of the page) |
 | `OnUpdate` | `Action<IReadOnlyDictionary<string, string>>?` | Per-frame callback with the CSS flushed this frame (no re-render) |
+| `Prerender` | `BmPrerenderMode?` | What the element renders while prerendered / statically rendered; overrides the global option (see [Prerendering](#prerendering--static-ssr)) |
 
 Plain HTML attributes (`class`, `role`, `data-*`, …) go directly on the element you author
 inside the child content. Your own inline `style` just works: the engine's initial style is
@@ -897,6 +899,65 @@ Scroll-linked animations compose end-to-end:
     public ValueTask DisposeAsync() => Scroll.DisposeAsync();
 }
 ```
+
+---
+
+## Prerendering & static SSR
+
+While a page is prerendered (or statically rendered with no interactivity at all) there is no
+browser attached, so the C# engine can't run. By default every element is served at its `Initial`
+state and animates once the runtime is interactive - which for an `Initial="Bm.To(opacity: 0)"`
+element means invisible content until the WebAssembly runtime has downloaded. Choose something
+better globally, or per element with the `Prerender` parameter:
+
+```csharp
+builder.Services.AddBitBmotionServices(o => o.Prerender = BmPrerenderMode.Animate);
+```
+
+```html
+<!-- App.razor <head> - needed for BmPrerenderMode.Animate -->
+<link rel="stylesheet" href="_content/Bit.Bmotion/bit-bmotion.css" />
+```
+
+| `BmPrerenderMode` | Served HTML | When the runtime takes over |
+|---|---|---|
+| `Initial` | **Default.** The `Initial` state | The enter animation plays |
+| `Final` | The resting state - visible, indexable content, no animation | Already at rest; the enter is skipped |
+| `Animate` | The resting state plus the enter animation compiled to **pure CSS**, playing the moment the HTML arrives | On WebAssembly it continues the CSS animation from where it got to; elsewhere it lands at rest. Never replayed |
+
+Blazor doesn't hydrate prerendered markup - the interactive renderer throws it away and renders
+every component again. That is why `Final`/`Animate` also affect the takeover: every element
+prerendered at rest inside an interactive island persists an entry through
+`PersistentComponentState` (to that island's runtime), and an element mounting in the runtime's
+first render claims one and renders straight into its resting state instead of jumping back to
+`Initial` and playing its enter a second time. Entries are matched by what the element looks like at
+rest, so content that only exists once interactive finds none and enters normally, as do elements
+that mount later (after data loads, on navigation). An enter animation that repeats forever has no
+resting state, so the runtime restarts it.
+
+How `Animate` works, and what it covers:
+
+- A `<Bmotion>` renders no element of its own, so it can't add a `<style>` block (a sibling would
+  break your `:first-child` selectors). The animation travels in the element's inline style as
+  custom properties, and the stylesheet holds generic `@keyframes` that read them back. Without the
+  stylesheet nothing reads them and the element simply renders at rest, like `Final`.
+- Tweens and zero-velocity springs (sampled to CSS `linear()`), delays, variant stagger (`from`
+  origins included), `delayChildren`, `BeforeChildren`, `TransitionSpeed`, loops and mirrors, and
+  keyframe sequences of up to 6 evenly spaced frames all compile. So do transforms, opacity, colours
+  (when `Initial` gives a starting colour), sizes, filters, shadows and path drawing.
+- Anything CSS can't play faithfully - inertia, arcs, springs with initial velocity, unevenly spaced `times`,
+  differing per-segment `eases`, `RepeatDelay`, `BmRepeatType.Reverse`, `AfterChildren`, transform
+  components with different transitions - renders at rest instead. An SVG `d` morph can't be served
+  at rest at all, so that element keeps the `Initial` behaviour.
+- `prefers-reduced-motion` is honoured by media query, following the same `ReducedMotion` policy as
+  the runtime (transforms snap, opacity and colour still fade).
+- `WhileInView` can't be triggered without the runtime, so those elements keep their resting state
+  and reveal once interactive - except with scripting disabled, where the stylesheet shows them as
+  they would look in view.
+- `Timeline`-driven elements keep the `Initial` behaviour: progress 0 is their starting point.
+
+`BmotionCapabilities.IsPrerendering` tells your own components when they are being prerendered
+(`SupportsFrameLoop` then describes the prerendering server, not the runtime that takes over).
 
 ---
 

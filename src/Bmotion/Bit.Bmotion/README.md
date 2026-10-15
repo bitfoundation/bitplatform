@@ -57,13 +57,20 @@ and `BmotionAnimateService` for the complete API surface.
   enter/exit/hover/tap/variant animations on transform + opacity play normally. Features that
   require the per-frame loop - inertia, color/dimension interpolation, keyframe arrays, drag,
   motion values - degrade to instant state changes.
-- ⏸️ **Server-side prerendering** - components render their initial styles; animations start
-  once the circuit/runtime becomes interactive.
+- ✅ **Prerendering / static SSR** - by default elements render their `Initial` state and animate
+  once interactive. Set `o.Prerender = BmPrerenderMode.Final` to serve them at rest (visible,
+  indexable), or `BmPrerenderMode.Animate` to play the enter animation in pure CSS straight from the
+  served HTML - before the runtime loads, and on pages that never become interactive. `Animate`
+  needs the stylesheet in the page head:
+  `<link rel="stylesheet" href="_content/Bit.Bmotion/bit-bmotion.css" />`. In both modes the runtime
+  takes each prerendered element over at rest instead of replaying its enter animation.
 
 Inject **`BmotionCapabilities`** to detect the current mode instead of guessing:
 `Caps.SupportsFrameLoop` is `false` on Server (drag/inertia/interpolation degrade to instant),
-`Caps.SupportsCompositor` is always `true`. On Server, the first animation that collapses to an
-instant change also logs a one-time warning so the degradation is diagnosable.
+`Caps.SupportsCompositor` is always `true`, and `Caps.IsPrerendering` is `true` while the page is
+being prerendered (when the other flags describe the server, not the runtime that takes over). On
+Server, the first animation that collapses to an instant change also logs a one-time warning so the
+degradation is diagnosable.
 
 ## Accessibility: reduced motion
 

@@ -7,8 +7,15 @@
         flex-direction: row;
         align-items: flex-start;
 
+        // A nav wrapped in a block of its own (a caption above it) would hold that block at the nav's
+        // width, so the two columns could not share a tablet's preview the way two bare navs do.
+        > * {
+            min-width: 0;
+        }
+
         .bit-nav {
             width: 350px;
+            max-width: 100%;
         }
 
         @include sm {

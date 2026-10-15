@@ -5,6 +5,7 @@ public partial class BitScrollablePaneDemo
     private readonly string example1RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -32,6 +33,7 @@ public partial class BitScrollablePaneDemo
     private readonly string example2RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -67,6 +69,7 @@ private int maxHeightLines = 2;";
     private readonly string example3RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -127,6 +130,7 @@ private BitOverflow overflow;";
     private readonly string example4RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -167,6 +171,7 @@ private BitOverscroll overscroll = BitOverscroll.Contain;";
     private readonly string example5RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -220,6 +225,7 @@ private bool scrollbarOverflowing;";
     private readonly string example6RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -276,6 +282,7 @@ private double autoHideDelay = 800;";
     private readonly string example7RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -347,6 +354,7 @@ private double fadeSize = 2;";
     private readonly string example8RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -380,6 +388,7 @@ private bool focusable = true;";
     private readonly string example9RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -442,6 +451,7 @@ private void HandleScrollEnd(BitScrollOffset offset) => scrollState = $""stopped
     private readonly string example10RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -503,6 +513,7 @@ private async Task LoadMoreRows()
     private readonly string example11RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -578,6 +589,7 @@ private async Task ReadScrollOffset()
     private readonly string example12RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -629,6 +641,7 @@ private async Task AddAutoScrollContent()
     private readonly string example13RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -693,6 +706,7 @@ private async Task LoadOlderMessages()
     private readonly string example14RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -755,6 +769,7 @@ private BitScrollOffset? carouselOffset;";
     private readonly string example15RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -793,6 +808,7 @@ private bool horizontalWheel = true;";
     private readonly string example16RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -834,6 +850,7 @@ private bool horizontalWheel = true;";
     private readonly string example17RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }
@@ -909,6 +926,7 @@ private readonly List<IBitComponentParams> scrollablePaneParams =
     private readonly string example19RazorCode = @"
 <style>
     .pane {
+        max-width: 100%;
         padding: 0 0.25rem;
         border: 1px solid var(--bit-clr-brd-pri);
     }

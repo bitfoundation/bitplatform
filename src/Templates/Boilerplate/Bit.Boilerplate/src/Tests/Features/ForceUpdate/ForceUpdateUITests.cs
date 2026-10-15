@@ -50,7 +50,7 @@ public partial class ForceUpdateUITests : AppPageTest
         // unscoped locator then fails with a strict mode violation instead of finding the panel.
         var forceUpdatePanel = Page.Locator(".force-update-snack-bar");
 
-        await Expect(forceUpdatePanel.GetByText(AppStrings.ForceUpdateTitle)).ToBeVisibleAsync();
-        await Expect(forceUpdatePanel.GetByText(AppStrings.ForceUpdateBody)).ToBeVisibleAsync();
+        await Expect(forceUpdatePanel.GetByText(AppStrings.ForceUpdateTitle, new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(forceUpdatePanel.GetByText(AppStrings.ForceUpdateBody, new() { Exact = true })).ToBeVisibleAsync();
     }
 }

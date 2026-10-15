@@ -54,12 +54,16 @@
                     <ValidationMessage For="@(() => product.CategoryId)" />
 
                     <BitNumberField @bind-Value="product.Price"
-                                    Suffix="@CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol"
+                                    Suffix="@(product.CurrencySymbol ?? product.CurrencyIso ?? "$")"
                                     NumberFormat="N"
                                     Label="@Localizer[(nameof(AppStrings.Price))]" />
                     <ValidationMessage For="() => product.Price" />
 
-                    <BitRichTextEditor Toolbar="BitRichTextEditorToolbar.AllExtended" @bind-Value="product.DescriptionHTML" @ref="bitRichTextEditor" />
+                    <BitRichTextEditor Toolbar="BitRichTextEditorToolbar.AllExtended"
+                                       @bind-Value="product.DescriptionHTML"
+                                       @ref="bitRichTextEditor"
+                                       MaxLength="4096"
+                                       Label="@Localizer[nameof(AppStrings.Description)]" />
                     <ValidationMessage For="() => product.DescriptionHTML" />
                     <ValidationMessage For="() => product.DescriptionText" />
 
@@ -70,9 +74,13 @@
                                    Accept="image/*"
                                    Style="max-width:unset;"
                                    MaxSize="1024 * 1024 * 10"
+                                   AllowedExtensions="@(["image/*"])"
                                    UploadUrlProvider="GetUploadUrl"
                                    OnUploading="() => isManagingFile = true"
+                                   OnInvalid="HandleOnInvalid"
                                    OnUploadFailed="HandleOnUploadFailed"
+                                   MaxSizeErrorMessage="@Localizer[nameof(AppStrings.ImageMaxSizeErrorMessage),"10 MB"]"
+                                   NotAllowedExtensionErrorMessage="@Localizer[nameof(AppStrings.OnlyImageFilesAllowedErrorMessage)]"
                                    OnUploadComplete="HandleOnUploadComplete"
                                    UploadRequestHttpHeadersProvider="WrapHandled(GetUploadRequestHeaders)">
                         <LabelTemplate>
@@ -103,8 +111,8 @@
                                     }
                                     else
                                     {
-                                        <BitShimmer Height="4.5rem" Circle />
-                                        <BitShimmer Height="1.5rem" Width="12.5rem" />
+                                        <BitShimmer Height="4.5rem" Circle Background="BitColor.PrimaryBackground" />
+                                        <BitShimmer Height="1.5rem" Width="12.5rem" Background="BitColor.PrimaryBackground" />
                                     }
                                 </BitStack>
                             </BitCard>
