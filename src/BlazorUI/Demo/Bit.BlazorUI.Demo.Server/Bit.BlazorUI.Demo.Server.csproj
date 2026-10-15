@@ -34,17 +34,17 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
         <PackageReference Include="Microsoft.AspNetCore.OData" Version="9.5.0" />
-        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.10.1" />
+        <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.11.0" />
         <PackageReference Include="MimeTypeMapOfficial" Version="1.0.17" />
         <PackageReference Include="NWebsec.AspNetCore.Middleware" Version="3.0.0" />
         <PackageReference Include="Swashbuckle.AspNetCore" Version="10.3.0" />
         <PackageReference Include="AspNetCore.HealthChecks.System" Version="9.0.0" />
         <PackageReference Include="AspNetCore.HealthChecks.UI.Client" Version="9.0.0" />
         <PackageReference Include="Riok.Mapperly" Version="4.3.1" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
-        <PackageReference Include="Microsoft.Extensions.AI" Version="10.10.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+        <PackageReference Include="Microsoft.Extensions.AI" Version="10.11.0" />
         <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
     </ItemGroup>
 

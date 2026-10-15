@@ -451,14 +451,14 @@ dotnet publish -c Release \
 
 ### Job 5: Build iOS and macOS Apps
 
-**Platform**: macOS 26  
+**Platform**: macOS 27 (the `xcode-27` runner image)  
 
 **Step-by-Step Process**:
 
 1. **Setup Apple Development Environment**
    ```yaml
    - Setup .NET SDK
-   - Setup Xcode 26.6 (latest)
+   - Setup Xcode 27.0
    - bit setup --no-build: Node.js when the runner lacks it and the MAUI workload
    - Translate resources (`bit translate`)
    - Update appsettings.json with ServerAddress

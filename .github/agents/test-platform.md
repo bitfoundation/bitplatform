@@ -50,19 +50,24 @@ Steps 5 and 6 take a commit, usually the CI run's head. Without one, they test t
 Before doing anything, ask the user in one go what this run covers. Offer choices, fill in what the links already
 answer, and repeat the plan back before starting:
 
-1. **The branch**, or the commit, under test, unless a link names it.
+1. **The branch**, or the commit, under test, unless a link names it. Read this file and run the helper from a
+   checkout of that branch, pulled first: the helper takes the suite, its stages and the CD workflows from the
+   checkout it runs in.
 2. **The tests**: any of the CI run (step 1), the CD rollout and its versions check (step 2), the E2E suite (step 3,
    every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5) and the Aspire containers (step 6).
 3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
-   latter needs a successful prerelease run on the branch under test first: ask whether to start one or whether the
-   user will. It publishes the branch's version to nuget.org when nuget.org doesn't have it yet.
+   latter needs a successful prerelease run on the branch under test first. It publishes the branch's version to
+   nuget.org only when nuget.org doesn't have it yet, so at a version that is already there it builds packages and
+   nothing else: start it, and any later one a fix needs, without asking.
 4. **All CI**: the linked run, a new run on the branch (every job, or which ones), or none.
 5. **All CD**: the linked run, a new run (every app, or which of `server`, `wasm`, `windows`, `android` and `ios`),
-   or none, which tests what is deployed now.
+   or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
+   (`gh run list -R bitfoundation/bitplatform -w all.cd.yml -L 1`): it is often another branch than the one under test.
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
 7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org.
 
-Start, change or skip nothing beyond the answers. Then go in this order:
+Start, change or skip nothing beyond the answers, and ask nothing more once they are in: the user is often away
+until the report. Then go in this order:
 
 1. The prerelease run, when asked for:
    `gh workflow run prerelease.nuget.org.yml -R bitfoundation/bitplatform --ref <branch>`. Wait for it to succeed
@@ -155,6 +160,9 @@ websites - is checked. Every command prints what it checked and exits non-zero o
      `UseSharedCompilation=false`.
    - The Linux-only Chromium flakes (Brouter, some template UI tests) don't reproduce on Windows; they need CI or a
      Linux container.
+   - In a fresh worktree, a library whose build runs `npm install`, such as Bswup, breaks when its target frameworks
+     build in parallel: the installs race on `node_modules` (`ENOTEMPTY`), and the half-installed folder then fails
+     every build with `tsc` exiting 9009. Delete `node_modules`, build one framework (`-f net10.0`), then the rest.
    - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left. Never the `redis`
      container, which the demos use, nor another project's containers.
 
@@ -164,7 +172,8 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    `.editorconfig` says so - and CI's `dotnet format` fails on a BOM; check new files with
    `dotnet format whitespace <slnx> --verify-no-changes --include <folder>`.
 
-5. Commit on the run's branch and ask before pushing. A CI run on the pushed branch is the final proof:
+5. Commit on the run's branch. Push to a branch of your own without asking, for the user to review with the report;
+   ask before pushing to anyone else's. A CI run on the pushed branch is the final proof:
    `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed job
    (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix.
 
@@ -251,11 +260,18 @@ What it needs, all of it already on this machine:
   keyboard "still open" as if the app were wrong. `android` and the Android stage turn the device's autofill service
   and stylus handwriting off, so a new or wiped AVD gets them too. The Android stage's WebView videos are blank:
   `adb exec-out screencap -p` shows what is really on the screen.
+- **The keyboard has to resize the page.** An Android click that times out because an element just above the target
+  intercepts it means the soft keyboard panned the page instead of resizing it, and the click lands that far off.
+  Over CDP (`adb forward` to the app's `webview_devtools_remote_<pid>` socket), `innerHeight` must shrink when a field
+  takes the focus; a `visualViewport` that moves down instead is the app's bug, not the test's.
 
 Triage every failure:
 
 1. Re-run just that test the same way - `e2e -Stage <stage> -Filter "FullyQualifiedName~<Class>.<Method>"` - to
-   tell flaky from broken.
+   tell flaky from broken. A stage's console log counts every failed attempt of a test that retries, its TRX only
+   the last one: a test the TRX shows passed failed once and passed on its retry. Compare a failure only with earlier
+   runs against a deployment from the same branch: the demos run whichever branch the last CD built, and the
+   branches differ in their .NET.
 2. Read the server's side. The demo backends run on this machine and log to the Windows **Application** event log,
    source `.NET Runtime`. How much gets there is each site's own `Logging` section in its server-owned
    `appsettings.json` under `C:\inetpub\<site>`: the Boilerplate backends log from Information up, the platform
@@ -272,6 +288,12 @@ Triage every failure:
 
 3. Name it: a test bug, a product bug, the infrastructure (the mac, the emulator, an outside service's outage), or
    flaky. Fix the first two at their cause, as in step 1.
+
+A download size that grew is broken down by file before it is called growth. The published `.br` of each file sits
+next to it in `C:\inetpub\<site>\wwwroot`, and that is what has to arrive: a response larger than it, or chunked with
+no `Content-Length`, was compressed again on the way. Compare the libraries' assets and the trimmed WebAssembly files
+with a publish of the commit the expected sizes were measured on. The service worker's own scripts, its asset list
+included, report no size to Playwright, so the total leaves them out.
 
 Two failures on .NET 11 are known gaps of third-party libraries; report them as known and don't triage them: the
 template's MySQL provider doesn't work there (All CI keeps its MySQL job off), and CommunityToolkit.Datasync doesn't

@@ -43,13 +43,38 @@ public partial class StaticFilesTests
         var published = new DirectoryInfo(framework).GetFiles("*.br").OrderByDescending(f => f.Length).Take(filesPerSite).ToArray();
         Assert.IsNotEmpty(published, $"{framework} has no .br files.");
 
+        await AssertServedAsPublished(app, Path.Combine(sitePath, "wwwroot"), published);
+    }
+
+    [TestMethod]
+    [DataRow(App.Sales, @"C:\inetpub\SalesModule", DisplayName = "Sales (Server.Web + Cloudflare)")]
+    [DataRow(App.AdminPanel, @"C:\inetpub\AdminPanel", DisplayName = "AdminPanel (Server.Web + Cloudflare)")]
+    [DataRow(App.Todo, @"C:\inetpub\Todo", DisplayName = "Todo (Server.Web + Cloudflare)")]
+    public async Task LibraryFiles_Should_ReachTheBrowserAsThePublishedBrotli(App app, string sitePath)
+    {
+        var content = Path.Combine(sitePath, "wwwroot", "_content");
+        if (Directory.Exists(content) is false)
+            Assert.Inconclusive($"{content} is not on this machine, so there is no published .br to compare with.");
+
+        var published = new DirectoryInfo(content).GetFiles("*.br", SearchOption.AllDirectories)
+            .Where(f => f.Name.EndsWith(".map.br", StringComparison.OrdinalIgnoreCase) is false)
+            .OrderByDescending(f => f.Length).Take(filesPerSite).ToArray();
+        Assert.IsNotEmpty(published, $"{content} has no .br files.");
+
+        await AssertServedAsPublished(app, Path.Combine(sitePath, "wwwroot"), published);
+    }
+
+    private async Task AssertServedAsPublished(App app, string wwwroot, FileInfo[] published)
+    {
         foreach (var br in published)
         {
             var publishedBytes = await File.ReadAllBytesAsync(br.FullName, TestContext.CancellationToken);
             var publishedHash = Convert.ToHexString(SHA256.HashData(publishedBytes));
 
+            var path = Path.GetRelativePath(wwwroot, br.FullName)[..^".br".Length].Replace('\\', '/');
+
             // Any v does: the rule keys on the parameter, not on its value (See the class summary).
-            var url = new Uri(new Uri(DeployedApps.AddressOf(app)), $"_framework/{Path.GetFileNameWithoutExtension(br.Name)}?v={publishedHash}");
+            var url = new Uri(new Uri(DeployedApps.AddressOf(app)), $"{path}?v={publishedHash}");
 
             using var response = await Send(url, browserAcceptEncoding);
             var served = await response.Content.ReadAsByteArrayAsync(TestContext.CancellationToken);

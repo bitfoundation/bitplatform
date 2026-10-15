@@ -63,20 +63,19 @@ public partial class ClientIpForwardingTests : AppTestBase
         // A full load, so both the http client and the hub's handshake start from the stored token.
         await page.GotoAsync(new Uri(new Uri(DeployedApps.AdminPanel), "diagnostic").ToString());
 
-        var report = page.Locator(".diagnostic-report");
-        var serverSections = report.Locator(".report");
+        var report = page.Locator(".report");
         var patience = new LocatorAssertionsToContainTextOptions { Timeout = (float)TimeSpan.FromMinutes(2).TotalMilliseconds };
 
         // The page runs itself over http on load. Matched by name, so the second half can't pass on the first's answer.
-        await Expect(serverSections).ToContainTextAsync("Via: Http", patience);
+        await Expect(report).ToContainTextAsync("Via: Http", patience);
         await AssertPublicIp(report, publicIps);
-        AssertCaller(await serverSections.InnerTextAsync(), signedIn, sessionId);
+        AssertCaller(await report.InnerTextAsync(), signedIn, sessionId);
 
         await page.GetByRole(AriaRole.Button, new() { Name = "Ask over SignalR" }).ClickAsync();
 
-        await Expect(serverSections).ToContainTextAsync("Via: SignalR", patience);
+        await Expect(report).ToContainTextAsync("Via: SignalR", patience);
         await AssertPublicIp(report, publicIps);
-        AssertCaller(await serverSections.InnerTextAsync(), signedIn, sessionId);
+        AssertCaller(await report.InnerTextAsync(), signedIn, sessionId);
     }
 
     private async Task AssertPublicIp(ILocator report, IReadOnlyCollection<string> publicIps)
