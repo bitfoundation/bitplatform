@@ -60,7 +60,9 @@
                     <td>
                         Runs the .NET pipeline in the browser: the WebAssembly app's <code>ILogger</code>,
                         <code>Activity</code> and <code>Meter</code> records are collected and exported from
-                        there, and flushed with <code>keepalive</code> when the page unloads.
+                        there, and flushed with <code>keepalive</code> when the page unloads. Its metrics rely on
+                        <code>System.Diagnostics.Metrics</code>, which the WebAssembly SDK turns off by default and the
+                        Bit.Belemetry package turns back on (<code>MetricsSupport</code>).
                     </td>
                 </tr>
             </tbody>
@@ -276,9 +278,9 @@
 
     private const string StaticSsrConsentCode = """
         <div id="consent">
-            <button onclick="BitBelemetry.setConsent(Belemetry.Features.All)">Accept all</button>
-            <button onclick="BitBelemetry.setConsent(Belemetry.Features.Diagnostics)">Diagnostics only</button>
-            <button onclick="BitBelemetry.setConsent(Belemetry.Features.None)">Reject</button>
+            <button onclick="BitBelemetry.setConsent(BitBelemetry.Features.All)">Accept all</button>
+            <button onclick="BitBelemetry.setConsent(BitBelemetry.Features.Diagnostics)">Diagnostics only</button>
+            <button onclick="BitBelemetry.setConsent(BitBelemetry.Features.None)">Reject</button>
         </div>
         <script type="module">
             // window.BitBelemetry is set when the module loads; the choice persists in localStorage.

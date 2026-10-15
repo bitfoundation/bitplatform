@@ -412,6 +412,50 @@ public class BelemetryPipelineTests
         public bool OnMetric(BelemetryMetric metric) => metric.Name != "drop";
     }
 
+    [TestMethod]
+    public async Task MetricsSwitchedOff_IsWarnedAbout_OnceThePipelineStarts()
+    {
+        // MetricsSupport=false (the WebAssembly SDK's default) leaves every Meter inert without any other symptom.
+        var capture = new CapturingLoggerProvider();
+        await using var host = TestHost.Create(o => o.Metrics.Meters.Add("MyApp"), configureServices: s => s.AddSingleton<ILoggerProvider>(capture));
+        host.Settings.MetricsSupported = false;
+
+        host.StartLogging();
+
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (MetricsWarnings(capture).Length == 0 && DateTime.UtcNow < deadline) await Task.Delay(20);
+
+        var warning = MetricsWarnings(capture).SingleOrDefault();
+        Assert.IsNotNull(warning, "No warning was logged for metrics switched off.");
+        StringAssert.Contains(warning, "<MetricsSupport>true</MetricsSupport>");
+    }
+
+    [TestMethod]
+    [DataRow(true, true, DisplayName = "Metrics supported")]
+    [DataRow(false, false, DisplayName = "Metrics switched off, and the Metrics feature too")]
+    public async Task MetricsSwitch_IsNotWarnedAbout_WhenNothingIsLost(bool supported, bool metricsFeature)
+    {
+        var capture = new CapturingLoggerProvider();
+        await using var host = TestHost.Create(o =>
+        {
+            o.Metrics.Meters.Add("MyApp");
+            if (metricsFeature is false) o.Features &= ~BelemetryFeatures.Metrics;
+        }, configureServices: s => s.AddSingleton<ILoggerProvider>(capture));
+        host.Settings.MetricsSupported = supported;
+
+        host.StartLogging();
+
+        // The warning is the first thing the export loop does; a flush round trip is well past it.
+        await host.FlushAsync(includeMetrics: true);
+        await Task.Delay(200);
+
+        Assert.IsEmpty(MetricsWarnings(capture));
+    }
+
+    private static string[] MetricsWarnings(CapturingLoggerProvider capture) =>
+        [.. capture.Entries.Where(e => e.Category == BelemetryLogger.DiagnosticsCategory && e.Level == LogLevel.Warning && e.Message.Contains("MetricsSupport", StringComparison.Ordinal))
+                           .Select(e => e.Message)];
+
     private sealed class ThrowingProcessor : IBelemetryProcessor
     {
         public bool OnLog(BelemetryLogRecord log) => throw new InvalidOperationException();

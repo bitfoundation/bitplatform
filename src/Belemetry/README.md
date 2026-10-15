@@ -78,6 +78,9 @@ builder.Services.AddBitBelemetryServices(options =>
 `AddBitBelemetryServices` is idempotent and follows the Options pattern: call it in every project that hosts Blazor,
 and every configure callback passed across calls runs, in order, on the same `BelemetryOptions`.
 
+Add `@using Bit.Belemetry` to `_Imports.razor` in every project whose components use it. Without it,
+`<BelemetryScript />` compiles as an unknown HTML element (only a warning), and telemetry silently never starts.
+
 ---
 
 ## Set up per host
@@ -111,6 +114,11 @@ And connect .NET once the app is interactive, in `Routes.razor` (or the main lay
 With the WebAssembly or Auto render modes, the .NET pipeline (logs, traces, metrics) runs **in the browser** and its
 export is flushed with `keepalive` when the page unloads. On the server, Belemetry only serves the script unless you
 turn on the [server pipeline](#the-server-pipeline).
+
+In the browser, metrics need `System.Diagnostics.Metrics`, which the WebAssembly SDK turns off by default
+(`MetricsSupport=false`) to save size. The Bit.Belemetry package turns it back on for you: its build props set
+`MetricsSupport` to `true` unless the project sets it. A project that sets it to `false` gets no metrics, and Belemetry
+logs a warning at startup.
 
 ### Standalone Blazor WebAssembly
 
@@ -166,7 +174,23 @@ and the .NET pipeline exports everything, persisting it on the device while offl
 suspended:
 
 ```csharp
-protected override async void OnSleep() => await services.GetRequiredService<IBelemetry>().FlushAsync();
+// App.xaml.cs, with the app's IServiceProvider injected into its constructor as _services
+protected override async void OnSleep()
+{
+    base.OnSleep();
+
+    try
+    {
+        // IBelemetry is scoped; the queue it flushes is the app-wide pipeline.
+        await using var scope = _services.CreateAsyncScope();
+        await scope.ServiceProvider.GetRequiredService<IBelemetry>().FlushAsync();
+    }
+    catch (Exception ex)
+    {
+        // async void: an exception here would crash the app on its way to the background.
+        System.Diagnostics.Debug.WriteLine($"Flushing telemetry failed: {ex}");
+    }
+}
 ```
 
 ---
@@ -388,6 +412,13 @@ options.Metrics.Meters.Add("MyApp");
 options.Metrics.HistogramBoundaries = [0, 10, 50, 100, 500, 1000];
 ```
 
+Metrics depend on the `System.Diagnostics.Metrics` feature switch (`MetricsSupport`). The WebAssembly SDK turns it off
+by default; the Bit.Belemetry package turns it back on unless the project sets it. With the switch off, no metrics are
+exported while logs and traces still flow, and Belemetry logs a warning at startup. To drop metrics on purpose, also
+remove `BelemetryFeatures.Metrics` from `options.Features`, which silences the warning. A project that references
+`Bit.Belemetry.csproj` instead of the package skips the package's build props: import
+`buildTransitive/Bit.Belemetry.props` from it, as this repository's samples do.
+
 ---
 
 ## Browser instrumentation
@@ -580,7 +611,7 @@ one of them.
 `bit-belemetry.js` is an ES module and also sets `window.BitBelemetry`:
 
 ```js
-BitBelemetry.setConsent(Belemetry.Features?.All ?? 4095);
+BitBelemetry.setConsent(BitBelemetry.Features.All);
 BitBelemetry.trackEvent('video.played', { 'video.id': 'intro' });
 BitBelemetry.setUser('42');
 await BitBelemetry.flush();
@@ -613,5 +644,9 @@ console.log(BitBelemetry.getContext());   // { consent, decided, sessionId, pseu
 - **CORS errors in the browser console:** the receiver does not allow the page origin - configure CORS on the
   collector, use `BrowserEndpoint`, or switch to the Relay transport.
 - **No .NET telemetry on the server:** that is the default; see [the server pipeline](#the-server-pipeline).
+- **Logs and traces from WebAssembly, but no metrics:** `System.Diagnostics.Metrics` is off in the app, and Belemetry
+  logs a warning at startup saying so. The package turns it on by default, so look for
+  `<MetricsSupport>false</MetricsSupport>` in the client project, or a project reference to Bit.Belemetry instead of
+  the package (see [Metrics](#metrics)).
 - **Duplicate HTTP spans in WebAssembly:** they should not happen - the script skips requests that already carry a
   `traceparent` from .NET's `HttpClient`. If a custom handler strips it, add the URL to `Browser.IgnoreUrls`.

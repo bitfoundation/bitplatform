@@ -72,7 +72,7 @@
         <table class="doc-table">
             <tbody>
                 <tr><td>Browser instrumentation</td><td>The script: page views, clicks, web vitals, errors, fetch and XHR spans</td></tr>
-                <tr><td>.NET logs, traces, metrics</td><td>In the browser, exported every <code>Batch.FlushInterval</code> and <code>Metrics.ExportInterval</code></td></tr>
+                <tr><td>.NET logs, traces, metrics</td><td>In the browser, exported every <code>Batch.FlushInterval</code> and <code>Metrics.ExportInterval</code>. Metrics rely on <code>System.Diagnostics.Metrics</code>, which the WebAssembly SDK turns off by default and the package turns back on (<code>MetricsSupport</code>)</td></tr>
                 <tr><td>Unload</td><td>On <code>pagehide</code> or when the tab is hidden, the script asks .NET for its pending records already serialized, and sends them with <code>fetch(..., { keepalive: true })</code> - async .NET work does not survive the page going away</td></tr>
                 <tr><td>Offline persistence</td><td><code>localStorage</code>, up to <code>Persistence.BrowserMaxBytes</code> (1 MB)</td></tr>
                 <tr><td>Consent</td><td>App-wide: one decision governs the script and the .NET pipeline alike</td></tr>

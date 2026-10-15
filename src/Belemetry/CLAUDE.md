@@ -23,6 +23,7 @@ Every feature is gated by runtime consent (GDPR), per feature.
 | Path | What it is |
 | --- | --- |
 | `Bit.Belemetry/` | The package: Razor class library plus `Scripts/*.ts`, bundled by esbuild into `wwwroot/bit-belemetry.js` (generated, git-ignored) |
+| `Bit.Belemetry/buildTransitive/` | `Bit.Belemetry.props`, packed as the package's `build`, `buildMultiTargeting` and `buildTransitive` props: it defaults `MetricsSupport` to `true` (WebAssembly turns it off) and imports the static web assets props the Razor SDK's own file would. Projects here that reference the library as a project and run .NET in WebAssembly or MAUI import it themselves |
 | `Bit.Belemetry/Options/` | `BelemetryOptions` and its sub-option classes |
 | `Bit.Belemetry/Consent/` | `BelemetryFeatures`, `IBelemetryConsent`, the consent state machine |
 | `Bit.Belemetry/Model/` | Public, OTel-shaped data model: spans, log records, metrics, resource, scope, attributes |

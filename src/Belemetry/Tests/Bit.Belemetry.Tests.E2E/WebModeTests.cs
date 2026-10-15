@@ -370,6 +370,30 @@ public class WebAssemblyModeTests : InteractiveWebModeTests
         Assert.AreEqual("Bit.Belemetry.Tests.Harness", span.Scope);
         Assert.AreEqual(session, span.Attributes.GetValueOrDefault("session.id"));
     }
+
+    [TestMethod]
+    public async Task DotNet_Meter_measurements_are_exported_from_the_page()
+    {
+        // The WebAssembly SDK turns System.Diagnostics.Metrics off by default and the package's build props turn it
+        // back on (the harness client imports them, as a PackageReference would). Without them every Meter in the
+        // page is inert, and this measurement never leaves it - while logs and traces still flow.
+        var marker = NewMarker();
+        await OpenAsync($"/?consent=all&marker={marker}");
+
+        await Page.Locator("#record-metric").ClickAsync();
+        await Page.Locator("#flush").ClickAsync();
+        await Expect(Page.Locator("#consent-state")).ToHaveAttributeAsync("data-actions", "2");
+
+        var metric = await Collector.WaitForAsync(t => t.Metrics.FirstOrDefault(m => m.Name == "harness.clicks"), "the Meter measurement", marker: marker);
+        Assert.AreEqual("Bit.Belemetry.Tests.Harness", metric.Scope);
+        Assert.AreEqual("sum", metric.Type);
+        Assert.AreEqual("dotnet", metric.Resource.GetValueOrDefault("telemetry.sdk.language"));
+        Assert.AreEqual("browser", metric.Resource.GetValueOrDefault("os.type"));
+
+        // And the Azure Monitor exporter turned it into a Metric envelope.
+        await Collector.WaitForAsync(t => t.Envelopes.FirstOrDefault(e => e.Name == "Microsoft.ApplicationInsights.Metric" && e.BaseData?.Contains("harness.clicks") is true),
+            "the Metric envelope", marker: marker);
+    }
 }
 
 [TestClass]

@@ -148,6 +148,11 @@ public static class BelemetryConfigGenerator
 
         files.Add(new("_Imports.razor", "Razor", "@using Bit.Belemetry"));
 
+        if (found.Id is "web-app" or "webassembly" or "auto" or "standalone-wasm")
+        {
+            notes.Add("Metrics in WebAssembly: the WebAssembly SDK turns System.Diagnostics.Metrics off by default, and the Bit.Belemetry package turns it back on (MetricsSupport). Do not set <MetricsSupport>false</MetricsSupport> in the client .csproj, or no Meter records anything (Belemetry logs a warning at startup when that happens).");
+        }
+
         if (consentModel != "none" && found.Id != "static-ssr")
         {
             files.Add(new("Shared/ConsentBanner.razor", "Razor", ConsentBanner(consentModel)));

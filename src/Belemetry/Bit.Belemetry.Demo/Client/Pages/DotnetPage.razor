@@ -39,8 +39,8 @@
     <p>
         Trace and Debug are below the minimum level, so their buttons produce nothing - which is the point.
         <code>IncludeMessageTemplate</code> keeps the raw template as <code>log.record.template</code>, and
-        <code>ExcludedCategories</code> drops category prefixes outright (Belemetry's own categories are always
-        excluded, so its diagnostics never feed back into its pipeline).
+        <code>ExcludedCategories</code> drops category prefixes outright (Belemetry's own diagnostics category,
+        <code>Bit.Belemetry</code>, is always excluded, so its diagnostics never feed back into its pipeline).
     </p>
     <div class="demo-row">
         <div class="demo-card stack">
@@ -120,6 +120,13 @@
         instrument keeps at most <code>CardinalityLimit</code> (2000) attribute sets; measurements with new sets past
         it are folded into one point carrying <code>otel.metric.overflow = true</code>, so a user id used as a tag by
         mistake cannot exhaust memory.
+    </p>
+    <p>
+        In WebAssembly, the <code>System.Diagnostics.Metrics</code> feature switch is off by default, which leaves every
+        <code>Meter</code> inert. The Bit.Belemetry package turns it back on (it sets <code>MetricsSupport</code> to
+        <code>true</code> unless the project sets it), and Belemetry logs a warning at startup when a project turns it
+        off again. This demo references the library as a project, so its client imports the package's build props
+        itself; without them, the buttons below would produce nothing.
     </p>
     <div class="demo-row">
         <div class="demo-card stack">

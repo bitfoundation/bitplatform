@@ -380,7 +380,7 @@
         """;
 
     private const string JsCode = """
-        BitBelemetry.setConsent(Belemetry.Features.Diagnostics | Belemetry.Features.Persistence);
+        BitBelemetry.setConsent(BitBelemetry.Features.Diagnostics | BitBelemetry.Features.Persistence);
         BitBelemetry.getConsent();         // 1 | 128 | 256 | 16 | 1024 = 1425
         BitBelemetry.isConsentDecided();   // true
         BitBelemetry.getContext();         // { consent, decided, sessionId, pseudoId, userId }

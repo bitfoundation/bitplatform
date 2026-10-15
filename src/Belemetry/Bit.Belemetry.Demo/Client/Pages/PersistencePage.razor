@@ -1,5 +1,6 @@
 ﻿@page "/persistence"
 @using System.Text.Json
+@implements IDisposable
 @inject IJSRuntime JS
 @inject IBelemetryConsent Consent
 
@@ -211,12 +212,14 @@
     private const string ReadQueueCode = """
         @inject IJSRuntime JS
 
-        private async Task ReadQueueAsync()
-        {
-            // The queue is a plain localStorage entry, so any page can look at it.
-            var json = await JS.InvokeAsync<string?>("localStorage.getItem", "bit-belemetry-queue");
-            using var queue = json is null ? null : JsonDocument.Parse(json);
-            var pending = queue?.RootElement.GetArrayLength() ?? 0;
+        @code {
+            private async Task ReadQueueAsync()
+            {
+                // The queue is a plain localStorage entry, so any page can look at it.
+                var json = await JS.InvokeAsync<string?>("localStorage.getItem", "bit-belemetry-queue");
+                using var queue = json is null ? null : JsonDocument.Parse(json);
+                var pending = queue?.RootElement.GetArrayLength() ?? 0;
+            }
         }
         """;
 
@@ -229,11 +232,23 @@
         """;
 
     private const string HybridCode = """
-        // App.xaml.cs (MAUI)
+        // App.xaml.cs (MAUI), with the app's IServiceProvider injected into its constructor as _services
         protected override async void OnSleep()
         {
-            // Async work does not survive suspension: hand the queues over while the app still runs.
-            await services.GetRequiredService<IBelemetry>().FlushAsync();
+            base.OnSleep();
+
+            try
+            {
+                // Async work does not survive suspension: hand the queues over while the app still runs.
+                // IBelemetry is scoped, so it is resolved from a scope of its own.
+                await using var scope = _services.CreateAsyncScope();
+                await scope.ServiceProvider.GetRequiredService<IBelemetry>().FlushAsync();
+            }
+            catch (Exception ex)
+            {
+                // async void: an exception here would crash the app on its way to the background.
+                System.Diagnostics.Debug.WriteLine($"Flushing telemetry failed: {ex}");
+            }
         }
         """;
 
@@ -244,6 +259,10 @@
     private string[] _queueExporters = [];
     private string? _message;
 
+    // The reader usually decides on the banner while this page is open, so the state shown here follows every
+    // consent change, not only the ones made with this page's own buttons.
+    protected override void OnInitialized() => Consent.Changed += OnConsentChanged;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender is false || RendererInfo.IsInteractive is false) return;
@@ -251,6 +270,14 @@
         await RefreshAsync();
         StateHasChanged();
     }
+
+    private void OnConsentChanged(object? sender, EventArgs e)
+    {
+        _persistenceGranted = Consent.IsGranted(BelemetryFeatures.Persistence);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => Consent.Changed -= OnConsentChanged;
 
     private async Task RefreshAsync()
     {

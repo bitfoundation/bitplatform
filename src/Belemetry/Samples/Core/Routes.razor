@@ -4,15 +4,9 @@
 
 <BelemetryInitializer />
 
-<Router AppAssembly="typeof(Routes).Assembly">
+<Router AppAssembly="typeof(Routes).Assembly" NotFoundPage="typeof(NotFoundPage)">
     <Found Context="routeData">
         <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
         <FocusOnNavigate RouteData="routeData" Selector="h1" />
     </Found>
-    <NotFound>
-        <LayoutView Layout="typeof(MainLayout)">
-            <h1>Not found</h1>
-            <p>Nothing lives at this address.</p>
-        </LayoutView>
-    </NotFound>
 </Router>

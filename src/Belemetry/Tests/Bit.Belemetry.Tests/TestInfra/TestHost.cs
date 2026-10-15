@@ -24,11 +24,13 @@ internal sealed class TestHost : IAsyncDisposable
 
     public BelemetryConsentState Consent => Services.GetRequiredService<BelemetryConsentState>();
 
-    public static TestHost Create(Action<BelemetryOptions>? configure = null, BelemetryFeatures consentDefault = BelemetryFeatures.All)
+    /// <param name="configureServices">Extra registrations, e.g. a logger provider that captures Belemetry's own diagnostics.</param>
+    public static TestHost Create(Action<BelemetryOptions>? configure = null, BelemetryFeatures consentDefault = BelemetryFeatures.All, Action<IServiceCollection>? configureServices = null)
     {
         var memory = new BelemetryInMemoryExporter();
         var services = new ServiceCollection();
         services.AddLogging(b => b.SetMinimumLevel(LogLevel.Trace));
+        configureServices?.Invoke(services);
         services.AddBitBelemetryServices(o =>
         {
             ApplyTestDefaults(o);

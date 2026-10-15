@@ -37,8 +37,13 @@ if (app.Environment.IsDevelopment())
 }
 else
 {
+    app.UseExceptionHandler("/Error", createScopeForErrors: true);
     app.UseHsts();
 }
+
+// A deep link to an unknown address matches no endpoint, which would end in an empty 404: re-execute it to render the
+// shared Not found page instead, keeping the status code.
+app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 
 app.UseHttpsRedirection();
 app.UseAntiforgery();

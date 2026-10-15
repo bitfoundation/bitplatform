@@ -297,6 +297,16 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         // Yield first so Start() returns immediately; on WebAssembly this also lets the app finish booting.
         await Task.Yield();
 
+        // Said here rather than in Start(), which runs while the logger factory is still being built. A warning, not a
+        // diagnostic: it is a misconfiguration that loses a whole signal without any other symptom.
+        if (_meters is not null && Settings.Meters.Count > 0 && Settings.MetricsSupported is false)
+        {
+            LogDiagnostic(null, "System.Diagnostics.Metrics is turned off in this app (MetricsSupport=false), so no Meter records anything and no metrics are exported. " +
+                                "The WebAssembly SDK defaults to that; the Bit.Belemetry package turns it back on unless the project sets it, or references Bit.Belemetry as a project rather than a package. " +
+                                "Set <MetricsSupport>true</MetricsSupport> in the project file, or remove BelemetryFeatures.Metrics from BelemetryOptions.Features to silence this warning.",
+                          LogLevel.Warning);
+        }
+
         var options = Settings.Options;
         var flushInterval = options.Batch.FlushInterval > TimeSpan.Zero ? options.Batch.FlushInterval : TimeSpan.FromSeconds(5);
         var metricsInterval = options.Metrics.ExportInterval > TimeSpan.Zero ? options.Metrics.ExportInterval : TimeSpan.FromSeconds(60);
@@ -433,14 +443,17 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         }
     }
 
-    internal void LogDiagnostic(Exception? exception, string message)
+    /// <summary>Logs at Debug, or at Information with <see cref="BelemetryOptions.Debug"/>.</summary>
+    internal void LogDiagnostic(Exception? exception, string message) =>
+        LogDiagnostic(exception, message, Settings.Options.Debug ? LogLevel.Information : LogLevel.Debug);
+
+    internal void LogDiagnostic(Exception? exception, string message, LogLevel level)
     {
         try
         {
             // Resolved lazily: the logger factory depends on this pipeline through the logger provider, so taking
             // ILogger in the constructor would be a cycle.
             _diagnostics ??= _services.GetService<ILoggerFactory>()?.CreateLogger(BelemetryLogger.DiagnosticsCategory);
-            var level = Settings.Options.Debug ? LogLevel.Information : LogLevel.Debug;
             _diagnostics?.Log(level, exception, "{Message}", message);
         }
         catch

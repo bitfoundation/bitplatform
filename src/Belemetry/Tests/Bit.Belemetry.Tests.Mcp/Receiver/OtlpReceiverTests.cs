@@ -167,6 +167,29 @@ public class OtlpReceiverTests
     }
 
     [TestMethod]
+    public void ASharedRecord_ThatArrivesBeforeTheSessionsRecordOfItsTrace_IsHandedOutOnceItCorrelates()
+    {
+        // The server's batch and the browser's are flushed independently, so the server span often lands first. The
+        // poll in between moves `after` past it while nothing correlates it yet; the next poll must still hand it out.
+        var store = new TelemetryStore(TimeProvider.System);
+        var session = NewSession();
+        var trace = Guid.NewGuid().ToString("N");
+
+        store.Add([new TelemetryRecord { Signal = "span", Kind = "Span", Source = "server", Name = "GET /api/demo/echo", TraceId = trace }]);
+
+        var first = store.Get(session, 0, includeShared: false);
+        Assert.AreEqual(0, first.Records.Length);
+
+        store.Add([new TelemetryRecord { Signal = "span", Kind = "Span", Source = "browser", Name = "GET", TraceId = trace, SessionId = session }]);
+
+        var second = store.Get(session, first.LastId, includeShared: false);
+        Assert.AreEqual(2, second.Records.Length);
+        Assert.IsTrue(second.Records.Single(r => r.Source == "server").Correlated);
+
+        Assert.AreEqual(0, store.Get(session, second.LastId, includeShared: false).Records.Length, "Each record is handed out once.");
+    }
+
+    [TestMethod]
     public async Task Gzip_IsAccepted()
     {
         var session = NewSession();

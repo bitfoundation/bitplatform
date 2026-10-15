@@ -29,7 +29,7 @@ public static class BelemetrySetupGuide
             [
                 "Register `AddBitBelemetryServices` in BOTH projects (server and client) with the same configuration - the server renders the browser script's configuration from its options, the client runs the .NET pipeline in WebAssembly.",
                 "Put `<BelemetryScript />` in the `<head>` of App.razor and `<BelemetryInitializer />` once in Routes.razor (or the main layout).",
-                "The .NET pipeline runs where the components run: in the browser for WebAssembly/Auto; on the server only with `options.Server.CollectDotnetTelemetry = true`.",
+                "The .NET pipeline runs where the components run: in the browser for WebAssembly/Auto (the package turns System.Diagnostics.Metrics back on there, which the WebAssembly SDK defaults off - do not set `<MetricsSupport>false</MetricsSupport>` in the client .csproj); on the server only with `options.Server.CollectDotnetTelemetry = true`.",
             ],
             ["Samples/Wasm/Bit.Belemetry.Samples.Wasm/Program.cs", "Samples/Wasm/Bit.Belemetry.Samples.Wasm.Client/Program.cs", "Samples/Wasm/Bit.Belemetry.Samples.Wasm/Components/App.razor", "Samples/Core/Routes.razor", "Demo/Client/Routes.razor"]),
 

@@ -86,6 +86,17 @@ internal sealed class BelemetrySettings
 
     public bool HasExporters => OtlpExporters.Count > 0 || AzureMonitorExporters.Count > 0 || Options.ConsoleExporter is not null || Options.Exporters.Count > 0;
 
+    /// <summary>The runtime feature switch behind the <c>MetricsSupport</c> MSBuild property.</summary>
+    public const string MetricsSupportSwitch = "System.Diagnostics.Metrics.Meter.IsSupported";
+
+    /// <summary>
+    /// Whether <c>System.Diagnostics.Metrics</c> works in this process. An app can switch it off with
+    /// <c>MetricsSupport=false</c> - the WebAssembly SDK's default since .NET 9 - and then every Meter is inert: the
+    /// listener never sees a measurement, and nothing says so. Settable for the tests, which cannot flip the
+    /// process-wide switch without turning off the meters of every other test in the run.
+    /// </summary>
+    public bool MetricsSupported { get; set; } = AppContext.TryGetSwitch(MetricsSupportSwitch, out var supported) is false || supported;
+
     /// <summary>
     /// The features the .NET collectors may produce regardless of user consent. On the server the pipeline is
     /// process-wide and governed by <see cref="BelemetryServerOptions.Features"/>; elsewhere consent decides.

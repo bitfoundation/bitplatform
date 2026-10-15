@@ -15,4 +15,8 @@
         <ProjectReference Include="..\..\Core\Bit.Belemetry.Samples.Core.csproj" />
     </ItemGroup>
 
+    <!-- Only because this sample references Bit.Belemetry as a project: the package imports this on its own. It turns
+         System.Diagnostics.Metrics back on, which the WebAssembly SDK turns off by default. -->
+    <Import Project="..\..\..\Bit.Belemetry\buildTransitive\Bit.Belemetry.props" />
+
 </Project>

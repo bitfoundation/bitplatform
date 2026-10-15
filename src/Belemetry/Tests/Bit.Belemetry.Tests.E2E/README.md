@@ -64,6 +64,7 @@ finds its own records in a receiver shared with other tests.
 | `PageView` envelope with the Azure tags | - | yes | relayed |
 | C# `IBelemetry.TrackEvent`: through the browser (Server), through the .NET pipeline (WebAssembly) | - | yes | yes |
 | .NET `ILogger` and `Activity` records from the WebAssembly runtime, with the page's session | - | wasm | `ILogger` |
+| .NET `Meter` measurements from the WebAssembly runtime (needs the package's `MetricsSupport` default, which the harness client imports), as OTLP and a `Metric` envelope | - | wasm | - |
 | The hosting samples boot, render the config and serve their assets | yes (net10.0) | - | - |
 
 ## Running locally

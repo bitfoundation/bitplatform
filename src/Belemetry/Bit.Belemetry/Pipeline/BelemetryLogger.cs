@@ -9,7 +9,7 @@ internal sealed class BelemetryLogger : ILogger
     private const string OriginalFormat = "{OriginalFormat}";
 
     /// <summary>
-    /// The one category Belemetry logs its own diagnostics under (<see cref="BelemetryPipeline.LogDiagnostic"/>).
+    /// The one category Belemetry logs its own diagnostics under (<see cref="BelemetryPipeline.LogDiagnostic(Exception?, string, LogLevel)"/>).
     /// </summary>
     internal const string DiagnosticsCategory = "Bit.Belemetry";
 

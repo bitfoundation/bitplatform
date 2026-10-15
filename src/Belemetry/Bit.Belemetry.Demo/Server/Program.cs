@@ -1,8 +1,10 @@
 ﻿using Bit.Belemetry.Demo.Client.Services;
 using Bit.Belemetry.Demo.Server.Components;
+using Bit.Belemetry.Demo.Server.Controllers;
 using Bit.Belemetry.Demo.Server.Endpoints;
 using Bit.Belemetry.Demo.Server.Services;
 using Microsoft.AspNetCore.HttpOverrides;
+using ModelContextProtocol.Protocol;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -52,7 +54,19 @@ builder.Services.AddBitBelemetryServices(options =>
 // live. That page's route has to differ from MapMcp's below: two literal endpoints on /mcp would
 // make a GET of it ambiguous.
 builder.Services.AddControllers();
-builder.Services.AddMcpServer()
+builder.Services.AddMcpServer(options =>
+{
+    // The name a person sees in their client's server list, and the version they would quote in a bug report -
+    // the library's, not this web app's, because the library is what the answers are about.
+    options.ServerInfo = new Implementation
+    {
+        Name = "bit-belemetry",
+        Title = "Bit.Belemetry",
+        Version = McpController.BelemetryVersion.Split('+')[0],
+        Description = "Setup guides, public API, configuration generation and review, and the semantic conventions of the Bit.Belemetry telemetry SDK for Blazor.",
+        WebsiteUrl = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Belemetry"
+    };
+})
     .WithHttpTransport()
     .WithToolsFromAssembly()
     .WithResourcesFromAssembly()
@@ -82,7 +96,7 @@ else
 // A deep link to an unknown route matches no Razor component endpoint, so routing answers with an
 // empty 404. Re-execute it through the app to get the styled page the router shows for the same
 // miss during client-side navigation - keeping the status code at 404.
-app.UseStatusCodePagesWithReExecute("/not-found");
+app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
 
 app.UseForwardedHeaders();
 

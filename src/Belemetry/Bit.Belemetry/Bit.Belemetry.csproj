@@ -7,6 +7,16 @@
         <IsTrimmable>true</IsTrimmable>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <!-- The package ships its own Bit.Belemetry.props (buildTransitive\Bit.Belemetry.props, below), which takes the
+             package paths of the three the Razor SDK generates to wire up static web assets. The SDK's own guidance for
+             a package with build logic of its own: turn its files off, and import the static web assets props from
+             yours - which that file does. -->
+        <StaticWebAssetsDisableProjectBuildPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildPropsFileGeneration>
+        <StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>true</StaticWebAssetsDisableProjectBuildMultiTargetingPropsFileGeneration>
+        <StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>true</StaticWebAssetsDisableProjectBuildTransitivePropsFileGeneration>
+    </PropertyGroup>
+
     <ItemGroup>
         <SupportedPlatform Include="browser" />
     </ItemGroup>
@@ -41,6 +51,11 @@
         <None Include="tsconfig.json" />
         <Content Remove="package.json;package-lock.json" />
         <None Include="package.json;package-lock.json" />
+        <!-- Consumer-side build defaults (MetricsSupport) plus the static web assets import, as the package's one
+             Bit.Belemetry.props in each of the folders NuGet looks in. Included rather than updated: pack collects it
+             in the outer, cross-targeting build, which has no default None items for an Update to match. -->
+        <None Remove="buildTransitive\Bit.Belemetry.props" />
+        <None Include="buildTransitive\Bit.Belemetry.props" Pack="true" PackagePath="build\;buildMultiTargeting\;buildTransitive\" />
     </ItemGroup>
 
     <ItemGroup>

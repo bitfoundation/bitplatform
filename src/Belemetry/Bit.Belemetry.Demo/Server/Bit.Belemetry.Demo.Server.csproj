@@ -1,65 +1,66 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
-  <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <InvariantGlobalization>true</InvariantGlobalization>
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
-    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
-    <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
-    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+        <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\Bit.Belemetry\Bit.Belemetry.csproj" />
-    <ProjectReference Include="..\Client\Bit.Belemetry.Demo.Client.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Belemetry\Bit.Belemetry.csproj" />
+        <ProjectReference Include="..\Client\Bit.Belemetry.Demo.Client.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Bit.Belemetry" />
-    <Using Include="Microsoft.AspNetCore.Mvc" />
-  </ItemGroup>
+    <ItemGroup>
+        <Using Include="Bit.Belemetry" />
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+    </ItemGroup>
 
-  <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
-       working from a published deployment, where none of these files exist next to the app.
-       LogicalName is set explicitly because the resource name IS the path an MCP client asks for.
-       Every include is a glob, so a file that does not exist yet (the README, the samples) is simply
-       not embedded, and the services that read them answer without it. -->
-  <ItemGroup>
-    <!-- The reference guide (README.md) and the contracts between the C# and TypeScript halves
-         (CLAUDE.md), whose convention and mapping tables LookupBelemetryConventions reads. -->
-    <EmbeddedResource Include="..\..\*.md">
-      <LogicalName>BelemetryDocs/%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
+    <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+         working from a published deployment, where none of these files exist next to the app.
+         LogicalName is set explicitly because the resource name IS the path an MCP client asks for.
+         Every include is a glob, so a file that does not exist yet (the README, the samples) is simply
+         not embedded, and the services that read them answer without it. -->
+    <ItemGroup>
+        <!-- The reference guide (README.md) and the contracts between the C# and TypeScript halves
+             (CLAUDE.md), whose convention and mapping tables LookupBelemetryConventions reads. -->
+        <EmbeddedResource Include="..\..\*.md">
+            <LogicalName>BelemetryDocs/%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
 
-    <!-- Every demo page, which is also every worked example the tools can point an agent at. -->
-    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
-                      Exclude="..\Client\bin\**;..\Client\obj\**">
-      <LogicalName>BelemetrySource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
+        <!-- Every demo page, which is also every worked example the tools can point an agent at. -->
+        <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
+                          Exclude="..\Client\bin\**;..\Client\obj\**">
+            <LogicalName>BelemetrySource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
 
-    <!-- The host: how a Blazor Web App is wired up around Belemetry, the receiver the demo exports to,
-         and the App.razor that places <BelemetryScript />. -->
-    <EmbeddedResource Include="Program.cs" LogicalName="BelemetrySource/Demo/Server/Program.cs" />
+        <!-- The host: how a Blazor Web App is wired up around Belemetry, the receiver the demo exports to,
+             and the App.razor that places <BelemetryScript />. -->
+        <EmbeddedResource Include="Program.cs" LogicalName="BelemetrySource/Demo/Server/Program.cs" />
 
-    <!-- The Components\ and Endpoints\ prefixes are written out: %(RecursiveDir) only captures what
-         the '**' matched, so it would start at the folder below and drop the folder itself. -->
-    <EmbeddedResource Include="Components\**\*.razor">
-      <LogicalName>BelemetrySource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Endpoints\**\*.cs">
-      <LogicalName>BelemetrySource/Demo/Server/Endpoints/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
+        <!-- The Components\ and Endpoints\ prefixes are written out: %(RecursiveDir) only captures what
+             the '**' matched, so it would start at the folder below and drop the folder itself. -->
+        <EmbeddedResource Include="Components\**\*.razor">
+            <LogicalName>BelemetrySource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+        <EmbeddedResource Include="Endpoints\**\*.cs">
+            <LogicalName>BelemetrySource/Demo/Server/Endpoints/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
 
-    <!-- The minimal hosting samples, one per host: the setup guide shows their real files. -->
-    <EmbeddedResource Include="..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\*.razor;..\..\Samples\**\index.html;..\..\Samples\**\appsettings.json"
-                      Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\**\Platforms\**;..\..\Samples\**\node_modules\**">
-      <LogicalName>BelemetrySource/Samples/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
+        <!-- The minimal hosting samples, one per host: the setup guide shows their real files. -->
+        <EmbeddedResource Include="..\..\Samples\**\*.cs;..\..\Samples\**\*.csproj;..\..\Samples\**\*.razor;..\..\Samples\**\index.html;..\..\Samples\**\appsettings.json"
+                          Exclude="..\..\Samples\**\bin\**;..\..\Samples\**\obj\**;..\..\Samples\**\Platforms\**;..\..\Samples\**\node_modules\**">
+            <LogicalName>BelemetrySource/Samples/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
 
 </Project>

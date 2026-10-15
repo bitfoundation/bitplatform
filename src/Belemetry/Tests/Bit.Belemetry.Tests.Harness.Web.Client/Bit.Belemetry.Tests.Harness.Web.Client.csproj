@@ -24,4 +24,8 @@
         <ProjectReference Include="..\Bit.Belemetry.Tests.Harness\Bit.Belemetry.Tests.Harness.csproj" />
     </ItemGroup>
 
+    <!-- What a PackageReference to Bit.Belemetry imports on its own, and a ProjectReference does not: the build
+         defaults that turn System.Diagnostics.Metrics back on in WebAssembly. The suites test the shipped file. -->
+    <Import Project="..\..\Bit.Belemetry\buildTransitive\Bit.Belemetry.props" />
+
 </Project>

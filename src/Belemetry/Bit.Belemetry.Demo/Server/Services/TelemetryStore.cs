@@ -84,14 +84,28 @@ public sealed class TelemetryStore(TimeProvider timeProvider)
     {
         var now = timeProvider.GetUtcNow();
         var own = _sessions.TryGetValue(sessionId, out var bucket) ? bucket.Snapshot(now) : [];
-        var traces = own.Select(r => r.TraceId).Where(t => t is not null).ToHashSet(StringComparer.Ordinal);
+
+        // The id of the session's first record of each trace. A shared record becomes the session's when that
+        // record arrives, which is often after the shared record itself: the server's batch and the browser's are
+        // flushed independently. Filtering a shared record by its own id alone would then drop it for good, since
+        // by the poll that could correlate it, `after` has moved past it.
+        var traces = new Dictionary<string, long>(StringComparer.Ordinal);
+        foreach (var record in own)
+        {
+            if (record.TraceId is { } trace && (traces.TryGetValue(trace, out var first) is false || record.Id < first)) traces[trace] = record.Id;
+        }
 
         var shared = _shared.Snapshot(now)
-            .Where(r => includeShared || (r.TraceId is not null && traces.Contains(r.TraceId)))
-            .Select(r => r.TraceId is not null && traces.Contains(r.TraceId) ? r with { Correlated = true } : r);
+            .Select(r => (Record: r, FirstOwn: r.TraceId is not null && traces.TryGetValue(r.TraceId, out var first) ? first : (long?)null))
+            // With includeShared the record was already handed out uncorrelated when it arrived; sending it again
+            // once correlated would show it twice.
+            .Where(x => x.FirstOwn is { } firstOwn
+                ? x.Record.Id > after || (includeShared is false && firstOwn > after)
+                : includeShared && x.Record.Id > after)
+            .Select(x => x.FirstOwn is null ? x.Record : x.Record with { Correlated = true });
 
-        var records = own.Concat(shared)
-                         .Where(r => r.Id > after)
+        var records = own.Where(r => r.Id > after)
+                         .Concat(shared)
                          .OrderBy(r => r.Id)
                          .ToArray();
 

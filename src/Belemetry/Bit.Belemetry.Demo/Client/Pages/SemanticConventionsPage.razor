@@ -195,7 +195,7 @@
                 <tr><td><code>service.name</code></td><td><code>ServiceName</code>, else <code>OTEL_SERVICE_NAME</code>, else the entry assembly name</td><td>both</td></tr>
                 <tr><td><code>service.version</code></td><td><code>ServiceVersion</code>, else the entry assembly's informational version</td><td>both</td></tr>
                 <tr><td><code>service.namespace</code></td><td><code>ServiceNamespace</code></td><td>both</td></tr>
-                <tr><td><code>service.instance.id</code></td><td><code>ServiceInstanceId</code>, else a random id per process (per page load in the browser)</td><td>both</td></tr>
+                <tr><td><code>service.instance.id</code></td><td><code>ServiceInstanceId</code>, else a random id per process; always a random id per page load in the browser</td><td>both</td></tr>
                 <tr><td><code>deployment.environment.name</code></td><td><code>Environment</code></td><td>both</td></tr>
                 <tr><td><code>telemetry.sdk.name</code></td><td><code>bit-belemetry</code></td><td>both</td></tr>
                 <tr><td><code>telemetry.sdk.language</code></td><td><code>dotnet</code> / <code>webjs</code></td><td>both</td></tr>
@@ -268,14 +268,15 @@
 @code {
     private const string ConfigCode = """
         {
-          "service": { "name": "MyApp", "version": "1.0.0", "namespace": null, "instanceId": "<guid>", "environment": "Production" },
+          "service": { "name": "MyApp", "version": "1.0.0", "namespace": null, "instanceId": null, "environment": "Production" },
           "resource": { "any.attribute": "value" },             // extra resource attributes
           "sdkVersion": "10.6.2",
           "transport": "direct",                                 // "direct" (JS exports itself) | "relay" (JS hands records to .NET)
           "exporters": [
             { "type": "otlp", "endpoint": "http://localhost:4318", "tracesEndpoint": null, "logsEndpoint": null,
-              "protocol": "http/protobuf", "headers": { "x-api-key": "..." }, "compression": "none" },   // protocol: http/protobuf | http/json ; compression: none | gzip
-            { "type": "azureMonitor", "connectionString": "InstrumentationKey=...;IngestionEndpoint=https://...", "maskIp": true },
+              "protocol": "http/protobuf", "headers": { "x-api-key": "..." }, "compression": "none", "signals": 3 },   // protocol: http/protobuf | http/json ; compression: none | gzip
+            { "type": "azureMonitor", "connectionString": "InstrumentationKey=...;IngestionEndpoint=https://...", "maskIp": true,
+              "compression": "none", "signals": 3 },
             { "type": "console" }
           ],
           "features": 4095,                                      // instrumentations switched on by configuration
@@ -287,11 +288,11 @@
           "errors": { "ignoreMessages": ["ResizeObserver loop"] },
           "logs": { "captureConsole": false, "consoleLevels": ["error", "warn"] },
           "privacy": { "redactQueryParameters": ["token","code","password","pwd","secret","key","apikey","api_key","auth","authorization","session","sid","sig","signature","email","access_token","id_token","refresh_token"],
-                       "stripQueryString": false, "stripFragment": true, "scrubPatterns": true, "collectUserAgent": true },
+                       "stripQueryString": false, "stripFragment": true, "scrubPatterns": true, "collectUserAgent": true, "blockedAttributes": [] },
           "session": { "inactivityTimeoutMinutes": 30, "maxDurationMinutes": 1440 },
           "sampling": { "sessionRatio": 1.0 },
           "batch": { "maxQueueSize": 1024, "maxBatchSize": 100, "flushIntervalMs": 5000 },
-          "persistence": { "enabled": true, "maxBytes": 1048576, "maxAgeHours": 48 },
+          "persistence": { "enabled": true, "maxBytes": 1048576, "maxAgeHours": 48, "retryIntervalMs": 60000 },
           "debug": false
         }
         """;

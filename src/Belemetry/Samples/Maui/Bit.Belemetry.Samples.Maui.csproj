@@ -56,4 +56,8 @@
         <ProjectReference Include="..\Core\Bit.Belemetry.Samples.Core.csproj" />
     </ItemGroup>
 
+    <!-- Only because this sample references Bit.Belemetry as a project: the package imports this on its own. It keeps
+         System.Diagnostics.Metrics on unless the project turns it off. -->
+    <Import Project="..\..\Bit.Belemetry\buildTransitive\Bit.Belemetry.props" />
+
 </Project>
