@@ -360,6 +360,18 @@ function Install-AndroidApps {
             $output = Invoke-Adb install $apk.Path
         }
 
+        if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE') {
+            Write-Host "  $($Matches[0]): retrying with the low-storage limit lowered to 100 MB for this install."
+            Invoke-Adb shell settings put global sys_storage_threshold_max_bytes 104857600 | Out-Null
+
+            try {
+                $output = Invoke-Adb install -r -d $apk.Path
+            }
+            finally {
+                Invoke-Adb shell settings delete global sys_storage_threshold_max_bytes | Out-Null
+            }
+        }
+
         if ($output -notmatch '(?m)^Success') {
             throw "Installing $($apk.Path) failed:`n$output"
         }
