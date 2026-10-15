@@ -21,6 +21,8 @@
               commit; without it, from nuget.org, as users get them. Removes the container, its volumes and its image
               afterwards unless -Keep is given, and keeps the logs. Exits 1 when a setup step fails or bit doctor
               finds something missing.
+    aspire    Runs a new project's Aspire app host three times: the second run reuses the first one's containers, they
+              stop once it sits idle, and the third run brings them back on the same volumes. -Sha and -Keep as above.
 
     What is deployed where is read from those CD workflows and from the E2E suite's DeployedApps.cs and
     RunTests.bat rather than repeated here, so this script follows them.
@@ -34,12 +36,14 @@
 .EXAMPLE
     pwsh .github/agents/test-platform/test-platform.ps1 devcontainer -Sha 465ce237c
 .EXAMPLE
+    pwsh .github/agents/test-platform/test-platform.ps1 aspire -Sha 465ce237c
+.EXAMPLE
     pwsh .github/agents/test-platform/test-platform.ps1 mcp -McpVersion 10.6.1 -Tool GetBitBlazorUIComponent -Arguments '{"name":"BitAccordion"}'
 #>
 [CmdletBinding()]
 param(
     [Parameter(Mandatory, Position = 0)]
-    [ValidateSet('versions', 'android', 'windows', 'e2e', 'mcp', 'devcontainer')]
+    [ValidateSet('versions', 'android', 'windows', 'e2e', 'mcp', 'devcontainer', 'aspire')]
     [string] $Command,
 
     # What everything must be at. The repository's APP_VERSION variable when omitted.
@@ -800,75 +804,104 @@ function Write-BitSteps([string] $log, [string] $after) {
         ForEach-Object { Write-Host $_.TrimEnd() }
 }
 
-function Invoke-DevContainerTest {
+function Assert-DockerLinux {
     if ((docker version --format '{{.Server.Os}}' 2>$null) -ne 'linux') {
         throw 'Docker Desktop must be running on its Linux engine.'
     }
+}
 
-    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-devcontainer-{0:yyyyMMdd-HHmmss}' -f (Get-Date))
+function Install-BitUnderTest([string] $lab) {
     $tools = Join-Path $lab 'tools'
     $feed = Join-Path $lab 'feed'
     $source = Join-Path $lab 'source'
+    New-Item -ItemType Directory -Force $tools, $feed | Out-Null
+    $templateArguments = @()
+
+    if ($Sha) {
+        Write-Host "Packing bit from $Sha..."
+        git -C $repositoryRoot fetch --quiet origin 2>&1 | Out-Null
+        git -C $repositoryRoot worktree add --detach $source $Sha 2>&1 | Out-Null
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "$Sha isn't a commit of this repository."
+        }
+
+        dotnet pack (Join-Path $source 'src\Cli\Bit.Cli\Bit.Cli.csproj') -c Release -o $feed -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -nologo -v q > (Join-Path $lab 'pack.log')
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "bit doesn't pack from $Sha; see $(Join-Path $lab 'pack.log')."
+        }
+
+        dotnet tool install Bit.Cli --tool-path $tools --add-source $feed --version 0.0.0 | Out-Null
+        $templateArguments = '--template-package', (Join-Path $source 'src\Templates\Boilerplate\Bit.Boilerplate')
+    }
+    else {
+        Write-Host 'Installing bit from nuget.org...'
+        dotnet tool install Bit.Cli --tool-path $tools --prerelease | Out-Null
+    }
+
+    if ($LASTEXITCODE -ne 0) {
+        throw 'bit could not be installed.'
+    }
+
+    $bit = Join-Path $tools ($IsWindows ? 'bit.exe' : 'bit')
+    Write-Host "Testing $((& $bit --version) | Select-Object -Last 1)"
+
+    [pscustomobject]@{ Path = $bit; TemplateArguments = $templateArguments }
+}
+
+function New-BitProject([string] $lab, $bit, [string] $name, [string[]] $options = @()) {
+    Write-Host "Creating $name with bit new..."
+    $env:BIT_CLI_HOME = Join-Path $lab 'home'
+    $env:BIT_CLI_NO_UPDATE = '1'
+
+    Push-Location $lab
+
+    $templateArguments = $bit.TemplateArguments
+
+    try {
+        & $bit.Path new $name --yes --no-open --no-trust --no-setup @options @templateArguments *> (Join-Path $lab 'new.log')
+        $newExitCode = $LASTEXITCODE
+    }
+    finally {
+        Pop-Location
+        Remove-Item Env:BIT_CLI_HOME, Env:BIT_CLI_NO_UPDATE -ErrorAction SilentlyContinue
+    }
+
+    Write-BitSteps (Join-Path $lab 'new.log')
+
+    if ($newExitCode -ne 0) {
+        throw "bit new failed; see $(Join-Path $lab 'new.log')."
+    }
+
+    Join-Path $lab $name
+}
+
+function Remove-BitUnderTest([string] $lab) {
+    $source = Join-Path $lab 'source'
+
+    if (Test-Path $source) {
+        git -C $repositoryRoot worktree remove --force $source 2>&1 | Out-Null
+    }
+
+    Remove-Item (Join-Path $lab 'tools'), (Join-Path $lab 'feed'), $source, (Join-Path $lab 'home') -Recurse -Force -ErrorAction SilentlyContinue
+}
+
+function Invoke-DevContainerTest {
+    Assert-DockerLinux
+
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-devcontainer-{0:yyyyMMdd-HHmmss}' -f (Get-Date))
+    $feed = Join-Path $lab 'feed'
     $project = Join-Path $lab 'DevApp'
-    New-Item -ItemType Directory -Force $lab, $tools, $feed | Out-Null
+    New-Item -ItemType Directory -Force $lab | Out-Null
 
     $outputEncoding = [Console]::OutputEncoding
     [Console]::OutputEncoding = [Text.Encoding]::UTF8
     $failures = [Collections.Generic.List[string]]::new()
 
     try {
-        $templateArguments = @()
-
-        if ($Sha) {
-            Write-Host "Packing bit from $Sha..."
-            git -C $repositoryRoot fetch --quiet origin 2>&1 | Out-Null
-            git -C $repositoryRoot worktree add --detach $source $Sha 2>&1 | Out-Null
-
-            if ($LASTEXITCODE -ne 0) {
-                throw "$Sha isn't a commit of this repository."
-            }
-
-            dotnet pack (Join-Path $source 'src\Cli\Bit.Cli\Bit.Cli.csproj') -c Release -o $feed -p:ReleaseVersion=0.0.0 -p:PackageVersion=0.0.0 -nologo -v q > (Join-Path $lab 'pack.log')
-
-            if ($LASTEXITCODE -ne 0) {
-                throw "bit doesn't pack from $Sha; see $(Join-Path $lab 'pack.log')."
-            }
-
-            dotnet tool install Bit.Cli --tool-path $tools --add-source $feed --version 0.0.0 | Out-Null
-            $templateArguments = '--template-package', (Join-Path $source 'src\Templates\Boilerplate\Bit.Boilerplate')
-        }
-        else {
-            Write-Host 'Installing bit from nuget.org...'
-            dotnet tool install Bit.Cli --tool-path $tools --prerelease | Out-Null
-        }
-
-        if ($LASTEXITCODE -ne 0) {
-            throw 'bit could not be installed.'
-        }
-
-        $bit = Join-Path $tools ($IsWindows ? 'bit.exe' : 'bit')
-        Write-Host "Testing $((& $bit --version) | Select-Object -Last 1)"
-
-        Write-Host 'Creating DevApp with bit new...'
-        $env:BIT_CLI_HOME = Join-Path $lab 'home'
-        $env:BIT_CLI_NO_UPDATE = '1'
-
-        Push-Location $lab
-
-        try {
-            & $bit new DevApp --yes --no-open --no-trust --no-setup @templateArguments *> (Join-Path $lab 'new.log')
-            $newExitCode = $LASTEXITCODE
-        }
-        finally {
-            Pop-Location
-            Remove-Item Env:BIT_CLI_HOME, Env:BIT_CLI_NO_UPDATE -ErrorAction SilentlyContinue
-        }
-
-        Write-BitSteps (Join-Path $lab 'new.log')
-
-        if ($newExitCode -ne 0) {
-            throw "bit new failed; see $(Join-Path $lab 'new.log')."
-        }
+        $bit = Install-BitUnderTest $lab
+        New-BitProject $lab $bit 'DevApp' | Out-Null
 
         $mount = @()
 
@@ -932,12 +965,8 @@ function Invoke-DevContainerTest {
         }
         else {
             Remove-DevContainer $project
-
-            if (Test-Path $source) {
-                git -C $repositoryRoot worktree remove --force $source 2>&1 | Out-Null
-            }
-
-            Remove-Item $project, $tools, $feed, $source, (Join-Path $lab 'home') -Recurse -Force -ErrorAction SilentlyContinue
+            Remove-BitUnderTest $lab
+            Remove-Item $project -Recurse -Force -ErrorAction SilentlyContinue
             Write-Host "Logs: $lab"
         }
     }
@@ -948,6 +977,269 @@ function Invoke-DevContainerTest {
     }
 
     Write-Host 'The dev container set itself up, and bit doctor found everything.'
+}
+
+#endregion
+
+#region Aspire containers
+
+function Get-AspireContainers([string[]] $names) {
+    $ids = docker ps -a --filter 'label=com.microsoft.developer.usvc-dev.persistent=true' --format '{{.ID}}'
+
+    if (-not $ids) {
+        return
+    }
+
+    docker inspect $ids --format '{{.Name}}|{{.Id}}|{{.Created}}|{{.State.StartedAt}}|{{.State.Status}}|{{range .Mounts}}{{if eq .Type "volume"}}{{.Name}} {{end}}{{end}}' | ForEach-Object {
+        $name, $id, $created, $startedAt, $status, $volumes = $_ -split '\|', 6
+
+        [pscustomobject]@{
+            Name = $name.TrimStart('/')
+            Id = $id.Substring(0, 12)
+            Created = $created
+            StartedAt = $startedAt
+            Status = $status
+            Volumes = @($volumes -split ' ' | Where-Object { $_ -and $_ -notmatch '^[0-9a-f]{64}$' } | Sort-Object)
+        }
+    } | Where-Object { -not $names -or $_.Name -in $names } | Sort-Object Name
+}
+
+function Get-IdleMinutes([string] $appHost) {
+    $call = [regex]::Match((Get-Content (Join-Path $appHost 'Program.cs') -Raw), 'UsePersistentContainers\((?:idleMinutes:\s*)?(?<minutes>\d*)\)')
+
+    if (-not $call.Success) {
+        throw "$appHost doesn't call UsePersistentContainers."
+    }
+
+    if ($call.Groups['minutes'].Value) {
+        return [int]$call.Groups['minutes'].Value
+    }
+
+    $default = Get-ChildItem $appHost -Recurse -Filter *.cs | Select-String 'UsePersistentContainers\(int idleMinutes = (?<minutes>\d+)\)' | Select-Object -First 1
+    [int]$default.Matches[0].Groups['minutes'].Value
+}
+
+function Start-AppHostRun([string] $appHost, [string] $aliveUrl, [string] $log) {
+    $started = Get-Date
+    $process = Start-Process dotnet -ArgumentList 'run', '--project', $appHost, '--no-build' -WorkingDirectory $appHost -RedirectStandardOutput $log -RedirectStandardError "$log.err" -PassThru -WindowStyle Hidden
+
+    while (((Get-Date) - $started).TotalMinutes -lt 15) {
+        Start-Sleep -Seconds 3
+
+        if ($process.HasExited) {
+            throw "dotnet run ended with $($process.ExitCode) before the app was up; see $log."
+        }
+
+        try {
+            if ((Invoke-WebRequest $aliveUrl -TimeoutSec 5 -SkipHttpErrorCheck).StatusCode -eq 200) {
+                return [pscustomobject]@{ Process = $process; Seconds = [int]((Get-Date) - $started).TotalSeconds }
+            }
+        }
+        catch {
+        }
+    }
+
+    Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
+    throw "The app wasn't up 15 minutes after dotnet run started; see $log."
+}
+
+function Stop-AppHostRun($run, [string] $appHostName) {
+    Stop-Process -Id $run.Process.Id -Force
+    $deadline = (Get-Date).AddMinutes(1)
+
+    while ((Get-Process -Name $appHostName -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline) {
+        Start-Sleep -Seconds 1
+    }
+}
+
+function Wait-ContainersRunning([string[]] $names) {
+    $deadline = (Get-Date).AddMinutes(3)
+
+    do {
+        $containers = @(Get-AspireContainers $names)
+
+        if (-not ($containers | Where-Object Status -ne 'running')) {
+            return $containers
+        }
+
+        Start-Sleep -Seconds 5
+    }
+    while ((Get-Date) -lt $deadline)
+
+    $containers
+}
+
+function Remove-AspireContainers([string[]] $names, [string] $appHostName) {
+    if (-not $names) {
+        return
+    }
+
+    $containers = @(Get-AspireContainers $names)
+
+    if (-not $containers) {
+        return
+    }
+
+    $keepers = Join-Path ([IO.Path]::GetTempPath()) 'aspire-containers-keeper'
+
+    foreach ($state in Get-ChildItem $keepers -Directory -ErrorAction SilentlyContinue) {
+        $recorded = Get-Content (Join-Path $state.FullName 'containers') -ErrorAction SilentlyContinue | ForEach-Object { $_.Substring(0, [Math]::Min(12, $_.Length)) }
+
+        if ($recorded | Where-Object { $_ -in $containers.Id }) {
+            $keeperPid = (Get-Content (Join-Path $state.FullName 'process') -Raw -ErrorAction SilentlyContinue) -split ' ' | Select-Object -First 1
+
+            if ($keeperPid) {
+                Stop-Process -Id ([int]$keeperPid) -Force -ErrorAction SilentlyContinue
+            }
+
+            Remove-Item $state.FullName -Recurse -Force -ErrorAction SilentlyContinue
+        }
+    }
+
+    docker rm -f -v $containers.Id | Out-Null
+
+    foreach ($volume in $containers.Volumes | Where-Object { $_ -like "$($appHostName.ToLowerInvariant())-*" } | Sort-Object -Unique) {
+        docker volume rm $volume 2>&1 | Out-Null
+    }
+
+    Write-Host "Removed the containers, their volumes and their keeper."
+}
+
+function Invoke-AspireTest {
+    Assert-DockerLinux
+
+    $lab = Join-Path ([IO.Path]::GetTempPath()) ('bit-aspire-{0:yyyyMMdd-HHmmss}' -f (Get-Date))
+    $appHostName = 'AspireApp.Server.AppHost'
+    New-Item -ItemType Directory -Force $lab | Out-Null
+
+    $outputEncoding = [Console]::OutputEncoding
+    [Console]::OutputEncoding = [Text.Encoding]::UTF8
+    $failures = [Collections.Generic.List[string]]::new()
+    $names = @()
+    $before = $null
+    $project = $null
+    $allBefore = @(docker ps -a --format '{{.Names}}')
+
+    try {
+        $bit = Install-BitUnderTest $lab
+        $project = New-BitProject $lab $bit 'AspireApp' '--database', 'PostgreSQL', '--redis', 'true'
+        $appHost = Join-Path $project "src\Server\$appHostName"
+
+        $profiles = (Get-Content (Join-Path $project 'src\Server\AspireApp.Server.Web\Properties\launchSettings.json') -Raw | ConvertFrom-Json).profiles.PSObject.Properties.Value
+        $aliveUrl = (($profiles | Where-Object { $_.commandName -eq 'Project' -and $_.applicationUrl } | Select-Object -First 1).applicationUrl -split ';')[0].TrimEnd('/') + '/alive'
+        $idleMinutes = Get-IdleMinutes $appHost
+
+        Write-Host 'Building the app host...'
+        dotnet build $appHost -nologo -v q > (Join-Path $lab 'build.log')
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "The project doesn't build; see $(Join-Path $lab 'build.log')."
+        }
+
+        $before = @(Get-AspireContainers | ForEach-Object Name)
+
+        $first = Start-AppHostRun $appHost $aliveUrl (Join-Path $lab 'run1.log')
+        $names = @(Get-AspireContainers | Where-Object Name -notin $before | ForEach-Object Name)
+
+        if (-not $names) {
+            throw 'The first run started no persistent containers.'
+        }
+
+        $firstContainers = Wait-ContainersRunning $names
+        Write-Host "Run 1 was up in $($first.Seconds)s with $($names.Count) containers: $($names -join ', ')."
+        Stop-AppHostRun $first $appHostName
+
+        foreach ($container in Get-AspireContainers $names | Where-Object Status -ne 'running') {
+            $failures.Add("$($container.Name) is $($container.Status) once run 1 ended")
+        }
+
+        $second = Start-AppHostRun $appHost $aliveUrl (Join-Path $lab 'run2.log')
+        $secondContainers = Wait-ContainersRunning $names
+        Write-Host "Run 2 was up in $($second.Seconds)s."
+
+        foreach ($container in $firstContainers) {
+            $again = $secondContainers | Where-Object Name -eq $container.Name
+
+            if (-not $again -or $again.Id -ne $container.Id -or $again.Created -ne $container.Created) {
+                $failures.Add("run 2 re-created $($container.Name); its log says why: $(Join-Path $lab 'run2.log')")
+            }
+            elseif ($again.StartedAt -ne $container.StartedAt) {
+                $failures.Add("run 2 restarted $($container.Name)")
+            }
+        }
+
+        foreach ($extra in Get-AspireContainers | Where-Object Name -notin ($before + $names)) {
+            $failures.Add("run 2 started $($extra.Name), which run 1 didn't")
+        }
+
+        Stop-AppHostRun $second $appHostName
+        $idleSince = Get-Date
+        Write-Host "Waiting up to $($idleMinutes + 3) minutes for the containers to stop, from $($idleSince.ToString('HH:mm:ss'))..."
+
+        do {
+            Start-Sleep -Seconds 30
+            $running = @(Get-AspireContainers $names | Where-Object Status -eq 'running')
+        }
+        while ($running -and ((Get-Date) - $idleSince).TotalMinutes -lt $idleMinutes + 3)
+
+        $idle = (Get-Date) - $idleSince
+
+        if ($running) {
+            $failures.Add("$($running.Name -join ', ') still running $([int]$idle.TotalMinutes) minutes after the last run")
+        }
+        elseif ($idle.TotalMinutes -lt $idleMinutes - 1) {
+            $failures.Add("the containers stopped after $($idle.ToString('mm\:ss')), before the $idleMinutes idle minutes")
+        }
+        else {
+            Write-Host "They stopped $($idle.ToString('mm\:ss')) after the last run ended: $((Get-AspireContainers $names | ForEach-Object { "$($_.Name) $($_.Status)" }) -join ', ')."
+        }
+
+        $third = Start-AppHostRun $appHost $aliveUrl (Join-Path $lab 'run3.log')
+        $thirdContainers = Wait-ContainersRunning $names
+        Write-Host "Run 3 was up in $($third.Seconds)s."
+
+        foreach ($container in $firstContainers) {
+            $again = $thirdContainers | Where-Object Name -eq $container.Name
+
+            if (-not $again -or $again.Status -ne 'running') {
+                $failures.Add("run 3 didn't bring $($container.Name) back")
+            }
+            elseif (($again.Volumes -join ' ') -ne ($container.Volumes -join ' ')) {
+                $failures.Add("$($container.Name) came back on other volumes: $($again.Volumes -join ', ')")
+            }
+        }
+
+        Stop-AppHostRun $third $appHostName
+    }
+    finally {
+        [Console]::OutputEncoding = $outputEncoding
+
+        if ($Keep) {
+            Write-Host "Kept $project and its containers."
+        }
+        else {
+            if (-not $names -and $null -ne $before) {
+                $names = @(Get-AspireContainers | Where-Object Name -notin $before | ForEach-Object Name)
+            }
+
+            Remove-AspireContainers $names $appHostName
+
+            foreach ($proxy in docker ps -a --format '{{.Names}}' | Where-Object { $_ -like 'tunnel-proxy-*' -and $_ -notin $allBefore }) {
+                docker rm -f $proxy | Out-Null
+            }
+
+            Remove-BitUnderTest $lab
+            Remove-Item $project -Recurse -Force -ErrorAction SilentlyContinue
+            Write-Host "Logs: $lab"
+        }
+    }
+
+    if ($failures.Count) {
+        $failures | ForEach-Object { Write-Host "Failed: $_" }
+        exit 1
+    }
+
+    Write-Host 'Run 2 reused every container, they stopped once the app host sat idle, and run 3 brought them back on the same volumes.'
 }
 
 #endregion
@@ -1013,6 +1305,10 @@ switch ($Command) {
 
     'devcontainer' {
         Invoke-DevContainerTest
+    }
+
+    'aspire' {
+        Invoke-AspireTest
     }
 
     'mcp' {

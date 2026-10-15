@@ -1,6 +1,6 @@
 ---
 name: test-platform
-description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, roll its All CD run's web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, and check that a new bit Boilerplate project's dev container sets itself up with bit. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
+description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit, and check that its Aspire containers are reused from one run to the next and stopped once it sits idle. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
 ---
 
 # Test the platform
@@ -26,9 +26,10 @@ gh run view <run-id> -R bitfoundation/bitplatform --json workflowName,headBranch
 gh variable list -R bitfoundation/bitplatform   # APP_VERSION, and when it last changed
 ```
 
-Without a CD link, step 2 only verifies: the suite tests whatever is deployed.
+Without a CD link, step 2 only verifies: the suite tests whatever is deployed. When the user asks for a new CD run
+instead, step 2 says how to start one.
 
-Step 5 takes a commit, usually the CI run's head. Without one, it tests the bit packages nuget.org serves.
+Steps 5 and 6 take a commit, usually the CI run's head. Without one, they test the bit packages nuget.org serves.
 
 Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows that version everywhere: as
 `<APP_VERSION>+<sha>` in the ProductVersion of the IIS assemblies and the Windows executables, as `versionName` on
@@ -51,6 +52,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `e2e [-Stage <stages>] [-Filter <filter>]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. |
 | `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. |
 | `devcontainer [-Sha <sha>] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
+| `aspire [-Sha <sha>] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
 
 ## 1. The CI run
 
@@ -103,6 +105,20 @@ This machine has four cores and serves the demos too, so a local build or test r
 
 ## 2. The CD run: every app at APP_VERSION
 
+**Starting one.** All CD deploys to the live demos and the stores, so start it only when the user asks. It builds the
+branch it is started on.
+
+```bash
+gh variable set APP_VERSION -R bitfoundation/bitplatform --body <new version>
+gh workflow run all.cd.yml -R bitfoundation/bitplatform --ref <branch> -f prerelease_packages=<true|false>
+```
+
+Raise `APP_VERSION` first, to the version the user names or the next one: Google Play refuses a bundle whose version
+code it already has, App Store Connect a build number it already has, and the Windows apps only update to a higher
+version. Leave it alone until every job has started. The `server`, `wasm`, `windows`, `android` and `ios` inputs are
+all on by default, and `-f <input>=false` leaves that part out. A run of the web apps alone can stay at the current
+version; a run at a new version that leaves an app out leaves that app behind, and `versions` says so.
+
 **Web.** The deploy jobs mirror each bundle into `C:\inetpub\<site>` and restart its app pool, and the WebAssembly
 standalone apps go to Azure Static Web Apps. There is nothing to do but check.
 
@@ -127,6 +143,13 @@ are built with the Bit packages of the latest Prerelease nuget packages run (`pr
 nuget.org's, and each job that took them leaves a "Bit packages" notice naming that run's branch and commit. `versions`
 reads those notices when given the CD run. Say where the packages came from next to the versions table: a library
 change is on the demos only when it names the branch that has it.
+
+Every Prerelease nuget packages run, on any branch, uploads all the packages it built as its `nupkg-files` artifact,
+and each job of a CD or CI run with `prerelease_packages` takes the newest unexpired one when that job starts. So a
+prerelease run that finishes in the middle of a CD run hands the jobs that start after it another build, maybe of
+another branch: compare the jobs' notices. The prerelease run also pushes its packages to nuget.org, skipping every
+version nuget.org already has, so a second run at the same version changes nothing there and its build lives only in
+its artifact. All CI's `prerelease_packages` option works the same way for its template and website jobs.
 
 ## 3. The E2E suite
 
@@ -184,9 +207,9 @@ plainly which failures stay until that CD.
 
 A fix in a bit library does not have to wait for its release: the demos take the libraries as packages, and
 `prerelease_packages` swaps nuget.org's for the fix's. Ask the user to run Prerelease nuget packages on the fix's
-branch and then All CD with that option. Both branches have to be on the same version in `src/Bit.Build.props`;
-otherwise the action stops
-before it changes anything and names both versions.
+branch and then All CD with that option, with no other prerelease run finishing in between. Both branches have to be
+on the same version in `src/Bit.Build.props`; otherwise the action stops before it changes anything and names both
+versions.
 
 ## 4. bitplatform.dev/mcp
 
@@ -245,7 +268,26 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 A failure in bit or in the template is fixed like a CI failure, and the next `devcontainer -Sha` on the fix proves it;
 no CD is involved.
 
-## 6. Report
+## 6. bit Boilerplate's Aspire containers
+
+A new project's Aspire app host leaves its containers (the database, Redis, Keycloak, MailPit and the like) running
+when it stops, so the next run reuses them instead of starting them from scratch, and stops them once no run has been
+alive for its idle time. `aspire` checks that the way a developer meets it:
+
+- It creates a project with `bit new`, with its database and Redis in containers, and runs the app host with
+  `dotnet run` three times, each time until the web app answers, then ends it the way closing its terminal does.
+- The second run reuses every container of the first: the same container, neither re-created nor restarted, and up
+  sooner. A re-created container is a failure: Aspire re-creates a persistent container when anything its lifecycle
+  key covers changed between the runs, such as its image, environment or ports.
+- After the second run the containers keep running for the idle time, then stop. Stopped, not removed: the third run
+  brings them back on the same volumes.
+- `-Sha` works as for `devcontainer`; the Bit packages come from nuget.org at the version the template asks for.
+- It takes about half an hour, most of it the idle wait, and a few GB of Docker Desktop's memory while the app runs.
+  Start it in the background early and go on with the other steps, but never next to `devcontainer`.
+
+A failure is fixed in the template like a CI failure, and the next `aspire -Sha` on the fix proves it.
+
+## 7. Report
 
 Lead with the verdict, then:
 
@@ -257,7 +299,9 @@ Lead with the verdict, then:
 4. **MCP**: the served versions, their tool counts, the version check, and how good the answers were.
 5. **Dev container**: the commit or the nuget.org version tested, each `bit setup` step with its time, `bit doctor`'s
    exit code, and per failure its cause and fix.
-6. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
+6. **Aspire containers**: the commit or the nuget.org version tested, how soon each run was up, whether the second run
+   reused every container, how long after the last run they stopped, and per failure its cause and fix.
+7. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
    through `prerelease_packages` before its release.
 
 Anything that looks like a defect in a bit platform library or in the `bit-bp` template itself: say so, and offer to
