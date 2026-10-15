@@ -1,0 +1,645 @@
+﻿@page "/e2e/message-box"
+@inject BitMessageBoxService MessageBoxService
+@inject BitModalService ModalService
+
+<PageTitle>BitMessageBox E2E</PageTitle>
+
+<h1>BitMessageBox</h1>
+
+@* Every event of the inline boxes is appended here as box:event, in the order it was raised. *@
+<p>Log: <span id="msb-log">@string.Join(",", _log)</span> <button id="btn-clear-log" @onclick="() => _log.Clear()">Clear log</button></p>
+
+<E2ESection Id="basic" Title="Basic">
+    <div style="width:420px">
+        <BitMessageBox Id="msb-basic" Title="It's a title" Body="@("It's a body.\nOn two lines.")" />
+    </div>
+    <div style="width:240px">
+        <BitMessageBox Id="msb-long" Title="Long" Body="Averyveryverylongwordwithoutanyspacethatmustwrapinsidetheboxinsteadofoverflowing and more words after it." />
+    </div>
+    <BitMessageBox Id="msb-empty" />
+</E2ESection>
+
+<E2ESection Id="buttons" Title="Buttons">
+    <BitMessageBox Id="msb-ok" Title="Ok" Body="A single button." OkText="Got it"
+                   OnOk="@(() => Log("ok:OnOk"))" OnResult="@(r => Log($"ok:{r}"))" OnClose="@(() => Log("ok:OnClose"))" />
+    <BitMessageBox Id="msb-okcancel" Title="OkCancel" Body="Ok and Cancel." Buttons="BitMessageBoxButtons.OkCancel" CancelText="Not now"
+                   OnOk="@(() => Log("okcancel:OnOk"))" OnCancel="@(() => Log("okcancel:OnCancel"))" OnResult="@(r => Log($"okcancel:{r}"))" OnClose="@(() => Log("okcancel:OnClose"))" />
+    <BitMessageBox Id="msb-yesno" Title="YesNo" Body="Yes and No." Buttons="BitMessageBoxButtons.YesNo" YesText="Sure" NoText="Nope"
+                   OnYes="@(() => Log("yesno:OnYes"))" OnNo="@(() => Log("yesno:OnNo"))" OnResult="@(r => Log($"yesno:{r}"))" OnClose="@(() => Log("yesno:OnClose"))" />
+    <BitMessageBox Id="msb-yesnocancel" Title="YesNoCancel" Body="Yes, No and Cancel." Buttons="BitMessageBoxButtons.YesNoCancel"
+                   OnYes="@(() => Log("ync:OnYes"))" OnNo="@(() => Log("ync:OnNo"))" OnCancel="@(() => Log("ync:OnCancel"))" OnResult="@(r => Log($"ync:{r}"))" OnClose="@(() => Log("ync:OnClose"))" />
+    <BitMessageBox Id="msb-none" Title="None" Body="No buttons at all." Buttons="BitMessageBoxButtons.None"
+                   OnResult="@(r => Log($"none:{r}"))" OnClose="@(() => Log("none:OnClose"))" />
+</E2ESection>
+
+<E2ESection Id="order" Title="Order, focus & emphasis">
+    <BitMessageBox Id="msb-reversed" Reversed Title="Reversed" Body="Cancel comes first." Buttons="BitMessageBoxButtons.OkCancel" />
+    <BitMessageBox Id="msb-reversed-ync" Reversed Title="Reversed" Body="Cancel, No, Yes." Buttons="BitMessageBoxButtons.YesNoCancel" />
+    <BitMessageBox Id="msb-primary-color" Title="Delete the file?" Body="Keep is the default." Buttons="BitMessageBoxButtons.YesNo"
+                   YesText="Delete" NoText="Keep" PrimaryButtonColor="BitColor.Error" DefaultButton="BitMessageBoxResult.No" />
+    <BitMessageBox Id="msb-button-color" Title="ButtonColor" Body="Every button primary." Buttons="BitMessageBoxButtons.YesNoCancel" ButtonColor="BitColor.Primary" />
+    <BitMessageBox Id="msb-both-colors" Title="Both" Body="Ok success, Cancel info." Buttons="BitMessageBoxButtons.OkCancel" ButtonColor="BitColor.Info" PrimaryButtonColor="BitColor.Success" />
+    <button id="btn-show-autofocus" @onclick="() => _showAutoFocus = !_showAutoFocus">Toggle the autofocused boxes</button>
+    @if (_showAutoFocus)
+    {
+        <BitMessageBox Id="msb-af-default" AutoFocus Title="Default" Body="Ok is focused." Buttons="BitMessageBoxButtons.OkCancel" />
+        <BitMessageBox Id="msb-af-no" AutoFocus DefaultButton="BitMessageBoxResult.No" Title="No" Body="No is focused." Buttons="BitMessageBoxButtons.YesNoCancel" />
+        <BitMessageBox Id="msb-af-close" AutoFocus DefaultButton="BitMessageBoxResult.None" Title="Close" Body="Close is focused." Buttons="BitMessageBoxButtons.YesNo" />
+        <BitMessageBox Id="msb-af-none" AutoFocus Title="None" Body="Only close." Buttons="BitMessageBoxButtons.None" />
+        <BitMessageBox Id="msb-af-stray" AutoFocus DefaultButton="BitMessageBoxResult.Cancel" Title="Stray" Body="Yes is focused." Buttons="BitMessageBoxButtons.YesNo" />
+    }
+    <button id="btn-show-af-single" @onclick="() => _showAutoFocusSingle = !_showAutoFocusSingle">Toggle a single autofocused box</button>
+    @if (_showAutoFocusSingle)
+    {
+        <BitMessageBox Id="msb-af-single" AutoFocus DefaultButton="BitMessageBoxResult.No" Title="Single" Body="No is focused." Buttons="BitMessageBoxButtons.YesNo" />
+    }
+    <button id="btn-show-noaf" @onclick="() => _showNoAutoFocus = !_showNoAutoFocus">Toggle a box without autofocus</button>
+    @if (_showNoAutoFocus)
+    {
+        <BitMessageBox Id="msb-noaf" Title="No autofocus" Body="The focus stays where it was." Buttons="BitMessageBoxButtons.OkCancel" />
+    }
+</E2ESection>
+
+<E2ESection Id="icon" Title="Icon">
+    <BitMessageBox Id="msb-icon-name" Title="IconName" Body="A built-in glyph." IconName="@BitIconName.Lightbulb" />
+    <BitMessageBox Id="msb-icon-template" Title="IconTemplate" Body="Any markup.">
+        <IconTemplate>
+            <span id="msb-icon-emoji">🎉</span>
+        </IconTemplate>
+    </BitMessageBox>
+    <BitMessageBox Id="msb-icon-aria" Title="IconAriaLabel" Body="The glyph is announced." IconName="@BitIconName.Warning" IconAriaLabel="Warning" />
+    <BitMessageBox Id="msb-icon-hidden" Title="HideIcon" Body="No glyph." IconName="@BitIconName.Warning" HideIcon />
+    <BitMessageBox Id="msb-icon-name-over-color" Title="IconName over Color" Body="The name wins." Color="BitColor.Error" IconName="@BitIconName.Lightbulb" />
+    <BitMessageBox Id="msb-icon-external" Title="External" Body="Css classes." Color="BitColor.Warning"
+                   Icon="@BitIconInfo.Css("e2e-ext-ico e2e-ext-ico-warn")" CloseIcon="@BitIconInfo.Css("e2e-ext-close")" IconName="@BitIconName.Lightbulb" />
+    <BitMessageBox Id="msb-icon-fa" Title="Fa" Body="FontAwesome classes." Icon="@BitIconInfo.Fa("solid triangle-exclamation")" />
+    <BitMessageBox Id="msb-icon-bi" Title="Bi" Body="Bootstrap classes." Icon="@BitIconInfo.Bi("info-circle")" CloseIcon="@BitIconInfo.Bi("x-lg")" />
+</E2ESection>
+
+<E2ESection Id="close" Title="Close button">
+    <BitMessageBox Id="msb-noclose" Title="No close button" Body="Has to be answered." ShowCloseButton="false" Buttons="BitMessageBoxButtons.YesNo" />
+    <BitMessageBox Id="msb-custom-close" Title="Custom close" Body="Another glyph." CloseIconName="@BitIconName.Cancel" CloseButtonTitle="Dismiss this message"
+                   OnResult="@(r => Log($"custom-close:{r}"))" OnClose="@(() => Log("custom-close:OnClose"))" />
+    <BitMessageBox Id="msb-only-close" Body="Neither title nor icon." Buttons="BitMessageBoxButtons.None" />
+    <BitMessageBox Id="msb-no-header" Body="No header at all." ShowCloseButton="false" />
+</E2ESection>
+
+<E2ESection Id="title-element" Title="TitleElement">
+    <BitMessageBox Id="msb-te-default" Title="Default" Body="h5." />
+    <BitMessageBox Id="msb-te-h2" TitleElement="h2" Title="H2" Body="h2." />
+    <BitMessageBox Id="msb-te-void" TitleElement="img" Title="Void" Body="falls back to h5." />
+    <BitMessageBox Id="msb-te-bad" TitleElement="h2 onclick" Title="Malformed" Body="falls back to h5." />
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitMessageBox @ref="_templatesBox" Id="msb-templates" Title="Delete the workspace?" OnResult="@(r => Log($"templates:{r}"))">
+        <BodyTemplate>
+            <div id="msb-templates-body">
+                Everything in <b>Design system</b> is removed, including:
+                <ul>
+                    <li>18 projects</li>
+                    <li>4 shared libraries</li>
+                </ul>
+            </div>
+        </BodyTemplate>
+        <FooterTemplate>
+            <button id="msb-templates-delete" @onclick="() => _templatesBox!.AnswerAsync(BitMessageBoxResult.Yes)">Delete forever</button>
+            <button id="msb-templates-keep" @onclick="() => _templatesBox!.AnswerAsync(BitMessageBoxResult.No)">Keep it</button>
+        </FooterTemplate>
+    </BitMessageBox>
+    <BitMessageBox Id="msb-header-template" Title="Never shown" IconName="@BitIconName.Warning" Body="Body">
+        <HeaderTemplate>
+            <strong id="msb-custom-header">A header of my own</strong>
+        </HeaderTemplate>
+    </BitMessageBox>
+    <BitMessageBox Id="msb-child-content" Title="ChildContent" Body="Never shown">
+        <span id="msb-child">The child content is the body.</span>
+    </BitMessageBox>
+    <BitMessageBox Id="msb-body-wins" Title="BodyTemplate over ChildContent">
+        <BodyTemplate><span id="msb-body-template">The body template</span></BodyTemplate>
+        <ChildContent><span id="msb-body-child">The child content</span></ChildContent>
+    </BitMessageBox>
+    <BitMessageBox Id="msb-cascaded-footer" Title="A footer component" Body="It answers through the cascaded box."
+                   OnResult="@(r => Log($"cascaded:{r}"))">
+        <FooterTemplate>
+            <BitMessageBoxE2EAnswerFooter IdPrefix="inline-footer" />
+        </FooterTemplate>
+    </BitMessageBox>
+</E2ESection>
+
+<E2ESection Id="guard" Title="Guarding the answer">
+    <BitMessageBox Id="msb-guard" AutoLoading Title="Delete the file?" Buttons="BitMessageBoxButtons.YesNo"
+                   YesText="Delete" NoText="Keep" PrimaryButtonColor="BitColor.Error" DefaultButton="BitMessageBoxResult.No"
+                   OnBeforeResult="HandleBeforeResult" OnYes="@(() => Log("guard:OnYes"))" OnNo="@(() => Log("guard:OnNo"))"
+                   OnResult="@(r => Log($"guard:{r}"))" OnClose="@(() => Log("guard:OnClose"))">
+        <BodyTemplate>
+            <label><input id="guard-check" type="checkbox" checked="@_guardConfirmed" @onchange="e => _guardConfirmed = (bool)e.Value!" /> I understand</label>
+        </BodyTemplate>
+    </BitMessageBox>
+    <button id="btn-guard-release" @onclick="ReleaseGuard">Release the guard</button>
+    <span id="guard-waiting">@_guardWaiting</span>
+    <span id="guard-args">@_guardArgs</span>
+
+    <BitMessageBox Id="msb-slow" AutoLoading Title="Slow Ok" Body="The callback waits." Buttons="BitMessageBoxButtons.OkCancel"
+                   OnOk="HandleSlowOk" OnResult="@(r => Log($"slow:{r}"))" />
+    <button id="btn-slow-release" @onclick="ReleaseSlow">Release the slow Ok</button>
+</E2ESection>
+
+<E2ESection Id="members" Title="Public members">
+    <BitMessageBox @ref="_membersBox" Id="msb-members" Title="Members" Body="AnswerAsync, FocusAsync, Result." Buttons="BitMessageBoxButtons.YesNoCancel"
+                   DefaultButton="BitMessageBoxResult.No" OnResult="@(r => Log($"members:{r}"))" />
+    <button id="btn-answer-yes" @onclick="() => _membersBox!.AnswerAsync(BitMessageBoxResult.Yes)">AnswerAsync(Yes)</button>
+    <button id="btn-answer-ok" @onclick="() => _membersBox!.AnswerAsync(BitMessageBoxResult.Ok)">AnswerAsync(Ok)</button>
+    <button id="btn-focus" @onclick="() => _membersBox!.FocusAsync()">FocusAsync</button>
+    <button id="btn-read-result" @onclick="() => _membersResult = _membersBox!.Result.ToString()">Read Result</button>
+    <span id="members-result">@_membersResult</span>
+
+    <BitMessageBox @ref="_footerFocusBox" Id="msb-focus-footer" Title="Footer" Body="Close is focused.">
+        <FooterTemplate><button id="msb-focus-footer-btn">Mine</button></FooterTemplate>
+    </BitMessageBox>
+    <button id="btn-focus-footer" @onclick="() => _footerFocusBox!.FocusAsync()">FocusAsync (footer)</button>
+    <BitMessageBox @ref="_noFocusBox" Id="msb-focus-nothing" Body="Nothing to focus." ShowCloseButton="false" Buttons="BitMessageBoxButtons.None" />
+    <button id="btn-focus-nothing" @onclick="() => _noFocusBox!.FocusAsync()">FocusAsync (nothing)</button>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <BitMessageBox @ref="_disabledBox" Id="msb-disabled" Disabled="_disabled" Title="Disabled" Buttons="BitMessageBoxButtons.OkCancel"
+                   OnResult="@(r => Log($"disabled:{r}"))"
+                   HtmlAttributes="@(new() { ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _rootClicks++) })">
+        <BodyTemplate>
+            <button id="msb-disabled-inner">An enabled control of the page</button>
+        </BodyTemplate>
+    </BitMessageBox>
+    <button id="btn-disabled-answer" @onclick="() => _disabledBox!.AnswerAsync(BitMessageBoxResult.Ok)">AnswerAsync on the disabled box</button>
+    <span id="root-clicks">@_rootClicks</span>
+</E2ESection>
+
+<E2ESection Id="modal" Title="BitModal">
+    <button id="btn-open-modal" @onclick="() => _isModalOpen = true">Show</button>
+    <BitModal @bind-IsOpen="_isModalOpen" TitleAriaId="modal-msb-ttl" SubtitleAriaId="modal-msb-bdy">
+        <BitMessageBox Id="modal-msb" AutoFocus TitleElement="h2" OnClose="() => _isModalOpen = false"
+                       Title="Session expiring" Body="You will be signed out in 2 minutes." />
+    </BitModal>
+    <span id="modal-open">@_isModalOpen</span>
+</E2ESection>
+
+<E2ESection Id="modal-service" Title="BitModalService">
+    <button id="btn-modal-service" @onclick="ShowThroughModalService">Show MessageBox</button>
+    <span id="modal-service-result">@_modalServiceResult</span>
+</E2ESection>
+
+<E2ESection Id="service" Title="BitMessageBoxService">
+    <button id="btn-svc-show" @onclick="ShowService">Show</button>
+    <button id="btn-svc-show-plain" @onclick="ShowPlain">Show(title, body)</button>
+    <button id="btn-svc-info" @onclick="() => ShowSeverity(BitColor.Info)">Info</button>
+    <button id="btn-svc-success" @onclick="() => ShowSeverity(BitColor.Success)">Success</button>
+    <button id="btn-svc-warning" @onclick="() => ShowSeverity(BitColor.Warning)">Warning</button>
+    <button id="btn-svc-severewarning" @onclick="() => ShowSeverity(BitColor.SevereWarning)">SevereWarning</button>
+    <button id="btn-svc-error" @onclick="() => ShowSeverity(BitColor.Error)">Error</button>
+    <button id="btn-svc-timed" @onclick="ShowTimed">Closes from code</button>
+    <button id="btn-svc-cancel-timed" @onclick="() => _timedCts?.Cancel()">Cancel the token</button>
+    <button id="btn-svc-params" @onclick="ShowWithParameters">Show(parameters)</button>
+    <button id="btn-svc-no-title" @onclick="ShowWithoutTitle">Without a title</button>
+    <button id="btn-svc-header" @onclick="ShowWithHeaderTemplate">With a header template</button>
+    <button id="btn-svc-footer" @onclick="ShowWithFooterComponent">With a footer component</button>
+    <button id="btn-svc-guarded" @onclick="ShowGuarded">Guarded</button>
+    <button id="btn-svc-cancelled-before" @onclick="ShowAlreadyCancelled">Already cancelled token</button>
+    <span id="svc-result">@_serviceResult</span>
+    <span id="svc-count">@_serviceCount</span>
+</E2ESection>
+
+<E2ESection Id="confirm" Title="Confirmation">
+    <button id="btn-confirm" @onclick="ShowConfirm">Confirm</button>
+    <button id="btn-confirm-yesno" @onclick="ShowConfirmYesNo">Confirm (YesNo)</button>
+    <button id="btn-confirm-danger" @onclick="ShowDangerousConfirm">Delete something</button>
+    <span id="confirm-result">@(_confirmResult?.ToString() ?? "-")</span>
+</E2ESection>
+
+<E2ESection Id="prompt" Title="Prompt">
+    <button id="btn-prompt" @onclick="ShowPrompt">Rename</button>
+    <button id="btn-prompt-validated" @onclick="ShowValidatedPrompt">New folder</button>
+    <button id="btn-prompt-password" @onclick="ShowPasswordPrompt">Password</button>
+    <button id="btn-prompt-multiline" @onclick="ShowMultilinePrompt">Feedback</button>
+    <button id="btn-prompt-yesno" @onclick="ShowYesNoPrompt">YesNo prompt</button>
+    <button id="btn-prompt-throws" @onclick="ShowThrowingPrompt">Validator throws</button>
+    <span id="prompt-result">@(_promptResult ?? "null")</span>
+    <span id="prompt-count">@_promptCount</span>
+    <span id="prompt-error">@_promptError</span>
+    <span id="prompt-validating">@_asyncValidations</span>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var color in Colors)
+    {
+        <BitMessageBox Id="@($"msb-color-{color.ToString().ToLowerInvariant()}")" Color="color" Title="@color.ToString()" Body="A colored box." />
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitMessageBox Id="msb-size-small" Size="BitSize.Small" Color="BitColor.Info" Title="Small" Body="The small size." Buttons="BitMessageBoxButtons.OkCancel" />
+    <BitMessageBox Id="msb-size-medium" Size="BitSize.Medium" Color="BitColor.Info" Title="Medium" Body="The medium size." Buttons="BitMessageBoxButtons.OkCancel" />
+    <BitMessageBox Id="msb-size-large" Size="BitSize.Large" Color="BitColor.Info" Title="Large" Body="The large size." Buttons="BitMessageBoxButtons.OkCancel" />
+    <BitMessageBox Id="msb-size-unset" Color="BitColor.Info" Title="Unset" Body="The default size." Buttons="BitMessageBoxButtons.OkCancel" />
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <BitMessageBox Id="msb-styles" Title="Styled" Body="Every part." Color="BitColor.Info" Buttons="BitMessageBoxButtons.YesNoCancel"
+                   Style="border: 3px solid rgb(1, 2, 3)" Class="e2e-msb-root-class"
+                   Styles="@(new() { Root = "background-color: rgb(0, 0, 0)", Container = "outline: 1px solid rgb(4, 5, 6)", Header = "padding-top: 7px",
+                                     IconContainer = "padding-left: 3px", Icon = "color: rgb(7, 8, 9)", Title = "color: rgb(255, 255, 255)",
+                                     Spacer = "min-width: 5px", CloseButton = new() { Root = "color: rgb(10, 11, 12)" }, Body = "color: rgb(13, 14, 15)",
+                                     Footer = "padding-bottom: 9px", ActionButton = new() { Root = "border-radius: 11px" },
+                                     YesButton = new() { Root = "border-radius: 1rem" }, NoButton = new() { Root = "border-radius: 2px" } })" />
+    <BitMessageBox Id="msb-classes" Title="Classy" Body="Every part." Color="BitColor.Info" Buttons="BitMessageBoxButtons.OkCancel"
+                   Classes="@(new() { Root = "c-root", Container = "c-con", Header = "c-hdr", IconContainer = "c-ict", Icon = "c-ico", Title = "c-ttl",
+                                      Spacer = "c-spc", CloseButton = new() { Root = "c-cls" }, Body = "c-bdy", Footer = "c-ftr",
+                                      ActionButton = new() { Root = "c-act" }, OkButton = new() { Root = "c-ok" } })" />
+    <BitMessageBox Id="msb-classes-yn" Title="Classy" Body="Yes, No and Cancel." Buttons="BitMessageBoxButtons.YesNoCancel"
+                   Classes="@(new() { YesButton = new() { Root = "c-yes" }, NoButton = new() { Root = "c-no" }, CancelButton = new() { Root = "c-cancel" } })"
+                   Styles="@(new() { CancelButton = new() { Root = "border-radius: 6px" } })" />
+    <div id="msb-vars-host" style="--bit-MessageBox-padding:31px;--bit-MessageBox-gap:13px;--bit-MessageBox-min-width:333px;--bit-MessageBox-max-width:444px;--bit-MessageBox-max-height:222px;--bit-MessageBox-text-align:center;--bit-MessageBox-icon-color:rgb(1, 100, 1);--bit-MessageBox-icon-size:41px;--bit-MessageBox-title-color:rgb(2, 2, 200);--bit-MessageBox-title-font-size:27px;--bit-MessageBox-title-font-weight:300;--bit-MessageBox-body-color:rgb(3, 3, 3);--bit-MessageBox-body-font-size:19px;--bit-MessageBox-actions-gap:17px;--bit-MessageBox-actions-justify:center">
+        <BitMessageBox Id="msb-vars" Title="Variables" IconName="@BitIconName.Info" Buttons="BitMessageBoxButtons.OkCancel"
+                       Body="@string.Join(" ", Enumerable.Repeat("A body long enough to scroll inside the max height.", 20))" />
+        <BitMessageBox Id="msb-vars-own" Title="Own parameters" Color="BitColor.Error" Size="BitSize.Small" Body="Color and Size win." />
+    </div>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="_messageBoxParams">
+        <BitMessageBox Id="msb-cas-1" Title="Save changes?" Body="Not saved." Buttons="BitMessageBoxButtons.YesNoCancel" />
+        <BitMessageBox Id="msb-cas-2" Title="Discard?" Body="Removed for good." Buttons="BitMessageBoxButtons.YesNoCancel" YesText="Discard" Size="BitSize.Large" />
+        <BitMessageBox Id="msb-cas-ok" Title="Ok" Body="An Ok." Buttons="BitMessageBoxButtons.OkCancel" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div dir="rtl">
+        <BitMessageBox Id="msb-rtl" Dir="BitDir.Rtl" Color="BitColor.Warning" Title="عنوان پیام" Body="متن تست پیام..."
+                       Buttons="BitMessageBoxButtons.YesNo" YesText="بله" NoText="خیر" CloseButtonTitle="بستن" />
+    </div>
+    <div dir="rtl">
+        <BitMessageBox Id="msb-rtl-inherited" Color="BitColor.Info" Title="ارث" Body="جهت از والد" Buttons="BitMessageBoxButtons.YesNo" />
+    </div>
+    <button id="btn-svc-rtl" @onclick="ShowRtl">Show RTL through the service</button>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-rerender" @onclick="ReRender">Re-render</button>
+    <BitMessageBox Id="msb-rerender" Title="@_rerenderTitle" Body="@_rerenderBody" Buttons="_rerenderButtons" Color="_rerenderColor" />
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitMessageBox Id="msb-mounted" Title="Mounted" Body="Mounted box." />
+    }
+</E2ESection>
+
+<BitModalContainer />
+
+<E2EStatus />
+
+@code {
+    private static readonly BitColor[] Colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly List<string> _log = [];
+    private bool _showAutoFocus;
+    private bool _showAutoFocusSingle;
+    private bool _showNoAutoFocus;
+    private BitMessageBox? _templatesBox;
+    private BitMessageBox? _membersBox;
+    private BitMessageBox? _footerFocusBox;
+    private BitMessageBox? _noFocusBox;
+    private BitMessageBox? _disabledBox;
+    private string _membersResult = "-";
+    private bool _guardConfirmed;
+    private bool _guardWaiting;
+    private string _guardArgs = "-";
+    private TaskCompletionSource _guardGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private TaskCompletionSource _slowGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private bool _disabled = true;
+    private int _rootClicks;
+    private bool _isModalOpen;
+    private string _modalServiceResult = "-";
+    private string _serviceResult = "-";
+    private int _serviceCount;
+    private CancellationTokenSource? _timedCts;
+    private bool? _confirmResult;
+    private string? _promptResult;
+    private int _promptCount;
+    private string _promptError = "-";
+    private int _asyncValidations;
+    private string _rerenderTitle = "Before";
+    private string _rerenderBody = "Body before";
+    private BitMessageBoxButtons _rerenderButtons = BitMessageBoxButtons.Ok;
+    private BitColor? _rerenderColor;
+    private bool _mounted = true;
+
+    private readonly BitMessageBoxParams[] _messageBoxParams =
+    [
+        new()
+        {
+            Size = BitSize.Small,
+            YesText = "Save",
+            NoText = "Don't save",
+            CancelText = "Go back",
+            OkText = "Fine",
+            CloseButtonTitle = "Dismiss",
+            PrimaryButtonColor = BitColor.Primary,
+            ButtonColor = BitColor.Secondary,
+            Reversed = true,
+            TitleElement = "h3"
+        }
+    ];
+
+    private void Log(string entry) => _log.Add(entry);
+
+    private async Task HandleBeforeResult(BitMessageBoxBeforeResultArgs args)
+    {
+        _guardArgs = args.Result.ToString();
+
+        // Only the destructive answer is guarded: Keep and the close button end the box as they always would.
+        if (args.Result is not BitMessageBoxResult.Yes) return;
+
+        _guardWaiting = true;
+        StateHasChanged();
+
+        try
+        {
+            await _guardGate.Task.WaitAsync(args.CancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            Log("guard:token-cancelled");
+            throw;
+        }
+        finally
+        {
+            _guardWaiting = false;
+            _guardGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        if (_guardConfirmed) return;
+
+        args.Cancel = true;
+        Log("guard:refused");
+    }
+
+    private void ReleaseGuard() => _guardGate.TrySetResult();
+
+    private async Task HandleSlowOk()
+    {
+        Log("slow:OnOk-start");
+        await _slowGate.Task;
+        _slowGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        Log("slow:OnOk-end");
+    }
+
+    private void ReleaseSlow() => _slowGate.TrySetResult();
+
+    private async Task ShowThroughModalService()
+    {
+        var modalRef = await ModalService.Show<BitMessageBox>(modalRef => new()
+        {
+            { nameof(BitMessageBox.Id), "modal-svc-msb" },
+            { nameof(BitMessageBox.Title), "This is a title" },
+            { nameof(BitMessageBox.Body), "This is a body." },
+            { nameof(BitMessageBox.AutoFocus), true },
+            { nameof(BitMessageBox.Buttons), BitMessageBoxButtons.OkCancel },
+            { nameof(BitMessageBox.OnResult), EventCallback.Factory.Create<BitMessageBoxResult>(this, r => modalRef.CloseWith(r)) }
+        });
+
+        _modalServiceResult = ((await modalRef.Result) as BitMessageBoxResult? ?? BitMessageBoxResult.None).ToString();
+    }
+
+    private async Task Report(Task<BitMessageBoxResult> show)
+    {
+        _serviceResult = "pending";
+        var result = await show;
+        _serviceResult = result.ToString();
+        _serviceCount++;
+    }
+
+    private Task ShowService() => Report(MessageBoxService.Show("TITLE", "BODY", BitMessageBoxButtons.OkCancel));
+
+    private Task ShowPlain() => Report(MessageBoxService.Show("Plain title", "Plain body"));
+
+    private Task ShowSeverity(BitColor color) => Report(color switch
+    {
+        BitColor.Info => MessageBoxService.ShowInfo("Information", "The export finished."),
+        BitColor.Success => MessageBoxService.ShowSuccess("Success", "Your changes are saved."),
+        BitColor.Warning => MessageBoxService.ShowWarning("Warning", "Almost out of space."),
+        BitColor.SevereWarning => MessageBoxService.ShowSevereWarning("Severe warning", "Out of space."),
+        _ => MessageBoxService.ShowError("Error", "The file could not be uploaded.")
+    });
+
+    private async Task ShowTimed()
+    {
+        _timedCts = new CancellationTokenSource();
+        await Report(MessageBoxService.Show(new() { Title = "Saved", Body = "This closes from code." }, _timedCts.Token));
+    }
+
+    private Task ShowAlreadyCancelled()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        return Report(MessageBoxService.Show(new() { Title = "Never", Body = "Never shown." }, cts.Token));
+    }
+
+    private Task ShowWithParameters() => Report(MessageBoxService.Show(new()
+    {
+        Id = "svc-params",
+        Title = "Parameters",
+        Body = "Every parameter of the box.",
+        Buttons = BitMessageBoxButtons.YesNoCancel,
+        YesText = "Y",
+        NoText = "N",
+        CancelText = "C",
+        DefaultButton = BitMessageBoxResult.Cancel,
+        Size = BitSize.Large,
+        Color = BitColor.Success,
+        IconAriaLabel = "Success",
+        TitleElement = "h2",
+        Reversed = true,
+        ButtonColor = BitColor.Tertiary,
+        PrimaryButtonColor = BitColor.Success,
+        CloseButtonTitle = "Shut",
+        Classes = new() { Root = "svc-params-root" },
+        Styles = new() { Title = "color: rgb(0, 128, 0)" },
+        Modal = new() { Blocking = true, Classes = new() { Root = "svc-params-modal" } }
+    }));
+
+    private Task ShowWithoutTitle() => Report(MessageBoxService.Show(new() { Id = "svc-no-title", Body = "Only a body names this dialog." }));
+
+    private Task ShowWithHeaderTemplate() => Report(MessageBoxService.Show(new()
+    {
+        Id = "svc-header",
+        Title = "Named by its title",
+        Body = "A header template replaces the title.",
+        HeaderTemplate = @<strong id="svc-custom-header">Custom header</strong>
+    }));
+
+    private Task ShowWithFooterComponent() => Report(MessageBoxService.Show(new()
+    {
+        Id = "svc-footer",
+        Title = "Footer component",
+        Body = "The footer answers through the cascaded box.",
+        FooterTemplate = @<BitMessageBoxE2EAnswerFooter IdPrefix="svc-footer" />
+    }));
+
+    private Task ShowGuarded() => Report(MessageBoxService.Show(new()
+    {
+        Id = "svc-guarded",
+        Title = "Guarded",
+        Body = "Ok is refused until the box below is ticked.",
+        Buttons = BitMessageBoxButtons.OkCancel,
+        BodyTemplate = @<label><input id="svc-guard-check" type="checkbox" @onchange="e => _guardConfirmed = (bool)e.Value!" /> Allow</label>,
+        OnBeforeResult = EventCallback.Factory.Create<BitMessageBoxBeforeResultArgs>(this, args =>
+        {
+            if (args.Result is BitMessageBoxResult.Ok && _guardConfirmed is false) args.Cancel = true;
+        })
+    }));
+
+    private Task ShowRtl() => Report(MessageBoxService.Show(new()
+    {
+        Id = "svc-rtl",
+        Dir = BitDir.Rtl,
+        Title = "عنوان",
+        Body = "متن",
+        Buttons = BitMessageBoxButtons.YesNo
+    }));
+
+    private async Task ShowConfirm()
+    {
+        _confirmResult = null;
+        _confirmResult = await MessageBoxService.Confirm("Publish", "Publish these changes to production?");
+    }
+
+    private async Task ShowConfirmYesNo()
+    {
+        _confirmResult = null;
+        _confirmResult = await MessageBoxService.Confirm("Publish", "Publish now?", BitMessageBoxButtons.YesNo);
+    }
+
+    private async Task ShowDangerousConfirm()
+    {
+        _confirmResult = null;
+        _confirmResult = await MessageBoxService.Confirm(new()
+        {
+            Id = "svc-danger",
+            Title = "Delete the workspace?",
+            Body = "Everything in it is removed. This cannot be undone.",
+            Color = BitColor.Error,
+            Buttons = BitMessageBoxButtons.YesNo,
+            PrimaryButtonColor = BitColor.Error,
+            YesText = "Delete forever",
+            NoText = "Keep it",
+            DefaultButton = BitMessageBoxResult.No,
+            IconAriaLabel = "Error",
+            Modal = new() { Blocking = true }
+        });
+    }
+
+    private async Task ReportPrompt(Task<string?> prompt)
+    {
+        _promptResult = "pending";
+        try
+        {
+            _promptResult = await prompt;
+        }
+        catch (Exception ex)
+        {
+            _promptError = ex.Message;
+            _promptResult = "threw";
+        }
+        _promptCount++;
+    }
+
+    private Task ShowPrompt() => ReportPrompt(MessageBoxService.Prompt("Rename", "The new name of the file:", "report.pdf"));
+
+    private Task ShowValidatedPrompt() => ReportPrompt(MessageBoxService.Prompt(new()
+    {
+        Id = "svc-folder",
+        Title = "New folder",
+        Body = "Folders hold the files of a project.",
+        Label = "Name",
+        Description = "Up to 40 characters, no slashes.",
+        Placeholder = "Untitled folder",
+        AutoComplete = "off",
+        MaxLength = 40,
+        Required = true,
+        RequiredMessage = "Give the folder a name.",
+        Validator = v => v.IndexOfAny(['/', '\\']) >= 0 ? "A name cannot hold a slash." : null,
+        AsyncValidator = IsFolderNameTaken,
+        OkText = "Create"
+    }));
+
+    private async Task<string?> IsFolderNameTaken(string name, CancellationToken cancellationToken)
+    {
+        _asyncValidations++;
+        await InvokeAsync(StateHasChanged);
+        await Task.Delay(600, cancellationToken);
+
+        return string.Equals(name.Trim(), "Projects", StringComparison.OrdinalIgnoreCase) ? "A folder with this name already exists." : null;
+    }
+
+    private async Task ShowPasswordPrompt()
+    {
+        _promptResult = "pending";
+        var password = await MessageBoxService.Prompt(new()
+        {
+            Id = "svc-password",
+            Title = "Delete the account?",
+            Body = "Enter your password to confirm.",
+            Color = BitColor.Error,
+            Label = "Password",
+            InputType = BitInputType.Password,
+            AutoComplete = "current-password",
+            CanRevealPassword = true,
+            Required = true,
+            OkText = "Delete",
+            PrimaryButtonColor = BitColor.Error
+        });
+        _promptResult = password;
+        _promptCount++;
+    }
+
+    private Task ShowMultilinePrompt() => ReportPrompt(MessageBoxService.Prompt(new()
+    {
+        Id = "svc-feedback",
+        Title = "Feedback",
+        Body = "What could be better?",
+        Multiline = true,
+        OkText = "Send"
+    }));
+
+    private Task ShowYesNoPrompt() => ReportPrompt(MessageBoxService.Prompt(new()
+    {
+        Id = "svc-yesno-prompt",
+        Title = "Name it?",
+        Body = "A name:",
+        Buttons = BitMessageBoxButtons.YesNo,
+        Value = "abc"
+    }));
+
+    private Task ShowThrowingPrompt() => ReportPrompt(MessageBoxService.Prompt(new()
+    {
+        Id = "svc-throws",
+        Title = "Throws",
+        Body = "The validator throws.",
+        Validator = v => throw new InvalidOperationException("The validator failed.")
+    }));
+
+    private void ReRender()
+    {
+        _rerenderTitle = "After";
+        _rerenderBody = "Body after";
+        _rerenderButtons = BitMessageBoxButtons.YesNo;
+        _rerenderColor = BitColor.Error;
+    }
+}

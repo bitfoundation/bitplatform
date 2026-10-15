@@ -9,7 +9,15 @@ namespace Bit.BlazorUI;
 /// </summary>
 public sealed class BitPdfContentParser
 {
+    // Nesting limit for array/dictionary operands, matching BitPdfParser's. Each level
+    // is one recursive ReadArray/ReadDict frame, so hostile content of 100000 '['
+    // would otherwise overflow the stack - an uncatchable crash of the whole process.
+    // Deeper levels are skipped (iteratively) and read as empty, so the rest of the
+    // stream still parses.
+    private const int MaxDepth = 512;
+
     private readonly BitPdfLexer _lexer;
+    private int _depth;
 
     public BitPdfContentParser(byte[] content) => _lexer = new BitPdfLexer(new BitPdfStream(content));
 
@@ -74,6 +82,25 @@ public sealed class BitPdfContentParser
     private List<object?> ReadArray()
     {
         var array = new List<object?>();
+        if (_depth >= MaxDepth)
+        {
+            SkipNested();
+            return array;
+        }
+        _depth++;
+        try
+        {
+            ReadArrayItems(array);
+        }
+        finally
+        {
+            _depth--;
+        }
+        return array;
+    }
+
+    private void ReadArrayItems(List<object?> array)
+    {
         while (true)
         {
             object token = _lexer.GetObj();
@@ -85,17 +112,67 @@ public sealed class BitPdfContentParser
             {
                 array.Add(ReadArray());
             }
+            // A dictionary inside an array (a property list among the operands of BDC) is one element, not the
+            // delimiters, keys and values it is written with.
+            else if (token is BitPdfCmd { Value: "<<" })
+            {
+                array.Add(ReadDict());
+            }
             else
             {
                 array.Add(token);
             }
         }
-        return array;
     }
 
     private BitPdfDict ReadDict()
     {
         var dict = new BitPdfDict();
+        if (_depth >= MaxDepth)
+        {
+            SkipNested();
+            return dict;
+        }
+        _depth++;
+        try
+        {
+            ReadDictEntries(dict);
+        }
+        finally
+        {
+            _depth--;
+        }
+        return dict;
+    }
+
+    /// <summary>
+    /// Consumes the rest of an array or dictionary nested past <see cref="MaxDepth"/>
+    /// without recursing: counts openers and closers until the one already opened is
+    /// closed, or the stream ends.
+    /// </summary>
+    private void SkipNested()
+    {
+        int open = 1;
+        while (open > 0)
+        {
+            object token = _lexer.GetObj();
+            if (ReferenceEquals(token, BitPdfPrimitives.EOF))
+            {
+                return;
+            }
+            if (token is BitPdfCmd { Value: "[" or "<<" })
+            {
+                open++;
+            }
+            else if (token is BitPdfCmd { Value: "]" or ">>" })
+            {
+                open--;
+            }
+        }
+    }
+
+    private void ReadDictEntries(BitPdfDict dict)
+    {
         while (true)
         {
             object token = _lexer.GetObj();
@@ -121,7 +198,6 @@ public sealed class BitPdfContentParser
                 dict.Set(key.Value, value);
             }
         }
-        return dict;
     }
 
     private BitPdfOperation ReadInlineImage()

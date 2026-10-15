@@ -28,7 +28,7 @@
     @if ((ShowDots && _pagesCount > 1) || (AutoPlay && ShowPlayPause))
     {
         <div class="bit-swp-dcn @Classes?.DotsContainer"
-             style="@_directionStyle @Styles?.DotsContainer">
+             style="@JoinStyles(_directionStyle, Styles?.DotsContainer)">
             @if (AutoPlay && ShowPlayPause)
             {
                 var playPauseIcon = IsPaused
@@ -62,7 +62,7 @@
                                 aria-current="@(_page == index ? "true" : null)"
                                 disabled="@(Disabled)"
                                 aria-disabled="@(Disabled ? "true" : null)"
-                                style="@Styles?.Dots @(_page == index ? Styles?.CurrentDot : null)"
+                                style="@JoinStyles(Styles?.Dots, _page == index ? Styles?.CurrentDot : null)"
                                 class="bit-swp-dot @(DotTemplate is null ? null : "bit-swp-dtt") @((_page == index ? $"bit-swp-cud {Classes?.CurrentDot}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
                     }
                 </div>
@@ -88,9 +88,9 @@
                     disabled="@(Disabled)"
                     aria-disabled="@(Disabled ? "true" : null)"
                     class="bit-swp-lbt @Classes?.Buttons @Classes?.PrevButton"
-                    style="@_prevButtonStyle @Styles?.Buttons @Styles?.PrevButton">
+                    style="@JoinStyles(JoinStyles(_prevButtonStyle, Styles?.Buttons), Styles?.PrevButton)">
                 <i aria-hidden="true"
-                   style="@Styles?.ButtonIcons @Styles?.PrevButtonIcon"
+                   style="@JoinStyles(Styles?.ButtonIcons, Styles?.PrevButtonIcon)"
                    class="@prevIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.PrevButtonIcon" />
             </button>
 
@@ -101,9 +101,9 @@
                     disabled="@(Disabled)"
                     aria-disabled="@(Disabled ? "true" : null)"
                     class="bit-swp-rbt @Classes?.Buttons @Classes?.NextButton"
-                    style="@_nextButtonStyle @Styles?.Buttons @Styles?.NextButton">
+                    style="@JoinStyles(JoinStyles(_nextButtonStyle, Styles?.Buttons), Styles?.NextButton)">
                 <i aria-hidden="true"
-                   style="@Styles?.ButtonIcons @Styles?.NextButtonIcon"
+                   style="@JoinStyles(Styles?.ButtonIcons, Styles?.NextButtonIcon)"
                    class="@nextIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.NextButtonIcon" />
             </button>
         }
@@ -111,7 +111,7 @@
         <div @ref="_swiperContainer"
              id="@_ContainerId"
              class="bit-swp-cnt @Classes?.Container"
-             style="@_directionStyle @Styles?.Container">
+             style="@JoinStyles(_directionStyle, Styles?.Container)">
             <CascadingValue Value="this" IsFixed="true">
                 @ChildContent
             </CascadingValue>

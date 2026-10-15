@@ -44,6 +44,13 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     private bool _tagsExpanded;
     private string? _separatorsJson;
     private string[] _separators = _emptySeparators;
+
+    // The script commits the text a typed separator closes on its own (see _CommitSeparatedText), emptying the input
+    // in the very keystroke so that what is typed while the commit is on its way lands in an empty field. A text it
+    // could not commit is handed back into the input by the script, and the input event that reports it is the one
+    // keystroke that must not take back the mark of the refusal it comes with.
+    private string? _handedBackText;
+    private DotNetObjectReference<BitTagsInput>? _dotnetObj;
     private Regex? _patternRegex;
     private string? _announcement;
 
@@ -1156,6 +1163,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
 
         SetDefaultValue();
 
+        _dotnetObj = DotNetObjectReference.Create(this);
+
         await base.OnInitializedAsync();
     }
 
@@ -1188,7 +1197,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         {
             try
             {
-                await _js.BitTagsInputSetup(InputElement);
+                await _js.BitTagsInputSetup(InputElement, dotnetObj: _dotnetObj);
 
                 // The chips answer to keys the browser acts on long before the .NET side is reached
                 // (Home scrolls the page, Alt with an arrow leaves it altogether), which one listener
@@ -1291,6 +1300,8 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         // A debounced OnInput still on the clock would otherwise run against a component that is no
         // longer there, for text that is no longer anywhere.
         _rateLimiter.Reset();
+
+        _dotnetObj?.Dispose();
 
         await base.DisposeAsync(disposing);
     }
@@ -2240,11 +2251,18 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         if (Disabled || ReadOnly) return;
 
-        // Typing is the answer to whatever was refused a moment ago, so the mark of that refusal goes
-        // with the first keystroke rather than waiting for the next Enter.
-        ClearInvalid();
-
         var text = e.Value?.ToString() ?? string.Empty;
+
+        // Typing is the answer to whatever was refused a moment ago, so the mark of that refusal goes
+        // with the first keystroke rather than waiting for the next Enter - except for the text of a refusal
+        // the script hands back into the input, which is the refusal being shown rather than answered.
+        var handedBack = _handedBackText is not null && string.Equals(_handedBackText, text, StringComparison.Ordinal);
+        _handedBackText = null;
+
+        if (handedBack is false)
+        {
+            ClearInvalid();
+        }
 
         if (_separators.Length > 0 && _separators.Any(s => text.Contains(s, StringComparison.Ordinal)))
         {
@@ -3006,35 +3024,75 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
     {
         if (_inputText.Length == 0) return;
 
+        if (await TryAddTypedTag(_inputText) is false) return;
+
+        // Last, so that the list a consumer reads out of OnInput is the one the tag is already in - the
+        // very order a pasted batch is reported in.
+        await ClearInputText();
+    }
+
+    /// <summary>
+    /// Commits the text a typed separator closes, which the script hands over in the keystroke of the separator
+    /// itself and takes out of the input right then. The round trip that would otherwise empty the input lands after
+    /// the keys typed in the meantime, which then joined the text being committed (a quick "ab,cd," gave the tags
+    /// "ab" and "abcd"). The input event the script raises along with the emptying has already told the component
+    /// what the input holds, so a tag that is added leaves the input alone. One that is not - refused, called off,
+    /// or rewritten into one that is refused - is handed back for the script to put into the input again, the way
+    /// the text stays in the input when Enter does not add it, unless the next one is already being typed there.
+    /// </summary>
+    /// <returns>Whether the text was not taken and goes back into the input.</returns>
+    [JSInvokable("CommitSeparatedText")]
+    public async Task<bool> _CommitSeparatedText(string text)
+    {
+        if (IsDisposed || Disabled || ReadOnly || string.IsNullOrEmpty(text)) return false;
+
+        if (MaxLength > 0 && text.Length > MaxLength)
+        {
+            text = text[..MaxLength];
+        }
+
+        var taken = await TryAddTypedTag(text);
+
+        StateHasChanged();
+
+        if (taken) return false;
+
+        _handedBackText = text;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Runs typed text through the rules and the OnBeforeAdd handler into the list, and tells whether the text is
+    /// done with - added, or nothing but whitespace - rather than left for the user to correct.
+    /// </summary>
+    private async Task<bool> TryAddTypedTag(string typed)
+    {
         ClearInvalid();
 
-        var text = NormalizeTag(_inputText);
+        var text = NormalizeTag(typed);
 
-        if (text.Length == 0)
-        {
-            await ClearInputText();
-            return;
-        }
+        if (text.Length == 0) return true;
 
         var list = GetTags();
 
         if (IsValidTag(text, list, out var reason) is false)
         {
             await ReportInvalid(text, reason);
-            return;
+            return false;
         }
 
         if (OnBeforeAdd.HasDelegate)
         {
             var args = new BitTagsInputBeforeArgs { Tag = text };
             await OnBeforeAdd.InvokeAsync(args);
-            if (args.Cancel) return;
+            if (args.Cancel) return false;
 
             // The handler is allowed to correct the text on its way in, the way an OnEdit handler is; an
             // empty one is a handler that wrote nothing rather than one calling the add off, Cancel being
             // what does that. A rewrite that is refused leaves the typed text in the input to be corrected.
             var accepted = await AcceptRewrittenTag(text, args.Tag, list);
-            if (accepted is null) return;
+            if (accepted is null) return false;
 
             text = accepted;
         }
@@ -3046,9 +3104,7 @@ public partial class BitTagsInput : BitInputBase<ICollection<string>?>
         await SetTagsAsync(list);
         await OnAdd.InvokeAsync([text]);
 
-        // Last, so that the list a consumer reads out of OnInput is the one the tag is already in - the
-        // very order a pasted batch is reported in.
-        await ClearInputText();
+        return true;
     }
 
     private async Task<int> TryAddTags(string[] tags)

@@ -241,7 +241,7 @@ public partial class BitFullCalendarDemo
             Name = "OnRefused",
             Type = "EventCallback<BitFullCalendarChangeRefusal>",
             DefaultValue = "",
-            Description = "Raised when the calendar refuses a user-driven change: an overlap while Settings.AllowEventOverlap is false, a target outside the MinDate/MaxDate window or the business hours (Settings.RestrictToBusinessHours), or an event marked IsReadOnly.",
+            Description = "Raised when the calendar refuses a user-driven change, from a drag, a resize, their keyboard equivalents or a save of the built-in dialog: an overlap while Settings.AllowEventOverlap is false, an event marked IsBlocking in the way, a target outside the MinDate/MaxDate window or the business hours (Settings.RestrictToBusinessHours), or a change to what is read-only (the calendar, its edit permissions or an event marked IsReadOnly). A drag or resize also shows the reason as a notice, a dialog next to its actions; a change OnChanging cancels is not reported here.",
             LinkType = LinkType.Link,
             Href = "#change-refusal-enum",
         },

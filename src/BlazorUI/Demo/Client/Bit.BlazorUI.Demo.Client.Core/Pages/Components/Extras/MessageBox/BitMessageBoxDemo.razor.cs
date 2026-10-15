@@ -546,7 +546,9 @@ public partial class BitMessageBoxDemo
                     Name = "ButtonColor",
                     Type = "BitColor?",
                     DefaultValue = "null",
-                    Description = "The color of the action buttons of the message box."
+                    Description = "The color of the action buttons of the message box.",
+                    LinkType = LinkType.Link,
+                    Href = "#color-enum"
                 },
                 new()
                 {
@@ -590,7 +592,9 @@ public partial class BitMessageBoxDemo
                     Name = "Color",
                     Type = "BitColor?",
                     DefaultValue = "null",
-                    Description = "The general color of the message box, which is the severity of its message. Warning, SevereWarning and Error are announced as alerts. An explicit value wins over --bit-MessageBox-icon-color."
+                    Description = "The general color of the message box, which is the severity of its message. Warning, SevereWarning and Error are announced as alerts. An explicit value wins over --bit-MessageBox-icon-color.",
+                    LinkType = LinkType.Link,
+                    Href = "#color-enum"
                 },
                 new()
                 {
@@ -606,7 +610,9 @@ public partial class BitMessageBoxDemo
                     Name = "Dir",
                     Type = "BitDir?",
                     DefaultValue = "null",
-                    Description = "The general directionality of the message box and of the modal it is shown in."
+                    Description = "The general directionality of the message box and of the modal it is shown in.",
+                    LinkType = LinkType.Link,
+                    Href = "#component-dir"
                 },
                 new()
                 {
@@ -708,7 +714,9 @@ public partial class BitMessageBoxDemo
                     Name = "PrimaryButtonColor",
                     Type = "BitColor?",
                     DefaultValue = "null",
-                    Description = "The color of the affirmative action button (Ok, or Yes), which falls back to ButtonColor."
+                    Description = "The color of the affirmative action button (Ok, or Yes), which falls back to ButtonColor.",
+                    LinkType = LinkType.Link,
+                    Href = "#color-enum"
                 },
                 new()
                 {
@@ -805,7 +813,9 @@ public partial class BitMessageBoxDemo
                     Name = "InputType",
                     Type = "BitInputType?",
                     DefaultValue = "null",
-                    Description = "The type of the text field, such as Password or Email. Text by default."
+                    Description = "The type of the text field, such as Password or Email. Text by default.",
+                    LinkType = LinkType.Link,
+                    Href = "#input-type-enum"
                 },
                 new()
                 {
@@ -898,7 +908,8 @@ public partial class BitMessageBoxDemo
             ]
         },
         DemoSharedEnums.BitColor(),
-        DemoSharedEnums.BitSize(description: "The size of the message box.")
+        DemoSharedEnums.BitSize(description: "The size of the message box."),
+        DemoSharedEnums.BitInputType()
     ];
 
 

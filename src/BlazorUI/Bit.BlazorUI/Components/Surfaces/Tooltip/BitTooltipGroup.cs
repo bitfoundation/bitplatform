@@ -58,7 +58,8 @@ public class BitTooltipGroup : ComponentBase
     /// <remarks>
     /// The delay is there to keep a pointer merely crossing the page quiet. Once the reader has stopped
     /// on one control of a row and read its tooltip, they are reading the row rather than crossing it, so
-    /// the next tooltip along is what they asked for and waiting for it again only reads as lag.
+    /// the next tooltip along is what they asked for and waiting for it again only reads as lag. A tooltip of
+    /// the group still on the screen - the pointer moving straight on from it - counts as fresh as well.
     /// </remarks>
     [Parameter] public int SkipDelay { get; set; } = 300;
 
@@ -79,9 +80,17 @@ public class BitTooltipGroup : ComponentBase
 
     internal void Unregister(BitTooltip tooltip) => _members.Remove(tooltip);
 
-    internal bool ShouldSkipShowDelay()
+    internal bool ShouldSkipShowDelay(BitTooltip tooltip)
     {
         if (SkipDelay <= 0) return false;
+
+        // A sibling still on the screen is as fresh in mind as a tooltip gets: the pointer has moved straight on
+        // from it to the next control of the row, before its own hide delay has run out and started the window.
+        foreach (var member in _members)
+        {
+            if (ReferenceEquals(member, tooltip) is false && member.IsShown) return true;
+        }
+
         if (_lastHiddenAt == 0) return false;
 
         return Environment.TickCount64 - _lastHiddenAt <= SkipDelay;

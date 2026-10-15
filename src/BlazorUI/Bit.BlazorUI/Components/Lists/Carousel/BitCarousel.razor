@@ -30,7 +30,7 @@
     @if ((HideDots is false && _pagesCount > 1) || (AutoPlay && ShowPlayPause))
     {
         <div class="bit-csl-dcn @Classes?.DotsContainer"
-             style="@_directionStyle @Styles?.DotsContainer">
+             style="@JoinStyles(_directionStyle, Styles?.DotsContainer)">
             @if (AutoPlay && ShowPlayPause)
             {
                 var playPauseIcon = IsPaused
@@ -67,7 +67,7 @@
                                 aria-current="@(_currentPage == index ? "true" : null)"
                                 disabled="@(Disabled)"
                                 aria-disabled="@(Disabled ? "true" : null)"
-                                style="@Styles?.Dots @(_currentPage == index ? Styles?.CurrentDot : null)"
+                                style="@JoinStyles(Styles?.Dots, _currentPage == index ? Styles?.CurrentDot : null)"
                                 class="bit-csl-dot @(DotTemplate is null ? null : "bit-csl-dtt") @((_currentPage == index ? $"bit-csl-cud {Classes?.CurrentDot}" : "").Trim()) @Classes?.Dots">@DotTemplate?.Invoke(index)</button>
                     }
                 </div>
@@ -90,7 +90,7 @@
          aria-atomic="false"
          aria-live="@(IsPlaying ? "off" : "polite")"
          class="bit-csl-cnt @((NoDrag || Disabled) ? "bit-csl-ndr" : null) @Classes?.Container"
-         style="@_directionStyle @Styles?.Container">
+         style="@JoinStyles(_directionStyle, Styles?.Container)">
 
         @* The buttons come before the slides (the carousel pattern of the ARIA authoring practices puts
            the controls before the content they control), and the stylesheet places them over the slides.
@@ -103,6 +103,9 @@
             var goLeftIcon = BitIconInfo.From(GoLeftIcon, GoLeftIconName ?? (Vertical ? "ChevronDown" : "ChevronRight"));
             var goRightIcon = BitIconInfo.From(GoRightIcon, GoRightIconName ?? (Vertical ? "ChevronUp" : "ChevronRight bit-ico-r180"));
 
+            // The styles of a part are joined with JoinStyles, which puts the semicolon between two of them: the
+            // display:none of a button at the end it cannot pass would otherwise run into a style the page gives
+            // the buttons and be dropped by the browser along with it, leaving the button on screen.
             RenderFragment goLeftButton =
                 @<button @ref="_goLeftButtonRef"
                          @onclick="HandleGoLeftButtonClick"
@@ -113,9 +116,9 @@
                          disabled="@(Disabled)"
                          aria-disabled="@(Disabled ? "true" : null)"
                          class="bit-csl-lbt @Classes?.Buttons @Classes?.GoLeftButton"
-                         style="@_goLeftButtonStyle @Styles?.Buttons @Styles?.GoLeftButton">
+                         style="@JoinStyles(JoinStyles(_goLeftButtonStyle, Styles?.Buttons), Styles?.GoLeftButton)">
                     <i aria-hidden="true"
-                       style="@Styles?.ButtonIcons @Styles?.GoLeftButtonIcon"
+                       style="@JoinStyles(Styles?.ButtonIcons, Styles?.GoLeftButtonIcon)"
                        class="@goLeftIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoLeftButtonIcon" />
                 </button>;
 
@@ -129,9 +132,9 @@
                          disabled="@(Disabled)"
                          aria-disabled="@(Disabled ? "true" : null)"
                          class="bit-csl-rbt @Classes?.Buttons @Classes?.GoRightButton"
-                         style="@_goRightButtonStyle @Styles?.Buttons @Styles?.GoRightButton">
+                         style="@JoinStyles(JoinStyles(_goRightButtonStyle, Styles?.Buttons), Styles?.GoRightButton)">
                     <i aria-hidden="true"
-                       style="@Styles?.ButtonIcons @Styles?.GoRightButtonIcon"
+                       style="@JoinStyles(Styles?.ButtonIcons, Styles?.GoRightButtonIcon)"
                        class="@goRightIcon?.GetCssClasses() @Classes?.ButtonIcons @Classes?.GoRightButtonIcon" />
                 </button>;
 

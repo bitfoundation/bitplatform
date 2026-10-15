@@ -9,9 +9,11 @@
 /// <see cref="BitMessage.Title"/>, <see cref="BitMessage.TitleTemplate"/>, <see cref="BitMessage.Actions"/> and
 /// <see cref="BitMessage.IconTemplate"/>), the state (<see cref="BitMessage.Dismissed"/> and
 /// <see cref="BitMessage.Expanded"/>), the callbacks (<see cref="BitMessage.OnDismiss"/> and
-/// <see cref="BitMessage.OnDismissing"/>) and what a message says about itself
-/// (<see cref="BitMessage.AutoFocus"/>, <see cref="BitMessage.IconAriaLabel"/>, <see cref="BitMessage.Politeness"/>
-/// and <see cref="BitMessage.Role"/>) are left off, since they are the business of the message they belong to.
+/// <see cref="BitMessage.OnDismissing"/>) and what a message says about itself (<see cref="BitMessage.AutoFocus"/>,
+/// since only one element of a page can take the focus as it appears, and <see cref="BitMessage.IconAriaLabel"/>, which
+/// names the glyph that message's own color picks) are left off, since they are the business of the message they belong
+/// to. How the messages are announced (<see cref="Politeness"/> and <see cref="Role"/>) is shared like their look: a
+/// region of standing notices that should not be announced at all, say, sets it once for every message in it.
 /// </remarks>
 public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -168,6 +170,16 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
     /// Holds the AutoDismissTime countdown while the window does not have the focus.
     /// </summary>
     public bool? PauseOnWindowBlur { get; set; }
+
+    /// <summary>
+    /// How urgently the messages interrupt a screen reader, independently of the role they are announced under.
+    /// </summary>
+    public BitPoliteness? Politeness { get; set; }
+
+    /// <summary>
+    /// A custom role for the text of the messages, overriding the one their color implies.
+    /// </summary>
+    public string? Role { get; set; }
 
     /// <summary>
     /// Renders a bar along the bottom edge of the message that runs down as its AutoDismissTime does.
@@ -356,6 +368,16 @@ public class BitMessageParams : BitComponentBaseParams, IBitComponentParams
         if (PauseOnWindowBlur.HasValue)
         {
             bitMessage.TakeFromCascade(nameof(PauseOnWindowBlur), PauseOnWindowBlur.Value, static m => m.PauseOnWindowBlur, static (m, v) => m.PauseOnWindowBlur = v);
+        }
+
+        if (Politeness.HasValue)
+        {
+            bitMessage.TakeFromCascade(nameof(Politeness), Politeness.Value, static m => m.Politeness, static (m, v) => m.Politeness = v);
+        }
+
+        if (Role.HasValue())
+        {
+            bitMessage.TakeFromCascade(nameof(Role), Role, static m => m.Role, static (m, v) => m.Role = v);
         }
 
         if (ShowAutoDismissProgress.HasValue)

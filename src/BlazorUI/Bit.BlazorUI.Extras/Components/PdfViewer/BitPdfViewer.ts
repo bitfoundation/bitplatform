@@ -1,6 +1,9 @@
 ﻿namespace BitBlazorUI {
     export class PdfViewer {
         private static _rezoomTimers = new WeakMap<HTMLElement, number>();
+        // The zoom the canvases of a container are to be rasterized at: the latest one .NET named, through a paint
+        // or a re-zoom, which a paint still waiting on its fonts reads once it gets to draw (see paintCanvasPages).
+        private static _canvasScales = new WeakMap<HTMLElement, number>();
         // The controls that opened the currently trapped dialogs, innermost last, so
         // closing one hands focus back to whatever the reader was on when it opened.
         private static readonly _focusReturn: HTMLElement[] = [];
@@ -1459,6 +1462,7 @@
             if (!container || !pages) {
                 return;
             }
+            PdfViewer._canvasScales.set(container, scale || 1);
             // Embedded @font-face fonts must be loaded before fillText can use them.
             try {
                 if (document.fonts && document.fonts.ready) {
@@ -1480,7 +1484,10 @@
                 // Cache the display list (and decoded images) on the element so zoom
                 // changes can re-rasterize without another interop round-trip.
                 (canvas as any).__bitPdvOps = { ops, w: p.w, h: p.h, images: new Map() };
-                await PdfViewer.replayOps(canvas, scale || 1);
+                // The zoom as it stands now, not as it stood when the paint was asked for: a zoom that settled while
+                // the fonts loaded (the fit-width zoom of a viewer that has just opened) re-zoomed every canvas that
+                // was painted by then, and this one was not yet.
+                await PdfViewer.replayOps(canvas, PdfViewer._canvasScales.get(container) || scale || 1);
             }
         }
 
@@ -1492,6 +1499,7 @@
             if (!container) {
                 return;
             }
+            PdfViewer._canvasScales.set(container, scale || 1);
             clearTimeout(PdfViewer._rezoomTimers.get(container));
             PdfViewer._rezoomTimers.set(container, setTimeout(() => {
                 container.querySelectorAll("canvas[data-bit-pdv-canvas]").forEach((canvas) => {
@@ -1504,19 +1512,10 @@
 
         private static async replayOps(canvas: HTMLCanvasElement, scale: number, pixelRatio?: number) {
             const { ops, w, h, images } = (canvas as any).__bitPdvOps as { ops: any[][], w: number, h: number, images: Map<string, HTMLImageElement> };
-            // Rasterize at devicePixelRatio x zoom so the backing store matches the
-            // on-screen pixel density (the element is CSS-scaled by --bit-pdv-scale).
-            // Print passes an explicit pixelRatio to rasterize at printer resolution.
-            // Cap the backing store to stay inside browser canvas limits on large pages.
-            const dpr = pixelRatio || Math.min(window.devicePixelRatio || 1, 3);
-            let px = dpr * Math.max(scale, 0.1);
-            px = Math.min(px, 8192 / w, 8192 / h, Math.sqrt(16777216 / (w * h)));
-            canvas.width = Math.max(1, Math.round(w * px));
-            canvas.height = Math.max(1, Math.round(h * px));
-            const ctx = canvas.getContext("2d");
-            if (!ctx) {
-                return;
-            }
+            // Two replays of one canvas overlap when a zoom settles while the first still waits on its fonts or
+            // images: only the latest one draws, so the canvas is neither left at the earlier zoom nor drawn over
+            // at two scales at once.
+            const replay = ((canvas as any).__bitPdvReplay = ((canvas as any).__bitPdvReplay || 0) + 1);
 
             // @font-face faces load lazily - only when DOM text uses them - and canvas
             // fillText never waits for (or reliably triggers) a load: it draws with the
@@ -1544,6 +1543,26 @@
                     img.onerror = () => resolve();
                     img.src = o[1];
                 })));
+
+            if ((canvas as any).__bitPdvReplay !== replay) {
+                return;
+            }
+
+            // Rasterize at devicePixelRatio x zoom so the backing store matches the
+            // on-screen pixel density (the element is CSS-scaled by --bit-pdv-scale).
+            // Print passes an explicit pixelRatio to rasterize at printer resolution.
+            // Cap the backing store to stay inside browser canvas limits on large pages.
+            // Sized only now, after the waits above, so the bitmap on screen stays until
+            // the one replacing it is drawn.
+            const dpr = pixelRatio || Math.min(window.devicePixelRatio || 1, 3);
+            let px = dpr * Math.max(scale, 0.1);
+            px = Math.min(px, 8192 / w, 8192 / h, Math.sqrt(16777216 / (w * h)));
+            canvas.width = Math.max(1, Math.round(w * px));
+            canvas.height = Math.max(1, Math.round(h * px));
+            const ctx = canvas.getContext("2d");
+            if (!ctx) {
+                return;
+            }
 
             ctx.setTransform(px, 0, 0, px, 0, 0);
             let depth = 0;

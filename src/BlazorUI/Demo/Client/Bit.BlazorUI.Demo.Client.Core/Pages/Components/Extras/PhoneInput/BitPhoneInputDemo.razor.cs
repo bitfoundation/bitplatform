@@ -233,6 +233,8 @@ public partial class BitPhoneInputDemo
             Type = "BitInputMode?",
             DefaultValue = "null",
             Description = "Sets the inputmode html attribute of the number input, which decides the on-screen keyboard it asks for.",
+            LinkType = LinkType.Link,
+            Href = "#input-mode-enum",
         },
         new()
         {
@@ -648,6 +650,7 @@ public partial class BitPhoneInputDemo
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitColorKind(),
         DemoSharedEnums.BitDropDirection(),
+        DemoSharedEnums.BitInputMode(),
         DemoSharedEnums.BitSize(),
     ];
 

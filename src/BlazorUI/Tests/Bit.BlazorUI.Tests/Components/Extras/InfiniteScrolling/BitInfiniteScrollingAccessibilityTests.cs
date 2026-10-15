@@ -501,7 +501,7 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitInfiniteScrollingShouldRenderAHiddenSpinnerInTheDefaultLoadingBlock()
+    public void BitInfiniteScrollingShouldRenderAHiddenSpinnerInTheDefaultLoadingBlock()
     {
         var source = new TaskCompletionSource<IEnumerable<int>>();
 
@@ -522,7 +522,5 @@ public class BitInfiniteScrollingAccessibilityTests : BunitTestContext
         Assert.AreEqual("Loading...", component.Find(".bit-isc-ldg").TextContent.Trim());
 
         source.SetResult([]);
-
-        await Task.CompletedTask;
     }
 }

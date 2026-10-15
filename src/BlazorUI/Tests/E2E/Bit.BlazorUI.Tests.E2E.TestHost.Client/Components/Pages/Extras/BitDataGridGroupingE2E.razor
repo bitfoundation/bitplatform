@@ -1,0 +1,86 @@
+﻿@page "/e2e/data-grid/grouping"
+
+@* BitDataGrid's grouping: the header's group toggle, nested groups, the group rows with their counts and aggregates,
+   collapsing a group, GroupsInitiallyCollapsed, ExpandAllGroupsAsync / CollapseAllGroupsAsync, the grouping API
+   (GroupByAsync, UngroupAsync, ClearGroupsAsync), OnGroupChange, the footer's grand totals and the pager that steps
+   aside while the rows are grouped. *@
+
+<PageTitle>BitDataGrid grouping E2E</PageTitle>
+
+<h1>BitDataGrid grouping</h1>
+
+<E2ESection Id="group" Title="Grouping and aggregates">
+    <button id="btn-expand-groups" type="button" @onclick="() => _groupGrid.ExpandAllGroupsAsync()">Expand all groups</button>
+    <button id="btn-collapse-groups" type="button" @onclick="() => _groupGrid.CollapseAllGroupsAsync()">Collapse all groups</button>
+    <button id="btn-group-by-supplier" type="button" @onclick="GroupBySupplier">GroupByAsync(Supplier)</button>
+    <button id="btn-ungroup-supplier" type="button" @onclick="UngroupSupplier">UngroupAsync(Supplier)</button>
+    <button id="btn-clear-groups" type="button" @onclick="() => _groupGrid.ClearGroupsAsync()">ClearGroupsAsync</button>
+    <BitDataGrid @ref="_groupGrid" TItem="Product" Id="grid-group" Items="@_products" Groupable="true" ShowFooter="true"
+                 Pageable="true" PageSize="4" CellNavigation="true"
+                 OnGroupChange="OnGroupChange">
+        <BitDataGridColumn Property="p => p.Id" Groupable="false" />
+        <BitDataGridColumn Property="p => p.Name" Groupable="false" Aggregate="BitDataGridAggregateType.Count" />
+        <BitDataGridColumn Property="p => p.Category" />
+        <BitDataGridColumn Property="p => p.Supplier" />
+        <BitDataGridColumn Property="p => p.Stock" Groupable="false" Aggregate="BitDataGridAggregateType.Sum" />
+        <BitDataGridColumn Property="p => p.Price" Groupable="false" Aggregate="BitDataGridAggregateType.Average" AggregateFormat="0" />
+        <BitDataGridColumn Property="p => p.Rating" Groupable="false" Aggregate="BitDataGridAggregateType.Min" />
+    </BitDataGrid>
+    <p>group changes <span id="group-count">@_groupCount</span> | <span id="group-log">@_groupLog</span></p>
+</E2ESection>
+
+<E2ESection Id="group-collapsed" Title="Groups initially collapsed">
+    <button id="btn-group-collapsed" type="button" @onclick="GroupCollapsedByCategory">GroupByAsync(Category)</button>
+    <BitDataGrid @ref="_collapsedGrid" TItem="Product" Id="grid-group-collapsed" Items="@_products" Groupable="true" GroupsInitiallyCollapsed="true">
+        <BitDataGridColumn Property="p => p.Name" Groupable="false" />
+        <BitDataGridColumn Property="p => p.Category" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public enum Category { Electronics, Books, Clothing, Home, Toys }
+
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public Category Category { get; set; }
+        public string Supplier { get; set; } = "";
+        public int Stock { get; set; }
+        public decimal Price { get; set; }
+        public int Rating { get; set; }
+    }
+
+    private readonly List<Product> _products =
+    [
+        new() { Id = 1, Name = "Laptop", Category = Category.Electronics, Supplier = "Acme", Stock = 5, Price = 1200, Rating = 4 },
+        new() { Id = 2, Name = "Novel", Category = Category.Books, Supplier = "Globex", Stock = 120, Price = 15, Rating = 3 },
+        new() { Id = 3, Name = "Jacket", Category = Category.Clothing, Supplier = "Initech", Stock = 0, Price = 90, Rating = 2 },
+        new() { Id = 4, Name = "Lamp", Category = Category.Home, Supplier = "Acme", Stock = 30, Price = 45, Rating = 4 },
+        new() { Id = 5, Name = "Drone", Category = Category.Toys, Supplier = "Globex", Stock = 8, Price = 299, Rating = 5 },
+        new() { Id = 6, Name = "Camera", Category = Category.Electronics, Supplier = "Initech", Stock = 12, Price = 650, Rating = 5 },
+        new() { Id = 7, Name = "Cookbook", Category = Category.Books, Supplier = "Acme", Stock = 60, Price = 25, Rating = 3 },
+        new() { Id = 8, Name = "Sneaker", Category = Category.Clothing, Supplier = "Umbrella", Stock = 45, Price = 110, Rating = 4 },
+        new() { Id = 9, Name = "Mug", Category = Category.Home, Supplier = "Umbrella", Stock = 200, Price = 10, Rating = 1 },
+        new() { Id = 10, Name = "Puzzle", Category = Category.Toys, Supplier = "Globex", Stock = 70, Price = 20, Rating = 4 },
+    ];
+
+    private BitDataGrid<Product> _groupGrid = default!;
+    private BitDataGrid<Product> _collapsedGrid = default!;
+    private int _groupCount;
+    private string _groupLog = "";
+
+    private void OnGroupChange(IReadOnlyList<BitDataGridGroupDescriptor> groups)
+    {
+        _groupCount++;
+        _groupLog = string.Join(",", groups.Select(g => $"{g.ColumnId}:{g.Direction}"));
+    }
+
+    private Task GroupBySupplier() => _groupGrid.GroupByAsync("Supplier");
+
+    private Task UngroupSupplier() => _groupGrid.UngroupAsync("Supplier");
+
+    private Task GroupCollapsedByCategory() => _collapsedGrid.GroupByAsync("Category");
+}

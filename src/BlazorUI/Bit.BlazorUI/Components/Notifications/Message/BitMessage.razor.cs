@@ -39,6 +39,8 @@ public partial class BitMessage : BitComponentBase
     // Latched for the length of one showing of the message, and cleared when it is dismissed or brought back.
     private bool _autoFocusDone;
     private bool _isAnnounced;
+    private bool _isAnnouncing;
+    private int _showing;
     private TimeSpan? _armedAutoDismissTime;
     private CancellationTokenSource? _autoDismissCts;
 
@@ -116,6 +118,12 @@ public partial class BitMessage : BitComponentBase
     /// <summary>
     /// Determines the alignment of the content section of the message.
     /// </summary>
+    /// <remarks>
+    /// The distributions (Start, End, Center and the three Space ones) place the icon and the text along the width of
+    /// the message. <see cref="BitAlignment.Baseline"/> and <see cref="BitAlignment.Stretch"/> keep them at the start
+    /// and align them across the row instead: Baseline lines the icon up with the first line of the text, Stretch
+    /// draws each the full height of the row.
+    /// </remarks>
     [Parameter, ResetStyleBuilder]
     public BitAlignment? Alignment { get; set; }
 
@@ -225,7 +233,8 @@ public partial class BitMessage : BitComponentBase
     /// <remarks>
     /// A live region announces what changes inside it, so a region that arrives with its text already in place is
     /// a change of nothing and several screen readers stay silent. Setting this renders the region empty first and
-    /// fills it on the very next render, which is what makes the announcement reliable for a message that appears
+    /// fills it on the next render, once the page has been painted with the empty region (in every render mode,
+    /// WebAssembly included), which is what makes the announcement reliable for a message that appears
     /// in answer to something the reader just did. It costs the message one frame, so leave it off where the
     /// message is part of the page from the start and there is nothing to announce anyway.
     /// <br />
@@ -691,7 +700,10 @@ public partial class BitMessage : BitComponentBase
     {
         StyleBuilder.Register(() => Styles?.Root);
 
-        StyleBuilder.Register(() => Alignment switch
+        // Baseline and Stretch say nothing about where along the width the content goes (justify-content has no
+        // baseline, and lays a stretch out as flex-start), so they leave it at the start and line the icon and the
+        // text up across the row instead: on the first line of the text, or each the full height of the row.
+        StyleBuilder.Register(() => Alignment.ForMainAxis() switch
         {
             BitAlignment.Start => "--bit-msg-justifycontent:flex-start",
             BitAlignment.End => "--bit-msg-justifycontent:flex-end",
@@ -699,9 +711,14 @@ public partial class BitMessage : BitComponentBase
             BitAlignment.SpaceBetween => "--bit-msg-justifycontent:space-between",
             BitAlignment.SpaceAround => "--bit-msg-justifycontent:space-around",
             BitAlignment.SpaceEvenly => "--bit-msg-justifycontent:space-evenly",
-            BitAlignment.Baseline => "--bit-msg-justifycontent:baseline",
-            BitAlignment.Stretch => "--bit-msg-justifycontent:stretch",
             _ => "--bit-msg-justifycontent:flex-start"
+        });
+
+        StyleBuilder.Register(() => Alignment switch
+        {
+            BitAlignment.Baseline => "--bit-msg-alignitems:baseline",
+            BitAlignment.Stretch => "--bit-msg-alignitems:stretch",
+            _ => string.Empty
         });
 
         // The shadow scale only has the 24 steps the theme declares, so anything outside it would resolve
@@ -782,13 +799,16 @@ public partial class BitMessage : BitComponentBase
 
         await HandleAutoFocus();
 
-        HandleDelayedAnnouncement();
+        // Waited for last, like the page's visibility: it waits for a paint, which nothing below has to wait for.
+        var announcement = HandleDelayedAnnouncement();
 
         await SyncOverflowObserver();
 
         await SyncEscapeWatch();
 
         await pageVisibilityInit;
+
+        await announcement;
     }
 
 
@@ -923,9 +943,37 @@ public partial class BitMessage : BitComponentBase
 
     // A live region announces what changes inside it, so the text is handed to it one render after the region
     // itself reaches the page rather than arriving with it. Like the focus, it is done once per showing.
-    private void HandleDelayedAnnouncement()
+    // The render that fills it waits for the page to be painted with the empty region first (Message.afterPaint): on
+    // WebAssembly a render made right here lands in the same browser task as the one that put the region on the page,
+    // so the region would reach the accessibility tree with its text already in it - a change of nothing.
+    private async Task HandleDelayedAnnouncement()
     {
-        if (DelayedAnnouncement is false || Dismissed || _isAnnounced) return;
+        if (DelayedAnnouncement is false || Dismissed || _isAnnounced || _isAnnouncing) return;
+
+        _isAnnouncing = true;
+
+        var showing = _showing;
+
+        try
+        {
+            await _js.BitMessageAfterPaint();
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone, and the page with it
+        catch (JSException) { } // without the wait the text follows right away, as it always did
+        catch (TaskCanceledException) { } // a round trip that timed out has waited long enough
+        finally
+        {
+            _isAnnouncing = false;
+        }
+
+        if (IsDisposed || DelayedAnnouncement is false || Dismissed || _isAnnounced) return;
+
+        // Dismissed and shown again in the meantime: the region of this showing waits for a paint of its own.
+        if (showing != _showing)
+        {
+            await HandleDelayedAnnouncement();
+            return;
+        }
 
         _isAnnounced = true;
 
@@ -1135,6 +1183,7 @@ public partial class BitMessage : BitComponentBase
         _armedAutoDismissTime = null;
         _autoFocusDone = false;
         _isAnnounced = false;
+        _showing++;
     }
 
     private void ArmAutoDismiss()

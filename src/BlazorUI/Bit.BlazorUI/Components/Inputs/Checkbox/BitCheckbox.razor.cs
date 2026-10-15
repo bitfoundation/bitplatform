@@ -200,7 +200,7 @@ public partial class BitCheckbox : BitInputBase<bool>
     /// An indeterminate visual state for checkbox.
     /// The indeterminate state takes visual precedence over the checked state but does not affect the Value.
     /// </summary>
-    [Parameter, ResetClassBuilder, TwoWayBound]
+    [Parameter, ResetClassBuilder, ResetStyleBuilder, TwoWayBound]
     [CallOnSet(nameof(OnSetIndeterminate))]
     public bool Indeterminate { get; set; }
 

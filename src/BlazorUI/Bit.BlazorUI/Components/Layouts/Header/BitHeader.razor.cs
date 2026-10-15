@@ -30,6 +30,7 @@ public partial class BitHeader : BitComponentBase
     private DotNetObjectReference<BitHeader>? _dotnetObj;
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
+    [Inject] private NavigationManager _navigationManager { get; set; } = default!;
 
 
 
@@ -334,8 +335,9 @@ public partial class BitHeader : BitComponentBase
     /// focused, so it costs a sighted user nothing.
     /// <br />
     /// The value is a plain href, so it points at the id of the main content of the page (for example
-    /// <c>#main</c>). Give that target a <c>tabindex="-1"</c> so the browser really moves the focus there
-    /// instead of only scrolling to it.
+    /// <c>#main</c>). A bare fragment like that is rendered as the address of the current page followed by it,
+    /// since the base href of the app would otherwise resolve it to another page, and activating the link scrolls
+    /// the target into view and moves the focus onto it. Any other href is rendered as it is.
     /// </remarks>
     [Parameter] public string? SkipLinkHref { get; set; }
 
@@ -430,6 +432,42 @@ public partial class BitHeader : BitComponentBase
     /// It is always false unless <see cref="ElevateOnScroll"/> is enabled.
     /// </summary>
     public bool IsScrolled => _scrolled;
+
+
+
+    /// <summary>
+    /// Whether the skip link points at an element of this very page, which a bare "#id" names.
+    /// </summary>
+    private bool _IsFragmentSkipLink => SkipLinkHref is { Length: > 1 } href && href[0] == '#';
+
+    /// <summary>
+    /// The href of the skip link: for a bare "#id", the address of the current page, less any fragment it already
+    /// has, followed by that fragment, so the link still names this page where nothing handles its click (static
+    /// rendering); any other href as it is.
+    /// </summary>
+    private string? _SkipLinkHref
+    {
+        get
+        {
+            if (_IsFragmentSkipLink is false) return SkipLinkHref;
+
+            var uri = _navigationManager.Uri;
+            var hashIndex = uri.IndexOf('#');
+
+            return $"{(hashIndex < 0 ? uri : uri[..hashIndex])}{SkipLinkHref}";
+        }
+    }
+
+    /// <summary>
+    /// Scrolls the target of a fragment skip link into view and moves the focus onto it, so the next Tab carries on
+    /// from the content rather than from the header the link sits in.
+    /// </summary>
+    private async Task HandleSkipLinkClick()
+    {
+        if (_IsFragmentSkipLink is false) return;
+
+        await _js.BitUtilsScrollElementIntoView(Uri.UnescapeDataString(SkipLinkHref![1..]), true);
+    }
 
 
 

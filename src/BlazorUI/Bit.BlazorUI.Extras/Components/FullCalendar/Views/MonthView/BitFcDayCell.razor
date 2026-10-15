@@ -84,13 +84,15 @@ else
             @if (item.Event != null)
             {
                 var position = GetBadgePosition(item.Event, Cell.Date);
-                <div class="bit-bfc-month-event-slot">
+                @* Keyed by the event, so a slot that now holds another event is another element: reused in place, the
+                   badge an Alt+Arrow just moved away kept the focus while it turned into the event that took its slot. *@
+                <div class="bit-bfc-month-event-slot" @key="item.Event.Id">
                     <BitFcMonthEventBadge Event="item.Event" CellDate="Cell.Date" Position="@position" IsLead="@IsLeadSegment(item.Event, position)" OnSelected="ShowEventDetails" EventTemplate="EventTemplate" />
                 </div>
             }
             else
             {
-                <div class="bit-bfc-month-event-slot"></div>
+                <div class="bit-bfc-month-event-slot" @key="pos"></div>
             }
         }
     </div>

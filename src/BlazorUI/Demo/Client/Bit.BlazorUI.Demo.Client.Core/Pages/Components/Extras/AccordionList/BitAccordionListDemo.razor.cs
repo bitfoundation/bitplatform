@@ -321,7 +321,7 @@ public partial class BitAccordionListDemo
             Name = "ScrollIntoViewOnExpand",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Brings the item that has just been expanded into view, moving it as little as the browser can - so nothing happens to one that is already in view - and instantly rather than smoothly for a reader who has asked for less motion. It covers every way a panel opens: a click, one of the public methods, and the bound keys.",
+            Description = "Brings the item that has just been expanded into view, moving it as little as the browser can - so nothing happens to one that is already in view - and instantly rather than smoothly for a reader who has asked for less motion. It covers every way a panel opens: a click, one of the public methods, and the bound keys. The item is brought into view as it opens and again at its full height once the opening transition ends, unless the reader has scrolled, pressed a key or touched the page in the meantime.",
         },
         new()
         {

@@ -1,0 +1,147 @@
+﻿@page "/e2e/dropdown/templates"
+
+@* The templates and icons of BitDropdown: ItemTemplate, HeaderTemplate (and a hidden templated header), TextTemplate,
+   PlaceholderTemplate, LabelTemplate, CaretDownTemplate, the default icons, every ...IconName, and every ...Icon taking
+   a BitIconInfo and winning over its name. *@
+
+<PageTitle>BitDropdown templates E2E</PageTitle>
+
+<h1>BitDropdown templates</h1>
+
+<E2ESection Id="item-templates" Title="Item, header, text, label and caret templates">
+    <BitDropdown Id="dd-tpl"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Items="_dataItems1"
+                 @bind-Value="_tplValue">
+        <LabelTemplate><span id="lbl-tpl">Custom label</span></LabelTemplate>
+        <HeaderTemplate Context="item"><div class="header-tpl">## @item.Text</div></HeaderTemplate>
+        <ItemTemplate Context="item"><span class="item-tpl">» @item.Text (@(item.Data))</span></ItemTemplate>
+        <TextTemplate Context="dropdown"><span id="text-tpl">Picked: @dropdown.SelectedItem?.Text</span></TextTemplate>
+        <CaretDownTemplate><span id="caret-tpl">v</span></CaretDownTemplate>
+    </BitDropdown>
+    <p>Value: <span id="tpl-value">@_tplValue</span></p>
+    <BitDropdown Id="dd-tpl-ph"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Placeholder template"
+                 Placeholder="pick one"
+                 Items="_dataItems2"
+                 DefaultValue="@string.Empty">
+        <PlaceholderTemplate Context="dropdown"><span id="ph-tpl">Nothing yet, @dropdown.Placeholder</span></PlaceholderTemplate>
+    </BitDropdown>
+    <BitDropdown Id="dd-tpl-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Multi item template"
+                 MultiSelect
+                 Items="_dataItems3"
+                 @bind-Values="_tplMultiValues">
+        <ItemTemplate Context="item"><span class="item-tpl">» @item.Text</span></ItemTemplate>
+        <TextTemplate Context="dropdown"><span id="text-tpl-multi">@dropdown.SelectedItems.Count picked</span></TextTemplate>
+    </BitDropdown>
+    <p>Values: <span id="tpl-multi-values">@string.Join(',', _tplMultiValues ?? [])</span></p>
+    <BitDropdown Id="dd-tpl-hidden-header"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Hidden templated header"
+                 Items="_hiddenHeaderItems"
+                 DefaultValue="@string.Empty">
+        <HeaderTemplate Context="item"><div class="header-tpl">## @item.Text</div></HeaderTemplate>
+    </BitDropdown>
+</E2ESection>
+
+<E2ESection Id="icons-default" Title="Default icons">
+    <BitDropdown Id="dd-ico-default"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Default icons"
+                 MultiSelect
+                 Chips
+                 ShowSelectAll
+                 ShowSearchBox
+                 ShowClearButton
+                 Items="@L("ico-default")"
+                 DefaultValues="@(["f-app"])" />
+</E2ESection>
+
+<E2ESection Id="icons-names" Title="Icon names">
+    <BitDropdown Id="dd-ico-names"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Icon names"
+                 MultiSelect
+                 Chips
+                 ShowSelectAll
+                 ShowSearchBox
+                 ShowClearButton
+                 CaretDownIconName="ChevronDownMed"
+                 ClearButtonIconName="ChromeClose"
+                 ItemCheckIconName="CheckMark"
+                 SearchBoxIconName="Filter"
+                 SearchBoxClearIconName="EraseTool"
+                 ChipsRemoveIconName="Delete"
+                 Items="@L("ico-names")"
+                 DefaultValues="@(["f-app"])" />
+</E2ESection>
+
+<E2ESection Id="icons-external" Title="External icons">
+    <BitDropdown Id="dd-ico-ext"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="External icons"
+                 MultiSelect
+                 Chips
+                 ShowSelectAll
+                 ShowSearchBox
+                 ShowClearButton
+                 CaretDownIcon="@BitIconInfo.Css("ext-caret")"
+                 CaretDownIconName="ChevronDownMed"
+                 ClearButtonIcon="@BitIconInfo.Css("ext-clear")"
+                 ItemCheckIcon="@BitIconInfo.Css("ext-check")"
+                 SearchBoxIcon="@BitIconInfo.Css("ext-search")"
+                 SearchBoxClearIcon="@BitIconInfo.Css("ext-search-clear")"
+                 ChipsRemoveIcon="@BitIconInfo.Css("ext-chip-remove")"
+                 Items="@L("ico-ext")"
+                 DefaultValues="@(["f-app"])" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly Dictionary<string, List<BitDropdownItem<string>>> _lists = [];
+
+    private List<BitDropdownItem<string>> L(string key)
+    {
+        if (_lists.TryGetValue(key, out var list) is false)
+        {
+            _lists[key] =
+            list =
+            [
+                new() { Text = "Apple", Value = "f-app" },
+                new() { Text = "Banana", Value = "f-ban" },
+                new() { Text = "Grape", Value = "f-gra" },
+            ];
+        }
+
+        return list;
+    }
+
+    private static List<BitDropdownItem<string>> DataItems() =>
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Items" },
+        new() { Text = "Item a", Value = "A", Data = "memo" },
+        new() { Text = "Item b", Value = "B", Data = "print" },
+        new() { ItemType = BitDropdownItemType.Divider },
+        new() { ItemType = BitDropdownItemType.Header, Text = "More items" },
+        new() { Text = "Item c", Value = "C", Data = "cart" },
+    ];
+
+    private readonly List<BitDropdownItem<string>> _dataItems1 = DataItems();
+    private readonly List<BitDropdownItem<string>> _dataItems2 = DataItems();
+    private readonly List<BitDropdownItem<string>> _dataItems3 = DataItems();
+
+    private readonly List<BitDropdownItem<string>> _hiddenHeaderItems =
+    [
+        new() { ItemType = BitDropdownItemType.Header, Text = "Shown", Id = "shown-header" },
+        new() { Text = "First", Value = "1" },
+        new() { ItemType = BitDropdownItemType.Header, Text = "Hidden", IsHidden = true },
+        new() { Text = "Second", Value = "2" },
+    ];
+
+    private string? _tplValue;
+    private IEnumerable<string?>? _tplMultiValues = [];
+}

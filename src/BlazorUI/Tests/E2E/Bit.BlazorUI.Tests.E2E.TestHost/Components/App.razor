@@ -1,0 +1,45 @@
+﻿@using Microsoft.AspNetCore.Components.Web
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    @* No favicon request: a 404 for one would be a console error every test would have to excuse. *@
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css" />
+    <link rel="stylesheet" href="e2e.css" />
+    <HeadOutlet @rendermode="_renderMode" />
+</head>
+
+<body>
+    <Routes @rendermode="_renderMode" />
+    @* Shown by Blazor when an unhandled exception tears the circuit (or the WebAssembly app) down; the tests read it
+       to tell a dead page from a slow one. *@
+    <div id="blazor-error-ui" style="display: none;">An unhandled error has occurred.</div>
+    <script src="_framework/blazor.web.js"></script>
+    <script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script>
+    <script src="_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js"></script>
+</body>
+
+</html>
+
+@code {
+    // The tests choose where the pages run through a cookie on their browser context (E2E_RENDER_MODE), so the very
+    // same page and test run on the server or in the browser; a request without it runs on the server.
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    private IComponentRenderMode _renderMode = RenderMode.InteractiveServer;
+
+    protected override void OnInitialized()
+    {
+        if (string.Equals(HttpContext?.Request.Cookies["e2e-render-mode"], "wasm", StringComparison.OrdinalIgnoreCase))
+        {
+            _renderMode = RenderMode.InteractiveWebAssembly;
+        }
+    }
+}

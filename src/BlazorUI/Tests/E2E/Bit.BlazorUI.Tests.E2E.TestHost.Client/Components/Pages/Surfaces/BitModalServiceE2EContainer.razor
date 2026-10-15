@@ -1,0 +1,6 @@
+﻿@inherits BitModalContainer
+
+@* A container of the page's own: it derives from BitModalContainer and wraps each modal in markup of its own. *@
+<div id="custom-container-count">@ModalReferences.Count(m => m.IsClosed is false)</div>
+
+@(RenderModals(item => @<div class="svc-slot" data-modal-id="@item.Reference.Id">@item.Modal</div>))

@@ -1,6 +1,8 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
 
-public partial class _BitNavBarItem<TItem> : IDisposable where TItem : class
+namespace Bit.BlazorUI;
+
+public partial class _BitNavBarItem<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : IDisposable where TItem : class
 {
     private bool _disposed;
     private bool _replaced;

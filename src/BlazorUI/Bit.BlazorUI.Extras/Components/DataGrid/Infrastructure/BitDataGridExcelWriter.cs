@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.IO.Compression;
 using System.Text;
 
@@ -100,7 +101,7 @@ internal static class BitDataGridExcelWriter
     /// <param name="style">The grid's sampled visual theme; when provided the workbook's style sheet
     /// carries the on-screen colors/fonts (header fill, striped rows, borders) instead of the plain
     /// bold-header default.</param>
-    public static byte[] Write<TItem>(
+    public static byte[] Write<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         IReadOnlyList<TItem> rows,
         IReadOnlyList<BitDataGridColumn<TItem>> columns,
         int frozenColumnCount = 0,
@@ -213,7 +214,7 @@ internal static class BitDataGridExcelWriter
         writer.Write(content);
     }
 
-    private static void WriteSheet<TItem>(
+    private static void WriteSheet<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(
         TextWriter writer,
         IReadOnlyList<TItem> rows,
         IReadOnlyList<BitDataGridColumn<TItem>> columns,
@@ -331,7 +332,7 @@ internal static class BitDataGridExcelWriter
         return letters + row.ToString(CultureInfo.InvariantCulture);
     }
 
-    private static void WriteCell<TItem>(TextWriter writer, BitDataGridColumn<TItem> column, TItem item, int styleIndex, bool stripe)
+    private static void WriteCell<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(TextWriter writer, BitDataGridColumn<TItem> column, TItem item, int styleIndex, bool stripe)
     {
         var s = styleIndex > 0 ? $" s=\"{styleIndex}\"" : "";
         // GetExportValue resolves the column's ExportValue selector when one is set (which is what

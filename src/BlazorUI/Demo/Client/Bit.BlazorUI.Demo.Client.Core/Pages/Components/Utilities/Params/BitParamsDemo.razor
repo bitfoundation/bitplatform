@@ -9,6 +9,7 @@
           Notes="A params object fills in only what a component leaves unset, one parameter at a time. BitParams re-reads its objects on every render and tells the components below only when a value actually changed, so rebuilding the list inline or changing a property of one of its objects is fine; a parameter an object stops setting goes back to what the component held before. For values of your own, use BitCascadingValueProvider."
           Parameters="componentParameters"
           SubClasses="componentSubClasses"
+          SubEnums="componentSubEnums"
           GitHubUrl="../Utils/Params/BitParams.cs"
           GitHubDemoUrl="Utilities/Params/BitParamsDemo.razor">
     <DemoExample Title="Basic" RazorCode="@example1RazorCode" CsharpCode="@example1CsharpCode" Id="example1">

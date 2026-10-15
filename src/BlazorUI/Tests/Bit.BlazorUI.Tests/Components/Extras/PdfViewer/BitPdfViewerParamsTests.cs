@@ -83,6 +83,22 @@ public class BitPdfViewerParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitPdfViewerParamsShouldOnlyCarryParametersOfTheViewer()
+    {
+        var own = typeof(BitPdfViewerParams).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                                            .Select(p => p.Name)
+                                            .Where(n => n is not nameof(IBitComponentParams.Name));
+
+        foreach (var name in own)
+        {
+            var target = typeof(BitPdfViewer).GetProperty(name);
+
+            Assert.IsNotNull(target?.GetCustomAttribute<ParameterAttribute>(), $"BitPdfViewer has no {name} parameter.");
+            Assert.IsFalse(_notCascaded.Contains(name), $"{name} belongs to a single viewer and must not be cascaded.");
+        }
+    }
+
+    [TestMethod]
     public void BitPdfViewerShouldTakeTheCascadedValues()
     {
         var component = RenderWithParams(new BitPdfViewerParams

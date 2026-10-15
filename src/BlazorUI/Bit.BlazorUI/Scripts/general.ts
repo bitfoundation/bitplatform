@@ -118,6 +118,13 @@ window.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.dismi
 // in the bubble phase, after every listener of the page's elements and right ahead of Blazor's delegation on the document.
 document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.stopComposingEscape(e));
 
+// A horizontal arrow whose direction a component reads in a round trip is dropped once the user has taken the focus
+// elsewhere (see Utils.isRtl), so the keys and the presses that do that are followed in the capture phase, ahead of
+// every listener of the page's elements and of Blazor's delegation. On the document element rather than the window,
+// so that the window's own keydown listeners above keep their place right at the start of the dispatch.
+document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);
+document.documentElement.addEventListener('pointerdown', (e: PointerEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);
+
 // A click on the overlay of a callout opened from inside another one, outside the callouts under it as well,
 // dismisses them all (see Callouts.dismissOnOverlayClick). On the window in the capture phase, ahead of Blazor's
 // own delegation, so that the overlay's handler does not dismiss the innermost callout a second time.

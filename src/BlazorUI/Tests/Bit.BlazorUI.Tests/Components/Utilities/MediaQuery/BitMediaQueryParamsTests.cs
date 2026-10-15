@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -237,6 +238,35 @@ public class BitMediaQueryParamsTests : BunitTestContext
         Assert.IsFalse(instance.DefaultMatched);
         Assert.IsFalse(instance.NoWrapper);
         Assert.AreEqual(1, component.FindAll(".bit-mdq").Count);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryParamsShouldCarryEveryParameterThatIsNotPerQuery()
+    {
+        // The state is the browser's answer for each query, and the content is what each one renders.
+        string[] notCascaded =
+        [
+            nameof(BitMediaQuery.CascadingParameters),
+            nameof(BitMediaQuery.ChildContent),
+            nameof(BitMediaQuery.IsMatched),
+            "IsMatchedChanged",
+            nameof(BitMediaQuery.Matched),
+            nameof(BitMediaQuery.NotMatched),
+            nameof(BitMediaQuery.OnChange),
+            nameof(BitMediaQuery.Template),
+        ];
+
+        var baseParameters = typeof(BitComponentBase).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var parameters = typeof(BitMediaQuery).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                              .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                              .Select(p => p.Name)
+                                              .Where(n => baseParameters.Contains(n) is false && notCascaded.Contains(n) is false);
+
+        foreach (var name in parameters)
+        {
+            Assert.IsNotNull(typeof(BitMediaQueryParams).GetProperty(name), $"BitMediaQueryParams has no {name}.");
+        }
     }
 
     [TestMethod]

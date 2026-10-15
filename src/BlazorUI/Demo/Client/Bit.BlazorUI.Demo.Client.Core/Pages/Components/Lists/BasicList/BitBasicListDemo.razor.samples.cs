@@ -58,10 +58,10 @@ public class Person
 }";
 
     private readonly string example3RazorCode = @"
-<BitBasicList Items=""fewPeople"" Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 300px;"">
+<BitBasicList Items=""fewPeople"" StickyHeader Style=""border: 1px solid var(--bit-clr-brd-sec); border-radius: 4px; height: 300px;"">
     <HeaderTemplate>
         <BitStack Horizontal HorizontalAlign=""BitAlignment.SpaceBetween""
-                  Style=""padding: 0.5rem 1rem; background: var(--bit-clr-bg-sec); position: sticky; top: 0;"">
+                  Style=""padding: 0.5rem 1rem; background: var(--bit-clr-bg-sec);"">
             <BitText Typography=""BitTypography.Subtitle1"">People</BitText>
             <BitTag Color=""BitColor.Info"">@fewPeople.Count</BitTag>
         </BitStack>

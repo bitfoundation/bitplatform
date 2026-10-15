@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
-using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Buttons.ButtonGroup;
@@ -58,9 +59,10 @@ public class BitButtonGroupTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitButtonGroupToggleDefaultKeyShouldSetToggledItemAndRaiseOnToggleChange()
+    public void BitButtonGroupToggleDefaultKeyShouldSetToggledItemWithoutRaisingOnToggleChange()
     {
         string? toggledKey = null;
+        var changes = 0;
 
         var items = new List<BitButtonGroupItem>
         {
@@ -73,11 +75,13 @@ public class BitButtonGroupTests : BunitTestContext
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Toggle, true);
             parameters.Add(p => p.DefaultToggleKey, "b");
-            parameters.Add(p => p.OnToggleChange, (BitButtonGroupItem it) => toggledKey = it?.Key);
+            parameters.Add(p => p.OnToggleChange, (BitButtonGroupItem it) => { toggledKey = it?.Key; changes++; });
         });
 
-        // After initialization the default toggled item should be applied
-        Assert.AreEqual("b", toggledKey);
+        // The default toggled item is a state the group starts in rather than a change the user made, so it is
+        // applied without raising OnToggleChange - the way DefaultToggleKeys is in the Multiple selection mode.
+        Assert.AreEqual(0, changes);
+        Assert.IsNull(toggledKey);
 
         // The rendered button with toggled class
         var toggled = comp.FindAll(".bit-btg-chk");
@@ -90,6 +94,70 @@ public class BitButtonGroupTests : BunitTestContext
 
         // Now toggledKey should change to 'a'
         Assert.AreEqual("a", toggledKey);
+        Assert.AreEqual(1, changes);
+    }
+
+    [TestMethod,
+        DataRow(BitSelectionMode.Single),
+        DataRow(BitSelectionMode.Multiple)]
+    public void BitButtonGroupBoundToggleKeysShouldBeAppliedWithoutRaisingAnythingInEitherMode(BitSelectionMode mode)
+    {
+        string? toggleKey = "b";
+        IEnumerable<string>? toggleKeys = ["b"];
+        var keyChanges = 0;
+        var toggleChanges = 0;
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItemsWithKeysAAndB);
+            parameters.Add(p => p.SelectionMode, mode);
+            parameters.Bind(p => p.ToggleKey, toggleKey, v => { toggleKey = v; keyChanges++; });
+            parameters.Bind(p => p.ToggleKeys, toggleKeys, v => { toggleKeys = v; keyChanges++; });
+            parameters.Add(p => p.OnToggleChange, (BitButtonGroupItem _) => toggleChanges++);
+        });
+
+        // the bound key the group starts with is applied, and nothing is raised for it
+        var toggled = comp.FindAll(".bit-btg-chk");
+        Assert.HasCount(1, toggled);
+        Assert.Contains("B", toggled[0].TextContent);
+        Assert.AreEqual(0, keyChanges);
+        Assert.AreEqual(0, toggleChanges);
+
+        // a key the page writes itself is followed without being reported back as a change either
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.ToggleKey, "a");
+            parameters.Add(p => p.ToggleKeys, (IEnumerable<string>?)["a"]);
+        });
+
+        toggled = comp.FindAll(".bit-btg-chk");
+        Assert.HasCount(1, toggled);
+        Assert.Contains("A", toggled[0].TextContent);
+        Assert.AreEqual(0, keyChanges);
+        Assert.AreEqual(0, toggleChanges);
+    }
+
+    [TestMethod]
+    public void BitButtonGroupOneWayToggleKeyShouldShowTheItemItNamesToggled()
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItemsWithKeysAAndB);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+            parameters.Add(p => p.ToggleKey, "b");
+        });
+
+        // a ToggleKey bound one way is the page deciding the selection, so the group shows it as the Multiple
+        // mode shows a one-way ToggleKeys - only a click, which it cannot write back, is refused
+        var toggled = comp.FindAll(".bit-btg-chk");
+        Assert.HasCount(1, toggled);
+        Assert.Contains("B", toggled[0].TextContent);
+
+        comp.FindAll("button")[0].Click();
+
+        toggled = comp.FindAll(".bit-btg-chk");
+        Assert.HasCount(1, toggled);
+        Assert.Contains("B", toggled[0].TextContent);
     }
 
     [TestMethod]
@@ -1659,330 +1727,6 @@ public class BitButtonGroupTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitButtonGroupParamsShouldHaveCorrectParamName()
-    {
-        var paramName = BitButtonGroupParams.ParamName;
-        var expectedName = $"{nameof(BitParams)}.BitButtonGroup";
-
-        Assert.AreEqual(expectedName, paramName);
-    }
-
-    [TestMethod]
-    public void BitButtonGroupParamsShouldImplementIBitComponentParams()
-    {
-        var @params = new BitButtonGroupParams();
-
-        Assert.IsInstanceOfType<IBitComponentParams>(@params);
-        Assert.AreEqual(BitButtonGroupParams.ParamName, @params.Name);
-    }
-
-    [TestMethod]
-    public void BitButtonGroupShouldApplyCascadingParametersFromBitParams()
-    {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitButtonGroupParams
-            {
-                Variant = BitVariant.Outline,
-                Color = BitColor.Success,
-                Size = BitSize.Large,
-                Rounded = true,
-                Justified = true,
-                Vertical = true
-            }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(RenderButtonGroup());
-        });
-
-        var group = component.Find(".bit-btg");
-
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-otl"));
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-suc"));
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-lg"));
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-rnd"));
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-jst"));
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-vrt"));
-    }
-
-    [TestMethod]
-    public void BitButtonGroupDirectParametersShouldOverrideCascadingParameters()
-    {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitButtonGroupParams
-            {
-                Variant = BitVariant.Outline,
-                Color = BitColor.Success,
-                Size = BitSize.Large,
-                Rounded = true
-            }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(RenderButtonGroup(builder =>
-            {
-                builder.AddAttribute(10, nameof(BitButtonGroup<BitButtonGroupItem>.Variant), BitVariant.Text);
-                builder.AddAttribute(11, nameof(BitButtonGroup<BitButtonGroupItem>.Color), BitColor.Error);
-            }));
-        });
-
-        var group = component.Find(".bit-btg");
-
-        // Direct parameters win over the cascaded ones.
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-txt"));
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-err"));
-
-        // What the group left unset is still filled in from the cascade.
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-lg"));
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-rnd"));
-    }
-
-    [TestMethod]
-    public void BitButtonGroupParamsUpdateParametersShouldSetAllProperties()
-    {
-        var classes = new BitButtonGroupClassStyles { Root = "custom-root" };
-        var styles = new BitButtonGroupClassStyles { Root = "color: red;" };
-
-        var @params = new BitButtonGroupParams
-        {
-            AutoFocus = true,
-            Classes = classes,
-            Color = BitColor.Warning,
-            DefaultToggleKey = "italic",
-            DefaultToggleKeys = ["bold"],
-            Detached = true,
-            DisabledInteractive = true,
-            FixedToggle = true,
-            FullWidth = true,
-            Gap = "1rem",
-            IconOnly = true,
-            Justified = true,
-            MaxToggles = 2,
-            Navigable = false,
-            Overflow = BitButtonGroupOverflow.Scroll,
-            Rounded = true,
-            SelectOnFocus = false,
-            SelectionMode = BitSelectionMode.Multiple,
-            ShowSelectionIndicator = true,
-            Size = BitSize.Small,
-            Styles = styles,
-            Toggle = true,
-            Variant = BitVariant.Outline,
-            Vertical = true,
-            AriaLabel = "Test Label",
-            Disabled = true,
-            TabIndex = "5"
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
-            parameters.AddChildContent(RenderButtonGroup());
-        });
-
-        var instance = component.FindComponent<BitButtonGroup<BitButtonGroupItem>>().Instance;
-
-        Assert.IsTrue(instance.AutoFocus);
-        Assert.AreEqual(classes, instance.Classes);
-        Assert.AreEqual(BitColor.Warning, instance.Color);
-        Assert.AreEqual("italic", instance.DefaultToggleKey);
-        CollectionAssert.AreEqual(new[] { "bold" }, instance.DefaultToggleKeys?.ToArray());
-        Assert.IsTrue(instance.Detached);
-        Assert.IsTrue(instance.DisabledInteractive);
-        Assert.IsTrue(instance.FixedToggle);
-        Assert.IsTrue(instance.FullWidth);
-        Assert.AreEqual("1rem", instance.Gap);
-        Assert.IsTrue(instance.IconOnly);
-        Assert.IsTrue(instance.Justified);
-        Assert.AreEqual(2, instance.MaxToggles);
-        Assert.IsFalse(instance.Navigable);
-        Assert.AreEqual(BitButtonGroupOverflow.Scroll, instance.Overflow);
-        Assert.IsTrue(instance.Rounded);
-        Assert.IsFalse(instance.SelectOnFocus);
-        Assert.AreEqual(BitSelectionMode.Multiple, instance.SelectionMode);
-        Assert.IsTrue(instance.ShowSelectionIndicator);
-        Assert.AreEqual(BitSize.Small, instance.Size);
-        Assert.AreEqual(styles, instance.Styles);
-        Assert.IsTrue(instance.Toggle);
-        Assert.AreEqual(BitVariant.Outline, instance.Variant);
-        Assert.IsTrue(instance.Vertical);
-        Assert.AreEqual("Test Label", instance.AriaLabel);
-        Assert.IsTrue(instance.Disabled);
-        Assert.AreEqual("5", instance.TabIndex);
-    }
-
-    [TestMethod]
-    public void BitButtonGroupParamsUpdateParametersShouldNotOverwriteExistingValues()
-    {
-        var @params = new BitButtonGroupParams
-        {
-            Variant = BitVariant.Outline,
-            Color = BitColor.Success,
-            Size = BitSize.Large
-        };
-
-        var component = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
-        {
-            parameters.Add(p => p.Items, BasicItems);
-            parameters.Add(p => p.Variant, BitVariant.Text);
-            parameters.Add(p => p.Color, BitColor.Error);
-            parameters.Add(p => p.Size, BitSize.Small);
-        });
-
-        var instance = component.Instance;
-
-        @params.UpdateParameters(instance);
-
-        // The values stay as they were, because HasNotBeenSet returns false for each of them.
-        Assert.AreEqual(BitVariant.Text, instance.Variant);
-        Assert.AreEqual(BitColor.Error, instance.Color);
-        Assert.AreEqual(BitSize.Small, instance.Size);
-    }
-
-    [TestMethod]
-    public void BitButtonGroupParamsShouldApplyClassesAndStyles()
-    {
-        var classes = new BitButtonGroupClassStyles { Root = "custom-root", Button = "custom-button", Text = "custom-text" };
-        var styles = new BitButtonGroupClassStyles { Root = "color: red;", Button = "margin: 5px;", Text = "padding: 10px;" };
-
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitButtonGroupParams { Classes = classes, Styles = styles }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(RenderButtonGroup());
-        });
-
-        var group = component.Find(".bit-btg");
-        var button = component.Find("button");
-        var text = component.Find(".bit-btg-btx");
-
-        Assert.IsTrue(group.ClassList.Contains("custom-root"));
-        Assert.IsTrue(button.ClassList.Contains("custom-button"));
-        Assert.IsTrue(text.ClassList.Contains("custom-text"));
-        Assert.IsTrue(group.GetAttribute("style")?.Contains("color: red;"));
-        // The button style is joined with the item's own, which is why the trailing semicolon is not part of it.
-        Assert.IsTrue(button.GetAttribute("style")?.Contains("margin: 5px"));
-        Assert.IsTrue(text.GetAttribute("style")?.Contains("padding: 10px;"));
-    }
-
-    [TestMethod]
-    public void BitButtonGroupParamsShouldApplyBaseParameters()
-    {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitButtonGroupParams
-            {
-                AriaLabel = "Base Label",
-                Id = "test-id",
-                Disabled = true,
-                Style = "background: blue;",
-                Class = "base-class"
-            }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(RenderButtonGroup());
-        });
-
-        var group = component.Find(".bit-btg");
-
-        Assert.AreEqual("Base Label", group.GetAttribute("aria-label"));
-        Assert.AreEqual("test-id", group.GetAttribute("id"));
-        Assert.IsTrue(group.GetAttribute("style")?.Contains("background: blue;"));
-        Assert.IsTrue(group.ClassList.Contains("base-class"));
-        Assert.IsTrue(component.FindAll("button").All(b => b.HasAttribute("disabled")));
-    }
-
-    [TestMethod]
-    public void BitButtonGroupParamsShouldNotApplyWhenEmpty()
-    {
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, []);
-            parameters.AddChildContent(RenderButtonGroup(builder =>
-            {
-                builder.AddAttribute(10, nameof(BitButtonGroup<BitButtonGroupItem>.Variant), BitVariant.Text);
-            }));
-        });
-
-        var group = component.Find(".bit-btg");
-
-        Assert.IsTrue(group.ClassList.Contains("bit-btg-txt"));
-    }
-
-    [TestMethod]
-    public void BitButtonGroupCascadedSelectionShouldBeAppliedOnInitialization()
-    {
-        // The selection mode and the toggle defaults are read while the group initializes, which runs before
-        // OnParametersSetAsync, so the cascaded values have to be taken there as well.
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitButtonGroupParams
-            {
-                SelectionMode = BitSelectionMode.Single,
-                DefaultToggleKey = "italic"
-            }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(RenderButtonGroup());
-        });
-
-        var buttons = component.FindAll("button");
-
-        Assert.AreEqual("radiogroup", component.Find(".bit-btg").GetAttribute("role"));
-        Assert.AreEqual("false", buttons[0].GetAttribute("aria-checked"));
-        Assert.AreEqual("true", buttons[1].GetAttribute("aria-checked"));
-    }
-
-    [TestMethod]
-    public void BitButtonGroupParamsShouldReachGroupsOfEveryItemType()
-    {
-        // The params carry nothing about the item type, so a single cascade covers the groups of every API.
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitButtonGroupParams { Variant = BitVariant.Outline, Rounded = true }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitButtonGroup<BitButtonGroupItem>>(0);
-                builder.AddAttribute(1, nameof(BitButtonGroup<BitButtonGroupItem>.Items), BasicItems);
-                builder.CloseComponent();
-
-                builder.OpenComponent<BitButtonGroup<KeylessButtonGroupItem>>(2);
-                builder.AddAttribute(3, nameof(BitButtonGroup<KeylessButtonGroupItem>.Items),
-                                     (IEnumerable<KeylessButtonGroupItem>)new List<KeylessButtonGroupItem> { new() { Text = "Bold" } });
-                builder.AddAttribute(4, nameof(BitButtonGroup<KeylessButtonGroupItem>.NameSelectors),
-                                     new BitButtonGroupNameSelectors<KeylessButtonGroupItem> { Text = { Selector = i => i.Text } });
-                builder.CloseComponent();
-            });
-        });
-
-        var groups = component.FindAll(".bit-btg");
-
-        Assert.AreEqual(2, groups.Count);
-        Assert.IsTrue(groups.All(g => g.ClassList.Contains("bit-btg-otl") && g.ClassList.Contains("bit-btg-rnd")));
-    }
-
-    [TestMethod]
     public void BitButtonGroupShouldLeaveItsToggleStateAloneWhileItIsDisposedTogetherWithItsOptions()
     {
         var component = RenderComponent<BitButtonGroupTeardownTest>();
@@ -2008,22 +1752,506 @@ public class BitButtonGroupTests : BunitTestContext
     }
 
 
+    [TestMethod]
+    public void BitButtonGroupShouldRenderTheBaseParametersOnItsRoot()
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItems);
+            parameters.Add(p => p.Id, "the-id");
+            parameters.Add(p => p.Class, "the-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.ForceAnimation, true);
+        });
+
+        var root = comp.Find(".bit-btg");
+
+        Assert.AreEqual("the-id", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("the-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-fam"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, null),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitButtonGroupShouldFollowTheVisibility(BitVisibility visibility, string? expectedStyle)
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItems);
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = comp.Find(".bit-btg").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle is null)
+        {
+            Assert.IsFalse(style.Contains("visibility") || style.Contains("display"));
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod,
+        DataRow(null, "bit-btg-fil"),
+        DataRow(BitVariant.Fill, "bit-btg-fil"),
+        DataRow(BitVariant.Outline, "bit-btg-otl"),
+        DataRow(BitVariant.Text, "bit-btg-txt")
+    ]
+    public void BitButtonGroupVariantShouldMapToItsRootClass(BitVariant? variant, string expectedClass)
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItems);
+            parameters.Add(p => p.Variant, variant);
+        });
+
+        var root = comp.Find(".bit-btg");
+
+        foreach (var cls in new[] { "bit-btg-fil", "bit-btg-otl", "bit-btg-txt" })
+        {
+            Assert.AreEqual(cls == expectedClass, root.ClassList.Contains(cls), cls);
+        }
+    }
+
+    [TestMethod,
+        DataRow(true, true),
+        DataRow(true, false),
+        DataRow(false, true),
+        DataRow(false, false)
+    ]
+    public void BitButtonGroupFullWidthAndVerticalShouldMapToTheirRootClasses(bool fullWidth, bool vertical)
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItems);
+            parameters.Add(p => p.FullWidth, fullWidth);
+            parameters.Add(p => p.Vertical, vertical);
+        });
+
+        var root = comp.Find(".bit-btg");
+
+        Assert.AreEqual(fullWidth, root.ClassList.Contains("bit-btg-flw"));
+        Assert.AreEqual(vertical, root.ClassList.Contains("bit-btg-vrt"));
+        Assert.AreEqual(vertical ? "vertical" : "horizontal", root.GetAttribute("aria-orientation"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupDisabledShouldDisableTheRootAndEveryButton()
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItems);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var root = comp.Find(".bit-btg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
+
+        foreach (var button in comp.FindAll("button"))
+        {
+            // the native attribute and aria-disabled say the same thing, and nothing in the group holds a tab stop
+            Assert.IsTrue(button.HasAttribute("disabled"));
+            Assert.AreEqual("true", button.GetAttribute("aria-disabled"));
+            Assert.AreEqual("-1", button.GetAttribute("tabindex"));
+        }
+
+        // a disabled group navigates nothing
+        root.KeyDown("ArrowRight");
+
+        Assert.IsTrue(comp.FindAll("button").All(b => b.GetAttribute("tabindex") == "-1"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupItemTemplateShouldRenderEveryItemAndAnItemsOwnTemplateShouldWinOverIt()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a", Template = item => builder => builder.AddMarkupContent(0, $"<em class=\"own\">{item.Text}</em>") },
+            new() { Text = "B", Key = "b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.ItemTemplate, (RenderFragment<BitButtonGroupItem>)(item => builder => builder.AddMarkupContent(0, $"<strong class=\"shared\">{item.Text}</strong>")));
+        });
+
+        var buttons = comp.FindAll("button");
+
+        Assert.AreEqual("A", buttons[0].QuerySelector(".own")!.TextContent);
+        Assert.IsNull(buttons[0].QuerySelector(".shared"));
+        Assert.AreEqual("B", buttons[1].QuerySelector(".shared")!.TextContent);
+        // a template renders the item's content itself, so the plain text and its aria-label stay out
+        Assert.IsEmpty(comp.FindAll(".bit-btg-btx"));
+        Assert.IsTrue(buttons.All(b => b.HasAttribute("aria-label") is false));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupToggledItemShouldShowItsOnTextTitleAndIcon()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Key = "mute", Text = "Sound", OffText = "Mute", OnText = "Unmute", OffTitle = "Turn the sound off", OnTitle = "Turn the sound on", OffIconName = "Volume3", OnIconName = "Volume0" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+        });
+
+        var button = comp.Find("button");
+
+        Assert.AreEqual("Mute", comp.Find(".bit-btg-btx").TextContent);
+        Assert.AreEqual("Turn the sound off", button.GetAttribute("title"));
+        StringAssert.Contains(comp.Find(".bit-btg-ico").ClassName, "bit-icon--Volume3");
+
+        button.Click();
+
+        Assert.AreEqual("Unmute", comp.Find(".bit-btg-btx").TextContent);
+        Assert.AreEqual("Turn the sound on", comp.Find("button").GetAttribute("title"));
+        StringAssert.Contains(comp.Find(".bit-btg-ico").ClassName, "bit-icon--Volume0");
+        Assert.IsTrue(comp.Find("button").ClassList.Contains("bit-btg-chk"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupWithoutASelectionShouldIgnoreTheToggleStateTexts()
+    {
+        // Outside the selection modes nothing is ever toggled, so the plain Text, Title and icon are what is rendered.
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Key = "mute", Text = "Sound", Title = "Sound", IconName = "Volume2", OffText = "Mute", OffTitle = "Off", OffIconName = "Volume3" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        Assert.AreEqual("Sound", comp.Find(".bit-btg-btx").TextContent);
+        Assert.AreEqual("Sound", comp.Find("button").GetAttribute("title"));
+        Assert.IsTrue(comp.Find(".bit-btg-ico").ClassList.Contains("bit-icon--Volume2"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupItemShouldCarryItsOwnClassStyleIconAndReversedIcon()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Heart", Icon = BitIconInfo.Fa("solid heart"), Class = "item-class", Style = "color: red;", ReversedIcon = true }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var button = comp.Find("button");
+
+        Assert.IsTrue(button.ClassList.Contains("item-class"));
+        Assert.IsTrue(button.ClassList.Contains("bit-btg-rvi"));
+        StringAssert.Contains(button.GetAttribute("style"), "color: red");
+        Assert.IsTrue(comp.Find(".bit-btg-ico").ClassList.Contains("fa-heart"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupShouldApplyTheClassesAndStylesOfEveryPart()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "Inbox", Key = "a", IconName = "Mail", Badge = "3" },
+            new() { Text = "Busy", Key = "b", IsLoading = true }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+            parameters.Add(p => p.ShowSelectionIndicator, true);
+            parameters.Add(p => p.DefaultToggleKey, "a");
+            parameters.Add(p => p.Classes, new BitButtonGroupClassStyles
+            {
+                Icon = "c-icon",
+                Badge = "c-badge",
+                Spinner = "c-spinner",
+                SelectionIndicator = "c-indicator",
+                ToggledButton = "c-toggled",
+            });
+            parameters.Add(p => p.Styles, new BitButtonGroupClassStyles
+            {
+                Icon = "color: red;",
+                Badge = "color: blue;",
+                Spinner = "color: green;",
+                SelectionIndicator = "color: gray;",
+                ToggledButton = "color: gold;",
+            });
+        });
+
+        var buttons = comp.FindAll("button");
+
+        Assert.IsTrue(comp.Find(".bit-btg-ico").ClassList.Contains("c-icon"));
+        Assert.AreEqual("color: red;", comp.Find(".bit-btg-ico").GetAttribute("style"));
+        Assert.IsTrue(comp.Find(".bit-btg-bdg").ClassList.Contains("c-badge"));
+        Assert.AreEqual("color: blue;", comp.Find(".bit-btg-bdg").GetAttribute("style"));
+        Assert.IsTrue(comp.Find(".bit-btg-spn").ClassList.Contains("c-spinner"));
+        Assert.AreEqual("color: green;", comp.Find(".bit-btg-spn").GetAttribute("style"));
+        Assert.IsTrue(comp.FindAll(".bit-btg-sin").All(s => s.ClassList.Contains("c-indicator") && s.GetAttribute("style") == "color: gray;"));
+
+        // the toggled class and style reach the toggled button alone
+        Assert.IsTrue(buttons[0].ClassList.Contains("c-toggled"));
+        StringAssert.Contains(buttons[0].GetAttribute("style"), "color: gold");
+        Assert.IsFalse(buttons[1].ClassList.Contains("c-toggled"));
+        Assert.IsFalse((buttons[1].GetAttribute("style") ?? string.Empty).Contains("gold"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupShouldReadACustomItemTypeThroughTheDefaultPropertyNames()
+    {
+        var items = new List<CustomButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" },
+            new() { Text = "C", Key = "c", IsDisabled = true },
+            new() { Text = "D", Key = "d", Href = "/d", Target = "_blank" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<CustomButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.NameSelectors, new BitButtonGroupNameSelectors<CustomButtonGroupItem>());
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+            parameters.Add(p => p.DefaultToggleKey, "b");
+        });
+
+        var controls = comp.FindAll(".bit-btg-itm");
+
+        Assert.AreEqual(4, controls.Count);
+        Assert.AreEqual("B", controls[1].QuerySelector(".bit-btg-btx")!.TextContent);
+        Assert.AreEqual("true", controls[1].GetAttribute("aria-checked"));
+        // the toggle state is written back to the item through the selector
+        Assert.IsTrue(items[1].IsToggled);
+        Assert.IsFalse(items[0].IsToggled);
+        Assert.IsTrue(controls[2].HasAttribute("disabled"));
+        Assert.AreEqual("A", controls[3].TagName);
+        Assert.AreEqual("/d", controls[3].GetAttribute("href"));
+        Assert.AreEqual("noopener", controls[3].GetAttribute("rel"));
+    }
+
+    [TestMethod]
+    public async Task BitButtonGroupFocusAsyncShouldFocusTheButtonHoldingTheTabStop()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+            parameters.Add(p => p.DefaultToggleKey, "b");
+        });
+
+        await comp.Instance.FocusAsync();
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
+    }
+
+    [TestMethod]
+    public void BitButtonGroupVerticalShouldNavigateWithTheVerticalArrowsAlone()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" },
+            new() { Text = "C", Key = "c" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Vertical, true);
+        });
+
+        var group = comp.Find(".bit-btg");
+
+        group.KeyDown("ArrowDown");
+        Assert.AreEqual("0", comp.FindAll("button")[1].GetAttribute("tabindex"));
+
+        group.KeyDown("ArrowUp");
+        Assert.AreEqual("0", comp.FindAll("button")[0].GetAttribute("tabindex"));
+
+        // wraps around at the top, and the horizontal arrows are left to the page
+        group.KeyDown("ArrowUp");
+        Assert.AreEqual("0", comp.FindAll("button")[2].GetAttribute("tabindex"));
+
+        group.KeyDown("ArrowRight");
+        Assert.AreEqual("0", comp.FindAll("button")[2].GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupShouldLeaveTheModifiedKeysAndANonNavigableGroupAlone()
+    {
+        var items = new List<BitButtonGroupItem>
+        {
+            new() { Text = "A", Key = "a" },
+            new() { Text = "B", Key = "b" }
+        };
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        comp.Find(".bit-btg").KeyDown(new KeyboardEventArgs { Key = "ArrowRight", CtrlKey = true });
+        comp.Find(".bit-btg").KeyDown(new KeyboardEventArgs { Key = "End", AltKey = true });
+
+        Assert.AreEqual("0", comp.FindAll("button")[0].GetAttribute("tabindex"));
+        Assert.AreEqual("-1", comp.FindAll("button")[1].GetAttribute("tabindex"));
+
+        var notNavigable = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Navigable, false);
+        });
+
+        notNavigable.Find(".bit-btg").KeyDown("ArrowRight");
+
+        // every button is its own tab stop, and the keys move nothing
+        Assert.IsTrue(notNavigable.FindAll("button").All(b => b.GetAttribute("tabindex") == "0"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupSingleSelectionShouldWriteTheBoundToggleKeyBack()
+    {
+        string? toggleKey = null;
+        var changes = 0;
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItemsWithKeysAAndB);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+            parameters.Bind(p => p.ToggleKey, toggleKey, v => toggleKey = v);
+            parameters.Add(p => p.OnToggleChange, (BitButtonGroupItem _) => changes++);
+        });
+
+        comp.FindAll("button")[1].Click();
+
+        Assert.AreEqual("b", toggleKey);
+        Assert.AreEqual(1, changes);
+
+        // clicking the toggled item takes the selection back, and the bound key says so
+        comp.FindAll("button")[1].Click();
+
+        Assert.IsNull(toggleKey);
+        Assert.AreEqual(2, changes);
+        Assert.IsEmpty(comp.FindAll(".bit-btg-chk"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupToggleShouldBeTheSingleSelectionModeInShort()
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItemsWithKeysAAndB);
+            parameters.Add(p => p.Toggle, true);
+        });
+
+        Assert.AreEqual("radiogroup", comp.Find(".bit-btg").GetAttribute("role"));
+        Assert.IsTrue(comp.FindAll("button").All(b => b.GetAttribute("role") == "radio"));
+
+        // an explicit selection mode wins over the shorthand
+        var multiple = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItemsWithKeysAAndB);
+            parameters.Add(p => p.Toggle, true);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Multiple);
+        });
+
+        Assert.AreEqual("toolbar", multiple.Find(".bit-btg").GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitButtonGroupOptionsShouldToggleAndRaiseTheirOwnClick()
+    {
+        BitButtonGroupOption? clicked = null;
+
+        var comp = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitButtonGroup<BitButtonGroupOption>>(0);
+            builder.AddAttribute(1, nameof(BitButtonGroup<BitButtonGroupOption>.Toggle), true);
+            builder.AddAttribute(2, nameof(BitButtonGroup<BitButtonGroupOption>.DefaultToggleKey), "b");
+            builder.AddAttribute(3, nameof(BitButtonGroup<BitButtonGroupOption>.ChildContent), (RenderFragment)(b =>
+            {
+                b.OpenComponent<BitButtonGroupOption>(0);
+                b.AddAttribute(1, nameof(BitButtonGroupOption.Text), "A");
+                b.AddAttribute(2, nameof(BitButtonGroupOption.Key), "a");
+                b.AddAttribute(3, nameof(BitButtonGroupOption.OnClick), EventCallback.Factory.Create<BitButtonGroupOption>(this, o => clicked = o));
+                b.CloseComponent();
+
+                b.OpenComponent<BitButtonGroupOption>(4);
+                b.AddAttribute(5, nameof(BitButtonGroupOption.Text), "B");
+                b.AddAttribute(6, nameof(BitButtonGroupOption.Key), "b");
+                b.CloseComponent();
+            }));
+            builder.CloseComponent();
+        });
+
+        var buttons = comp.FindAll("button");
+
+        Assert.AreEqual("true", buttons[1].GetAttribute("aria-checked"));
+        Assert.AreEqual("false", buttons[0].GetAttribute("aria-checked"));
+
+        comp.FindAll("button")[0].Click();
+
+        Assert.IsNotNull(clicked);
+        Assert.AreEqual("a", clicked!.Key);
+        Assert.IsTrue(clicked.IsToggled);
+        Assert.AreEqual("true", comp.FindAll("button")[0].GetAttribute("aria-checked"));
+        Assert.AreEqual("false", comp.FindAll("button")[1].GetAttribute("aria-checked"));
+    }
+
     private static List<BitButtonGroupItem> BasicItems =>
     [
         new() { Text = "Bold", Key = "bold" },
         new() { Text = "Italic", Key = "italic" }
     ];
 
-    private static RenderFragment RenderButtonGroup(Action<RenderTreeBuilder>? extraAttributes = null) => builder =>
-    {
-        builder.OpenComponent<BitButtonGroup<BitButtonGroupItem>>(0);
-        builder.AddAttribute(1, nameof(BitButtonGroup<BitButtonGroupItem>.Items), BasicItems);
-        extraAttributes?.Invoke(builder);
-        builder.CloseComponent();
-    };
+    private static List<BitButtonGroupItem> BasicItemsWithKeysAAndB =>
+    [
+        new() { Text = "A", Key = "a" },
+        new() { Text = "B", Key = "b" }
+    ];
 
     public class KeylessButtonGroupItem
     {
         public string? Text { get; set; }
+    }
+
+    public class CustomButtonGroupItem
+    {
+        public string? Text { get; set; }
+
+        public string? Key { get; set; }
+
+        public bool IsDisabled { get; set; }
+
+        public bool IsToggled { get; set; }
+
+        public string? Href { get; set; }
+
+        public string? Target { get; set; }
     }
 }

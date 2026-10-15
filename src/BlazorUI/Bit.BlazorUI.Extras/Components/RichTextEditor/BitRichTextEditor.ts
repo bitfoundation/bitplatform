@@ -1901,6 +1901,7 @@
             if (RichTextEditor.inCode(editor)) return;
 
             if (e.inputType === 'insertText' && e.data === '/' && text === '/') {
+                RichTextEditor.rememberTriggerCaret(editor);
                 if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnSlashTrigger');
                 return;
             }
@@ -1909,6 +1910,7 @@
             // after whitespace - never inside an email address or a handle already being typed.
             if (editor._mentions && e.inputType === 'insertText' && e.data === '@'
                 && RichTextEditor.atMentionBoundary(editor)) {
+                RichTextEditor.rememberTriggerCaret(editor);
                 if (editor._dotNetRef) editor._dotNetRef.invokeMethodAsync('OnMentionTrigger');
                 return;
             }
@@ -3406,6 +3408,20 @@
                     `<a href="${RichTextEditor.escapeAttr(url)}">${RichTextEditor.escapeHtml(url)}</a>`);
             }
             return RichTextEditor.execNative(editor, 'createLink', url);
+        }
+
+        // Saves the caret just past a menu's trigger character as the range the menu's command restores
+        // (applySlashCommand, applyMention). selectionchange saves it only a task after the input, and the
+        // menu takes the focus into its filter box as soon as it renders - in WebAssembly before that task
+        // has run - so the range it would save is no longer the editor's and the command would act on the
+        // caret as it stood before the trigger was typed.
+        private static rememberTriggerCaret(editor: any) {
+            const sel = document.getSelection();
+            if (!sel || sel.rangeCount === 0) return;
+            const range = sel.getRangeAt(0);
+            if (editor.contains(range.startContainer) && editor.contains(range.endContainer)) {
+                editor._range = range.cloneRange();
+            }
         }
 
         private static restoreSelection(editor: any) {

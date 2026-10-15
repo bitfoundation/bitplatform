@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -445,6 +446,37 @@ public class BitOverlayTests : BunitTestContext
             var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
             Assert.AreEqual(scrollerSelector ?? "body", invocation.Arguments[1]);
             Assert.AreEqual(true, invocation.Arguments[2]);
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    // A reference that is not captured yet - what an Overlay opening on its first render is handed - points at no
+    // element, so it is not handed to the toggle: the page stands in until the captured one arrives.
+    [TestMethod]
+    public void BitOverlayShouldNotHandTheToggleAScrollerElementThatIsNotCapturedYet()
+    {
+        var component = RenderComponent<BitOverlay>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.ScrollerElement, default(ElementReference));
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+            Assert.AreEqual("body", invocation.Arguments[1]);
+        }, TimeSpan.FromSeconds(5));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollerElement, new ElementReference("captured-scroller"));
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            var held = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"]
+                                        .Where(i => i.Arguments[1] is ElementReference { Id: "captured-scroller" } && i.Arguments[2] is true);
+            Assert.AreEqual(1, held.Count());
         }, TimeSpan.FromSeconds(5));
     }
 
@@ -1504,5 +1536,77 @@ public class BitOverlayTests : BunitTestContext
         var root = component.Find(".bit-ovl");
 
         Assert.AreEqual("Main", root.GetAttribute("aria-label"));
+    }
+
+    // An Overlay inside a BitAppShell holds the shell's scroller without being told to - the shell cascades it under
+    // this name, and the body of such an app never scrolls, so toggling its overflow would take nothing away.
+    private IRenderedComponent<CascadingValue<ElementReference?>> RenderInAppShell(bool autoToggleScroll, string? scrollerSelector = null, ElementReference? scrollerElement = null)
+    {
+        return RenderComponent<CascadingValue<ElementReference?>>(parameters =>
+        {
+            parameters.Add(p => p.Name, "BitAppShell.Container");
+            parameters.Add(p => p.Value, new ElementReference("shell-scroller"));
+            parameters.Add(p => p.ChildContent, (RenderFragment)(builder =>
+            {
+                builder.OpenComponent<BitOverlay>(0);
+                builder.AddComponentParameter(1, nameof(BitOverlay.IsOpen), true);
+                builder.AddComponentParameter(2, nameof(BitOverlay.AutoToggleScroll), autoToggleScroll);
+                builder.AddComponentParameter(3, nameof(BitOverlay.ScrollerSelector), scrollerSelector);
+                builder.AddComponentParameter(4, nameof(BitOverlay.ScrollerElement), scrollerElement);
+                builder.CloseComponent();
+            }));
+        });
+    }
+
+    [TestMethod]
+    public void BitOverlayShouldHoldTheScrollerTheAppShellCascades()
+    {
+        var component = RenderInAppShell(autoToggleScroll: true);
+
+        component.WaitForAssertion(() =>
+        {
+            var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+            Assert.IsInstanceOfType<ElementReference>(invocation.Arguments[1]);
+            Assert.AreEqual("shell-scroller", ((ElementReference)invocation.Arguments[1]!).Id);
+            Assert.AreEqual(true, invocation.Arguments[2]);
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    // The consumer's intent comes first: the element it named, then the selector it named, and only then the shell's.
+    [TestMethod]
+    public void BitOverlayShouldPreferTheScrollerItWasPointedAtOverTheAppShellsOne()
+    {
+        var bySelector = RenderInAppShell(autoToggleScroll: true, scrollerSelector: ".scroller");
+
+        bySelector.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(".scroller", Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0].Arguments[1]);
+        }, TimeSpan.FromSeconds(5));
+
+        var byElement = RenderInAppShell(autoToggleScroll: true, scrollerSelector: ".scroller", scrollerElement: new ElementReference("own-scroller"));
+
+        byElement.WaitForAssertion(() =>
+        {
+            var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][1];
+            Assert.IsInstanceOfType<ElementReference>(invocation.Arguments[1]);
+            Assert.AreEqual("own-scroller", ((ElementReference)invocation.Arguments[1]!).Id);
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    // The shell's scroller is also the one an Overlay that is not holding it hands the gestures it catches to: the
+    // layer is fixed, so the browser would chain them to the document, which in a shell is not the thing that scrolls.
+    [TestMethod]
+    public void BitOverlayShouldForwardTheGesturesToTheScrollerTheAppShellCascades()
+    {
+        var component = RenderInAppShell(autoToggleScroll: false);
+
+        component.WaitForAssertion(() =>
+        {
+            var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.forwardScroll"][0];
+            Assert.IsInstanceOfType<ElementReference>(invocation.Arguments[2]);
+            Assert.AreEqual("shell-scroller", ((ElementReference)invocation.Arguments[2]!).Id);
+        }, TimeSpan.FromSeconds(5));
+
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.toggleOverflow");
     }
 }

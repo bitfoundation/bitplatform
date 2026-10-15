@@ -280,8 +280,15 @@ $npn-private-properties: w, tw;
     width: fit-content;
 }
 
+// A full-width panel fills its container with its padding and its border included, rather than taking the
+// container's whole width for its content and running past it by its own inset. The stretch keyword sizes the
+// outer box and leaves the box model alone, so the rail (ToggledWidth) and every other width the panel takes still
+// measure its content; an engine that knows none of the keywords keeps the plain 100%.
 .bit-npn-fuw {
     width: 100%;
+    width: -moz-available;
+    width: -webkit-fill-available;
+    width: stretch;
 }
 
 .bit-npn-ovl {

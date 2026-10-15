@@ -1528,6 +1528,161 @@ public class BitFlagTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitFlagShouldHandTheKeyboardActivationOnAsAClickWithoutAPointer()
+    {
+        MouseEventArgs? args = null;
+
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Country, BitCountries.Netherlands);
+            parameters.Add(p => p.OnClick, (MouseEventArgs e) => args = e);
+        });
+
+        await component.Find(".bit-flg").KeyDownAsync(new KeyboardEventArgs { Key = "Enter", ShiftKey = true, CtrlKey = true });
+
+        // A click that came from a key carries no pointer - a detail of 0 is how the platform marks one - and the
+        // modifiers are the only thing the keystroke has to pass on.
+        Assert.IsNotNull(args);
+        Assert.AreEqual(0L, args.Detail);
+        Assert.IsTrue(args.ShiftKey);
+        Assert.IsTrue(args.CtrlKey);
+        Assert.IsFalse(args.AltKey);
+    }
+
+    [TestMethod]
+    public void BitFlagShouldKeepSpaceFromScrollingThePageOnlyWhileItAnswersIt()
+    {
+        // A decorative flag answers no key, so it installs no listener at all.
+        RenderComponent<BitFlag>(parameters => parameters.Add(p => p.Iso2, "nl"));
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.registerPreventKeys");
+
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        var registered = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
+
+        Assert.AreEqual(1, registered.Count);
+        CollectionAssert.AreEqual(new[] { " ", "Spacebar" }, (string[])registered[0].Arguments[1]!);
+
+        // A render that changes nothing about it registers nothing again.
+        component.Render(parameters => parameters.Add(p => p.Title, "Netherlands"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+
+        // A disabled flag activates on nothing, so Space scrolls the page the way it does anywhere else.
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
+
+        Assert.AreEqual(2, invocations.Count);
+        Assert.AreEqual(0, ((string[])invocations.Last().Arguments[1]!).Length);
+    }
+
+    [TestMethod]
+    public async Task BitFlagShouldFocusItsRoot()
+    {
+        var component = RenderComponent<BitFlag>(parameters =>
+        {
+            parameters.Add(p => p.Iso2, "nl");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        await component.InvokeAsync(() => component.Instance.FocusAsync().AsTask());
+
+        Context.JSInterop.VerifyFocusAsyncInvoke();
+    }
+
+    // The root splats DisabledAwareHtmlAttributes: while disabled it drops the page's handlers of the events an
+    // element is activated through and keeps the ones that only follow the pointer.
+    [TestMethod]
+    public void BitFlagShouldDropThePageActivationHandlersWhileDisabled()
+    {
+        var clicks = 0;
+        var hovers = 0;
+
+        RenderFragment FlagWithPageHandlers(bool disabled) => builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Iso2), "nl");
+            builder.AddAttribute(2, nameof(BitFlag.Disabled), disabled);
+            builder.AddAttribute(3, "ondblclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+            builder.AddAttribute(4, "onmouseover", EventCallback.Factory.Create<MouseEventArgs>(this, () => hovers++));
+            builder.CloseComponent();
+        };
+
+        var enabled = Context.Render(FlagWithPageHandlers(false));
+
+        // A double click rather than a click, the one handler the flag never writes itself (its click is pinned by
+        // BitFlagShouldKeepThePageHandlersOfAFlagWithNoClickOfItsOwn).
+        enabled.Find(".bit-flg").DoubleClick();
+        enabled.Find(".bit-flg").MouseOver();
+
+        Assert.AreEqual(1, clicks);
+        Assert.AreEqual(1, hovers);
+
+        var disabled = Context.Render(FlagWithPageHandlers(true));
+
+        // Nothing listens for a double click on the disabled root any more: the page's handler is gone and the flag has none.
+        try { disabled.Find(".bit-flg").DoubleClick(); }
+        catch (MissingEventHandlerException) { }
+
+        disabled.Find(".bit-flg").MouseOver();
+
+        Assert.AreEqual(1, clicks);
+        Assert.AreEqual(2, hovers);
+    }
+
+    // A flag with no OnClick listens to nothing of its own, and writing an empty handler after the splat would take the
+    // page's off the root - so a page's onclick and onkeydown on a plain flag still run, and a disabled flag still drops
+    // them (the disabled-aware splat), while a clickable one answers with its own.
+    [TestMethod]
+    public void BitFlagShouldKeepThePageHandlersOfAFlagWithNoClickOfItsOwn()
+    {
+        var pageClicks = 0;
+        var pageKeys = 0;
+        var pageBlurs = 0;
+        var ownClicks = 0;
+
+        RenderFragment Flag(bool disabled, bool clickable) => builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Iso2), "nl");
+            builder.AddAttribute(2, nameof(BitFlag.Disabled), disabled);
+            if (clickable) builder.AddAttribute(3, nameof(BitFlag.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => ownClicks++));
+            builder.AddAttribute(4, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => pageClicks++));
+            builder.AddAttribute(5, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => pageKeys++));
+            builder.AddAttribute(6, "onblur", EventCallback.Factory.Create<FocusEventArgs>(this, () => pageBlurs++));
+            builder.CloseComponent();
+        };
+
+        var plain = Context.Render(Flag(disabled: false, clickable: false));
+        plain.Find(".bit-flg").Click();
+        plain.Find(".bit-flg").KeyDown(new KeyboardEventArgs { Key = "a" });
+        plain.Find(".bit-flg").Blur();
+
+        Assert.AreEqual(1, pageClicks);
+        Assert.AreEqual(1, pageKeys);
+        Assert.AreEqual(1, pageBlurs);
+
+        var disabled = Context.Render(Flag(disabled: true, clickable: false));
+        try { disabled.Find(".bit-flg").Click(); }
+        catch (MissingEventHandlerException) { }
+        try { disabled.Find(".bit-flg").KeyDown(new KeyboardEventArgs { Key = "a" }); }
+        catch (MissingEventHandlerException) { }
+
+        Assert.AreEqual(1, pageClicks);
+        Assert.AreEqual(1, pageKeys);
+
+        var clickable = Context.Render(Flag(disabled: false, clickable: true));
+        clickable.Find(".bit-flg").Click();
+
+        Assert.AreEqual(1, ownClicks);
+        Assert.AreEqual(1, pageClicks);
+    }
+
+    [TestMethod]
     public void BitFlagShouldNameTheButtonRatherThanThePictureInsideIt()
     {
         var component = RenderComponent<BitFlag>(parameters =>

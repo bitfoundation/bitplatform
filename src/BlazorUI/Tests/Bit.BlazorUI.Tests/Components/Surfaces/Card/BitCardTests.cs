@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -1820,6 +1821,36 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardWithoutOnClickShouldKeepThePagesOwnOnclick()
+    {
+        // A card with no click of its own writes the page's onclick back rather than an empty handler, which would
+        // take the page's off the root.
+        var pageClicks = 0;
+
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => pageClicks++));
+        });
+
+        component.Find(".bit-crd").Click();
+
+        Assert.AreEqual(1, pageClicks);
+        Assert.IsFalse(component.Find(".bit-crd").ClassList.Contains("bit-crd-int"));
+    }
+
+    [TestMethod]
+    public void BitCardDisabledWithoutOnClickShouldDropThePagesOwnOnclick()
+    {
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Disabled), true);
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.IsFalse(component.Find(".bit-crd").HasAttribute("blazor:onclick"));
+    }
+
+    [TestMethod]
     public void BitCardTabIndexShouldReachTheStretchedButtonAndNotTheRoot()
     {
         var component = RenderComponent<BitCard>(parameters =>
@@ -3289,5 +3320,53 @@ public class BitCardTests : BunitTestContext
         Assert.AreEqual("true", root.GetAttribute("aria-pressed"));
         Assert.AreEqual("true", root.GetAttribute("aria-busy"));
         Assert.AreEqual("true", root.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitCardStopPropagationShouldStopTheClickOfTheRoot(bool stopPropagation)
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagation, stopPropagation);
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        // The modifier is rendered on the root, where the click of the card - and of the button stretched over it,
+        // which bubbles up to the root - is handled.
+        Assert.AreEqual(stopPropagation, component.Find(".bit-crd").HasAttribute("blazor:onclick:stoppropagation"));
+    }
+
+    [TestMethod]
+    public async Task BitCardFocusAsyncShouldFocusTheStretchedControl()
+    {
+        var component = RenderComponent<BitCard>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Title, "Title");
+        });
+
+        await component.InvokeAsync(() => component.Instance.FocusAsync());
+
+        // The link is what a reader lands on, so it is what takes the focus: one call, and nothing thrown.
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitCardFocusAsyncShouldFocusTheRootOfACardThatIsItsOwnControl()
+    {
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, "role", "option");
+            builder.AddAttribute(2, nameof(BitCard.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        var card = component.FindComponent<BitCard>();
+
+        await card.InvokeAsync(() => card.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
     }
 }

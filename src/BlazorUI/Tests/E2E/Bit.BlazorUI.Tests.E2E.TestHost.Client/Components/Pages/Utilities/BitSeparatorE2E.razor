@@ -1,0 +1,236 @@
+﻿@page "/e2e/separator"
+
+<PageTitle>BitSeparator E2E</PageTitle>
+
+<h1>BitSeparator</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <div id="basic-container" style="width: 400px;">
+        <BitSeparator Id="spr-basic" />
+        <BitSeparator Id="spr-text">Text</BitSeparator>
+        <BitSeparator Id="spr-icon"><BitIcon Id="spr-icon-glyph" IconName="@BitIconName.Clock" /></BitSeparator>
+        <BitSeparator Id="spr-disabled" Disabled>Disabled</BitSeparator>
+    </div>
+</E2ESection>
+
+<E2ESection Id="vertical" Title="Vertical">
+    <div id="vertical-row" style="display: flex; align-items: center; gap: 8px; height: 60px;">
+        <span>Item 1</span>
+        <BitSeparator Id="spr-vertical" Vertical />
+        <span>Item 2</span>
+        <BitSeparator Id="spr-vertical-content" Vertical>OR</BitSeparator>
+        <span>Item 3</span>
+        <BitSeparator Id="spr-vertical-autosize" Vertical AutoSize />
+        <span>Item 4</span>
+        <BitSeparator Id="spr-vertical-inset" Vertical Inset="12px" />
+    </div>
+    <div id="inline-text">Docs <BitSeparator Id="spr-inline" Vertical /> Blog</div>
+    <div style="height: 120px;">
+        <BitSeparator Id="spr-vertical-container" Vertical />
+    </div>
+</E2ESection>
+
+<E2ESection Id="align" Title="Content alignment">
+    <div style="width: 400px;">
+        <BitSeparator Id="spr-align-start" AlignContent="BitPlacement.Start">Start</BitSeparator>
+        <BitSeparator Id="spr-align-center" AlignContent="BitPlacement.Center">Center</BitSeparator>
+        <BitSeparator Id="spr-align-end" AlignContent="BitPlacement.End">End</BitSeparator>
+        <BitSeparator Id="spr-align-unset">Unset</BitSeparator>
+        <BitSeparator Id="spr-align-other" AlignContent="BitPlacement.Top">Other</BitSeparator>
+        <BitSeparator Id="spr-offset-start" AlignContent="BitPlacement.Start" ContentOffset="32px">Start, 32px</BitSeparator>
+        <BitSeparator Id="spr-offset-end" AlignContent="BitPlacement.End" ContentOffset="10%">End, 10%</BitSeparator>
+        <BitSeparator Id="spr-offset-center" ContentOffset="32px">Center ignores offset</BitSeparator>
+    </div>
+    <div style="display: flex; height: 200px; gap: 16px;">
+        <BitSeparator Id="spr-valign-start" Vertical AlignContent="BitPlacement.Start">Start</BitSeparator>
+        <BitSeparator Id="spr-valign-center" Vertical AlignContent="BitPlacement.Center">Center</BitSeparator>
+        <BitSeparator Id="spr-valign-end" Vertical AlignContent="BitPlacement.End">End</BitSeparator>
+        <BitSeparator Id="spr-valign-offset" Vertical AlignContent="BitPlacement.Start" ContentOffset="25%">25%</BitSeparator>
+    </div>
+</E2ESection>
+
+<E2ESection Id="length" Title="Length">
+    <div id="length-container" style="width: 400px;">
+        <BitSeparator Id="spr-full">Full length</BitSeparator>
+        <BitSeparator Id="spr-inset" Inset="32px">Inset 32px</BitSeparator>
+        <BitSeparator Id="spr-inset-start" Inset="25% 0">Inset 25% at the start</BitSeparator>
+    </div>
+    <div id="autosize-column" style="width: 400px; display: flex; flex-direction: column; align-items: center;">
+        <BitSeparator Id="spr-autosize-full">Not auto</BitSeparator>
+        <BitSeparator Id="spr-autosize" AutoSize>Auto</BitSeparator>
+    </div>
+</E2ESection>
+
+<E2ESection Id="line" Title="Line">
+    <div style="width: 400px;">
+        <BitSeparator Id="spr-line-default">Default</BitSeparator>
+        <BitSeparator Id="spr-line-Solid" LineStyle="BitLineStyle.Solid">Solid</BitSeparator>
+        <BitSeparator Id="spr-line-Dashed" LineStyle="BitLineStyle.Dashed">Dashed</BitSeparator>
+        <BitSeparator Id="spr-line-Dotted" LineStyle="BitLineStyle.Dotted" Thickness="3px">Dotted, 3px</BitSeparator>
+        <BitSeparator Id="spr-line-Double" LineStyle="BitLineStyle.Double" Thickness="4px">Double, 4px</BitSeparator>
+        <BitSeparator Id="spr-thickness" Thickness="8px">Solid, 8px</BitSeparator>
+        <BitSeparator Id="spr-thickness-wins" Size="BitSize.Large" Thickness="5px">Thickness wins</BitSeparator>
+    </div>
+    <div style="display: flex; height: 60px;">
+        <BitSeparator Id="spr-vline-dashed" Vertical LineStyle="BitLineStyle.Dashed" Thickness="3px" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitSeparator Id="spr-named">Named by its content</BitSeparator>
+    <BitSeparator Id="spr-aria-label" AriaLabel="End of the shipping details" />
+    <BitSeparator Id="spr-aria-label-content" AriaLabel="Label wins">Content</BitSeparator>
+    <BitSeparator Id="spr-decorative" Decorative />
+    <BitSeparator Id="spr-decorative-content" Decorative>Read as plain text</BitSeparator>
+    <BitSeparator Id="spr-splat-labelledby" HtmlAttributes="@(new Dictionary<string, object> { ["aria-labelledby"] = "external-name" })">Ignored content</BitSeparator>
+    <span id="external-name">An external name</span>
+    <BitSeparator Id="spr-splat-hidden" Decorative HtmlAttributes="@(new Dictionary<string, object> { ["aria-hidden"] = "false" })" />
+    <div style="display: flex; height: 40px;">
+        <BitSeparator Id="spr-vertical-decorative" Vertical Decorative />
+    </div>
+</E2ESection>
+
+<E2ESection Id="elements" Title="Lists and menus">
+    <ul id="contacts" aria-label="Contacts" style="width: 300px;">
+        <li>Annie Lindqvist</li>
+        <BitSeparator Id="spr-li" Element="li" Inset="40px 0" Decorative />
+        <li>Aaron Reid</li>
+    </ul>
+    <div role="menu" id="menu">
+        <div role="menuitem">Cut</div>
+        <BitSeparator Id="spr-menu" />
+        <div role="menuitem">Paste</div>
+    </div>
+    <BitSeparator Id="spr-hr" Element="hr">Void falls back</BitSeparator>
+    <BitSeparator Id="spr-invalid" Element="1bad">Invalid falls back</BitSeparator>
+    <BitSeparator Id="spr-span" Element=" section ">Section</BitSeparator>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <div style="width: 400px;">
+        <BitParams Parameters="_separatorParams">
+            <BitSeparator Id="spr-params-1">Account</BitSeparator>
+            <BitSeparator Id="spr-params-2">Billing</BitSeparator>
+            <BitSeparator Id="spr-params-3" LineStyle="BitLineStyle.Solid">Danger zone</BitSeparator>
+        </BitParams>
+    </div>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Color, Border and Background">
+    <BitSeparator Id="spr-color-Primary" Color="BitColor.Primary">Primary</BitSeparator>
+    <BitSeparator Id="spr-color-Secondary" Color="BitColor.Secondary">Secondary</BitSeparator>
+    <BitSeparator Id="spr-color-Tertiary" Color="BitColor.Tertiary">Tertiary</BitSeparator>
+    <BitSeparator Id="spr-color-Info" Color="BitColor.Info">Info</BitSeparator>
+    <BitSeparator Id="spr-color-Success" Color="BitColor.Success">Success</BitSeparator>
+    <BitSeparator Id="spr-color-Warning" Color="BitColor.Warning">Warning</BitSeparator>
+    <BitSeparator Id="spr-color-SevereWarning" Color="BitColor.SevereWarning">SevereWarning</BitSeparator>
+    <BitSeparator Id="spr-color-Error" Color="BitColor.Error">Error</BitSeparator>
+    <BitSeparator Id="spr-color-PrimaryBackground" Color="BitColor.PrimaryBackground">PrimaryBackground</BitSeparator>
+    <BitSeparator Id="spr-color-SecondaryBackground" Color="BitColor.SecondaryBackground">SecondaryBackground</BitSeparator>
+    <BitSeparator Id="spr-color-TertiaryBackground" Color="BitColor.TertiaryBackground">TertiaryBackground</BitSeparator>
+    <BitSeparator Id="spr-color-PrimaryForeground" Color="BitColor.PrimaryForeground">PrimaryForeground</BitSeparator>
+    <BitSeparator Id="spr-color-SecondaryForeground" Color="BitColor.SecondaryForeground">SecondaryForeground</BitSeparator>
+    <BitSeparator Id="spr-color-TertiaryForeground" Color="BitColor.TertiaryForeground">TertiaryForeground</BitSeparator>
+    <BitSeparator Id="spr-color-PrimaryBorder" Color="BitColor.PrimaryBorder">PrimaryBorder</BitSeparator>
+    <BitSeparator Id="spr-color-SecondaryBorder" Color="BitColor.SecondaryBorder">SecondaryBorder</BitSeparator>
+    <BitSeparator Id="spr-color-TertiaryBorder" Color="BitColor.TertiaryBorder">TertiaryBorder</BitSeparator>
+
+    <BitSeparator Id="spr-border-Primary" Border="BitColorKind.Primary">Primary border</BitSeparator>
+    <BitSeparator Id="spr-border-Secondary" Border="BitColorKind.Secondary">Secondary border</BitSeparator>
+    <BitSeparator Id="spr-border-Tertiary" Border="BitColorKind.Tertiary">Tertiary border</BitSeparator>
+    <BitSeparator Id="spr-border-Transparent" Border="BitColorKind.Transparent">Transparent border</BitSeparator>
+    <BitSeparator Id="spr-color-wins" Color="BitColor.Error" Border="BitColorKind.Tertiary">Color wins</BitSeparator>
+
+    <BitSeparator Id="spr-background-Primary" Background="BitColorKind.Primary">Primary background</BitSeparator>
+    <BitSeparator Id="spr-background-Secondary" Background="BitColorKind.Secondary">Secondary background</BitSeparator>
+    <BitSeparator Id="spr-background-Tertiary" Background="BitColorKind.Tertiary">Tertiary background</BitSeparator>
+    <BitSeparator Id="spr-background-Transparent" Background="BitColorKind.Transparent">Transparent background</BitSeparator>
+
+    <BitSeparator Id="spr-nested-outer" Color="BitColor.Error" LineStyle="BitLineStyle.Dashed" Thickness="6px">
+        <div style="width: 200px;"><BitSeparator Id="spr-nested-inner">Inner</BitSeparator></div>
+    </BitSeparator>
+</E2ESection>
+
+<E2ESection Id="sizes" Title="Size">
+    <BitSeparator Id="spr-size-Small" Size="BitSize.Small">Small</BitSeparator>
+    <BitSeparator Id="spr-size-Medium" Size="BitSize.Medium">Medium</BitSeparator>
+    <BitSeparator Id="spr-size-Large" Size="BitSize.Large">Large</BitSeparator>
+    <div style="display: flex; height: 60px;">
+        <BitSeparator Id="spr-vsize-Large" Vertical Size="BitSize.Large" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="css-container" style="width: 400px; --bit-Separator-color: rgb(10, 20, 30); --bit-Separator-thickness: 7px; --bit-Separator-line-style: dotted; --bit-Separator-spacing: 9px; --bit-Separator-inset: 11px; --bit-Separator-content-gap: 13px; --bit-Separator-content-color: rgb(40, 50, 60); --bit-Separator-content-background: rgb(70, 80, 90); --bit-Separator-content-font-size: 17px; --bit-Separator-content-font-weight: 700;">
+        <BitSeparator Id="spr-css">Restyled</BitSeparator>
+        <BitSeparator Id="spr-css-offset" AlignContent="BitPlacement.Start" Style="--bit-Separator-content-offset: 50px;">Offset by variable</BitSeparator>
+        <BitSeparator Id="spr-css-params" Color="BitColor.Success" Size="BitSize.Medium" LineStyle="BitLineStyle.Dashed" Inset="3px" Background="BitColorKind.Tertiary">Parameters win</BitSeparator>
+        <BitSeparator Id="spr-css-thickness-param" Thickness="2px" Border="BitColorKind.Primary" AlignContent="BitPlacement.Start" ContentOffset="20px">Thickness and Border win</BitSeparator>
+        <BitSeparator Id="spr-css-disabled" Disabled>Disabled wins</BitSeparator>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitSeparator Id="spr-style" Style="max-width: 320px; margin: auto;">Styled</BitSeparator>
+    <BitSeparator Id="spr-class" Class="e2e-separator-class">Classed</BitSeparator>
+    <BitSeparator Id="spr-styles" Styles="@(new() { Root = "text-transform: uppercase;", Content = "color: rgb(30, 144, 255); font-weight: 600;" })">Styles</BitSeparator>
+    <BitSeparator Id="spr-classes" Classes="@(new() { Root = "e2e-root-class", Content = "e2e-content-class" })">Classes</BitSeparator>
+    <BitSeparator Id="spr-splat" HtmlAttributes="@(new Dictionary<string, object> { ["class"] = "splat-class", ["style"] = "outline: 1px solid rgb(1, 2, 3)", ["data-e2e"] = "splatted" })" Class="own-class" Style="opacity: 0.5">Splatted</BitSeparator>
+    <BitSeparator Id="spr-hidden" Visibility="BitVisibility.Hidden">Hidden</BitSeparator>
+    <BitSeparator Id="spr-collapsed" Visibility="BitVisibility.Collapsed">Collapsed</BitSeparator>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width: 400px;">
+        <BitSeparator Id="spr-rtl" Dir="BitDir.Rtl">جداکننده</BitSeparator>
+        <BitSeparator Id="spr-rtl-start" Dir="BitDir.Rtl" AlignContent="BitPlacement.Start">ابتدا</BitSeparator>
+        <BitSeparator Id="spr-rtl-end" Dir="BitDir.Rtl" AlignContent="BitPlacement.End">انتها</BitSeparator>
+        <BitSeparator Id="spr-rtl-inset" Dir="BitDir.Rtl" Inset="25% 0">Inset</BitSeparator>
+        <div dir="rtl">
+            <BitSeparator Id="spr-rtl-inherited" AlignContent="BitPlacement.Start">ابتدا</BitSeparator>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <div style="display: flex; height: 80px; width: 400px;">
+        <BitSeparator Id="spr-runtime" Vertical="_vertical" Color="_color" AlignContent="_align" Decorative="_decorative" Disabled="_disabled"
+                      ChildContent="@(_hasContent ? _runtimeContent : null)" />
+    </div>
+    <button id="btn-toggle-vertical" @onclick="() => _vertical = !_vertical">Toggle vertical</button>
+    <button id="btn-set-color" @onclick="() => _color = BitColor.Success">Success color</button>
+    <button id="btn-set-align" @onclick="() => _align = BitPlacement.End">Align end</button>
+    <button id="btn-toggle-decorative" @onclick="() => _decorative = !_decorative">Toggle decorative</button>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <button id="btn-toggle-content" @onclick="() => _hasContent = !_hasContent">Toggle content</button>
+    <button id="btn-toggle-mounted" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitSeparator Id="spr-mounted">Mounted</BitSeparator>
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _vertical;
+    private BitColor? _color;
+    private BitPlacement? _align;
+    private bool _decorative;
+    private bool _disabled;
+    private bool _hasContent = true;
+    private bool _mounted = true;
+
+    private readonly RenderFragment _runtimeContent = @<span id="runtime-content">Runtime</span>;
+
+    private readonly BitSeparatorParams[] _separatorParams =
+    [
+        new()
+        {
+            Thickness = "2px",
+            LineStyle = BitLineStyle.Dashed,
+            AlignContent = BitPlacement.Start,
+        }
+    ];
+}

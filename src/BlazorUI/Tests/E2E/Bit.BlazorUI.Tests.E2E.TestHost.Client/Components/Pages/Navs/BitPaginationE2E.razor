@@ -1,0 +1,380 @@
+﻿@page "/e2e/pagination"
+@inject NavigationManager Navigation
+@implements IDisposable
+
+<PageTitle>BitPagination E2E</PageTitle>
+
+<h1>BitPagination</h1>
+
+@* Every feature of BitPagination, one section each. Each pagination has its own Id; the page writes back every bound
+   value and every event it hears, so the tests read the outcome rather than infer it. *@
+
+<E2ESection Id="basic" Title="Basic: Count, two-way SelectedPage, OnChange">
+    <BitPagination Id="pg-basic" Count="5" @bind-SelectedPage="_basicPage" OnChange="OnBasicChange" />
+    <p>Selected: <span id="basic-page">@_basicPage</span>, OnChange count: <span id="basic-change-count">@_basicChangeCount</span>, last: <span id="basic-change-arg">@_basicChangeArg</span></p>
+    <button id="btn-basic-set-4" type="button" @onclick="() => _basicPage = 4">Select page 4</button>
+    <button id="btn-basic-set-99" type="button" @onclick="() => _basicPage = 99">Select page 99</button>
+</E2ESection>
+
+<E2ESection Id="default-selected" Title="DefaultSelectedPage">
+    <BitPagination Id="pg-default-3" Count="5" DefaultSelectedPage="3" />
+    <BitPagination Id="pg-default-out" Count="5" DefaultSelectedPage="9" />
+    <BitPagination Id="pg-default-none" Count="5" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitPagination Id="pg-disabled" Count="5" DefaultSelectedPage="3" Disabled="_disabled" ShowFirstButton ShowLastButton
+                   ShowGoToPage ShowPageSizeSelector ClickableEllipsis
+                   OnChange="() => _disabledChanges++"
+                   @ondblclick="() => _disabledActivations++"
+                   @onpointerdown="() => _disabledActivations++"
+                   @onmouseover="() => _disabledHovers++" />
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <p>Changes: <span id="disabled-changes">@_disabledChanges</span>, page activations: <span id="disabled-activations">@_disabledActivations</span>, page hovers: <span id="disabled-hovers">@_disabledHovers</span>, disabled: <span id="disabled-state">@_disabled</span></p>
+</E2ESection>
+
+<E2ESection Id="one-way" Title="One-way SelectedPage">
+    <BitPagination Id="pg-one-way" Count="5" SelectedPage="_oneWayPage" OnChange="p => _oneWayRequested = p" />
+    <p>Held: <span id="one-way-page">@_oneWayPage</span>, requested: <span id="one-way-requested">@_oneWayRequested</span></p>
+    <button id="btn-one-way-apply" type="button" @onclick="() => _oneWayPage = _oneWayRequested">Apply the request</button>
+    <button id="btn-one-way-9" type="button" @onclick="() => _oneWayPage = 9">Hold 9</button>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant and Rounded">
+    <BitPagination Id="pg-variant-none" Count="5" />
+    <BitPagination Id="pg-variant-Fill" Count="5" Variant="BitVariant.Fill" />
+    <BitPagination Id="pg-variant-Outline" Count="5" Variant="BitVariant.Outline" />
+    <BitPagination Id="pg-variant-Text" Count="5" Variant="BitVariant.Text" />
+    <BitPagination Id="pg-rounded" Count="20" Rounded DefaultSelectedPage="10" PreviousButtonText="Previous" />
+    <BitPagination Id="pg-not-rounded" Count="9" DefaultSelectedPage="5" />
+</E2ESection>
+
+<E2ESection Id="ranges" Title="BoundaryCount and MiddleCount">
+    <BitPagination Id="pg-range-default-10" Count="10" />
+    <BitPagination Id="pg-range-default-20" Count="20" DefaultSelectedPage="10" />
+    <BitPagination Id="pg-range-b1" Count="11" BoundaryCount="1" DefaultSelectedPage="6" />
+    <BitPagination Id="pg-range-b1-m5" Count="20" BoundaryCount="1" MiddleCount="5" DefaultSelectedPage="10" />
+    <BitPagination Id="pg-range-walk" Count="20" @bind-SelectedPage="_walkPage" />
+    <span id="walk-page">@_walkPage</span>
+</E2ESection>
+
+<E2ESection Id="ellipsis" Title="EllipsisText, EllipsisAriaLabel, ClickableEllipsis">
+    <BitPagination Id="pg-ellipsis-text" Count="24" EllipsisText="..." EllipsisAriaLabel="Hidden pages" DefaultSelectedPage="12" />
+    <BitPagination Id="pg-ellipsis-click" Count="500" ClickableEllipsis @bind-SelectedPage="_ellipsisPage" />
+    <span id="ellipsis-page">@_ellipsisPage</span>
+</E2ESection>
+
+<E2ESection Id="navigation" Title="First, Last, Previous, Next, Loop">
+    <BitPagination Id="pg-first-last" Count="24" ShowFirstButton ShowLastButton @bind-SelectedPage="_firstLastPage" />
+    <span id="first-last-page">@_firstLastPage</span>
+    <BitPagination Id="pg-no-prev-next" Count="24" ShowFirstButton ShowLastButton ShowNextButton="false" ShowPreviousButton="false" />
+    <BitPagination Id="pg-loop" Count="5" Loop @bind-SelectedPage="_loopPage" />
+    <span id="loop-page">@_loopPage</span>
+    <BitPagination Id="pg-loop-single" Count="1" Loop />
+</E2ESection>
+
+<E2ESection Id="button-text" Title="Button texts and icon names">
+    <BitPagination Id="pg-texts" Count="12" ShowFirstButton ShowLastButton
+                   FirstButtonText="First" PreviousButtonText="Previous" NextButtonText="Next" LastButtonText="Last" DefaultSelectedPage="5" />
+    <BitPagination Id="pg-icon-names" Count="5" ShowFirstButton ShowLastButton
+                   NextButtonIconName="@BitIconName.Next" PreviousButtonIconName="@BitIconName.Previous"
+                   FirstButtonIconName="@BitIconName.DoubleChevronLeft" LastButtonIconName="@BitIconName.DoubleChevronRight" />
+</E2ESection>
+
+<E2ESection Id="summary" Title="ShowSummary, GetSummary, ShowPageButtons">
+    <BitPagination Id="pg-summary" Count="12" ShowSummary DefaultSelectedPage="4" />
+    <BitPagination Id="pg-compact" Count="12" ShowSummary ShowPageButtons="false" ShowFirstButton ShowLastButton DefaultSelectedPage="4" />
+    <BitPagination Id="pg-get-summary" Count="12" ShowSummary ShowPageButtons="false" GetSummary="@((page, count) => $"{page} / {count}")" DefaultSelectedPage="4" />
+</E2ESection>
+
+<E2ESection Id="total-items" Title="TotalItems, PageSize, PageSizeOptions, GetItemsSummary, OnPageSizeChange">
+    <BitPagination Id="pg-total" ShowSummary ShowPageSizeSelector
+                   TotalItems="240"
+                   PageSizeOptions="@([10, 25, 100])"
+                   GetItemsSummary="@((first, last, total) => $"Showing {first} to {last} of {total} results")"
+                   @bind-PageSize="_totalPageSize"
+                   @bind-SelectedPage="_totalPage"
+                   OnChange="@(p => _totalLog += $"change:{p};")"
+                   OnPageSizeChange="@(s => _totalLog += $"size:{s};")" />
+    <p>Page <span id="total-page">@_totalPage</span>, size <span id="total-size">@_totalPageSize</span>, log <span id="total-log">@_totalLog</span></p>
+    <BitPagination Id="pg-total-default" TotalItems="95" ShowSummary />
+    <BitPagination Id="pg-count-size" ShowPageSizeSelector PageSizeText=""
+                   Count="@_countSizeCount"
+                   PageSizeOptions="@([10, 20, 50])"
+                   PageSizeAriaLabel="Rows per page"
+                   PageSize="_countSize"
+                   PageSizeChanged="OnCountSizeChanged"
+                   @bind-SelectedPage="_countSizePage" />
+    <p>Count <span id="count-size-count">@_countSizeCount</span>, size <span id="count-size-size">@_countSize</span>, page <span id="count-size-page">@_countSizePage</span></p>
+    <BitPagination Id="pg-size-unlisted" ShowPageSizeSelector Count="3" PageSizeOptions="@([10, 20, 50])" PageSize="15" />
+    <BitPagination Id="pg-size-zero" ShowPageSizeSelector Count="3" @bind-PageSize="_zeroSize" />
+    <span id="zero-size">@_zeroSize</span>
+</E2ESection>
+
+<E2ESection Id="go-to-page" Title="ShowGoToPage, GoToPageText, GoToPageAriaLabel">
+    <BitPagination Id="pg-go" Count="1250" ShowGoToPage @bind-SelectedPage="_goPage" />
+    <span id="go-page">@_goPage</span>
+    <BitPagination Id="pg-go-no-text" Count="24" ShowGoToPage GoToPageText="" GoToPageAriaLabel="Jump to page" ShowSummary ShowPageButtons="false" DefaultSelectedPage="4" />
+    <form id="go-form" @onsubmit="() => _formSubmits++">
+        <BitPagination Id="pg-go-form" Count="30" ShowGoToPage @bind-SelectedPage="_goFormPage" />
+    </form>
+    <p>Form page <span id="go-form-page">@_goFormPage</span>, submits <span id="go-form-submits">@_formSubmits</span></p>
+</E2ESection>
+
+<E2ESection Id="hide-single" Title="HideOnSinglePage">
+    <div id="hide-single-box">
+        <BitPagination Id="pg-hide-single" Count="_hideCount" HideOnSinglePage ShowSummary />
+    </div>
+    <button id="btn-hide-count-2" type="button" @onclick="() => _hideCount = 2">Count 2</button>
+    <button id="btn-hide-count-1" type="button" @onclick="() => _hideCount = 1">Count 1</button>
+    <BitPagination Id="pg-show-single" Count="1" />
+</E2ESection>
+
+<E2ESection Id="alignment" Title="Alignment">
+    @foreach (var alignment in _alignments)
+    {
+        <div id="@($"align-box-{alignment}")" style="width:600px;border:1px dashed #ccc">
+            <BitPagination Id="@($"pg-align-{alignment}")" Count="3" Alignment="alignment" />
+        </div>
+    }
+    <div id="align-box-none" style="width:600px;border:1px dashed #ccc">
+        <BitPagination Id="pg-align-none" Count="3" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="links" Title="GetPageHref">
+    <BitPagination Id="pg-links" Count="10" ShowFirstButton ShowLastButton ClickableEllipsis
+                   GetPageHref="@(page => $"/e2e/pagination?page={page}")"
+                   @bind-SelectedPage="_linkPage" />
+    <p>Link page <span id="link-page">@_linkPage</span>, url <span id="link-url">@_linkUrl</span></p>
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="Aria labels, GetPageAriaLabel, FocusAsync, keyboard">
+    <button id="before-a11y" type="button">Before</button>
+    <BitPagination @ref="_a11yPagination" Id="pg-a11y" Count="12" ShowFirstButton ShowLastButton DefaultSelectedPage="4"
+                   AriaLabel="Search results pages"
+                   FirstButtonAriaLabel="Go to the first page"
+                   LastButtonAriaLabel="Go to the last page"
+                   NextButtonAriaLabel="Go to the next page"
+                   PreviousButtonAriaLabel="Go to the previous page"
+                   GetPageAriaLabel="@((page, selected) => $"Page {page}, results {(page - 1) * 10 + 1} to {page * 10}{(selected ? " (current)" : "")}")" />
+    <button id="btn-focus" type="button" @onclick="async () => await _a11yPagination!.FocusAsync()">Focus the pagination</button>
+    <BitPagination @ref="_a11yCompact" Id="pg-a11y-compact" Count="12" ShowPageButtons="false" ShowFirstButton DefaultSelectedPage="4" />
+    <button id="btn-focus-compact" type="button" @onclick="async () => await _a11yCompact!.FocusAsync()">Focus the compact one</button>
+    <BitPagination Id="pg-a11y-default" Count="3" />
+    <BitPagination Id="pg-keyboard" Count="5" ShowFirstButton ShowLastButton @bind-SelectedPage="_keyboardPage" />
+    <span id="keyboard-page">@_keyboardPage</span>
+    <button id="after-a11y" type="button">After</button>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="_paginationParams">
+        <BitPagination Id="pg-params-1" Count="12" DefaultSelectedPage="4" AriaLabel="Páginas de resultados" />
+        <BitPagination Id="pg-params-2" Count="12" DefaultSelectedPage="4" AriaLabel="Páginas de mensajes" Variant="BitVariant.Fill" ShowSummary="false" />
+    </BitParams>
+    <BitPagination Id="pg-params-outside" Count="12" DefaultSelectedPage="4" />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var color in _colors)
+    {
+        <BitPagination Id="@($"pg-color-{color}")" Count="3" Color="color" />
+        <BitPagination Id="@($"pg-color-outline-{color}")" Count="3" Color="color" Variant="BitVariant.Outline" />
+    }
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External icons">
+    <BitPagination Id="pg-ext-fa" Count="5" ShowFirstButton ShowLastButton
+                   NextButtonIcon="@BitIconInfo.Fa("solid angle-right")"
+                   PreviousButtonIcon="@BitIconInfo.Fa("solid angle-left")"
+                   FirstButtonIcon="@BitIconInfo.Fa("solid angles-left")"
+                   LastButtonIcon="@BitIconInfo.Fa("solid angles-right")" />
+    <BitPagination Id="pg-ext-bi" Count="5" ShowFirstButton ShowLastButton
+                   NextButtonIcon="@BitIconInfo.Bi("caret-right-fill")"
+                   PreviousButtonIcon="@BitIconInfo.Bi("caret-left-fill")"
+                   FirstButtonIcon="@BitIconInfo.Css("bi bi-skip-start-fill")"
+                   LastButtonIcon="@BitIconInfo.Css("bi bi-skip-end-fill")"
+                   NextButtonIconName="@BitIconName.Next" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitPagination Id="pg-size-none" Count="5" ShowSummary ShowGoToPage />
+    <BitPagination Id="pg-size-Small" Count="5" Size="BitSize.Small" ShowSummary ShowGoToPage PreviousButtonText="Prev" />
+    <BitPagination Id="pg-size-Medium" Count="5" Size="BitSize.Medium" ShowSummary ShowGoToPage PreviousButtonText="Prev" />
+    <BitPagination Id="pg-size-Large" Count="5" Size="BitSize.Large" ShowSummary ShowGoToPage PreviousButtonText="Prev" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes, Visibility, HtmlAttributes">
+    <BitPagination Id="pg-style" Count="5" Style="margin-inline: 13px; flex-flow: column;" />
+    <BitPagination Id="pg-class" Count="5" Class="custom-class" />
+    <BitPagination Id="pg-styles" Count="30" ShowFirstButton ShowLastButton ShowSummary ShowGoToPage ShowPageSizeSelector
+                   PreviousButtonText="Prev" DefaultSelectedPage="15"
+                   Styles="@(new() { Root = "gap: 11px;",
+                                     Button = "background-color: rgb(46, 46, 46);",
+                                     SelectedButton = "background-color: rgb(255, 99, 71);",
+                                     FirstButton = "color: rgb(1, 2, 3);",
+                                     FirstButtonIcon = "color: rgb(4, 5, 6);",
+                                     PreviousButton = "color: rgb(7, 8, 9);",
+                                     PreviousButtonIcon = "color: rgb(10, 11, 12);",
+                                     NextButton = "color: rgb(13, 14, 15);",
+                                     NextButtonIcon = "color: rgb(16, 17, 18);",
+                                     LastButton = "color: rgb(19, 20, 21);",
+                                     LastButtonIcon = "color: rgb(22, 23, 24);",
+                                     ButtonText = "color: rgb(25, 26, 27);",
+                                     Ellipsis = "color: rgb(28, 29, 30);",
+                                     Summary = "color: rgb(31, 32, 33);",
+                                     GoToPage = "color: rgb(34, 35, 36);",
+                                     GoToPageLabel = "color: rgb(37, 38, 39);",
+                                     GoToPageInput = "color: rgb(40, 41, 42);",
+                                     PageSizeSelector = "color: rgb(43, 44, 45);",
+                                     PageSizeLabel = "color: rgb(46, 47, 48);",
+                                     PageSizeSelect = "color: rgb(49, 50, 51);" })" />
+    <BitPagination Id="pg-classes" Count="30" ShowFirstButton ShowLastButton ShowSummary ShowGoToPage ShowPageSizeSelector
+                   PreviousButtonText="Prev" DefaultSelectedPage="15"
+                   Classes="@(new() { Root = "c-root", Button = "c-button", SelectedButton = "c-selected",
+                                      FirstButton = "c-first", FirstButtonIcon = "c-first-icon",
+                                      PreviousButton = "c-prev", PreviousButtonIcon = "c-prev-icon",
+                                      NextButton = "c-next", NextButtonIcon = "c-next-icon",
+                                      LastButton = "c-last", LastButtonIcon = "c-last-icon",
+                                      ButtonText = "c-button-text", Ellipsis = "c-ellipsis", Summary = "c-summary",
+                                      GoToPage = "c-go", GoToPageLabel = "c-go-label", GoToPageInput = "c-go-input",
+                                      PageSizeSelector = "c-pss", PageSizeLabel = "c-pss-label", PageSizeSelect = "c-pss-select" })" />
+    <BitPagination Id="pg-visibility" Count="5" Visibility="_visibility" />
+    <button id="btn-visibility-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-visibility-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <button id="btn-visibility-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <BitPagination Id="pg-attrs" Count="5" data-test="pagination-attr" aria-label="Splatted name" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="css-vars-ancestor" style="--bit-Pagination-selected-background: rgb(15, 118, 110); --bit-Pagination-button-size: 44px; --bit-Pagination-gap: 9px; --bit-Pagination-button-background: rgb(200, 100, 50); --bit-Pagination-button-radius: 3px; --bit-Pagination-selected-font-weight: 800; --bit-Pagination-button-hover-background: rgb(204, 251, 241);">
+        <BitPagination Id="pg-css-vars" Count="5" />
+        <BitPagination Id="pg-css-vars-color" Count="5" Color="BitColor.Error" />
+        <BitPagination Id="pg-css-vars-rounded" Count="5" Rounded />
+        <BitPagination Id="pg-css-vars-size" Count="5" Size="BitSize.Small" />
+    </div>
+    <BitPagination Id="pg-css-vars-twin" Count="5" Variant="BitVariant.Outline" Style="--bit-Pagination-outline-button-border-color: rgb(1, 2, 3); --bit-Pagination-button-border-color: rgb(9, 9, 9);" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitPagination Id="pg-rtl" Dir="BitDir.Rtl" Count="5" ShowFirstButton ShowLastButton />
+    <div dir="rtl">
+        <BitPagination Id="pg-rtl-inherited" Count="5" ShowFirstButton ShowLastButton />
+    </div>
+    <BitPagination Id="pg-ltr" Count="5" ShowFirstButton ShowLastButton />
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Re-render and unmount">
+    <button id="btn-count-up" type="button" @onclick="() => _dynamicCount++">Count +1</button>
+    <button id="btn-toggle-mounted" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitPagination Id="pg-dynamic" Count="_dynamicCount" @bind-SelectedPage="_dynamicPage" />
+    }
+    <span id="dynamic-page">@_dynamicPage</span>
+    <span id="mounted-state">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error
+    ];
+
+    private static readonly BitAlignment[] _alignments =
+    [
+        BitAlignment.Start, BitAlignment.End, BitAlignment.Center, BitAlignment.SpaceBetween, BitAlignment.SpaceAround,
+        BitAlignment.SpaceEvenly, BitAlignment.Baseline, BitAlignment.Stretch
+    ];
+
+    private readonly BitPaginationParams[] _paginationParams =
+    [
+        new()
+        {
+            Rounded = true,
+            ShowSummary = true,
+            ShowFirstButton = true,
+            ShowLastButton = true,
+            Variant = BitVariant.Outline,
+            NextButtonAriaLabel = "Página siguiente",
+            GetSummary = (page, count) => $"Página {page} de {count}"
+        }
+    ];
+
+    private int _basicPage;
+    private int _basicChangeCount;
+    private int _basicChangeArg;
+
+    private bool _disabled = true;
+    private int _disabledChanges;
+    private int _disabledActivations;
+    private int _disabledHovers;
+
+    private int _oneWayPage = 2;
+    private int _oneWayRequested;
+
+    private int _walkPage = 1;
+    private int _ellipsisPage = 250;
+    private int _firstLastPage = 1;
+    private int _loopPage = 1;
+
+    private int _totalPageSize;
+    private int _totalPage = 1;
+    private string _totalLog = "";
+    private int _countSizeCount = 10;
+    private int _countSize = 10;
+    private int _countSizePage = 1;
+    private int _zeroSize;
+
+    private int _goPage = 4;
+    private int _goFormPage = 1;
+    private int _formSubmits;
+
+    private int _hideCount = 1;
+
+    private int _linkPage = 1;
+    private string _linkUrl = "";
+
+    private BitPagination? _a11yPagination;
+    private BitPagination? _a11yCompact;
+    private int _keyboardPage = 1;
+
+    private BitVisibility _visibility = BitVisibility.Visible;
+
+    private int _dynamicCount = 3;
+    private int _dynamicPage = 1;
+    private bool _mounted = true;
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+        _linkUrl = new Uri(Navigation.Uri).PathAndQuery;
+    }
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _linkUrl = new Uri(e.Location).PathAndQuery;
+        InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Navigation.LocationChanged -= OnLocationChanged;
+    }
+
+    private void OnBasicChange(int page)
+    {
+        _basicChangeCount++;
+        _basicChangeArg = page;
+    }
+
+    // The consumer recomputes the number of pages from the page size it is handed (100 items).
+    private void OnCountSizeChanged(int size)
+    {
+        _countSize = size;
+        _countSizeCount = (int)Math.Ceiling(100.0 / size);
+    }
+}

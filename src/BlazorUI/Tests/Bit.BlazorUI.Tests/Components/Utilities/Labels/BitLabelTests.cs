@@ -238,6 +238,38 @@ public class BitLabelTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitLabelShouldKeepForOnALabelElementHoweverItIsCased()
+    {
+        var component = RenderComponent<BitLabel>(parameters =>
+        {
+            parameters.Add(p => p.Element, "LABEL");
+            parameters.Add(p => p.For, "test-for");
+        });
+
+        // The tag name is used as written, and a label is a label whatever its case.
+        component.MarkupMatches(@"<LABEL for=""test-for"" class=""bit-lbl"" id:ignore></LABEL>");
+    }
+
+    [TestMethod]
+    public void BitLabelShouldDropForWhenTheElementStopsBeingALabelAfterRender()
+    {
+        var component = RenderComponent<BitLabel>(parameters =>
+        {
+            parameters.Add(p => p.For, "test-for");
+        });
+
+        Assert.AreEqual("test-for", component.Find(".bit-lbl").GetAttribute("for"));
+
+        component.Render(parameters => parameters.Add(p => p.Element, "div"));
+
+        Assert.IsFalse(component.Find(".bit-lbl").HasAttribute("for"));
+
+        component.Render(parameters => parameters.Add(p => p.Element, "label"));
+
+        Assert.AreEqual("test-for", component.Find(".bit-lbl").GetAttribute("for"));
+    }
+
+    [TestMethod]
     public void BitLabelShouldNotRenderForOnANonLabelElement()
     {
         var component = RenderComponent<BitLabel>(parameters =>

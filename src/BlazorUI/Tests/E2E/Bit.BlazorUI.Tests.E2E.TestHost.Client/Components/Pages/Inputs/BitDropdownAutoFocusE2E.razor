@@ -1,0 +1,43 @@
+﻿@page "/e2e/dropdown/autofocus"
+
+@* AutoFocus on its own page, since a dropdown taking the focus on load would steal it from the tests of any other
+   page: the field takes it, or the input of the ComboBox mode with ?combo=true. *@
+
+<PageTitle>BitDropdown AutoFocus E2E</PageTitle>
+
+<h1>BitDropdown AutoFocus</h1>
+
+<E2ESection Id="autofocus" Title="AutoFocus">
+    <button id="first-button">A button before the dropdown</button>
+    @if (Combo)
+    {
+        <BitDropdown Id="dd-af"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Auto focused combo"
+                     AutoFocus
+                     Combo
+                     Items="_items"
+                     DefaultValue="@string.Empty" />
+    }
+    else
+    {
+        <BitDropdown Id="dd-af"
+                     TItem="BitDropdownItem<string>" TValue="string"
+                     Label="Auto focused"
+                     AutoFocus
+                     Items="_items"
+                     DefaultValue="@string.Empty" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    [SupplyParameterFromQuery(Name = "combo")] public bool Combo { get; set; }
+
+    private readonly List<BitDropdownItem<string>> _items =
+    [
+        new() { Text = "Apple", Value = "f-app" },
+        new() { Text = "Banana", Value = "f-ban" },
+    ];
+}

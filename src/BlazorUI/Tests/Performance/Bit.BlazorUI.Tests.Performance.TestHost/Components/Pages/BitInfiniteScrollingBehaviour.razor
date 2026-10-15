@@ -1,0 +1,68 @@
+﻿@page "/regression/infinite-scrolling-behaviour"
+
+<PageTitle>BitInfiniteScrolling Behaviour</PageTitle>
+
+@* A 300px list of 30px rows over a source of 50 items, asked for 20 at a time by a provider that answers after
+   300ms - long enough for a reader scrolling fast to hit the end again while a page is still on its way. Every
+   request is recorded by the item it skips to, so a page asked for twice shows up as a repeated skip. The source
+   runs out on the third page, which is short, so the list knows it is the last one without asking again. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitInfiniteScrolling Behaviour</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+<div data-probe="list" style="width: 300px;">
+    <BitInfiniteScrolling TItem="int"
+                          ItemsProvider="_provider"
+                          PageSize="20"
+                          EndMessage="The end of the list."
+                          AriaLabel="Numbers"
+                          Style="height: 300px; border: 1px solid gray;"
+                          OnItemsLoaded="items => { _loaded += items.Count; }"
+                          OnEnd="() => _ends++">
+        <ItemTemplate Context="item">
+            <div class="row" data-item="@item" style="height: 30px; line-height: 30px; box-sizing: border-box; border-bottom: 1px solid #ddd; padding: 0 8px;">Item @item</div>
+        </ItemTemplate>
+    </BitInfiniteScrolling>
+    <p class="report" style="font-family: monospace;">
+        skips: <span class="skips">@string.Join(",", _skips)</span>
+        loaded: <span class="loaded">@_loaded</span>
+        ends: <span class="ends">@_ends</span>
+    </p>
+</div>
+
+@code {
+    private const int Total = 50;
+
+    private readonly List<int> _skips = [];
+    private readonly BitInfiniteScrollingItemsProvider<int> _provider;
+
+    private int _loaded;
+    private int _ends;
+
+    private string _status = "Loading";
+
+    public BitInfiniteScrollingBehaviour()
+    {
+        _provider = LoadPage;
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private async ValueTask<IEnumerable<int>> LoadPage(BitInfiniteScrollingItemsProviderRequest request)
+    {
+        _skips.Add(request.Skip);
+
+        await Task.Delay(300, request.CancellationToken);
+
+        var count = Math.Clamp(Total - request.Skip, 0, request.Count);
+
+        return Enumerable.Range(request.Skip, count);
+    }
+}

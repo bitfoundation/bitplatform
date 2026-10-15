@@ -377,6 +377,14 @@ public partial class BitRating : BitInputBase<double>
                 await _js.BitRatingsSetup(_Id, _dotnetObj, nameof(_HandleFocusIn), nameof(_HandleFocusOut));
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+
+            // The autofocus attribute is only honoured while the browser is parsing the document, which is
+            // never when the markup arrives from an interactive render - so the attribute alone covers the
+            // statically rendered page and nothing else. The focus is moved here for the rest.
+            if (AutoFocus && Disabled is false && ReadOnly is false)
+            {
+                await FocusItem(index);
+            }
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -423,9 +431,12 @@ public partial class BitRating : BitInputBase<double>
 
         var max = _Max;
 
+        // Resized rather than replaced: Blazor captures an @ref only when it creates the element, so the items
+        // that outlive a change of the Max would otherwise be left with empty references, and the focus that
+        // follows the value from the keyboard would stop moving.
         if (_itemRefs.Length != max)
         {
-            _itemRefs = new ElementReference[max];
+            Array.Resize(ref _itemRefs, max);
         }
 
         // A rating turned read-only or disabled under the pointer stops receiving the mouseleave that would

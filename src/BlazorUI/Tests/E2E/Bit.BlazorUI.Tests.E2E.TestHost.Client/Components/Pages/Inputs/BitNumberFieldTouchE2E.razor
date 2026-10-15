@@ -1,0 +1,17 @@
+﻿@page "/e2e/number-field/touch"
+
+<PageTitle>BitNumberField Touch E2E</PageTitle>
+
+<h1>BitNumberField on a touch screen</h1>
+
+<E2ESection Id="touch" Title="Touch">
+    <BitNumberField Id="nf-touch" Label="Touch" Mode="BitSpinButtonMode.Compact" @bind-Value="_touchValue" />
+    <span id="touch-value">[@_touchValue]</span>
+    <BitNumberField Id="nf-touch-hide" Label="HideInput" HideInput TValue="int" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _touchValue;
+}

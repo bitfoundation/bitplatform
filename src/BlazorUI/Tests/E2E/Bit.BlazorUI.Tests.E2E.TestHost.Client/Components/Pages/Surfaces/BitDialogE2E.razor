@@ -1,0 +1,688 @@
+﻿@page "/e2e/dialog"
+
+<PageTitle>BitDialog E2E</PageTitle>
+
+<h1>BitDialog</h1>
+
+@* Every section opens a Dialog of its own from a button of the page. A Dialog covers the page while it is
+   open, so whatever a test drives while it is open - a button that changes a parameter, a field, a way of
+   closing it from the page's side - sits inside that Dialog's own content. *@
+
+<E2ESection Id="basic" Title="Basic: bound IsOpen, Title, Message, events, Result and DismissReason">
+    <button id="btn-basic-open" @onclick="() => _basicOpen = true">Open basic</button>
+    <button id="btn-basic-refresh" @onclick="() => { }">Refresh</button>
+    <span id="basic-open">@_basicOpen</span>
+    <span id="basic-result">@(_basicRef?.Result?.ToString() ?? "-")</span>
+    <span id="basic-reason">@(_basicRef?.DismissReason?.ToString() ?? "-")</span>
+    <span id="basic-log">@string.Join(",", _basicLog)</span>
+    <span id="basic-changed">@_basicChanged</span>
+
+    <BitDialog @ref="_basicRef"
+               Id="basic-dialog"
+               @bind-IsOpen="_basicOpen"
+               @bind-IsOpen:after="() => _basicChanged++"
+               Title="@_basicTitle"
+               Message="Do you want to send this message without a subject?"
+               OnOpen="() => _basicLog.Add(nameof(BitDialog.OnOpen))"
+               OnOk="() => _basicLog.Add(nameof(BitDialog.OnOk))"
+               OnCancel="() => _basicLog.Add(nameof(BitDialog.OnCancel))"
+               OnClose="() => _basicLog.Add(nameof(BitDialog.OnClose))"
+               OnOverlayClick="() => _basicLog.Add(nameof(BitDialog.OnOverlayClick))"
+               OnDismiss="() => _basicLog.Add(nameof(BitDialog.OnDismiss))">
+        <div class="basic-tools">
+            <button id="basic-page-close" @onclick="() => _basicOpen = false">Page closes it</button>
+            <button id="basic-retitle" @onclick="@(() => _basicTitle = "Renamed subject")">Rename</button>
+        </div>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="buttons" Title="Buttons: labels, Show*Button, Is*ButtonEnabled, no header">
+    <button id="btn-labels-open" @onclick="() => _labelsOpen = true">Labels</button>
+    <button id="btn-single-open" @onclick="() => _singleOpen = true">Single action</button>
+    <button id="btn-nook-open" @onclick="() => _noOkOpen = true">No Ok</button>
+    <button id="btn-gated-open" @onclick="() => { _agreed = false; _cancelEnabled = true; _gatedOpen = true; }">Gated</button>
+    <button id="btn-noheader-open" @onclick="() => _noHeaderOpen = true">No header</button>
+    <span id="gated-open">@_gatedOpen</span>
+
+    <BitDialog Id="labels-dialog" @bind-IsOpen="_labelsOpen" Title="Delete this file?"
+               Message="This file will be moved to the trash." OkText="Move to trash" CancelText="Keep it" />
+
+    <BitDialog Id="single-dialog" @bind-IsOpen="_singleOpen" ShowCancelButton="false" ShowCloseButton="false"
+               Title="Your session expired" Message="Sign in again." OkText="Got it" />
+
+    <BitDialog Id="nook-dialog" @bind-IsOpen="_noOkOpen" ShowOkButton="false" Title="Changes" CancelText="Back"
+               Message="Only a Cancel here." />
+
+    <BitDialog Id="gated-dialog" @bind-IsOpen="_gatedOpen" IsOkButtonEnabled="_agreed" IsCancelButtonEnabled="_cancelEnabled"
+               Title="Before you continue" OkText="Accept">
+        <label><input id="gated-agree" type="checkbox" checked="@_agreed" @onchange="e => _agreed = (bool)e.Value!" /> I agree</label>
+        <button id="gated-toggle-cancel" @onclick="() => _cancelEnabled = !_cancelEnabled">Toggle cancel</button>
+    </BitDialog>
+
+    <BitDialog Id="noheader-dialog" @bind-IsOpen="_noHeaderOpen" ShowCloseButton="false"
+               Message="A Dialog without a title and without a close button has no header." />
+</E2ESection>
+
+<E2ESection Id="header-footer" Title="Header and footer: Subtitle, HeaderTemplate, FooterTemplate, Body, aria ids">
+    <button id="btn-subtitle-open" @onclick="() => _subtitleOpen = true">Subtitle</button>
+    <button id="btn-header-open" @onclick="() => _headerOpen = true">HeaderTemplate</button>
+    <button id="btn-footer-open" @onclick="() => _footerOpen = true">FooterTemplate</button>
+    <button id="btn-custom-open" @onclick="() => _customOpen = true">Custom content</button>
+    <button id="btn-body-open" @onclick="() => _bodyOpen = true">Body</button>
+    <span id="footer-open">@_footerOpen</span>
+
+    <BitDialog Id="subtitle-dialog" @bind-IsOpen="_subtitleOpen" Title="Publish this version?" Subtitle="Version 4.2.0"
+               Message="Everyone will see this version." />
+
+    <BitDialog Id="header-dialog" @bind-IsOpen="_headerOpen" AriaLabel="Storage almost full"
+               Message="Delete something to keep syncing.">
+        <HeaderTemplate>
+            <div id="custom-header-content">Storage almost full</div>
+        </HeaderTemplate>
+    </BitDialog>
+
+    <BitDialog Id="footer-dialog" @bind-IsOpen="_footerOpen" ShowOkButton="false" ShowCancelButton="false"
+               Title="Delete all" Message="99+ emails will be deleted.">
+        <FooterTemplate>
+            <button id="footer-not-now" @onclick="() => _footerOpen = false">Not now</button>
+        </FooterTemplate>
+    </BitDialog>
+
+    <BitDialog Id="custom-dialog" @bind-IsOpen="_customOpen" TitleAriaId="custom-title" SubtitleAriaId="custom-desc"
+               ShowCloseButton="false">
+        <h2 id="custom-title">All emails together</h2>
+        <p id="custom-desc">Your inbox has changed.</p>
+    </BitDialog>
+
+    <BitDialog Id="body-dialog" @bind-IsOpen="_bodyOpen" Title="Body alias">
+        <Body>
+            <p id="body-content">Rendered through Body.</p>
+        </Body>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="result" Title="Result: Show() awaited">
+    <button id="btn-show-await" @onclick="ShowAndAwait">Show and await</button>
+    <span id="awaited">@string.Join(",", _awaited)</span>
+
+    <BitDialog @ref="_awaitRef" Id="await-dialog" Title="Discard draft?" OkText="Discard" CancelText="Keep editing"
+               Message="Your changes will be lost.">
+        <button id="await-close-method" @onclick="() => _awaitRef.Close()">Close()</button>
+        <button id="await-show-again" @onclick="ShowAndAwait">Show again</button>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events: awaited OnOk">
+    <button id="btn-slow-open" @onclick="() => _slowOpen = true">Slow Ok</button>
+    <span id="slow-log">@string.Join(",", _slowLog)</span>
+    <span id="slow-open">@_slowOpen</span>
+
+    <BitDialog Id="slow-dialog" @bind-IsOpen="_slowOpen" Title="Saving" OkText="Save" OnOk="HandleSlowOk" Classes="_slowClasses" Styles="_slowStyles"
+               OnDismiss="() => _slowLog.Add(nameof(BitDialog.OnDismiss))" OnOverlayClick="() => _slowLog.Add(nameof(BitDialog.OnOverlayClick))">
+        <button id="slow-release" @onclick="ReleaseSlowOk">Finish saving</button>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="dismiss" Title="Dismiss behavior: Blocking, CloseOnOverlayClick, CloseOnEscape, Modeless, IsAlert, NoDismissPreventedAnimation">
+    <button id="btn-blocking-open" @onclick="() => _blockingOpen = true">Blocking</button>
+    <button id="btn-nooverlay-open" @onclick="() => _noOverlayOpen = true">No overlay click</button>
+    <button id="btn-noescape-open" @onclick="() => _noEscapeOpen = true">No Escape</button>
+    <button id="btn-modeless-open" @onclick="() => _modelessOpen = true">Modeless</button>
+    <button id="btn-notalert-open" @onclick="() => _notAlertOpen = true">Blocking, IsAlert false</button>
+    <button id="btn-alert-open" @onclick="() => _alertOpen = true">IsAlert</button>
+    <button id="btn-noanim-open" @onclick="() => _noAnimOpen = true">No animation</button>
+    <button id="btn-forceanim-open" @onclick="() => _forceAnimOpen = true">ForceAnimation</button>
+    <button id="behind-button" @onclick="() => _behindClicks++">Behind</button>
+    <span id="behind-clicks">@_behindClicks</span>
+    <span id="blocking-open">@_blockingOpen</span>
+    <span id="nooverlay-open">@_noOverlayOpen</span>
+    <span id="noescape-open">@_noEscapeOpen</span>
+    <span id="modeless-open">@_modelessOpen</span>
+    <span id="noanim-open">@_noAnimOpen</span>
+    <span id="prevented">@string.Join(",", _prevented)</span>
+
+    <BitDialog Id="blocking-dialog" Blocking @bind-IsOpen="_blockingOpen" Title="Two-factor code" Message="Answer it with a button."
+               OnDismissPrevented="r => _prevented.Add(r.ToString())" />
+
+    <BitDialog Id="nooverlay-dialog" CloseOnOverlayClick="false" @bind-IsOpen="_noOverlayOpen" Title="Edit profile"
+               Message="A click outside is refused." OnDismissPrevented="r => _prevented.Add(r.ToString())" />
+
+    <BitDialog Id="noescape-dialog" CloseOnEscape="false" @bind-IsOpen="_noEscapeOpen" Title="Missing subject"
+               Message="The Escape key is refused." OnDismissPrevented="r => _prevented.Add(r.ToString())" />
+
+    <BitDialog Id="modeless-dialog" Modeless @bind-IsOpen="_modelessOpen" Position="BitPosition.BottomRight" Title="Modeless"
+               Message="The page behind is still usable." />
+
+    <BitDialog Id="notalert-dialog" Blocking IsAlert="false" @bind-IsOpen="_notAlertOpen" Title="Blocking dialog" Message="Not an alert." />
+
+    <BitDialog Id="forceanim-dialog" Blocking ForceAnimation @bind-IsOpen="_forceAnimOpen" Title="Forced animation" Message="Shakes under reduced motion too." />
+
+    <BitDialog Id="alert-dialog" IsAlert="true" @bind-IsOpen="_alertOpen" Title="Alert" Message="An alert dialog." />
+
+    <BitDialog Id="noanim-dialog" Blocking NoDismissPreventedAnimation @bind-IsOpen="_noAnimOpen" Title="No shake"
+               Message="Refused without a shake." OnDismissPrevented="r => _prevented.Add(r.ToString())" />
+</E2ESection>
+
+<E2ESection Id="guarded" Title="Guarded close: OnDismissing">
+    <button id="btn-guarded-open" @onclick="() => { _guard = true; _guardedOpen = true; }">Guarded</button>
+    <span id="guarded-open">@_guardedOpen</span>
+    <span id="guarded-reasons">@string.Join(",", _guardedReasons)</span>
+    <span id="guarded-prevented">@string.Join(",", _guardedPrevented)</span>
+    <span id="guarded-result">@(_guardedRef?.Result?.ToString() ?? "-")</span>
+    <span id="guarded-reason">@(_guardedRef?.DismissReason?.ToString() ?? "-")</span>
+
+    <BitDialog @ref="_guardedRef" Id="guarded-dialog" @bind-IsOpen="_guardedOpen" Title="Edit the note" OkText="Save" CancelText="Discard"
+               OnDismissing="HandleDismissing" OnDismissPrevented="r => _guardedPrevented.Add(r.ToString())">
+        <button id="guarded-toggle" @onclick="() => _guard = !_guard">Toggle guard</button>
+        <span id="guarded-guard">@_guard</span>
+        <button id="guarded-close-method" @onclick="() => _guardedRef.Close()">Close()</button>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="focus" Title="Focus management">
+    <button id="btn-focus-open" @onclick="() => _focusOpen = true">Default</button>
+    <button id="btn-nofocus-open" @onclick="() => _noFocusOpen = true">AutoFocus and TrapFocus off</button>
+    <button id="btn-focusbtn-ok" @onclick="() => OpenFocusButton(BitDialogButton.Ok)">AutoFocusButton Ok</button>
+    <button id="btn-focusbtn-cancel" @onclick="() => OpenFocusButton(BitDialogButton.Cancel)">AutoFocusButton Cancel</button>
+    <button id="btn-focusbtn-close" @onclick="() => OpenFocusButton(BitDialogButton.Close)">AutoFocusButton Close</button>
+    <button id="btn-focussel-open" @onclick="() => _focusSelOpen = true">AutoFocusSelector</button>
+    <button id="btn-dataauto-open" @onclick="() => _dataAutoOpen = true">data-autofocus</button>
+    <button id="btn-norestore-open" @onclick="() => _noRestoreOpen = true">RestoreFocus false</button>
+    <button id="btn-empty-open" @onclick="() => _emptyOpen = true">Nothing focusable</button>
+    <span id="focus-open">@_focusOpen</span>
+    <span id="norestore-open">@_noRestoreOpen</span>
+
+    <BitDialog Id="focus-dialog" @bind-IsOpen="_focusOpen" Title="Rename the project" ShowCloseButton="false">
+        <input id="focus-input" value="Untitled project" />
+    </BitDialog>
+
+    <BitDialog Id="nofocus-dialog" AutoFocus="false" TrapFocus="false" @bind-IsOpen="_noFocusOpen" Title="Rename"
+               ShowCloseButton="false" Position="BitPosition.BottomRight">
+        <input id="nofocus-input" />
+    </BitDialog>
+
+    <BitDialog Id="focusbtn-dialog" AutoFocusButton="_focusButton" @bind-IsOpen="_focusBtnOpen" Title="Delete this workspace?"
+               Message="This cannot be undone." OkText="Delete workspace">
+        <input id="focusbtn-input" />
+    </BitDialog>
+
+    <BitDialog Id="focussel-dialog" AutoFocusSelector=".invite-email" @bind-IsOpen="_focusSelOpen" Title="Invite a teammate"
+               ShowCloseButton="false">
+        <a id="focussel-link" href="#focus">What can a guest see?</a>
+        <input id="focussel-input" class="invite-email" />
+    </BitDialog>
+
+    <BitDialog Id="dataauto-dialog" @bind-IsOpen="_dataAutoOpen" Title="data-autofocus" ShowCloseButton="false">
+        <input id="dataauto-first" />
+        <input id="dataauto-second" data-autofocus />
+    </BitDialog>
+
+    <BitDialog Id="norestore-dialog" RestoreFocus="false" @bind-IsOpen="_noRestoreOpen" Title="No restore" />
+
+    <BitDialog Id="empty-dialog" @bind-IsOpen="_emptyOpen" ShowCloseButton="false" ShowOkButton="false" ShowCancelButton="false"
+               Message="Nothing in here can take the focus." />
+</E2ESection>
+
+<E2ESection Id="position" Title="Position">
+    <select id="position-select" @bind="_positionName">
+        @foreach (var name in Enum.GetNames<BitPosition>())
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    <button id="btn-position-open" @onclick="() => _positionOpen = true">Open positioned</button>
+
+    <BitDialog Id="position-dialog" @bind-IsOpen="_positionOpen" Position="Enum.Parse<BitPosition>(_positionName)"
+               Title="@_positionName" Message="Positioned." Width="240px" />
+</E2ESection>
+
+<E2ESection Id="scroll" Title="Absolute position and scroll lock">
+    <button id="btn-scroll-open" @onclick="() => _scrollOpen = true">AutoToggleScroll</button>
+    <button id="btn-abs-open" @onclick="() => _absOpen = true">AbsolutePosition</button>
+    <button id="btn-scrollel-open" @onclick="() => _scrollElOpen = true">ScrollerElement</button>
+    <span id="scroll-open">@_scrollOpen</span>
+    <span id="abs-open">@_absOpen</span>
+    <span id="scrollel-open">@_scrollElOpen</span>
+
+    <BitDialog Id="scroll-dialog" AutoToggleScroll @bind-IsOpen="_scrollOpen" Title="The page is locked" Message="Locked." />
+
+    <div id="abs-box" style="position: relative; height: 240px; overflow: auto; border: 1px solid #888;">
+        <BitDialog Id="abs-dialog" AbsolutePosition AutoToggleScroll ScrollerSelector="#abs-box" @bind-IsOpen="_absOpen"
+                   Title="Inside the box" Message="Covers the box." />
+        <div style="height: 900px;">Tall content of the box.</div>
+    </div>
+
+    <div @ref="_scrollElRef" id="scrollel-box" style="height: 120px; overflow: auto; border: 1px solid #888;">
+        <div style="height: 600px;">Tall content of the scroller element.</div>
+    </div>
+    <BitDialog Id="scrollel-dialog" AutoToggleScroll ScrollerElement="_scrollElRef" @bind-IsOpen="_scrollElOpen"
+               Title="Holds an element" Message="Locks the element given by reference." />
+</E2ESection>
+
+<E2ESection Id="drag" Title="Draggable">
+    <button id="btn-drag-open" @onclick="() => { _dragOn = true; _dragOpen = true; }">Header handle</button>
+    <button id="btn-handle-open" @onclick="() => _handleOpen = true">DragElementSelector</button>
+    <button id="btn-draghead-open" @onclick="() => _dragHeadOpen = true">No header</button>
+    <span id="drag-open">@_dragOpen</span>
+    <span id="handle-open">@_handleOpen</span>
+
+    <BitDialog Id="drag-dialog" IsDraggable="_dragOn" @bind-IsOpen="_dragOpen" Title="Draggable dialog" Message="Drag it by its header.">
+        <button id="drag-toggle" @onclick="() => _dragOn = !_dragOn">Toggle IsDraggable</button>
+        <span id="drag-on">@_dragOn</span>
+    </BitDialog>
+
+    <BitDialog Id="handle-dialog" IsDraggable DragElementSelector=".drag-handle" @bind-IsOpen="_handleOpen" TitleAriaId="handle-title"
+               ShowCloseButton="false" ShowOkButton="false" ShowCancelButton="false">
+        <div class="drag-handle" id="handle-bar" style="padding: 12px; background: #eee;">
+            <span id="handle-title">Drag me by this bar</span>
+            <button id="handle-close" @onclick="() => _handleOpen = false">Close</button>
+        </div>
+        <div id="handle-body" style="padding: 24px;">The bar above is the handle.</div>
+    </BitDialog>
+
+    <BitDialog Id="draghead-dialog" IsDraggable @bind-IsOpen="_dragHeadOpen" ShowCloseButton="false" ShowOkButton="false"
+               ShowCancelButton="false" Message="No header: the whole surface is the handle." />
+</E2ESection>
+
+<E2ESection Id="nested" Title="Nested dialogs and one Escape at a time">
+    <button id="btn-outer-open" @onclick="() => _outerOpen = true">Open outer</button>
+    <span id="outer-open">@_outerOpen</span>
+    <span id="inner-open">@_innerOpen</span>
+    <span id="nested-dd-open">@_nestedDropdownOpen</span>
+
+    <BitDialog Id="outer-dialog" @bind-IsOpen="_outerOpen" Title="Publish this version?" OkText="Publish" ShowCloseButton="false">
+        <input id="nested-claim" data-bit-esc="claim" placeholder="claims Escape" />
+        <BitDropdown Id="nested-dropdown" Items="_dropdownItems" @bind-IsOpen="_nestedDropdownOpen" Placeholder="Notify" TItem="BitDropdownItem<string>" TValue="string" />
+        <button id="btn-inner-open" @onclick="() => _innerOpen = true">What changed?</button>
+
+        <BitDialog Id="inner-dialog" @bind-IsOpen="_innerOpen" Title="Changes in 4.2.0" ShowOkButton="false" CancelText="Back"
+                   ShowCloseButton="false">
+            <input id="inner-input" />
+        </BitDialog>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="keep-mounted" Title="KeepMounted">
+    <button id="btn-kept-open" @onclick="() => _keptOpen = true">KeepMounted</button>
+    <button id="btn-unkept-open" @onclick="() => _unkeptOpen = true">Default</button>
+    <span id="kept-open">@_keptOpen</span>
+    <span id="unkept-open">@_unkeptOpen</span>
+
+    <BitDialog Id="kept-dialog" KeepMounted @bind-IsOpen="_keptOpen" Title="Report an issue" ShowCloseButton="false">
+        <input id="kept-input" />
+    </BitDialog>
+
+    <BitDialog Id="unkept-dialog" @bind-IsOpen="_unkeptOpen" Title="Report an issue" ShowCloseButton="false">
+        <input id="unkept-input" />
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="programmatic" Title="Programmatic control: Open, Close, Toggle">
+    <button id="btn-prog-open" @onclick="() => _progRef.Open()">Open()</button>
+    <button id="btn-prog-close" @onclick="() => _progRef.Close()">Close()</button>
+    <button id="btn-prog-toggle" @onclick="() => _progRef.Toggle()">Toggle()</button>
+    <button id="btn-prog-refresh" @onclick="() => { }">Refresh</button>
+    <span id="prog-dismiss">@_progDismiss</span>
+    <span id="prog-reasons">@string.Join(",", _progReasons)</span>
+    <span id="prog-isopen">@(_progRef?.IsOpen.ToString() ?? "-")</span>
+
+    <BitDialog @ref="_progRef" Id="prog-dialog" Modeless Position="BitPosition.BottomRight" Title="Driven by methods"
+               ShowOkButton="false" CancelText="Close" OnDismiss="() => _progDismiss++"
+               OnDismissing="a => _progReasons.Add(a.Reason.ToString())" />
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters: BitParams">
+    <BitParams Parameters="_dialogParams">
+        <button id="btn-casc-file-open" @onclick="() => _cascFileOpen = true">Delete file</button>
+        <button id="btn-casc-folder-open" @onclick="() => _cascFolderOpen = true">Delete folder</button>
+
+        <BitDialog Id="casc-file-dialog" @bind-IsOpen="_cascFileOpen" Title="Delete this file?" Message="It moves to the trash." />
+
+        <BitDialog Id="casc-folder-dialog" @bind-IsOpen="_cascFolderOpen" OkText="Delete folder" Title="Delete this folder?"
+                   Message="Everything inside it goes too." />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <select id="color-select" @bind="_colorName">
+        <option value="">none</option>
+        @foreach (var name in Enum.GetNames<BitColor>())
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    <button id="btn-color-open" @onclick="() => _colorOpen = true">Open colored</button>
+
+    <BitDialog Id="color-dialog" @bind-IsOpen="_colorOpen"
+               Color="@(string.IsNullOrEmpty(_colorName) ? null : Enum.Parse<BitColor>(_colorName))"
+               Title="Colored" Message="The buttons follow the color." OkText="Confirm" />
+</E2ESection>
+
+<E2ESection Id="icons" Title="External icons">
+    <button id="btn-iconname-open" @onclick="() => _iconNameOpen = true">CloseIconName</button>
+    <button id="btn-iconcss-open" @onclick="() => _iconCssOpen = true">CloseIcon Css</button>
+    <button id="btn-iconfa-open" @onclick="() => _iconFaOpen = true">CloseIcon Fa</button>
+    <button id="btn-iconbi-open" @onclick="() => _iconBiOpen = true">CloseIcon Bi</button>
+
+    <BitDialog Id="iconname-dialog" @bind-IsOpen="_iconNameOpen" Title="CloseIconName" CloseButtonTitle="Dismiss"
+               CloseIconName="@BitIconName.ChromeClose" />
+    <BitDialog Id="iconcss-dialog" @bind-IsOpen="_iconCssOpen" Title="Css" CloseIcon="@BitIconInfo.Css("my-close-x")"
+               CloseIconName="@BitIconName.ChromeClose" />
+    <BitDialog Id="iconfa-dialog" @bind-IsOpen="_iconFaOpen" Title="Fa" CloseIcon="@BitIconInfo.Fa("solid xmark")" />
+    <BitDialog Id="iconbi-dialog" @bind-IsOpen="_iconBiOpen" Title="Bi" CloseIcon="@BitIconInfo.Bi("x-lg")" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <button id="btn-width-open" @onclick="() => _widthOpen = true">Width</button>
+    <button id="btn-minmax-open" @onclick="() => _minMaxOpen = true">MinWidth and MaxWidth</button>
+    <button id="btn-height-open" @onclick="() => _heightOpen = true">Height</button>
+    <button id="btn-minheight-open" @onclick="() => _minHeightOpen = true">MinHeight</button>
+    <button id="btn-fullwidth-open" @onclick="() => _fullWidthOpen = true">FullWidth</button>
+    <button id="btn-fullheight-open" @onclick="() => _fullHeightOpen = true">FullHeight</button>
+    <button id="btn-fullsize-open" @onclick="() => _fullSizeOpen = true">FullSize</button>
+    <button id="btn-maxvar-open" @onclick="() => _maxVarOpen = true">--bit-Dialog-max-width</button>
+    <button id="btn-margin-open" @onclick="() => _marginOpen = true">--bit-Dialog-margin</button>
+
+    <BitDialog Id="width-dialog" Width="32rem" @bind-IsOpen="_widthOpen" Title="Fixed width" Message="32rem wide." />
+    <BitDialog Id="minmax-dialog" MinWidth="20rem" MaxWidth="min(100%, 28rem)" @bind-IsOpen="_minMaxOpen" Title="Responsive width"
+               Message="@LongText" />
+    <BitDialog Id="height-dialog" Height="24rem" MaxHeight="min(100%, 20rem)" @bind-IsOpen="_heightOpen" Title="Fixed height">
+        <div style="padding: 0 24px; height: 800px; flex-shrink: 0;">@LongText</div>
+    </BitDialog>
+    <BitDialog Id="minheight-dialog" MinHeight="300px" @bind-IsOpen="_minHeightOpen" Title="Min height" Message="Short." />
+    <BitDialog Id="fullwidth-dialog" FullWidth Position="BitPosition.BottomCenter" @bind-IsOpen="_fullWidthOpen" Title="Full width" Message="Wide." />
+    <BitDialog Id="fullheight-dialog" FullHeight @bind-IsOpen="_fullHeightOpen" Title="Full height" Message="Tall." />
+    <BitDialog Id="fullsize-dialog" FullSize @bind-IsOpen="_fullSizeOpen" Title="Full size" Message="Everything." />
+    <div style="--bit-Dialog-max-width: 240px;">
+        <BitDialog Id="maxvar-dialog" @bind-IsOpen="_maxVarOpen" Title="Capped by the variable" Message="@LongText" />
+    </div>
+    <div style="--bit-Dialog-margin: 24px;">
+        <BitDialog Id="margin-dialog" FullSize @bind-IsOpen="_marginOpen" Title="Gutter" Message="Kept off the edges." />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes and CSS variables">
+    <button id="btn-styled-open" @onclick="() => _styledOpen = true">Styles</button>
+    <button id="btn-classed-open" @onclick="() => _classedOpen = true">Classes</button>
+    <button id="btn-vars-open" @onclick="() => _varsOpen = true">CSS variables</button>
+    <button id="btn-varscolor-open" @onclick="() => _varsColorOpen = true">CSS variables and Color</button>
+
+    <BitDialog Id="styled-dialog" @bind-IsOpen="_styledOpen" Style="--e2e-root: 1; letter-spacing: 1px;" Class="my-root"
+               Title="Styled" Subtitle="Sub" Message="Message" FooterTemplate="@FooterFragment" Styles="_styles" />
+
+    <BitDialog Id="classed-dialog" @bind-IsOpen="_classedOpen" Title="Classed" Subtitle="Sub" Message="Message"
+               FooterTemplate="@FooterFragment" Classes="_classes" />
+
+    <div class="vars-scope" style="--bit-Dialog-background: rgb(10, 20, 30); --bit-Dialog-color: rgb(200, 210, 220); --bit-Dialog-radius: 3px; --bit-Dialog-overlay-background: rgba(255, 0, 0, 0.5); --bit-Dialog-border-width: 4px; --bit-Dialog-border-color: rgb(1, 2, 3); --bit-Dialog-padding: 30px; --bit-Dialog-title-color: rgb(250, 0, 0); --bit-Dialog-title-font-size: 31px; --bit-Dialog-title-font-weight: 300; --bit-Dialog-subtitle-color: rgb(0, 250, 0); --bit-Dialog-message-color: rgb(0, 0, 250); --bit-Dialog-text-align: center; --bit-Dialog-ok-button-background: rgb(11, 12, 13); --bit-Dialog-ok-button-color: rgb(240, 241, 242); --bit-Dialog-ok-button-radius: 9px; --bit-Dialog-cancel-button-background: rgb(21, 22, 23); --bit-Dialog-cancel-button-color: rgb(230, 231, 232); --bit-Dialog-cancel-button-radius: 7px; --bit-Dialog-z-index: 1234; --bit-Dialog-shadow: none; --bit-Dialog-overlay-backdrop-filter: blur(2px); --bit-Dialog-ok-button-border-color: rgb(31, 32, 33); --bit-Dialog-ok-button-hover-background: rgb(41, 42, 43); --bit-Dialog-ok-button-hover-color: rgb(51, 52, 53); --bit-Dialog-ok-button-active-background: rgb(61, 62, 63); --bit-Dialog-ok-button-active-color: rgb(71, 72, 73); --bit-Dialog-cancel-button-border-color: rgb(81, 82, 83); --bit-Dialog-cancel-button-hover-background: rgb(91, 92, 93); --bit-Dialog-cancel-button-hover-color: rgb(101, 102, 103); --bit-Dialog-cancel-button-active-background: rgb(111, 112, 113); --bit-Dialog-cancel-button-active-color: rgb(121, 122, 123);">
+        <BitDialog Id="vars-dialog" @bind-IsOpen="_varsOpen" Title="Variables" Subtitle="Set on an ancestor" Message="Re-skinned." />
+        <BitDialog Id="varscolor-dialog" @bind-IsOpen="_varsColorOpen" Color="BitColor.Error" Title="Variables and Color"
+                   Message="The Color wins." />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <button id="btn-rtl-open" @onclick="() => _rtlOpen = true">Rtl</button>
+    <button id="btn-rtlstart-open" @onclick="() => _rtlStartOpen = true">Rtl TopStart</button>
+    <button id="btn-rtlleft-open" @onclick="() => _rtlLeftOpen = true">Rtl TopLeft</button>
+    <button id="btn-rtlinherit-open" @onclick="() => _rtlInheritOpen = true">Inherited TopStart</button>
+
+    <BitDialog Id="rtl-dialog" Dir="BitDir.Rtl" @bind-IsOpen="_rtlOpen" Title="بدون موضوع" OkText="تایید" CancelText="انصراف"
+               CloseButtonTitle="بستن" Message="آیا می خواهید این پیام را بدون موضوع ارسال کنید؟" />
+    <BitDialog Id="rtlstart-dialog" Dir="BitDir.Rtl" Position="BitPosition.TopStart" @bind-IsOpen="_rtlStartOpen" Title="TopStart" Width="240px" />
+    <BitDialog Id="rtlleft-dialog" Dir="BitDir.Rtl" Position="BitPosition.TopLeft" @bind-IsOpen="_rtlLeftOpen" Title="TopLeft" Width="240px" />
+    <div dir="rtl">
+        <BitDialog Id="rtlinherit-dialog" Position="BitPosition.TopStart" @bind-IsOpen="_rtlInheritOpen" Title="Inherited" Width="240px" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters: Id, HtmlAttributes, AriaLabel, TabIndex, Visibility, Disabled">
+    <select id="visibility-select" @bind="_visibilityName">
+        @foreach (var name in Enum.GetNames<BitVisibility>())
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    <button id="btn-base-open" @onclick="() => _baseOpen = true">Base</button>
+    <button id="btn-disabled-open" @onclick="() => _disabledOpen = true">Disabled</button>
+    <span id="base-open">@_baseOpen</span>
+    <span id="disabled-open">@_disabledOpen</span>
+    <span id="disabled-log">@string.Join(",", _disabledLog)</span>
+
+    <BitDialog Id="base-dialog" @bind-IsOpen="_baseOpen" AriaLabel="Named by AriaLabel" TabIndex="0"
+               Visibility="Enum.Parse<BitVisibility>(_visibilityName)" HtmlAttributes="_baseAttributes"
+               Message="No title: AriaLabel names the dialog." ShowCloseButton="false">
+        <button id="base-close" @onclick="() => _baseOpen = false">Close from the page</button>
+    </BitDialog>
+
+    <BitDialog Id="disabled-dialog" Disabled @bind-IsOpen="_disabledOpen" Title="Disabled" Message="Nothing answers."
+               OnOk="() => _disabledLog.Add(nameof(BitDialog.OnOk))" OnCancel="() => _disabledLog.Add(nameof(BitDialog.OnCancel))"
+               OnClose="() => _disabledLog.Add(nameof(BitDialog.OnClose))" OnOverlayClick="() => _disabledLog.Add(nameof(BitDialog.OnOverlayClick))"
+               OnDismiss="() => _disabledLog.Add(nameof(BitDialog.OnDismiss))">
+        <button id="disabled-page-close" @onclick="() => _disabledOpen = false">Close from the page</button>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle: unmounted while open">
+    <button id="btn-unmount-open" @onclick="() => { _showUnmount = true; _unmountOpen = true; }">Open, then unmount from inside</button>
+    <span id="unmount-shown">@_showUnmount</span>
+    @if (_showUnmount)
+    {
+        <BitDialog Id="unmount-dialog" AutoToggleScroll @bind-IsOpen="_unmountOpen" Title="Going away">
+            <button id="unmount-now" @onclick="() => _showUnmount = false">Unmount</button>
+        </BitDialog>
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string LongText = "Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning, a moment of possibility where creativity has yet to take shape.";
+
+    private BitDialog _basicRef = default!;
+    private bool _basicOpen;
+    private string _basicTitle = "Missing subject";
+    private int _basicChanged;
+    private readonly List<string> _basicLog = [];
+
+    private bool _labelsOpen;
+    private bool _singleOpen;
+    private bool _noOkOpen;
+    private bool _gatedOpen;
+    private bool _agreed;
+    private bool _cancelEnabled = true;
+    private bool _noHeaderOpen;
+
+    private bool _subtitleOpen;
+    private bool _headerOpen;
+    private bool _footerOpen;
+    private bool _customOpen;
+    private bool _bodyOpen;
+
+    private BitDialog _awaitRef = default!;
+    private readonly List<string> _awaited = [];
+
+    private bool _slowOpen;
+    private readonly List<string> _slowLog = [];
+    private TaskCompletionSource? _slowTcs;
+    private readonly BitDialogClassStyles _slowClasses = new() { Spinner = "part-spinner" };
+    private readonly BitDialogClassStyles _slowStyles = new() { Spinner = "--e2e-part: spinner;" };
+
+    private bool _blockingOpen;
+    private bool _noOverlayOpen;
+    private bool _noEscapeOpen;
+    private bool _modelessOpen;
+    private bool _notAlertOpen;
+    private bool _alertOpen;
+    private bool _noAnimOpen;
+    private bool _forceAnimOpen;
+    private int _behindClicks;
+    private readonly List<string> _prevented = [];
+
+    private BitDialog _guardedRef = default!;
+    private bool _guardedOpen;
+    private bool _guard = true;
+    private readonly List<string> _guardedReasons = [];
+    private readonly List<string> _guardedPrevented = [];
+
+    private bool _focusOpen;
+    private bool _noFocusOpen;
+    private bool _focusBtnOpen;
+    private BitDialogButton? _focusButton;
+    private bool _focusSelOpen;
+    private bool _dataAutoOpen;
+    private bool _noRestoreOpen;
+    private bool _emptyOpen;
+
+    private string _positionName = nameof(BitPosition.Center);
+    private bool _positionOpen;
+
+    private bool _scrollOpen;
+    private bool _absOpen;
+    private bool _scrollElOpen;
+    private ElementReference _scrollElRef;
+
+    private bool _dragOpen;
+    private bool _dragOn = true;
+    private bool _handleOpen;
+    private bool _dragHeadOpen;
+
+    private bool _outerOpen;
+    private bool _innerOpen;
+    private bool _nestedDropdownOpen;
+    private readonly List<BitDropdownItem<string>> _dropdownItems =
+    [
+        new() { Text = "Everyone", Value = "everyone" },
+        new() { Text = "Admins", Value = "admins" },
+        new() { Text = "Nobody", Value = "nobody" },
+    ];
+
+    private bool _keptOpen;
+    private bool _unkeptOpen;
+
+    private BitDialog _progRef = default!;
+    private int _progDismiss;
+    private readonly List<string> _progReasons = [];
+
+    private bool _cascFileOpen;
+    private bool _cascFolderOpen;
+    private readonly BitDialogParams[] _dialogParams =
+    [
+        new()
+        {
+            OkText = "Delete",
+            CancelText = "Keep",
+            ShowCloseButton = false,
+            Position = BitPosition.TopCenter,
+            Color = BitColor.Error,
+            Classes = new() { Container = "cascaded-container" },
+        }
+    ];
+
+    private string _colorName = string.Empty;
+    private bool _colorOpen;
+
+    private bool _iconNameOpen;
+    private bool _iconCssOpen;
+    private bool _iconFaOpen;
+    private bool _iconBiOpen;
+
+    private bool _widthOpen;
+    private bool _minMaxOpen;
+    private bool _heightOpen;
+    private bool _minHeightOpen;
+    private bool _fullWidthOpen;
+    private bool _fullHeightOpen;
+    private bool _fullSizeOpen;
+    private bool _maxVarOpen;
+    private bool _marginOpen;
+
+    private bool _styledOpen;
+    private bool _classedOpen;
+    private bool _varsOpen;
+    private bool _varsColorOpen;
+
+    private readonly BitDialogClassStyles _styles = new()
+    {
+        Root = "--e2e-part: root;",
+        Document = "--e2e-part: document;",
+        Overlay = "--e2e-part: overlay;",
+        Container = "--e2e-part: container;",
+        Header = "--e2e-part: header;",
+        Body = "--e2e-part: body;",
+        Title = "--e2e-part: title;",
+        Subtitle = "--e2e-part: subtitle;",
+        CloseButton = "--e2e-part: close-button;",
+        CloseIcon = "--e2e-part: close-icon;",
+        Message = "--e2e-part: message;",
+        ButtonsContainer = "--e2e-part: buttons-container;",
+        OkButton = "--e2e-part: ok-button;",
+        CancelButton = "--e2e-part: cancel-button;",
+        Footer = "--e2e-part: footer;",
+    };
+
+    private readonly BitDialogClassStyles _classes = new()
+    {
+        Root = "part-root",
+        Document = "part-document",
+        Overlay = "part-overlay",
+        Container = "part-container",
+        Header = "part-header",
+        Body = "part-body",
+        Title = "part-title",
+        Subtitle = "part-subtitle",
+        CloseButton = "part-close-button",
+        CloseIcon = "part-close-icon",
+        Message = "part-message",
+        ButtonsContainer = "part-buttons-container",
+        OkButton = "part-ok-button",
+        CancelButton = "part-cancel-button",
+        Footer = "part-footer",
+    };
+
+    private bool _rtlOpen;
+    private bool _rtlStartOpen;
+    private bool _rtlLeftOpen;
+    private bool _rtlInheritOpen;
+
+    private string _visibilityName = nameof(BitVisibility.Visible);
+    private bool _baseOpen;
+    private bool _disabledOpen;
+    private readonly List<string> _disabledLog = [];
+    private readonly Dictionary<string, object> _baseAttributes = new() { ["data-e2e"] = "dialog-root" };
+
+    private bool _showUnmount;
+    private bool _unmountOpen;
+
+    private static readonly RenderFragment FooterFragment = @<span class="footer-content">Footer</span>;
+
+    private async Task ShowAndAwait()
+    {
+        var result = await _awaitRef.Show();
+        _awaited.Add(result?.ToString() ?? "null");
+    }
+
+    private async Task HandleSlowOk()
+    {
+        _slowLog.Add("OnOk:start");
+        _slowTcs = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _slowTcs.Task;
+        _slowLog.Add("OnOk:end");
+    }
+
+    private void ReleaseSlowOk()
+    {
+        _slowTcs?.TrySetResult();
+    }
+
+    private void HandleDismissing(BitDialogDismissArgs args)
+    {
+        _guardedReasons.Add(args.Reason.ToString());
+        args.Cancel = _guard && args.Reason != BitDialogDismissReason.OkButton;
+    }
+
+    private void OpenFocusButton(BitDialogButton button)
+    {
+        _focusButton = button;
+        _focusBtnOpen = true;
+    }
+}

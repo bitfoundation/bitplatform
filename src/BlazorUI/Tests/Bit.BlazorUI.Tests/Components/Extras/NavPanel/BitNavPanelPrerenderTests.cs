@@ -65,6 +65,71 @@ public class BitNavPanelPrerenderTests
 
 
 
+    [TestMethod]
+    public async Task BitNavPanelShouldPrerenderAnAlwaysDrawerAsAModalDialog()
+    {
+        // The two breakpoints whose shape is the same on every screen need no browser to find it out, so a prerendered
+        // page already carries the dialog, the overlay and the shape class.
+        var html = await Prerenderer.RenderAsync<BitNavPanel<BitNavItem>>(new Dictionary<string, object?>
+        {
+            [nameof(BitNavPanel<BitNavItem>.Items)] = TreeItems(),
+            [nameof(BitNavPanel<BitNavItem>.IsOpen)] = true,
+            [nameof(BitNavPanel<BitNavItem>.DrawerBreakpoint)] = BitNavPanelBreakpoint.Always,
+        });
+
+        var document = new HtmlParser().ParseDocument(html);
+        var root = document.QuerySelector(".bit-npn")!;
+
+        Assert.IsTrue(root.ClassList.Contains("bit-npn-drw"));
+        Assert.AreEqual("dialog", root.GetAttribute("role"));
+        Assert.AreEqual("true", root.GetAttribute("aria-modal"));
+        Assert.AreEqual("-1", root.GetAttribute("tabindex"));
+        Assert.AreEqual("Navigation", root.GetAttribute("aria-label"));
+        Assert.IsTrue(document.QuerySelector(".bit-npn-ovl")!.ClassList.Contains("bit-npn-drw"));
+    }
+
+    [TestMethod]
+    public async Task BitNavPanelShouldPrerenderTheBreakpointUntilTheBrowserAnswers()
+    {
+        // Until the browser has reported the screen, the breakpoint itself is the class the stylesheet splits at, the
+        // overlay carries it too, and nothing says dialog yet.
+        var html = await Prerenderer.RenderAsync<BitNavPanel<BitNavItem>>(new Dictionary<string, object?>
+        {
+            [nameof(BitNavPanel<BitNavItem>.Items)] = TreeItems(),
+            [nameof(BitNavPanel<BitNavItem>.IsOpen)] = true,
+            [nameof(BitNavPanel<BitNavItem>.DrawerBreakpoint)] = BitNavPanelBreakpoint.Lg,
+        });
+
+        var document = new HtmlParser().ParseDocument(html);
+        var root = document.QuerySelector(".bit-npn")!;
+
+        Assert.IsTrue(root.ClassList.Contains("bit-npn-blg"));
+        Assert.IsFalse(root.ClassList.Contains("bit-npn-drw"));
+        Assert.IsFalse(root.ClassList.Contains("bit-npn-col"));
+        Assert.IsNull(root.GetAttribute("role"));
+        Assert.IsTrue(document.QuerySelector(".bit-npn-ovl")!.ClassList.Contains("bit-npn-blg"));
+    }
+
+    [TestMethod]
+    public async Task BitNavPanelShouldPrerenderANeverDrawerAsAColumnWithoutAnOverlay()
+    {
+        var html = await Prerenderer.RenderAsync<BitNavPanel<BitNavItem>>(new Dictionary<string, object?>
+        {
+            [nameof(BitNavPanel<BitNavItem>.Items)] = TreeItems(),
+            [nameof(BitNavPanel<BitNavItem>.IsOpen)] = true,
+            [nameof(BitNavPanel<BitNavItem>.DrawerBreakpoint)] = BitNavPanelBreakpoint.Never,
+        });
+
+        var document = new HtmlParser().ParseDocument(html);
+        var root = document.QuerySelector(".bit-npn")!;
+
+        Assert.IsTrue(root.ClassList.Contains("bit-npn-col"));
+        Assert.IsNull(root.GetAttribute("role"));
+        Assert.IsNull(document.QuerySelector(".bit-npn-ovl"));
+    }
+
+
+
     private static async Task<IDocument> Prerender(string? searchText)
     {
         var html = await Prerenderer.RenderAsync<BitNavPanel<BitNavItem>>(new Dictionary<string, object?>

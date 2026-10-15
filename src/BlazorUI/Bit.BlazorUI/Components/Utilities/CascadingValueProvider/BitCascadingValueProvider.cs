@@ -308,17 +308,15 @@ public class BitCascadingValueProvider : ComponentBase, IDisposable
         }
     }
 
+    // Unconditional, so the trimmer honours them too (a #pragma only silences the compiler's analyzer): every member of
+    // CascadingValue<> is kept through the annotated field it is built from, and every instantiation shares them.
+    [UnconditionalSuppressMessage("Trimming", "IL2073", Justification = "Every member of CascadingValue<> is kept through the annotated _cascadingValueType field, and every instantiation of it shares them.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2055", Justification = "Every member of CascadingValue<> is kept through the annotated _cascadingValueType field, and every instantiation of it shares them.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "A CascadingValue<T> over a value type nothing names statically needs code made for it at run time, which the WebAssembly interpreter and the server's JIT both make.")]
     [return: DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)]
     private static Type GetCascadingValueType(Type valueType)
     {
-#pragma warning disable IL2073
-        return _cascadingValueTypeCache.GetOrAdd(valueType, static type =>
-        {
-#pragma warning disable IL3050, IL2055
-            return _cascadingValueType.MakeGenericType(type);
-#pragma warning restore IL3050, IL2055
-        });
-#pragma warning restore IL2073
+        return _cascadingValueTypeCache.GetOrAdd(valueType, static type => _cascadingValueType.MakeGenericType(type));
     }
 
 

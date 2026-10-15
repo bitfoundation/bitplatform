@@ -1,0 +1,206 @@
+﻿@page "/e2e/accordion-list/apis"
+
+<PageTitle>BitAccordionList APIs E2E</PageTitle>
+
+<h1>BitAccordionList - Custom and Option APIs</h1>
+
+<p>Log: <span id="api-log">@string.Join(",", _log)</span></p>
+
+<E2ESection Id="custom" Title="Custom generic items with NameSelectors">
+    <BitAccordionList @ref="_customRef" Id="custom-list" Items="_customItems" TItem="E2ESection21" NameSelectors="_selectors"
+                      @bind-ExpandedKey="_customKey"
+                      OnItemClick="(E2ESection21 s) => Log(s.Id!)" />
+    <span id="custom-key">@(_customKey ?? "null")</span>
+    <button id="btn-custom-toggle" @onclick="@(() => _customRef!.Toggle("beta"))">Toggle beta</button>
+    <button id="btn-custom-focus" @onclick="@(() => _customRef!.FocusItem("eta"))">Focus eta</button>
+</E2ESection>
+
+<E2ESection Id="custom-names" Title="NameSelectors by member name">
+    <BitAccordionList Id="custom-names-list" Items="_namedItems" TItem="E2ESection21" NameSelectors="_namedSelectors" />
+</E2ESection>
+
+<E2ESection Id="custom-templates" Title="Custom items with templates">
+    <BitAccordionList Id="custom-templates-list" Items="_templateItems" TItem="E2ESection21" NameSelectors="_templateSelectors" />
+</E2ESection>
+
+<E2ESection Id="option" Title="Options">
+    <button id="btn-add-option" @onclick="() => _showLate = !_showLate">Toggle the late option</button>
+    <BitAccordionList @ref="_optionRef" Id="option-list" Multiple @bind-ExpandedKeys="_optionKeys" TItem="BitAccordionListOption"
+                      OnExpand="@((BitAccordionListOption o) => Log($"expand:{o.Key}"))">
+        <BitAccordionListOption Key="one" Title="One" Description="First option" IconName="@BitIconName.Settings" Class="opt-one" Style="margin-left: 7px"
+                                OnClick="@((BitAccordionListOption o) => Log($"click:{o.Key}"))">
+            <span class="opt-one-body">The first body</span>
+        </BitAccordionListOption>
+        @if (_showLate)
+        {
+            <BitAccordionListOption Key="late" Title="Late" Description="Added after the first render">
+                <span class="opt-late-body">Late body</span>
+            </BitAccordionListOption>
+        }
+        <BitAccordionListOption Key="two" Title="Two" IsExpanded ExpanderIconName="@BitIconName.Add" ExpandedExpanderIconName="@BitIconName.Remove">
+            <span class="opt-two-body">The second body</span>
+        </BitAccordionListOption>
+        <BitAccordionListOption Key="three" Title="Three" IsDisabled>
+            <span>Disabled</span>
+        </BitAccordionListOption>
+        <BitAccordionListOption Key="four" Title="Four" ReadOnly HideExpanderIcon HeaderAriaLabel="The fourth option">
+            <span>Read-only</span>
+        </BitAccordionListOption>
+        <BitAccordionListOption Key="five" Title="Five" Icon="@BitIconInfo.Bi("star")" ExpanderIcon="@BitIconInfo.Bi("plus")" ExpandedExpanderIcon="@BitIconInfo.Bi("dash")">
+            <Body Context="o"><span class="opt-five-body">Body of @o.Title</span></Body>
+            <Actions Context="o"><button class="opt-five-action" @onclick="@(() => Log($"action:{o.Key}"))">Act</button></Actions>
+            <TitleTemplate Context="o"><em class="opt-five-title">@o.Title!</em></TitleTemplate>
+            <ExpanderTemplate Context="o"><span class="opt-five-expander">+</span></ExpanderTemplate>
+        </BitAccordionListOption>
+        <BitAccordionListOption Key="six" Title="Six">
+            <HeaderTemplate Context="o"><strong class="opt-six-header">Header of @o.Title</strong></HeaderTemplate>
+        </BitAccordionListOption>
+    </BitAccordionList>
+    <span id="option-keys">@string.Join("|", _optionKeys)</span>
+    <button id="btn-option-collapse-all" @onclick="() => _optionRef!.CollapseAll()">CollapseAll</button>
+    <button id="btn-option-expand-all" @onclick="() => _optionRef!.ExpandAll()">ExpandAll</button>
+</E2ESection>
+
+<E2ESection Id="option-alias" Title="Options parameter and generated keys">
+    <BitAccordionList Id="option-alias-list" TItem="BitAccordionListOption" DefaultExpandedKey="1">
+        <Options>
+            <BitAccordionListOption Title="Generated zero"><span>Zero</span></BitAccordionListOption>
+            <BitAccordionListOption Title="Generated one"><span class="gen-one">One</span></BitAccordionListOption>
+        </Options>
+    </BitAccordionList>
+</E2ESection>
+
+<E2ESection Id="option-isexpanded" Title="An option's own IsExpanded">
+    <BitAccordionList Id="option-isexpanded-list" TItem="BitAccordionListOption">
+        <BitAccordionListOption Key="a" Title="A"><span>A</span></BitAccordionListOption>
+        <BitAccordionListOption Key="b" Title="B" IsExpanded><span class="opt-b-body">B</span></BitAccordionListOption>
+    </BitAccordionList>
+</E2ESection>
+
+<E2ESection Id="option-empty" Title="An empty option list">
+    <button id="btn-toggle-options" @onclick="() => _showOptions = !_showOptions">Toggle the options</button>
+    <BitAccordionList Id="option-empty-list" TItem="BitAccordionListOption">
+        <ChildContent>
+            @if (_showOptions)
+            {
+                <BitAccordionListOption Key="only" Title="Only"><span>Only</span></BitAccordionListOption>
+            }
+        </ChildContent>
+        <EmptyContent><span id="option-empty-content">No options</span></EmptyContent>
+    </BitAccordionList>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly List<string> _log = [];
+    private BitAccordionList<E2ESection21>? _customRef;
+    private BitAccordionList<BitAccordionListOption>? _optionRef;
+    private string? _customKey = "alpha";
+    private IEnumerable<string> _optionKeys = ["two"];
+    private bool _showLate;
+    private bool _showOptions;
+    private List<E2ESection21> _customItems = [];
+    private List<E2ESection21> _namedItems = [];
+    private List<E2ESection21> _templateItems = [];
+
+    public class E2ESection21
+    {
+        public string? Id { get; set; }
+        public string? Name { get; set; }
+        public string? Info { get; set; }
+        public bool Off { get; set; }
+        public bool? Locked { get; set; }
+        public bool Open { get; set; }
+        public string? Css { get; set; }
+        public string? Inline { get; set; }
+        public string? Glyph { get; set; }
+        public BitIconInfo? CustomGlyph { get; set; }
+        public string? Chevron { get; set; }
+        public string? ChevronOpen { get; set; }
+        public BitIconInfo? CustomChevron { get; set; }
+        public BitIconInfo? CustomChevronOpen { get; set; }
+        public bool? NoChevron { get; set; }
+        public string? Label { get; set; }
+        public RenderFragment<E2ESection21>? Content { get; set; }
+        public RenderFragment<E2ESection21>? Extra { get; set; }
+        public RenderFragment<E2ESection21>? Head { get; set; }
+        public RenderFragment<E2ESection21>? Caption { get; set; }
+        public RenderFragment<E2ESection21>? Arrow { get; set; }
+        public Action<E2ESection21>? Clicked { get; set; }
+    }
+
+    private readonly BitAccordionListNameSelectors<E2ESection21> _selectors = new()
+    {
+        Key = { Selector = i => i.Id },
+        Title = { Selector = i => i.Name },
+        Description = { Selector = i => i.Info },
+        IsDisabled = { Selector = i => i.Off },
+        ReadOnly = { Selector = i => i.Locked },
+        IsExpanded = { Selector = i => i.Open },
+        Class = { Selector = i => i.Css },
+        Style = { Selector = i => i.Inline },
+        IconName = { Selector = i => i.Glyph },
+        Icon = { Selector = i => i.CustomGlyph },
+        ExpanderIconName = { Selector = i => i.Chevron },
+        ExpandedExpanderIconName = { Selector = i => i.ChevronOpen },
+        ExpanderIcon = { Selector = i => i.CustomChevron },
+        ExpandedExpanderIcon = { Selector = i => i.CustomChevronOpen },
+        HideExpanderIcon = { Selector = i => i.NoChevron },
+        HeaderAriaLabel = { Selector = i => i.Label },
+        Body = { Selector = i => i.Content },
+        Actions = { Selector = i => i.Extra },
+        OnClick = { Selector = i => i.Clicked },
+    };
+
+    private readonly BitAccordionListNameSelectors<E2ESection21> _namedSelectors = new()
+    {
+        Key = { Name = nameof(E2ESection21.Id) },
+        Title = { Name = nameof(E2ESection21.Name) },
+        Description = { Name = nameof(E2ESection21.Info) },
+        IsExpanded = { Name = nameof(E2ESection21.Open) },
+        Body = { Name = nameof(E2ESection21.Content) },
+    };
+
+    private readonly BitAccordionListNameSelectors<E2ESection21> _templateSelectors = new()
+    {
+        Key = { Selector = i => i.Id },
+        Title = { Selector = i => i.Name },
+        Body = { Selector = i => i.Content },
+        HeaderTemplate = { Selector = i => i.Head },
+        TitleTemplate = { Selector = i => i.Caption },
+        ExpanderTemplate = { Selector = i => i.Arrow },
+    };
+
+    protected override void OnInitialized()
+    {
+        _customItems =
+        [
+            new() { Id = "alpha", Name = "Alpha", Info = "The first", Glyph = BitIconName.Settings, Css = "custom-alpha", Inline = "margin-left: 9px",
+                    Content = s => @<span class="custom-alpha-body">Alpha body</span>, Clicked = s => Log($"clicked:{s.Id}") },
+            new() { Id = "beta", Name = "Beta", Chevron = BitIconName.Add, ChevronOpen = BitIconName.Remove, Content = s => @<span class="custom-beta-body">Beta body</span>,
+                    Extra = s => @<button class="custom-beta-action" @onclick="@(() => Log("action:beta"))">Act</button> },
+            new() { Id = "gamma", Name = "Gamma", Off = true, Content = s => @<span>Gamma</span> },
+            new() { Id = "delta", Name = "Delta", Locked = true, Content = s => @<span>Delta</span> },
+            new() { Id = "eps", Label = "Epsilon by label", CustomGlyph = BitIconInfo.Bi("star"), CustomChevron = BitIconInfo.Bi("plus"), CustomChevronOpen = BitIconInfo.Bi("dash"),
+                    Content = s => @<span class="custom-eps-body">Epsilon</span> },
+            new() { Id = "zeta", Name = "Zeta", NoChevron = true, Content = s => @<span>Zeta</span> },
+            new() { Id = "eta", Name = "Eta", Content = s => @<span>Eta</span> },
+        ];
+
+        _namedItems =
+        [
+            new() { Id = "n1", Name = "Named one", Info = "By name", Content = s => @<span class="named-one-body">Named one body</span> },
+            new() { Id = "n2", Name = "Named two", Open = true, Content = s => @<span class="named-two-body">Named two body</span> },
+        ];
+
+        _templateItems =
+        [
+            new() { Id = "t1", Name = "Templated title", Caption = s => @<b class="tpl-caption">[@s.Name]</b>, Arrow = s => @<span class="tpl-arrow">v</span>,
+                    Content = s => @<span>T1</span> },
+            new() { Id = "t2", Name = "Templated header", Head = s => @<i class="tpl-head">Head of @s.Name</i>, Content = s => @<span>T2</span> },
+        ];
+    }
+
+    private void Log(string entry) => _log.Add(entry);
+}

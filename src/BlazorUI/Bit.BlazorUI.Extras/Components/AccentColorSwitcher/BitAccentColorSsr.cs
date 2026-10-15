@@ -229,7 +229,7 @@ public static class BitAccentColorSsr
     /// <summary>
     /// <see cref="BuildRootAccentAttributes"/> as an attribute map, for splatting onto the root
     /// element of a Razor host page - typically merged with
-    /// <see cref="BitThemeSsr.BuildRootThemeAttributeMap"/>'s result into a single
+    /// <see cref="BitThemeSsr.BuildRootThemeAttributeMap(string?, string?)"/>'s result into a single
     /// <c>@attributes</c> dictionary.
     /// </summary>
     public static IReadOnlyDictionary<string, object> BuildRootAccentAttributeMap(string? persistedAccent)

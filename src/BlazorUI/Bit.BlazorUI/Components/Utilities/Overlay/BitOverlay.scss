@@ -53,6 +53,14 @@
     user-select: text;
 }
 
+// The selectability is handed back to the children of the box as well. Firefox resolves a user-select of auto
+// against the parent box rather than the parent element, and a display:contents element has no box, so what the
+// consumer wrote would otherwise be resolved against the layer and could not be selected at all. Of no weight,
+// so a user-select a consumer's own rule gives a child still wins.
+:where(.bit-ovl-cnt) > * {
+    user-select: text;
+}
+
 // ModeFull: the Overlay dims what it covers instead of only catching the clicks meant for it. It is a
 // transparent catcher of clicks otherwise, so that an overlay used as a click catcher does not darken the
 // page it is meant to leave readable.

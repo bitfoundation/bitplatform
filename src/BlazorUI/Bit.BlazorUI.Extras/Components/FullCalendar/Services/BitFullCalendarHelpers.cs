@@ -563,14 +563,14 @@ public static class BitFullCalendarHelpers
     /// </summary>
     public static DateTime StartOfCulturalMonth(DateTime date, CultureInfo? culture = null)
     {
-        var cal = (culture ?? CultureInfo.CurrentUICulture).Calendar;
+        var cal = (culture ?? CultureInfo.CurrentUICulture).DateTimeFormat.Calendar;
         return date.Date.AddDays(1 - cal.GetDayOfMonth(date));
     }
 
     /// <summary>Last day of the cultural month containing <paramref name="date"/> (era-safe).</summary>
     public static DateTime EndOfCulturalMonth(DateTime date, CultureInfo? culture = null)
     {
-        var cal = (culture ?? CultureInfo.CurrentUICulture).Calendar;
+        var cal = (culture ?? CultureInfo.CurrentUICulture).DateTimeFormat.Calendar;
         return cal.AddMonths(StartOfCulturalMonth(date, culture), 1).AddDays(-1);
     }
 
@@ -582,7 +582,7 @@ public static class BitFullCalendarHelpers
     public static DateTime StartOfCulturalYear(DateTime date, CultureInfo? culture = null)
     {
         culture ??= CultureInfo.CurrentUICulture;
-        var cal = culture.Calendar;
+        var cal = culture.DateTimeFormat.Calendar;
         var year = cal.GetYear(date);
         var cursor = StartOfCulturalMonth(date, culture);
         // Bounded by the months in a year; the guard stops the walk as soon as stepping back would
@@ -601,7 +601,7 @@ public static class BitFullCalendarHelpers
     public static DateTime EndOfCulturalYear(DateTime date, CultureInfo? culture = null)
     {
         culture ??= CultureInfo.CurrentUICulture;
-        var cal = culture.Calendar;
+        var cal = culture.DateTimeFormat.Calendar;
         var year = cal.GetYear(date);
         var cursor = StartOfCulturalMonth(date, culture);
         for (var i = 0; i < 24; i++)
@@ -620,7 +620,7 @@ public static class BitFullCalendarHelpers
                                    int? weekDayCount = null, IReadOnlyList<DayOfWeek>? hiddenDays = null)
     {
         culture ??= CultureInfo.CurrentUICulture;
-        var cal = culture.Calendar;
+        var cal = culture.DateTimeFormat.Calendar;
 
         switch (view)
         {
@@ -695,7 +695,7 @@ public static class BitFullCalendarHelpers
             // Derived pattern was not a valid format string for this culture; fall through.
         }
 
-        var cal = culture.Calendar;
+        var cal = culture.DateTimeFormat.Calendar;
         int y = cal.GetYear(date);
         int m = cal.GetMonth(date);
         int d = cal.GetDayOfMonth(date);
@@ -732,7 +732,7 @@ public static class BitFullCalendarHelpers
         int? weekDayCount = null)
     {
         culture ??= CultureInfo.CurrentUICulture;
-        var cal = culture.Calendar;
+        var cal = culture.DateTimeFormat.Calendar;
         int delta = forward ? 1 : -1;
         // A shorter week steps by its own length in shown days, from the first day it shows.
         if (view == BitFullCalendarView.Week && NormalizeWeekDayCount(weekDayCount) is { } count)
@@ -952,7 +952,7 @@ public static class BitFullCalendarHelpers
         bool fixedWeekCount = false)
     {
         culture ??= CultureInfo.CurrentUICulture;
-        var cal = culture.Calendar;
+        var cal = culture.DateTimeFormat.Calendar;
         var dtf = culture.DateTimeFormat;
 
         // Anchor on the first day of the cultural month using pure date arithmetic derived from the
@@ -1008,7 +1008,7 @@ public static class BitFullCalendarHelpers
     public static int GetCulturalDayOfMonth(DateTime date, CultureInfo? culture = null)
     {
         culture ??= CultureInfo.CurrentUICulture;
-        return culture.Calendar.GetDayOfMonth(date);
+        return culture.DateTimeFormat.Calendar.GetDayOfMonth(date);
     }
 
     // -- Culture-aware: Events for year ------------------------------

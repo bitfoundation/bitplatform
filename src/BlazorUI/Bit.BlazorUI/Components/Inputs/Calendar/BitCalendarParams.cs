@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitCalendar"/> component.
 /// </summary>
-public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
+public class BitCalendarParams : BitInputBaseParams<DateTimeOffset?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitCalendar"/> cascading parameters within <see cref="BitParams"/>.
@@ -569,7 +569,7 @@ public class BitCalendarParams : BitComponentBaseParams, IBitComponentParams
     {
         if (bitCalendar is null) return;
 
-        UpdateBaseParameters(bitCalendar);
+        UpdateInputBaseParameters(bitCalendar);
 
         if (AllowDeselect.HasValue)
         {

@@ -1,0 +1,21 @@
+﻿@page "/e2e/modal/prerender"
+
+<PageTitle>BitModal prerender E2E</PageTitle>
+
+<h1>BitModal prerendered open</h1>
+
+<E2ESection Id="default-open" Title="DefaultIsOpen: uncontrolled and open from the first render">
+    <button id="btn-default-close" @onclick="() => _modalRef.Close()">Close()</button>
+    <span id="default-dismiss">@_dismissed</span>
+    <BitModal @ref="_modalRef" Id="default-open-modal" DefaultIsOpen="true" Modeless NoAutoFocus Position="BitPosition.BottomRight"
+              OnDismiss="() => _dismissed++">
+        <div id="prerendered-content" style="padding: 24px;">Prerendered modal</div>
+    </BitModal>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private BitModal _modalRef = default!;
+    private int _dismissed;
+}

@@ -1,0 +1,471 @@
+﻿@page "/e2e/overlay"
+
+@* Every feature of BitOverlay, one section each. A fixed Overlay covers the whole screen while it is open, so the
+   tests open one of them at a time; the parameters of an open one are changed by dispatching the click of a page
+   button, which the layer would otherwise catch. *@
+
+<PageTitle>BitOverlay E2E</PageTitle>
+
+<style>
+    .e2e-ovl-box {
+        width: 60px;
+        height: 40px;
+        background: #0a0;
+    }
+
+    .e2e-ovl-container {
+        position: relative;
+        width: 300px;
+        height: 200px;
+        border: 1px solid #888;
+        border-radius: 16px;
+    }
+
+    .e2e-ovl-scroller {
+        position: relative;
+        width: 300px;
+        height: 150px;
+        overflow: auto;
+        border: 1px solid green;
+    }
+
+    .e2e-ovl-scroller > p {
+        margin: 0;
+        height: 30px;
+    }
+
+    .e2e-ovl-class {
+        background-color: rgb(1, 2, 3);
+    }
+
+    .e2e-ovl-vars {
+        --bit-Overlay-background: rgb(10, 20, 30);
+        --bit-Overlay-padding: 24px;
+        --bit-Overlay-backdrop-filter: blur(4px);
+        --bit-Overlay-z-index: 1234;
+        --bit-Overlay-transition-duration: 400ms;
+    }
+</style>
+
+<E2ESection Id="basic" Title="Basic: IsOpen two-way bound, OnOpen / OnClose">
+    <button id="btn-open-basic" @onclick="() => _basicOpen = true">Open</button>
+    <button id="btn-close-basic" @onclick="() => _basicOpen = false">Close (page)</button>
+    <span id="basic-open">@_basicOpen</span>
+    <span id="basic-opened">@_basicOpened</span>
+    <span id="basic-closed">@_basicClosed</span>
+    <BitOverlay Id="ovl-basic" @bind-IsOpen="_basicOpen" Position="BitPosition.Center"
+                OnOpen="() => _basicOpened++" OnClose="() => _basicClosed++">
+        <div id="basic-content" class="e2e-ovl-box">content</div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="mode-full" Title="ModeFull dims what it covers">
+    <button id="btn-open-full" @onclick="() => _fullOpen = true">Open dimmed</button>
+    <button id="btn-toggle-modefull" @onclick="() => _modeFull = !_modeFull">Toggle ModeFull</button>
+    <span id="full-mode">@_modeFull</span>
+    <BitOverlay Id="ovl-full" @bind-IsOpen="_fullOpen" ModeFull="_modeFull" Position="BitPosition.Center">
+        <div class="e2e-ovl-box"></div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="position" Title="Position (in a container, LTR, Dir=Rtl and an inherited rtl)">
+    <div>
+        <button id="btn-pos-none" @onclick="() => _position = null">None</button>
+        @foreach (var position in Enum.GetValues<BitPosition>())
+        {
+            var p = position;
+            <button id="btn-pos-@p" @onclick="() => _position = p">@p</button>
+        }
+        <span id="pos-current">@(_position?.ToString() ?? "none")</span>
+    </div>
+    <div id="pos-container" class="e2e-ovl-container">
+        <BitOverlay Id="ovl-pos" IsOpen="true" AbsolutePosition Position="_position">
+            <div id="pos-content" class="e2e-ovl-box"></div>
+        </BitOverlay>
+    </div>
+    <div id="pos-rtl-container" class="e2e-ovl-container">
+        <BitOverlay Id="ovl-pos-rtl" IsOpen="true" AbsolutePosition Position="_position" Dir="BitDir.Rtl">
+            <div id="pos-rtl-content" class="e2e-ovl-box"></div>
+        </BitOverlay>
+    </div>
+    <div dir="rtl">
+        <div id="pos-inh-container" class="e2e-ovl-container">
+            <BitOverlay Id="ovl-pos-inh" IsOpen="true" AbsolutePosition Position="_position">
+                <div id="pos-inh-content" class="e2e-ovl-box"></div>
+            </BitOverlay>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="dismissal" Title="Dismissal: layer click, content click, selection drag, Escape, Blocking, NoDismissOnEscape">
+    <button id="btn-open-dismiss" @onclick="() => _dismissOpen = true">Open</button>
+    <button id="btn-toggle-blocking" @onclick="() => _blocking = !_blocking">Toggle Blocking</button>
+    <button id="btn-toggle-noesc" @onclick="() => _noEscape = !_noEscape">Toggle NoDismissOnEscape</button>
+    <span id="dismiss-open">@_dismissOpen</span>
+    <span id="dismiss-blocking">@_blocking</span>
+    <span id="dismiss-noesc">@_noEscape</span>
+    <span id="dismiss-clicks">@_dismissClicks</span>
+    <span id="dismiss-content-clicks">@_dismissContentClicks</span>
+    <span id="dismiss-last-x">@_dismissLastX</span>
+    <span id="dismiss-opened">@_dismissOpened</span>
+    <BitOverlay Id="ovl-dismiss" @bind-IsOpen="_dismissOpen" Position="BitPosition.Center" ModeFull
+                Blocking="_blocking" NoDismissOnEscape="_noEscape" OnOpen="() => _dismissOpened++"
+                OnClick="e => { _dismissClicks++; _dismissLastX = e.ClientX; }">
+        <div id="dismiss-content" style="width: 300px; padding: 16px; background: white;">
+            <p id="dismiss-text">Some text to select and drag past the edge of this box.</p>
+            <button id="dismiss-content-btn" @onclick="() => _dismissContentClicks++">Content button</button>
+            <input id="dismiss-claim-input" data-bit-esc="claim" placeholder="claims Escape" />
+            <button id="dismiss-close-btn" @onclick="() => _dismissOpen = false">Close</button>
+        </div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="escape-stack" Title="Escape closes the topmost of two open Overlays">
+    <button id="btn-open-lower" @onclick="() => _lowerOpen = true">Open lower</button>
+    <span id="lower-open">@_lowerOpen</span>
+    <span id="upper-open">@_upperOpen</span>
+    <span id="lower-opened">@_lowerOpened</span>
+    <span id="upper-opened">@_upperOpened</span>
+    <BitOverlay Id="ovl-lower" @bind-IsOpen="_lowerOpen" ModeFull Position="BitPosition.Center" OnOpen="() => _lowerOpened++">
+        <button id="btn-open-upper" @onclick="() => _upperOpen = true">Open upper</button>
+    </BitOverlay>
+    <BitOverlay Id="ovl-upper" @bind-IsOpen="_upperOpen" ModeFull Position="BitPosition.TopCenter" OnOpen="() => _upperOpened++">
+        <div class="e2e-ovl-box"></div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="escape-dialog" Title="Escape pressed inside a dialog of the page is the dialog's">
+    <button id="btn-open-esc-dialog" @onclick="() => _escDialogOverlayOpen = true">Open</button>
+    <span id="esc-dialog-open">@_escDialogOverlayOpen</span>
+    <span id="esc-dialog-opened">@_escDialogOpened</span>
+    <div role="dialog" aria-label="Page dialog">
+        <input id="esc-dialog-input" />
+    </div>
+    <BitOverlay Id="ovl-esc-dialog" @bind-IsOpen="_escDialogOverlayOpen" Position="BitPosition.Center" OnOpen="() => _escDialogOpened++">
+        <div role="dialog" aria-label="Dialog on the layer">
+            <input id="esc-layer-dialog-input" />
+        </div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="escape-modal" Title="An Overlay opened from a BitModal takes the Escape first">
+    <button id="btn-open-modal" @onclick="() => _modalOpen = true">Open modal</button>
+    <span id="modal-open">@_modalOpen</span>
+    <span id="modal-ovl-open">@_modalOverlayOpen</span>
+    <span id="modal-ovl-opened">@_modalOverlayOpened</span>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div style="padding: 16px;">
+            <button id="btn-open-modal-overlay" @onclick="() => _modalOverlayOpen = true">Open overlay</button>
+        </div>
+    </BitModal>
+    <BitOverlay Id="ovl-modal" @bind-IsOpen="_modalOverlayOpen" ModeFull ZIndex="2000000" Position="BitPosition.Center" OnOpen="() => _modalOverlayOpened++">
+        <div class="e2e-ovl-box"></div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="escape-dropdown" Title="An open dropdown on the layer takes the Escape first">
+    <button id="btn-open-esc-dropdown" @onclick="() => _escDropdownOpen = true">Open</button>
+    <span id="esc-dropdown-open">@_escDropdownOpen</span>
+    <span id="esc-dropdown-opened">@_escDropdownOpened</span>
+    <BitOverlay Id="ovl-esc-dropdown" @bind-IsOpen="_escDropdownOpen" ModeFull Position="BitPosition.Center" OnOpen="() => _escDropdownOpened++">
+        <div style="width: 300px; padding: 16px; background: white;">
+            <BitDropdown Id="drp-in-overlay" Label="Fruit" Placeholder="Pick a fruit"
+                         Items="_fruits" TItem="BitDropdownItem<string>" TValue="string" />
+        </div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="absolute" Title="AbsolutePosition covers its container">
+    <button id="btn-open-abs" @onclick="() => _absOpen = true">Open</button>
+    <span id="abs-open">@_absOpen</span>
+    <div id="abs-container" class="e2e-ovl-container">
+        <button id="abs-behind">Behind</button>
+        <BitOverlay Id="ovl-abs" @bind-IsOpen="_absOpen" AbsolutePosition ModeFull Position="BitPosition.Center">
+            <div class="e2e-ovl-box"></div>
+        </BitOverlay>
+    </div>
+    <button id="abs-outside">Outside</button>
+</E2ESection>
+
+<E2ESection Id="lock-page" Title="AutoToggleScroll holds the page; holds are counted">
+    <button id="btn-open-lock" @onclick="() => _lockOpen = true">Open</button>
+    <span id="lock-open">@_lockOpen</span>
+    <span id="lock2-open">@_lock2Open</span>
+    <span id="lock2-opened">@_lock2Opened</span>
+    <span id="lock-opened">@_lockOpened</span>
+    <span id="lock-closed">@_lockClosed</span>
+    <BitOverlay Id="ovl-lock" @bind-IsOpen="_lockOpen" AutoToggleScroll ModeFull Position="BitPosition.Center"
+                OnOpen="() => _lockOpened++" OnClose="() => _lockClosed++">
+        <button id="btn-open-lock2" @onclick="() => _lock2Open = true">Open second</button>
+    </BitOverlay>
+    <BitOverlay Id="ovl-lock2" @bind-IsOpen="_lock2Open" AutoToggleScroll Position="BitPosition.TopCenter" OnOpen="() => _lock2Opened++">
+        <div class="e2e-ovl-box"></div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="lock-toggle" Title="AutoToggleScroll changed while open">
+    <button id="btn-open-lt" @onclick="() => _ltOpen = true">Open</button>
+    <button id="btn-toggle-lt-auto" @onclick="() => _ltAuto = !_ltAuto">Toggle AutoToggleScroll</button>
+    <span id="lt-auto">@_ltAuto</span>
+    <BitOverlay Id="ovl-lt" @bind-IsOpen="_ltOpen" AutoToggleScroll="_ltAuto" Position="BitPosition.Center">
+        <div class="e2e-ovl-box"></div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="lock-selector" Title="ScrollerSelector + AutoToggleScroll hold a box; offset top">
+    <button id="btn-open-sel" @onclick="() => _selOpen = true">Open</button>
+    <button id="btn-close-sel" @onclick="() => _selOpen = false">Close</button>
+    <span id="sel-open">@_selOpen</span>
+    <div id="sel-box" class="e2e-ovl-scroller">
+        <BitOverlay Id="ovl-sel" @bind-IsOpen="_selOpen" AbsolutePosition AutoToggleScroll ModeFull
+                    ScrollerSelector="#sel-box" Position="BitPosition.Center">
+            <div class="e2e-ovl-box"></div>
+        </BitOverlay>
+        @for (var i = 1; i <= 20; i++)
+        {
+            <p>Line @i</p>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="lock-element" Title="ScrollerElement + AutoToggleScroll hold a box">
+    <button id="btn-open-elm" @onclick="() => _elmOpen = true">Open</button>
+    <button id="btn-close-elm" @onclick="() => _elmOpen = false">Close</button>
+    <span id="elm-open">@_elmOpen</span>
+    <div id="elm-box" class="e2e-ovl-scroller" @ref="_elmBox">
+        @for (var i = 1; i <= 20; i++)
+        {
+            <p>Line @i</p>
+        }
+    </div>
+    <BitOverlay Id="ovl-elm" @bind-IsOpen="_elmOpen" AutoToggleScroll ScrollerElement="_elmBox" ZIndex="10"
+                Style="inset: auto; width: 0; height: 0; pointer-events: none;">
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="forward" Title="A fixed Overlay left scrolling hands the wheel to its ScrollerSelector">
+    <button id="btn-open-fwd" @onclick="() => _fwdOpen = true">Open</button>
+    <span id="fwd-open">@_fwdOpen</span>
+    <div id="fwd-box" class="e2e-ovl-scroller">
+        @for (var i = 1; i <= 40; i++)
+        {
+            <p>Line @i</p>
+        }
+    </div>
+    <BitOverlay Id="ovl-fwd" @bind-IsOpen="_fwdOpen" ScrollerSelector="#fwd-box" Position="BitPosition.TopLeft">
+        <div id="fwd-content" class="e2e-ovl-scroller">
+            @for (var i = 1; i <= 40; i++)
+            {
+                <p>Inner @i</p>
+            }
+        </div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="programmatic" Title="Open / Close / Toggle on the ref, DefaultIsOpen">
+    <button id="btn-ref-open" @onclick="() => _refOverlay.Open()">Open()</button>
+    <button id="btn-ref-close" @onclick="() => _refOverlay.Close()">Close()</button>
+    <button id="btn-ref-toggle" @onclick="() => _refOverlay.Toggle()">Toggle()</button>
+    <button id="btn-rerender" @onclick="() => _rerenders++">Re-render</button>
+    <span id="ref-opened">@_refOpened</span>
+    <span id="ref-closed">@_refClosed</span>
+    <span id="rerenders">@_rerenders</span>
+    <BitOverlay @ref="_refOverlay" Id="ovl-ref" ModeFull Position="BitPosition.Center"
+                OnOpen="() => _refOpened++" OnClose="() => _refClosed++">
+        <div class="e2e-ovl-box"></div>
+    </BitOverlay>
+    <span id="default-opened">@_defaultOpened</span>
+    <div class="e2e-ovl-container">
+        <BitOverlay Id="ovl-default" DefaultIsOpen="_defaultIsOpen" AbsolutePosition ModeFull Position="BitPosition.Center"
+                    OnOpen="() => _defaultOpened++">
+            <div class="e2e-ovl-box"></div>
+        </BitOverlay>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled: no dismissal, no OnClick, Open() refused, Close() honoured">
+    <button id="btn-dis-open" @onclick="() => _disOpen = true">Open (binding)</button>
+    <button id="btn-dis-toggle" @onclick="() => _disabled = !_disabled">Toggle Disabled</button>
+    <button id="btn-dis-ref-open" @onclick="() => _disRef.Open()">Open()</button>
+    <button id="btn-dis-ref-close" @onclick="() => _disRef.Close()">Close()</button>
+    <span id="dis-open">@_disOpen</span>
+    <span id="dis-disabled">@_disabled</span>
+    <span id="dis-clicks">@_disClicks</span>
+    <BitOverlay @ref="_disRef" Id="ovl-dis" @bind-IsOpen="_disOpen" Disabled="_disabled" ModeFull Position="BitPosition.Center"
+                OnClick="() => _disClicks++">
+        <div class="e2e-ovl-box"></div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="cascade" Title="BitParams cascade">
+    <button id="btn-cascade-open" @onclick="() => _cascadeOpen = true">Open</button>
+    <button id="btn-cascade-change" @onclick="ChangeCascade">Change cascade</button>
+    <span id="cascade-open">@_cascadeOpen</span>
+    <BitParams Parameters="_overlayParams">
+        <div class="e2e-ovl-container">
+            <BitOverlay Id="ovl-cascade" IsOpen="true" AbsolutePosition>
+                <div class="e2e-ovl-box"></div>
+            </BitOverlay>
+        </div>
+        <div class="e2e-ovl-container">
+            <BitOverlay Id="ovl-cascade-own" IsOpen="true" AbsolutePosition Position="BitPosition.TopCenter" ModeFull="false">
+                <div class="e2e-ovl-box"></div>
+            </BitOverlay>
+        </div>
+        <BitOverlay Id="ovl-cascade-blocking" @bind-IsOpen="_cascadeOpen">
+            <div class="e2e-ovl-box"></div>
+        </BitOverlay>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Id, Style, Class, ZIndex, the --bit-Overlay-* variables">
+    <div class="e2e-ovl-container">
+        <BitOverlay Id="ovl-style" IsOpen="true" AbsolutePosition Style="background-color: rgb(200, 0, 0);">
+            <div class="e2e-ovl-box"></div>
+        </BitOverlay>
+    </div>
+    <div class="e2e-ovl-container">
+        <BitOverlay Id="ovl-class" IsOpen="true" AbsolutePosition Class="e2e-ovl-class">
+            <div class="e2e-ovl-box"></div>
+        </BitOverlay>
+    </div>
+    <div class="e2e-ovl-vars">
+        <BitOverlay Id="ovl-vars" IsOpen="true" ModeFull Style="inset: auto; top: 0; left: 0; width: 200px; height: 120px; pointer-events: none;">
+            <div id="vars-content" class="e2e-ovl-box"></div>
+        </BitOverlay>
+        <BitOverlay Id="ovl-vars-zindex" IsOpen="true" ZIndex="77" Style="inset: auto; width: 0; height: 0; pointer-events: none;" />
+    </div>
+    <BitOverlay Id="ovl-default-styles" IsOpen="true" ModeFull Style="inset: auto; width: 0; height: 0; pointer-events: none;" />
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility, HtmlAttributes, AriaLabel, TabIndex">
+    <button id="btn-vis-visible" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-vis-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-vis-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <div class="e2e-ovl-container">
+        <BitOverlay Id="ovl-vis" IsOpen="true" AbsolutePosition ModeFull Visibility="_visibility"
+                    AriaLabel="Loading the report" data-e2e="overlay-attr" title="layer title">
+            <div class="e2e-ovl-box"></div>
+        </BitOverlay>
+    </div>
+    <div class="e2e-ovl-container">
+        <BitOverlay Id="ovl-tabindex" IsOpen="true" AbsolutePosition TabIndex="0"
+                    HtmlAttributes="@(new Dictionary<string, object> { ["aria-label"] = "From attributes", ["data-extra"] = "x" })">
+            <div class="e2e-ovl-box"></div>
+        </BitOverlay>
+    </div>
+</E2ESection>
+
+<E2ESection Id="motion" Title="The fade follows the motion tokens; ForceAnimation keeps it">
+    <BitOverlay Id="ovl-motion" IsOpen="true" Style="inset: auto; width: 0; height: 0; pointer-events: none;" />
+    <BitOverlay Id="ovl-motion-force" IsOpen="true" ForceAnimation Style="inset: auto; width: 0; height: 0; pointer-events: none;" />
+    <button id="btn-open-fade" @onclick="() => _fadeOpen = true">Open fading</button>
+    <BitOverlay Id="ovl-fade" @bind-IsOpen="_fadeOpen" ModeFull ForceAnimation Position="BitPosition.Center"
+                Style="--bit-Overlay-transition-duration: 300ms;">
+        <div class="e2e-ovl-box"></div>
+    </BitOverlay>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="An open Overlay removed from the page hands its scroller back">
+    <button id="btn-unmount-open" @onclick="() => _unmountOpen = true">Open</button>
+    <button id="btn-unmount" @onclick="() => _unmountShown = !_unmountShown">Toggle mounted</button>
+    <span id="unmount-shown">@_unmountShown</span>
+    <div id="unmount-box" class="e2e-ovl-scroller">
+        @if (_unmountShown)
+        {
+            <BitOverlay Id="ovl-unmount" @bind-IsOpen="_unmountOpen" AutoToggleScroll ScrollerSelector="#unmount-box"
+                        AbsolutePosition ModeFull>
+                <div class="e2e-ovl-box"></div>
+            </BitOverlay>
+        }
+        @for (var i = 1; i <= 20; i++)
+        {
+            <p>Line @i</p>
+        }
+    </div>
+</E2ESection>
+
+@* Room for the page itself to scroll, which the page hold is checked against. *@
+<div id="tall-spacer" style="height: 2000px;"></div>
+
+<E2EStatus />
+
+@code {
+    private bool _basicOpen;
+    private int _basicOpened;
+    private int _basicClosed;
+
+    private bool _fullOpen;
+    private bool _modeFull = true;
+
+    private BitPosition? _position = BitPosition.Center;
+
+    private bool _dismissOpen;
+    private bool _blocking;
+    private bool _noEscape;
+    private int _dismissClicks;
+    private int _dismissContentClicks;
+    private double _dismissLastX;
+    private int _dismissOpened;
+    private int _lowerOpened;
+    private int _upperOpened;
+    private int _escDialogOpened;
+    private int _escDropdownOpened;
+    private int _modalOverlayOpened;
+    private int _lock2Opened;
+
+    private bool _lowerOpen;
+    private bool _upperOpen;
+
+    private bool _escDialogOverlayOpen;
+
+    private bool _modalOpen;
+    private bool _modalOverlayOpen;
+
+    private bool _escDropdownOpen;
+    private readonly List<BitDropdownItem<string>> _fruits = [new() { Text = "Apple", Value = "apple" }, new() { Text = "Banana", Value = "banana" }];
+
+    private bool _absOpen;
+
+    private bool _lockOpen;
+    private bool _lock2Open;
+    private int _lockOpened;
+    private int _lockClosed;
+
+    private bool _ltOpen;
+    private bool _ltAuto;
+
+    private bool _selOpen;
+
+    private bool _elmOpen;
+    private ElementReference _elmBox;
+
+    private bool _fwdOpen;
+
+    private BitOverlay _refOverlay = default!;
+    private int _refOpened;
+    private int _refClosed;
+    private int _rerenders;
+    private bool _defaultIsOpen = true;
+    private int _defaultOpened;
+
+    private BitOverlay _disRef = default!;
+    private bool _disOpen;
+    private bool _disabled = true;
+    private int _disClicks;
+
+    private bool _cascadeOpen;
+    private BitOverlayParams[] _overlayParams = [new() { ModeFull = true, Position = BitPosition.Center, Blocking = true }];
+
+    private BitVisibility _visibility;
+
+    private bool _fadeOpen;
+
+    private bool _unmountOpen;
+    private bool _unmountShown = true;
+
+    private void ChangeCascade()
+    {
+        _overlayParams = [new() { ModeFull = false, Position = BitPosition.BottomRight, Blocking = false }];
+    }
+}

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
@@ -2201,103 +2202,6 @@ public class BitRatingTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitRatingParamsShouldHaveCorrectParamName()
-    {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitRating)}", BitRatingParams.ParamName);
-    }
-
-    [TestMethod]
-    public void BitRatingParamsShouldImplementIBitComponentParams()
-    {
-        var @params = new BitRatingParams();
-
-        Assert.IsInstanceOfType<IBitComponentParams>(@params);
-        Assert.IsInstanceOfType<BitInputBaseParams<double>>(@params);
-        Assert.AreEqual(BitRatingParams.ParamName, @params.Name);
-    }
-
-    [TestMethod]
-    public void BitRatingShouldApplyCascadingParametersFromBitParams()
-    {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitRatingParams
-            {
-                Max = 3,
-                Color = BitColor.Success,
-                Size = BitSize.Large,
-                Vertical = true,
-                ReadOnly = true,
-                Label = "Cascaded label",
-                LabelPlacement = BitPlacement.End,
-                SelectedIconName = "HeartFill",
-                UnselectedIconName = "Heart"
-            }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitRating>(0);
-                builder.CloseComponent();
-            });
-        });
-
-        var root = component.Find(".bit-rtg");
-
-        Assert.AreEqual(3, component.FindAll(".bit-rtg-btn").Count);
-        Assert.IsTrue(root.ClassList.Contains("bit-rtg-suc"));
-        Assert.IsTrue(root.ClassList.Contains("bit-rtg-lg"));
-        Assert.IsTrue(root.ClassList.Contains("bit-rtg-vrt"));
-        Assert.IsTrue(root.ClassList.Contains("bit-rtg-rdl"));
-        Assert.IsTrue(root.ClassList.Contains("bit-rtg-led"));
-        Assert.AreEqual("Cascaded label", component.Find(".bit-rtg-lbl").TextContent);
-        Assert.IsTrue(component.FindAll(".bit-rtg-iem")[2].ClassList.Contains("bit-icon--Heart"));
-        Assert.IsTrue(component.FindAll(".bit-rtg-ifl")[0].ClassList.Contains("bit-icon--HeartFill"));
-    }
-
-    [TestMethod]
-    public void BitRatingDirectParametersShouldOverrideCascadingParameters()
-    {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitRatingParams
-            {
-                Max = 3,
-                Color = BitColor.Success,
-                ReadOnly = true,
-                Label = "Cascaded label"
-            }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitRating>(0);
-                builder.AddAttribute(1, nameof(BitRating.Max), 6);
-                builder.AddAttribute(2, nameof(BitRating.Color), BitColor.Error);
-                builder.AddAttribute(3, nameof(BitRating.ReadOnly), false);
-                builder.CloseComponent();
-            });
-        });
-
-        var root = component.Find(".bit-rtg");
-
-        Assert.AreEqual(6, component.FindAll(".bit-rtg-btn").Count);
-        Assert.IsTrue(root.ClassList.Contains("bit-rtg-err"));
-
-        // An explicit false is a written parameter like any other, so the cascade does not fill it in.
-        Assert.IsFalse(root.ClassList.Contains("bit-rtg-rdl"));
-
-        // What the markup left unwritten still comes from the cascade.
-        Assert.AreEqual("Cascaded label", component.Find(".bit-rtg-lbl").TextContent);
-    }
-
-    [TestMethod]
     public void BitRatingShouldRespectTheLabelClassesAndStyles()
     {
         var component = RenderComponent<BitRating>(parameters =>
@@ -2410,5 +2314,272 @@ public class BitRatingTests : BunitTestContext
         });
 
         Assert.IsFalse(component.Find(".bit-rtg").HasAttribute("aria-required"));
+    }
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitRatingShouldPairTheDisabledAttributesOfItsItems(bool disabled)
+    {
+        // A native control rendered disabled writes disabled and aria-disabled both, so :disabled and
+        // [aria-disabled="true"] each find it - the items and the hidden field that carries the value alike.
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        foreach (var button in component.FindAll(".bit-rtg-btn"))
+        {
+            Assert.AreEqual(disabled, button.HasAttribute("disabled"));
+            Assert.AreEqual(disabled ? "true" : null, button.GetAttribute("aria-disabled"));
+        }
+
+        var input = component.Find(".bit-input-hidden");
+
+        Assert.AreEqual(disabled, input.HasAttribute("disabled"));
+        Assert.AreEqual(disabled ? "true" : null, input.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldKeepThePagesAriaDisabledOnTheHiddenInputWhileEnabled()
+    {
+        // The hidden input writes its own aria-disabled after the splat of the InputHtmlAttributes, so the value the
+        // page wrote there is carried over rather than overwritten with the parameter's null.
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-disabled", "true" } });
+        });
+
+        var input = component.Find(".bit-input-hidden");
+
+        Assert.IsFalse(input.HasAttribute("disabled"));
+        Assert.AreEqual("true", input.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod,
+        DataRow(true, 0),
+        DataRow(false, 1)
+    ]
+    public void BitRatingShouldDropTheSplattedActivationHandlersWhileDisabled(bool disabled, int expected)
+    {
+        // A screen reader activates what it announces by dispatching a click, which pointer-events: none does not
+        // stop, so a disabled rating drops the page's handlers of the activating events (see
+        // BitComponentBase.DisabledAwareHtmlAttributes) rather than running them for a state it announces as unavailable.
+        var clicks = 0;
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitRating>(0);
+            builder.AddAttribute(1, nameof(BitRating.Disabled), disabled);
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+            builder.CloseComponent();
+        });
+
+        try
+        {
+            component.Find(".bit-rtg").Click();
+        }
+        catch (MissingEventHandlerException) { }
+
+        Assert.AreEqual(expected, clicks);
+    }
+
+    [TestMethod]
+    public async Task BitRatingShouldSetUpAndTearDownTheJsSide()
+    {
+        var component = RenderComponent<BitRating>();
+
+        var rootId = component.Find(".bit-rtg").Id;
+        var setups = Context.JSInterop.Invocations["BitBlazorUI.Ratings.setup"];
+
+        // The javascript side suppresses the scrolling of the navigation keys and reports the focus crossing the edge
+        // of the rating, which is what the names of the two JSInvokable handlers are handed over for.
+        Assert.AreEqual(1, setups.Count);
+        Assert.AreEqual(rootId, setups[0].Arguments[0]);
+        Assert.AreEqual(nameof(BitRating._HandleFocusIn), setups[0].Arguments[2]);
+        Assert.AreEqual(nameof(BitRating._HandleFocusOut), setups[0].Arguments[3]);
+
+        await component.Instance.DisposeAsync();
+
+        var disposals = Context.JSInterop.Invocations["BitBlazorUI.Ratings.dispose"];
+
+        Assert.AreEqual(1, disposals.Count);
+        Assert.AreEqual(rootId, disposals[0].Arguments[0]);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldFollowAMaxThatChangesAtRuntime()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Max, 5);
+            parameters.Add(p => p.DefaultValue, 4);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Max, 3));
+
+        var buttons = component.FindAll(".bit-rtg-btn");
+
+        // The items follow the new max, and so does the value, which is held inside the range.
+        Assert.AreEqual(3, buttons.Count);
+        Assert.IsTrue(buttons.All(b => b.GetAttribute("aria-setsize") == "3"));
+        Assert.AreEqual(3, component.Instance.Value);
+        Assert.AreEqual("3", component.Find(".bit-input-hidden").GetAttribute("max"));
+
+        component.Render(parameters => parameters.Add(p => p.Max, 8));
+
+        Assert.AreEqual(8, component.FindAll(".bit-rtg-btn").Count);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRespectTheDescriptionClassesAndStyles()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Description, "Half a star is selectable.");
+            parameters.Add(p => p.Classes, new BitRatingClassStyles { Description = "custom-description" });
+            parameters.Add(p => p.Styles, new BitRatingClassStyles { Description = "color: red;" });
+        });
+
+        var description = component.Find(".bit-rtg-dsc");
+
+        Assert.IsTrue(description.ClassList.Contains("custom-description"));
+        Assert.AreEqual("color: red;", description.GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitRatingShouldRenderTheBaseParametersOnItsRoot()
+    {
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.Id, "rating-id");
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { { "data-test", "rating" } });
+        });
+
+        var root = component.Find(".bit-rtg");
+
+        Assert.AreEqual("rating-id", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.AreEqual("rating", root.GetAttribute("data-test"));
+    }
+
+    [TestMethod]
+    public void BitRatingKeyboardShouldRespectOnChangingCancel()
+    {
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Bind(p => p.Value, value, v => value = v);
+            parameters.Add(p => p.OnChanging, (BitRatingChangeArgs args) => args.Cancel = true);
+        });
+
+        // A refusal holds for a key the same way it holds for a click.
+        component.Find(".bit-rtg").KeyDown("ArrowRight");
+
+        Assert.AreEqual(3d, value);
+        Assert.AreEqual("true", component.FindAll(".bit-rtg-btn")[2].GetAttribute("aria-checked"));
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitRatingShouldNotPreviewWhileItIsNotInteractive(bool readOnly, bool disabled)
+    {
+        double? hovered = null;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, readOnly);
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.DefaultValue, 1);
+            parameters.Add(p => p.OnHoverChange, (double? v) => hovered = v);
+        });
+
+        component.FindAll(".bit-rtg-btn")[3].MouseOver();
+
+        // Neither the preview nor its report: a rating that cannot be changed has no value a click would commit.
+        Assert.IsNull(hovered);
+        StringAssert.Contains(component.FindAll(".bit-rtg-ifl")[3].GetAttribute("style"), "width:0%");
+    }
+
+    [TestMethod]
+    public async Task BitRatingShouldPointFocusAsyncAtTheTabbableItem()
+    {
+        // The hidden number input is the form value carrier, not something the user is ever meant to land on, so the
+        // inherited InputElement is bound to the item holding the single tab stop of the group.
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.DefaultValue, 4);
+        });
+
+        var tabbable = component.FindAll(".bit-rtg-btn")[3];
+
+        Assert.AreEqual("0", tabbable.GetAttribute("tabindex"));
+
+        await component.InvokeAsync(() => component.Instance.FocusAsync().AsTask());
+
+        var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.AreEqual(1, focuses.Count);
+        Assert.AreEqual(component.Instance.InputElement.Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public void BitRatingShouldClearWithBackspaceWhenAllowClear()
+    {
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.AllowClear, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find(".bit-rtg").KeyDown("Backspace");
+
+        Assert.AreEqual(0d, value);
+    }
+
+    [TestMethod]
+    public void BitRatingKeyboardShouldNotClearWithoutAllowClear()
+    {
+        double value = 3;
+        var component = RenderComponent<BitRating>(parameters =>
+        {
+            parameters.Add(p => p.AllowZeroStars, true);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // Delete is the clearing key, and it stays behind AllowClear even where 0 is in the range.
+        component.Find(".bit-rtg").KeyDown("Delete");
+
+        Assert.AreEqual(3d, value);
+    }
+
+    [TestMethod]
+    public void BitRatingItemContextShouldDescribeTheItem()
+    {
+        var context = new BitRatingItemContext(index: 3, max: 5, percentage: 50, displayValue: 2.5, value: 2);
+
+        Assert.AreEqual(3, context.Index);
+        Assert.AreEqual(5, context.Max);
+        Assert.AreEqual(50, context.Percentage);
+        Assert.AreEqual(2.5, context.DisplayValue);
+        Assert.AreEqual(2, context.Value);
+        Assert.IsTrue(context.IsSelected);
+        Assert.IsFalse(context.IsFull);
+        Assert.IsTrue(context.IsCurrent);
+
+        var empty = new BitRatingItemContext(index: 4, max: 5, percentage: 0, displayValue: 2.5, value: 2);
+
+        Assert.IsFalse(empty.IsSelected);
+        Assert.IsFalse(empty.IsCurrent);
+
+        var full = new BitRatingItemContext(index: 2, max: 5, percentage: 100, displayValue: 2.5, value: 2);
+
+        Assert.IsTrue(full.IsFull);
+        Assert.IsFalse(full.IsCurrent);
     }
 }

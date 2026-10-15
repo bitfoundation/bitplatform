@@ -1,7 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @typeparam TItem
 
-<li role="listitem" style="@Nav.GetStyle(Item)" class="@Nav.GetClass(Item)">
+<li role="listitem" style="@Nav.GetStyle(Item)" class="@Nav.GetClass(Item)" @attributes="Nav.GetItemMarkerAttributes(Item)">
     @{
         var template = Nav.GetTemplate(Item);
         var templateRenderMode = Nav.GetTemplateRenderMode(Item);
@@ -53,9 +53,7 @@
         // template rendered in its place, so an item marked with a count keeps its icon, its text and its states.
         // Only an item that renders its own anchor (or button) has one: a group header, a separator and a template
         // that replaces the item render none, and the rail keeps the badge alone, pinned to the icon.
-        var replacingTemplate = template is not null && templateRenderMode is BitNavItemTemplateRenderMode.Replace ? template
-                              : Nav.ItemTemplate is not null && Nav.ItemTemplateRenderMode is BitNavItemTemplateRenderMode.Replace ? Nav.ItemTemplate
-                              : null;
+        var replacingTemplate = Nav.GetReplacingTemplate(Item);
         var hasEnd = isGroupHeader is false && isSeparator is false && replacingTemplate is null;
         var badge = hasEnd ? Nav.GetBadge(Item) : null;
         var dot = hasEnd && badge.HasNoValue() && Nav.GetDot(Item);
@@ -114,8 +112,10 @@
         {
             @template(Item)
         }
-        else if (Nav.HeaderTemplate is not null && Nav.HeaderTemplateRenderMode is BitNavItemTemplateRenderMode.Replace)
+        else if (template is null && Nav.HeaderTemplate is not null && Nav.HeaderTemplateRenderMode is BitNavItemTemplateRenderMode.Replace)
         {
+            @* The template of an item wins over the HeaderTemplate, so the mode that goes with it wins as well: a
+               header with a Normal template of its own keeps its button under a replacing HeaderTemplate. *@
             @Nav.HeaderTemplate(Item)
         }
         else

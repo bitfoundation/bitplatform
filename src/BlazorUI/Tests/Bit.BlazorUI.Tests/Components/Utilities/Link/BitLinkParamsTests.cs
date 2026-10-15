@@ -20,6 +20,87 @@ public class BitLinkParamsTests : BunitTestContext
     private static readonly string[] NotCascaded = [nameof(BitLink.ChildContent), nameof(BitLink.OnClick), nameof(BitLink.CascadingParameters)];
 
     [TestMethod]
+    public void BitLinkParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitLink)}", BitLinkParams.ParamName);
+        Assert.AreEqual("BitParams.BitLink", BitLinkParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitLinkParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitLinkParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitLinkParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitLinkShouldTakeTheCascadedLookAndBaseParameters()
+    {
+        var component = RenderComponent<BitLinkParamsTest>(parameters =>
+        {
+            parameters.Add(p => p.Href, "https://bitplatform.dev");
+            parameters.Add(p => p.Params, new BitLinkParams
+            {
+                NoUnderline = true,
+                NoColor = true,
+                Size = BitSize.Small,
+                AriaLabel = "Home",
+                Class = "cascaded",
+                Dir = BitDir.Rtl,
+                Disabled = true,
+                Style = "color: red;",
+            });
+        });
+
+        var anchor = component.Find(".bit-lnk");
+
+        Assert.IsTrue(anchor.ClassList.Contains("bit-lnk-nun"));
+        Assert.IsTrue(anchor.ClassList.Contains("bit-lnk-ncl"));
+        Assert.IsTrue(anchor.ClassList.Contains("bit-lnk-sm"));
+        Assert.IsTrue(anchor.ClassList.Contains("cascaded"));
+        Assert.IsTrue(anchor.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("rtl", anchor.GetAttribute("dir"));
+        Assert.AreEqual("Home", anchor.GetAttribute("aria-label"));
+        StringAssert.Contains(anchor.GetAttribute("style"), "color: red;");
+
+        // A cascaded Disabled disables the link the way the parameter does: the href goes, the role and the state stay.
+        Assert.IsTrue(anchor.ClassList.Contains("bit-dis"));
+        Assert.IsFalse(anchor.HasAttribute("href"));
+        Assert.AreEqual("link", anchor.GetAttribute("role"));
+        Assert.AreEqual("true", anchor.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitLinkShouldGiveBackCascadedValuesWhenTheCascadeStopsCarryingThem()
+    {
+        var component = RenderComponent<BitLinkParamsTest>(parameters =>
+        {
+            parameters.Add(p => p.Params, new BitLinkParams { Href = "https://bitplatform.dev", Underlined = true, Color = BitColor.Error });
+        });
+
+        var instance = component.FindComponent<BitLink>().Instance;
+
+        Assert.AreEqual("A", component.Find(".bit-lnk").TagName);
+        Assert.IsTrue(component.Find(".bit-lnk").ClassList.Contains("bit-lnk-und"));
+
+        // The same number of params objects, so BitParams keeps its child instead of building a new one.
+        component.Render(parameters => parameters.Add(p => p.Params, new BitLinkParams()));
+
+        Assert.AreSame(instance, component.FindComponent<BitLink>().Instance);
+
+        // Without an href from anywhere the link is a button again, and the look goes back with the rest.
+        var root = component.Find(".bit-lnk");
+
+        Assert.AreEqual("BUTTON", root.TagName);
+        Assert.IsFalse(root.ClassList.Contains("bit-lnk-und"));
+        Assert.IsFalse(root.ClassList.Contains("bit-lnk-err"));
+        Assert.IsNull(instance.Href);
+        Assert.IsNull(instance.Color);
+    }
+
+    [TestMethod]
     public void BitLinkParamsShouldCarryEveryValueParameterOfTheLink()
     {
         var linkParameters = typeof(BitLink).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)

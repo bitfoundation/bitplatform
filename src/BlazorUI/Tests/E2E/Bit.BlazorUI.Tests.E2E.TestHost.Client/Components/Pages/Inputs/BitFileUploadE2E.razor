@@ -1,0 +1,445 @@
+﻿@page "/e2e/file-upload"
+@using System.Globalization
+@inject NavigationManager Nav
+
+<PageTitle>BitFileUpload E2E</PageTitle>
+
+<h1>BitFileUpload</h1>
+
+<div style="width: 560px;">
+
+<E2ESection Id="basic" Title="Basic">
+    <BitFileUpload Id="upl-basic" Label="Select or drag and drop files" UploadUrl="/api/upload" @bind-Value="_basic"
+                   OnUploadComplete="@(f => _basicComplete = $"{f.Name}:{f.Status}:{f.ResponseStatus}")" />
+    <span id="basic-value">@(_basic ?? "null")</span>
+    <span id="basic-complete">@_basicComplete</span>
+    <button id="btn-basic-clear" @onclick="() => _basic = null">clear value</button>
+    <BitFileUpload Id="upl-default" UploadUrl="/api/upload" />
+    <BitFileUpload Id="upl-disabled" Label="Disabled" UploadUrl="/api/upload" Disabled="_disabled" OnFilesChange="f => _disabledFiles = Names(f)"
+                   @onclick="() => _disabledClicks++" />
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="disabled-files">@_disabledFiles</span>
+    <BitFileUpload Id="upl-readonly" Label="Read-only" UploadUrl="/api/upload" ReadOnly ShowRemoveButton ShowBatchActions OnFilesChange="f => _readOnlyFiles = Names(f)" />
+    <span id="readonly-files">@_readOnlyFiles</span>
+</E2ESection>
+
+<E2ESection Id="label" Title="Label & description">
+    <BitFileUpload Id="upl-label-icon" Label="Upload a document" UploadUrl="/api/upload" LabelIconName="Upload" Accept=".pdf,.docx" Description="PDF or DOCX, up to 5 MB." />
+    <BitFileUpload Id="upl-label-end" Label="Browse for an image" UploadUrl="/api/upload" LabelIconName="ChevronRight" LabelIconPlacement="BitPlacement.End" Accept="image/*">
+        <DescriptionTemplate><span class="dsc-tpl">Images <b>only</b></span></DescriptionTemplate>
+    </BitFileUpload>
+    <BitFileUpload Id="upl-label-external" Label="External icon" UploadUrl="/api/upload" LabelIcon="@BitIconInfo.Fa("solid upload")" />
+    <BitFileUpload Id="upl-hide-label" HideLabel UploadUrl="/api/upload" />
+</E2ESection>
+
+<E2ESection Id="drop" Title="Drop area & drop zones">
+    <BitFileUpload Id="upl-drop-area" Label="Drag and drop files here, or click to browse" UploadUrl="/api/upload" ShowDropArea Multiple
+                   Description="Any file type." OnFilesChange="f => _dropAreaFiles = Names(f)" />
+    <span id="drop-area-files">@_dropAreaFiles</span>
+    <BitFileUpload Id="upl-drop-toggle" Label="Select, drop or paste files" UploadUrl="/api/upload" Multiple AllowDrop="_allowDrop" AllowPaste="_allowPaste"
+                   OnFilesChange="f => _dropToggleFiles = Names(f)" />
+    <span id="drop-toggle-files">@_dropToggleFiles</span>
+    <button id="btn-toggle-drop" @onclick="() => _allowDrop = !_allowDrop">Toggle drop</button>
+    <button id="btn-toggle-paste" @onclick="() => _allowPaste = !_allowPaste">Toggle paste</button>
+    <div id="upl-external-zone" style="height: 60px; border: 1px dashed gray;">Drop files anywhere in this box</div>
+    <BitFileUpload Id="upl-drop-zone" Label="...or browse for them" UploadUrl="/api/upload" Multiple DropZoneSelector="#upl-external-zone"
+                   Classes="@(new() { Dragging = "drop-zone-dragging", DraggingRejected = "drop-zone-rejected" })"
+                   Styles="@(new() { Dragging = "outline: 3px solid rgb(1, 2, 3);", DraggingRejected = "outline-style: dotted;" })"
+                   OnFilesChange="f => _dropZoneFiles = Names(f)" />
+    <span id="drop-zone-files">@_dropZoneFiles</span>
+    <BitFileUpload Id="upl-drop-reject" Label="Drop images or PDFs here" UploadUrl="/api/upload" ShowDropArea Multiple MaxCount="2" AllowedExtensions="@(["image/*", "application/pdf"])"
+                   Classes="@(new() { DraggingRejected = "custom-rejected" })" />
+</E2ESection>
+
+<E2ESection Id="removable" Title="Removable">
+    <BitFileUpload Id="upl-remove" Label="Select files" UploadUrl="/api/upload" Multiple ShowRemoveButton RemoveUrl="@RemoveUrl" @bind-Value="_remove"
+                   OnRemoveComplete="f => _removeComplete = f.Name" OnRemoveFailed="f => _removeFailed = f.Name" />
+    <span id="remove-value">@(_remove ?? "null")</span>
+    <span id="remove-complete">@_removeComplete</span>
+    <span id="remove-failed">@_removeFailed</span>
+    <BitFileUpload Id="upl-remove-fail" Label="Remove fails" UploadUrl="/api/upload" AutoUpload ShowRemoveButton RemoveUrl="@RemoveFailUrl"
+                   RemoveButtonTitle="Delete" RemoveIconName="Cancel" FailedRemoveMessage="Could not delete."
+                   OnRemoveFailed="@(f => _removeFailStatus = $"{f.Name}:{f.Status}:{f.ResponseStatus}")" />
+    <span id="remove-fail-status">@_removeFailStatus</span>
+</E2ESection>
+
+<E2ESection Id="selection" Title="Selection behavior">
+    <BitFileUpload Id="upl-auto" Label="AutoUpload" UploadUrl="/api/upload" Multiple AutoUpload OnAllUploadsComplete="f => _autoComplete = Names(f)" />
+    <span id="auto-complete">@_autoComplete</span>
+    <BitFileUpload Id="upl-append" Label="Append" UploadUrl="/api/upload" Multiple Append AllowDuplicates="false" DuplicateErrorMessage="Already picked." ShowRemoveButton @bind-Value="_append" />
+    <span id="append-value">@(_append ?? "null")</span>
+    <BitFileUpload Id="upl-replace" Label="Replace" UploadUrl="/api/upload" Multiple @bind-Value="_replace" />
+    <span id="replace-value">@(_replace ?? "null")</span>
+    <BitFileUpload Id="upl-autoreset" Label="AutoReset" UploadUrl="/api/upload" AutoReset @bind-Value="_autoReset" />
+    <span id="autoreset-value">@(_autoReset ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation">
+    <BitFileUpload Id="upl-limits" Label="Limits" UploadUrl="/api/upload" Multiple MaxSize="2000" MinSize="10" MaxSizeErrorMessage="Too big." MinSizeErrorMessage="Too small."
+                   AllowedExtensions="@([".bin", ".txt"])" NotAllowedExtensionErrorMessage="Wrong type." FileValidator="ValidateName" @bind-Value="_limits" />
+    <span id="limits-value">@(_limits ?? "null")</span>
+    <BitFileUpload Id="upl-count" Label="Count" UploadUrl="/api/upload" Multiple Append ShowRemoveButton MaxCount="2" MaxTotalSize="2500"
+                   MaxCountErrorMessage="Two at most." MaxTotalSizeErrorMessage="Too much in total." @bind-Value="_count" />
+    <span id="count-value">@(_count ?? "null")</span>
+    <BitFileUpload Id="upl-accept" Label="Accept only" UploadUrl="/api/upload" Accept=".png,.jpg" />
+</E2ESection>
+
+<E2ESection Id="directory" Title="Directory & Capture">
+    <BitFileUpload Id="upl-directory" Label="Folder" UploadUrl="/api/upload" Directory Multiple OnFilesChange="f => _directoryFiles = Names(f)" />
+    <span id="directory-files">@_directoryFiles</span>
+    <BitFileUpload Id="upl-capture" Label="Take a photo" UploadUrl="/api/upload" Accept="image/*" Capture="environment" />
+</E2ESection>
+
+<E2ESection Id="preview" Title="Preview & image dimensions">
+    <BitFileUpload Id="upl-preview" Label="Preview" UploadUrl="/api/upload" Multiple ShowPreview />
+    <BitFileUpload Id="upl-dimensions" Label="Dimensions" UploadUrl="/api/upload" Multiple ShowPreview Accept="image/*" ReadImageDimensions FileValidator="ValidateWidth"
+                   OnFilesChange="@(f => _dimensions = string.Join('|', f.Select(x => $"{x.Name}:{x.Width}x{x.Height}")))" />
+    <span id="dimensions">@_dimensions</span>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitFileUpload Id="upl-events" Label="Events" UploadUrl="/api/upload" Multiple MaxSize="1000"
+                   OnFilesChange="@(f => Log($"change:{f.Length}"))"
+                   OnInvalid="@(f => Log($"invalid:{Names(f)}"))"
+                   OnUploading="@(f => { Log($"uploading:{f.Name}"); f.HttpHeaders = new() { ["X-Per-File"] = f.Name }; f.FormFields = new() { ["perfile"] = f.Name }; })"
+                   OnProgress="@(f => _progressCount++)"
+                   OnUploadComplete="@(f => Log($"complete:{f.Name}"))"
+                   OnUploadFailed="@(f => Log($"failed:{f.Name}"))"
+                   OnAllUploadsComplete="@(f => Log($"all:{f.Length}"))" />
+    <span id="events-log">@string.Join(";", _log)</span>
+    <span id="progress-count">@_progressCount</span>
+</E2ESection>
+
+<E2ESection Id="chunked" Title="Chunked">
+    <BitFileUpload Id="upl-chunked" Label="Chunked" UploadUrl="/api/upload" ChunkedUpload ChunkSize="1000" OnProgress="f => _chunkProgress = f.TotalUploadedSize" OnUploadComplete="f => _chunkDone = f.Name" />
+    <span id="chunk-progress">@_chunkProgress</span>
+    <span id="chunk-done">@_chunkDone</span>
+    <BitFileUpload Id="upl-chunked-auto" Label="Auto chunk size" UploadUrl="/api/upload" ChunkedUpload AutoChunkSize OnUploadComplete="f => _chunkAutoDone = f.Name" />
+    <span id="chunk-auto-done">@_chunkAutoDone</span>
+    <BitFileUpload Id="upl-chunked-slow" Label="Chunked, slow" UploadUrl="/api/upload-slow" ChunkedUpload ChunkSize="1000" OnProgress="f => _chunkSlowProgress = f.TotalUploadedSize" />
+    <span id="chunk-slow-progress">@_chunkSlowProgress</span>
+</E2ESection>
+
+<E2ESection Id="http" Title="Http requests">
+    <BitFileUpload Id="upl-http" Label="Http" UploadUrl="/api/upload" AutoUpload
+                   UploadRequestQueryStrings="@(new Dictionary<string, string> { ["qs1"] = "qsValue1" })"
+                   UploadRequestHttpHeaders="@(new Dictionary<string, string> { ["header1"] = "value1" })"
+                   UploadRequestFormFields="@(new Dictionary<string, string> { ["folder"] = "invoices" })"
+                   UploadFormFieldName="document" UploadRequestHttpMethod="POST" WithCredentials />
+    <BitFileUpload Id="upl-providers" Label="Providers" UploadUrl="/api/upload-fail" AutoUpload
+                   UploadUrlProvider="@(() => Task.FromResult<string?>("/api/upload"))"
+                   UploadRequestHttpHeadersProvider="@(() => Task.FromResult(new Dictionary<string, string> { ["authorization"] = $"Bearer token-{++_tokenCount}" }))"
+                   UploadRequestQueryStringsProvider="@(() => Task.FromResult(new Dictionary<string, string> { ["sig"] = "signed" }))"
+                   OnUploadComplete="f => _providersDone = f.Name" />
+    <span id="providers-done">@_providersDone</span>
+    <BitFileUpload Id="upl-timeout" Label="Timeout" UploadUrl="/api/upload-slow" AutoUpload UploadTimeout="TimeSpan.FromMilliseconds(400)" OnUploadFailed="f => _timeoutFailed = f.Name" />
+    <span id="timeout-failed">@_timeoutFailed</span>
+</E2ESection>
+
+<E2ESection Id="retry" Title="Retry">
+    <BitFileUpload Id="upl-retry" Label="Fails" UploadUrl="/api/upload-fail" RetryButtonTitle="Try again" OnUploadFailed="@(f => _retryFailed = $"{f.Name}:{f.ResponseStatus}")" />
+    <span id="retry-failed">@_retryFailed</span>
+    <BitFileUpload Id="upl-auto-retry" Label="Auto retry" UploadUrl="/api/upload-fail" AutoUpload AutoRetries="2" AutoRetryDelay="TimeSpan.FromMilliseconds(100)" OnUploadFailed="f => _autoRetryFailed = f.Name" />
+    <span id="auto-retry-failed">@_autoRetryFailed</span>
+    <BitFileUpload Id="upl-no-retry" Label="Should not retry" UploadUrl="/api/upload-fail" AutoUpload AutoRetries="3" ShouldAutoRetry="@((f, s) => false)" OnUploadFailed="f => _noRetryFailed = f.Name" />
+    <span id="no-retry-failed">@_noRetryFailed</span>
+    <BitFileUpload Id="upl-retry-provider" Label="Delay provider" UploadUrl="/api/upload-fail" AutoUpload AutoRetries="2" AutoRetryDelayProvider="@((f, attempt) => { _delayAttempts.Add(attempt); return TimeSpan.FromMilliseconds(50); })" OnUploadFailed="f => _providerFailed = string.Join(',', _delayAttempts)" />
+    <span id="provider-failed">@_providerFailed</span>
+</E2ESection>
+
+<E2ESection Id="concurrent" Title="ConcurrentUploads">
+    <BitFileUpload Id="upl-concurrent" Label="One at a time" UploadUrl="/api/upload-slow" Multiple AutoUpload ConcurrentUploads="1" QueuedUploadMessage="In the queue"
+                   OnAllUploadsComplete="f => _concurrentDone = Names(f)" />
+    <span id="concurrent-done">@_concurrentDone</span>
+</E2ESection>
+
+<E2ESection Id="batch" Title="Batch actions">
+    <BitFileUpload Id="upl-batch" Label="Batch" UploadUrl="/api/upload" Multiple Append ShowBatchActions ShowRemoveButton OnAllUploadsComplete="f => _batchDone = Names(f)" />
+    <span id="batch-done">@_batchDone</span>
+    <BitFileUpload Id="upl-batch-slow" Label="Batch slow" UploadUrl="/api/upload-slow" Multiple ShowBatchActions ConcurrentUploads="1"
+                   UploadAllText="Send everything" CancelAllText="Stop everything" ClearText="Start over" CanceledUploadMessage="Stopped." />
+</E2ESection>
+
+<E2ESection Id="progress" Title="Progress & file list">
+    <BitFileUpload @ref="_progress" Id="upl-progress" Label="Slow" UploadUrl="/api/upload-slow" Multiple
+                   OnProgress="_ => StateHasChanged()" OnFilesChange="_ => StateHasChanged()" OnUploadComplete="_ => StateHasChanged()"
+                   PauseButtonTitle="Hold" CancelButtonTitle="Stop" UploadButtonTitle="Send" />
+    <span id="progress-status">@_progress?.UploadStatus</span>
+    <span id="progress-overall">@_progress?.OverallUploadProgress</span>
+    <span id="progress-total">@_progress?.TotalSize</span>
+    <span id="progress-uploaded">@_progress?.TotalUploadedSize</span>
+    <BitFileUpload Id="upl-formatter" Label="Formatter" UploadUrl="/api/upload" Multiple FileSizeFormatter="@(size => $"{size.ToString("N0", CultureInfo.InvariantCulture)} B")" FileListAriaLabel="Documents to upload" />
+    <BitFileUpload Id="upl-hidden-view" Label="Hidden" UploadUrl="/api/upload" HideFileView OnFilesChange="f => _hiddenFiles = Names(f)" />
+    <span id="hidden-files">@_hiddenFiles</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitFileUpload @ref="_templated" Id="upl-templates" UploadUrl="/api/upload" RemoveUrl="@RemoveUrl" Multiple>
+        <LabelTemplate>
+            <button id="custom-browse" type="button" @onclick="BrowseTemplated">Pick files</button>
+        </LabelTemplate>
+        <FileViewTemplate Context="file">
+            <div class="file-card" data-name="@file.Name" data-status="@file.Status">
+                <span class="file-card-name">@file.Name</span>
+                <button class="file-card-upload" type="button" @onclick="() => _templated!.Upload(file)">up</button>
+                <button class="file-card-remove" type="button" @onclick="() => _templated!.RemoveFile(file)">x</button>
+            </div>
+        </FileViewTemplate>
+    </BitFileUpload>
+</E2ESection>
+
+<E2ESection Id="api" Title="Public API">
+    <BitFileUpload @ref="_api" Id="upl-api" HideLabel Multiple UploadUrl="/api/upload-slow" RemoveUrl="@RemoveUrl" OnFilesChange="_ => StateHasChanged()" OnUploadComplete="_ => StateHasChanged()" OnAllUploadsComplete="_ => StateHasChanged()" />
+    <button id="api-browse" @onclick="() => _api!.Browse()">Browse</button>
+    <button id="api-upload" @onclick="() => _api!.Upload()">Upload</button>
+    <button id="api-upload-first" @onclick="@(() => _api!.Upload(_api.Files[0], uploadUrl: "/api/upload"))">Upload first</button>
+    <button id="api-pause" @onclick="() => _api!.PauseUpload()">Pause</button>
+    <button id="api-cancel" @onclick="() => _api!.CancelUpload()">Cancel</button>
+    <button id="api-remove-first" @onclick="() => _api!.RemoveFile(_api.Files[0])">Remove first</button>
+    <button id="api-remove-all" @onclick="() => _api!.RemoveFile()">Remove all</button>
+    <button id="api-reset" @onclick="() => _api!.Reset()">Reset</button>
+    <button id="api-focus" @onclick="() => _api!.FocusAsync()">Focus</button>
+    <button id="api-refresh" @onclick="() => { }">Refresh</button>
+    <span id="api-files">@(_api is null ? "" : string.Join("|", _api.Files.Select(f => $"{f.Name}:{f.Status}")))</span>
+    <span id="api-status">@_api?.UploadStatus</span>
+    <span id="api-input-id">@_api?.InputId</span>
+    <span id="api-removing">@_api?.IsRemoving</span>
+    <BitFileUpload @ref="_apiFocus" Id="upl-api-focus" Label="Focus me" UploadUrl="/api/upload" />
+    <button id="api-focus-labelled" @onclick="() => _apiFocus!.FocusAsync()">Focus labelled</button>
+</E2ESection>
+
+<E2ESection Id="preloaded" Title="Preloaded files">
+    <BitFileUpload Id="upl-preloaded" Label="Add more" UploadUrl="/api/upload" RemoveUrl="@RemoveUrl" ShowRemoveButton Multiple Append
+                   PreloadedFiles="_preloaded" PreloadedFileMessage="Saved with this record" @bind-Value="_preloadedValue" />
+    <span id="preloaded-value">@(_preloadedValue ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="Accessibility">
+    <BitFileUpload Id="upl-a11y" Label="Select" UploadUrl="/api/upload" AriaLabel="Select a document to upload" Description="One document." />
+    <BitFileUpload Id="upl-announce" Label="Announce" UploadUrl="/api/upload" Multiple AutoUpload FileListAriaLabel="Documents to upload"
+                   AnnouncementProvider="@(files => $"{files.Count} picked, {files.Count(f => f.Status == BitFileUploadStatus.Completed)} done")" />
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    @foreach (var (variant, slug) in _variants)
+    {
+        <BitFileUpload Id="@($"upl-var-{slug}")" Label="@slug" UploadUrl="/api/upload" Variant="variant" />
+        <BitFileUpload Id="@($"upl-var-{slug}-dis")" Label="@slug" UploadUrl="/api/upload" Variant="variant" Disabled />
+    }
+    <BitFileUpload Id="upl-var-drop-dis" Label="Disabled drop area" UploadUrl="/api/upload" ShowDropArea Disabled />
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_uploadParams">
+        <BitFileUpload Id="upl-cascade-1" Label="From the cascade" />
+        <BitFileUpload Id="upl-cascade-own" Label="Its own" Variant="BitVariant.Fill" MaxSize="100000" />
+    </BitParams>
+    <BitFileUpload Id="upl-cascade-outside" Label="Outside" UploadUrl="/api/upload" />
+</E2ESection>
+
+<E2ESection Id="form" Title="Form validation">
+    <EditForm Model="_model" OnValidSubmit="@(() => _formResult = "valid")" OnInvalidSubmit="@(() => _formResult = "invalid")">
+        <DataAnnotationsValidator />
+        <BitFileUpload Id="upl-form" Required Multiple Label="Add attachments" Name="attachments" UploadUrl="/api/upload"
+                       InputHtmlAttributes="@(new() { ["data-input"] = "attachments" })" @bind-Value="_model.Attachments" />
+        <div id="upl-form-msg"><ValidationMessage For="@(() => _model.Attachments)" /></div>
+        <button id="upl-form-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-result">@_formResult</span>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <BitFileUpload Id="upl-color-none" Label="None" UploadUrl="/api/upload" />
+    @foreach (var (color, slug) in _colors)
+    {
+        <BitFileUpload Id="@($"upl-color-{slug}")" Label="@slug" UploadUrl="/api/upload" Color="color" />
+    }
+</E2ESection>
+
+<E2ESection Id="icons" Title="External icons">
+    <BitFileUpload Id="upl-icons" Label="Icons" UploadUrl="/api/upload-slow" ShowRemoveButton
+                   UploadIcon="@BitIconInfo.Css("ext-upload")" PauseIcon="@BitIconInfo.Css("ext-pause")" CancelIcon="@BitIconInfo.Css("ext-cancel")"
+                   RemoveIcon="@BitIconInfo.Css("ext-remove")" RetryIcon="@BitIconInfo.Css("ext-retry")" />
+    <BitFileUpload Id="upl-icon-names" Label="Icon names" UploadUrl="/api/upload-fail" AutoUpload ShowRemoveButton
+                   UploadIconName="Upload" RetryIconName="Sync" RemoveIconName="Blocked" RemoveButtonTitle="Drop" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitFileUpload Id="upl-size-sm" Size="BitSize.Small" Label="Small" UploadUrl="/api/upload" />
+    <BitFileUpload Id="upl-size-md" Size="BitSize.Medium" Label="Medium" UploadUrl="/api/upload" />
+    <BitFileUpload Id="upl-size-lg" Size="BitSize.Large" Label="Large" UploadUrl="/api/upload" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <BitFileUpload Id="upl-style" Label="Style" UploadUrl="/api/upload" Style="margin-inline: 13px;" Class="custom-class" data-test="attr-value" />
+    <BitFileUpload Id="upl-styles" Label="Styles" UploadUrl="/api/upload-slow" Description="Styles description" LabelIconName="Upload" Multiple ShowPreview ShowRemoveButton ShowBatchActions MaxSize="1000"
+                   Styles="@(new() { Root = "padding: 5px;", Label = "letter-spacing: 3px;", LabelIcon = "color: rgb(1, 1, 1);", Description = "color: rgb(2, 2, 2);", FileList = "padding-top: 4px;", FileItem = "padding-bottom: 3px;", Preview = "opacity: 0.9;", PreviewIcon = "color: rgb(3, 3, 3);", FileName = "color: rgb(4, 4, 4);", FileSize = "color: rgb(5, 5, 5);", Percentage = "color: rgb(6, 6, 6);", StatusMessage = "color: rgb(7, 7, 7);", UploadButton = "opacity: 0.8;", UploadIcon = "color: rgb(8, 8, 8);", RemoveButton = "opacity: 0.7;", RemoveIcon = "color: rgb(9, 9, 9);", BatchActions = "padding-top: 6px;", BatchActionButton = "letter-spacing: 2px;", ProgressBarContainer = "opacity: 0.6;", ProgressBar = "opacity: 0.5;", PauseButton = "opacity: 0.4;", PauseIcon = "color: rgb(10, 10, 10);", CancelButton = "opacity: 0.3;", CancelIcon = "color: rgb(11, 11, 11);" })" />
+    <BitFileUpload Id="upl-classes" Label="Classes" UploadUrl="/api/upload-slow" Description="Classes description" LabelIconName="Upload" Multiple ShowPreview ShowRemoveButton ShowBatchActions MaxSize="1000"
+                   Classes="@(new() { Root = "c-root", Label = "c-lbl", LabelIcon = "c-lic", Description = "c-dsc", FileList = "c-fl", FileItem = "c-itm", Preview = "c-prv", PreviewIcon = "c-pvi", FileName = "c-fn", FileSize = "c-fs", Percentage = "c-pct", StatusMessage = "c-us", UploadButton = "c-ubt", UploadIcon = "c-uic", RemoveButton = "c-rbt", RemoveIcon = "c-ric", BatchActions = "c-bat", BatchActionButton = "c-bab", ProgressBarContainer = "c-pbc", ProgressBar = "c-pgb", PauseButton = "c-pbt", PauseIcon = "c-pic", CancelButton = "c-cbt", CancelIcon = "c-cic" })" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div style="--bit-FileUpload-max-width: 320px; --bit-FileUpload-gap: 9px; --bit-FileUpload-label-color: rgb(1, 2, 3); --bit-FileUpload-label-background: rgb(218, 165, 32); --bit-FileUpload-label-border-color: rgb(4, 5, 6); --bit-FileUpload-label-radius: 7px; --bit-FileUpload-label-min-height: 50px; --bit-FileUpload-label-padding: 6px; --bit-FileUpload-label-font-size: 19px; --bit-FileUpload-label-font-weight: 700; --bit-FileUpload-description-color: rgb(7, 8, 9); --bit-FileUpload-description-font-size: 11px; --bit-FileUpload-item-color: rgb(10, 11, 12); --bit-FileUpload-item-background: rgb(13, 14, 15); --bit-FileUpload-item-border-color: rgb(16, 17, 18); --bit-FileUpload-item-radius: 5px; --bit-FileUpload-item-font-size: 15px; --bit-FileUpload-success-color: rgb(19, 20, 21); --bit-FileUpload-error-color: rgb(22, 23, 24); --bit-FileUpload-action-color: rgb(25, 26, 27);">
+        <BitFileUpload Id="upl-vars" Label="Vars" Description="Vars description" UploadUrl="/api/upload" Multiple MaxSize="1000" ShowRemoveButton />
+        <BitFileUpload Id="upl-vars-explicit" Label="Explicit" UploadUrl="/api/upload" Color="BitColor.Error" Size="BitSize.Small" />
+    </div>
+    <div style="--bit-FileUpload-drop-area-min-height: 140px; --bit-FileUpload-drop-area-border-style: dotted; --bit-FileUpload-drop-area-background: rgb(30, 31, 32); --bit-FileUpload-drop-area-icon-color: rgb(33, 34, 35); --bit-FileUpload-drop-background: rgb(36, 37, 38); --bit-FileUpload-disabled-background: rgb(39, 40, 41);">
+        <BitFileUpload Id="upl-vars-drop" Label="Drop vars" UploadUrl="/api/upload" ShowDropArea />
+        <BitFileUpload Id="upl-vars-disabled" Label="Disabled vars" UploadUrl="/api/upload" Disabled />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitFileUpload Id="upl-rtl" Dir="BitDir.Rtl" Label="بارگذاری" UploadUrl="/api/upload" ShowRemoveButton LabelIconName="Upload" />
+    <div dir="rtl">
+        <BitFileUpload Id="upl-rtl-inherited" Label="Inherited" UploadUrl="/api/upload" ShowRemoveButton />
+    </div>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitFileUpload Id="upl-runtime" Label="@_runtimeLabel" UploadUrl="/api/upload" Color="_runtimeColor" Size="_runtimeSize" ShowDropArea="_runtimeDropArea" />
+    <button id="btn-runtime-color" @onclick="() => _runtimeColor = BitColor.Error">Error</button>
+    <button id="btn-runtime-size" @onclick="() => _runtimeSize = BitSize.Large">Large</button>
+    <button id="btn-runtime-droparea" @onclick="() => _runtimeDropArea = true">DropArea</button>
+    <button id="btn-runtime-label" @onclick="@(() => _runtimeLabel = "Changed label")">Label</button>
+    @if (_mounted)
+    {
+        <BitFileUpload Id="upl-unmount" Label="Unmount me" UploadUrl="/api/upload-slow" AutoUpload ShowPreview />
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Motion">
+    <BitFileUpload Id="upl-motion" Label="Motion" UploadUrl="/api/upload" />
+    <BitFileUpload Id="upl-motion-forced" Label="Forced" UploadUrl="/api/upload" ForceAnimation />
+</E2ESection>
+
+</div>
+
+<E2EStatus />
+
+@code {
+    private static readonly (BitColor Color, string Slug)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+
+    private static readonly (BitVariant Variant, string Slug)[] _variants =
+    [
+        (BitVariant.Fill, "fil"),
+        (BitVariant.Outline, "otl"),
+        (BitVariant.Text, "txt"),
+    ];
+
+    private readonly BitFileUploadParams[] _uploadParams =
+    [
+        new()
+        {
+            UploadUrl = "/api/upload",
+            MaxSize = 1000,
+            MaxSizeErrorMessage = "Cascaded message.",
+            Multiple = true,
+            Variant = BitVariant.Outline,
+            Color = BitColor.Success,
+            ShowRemoveButton = true,
+        }
+    ];
+
+    private readonly List<BitFileInfo> _preloaded =
+    [
+        new() { Name = "invoice.pdf", Size = 2048, ContentType = "application/pdf", FileId = "pre-1" },
+        new() { Name = "photo.png", Size = 4096, ContentType = "image/png", FileId = "pre-2" },
+    ];
+
+    private string RemoveUrl => $"{Nav.BaseUri}api/upload";
+    private string RemoveFailUrl => $"{Nav.BaseUri}api/upload-fail";
+
+    private string? _basic;
+    private string _basicComplete = "";
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private string _disabledFiles = "";
+    private string _readOnlyFiles = "";
+    private string _dropAreaFiles = "";
+    private bool _allowDrop = true;
+    private bool _allowPaste = true;
+    private string _dropToggleFiles = "";
+    private string _dropZoneFiles = "";
+    private string? _remove;
+    private string _removeComplete = "";
+    private string _removeFailed = "";
+    private string _removeFailStatus = "";
+    private string _autoComplete = "";
+    private string? _append;
+    private string? _replace;
+    private string? _autoReset;
+    private string? _limits;
+    private string? _count;
+    private string _directoryFiles = "";
+    private string _dimensions = "";
+    private readonly List<string> _log = [];
+    private int _progressCount;
+    private long _chunkProgress;
+    private string _chunkDone = "";
+    private string _chunkAutoDone = "";
+    private long _chunkSlowProgress;
+    private int _tokenCount;
+    private string _providersDone = "";
+    private string _timeoutFailed = "";
+    private string _retryFailed = "";
+    private string _autoRetryFailed = "";
+    private string _noRetryFailed = "";
+    private readonly List<int> _delayAttempts = [];
+    private string _providerFailed = "";
+    private string _concurrentDone = "";
+    private string _batchDone = "";
+    private BitFileUpload? _progress;
+    private string _hiddenFiles = "";
+    private BitFileUpload? _templated;
+    private BitFileUpload? _api;
+    private BitFileUpload? _apiFocus;
+    private string? _preloadedValue;
+    private readonly FormModel _model = new();
+    private string _formResult = "none";
+    private string _runtimeLabel = "Runtime label";
+    private BitColor? _runtimeColor;
+    private BitSize? _runtimeSize;
+    private bool _runtimeDropArea;
+    private bool _mounted = true;
+
+    private static string Names(IEnumerable<BitFileInfo> files) => string.Join("|", files.Select(f => f.Name));
+
+    private void Log(string entry) => _log.Add(entry);
+
+    private static string? ValidateName(BitFileInfo file) => file.Name.StartsWith("bad", StringComparison.Ordinal) ? "Bad name." : null;
+
+    private static string? ValidateWidth(BitFileInfo file) => file.Width > 100 ? $"Too wide: {file.Width}px." : null;
+
+    private async Task BrowseTemplated()
+    {
+        if (_templated is not null) await _templated.Browse();
+    }
+
+    public class FormModel
+    {
+        [Required(ErrorMessage = "Add at least one attachment.")]
+        public string? Attachments { get; set; }
+    }
+}

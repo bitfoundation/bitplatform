@@ -1,0 +1,101 @@
+﻿@page "/e2e/full-calendar/month"
+
+<PageTitle>BitFullCalendar E2E - month grid</PageTitle>
+
+@* The month grid settings (FixedWeekCount, ShowNonCurrentDates, MaxEventsPerDayCell, NavLinks, ShowWeekNumbers), the
+   dot badge in a 12-hour calendar, and the event colors: a palette of the app's own, a CSS color of an event's own and
+   one neither knows, drawn in --bit-FullCalendar-event-color. "Today" is pinned to Wednesday 2025-07-16 10:30. *@
+<E2ESection Id="monthgrid" Title="Month grid">
+    <button id="btn-fixed" @onclick="() => _gridSettings.FixedWeekCount = !_gridSettings.FixedWeekCount">Toggle FixedWeekCount</button>
+    <button id="btn-noncurrent" @onclick="() => _gridSettings.ShowNonCurrentDates = !_gridSettings.ShowNonCurrentDates">Toggle ShowNonCurrentDates</button>
+    <button id="btn-navlinks" @onclick="() => _gridSettings.NavLinks = !_gridSettings.NavLinks">Toggle NavLinks</button>
+    <button id="btn-max-1" @onclick="() => _gridSettings.MaxEventsPerDayCell = 1">MaxEventsPerDayCell = 1</button>
+    <button id="btn-max-20" @onclick="() => _gridSettings.MaxEventsPerDayCell = 20">MaxEventsPerDayCell = 20</button>
+    <BitFullCalendar Id="grid-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_gridEvents"
+                     Settings="_gridSettings"
+                     OnViewChange="v => _gridView = v.ToString()"
+                     OnDateChange="args => _gridDate = args.Start.ToString(DateFormat)" />
+    <span id="grid-view">@_gridView</span>
+    <span id="grid-date">@_gridDate</span>
+</E2ESection>
+
+<E2ESection Id="dots" Title="Dot badges, 12-hour clock">
+    <BitFullCalendar Id="dots-cal"
+                     CultureName="en-US"
+                     TimeProvider="Clock"
+                     Events="_dotEvents"
+                     Settings="_dotSettings" />
+</E2ESection>
+
+<E2ESection Id="colors" Title="Event colors">
+    <div id="colors-host" style="--bit-FullCalendar-event-color:#64748b">
+        <BitFullCalendar Id="colors-cal"
+                         CultureName="en-US"
+                         TimeProvider="Clock"
+                         Events="_colorEvents"
+                         EventColorOptions="_colorOptions" />
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string DateFormat = "yyyy-MM-dd";
+
+    private static readonly TimeProvider Clock = new PinnedClock(new DateTimeOffset(2025, 7, 16, 10, 30, 0, TimeSpan.Zero));
+
+    private static readonly DateTime Today = new(2025, 7, 16);
+
+    private readonly BitFullCalendarSettings _gridSettings = new()
+    {
+        FixedWeekCount = true,
+        ShowNonCurrentDates = false,
+        MaxEventsPerDayCell = 2,
+        NavLinks = true,
+        ShowWeekNumbers = true
+    };
+
+    private readonly List<BitFullCalendarEvent> _gridEvents =
+    [
+        new() { Id = "m1", Title = "One", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "blue" },
+        new() { Id = "m2", Title = "Two", StartDate = Today.AddHours(11), EndDate = Today.AddHours(12), Color = "green" },
+        new() { Id = "m3", Title = "Three", StartDate = Today.AddHours(13), EndDate = Today.AddHours(14), Color = "red" },
+        new() { Id = "m4", Title = "Borrowed", StartDate = new DateTime(2025, 6, 30, 9, 0, 0), EndDate = new DateTime(2025, 6, 30, 10, 0, 0), Color = "purple" },
+    ];
+
+    private string? _gridView;
+    private string? _gridDate;
+
+    private readonly BitFullCalendarSettings _dotSettings = new() { BadgeVariant = BitFullCalendarBadgeVariant.Dot, Use24HourFormat = false };
+
+    private readonly List<BitFullCalendarEvent> _dotEvents =
+    [
+        new() { Id = "d1", Title = "Morning", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "purple" },
+        new() { Id = "d2", Title = "Evening", StartDate = Today.AddHours(19), EndDate = Today.AddHours(20), Color = "orange" },
+    ];
+
+    private readonly List<BitFullCalendarColorOption> _colorOptions =
+    [
+        new() { Id = "work", Title = "Work", Value = "#2563eb" },
+        new() { Id = "personal", Title = "Personal", Value = "#16a34a" },
+        new() { Id = "urgent", Title = "Urgent", Value = "#dc2626" },
+    ];
+
+    private readonly List<BitFullCalendarEvent> _colorEvents =
+    [
+        new() { Id = "c1", Title = "Planning", StartDate = Today.AddHours(9), EndDate = Today.AddHours(10), Color = "work" },
+        new() { Id = "c2", Title = "Gym", StartDate = Today.AddHours(17), EndDate = Today.AddHours(18), Color = "PERSONAL" },
+        new() { Id = "c3", Title = "Brand launch", StartDate = Today.AddDays(1).AddHours(13), EndDate = Today.AddDays(1).AddHours(15), Color = "#db2777" },
+        new() { Id = "c4", Title = "Imported", StartDate = Today.AddDays(2).AddHours(10), EndDate = Today.AddDays(2).AddHours(11), Color = "legacy" },
+    ];
+
+    private sealed class PinnedClock(DateTimeOffset now) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => now;
+
+        public override TimeZoneInfo LocalTimeZone => TimeZoneInfo.Utc;
+    }
+}

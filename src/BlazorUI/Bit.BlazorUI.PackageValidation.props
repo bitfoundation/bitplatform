@@ -1,0 +1,18 @@
+﻿<Project>
+
+    <!-- Package validation compares the package a pack produces against the last published one, so a public API that
+         is removed or changed without being meant to fails the pack (and so the Release build, which packs) rather than
+         reaching the apps that update. A break that is meant goes into the project's CompatibilitySuppressions.xml,
+         which `dotnet pack -c Release -p:ApiCompatGenerateSuppressionFile=true` regenerates, and into BreakingChanges.md.
+
+         Bump the baseline to the version just published once a release is out, and delete the suppression files, since
+         every break they list is then part of the baseline. -->
+    <PropertyGroup>
+        <EnablePackageValidation>true</EnablePackageValidation>
+        <PackageValidationBaselineVersion>10.6.2</PackageValidationBaselineVersion>
+        <!-- CP0003 compares the public key token: a published package is signed with the release key, which only the
+             release pipeline holds, so every other build is signed with the repo's key and would fail on it alone. -->
+        <NoWarn>$(NoWarn);CP0003</NoWarn>
+    </PropertyGroup>
+
+</Project>

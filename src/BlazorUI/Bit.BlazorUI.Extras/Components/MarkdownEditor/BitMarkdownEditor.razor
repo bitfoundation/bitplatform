@@ -273,9 +273,11 @@
     {
         @* data-bit-esc on the dialog claims the Escape that closes it (OnHelpKeyDown, see Utils.claimEscape), so a
            dialog the editor sits in does not close on that same press. The dialog is only rendered while it is
-           open, and its handler closes it on every plain Escape pressed in it. *@
+           open, and its handler closes it on every plain Escape pressed in it. Tab and Shift+Tab are kept inside it
+           by the script (Utils.setupFocusTrap on its id, registered once it is rendered - see OnAfterRenderAsync). *@
         <div class="bit-mde-hlp" @onclick="CloseHelp">
             <div @ref="_helpRef"
+                 id="@HelpDialogId"
                  role="dialog"
                  aria-modal="true"
                  aria-labelledby="@HelpTitleId"
@@ -284,10 +286,9 @@
                  @onkeydown="OnHelpKeyDown"
                  data-bit-esc="claim"
                  @onclick:stopPropagation="true">
-                <span tabindex="0" class="bit-mde-guard" @onfocus="FocusHelpClose"></span>
                 <header>
                     <h2 id="@HelpTitleId">@ActiveTexts.KeyboardShortcutsTitle</h2>
-                    <button type="button" @ref="_helpCloseRef" class="bit-mde-hcl" @onclick="CloseHelp" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
+                    <button type="button" class="bit-mde-hcl" @onclick="CloseHelp" aria-label="@ActiveTexts.CloseAriaLabel">&times;</button>
                 </header>
                 <dl>
                     @foreach (var (label, keys) in HelpShortcuts)
@@ -295,7 +296,6 @@
                         <div><dt>@label</dt><dd>@keys</dd></div>
                     }
                 </dl>
-                <span tabindex="0" class="bit-mde-guard" @onfocus="FocusHelpClose"></span>
             </div>
         </div>
     }

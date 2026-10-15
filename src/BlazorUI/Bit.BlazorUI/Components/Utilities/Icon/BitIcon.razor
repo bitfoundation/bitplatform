@@ -61,7 +61,14 @@
        there), and dropping the tab index would take away the tooltip anchor it was given for - so the
        Title docs are where the author is told to name it. *@
     var fallbackName = tabStop && named is false ? FallbackName : null;
-    var ariaLabel = label ?? fallbackName;
+
+    @* A button takes its name from its content before its title, and the glyph a font set draws through
+       ::before is content: a button named by its Title alone would be announced as the private-use
+       character of that glyph, the Title only describing it. So the Title of an icon with a handler is
+       written as its aria-label as well, unless an aria-labelledby of the app's own names it. An img
+       takes no name from its content, so a picture keeps its Title as the name it already is. *@
+    var titleName = interactive && label.HasNoValue() && HasSplattedAttribute("aria-labelledby") is false ? title : null;
+    var ariaLabel = label ?? titleName ?? fallbackName;
 
     @* The role and the name arrive together, for a picture as for a control: "button" or an img with
        nothing to read out is a dead stop, so the role is written only once the icon has a name to

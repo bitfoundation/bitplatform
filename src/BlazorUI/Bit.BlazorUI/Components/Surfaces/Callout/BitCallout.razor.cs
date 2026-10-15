@@ -23,6 +23,8 @@ public partial class BitCallout : BitComponentBase
     private double? _pointY;
     private bool _openAfterRender;
     private bool _placeAfterRender;
+    // The inline styles the last render gave the callout and its arrow (see OnAfterRenderAsync).
+    private string? _renderedStyles;
     private bool _contentRendered;
     private bool _selfDrivenIsOpen;
     private bool _focusTrapped;
@@ -802,6 +804,15 @@ public partial class BitCallout : BitComponentBase
 
         await SyncAnchorAria();
 
+        // The inline style of the callout and of its arrow carries what the parameters ask for (MaxHeight, Width,
+        // MinWidth, MaxWidth, ArrowSize, Styles), and the positioning code writes its own into the same attribute:
+        // a render that changes the first takes the second away with it, which would leave an open callout hidden
+        // and unplaced. So an open callout whose parameters changed what it renders inline is laid out again, which
+        // is also what a callout that has just changed size needs.
+        var renderedStyles = $"{GetCalloutStyles()}|{GetArrowStyles()}";
+        var stylesChanged = firstRender is false && renderedStyles != _renderedStyles;
+        _renderedStyles = renderedStyles;
+
         // The opening that had to wait for a render: an IsOpen (or DefaultIsOpen) that starts out true
         // reaches OnSetIsOpen before the first render, when neither the callout element nor the .NET object
         // reference the JS side needs exist yet, and a lazily rendered content is only put in the callout
@@ -830,6 +841,10 @@ public partial class BitCallout : BitComponentBase
 
                 await MoveKeyboardToPoint();
             }
+        }
+        else if (stylesChanged && IsOpen)
+        {
+            await RepositionCallout();
         }
     }
 
@@ -1891,6 +1906,11 @@ public partial class BitCallout : BitComponentBase
         if (Width.HasValue())
         {
             classes.Add("bit-clo-wid");
+        }
+
+        if (FixedCalloutWidth)
+        {
+            classes.Add("bit-clo-fxw");
         }
 
         if (FitsToViewport)

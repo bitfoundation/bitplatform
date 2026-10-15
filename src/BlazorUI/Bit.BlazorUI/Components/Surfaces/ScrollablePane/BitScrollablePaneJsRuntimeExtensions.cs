@@ -15,7 +15,7 @@ internal static class BitScrollablePaneJsRuntimeExtensions
     // the constraint is `class` rather than the component base type.
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollablePaneOptions))]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitScrollOffset))]
-    internal static ValueTask BitScrollablePaneSetup<T>(this IJSRuntime jsRuntime,
+    internal static ValueTask BitScrollablePaneSetup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IJSRuntime jsRuntime,
                                                         string id,
                                                         ElementReference element,
                                                         DotNetObjectReference<T> dotnetObj,

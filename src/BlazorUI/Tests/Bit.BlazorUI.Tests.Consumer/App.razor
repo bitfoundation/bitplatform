@@ -1,0 +1,109 @@
+﻿@* Markup across the packages the way an app writes it - two-way bindings, generic components whose type arguments are
+   inferred, templates, cascades - compiled as C# 12. *@
+
+<BitThemeProvider>
+    <BitParams Parameters="@([new BitButtonParams { Variant = BitVariant.Outline }])">
+        <BitStack Gap="1rem">
+            <BitButton OnClick="ToggleModal">Open</BitButton>
+            <BitTextField Label="Name" @bind-Value="_name" />
+            <BitNumberField Label="Age" @bind-Value="_age" />
+            <BitToggle Label="Subscribe" @bind-Value="_subscribe" />
+            <BitDropdown Label="Color" Items="_colors" @bind-Value="_color" />
+            <BitDatePicker Label="Birthday" @bind-Value="_birthday" />
+            <BitTagsInput Label="Tags" @bind-Value="_tags" />
+            <BitIcon IconName="@BitIconName.Add" />
+            <BitBreadcrumb Items="_trail" AutoCollapse />
+            <BitNav Items="_nav" />
+            <BitNavBar Items="_navBar" />
+            <BitNavPanel Items="_nav" />
+            <BitMenuButton Text="Menu" Items="_menu" />
+            <BitButtonGroup Items="_buttons" />
+            <BitChoiceGroup Items="_choices" @bind-Value="_choice" />
+            <BitTimeline Items="_timeline" />
+            <BitAccordionList Items="_accordion" />
+
+            @* An app's own item type, read by the names of its properties: what the trimming check is most about. *@
+            <BitDropdown Items="_fruits" NameSelectors="_fruitSelectors" @bind-Value="_fruit" />
+
+            <BitDataGrid Items="_people">
+                <BitDataGridColumn Property="p => p.Name" Title="Name" />
+                <BitDataGridColumn Property="p => p.Age" Title="Age" Align="BitTextAlign.End" />
+            </BitDataGrid>
+
+            <BitRichTextEditor @bind-Value="_html" />
+            <BitMarkdownViewer Markdown="# Hello" />
+            <BitThemeSwitcher />
+            <BitCountryPicker @bind-Value="_country" />
+            <BitTimeZonePicker @bind-Value="_timeZone" />
+        </BitStack>
+    </BitParams>
+</BitThemeProvider>
+
+<BitModal @bind-IsOpen="_isModalOpen">
+    <BitText>@ThemeChoices.Describe(_theme)</BitText>
+</BitModal>
+
+@code {
+    private string? _name;
+    private int _age;
+    private bool _subscribe;
+    private string? _color;
+    private DateTimeOffset? _birthday;
+    private ICollection<string>? _tags;
+    private string? _html;
+    private BitCountry? _country;
+    private string? _timeZone;
+    private string? _theme = BitThemePresets.Light;
+    private bool _isModalOpen;
+
+    private readonly List<BitDropdownItem<string>> _colors =
+    [
+        new() { Text = "Red", Value = "red" },
+        new() { Text = "Green", Value = "green" },
+    ];
+
+    private readonly List<BitBreadcrumbItem> _trail =
+    [
+        new() { Text = "Home", Href = "/" },
+        new() { Text = "Docs", Href = "/docs", IsSelected = true },
+    ];
+
+    private readonly List<BitNavItem> _nav =
+    [
+        new() { Text = "Home", Url = "/" },
+        new() { Text = "Settings", ChildItems = [new() { Text = "Profile", Url = "/profile" }] },
+    ];
+
+    private readonly List<Person> _people =
+    [
+        new("Ada", 36),
+        new("Alan", 41),
+    ];
+
+    private string? _choice;
+    private string? _fruit = "b";
+
+    private readonly List<BitNavBarItem> _navBar = [new() { Text = "Home", Url = "/" }];
+    private readonly List<BitMenuButtonItem> _menu = [new() { Text = "Open", Key = "open" }];
+    private readonly List<BitButtonGroupItem> _buttons = [new() { Text = "Bold" }, new() { Text = "Italic" }];
+    private readonly List<BitChoiceGroupItem<string>> _choices = [new() { Text = "One", Value = "1" }, new() { Text = "Two", Value = "2" }];
+    private readonly List<BitTimelineItem> _timeline = [new() { PrimaryText = "Created" }];
+    private readonly List<BitAccordionListItem> _accordion = [new() { Title = "First", Description = "Body" }];
+
+    private readonly List<Fruit> _fruits = [new() { Title = "Apple", Code = "a" }, new() { Title = "Banana", Code = "b" }];
+    private readonly BitDropdownNameSelectors<Fruit, string> _fruitSelectors = new()
+    {
+        Text = { Name = nameof(Fruit.Title) },
+        Value = { Name = nameof(Fruit.Code) },
+    };
+
+    private void ToggleModal() => _isModalOpen = _isModalOpen is false;
+
+    private sealed record Person(string Name, int Age);
+
+    private sealed class Fruit
+    {
+        public string? Title { get; set; }
+        public string? Code { get; set; }
+    }
+}

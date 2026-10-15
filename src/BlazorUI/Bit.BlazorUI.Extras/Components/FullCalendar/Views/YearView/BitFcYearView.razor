@@ -3,7 +3,7 @@
 
 @{
     var allEvents = MultiDayEvents.Concat(SingleDayEvents).ToList();
-    var cal = State.Culture.Calendar;
+    var cal = State.Culture.DateTimeFormat.Calendar;
     var dtf = State.Culture.DateTimeFormat;
     // Capture the era of the anchor date and pass it explicitly into every calendar call below so
     // the year range stays correct for era-based calendars (e.g. JapaneseCalendar) where the same
@@ -146,7 +146,7 @@
                             <span class="bit-bfc-year-day-bullets" aria-hidden="true">
                                 @foreach (var ev in dayEvents.Take(3))
                                 {
-                                    <BitFcEventBullet Color="ev.Color" />
+                                    <BitFcEventBullet Color="@ev.Color" />
                                 }
                             </span>
                         </button>

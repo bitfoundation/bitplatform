@@ -39,6 +39,13 @@ public partial class BitOtpInput : BitInputBase<string?>
     // keydown handler when Backspace is pressed while AutoShift is enabled.
     private int _pendingShiftIndex = -1;
 
+    // The latest input event raised by each input, by the sequence number it was given. An input event waits a moment
+    // before it reads what the browser did (see HandleOnInput), and nothing promises that two of them resume in the
+    // order they were raised - a WebAssembly timer does not - so one that a later event of the same input has
+    // overtaken steps aside rather than write the value it read over the newer one.
+    private readonly Dictionary<int, int> _latestInputEvents = [];
+    private int _inputEventSequence;
+
 
 
     [Inject] private IJSRuntime _js { get; set; } = default!;
@@ -976,6 +983,9 @@ public partial class BitOtpInput : BitInputBase<string?>
         _handledClearIndex = -1;
         _pendingShiftIndex = -1;
 
+        var inputEvent = ++_inputEventSequence;
+        _latestInputEvents[index] = inputEvent;
+
         // Emptying the input before the wait is what lets the browser apply its own default behavior
         // before a new value is written over it. The one case it must not be done in is the clear that the
         // keydown handler owns: that handler writes the resulting values itself, and it may have written
@@ -993,7 +1003,21 @@ public partial class BitOtpInput : BitInputBase<string?>
         // replaced.
         if (IsDisposed || IsStaleIndex(index)) return;
 
-        if (Disabled || IsReadOnly || InvalidValueBinding())
+        // A later input event of the same input carries what the input holds now, and it is the one that decides:
+        // this one, overtaken while it waited, would only restore the value it saw before it - a rejected
+        // character's - over the one the later event has just written.
+        if (_latestInputEvents.GetValueOrDefault(index) != inputEvent) return;
+
+        // A disabled component is out of reach of every activation the page listens for, so the input event a
+        // script or an assistive technology still delivers to it changes nothing and is reported to nobody, the way
+        // its key and focus events are not.
+        if (Disabled)
+        {
+            _inputValues[index] = oldValue;
+            return;
+        }
+
+        if (IsReadOnly || InvalidValueBinding())
         {
             _inputValues[index] = oldValue;
 
@@ -1118,7 +1142,15 @@ public partial class BitOtpInput : BitInputBase<string?>
         // on, but it is still a keystroke the consumer asked to be told about.
         if (e.Code is not null || e.Key is not null)
         {
-            await NavigateInput(e.Code ?? string.Empty, e.Key ?? string.Empty, index);
+            try
+            {
+                await NavigateInput(e.Code ?? string.Empty, e.Key ?? string.Empty, index);
+            }
+            catch (OperationCanceledException)
+            {
+                // An arrow the user moved on from before its direction came back (a Tab right after it) moves the
+                // focus nowhere (see IsRtlArrowAsync); it is still a keystroke the consumer asked to be told about.
+            }
         }
 
         await OnKeyDown.InvokeAsync((e, index));

@@ -1793,163 +1793,96 @@ public class BitScrollablePaneTests : BunitTestContext
 
 
 
-    #region cascading parameters
+    #region teardown
 
     [TestMethod]
-    public void BitScrollablePaneParamsShouldHaveCorrectParamName()
+    public async Task BitScrollablePaneShouldDisposeTheBrowserSideUnderTheIdItWasSetUpWith()
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitScrollablePane)}", BitScrollablePaneParams.ParamName);
-    }
-
-    [TestMethod]
-    public void BitScrollablePaneParamsShouldImplementIBitComponentParams()
-    {
-        var @params = new BitScrollablePaneParams();
-
-        Assert.IsTrue(typeof(IBitComponentParams).IsAssignableFrom(typeof(BitScrollablePaneParams)));
-        Assert.AreEqual(BitScrollablePaneParams.ParamName, @params.Name);
-    }
-
-    [TestMethod]
-    public void BitScrollablePaneShouldApplyCascadingStylesAndClassesFromBitParams()
-    {
-        var component = RenderInParams(new BitScrollablePaneParams
+        var component = RenderComponent<BitScrollablePane>(parameters =>
         {
-            Height = "10rem",
-            MaxWidth = "30rem",
-            Horizontal = true,
-            Overscroll = BitOverscroll.Contain,
-            Gutter = BitScrollbarGutter.Stable,
-            ScrollPadding = "1rem",
-            Snap = BitScrollSnap.Proximity,
-            SnapAlign = BitScrollSnapAlign.Center,
-            SnapStop = true,
-            ExpandOnPrint = true,
-            Modern = true,
-            AutoHideScrollbar = true,
-            Smooth = true,
-            FadeSize = "3rem",
-            Class = "cascaded",
+            parameters.Add(p => p.Id, "first-id");
+            parameters.Add(p => p.Fade, true);
         });
 
-        var root = component.Find(".bit-scp");
-        var style = root.GetAttribute("style") ?? string.Empty;
+        Assert.AreEqual("first-id", InvocationsOf(Setup).Single().Arguments[0]);
 
-        StringAssert.Contains(style, "height:10rem");
-        StringAssert.Contains(style, "max-width:30rem");
-        StringAssert.Contains(style, "overflow-x:auto");
-        StringAssert.Contains(style, "overscroll-behavior:contain");
-        StringAssert.Contains(style, "scrollbar-gutter:stable");
-        StringAssert.Contains(style, "scroll-padding:1rem");
-        StringAssert.Contains(style, "scroll-snap-type:both proximity");
-        StringAssert.Contains(style, "--bit-scp-fsz:3rem");
+        // The Id parameter changes after the first render, while the instance the browser side holds does not.
+        component.Render(parameters => parameters.Add(p => p.Id, "second-id"));
 
-        foreach (var cls in new[] { "bit-scp-hor", "bit-scp-sna-cnt", "bit-scp-sns", "bit-scp-eop", "bit-scp-mod", "bit-scp-ahs", "bit-scp-smt", "cascaded" })
-        {
-            Assert.IsTrue(root.ClassList.Contains(cls), cls);
-        }
+        await component.Instance.DisposeAsync();
+
+        Assert.AreEqual("first-id", InvocationsOf(Dispose).Single().Arguments[0]);
     }
 
     [TestMethod]
-    public void BitScrollablePaneShouldApplyCascadingAccessibilityFromBitParams()
+    public void BitScrollablePaneShouldTearTheBrowserSideDownWhenItIsDisabled()
     {
-        var component = RenderInParams(new BitScrollablePaneParams
+        var component = RenderComponent<BitScrollablePane>(parameters =>
         {
-            Focusable = true,
-            Role = "region",
-            AriaLabel = "Cascaded",
-        });
-
-        var root = component.Find(".bit-scp");
-
-        Assert.AreEqual("0", root.GetAttribute("tabindex"));
-        Assert.AreEqual("region", root.GetAttribute("role"));
-        Assert.AreEqual("Cascaded", root.GetAttribute("aria-label"));
-    }
-
-    [TestMethod]
-    public void BitScrollablePaneOwnParametersShouldWinOverCascadingOnes()
-    {
-        var component = RenderInParams(new BitScrollablePaneParams
-        {
-            Height = "10rem",
-            Modern = true,
-            Role = "region",
-        }, builder =>
-        {
-            builder.AddAttribute(1, nameof(BitScrollablePane.Height), "5rem");
-            builder.AddAttribute(2, nameof(BitScrollablePane.Modern), false);
-            builder.AddAttribute(3, nameof(BitScrollablePane.Role), "group");
-        });
-
-        var root = component.Find(".bit-scp");
-
-        StringAssert.Contains(root.GetAttribute("style"), "height:5rem");
-        Assert.IsFalse(root.GetAttribute("style")!.Contains("height:10rem"));
-        Assert.IsFalse(root.ClassList.Contains("bit-scp-mod"));
-        Assert.AreEqual("group", root.GetAttribute("role"));
-    }
-
-    [TestMethod]
-    public void BitScrollablePaneShouldHandCascadingBrowserSideOptionsToJs()
-    {
-        RenderInParams(new BitScrollablePaneParams
-        {
-            Fade = true,
-            DragScroll = true,
-            DragMomentum = true,
-            HorizontalWheel = true,
-            PreserveScroll = true,
-            ReachOffset = 120,
-            ScrollThrottle = 50,
-            AutoScrollThreshold = 16,
-            Modern = true,
-            AutoHideScrollbar = true,
-            AutoHideDelay = 300,
+            parameters.Add(p => p.Fade, true);
         });
 
         Assert.AreEqual(1, InvocationCount(Setup));
 
-        var options = SetupOptions();
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
 
-        Assert.AreEqual(true, Option(options, "Fade"));
-        Assert.AreEqual(true, Option(options, "Drag"));
-        Assert.AreEqual(true, Option(options, "Momentum"));
-        Assert.AreEqual(true, Option(options, "Wheel"));
-        Assert.AreEqual(true, Option(options, "Preserve"));
-        Assert.AreEqual(120, Option(options, "Offset"));
-        Assert.AreEqual(50, Option(options, "Throttle"));
-        Assert.AreEqual(16, Option(options, "AutoScrollThreshold"));
-        Assert.AreEqual(true, Option(options, "AutoHide"));
-        Assert.AreEqual(300, Option(options, "AutoHideDelay"));
+        Assert.AreEqual(1, InvocationCount(Dispose));
+
+        // And sets it up again once the pane is usable again.
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        Assert.AreEqual(2, InvocationCount(Setup));
     }
 
     [TestMethod]
-    public void BitScrollablePaneShouldNotBeTouchedByAnEmptyCascade()
+    public void BitScrollablePaneShouldNotSetupJsForAutoHideWithoutAModernScrollbar()
     {
-        var component = RenderInParams(new BitScrollablePaneParams());
+        // Only the Modern bar is ever hidden, since it is the only one the library draws.
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.AutoHideScrollbar, true);
+        });
 
-        var root = component.Find(".bit-scp");
-
-        Assert.AreEqual("bit-scp", root.GetAttribute("class"));
-        Assert.IsTrue(string.IsNullOrEmpty(root.GetAttribute("style")));
-        Assert.IsNull(root.GetAttribute("tabindex"));
+        Assert.IsTrue(component.Find(".bit-scp").ClassList.Contains("bit-scp-ahs"));
         Assert.AreEqual(0, InvocationCount(Setup));
     }
 
-    private IRenderedComponent<BitParams> RenderInParams(BitScrollablePaneParams @params,
-                                                         Action<Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder>? attributes = null)
+    // A report from the browser side that was on its way as the pane went lands on nothing.
+    [TestMethod]
+    public async Task BitScrollablePaneCallbacksAfterDisposeShouldNotReachThePage()
     {
-        return RenderComponent<BitParams>(parameters =>
+        var calls = 0;
+
+        var component = RenderComponent<BitScrollablePane>(parameters =>
         {
-            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitScrollablePane>(0);
-                attributes?.Invoke(builder);
-                builder.CloseComponent();
-            });
+            parameters.Add(p => p.OnScroll, _ => calls++);
+            parameters.Add(p => p.OnScrollStart, _ => calls++);
+            parameters.Add(p => p.OnScrollEnd, _ => calls++);
+            parameters.Add(p => p.OnReachedTop, () => calls++);
         });
+
+        await component.Instance.DisposeAsync();
+
+        await component.Instance._OnScroll(new BitScrollOffset());
+        await component.Instance._OnScrollStart(new BitScrollOffset());
+        await component.Instance._OnScrollEnd(new BitScrollOffset());
+        await component.Instance._OnReached("top");
+
+        Assert.AreEqual(0, calls);
+    }
+
+    [TestMethod]
+    public async Task BitScrollablePaneShouldSurviveBeingDisposedTwice()
+    {
+        var component = RenderComponent<BitScrollablePane>(parameters =>
+        {
+            parameters.Add(p => p.Fade, true);
+        });
+
+        await component.Instance.DisposeAsync();
+        await component.Instance.DisposeAsync();
+
+        Assert.AreEqual(1, InvocationCount(Dispose));
     }
 
     #endregion

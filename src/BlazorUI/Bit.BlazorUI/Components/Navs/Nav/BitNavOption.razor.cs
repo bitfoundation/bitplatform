@@ -2,7 +2,15 @@
 
 public partial class BitNavOption : ComponentBase, IDisposable
 {
+    // The marker the nav reads the markup order of the options back from, and the value that tells the
+    // options apart in that read-back.
+    internal const string _OPTION_ID_ATTRIBUTE = "data-bit-nav-opt";
+
+    internal string _OptionId { get; } = BitShortId.NewId();
+
     private bool _disposed;
+    private bool _isExpanded;
+    private bool? _isExpandedParameter;
 
 
 
@@ -114,7 +122,25 @@ public partial class BitNavOption : ComponentBase, IDisposable
     /// <summary>
     /// Whether or not the nav option is in an expanded state.
     /// </summary>
-    [Parameter] public bool IsExpanded { get; set; }
+    /// <remarks>
+    /// The value given is the state the option starts in, and the state it moves to whenever the value given changes;
+    /// in between, the option keeps whatever the reader (or the nav's API) expanded or collapsed it to.
+    /// </remarks>
+    [Parameter]
+    public bool IsExpanded
+    {
+        get => _isExpanded;
+        set
+        {
+            // The markup hands its value over again on every render of the nav (the options are its content), so only
+            // a value that differs from the last one handed over is applied: re-applying the same one would undo every
+            // toggle of the reader at once, and an option written as expanded could never be collapsed.
+            if (_isExpandedParameter == value) return;
+
+            _isExpandedParameter = value;
+            _isExpanded = value;
+        }
+    }
 
     /// <summary>
     /// Indicates that the nav option should render as a separator.
@@ -199,6 +225,10 @@ public partial class BitNavOption : ComponentBase, IDisposable
 
     internal int Depth => Parent is null ? 0 : Parent.Depth + 1;
 
+    // The expansion state the nav moves the option to, which the IsExpanded handed over by the markup only replaces
+    // once that value changes.
+    internal void SetExpanded(bool value) => _isExpanded = value;
+
     internal void InternalRecursiveStateHasChanged()
     {
         StateHasChanged();
@@ -220,6 +250,9 @@ public partial class BitNavOption : ComponentBase, IDisposable
         else
         {
             Parent.ChildItems.Add(this);
+
+            // Only the parent re-renders for a nested option, so the nav is told its tree may be out of markup order.
+            Nav?.MarkOptionsOrderDirty();
         }
 
         // A nested option only re-renders its parent, not the nav, so the tree the nav has cached the

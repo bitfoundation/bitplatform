@@ -157,7 +157,7 @@
             const evaluate = () => {
                 frame.handle = 0;
 
-                const end = Footers.atEnd(target.current);
+                const end = Footers.atEnd(target.current, element);
 
                 applyOverlapping(!end);
 
@@ -326,16 +326,61 @@
             return (target as HTMLElement).scrollTop;
         }
 
-        private static atEnd(target: HTMLElement | Window): boolean {
+        private static atEnd(target: HTMLElement | Window, footer: HTMLElement): boolean {
             // A one pixel slack absorbs the rounding of a fractional device pixel ratio, which otherwise
             // keeps a viewport that is scrolled all the way down one hair short of its own height.
             if (target === window) {
                 const doc = document.documentElement;
-                return window.scrollY + window.innerHeight >= doc.scrollHeight - 1;
+                return window.scrollY + window.innerHeight >= doc.scrollHeight - 1 - Footers.ownOverflow(target, footer);
             }
 
             const el = target as HTMLElement;
-            return el.scrollTop + el.clientHeight >= el.scrollHeight - 1;
+            return el.scrollTop + el.clientHeight >= el.scrollHeight - 1 - Footers.ownOverflow(target, footer);
+        }
+
+        // A footer slid away is translated, not moved, and a transformed box still counts towards the scrollable
+        // overflow of the box it sits in: a Sticky (or Absolute) footer at the end of the content adds the length
+        // of its own slide below that end. Measured as is, the end the scroll reached stops being the end as the
+        // slide runs on - with no scroll event to say so - and a footer that should come back at the end stays
+        // hidden over an empty strip. So the overflow the footer's own translation adds is taken back out of the
+        // scrollable length: the end is where the footer's untranslated box (and the padding after it) is in view.
+        // A fixed footer, or one outside the scroller it follows, adds nothing to that scroller's overflow.
+        private static ownOverflow(target: HTMLElement | Window, footer: HTMLElement): number {
+            const style = getComputedStyle(footer);
+
+            if (style.position === 'fixed' || !style.transform || style.transform === 'none') return 0;
+
+            if (target !== window && !(target as HTMLElement).contains(footer)) return 0;
+
+            let shift = 0;
+
+            try {
+                // The current value, so a slide that is still running is measured where it is now.
+                shift = new DOMMatrixReadOnly(style.transform).m42;
+            } catch { }
+
+            if (!(shift > 0)) return 0;
+
+            const bottom = footer.getBoundingClientRect().bottom;
+
+            let end: number, translatedEnd: number, padding = 0;
+
+            if (target === window) {
+                end = document.documentElement.scrollHeight;
+                translatedEnd = bottom + window.scrollY;
+            } else {
+                const box = target as HTMLElement;
+
+                end = box.scrollHeight;
+                translatedEnd = bottom - box.getBoundingClientRect().top - box.clientTop + box.scrollTop;
+                padding = parseFloat(getComputedStyle(box).paddingBottom) || 0;
+            }
+
+            // Only a footer whose translated box is what reaches the end of the scrollable area lengthens it, and
+            // by no more than the slide less the padding its untranslated box already had after it.
+            if (translatedEnd < end - 1) return 0;
+
+            return Math.max(0, shift - padding);
         }
     }
 }

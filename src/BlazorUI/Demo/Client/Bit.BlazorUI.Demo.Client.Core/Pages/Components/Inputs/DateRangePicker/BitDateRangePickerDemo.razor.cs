@@ -214,6 +214,8 @@ public partial class BitDateRangePickerDemo
             Type = "BitDropDirection",
             DefaultValue = "BitDropDirection.TopAndBottom",
             Description = "Determines the allowed drop directions of the callout.",
+            LinkType = LinkType.Link,
+            Href = "#drop-direction-enum",
         },
         new()
         {
@@ -939,6 +941,8 @@ public partial class BitDateRangePickerDemo
             Type = "BitSize?",
             DefaultValue = "null",
             Description = "Sets the preset size (Small, Medium, Large) of the field, the calendar cells and the label. The callout takes the size with it. An explicit value wins over the --bit-DateRangePicker-* size variables (input height and font size, label font size, day size and font size); left unset, the DateRangePicker is medium unless they say otherwise.",
+            LinkType = LinkType.Link,
+            Href = "#size-enum",
         },
         new()
         {
@@ -2294,7 +2298,9 @@ public partial class BitDateRangePickerDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitDropDirection(),
         DemoSharedEnums.BitPlacement(),
+        DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitTimeFormat()
     ];
 

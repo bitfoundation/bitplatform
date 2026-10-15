@@ -5,6 +5,8 @@
         // so each of them owns its AbortController instead of sharing a single one.
         private static _abortControllers: { [key: string]: { [feature: string]: AbortController } } = {};
         private static _ghostTexts: { [key: string]: string } = {};
+        // The suggestion Escape rejected, kept away until the field is typed into or a different one arrives.
+        private static _rejectedGhostTexts: { [key: string]: string } = {};
         private static _maxRows: { [key: string]: number | null } = {};
         private static _inputElements: { [key: string]: HTMLInputElement } = {};
         private static _resizeObservers: { [key: string]: ResizeObserver } = {};
@@ -398,9 +400,13 @@
                 dotnetObj.invokeMethodAsync('OnGhostTextAccepted', accepted);
             };
 
-            // On every keystroke: immediately clear the ghost suggestion.
+            // On every keystroke: immediately clear the ghost suggestion, and forget the one Escape rejected, which
+            // was a rejection of the suggestion for the text as it stood.
             // The overlay is JS-owned; Blazor never touches its content.
-            inputElement.addEventListener('input', clearGhost, { signal });
+            inputElement.addEventListener('input', () => {
+                delete TextField._rejectedGhostTexts[id];
+                clearGhost();
+            }, { signal });
 
             // Tab/Enter: accept the ghost suggestion.
             inputElement.addEventListener('keydown', e => {
@@ -428,8 +434,11 @@
                 // Escape rejects the suggestion and nothing else: the key is kept from the handlers of the
                 // component, so it neither clears what was typed (ClearOnEscape) nor closes a dialog around
                 // the field, the way an open list closes before anything around it hears the key.
+                // The suggestion stays rejected through the renders that follow (the keyup of the very press is one),
+                // which push it again for a field typed into (see setGhostText).
                 if (e.key === 'Escape') {
                     e.stopPropagation();
+                    TextField._rejectedGhostTexts[id] = TextField._ghostTexts[id];
                     clearGhost();
                     return;
                 }
@@ -467,7 +476,16 @@
 
         // Called by C# (OnAfterRenderAsync) whenever the GhostText parameter changes.
         // Stores the new ghost text and refreshes the overlay to show value + ghost.
+        // A suggestion Escape rejected is not shown again by the renders that keep pushing the same one; a different
+        // suggestion, or the same one after the field is typed into, is.
         public static setGhostText(id: string, ghostText: string) {
+            const rejected = TextField._rejectedGhostTexts[id];
+            if (rejected !== undefined && rejected === (ghostText ?? '')) {
+                ghostText = '';
+            } else {
+                delete TextField._rejectedGhostTexts[id];
+            }
+
             TextField._ghostTexts[id] = ghostText ?? '';
 
             const inputElement = TextField._inputElements[id];
@@ -528,6 +546,7 @@
 
             delete TextField._abortControllers[id];
             delete TextField._ghostTexts[id];
+            delete TextField._rejectedGhostTexts[id];
             delete TextField._maxRows[id];
             delete TextField._inputElements[id];
         }

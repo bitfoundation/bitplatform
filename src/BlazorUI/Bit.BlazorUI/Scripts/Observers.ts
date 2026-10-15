@@ -3,12 +3,15 @@
         private static _resizeObservers: Record<string, ResizeObserver> = {};
         private static _intersectionObservers: Record<string, IntersectionObserver> = {};
 
-        // Watches an element for entering the visible region of its nearest scrollable ancestor and
-        // reports it back to .NET. Used by lists that load their next page as the end of the loaded
-        // items comes into view, where the element observed is a zero height sentinel sitting after
-        // the last one. rootMargin grows the region the sentinel is measured against, so a positive
-        // margin fires the callback before the sentinel itself is actually reached.
-        public static registerIntersection(id: string, element: HTMLElement, obj: DotNetObject, rootMargin: string) {
+        // Watches an element for entering the visible region (the viewport, as clipped by every scrolling
+        // ancestor in between) and reports it back to .NET. Used by lists that load their next page as the
+        // end of the loaded items comes into view, where the element observed is a sentinel sitting after the
+        // last one. An early start is drawn into the sentinel itself (BitBasicList lays a strip of the length
+        // of its threshold back over the end of its items), since that is clipped by whichever box scrolls
+        // the list; a rootMargin only ever grows the viewport, and so does nothing for a list that scrolls
+        // its own content. rootMargin is still taken for an observer that is meant to be measured against
+        // the viewport alone.
+        public static registerIntersection(id: string, element: HTMLElement, obj: DotNetObject, rootMargin?: string) {
             if (!element || !(element instanceof Element)) return;
 
             try {
@@ -60,11 +63,16 @@
             if (!element || !(element instanceof Element)) return;
 
             try {
+                // A second registration under the same id replaces the first, whose observer would otherwise keep
+                // calling .NET on its own. The reference it was handed is left alone: it may be this one again.
+                Observers._resizeObservers[id]?.disconnect();
+
                 const observer = new ResizeObserver(entries => {
                     const entry = entries[0];
                     if (!entry) return;
 
-                    obj.invokeMethodAsync("OnResize", entry.contentRect);
+                    // A component disposed while a resize was on its way rejects the call; that is nobody's error.
+                    obj.invokeMethodAsync("OnResize", entry.contentRect).catch(() => { });
                 });
                 observer.observe(element);
 
@@ -74,16 +82,22 @@
             }
         }
 
+        // Releases the reference it is handed whether or not an observer was registered for the id, or its element
+        // is still there: the components count on this call to release it (BitCarousel), and an element already gone
+        // with its parent or a registration that never happened would otherwise leave the reference tracked forever.
         public static unregisterResize(id: string, element: HTMLElement, obj: DotNetObject) {
-            if (!element || !(element instanceof Element)) return;
-
             try {
                 const observer = Observers._resizeObservers[id];
-                if (!observer) return;
+                if (observer) {
+                    observer.disconnect();
+                    delete Observers._resizeObservers[id];
+                }
+            } catch (err) {
+                console.error(err);
+            }
 
-                observer.unobserve(element);
-                delete Observers._resizeObservers[id];
-                obj.dispose();
+            try {
+                obj?.dispose();
             } catch (err) {
                 console.error(err);
             }

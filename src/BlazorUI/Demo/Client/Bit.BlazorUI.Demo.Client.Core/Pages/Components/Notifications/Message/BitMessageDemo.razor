@@ -450,8 +450,9 @@
         <DemoExample Title="Cascading parameters" RazorCode="@example13RazorCode" CsharpCode="@example13CsharpCode" Id="example13">
             <div>
                 <b>BitParams</b> with a <b>BitMessageParams</b> sets defaults for every message under it; a message's own
-                value always wins. The content, the state, the callbacks and what a message says about itself
-                (<b>Role</b>, <b>Politeness</b>, <b>IconAriaLabel</b>, <b>AutoFocus</b>) are not cascaded.
+                value always wins. How the messages are announced (<b>Role</b>, <b>Politeness</b>) is cascaded like their
+                look; the content, the state, the callbacks and what belongs to one message alone (<b>IconAriaLabel</b>,
+                <b>AutoFocus</b>) are not.
             </div>
             <br />
             <BitParams Parameters="@messageParams">

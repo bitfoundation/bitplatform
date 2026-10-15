@@ -11,19 +11,22 @@ namespace Bit.BlazorUI;
 /// </summary>
 public static class BitThemeSerialization
 {
-    private static readonly JsonSerializerOptions Options = new()
+    // The metadata of BitTheme is generated at compile time (BitThemeJsonContext) rather than reflected at run time, so
+    // a trimmed or AOT-compiled app keeps every member the JSON is read into and written from.
+    private static readonly BitThemeJsonContext Context = BitThemeJsonContext.Default;
+
+    private static readonly BitThemeJsonContext IndentedContext = new(new JsonSerializerOptions
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-    };
-
-    private static readonly JsonSerializerOptions IndentedOptions = new(Options) { WriteIndented = true };
+        WriteIndented = true,
+    });
     private static readonly JsonSerializerOptions JsonNodeIndentedWriteOptions = new() { WriteIndented = true };
 
     public static string Serialize(BitTheme? theme, bool writeIndented = false)
     {
-        var serializeOptions = writeIndented ? IndentedOptions : Options;
-        var raw = JsonSerializer.Serialize(theme ?? new BitTheme(), serializeOptions);
+        var context = writeIndented ? IndentedContext : Context;
+        var raw = JsonSerializer.Serialize(theme ?? new BitTheme(), context.BitTheme);
         var node = JsonNode.Parse(raw);
         PruneEmptyObjectNodes(node);
         return node!.ToJsonString(writeIndented ? JsonNodeIndentedWriteOptions : null);
@@ -34,7 +37,7 @@ public static class BitThemeSerialization
         if (string.IsNullOrWhiteSpace(json))
             return new BitTheme();
 
-        var theme = JsonSerializer.Deserialize<BitTheme>(json, Options) ?? new BitTheme();
+        var theme = JsonSerializer.Deserialize(json, Context.BitTheme) ?? new BitTheme();
         EnsureNestedObjects(theme);
         return theme;
     }
@@ -200,3 +203,8 @@ public static class BitThemeSerialization
         steps.Switch.Thumb ??= new BitThemeSizeScale();
     }
 }
+
+[JsonSourceGenerationOptions(PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
+                             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull)]
+[JsonSerializable(typeof(BitTheme))]
+internal sealed partial class BitThemeJsonContext : JsonSerializerContext;

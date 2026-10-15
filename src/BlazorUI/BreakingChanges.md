@@ -5,6 +5,99 @@ Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`,
 
 ## 10.7.0 (first shipped in 10.7.0-pre-01)
 
+### The item type of the item-based components keeps its public properties in a trimmed app
+
+`BitDropdown`, `BitChoiceGroup`, `BitButtonGroup`, `BitMenuButton`, `BitNav`, `BitNavBar`, `BitNavPanel`,
+`BitBreadcrumb`, `BitTimeline`, `BitAccordionList` and `BitDataGrid` (with `BitDataGridColumn`) read an app's own item
+type by the names of its properties - the `NameSelectors` names, a column's `Field`. A trimmed app could lose a
+property it never read in code of its own, and the component then showed nothing for it. Their `TItem` now carries
+`[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]`, so the type's public properties are
+kept wherever it is handed to one of them. Nothing changes for an app that names its item type (`BitDropdown<MyItem,
+string>`). **A generic component or method of an app's own that passes its type parameter on as one of these
+`TItem`s** gets the trim analysis warning IL2091 when it runs the trim analyzers; give its type parameter the same
+attribute. A `BitDataGridColumn.Field` path that reaches a nested type ("Address.City") still depends on the app
+reading that nested property somewhere itself; `Property="x => x.Address.City"` names every member and keeps them all.
+
+### Rate limiters run their callback on the caller's context
+
+`BitDebouncer.Do` and `BitThrottler.Do` used to run the callback through `Task.Run`, on the thread pool. They
+now wait out the delay and run it on the context `Do` was called from - the component's renderer when a component
+calls it - so a callback that calls `StateHasChanged` or changes the component's state works without
+`InvokeAsync`. This matters to Blazor Server and Hybrid apps; on single-threaded WebAssembly the callback already
+ran on the one thread there is. **A callback that does blocking or CPU-heavy work and relied on running off the
+renderer** now holds the renderer (on Blazor Server, the circuit) for as long as it runs; it offloads that work
+itself:
+
+```csharp
+await _debouncer.Do(300, async () =>
+{
+    _results = await Task.Run(() => Search(_term)); // the heavy part, off the renderer
+    StateHasChanged();
+});
+```
+
+`BitThrottler` also opens again after a callback that throws: it used to stay shut, dropping every later `Do`
+call for the life of the instance. An exception the callback throws, other than a cancellation, reaches the
+awaiter of the `Do` call that ran it, as before; a caller that does not await `Do` does not observe it.
+
+### `BitRichTextEditor` waits for the sanitizer in its parameter pass
+
+An updated `Value` is sanitized through the editor's script and pushed into the editor as part of the parameter
+pass, which now awaits both; they used to be started there and finish after it, so the render that followed a
+`Value` change could run before the sanitized value was in place. That render now sees the sanitized value, and
+the cleaned HTML written back to `@bind-Value` is written in the same pass. An interop call that fails there (a
+circuit that has gone away, a script that is not available) ends the sync and leaves the editor's content as it
+was, rather than failing the parameter pass. Nothing changes in an app's code.
+
+### One Escape does one thing: a component that acts on the key takes it from the surface around it ([#13545](https://github.com/bitfoundation/bitplatform/issues/13545))
+
+An Escape pressed in a component inside a surface that closes on Escape - `BitDialog`, `BitModal`, `BitPanel`, a
+callout (`BitCallout` and the popups of the dropdowns, pickers and menus), a shown `BitTooltip`, a `BitMessage`
+that dismisses on it - used to reach both: a `BitTextField` with `ClearOnEscape` emptied itself and the dialog
+around it closed on the same press. Now whoever acts on the key takes it by preventing its default, every surface
+leaves an Escape whose default is prevented alone, and the surface closes on the next press:
+
+- A field that clears on Escape takes the key only while it has something to clear (`BitTextField` with
+  `ClearOnEscape`, `BitSearchBox`, `BitNumberField`, `BitTagsInput`), and a component whose popup is open (a
+  dropdown's list, a picker's calendar, a nested callout) closes that popup alone. The components of
+  `Bit.BlazorUI.Extras` that act on the key themselves (`BitDataGrid`, `BitRichTextEditor`, `BitMarkdownEditor`,
+  `BitNavPanel`, `BitFullCalendar`'s dialogs, ...) take it the same way.
+- An Escape with Shift, Ctrl, Alt or Meta held is left to the surface: a field no longer clears on it. A
+  `BitTextField` bound one way (a `Value` with neither `ValueChanged` nor `OnChange`) no longer clears on
+  Escape at all.
+- An Escape pressed to cancel an IME composition reaches no .NET keydown handler any more, an app's own included:
+  it is stopped on the document element ahead of Blazor's event delegation, in every browser.
+
+**An app's own control inside one of these surfaces that acts on Escape in a Blazor `@onkeydown`** - and should
+keep the surface open while it does - says so in its markup, with `data-bit-esc="claim"` on the element its
+handler listens on, rendered while the press does something (or `"text"`: only while that input holds text). A
+script of the app's own calls `preventDefault()` on the keydown instead. An app's own listener that closes
+something on Escape checks `event.defaultPrevented` to follow the same rule; and one that prevents the default of
+an Escape for a reason of its own now keeps the library's surfaces open on that press. A test or a flow that
+pressed Escape once to clear a field and close the dialog around it presses it twice.
+
+```razor
+@* OnFilterKeyDown empties the filter on Escape; "text" takes the key only while the input holds text *@
+<input @bind="_filter" @onkeydown="OnFilterKeyDown" data-bit-esc="text" />
+```
+
+The date, date range, time and circular time pickers and `BitPhoneInput` also close their popup when the focus
+moves on from both the field and the popup (a Tab out of the field), rather than leaving it open behind its
+overlay.
+
+### Dialogs, modals, panels and callouts no longer stop the keys pressed inside them ([#13565](https://github.com/bitfoundation/bitplatform/issues/13565))
+
+`BitDialog`, `BitModal`, `BitPanel` (one that closed on Escape) and `BitCallout` stopped the keydown events
+pressed inside them at their root (`@onkeydown:stopPropagation`), so a Blazor `@onkeydown` an app wrote on an
+element around one never heard a key pressed inside it. They now let every key through, so the page's own
+keyboard shortcuts around them (Ctrl+S) keep working while one is open; a nested surface's Escape is told from
+the outer one's own in script instead, so one press still closes only the innermost surface. **An app's handler
+around one of these components that relied on not hearing the keys typed inside it** - a page shortcut on a
+letter, Enter or Delete that would now fire while the user types into a field of the dialog - checks where the
+key came from, or whether the surface is open, itself. A `@onkeydown:stopPropagation` of the app's own around the
+surface's content is not the way: `BitModal`, `BitPanel` and `BitCallout` listen on their root, above that
+content, for the Escape they close on.
+
 ### Components no longer run past the side of a narrow container ([#13834](https://github.com/bitfoundation/bitplatform/issues/13834))
 
 A component in a horizontally scrolling box, or on a phone, widened the page around it: the visually hidden text it
@@ -173,6 +266,28 @@ A boolean written into an input's `InputHtmlAttributes` for an attribute the inp
 splatted boolean - with no value while it is `true`, left out while it is `false` - rather than as the text `True`
 or `False`. Write the string (`["aria-disabled"] = "true"`) for a value of its own.
 
+### A duration an app sets on a component follows reduced motion like the theme's own ([#13552](https://github.com/bitfoundation/bitplatform/issues/13552))
+
+Under `prefers-reduced-motion: reduce` the theme's `--bit-mot-duration*` tokens collapse, and the app restores them
+by withdrawing that at `:root` or by `ForceAnimation` (the `bit-fam` class) on a component or an element around it.
+A duration the page set on a component through a parameter did not follow them: `BitCarousel`'s and `BitSwiper`'s
+`AnimationDuration`, `BitCollapse`'s `Duration` / `Delay` / `ExpandDuration` / `CollapseDuration`,
+`BitAccordion`'s and `BitSnackBar`'s `TransitionDuration` each collapsed through a reduced-motion query of the
+component's own that only `ForceAnimation` undid, and `BitChart` took its entry animations out the same way. Every
+duration the page sets - those parameters, the chart's animation options and the public
+`--bit-<Component>-*-duration` variables alike - is now scaled by the new `--bit-mot-duration-factor` token, 1
+normally and 0 under the preference, so it collapses (to 0.01ms, and a delay to nothing) exactly where the theme's
+durations do and comes back wherever they are restored. **An app that restores the motion tokens at `:root`, to
+animate regardless of the preference, now gets these animations back as well**; one that wants them to stay
+collapsed there sets `--bit-mot-duration-factor: 0` itself. To scale every duration the page sets on components,
+an app sets `--bit-mot-duration-factor-full` in CSS, which the preference still collapses;
+`BitThemeMotion.DurationFactor` writes the effective token, which outranks the preference, so it is left unset
+unless the app answers the preference itself.
+
+Two reduced-motion rules that ignored `ForceAnimation` now honour it: `BitPivot` keeps the smooth scrolling of its
+headers, and a `BitDialog` whose dismissal is refused shakes rather than showing the ring drawn in place of the
+shake.
+
 ### A disabled component no longer runs the activation handlers written on it ([#13547](https://github.com/bitfoundation/bitplatform/issues/13547))
 
 An HTML event handler written straight on a component (`<BitToggle Disabled="true" @onclick="...">`) lands on
@@ -200,6 +315,20 @@ disabled, say - puts it on an element of its own around the component.
 `IsDisabled`: with `DisabledInteractive`, a disabled group used to still run `OnItemClick`, the item's
 `OnClick` and its toggle on a key press. The link items of a disabled group are out of the tab order.
 
+### A nested component no longer inherits what an outer one's parameters set ([#13535](https://github.com/bitfoundation/bitplatform/issues/13535))
+
+A component hands what its parameters ask for to its stylesheet as private custom properties
+(`--bit-<prefix>-*`), set by a class or an inline style on its root, and custom properties inherit: an instance
+rendered in the content of another one of its kind read the outer one's values wherever it set none of its own -
+a `BitDialog` in a dialog given a `Width`, a `BitGrid` in a grid given a `MinItemWidth`, a `BitStack` in a stack
+given a direction or a gap, a `BitPanel` in a panel. Every component's root now resets every private property its
+parameters publish (to `initial`), so an inner instance goes by its own parameters and its defaults alone;
+`BitCard` also registers the ones only its root reads (its shadows and border width) as non-inheriting, so an
+ancestor cannot reach them at all. The private properties were never public API: **an app that set one on an
+ancestor to restyle the components under it** sets the component's public `--bit-<Component>-*` variable instead,
+which inherits as before - one set on an instance's `Style` reaches the instances nested in it too; to restyle one
+instance alone, set its parameter, or the property itself through `Style` / `Styles` / `Classes`.
+
 ### An app's class keeps painting a part while it is hovered, pressed or focused ([#13542](https://github.com/bitfoundation/bitplatform/issues/13542))
 
 The hover, pressed and focus states of the components used to paint their parts' `color`, `background`,
@@ -224,6 +353,36 @@ of `BitMap` still paint directly, as before. One side effect in `forced-colors` 
 in system colors at rest (today or the selected day of a calendar, a checked or toggled button, an active
 toolbar button) now keeps those colors under the pointer, where a library hover rule used to paint theme
 colors over them.
+
+### A parameter set on a component wins over the public CSS variable that restyles it ([#13483](https://github.com/bitfoundation/bitplatform/issues/13483))
+
+The public `--bit-<Component>-*` variables were read ahead of the value a parameter published
+(`color: var(--bit-Button-color, var(--bit-btn-clr-txt))`), so a variable set on `:root` or an ancestor to restyle
+the buttons of an app also repainted, resized or reshaped every button that asked for something else with its
+`Color`, `Size` or `Rounded`. The variables now restyle the default only: every read ranks the parameter first, then
+the variable, then the default the unset parameter stands for, so `:root { --bit-Badge-background: gray }` leaves
+`<BitBadge Color="BitColor.Error">` red while it repaints every badge that left `Color` unset. This holds for the
+`Color`, `Size`, `Shape` / `Rounded` and the value parameters (`Height`, `Gap`, ...) of every component of
+`Bit.BlazorUI` and `Bit.BlazorUI.Extras` that has public variables for what they set; a value cascaded from a
+`BitParams` ancestor counts as set. What a parameter does not paint stays the variable's: an Outline badge's
+transparent background is its `Variant`'s, so `--bit-Badge-background` still fills it under an explicit `Color`.
+Each component's demo page says which parameter wins over which variable. **An app that sets these parameters
+explicitly and also restyles the components through their variables** loses the variable on those instances:
+drop the parameter where the variable should decide, or restyle the role itself through the theme's color tokens
+(`--bit-clr-pri`, ...).
+
+What changes in the markup: a `Color`, `Size` or `Shape` left unset no longer renders the class of its default - a
+`<BitButton>` used to carry `bit-btn-pri bit-btn-md` and now carries neither, a `<BitTag>` drops
+`bit-tag-pri bit-tag-md bit-tag-rnd`, and the same goes for the default classes of the other buttons, the inputs,
+the navs, `BitBadge`, `BitCard`, `BitIcon`, `BitLink`, `BitMessage`, `BitPersona`, `BitProgress`, `BitSnackBar`,
+`BitTimeline` and the rest. **A rule or test locator written against a default class** (`.bit-btn-pri`) now matches
+only the components that set the parameter: target the root class (`.bit-btn`), or set the parameter.
+
+`BitSnackBarService.Show` takes its `color` as `BitColor?`, defaulting to none rather than `BitColor.Info`: a snack
+bar shown without a color is still drawn as Info, unless the `--bit-SnackBar-*` color variables say otherwise, while
+`Info(...)` and a color passed in win over them. A call compiled against the earlier signature keeps working. The
+buttons of `BitMessageBox` no longer pass their neutral default as `Color`, so an app's `--bit-Button-*` variables
+now restyle them too.
 
 ### Every anchor resolves a new tab's rel the same way ([#13475](https://github.com/bitfoundation/bitplatform/issues/13475))
 
@@ -280,6 +439,27 @@ new BitNavItem { Text = "Partner", Url = "https://partner.example", Target = "_b
 
 An app whose own text already says that an item opens a new tab sets `NoNewTabHint` on the component,
 so the announcement is not made twice.
+
+### Core components draw their own spinner and skeleton instead of rendering other components ([#13476](https://github.com/bitfoundation/bitplatform/issues/13476))
+
+A component of `Bit.BlazorUI` no longer renders another public component of the library inside it, so a restyle
+of one - its `--bit-<Component>-*` variables, a `BitParams` cascade, an app's rule for its classes - no longer
+carries into another. Two components did, and now draw the part themselves:
+
+| Component | Before | After |
+|---|---|---|
+| `BitTextField` while `Loading`, with no `LoadingTemplate` | a `BitSpinnerLoading` | `<div class="bit-tfl-spn" aria-hidden="true">`, restyled through `Classes.Spinner` / `Styles.Spinner` and `--bit-TextField-spinner-size` / `-color` / `-track-color` |
+| `BitCard` while loading, with no `LoadingTemplate` | three `BitShimmer`s in `.bit-crd-skl` | three `<div class="bit-crd-skb">` bars in `.bit-crd-skl` (now `aria-hidden="true"`), restyled through `Classes.Skeleton` / `Styles.Skeleton`, `Classes.SkeletonBar` / `Styles.SkeletonBar` and `--bit-Card-skeleton-background` / `-color` |
+
+**An app that restyled these parts through the inner component** - a `BitSpinnerLoading` or `BitShimmer` rule, its
+variables or its `BitParams` reaching into the field or the card - restyles them through the members and variables
+above instead. A test that found the inner component in the rendered markup looks for the new elements.
+
+Every inline spinner of the library (the buttons, `BitCheckbox`, `BitToggle`, `BitDropdown`, `BitSearchBox`,
+`BitTagsInput`, `BitFileUpload`, `BitDropMenu`, `BitAccordion`, `BitDialog`, `BitSnackBar`, `BitBasicList` and, in
+`Bit.BlazorUI.Extras`, `BitChart`, `BitDataGrid`, `BitInfiniteScrolling` and `BitMap`) now turns on the shared
+`bit-spin` keyframes: each component's own (`bit-btn-spinner-animation`, `bit-srb-spin`, ...) is gone, so an app's
+CSS that named one of them names `bit-spin`.
 
 ### The enabled state is a flag: `IsEnabled` is now `Disabled` / `IsDisabled` ([#5527](https://github.com/bitfoundation/bitplatform/issues/5527))
 
@@ -370,6 +550,13 @@ disabling the component (class, `aria-disabled`, tab order and events). A `disab
 arrives at runtime - in an `@attributes` dictionary or a `DynamicComponent`'s `Parameters` - is matched
 by its exact name, so it is still passed through to the element as a plain HTML attribute, without any of
 that. To disable a component, use `Disabled` itself.
+
+### `BitComponentBase.OnVisibilityChanged` is removed
+
+The protected virtual `OnVisibilityChanged(BitVisibility)` hook of `BitComponentBase` was never called: an override
+of it never ran, whatever `Visibility` was set to. It is removed. **A component of an app's own deriving from a bit
+component that overrides it** no longer compiles (CS0115); act on the change where the parameter arrives instead,
+comparing `Visibility` with the value it had in `OnParametersSet`, or read `Visibility` while rendering.
 
 ### Unified position, placement, shape, line-style and selection enums ([#13041](https://github.com/bitfoundation/bitplatform/issues/13041))
 

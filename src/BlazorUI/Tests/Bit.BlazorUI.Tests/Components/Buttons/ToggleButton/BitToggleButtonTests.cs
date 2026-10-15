@@ -174,8 +174,7 @@ public class BitToggleButtonTests : BunitTestContext
 
     [TestMethod,
         DataRow(true),
-        DataRow(false),
-        DataRow(null)
+        DataRow(false)
     ]
     public void BitToggleButtonAriaHiddenTest(bool ariaHidden)
     {
@@ -186,7 +185,9 @@ public class BitToggleButtonTests : BunitTestContext
 
         var bitButton = component.Find(".bit-tgb");
 
+        // A valueless aria-hidden is not "true" to assistive technologies, so the attribute is either "true" or absent.
         Assert.AreEqual(ariaHidden, bitButton.HasAttribute("aria-hidden"));
+        Assert.AreEqual(ariaHidden ? "true" : null, bitButton.GetAttribute("aria-hidden"));
     }
 
     [TestMethod,
@@ -1335,379 +1336,482 @@ public class BitToggleButtonTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitToggleButtonParamsShouldHaveCorrectParamName()
+    public void BitToggleButtonShouldRenderTheBaseParametersOnItsRoot()
     {
-        var paramName = BitToggleButtonParams.ParamName;
-        var expectedName = $"{nameof(BitParams)}.{nameof(BitToggleButton)}";
-
-        Assert.AreEqual(expectedName, paramName);
-    }
-
-    [TestMethod]
-    public void BitToggleButtonParamsShouldImplementIBitComponentParams()
-    {
-        var @params = new BitToggleButtonParams();
-
-        Assert.IsInstanceOfType<IBitComponentParams>(@params);
-        Assert.AreEqual(BitToggleButtonParams.ParamName, @params.Name);
-    }
-
-    [TestMethod]
-    public void BitToggleButtonShouldApplyCascadingParametersFromBitParams()
-    {
-        var paramsList = new List<IBitComponentParams>
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            new BitToggleButtonParams
+            parameters.Add(p => p.Id, "the-id");
+            parameters.Add(p => p.Class, "the-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.ForceAnimation, true);
+            parameters.Add(p => p.TabIndex, "2");
+        });
+
+        var bitToggleButton = component.Find(".bit-tgb");
+
+        Assert.AreEqual("the-id", bitToggleButton.Id);
+        Assert.IsTrue(bitToggleButton.ClassList.Contains("the-class"));
+        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-fam"));
+        Assert.AreEqual("rtl", bitToggleButton.GetAttribute("dir"));
+        StringAssert.Contains(bitToggleButton.GetAttribute("style"), "margin: 1px;");
+        Assert.AreEqual("2", bitToggleButton.GetAttribute("tabindex"));
+        Assert.AreEqual("button", bitToggleButton.GetAttribute("type"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, null),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitToggleButtonShouldFollowTheVisibility(BitVisibility visibility, string? expectedStyle)
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = component.Find(".bit-tgb").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle is null)
+        {
+            Assert.IsFalse(style.Contains("visibility") || style.Contains("display"));
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod,
+        DataRow(BitColor.Primary, "bit-tgb-pri"),
+        DataRow(BitColor.Secondary, "bit-tgb-sec"),
+        DataRow(BitColor.Tertiary, "bit-tgb-ter"),
+        DataRow(BitColor.Info, "bit-tgb-inf"),
+        DataRow(BitColor.Success, "bit-tgb-suc"),
+        DataRow(BitColor.Warning, "bit-tgb-wrn"),
+        DataRow(BitColor.SevereWarning, "bit-tgb-swr"),
+        DataRow(BitColor.Error, "bit-tgb-err"),
+        DataRow(BitColor.PrimaryBackground, "bit-tgb-pbg"),
+        DataRow(BitColor.SecondaryBackground, "bit-tgb-sbg"),
+        DataRow(BitColor.TertiaryBackground, "bit-tgb-tbg"),
+        DataRow(BitColor.PrimaryForeground, "bit-tgb-pfg"),
+        DataRow(BitColor.SecondaryForeground, "bit-tgb-sfg"),
+        DataRow(BitColor.TertiaryForeground, "bit-tgb-tfg"),
+        DataRow(BitColor.PrimaryBorder, "bit-tgb-pbr"),
+        DataRow(BitColor.SecondaryBorder, "bit-tgb-sbr"),
+        DataRow(BitColor.TertiaryBorder, "bit-tgb-tbr")
+    ]
+    public void BitToggleButtonColorShouldMapToItsClass(BitColor color, string expectedClass)
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.Color, color);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tgb").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(BitSize.Small, "bit-tgb-sm"),
+        DataRow(BitSize.Medium, "bit-tgb-md"),
+        DataRow(BitSize.Large, "bit-tgb-lg")
+    ]
+    public void BitToggleButtonSizeShouldMapToItsClass(BitSize size, string expectedClass)
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(component.Find(".bit-tgb").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleButtonStopPropagationShouldBeRenderedOnTheClick(bool stopPropagation)
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.StopPropagation, stopPropagation);
+        });
+
+        Assert.AreEqual(stopPropagation, component.Markup.Contains("onclick:stopPropagation"));
+    }
+
+    [TestMethod,
+        DataRow(false, false, false, false),
+        DataRow(true, false, false, true),
+        DataRow(false, true, false, true),
+        DataRow(false, true, true, false)
+    ]
+    public void BitToggleButtonShouldSuppressTheNativeClickExactlyWhileItRefusesTheClick(bool disabled, bool isLoading, bool reclickable, bool expected)
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.IsLoading, isLoading);
+            parameters.Add(p => p.Reclickable, reclickable);
+        });
+
+        Assert.AreEqual(expected, component.Markup.Contains("onclick:preventDefault"));
+    }
+
+    [TestMethod,
+        DataRow(true, "MicOff"),
+        DataRow(false, "Microphone")
+    ]
+    public void BitToggleButtonShouldShowTheIconOfItsState(bool isChecked, string expectedIconName)
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.IconName, "Volume3");
+            parameters.Add(p => p.OnIconName, "MicOff");
+            parameters.Add(p => p.OffIconName, "Microphone");
+        });
+
+        Assert.IsTrue(component.Find(".bit-tgb-ico").ClassList.Contains($"bit-icon--{expectedIconName}"));
+
+        // with no icon of its own for the state, the general one is what is shown
+        var general = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.IconName, "Volume3");
+        });
+
+        Assert.IsTrue(general.Find(".bit-tgb-ico").ClassList.Contains("bit-icon--Volume3"));
+
+        // and an icon of an external library wins over the built-in name of the same state
+        var external = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.OnIcon, BitIconInfo.Fa("solid microphone-slash"));
+            parameters.Add(p => p.OnIconName, "MicOff");
+            parameters.Add(p => p.OffIcon, BitIconInfo.Fa("solid microphone"));
+            parameters.Add(p => p.OffIconName, "Microphone");
+        });
+
+        Assert.IsTrue(external.Find(".bit-tgb-ico").ClassList.Contains(isChecked ? "fa-microphone-slash" : "fa-microphone"));
+        Assert.IsFalse(external.Find(".bit-tgb-ico").ClassList.Contains($"bit-icon--{expectedIconName}"));
+    }
+
+    [TestMethod]
+    public void BitToggleButtonShouldDrawTheCheckMarkWithTheGlyphItIsGiven()
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.ShowCheckMark, true);
+            parameters.Add(p => p.IsChecked, true);
+            parameters.Add(p => p.CheckMarkIconName, "CheckMark");
+            parameters.Add(p => p.Text, "Bold");
+        });
+
+        Assert.IsTrue(component.Find(".bit-tgb-chm").ClassList.Contains("bit-icon--CheckMark"));
+
+        var external = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.ShowCheckMark, true);
+            parameters.Add(p => p.IsChecked, true);
+            parameters.Add(p => p.CheckMarkIcon, BitIconInfo.Fa("solid check"));
+            parameters.Add(p => p.CheckMarkIconName, "CheckMark");
+            parameters.Add(p => p.Text, "Bold");
+        });
+
+        Assert.IsTrue(external.Find(".bit-tgb-chm").ClassList.Contains("fa-check"));
+        Assert.IsFalse(external.Find(".bit-tgb-chm").ClassList.Contains("bit-icon--CheckMark"));
+    }
+
+    [TestMethod,
+        DataRow(BitPlacement.Top, "bit-tgb-top"),
+        DataRow(BitPlacement.Start, "bit-tgb-srt"),
+        DataRow(BitPlacement.End, "bit-tgb-end"),
+        DataRow(BitPlacement.Bottom, "bit-tgb-btm"),
+        DataRow(BitPlacement.Left, "bit-tgb-end"),
+        DataRow(null, "bit-tgb-end")
+    ]
+    public void BitToggleButtonLoadingLabelPlacementShouldMapToTheContainerClass(BitPlacement? placement, string expectedClass)
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingLabel, "Saving...");
+            parameters.Add(p => p.Text, "Save");
+            if (placement.HasValue)
             {
-                Color = BitColor.Success,
-                Size = BitSize.Large,
-                Variant = BitVariant.Outline,
-                IconName = "Add",
-                Title = "Cascaded Title",
-                FullWidth = true,
-                NoWrap = true
+                parameters.Add(p => p.LoadingLabelPlacement, placement.Value);
             }
-        };
+        });
 
-        var component = RenderComponent<BitParams>(parameters =>
+        Assert.IsTrue(component.Find(".bit-tgb-ldg").ClassList.Contains(expectedClass));
+        Assert.AreEqual("Saving...", component.Find(".bit-tgb-lbl").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitToggleButtonCheckedClassAndStyleShouldApplyWhileItIsCheckedAlone()
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitToggleButton>(0);
-                builder.CloseComponent();
-            });
+            parameters.Add(p => p.Text, "Bold");
+            parameters.Add(p => p.Classes, new BitToggleButtonClassStyles { Checked = "c-checked" });
+            parameters.Add(p => p.Styles, new BitToggleButtonClassStyles { Checked = "color: red;" });
         });
 
         var bitToggleButton = component.Find(".bit-tgb");
 
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-suc"));
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-lg"));
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-otl"));
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-flw"));
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-nwr"));
-        Assert.AreEqual("Cascaded Title", bitToggleButton.GetAttribute("title"));
-
-        var icon = component.Find(".bit-tgb-ico");
-        Assert.IsTrue(icon.ClassList.Contains("bit-icon--Add"));
-    }
-
-    [TestMethod]
-    public void BitToggleButtonDirectParametersShouldOverrideCascadingParameters()
-    {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitToggleButtonParams
-            {
-                Color = BitColor.Success,
-                Size = BitSize.Large,
-                IconName = "Add",
-                Title = "Cascaded Title"
-            }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitToggleButton>(0);
-                builder.AddAttribute(1, nameof(BitToggleButton.Color), BitColor.Error);
-                builder.AddAttribute(2, nameof(BitToggleButton.Size), BitSize.Small);
-                builder.AddAttribute(3, nameof(BitToggleButton.Title), "Direct Title");
-                builder.CloseComponent();
-            });
-        });
-
-        var bitToggleButton = component.Find(".bit-tgb");
-
-        // Direct parameters should override cascading ones
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-err"));
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-sm"));
-        Assert.AreEqual("Direct Title", bitToggleButton.GetAttribute("title"));
-
-        // IconName from cascading params should still apply (not overridden)
-        var icon = component.Find(".bit-tgb-ico");
-        Assert.IsTrue(icon.ClassList.Contains("bit-icon--Add"));
-    }
-
-    [TestMethod]
-    public void BitToggleButtonParamsUpdateParametersShouldSetAllProperties()
-    {
-        var @params = new BitToggleButtonParams
-        {
-            AllowDisabledFocus = false,
-            AriaControls = "the-panel",
-            AriaDescription = "Test description",
-            AriaHidden = true,
-            AriaLabelledBy = "the-label",
-            AriaMode = BitToggleButtonAriaMode.Switch,
-            AutoFocus = true,
-            AutoLoading = true,
-            CheckMarkIconName = "CheckMark",
-            Color = BitColor.Warning,
-            FixedCheckMark = true,
-            FixedColor = true,
-            FullWidth = true,
-            IconName = "Share",
-            IconOnly = true,
-            IconPlacement = BitPlacement.End,
-            IsLoading = true,
-            LoadingDelay = 300,
-            LoadingLabel = "Saving...",
-            LoadingLabelPlacement = BitPlacement.Top,
-            NoWrap = true,
-            OffAriaLabel = "Off label",
-            OffColor = BitColor.Info,
-            OffIconName = "Microphone",
-            OffText = "Unmuted",
-            OffTitle = "Click to mute",
-            OffVariant = BitVariant.Text,
-            OnAriaLabel = "On label",
-            OnColor = BitColor.Error,
-            OnIconName = "MicOff",
-            OnText = "Muted",
-            OnTitle = "Click to unmute",
-            OnVariant = BitVariant.Outline,
-            Reclickable = true,
-            ShowCheckMark = true,
-            Size = BitSize.Small,
-            StopPropagation = true,
-            Text = "Test Text",
-            Title = "Test Title",
-            Variant = BitVariant.Outline,
-            AriaLabel = "Test Label",
-            Disabled = true,
-            TabIndex = "5"
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitToggleButton>(0);
-                builder.CloseComponent();
-            });
-        });
-
-        var instance = component.FindComponent<BitToggleButton>().Instance;
-
-        Assert.IsFalse(instance.AllowDisabledFocus);
-        Assert.AreEqual("the-panel", instance.AriaControls);
-        Assert.AreEqual("Test description", instance.AriaDescription);
-        Assert.IsTrue(instance.AriaHidden);
-        Assert.AreEqual("the-label", instance.AriaLabelledBy);
-        Assert.AreEqual(BitToggleButtonAriaMode.Switch, instance.AriaMode);
-        Assert.IsTrue(instance.AutoFocus);
-        Assert.IsTrue(instance.AutoLoading);
-        Assert.AreEqual("CheckMark", instance.CheckMarkIconName);
-        Assert.AreEqual(BitColor.Warning, instance.Color);
-        Assert.IsTrue(instance.FixedCheckMark);
-        Assert.IsTrue(instance.FixedColor);
-        Assert.IsTrue(instance.FullWidth);
-        Assert.AreEqual("Share", instance.IconName);
-        Assert.IsTrue(instance.IconOnly);
-        Assert.AreEqual(BitPlacement.End, instance.IconPlacement);
-        Assert.IsTrue(instance.IsLoading);
-        Assert.AreEqual(300, instance.LoadingDelay);
-        Assert.AreEqual("Saving...", instance.LoadingLabel);
-        Assert.AreEqual(BitPlacement.Top, instance.LoadingLabelPlacement);
-        Assert.IsTrue(instance.NoWrap);
-        Assert.AreEqual("Off label", instance.OffAriaLabel);
-        Assert.AreEqual(BitColor.Info, instance.OffColor);
-        Assert.AreEqual("Microphone", instance.OffIconName);
-        Assert.AreEqual("Unmuted", instance.OffText);
-        Assert.AreEqual("Click to mute", instance.OffTitle);
-        Assert.AreEqual(BitVariant.Text, instance.OffVariant);
-        Assert.AreEqual("On label", instance.OnAriaLabel);
-        Assert.AreEqual(BitColor.Error, instance.OnColor);
-        Assert.AreEqual("MicOff", instance.OnIconName);
-        Assert.AreEqual("Muted", instance.OnText);
-        Assert.AreEqual("Click to unmute", instance.OnTitle);
-        Assert.AreEqual(BitVariant.Outline, instance.OnVariant);
-        Assert.IsTrue(instance.Reclickable);
-        Assert.IsTrue(instance.ShowCheckMark);
-        Assert.AreEqual(BitSize.Small, instance.Size);
-        Assert.IsTrue(instance.StopPropagation);
-        Assert.AreEqual("Test Text", instance.Text);
-        Assert.AreEqual("Test Title", instance.Title);
-        Assert.AreEqual(BitVariant.Outline, instance.Variant);
-        Assert.AreEqual("Test Label", instance.AriaLabel);
-        Assert.IsTrue(instance.Disabled);
-        Assert.AreEqual("5", instance.TabIndex);
-    }
-
-    [TestMethod]
-    public void BitToggleButtonParamsUpdateParametersShouldNotOverwriteExistingValues()
-    {
-        var @params = new BitToggleButtonParams
-        {
-            Color = BitColor.Success,
-            Size = BitSize.Large,
-            Title = "Params Title"
-        };
-
-        // First render with direct parameters
-        var component = RenderComponent<BitToggleButton>(p =>
-        {
-            p.Add(x => x.Color, BitColor.Error);
-            p.Add(x => x.Size, BitSize.Small);
-            p.Add(x => x.Title, "Existing Title");
-        });
-
-        var instance = component.Instance;
-
-        // Verify initial values
-        Assert.AreEqual(BitColor.Error, instance.Color);
-        Assert.AreEqual(BitSize.Small, instance.Size);
-        Assert.AreEqual("Existing Title", instance.Title);
-
-        // Now try to update with param, should not overwrite since properties were already set
-        @params.UpdateParameters(instance);
-
-        // Values should remain unchanged because HasNotBeenSet returns false
-        Assert.AreEqual(BitColor.Error, instance.Color);
-        Assert.AreEqual(BitSize.Small, instance.Size);
-        Assert.AreEqual("Existing Title", instance.Title);
-    }
-
-    [TestMethod]
-    public void BitToggleButtonParamsShouldSeedTheCheckedStateThroughDefaultIsChecked()
-    {
-        // The checked state itself is left out of the params class on purpose - a toggle button writes to it on
-        // every click, so a cascaded value would be written back over the click on the next render.
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitToggleButtonParams { DefaultIsChecked = true }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitToggleButton>(0);
-                builder.CloseComponent();
-            });
-        });
-
-        var bitToggleButton = component.Find(".bit-tgb");
-
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-chk"));
-        Assert.AreEqual("true", bitToggleButton.GetAttribute("aria-pressed"));
+        Assert.IsFalse(bitToggleButton.ClassList.Contains("c-checked"));
+        Assert.IsFalse((bitToggleButton.GetAttribute("style") ?? string.Empty).Contains("color: red;"));
 
         bitToggleButton.Click();
 
-        Assert.IsFalse(bitToggleButton.ClassList.Contains("bit-tgb-chk"));
-        Assert.AreEqual("false", bitToggleButton.GetAttribute("aria-pressed"));
+        Assert.IsTrue(bitToggleButton.ClassList.Contains("c-checked"));
+        StringAssert.Contains(bitToggleButton.GetAttribute("style"), "color: red;");
+
+        bitToggleButton.Click();
+
+        Assert.IsFalse(bitToggleButton.ClassList.Contains("c-checked"));
+        Assert.IsFalse((bitToggleButton.GetAttribute("style") ?? string.Empty).Contains("color: red;"));
     }
 
     [TestMethod]
-    public void BitToggleButtonParamsShouldApplyClassesAndStyles()
+    public void BitToggleButtonShouldApplyTheClassesAndStylesOfEveryPart()
     {
-        var classes = new BitToggleButtonClassStyles
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            Root = "custom-root",
-            Icon = "custom-icon",
-            Text = "custom-text"
-        };
-
-        var styles = new BitToggleButtonClassStyles
-        {
-            Root = "color: red;",
-            Icon = "margin: 5px;",
-            Text = "padding: 10px;"
-        };
-
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitToggleButtonParams
+            parameters.Add(p => p.IsChecked, true);
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.ShowCheckMark, true);
+            parameters.Add(p => p.IconName, "Bold");
+            parameters.Add(p => p.Text, "Bold");
+            parameters.Add(p => p.LoadingLabel, "Saving...");
+            parameters.Add(p => p.Classes, new BitToggleButtonClassStyles
             {
-                Classes = classes,
-                Styles = styles,
-                IconName = "Add",
-                Text = "Content"
-            }
-        };
-
-        var component = RenderComponent<BitParams>(parameters =>
-        {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
+                CheckMark = "c-check",
+                Icon = "c-icon",
+                Text = "c-text",
+                HiddenContent = "c-hidden",
+                LoadingContainer = "c-loading",
+                LoadingLabel = "c-label",
+                Spinner = "c-spinner",
+            });
+            parameters.Add(p => p.Styles, new BitToggleButtonClassStyles
             {
-                builder.OpenComponent<BitToggleButton>(0);
-                builder.CloseComponent();
+                CheckMark = "color: red;",
+                Icon = "color: blue;",
+                Text = "color: green;",
+                HiddenContent = "color: gray;",
+                LoadingContainer = "color: gold;",
+                LoadingLabel = "color: pink;",
+                Spinner = "color: teal;",
             });
         });
 
-        var bitToggleButton = component.Find(".bit-tgb");
-        var icon = component.Find(".bit-tgb-ico");
-        var text = component.Find(".bit-tgb-btx");
+        void AssertPart(string selector, string cssClass, string style)
+        {
+            var element = component.Find(selector);
 
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("custom-root"));
-        Assert.IsTrue(icon.ClassList.Contains("custom-icon"));
-        Assert.IsTrue(text.ClassList.Contains("custom-text"));
-        Assert.IsTrue(bitToggleButton.GetAttribute("style")?.Contains("color: red;"));
-        Assert.AreEqual("margin: 5px;", icon.GetAttribute("style"));
-        Assert.AreEqual("padding: 10px;", text.GetAttribute("style"));
+            Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}.");
+            Assert.AreEqual(style, element.GetAttribute("style"), $"{selector} lacks the style {style}.");
+        }
+
+        AssertPart(".bit-tgb-chm", "c-check", "color: red;");
+        AssertPart(".bit-tgb-ico", "c-icon", "color: blue;");
+        AssertPart(".bit-tgb-btx", "c-text", "color: green;");
+        AssertPart(".bit-tgb-hcn", "c-hidden", "color: gray;");
+        AssertPart(".bit-tgb-ldg", "c-loading", "color: gold;");
+        AssertPart(".bit-tgb-lbl", "c-label", "color: pink;");
+        AssertPart(".bit-tgb-spn", "c-spinner", "color: teal;");
     }
 
     [TestMethod]
-    public void BitToggleButtonParamsShouldNotApplyWhenNull()
+    public async Task BitToggleButtonFocusAsyncShouldFocusTheRootElement()
     {
-        var component = RenderComponent<BitParams>(parameters =>
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.Parameters, []);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitToggleButton>(0);
-                builder.AddAttribute(1, nameof(BitToggleButton.Color), BitColor.Primary);
-                builder.CloseComponent();
-            });
+            parameters.Add(p => p.Text, "Focus me");
         });
 
-        var bitToggleButton = component.Find(".bit-tgb");
+        await component.Instance.FocusAsync();
 
-        // Should use default color (Primary) from direct parameter
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("bit-tgb-pri"));
+        Assert.HasCount(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 
     [TestMethod]
-    public void BitToggleButtonParamsShouldApplyBaseParameters()
+    public void BitToggleButtonShouldAskBeforeTheChangeThenWriteItBackThenReportIt()
     {
-        var paramsList = new List<IBitComponentParams>
-        {
-            new BitToggleButtonParams
-            {
-                AriaLabel = "Base Label",
-                Id = "test-id",
-                Disabled = true,
-                TabIndex = "3",
-                Style = "background: blue;",
-                Class = "base-class"
-            }
-        };
+        var sequence = new List<string>();
 
-        var component = RenderComponent<BitParams>(parameters =>
+        var component = RenderComponent<BitToggleButton>(parameters =>
         {
-            parameters.Add(p => p.Parameters, paramsList);
-            parameters.AddChildContent(builder =>
-            {
-                builder.OpenComponent<BitToggleButton>(0);
-                builder.CloseComponent();
-            });
+            parameters.Add(p => p.OnChanging, (BitToggleButtonChangeArgs args) => sequence.Add($"changing:{args.Value}"));
+            parameters.Add(p => p.IsCheckedChanged, (bool value) => sequence.Add($"bound:{value}"));
+            parameters.Add(p => p.OnChange, (bool value) => sequence.Add($"change:{value}"));
         });
 
-        var bitToggleButton = component.Find(".bit-tgb");
+        component.Find(".bit-tgb").Click();
 
-        Assert.AreEqual("Base Label", bitToggleButton.GetAttribute("aria-label"));
-        Assert.AreEqual("test-id", bitToggleButton.GetAttribute("id"));
-        // The disabled toggle button keeps its place in the tab order by default and says so with aria-disabled.
-        Assert.IsFalse(bitToggleButton.HasAttribute("disabled"));
-        Assert.AreEqual("true", bitToggleButton.GetAttribute("aria-disabled"));
-        Assert.AreEqual("3", bitToggleButton.GetAttribute("tabindex"));
-        Assert.IsTrue(bitToggleButton.GetAttribute("style")?.Contains("background: blue;"));
-        Assert.IsTrue(bitToggleButton.ClassList.Contains("base-class"));
+        CollectionAssert.AreEqual(new[] { "changing:True", "bound:True", "change:True" }, sequence);
+
+        component.Find(".bit-tgb").Click();
+
+        CollectionAssert.AreEqual(new[] { "changing:True", "bound:True", "change:True", "changing:False", "bound:False", "change:False" }, sequence);
+    }
+
+    [TestMethod]
+    public void BitToggleButtonOneWayBoundIsCheckedShouldNotChangeWithoutACallback()
+    {
+        // A value bound one way is the page's to write, so the click reports nothing and changes nothing.
+        var changes = 0;
+
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsChecked, false);
+            parameters.Add(p => p.OnChange, (bool _) => changes++);
+        });
+
+        component.Find(".bit-tgb").Click();
+
+        Assert.IsFalse(component.Instance.IsChecked);
+        Assert.AreEqual(0, changes);
+        Assert.IsFalse(component.Find(".bit-tgb").ClassList.Contains("bit-tgb-chk"));
+    }
+
+    [TestMethod]
+    public async Task BitToggleButtonReclickableAutoLoadingShouldStayLoadingUntilTheLastRunEnds()
+    {
+        var firstTcs = new TaskCompletionSource();
+        var secondTcs = new TaskCompletionSource();
+        var clicks = 0;
+
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.Reclickable, true);
+            parameters.Add(p => p.Text, "Microphone");
+            parameters.Add(p => p.OnClick, (MouseEventArgs _) => ++clicks == 1 ? firstTcs.Task : secondTcs.Task);
+        });
+
+        var button = component.Find(".bit-tgb");
+
+        var first = button.ClickAsync(new MouseEventArgs());
+
+        component.WaitForAssertion(() => Assert.IsTrue(component.Instance.IsLoading));
+
+        var second = button.ClickAsync(new MouseEventArgs());
+
+        component.WaitForAssertion(() => Assert.AreEqual(2, clicks));
+
+        // the first run ending leaves the loading state to the run still in flight
+        firstTcs.SetResult();
+        await first;
+
+        Assert.IsTrue(component.Instance.IsLoading);
+
+        secondTcs.SetResult();
+        await second;
+
+        Assert.IsFalse(component.Instance.IsLoading);
+        // the two clicks each toggled the state, which is back where it started
+        Assert.IsFalse(component.Instance.IsChecked);
+    }
+
+    [TestMethod]
+    public async Task BitToggleButtonShouldDisposeCleanlyWhileALoadingDelayIsPending()
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsLoading, true);
+            parameters.Add(p => p.LoadingDelay, 5000);
+        });
+
+        Assert.IsEmpty(component.FindAll(".bit-tgb-spn"));
+
+        // the pending delay is cancelled with the component rather than left to render into a disposed one
+        await Context.DisposeComponentsAsync();
+    }
+
+    [TestMethod]
+    public void BitToggleButtonPerStateTemplateShouldFallBackToTheChildContent()
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.AddChildContent("<span class=\"child\">C</span>");
+            parameters.Add(p => p.OnTemplate, "<span class=\"on-template\">On</span>");
+        });
+
+        Assert.AreEqual(1, component.FindAll(".child").Count);
+        Assert.AreEqual(0, component.FindAll(".on-template").Count);
+
+        component.Find(".bit-tgb").Click();
+
+        Assert.AreEqual(0, component.FindAll(".child").Count);
+        Assert.AreEqual(1, component.FindAll(".on-template").Count);
+    }
+
+    [TestMethod]
+    public void BitToggleButtonDescriptionShouldSitOutsideTheControl()
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.AriaDescription, "Turns the microphone off.");
+            parameters.Add(p => p.Text, "Mute");
+        });
+
+        var control = component.Find(".bit-tgb");
+        var description = component.Find(".bit-tgb-dsc");
+
+        // inside the control the description would join its accessible name
+        Assert.IsFalse(control.Contains(description));
+        Assert.AreEqual(description.Id, control.GetAttribute("aria-describedby"));
+        Assert.AreEqual("Mute", control.TextContent.Trim());
+    }
+
+    [TestMethod,
+        DataRow(true, "Click to unmute"),
+        DataRow(false, "Click to mute")
+    ]
+    public void BitToggleButtonShouldShowTheTitleOfItsState(bool isChecked, string expectedTitle)
+    {
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Text, "Microphone");
+            parameters.Add(p => p.Title, "Microphone");
+            parameters.Add(p => p.OnTitle, "Click to unmute");
+            parameters.Add(p => p.OffTitle, "Click to mute");
+        });
+
+        Assert.AreEqual(expectedTitle, component.Find(".bit-tgb").GetAttribute("title"));
+
+        var general = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.IsChecked, isChecked);
+            parameters.Add(p => p.Text, "Microphone");
+            parameters.Add(p => p.Title, "Microphone");
+        });
+
+        Assert.AreEqual("Microphone", general.Find(".bit-tgb").GetAttribute("title"));
+    }
+
+    [TestMethod,
+        DataRow(true, 1),
+        DataRow(false, 0)
+    ]
+    public void BitToggleButtonAutoFocusShouldFocusTheButtonOnceOnTheFirstRender(bool autoFocus, int expectedFocusCalls)
+    {
+        // A browser honors the autofocus attribute only while the document loads, so the first interactive render
+        // gives the focus itself - once, never again on a later render.
+        var component = RenderComponent<BitToggleButton>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, autoFocus);
+            parameters.Add(p => p.Text, "Focus me");
+        });
+
+        component.Render();
+
+        Assert.HasCount(expectedFocusCalls, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"]);
     }
 }

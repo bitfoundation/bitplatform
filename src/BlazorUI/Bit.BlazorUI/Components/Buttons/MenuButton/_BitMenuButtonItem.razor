@@ -157,7 +157,7 @@
                         @onclick="HandleOnClick" @onclick:stopPropagation
                         role="@role"
                         id="@(hasSubmenu ? _itemId : null)"
-                        form="@(hasSubmenu ? null : MenuButton.FormId)"
+                        form="@(hasSubmenu ? null : MenuButton.ResolvedFormId)"
                         type="@(hasSubmenu ? "button" : MenuButton._buttonType.GetValue())"
                         title="@MenuButton.GetTitle(Item)"
                         tabindex="-1"

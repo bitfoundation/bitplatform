@@ -225,9 +225,12 @@
 
             // .NET leaves the sentinel unobserved for everything it does not want loaded (an error, the end
             // of the data, the manual mode), so a replay only follows one it asked to keep watching.
-            if (this._disposed || !this._observing) return;
+            if (this._disposed || !this._observing || !this._lastElement) return;
 
-            await this._load();
+            // The remembered intersection may be stale by now: the page that just landed can have pushed the
+            // sentinel out of view, and loading on it regardless would fetch a page nobody scrolled to. Observing
+            // the sentinel afresh delivers where it is now, which loads the next page only if it is still in view.
+            this.observe(this._lastElement);
         }
 
         public observe(lastElement: HTMLElement) {

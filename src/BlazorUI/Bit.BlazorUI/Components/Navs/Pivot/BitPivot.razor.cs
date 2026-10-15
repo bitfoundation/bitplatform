@@ -106,6 +106,12 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// Determines the alignment of the header section of the pivot.
     /// </summary>
+    /// <remarks>
+    /// The distributions (Start, End, Center and the three Space ones) place the tabs along the header.
+    /// <see cref="BitAlignment.Baseline"/> and <see cref="BitAlignment.Stretch"/> keep them at the start and align them
+    /// across the header instead: Baseline lines the tabs up on the first line of their labels, Stretch draws each the
+    /// full height (or, in a vertical header, the full width) of the header.
+    /// </remarks>
     [Parameter, ResetStyleBuilder]
     public BitAlignment? Alignment { get; set; }
 
@@ -433,6 +439,11 @@ public partial class BitPivot : BitComponentBase
                                             ? GetMenuItemId(_menuFocusIndex)
                                             : null;
 
+    // The overflow menu and the button that opens it act on Escape in .NET (HandleMenuKeyDown, HandleMoreKeyDown)
+    // exactly while the menu is open, so that is when they claim the press from the surface the pivot sits in
+    // (data-bit-esc, see Utils.claimEscape): a closed menu leaves the key to the dialog around the pivot.
+    private string? EscapeClaim => _isMenuOpen ? "claim" : null;
+
     protected override void RegisterCssClasses()
     {
         ClassBuilder.Register(() => Classes?.Root);
@@ -485,7 +496,10 @@ public partial class BitPivot : BitComponentBase
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-pvt-gap:{Gap}" : string.Empty);
 
-        StyleBuilder.Register(() => Alignment switch
+        // Baseline and Stretch say nothing about where along the header the tabs go (justify-content has no baseline,
+        // and lays a stretch out as flex-start), so they leave the tabs at the start and line them up across the
+        // header instead: on the first line of their labels, or each the full height of the header.
+        StyleBuilder.Register(() => Alignment.ForMainAxis() switch
         {
             BitAlignment.Start => "--bit-pvt-hal:flex-start",
             BitAlignment.End => "--bit-pvt-hal:flex-end",
@@ -493,9 +507,14 @@ public partial class BitPivot : BitComponentBase
             BitAlignment.SpaceBetween => "--bit-pvt-hal:space-between",
             BitAlignment.SpaceAround => "--bit-pvt-hal:space-around",
             BitAlignment.SpaceEvenly => "--bit-pvt-hal:space-evenly",
-            BitAlignment.Baseline => "--bit-pvt-hal:baseline",
-            BitAlignment.Stretch => "--bit-pvt-hal:stretch",
             _ => "--bit-pvt-hal:flex-start"
+        });
+
+        StyleBuilder.Register(() => Alignment switch
+        {
+            BitAlignment.Baseline => "--bit-pvt-hai:baseline",
+            BitAlignment.Stretch => "--bit-pvt-hai:stretch",
+            _ => string.Empty
         });
     }
 
@@ -923,9 +942,11 @@ public partial class BitPivot : BitComponentBase
         return $"{_MenuId}-{index}";
     }
 
-    internal async Task SelectItem(BitPivotItem item)
+    internal async Task SelectItem(BitPivotItem item, bool fromKey = false)
     {
-        if (SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
+        // A key bound one way is the parent's to move: the user cannot move it, but a new key the parent hands down
+        // is followed like any other, or the pivot would stay on the tab it started on whatever the parent says.
+        if (fromKey is false && SelectedKeyHasBeenSet && SelectedKeyChanged.HasDelegate is false) return;
 
         if (item == _selectedItem) return;
 
@@ -1283,11 +1304,11 @@ public partial class BitPivot : BitComponentBase
             // round trip.
             case "ArrowRight":
                 if (_isVertical) return;
-                next = index < 0 ? 0 : (await IsRtlAsync(_js, _headerRef) ? index - 1 : index + 1);
+                next = index < 0 ? 0 : (await IsRtlArrowAsync(_js, e.Key, _headerRef) ? index - 1 : index + 1);
                 break;
             case "ArrowLeft":
                 if (_isVertical) return;
-                next = index < 0 ? 0 : (await IsRtlAsync(_js, _headerRef) ? index + 1 : index - 1);
+                next = index < 0 ? 0 : (await IsRtlArrowAsync(_js, e.Key, _headerRef) ? index + 1 : index - 1);
                 break;
             case "ArrowDown":
                 if (_isVertical is false) return;
@@ -1384,12 +1405,20 @@ public partial class BitPivot : BitComponentBase
         // be moved to either.
         if (GetItemReorderable(_allItems[newIndex]) is false) return;
 
+        // The handler moves the item in the markup, which moves the element of the tab without registering anything,
+        // so the order the header is laid out in is read back once the render that moved it has gone through: the arrow
+        // keys and the indexes of the next reorder go by it. Asked for on both sides of the handler, since a handler
+        // that awaits lets that render through before it returns.
+        _orderCheckNeeded = true;
+
         await OnItemReorder.InvokeAsync(new BitPivotReorderEventArgs
         {
             Item = item,
             OldIndex = oldIndex,
             NewIndex = newIndex
         });
+
+        _orderCheckNeeded = true;
     }
 
     // The items are registered as they are created, which stops being the order they are declared in as
@@ -1525,7 +1554,7 @@ public partial class BitPivot : BitComponentBase
             return;
         }
 
-        _ = SelectItem(newItem);
+        _ = SelectItem(newItem, fromKey: true);
     }
 
     // The new key cannot be honored, so the bound value goes back to the key of the item that is

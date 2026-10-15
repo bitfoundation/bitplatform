@@ -554,4 +554,162 @@ public class BitMessageBoxServiceTests : BunitTestContext
         Assert.AreEqual(BitMessageBoxResult.None, result);
         Assert.AreEqual(0, container.FindAll(".bit-msb").Count);
     }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldPassTheRestOfTheParametersOnToTheMessageBox()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters
+        {
+            Title = "Title",
+            Body = "Body",
+            Buttons = BitMessageBoxButtons.YesNoCancel,
+            Reversed = true,
+            TitleElement = "h2",
+            Color = BitColor.Warning,
+            IconAriaLabel = "Warning",
+            IconName = "Lightbulb",
+            ButtonColor = BitColor.Secondary,
+            CloseIconName = "Cancel",
+            DefaultButton = BitMessageBoxResult.Cancel,
+            OkText = "Go",
+            CancelText = "Later",
+            ShowCloseButton = false,
+            Classes = new() { Root = "custom-root" },
+            Styles = new() { Root = "margin:1px" },
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+
+        var root = container.Find(".bit-msb");
+
+        Assert.IsTrue(root.ClassList.Contains("custom-root"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.AreEqual("H2", container.Find(".bit-msb-ttl").TagName);
+        Assert.AreEqual("Warning", container.Find(".bit-msb-ict").GetAttribute("aria-label"));
+        Assert.IsTrue(container.Find(".bit-msb-ico").ClassList.Contains("bit-icon--Lightbulb"));
+        Assert.AreEqual(0, container.FindAll(".bit-msb-hdr .bit-btn").Count);
+
+        var buttons = container.FindAll(".bit-msb-ftr .bit-btn");
+        var texts = buttons.Select(b => b.TextContent.Trim()).ToArray();
+
+        CollectionAssert.AreEqual(new[] { "Later", "No", "Yes" }, texts);
+        Assert.IsTrue(buttons.All(b => b.ClassList.Contains("bit-btn-sec")));
+        // The focus lands on the button the showing named rather than on the affirmative one.
+        Assert.IsTrue(buttons[0].HasAttribute("autofocus"));
+
+        buttons[0].Click();
+
+        Assert.AreEqual(BitMessageBoxResult.Cancel, await showing);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldPassAHiddenIconAndAFooterTemplateOn()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters
+        {
+            Title = "Title",
+            Color = BitColor.Error,
+            HideIcon = true,
+            FooterTemplate = builder => builder.AddMarkupContent(0, "<div class=\"custom-footer\"></div>"),
+        });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".custom-footer").Count));
+
+        Assert.AreEqual(0, container.FindAll(".bit-msb-ict").Count);
+        Assert.AreEqual(0, container.FindAll(".bit-msb-ftr .bit-btn").Count);
+
+        // The close button is the only way left to end it, and it is wired to close the modal too.
+        container.Find(".bit-msb-hdr .bit-btn").Click();
+
+        Assert.AreEqual(BitMessageBoxResult.None, await showing);
+        container.WaitForAssertion(() => Assert.AreEqual(0, container.FindAll(".bit-msb").Count));
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldFocusTheMessageBoxItShowsUnlessToldNotTo()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var showing = MessageBoxService.Show("Title", "Body", BitMessageBoxButtons.OkCancel);
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+
+        // A dialog that interrupts puts the focus inside itself: on the affirmative button by default.
+        Assert.IsTrue(container.FindAll(".bit-msb-ftr .bit-btn")[0].HasAttribute("autofocus"));
+
+        container.FindAll(".bit-msb-ftr .bit-btn")[0].Click();
+        await showing;
+
+        showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body", AutoFocus = false });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+
+        Assert.AreEqual(0, container.FindAll(".bit-msb .bit-btn[autofocus]").Count);
+
+        container.Find(".bit-msb-ftr .bit-btn").Click();
+        await showing;
+    }
+
+    [TestMethod,
+        DataRow(BitMessageBoxButtons.Ok, BitColor.Success, false),
+        DataRow(BitMessageBoxButtons.None, BitColor.Info, false),
+        DataRow(BitMessageBoxButtons.OkCancel, BitColor.Info, true),
+        DataRow(BitMessageBoxButtons.None, BitColor.Warning, true),
+        DataRow(BitMessageBoxButtons.Ok, BitColor.SevereWarning, true),
+        DataRow(BitMessageBoxButtons.Ok, BitColor.Error, true)]
+    public async Task BitMessageBoxServiceShouldAnnounceAQuestionOrAnUrgentColorAsAnAlert(BitMessageBoxButtons buttons, BitColor color, bool isAlert)
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body", Buttons = buttons, Color = color });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+
+        Assert.AreEqual(isAlert ? 1 : 0, container.FindAll("[role='alertdialog']").Count);
+        Assert.AreEqual(isAlert ? 0 : 1, container.FindAll("[role='dialog']").Count);
+
+        container.Find(".bit-msb .bit-btn").Click();
+
+        await showing;
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldShowAPersistentMessageBoxOnceAContainerMounts()
+    {
+        // No container yet: a persistent showing waits for one rather than answering with nothing.
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Title", Body = "Body", Persistent = true });
+
+        Assert.IsFalse(showing.IsCompleted);
+
+        var container = RenderComponent<BitModalContainer>();
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+
+        container.Find(".bit-msb-ftr .bit-btn").Click();
+
+        Assert.AreEqual(BitMessageBoxResult.Ok, await showing);
+    }
+
+    [TestMethod]
+    public async Task BitMessageBoxServiceShouldDescribeTheDialogByNothingWithoutABody()
+    {
+        var container = RenderComponent<BitModalContainer>();
+
+        var showing = MessageBoxService.Show(new BitMessageBoxParameters { Title = "Only a title." });
+
+        container.WaitForAssertion(() => Assert.AreEqual(1, container.FindAll(".bit-msb").Count));
+
+        var dialog = container.Find("[role='dialog']");
+
+        Assert.AreEqual(container.Find(".bit-msb-ttl").Id, dialog.GetAttribute("aria-labelledby"));
+        Assert.IsNull(dialog.GetAttribute("aria-describedby"));
+
+        container.Find(".bit-msb-ftr .bit-btn").Click();
+
+        await showing;
+    }
 }

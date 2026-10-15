@@ -1,0 +1,23 @@
+/* A stand-in for the external icon sets BitIconInfo names (FontAwesome, Bootstrap Icons, Material Icons / Symbols and a
+   plain css set), served locally so the E2E pages need no network: each class draws a glyph the way its set does - a
+   ::before content for the class-based sets, the element's own ligature text for the Material ones. */
+.fa-solid, .fa-brands, .fa-regular, .bi, .e2e-css-icon {
+    display: inline-block;
+    font-style: normal;
+    line-height: 1;
+}
+
+.fa-github::before { content: "G"; }
+.fa-heart::before { content: "H"; }
+.fa-arrow-up-right-from-square::before { content: "A"; }
+.bi-github::before { content: "B"; }
+.bi-box-arrow-up-right::before { content: "X"; }
+.e2e-css-icon.e2e-star::before { content: "S"; }
+
+.material-icons, .material-icons-outlined, .material-symbols-outlined, .material-symbols-rounded {
+    font-style: normal;
+    display: inline-block;
+    line-height: 1;
+    white-space: nowrap;
+    font-family: monospace;
+}

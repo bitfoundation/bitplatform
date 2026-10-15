@@ -462,6 +462,32 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitInfiniteScrollingShouldWatchTheSentinelAgainAfterAPageThatRendersWithinTheLoad()
+    {
+        // A provider that answers at once lets the renderer put the page on the screen inside the load itself - the
+        // way a WebAssembly renderer always does, and this one too - so the render that is to re-observe the sentinel
+        // runs before the load returns. It has to know by then that it is to: otherwise the list stops after a page.
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(100));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 10);
+        });
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve"));
+
+        await component.InvokeAsync(() => component.Instance._LoadMoreItems());
+
+        Assert.AreEqual(10, component.Instance.Items.Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve"));
+
+        await component.InvokeAsync(() => component.Instance._LoadMoreItems());
+
+        Assert.AreEqual(20, component.Instance.Items.Count);
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve"));
+    }
+
+    [TestMethod]
     public async Task BitInfiniteScrollingAutoLoadLimitShouldSwitchToTheButtonAfterItsPages()
     {
         var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
@@ -836,6 +862,132 @@ public class BitInfiniteScrollingTests : BunitTestContext
             Assert.IsTrue(style.Contains("height:64px"));
             Assert.IsTrue(style.Contains("opacity:0.5"));
         });
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldRenderTheBaseClassAttributesOnItsRoot()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitInfiniteScrolling<int>>(0);
+            builder.AddAttribute(1, nameof(BitInfiniteScrolling<int>.ItemsProvider), PagedProvider(3));
+            builder.AddAttribute(2, nameof(BitInfiniteScrolling<int>.ItemTemplate), ItemTemplate());
+            builder.AddAttribute(3, nameof(BitComponentBase.Id), "the-list");
+            builder.AddAttribute(4, nameof(BitComponentBase.Class), "custom-class");
+            builder.AddAttribute(5, nameof(BitComponentBase.Style), "margin: 1px");
+            builder.AddAttribute(6, "data-test", "list");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-isc");
+
+        Assert.AreEqual("the-list", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px");
+        Assert.AreEqual("list", root.GetAttribute("data-test"));
+    }
+
+    [TestMethod]
+    [DataRow(BitVisibility.Visible, null)]
+    [DataRow(BitVisibility.Hidden, "visibility:hidden")]
+    [DataRow(BitVisibility.Collapsed, "display:none")]
+    public void BitInfiniteScrollingShouldFollowItsVisibility(BitVisibility visibility, string? expectedStyle)
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(3));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = component.Find(".bit-isc").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle is null)
+        {
+            Assert.IsFalse(style.Contains("visibility:hidden") || style.Contains("display:none"));
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldSayItIsDisabledAndOfferNothingToLoad()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(20));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Manual, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        // The root carries the one hook for "this component is disabled", the sentinel is out of the layout, the
+        // manual mode's button is not offered, and the observer is set up without anything to watch.
+        Assert.IsTrue(component.Find(".bit-isc").ClassList.Contains("bit-dis"));
+        Assert.AreEqual("display:none", component.Find(".bit-isc-lst").GetAttribute("style"));
+        Assert.AreEqual(0, component.FindAll(".bit-isc-btn").Count);
+        Assert.AreEqual(false, Context.JSInterop.VerifyInvoke("BitBlazorUI.InfiniteScrolling.setup").Arguments[7]);
+        Assert.AreEqual(0, component.Instance.Items.Count);
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldRenderTheLoadMoreTemplateInItsButton()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(20));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Manual, true);
+            parameters.Add(p => p.LoadMoreText, "Load more");
+            parameters.Add(p => p.LoadMoreTemplate, builder => builder.AddMarkupContent(0, "<span class=\"own-more\">Fetch the rest</span>"));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(5, component.Instance.Items.Count));
+
+        var button = component.Find(".bit-isc-btn");
+
+        Assert.IsNotNull(button.QuerySelector(".own-more"));
+        Assert.IsFalse(button.TextContent.Contains("Load more", StringComparison.Ordinal), "the template replaces the text");
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldRenderEachItemThroughChildContent()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(3));
+            parameters.Add(p => p.ChildContent, (RenderFragment<int>)(item => builder => builder.AddMarkupContent(0, $"<span class=\"own-item\">Child {item}</span>")));
+            parameters.Add(p => p.PageSize, 3);
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual(3, component.FindAll(".own-item").Count));
+
+        Assert.AreEqual("Child 2", component.FindAll(".own-item")[2].TextContent);
+    }
+
+    [TestMethod]
+    public void BitInfiniteScrollingShouldRenderNoEndBlockWithoutAnEndMessageOrTemplate()
+    {
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(3));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 5);
+            parameters.Add(p => p.Preload, true);
+        });
+
+        component.WaitForAssertion(() => Assert.IsFalse(component.Instance.HasMore));
+
+        Assert.AreEqual(0, component.FindAll(".bit-isc-end").Count);
+
+        component.Render(parameters => parameters.Add(p => p.EndTemplate, builder => builder.AddMarkupContent(0, "<span class=\"own-end\">Fin</span>")));
+
+        Assert.IsNotNull(component.Find(".bit-isc-end .own-end"));
     }
 
     [TestMethod]
