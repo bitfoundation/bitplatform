@@ -217,6 +217,16 @@ function Initialize-Adb {
     }
 
     $script:adb = Join-Path $script:androidSdk 'platform-tools\adb.exe'
+
+    if (-not (Get-NetTCPConnection -LocalPort 5037 -State Listen -ErrorAction SilentlyContinue)) {
+        Start-Process $script:adb -ArgumentList 'start-server' -WindowStyle Hidden
+
+        $deadline = (Get-Date).AddSeconds(30)
+
+        while (-not (Get-NetTCPConnection -LocalPort 5037 -State Listen -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline) {
+            Start-Sleep -Milliseconds 500
+        }
+    }
 }
 
 function Invoke-Adb {
