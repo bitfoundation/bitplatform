@@ -133,6 +133,78 @@ public class BitPdfSeekableStreamTests
     }
 
     [TestMethod]
+    [DataRow("length")]
+    [DataRow("seek")]
+    [DataRow("read")]
+    public async Task SeekableSourceShouldClassifyEveryProviderFailure(string operation)
+    {
+        byte[] bytes = TestPdf.HelloWorld();
+        foreach (var failure in new Exception[]
+        {
+            new UnauthorizedAccessException("Provider access denied."),
+            new InvalidOperationException("Provider request failed."),
+            new PdfProviderException(),
+        })
+        {
+            var input = new FaultingProviderStream(bytes, operation);
+            await using var source = new PdfSeekableSourceAccess(input);
+            input.Failure = failure;
+
+            var syncError = Assert.Throws<IOException>(() => source.CreateStream().GetBytes());
+            Assert.AreSame(failure, syncError.InnerException);
+            var asyncError = await Assert.ThrowsAsync<IOException>(() => source.ReadAllAsync());
+            Assert.AreSame(failure, asyncError.InnerException);
+
+            input.Failure = null;
+            CollectionAssert.AreEqual(bytes, await source.ReadAllAsync());
+        }
+    }
+
+    [TestMethod]
+    public async Task SeekableSourceShouldPreserveProviderCancellationAndDisposalSignals()
+    {
+        foreach (string operation in new[] { "length", "seek", "read" })
+        foreach (var signal in new Exception[] { new OperationCanceledException(), new ObjectDisposedException("provider") })
+        {
+            var input = new FaultingProviderStream(TestPdf.HelloWorld(), operation);
+            await using var source = new PdfSeekableSourceAccess(input);
+            input.Failure = signal;
+
+            Assert.AreSame(signal, Assert.Throws<Exception>(() => source.CreateStream().GetBytes()));
+            Assert.AreSame(signal, await Assert.ThrowsAsync<Exception>(() => source.ReadAllAsync()));
+        }
+    }
+
+    [TestMethod]
+    [DataRow("access")]
+    [DataRow("state")]
+    [DataRow("provider")]
+    public async Task XrefProviderFailureShouldEscapeWithoutStartingRecovery(string kind)
+    {
+        var input = new PdfTrackingStream(TestPdf.Build([
+            "<< /Type /Catalog /Pages 2 0 R >>",
+            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
+            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 200 200] /Contents 4 0 R >>",
+            TestPdf.Stream(""),
+            TestPdf.Stream(new string(' ', 128 * 1024)),
+        ], rootObjNum: 1));
+        Exception failure = kind switch
+        {
+            "access" => new UnauthorizedAccessException("Provider access denied."),
+            "state" => new InvalidOperationException("Provider request failed."),
+            _ => new PdfProviderException(),
+        };
+        int attempts = 0;
+        // The header succeeds. Fail the later tail/xref read once: treating this
+        // as malformed content would start a successful but spurious recovery scan.
+        input.OnRead = () => { if (++attempts == 2) throw failure; };
+        await using var source = new PdfSeekableSourceAccess(input);
+        var error = Assert.Throws<IOException>(() => source.Load());
+        Assert.AreSame(failure, error.InnerException);
+        Assert.AreEqual(2, attempts);
+    }
+
+    [TestMethod]
     public async Task CacheShouldAccountForAnInFlightFillAndAQueuedCrossBlockCopy()
     {
         using var release = new ManualResetEventSlim();
@@ -168,12 +240,14 @@ public class BitPdfSeekableStreamTests
         var input = new PdfTrackingStream(TestPdf.HelloWorld());
         await using var source = new PdfSeekableSourceAccess(input);
         input.LengthOverride = input.Length + 1;
-        Assert.Throws<IOException>(() => source.Load());
+        var lengthError = Assert.Throws<IOException>(() => source.Load());
+        Assert.IsNull(lengthError.InnerException); // already classified; do not wrap twice
         Assert.AreEqual(0, input.ReadCount);
         Assert.AreEqual(0, source.AccountedBytes);
         input.LengthOverride = null;
         input.ReturnEndOfStream = true;
-        Assert.Throws<IOException>(() => source.Load());
+        var endError = Assert.Throws<IOException>(() => source.Load());
+        Assert.IsNull(endError.InnerException);
         Assert.AreEqual(0, source.AccountedBytes);
     }
 
@@ -230,6 +304,22 @@ public class BitPdfSeekableStreamTests
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => source.CreateStream(-1));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => source.CreateStream(0, 1));
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => source.Window(0, 1));
+    }
+
+    private sealed class PdfProviderException() : Exception("Provider SDK request failed.");
+
+    private sealed class FaultingProviderStream(byte[] bytes, string operation) : PdfTrackingStream(bytes)
+    {
+        public Exception? Failure { get; set; }
+        private void Fail(string name) { if (operation == name && Failure is not null) throw Failure; }
+        public override long Length { get { Fail("length"); return base.Length; } }
+        public override long Seek(long offset, SeekOrigin origin) { Fail("seek"); return base.Seek(offset, origin); }
+        public override int Read(Span<byte> buffer) { Fail("read"); return base.Read(buffer); }
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            await Task.Yield();
+            return await base.ReadAsync(buffer, cancellationToken);
+        }
     }
 }
 

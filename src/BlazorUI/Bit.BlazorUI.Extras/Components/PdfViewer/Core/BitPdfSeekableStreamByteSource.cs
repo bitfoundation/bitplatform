@@ -245,7 +245,8 @@ internal sealed class BitPdfSeekableStreamByteSource : IBitPdfByteSource, IBitPd
             }
             CheckLength();
         }
-        catch (Exception ex) when (ex is IOException and not BitPdfByteSourceIOException or NotSupportedException)
+        // Provider SDK failures are source errors, regardless of their exception type.
+        catch (Exception ex) when (ex is not (BitPdfByteSourceIOException or OperationCanceledException or ObjectDisposedException))
         {
             throw new BitPdfByteSourceIOException("Reading the PDF stream failed.", ex);
         }
@@ -279,7 +280,7 @@ internal sealed class BitPdfSeekableStreamByteSource : IBitPdfByteSource, IBitPd
             }
             CheckLength();
         }
-        catch (Exception ex) when (ex is IOException and not BitPdfByteSourceIOException or NotSupportedException)
+        catch (Exception ex) when (ex is not (BitPdfByteSourceIOException or OperationCanceledException or ObjectDisposedException))
         {
             throw new BitPdfByteSourceIOException("Reading the PDF stream failed.", ex);
         }
