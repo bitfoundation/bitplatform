@@ -104,13 +104,13 @@ gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(
 A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
 worth checking for *any* action bump, not just this one — it is invisible in the release notes.
 
-**MAUI is held at 11.0.0-rc.1.26451.6** (`Microsoft.Maui.Controls` and `Components.WebView.Maui`, in the
-Boilerplate, the BlazorUI demo and the Butil sample; develop holds 10.0.100 for the same reason). From 10.0.101
-and 11.0.0-rc.2 on, MAUI bundles an `Svg.Skia` that calls a SkiaSharp overload missing from the SkiaSharp next
-to it, so the resizetizer fails with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
-on any SVG icon with a `<filter>` ([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). Move only
-once that issue is closed and `dotnet build -f net11.0-ios` passes on the Boilerplate. `WebView.WindowsForms` has
-no resizetizer and is not held.
+**MAUI's resizetizer breaks on SVG filters.** From 10.0.101 and 11.0.0-rc.2 on, MAUI bundles an `Svg.Skia` that
+calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it resizes that has a `<filter>` fails
+the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). develop holds MAUI at 10.0.100 for it. On
+this branch MAUI can't stay behind: a MAUI built for an older preview doesn't compile against the newer
+preview's Android workload (CS1705 on `Java.Interop`). So MAUI follows the SDK here, and the app icons of the
+Boilerplate and the BlazorUI demo carry no drop shadow (their `<filter>`) until that issue is fixed.
 
 **`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
 (through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the

@@ -33,9 +33,9 @@
         <PackageVersion Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="11.0.0-rc.1.26425.128" />
         <PackageVersion Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="11.0.0-rc.2.26504.105" />
         <PackageVersion Include="Microsoft.Extensions.Options.DataAnnotations" Version="11.0.0-rc.2.26504.105" />
-        <PackageVersion Include="Microsoft.Maui.Controls" Version="11.0.0-rc.1.26451.6" />
+        <PackageVersion Include="Microsoft.Maui.Controls" Version="11.0.0-rc.2.26505.5" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView" Version="11.0.0-rc.2.26504.105" />
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="11.0.0-rc.1.26451.6" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.Maui" Version="11.0.0-rc.2.26505.5" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="11.0.0-rc.2.26505.5" />
         <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4258.31" />
         <PackageVersion Include="MSTest" Version="4.5.1" />
