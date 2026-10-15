@@ -91,12 +91,18 @@
 
 <style>
     .custom-shell {
+        position: fixed;
+        left: 0;
+        top: 0;
+        /* Matches the card so the engine, which measures this element, keeps the arrow off its corners. */
+        border-radius: 18px;
         width: 24rem;
         max-width: calc(100vw - 2rem);
         pointer-events: auto;
         filter: drop-shadow(0 18px 40px rgba(8, 12, 30, 0.35));
-        /* The arrow is still the library's, and it is painted with these two: match the card. */
-        --bit-bonboarding-surface: #111827;
+        /* The arrow is still the library's, and it is painted with these two: match the card. The
+           card is a gradient, so the surface is its colour near the edges the arrow meets. */
+        --bit-bonboarding-surface: #161934;
         --bit-bonboarding-border: rgba(255, 255, 255, 0.12);
     }
 

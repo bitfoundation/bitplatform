@@ -18,6 +18,7 @@
         <div class="field">
             <label for="theme">Theme</label>
             <select id="theme" @bind="_theme">
+                <option value="">Not set (follows the site)</option>
                 @foreach (var value in Enum.GetValues<BonboardingTheme>())
                 {
                     <option value="@value">@value</option>
@@ -59,8 +60,8 @@
     <div class="note">
         <Icon Path="@Icons.Info" />
         <span>
-            The site's own dark theme forces every tour dark, so switch the site to light to compare the
-            <code>Theme</code> values.
+            Left unset, the tour follows this site's theme switch. Any other value wins over the switch:
+            <code>System</code> leaves the choice to your stylesheet, which here means the light palette.
         </span>
     </div>
 
@@ -101,7 +102,7 @@
 </section>
 
 @code {
-    private BonboardingTheme _theme = BonboardingTheme.System;
+    private BonboardingTheme? _theme;
     private BonboardingDirection _direction = BonboardingDirection.Auto;
     private BonboardingProgressStyle _progress = BonboardingProgressStyle.Dots;
     private string _skin = string.Empty;

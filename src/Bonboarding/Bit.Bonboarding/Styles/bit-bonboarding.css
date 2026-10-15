@@ -201,32 +201,44 @@
     pointer-events: none;
 }
 
-.bit-bonboarding-popover[data-bonboarding-side="bottom"] .bit-bonboarding-arrow {
+/*
+ * Keyed on the side attribute rather than the popover class, because an Unstyled host drops that
+ * class but still renders the arrow. The specificity matches the class-based form.
+ *
+ * The clip paints only the half outside the popover, plus 2px across the diagonal to cover its
+ * border, so a card that is not a flat surface colour (a gradient, an image) never shows the
+ * inner half of the square through it.
+ */
+.bit-bonboarding-root [data-bonboarding-side="bottom"] > .bit-bonboarding-arrow {
     top: calc(var(--bit-bonboarding-arrow) / -2);
     border-right: none;
     border-bottom: none;
     border-top-left-radius: 3px;
+    clip-path: polygon(0 0, 100% 0, 100% 2px, 2px 100%, 0 100%);
 }
 
-.bit-bonboarding-popover[data-bonboarding-side="top"] .bit-bonboarding-arrow {
+.bit-bonboarding-root [data-bonboarding-side="top"] > .bit-bonboarding-arrow {
     bottom: calc(var(--bit-bonboarding-arrow) / -2);
     border-left: none;
     border-top: none;
     border-bottom-right-radius: 3px;
+    clip-path: polygon(100% 100%, 0 100%, 0 calc(100% - 2px), calc(100% - 2px) 0, 100% 0);
 }
 
-.bit-bonboarding-popover[data-bonboarding-side="right"] .bit-bonboarding-arrow {
+.bit-bonboarding-root [data-bonboarding-side="right"] > .bit-bonboarding-arrow {
     left: calc(var(--bit-bonboarding-arrow) / -2);
     border-right: none;
     border-top: none;
     border-bottom-left-radius: 3px;
+    clip-path: polygon(0 100%, 0 0, 2px 0, 100% calc(100% - 2px), 100% 100%);
 }
 
-.bit-bonboarding-popover[data-bonboarding-side="left"] .bit-bonboarding-arrow {
+.bit-bonboarding-root [data-bonboarding-side="left"] > .bit-bonboarding-arrow {
     right: calc(var(--bit-bonboarding-arrow) / -2);
     border-left: none;
     border-bottom: none;
     border-top-right-radius: 3px;
+    clip-path: polygon(100% 0, 100% 100%, calc(100% - 2px) 100%, 0 2px, 0 0);
 }
 
 /* ---- Header ------------------------------------------------------------- */
