@@ -321,8 +321,11 @@
     private async ValueTask<BitBasicListItemsProviderResult<Person>> AllProvider(BitBasicListItemsProviderRequest<Person> request)
     {
         _allRequest = $"{request.StartIndex}:{request.Count}";
-        // A prerender waits for every pending load before it sends the page, so it is not held.
+        // A prerender waits for every pending load before it sends the page, so it is not held. .NET 8 cannot tell a
+        // prerender apart (RendererInfo is .NET 9+), so it never holds; the E2E tests run on the latest TFM only.
+#if NET9_0_OR_GREATER
         if (RendererInfo.IsInteractive) await _allGate.Task;
+#endif
         return BitBasicListItemsProviderResult.From<Person>(_people.Take(5).ToList());
     }
 
