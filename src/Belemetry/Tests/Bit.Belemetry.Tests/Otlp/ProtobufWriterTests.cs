@@ -1,4 +1,4 @@
-using Google.Protobuf;
+﻿using Google.Protobuf;
 
 namespace Bit.Belemetry.Tests.Otlp;
 

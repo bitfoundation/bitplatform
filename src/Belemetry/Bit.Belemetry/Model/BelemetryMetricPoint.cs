@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// A metric data point for one attribute set, carrying both the cumulative value (since the stream started)

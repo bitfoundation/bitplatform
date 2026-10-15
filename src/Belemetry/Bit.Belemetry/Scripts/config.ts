@@ -19,12 +19,17 @@ export interface OtlpExporterConfig {
     protocol?: 'http/protobuf' | 'http/json' | null;
     headers?: Record<string, string> | null;
     compression?: 'none' | 'gzip' | null;
+    /** The `Signals` bits sent to this exporter (traces 1, logs 2); null or absent means both. */
+    signals?: number | null;
 }
 
 export interface AzureMonitorExporterConfig {
     type: 'azureMonitor';
     connectionString: string;
     maskIp?: boolean | null;
+    compression?: 'none' | 'gzip' | null;
+    /** The `Signals` bits sent to this exporter (traces 1, logs 2); null or absent means both. */
+    signals?: number | null;
 }
 
 export interface ConsoleExporterConfig {
@@ -79,6 +84,8 @@ export interface PrivacyConfig {
     stripFragment: boolean;
     scrubPatterns: boolean;
     collectUserAgent: boolean;
+    /** Attribute keys removed from every record (exact match). */
+    blockedAttributes: string[];
 }
 
 export interface SessionConfig {
@@ -100,6 +107,8 @@ export interface PersistenceConfig {
     enabled: boolean;
     maxBytes: number;
     maxAgeHours: number;
+    /** How often the stored requests are retried while the page is open (also on start and when back online). */
+    retryIntervalMs: number;
 }
 
 export interface ResolvedConfig {
@@ -151,11 +160,12 @@ export function createDefaults(): ResolvedConfig {
             stripFragment: true,
             scrubPatterns: true,
             collectUserAgent: true,
+            blockedAttributes: [],
         },
         session: { inactivityTimeoutMinutes: 30, maxDurationMinutes: 1440 },
         sampling: { sessionRatio: 1 },
         batch: { maxQueueSize: 1024, maxBatchSize: 100, flushIntervalMs: 5000 },
-        persistence: { enabled: true, maxBytes: 1048576, maxAgeHours: 48 },
+        persistence: { enabled: true, maxBytes: 1048576, maxAgeHours: 48, retryIntervalMs: 60000 },
         debug: false,
     };
 }

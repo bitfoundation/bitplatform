@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @implements IAsyncDisposable
 @inject IBelemetry Belemetry
 @inject ILogger<HomePage> Logger
@@ -34,12 +34,12 @@
     <button @onclick="FetchAsync">fetch @Settings.FetchUrl</button>
     <button @onclick="ThrowJsErrorAsync">Throw a JS error</button>
 
-    @* Clicks are recorded with the element's data-belemetry-name (then aria-label, then name) - never its text,
+    @* Clicks are recorded with the element's data-bit-belemetry-name (then aria-label, then name) - never its text,
        unless CaptureInteractionText is on. *@
-    <button data-belemetry-name="sample-checkout">Named click target</button>
+    <button data-bit-belemetry-name="sample-checkout">Named click target</button>
 
-    <div data-belemetry-ignore>
-        <button>Ignored click (inside data-belemetry-ignore)</button>
+    <div data-bit-belemetry-ignore>
+        <button>Ignored click (inside data-bit-belemetry-ignore)</button>
     </div>
 </section>
 

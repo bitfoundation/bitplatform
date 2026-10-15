@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <!-- The pages every hosting sample (Server, WebAssembly, Auto, MAUI) renders. Nothing in here knows which
          host it runs in: each host's Program.cs owns its Belemetry setup, which is the part worth comparing. -->

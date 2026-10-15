@@ -1,4 +1,4 @@
-using System.Text;
+﻿using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Bit.Belemetry;
@@ -72,7 +72,27 @@ internal sealed partial class BelemetryPrivacy(BelemetryPrivacyOptions options)
             builder.Append('#').Append(fragment.Contains('=', StringComparison.Ordinal) ? RedactQuery(fragment[1..]) : fragment[1..]);
         }
 
-        return Scrub(builder.ToString());
+        return ScrubUrl(builder.ToString());
+    }
+
+    /// <summary>
+    /// Scrubs a URL after its host: the host (an IP literal included) names the server that was called, not the user,
+    /// and "http://[ip]:5000/" would hide which backend failed. Credentials in the authority are always dropped.
+    /// </summary>
+    private string ScrubUrl(string url)
+    {
+        var schemeEnd = url.IndexOf("://", StringComparison.Ordinal);
+        if (schemeEnd < 0) return Scrub(url);
+
+        var authorityStart = schemeEnd + 3;
+        var pathStart = url.IndexOfAny(['/', '?', '#'], authorityStart);
+        if (pathStart < 0) pathStart = url.Length;
+
+        var authority = url[authorityStart..pathStart];
+        var at = authority.LastIndexOf('@');
+        if (at >= 0) authority = authority[(at + 1)..];
+
+        return string.Concat(url.AsSpan(0, authorityStart), authority, Scrub(url[pathStart..]));
     }
 
     private string RedactQuery(string query)

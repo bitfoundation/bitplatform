@@ -1,4 +1,4 @@
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 
 namespace Bit.Belemetry.Tests.Pipeline;
 
@@ -154,7 +154,7 @@ public class BelemetryLoggerTests
         Assert.IsFalse(app.IsEnabled(LogLevel.None));
         app.LogDebug("dropped");
 
-        var own = factory.CreateLogger("Bit.Belemetry.Pipeline");
+        var own = factory.CreateLogger(BelemetryLogger.DiagnosticsCategory);
         Assert.IsFalse(own.IsEnabled(LogLevel.Critical), "Belemetry never exports its own diagnostics.");
         own.LogError("dropped");
 
@@ -166,6 +166,23 @@ public class BelemetryLoggerTests
 
         await host.FlushAsync();
         Assert.AreEqual("kept", host.Memory.Logs.Single().Body);
+    }
+
+    [TestMethod]
+    public async Task AppCategories_UnderTheBelemetryNamespace_AreCollected()
+    {
+        await using var host = TestHost.Create();
+        var factory = host.StartLogging();
+
+        // Only the diagnostics category itself is Belemetry's; apps (the demo, the samples) live under Bit.Belemetry.*.
+        var demo = factory.CreateLogger("Bit.Belemetry.Demo.Client.Pages.DotnetPage");
+        Assert.IsTrue(demo.IsEnabled(LogLevel.Information));
+        demo.LogInformation("kept");
+
+        await host.FlushAsync();
+        var log = host.Memory.Logs.Single();
+        Assert.AreEqual("kept", log.Body);
+        Assert.AreEqual("Bit.Belemetry.Demo.Client.Pages.DotnetPage", log.Scope.Name);
     }
 
     [TestMethod]

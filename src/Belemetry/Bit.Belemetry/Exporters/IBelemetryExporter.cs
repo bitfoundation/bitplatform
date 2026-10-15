@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>Sends batches of telemetry to a backend.</summary>
 /// <remarks>

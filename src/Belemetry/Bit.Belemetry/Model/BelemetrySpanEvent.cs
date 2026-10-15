@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>A time-stamped annotation on a span, shaped like the OTLP <c>Span.Event</c> message.</summary>
 public sealed class BelemetrySpanEvent

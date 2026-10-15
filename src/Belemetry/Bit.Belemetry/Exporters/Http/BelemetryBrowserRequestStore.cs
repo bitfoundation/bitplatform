@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// The WebAssembly "store": undeliverable requests are handed to the browser script, which owns retry and the

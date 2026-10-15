@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The OpenTelemetry signals.</summary>
 [Flags]

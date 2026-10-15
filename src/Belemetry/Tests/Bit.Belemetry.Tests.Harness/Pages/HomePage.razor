@@ -1,4 +1,4 @@
-@page "/"
+﻿@page "/"
 @implements IDisposable
 @inject IBelemetry Belemetry
 @inject IBelemetryConsent Consent
@@ -40,8 +40,8 @@
 </section>
 
 <section class="harness-actions">
-    <button id="named-button" data-belemetry-name="harness-named-button">named</button>
-    <div data-belemetry-ignore>
+    <button id="named-button" data-bit-belemetry-name="harness-named-button">named</button>
+    <div data-bit-belemetry-ignore>
         <button id="ignored-button">ignored</button>
     </div>
 </section>
@@ -98,13 +98,13 @@
 
     private void LogInformation()
     {
-        Logger.LogInformation("Harness log {Marker}", _marker);
+        Logger.LogInformation("Harness log {harness.marker}", _marker);
         _actions++;
     }
 
     private void LogError()
     {
-        Logger.LogError(new InvalidOperationException($"Harness logged exception {_marker}"), "Harness error log {Marker}", _marker);
+        Logger.LogError(new InvalidOperationException($"Harness logged exception {_marker}"), "Harness error log {harness.marker}", _marker);
         _actions++;
     }
 

@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.Belemetry;
@@ -26,6 +26,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     private BelemetryExporterSet? _exporters;
     private BelemetryActivityCollector? _activities;
     private BelemetryMeterCollector? _meters;
+    private BelemetryAspNetCoreRequests? _requests;
     private ILogger? _diagnostics;
     private Task? _loop;
     private int _started;
@@ -61,6 +62,13 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         {
             if ((Settings.ConfiguredFeatures & BelemetryFeatures.Traces) != 0) _activities = new BelemetryActivityCollector(Settings, this);
             if ((Settings.ConfiguredFeatures & BelemetryFeatures.Metrics) != 0) _meters = new BelemetryMeterCollector(Settings);
+
+            if (_activities is not null && Settings.IsServer && CanRecord(BelemetryFeatures.Traces))
+            {
+                // Without these the Microsoft.AspNetCore request spans would carry no method, route or status.
+                BelemetryAspNetCoreRequests.EnableNativeTags();
+                _requests = new BelemetryAspNetCoreRequests();
+            }
         }
 
         _loop = RunAsync(_stopping.Token);
@@ -162,7 +170,8 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         var metrics = _meters is not null && CanRecord(BelemetryFeatures.Metrics) ? RunMetricProcessors(_meters.Collect()) : [];
         foreach (var batch in BuildBatches(entries, metrics))
         {
-            foreach (var exporter in Exporters.HttpExporters) requests.AddRange(exporter.CreateRequests(batch));
+            // The browser sends these with keepalive, so they carry the exporter's headers.
+            foreach (var exporter in Exporters.HttpExporters) requests.AddRange(exporter.CreateRequests(batch).Select(r => r.WithHeaders(exporter.Headers)));
         }
 
         return requests;
@@ -430,7 +439,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         {
             // Resolved lazily: the logger factory depends on this pipeline through the logger provider, so taking
             // ILogger in the constructor would be a cycle.
-            _diagnostics ??= _services.GetService<ILoggerFactory>()?.CreateLogger("Bit.Belemetry");
+            _diagnostics ??= _services.GetService<ILoggerFactory>()?.CreateLogger(BelemetryLogger.DiagnosticsCategory);
             var level = Settings.Options.Debug ? LogLevel.Information : LogLevel.Debug;
             _diagnostics?.Log(level, exception, "{Message}", message);
         }
@@ -444,6 +453,7 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
     {
         _consent.Changed -= OnConsentChanged;
         _activities?.Dispose();
+        _requests?.Dispose();
 
         try
         {

@@ -1,4 +1,5 @@
 ﻿import type { ResolvedConfig } from './config';
+import { newTraceId } from './ids';
 import type { Attributes } from './model';
 
 interface UserAgentData {
@@ -6,6 +7,10 @@ interface UserAgentData {
     mobile?: boolean;
     platform?: string;
 }
+
+// A browser tab is its own service instance, not the server process that rendered it, so the server sends no
+// instance id and each page load gets a random one, kept for the life of the module.
+let pageInstanceId: string | undefined;
 
 /** Builds the resource attributes shared by every record of this page. */
 export function buildResource(config: ResolvedConfig): Attributes {
@@ -17,7 +22,7 @@ export function buildResource(config: ResolvedConfig): Attributes {
     set('service.name', service.name);
     set('service.version', service.version);
     set('service.namespace', service.namespace);
-    set('service.instance.id', service.instanceId);
+    set('service.instance.id', service.instanceId || (pageInstanceId ??= newTraceId()));
     set('deployment.environment.name', service.environment);
     set('telemetry.sdk.name', 'bit-belemetry');
     set('telemetry.sdk.language', 'webjs');

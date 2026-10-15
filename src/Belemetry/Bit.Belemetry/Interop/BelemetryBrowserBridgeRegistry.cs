@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// Lets singletons reach the browser script, which is only reachable through a scoped <c>IJSRuntime</c>: the scoped

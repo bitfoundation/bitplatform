@@ -5,8 +5,8 @@ import type { AzureMonitorExporterConfig } from '../config';
 import { debug } from '../log';
 import { newSpanId } from '../ids';
 import { SpanKind, StatusCode, type AttributeValue, type Attributes, type LogRecord, type RecordBatch, type SpanRecord } from '../model';
-import type { OutgoingRequest, Transport } from '../transport';
-import type { Exporter } from './exporter';
+import { gzip, type OutgoingRequest, type Transport } from '../transport';
+import { Signals, signalsOf, type Exporter } from './exporter';
 import { encodeUtf8 } from './protobuf';
 
 export const DEFAULT_INGESTION_ENDPOINT = 'https://dc.services.visualstudio.com';
@@ -150,17 +150,23 @@ function dependencyTarget(a: Attributes, url: string | undefined): string | unde
 
 export function spanToEnvelope(span: SpanRecord, resource: Attributes, ctx: AzureContext): Json {
     const a = span.attributes;
-    const tags = recordTags(baseTags(resource, ctx), a, span.traceId, span.parentSpanId, span.name);
     const success = !span.status || span.status.code !== StatusCode.Error;
     const duration = formatDuration(span.endTime - span.startTime);
     const statusCode = str(a, 'http.response.status_code');
     if (span.kind === SpanKind.Server || span.kind === SpanKind.Consumer) {
+        // A request names the operation (ai.operation.name), as in C#: "{method} {route}" when both are known.
+        const method = str(a, 'http.request.method');
+        const route = str(a, 'http.route');
+        const name = method && route ? method + ' ' + route : span.name;
+        const tags = recordTags(baseTags(resource, ctx), a, span.traceId, span.parentSpanId, name);
         const consumed = ['http.response.status_code', 'url.full'];
-        const data: Json = { ver: 2, id: span.spanId, name: span.name, duration, responseCode: statusCode || (success ? '200' : '500'), success };
+        const data: Json = { ver: 2, id: span.spanId, name, duration, responseCode: statusCode || (success ? '200' : '500'), success };
         const url = str(a, 'url.full');
         if (url) data.url = url;
         return envelope('Request', span.startTime, ctx, tags, data, properties(a, consumed));
     }
+    // A dependency belongs to the operation of its request or page; it does not name one.
+    const tags = recordTags(baseTags(resource, ctx), a, span.traceId, span.parentSpanId);
     const consumed = ['http.response.status_code', 'url.full', 'server.address', 'server.port'];
     const url = str(a, 'url.full');
     const isHttp = a['http.request.method'] != null || url !== undefined;
@@ -244,14 +250,30 @@ export function createAzureExporter(config: AzureMonitorExporterConfig, transpor
     }
     const url = target.endpoint + '/v2.1/track';
     const ctx: AzureContext = { iKey: target.iKey, maskIp: config.maskIp !== false, sdkVersion };
+    const compress = config.compression === 'gzip';
+    const signals = signalsOf(config);
     return {
         urls: [target.endpoint],
-        export(batch, unload) {
-            const envelopes = toEnvelopes(batch, ctx);
-            if (envelopes.length) {
-                transport.send({ exporter: 'azureMonitor', url, contentType: 'application/json', body: encodeUtf8(JSON.stringify(envelopes)) }, unload);
-            }
-            return Promise.resolve();
+        async export(batch, unload) {
+            const filtered: RecordBatch = {
+                resource: batch.resource,
+                spans: signals & Signals.Traces ? batch.spans : [],
+                logs: signals & Signals.Logs ? batch.logs : [],
+            };
+            const envelopes = toEnvelopes(filtered, ctx);
+            if (!envelopes.length) return;
+            const body = encodeUtf8(JSON.stringify(envelopes));
+            // Compression is async, and nothing async survives unload, so unload batches go uncompressed. The raw
+            // body is kept for persistence and for rebuilding a 206 partial success.
+            const zipped = compress && !unload ? await gzip(body) : null;
+            transport.send({
+                exporter: 'azureMonitor',
+                url,
+                contentType: 'application/json',
+                contentEncoding: zipped ? 'gzip' : null,
+                body: zipped || body,
+                raw: zipped ? body : null,
+            }, unload);
         },
     };
 }

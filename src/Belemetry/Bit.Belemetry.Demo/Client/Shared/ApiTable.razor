@@ -1,4 +1,4 @@
-@implements IDisposable
+﻿@implements IDisposable
 @inject IApiReference Api
 @inject PersistentComponentState AppState
 
@@ -81,8 +81,8 @@
     /// <summary>The public Bit.Belemetry type to reflect, e.g. <c>BelemetryConsentOptions</c>.</summary>
     [Parameter, EditorRequired] public string TypeName { get; set; } = "";
 
-    /// <summary>Which member kinds to list. Defaults to everything a caller uses: properties, parameters, methods, events and enum values.</summary>
-    [Parameter] public string[] Kinds { get; set; } = ["Parameter", "Property", "EnumValue", "Method", "Event"];
+    /// <summary>Which member kinds to list. Defaults to everything a caller uses: properties, parameters, methods, events, constants and enum values.</summary>
+    [Parameter] public string[] Kinds { get; set; } = ["Parameter", "Property", "EnumValue", "Constant", "Field", "Method", "Event"];
 
     private ApiTypeInfo? _info;
     private ApiMemberInfo[] _rows = [];

@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Bit.Belemetry;
 
@@ -105,7 +105,8 @@ internal static class BelemetryRelayConverter
             case JsonValueKind.False:
                 return false;
             case JsonValueKind.Number:
-                return value.TryGetInt64(out var l) ? l : value.GetDouble();
+                // The cast matters: without it the conditional is typed double and every integer would become one.
+                return value.TryGetInt64(out var l) ? (object)l : value.GetDouble();
             case JsonValueKind.Array:
                 {
                     var items = value.EnumerateArray().Select(ToValue).Where(v => v is not null).ToList();

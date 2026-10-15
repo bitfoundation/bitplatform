@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// Optional: register an instance in DI to route Belemetry's export traffic through a custom

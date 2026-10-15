@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>A unit of export: records that share one resource.</summary>
 public sealed class BelemetryBatch

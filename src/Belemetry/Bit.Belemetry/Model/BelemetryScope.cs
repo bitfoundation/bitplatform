@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// The OpenTelemetry instrumentation scope a record was produced by - the <c>ActivitySource</c>, <c>Meter</c>

@@ -1,0 +1,153 @@
+﻿@page "/azure-monitor"
+
+<PageTitle>Azure Monitor - bit Belemetry</PageTitle>
+
+<h1>Azure Monitor</h1>
+
+<p class="page-intro">
+    The Azure Monitor exporter posts straight to the Application Insights ingestion endpoint
+    (<code>/v2.1/track</code>), with no collector in between. Page views, requests, dependencies, exceptions, custom
+    events and metrics land in their usual tables - <code>pageViews</code>, <code>requests</code>,
+    <code>dependencies</code>, <code>exceptions</code>, <code>customEvents</code>, <code>customMetrics</code> - so the
+    portal's Application Map, Failures, Performance and Usage blades work as they do with Microsoft's own SDKs.
+</p>
+
+<div class="demo-section">
+    <h2>Connection string</h2>
+    <p>
+        The exporter needs the resource's connection string: the instrumentation key and the regional
+        <code>IngestionEndpoint</code> (records go to <code>{IngestionEndpoint}/v2.1/track</code>; without one, to
+        <code>https://dc.services.visualstudio.com</code>), plus the <code>LiveEndpoint</code> for Live Metrics.
+        Outside the browser, with <code>options.UseEnvironmentVariables</code> on, an unset connection string is read
+        from <code>APPLICATIONINSIGHTS_CONNECTION_STRING</code> - and that variable alone adds the exporter when none
+        is configured, which is what App Service and Container Apps set.
+    </p>
+    <CodeSnippet Code="@BasicCode" Language="C#" Expanded="true" />
+    <p>
+        The browser script exports to Application Insights too (<code>IncludeInBrowser</code>, on by default) - the
+        same arrangement as Microsoft's JavaScript SDK, whose connection string is in every page it runs on. The
+        instrumentation key identifies the resource; it does not authorize reading anything. Turn
+        <code>IncludeInBrowser</code> off to keep the browser away from it, and use the
+        <a href="/transport">Relay transport</a> to send browser records through .NET instead.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Microsoft Entra ID</h2>
+    <p>
+        A resource with local authentication disabled only accepts telemetry with an Entra ID token.
+        <code>AccessTokenProvider</code> supplies one, sent as <code>Authorization: Bearer</code>, for the scope
+        <code>https://monitor.azure.com//.default</code>. Belemetry takes no dependency on Azure.Identity: the provider
+        is a plain delegate, so any credential - managed identity, workload identity, a client secret - plugs in.
+    </p>
+    <p>
+        An exporter with a token provider is never handed to the browser script, which could not hold the token
+        safely. On Blazor Server and Hybrid, browser records reach such a resource through the Relay transport. In
+        WebAssembly the .NET pipeline runs in the browser too, so it is no place for a credential either: there, send
+        telemetry to a server of yours (an OpenTelemetry Collector with the Azure Monitor exporter, for example) and let
+        that server authenticate.
+    </p>
+    <CodeSnippet Code="@EntraCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>MaskIp</h2>
+    <p>
+        Application Insights derives each record's city and country from the client IP address it was sent from.
+        With <code>MaskIp</code> (on by default) Belemetry sends <code>ai.location.ip = 0.0.0.0</code>, so no
+        location is derived and the user's address is not part of the record. Belemetry never adds the client IP
+        itself. Turn it off only if you need the geography and your privacy notice covers it.
+    </p>
+    <CodeSnippet Code="@MaskIpCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Live Metrics</h2>
+    <p>
+        With <code>EnableLiveMetrics</code> the .NET side streams requests, dependencies, exceptions, CPU and memory to
+        the portal's Live Metrics blade once per second while someone is watching it - following the Application
+        Insights QuickPulse protocol, so treat it as a preview feature. It is not available in the browser, and in
+        WebAssembly it reports the app running in that one browser, so it is most useful with the
+        <a href="/server-pipeline">server pipeline</a> and in Hybrid apps.
+    </p>
+    <CodeSnippet Code="@LiveMetricsCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Compression, timeout and signals</h2>
+    <p>
+        <code>Compression = BelemetryCompression.Gzip</code> compresses the envelope array (<code>Content-Encoding:
+        gzip</code>), in the browser too. <code>Timeout</code> bounds one request (30 s). <code>Signals</code> restricts
+        what is sent, by the browser script as well - for example metrics only, while traces and logs go to an OTLP
+        backend. Throttling (429, 439), transient failures
+        (408, 500, 502, 503, 504) and the items of a partial success (206) are retried, and kept by the
+        <a href="/persistence">offline persistence</a> while the network is down. Metrics are always sent as deltas,
+        which is what <code>customMetrics</code> expects, whatever <code>Metrics.Temporality</code> says.
+    </p>
+    <CodeSnippet Code="@MoreCode" Language="C#" />
+    <p>
+        How each record becomes an envelope - the types, tags and properties - is on the
+        <a href="/azure-mapping">Azure mapping</a> page.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="BelemetryAzureMonitorExporterOptions" />
+</div>
+
+@code {
+    private const string BasicCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.ServiceName = "MyApp";            // ai.cloud.role
+            options.ServiceNamespace = "Shop";        // ai.cloud.role = "[Shop]/MyApp"
+
+            options.AddAzureMonitorExporter(builder.Configuration["ApplicationInsights:ConnectionString"]!);
+        });
+        """;
+
+    private const string EntraCode = """
+        using Azure.Core;
+        using Azure.Identity;
+
+        var credential = new DefaultAzureCredential();
+
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.AddAzureMonitorExporter(builder.Configuration["ApplicationInsights:ConnectionString"]!, azure =>
+            {
+                azure.AccessTokenProvider = async cancellationToken =>
+                    (await credential.GetTokenAsync(
+                        new TokenRequestContext(["https://monitor.azure.com//.default"]), cancellationToken)).Token;
+            });
+        });
+        """;
+
+    private const string MaskIpCode = """
+        options.AddAzureMonitorExporter(connectionString, azure =>
+        {
+            azure.MaskIp = true;      // the default: ai.location.ip = 0.0.0.0
+        });
+        """;
+
+    private const string LiveMetricsCode = """
+        options.AddAzureMonitorExporter(connectionString, azure =>
+        {
+            azure.EnableLiveMetrics = true;
+        });
+
+        // On an ASP.NET Core host, together with the server pipeline:
+        options.Server.CollectDotnetTelemetry = true;
+        """;
+
+    private const string MoreCode = """
+        options.AddAzureMonitorExporter(connectionString, azure =>
+        {
+            azure.Compression = BelemetryCompression.Gzip;
+            azure.Timeout = TimeSpan.FromSeconds(15);
+            azure.Signals = BelemetrySignals.Metrics;
+            azure.IncludeInBrowser = false;
+        });
+        """;
+}

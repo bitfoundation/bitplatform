@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// Settings of the Azure Monitor (Application Insights) exporter, which posts to the ingestion endpoint

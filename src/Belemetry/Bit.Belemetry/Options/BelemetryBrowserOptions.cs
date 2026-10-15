@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The browser script (<c>bit-belemetry.js</c>): what it instruments and how it ships records.</summary>
 public sealed class BelemetryBrowserOptions
@@ -17,7 +17,7 @@ public sealed class BelemetryBrowserOptions
 
     /// <summary>
     /// Whether the visible text of the clicked element is recorded (truncated to <see cref="MaxInteractionTextLength"/>).
-    /// Defaults to <see langword="false"/> because text can contain personal data; prefer <c>data-belemetry-name</c>.
+    /// Defaults to <see langword="false"/> because text can contain personal data; prefer <c>data-bit-belemetry-name</c>.
     /// Input values are never read.
     /// </summary>
     public bool CaptureInteractionText { get; set; }

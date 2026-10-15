@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// The app-wide consent and user context the .NET pipeline gates on in WebAssembly and Hybrid, where there is one

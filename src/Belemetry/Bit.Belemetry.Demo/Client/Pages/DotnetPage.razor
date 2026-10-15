@@ -1,0 +1,383 @@
+﻿@page "/dotnet"
+@using System.Diagnostics
+@using Microsoft.Extensions.Logging
+@inject ILogger<DotnetPage> Logger
+@inject HttpClient Http
+
+<PageTitle>.NET instrumentation - bit Belemetry</PageTitle>
+
+<h1>.NET instrumentation</h1>
+
+<p class="page-intro">
+    On the .NET side Belemetry listens with the same BCL primitives the OpenTelemetry SDK is built on - an
+    <code>ILoggerProvider</code>, an <code>ActivityListener</code> and a <code>MeterListener</code> - so your
+    <code>ILogger</code> calls, <code>ActivitySource</code> spans and <code>Meter</code> instruments are collected
+    without referencing Belemetry anywhere in the code that produces them.
+</p>
+
+<div class="callout">
+    In this demo the .NET side runs in <strong>WebAssembly</strong>: these buttons produce records in your browser's
+    .NET runtime, which exports them as OTLP/JSON to this site's own receiver (their source in the feed is
+    <code>wasm</code>). Logs below Error need the <code>Logs</code> feature, spans <code>Traces</code>, metrics
+    <code>Metrics</code>, and Error/Critical logs <code>Errors</code> - grant them on the
+    <a href="/consent">consent page</a> if a feed says nothing is granted. Metrics are exported every 10 s here
+    (60 s by default).
+</div>
+
+<div class="demo-section">
+    <h2>Logs</h2>
+    <p>
+        Every <code>ILogger</code> entry at or above <code>Logs.MinimumLevel</code> (Information by default) becomes a
+        log record: the formatted message as the body, the category as the instrumentation scope, the structured
+        values of the message template as attributes, the <code>EventId</code> as <code>log.event.id</code> and
+        <code>log.event.name</code> when it is set, the
+        values of the active scopes (<code>IncludeScopes</code>, on by default), an exception as
+        <code>exception.type</code>, <code>exception.message</code> and <code>exception.stacktrace</code>, and the
+        trace context of the current <code>Activity</code>. Entries at Error or Critical, or carrying an exception,
+        belong to the <code>Errors</code> feature; the rest to <code>Logs</code>.
+    </p>
+    <p>
+        Trace and Debug are below the minimum level, so their buttons produce nothing - which is the point.
+        <code>IncludeMessageTemplate</code> keeps the raw template as <code>log.record.template</code>, and
+        <code>ExcludedCategories</code> drops category prefixes outright (Belemetry's own categories are always
+        excluded, so its diagnostics never feed back into its pipeline).
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                @foreach (var level in _levels)
+                {
+                    <button type="button" class="@(level >= LogLevel.Error ? "btn-bl btn-bl-danger" : level >= LogLevel.Information ? "btn-bl" : "btn-bl-subtle")"
+                            disabled="@(RendererInfo.IsInteractive is false)" @onclick="() => Log(level)">
+                        @level
+                    </button>
+                }
+            </div>
+            <div class="demo-actions">
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="LogWithScope">Log inside a scope</button>
+                <button type="button" class="btn-bl btn-bl-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="LogException">LogError with an exception</button>
+            </div>
+            <TelemetryFeedView Compact="true" Match="@IsWasmLog"
+                               EmptyText="No .NET logs yet - press one of the level buttons above." />
+        </div>
+    </div>
+    <CodeSnippet Code="@LoggingCode" Language="C#" />
+    <p>
+        Per-category levels use the standard logging configuration, under the <code>Belemetry</code> provider alias -
+        so Belemetry can collect less than the console shows, or more:
+    </p>
+    <CodeSnippet Code="@LoggingConfigCode" Language="JSON" />
+</div>
+
+<div class="demo-section">
+    <h2>Traces</h2>
+    <p>
+        The activities of every source named in <code>Traces.Sources</code> are recorded as spans - by default
+        <code>System.Net.Http</code> and <code>Microsoft.AspNetCore.Components*</code> (and
+        <code>Microsoft.AspNetCore</code> for the server pipeline). A trailing <code>*</code> matches a prefix, so
+        <code>MyApp*</code> collects <code>MyApp.Checkout</code> and <code>MyApp.Search</code> alike. This demo adds
+        its own <code>Bit.Belemetry.Demo</code> source.
+    </p>
+    <p>
+        Sampling is parent-based: a span whose parent was sampled is recorded, a new trace is recorded with
+        probability <code>Traces.SamplingRatio</code> (1.0), deciding on the trace id the way OpenTelemetry's
+        <code>TraceIdRatioBased</code> sampler does - so every service in a trace makes the same decision. Without
+        <code>Traces</code> consent, activities are still created for propagation, so trace context keeps flowing to
+        downstream services, but nothing is recorded. <code>MaxEventsPerSpan</code> and <code>MaxLinksPerSpan</code>
+        (128 each) cap what one span can carry.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false || _running)" @onclick="RunCheckout">
+                    @(_running ? "Running..." : "Run a checkout trace")
+                </button>
+            </div>
+            <p class="demo-label">
+                A root <code>demo.checkout</code> span, a <code>demo.validate-cart</code> child, an
+                <code>HttpClient</code> call to <code>/api/demo/echo</code> (a <code>System.Net.Http</code> client
+                span), and a <code>demo.charge-card</code> child that fails with an exception event.
+            </p>
+            <TelemetryFeedView Compact="true" Match="@IsWasmSpan"
+                               EmptyText="No .NET spans yet - press the button above." />
+        </div>
+    </div>
+    <CodeSnippet Code="@TracingCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Metrics</h2>
+    <p>
+        The instruments of every meter named in <code>Metrics.Meters</code> are aggregated in process - by default
+        <code>System.Net.Http</code>, <code>Microsoft.AspNetCore.Components*</code> and <code>System.Runtime</code>,
+        with the same trailing-<code>*</code> patterns. Counters and up-down counters become sums, histograms become
+        explicit-bucket histograms (<code>HistogramBoundaries</code>, the OpenTelemetry defaults, unless the
+        instrument advises its own on .NET 9+), and gauges keep their last value.
+    </p>
+    <p>
+        Metrics are collected and exported every <code>ExportInterval</code> (60 s; 10 s in this demo) with
+        <code>Temporality</code> - cumulative by default, as OTLP expects; Azure Monitor always gets deltas. Each
+        instrument keeps at most <code>CardinalityLimit</code> (2000) attribute sets; measurements with new sets past
+        it are folded into one point carrying <code>otel.metric.overflow = true</code>, so a user id used as a tag by
+        mistake cannot exhaust memory.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => Press("primary"))">Press (counter)</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => Press("secondary"))">Press another button</button>
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="RecordWork">Do some work (histogram)</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => Cart(+1))">Add to cart</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => Cart(-1))">Remove from cart</button>
+            </div>
+            <dl class="kv">
+                <dt>demo.button.presses</dt><dd>@_presses</dd>
+                <dt>demo.work.duration (last)</dt><dd>@(_lastWork is null ? "-" : $"{_lastWork:0} ms")</dd>
+                <dt>demo.cart.items</dt><dd>@_cart</dd>
+            </dl>
+            <TelemetryFeedView Compact="true" Match="@IsWasmMetric"
+                               EmptyText="No metrics yet - they are exported every 10 s in this demo." />
+        </div>
+    </div>
+    <CodeSnippet Code="@MetricsCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <p><code>options.Logs</code>:</p>
+    <ApiTable TypeName="BelemetryLoggingOptions" />
+    <p><code>options.Traces</code>:</p>
+    <ApiTable TypeName="BelemetryTracingOptions" />
+    <p><code>options.Metrics</code>:</p>
+    <ApiTable TypeName="BelemetryMetricsOptions" />
+</div>
+
+@code {
+    private static readonly LogLevel[] _levels =
+    [
+        LogLevel.Trace, LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical,
+    ];
+
+    private bool _running;
+    private long _presses;
+    private double? _lastWork;
+    private long _cart;
+    private int _order = 1000;
+
+    private static bool IsWasmLog(TelemetryRecord r) => r.Source == "wasm" && r.Signal == "log";
+
+    private static bool IsWasmSpan(TelemetryRecord r) => r.Source == "wasm" && r.Signal == "span";
+
+    private static bool IsWasmMetric(TelemetryRecord r) => r.Source == "wasm" && r.Signal == "metric" && r.Name.StartsWith("demo.", StringComparison.Ordinal);
+
+    private void Log(LogLevel level)
+    {
+        try
+        {
+            _order++;
+            Logger.Log(level, "Order {OrderId} reached {Stage} at level {Level}", _order, "payment", level.ToString());
+        }
+        catch
+        {
+            // Telemetry must never take the page down.
+        }
+    }
+
+    private void LogWithScope()
+    {
+        try
+        {
+            _order++;
+            using (Logger.BeginScope(new Dictionary<string, object?> { ["tenant.id"] = "contoso", ["order.id"] = _order }))
+            {
+                Logger.LogInformation("Shipping label printed for {Carrier}", "DHL");
+            }
+        }
+        catch { }
+    }
+
+    private void LogException()
+    {
+        try
+        {
+            throw new TimeoutException("The payment provider did not answer within 5 s.");
+        }
+        catch (TimeoutException ex)
+        {
+            try { Logger.LogError(ex, "Payment for order {OrderId} failed", _order); } catch { }
+        }
+    }
+
+    private async Task RunCheckout()
+    {
+        _running = true;
+
+        try
+        {
+            using var checkout = DemoDiagnostics.Source.StartActivity("demo.checkout");
+            checkout?.SetTag("cart.items", 3);
+            checkout?.SetTag("payment.method", "card");
+
+            using (var validate = DemoDiagnostics.Source.StartActivity("demo.validate-cart"))
+            {
+                await Task.Delay(40);
+                validate?.AddEvent(new ActivityEvent("cart.validated"));
+            }
+
+            // HttpClient creates its own System.Net.Http span as a child of demo.checkout, and sends traceparent.
+            try { await Http.GetAsync("api/demo/echo"); } catch { }
+
+            using (var charge = DemoDiagnostics.Source.StartActivity("demo.charge-card"))
+            {
+                await Task.Delay(80);
+
+                try
+                {
+                    throw new InvalidOperationException("The card was declined.");
+                }
+                catch (InvalidOperationException ex)
+                {
+                    charge?.AddException(ex);
+                    charge?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                }
+            }
+
+            checkout?.SetStatus(ActivityStatusCode.Error, "Payment failed");
+        }
+        catch
+        {
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    private void Press(string button)
+    {
+        try
+        {
+            _presses++;
+            DemoDiagnostics.ButtonPresses.Add(1, new KeyValuePair<string, object?>("demo.button", button));
+        }
+        catch { }
+    }
+
+    private void RecordWork()
+    {
+        try
+        {
+            _lastWork = Random.Shared.Next(5, 900);
+            DemoDiagnostics.WorkDuration.Record(_lastWork.Value);
+        }
+        catch { }
+    }
+
+    private void Cart(int delta)
+    {
+        try
+        {
+            _cart += delta;
+            DemoDiagnostics.CartItems.Add(delta);
+        }
+        catch { }
+    }
+
+    private const string LoggingCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Logs.MinimumLevel = LogLevel.Information;    // the default
+            options.Logs.IncludeScopes = true;                   // the default
+            options.Logs.IncludeMessageTemplate = true;          // keeps "Order {OrderId} ..." as log.record.template
+            options.Logs.ExcludedCategories.Add("Microsoft.AspNetCore.Components.RenderTree");
+        });
+
+        // Anywhere: plain ILogger, no reference to Belemetry.
+        public sealed class CheckoutService(ILogger<CheckoutService> logger)
+        {
+            public void Ship(int orderId)
+            {
+                using (logger.BeginScope(new Dictionary<string, object?> { ["tenant.id"] = "contoso" }))
+                {
+                    // OrderId and Carrier become attributes; tenant.id comes from the scope.
+                    logger.LogInformation("Order {OrderId} shipped with {Carrier}", orderId, "DHL");
+                }
+            }
+        }
+        """;
+
+    private const string LoggingConfigCode = """
+        {
+          "Logging": {
+            "LogLevel": { "Default": "Information" },
+            "Belemetry": {
+              "LogLevel": {
+                "Default": "Information",
+                "Microsoft.AspNetCore": "Warning",
+                "MyApp.Payments": "Debug"
+              }
+            }
+          }
+        }
+        """;
+
+    private const string TracingCode = """
+        // Program.cs
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Traces.Sources.Add("MyApp*");          // MyApp, MyApp.Checkout, MyApp.Search, ...
+            options.Traces.SamplingRatio = 0.25;           // a quarter of new traces; children follow their parent
+        });
+
+        // Anywhere: plain System.Diagnostics, no reference to Belemetry.
+        public sealed class Checkout(HttpClient http)
+        {
+            private static readonly ActivitySource Source = new("MyApp.Checkout");
+
+            public async Task PlaceOrderAsync(Cart cart)
+            {
+                using var activity = Source.StartActivity("PlaceOrder");
+                activity?.SetTag("cart.items", cart.Items.Count);
+
+                await http.PostAsJsonAsync("api/orders", cart);     // a System.Net.Http child span
+
+                try
+                {
+                    await ChargeAsync(cart);
+                }
+                catch (Exception ex)
+                {
+                    activity?.AddException(ex);                  // an "exception" span event
+                    activity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                    throw;
+                }
+            }
+        }
+        """;
+
+    private const string MetricsCode = """
+        // Program.cs
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Metrics.Meters.Add("MyApp*");
+            options.Metrics.ExportInterval = TimeSpan.FromSeconds(30);
+            options.Metrics.Temporality = BelemetryMetricTemporality.Delta;      // for backends that want deltas
+            options.Metrics.HistogramBoundaries = [0, 10, 50, 100, 500, 1000];
+            options.Metrics.CardinalityLimit = 500;
+        });
+
+        // Anywhere: plain System.Diagnostics.Metrics.
+        public static class ShopMetrics
+        {
+            private static readonly Meter Meter = new("MyApp.Shop");
+
+            public static readonly Counter<long> Orders = Meter.CreateCounter<long>("shop.orders", "{order}");
+            public static readonly Histogram<double> CheckoutDuration = Meter.CreateHistogram<double>("shop.checkout.duration", "ms");
+            public static readonly UpDownCounter<long> CartItems = Meter.CreateUpDownCounter<long>("shop.cart.items", "{item}");
+        }
+
+        ShopMetrics.Orders.Add(1, new KeyValuePair<string, object?>("payment.method", "card"));
+        ShopMetrics.CheckoutDuration.Record(elapsed.TotalMilliseconds);
+        ShopMetrics.CartItems.Add(-1);
+        """;
+}

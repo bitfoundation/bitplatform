@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Tests.AzureMonitor;
+﻿namespace Bit.Belemetry.Tests.AzureMonitor;
 
 /// <summary>Golden checks of the Application Insights mapping documented in CLAUDE.md.</summary>
 [TestClass]

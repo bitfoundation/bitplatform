@@ -1,6 +1,6 @@
 ﻿import { describe, expect, it } from 'vitest';
 import { resolveConfig } from '../../Bit.Belemetry/Scripts/config.ts';
-import { applyPrivacy, luhn, redactUrl, scrub } from '../../Bit.Belemetry/Scripts/privacy.ts';
+import { applyPrivacy, luhn, redactUrl, scrub, scrubUrl } from '../../Bit.Belemetry/Scripts/privacy.ts';
 import { log, span } from './helpers.js';
 
 const privacy = (overrides = {}) => ({ ...resolveConfig().privacy, ...overrides });
@@ -85,5 +85,35 @@ describe('applyPrivacy', () => {
         const record = log({ body: 'a@b.io' });
         applyPrivacy(record, privacy({ scrubPatterns: false }));
         expect(record.body).toBe('a@b.io');
+    });
+
+    it('removes blocked attributes from records and span events (exact, case-sensitive keys)', () => {
+        const record = span({
+            attributes: { 'url.full': 'https://x.test/', 'tenant.secret': 's', 'Tenant.Secret': 'kept' },
+            events: [{ name: 'e', time: 1, attributes: { 'tenant.secret': 's', other: 1 } }],
+        });
+        applyPrivacy(record, privacy({ blockedAttributes: ['tenant.secret'] }));
+        expect(record.attributes).toEqual({ 'url.full': 'https://x.test/', 'Tenant.Secret': 'kept' });
+        expect(record.events[0].attributes).toEqual({ other: 1 });
+
+        const entry = log({ attributes: { 'tenant.secret': 's' } });
+        applyPrivacy(entry, privacy({ blockedAttributes: ['tenant.secret'] }));
+        expect(entry.attributes).toEqual({});
+    });
+
+    it('keeps the server host of URLs and server.address, IP literals included', () => {
+        const record = span({ attributes: { 'url.full': 'http://10.0.0.5:5000/orders/10.1.2.3?email=a@b.io', 'server.address': '10.0.0.5', 'client.address': '10.9.9.9' } });
+        applyPrivacy(record, privacy());
+        expect(record.attributes).toEqual({
+            'url.full': 'http://10.0.0.5:5000/orders/[ip]?email=REDACTED',
+            'server.address': '10.0.0.5',
+            'client.address': '[ip]',
+        });
+        expect(scrubUrl('https://user:pw@x.test/a/jane@example.com')).toBe('https://x.test/a/[email]');
+        expect(scrubUrl('from 10.0.0.1')).toBe('from [ip]');
+    });
+
+    it('blocks nothing by default', () => {
+        expect(resolveConfig().privacy.blockedAttributes).toEqual([]);
     });
 });

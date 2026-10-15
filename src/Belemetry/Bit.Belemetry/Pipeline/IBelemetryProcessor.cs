@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// Inspects, enriches or drops records on the .NET side before they are queued for export - including records

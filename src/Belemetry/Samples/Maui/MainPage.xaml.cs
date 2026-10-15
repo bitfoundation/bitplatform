@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Samples.Maui;
+﻿namespace Bit.Belemetry.Samples.Maui;
 
 public partial class MainPage
 {

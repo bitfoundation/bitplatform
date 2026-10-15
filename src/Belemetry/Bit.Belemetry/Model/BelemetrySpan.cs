@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// A finished span, shaped like the OTLP <c>Span</c> message. Produced from a stopped

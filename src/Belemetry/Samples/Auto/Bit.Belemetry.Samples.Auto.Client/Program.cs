@@ -1,4 +1,4 @@
-using Bit.Belemetry;
+﻿using Bit.Belemetry;
 using Bit.Belemetry.Samples.Core;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 

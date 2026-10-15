@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// The OpenTelemetry semantic-convention attribute and event names Belemetry emits and understands.

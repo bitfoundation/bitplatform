@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The OTLP span status code (numbered as in <c>opentelemetry/proto/trace/v1/trace.proto</c>).</summary>
 public enum BelemetryStatusCode

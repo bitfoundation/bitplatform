@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// Settings of an OTLP/HTTP exporter - the vendor-neutral OpenTelemetry protocol understood by the OpenTelemetry
@@ -29,8 +29,20 @@ public sealed class BelemetryOtlpExporterOptions
     /// </summary>
     public Uri? BrowserEndpoint { get; set; }
 
-    /// <summary>The payload encoding. Defaults to <see cref="BelemetryOtlpProtocol.HttpProtobuf"/>.</summary>
-    public BelemetryOtlpProtocol Protocol { get; set; } = BelemetryOtlpProtocol.HttpProtobuf;
+    private BelemetryOtlpProtocol? _protocol;
+
+    /// <summary>
+    /// The payload encoding. Defaults to <c>OTEL_EXPORTER_OTLP_PROTOCOL</c> when set (outside the browser), else
+    /// <see cref="BelemetryOtlpProtocol.HttpProtobuf"/>. A value set in code always wins over the variable.
+    /// </summary>
+    public BelemetryOtlpProtocol Protocol
+    {
+        get => _protocol ?? BelemetryOtlpProtocol.HttpProtobuf;
+        set => _protocol = value;
+    }
+
+    /// <summary>Whether <see cref="Protocol"/> was set explicitly (so the environment must not override it).</summary>
+    internal bool IsProtocolSet => _protocol.HasValue;
 
     /// <summary>Extra request headers (e.g. an API key). Merged with <c>OTEL_EXPORTER_OTLP_HEADERS</c> outside the browser.</summary>
     /// <remarks>Headers used by the browser exporter are visible to anyone who opens the page; prefer <see cref="BelemetryBrowserTransport.Relay"/> or a collector without credentials for browser traffic.</remarks>

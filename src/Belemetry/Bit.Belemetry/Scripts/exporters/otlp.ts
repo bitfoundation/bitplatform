@@ -1,7 +1,7 @@
 ﻿import type { OtlpExporterConfig } from '../config';
 import type { Transport } from '../transport';
 import { gzip } from '../transport';
-import type { Exporter } from './exporter';
+import { Signals, signalsOf, type Exporter } from './exporter';
 import { logsToJson, tracesToJson } from './otlp-json';
 import { encodeLogs, encodeTraces } from './otlp-proto';
 import { encodeUtf8 } from './protobuf';
@@ -19,6 +19,7 @@ export function createOtlpExporter(config: OtlpExporterConfig, transport: Transp
     const json = config.protocol === 'http/json';
     const contentType = json ? 'application/json' : 'application/x-protobuf';
     const compress = config.compression === 'gzip';
+    const signals = signalsOf(config);
 
     const send = async (url: string, body: Uint8Array, unload: boolean): Promise<void> => {
         let payload = body;
@@ -40,11 +41,11 @@ export function createOtlpExporter(config: OtlpExporterConfig, transport: Transp
         export(batch, unload) {
             // Both sends start synchronously (no await in between), which matters during unload.
             const sends: Promise<void>[] = [];
-            if (batch.spans.length) {
+            if (batch.spans.length && (signals & Signals.Traces)) {
                 const body = json ? encodeUtf8(JSON.stringify(tracesToJson(batch.resource, batch.spans, sdkVersion))) : encodeTraces(batch.resource, batch.spans, sdkVersion);
                 sends.push(send(urls.traces, body, unload));
             }
-            if (batch.logs.length) {
+            if (batch.logs.length && (signals & Signals.Logs)) {
                 const body = json ? encodeUtf8(JSON.stringify(logsToJson(batch.resource, batch.logs, sdkVersion))) : encodeLogs(batch.resource, batch.logs, sdkVersion);
                 sends.push(send(urls.logs, body, unload));
             }

@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>Data-minimization rules applied to every record, on both the browser and the .NET side, before it is queued.</summary>
 public sealed class BelemetryPrivacyOptions

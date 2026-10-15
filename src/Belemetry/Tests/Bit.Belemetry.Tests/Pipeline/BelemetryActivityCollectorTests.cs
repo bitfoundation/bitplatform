@@ -1,3 +1,5 @@
+﻿using System.Diagnostics.Metrics;
+
 namespace Bit.Belemetry.Tests.Pipeline;
 
 [TestClass]
@@ -270,6 +272,97 @@ public class BelemetryActivityCollectorTests
         using var wildcard = new ActivitySource("Tests.Wildcard." + Guid.NewGuid().ToString("N"));
         using var matched = wildcard.StartActivity("matched");
         Assert.IsNotNull(matched);
+    }
+
+    [TestMethod]
+    public async Task AspNetCoreRequestSpans_GetTheHttpConventions_FromTheHostingMetric()
+    {
+        await using var host = TestHost.Create(o =>
+        {
+            o.Host = BelemetryHostKind.Server;
+            o.Server.CollectDotnetTelemetry = true;
+        });
+        host.StartLogging();
+
+        // Stand-ins for what ASP.NET Core's hosting layer creates: same source, activity, meter and instrument names.
+        using var source = new ActivitySource("Microsoft.AspNetCore");
+        using var meter = new Meter(BelemetryAspNetCoreRequests.MeterName);
+        var duration = meter.CreateHistogram<double>(BelemetryAspNetCoreRequests.DurationInstrument, "s");
+
+        void Request(string method, string? route, int status, string? appName = null)
+        {
+            using var activity = source.StartActivity(BelemetryAspNetCoreRequests.ActivityName, ActivityKind.Server)!;
+            Assert.IsNotNull(activity);
+            if (appName is not null) activity.DisplayName = appName;
+            activity.SetTag(BelemetrySemanticConventions.UrlPath, "/already/set");
+
+            var tags = new TagList
+            {
+                { BelemetrySemanticConventions.UrlScheme, "https" },
+                { BelemetrySemanticConventions.HttpRequestMethod, method },
+                { BelemetrySemanticConventions.HttpResponseStatusCode, status },
+                { BelemetrySemanticConventions.UrlPath, "/from/the/metric" },
+            };
+            if (route is not null) tags.Add(BelemetrySemanticConventions.HttpRoute, route);
+            duration.Record(0.01, tags);
+        }
+
+        Request("GET", "/orders/{id}", 200);
+        Request("POST", null, 503);
+        Request("GET", "/health", 404, appName: "health probe");
+
+        await host.FlushAsync();
+        var spans = host.Memory.Spans.ToList();
+        Assert.HasCount(3, spans);
+
+        Assert.AreEqual("GET /orders/{id}", spans[0].Name);
+        Assert.AreEqual(BelemetrySpanKind.Server, spans[0].Kind);
+        Assert.AreEqual("GET", spans[0].Attributes.GetString(BelemetrySemanticConventions.HttpRequestMethod));
+        Assert.AreEqual("https", spans[0].Attributes.GetString(BelemetrySemanticConventions.UrlScheme));
+        Assert.AreEqual("/orders/{id}", spans[0].Attributes.GetString(BelemetrySemanticConventions.HttpRoute));
+        Assert.AreEqual(200L, spans[0].Attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode));
+        Assert.AreEqual("/already/set", spans[0].Attributes.GetString(BelemetrySemanticConventions.UrlPath), "A tag already on the activity wins.");
+        Assert.AreEqual(BelemetryStatusCode.Unset, spans[0].Status);
+
+        Assert.AreEqual("POST", spans[1].Name, "Without a route the name is the method alone.");
+        Assert.AreEqual(BelemetryStatusCode.Error, spans[1].Status, "A 5xx fails a server span.");
+
+        Assert.AreEqual("health probe", spans[2].Name, "A name the app gave the activity is kept.");
+        Assert.AreEqual(BelemetryStatusCode.Unset, spans[2].Status, "A 4xx is the client's error, not the server span's.");
+    }
+
+    [TestMethod]
+    public void AspNetCoreRequests_OnlyEnrichTheLiveRequestActivity()
+    {
+        using var source = new ActivitySource(NewSourceName());
+        using var listener = new ActivityListener
+        {
+            ShouldListenTo = s => s == source,
+            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+        };
+        ActivitySource.AddActivityListener(listener);
+
+        KeyValuePair<string, object?>[] tags = [new(BelemetrySemanticConventions.HttpRoute, "/x")];
+
+        using var other = source.StartActivity("SomethingElse")!;
+        BelemetryAspNetCoreRequests.Enrich(other, tags);
+        Assert.IsNull(other.GetTagItem(BelemetrySemanticConventions.HttpRoute));
+
+        var stopped = source.StartActivity(BelemetryAspNetCoreRequests.ActivityName)!;
+        stopped.Stop();
+        BelemetryAspNetCoreRequests.Enrich(stopped, tags);
+        Assert.IsNull(stopped.GetTagItem(BelemetrySemanticConventions.HttpRoute));
+
+        BelemetryAspNetCoreRequests.Enrich(null, tags);
+    }
+
+    [TestMethod]
+    public void AspNetCoreRequests_SpanName()
+    {
+        Assert.AreEqual("GET /orders/{id}", BelemetryAspNetCoreRequests.GetSpanName("GET", "/orders/{id}"));
+        Assert.AreEqual("GET", BelemetryAspNetCoreRequests.GetSpanName("GET", null));
+        Assert.AreEqual("HTTP", BelemetryAspNetCoreRequests.GetSpanName("_OTHER", ""));
+        Assert.IsNull(BelemetryAspNetCoreRequests.GetSpanName(null, "/x"));
     }
 
     [TestMethod]

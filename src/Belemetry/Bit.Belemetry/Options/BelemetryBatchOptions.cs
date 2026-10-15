@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>Batching of the .NET pipeline.</summary>
 public sealed class BelemetryBatchOptions

@@ -1,4 +1,4 @@
-body {
+﻿body {
     margin: 0;
     font-family: system-ui, sans-serif;
 }
@@ -25,6 +25,6 @@ body {
     margin: 0 0.25rem 0.25rem 0;
 }
 
-[data-belemetry-ignore] {
+[data-bit-belemetry-ignore] {
     display: inline-block;
 }

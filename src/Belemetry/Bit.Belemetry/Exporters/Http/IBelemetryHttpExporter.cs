@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>An exporter whose output is plain HTTP requests, which the shared sender delivers, retries and persists.</summary>
 internal interface IBelemetryHttpExporter
@@ -8,6 +8,12 @@ internal interface IBelemetryHttpExporter
 
     /// <summary>Serializes <paramref name="batch"/> into the requests that deliver it (none when there is nothing for this exporter).</summary>
     IEnumerable<BelemetryHttpRequest> CreateRequests(BelemetryBatch batch);
+
+    /// <summary>
+    /// The configured headers (e.g. an API key), read from the current options. Added to every request when it is sent,
+    /// never stored with it.
+    /// </summary>
+    IReadOnlyDictionary<string, string> Headers { get; }
 
     /// <summary>Adds what cannot be persisted with the request - e.g. a fresh access token - right before sending.</summary>
     ValueTask PrepareAsync(HttpRequestMessage message, CancellationToken cancellationToken);

@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>A persisted consent decision - the same shape as the browser's <c>bit-belemetry-consent</c> entry.</summary>
 internal sealed class BelemetryConsentRecord

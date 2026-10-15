@@ -30,6 +30,43 @@
     <File Path="../.github/workflows/sales.website.cd.yml" />
     <File Path="../.github/workflows/todo-sample.cd.yml" />
   </Folder>
+  <Folder Name="/Belemetry/">
+    <File Path="Belemetry/README.md" />
+    <Project Path="Belemetry/Bit.Belemetry/Bit.Belemetry.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Bit.Belemetry.Demo/">
+    <Project Path="Belemetry/Bit.Belemetry.Demo/Client/Bit.Belemetry.Demo.Client.csproj" />
+    <Project Path="Belemetry/Bit.Belemetry.Demo/Server/Bit.Belemetry.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/">
+    <Project Path="Belemetry/Samples/Core/Bit.Belemetry.Samples.Core.csproj" />
+    <Project Path="Belemetry/Samples/Maui/Bit.Belemetry.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Belemetry/Samples/Auto/">
+    <Project Path="Belemetry/Samples/Auto/Bit.Belemetry.Samples.Auto/Bit.Belemetry.Samples.Auto.csproj" />
+    <Project Path="Belemetry/Samples/Auto/Bit.Belemetry.Samples.Auto.Client/Bit.Belemetry.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/Server/">
+    <Project Path="Belemetry/Samples/Server/Bit.Belemetry.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/Wasm/">
+    <Project Path="Belemetry/Samples/Wasm/Bit.Belemetry.Samples.Wasm/Bit.Belemetry.Samples.Wasm.csproj" />
+    <Project Path="Belemetry/Samples/Wasm/Bit.Belemetry.Samples.Wasm.Client/Bit.Belemetry.Samples.Wasm.Client.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Tests/">
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests/Bit.Belemetry.Tests.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Mcp/Bit.Belemetry.Tests.Mcp.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Hosting/Bit.Belemetry.Tests.Hosting.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Tests/Harness/">
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Harness/Bit.Belemetry.Tests.Harness.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Harness.Web/Bit.Belemetry.Tests.Harness.Web.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Harness.Web.Client/Bit.Belemetry.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Harness.Hybrid/Bit.Belemetry.Tests.Harness.Hybrid.csproj" />
+  </Folder>
   <Folder Name="/Besql/">
     <File Path="Besql/README.md" />
     <Project Path="Besql/Bit.Besql/Bit.Besql.csproj" />

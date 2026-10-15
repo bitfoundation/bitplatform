@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>Exports over OTLP/HTTP, as protobuf or JSON.</summary>
 internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options, BelemetryMetricTemporality temporality, string name) : IBelemetryHttpExporter
@@ -8,6 +8,8 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
     public TimeSpan Timeout => options.Timeout;
 
     internal BelemetryOtlpExporterOptions Options => options;
+
+    public IReadOnlyDictionary<string, string> Headers => options.Headers;
 
     public IEnumerable<BelemetryHttpRequest> CreateRequests(BelemetryBatch batch)
     {
@@ -50,7 +52,6 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
             Url = url,
             ContentType = contentType,
             ContentEncoding = options.Compression == BelemetryCompression.Gzip ? "gzip" : null,
-            Headers = new Dictionary<string, string>(options.Headers, StringComparer.OrdinalIgnoreCase),
             Body = body,
         };
     }

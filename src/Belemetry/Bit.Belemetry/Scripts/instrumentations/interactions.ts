@@ -6,15 +6,15 @@ import { guard, type InstrumentationContext, type Uninstall } from './context';
 
 export const INTERACTION_SCOPE = 'bit.belemetry.interactions';
 
-const INTERACTIVE = 'a,button,[role=button],input[type=submit],input[type=button],[data-belemetry-name]';
+const INTERACTIVE = 'a,button,[role=button],input[type=submit],input[type=button],[data-bit-belemetry-name]';
 
-/** The nearest interactive ancestor of an event target, or null when there is none or it is under `[data-belemetry-ignore]`. */
+/** The nearest interactive ancestor of an event target, or null when there is none or it is under `[data-bit-belemetry-ignore]`. */
 export function resolveTarget(target: EventTarget | null): Element | null {
     let node = target as Node | null;
     if (node && node.nodeType !== 1) node = node.parentElement;
     const element = node as Element | null;
     if (!element || typeof element.closest !== 'function') return null;
-    if (element.closest('[data-belemetry-ignore]')) return null;
+    if (element.closest('[data-bit-belemetry-ignore]')) return null;
     return element.closest(INTERACTIVE);
 }
 
@@ -44,7 +44,7 @@ export function describeTarget(element: Element, eventType: string, config: Inte
         'target.element': element.nodeName.toLowerCase(),
     };
     if (element.id) attributes['target.id'] = element.id;
-    const name = element.getAttribute('data-belemetry-name') || element.getAttribute('aria-label') || element.getAttribute('name');
+    const name = element.getAttribute('data-bit-belemetry-name') || element.getAttribute('aria-label') || element.getAttribute('name');
     if (name) attributes['target.name'] = name;
     if (config.captureText && element.nodeName !== 'INPUT') {
         const text = (element.textContent || '').replace(/\s+/g, ' ').trim();

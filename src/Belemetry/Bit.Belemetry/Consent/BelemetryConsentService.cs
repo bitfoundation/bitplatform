@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The scoped <see cref="IBelemetryConsent"/>.</summary>
 internal sealed class BelemetryConsentService : IBelemetryConsent, IDisposable
@@ -19,9 +19,9 @@ internal sealed class BelemetryConsentService : IBelemetryConsent, IDisposable
 
     public BelemetryFeatures Available => _settings.ConfiguredFeatures;
 
-    public BelemetryFeatures Granted => _settings.IsServer
+    public BelemetryFeatures Granted => Available & (_settings.IsServer
         ? (BelemetryFeatures?)_bridge.Context?.Consent ?? _settings.Options.Consent.Default
-        : _state.Granted;
+        : _state.Granted);
 
     public bool IsDecided => _settings.IsServer ? _bridge.Context?.Decided ?? false : _state.IsDecided;
 
@@ -31,7 +31,8 @@ internal sealed class BelemetryConsentService : IBelemetryConsent, IDisposable
 
     public async ValueTask SetAsync(BelemetryFeatures features)
     {
-        features &= BelemetryFeatures.All;
+        // A grant of a feature the configuration switched off would be recorded but never collected.
+        features &= Available;
 
         if (_settings.IsServer is false)
         {

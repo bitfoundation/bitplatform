@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Tests.Harness;
+﻿namespace Bit.Belemetry.Tests.Harness;
 
 public static class HarnessRuntime
 {

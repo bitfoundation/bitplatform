@@ -1,4 +1,4 @@
-// The browser half of the harness: actions that must work without .NET interactivity (static SSR), and consent
+﻿// The browser half of the harness: actions that must work without .NET interactivity (static SSR), and consent
 // controlled from the URL. Loaded as a module right after <BelemetryScript />, so module order guarantees that
 // window.BitBelemetry exists and has already auto-started from the rendered configuration.
 

@@ -1,4 +1,4 @@
-@implements IDisposable
+﻿@implements IDisposable
 @inject IBelemetryConsent Consent
 
 @* The site's consent banner - the GDPR flow, live, on every page.
@@ -12,7 +12,7 @@
 
 @if (_ready && Consent.IsDecided is false)
 {
-    <section class="consent-banner" aria-label="Telemetry consent" data-belemetry-name="consent.banner">
+    <section class="consent-banner" aria-label="Telemetry consent" data-bit-belemetry-name="consent.banner">
         <div class="consent-banner-text">
             <strong>This site measures itself - for you to watch.</strong>
             <p>

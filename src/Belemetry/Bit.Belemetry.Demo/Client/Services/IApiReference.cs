@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Demo.Client.Services;
+﻿namespace Bit.Belemetry.Demo.Client.Services;
 
 /// <summary>
 /// Where the API tables get their rows. The server answers from the reflected catalog directly

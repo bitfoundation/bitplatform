@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Samples.Core;
+﻿namespace Bit.Belemetry.Samples.Core;
 
 /// <summary>What differs between the hosts the shared pages run in.</summary>
 public sealed class SampleSettings

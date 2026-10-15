@@ -74,7 +74,7 @@ public sealed record NavItem(
             "ConsentPage.razor"),
         new("Browser instrumentation", "browser", Collect,
             "Page views, interactions, web vitals, document load, resources, long tasks, fetch/XHR with traceparent, errors and console - each with a live trigger.",
-            "browser javascript page view click interaction web vitals lcp inp cls fcp ttfb document load resource long task fetch xhr traceparent error exception console trackevent trackpageview trackexception data-belemetry-name data-belemetry-ignore",
+            "browser javascript page view click interaction web vitals lcp inp cls fcp ttfb document load resource long task fetch xhr traceparent error exception console trackevent trackpageview trackexception data-bit-belemetry-name data-bit-belemetry-ignore",
             "BrowserPage.razor"),
         new(".NET instrumentation", "dotnet", Collect,
             "ILogger logs, ActivitySource traces and Meter metrics collected by the BCL listeners - levels, sources, sampling, temporality, buckets and the cardinality limit.",

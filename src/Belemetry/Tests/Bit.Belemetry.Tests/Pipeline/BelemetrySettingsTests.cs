@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Tests.Pipeline;
+﻿namespace Bit.Belemetry.Tests.Pipeline;
 
 // The environment is process-wide: these tests set and restore it, so they must not overlap with others.
 [TestClass]
@@ -146,12 +146,18 @@ public class BelemetrySettingsTests
         Environment.SetEnvironmentVariable("OTEL_SERVICE_NAME", "from-env");
         Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector.env:4318");
         Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_HEADERS", "x-api-key=env");
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_PROTOCOL", "http/json");
         Environment.SetEnvironmentVariable("APPLICATIONINSIGHTS_CONNECTION_STRING", ConnectionString);
 
         var settings = TestHost.CreateSettings(o =>
         {
             o.UseEnvironmentVariables = true;
-            o.AddOtlpExporter("http://explicit:4318", e => e.Headers["x-api-key"] = "explicit");
+            o.AddOtlpExporter("http://explicit:4318", e =>
+            {
+                e.Headers["x-api-key"] = "explicit";
+                // The default value, set explicitly: still a decision the environment must not overturn.
+                e.Protocol = BelemetryOtlpProtocol.HttpProtobuf;
+            });
             o.AddOtlpExporter();
             o.AddAzureMonitorExporter("InstrumentationKey=99999999-2222-3333-4444-555555555555");
             o.AddAzureMonitorExporter();
@@ -162,7 +168,8 @@ public class BelemetrySettingsTests
         Assert.AreEqual(new Uri("http://explicit:4318"), settings.OtlpExporters[0].Endpoint);
         Assert.AreEqual("explicit", settings.OtlpExporters[0].Headers["x-api-key"]);
         Assert.AreEqual(new Uri("http://collector.env:4318"), settings.OtlpExporters[1].Endpoint, "Only an unset endpoint comes from the environment.");
-        Assert.AreEqual(BelemetryOtlpProtocol.HttpProtobuf, settings.OtlpExporters[1].Protocol);
+        Assert.AreEqual(BelemetryOtlpProtocol.HttpProtobuf, settings.OtlpExporters[0].Protocol, "A protocol set in code wins over OTEL_EXPORTER_OTLP_PROTOCOL.");
+        Assert.AreEqual(BelemetryOtlpProtocol.HttpJson, settings.OtlpExporters[1].Protocol, "Only an unset protocol comes from the environment.");
 
         Assert.HasCount(2, settings.AzureMonitorExporters);
         StringAssert.Contains(settings.AzureMonitorExporters[0].ConnectionString, "99999999");

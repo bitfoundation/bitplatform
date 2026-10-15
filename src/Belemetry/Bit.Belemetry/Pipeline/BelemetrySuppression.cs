@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// Marks the current async flow as Belemetry's own work, so the HTTP calls an exporter makes are neither traced nor

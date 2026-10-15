@@ -1,4 +1,4 @@
-using Bit.Belemetry;
+﻿using Bit.Belemetry;
 
 namespace Bit.Belemetry.Demo.Client.Services;
 

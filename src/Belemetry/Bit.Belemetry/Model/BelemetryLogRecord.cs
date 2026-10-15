@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// A log record or event, shaped like the OTLP <c>LogRecord</c> message. Produced from <c>ILogger</c> entries,

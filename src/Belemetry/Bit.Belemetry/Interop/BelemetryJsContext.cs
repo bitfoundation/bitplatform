@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The consent and user context the browser script reports (<c>getContext()</c> / <c>Belemetry.ContextChanged</c>).</summary>
 internal sealed class BelemetryJsContext

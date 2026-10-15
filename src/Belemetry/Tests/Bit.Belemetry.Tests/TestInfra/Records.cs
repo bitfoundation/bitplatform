@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Tests;
+﻿namespace Bit.Belemetry.Tests;
 
 /// <summary>Factories for model records with well-known values.</summary>
 internal static class Records

@@ -8,7 +8,7 @@
        prerendering the HeadOutlet emits a real <title> element into this head. A second,
        earlier one would win in the served HTML (browsers and crawlers take the first). *@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Bit.Bmotion - a Blazor-native animation library inspired by Framer Motion: springs, gestures, variants, drag, layout and scroll animations, with all of the maths in C#." />
+    <meta name="description" content="bit Belemetry - one lightweight, OpenTelemetry-native telemetry SDK for every Blazor app: page views, web vitals, errors, fetch spans, ILogger, Activity and Meter, exported over OTLP or to Azure Monitor, with per-feature GDPR consent." />
     <meta name="color-scheme" content="light dark" />
     @* Painted behind the browser's own chrome on the platforms that colour it. Two declarations,
        one per scheme, so the bar matches the theme the page is actually in - the values are the
@@ -18,16 +18,18 @@
 
     @* What a link to the site looks like when it is shared. *@
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Bit.Bmotion" />
-    <meta property="og:title" content="Bmotion - a Blazor-native animation library" />
-    <meta property="og:description" content="Springs, gestures, layout animations and variants for Blazor. All of the maths in C#, none of the JavaScript wiring, and no animation library shipped alongside it." />
+    <meta property="og:site_name" content="bit Belemetry" />
+    <meta property="og:title" content="bit Belemetry - telemetry for every Blazor app" />
+    <meta property="og:description" content="Browser and .NET telemetry for Blazor, OpenTelemetry-native without the OpenTelemetry packages: OTLP, Azure Monitor, per-feature consent." />
+    <meta property="og:url" content="https://belemetry.bitplatform.dev" />
     <meta name="twitter:card" content="summary" />
 
     <link rel="icon" href="favicon.ico" type="image/x-icon" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/app.css" />
-    <link rel="stylesheet" href="css/motion-samples.css" />
+    <link rel="stylesheet" href="css/docs.css" />
+    <link rel="stylesheet" href="css/belemetry.css" />
 
     @* The theme is applied here, in the head, rather than from js/demo.js at the end of the body:
        the stylesheets key off the data-theme attribute, and setting it after the first paint would
@@ -44,25 +46,29 @@
         })();
     </script>
 
+    @* Belemetry's browser script, as early as possible: it starts before Blazor boots, so it sees the
+       initial page load, the web vitals and any early error. It writes its configuration (built from
+       the options registered in Program.cs) into the page and loads _content/Bit.Belemetry/bit-belemetry.js.
+       <BelemetryInitializer /> in Routes.razor connects it to .NET once the app is interactive. *@
+    <BelemetryScript />
+
     @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
     <HeadOutlet @rendermode="InteractiveWebAssembly" />
 </head>
 
 <body>
-    @* Prerendered on the server, then hydrated by the WebAssembly runtime. Bit.Bmotion is inert
-       during the prerender pass - it only touches the browser from OnAfterRenderAsync and event
-       handlers - so the markup is served with every element at its Initial state and the
-       animations start once the runtime takes over. See Layout/MainLayout.razor for the
-       RendererInfo-driven hydration hint. *@
+    @* Prerendered on the server, then hydrated by the WebAssembly runtime. The .NET half of Belemetry
+       runs in the browser from then on; the prerender pass only renders. See Layout/MainLayout.razor
+       for the RendererInfo-driven hydration hint. *@
     <Routes @rendermode="InteractiveWebAssembly" />
 
     <div id="blazor-error-ui">
         An unhandled error has occurred.
         <a href="." class="reload">Reload</a>
-        <span class="dismiss">🗙</span>
+        <span class="dismiss">&#x1F5D9;</span>
     </div>
 
-    @* Loaded before the Blazor script so the window.bm* helpers exist by the time the app boots. *@
+    @* Loaded before the Blazor script so the window.bl* helpers exist by the time the app boots. *@
     <script src="js/demo.js"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>

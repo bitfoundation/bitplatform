@@ -1,11 +1,11 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.Belemetry;
 
 /// <summary>Registration of Belemetry.</summary>
-public static class BitBelemetry
+public static class Belemetry
 {
     /// <summary>
     /// Registers Belemetry: the <c>ILogger</c> provider, the <c>Activity</c> and <c>Meter</c> collectors, the exporters,
@@ -34,9 +34,11 @@ public static class BitBelemetry
         {
             var settings = sp.GetRequiredService<BelemetrySettings>();
             var saved = BelemetryConsentFile.Load(settings);
+
+            // Narrowed to the configured features, as IBelemetryConsent.Granted and the script's grant are.
             return saved is null
-                ? new BelemetryConsentState(settings.Options.Consent.Default, decided: false)
-                : new BelemetryConsentState((BelemetryFeatures)saved.Features, decided: true);
+                ? new BelemetryConsentState(settings.Options.Consent.Default & settings.ConfiguredFeatures, decided: false)
+                : new BelemetryConsentState((BelemetryFeatures)saved.Features & settings.ConfiguredFeatures, decided: true);
         });
         services.TryAddSingleton<BelemetryBrowserBridgeRegistry>();
         services.TryAddSingleton<BelemetryPipeline>();

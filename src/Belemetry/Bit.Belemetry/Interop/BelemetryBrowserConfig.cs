@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// The configuration handed to the browser script, serialized camelCase (the "Browser config" contract in CLAUDE.md).
@@ -43,6 +43,8 @@ internal sealed class BelemetryBrowserConfig
         public string? Protocol { get; set; }
         public Dictionary<string, string>? Headers { get; set; }
         public string? Compression { get; set; }
+        /// <summary>The <see cref="BelemetrySignals"/> bits the browser sends (traces 1, logs 2); null means both.</summary>
+        public int? Signals { get; set; }
         public string? ConnectionString { get; set; }
         public bool? MaskIp { get; set; }
     }
@@ -101,6 +103,7 @@ internal sealed class BelemetryBrowserConfig
         public bool StripFragment { get; set; }
         public bool ScrubPatterns { get; set; }
         public bool CollectUserAgent { get; set; }
+        public List<string> BlockedAttributes { get; set; } = [];
     }
 
     internal sealed class SessionConfig
@@ -126,5 +129,6 @@ internal sealed class BelemetryBrowserConfig
         public bool Enabled { get; set; }
         public long MaxBytes { get; set; }
         public double MaxAgeHours { get; set; }
+        public int RetryIntervalMs { get; set; }
     }
 }

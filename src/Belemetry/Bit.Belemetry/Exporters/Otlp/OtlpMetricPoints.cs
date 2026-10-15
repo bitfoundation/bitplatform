@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>Picks the points of a metric that belong in an export of a given temporality.</summary>
 internal static class OtlpMetricPoints

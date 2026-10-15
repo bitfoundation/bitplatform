@@ -1,3 +1,4 @@
+﻿using Bit.Belemetry;
 using Bit.Belemetry.Demo.Client.Services;
 
 namespace Microsoft.Extensions.DependencyInjection;

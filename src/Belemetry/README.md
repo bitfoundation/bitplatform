@@ -1,4 +1,4 @@
-# bit Belemetry
+﻿# bit Belemetry
 
 One lightweight telemetry SDK for every Blazor app - WebAssembly, Server, Auto, static SSR and Hybrid (MAUI, WPF,
 WinForms) - covering **both sides** of the app:
@@ -132,11 +132,19 @@ builder.Services.AddBitBelemetryServices(options =>
 <BelemetryInitializer />
 ```
 
-Optionally add the script to `index.html` too, to capture what happens before Blazor starts:
+Optionally add the module to `index.html` too:
 
 ```html
 <script type="module" src="_content/Bit.Belemetry/bit-belemetry.js"></script>
 ```
+
+The browser then downloads it in parallel with the .NET runtime and `window.BitBelemetry` exists before Blazor starts,
+but the script itself only starts when `<BelemetryInitializer />` hands it the configuration. (It starts on load only
+from the `<script type="application/json" id="bit-belemetry-config">` element that `<BelemetryScript />` renders in a
+Blazor Web App; you can write that element into `index.html` yourself, in the shape of the browser config - it then
+fixes the exporters, and the later `start` from .NET only updates consent and the transport.) Starting late costs
+little: web vitals, the document-load span, resource timing and long tasks are read from the browser's buffered
+performance entries. What a late start misses is a JavaScript error thrown before it.
 
 ### Blazor Hybrid (MAUI, WPF, WinForms)
 
@@ -177,8 +185,8 @@ options.AddOtlpExporter(o =>
     o.Protocol = BelemetryOtlpProtocol.HttpProtobuf;            // or HttpJson
     o.Headers["x-honeycomb-team"] = "...";                       // vendor API keys
     o.Compression = BelemetryCompression.Gzip;
-    o.BrowserEndpoint = new Uri("https://otel.example.com");    // public, CORS-enabled route for the browser
-    o.Signals = BelemetrySignals.All;
+    o.BrowserEndpoint = new Uri("https://otel.example.com");    // public, CORS-enabled route for the browser (may be relative: "/otlp")
+    o.Signals = BelemetrySignals.All;                           // honored by the browser too (it sends traces and logs)
     // o.TracesEndpoint / LogsEndpoint / MetricsEndpoint: full per-signal URLs, used verbatim
 });
 ```
@@ -207,6 +215,8 @@ an API key, use a collector in between, or the [Relay transport](#transport-dire
 options.AddAzureMonitorExporter("InstrumentationKey=...;IngestionEndpoint=https://...", o =>
 {
     o.MaskIp = true;                     // default: ai.location.ip = 0.0.0.0, no IP-based geolocation
+    o.Compression = BelemetryCompression.Gzip;   // also from the browser (the endpoint's CORS allows Content-Encoding)
+    o.Signals = BelemetrySignals.All;    // honored by the browser too
     o.EnableLiveMetrics = true;          // Live Metrics stream (not in the browser)
     o.AccessTokenProvider = async ct =>  // Entra ID auth, for resources with local auth disabled
         (await credential.GetTokenAsync(new(["https://monitor.azure.com//.default"]), ct)).Token;
@@ -247,7 +257,9 @@ public sealed class MyExporter : IBelemetryExporter
 ## Consent and GDPR
 
 Every record belongs to one **feature**, and is only collected when the feature is enabled by configuration
-(`BelemetryOptions.Features`, all by default) **and** granted by the user.
+(`BelemetryOptions.Features`, all by default) **and** granted by the user. The grant never exceeds the configuration:
+`IBelemetryConsent.Granted` (and `getConsent()` in the browser) is always a subset of `Available`, and granting a
+feature the configuration switched off records nothing - so a feature you enable later needs the user's consent.
 
 | Feature | Covers |
 | --- | --- |
@@ -345,6 +357,10 @@ attributes, the active scopes (`Logs.IncludeScopes`), the exception (`exception.
 }
 ```
 
+Belemetry's own diagnostics are logged under the category `Bit.Belemetry`, which is never exported (an export failure
+would otherwise be exported by the pipeline it describes). Every other category is collected, including your own
+types in `Bit.Belemetry.*` namespaces; `Logs.ExcludedCategories` drops more by prefix.
+
 ### Traces
 
 Activities of the sources in `Traces.Sources` (default `System.Net.Http` and `Microsoft.AspNetCore.Components*`; a
@@ -394,11 +410,11 @@ options.Metrics.HistogramBoundaries = [0, 10, 50, 100, 500, 1000];
 | `FlushInterval`, `MaxBatchSize`, `MaxQueueSize` | 5 s, 100, 1024 | batching |
 | `Debug` | `false` | the script's own diagnostics in `console.debug` |
 
-Name interactions with `data-belemetry-name`, and keep a region out entirely with `data-belemetry-ignore`:
+Name interactions with `data-bit-belemetry-name`, and keep a region out entirely with `data-bit-belemetry-ignore`:
 
 ```html
-<button data-belemetry-name="checkout.pay">Pay</button>
-<section data-belemetry-ignore>...</section>
+<button data-bit-belemetry-name="checkout.pay">Pay</button>
+<section data-bit-belemetry-ignore>...</section>
 ```
 
 Input values are never read.
@@ -415,8 +431,14 @@ Applied on both sides before anything is queued (`options.Privacy.*`):
 - `ScrubPatterns` (on): e-mail addresses, JWTs, bearer tokens, card numbers (Luhn-checked) and IPv4 addresses are
   replaced in messages, stack traces and URLs.
 - `CollectUserAgent` (on): the user agent string in the browser resource.
-- `BlockedAttributes`: attribute keys removed from every record.
+- `BlockedAttributes`: attribute keys (exact, case-sensitive) removed from every record and span event, by the
+  script and by .NET. The ids added afterwards (`session.id`, `enduser.pseudo.id`, `user.id`) are governed by consent.
 - Azure Monitor's `MaskIp` (on) stops IP-based geolocation; Belemetry never adds the client IP itself.
+
+IP scrubbing leaves the **host** of a URL and `server.address` alone, even when they are IP literals: they name the
+server that was called (`http://10.0.0.5:5000/api` stays readable in a dependency), not the user. The rest of the URL
+is still scrubbed, credentials in a URL are always dropped, and IPs in any other text (messages, stack traces,
+`client.address` in the browser) are replaced with `[ip]`.
 
 ---
 
@@ -444,9 +466,14 @@ Processors run on every .NET-side record, including those relayed from the brows
 ## Offline persistence
 
 With `Persistence` consent and `options.Persistence.Enabled` (default), requests that fail with a network error or a
-retryable status (408, 429, 439, 5xx) are kept - in `localStorage` in the browser (`BrowserMaxBytes`, 1 MB), in
-files in Hybrid and on servers (`Directory`, `MaxBytes` 20 MB) - and retried every `RetryInterval` and when the
-browser comes back online, for up to `MaxAge` (48 h).
+retryable status (408, 429, 439, 500, 502, 503 or 504; other statuses are dropped) are kept - in `localStorage` in the
+browser (`BrowserMaxBytes`, 1 MB), in files in Hybrid and on servers (`Directory`, `MaxBytes` 20 MB) - and retried
+every `RetryInterval` (1 min, on both sides), when the page starts and when the browser comes back online, for up to
+`MaxAge` (48 h).
+
+Stored requests never contain headers, so API keys are not written to disk or `localStorage`. The exporter's current
+headers are added when a stored request is sent, so a rotated key applies to the backlog too. (In WebAssembly, a .NET
+request stored by the browser is resent with the headers of the browser exporter posting to the same URL.)
 
 ---
 
@@ -463,6 +490,14 @@ options.Server.Features = BelemetryFeatures.Errors | BelemetryFeatures.Logs | Be
 
 The server pipeline serves every user at once, so it is governed by `Server.Features` (operator telemetry), not by
 any one user's consent. User consent keeps governing the browser script and the `IBelemetry` calls of each circuit.
+
+ASP.NET Core's request activity (`Microsoft.AspNetCore.Hosting.HttpRequestIn`) carries no HTTP tags of its own on
+.NET 8 and 9. Belemetry fills them in without a middleware or a reference to ASP.NET Core, from the tags ASP.NET Core
+puts on its `http.server.request.duration` measurement: `http.request.method`, `url.scheme`, `http.route`,
+`http.response.status_code`, `network.protocol.version` and `error.type`. The span is named `{method} {route}` (or
+`{method}` without a route, unless the app renamed the activity), and a 5xx marks it as an error. On .NET 10 Belemetry
+also turns off ASP.NET Core's `Microsoft.AspNetCore.Hosting.SuppressActivityOpenTelemetryData` switch (unless the app
+set it either way), which adds `url.path`, `server.address` and `server.port`.
 
 ---
 
@@ -481,7 +516,8 @@ any one user's consent. User consent keeps governing the browser script and the 
 ## Environment variables
 
 Outside the browser, with `options.UseEnvironmentVariables` (default on), the standard variables fill in what the code
-leaves unset - this is how the Aspire AppHost and most container platforms wire telemetry in:
+leaves unset - this is how the Aspire AppHost and most container platforms wire telemetry in. A value set in code
+always wins, as in the OpenTelemetry SDKs (headers merge per key):
 
 | Variable | Effect |
 | --- | --- |
@@ -489,7 +525,7 @@ leaves unset - this is how the Aspire AppHost and most container platforms wire 
 | `OTEL_RESOURCE_ATTRIBUTES` | extra resource attributes (`k=v,k2=v2`) |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | adds an OTLP exporter when none is configured, and fills unset endpoints |
 | `OTEL_EXPORTER_OTLP_HEADERS` | OTLP headers (`k=v,k2=v2`) |
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | `http/protobuf` or `http/json` |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `http/protobuf` or `http/json`, for exporters whose `Protocol` is not set in code |
 | `APPLICATIONINSIGHTS_CONNECTION_STRING` | adds an Azure Monitor exporter when none is configured |
 
 ---
@@ -527,9 +563,15 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 | Other logs | `traces` |
 | Metrics | `customMetrics` (deltas; histograms with count, min, max) |
 
-Tags: `ai.cloud.role` (`[service.namespace]/service.name`), `ai.cloud.roleInstance`, `ai.operation.id` (trace id),
-`ai.operation.parentId`, `ai.session.id`, `ai.user.id` (pseudo id), `ai.user.authUserId` (user id),
-`ai.application.ver`, `ai.location.ip` (`0.0.0.0` with `MaskIp`).
+Tags: `ai.cloud.role` (`[service.namespace]/service.name`, or `service.name` alone - as the Azure Monitor
+OpenTelemetry exporter writes it), `ai.cloud.roleInstance`, `ai.application.ver` (`service.version`), `ai.user.agent`
+(browser), `ai.device.type` (`Browser`, `PC` or `Phone`), `ai.operation.id` (trace id), `ai.operation.parentId`,
+`ai.operation.name` (requests: `{method} {route}` or the span name; page views: the page name), `ai.session.id`,
+`ai.user.id` (pseudo id), `ai.user.authUserId` (user id), `ai.location.ip` (`0.0.0.0` with `MaskIp`),
+`ai.internal.sdkVersion`.
+
+Retried statuses: 408, 429, 439, 500, 502, 503 and 504, and, in a 206 partial success, only the items rejected with
+one of them.
 
 ---
 
@@ -538,7 +580,7 @@ Tags: `ai.cloud.role` (`[service.namespace]/service.name`), `ai.cloud.roleInstan
 `bit-belemetry.js` is an ES module and also sets `window.BitBelemetry`:
 
 ```js
-BitBelemetry.setConsent(BitBelemetry.Features?.All ?? 4095);
+BitBelemetry.setConsent(Belemetry.Features?.All ?? 4095);
 BitBelemetry.trackEvent('video.played', { 'video.id': 'intro' });
 BitBelemetry.setUser('42');
 await BitBelemetry.flush();

@@ -117,7 +117,11 @@ internal sealed class BelemetryHttpSender : IDisposable
         if (encoding is not null) content.Headers.ContentEncoding.Add(encoding);
 
         var message = new HttpRequestMessage(HttpMethod.Post, request.Url) { Content = content };
-        foreach (var (name, value) in request.Headers)
+
+        // The exporter's current headers, not ones stored with the request: persisted requests carry none (no secrets
+        // on disk), and a replayed request must use today's API key, not the one it was created with.
+        var headers = request.Headers is { Count: > 0 } ? request.WithHeaders(exporter.Headers).Headers! : exporter.Headers;
+        foreach (var (name, value) in headers)
         {
             if (message.Headers.TryAddWithoutValidation(name, value) is false) content.Headers.TryAddWithoutValidation(name, value);
         }

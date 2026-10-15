@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// Manual telemetry from C#: custom events, page views and handled exceptions, the authenticated user, and flushing.

@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// Encodes batches as OTLP <c>Export{Trace,Logs,Metrics}ServiceRequest</c> protobuf messages. Field numbers follow

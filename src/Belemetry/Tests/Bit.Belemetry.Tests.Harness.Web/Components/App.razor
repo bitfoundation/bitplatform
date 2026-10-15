@@ -1,0 +1,31 @@
+﻿@inject IConfiguration Configuration
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <base href="/" />
+    @* An empty icon: the default /favicon.ico request would 404 and trip the suites' console-error check. *@
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="_content/Bit.Belemetry.Tests.Harness/harness.css" />
+    <title>Belemetry harness (@Mode)</title>
+    @* Statically rendered in every mode, so the script starts (and holds records until consent) before Blazor boots. *@
+    <BelemetryScript />
+    @* After the Belemetry module: module scripts run in document order, so window.BitBelemetry is up when it runs. *@
+    <script type="module" src="_content/Bit.Belemetry.Tests.Harness/harness.js"></script>
+</head>
+
+<body data-mode="@Mode">
+    <HarnessApp @rendermode="RenderMode" />
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>
+
+@code {
+    private string Mode => Configuration[HarnessRenderModes.ConfigurationKey] ?? HarnessRenderModes.Auto;
+
+    private IComponentRenderMode? RenderMode => HarnessRenderModes.Resolve(Mode);
+}

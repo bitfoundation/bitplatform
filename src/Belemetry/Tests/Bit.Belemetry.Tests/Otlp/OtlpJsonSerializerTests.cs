@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Tests.Otlp;
+﻿namespace Bit.Belemetry.Tests.Otlp;
 
 /// <summary>The OTLP/JSON rules: lowerCamelCase names, hex ids, enums as numbers, 64-bit integers as strings.</summary>
 [TestClass]

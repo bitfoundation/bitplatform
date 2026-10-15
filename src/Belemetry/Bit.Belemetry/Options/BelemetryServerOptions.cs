@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// The server side (Blazor Server, static SSR, the server half of Auto). By default Belemetry only serves the browser

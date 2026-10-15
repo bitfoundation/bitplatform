@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Tests.AzureMonitor;
+﻿namespace Bit.Belemetry.Tests.AzureMonitor;
 
 [TestClass]
 public class AzureMonitorConnectionStringTests

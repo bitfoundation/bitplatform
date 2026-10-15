@@ -1,0 +1,236 @@
+﻿@page "/exporters"
+
+<PageTitle>Console, in-memory and custom exporters - bit Belemetry</PageTitle>
+
+<h1>Console, in-memory and custom exporters</h1>
+
+<p class="page-intro">
+    Besides OTLP and Azure Monitor, Belemetry ships a console exporter for development and an in-memory exporter for
+    tests and in-app viewers, and takes any <code>IBelemetryExporter</code> of your own. All of them can be combined
+    with the others: every exporter receives every batch.
+</p>
+
+<div class="demo-section">
+    <h2>Console</h2>
+    <p>
+        <code>AddConsoleExporter</code> prints one line per span, log record and metric point - the kind, the name, the
+        duration or severity, the ids and the attributes. The .NET side writes to the process's standard output, which
+        in WebAssembly is the browser's console; with <code>IncludeInBrowser</code> (on by default) the browser script
+        prints its own records there as well. <code>Signals</code> (all three by default) narrows it down when the output gets noisy. It is a
+        development tool: keep it out of production builds.
+    </p>
+    <CodeSnippet Code="@ConsoleCode" Language="C#" Expanded="true" />
+    <CodeSnippet Code="@ConsoleOutput" Language="Text" />
+</div>
+
+<div class="demo-section">
+    <h2>In-memory</h2>
+    <p>
+        <code>BelemetryInMemoryExporter</code> keeps what it is handed in three queues - <code>Spans</code>,
+        <code>Logs</code> and <code>Metrics</code>, oldest first, each capped at the <code>capacity</code> passed to
+        its constructor (1000) - plus the <code>LastResource</code>, and raises <code>Exported</code> after every
+        batch. <code>Clear()</code> empties it. Because it sees records exactly as the other exporters do - after
+        consent, privacy rules and processors - it is the way to assert on telemetry in a test.
+    </p>
+    <CodeSnippet Code="@TestCode" Language="C#" Expanded="true" />
+    <p>
+        The same exporter backs an in-app telemetry viewer - a diagnostics page in an internal tool, or a support
+        panel in a Hybrid app. Register the instance as a service too, so components can read it.
+        <code>Exported</code> is raised by the export loop, not by the renderer, so marshal back with
+        <code>InvokeAsync</code> before rendering.
+    </p>
+    <CodeSnippet Code="@ViewerSetupCode" Language="C#" />
+    <CodeSnippet Code="@ViewerCode" Language="Razor" />
+</div>
+
+<div class="demo-section">
+    <h2>Your own exporter</h2>
+    <p>
+        Implement <code>IBelemetryExporter</code> - a <code>Name</code> for diagnostics and
+        <code>ExportAsync</code> - and add an instance with <code>options.AddExporter</code>. A
+        <code>BelemetryBatch</code> holds the records that share one <code>Resource</code>: <code>Spans</code>,
+        <code>Logs</code> and <code>Metrics</code>, already shaped like their OTLP messages (see the model types
+        <code>BelemetrySpan</code>, <code>BelemetryLogRecord</code> and <code>BelemetryMetric</code>).
+    </p>
+    <ul>
+        <li>
+            Calls are serialized: the pipeline never calls <code>ExportAsync</code> on one exporter concurrently, so
+            no locking is needed inside it.
+        </li>
+        <li>
+            It runs with Belemetry's own instrumentation suppressed: the <code>HttpClient</code> calls it makes are
+            not traced. In WebAssembly <code>HttpClient</code> goes through the browser's <code>fetch</code>, so add
+            the exporter's URL to <code>options.Browser.IgnoreUrls</code> as well, or the script records each export
+            as a dependency.
+        </li>
+        <li>
+            Each call gets a cancellation token that fires after 30 seconds. An exception is caught and reported in
+            Belemetry's diagnostics (<code>options.Debug</code>); it never reaches the app.
+        </li>
+        <li>
+            Retries and offline persistence belong to the built-in HTTP exporters. A custom exporter's
+            <code>BelemetryExportResult.Failure</code> is not retried, so retry inside <code>ExportAsync</code> if the
+            records matter.
+        </li>
+        <li>
+            Custom exporters are .NET-side only. Browser records reach one when they travel through .NET - with the
+            Relay transport - but not when the script exports them directly.
+        </li>
+    </ul>
+    <CodeSnippet Code="@CustomCode" Language="C#" Expanded="true" />
+    <CodeSnippet Code="@CustomSetupCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="IBelemetryExporter" />
+    <ApiTable TypeName="BelemetryInMemoryExporter" />
+    <ApiTable TypeName="BelemetryConsoleExporterOptions" />
+</div>
+
+@code {
+    private const string ConsoleCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            if (builder.Environment.IsDevelopment())
+            {
+                options.AddConsoleExporter(console =>
+                {
+                    console.Signals = BelemetrySignals.Traces | BelemetrySignals.Logs;
+                    console.IncludeInBrowser = true;      // the default
+                });
+            }
+        });
+        """;
+
+    private const string ConsoleOutput = """
+        [belemetry] span MyApp Client GET (12.4 ms) trace=4bf92f3577b34da6a3ce929d0e0e4736 span=00f067aa0ba902b7 {http.request.method=GET, url.full=https://localhost:5001/api/orders, ...}
+        [belemetry] log MyApp Information Order 1042 shipped with DHL {OrderId=1042, Carrier=DHL, ...}
+        [belemetry] metric MyApp shop.orders 3 {order} {payment.method=card}
+        """;
+
+    private const string TestCode = """
+        using Bit.Belemetry;
+        using Microsoft.Extensions.DependencyInjection;
+        using Microsoft.Extensions.Logging;
+
+        [TestClass]
+        public sealed class CheckoutTelemetryTests
+        {
+            [TestMethod]
+            public async Task Checkout_records_an_event()
+            {
+                var memory = new BelemetryInMemoryExporter();
+
+                var services = new ServiceCollection();
+                services.AddLogging();
+                services.AddBitBelemetryServices(options =>
+                {
+                    options.ServiceName = "checkout-tests";
+                    options.UseEnvironmentVariables = false;       // the test machine's OTEL_* must not leak in
+                    options.Consent.Default = BelemetryFeatures.All; // no user to ask in a test
+                    options.Consent.Persist = false;
+                    options.Persistence.Enabled = false;
+                    options.AddExporter(memory);
+                });
+
+                await using var provider = services.BuildServiceProvider();
+
+                // Building the logger factory starts the collectors, as it does when a host starts.
+                _ = provider.GetRequiredService<ILoggerFactory>();
+
+                await using var scope = provider.CreateAsyncScope();
+                var belemetry = scope.ServiceProvider.GetRequiredService<IBelemetry>();
+
+                belemetry.TrackEvent("checkout.completed", new Dictionary<string, object?> { ["cart.items"] = 3 });
+                await belemetry.FlushAsync();
+
+                var log = memory.Logs.Single(l => l.EventName == "checkout.completed");
+                Assert.AreEqual(3L, log.Attributes.GetInt64("cart.items"));
+                Assert.AreEqual("checkout-tests", memory.LastResource?.ServiceName);
+            }
+        }
+        """;
+
+    private const string ViewerSetupCode = """
+        var memory = new BelemetryInMemoryExporter(capacity: 200);
+        builder.Services.AddSingleton(memory);
+
+        builder.Services.AddBitBelemetryServices(options => options.AddExporter(memory));
+        """;
+
+    private const string ViewerCode = """
+        @implements IDisposable
+        @inject BelemetryInMemoryExporter Memory
+
+        <ul>
+            @foreach (var log in Memory.Logs.Reverse().Take(20))
+            {
+                <li>@log.SeverityText @(log.EventName ?? log.Body)</li>
+            }
+        </ul>
+
+        @code {
+            protected override void OnInitialized() => Memory.Exported += OnExported;
+
+            // Raised by the export loop, not the renderer.
+            private void OnExported(BelemetryBatch batch) => _ = InvokeAsync(StateHasChanged);
+
+            public void Dispose() => Memory.Exported -= OnExported;
+        }
+        """;
+
+    private const string CustomCode = """
+        using System.Net.Http.Json;
+        using Bit.Belemetry;
+
+        /// <summary>Posts every error of a batch to an incident webhook.</summary>
+        public sealed class IncidentWebhookExporter(HttpClient http, Uri webhook) : IBelemetryExporter
+        {
+            public string Name => "incident-webhook";
+
+            public async ValueTask<BelemetryExportResult> ExportAsync(BelemetryBatch batch, CancellationToken cancellationToken)
+            {
+                var incidents = batch.Logs
+                    .Where(log => log.HasException || log.Severity >= BelemetrySeverity.Error)
+                    .Select(log => new
+                    {
+                        service = batch.Resource.ServiceName,
+                        time = DateTimeOffset.FromUnixTimeMilliseconds(log.TimeUnixNano / 1_000_000),
+                        type = log.Attributes.GetString(BelemetrySemanticConventions.ExceptionType),
+                        message = log.Attributes.GetString(BelemetrySemanticConventions.ExceptionMessage) ?? log.Body,
+                        traceId = log.TraceId,
+                        sessionId = log.Attributes.GetString(BelemetrySemanticConventions.SessionId),
+                    })
+                    .ToList();
+
+                // An empty batch is a success: there was nothing to deliver.
+                if (incidents.Count == 0) return BelemetryExportResult.Success;
+
+                try
+                {
+                    using var response = await http.PostAsJsonAsync(webhook, incidents, cancellationToken);
+                    return response.IsSuccessStatusCode ? BelemetryExportResult.Success : BelemetryExportResult.Failure;
+                }
+                catch (HttpRequestException)
+                {
+                    return BelemetryExportResult.Failure;
+                }
+            }
+        }
+        """;
+
+    private const string CustomSetupCode = """
+        using System.Text.RegularExpressions;
+
+        var webhook = new Uri("https://hooks.example.com/incidents");
+
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.AddExporter(new IncidentWebhookExporter(new HttpClient(), webhook));
+
+            // WebAssembly only: the script would otherwise record each export as a fetch span.
+            options.Browser.IgnoreUrls.Add(Regex.Escape(webhook.ToString()));
+        });
+        """;
+}

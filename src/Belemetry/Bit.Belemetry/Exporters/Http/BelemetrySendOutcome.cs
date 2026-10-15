@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>What happened to a request the sender tried to deliver.</summary>
 internal enum BelemetrySendOutcome

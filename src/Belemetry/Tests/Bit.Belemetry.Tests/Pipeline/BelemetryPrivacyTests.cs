@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Tests.Pipeline;
+﻿namespace Bit.Belemetry.Tests.Pipeline;
 
 [TestClass]
 public class BelemetryPrivacyTests
@@ -94,5 +94,22 @@ public class BelemetryPrivacyTests
         privacy.Apply(log);
         Assert.AreEqual("login by [email] from [ip]", log.Body);
         Assert.AreEqual("at X() Bearer [token]", log.Attributes["exception.stacktrace"]);
+    }
+
+    [TestMethod]
+    public void Urls_KeepTheirHost_AndLoseTheirCredentials()
+    {
+        var privacy = Create();
+
+        Assert.AreEqual("http://10.0.0.5:5000/orders/[ip]?email=REDACTED", privacy.RedactUrl("http://10.0.0.5:5000/orders/10.1.2.3?email=a@b.io"));
+        Assert.AreEqual("https://x.test/a/[email]", privacy.RedactUrl("https://user:p%40ss@x.test/a/jane@example.com"));
+        Assert.AreEqual("http://192.168.1.1", privacy.RedactUrl("http://192.168.1.1"));
+        Assert.AreEqual("from [ip]?a=1", privacy.RedactUrl("from 10.0.0.1?a=1"), "Not a URL: scrubbed whole.");
+
+        var span = Records.Span();
+        span.Attributes.Set("url.full", "http://10.0.0.5:8080/api").Set("server.address", "10.0.0.5");
+        privacy.Apply(span);
+        Assert.AreEqual("http://10.0.0.5:8080/api", span.Attributes["url.full"]);
+        Assert.AreEqual("10.0.0.5", span.Attributes["server.address"]);
     }
 }

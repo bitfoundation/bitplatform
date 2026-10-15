@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <!-- One Blazor Web App that serves the harness in any render mode, chosen at startup with BelemetryHarness:Mode
          (see HarnessRenderModes), and hosts the capturing receiver (/test-collector) every harness host exports to.

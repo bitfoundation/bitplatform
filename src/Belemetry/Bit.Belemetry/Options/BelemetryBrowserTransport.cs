@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>How browser telemetry leaves the page.</summary>
 public enum BelemetryBrowserTransport

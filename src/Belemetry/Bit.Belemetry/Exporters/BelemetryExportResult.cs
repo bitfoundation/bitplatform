@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The outcome of an export.</summary>
 public enum BelemetryExportResult

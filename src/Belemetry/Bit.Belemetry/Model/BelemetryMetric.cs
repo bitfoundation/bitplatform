@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// One collection of a metric stream, shaped like the OTLP <c>Metric</c> message: an instrument with one

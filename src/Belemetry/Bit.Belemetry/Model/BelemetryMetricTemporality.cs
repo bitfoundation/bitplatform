@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The OTLP aggregation temporality (numbered as in <c>opentelemetry/proto/metrics/v1/metrics.proto</c>).</summary>
 public enum BelemetryMetricTemporality

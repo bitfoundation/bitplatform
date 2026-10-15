@@ -1,4 +1,4 @@
-using Bit.Belemetry;
+﻿using Bit.Belemetry;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);

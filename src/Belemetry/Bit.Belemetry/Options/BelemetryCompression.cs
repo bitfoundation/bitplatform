@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The request-body compression an exporter applies.</summary>
 public enum BelemetryCompression

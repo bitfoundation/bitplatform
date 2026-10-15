@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The OTLP transport encoding.</summary>
 public enum BelemetryOtlpProtocol

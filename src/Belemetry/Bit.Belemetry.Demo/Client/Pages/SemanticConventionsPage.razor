@@ -1,0 +1,314 @@
+﻿@page "/semantic-conventions"
+
+<PageTitle>Semantic conventions - bit Belemetry</PageTitle>
+
+<h1>Semantic conventions</h1>
+
+<p class="page-intro">
+    Belemetry follows the OpenTelemetry data model and its semantic conventions, so a page view, a fetch or an
+    exception arrives with the attribute names every OTLP backend already knows how to query. This page is the
+    reference: what each record looks like, the resource that describes where it came from, the feature bit it
+    belongs to, and what the script keeps in browser storage.
+</p>
+
+<div class="demo-section">
+    <h2>Feature bits</h2>
+    <p>
+        Every record belongs to exactly one feature, and is only collected while that feature is both switched on
+        by configuration (<code>options.Features</code>) and granted by the user. The numbers are the same in C#
+        (<code>BelemetryFeatures</code>) and in the script (<code>Features</code>), and they are what
+        <code>BitBelemetry.setConsent</code> takes.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Name</th><th scope="col">Bit</th><th scope="col">Covers</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>Errors</code></td><td>1</td><td>JS errors and unhandled rejections; .NET logs at Error/Critical or carrying an exception; <code>TrackException</code></td></tr>
+                <tr><td><code>PageViews</code></td><td>2</td><td>Page views (history/enhanced navigation, <code>TrackPageView</code>)</td></tr>
+                <tr><td><code>Interactions</code></td><td>4</td><td>Clicks and other user interactions</td></tr>
+                <tr><td><code>Performance</code></td><td>8</td><td>Web vitals (LCP, INP, CLS, FCP, TTFB), document-load span, resource timing, long tasks</td></tr>
+                <tr><td><code>Dependencies</code></td><td>16</td><td>Browser fetch/XHR client spans</td></tr>
+                <tr><td><code>Sessions</code></td><td>32</td><td>A session id that survives reloads (in <code>sessionStorage</code>). Without it, the session id lives in memory only</td></tr>
+                <tr><td><code>UserTracking</code></td><td>64</td><td><code>enduser.pseudo.id</code> (random id persisted in <code>localStorage</code>) and <code>user.id</code> (authenticated id from <code>SetUser</code>)</td></tr>
+                <tr><td><code>Logs</code></td><td>128</td><td>.NET logs below Error; browser console capture below error</td></tr>
+                <tr><td><code>Traces</code></td><td>256</td><td>.NET <code>Activity</code> spans</td></tr>
+                <tr><td><code>Metrics</code></td><td>512</td><td>.NET <code>Meter</code> metrics</td></tr>
+                <tr><td><code>Persistence</code></td><td>1024</td><td>Keeping unsent telemetry on the device (<code>localStorage</code> / files) for retry after going offline or reloading</td></tr>
+                <tr><td><code>Events</code></td><td>2048</td><td>Custom events (<code>TrackEvent</code>)</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Group</th><th scope="col">Value</th><th scope="col">Members</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>Diagnostics</code></td><td>401</td><td>Errors, Logs, Traces, Dependencies</td></tr>
+                <tr><td><code>Analytics</code></td><td>2150</td><td>PageViews, Interactions, Sessions, UserTracking, Events</td></tr>
+                <tr><td><code>Monitoring</code></td><td>520</td><td>Performance, Metrics</td></tr>
+                <tr><td><code>All</code></td><td>4095</td><td>Every feature</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <ApiTable TypeName="BelemetryFeatures" />
+</div>
+
+<div class="demo-section">
+    <h2>Browser records</h2>
+    <p>
+        Events are log records with an <code>eventName</code>, the way the OpenTelemetry Events API models them.
+        Spans use the OTLP span kinds (1 internal, 2 server, 3 client) and status codes (0 unset, 1 ok, 2 error),
+        and log severities use the OTLP <code>SeverityNumber</code>. Times are milliseconds since the Unix epoch,
+        from <code>performance.timeOrigin + performance.now()</code>.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Record</th><th scope="col">Shape</th><th scope="col">Scope</th><th scope="col">Feature</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Page view</td>
+                    <td>Log record, <code>eventName = "browser.page_view"</code>. Attributes: <code>url.full</code>, <code>url.path</code>, <code>page.title</code>, <code>page.referrer</code> (redacted), <code>browser.navigation.type</code> (<code>initial</code>/<code>push</code>/<code>replace</code>/<code>pop</code>/<code>hash</code>/<code>manual</code>)</td>
+                    <td><code>bit.belemetry.page_views</code></td>
+                    <td>PageViews</td>
+                </tr>
+                <tr>
+                    <td>Click</td>
+                    <td>Log record, <code>eventName = "browser.user_interaction"</code>. Attributes: <code>event.type</code>, <code>target.element</code>, <code>target.id</code>, <code>target.name</code> (<code>data-bit-belemetry-name</code>, <code>aria-label</code>, then <code>name</code>), <code>target.text</code> (only with <code>captureText</code>), <code>target.xpath</code>. Elements under <code>[data-bit-belemetry-ignore]</code> are skipped</td>
+                    <td><code>bit.belemetry.interactions</code></td>
+                    <td>Interactions</td>
+                </tr>
+                <tr>
+                    <td>Web vital</td>
+                    <td>Log record, <code>eventName = "browser.web_vital"</code>. Attributes: <code>web_vital.name</code> (<code>LCP</code>/<code>INP</code>/<code>CLS</code>/<code>FCP</code>/<code>TTFB</code>), <code>web_vital.value</code>, <code>web_vital.delta</code>, <code>web_vital.rating</code> (<code>good</code>/<code>needs-improvement</code>/<code>poor</code>), <code>web_vital.id</code>, <code>web_vital.navigation_type</code></td>
+                    <td><code>bit.belemetry.web_vitals</code></td>
+                    <td>Performance</td>
+                </tr>
+                <tr>
+                    <td>Document load</td>
+                    <td>Internal span <code>documentLoad</code>, with events <code>domInteractive</code>, <code>domContentLoadedEventEnd</code>, <code>loadEventEnd</code>, ... from <code>PerformanceNavigationTiming</code></td>
+                    <td><code>bit.belemetry.document_load</code></td>
+                    <td>Performance</td>
+                </tr>
+                <tr>
+                    <td>Resource timing</td>
+                    <td>Internal span <code>resourceFetch</code> with <code>url.full</code>, <code>http.response.body.size</code>, <code>network.protocol.name</code></td>
+                    <td><code>bit.belemetry.resources</code></td>
+                    <td>Performance</td>
+                </tr>
+                <tr>
+                    <td>Long task</td>
+                    <td>Internal span <code>longtask</code></td>
+                    <td><code>bit.belemetry.long_tasks</code></td>
+                    <td>Performance</td>
+                </tr>
+                <tr>
+                    <td>fetch/XHR</td>
+                    <td>Client span <code>{METHOD}</code>. Attributes: <code>http.request.method</code>, <code>url.full</code>, <code>server.address</code>, <code>server.port</code>, <code>http.response.status_code</code>, <code>error.type</code>. Adds <code>traceparent</code> only for targets matched by <code>propagateTraceContextTo</code></td>
+                    <td><code>bit.belemetry.http</code></td>
+                    <td>Dependencies</td>
+                </tr>
+                <tr>
+                    <td>JS error</td>
+                    <td>Log record, severity 17 (ERROR), <code>eventName = "exception"</code>. Attributes: <code>exception.type</code>, <code>exception.message</code>, <code>exception.stacktrace</code></td>
+                    <td><code>bit.belemetry.errors</code></td>
+                    <td>Errors</td>
+                </tr>
+                <tr>
+                    <td>Console</td>
+                    <td>Log record at the console call's level (with <code>captureConsole</code>, for the levels in <code>consoleLevels</code>)</td>
+                    <td><code>bit.belemetry.console</code></td>
+                    <td>Errors at <code>error</code>, Logs below</td>
+                </tr>
+                <tr>
+                    <td>Custom event</td>
+                    <td>Log record, <code>eventName</code> = the name passed to <code>trackEvent</code>, with its attributes</td>
+                    <td><code>bit.belemetry.events</code></td>
+                    <td>Events</td>
+                </tr>
+                <tr>
+                    <td>Common (every record)</td>
+                    <td><code>session.id</code>. <code>enduser.pseudo.id</code> and <code>user.id</code> only with <code>UserTracking</code></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>.NET records</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Record</th><th scope="col">Shape</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>ILogger</code> entry</td>
+                    <td>
+                        Log record with the category as its scope, the severity mapped from the <code>LogLevel</code>, the
+                        structured values as attributes, <code>log.event.id</code> and <code>log.event.name</code> (from
+                        the <code>EventId</code>, when set), the values of active scopes (<code>Logs.IncludeScopes</code>),
+                        <code>log.record.template</code> (with <code>Logs.IncludeMessageTemplate</code>), and the current
+                        trace and span id
+                    </td>
+                </tr>
+                <tr>
+                    <td><code>ILogger</code> entry with an exception</td>
+                    <td>The same, plus <code>exception.type</code>, <code>exception.message</code>, <code>exception.stacktrace</code> - feature Errors</td>
+                </tr>
+                <tr>
+                    <td><code>Activity</code></td>
+                    <td>A span with the activity's kind, status, tags as attributes, events and links, scoped by its <code>ActivitySource</code></td>
+                </tr>
+                <tr>
+                    <td><code>Meter</code> instrument</td>
+                    <td>Counters and up-down counters as sums, histograms with explicit buckets, gauges as last values; past the cardinality limit, an <code>otel.metric.overflow = true</code> point</td>
+                </tr>
+                <tr>
+                    <td><code>TrackEvent</code> / <code>TrackPageView</code> / <code>TrackException</code></td>
+                    <td>The same records as their browser counterparts: an event log record, a <code>browser.page_view</code> log record, an <code>exception</code> log record</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Resource attributes</h2>
+    <p>
+        The resource describes the producer rather than the event, and travels once per batch. The first eight are
+        common to both sides; the rest say which side the record came from.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Attribute</th><th scope="col">Value</th><th scope="col">Side</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>service.name</code></td><td><code>ServiceName</code>, else <code>OTEL_SERVICE_NAME</code>, else the entry assembly name</td><td>both</td></tr>
+                <tr><td><code>service.version</code></td><td><code>ServiceVersion</code>, else the entry assembly's informational version</td><td>both</td></tr>
+                <tr><td><code>service.namespace</code></td><td><code>ServiceNamespace</code></td><td>both</td></tr>
+                <tr><td><code>service.instance.id</code></td><td><code>ServiceInstanceId</code>, else a random id per process (per page load in the browser)</td><td>both</td></tr>
+                <tr><td><code>deployment.environment.name</code></td><td><code>Environment</code></td><td>both</td></tr>
+                <tr><td><code>telemetry.sdk.name</code></td><td><code>bit-belemetry</code></td><td>both</td></tr>
+                <tr><td><code>telemetry.sdk.language</code></td><td><code>dotnet</code> / <code>webjs</code></td><td>both</td></tr>
+                <tr><td><code>telemetry.sdk.version</code></td><td>The package version</td><td>both</td></tr>
+                <tr><td><code>process.runtime.name</code>, <code>.version</code>, <code>.description</code></td><td><code>.NET</code>, the runtime version and framework description</td><td>.NET</td></tr>
+                <tr><td><code>os.type</code>, <code>os.description</code>, <code>host.arch</code></td><td>The operating system and process architecture</td><td>.NET</td></tr>
+                <tr><td><code>process.pid</code></td><td>The process id (not in WebAssembly)</td><td>.NET</td></tr>
+                <tr><td><code>host.name</code></td><td>The machine name (server only)</td><td>.NET</td></tr>
+                <tr><td><code>browser.language</code>, <code>browser.mobile</code>, <code>browser.platform</code>, <code>browser.brands</code></td><td>From <code>navigator</code> and User-Agent Client Hints, where available</td><td>browser</td></tr>
+                <tr><td><code>user_agent.original</code></td><td>The user agent string (with <code>Privacy.CollectUserAgent</code>)</td><td>browser</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        <code>options.ResourceAttributes</code> adds your own, and outside the browser <code>OTEL_RESOURCE_ATTRIBUTES</code>
+        is merged in first, so explicit options win.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Browser storage keys</h2>
+    <p>Belemetry sets no cookies. These are the only keys it writes, and each one is gated by the feature it serves.</p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Key</th><th scope="col">Storage</th><th scope="col">Gated by</th><th scope="col">Content</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>bit-belemetry-consent</code></td><td>localStorage</td><td>always (strictly necessary: records the choice itself)</td><td><code>{"v":1,"features":&lt;int&gt;,"time":&lt;ms&gt;}</code></td></tr>
+                <tr><td><code>bit-belemetry-session</code></td><td>sessionStorage</td><td><code>Sessions</code></td><td><code>{"id":"&lt;32 hex&gt;","start":&lt;ms&gt;,"last":&lt;ms&gt;}</code></td></tr>
+                <tr><td><code>bit-belemetry-pseudo-id</code></td><td>localStorage</td><td><code>UserTracking</code></td><td>32 hex chars</td></tr>
+                <tr><td><code>bit-belemetry-user-id</code></td><td>sessionStorage</td><td><code>UserTracking</code></td><td>authenticated id from <code>setUser</code></td></tr>
+                <tr><td><code>bit-belemetry-queue</code></td><td>localStorage</td><td><code>Persistence</code></td><td><code>[{"id","exporter","url","contentType","body"(base64),"time"}]</code>, capped by <code>persistence.maxBytes</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Revoking a feature clears its key: <code>Persistence</code> removes the queue, <code>Sessions</code> the stored
+        session, and <code>UserTracking</code> the pseudo id and the user id.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Browser configuration</h2>
+    <p>
+        <code>&lt;BelemetryScript /&gt;</code> writes this object into
+        <code>&lt;script type="application/json" id="bit-belemetry-config"&gt;</code>, built from the server's
+        <code>BelemetryOptions</code>, and the module starts from it on load. <code>&lt;BelemetryInitializer /&gt;</code>
+        passes the same object to <code>start(config)</code>, which is idempotent. Without .NET, pass it to
+        <code>BitBelemetry.start</code> yourself - every field is optional.
+    </p>
+    <CodeSnippet Code="@ConfigCode" Language="JSON" Expanded="true" />
+    <ul>
+        <li><code>propagateTraceContextTo</code> entries are <code>"same-origin"</code>, <code>"*"</code>, or a regex source matched against the absolute URL.</li>
+        <li><code>ignoreUrls</code> and <code>ignoreMessages</code> are regex sources.</li>
+    </ul>
+</div>
+
+<div class="demo-section">
+    <h2>The constants</h2>
+    <p>
+        <code>BelemetrySemanticConventions</code> holds every attribute and event name above as a
+        <code>const string</code>, for processors and custom exporters that read or write them - so a typo is a
+        compile error rather than an attribute nobody queries.
+    </p>
+    <CodeSnippet Code="@ConstantsCode" Language="C#" />
+    <ApiTable TypeName="BelemetrySemanticConventions" Kinds="@(new[] { "Constant" })" />
+</div>
+
+@code {
+    private const string ConfigCode = """
+        {
+          "service": { "name": "MyApp", "version": "1.0.0", "namespace": null, "instanceId": "<guid>", "environment": "Production" },
+          "resource": { "any.attribute": "value" },             // extra resource attributes
+          "sdkVersion": "10.6.2",
+          "transport": "direct",                                 // "direct" (JS exports itself) | "relay" (JS hands records to .NET)
+          "exporters": [
+            { "type": "otlp", "endpoint": "http://localhost:4318", "tracesEndpoint": null, "logsEndpoint": null,
+              "protocol": "http/protobuf", "headers": { "x-api-key": "..." }, "compression": "none" },   // protocol: http/protobuf | http/json ; compression: none | gzip
+            { "type": "azureMonitor", "connectionString": "InstrumentationKey=...;IngestionEndpoint=https://...", "maskIp": true },
+            { "type": "console" }
+          ],
+          "features": 4095,                                      // instrumentations switched on by configuration
+          "consent": { "default": 0, "persist": true, "honorGlobalPrivacyControl": true, "pendingLimit": 500 },
+          "pageViews": { "trackHashChanges": false },
+          "interactions": { "events": ["click"], "captureText": false, "maxTextLength": 64 },
+          "performance": { "webVitals": true, "documentLoad": true, "resources": false, "longTasks": false },
+          "dependencies": { "fetch": true, "xhr": true, "propagateTraceContextTo": ["same-origin"], "ignoreUrls": ["/_framework/", "/_blazor", "/_content/"] },
+          "errors": { "ignoreMessages": ["ResizeObserver loop"] },
+          "logs": { "captureConsole": false, "consoleLevels": ["error", "warn"] },
+          "privacy": { "redactQueryParameters": ["token","code","password","pwd","secret","key","apikey","api_key","auth","authorization","session","sid","sig","signature","email","access_token","id_token","refresh_token"],
+                       "stripQueryString": false, "stripFragment": true, "scrubPatterns": true, "collectUserAgent": true },
+          "session": { "inactivityTimeoutMinutes": 30, "maxDurationMinutes": 1440 },
+          "sampling": { "sessionRatio": 1.0 },
+          "batch": { "maxQueueSize": 1024, "maxBatchSize": 100, "flushIntervalMs": 5000 },
+          "persistence": { "enabled": true, "maxBytes": 1048576, "maxAgeHours": 48 },
+          "debug": false
+        }
+        """;
+
+    private const string ConstantsCode = """
+        public sealed class LcpAreaProcessor : IBelemetryProcessor
+        {
+            public bool OnLog(BelemetryLogRecord log)
+            {
+                if (log.EventName == BelemetrySemanticConventions.WebVitalEvent
+                    && log.Attributes.GetString(BelemetrySemanticConventions.WebVitalName) == "LCP")
+                {
+                    log.Attributes.Set("app.area", "storefront");
+                }
+
+                return true;
+            }
+        }
+        """;
+}

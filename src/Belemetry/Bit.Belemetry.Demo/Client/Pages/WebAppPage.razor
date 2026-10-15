@@ -1,0 +1,299 @@
+﻿@page "/web-app"
+
+<PageTitle>Blazor Web App - bit Belemetry</PageTitle>
+
+<h1>Blazor Web App</h1>
+
+<p class="page-intro">
+    A Blazor Web App has two projects and up to four ways of rendering a page - Server, WebAssembly,
+    Auto and static SSR. Belemetry is set up the same way for all of them: one registration in each
+    project, <code>&lt;BelemetryScript /&gt;</code> in the document head, and
+    <code>&lt;BelemetryInitializer /&gt;</code> in <code>Routes.razor</code>. What differs between the
+    render modes is where the .NET half runs, and that is decided for you.
+</p>
+
+<div class="demo-section">
+    <h2>Install</h2>
+    <p>
+        One package, referenced by the project that renders <code>App.razor</code> (the server) and by
+        the client project when there is one. It brings the browser script with it as a static web
+        asset, at <code>_content/Bit.Belemetry/bit-belemetry.js</code>.
+    </p>
+    <CodeSnippet Code="@InstallCode" Language="Shell" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Register in both projects</h2>
+    <p>
+        Call <code>AddBitBelemetryServices</code> in the server's <code>Program.cs</code> and in the
+        client's. Every component is instantiated twice - once on the server for the prerender pass and
+        again in the browser - so whatever a page injects (<code>IBelemetry</code>,
+        <code>IBelemetryConsent</code>) has to resolve in both containers. The call is idempotent and
+        follows the Options pattern: every configure callback, across calls, runs in order on the same
+        <code>BelemetryOptions</code>, which makes a shared configuration method the natural way to keep
+        the two in step.
+    </p>
+    <CodeSnippet Code="@SharedCode" Language="C#" Expanded="true" />
+    <CodeSnippet Code="@ServerProgramCode" Language="C#" Expanded="true" />
+    <CodeSnippet Code="@ClientProgramCode" Language="C#" Expanded="true" />
+
+    <p>Each container has its own job:</p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Container</th><th scope="col">What Belemetry does there</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Server</td>
+                    <td>
+                        Builds the browser script's configuration from <em>its</em> options and writes it
+                        into the page with <code>&lt;BelemetryScript /&gt;</code> - so the exporters, the
+                        consent defaults and every <code>options.Browser.*</code> setting the browser sees come
+                        from the server registration. Resolves <code>IBelemetry</code> and
+                        <code>IBelemetryConsent</code> during prerendering and for interactive Server
+                        circuits. Collects the server's own .NET telemetry only if you opt in (below).
+                    </td>
+                </tr>
+                <tr>
+                    <td>Client</td>
+                    <td>
+                        Runs the .NET pipeline in the browser: the WebAssembly app's <code>ILogger</code>,
+                        <code>Activity</code> and <code>Meter</code> records are collected and exported from
+                        there, and flushed with <code>keepalive</code> when the page unloads.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>The script in App.razor</h2>
+    <p>
+        <code>&lt;BelemetryScript /&gt;</code> renders the configuration as an inline JSON element and the
+        module after it. Because it is static markup in the head, the script starts before Blazor boots -
+        it sees the initial page view, the web vitals and errors thrown while the runtime downloads - and
+        it also covers static SSR pages that never become interactive.
+    </p>
+    <CodeSnippet Code="@AppRazorCode" Language="Razor" Expanded="true" />
+    <div class="callout">
+        <p>
+            With <code>MapStaticAssets</code> and fingerprinted assets, pass the fingerprinted path:
+            <code>&lt;BelemetryScript Src="@@Assets["_content/Bit.Belemetry/bit-belemetry.js"]" /&gt;</code>.
+            Under a Content Security Policy, pass <code>Nonce</code>; it is added to both script elements.
+        </p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>The initializer in Routes.razor</h2>
+    <p>
+        <code>&lt;BelemetryInitializer /&gt;</code> connects the script to .NET once the app is interactive:
+        consent and the session flow both ways, browser records can be relayed to .NET, and the WebAssembly
+        pipeline gets its unload flush. It renders nothing. Place it once, in <code>Routes.razor</code> or
+        the main layout, inside the interactive part of the app.
+    </p>
+    <CodeSnippet Code="@RoutesCode" Language="Razor" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Per render mode</h2>
+    <p>
+        The setup above does not change between render modes. What changes is where .NET telemetry is
+        collected and how <code>IBelemetry</code> calls travel:
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr>
+                    <th scope="col">Render mode</th>
+                    <th scope="col">Browser instrumentation</th>
+                    <th scope="col">.NET logs, traces, metrics</th>
+                    <th scope="col"><code>IBelemetry</code> and consent</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>InteractiveWebAssembly</td>
+                    <td>The script, from the head</td>
+                    <td>In the browser, exported by the client registration</td>
+                    <td>Through the WebAssembly pipeline; consent is app-wide</td>
+                </tr>
+                <tr>
+                    <td>InteractiveServer</td>
+                    <td>The script, from the head</td>
+                    <td>Opt-in: the server pipeline</td>
+                    <td>Routed through the circuit's browser, so that user's consent applies</td>
+                </tr>
+                <tr>
+                    <td>InteractiveAuto</td>
+                    <td>The script, from the head - one script for the whole visit</td>
+                    <td>On the server while a page runs on a circuit (opt-in), in the browser once Auto switches to WebAssembly</td>
+                    <td>As Server, then as WebAssembly</td>
+                </tr>
+                <tr>
+                    <td>Static SSR</td>
+                    <td>The script, from the head</td>
+                    <td>Opt-in: the server pipeline</td>
+                    <td>No interactivity: consent is given in the browser, through <code>window.BitBelemetry</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        On a static SSR page there is no circuit and no WebAssembly runtime, so
+        <code>IBelemetryConsent</code> has nobody to talk to. The script is still running, and a plain
+        HTML banner can record the choice with its JavaScript API - the same
+        <code>bit-belemetry-consent</code> entry the .NET API writes, so an interactive page later reads
+        the same decision:
+    </p>
+    <CodeSnippet Code="@StaticSsrConsentCode" Language="HTML" />
+</div>
+
+<div class="demo-section">
+    <h2>The server pipeline</h2>
+    <p>
+        On an ASP.NET Core host Belemetry's .NET pipeline is off by default - such hosts usually have an
+        OpenTelemetry setup of their own - and the server registration only renders and serves the script.
+        Turn it on to collect the server's logs, traces (including the <code>Microsoft.AspNetCore</code>
+        request spans) and metrics with the same exporters. It is process-wide, serving every user at
+        once, so it follows <code>Server.Features</code> - an operator decision - and not any one user's
+        consent. With Server and Auto, this is also where an interactive circuit's <code>ILogger</code>
+        output is collected.
+    </p>
+    <CodeSnippet Code="@ServerPipelineCode" Language="C#" Expanded="true" />
+    <p>
+        Browser fetch spans add a <code>traceparent</code> to same-origin requests, so the server's
+        request span becomes a child of the browser's span and the two land in one trace. More on the
+        <a href="/server-pipeline">Server pipeline</a> page.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>What this site does</h2>
+    <p>
+        This documentation site is a Blazor Web App in the InteractiveWebAssembly render mode, prerendered,
+        and it is set up exactly as above: <code>AddBitBelemetryServices</code> in both projects through a
+        shared <code>DemoTelemetry.ConfigureShared</code>, <code>&lt;BelemetryScript /&gt;</code> in
+        <code>App.razor</code>, <code>&lt;BelemetryInitializer /&gt;</code> in <code>Routes.razor</code>,
+        and the server pipeline turned on. It exports OTLP/JSON to itself, and an in-process receiver
+        hands each reader their own records back.
+    </p>
+    <div class="callout">
+        <p>
+            Answer the consent banner, then open <a href="/live">Live telemetry</a>: the page views, clicks,
+            web vitals and .NET logs you produce on this site arrive there within a couple of seconds, with
+            the demo's real configuration printed underneath.
+        </p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="BelemetryScript" />
+    <ApiTable TypeName="BelemetryInitializer" />
+    <ApiTable TypeName="BelemetryServerOptions" />
+</div>
+
+@code {
+    private const string InstallCode = """
+        dotnet add package Bit.Belemetry
+        """;
+
+    private const string SharedCode = """
+        // In the client project, so both Program.cs files can call it.
+        using Bit.Belemetry;
+
+        public static class AppTelemetry
+        {
+            public static void Configure(BelemetryOptions options)
+            {
+                options.ServiceName = "MyApp";
+                options.AddOtlpExporter("https://otel.example.com");
+
+                options.Consent.Default = BelemetryFeatures.None;   // opt-in until the user decides
+
+                options.Traces.Sources.Add("MyApp*");
+                options.Metrics.Meters.Add("MyApp");
+            }
+        }
+        """;
+
+    private const string ServerProgramCode = """
+        // Server/Program.cs
+        builder.Services.AddRazorComponents()
+            .AddInteractiveServerComponents()
+            .AddInteractiveWebAssemblyComponents();
+
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            AppTelemetry.Configure(options);
+            options.Environment = builder.Environment.EnvironmentName;
+        });
+        """;
+
+    private const string ClientProgramCode = """
+        // Client/Program.cs
+        var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            AppTelemetry.Configure(options);
+            options.Environment = builder.HostEnvironment.Environment;
+        });
+
+        await builder.Build().RunAsync();
+        """;
+
+    private const string AppRazorCode = """
+        @* Server/Components/App.razor *@
+        <!DOCTYPE html>
+        <html lang="en">
+        <head>
+            <meta charset="utf-8" />
+            <base href="/" />
+            <BelemetryScript />
+            <HeadOutlet @rendermode="InteractiveAuto" />
+        </head>
+        <body>
+            <Routes @rendermode="InteractiveAuto" />
+            <script src="_framework/blazor.web.js"></script>
+        </body>
+        </html>
+        """;
+
+    private const string RoutesCode = """
+        @* Client/Routes.razor *@
+        <Router AppAssembly="typeof(Program).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)" />
+            </Found>
+        </Router>
+
+        <BelemetryInitializer />
+        """;
+
+    private const string StaticSsrConsentCode = """
+        <div id="consent">
+            <button onclick="BitBelemetry.setConsent(Belemetry.Features.All)">Accept all</button>
+            <button onclick="BitBelemetry.setConsent(Belemetry.Features.Diagnostics)">Diagnostics only</button>
+            <button onclick="BitBelemetry.setConsent(Belemetry.Features.None)">Reject</button>
+        </div>
+        <script type="module">
+            // window.BitBelemetry is set when the module loads; the choice persists in localStorage.
+            if (window.BitBelemetry?.isConsentDecided()) document.getElementById('consent').remove();
+        </script>
+        """;
+
+    private const string ServerPipelineCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            AppTelemetry.Configure(options);
+
+            options.Server.CollectDotnetTelemetry = true;
+            options.Server.Features = BelemetryFeatures.Errors | BelemetryFeatures.Logs
+                                    | BelemetryFeatures.Traces | BelemetryFeatures.Metrics;   // the default
+        });
+        """;
+}

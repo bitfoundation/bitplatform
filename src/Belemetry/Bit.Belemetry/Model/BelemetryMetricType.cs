@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The OTLP metric data type a <see cref="BelemetryMetric"/> carries.</summary>
 public enum BelemetryMetricType

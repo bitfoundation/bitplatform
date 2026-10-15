@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The settings of Belemetry, configured through <c>AddBitBelemetryServices</c>.</summary>
 public sealed class BelemetryOptions

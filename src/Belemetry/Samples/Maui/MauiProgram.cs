@@ -1,4 +1,4 @@
-using Bit.Belemetry.Samples.Core;
+﻿using Bit.Belemetry.Samples.Core;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.Belemetry.Samples.Maui;

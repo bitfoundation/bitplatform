@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>Settings of the console exporter, which prints every exported record - for development only.</summary>
 public sealed class BelemetryConsoleExporterOptions

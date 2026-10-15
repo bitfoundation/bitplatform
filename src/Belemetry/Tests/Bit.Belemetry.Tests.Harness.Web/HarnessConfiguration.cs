@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Tests.Harness.Web;
+﻿namespace Bit.Belemetry.Tests.Harness.Web;
 
 /// <summary>The settings the harness host reads, besides <see cref="HarnessRenderModes.ConfigurationKey"/>.</summary>
 public static class HarnessConfiguration

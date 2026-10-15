@@ -16,7 +16,11 @@ export class ConsentManager {
     private pending: TelemetryRecord[] = [];
     private listeners: ConsentListener[] = [];
 
-    constructor(public config: ConsentConfig) { }
+    /**
+     * @param available The configured features (`config.features`). The grant never exceeds them: a grant of a
+     * feature the configuration switched off is not recorded, and a default or restored decision is narrowed to them.
+     */
+    constructor(public config: ConsentConfig, private available: number = Features.All) { }
 
     /** Reads the persisted choice (if `persist`). */
     load(): void {
@@ -26,7 +30,7 @@ export class ConsentManager {
         try {
             const stored = JSON.parse(raw);
             if (stored && stored.v === 1 && typeof stored.features === 'number') {
-                this.decision = stored.features & Features.All;
+                this.decision = stored.features & Features.All & this.available;
             }
         } catch {
             // A corrupt entry counts as "no decision".
@@ -43,15 +47,15 @@ export class ConsentManager {
         return this.config.honorGlobalPrivacyControl && nav && nav.globalPrivacyControl === true ? Features.Analytics : 0;
     }
 
-    /** The granted features. */
+    /** The granted features: always within the configured ones, so exactly what is collected. */
     granted(): number {
         const value = this.decision !== null ? this.decision : this.config.default;
-        return value & Features.All & ~this.gpcMask();
+        return value & Features.All & this.available & ~this.gpcMask();
     }
 
     /** The features worth collecting now: everything grantable before a decision (to hold it), the grant after. */
     collectable(): number {
-        return this.decision !== null ? this.granted() : Features.All & ~this.gpcMask();
+        return this.decision !== null ? this.granted() : Features.All & this.available & ~this.gpcMask();
     }
 
     isGranted(feature: number): boolean {
@@ -72,7 +76,7 @@ export class ConsentManager {
     /** Records the decision, persists it, clears the storage of revoked features and notifies the listeners. */
     set(features: number): void {
         const previous = this.granted();
-        this.decision = (features | 0) & Features.All;
+        this.decision = (features | 0) & Features.All & this.available;
         if (this.config.persist) {
             writeItem('local', StorageKeys.consent, JSON.stringify({ v: 1, features: this.decision, time: Date.now() }));
         }

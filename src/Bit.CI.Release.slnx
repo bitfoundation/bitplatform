@@ -18,6 +18,26 @@
     <File Path="Clean.bat" />
     <File Path="global.json" />
   </Folder>
+  <Folder Name="/Belemetry/">
+    <File Path="Belemetry/README.md" />
+    <Project Path="Belemetry/Bit.Belemetry/Bit.Belemetry.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests/Bit.Belemetry.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/" />
+  <Folder Name="/Belemetry/Samples/Auto/">
+    <Project Path="Belemetry/Samples/Auto/Bit.Belemetry.Samples.Auto/Bit.Belemetry.Samples.Auto.csproj" />
+    <Project Path="Belemetry/Samples/Auto/Bit.Belemetry.Samples.Auto.Client/Bit.Belemetry.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/Core/">
+    <Project Path="Belemetry/Samples/Core/Bit.Belemetry.Samples.Core.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/Server/">
+    <Project Path="Belemetry/Samples/Server/Bit.Belemetry.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/Wasm/">
+    <Project Path="Belemetry/Samples/Wasm/Bit.Belemetry.Samples.Wasm/Bit.Belemetry.Samples.Wasm.csproj" />
+    <Project Path="Belemetry/Samples/Wasm/Bit.Belemetry.Samples.Wasm.Client/Bit.Belemetry.Samples.Wasm.Client.csproj" />
+  </Folder>
   <Folder Name="/Besql/">
     <Project Path="Besql/Bit.Besql/Bit.Besql.csproj" />
   </Folder>

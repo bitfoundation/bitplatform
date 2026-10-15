@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 
 namespace Bit.Belemetry;
 
@@ -43,7 +43,8 @@ internal sealed class BelemetryFileRequestStore : IBelemetryRequestStore
             var temp = path + ".tmp";
             await using (var stream = File.Create(temp))
             {
-                await JsonSerializer.SerializeAsync(stream, request, BelemetryJsonContext.Default.BelemetryHttpRequest, cancellationToken);
+                // Never headers on disk: they may hold API keys. The exporter adds its current ones on replay.
+                await JsonSerializer.SerializeAsync(stream, request.WithoutHeaders(), BelemetryJsonContext.Default.BelemetryHttpRequest, cancellationToken);
             }
             File.Move(temp, path, overwrite: true);
 
@@ -80,6 +81,8 @@ internal sealed class BelemetryFileRequestStore : IBelemetryRequestStore
                         continue;
                     }
 
+                    // A file an older version wrote may still hold headers; the exporter's current ones apply instead.
+                    request.Headers = null;
                     result.Add(request);
                 }
                 catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)

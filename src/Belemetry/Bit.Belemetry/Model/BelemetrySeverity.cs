@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The OTLP log severity number (numbered as in <c>opentelemetry/proto/logs/v1/logs.proto</c>).</summary>
 public enum BelemetrySeverity

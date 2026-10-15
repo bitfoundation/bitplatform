@@ -85,21 +85,21 @@ describe('page views', () => {
 describe('interactions', () => {
     it('resolves the nearest interactive ancestor', () => {
         document.body.innerHTML = '<div id="root"><button id="buy" aria-label="Buy now"><span id="inner">Buy</span></button><p id="plain">text</p>'
-            + '<div data-belemetry-name="card"><i id="icon"></i></div><div role="button"><b id="rb"></b></div></div>';
+            + '<div data-bit-belemetry-name="card"><i id="icon"></i></div><div role="button"><b id="rb"></b></div></div>';
         expect(resolveTarget(document.getElementById('inner')).id).toBe('buy');
         expect(resolveTarget(document.getElementById('plain'))).toBeNull();
-        expect(resolveTarget(document.getElementById('icon')).getAttribute('data-belemetry-name')).toBe('card');
+        expect(resolveTarget(document.getElementById('icon')).getAttribute('data-bit-belemetry-name')).toBe('card');
         expect(resolveTarget(document.getElementById('rb')).getAttribute('role')).toBe('button');
         expect(resolveTarget(document.getElementById('inner').firstChild).id).toBe('buy');
     });
 
-    it('skips elements under [data-belemetry-ignore]', () => {
-        document.body.innerHTML = '<section data-belemetry-ignore><a id="secret" href="#">x</a></section>';
+    it('skips elements under [data-bit-belemetry-ignore]', () => {
+        document.body.innerHTML = '<section data-bit-belemetry-ignore><a id="secret" href="#">x</a></section>';
         expect(resolveTarget(document.getElementById('secret'))).toBeNull();
     });
 
     it('describes the target without values, text only with captureText', () => {
-        document.body.innerHTML = '<form id="f"><input type="submit" name="go" value="secret"><button data-belemetry-name="save">  Save\n  all  </button></form>';
+        document.body.innerHTML = '<form id="f"><input type="submit" name="go" value="secret"><button data-bit-belemetry-name="save">  Save\n  all  </button></form>';
         const input = document.querySelector('input');
         const button = document.querySelector('button');
         const config = { events: ['click'], captureText: false, maxTextLength: 4 };

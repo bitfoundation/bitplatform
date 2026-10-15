@@ -1,4 +1,4 @@
-body {
+﻿body {
     margin: 0;
     font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color: #1b1b1f;
@@ -45,7 +45,7 @@ button:hover {
     background: #e8f0fe;
 }
 
-[data-belemetry-ignore] {
+[data-bit-belemetry-ignore] {
     display: inline-block;
 }
 

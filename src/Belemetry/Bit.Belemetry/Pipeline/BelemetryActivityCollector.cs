@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 namespace Bit.Belemetry;
 
@@ -127,6 +127,23 @@ internal sealed class BelemetryActivityCollector : IDisposable
         {
             span.Status = activity.Status == ActivityStatusCode.Error ? BelemetryStatusCode.Error : BelemetryStatusCode.Ok;
             span.StatusMessage = activity.Status == ActivityStatusCode.Error ? activity.StatusDescription : null;
+        }
+
+        if (activity.OperationName == BelemetryAspNetCoreRequests.ActivityName)
+        {
+            // ASP.NET Core names its request Activity after the diagnostic event; keep a name the app chose itself.
+            if (activity.DisplayName == activity.OperationName
+                && BelemetryAspNetCoreRequests.GetSpanName(span.Attributes.GetString(BelemetrySemanticConventions.HttpRequestMethod),
+                                                           span.Attributes.GetString(BelemetrySemanticConventions.HttpRoute)) is { } name)
+            {
+                span.Name = name;
+            }
+
+            // HTTP server conventions: a 5xx is an error of this span, a 4xx is the client's and leaves it unset.
+            if (span.Status == BelemetryStatusCode.Unset && span.Attributes.GetInt64(BelemetrySemanticConventions.HttpResponseStatusCode) >= 500)
+            {
+                span.Status = BelemetryStatusCode.Error;
+            }
         }
 
         foreach (var e in activity.Events)

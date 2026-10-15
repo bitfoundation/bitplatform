@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// The independently consentable parts of Belemetry. Every telemetry record belongs to exactly one feature,

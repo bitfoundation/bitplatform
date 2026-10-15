@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// The OpenTelemetry resource: the attributes that describe the entity producing telemetry

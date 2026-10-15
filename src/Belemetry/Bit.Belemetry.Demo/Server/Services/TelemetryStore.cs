@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using Bit.Belemetry.Demo.Client.Services;
 
 namespace Bit.Belemetry.Demo.Server.Services;

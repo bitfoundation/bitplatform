@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace Bit.Belemetry;
@@ -63,6 +63,7 @@ internal static class BelemetryBrowserConfigFactory
                 StripFragment = options.Privacy.StripFragment,
                 ScrubPatterns = options.Privacy.ScrubPatterns,
                 CollectUserAgent = options.Privacy.CollectUserAgent,
+                BlockedAttributes = [.. options.Privacy.BlockedAttributes],
             },
             Session = new()
             {
@@ -81,6 +82,10 @@ internal static class BelemetryBrowserConfigFactory
                 Enabled = options.Persistence.Enabled,
                 MaxBytes = options.Persistence.BrowserMaxBytes,
                 MaxAgeHours = options.Persistence.MaxAge.TotalHours,
+                // Same fallback as the .NET export loop for a non-positive interval.
+                RetryIntervalMs = options.Persistence.RetryInterval > TimeSpan.Zero
+                    ? (int)Math.Min(int.MaxValue, Math.Max(1000, options.Persistence.RetryInterval.TotalMilliseconds))
+                    : 60000,
             },
             Debug = browser.Debug,
         };
@@ -95,7 +100,10 @@ internal static class BelemetryBrowserConfigFactory
 
         if (relay is false)
         {
-            foreach (var otlp in settings.OtlpExporters.Where(o => o.IncludeInBrowser && (o.Signals & (BelemetrySignals.Traces | BelemetrySignals.Logs)) != 0))
+            // The browser produces spans and logs only; its metrics-like records (web vitals) are log records.
+            const BelemetrySignals browserSignals = BelemetrySignals.Traces | BelemetrySignals.Logs;
+
+            foreach (var otlp in settings.OtlpExporters.Where(o => o.IncludeInBrowser && (o.Signals & browserSignals) != 0))
             {
                 var root = otlp.BrowserEndpoint ?? otlp.Endpoint;
                 config.Exporters.Add(new()
@@ -108,12 +116,21 @@ internal static class BelemetryBrowserConfigFactory
                     Protocol = otlp.Protocol == BelemetryOtlpProtocol.HttpJson ? "http/json" : "http/protobuf",
                     Headers = otlp.Headers.Count > 0 ? new Dictionary<string, string>(otlp.Headers) : null,
                     Compression = otlp.Compression == BelemetryCompression.Gzip ? "gzip" : "none",
+                    Signals = (int)(otlp.Signals & browserSignals),
                 });
             }
 
-            foreach (var azure in settings.AzureMonitorExporters.Where(a => a.IncludeInBrowser && a.AccessTokenProvider is null))
+            foreach (var azure in settings.AzureMonitorExporters.Where(a => a.IncludeInBrowser && a.AccessTokenProvider is null && (a.Signals & browserSignals) != 0))
             {
-                config.Exporters.Add(new() { Type = "azureMonitor", ConnectionString = azure.ConnectionString, MaskIp = azure.MaskIp });
+                config.Exporters.Add(new()
+                {
+                    Type = "azureMonitor",
+                    ConnectionString = azure.ConnectionString,
+                    MaskIp = azure.MaskIp,
+                    // The ingestion endpoint's CORS preflight allows Content-Encoding, so gzip works from the page too.
+                    Compression = azure.Compression == BelemetryCompression.Gzip ? "gzip" : "none",
+                    Signals = (int)(azure.Signals & browserSignals),
+                });
             }
 
             if (options.ConsoleExporter is { IncludeInBrowser: true })

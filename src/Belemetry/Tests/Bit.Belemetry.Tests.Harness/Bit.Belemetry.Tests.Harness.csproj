@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <!-- The one set of pages and the one Belemetry configuration every harness host renders: the web host in each
          Blazor render mode (Bit.Belemetry.Tests.Harness.Web), its WebAssembly client, and the BlazorWebView host

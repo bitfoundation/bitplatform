@@ -1,7 +1,7 @@
 ﻿import { describe, expect, it } from 'vitest';
 import { encodeLogs, encodeTraces } from '../../Bit.Belemetry/Scripts/exporters/otlp-proto.ts';
 import { logsToJson, tracesToJson } from '../../Bit.Belemetry/Scripts/exporters/otlp-json.ts';
-import { otlpUrls } from '../../Bit.Belemetry/Scripts/exporters/otlp.ts';
+import { createOtlpExporter, otlpUrls } from '../../Bit.Belemetry/Scripts/exporters/otlp.ts';
 import { all, attributesOf, anyValue, decode, hex, log, one, span, str, u32, u64 } from './helpers.js';
 
 const resource = { 'service.name': 'shop', 'telemetry.sdk.language': 'webjs' };
@@ -124,5 +124,29 @@ describe('OTLP JSON', () => {
     it('resolves the signal endpoints', () => {
         expect(otlpUrls({ type: 'otlp', endpoint: 'http://c:4318/' })).toEqual({ base: 'http://c:4318', traces: 'http://c:4318/v1/traces', logs: 'http://c:4318/v1/logs' });
         expect(otlpUrls({ type: 'otlp', endpoint: 'http://c:4318', tracesEndpoint: 'https://t/x', logsEndpoint: 'https://l/y' })).toMatchObject({ traces: 'https://t/x', logs: 'https://l/y' });
+    });
+});
+
+describe('OTLP exporter', () => {
+    const sent = () => {
+        const requests = [];
+        return { requests, transport: { send: request => { requests.push(request); return Promise.resolve(); } } };
+    };
+    const batch = { resource, spans: [span()], logs: [log()] };
+
+    it('sends both signals by default', async () => {
+        const { requests, transport } = sent();
+        await createOtlpExporter({ type: 'otlp', endpoint: 'http://c:4318' }, transport, '1.0.0').export(batch, false);
+        expect(requests.map(r => r.url)).toEqual(['http://c:4318/v1/traces', 'http://c:4318/v1/logs']);
+    });
+
+    it('sends only the configured signals', async () => {
+        const traces = sent();
+        await createOtlpExporter({ type: 'otlp', endpoint: 'http://c:4318', signals: 1 }, traces.transport, '1.0.0').export(batch, false);
+        expect(traces.requests.map(r => r.url)).toEqual(['http://c:4318/v1/traces']);
+
+        const logs = sent();
+        await createOtlpExporter({ type: 'otlp', endpoint: 'http://c:4318', signals: 2 }, logs.transport, '1.0.0').export(batch, false);
+        expect(logs.requests.map(r => r.url)).toEqual(['http://c:4318/v1/logs']);
     });
 });

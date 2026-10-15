@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>How consent is obtained and kept.</summary>
 public sealed class BelemetryConsentOptions

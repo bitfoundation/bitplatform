@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>A link from a span to another span, shaped like the OTLP <c>Span.Link</c> message.</summary>
 public sealed class BelemetrySpanLink

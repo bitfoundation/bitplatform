@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Options;
@@ -182,7 +182,9 @@ internal sealed class BelemetrySettings
                     }
                 }
 
-                if (GetEnv("OTEL_EXPORTER_OTLP_PROTOCOL") is { } protocol)
+                // Like every variable here, it only fills in what the code left unset: explicit configuration wins,
+                // as in the OpenTelemetry SDKs.
+                if (exporter.IsProtocolSet is false && GetEnv("OTEL_EXPORTER_OTLP_PROTOCOL") is { } protocol)
                 {
                     if (protocol.Equals("http/json", StringComparison.OrdinalIgnoreCase)) exporter.Protocol = BelemetryOtlpProtocol.HttpJson;
                     else if (protocol.Equals("http/protobuf", StringComparison.OrdinalIgnoreCase)) exporter.Protocol = BelemetryOtlpProtocol.HttpProtobuf;

@@ -1,4 +1,4 @@
-using Bit.Belemetry;
+﻿using Bit.Belemetry;
 using Bit.Belemetry.Samples.Core;
 using Bit.Belemetry.Samples.Auto.Components;
 

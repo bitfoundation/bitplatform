@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Demo.Client.Services;
+﻿namespace Bit.Belemetry.Demo.Client.Services;
 
 /// <summary>
 /// One record the demo server's OTLP receiver decoded - a span, a log record or event, or a metric

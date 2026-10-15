@@ -1,4 +1,4 @@
-@* data-interactive only flips after the first interactive render, so a test can wait for it before driving anything
+﻿@* data-interactive only flips after the first interactive render, so a test can wait for it before driving anything
    that needs event handlers; data-bridge flips once <BelemetryInitializer /> connected the script to .NET. *@
 <p id="status"
    data-interactive="@(_interactive ? "true" : "false")"

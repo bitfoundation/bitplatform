@@ -38,6 +38,24 @@ describe('ConsentManager', () => {
         expect(consent.collectable()).toBe(Features.All);
     });
 
+    it('never grants more than the configured features', () => {
+        const available = Features.Errors | Features.Logs;
+        const consent = new ConsentManager(config({ default: Features.All }), available);
+        expect(consent.granted(), 'The default is narrowed.').toBe(available);
+        expect(consent.collectable()).toBe(available);
+
+        consent.set(Features.All);
+        expect(consent.granted()).toBe(available);
+        expect(consent.isGranted(Features.PageViews)).toBe(false);
+        expect(JSON.parse(localStorage.getItem('bit-belemetry-consent')).features, 'Only the available part is recorded.').toBe(available);
+
+        // A decision stored before the configuration narrowed is narrowed when read back.
+        localStorage.setItem('bit-belemetry-consent', JSON.stringify({ v: 1, features: Features.All, time: 1 }));
+        const reloaded = new ConsentManager(config(), Features.Errors);
+        reloaded.load();
+        expect(reloaded.granted()).toBe(Features.Errors);
+    });
+
     it('persists the decision and reads it back', () => {
         const consent = new ConsentManager(config());
         consent.set(Features.Diagnostics);

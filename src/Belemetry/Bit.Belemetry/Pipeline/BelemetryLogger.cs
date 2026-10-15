@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 
 namespace Bit.Belemetry;
@@ -7,6 +7,11 @@ namespace Bit.Belemetry;
 internal sealed class BelemetryLogger : ILogger
 {
     private const string OriginalFormat = "{OriginalFormat}";
+
+    /// <summary>
+    /// The one category Belemetry logs its own diagnostics under (<see cref="BelemetryPipeline.LogDiagnostic"/>).
+    /// </summary>
+    internal const string DiagnosticsCategory = "Bit.Belemetry";
 
     private readonly BelemetryLoggerProvider _provider;
     private readonly BelemetryPipeline _pipeline;
@@ -24,8 +29,9 @@ internal sealed class BelemetryLogger : ILogger
         _minimumLevel = _options.MinimumLevel;
 
         // Belemetry's own diagnostics would otherwise be exported by the pipeline they describe, failure logs about an
-        // export included - an export storm in the making.
-        _excluded = category.StartsWith("Bit.Belemetry", StringComparison.Ordinal)
+        // export included - an export storm in the making. Only that exact category: a prefix match would also swallow
+        // every app type that happens to live in a Bit.Belemetry.* namespace (the demo and the samples do).
+        _excluded = string.Equals(category, DiagnosticsCategory, StringComparison.Ordinal)
                     || _options.ExcludedCategories.Any(prefix => category.StartsWith(prefix, StringComparison.Ordinal));
     }
 

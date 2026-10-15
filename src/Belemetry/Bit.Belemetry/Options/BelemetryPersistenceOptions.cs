@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>
 /// Offline persistence: export requests that fail with a network error or a retryable status are kept on the

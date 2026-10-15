@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Demo.Client.Services;
+﻿namespace Bit.Belemetry.Demo.Client.Services;
 
 /// <summary>
 /// One public type of Bit.Belemetry as the API tables on the docs pages show it - reflected out of

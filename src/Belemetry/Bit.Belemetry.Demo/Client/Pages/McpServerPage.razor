@@ -1,0 +1,832 @@
+﻿@page "/mcp-server"
+@using System.Text.Json
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+@* The MCP server's own documentation page. Every panel on it calls the demo's real /api/mcp
+   endpoints - the plain GET mirrors of the tools the MCP server exposes - so what a reader tries
+   here is exactly what an agent gets, and the page cannot document a tool that does not work.
+
+   The tool, prompt and resource tables are fetched rather than written out, for the same reason:
+   they come from GetMcpCatalog, which reflects over the attributes that declare them. *@
+
+<PageTitle>MCP Server - bit Belemetry</PageTitle>
+
+<h1>MCP Server</h1>
+
+<p class="page-intro">
+    This site ships a <strong>Model Context Protocol</strong> server, so an AI agent can set up Belemetry from what
+    the library <em>actually</em> is rather than from what it remembers. Its tools answer from this build's own
+    text - the README, the XML documentation compiled into the assembly, the source of every page you have been
+    reading - and two of them go further: one writes a configuration for your host, and one reviews a
+    configuration for the mistakes that compile cleanly and then send nothing, or send too much.
+</p>
+
+<div class="demo-section">
+    <h2>Why a telemetry SDK needs one</h2>
+    <p>
+        Telemetry fails quietly. There is no exception when the collector rejects the page's origin, and no warning
+        when an API key ships to every visitor. The mistakes an agent is most likely to make are exactly the ones
+        nobody notices until the dashboard is empty - or until a privacy review:
+    </p>
+    <div class="demo-row">
+        @foreach (var problem in _problems)
+        {
+            <div class="demo-card stack">
+                <span class="demo-label">@problem.Symptom</span>
+                <p>@problem.Cause</p>
+                <code>@problem.Tool</code>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Connect your agent</h2>
+    <p>
+        The server speaks MCP over Streamable HTTP at <code>@PublicUrl</code>. When you run this demo yourself it is at
+        <code>@LocalUrl</code>. The same tools are also plain <code>GET</code> endpoints under
+        <code>/api/mcp/...</code>, which is what the panels further down this page call.
+    </p>
+
+    @* A tablist is one stop in the tab order: tab moves past the group, and the arrow keys move between
+       the tabs inside it. Only the selected tab is tabbable, and each names the panel it controls. *@
+    <div class="demo-actions" role="tablist" aria-label="MCP client">
+        @foreach (var client in _clients)
+        {
+            var isSelected = _client == client.Name;
+
+            <button type="button" role="tab" class="@(isSelected ? "btn-bl" : "btn-bl-subtle")"
+                    id="@TabId(client.Name)"
+                    aria-selected="@(isSelected ? "true" : "false")"
+                    aria-controls="@PanelId(client.Name)"
+                    tabindex="@(isSelected ? 0 : -1)"
+                    @ref="_tabs[client.Name]"
+                    @onclick="@(() => _client = client.Name)"
+                    @onkeydown="OnTabKeyDown">
+                @client.Name
+            </button>
+        }
+    </div>
+
+    @foreach (var client in _clients)
+    {
+        <div role="tabpanel" id="@PanelId(client.Name)" aria-labelledby="@TabId(client.Name)"
+             hidden="@(_client != client.Name)">
+            <p>@client.Note</p>
+            <CodeSnippet Code="@client.Config(PublicUrl)" Language="@client.Language" Expanded="true" />
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Search everything</h2>
+    <p>
+        An agent rarely knows which corpus holds the answer. <code>SearchBelemetry</code> covers the guide, every
+        public type and member, the semantic conventions and the demo pages at once - and every hit names the
+        follow-up call that returns it in full.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <label class="demo-label" for="mcp-search">Query</label>
+            <input id="mcp-search" type="search" value="@_query" @onchange="OnQueryChanged"
+                   disabled="@(_searching || RendererInfo.IsInteractive is false)" style="width: 100%"
+                   placeholder="keep the api key out of the browser" />
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" @onclick="RunSearchAsync" disabled="@(_searching || RendererInfo.IsInteractive is false)">
+                    @(_searching ? "Searching..." : "Search")
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (_searchError is not null)
+    {
+        <div class="callout warn"><p>@_searchError</p></div>
+    }
+    else if (_hits is { Length: > 0 })
+    {
+        <div class="doc-table-wrap">
+            <table class="doc-table">
+                <thead>
+                    <tr><th scope="col">Kind</th><th scope="col">Hit</th><th scope="col">Follow up with</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var hit in _hits)
+                    {
+                        <tr>
+                            <td>@hit.Kind</td>
+                            <td>
+                                <strong>@hit.Title</strong>
+                                @if (string.IsNullOrWhiteSpace(hit.Summary) is false)
+                                {
+                                    <br />@hit.Summary
+                                }
+                                @if (string.IsNullOrWhiteSpace(hit.Location) is false)
+                                {
+                                    <br /><small><code>@hit.Location</code></small>
+                                }
+                            </td>
+                            <td><code>@hit.FollowUp</code></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else if (_hits is not null)
+    {
+        <p>Nothing matched that.</p>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Generate a configuration</h2>
+    <p>
+        <code>GenerateBelemetryConfiguration</code> writes every file a host needs - the registrations, where
+        <code>&lt;BelemetryScript /&gt;</code> and <code>&lt;BelemetryInitializer /&gt;</code> go, a consent banner when the
+        app needs one - from the same rules the reviewer below checks against. Pick a host, the exporters and the
+        consent model.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <label class="demo-label" for="mcp-host">Host</label>
+            <select id="mcp-host" value="@_host" @onchange="OnHostChanged" disabled="@(_generating || RendererInfo.IsInteractive is false)">
+                @foreach (var host in _hosts)
+                {
+                    <option value="@host.Value">@host.Label</option>
+                }
+            </select>
+
+            <span class="demo-label">Exporters</span>
+            <div class="consent-grid">
+                @foreach (var exporter in _exporterChoices)
+                {
+                    <label class="consent-feature">
+                        <input type="checkbox" checked="@_exporters.Contains(exporter.Value)"
+                               disabled="@(_generating || RendererInfo.IsInteractive is false)"
+                               @onchange="@(e => OnExporterChanged(exporter.Value, e))" />
+                        <span><strong>@exporter.Label</strong><small>@exporter.Description</small></span>
+                    </label>
+                }
+            </div>
+
+            <label class="demo-label" for="mcp-consent">Consent</label>
+            <select id="mcp-consent" value="@_consent" @onchange="OnConsentChanged" disabled="@(_generating || RendererInfo.IsInteractive is false)">
+                <option value="opt-in">opt-in - nothing is sent before the user agrees (the default)</option>
+                <option value="opt-out">opt-out - everything until the user says no</option>
+                <option value="none">none - no consent UI, the operator decides</option>
+            </select>
+
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" @onclick="RunGenerateAsync" disabled="@(_generating || RendererInfo.IsInteractive is false)">
+                    @(_generating ? "Generating..." : "Generate")
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (_generateError is not null)
+    {
+        <div class="callout warn"><p>@_generateError</p></div>
+    }
+    else if (_generated is not null)
+    {
+        @foreach (var file in _generated.Files ?? [])
+        {
+            <h3><code>@file.Path</code></h3>
+            <CodeSnippet @key="@($"{_generation}:{file.Path}")" Code="@(file.Content ?? "")" Language="@SnippetLanguage(file.Language)" Expanded="true" />
+        }
+
+        @if (_generated.Notes is { Length: > 0 })
+        {
+            <div class="callout">
+                <ul>
+                    @foreach (var note in _generated.Notes)
+                    {
+                        <li>@note</li>
+                    }
+                </ul>
+            </div>
+        }
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Review a configuration</h2>
+    <p>
+        <code>ReviewBelemetryConfiguration</code> is the pass that closes the loop after an agent writes code. It looks
+        for the mistakes that compile: a consent default that sends everything before anyone agreed, an OTLP
+        endpoint that already ends in <code>/v1/traces</code> (Belemetry appends the signal path itself), a vendor API
+        key in an exporter the browser script will use. The sample below makes all three on purpose.
+    </p>
+    <textarea class="code-block" rows="16" spellcheck="false" aria-label="Configuration to review" style="width: 100%"
+              value="@_review" @onchange="OnReviewChanged" disabled="@(_reviewing || RendererInfo.IsInteractive is false)"></textarea>
+    <div class="demo-actions">
+        <button type="button" class="btn-bl" @onclick="RunReviewAsync" disabled="@(_reviewing || RendererInfo.IsInteractive is false)">
+            @(_reviewing ? "Reviewing..." : "Review it")
+        </button>
+    </div>
+
+    @if (_reviewError is not null)
+    {
+        <div class="callout warn"><p>@_reviewError</p></div>
+    }
+    else if (_findings is not null)
+    {
+        @if (string.IsNullOrWhiteSpace(_findings.Summary) is false)
+        {
+            <p>@_findings.Summary</p>
+        }
+
+        @if (_findings.Findings is { Length: > 0 })
+        {
+            <div class="doc-table-wrap">
+                <table class="doc-table">
+                    <thead>
+                        <tr><th scope="col">Severity</th><th scope="col">Rule</th><th scope="col">Line</th><th scope="col">Finding</th><th scope="col">Fix</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var finding in _findings.Findings)
+                        {
+                            <tr>
+                                <td><strong>@finding.Severity</strong></td>
+                                <td><code>@finding.Rule</code></td>
+                                <td>@(finding.Line?.ToString() ?? "-")</td>
+                                <td>@finding.Message</td>
+                                <td>@finding.Fix</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        else
+        {
+            <p>Nothing to report.</p>
+        }
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Look up a convention</h2>
+    <p>
+        <code>LookupBelemetryConventions</code> answers "what is this attribute called" and "where does this record land
+        in Application Insights" from the same tables as the <a href="/semantic-conventions">Semantic conventions</a>
+        and <a href="/azure-mapping">Azure mapping</a> pages - an attribute, an event name, a feature, a storage key or an
+        Azure table.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <label class="demo-label" for="mcp-conventions">Attribute, event, feature or table</label>
+            <input id="mcp-conventions" type="search" value="@_lookup" @onchange="OnLookupChanged" style="width: 100%"
+                   disabled="@(_looking || RendererInfo.IsInteractive is false)" placeholder="web_vital.rating" />
+            <div class="demo-actions">
+                @foreach (var example in _lookupExamples)
+                {
+                    <button type="button" class="btn-bl-subtle" disabled="@(_looking || RendererInfo.IsInteractive is false)"
+                            @onclick="@(() => RunLookupAsync(example))">
+                        @example
+                    </button>
+                }
+                <button type="button" class="btn-bl" disabled="@(_looking || RendererInfo.IsInteractive is false)"
+                        @onclick="@(() => RunLookupAsync(_lookup))">
+                    @(_looking ? "Looking up..." : "Look up")
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if (_lookupError is not null)
+    {
+        <div class="callout warn"><p>@_lookupError</p></div>
+    }
+    else if (_conventions is not null)
+    {
+        <CodeSnippet @key="_lookupGeneration" Code="@_conventions" Language="Markdown" Expanded="true" />
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Tools</h2>
+    @if (_catalogError is not null)
+    {
+        <div class="callout warn"><p>@_catalogError</p></div>
+    }
+    else if (_catalog is null)
+    {
+        <p>@(RendererInfo.IsInteractive ? "Loading the catalog..." : "The catalog loads once the page is interactive.")</p>
+    }
+    else
+    {
+        <p>
+            @(_catalog.Tools?.Length ?? 0) of them, listed straight from the attributes that declare them - so this table
+            cannot fall out of step with the server. Each is also <code>GET /api/mcp/{Name}?parameter=...</code>.
+        </p>
+        <div class="doc-table-wrap">
+            <table class="doc-table">
+                <thead>
+                    <tr><th scope="col">Tool</th><th scope="col">Parameters</th><th scope="col">What it answers</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var tool in _catalog.Tools ?? [])
+                    {
+                        <tr>
+                            <td><code>@tool.Name</code></td>
+                            <td>
+                                @if (tool.Parameters is null or { Length: 0 })
+                                {
+                                    <span>none</span>
+                                }
+                                else
+                                {
+                                    @foreach (var parameter in tool.Parameters)
+                                    {
+                                        <div title="@parameter.Description">
+                                            <code>@parameter.Name</code>
+                                            <small>@parameter.Type@(parameter.Required ? "" : ", optional")</small>
+                                        </div>
+                                    }
+                                }
+                            </td>
+                            <td>@Shorten(tool.Description)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Prompts</h2>
+    <p>
+        Prompts are the workflows: which tools to call, in which order, for a whole task. They exist because an agent
+        holding seven tools rarely fails for lack of knowledge - it fails by skipping the review that would have caught
+        the mistake.
+    </p>
+    @if (_catalog?.Prompts is { Length: > 0 } prompts)
+    {
+        <div class="doc-table-wrap">
+            <table class="doc-table">
+                <thead>
+                    <tr><th scope="col">Prompt</th><th scope="col">What it does</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var prompt in prompts)
+                    {
+                        <tr><td><code>@prompt.Name</code></td><td>@prompt.Description</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Resources</h2>
+    <p>
+        The same knowledge as URIs, for clients that attach documentation to a conversation up front or let a person
+        browse and pin it. <code>belemetry://source/{path}</code> is a template: any path
+        <code>GetBelemetrySourceFile</code> lists.
+    </p>
+    @if (_catalog?.Resources is { Length: > 0 } resources)
+    {
+        <div class="doc-table-wrap">
+            <table class="doc-table">
+                <thead>
+                    <tr><th scope="col">URI</th><th scope="col">Name</th><th scope="col">What it holds</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var resource in resources)
+                    {
+                        <tr><td><code>@resource.Uri</code></td><td>@resource.Name</td><td>@resource.Description</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>How it stays true</h2>
+    <p>
+        Documentation that is written down separately drifts, and an agent cannot tell a stale answer from a fresh
+        one. So nothing the server says is written down twice:
+    </p>
+    <ul>
+        <li>
+            <strong>The API reference is reflected</strong> out of the shipped Bit.Belemetry assembly and paired with the
+            XML documentation compiled into it - the same catalog behind the API tables on every page of this site. A new
+            option appears the moment it is written, with the default a freshly constructed options object really has.
+        </li>
+        <li>
+            <strong>The README and the demo pages are embedded</strong> into the server, so the tools keep working from a
+            published deployment and hand out the same text this site renders.
+        </li>
+        <li>
+            <strong>The generator and the reviewer share their rules.</strong> What one writes, the other passes - and
+            what the reviewer flags is what the generator never writes.
+        </li>
+    </ul>
+</div>
+
+@code {
+    private sealed record Problem(string Symptom, string Cause, string Tool);
+
+    private sealed record McpClient(string Name, string Note, string Language, Func<string, string> Config);
+
+    private sealed record Choice(string Value, string Label, string Description = "");
+
+    // The response shapes of the endpoints this page calls. They mirror the server's DTOs rather than share
+    // them: the client project does not reference the host. Nullable throughout, because what comes back is
+    // JSON, and a missing field - or a server answering with something else - should not take the page down.
+    private sealed record Catalog(CatalogTool[]? Tools, CatalogPrompt[]? Prompts, CatalogResource[]? Resources);
+
+    private sealed record CatalogTool(string Name, string? Description, CatalogParameter[]? Parameters);
+
+    private sealed record CatalogParameter(string Name, string? Type, bool Required, string? Description);
+
+    private sealed record CatalogPrompt(string Name, string? Description);
+
+    private sealed record CatalogResource(string Uri, string? Name, string? Description);
+
+    private sealed record SearchHit(string? Kind, string? Title, string? Summary, string? Location, string? FollowUp);
+
+    private sealed record GeneratedConfiguration(GeneratedFile[]? Files, string[]? Notes);
+
+    private sealed record GeneratedFile(string? Path, string? Language, string? Content);
+
+    private sealed record Review(string? Summary, ReviewFinding[]? Findings);
+
+    private sealed record ReviewFinding(string? Rule, string? Severity, int? Line, string? Message, string? Fix);
+
+    private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
+
+    private const string PublicUrl = "https://belemetry.bitplatform.dev/mcp";
+
+    /// <summary>What every panel says when a call to the demo's own API comes back with nothing.</summary>
+    private const string Unreachable = "The demo's own API did not answer. Is the server still running?";
+
+    /// <summary>The longest request line the review panel builds; Kestrel refuses 8,192 bytes.</summary>
+    private const int MaxReviewUrlLength = 6_000;
+
+    private static readonly Problem[] _problems =
+    [
+        new("The dashboard is empty",
+            "Consent defaults to None, and the app never asks: nothing has been granted, so nothing leaves the browser.",
+            "ReviewBelemetryConfiguration"),
+        new("Requests fail with CORS errors",
+            "The browser posts to the collector from the page's origin, and the collector does not allow it.",
+            "GetBelemetrySetupGuide"),
+        new("An API key is in the page source",
+            "Exporter headers are part of the browser configuration unless the transport is Relay or the exporter is .NET-only.",
+            "ReviewBelemetryConfiguration"),
+    ];
+
+    private static readonly McpClient[] _clients =
+    [
+        new("Claude Code",
+            "One command, from anywhere in your project.",
+            "Shell",
+            url => $"""
+            claude mcp add --transport http belemetry {url}
+            """),
+        new("VS Code",
+            "Add it to .vscode/mcp.json in the workspace, and it is offered to Copilot in agent mode.",
+            "JSON",
+            url => $$"""
+            {
+              "servers": {
+                "belemetry": {
+                  "type": "http",
+                  "url": "{{url}}"
+                }
+              }
+            }
+            """),
+        new("Cursor",
+            "Add it to .cursor/mcp.json for this project, or to ~/.cursor/mcp.json for all of them.",
+            "JSON",
+            url => $$"""
+            {
+              "mcpServers": {
+                "belemetry": {
+                  "url": "{{url}}"
+                }
+              }
+            }
+            """),
+        new("Claude Desktop",
+            "Add it to claude_desktop_config.json, then restart the app. mcp-remote bridges the desktop app's stdio to the HTTP server.",
+            "JSON",
+            url => $$"""
+            {
+              "mcpServers": {
+                "belemetry": {
+                  "command": "npx",
+                  "args": ["-y", "mcp-remote", "{{url}}"]
+                }
+              }
+            }
+            """),
+    ];
+
+    private static readonly Choice[] _hosts =
+    [
+        new("web-app", "Blazor Web App"),
+        new("server", "Blazor Server"),
+        new("webassembly", "Blazor Web App, WebAssembly render mode"),
+        new("auto", "Blazor Web App, Auto render mode"),
+        new("static-ssr", "Static SSR"),
+        new("standalone-wasm", "Standalone WebAssembly"),
+        new("hybrid", "Blazor Hybrid (MAUI, WPF, WinForms)"),
+    ];
+
+    private static readonly Choice[] _exporterChoices =
+    [
+        new("otlp", "OTLP", "Collector, Aspire, Grafana, Jaeger, Honeycomb"),
+        new("azure", "Azure Monitor", "Application Insights, natively"),
+        new("console", "Console", "Development only"),
+    ];
+
+    private static readonly string[] _lookupExamples = ["web_vital.rating", "session.id", "pageViews", "bit-belemetry-queue"];
+
+    private string _client = "Claude Code";
+    private readonly Dictionary<string, ElementReference> _tabs = [];
+
+    private Catalog? _catalog;
+    private string? _catalogError;
+
+    private string _query = "keep the api key out of the browser";
+    private bool _searching;
+    private string? _searchError;
+    private SearchHit[]? _hits;
+
+    private string _host = "web-app";
+    private readonly HashSet<string> _exporters = ["otlp"];
+    private string _consent = "opt-in";
+    private bool _generating;
+    private string? _generateError;
+    private GeneratedConfiguration? _generated;
+    private int _generation;
+
+    private string _review = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.ServiceName = "MyShop";
+
+            // Ship everything from the very first page load.
+            options.Consent.Default = BelemetryFeatures.All;
+
+            options.AddOtlpExporter("https://api.honeycomb.io/v1/traces", otlp =>
+            {
+                otlp.Headers["x-honeycomb-team"] = "hcaik_01hx...";
+            });
+        });
+        """;
+    private bool _reviewing;
+    private string? _reviewError;
+    private Review? _findings;
+
+    private string _lookup = "web_vital.rating";
+    private bool _looking;
+    private string? _lookupError;
+    private string? _conventions;
+    private int _lookupGeneration;
+
+    /// <summary>Where this build answers MCP, for readers running the demo themselves.</summary>
+    private string LocalUrl => Nav.ToAbsoluteUri("mcp").ToString();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Every call on this page goes to the app's own API, which prerendering has no way to reach: the
+        // server's HttpClient has no base address.
+        if (firstRender is false || RendererInfo.IsInteractive is false || Http.BaseAddress is null) return;
+
+        _catalog = await GetJsonAsync<Catalog>("api/mcp/GetMcpCatalog");
+        _catalogError = _catalog is null ? Unreachable : null;
+
+        StateHasChanged();
+    }
+
+    private static string TabId(string client) => $"mcp-tab-{Slug(client)}";
+
+    private static string PanelId(string client) => $"mcp-panel-{Slug(client)}";
+
+    private static string Slug(string client) => client.ToLowerInvariant().Replace(' ', '-');
+
+    /// <summary>Arrow keys move between the tabs, wrapping at both ends, and the focus moves with the selection.</summary>
+    private async Task OnTabKeyDown(KeyboardEventArgs e)
+    {
+        var step = e.Key switch
+        {
+            "ArrowRight" or "ArrowDown" => 1,
+            "ArrowLeft" or "ArrowUp" => -1,
+            _ => 0
+        };
+
+        if (step == 0) return;
+
+        var index = Array.FindIndex(_clients, client => client.Name == _client);
+        var next = _clients[((index + step) % _clients.Length + _clients.Length) % _clients.Length];
+
+        _client = next.Name;
+
+        if (_tabs.TryGetValue(next.Name, out var tab))
+        {
+            try { await tab.FocusAsync(); } catch { /* focus is a nicety; the selection already moved */ }
+        }
+    }
+
+    private void OnQueryChanged(ChangeEventArgs e) => _query = e.Value?.ToString() ?? "";
+
+    private void OnHostChanged(ChangeEventArgs e) => _host = e.Value?.ToString() ?? "web-app";
+
+    private void OnConsentChanged(ChangeEventArgs e) => _consent = e.Value?.ToString() ?? "opt-in";
+
+    private void OnReviewChanged(ChangeEventArgs e) => _review = e.Value?.ToString() ?? "";
+
+    private void OnLookupChanged(ChangeEventArgs e) => _lookup = e.Value?.ToString() ?? "";
+
+    private void OnExporterChanged(string exporter, ChangeEventArgs e)
+    {
+        if (e.Value is true) _exporters.Add(exporter);
+        else _exporters.Remove(exporter);
+    }
+
+    // Each handler below resets its own busy flag in a finally: the flag disables the panel's controls while a
+    // call is out, so losing it would leave the panel disabled with no way back but a reload. Each also clears
+    // its own error first, so a panel never shows a stale result under a fresh question.
+
+    private async Task RunSearchAsync()
+    {
+        if (Http.BaseAddress is null) return;
+
+        _searching = true;
+        _searchError = null;
+
+        try
+        {
+            var result = await GetJsonAsync<SearchHit[]>($"api/mcp/SearchBelemetry?query={Uri.EscapeDataString(_query)}&limit=8");
+
+            _searchError = result is null ? Unreachable : null;
+            _hits = result;
+        }
+        finally
+        {
+            _searching = false;
+        }
+    }
+
+    private async Task RunGenerateAsync()
+    {
+        if (Http.BaseAddress is null) return;
+
+        if (_exporters.Count == 0)
+        {
+            _generateError = "Pick at least one exporter.";
+            _generated = null;
+            return;
+        }
+
+        _generating = true;
+        _generateError = null;
+
+        try
+        {
+            // In the order the choices are listed, so the same selection always builds the same URL.
+            var exporters = string.Join(",", _exporterChoices.Select(c => c.Value).Where(_exporters.Contains));
+            var result = await GetJsonAsync<GeneratedConfiguration>(
+                $"api/mcp/GenerateBelemetryConfiguration?host={Uri.EscapeDataString(_host)}" +
+                $"&exporters={Uri.EscapeDataString(exporters)}&consent={Uri.EscapeDataString(_consent)}");
+
+            _generateError = result is null ? Unreachable : null;
+            _generated = result;
+            _generation++;
+        }
+        finally
+        {
+            _generating = false;
+        }
+    }
+
+    private async Task RunReviewAsync()
+    {
+        if (Http.BaseAddress is null) return;
+
+        _reviewError = null;
+
+        var url = $"api/mcp/ReviewBelemetryConfiguration?code={Uri.EscapeDataString(_review)}";
+
+        // The code travels in the query string, and a request line that long is refused by the server before
+        // the tool sees it. Saying which is happening beats a 414 the panel cannot explain.
+        if (url.Length > MaxReviewUrlLength)
+        {
+            _reviewError = $"That is {_review.Length} characters, more than this page can put in a URL. Paste the " +
+                           "AddBitBelemetryServices call rather than a whole file - the MCP tool itself takes far more.";
+            _findings = null;
+            return;
+        }
+
+        _reviewing = true;
+
+        try
+        {
+            var result = await GetJsonAsync<Review>(url);
+
+            _reviewError = result is null ? Unreachable : null;
+            _findings = result;
+        }
+        finally
+        {
+            _reviewing = false;
+        }
+    }
+
+    private async Task RunLookupAsync(string query)
+    {
+        if (Http.BaseAddress is null) return;
+
+        _lookup = query;
+        _looking = true;
+        _lookupError = null;
+
+        try
+        {
+            var result = await GetTextAsync($"api/mcp/LookupBelemetryConventions?query={Uri.EscapeDataString(query)}");
+
+            _lookupError = result is null ? Unreachable : null;
+            _conventions = result;
+            _lookupGeneration++;
+        }
+        finally
+        {
+            _looking = false;
+        }
+    }
+
+    /// <summary>
+    /// Calls one of the demo's own MCP endpoints, answering null when it cannot be reached or did not come back in
+    /// the expected shape. Every caller turns that into its own message: leaving the last answer on screen would
+    /// read as the answer to the question just asked.
+    /// </summary>
+    private async Task<T?> GetJsonAsync<T>(string url)
+    {
+        try
+        {
+            return await Http.GetFromJsonAsync<T>(url, _json);
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    /// <summary>
+    /// A tool that answers with markdown may come back as text/plain or as a JSON string, depending on how the
+    /// endpoint formats a string; both read the same here.
+    /// </summary>
+    private async Task<string?> GetTextAsync(string url)
+    {
+        try
+        {
+            using var response = await Http.GetAsync(url);
+            if (response.IsSuccessStatusCode is false) return null;
+
+            var text = await response.Content.ReadAsStringAsync();
+            var json = response.Content.Headers.ContentType?.MediaType?.Contains("json", StringComparison.OrdinalIgnoreCase) is true;
+
+            return json && text.StartsWith('"') ? JsonSerializer.Deserialize<string>(text, _json) : text;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string SnippetLanguage(string? language) => language?.ToLowerInvariant() switch
+    {
+        "csharp" or "cs" or "c#" => "C#",
+        "razor" or "cshtml" => "Razor",
+        "json" => "JSON",
+        "html" => "HTML",
+        "xml" or "csproj" => "XML",
+        "yaml" or "yml" => "YAML",
+        "javascript" or "js" => "JavaScript",
+        "shell" or "bash" or "sh" or "powershell" => "Shell",
+        null or "" => "Text",
+        _ => language,
+    };
+
+    private static string Shorten(string? description)
+    {
+        if (string.IsNullOrEmpty(description)) return "";
+
+        // Tool descriptions are written for an agent deciding whether to call the tool, so they are long by
+        // design. The table wants the first sentence.
+        var stop = description.IndexOf(". ", StringComparison.Ordinal);
+
+        return stop > 0 ? description[..(stop + 1)] : description;
+    }
+}

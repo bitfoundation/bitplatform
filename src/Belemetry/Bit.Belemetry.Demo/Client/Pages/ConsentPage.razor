@@ -1,0 +1,388 @@
+﻿@page "/consent"
+@using System.Text.Json
+@implements IDisposable
+@inject IBelemetryConsent Consent
+@inject IJSRuntime JS
+
+<PageTitle>Consent and GDPR - bit Belemetry</PageTitle>
+
+<h1>Consent and GDPR</h1>
+
+<p class="page-intro">
+    Every record Belemetry produces belongs to exactly one of twelve <strong>features</strong>, and a feature
+    is collected only while it is both enabled by configuration and granted by the user. Nothing is sent
+    before the user decides, each feature can be granted and revoked on its own at runtime, and revoking one
+    purges what it queued and what it stored on the device.
+</p>
+
+<div class="demo-section">
+    <h2>Your consent, live</h2>
+    <p>
+        This panel is wired straight to <code>IBelemetryConsent</code> - the same service the site's banner
+        uses. Tick a feature to grant it, untick it to revoke it, or set a whole group at once. The decision is
+        remembered in this browser, and the <a href="/live">Live telemetry</a> page shows what each grant lets
+        through.
+    </p>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Per feature</span>
+            <div class="consent-grid">
+                @foreach (var feature in _features)
+                {
+                    var available = (Consent.Available & feature.Flag) == feature.Flag;
+                    <label class="consent-feature">
+                        <input type="checkbox"
+                               checked="@Consent.IsGranted(feature.Flag)"
+                               disabled="@(_ready is false || available is false)"
+                               @onchange="e => ToggleAsync(feature.Flag, e.Value is true)" />
+                        <span>
+                            <strong>@feature.Flag</strong>
+                            <small>@feature.Description</small>
+                        </span>
+                    </label>
+                }
+            </div>
+
+            <span class="demo-label">Groups</span>
+            <div class="demo-actions">
+                <button type="button" class="btn-bl-subtle" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.Diagnostics)">Diagnostics</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.Analytics)">Analytics</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.Monitoring)">Monitoring</button>
+                <button type="button" class="btn-bl" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.All)">All</button>
+                <button type="button" class="btn-bl btn-bl-danger" disabled="@(_ready is false)" @onclick="() => SetAsync(BelemetryFeatures.None)">None</button>
+            </div>
+
+            @if (_error is not null)
+            {
+                <p class="demo-label" role="status">@_error</p>
+            }
+        </div>
+    </div>
+
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">.NET - IBelemetryConsent</span>
+            <dl class="kv">
+                <dt>Available</dt>
+                <dd><code>@Describe(Consent.Available)</code></dd>
+                <dt>Granted</dt>
+                <dd><code>@Describe(Consent.Granted)</code></dd>
+                <dt>IsDecided</dt>
+                <dd><span class="state-pill @(Consent.IsDecided ? "on" : null)">@(Consent.IsDecided ? "decided" : "not decided")</span></dd>
+            </dl>
+
+            <span class="demo-label">Effective (configured and granted)</span>
+            <div class="badge-list">
+                @foreach (var feature in _features)
+                {
+                    var effective = (Consent.Available & Consent.Granted & feature.Flag) == feature.Flag;
+                    <span class="state-pill @(effective ? "on" : null)">@feature.Flag</span>
+                }
+            </div>
+        </div>
+
+        <div class="demo-card stack">
+            <span class="demo-label">Browser - BitBelemetry.getContext()</span>
+            @if (_browser is { } context)
+            {
+                <dl class="kv">
+                    <dt>consent</dt>
+                    <dd><code>@Describe(context.Consent)</code></dd>
+                    <dt>decided</dt>
+                    <dd><span class="state-pill @(context.Decided ? "on" : null)">@(context.Decided ? "decided" : "not decided")</span></dd>
+                    <dt>sessionId</dt>
+                    <dd><code>@(context.SessionId ?? "-")</code></dd>
+                    <dt>pseudoId</dt>
+                    <dd><code>@(context.PseudoId ?? "- (needs UserTracking)")</code></dd>
+                    <dt>userId</dt>
+                    <dd><code>@(context.UserId ?? "-")</code></dd>
+                </dl>
+                <p class="demo-label">
+                    @(context.Consent == (int)Consent.Granted && context.Decided == Consent.IsDecided
+                        ? "Both sides agree."
+                        : "The two sides differ - the browser applies Global Privacy Control, or a change is still on its way.")
+                </p>
+            }
+            else
+            {
+                <p class="demo-label">@(RendererInfo.IsInteractive ? "Waiting for the browser script..." : "Shown once the page is interactive.")</p>
+            }
+            <div class="demo-actions">
+                <button type="button" class="btn-bl-subtle" disabled="@(_ready is false)" @onclick="ReadBrowserAsync">Read again</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Features</h2>
+    <p>
+        The bit values are a wire contract shared by C# and the browser script: they cross the interop
+        boundary as plain integers and are persisted in the browser, so they never change.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Feature</th><th scope="col">Bit</th><th scope="col">Covers</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var feature in _features)
+                {
+                    <tr>
+                        <td><code>@feature.Flag</code></td>
+                        <td>@((int)feature.Flag)</td>
+                        <td>@feature.Description</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Groups</h2>
+    <p>
+        Banners rarely ask about twelve things. The groups are the usual three questions, as flags you can pass
+        to <code>SetAsync</code> or combine with others:
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Group</th><th scope="col">Features</th><th scope="col">Answers</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>Diagnostics</code></td><td>Errors, Logs, Traces, Dependencies</td><td>What is needed to troubleshoot the app</td></tr>
+                <tr><td><code>Analytics</code></td><td>PageViews, Interactions, Sessions, UserTracking, Events</td><td>How the app is used</td></tr>
+                <tr><td><code>Monitoring</code></td><td>Performance, Metrics</td><td>How the app performs</td></tr>
+                <tr><td><code>All</code></td><td>Every feature (4095)</td><td>For apps that need no consent</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        <code>Persistence</code> is in no group: keeping unsent telemetry on the device is a question of its
+        own. Grant it with <code>GrantAsync(BelemetryFeatures.Persistence)</code>, or include it in what you
+        pass to <code>SetAsync</code>.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>How consent behaves</h2>
+    <ul>
+        <li>
+            <strong>Effective = configured AND granted.</strong> <code>BelemetryOptions.Features</code> (all by
+            default) is what the app collects at all; <code>IBelemetryConsent.Available</code> reports it.
+            A feature switched off by configuration is never collected, whatever is granted.
+        </li>
+        <li>
+            <strong>Opt-in by default.</strong> Before the user decides, only <code>Consent.Default</code> is
+            granted - <code>None</code> unless you set it, for example to <code>Errors</code> when error
+            reporting is covered by legitimate interest, or to <code>All</code> for an app that needs no consent.
+        </li>
+        <li>
+            <strong>Nothing undecided leaves the device.</strong> Records of features not yet granted are held in
+            memory, up to <code>Consent.PendingLimit</code> (500). When the user decides, what they granted is
+            sent and the rest is dropped.
+        </li>
+        <li>
+            <strong>Revoking is immediate.</strong> Queued records of a revoked feature are discarded, and its
+            device storage cleared: revoking <code>Persistence</code> clears the offline queue,
+            <code>Sessions</code> the stored session, <code>UserTracking</code> the pseudo id and the user id.
+        </li>
+        <li>
+            <strong>The choice is remembered</strong> (<code>Consent.Persist</code>, on by default) in
+            <code>localStorage</code> under <code>bit-belemetry-consent</code>, and in a file in Hybrid apps.
+            Recording the choice itself is strictly necessary, so it needs no consent of its own.
+        </li>
+        <li>
+            <strong>Global Privacy Control is honored</strong> (<code>Consent.HonorGlobalPrivacyControl</code>,
+            on by default): a browser sending GPC never gets the <code>Analytics</code> features, whatever is
+            requested.
+        </li>
+        <li>
+            <strong>No cookies.</strong> Belemetry sets none.
+        </li>
+        <li>
+            <strong>Trace context still flows.</strong> Without <code>Traces</code>, activities are still created
+            for propagation, so downstream services keep receiving the trace context - but nothing is recorded.
+        </li>
+    </ul>
+    <p>
+        On WebAssembly and Hybrid consent is app-wide. On Blazor Server it belongs to the circuit's user - it
+        lives in their browser - so <code>IBelemetryConsent</code> needs an interactive render mode there. The
+        server pipeline is governed by <code>Server.Features</code> instead, since it serves every user at once.
+    </p>
+    <CodeSnippet Code="@OptionsCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>A banner of your own</h2>
+    <p>
+        A banner needs three things from <code>IBelemetryConsent</code>: whether to show itself
+        (<code>IsDecided</code>), a way to record the answer (<code>SetAsync</code>), and
+        <code>Changed</code> to hide itself when the answer comes from elsewhere - a settings page, or another
+        tab. It should wait for the first interactive render and <code>RefreshAsync</code>: the decision lives
+        in the browser, and a prerendered banner would flash at every user who already chose.
+    </p>
+    <CodeSnippet Code="@BannerCode" Language="Razor" Expanded="true" />
+    <p>Outside .NET - on a static SSR page, or in plain JavaScript - the script has the same API:</p>
+    <CodeSnippet Code="@JsCode" Language="JavaScript" />
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="IBelemetryConsent" />
+    <ApiTable TypeName="BelemetryFeatures" />
+    <ApiTable TypeName="BelemetryConsentOptions" />
+</div>
+
+@code {
+    /// <summary>One consentable feature and what it covers, in bit order.</summary>
+    private sealed record Feature(BelemetryFeatures Flag, string Description);
+
+    private static readonly JsonSerializerOptions _json = new(JsonSerializerDefaults.Web);
+
+    private static readonly Feature[] _features =
+    [
+        new(BelemetryFeatures.Errors, "JS errors and unhandled rejections, .NET logs at Error/Critical or with an exception, TrackException"),
+        new(BelemetryFeatures.PageViews, "Page views - navigation and TrackPageView"),
+        new(BelemetryFeatures.Interactions, "Clicks and other interactions"),
+        new(BelemetryFeatures.Performance, "Web vitals, document load, resource timing, long tasks"),
+        new(BelemetryFeatures.Dependencies, "Browser fetch and XHR spans"),
+        new(BelemetryFeatures.Sessions, "A session id that survives reloads (sessionStorage)"),
+        new(BelemetryFeatures.UserTracking, "enduser.pseudo.id (localStorage) and the authenticated user.id"),
+        new(BelemetryFeatures.Logs, ".NET logs below Error, browser console capture"),
+        new(BelemetryFeatures.Traces, ".NET Activity spans"),
+        new(BelemetryFeatures.Metrics, ".NET Meter metrics"),
+        new(BelemetryFeatures.Persistence, "Unsent telemetry kept on the device for a later retry"),
+        new(BelemetryFeatures.Events, "Custom events (TrackEvent)"),
+    ];
+
+    private TelemetryFeedClient.BrowserContext? _browser;
+    private bool _ready;
+    private string? _error;
+
+    protected override void OnInitialized() => Consent.Changed += OnConsentChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || RendererInfo.IsInteractive is false) return;
+
+        // The decision lives in the browser: adopt what the script restored from localStorage
+        // before showing a state that might be the default rather than the reader's choice.
+        try { await Consent.RefreshAsync(); } catch { /* telemetry never takes the page down */ }
+
+        _ready = true;
+        await ReadBrowserAsync();
+    }
+
+    private async Task ToggleAsync(BelemetryFeatures feature, bool grant)
+    {
+        try
+        {
+            if (grant) await Consent.GrantAsync(feature);
+            else await Consent.RevokeAsync(feature);
+            _error = null;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not change consent: {ex.Message}";
+        }
+
+        await ReadBrowserAsync();
+    }
+
+    private async Task SetAsync(BelemetryFeatures features)
+    {
+        try
+        {
+            await Consent.SetAsync(features);
+            _error = null;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Could not change consent: {ex.Message}";
+        }
+
+        await ReadBrowserAsync();
+    }
+
+    private async Task ReadBrowserAsync()
+    {
+        try
+        {
+            var element = await JS.InvokeAsync<JsonElement>("blDemo.context");
+            _browser = element.ValueKind == JsonValueKind.Object ? element.Deserialize<TelemetryFeedClient.BrowserContext>(_json) : null;
+        }
+        catch
+        {
+            // The script may not have loaded yet; the panel says so and "Read again" retries.
+            _browser = null;
+        }
+
+        StateHasChanged();
+    }
+
+    // Raised by the banner, by this panel, or by the script reporting a change - so the panel and the
+    // browser's view are re-read together.
+    private void OnConsentChanged(object? sender, EventArgs e) => _ = InvokeAsync(ReadBrowserAsync);
+
+    private static string Describe(BelemetryFeatures features) => $"{features} ({(int)features})";
+
+    private static string Describe(int features) => Describe((BelemetryFeatures)features);
+
+    public void Dispose() => Consent.Changed -= OnConsentChanged;
+
+    private const string OptionsCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Features = BelemetryFeatures.All;              // what the app collects at all (default)
+
+            options.Consent.Default = BelemetryFeatures.None;      // granted before a decision (default)
+            options.Consent.Persist = true;                        // remember the choice (default)
+            options.Consent.HonorGlobalPrivacyControl = true;      // GPC: never Analytics (default)
+            options.Consent.PendingLimit = 500;                    // held until the decision (default)
+        });
+        """;
+
+    private const string BannerCode = """
+        @implements IDisposable
+        @inject IBelemetryConsent Consent
+
+        @if (_ready && Consent.IsDecided is false)
+        {
+            <div class="consent-banner" role="dialog" aria-label="Telemetry consent">
+                <p>We measure errors and usage to improve the app. Nothing is sent until you choose.</p>
+                <button @onclick="() => Consent.SetAsync(BelemetryFeatures.All)">Accept all</button>
+                <button @onclick="() => Consent.SetAsync(BelemetryFeatures.Diagnostics)">Diagnostics only</button>
+                <button @onclick="() => Consent.SetAsync(BelemetryFeatures.None)">Reject</button>
+            </div>
+        }
+
+        @code {
+            private bool _ready;
+
+            protected override void OnInitialized() => Consent.Changed += OnChanged;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (firstRender is false) return;
+
+                await Consent.RefreshAsync();
+                _ready = true;
+                StateHasChanged();
+            }
+
+            private void OnChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+            public void Dispose() => Consent.Changed -= OnChanged;
+        }
+        """;
+
+    private const string JsCode = """
+        BitBelemetry.setConsent(Belemetry.Features.Diagnostics | Belemetry.Features.Persistence);
+        BitBelemetry.getConsent();         // 1 | 128 | 256 | 16 | 1024 = 1425
+        BitBelemetry.isConsentDecided();   // true
+        BitBelemetry.getContext();         // { consent, decided, sessionId, pseudoId, userId }
+        """;
+}

@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary><see cref="System.Diagnostics.Activity"/> collection.</summary>
 public sealed class BelemetryTracingOptions

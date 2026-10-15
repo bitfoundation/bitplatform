@@ -1,4 +1,4 @@
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Belemetry;
 
@@ -79,7 +79,8 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
                 {
                     try
                     {
-                        await Store.SaveAsync(request, cancellationToken);
+                        // The browser store sends the request itself, so it needs the headers; a file store must not get them.
+                        await Store.SaveAsync(Store is BelemetryBrowserRequestStore ? request.WithHeaders(exporter.Headers) : request, cancellationToken);
                     }
                     catch (Exception ex)
                     {

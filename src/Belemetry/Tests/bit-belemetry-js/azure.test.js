@@ -1,7 +1,8 @@
 ﻿import { describe, expect, it } from 'vitest';
 import {
-    formatDuration, logToEnvelope, parseConnectionString, rebuildPartial, severityLevel, spanToEnvelope, toEnvelopes,
+    createAzureExporter, formatDuration, logToEnvelope, parseConnectionString, rebuildPartial, severityLevel, spanToEnvelope, toEnvelopes,
 } from '../../Bit.Belemetry/Scripts/exporters/azure.ts';
+import { gunzip } from '../../Bit.Belemetry/Scripts/transport.ts';
 import { encodeUtf8 } from '../../Bit.Belemetry/Scripts/exporters/protobuf.ts';
 import { log, span } from './helpers.js';
 
@@ -67,7 +68,8 @@ describe('envelopes', () => {
         const s = span({ parentSpanId: '00f067aa0ba902b7', attributes: { ...span().attributes, 'server.address': 'api.example.com', 'server.port': 8443, ...ids } });
         const e = spanToEnvelope(s, resource, ctx);
         expect(e.name).toBe('Microsoft.ApplicationInsights.RemoteDependency');
-        expect(e.tags).toMatchObject({ 'ai.operation.id': s.traceId, 'ai.operation.parentId': '00f067aa0ba902b7', 'ai.operation.name': 'GET' });
+        expect(e.tags).toMatchObject({ 'ai.operation.id': s.traceId, 'ai.operation.parentId': '00f067aa0ba902b7' });
+        expect(e.tags['ai.operation.name'], 'Only requests and page views name the operation, as in C#.').toBeUndefined();
         expect(e.data.baseType).toBe('RemoteDependencyData');
         expect(e.data.baseData).toEqual({
             ver: 2, id: s.spanId, name: 'GET', resultCode: '200', data: 'https://api.example.com/items', duration: '00:00:00.2502500',
@@ -87,6 +89,10 @@ describe('envelopes', () => {
         expect(e.name).toBe('Microsoft.ApplicationInsights.Request');
         expect(e.data.baseType).toBe('RequestData');
         expect(e.data.baseData).toMatchObject({ ver: 2, name: 'GET', responseCode: '201', success: true, url: 'https://x.test/a' });
+        expect(e.tags['ai.operation.name']).toBe('GET');
+        const routed = spanToEnvelope(span({ kind: 2, attributes: { 'http.request.method': 'GET', 'http.route': '/a/{id}' } }), resource, ctx);
+        expect(routed.data.baseData.name).toBe('GET /a/{id}');
+        expect(routed.tags['ai.operation.name']).toBe('GET /a/{id}');
     });
 
     it('maps exception logs to Exception, excluding exception.* from properties', () => {
@@ -141,6 +147,46 @@ describe('envelopes', () => {
 
     it('converts a whole batch', () => {
         expect(toEnvelopes({ resource, spans: [span()], logs: [log(), log()] }, ctx)).toHaveLength(3);
+    });
+});
+
+describe('exporter', () => {
+    const connectionString = 'InstrumentationKey=ikey-1;IngestionEndpoint=https://dc.test/';
+    const sent = () => {
+        const requests = [];
+        return { requests, transport: { send: request => { requests.push(request); return Promise.resolve(); } } };
+    };
+    const items = request => JSON.parse(new TextDecoder().decode(request.raw || request.body));
+    const batch = { resource, spans: [span()], logs: [log({ eventName: 'checkout' })] };
+
+    it('sends every signal uncompressed by default', async () => {
+        const { requests, transport } = sent();
+        await createAzureExporter({ type: 'azureMonitor', connectionString }, transport, '1.0.0').export(batch, false);
+        expect(requests).toHaveLength(1);
+        expect(requests[0]).toMatchObject({ url: 'https://dc.test/v2.1/track', contentType: 'application/json', contentEncoding: null });
+        expect(items(requests[0]).map(e => e.name)).toEqual(['Microsoft.ApplicationInsights.RemoteDependency', 'Microsoft.ApplicationInsights.Event']);
+    });
+
+    it('sends only the configured signals', async () => {
+        const traces = sent();
+        await createAzureExporter({ type: 'azureMonitor', connectionString, signals: 1 }, traces.transport, '1.0.0').export(batch, false);
+        expect(items(traces.requests[0]).map(e => e.name)).toEqual(['Microsoft.ApplicationInsights.RemoteDependency']);
+
+        const logs = sent();
+        await createAzureExporter({ type: 'azureMonitor', connectionString, signals: 2 }, logs.transport, '1.0.0').export({ ...batch, logs: [] }, false);
+        expect(logs.requests, 'Nothing left to send: no request at all.').toHaveLength(0);
+    });
+
+    it('compresses with gzip, except during unload', async () => {
+        const zipped = sent();
+        await createAzureExporter({ type: 'azureMonitor', connectionString, compression: 'gzip' }, zipped.transport, '1.0.0').export(batch, false);
+        const request = zipped.requests[0];
+        expect(request.contentEncoding).toBe('gzip');
+        expect(JSON.parse(new TextDecoder().decode(await gunzip(request.body)))).toEqual(items(request));
+
+        const unload = sent();
+        await createAzureExporter({ type: 'azureMonitor', connectionString, compression: 'gzip' }, unload.transport, '1.0.0').export(batch, true);
+        expect(unload.requests[0].contentEncoding).toBeNull();
     });
 });
 

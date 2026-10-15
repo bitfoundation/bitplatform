@@ -1,4 +1,4 @@
-using Bit.Belemetry;
+﻿using Bit.Belemetry;
 using Bit.Belemetry.Tests.Harness;
 
 namespace Microsoft.Extensions.DependencyInjection;

@@ -1,4 +1,4 @@
-using Bit.Belemetry;
+﻿using Bit.Belemetry;
 
 namespace Bit.Belemetry.Demo.Client.Services;
 
@@ -20,8 +20,10 @@ public sealed class DemoNoiseFilter : IBelemetryProcessor
     /// <inheritdoc />
     public bool OnSpan(BelemetrySpan span)
     {
+        // Browser spans carry url.full; server request spans carry url.path on .NET 10 and the route everywhere.
         var url = span.Attributes.GetString(BelemetrySemanticConventions.UrlFull)
-               ?? span.Attributes.GetString(BelemetrySemanticConventions.UrlPath);
+               ?? span.Attributes.GetString(BelemetrySemanticConventions.UrlPath)
+               ?? span.Attributes.GetString(BelemetrySemanticConventions.HttpRoute);
 
         if (url is null) return true;
 

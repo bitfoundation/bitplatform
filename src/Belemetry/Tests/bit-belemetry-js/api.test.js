@@ -173,6 +173,49 @@ describe('public API', () => {
         expect(fetch.calls[0].init.headers).toMatchObject({ a: 'b', 'Content-Type': 'application/json' });
     });
 
+    it('reports the grant within the configured features', async () => {
+        await load();
+        api.start(relayConfig({ features: 1 | 128 }));
+        api.setConsent(4095);
+        expect(api.getConsent()).toBe(1 | 128);
+        expect(api.getContext().consent).toBe(1 | 128);
+    });
+
+    it('recognizes a relative exporter endpoint as its own URL', async () => {
+        await load();
+        api.start({
+            ...relayConfig({ transport: 'direct' }),
+            exporters: [{ type: 'otlp', endpoint: '/otlp', headers: { 'x-api-key': 'k' } }],
+            dependencies: { fetch: false, xhr: false, ignoreUrls: [] },
+        });
+        const ctx = api._getState().ctx;
+        expect(ctx.isExporterUrl(location.origin + '/otlp/v1/traces')).toBe(true);
+        expect(ctx.isExporterUrl('/otlp/v1/logs')).toBe(true);
+        expect(ctx.isExporterUrl(location.origin + '/api/orders')).toBe(false);
+    });
+
+    it('retries the stored requests every retryIntervalMs', async () => {
+        vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval'] });
+        try {
+            const fetch = mockFetch(200);
+            vi.stubGlobal('fetch', fetch);
+            await load();
+            api.start({
+                ...relayConfig({ transport: 'direct' }),
+                consent: { default: 4095 },
+                persistence: { retryIntervalMs: 5000 },
+            });
+            localStorage.setItem('bit-belemetry-queue', JSON.stringify([
+                { id: '1', exporter: 'otlp', url: 'https://collector.test/v1/logs', contentType: 'application/json', body: btoa('{}'), time: Date.now() },
+            ]));
+            expect(fetch.calls).toHaveLength(0);
+            await vi.advanceTimersByTimeAsync(5000);
+            expect(fetch.calls.map(c => c.url)).toEqual(['https://collector.test/v1/logs']);
+        } finally {
+            vi.useRealTimers();
+        }
+    });
+
     it('is idempotent and updates consent defaults on a second start', async () => {
         await load();
         api.start(relayConfig());

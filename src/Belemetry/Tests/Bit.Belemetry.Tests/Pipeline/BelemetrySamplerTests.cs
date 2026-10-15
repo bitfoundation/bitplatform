@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Tests.Pipeline;
+﻿namespace Bit.Belemetry.Tests.Pipeline;
 
 [TestClass]
 public class BelemetrySamplerTests

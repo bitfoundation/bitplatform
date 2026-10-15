@@ -1,4 +1,4 @@
-namespace Bit.Belemetry.Tests.Model;
+﻿namespace Bit.Belemetry.Tests.Model;
 
 [TestClass]
 public class BelemetryAttributesTests

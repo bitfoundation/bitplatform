@@ -1,4 +1,4 @@
-namespace Bit.Belemetry;
+﻿namespace Bit.Belemetry;
 
 /// <summary>The kind of Blazor host Belemetry runs in, which decides its defaults.</summary>
 public enum BelemetryHostKind

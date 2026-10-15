@@ -115,7 +115,9 @@ function exporterFor(s: State, url: string): Exporter | undefined {
     const absolute = absoluteUrl(url);
     for (const exporter of s.exporters) {
         for (const prefix of exporter.urls) {
-            if (prefix && absolute.indexOf(prefix) === 0) return exporter;
+            // A relative endpoint (BrowserEndpoint = "/otlp") is posted to relative to the page, so it is compared the
+            // same way; resolved on every call because the page URL changes with client-side navigation.
+            if (prefix && absolute.indexOf(absoluteUrl(prefix)) === 0) return exporter;
         }
     }
     return undefined;
@@ -208,7 +210,7 @@ function onPageHidden(s: State): void {
 function init(input: BelemetryConfig | null | undefined): State {
     const config = resolveConfig(input);
     setDebug(!!config.debug);
-    const consent = new ConsentManager(config.consent);
+    const consent = new ConsentManager(config.consent, config.features);
     consent.load();
     const session = new SessionManager(config.session);
     let s: State;
@@ -261,6 +263,12 @@ export function start(config?: BelemetryConfig | null): void {
         const onOnline = () => s.transport.resendPersisted();
         addEventListener('online', onOnline);
         s.disposers.push(() => removeEventListener('online', onOnline));
+        // The online event only covers the device's own connection; a backend that was down needs a periodic retry.
+        const retryMs = s.config.persistence.retryIntervalMs;
+        if (s.config.persistence.enabled && retryMs > 0) {
+            const timer = setInterval(onOnline, Math.max(1000, retryMs));
+            s.disposers.push(() => clearInterval(timer));
+        }
         reconcile(s);
         s.transport.resendPersisted();
         syncContext();

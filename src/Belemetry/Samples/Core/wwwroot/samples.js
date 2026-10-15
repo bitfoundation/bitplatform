@@ -1,4 +1,4 @@
-// Browser-side helpers of the sample pages.
+﻿// Browser-side helpers of the sample pages.
 
 // A plain fetch from the page: Belemetry records it as a client span (feature Dependencies) and, for same-origin
 // targets, adds a W3C traceparent header so the server's span joins the same trace.

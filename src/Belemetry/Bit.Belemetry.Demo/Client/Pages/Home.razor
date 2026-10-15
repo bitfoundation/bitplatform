@@ -1,0 +1,300 @@
+﻿@page "/"
+@inject IJSRuntime JS
+
+@* The landing page. It is not a documentation page and does not get the docs shell around it -
+   no nav panel, no "on this page" rail, no reading column (see Layout/MainLayout.razor). Instead
+   it lays out its own full-bleed sections, alternating surfaces, and prints its own index into the
+   docs - which is the job the nav panel would otherwise be doing here.
+
+   The page has one argument to make: that a single small package covers both halves of a Blazor
+   app in OpenTelemetry's own terms, under the user's consent. The strongest form of that argument
+   is the site itself, which is instrumented with Belemetry and shows each reader their own records
+   on the Live telemetry page - so that is where the second call to action goes.
+
+   Its styles live under "Landing page" in wwwroot/css/app.css. *@
+
+<PageTitle>bit Belemetry - telemetry for every Blazor app</PageTitle>
+
+<div class="homepage">
+
+    @* ── Hero ──────────────────────────────────────────────────────────────── *@
+    <section class="homepage-section hero-section">
+        <div class="homepage-section-content">
+            <div class="hero-copy">
+                <a class="hero-eyebrow" href="/mcp-server">
+                    <Icon Path="@Icons.Sparkle" />
+                    Ships with an MCP server for AI agents
+                </a>
+
+                <h1>Telemetry for Blazor, <span class="accent">both sides of the app</span></h1>
+
+                <p class="hero-lead">
+                    One lightweight SDK for WebAssembly, Server, Auto, static SSR and Hybrid. It records
+                    the browser - page views, clicks, web vitals, errors, fetch and XHR - and .NET -
+                    <code>ILogger</code>, <code>Activity</code> and <code>Meter</code> - in OpenTelemetry's
+                    data model, without the OpenTelemetry packages, and only what the user consented to.
+                </p>
+
+                <div class="hero-actions">
+                    <a class="btn-primary" href="/web-app">
+                        Get started
+                        <Icon Path="@Icons.ArrowRight" />
+                    </a>
+                    <a class="btn-secondary" href="/live">
+                        <Icon Path="@Icons.Live" />
+                        Live telemetry
+                    </a>
+                </div>
+
+                <div class="install-line">
+                    <code><span class="prompt" aria-hidden="true">&gt;&nbsp;</span>@_install</code>
+                    <button type="button" class="install-copy" @onclick="CopyInstallAsync"
+                            aria-label="@(_installCopied ? "Install command copied to the clipboard" : "Copy the install command")">
+                        <Icon Path="@(_installCopied ? Icons.Check : Icons.Copy)" />
+                        @(_installCopied ? "Copied" : "Copy")
+                    </button>
+                </div>
+            </div>
+
+            @* The four things a reader most often comes to check: that both halves are covered, and
+               that the data lands where they already look. Each tile opens the page that shows it. *@
+            <div class="hero-stage">
+                @foreach (var tile in _tiles)
+                {
+                    <a class="hero-tile" href="@($"/{tile.Href}")">
+                        <span class="hero-tile-icon">
+                            <Icon Path="@tile.Icon" />
+                        </span>
+                        <span class="hero-tile-title">@tile.Title</span>
+                        <span class="hero-tile-desc">@tile.Description</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* ── Quick start ───────────────────────────────────────────────────────── *@
+    <section class="homepage-section alt-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">Quick start</span>
+            <h2>One registration, two components</h2>
+            <p class="section-lead">
+                Register Belemetry with an exporter, put the script in the document head, and connect
+                .NET once the app is interactive. From then on page views, errors, web vitals, fetch
+                spans and your <code>ILogger</code> output are collected - as soon as the user says yes.
+            </p>
+
+            <div class="quick-start-body">
+                <CodeSnippet Code="@_quickStartProgram" Language="C#" Expanded="true" />
+                <CodeSnippet Code="@_quickStartApp" Language="Razor" Expanded="true" />
+            </div>
+        </div>
+    </section>
+
+    @* ── Why ───────────────────────────────────────────────────────────────── *@
+    <section class="homepage-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">Why Belemetry</span>
+            <h2>OpenTelemetry's model, none of its packages</h2>
+            <p class="section-lead">
+                Belemetry is built on the BCL's own <code>ActivityListener</code>, <code>MeterListener</code>
+                and <code>ILoggerProvider</code> - the primitives the OpenTelemetry SDK itself sits on - with
+                hand-written OTLP and Application Insights encoders and one dependency-free script. No
+                reflection-based serialization, so it trims and compiles ahead of time; no threads, so it
+                runs in single-threaded browser WebAssembly as it does on a server.
+            </p>
+
+            <div class="stat-row">
+                @foreach (var stat in _stats)
+                {
+                    <div class="stat">
+                        <span class="stat-value">@stat.Value</span>
+                        <span class="stat-label">@stat.Label</span>
+                    </div>
+                }
+            </div>
+
+            <p class="section-note">Exports to:</p>
+            <div class="badge-list">
+                @foreach (var target in _targets)
+                {
+                    <span class="badge">@target</span>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* ── Feature bits ──────────────────────────────────────────────────────── *@
+    @* The grid is the twelve consent features, in bit order, because that is how Belemetry itself
+       divides what it collects: every record belongs to exactly one of them, and each can be granted
+       and revoked on its own. *@
+    <section class="homepage-section alt-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">Capabilities</span>
+            <h2>Twelve features, each under its own consent</h2>
+            <p class="section-lead">
+                A record is collected only when its feature is enabled by configuration and granted by
+                the user. Nothing is sent before the user decides, revoking a feature purges what it
+                queued, and every card below opens the page that shows it working.
+            </p>
+
+            <div class="feature-grid">
+                @foreach (var feature in _capabilities)
+                {
+                    <a class="feature-card" href="@($"/{feature.Href}")">
+                        <span class="feature-card-icon">
+                            <Icon Path="@feature.Icon" />
+                        </span>
+                        <h3>@feature.Title</h3>
+                        <p>@feature.Description</p>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* ── Every demo ────────────────────────────────────────────────────────── *@
+    @* The landing page has no nav panel, so the full index of the docs lives here instead: a
+       reader who arrives at the root should be able to reach any page without first having to
+       find their way into them. It is grouped exactly as the panel groups it, from the same
+       list. *@
+    <section class="homepage-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">Documentation</span>
+            <h2>Explore every page</h2>
+            <p class="section-lead">
+                @NavItem.Docs.Length pages, in the order they are meant to be read. Press
+                <span class="kbd">Ctrl K</span> anywhere on the site to jump straight to one.
+            </p>
+
+            <div class="demo-index">
+                @foreach (var group in NavItem.Groups)
+                {
+                    <div class="demo-index-group">
+                        <h3>
+                            <Icon Path="@group.Icon" />
+                            @group.Category
+                        </h3>
+                        @foreach (var item in group.Items)
+                        {
+                            <a class="demo-index-link" href="@item.Url">@item.Title</a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* ── Closing call to action ────────────────────────────────────────────── *@
+    <section class="homepage-section alt-section cta-section">
+        <div class="homepage-section-content">
+            <h2>Start measuring</h2>
+            <p class="section-lead">
+                bit Belemetry is part of bit platform, free and open source. Set it up in a few lines,
+                or watch it measure this site first - your own records, and only yours, on the Live
+                telemetry page.
+            </p>
+            <div class="hero-actions">
+                <a class="btn-primary" href="/web-app">
+                    Get started
+                    <Icon Path="@Icons.ArrowRight" />
+                </a>
+                <a class="btn-secondary" target="_blank" rel="noopener noreferrer"
+                   href="https://github.com/bitfoundation/bitplatform">
+                    <span class="github-mark" aria-hidden="true"></span>
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+
+@code {
+    /// <summary>A hero or feature tile: a headline capability, its one-line pitch and where it is shown.</summary>
+    private sealed record Tile(string Title, string Description, string Href, string Icon);
+
+    /// <summary>One of the numbers under the pitch, which is the part of it that can be checked.</summary>
+    private sealed record Stat(string Value, string Label);
+
+    private const string _install = "dotnet add package Bit.Belemetry";
+
+    private bool _installCopied;
+
+    private readonly Stat[] _stats =
+    [
+        new(".NET 8+", "Targets .NET 8, 9 and 10"),
+        new("0", "OpenTelemetry or third-party packages"),
+        new("5", "Blazor hosts: Server, WebAssembly, Auto, static SSR, Hybrid"),
+        new("12", "Consent features, granted and revoked one by one"),
+    ];
+
+    private readonly string[] _targets =
+    [
+        "OTLP/HTTP protobuf", "OTLP/HTTP JSON", "OpenTelemetry Collector", ".NET Aspire dashboard",
+        "Grafana", "Jaeger", "Honeycomb", "Azure Monitor", "Application Insights Live Metrics",
+        "Console", "In-memory", "Your own IBelemetryExporter",
+    ];
+
+    private readonly Tile[] _tiles =
+    [
+        new("Browser", "Page views, clicks, web vitals, errors and fetch.", "browser", Icons.Browser),
+        new(".NET", "ILogger, Activity and Meter, without the OTel SDK.", "dotnet", Icons.Code),
+        new("OTLP", "Protobuf or JSON, to any OpenTelemetry backend.", "otlp", Icons.Send),
+        new("Consent", "Twelve features, each opt-in and revocable.", "consent", Icons.Shield),
+    ];
+
+    private readonly Tile[] _capabilities =
+    [
+        new("Errors", "JS errors and unhandled rejections, .NET logs at Error or with an exception, and TrackException - with the stack trace, scrubbed.", "browser", Icons.Alert),
+        new("Page views", "History and enhanced navigation, recorded as browser.page_view events with the URL redacted - plus TrackPageView for dialogs and wizard steps.", "browser", Icons.Browser),
+        new("Interactions", "Clicks as browser.user_interaction events, named with data-bit-belemetry-name and kept out with data-bit-belemetry-ignore. Input values are never read.", "browser", Icons.Pointer),
+        new("Performance", "LCP, INP, CLS, FCP and TTFB, the document-load span with navigation timing, resource timing and long tasks.", "browser", Icons.Pulse),
+        new("Dependencies", "fetch and XHR client spans that add a W3C traceparent to your own origin, so the server's span joins the browser's trace.", "browser", Icons.Link),
+        new("Sessions", "A session id that survives reloads in sessionStorage, rotated after inactivity. Without consent it lives in memory only.", "consent", Icons.Live),
+        new("User tracking", "A pseudonymous enduser.pseudo.id and the authenticated user.id from SetUserAsync - both cleared the moment it is revoked.", "consent", Icons.Shield),
+        new("Logs", "ILogger entries below Error with their structured values, scopes and trace context, and browser console capture.", "dotnet", Icons.Text),
+        new("Traces", "Activity spans from the sources you list, parent-based sampling compatible with OpenTelemetry's TraceIdRatioBased.", "dotnet", Icons.Trace),
+        new("Metrics", "Counters, histograms, up-down counters and gauges from your Meters, aggregated with a cardinality limit per instrument.", "dotnet", Icons.Chart),
+        new("Persistence", "Exports that fail offline are kept - in localStorage, or in files on Hybrid and servers - and retried when the network is back.", "persistence", Icons.Database),
+        new("Events", "Custom events from TrackEvent in C# or BitBelemetry.trackEvent in JavaScript, with attributes of your own.", "browser", Icons.Sparkle),
+    ];
+
+    private async Task CopyInstallAsync()
+    {
+        try
+        {
+            _installCopied = await JS.InvokeAsync<bool>("blCopyToClipboard", _install);
+        }
+        catch
+        {
+            // The command is printed next to the button, so a clipboard the browser refuses to
+            // hand over costs the reader a selection rather than the information.
+            _installCopied = false;
+        }
+    }
+
+    private const string _quickStartProgram = """
+        // Program.cs - in every project that hosts Blazor (server and client of a Blazor Web App)
+        using Bit.Belemetry;
+
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.ServiceName = "MyApp";
+            options.AddOtlpExporter("http://localhost:4318");   // Aspire dashboard, OTel Collector, ...
+
+            options.Consent.Default = BelemetryFeatures.None;  // opt-in: the default, written out
+        });
+        """;
+
+    private const string _quickStartApp = """
+        @* App.razor - starts in the browser before Blazor does, and on static SSR pages *@
+        <head>
+            ...
+            <BelemetryScript />
+        </head>
+
+        @* Routes.razor - connects .NET once the app is interactive *@
+        <Router AppAssembly="typeof(Program).Assembly">...</Router>
+        <BelemetryInitializer />
+        """;
+}

@@ -1,4 +1,4 @@
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace Bit.Belemetry;
@@ -24,6 +24,9 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
     public AzureMonitorConnectionString ConnectionString { get; }
 
     internal BelemetryAzureMonitorExporterOptions Options => _options;
+
+    // Authentication is the connection string's key (in the body) or a token from PrepareAsync.
+    public IReadOnlyDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
 
     public IEnumerable<BelemetryHttpRequest> CreateRequests(BelemetryBatch batch)
     {
