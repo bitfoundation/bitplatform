@@ -270,6 +270,7 @@ public static class IDistributedApplicationBuilderExtensions
         /// <summary>
         /// Keeps every container of the application model alive between runs, so that each run reuses them instead of
         /// booting them up from scratch, and stops them once the app host hasn't run for <paramref name="idleMinutes"/>.
+        /// If nothing can be started to stop them, they keep Aspire's default session lifetime instead.
         /// </summary>
         /// <remarks>
         /// Call it right before <see cref="IDistributedApplicationBuilder.Build"/>, so all the resources are already added
@@ -277,7 +278,8 @@ public static class IDistributedApplicationBuilderExtensions
         /// </remarks>
         public IDistributedApplicationBuilder UsePersistentContainers(int idleMinutes = 15)
         {
-            ContainersKeeper.Start(builder, TimeSpan.FromMinutes(idleMinutes));
+            if (ContainersKeeper.Start(builder, TimeSpan.FromMinutes(idleMinutes)) is false)
+                return builder;
 
             foreach (var container in builder.Resources.OfType<ContainerResource>().ToArray())
             {

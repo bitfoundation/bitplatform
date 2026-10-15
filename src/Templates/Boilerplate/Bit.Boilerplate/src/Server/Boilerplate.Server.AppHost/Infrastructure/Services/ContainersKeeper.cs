@@ -52,7 +52,9 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
     /// Makes sure a keeper is running for this app host and registers the hosted service that keeps it alive.
     /// Runs while the application model is built, before any container is created.
     /// </summary>
-    public static void Start(IDistributedApplicationBuilder builder, TimeSpan idleTimeout)
+    /// <returns><c>false</c> when no keeper could be started, so nothing would ever stop persistent containers.</returns>
+    /// <exception cref="InvalidOperationException">The previous keeper is still stopping the containers after 2 minutes.</exception>
+    public static bool Start(IDistributedApplicationBuilder builder, TimeSpan idleTimeout)
     {
         var stateDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), "aspire-containers-keeper", GetAppHostId(builder.AppHostDirectory))).FullName;
 
@@ -67,11 +69,12 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
             Beat(stateDirectory);
             WaitWhileStopping(stateDirectory);
 
-            // If no keeper can be started, the containers are still persistent; they just never stop on their own.
-            if (IsKeeperRunning(stateDirectory) || StartKeeper(builder, stateDirectory, idleTimeout))
-            {
-                builder.Services.AddHostedService(services => new ContainersKeeper(stateDirectory, services.GetRequiredService<ResourceNotificationService>()));
-            }
+            if (IsKeeperRunning(stateDirectory) is false && StartKeeper(builder, stateDirectory, idleTimeout) is false)
+                return false;
+
+            builder.Services.AddHostedService(services => new ContainersKeeper(stateDirectory, services.GetRequiredService<ResourceNotificationService>()));
+
+            return true;
         }
         finally
         {
@@ -240,13 +243,18 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
     }
 
     // Waits only while the keeper is alive, so a keeper killed in the middle of stopping can't hold up every later run.
+    // A keeper that is still stopping after the deadline makes this run fail: using the containers, or starting new ones
+    // on the same volumes, while they are being stopped would be worse.
     private static void WaitWhileStopping(string stateDirectory)
     {
         var stoppingPath = Path.Combine(stateDirectory, "stopping");
         var deadline = DateTime.UtcNow.AddMinutes(2);
 
-        while (File.Exists(stoppingPath) && IsKeeperRunning(stateDirectory) && DateTime.UtcNow < deadline)
+        while (File.Exists(stoppingPath) && IsKeeperRunning(stateDirectory))
         {
+            if (DateTime.UtcNow >= deadline)
+                throw new InvalidOperationException($"The containers keeper has been stopping this app host's containers for 2 minutes (its pid is in {Path.Combine(stateDirectory, "process")}). Check the container runtime, then end that process or wait for it to finish, and run again.");
+
             Thread.Sleep(500);
         }
 
