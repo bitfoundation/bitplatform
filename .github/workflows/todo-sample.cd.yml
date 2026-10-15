@@ -622,6 +622,9 @@ jobs:
           fileName: 'appicon.svg'
           encodedString: ${{ vars.TODO_ICON }}
 
+    - name: Leave the App Icon's SVG filters out, which MAUI's resizetizer can't render (dotnet/maui#38319)
+      run: perl -0pi -e 's/ filter="url\(#[^)]*\)"//g; s/\s*<filter\b.*?<\/filter>//gs' TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
+
     - name: Delete App Splash Screen
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
 
@@ -736,6 +739,9 @@ jobs:
           fileDir: './TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/'
           fileName: 'appicon.svg'
           encodedString: ${{ vars.TODO_ICON }}
+
+    - name: Leave the App Icon's SVG filters out, which MAUI's resizetizer can't render (dotnet/maui#38319)
+      run: perl -0pi -e 's/ filter="url\(#[^)]*\)"//g; s/\s*<filter\b.*?<\/filter>//gs' TodoSample/src/Client/TodoSample.Client.Maui/Resources/AppIcon/appicon.svg
 
     - name: Delete App Splash Screen
       run: rm TodoSample/src/Client/TodoSample.Client.Maui/Resources/Splash/splash.svg
