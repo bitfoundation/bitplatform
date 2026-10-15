@@ -21,6 +21,13 @@
 // the preview reads as a shaded rectangle someone forgot to finish.
 .box-content {
     width: 100%;
+    // The query container of the live preview: a demo that has to rearrange itself when it runs out of room
+    // asks how wide the box it is shown in is (`@container demo-preview (max-width: ...)`), never how wide
+    // the window is - beside the nav panel and the side rail a desktop preview can be narrower than a
+    // tablet's. Only the inline size is contained, which the box already takes from its column rather than
+    // from what it holds, and it makes no containing block, so a fixed or absolute popup in a preview is
+    // placed exactly as it would be without it.
+    container: demo-preview / inline-size;
     overflow: hidden;
     min-height: rem2(70px);
     box-sizing: border-box;
@@ -123,13 +130,9 @@
 .example-container {
     overflow: auto;
     padding: rem2(16px);
-    // The prose above a preview names parameters run together (<b>MinTime</b>/<b>MaxTime</b>), which is
-    // one word no line can break, so on a phone it would push the whole preview into a sideways scroll.
-    // Only a word wider than its line is broken; nothing that fits is laid out any differently.
-    overflow-wrap: break-word;
 
     // A phone's preview box is all the room a demo gets, so the stage's inset gives some of it back.
-    @include xs {
+    @container demo-preview (max-width: #{rem2(400px)}) {
         padding: rem2(8px);
     }
     // background-color: $bit-color-background-primary;

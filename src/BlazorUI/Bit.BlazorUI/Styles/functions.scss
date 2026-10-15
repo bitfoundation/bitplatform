@@ -354,6 +354,13 @@ $html-font-size: 16px;
  *     page without the stylesheet (BitMarkdownRenderer's inline style) is the one place it is spelled
  *     out, and that test pins it to these declarations.
  *   - What the element needs beyond it (an anchor, a user-select) is declared after the include.
+ *   - The element is absolutely positioned, so the part it is rendered in is its containing block:
+ *     that part declares `position: relative` (the root, or the item, chip or cell holding it).
+ *     Otherwise the pixel is placed against whatever positioned ancestor the page happens to have,
+ *     outside every box between the two, and a component in a horizontally scrolling box - or past
+ *     its edge - adds that pixel to the page's scrollable overflow and widens the page. The one
+ *     exception is a part rendered as a sibling of the root (a description the root points at, a
+ *     live region kept out of a busy root), which nothing of the component encloses.
  *   - A part that is shown again on a state (a skip link on focus) is hidden under a selector that
  *     stops matching in that state (`.bit-xyz-skp:where(:not(:focus))`), so nothing the mixin sets
  *     has to be taken back one declaration at a time.

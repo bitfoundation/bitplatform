@@ -172,13 +172,13 @@
             next box as its context. Separators are decoration only: never focused, announced or part of the value.
         </div>
         <br />
-        <BitOtpInput Label="Dash" Length="4" Separator="-" />
+        <BitOtpInput Label="Dash" Length="6" Separator="-" />
         <br /><br />
-        <BitOtpInput Label="Dot" Length="4" Separator="•" Type="BitInputType.Number" />
+        <BitOtpInput Label="Dot" Length="6" Separator="•" Type="BitInputType.Number" />
         <br /><br />
         <BitOtpInput Label="Grouped by 3" Length="6" Separator="-" SeparatorInterval="3" />
         <br /><br />
-        <BitOtpInput Label="Grouped by 2" Length="4" Separator="—" SeparatorInterval="2" Type="BitInputType.Number" />
+        <BitOtpInput Label="Grouped by 4" Length="8" Separator="—" SeparatorInterval="4" Type="BitInputType.Number" />
         <br /><br />
         <BitOtpInput Label="Icon separator" Length="6" SeparatorInterval="3" Type="BitInputType.Number">
             <SeparatorTemplate>
@@ -516,7 +516,7 @@
                                            Filled = "background-color: #f3e8ff;",
                                            Focused = "box-shadow: blueviolet 0 0 1rem;" })" />
             <br />
-            <BitOtpInput Label="Classes" Length="4" Separator="-"
+            <BitOtpInput Label="Classes" Length="6" Separator="-"
                          Description="Every part of the component has a slot of its own."
                          Classes="@(new() { Root = "custom-root",
                                             Label = "custom-label",
@@ -536,7 +536,7 @@
         </div>
         <br />
         <div>
-            <BitOtpInput Label="Bigger boxes, softer corners" Length="4" Type="BitInputType.Number"
+            <BitOtpInput Label="Bigger boxes, softer corners" Length="6" Type="BitInputType.Number"
                          Style="--bit-OtpInput-input-size: 3.5rem; --bit-OtpInput-radius: 1rem; --bit-OtpInput-font-size: 1.5rem; --bit-OtpInput-label-font-size: 0.875rem; --bit-OtpInput-font-weight: 600; --bit-OtpInput-gap: 0.5rem;" />
             <br />
             <BitOtpInput Label="A filled box shows its own progress" Length="6" Type="BitInputType.Number"

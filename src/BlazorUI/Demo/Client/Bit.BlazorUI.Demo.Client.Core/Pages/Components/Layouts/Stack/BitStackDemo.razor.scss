@@ -1,4 +1,4 @@
-﻿@import '../../../../Styles/abstracts/_media-queries.scss';
+﻿@import '../../../../Styles/abstracts/_functions.scss';
 @import '../../../../Styles/abstracts/_bit-css-variables.scss';
 
 // A BitStack root is a plain div rendered by the component, so it does not carry this file's scope
@@ -133,16 +133,19 @@
         text-overflow: ellipsis;
     }
 
-    // A stack given a width of its own (the 20rem and 24rem rows) never reaches past the preview on a
-    // phone; what it does with the room it is left is still what the example shows.
-    .bit-stc {
+    // The examples whose stack is given a width of its own (the 20rem and 24rem rows) are about that exact
+    // width - what a FillContent child stretches to, how much a row of 24rem is short of - so where the preview
+    // is narrower than it the stack keeps it and scrolls sideways in a box of its own, instead of being capped
+    // to a width its caption and its sample do not name, or pushing the whole preview into a sideways scroll.
+    .fixed-width {
         max-width: 100%;
+        overflow-x: auto;
     }
 
-    // Smaller squares on a phone, so the columns the Wrap example opens at any of its slider heights fit
-    // the preview instead of running past it. Only in a tinted stack: the squares of the Content sizing
-    // example sit in a host that is meant to be too narrow for them, which smaller ones would not be.
-    @include sm {
+    // Smaller squares in a narrow preview, so the columns the Wrap example opens at any of its slider heights
+    // fit it instead of running past it. Only in a tinted stack: the squares of the Content sizing example sit
+    // in a host that is meant to be too narrow for them, which smaller ones would not be.
+    @container demo-preview (max-width: #{rem2(600px)}) {
         .stack > .square {
             width: 1.75rem;
             height: 1.75rem;
@@ -151,11 +154,18 @@
         }
     }
 
-    // A narrower inset for the items on the smallest screens, so a row of them (GrowContent, EqualContent)
-    // still fits the preview without wrapping their labels.
-    @include xs {
+    // In the narrowest previews a row of items (GrowContent, EqualContent) is wider than the room it has, so
+    // there the items take a narrower inset and a label may wrap onto a second line: what the row shows - the
+    // longer child staying longer, the exact thirds - holds either way.
+    @container demo-preview (max-width: #{rem2(400px)}) {
         .item {
             padding-inline: 0.625rem;
+        }
+
+        // Not the items whose story is the one line itself: the label the Shrinkable example truncates and the
+        // ones the Shrink examples squeeze, which would wrap instead of being cut.
+        .item:not(.ellipsis, .squeezable) {
+            white-space: normal;
         }
     }
 }

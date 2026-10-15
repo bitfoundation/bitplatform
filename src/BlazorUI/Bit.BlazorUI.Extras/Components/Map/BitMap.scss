@@ -548,6 +548,14 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
     margin-block-start: spacing(1);
 }
 
+// A table of four columns is wider than a phone leaves room for, so a list on screen scrolls sideways in its own
+// box instead of running past the side of the map and widening whatever it sits in. A screen-reader-only list
+// keeps the overflow its .bit-map-help hides it with.
+.bit-map-marker-list:not(.bit-map-help) {
+    max-width: 100%;
+    overflow-x: auto;
+}
+
 .bit-map-marker-table {
     width: 100%;
     border-collapse: collapse;
@@ -570,6 +578,10 @@ $map-tooltip-color: var(--bit-Map-tooltip-color, #{$clr-tooltip-fg});
 
     th[scope="col"] {
         font-weight: $tg-fw-semibold;
+        // The containing block of the visually hidden .bit-map-help that names the action column, which is
+        // absolutely positioned: held here, its pixel stays in the table rather than adding to the scrollable
+        // overflow of a positioned ancestor outside it.
+        position: relative;
     }
 
     th[scope="row"] {

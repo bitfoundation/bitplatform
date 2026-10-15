@@ -1,4 +1,4 @@
-﻿@import '../../../../Styles/abstracts/_media-queries.scss';
+﻿@import '../../../../Styles/abstracts/_functions.scss';
 
 .example-content {
     gap: 0.75rem;
@@ -19,6 +19,9 @@
 
 .medium {
     height: 6rem;
+    // The two sign-in labels wrap inside their row where they would otherwise run past the preview. Where they
+    // fit they hold one line each, as every other row does: a flex row only wraps a label it is out of room for.
+    white-space: normal;
 }
 
 .taller {
@@ -26,17 +29,9 @@
     height: 12rem;
 }
 
-// On a phone the two sign-in labels wrap inside their 6rem row instead of holding one line each and
-// running past the preview.
-@include sm {
-    .medium {
-        white-space: normal;
-    }
-}
-
-// The rows of four items and three vertical lines close up on the smallest screens, so they still fit
-// on one line.
-@include xs {
+// The rows of four items and three vertical lines close up in the narrowest previews, so they still fit on
+// one line.
+@container demo-preview (max-width: #{rem2(400px)}) {
     .tall {
         gap: 0.5rem;
     }

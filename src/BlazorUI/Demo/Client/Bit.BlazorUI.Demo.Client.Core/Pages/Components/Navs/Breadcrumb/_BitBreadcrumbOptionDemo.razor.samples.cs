@@ -35,7 +35,7 @@ public partial class _BitBreadcrumbOptionDemo
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""bit BlazorUI"" Href=""https://blazorui.bitplatform.dev"" Target=""_blank""
                          Title=""Opens the bit BlazorUI website in a new tab"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>";
 
     private readonly string example2RazorCode = @"
@@ -367,7 +367,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
     private readonly string example13RazorCode = @"
 @foreach (var size in sizes)
 {
-    <BitBreadcrumb TItem=""BitBreadcrumbOption"" Size=""size"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" Size=""size"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap>
         <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
         <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
         <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />

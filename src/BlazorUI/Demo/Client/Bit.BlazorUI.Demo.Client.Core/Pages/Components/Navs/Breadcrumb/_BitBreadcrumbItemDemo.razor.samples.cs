@@ -33,7 +33,7 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithTarget =
 [
     new() { Text = ""Item 1"", Href = ""/components/breadcrumb"" },
     new() { Text = ""bit BlazorUI"", Href = ""https://blazorui.bitplatform.dev"", Target = ""_blank"", Title = ""Opens the bit BlazorUI website in a new tab"" },
-    new() { Text = ""Item 4"", Href = ""/components/breadcrumb"", IsSelected = true }
+    new() { Text = ""Item 3"", Href = ""/components/breadcrumb"", IsSelected = true }
 ];";
 
     private readonly string example2RazorCode = @"
@@ -380,11 +380,11 @@ private readonly List<BitBreadcrumbItem> BreadcrumbItemsWithExternalIcon4 =
 ];";
 
     private readonly string example13RazorCode = @"
-<BitBreadcrumb Items=""BreadcrumbItems"" Size=""BitSize.Small"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+<BitBreadcrumb Items=""BreadcrumbItems"" Size=""BitSize.Small"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />
 
-<BitBreadcrumb Items=""BreadcrumbItems"" Size=""BitSize.Medium"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+<BitBreadcrumb Items=""BreadcrumbItems"" Size=""BitSize.Medium"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />
 
-<BitBreadcrumb Items=""BreadcrumbItems"" Size=""BitSize.Large"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
+<BitBreadcrumb Items=""BreadcrumbItems"" Size=""BitSize.Large"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />";
     private readonly string example13CsharpCode = @"
 private readonly List<BitBreadcrumbItem> BreadcrumbItems =
 [

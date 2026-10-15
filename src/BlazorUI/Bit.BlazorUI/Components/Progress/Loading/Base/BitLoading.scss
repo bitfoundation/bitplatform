@@ -22,6 +22,10 @@
 $ldn-private-properties: clr, sz, lfs, stroke, spd, sz-def, lfs-def;
 
 .bit-ldn {
+    // The containing block of the visually hidden .bit-ldn-srt inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     display: flex;
     width: fit-content;
     align-items: center;

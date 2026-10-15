@@ -84,13 +84,13 @@ private string? maskValue;";
 <BitOtpInput Label=""Lower case letters, typed in any case"" Length=""4"" Pattern=""^[a-z]$"" Placeholder=""a"" Lowercase />";
 
     private readonly string example6RazorCode = @"
-<BitOtpInput Label=""Dash"" Length=""4"" Separator=""-"" />
+<BitOtpInput Label=""Dash"" Length=""6"" Separator=""-"" />
 
-<BitOtpInput Label=""Dot"" Length=""4"" Separator=""•"" Type=""BitInputType.Number"" />
+<BitOtpInput Label=""Dot"" Length=""6"" Separator=""•"" Type=""BitInputType.Number"" />
 
 <BitOtpInput Label=""Grouped by 3"" Length=""6"" Separator=""-"" SeparatorInterval=""3"" />
 
-<BitOtpInput Label=""Grouped by 2"" Length=""4"" Separator=""—"" SeparatorInterval=""2"" Type=""BitInputType.Number"" />
+<BitOtpInput Label=""Grouped by 4"" Length=""8"" Separator=""—"" SeparatorInterval=""4"" Type=""BitInputType.Number"" />
 
 <BitOtpInput Label=""Icon separator"" Length=""6"" SeparatorInterval=""3"" Type=""BitInputType.Number"">
     <SeparatorTemplate>
@@ -452,7 +452,7 @@ private readonly BitOtpInputParams[] otpInputParams =
                                Filled = ""background-color: #f3e8ff;"",
                                Focused = ""box-shadow: blueviolet 0 0 1rem;"" })"" />
 
-<BitOtpInput Label=""Classes"" Length=""4"" Separator=""-""
+<BitOtpInput Label=""Classes"" Length=""6"" Separator=""-""
              Description=""Every part of the component has a slot of its own.""
              Classes=""@(new() { Root = ""custom-root"",
                                 Label = ""custom-label"",
@@ -464,7 +464,7 @@ private readonly BitOtpInputParams[] otpInputParams =
                                 Separator = ""custom-separator"" })"" />
 
 
-<BitOtpInput Label=""Bigger boxes, softer corners"" Length=""4"" Type=""BitInputType.Number""
+<BitOtpInput Label=""Bigger boxes, softer corners"" Length=""6"" Type=""BitInputType.Number""
              Style=""--bit-OtpInput-input-size: 3.5rem; --bit-OtpInput-radius: 1rem; --bit-OtpInput-font-size: 1.5rem; --bit-OtpInput-label-font-size: 0.875rem; --bit-OtpInput-font-weight: 600; --bit-OtpInput-gap: 0.5rem;"" />
 
 <BitOtpInput Label=""A filled box shows its own progress"" Length=""6"" Type=""BitInputType.Number""

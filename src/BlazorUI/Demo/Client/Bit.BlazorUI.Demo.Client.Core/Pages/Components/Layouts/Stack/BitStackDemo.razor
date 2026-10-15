@@ -282,11 +282,13 @@
             </div>
             <div class="example-content">
                 <div class="caption">FillContent (cross axis)</div>
-                <BitStack FillContent Class="stack" Style="width:20rem">
-                    <div class="item">Item 1</div>
-                    <div class="item">Item 2</div>
-                    <div class="item">Item 3</div>
-                </BitStack>
+                <div class="fixed-width">
+                    <BitStack FillContent Class="stack" Style="width:20rem">
+                        <div class="item">Item 1</div>
+                        <div class="item">Item 2</div>
+                        <div class="item">Item 3</div>
+                    </BitStack>
+                </div>
                 <br />
                 <div class="caption">GrowContent (main axis): the leftover shared out, so the longer child stays longer</div>
                 <BitStack Horizontal GrowContent Class="stack">
@@ -310,20 +312,24 @@
                 </BitStack>
                 <br />
                 <div class="caption">Eight squares in a row too narrow for them: squeezed to fit</div>
-                <BitStack Horizontal Gap="0.5rem" Class="host" Style="width:20rem">
-                    @for (int i = 1; i <= 8; i++)
-                    {
-                        <div class="square">@i</div>
-                    }
-                </BitStack>
+                <div class="fixed-width">
+                    <BitStack Horizontal Gap="0.5rem" Class="host" Style="width:20rem">
+                        @for (int i = 1; i <= 8; i++)
+                        {
+                            <div class="square">@i</div>
+                        }
+                    </BitStack>
+                </div>
                 <br />
                 <div class="caption">NoShrinkContent: kept at their own size, and what no longer fits overflows</div>
-                <BitStack Horizontal NoShrinkContent Gap="0.5rem" Class="host" Style="width:20rem">
-                    @for (int i = 1; i <= 8; i++)
-                    {
-                        <div class="square">@i</div>
-                    }
-                </BitStack>
+                <div class="fixed-width">
+                    <BitStack Horizontal NoShrinkContent Gap="0.5rem" Class="host" Style="width:20rem">
+                        @for (int i = 1; i <= 8; i++)
+                        {
+                            <div class="square">@i</div>
+                        }
+                    </BitStack>
+                </div>
             </div>
         </DemoExample>
 
@@ -387,11 +393,13 @@
                 </BitStack>
                 <br />
                 <div class="caption">Shrink: three stacks of 12rem in a row of 24rem, giving up what it is short of by their factor</div>
-                <BitStack Horizontal Gap="0.5rem" Class="host" AutoHeight Style="width:24rem">
-                    <BitStack Shrink="3" Class="item squeezable" AutoSize Style="width:12rem">Shrink 3</BitStack>
-                    <BitStack Class="item squeezable" AutoSize Style="width:12rem">Default</BitStack>
-                    <BitStack NoShrink Class="item squeezable" AutoSize Style="width:12rem">NoShrink</BitStack>
-                </BitStack>
+                <div class="fixed-width">
+                    <BitStack Horizontal Gap="0.5rem" Class="host" AutoHeight Style="width:24rem">
+                        <BitStack Shrink="3" Class="item squeezable" AutoSize Style="width:12rem">Shrink 3</BitStack>
+                        <BitStack Class="item squeezable" AutoSize Style="width:12rem">Default</BitStack>
+                        <BitStack NoShrink Class="item squeezable" AutoSize Style="width:12rem">NoShrink</BitStack>
+                    </BitStack>
+                </div>
                 <br />
                 <div class="caption">NoShrink: drag the handle at the corner to squeeze the row</div>
                 <div class="resizable">

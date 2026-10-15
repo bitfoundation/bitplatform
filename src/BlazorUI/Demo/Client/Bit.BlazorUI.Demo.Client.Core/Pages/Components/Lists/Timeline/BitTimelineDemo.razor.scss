@@ -1,6 +1,8 @@
 ﻿::deep {
-    // Side by side while both fit, one under the other on a phone: the timelines share the row from a basis
-    // of nothing, so a line breaks only where the narrowest each of them can be no longer fits.
+    // Side by side while both fit, one under the other where they do not. A timeline is as wide as its container
+    // (width: 100%), so an unwrapping row has always shared itself out in two equal halves; growing both from a
+    // basis of nothing gives exactly those halves, where a 100% basis would put each timeline on a line of its own
+    // the moment the row may wrap. A line breaks only where the narrowest each of them can be no longer fits.
     .example-content {
         gap: 0.5rem;
         display: flex;

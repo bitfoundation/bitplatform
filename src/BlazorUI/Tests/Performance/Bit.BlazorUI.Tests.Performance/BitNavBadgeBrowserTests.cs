@@ -220,7 +220,9 @@ public class BitNavBadgeBrowserTests : PerformanceTestBase
 
         // In the row of its own item, after the icon, rather than pinned over the corner of it.
         await Expect(Page.Locator($"{inner} .bit-nav-itm")).Not.ToHaveClassAsync(new System.Text.RegularExpressions.Regex(@"bit-nav-icb"));
-        await Expect(Page.Locator($"{inner} .bit-nav-sfx")).ToHaveCSSAsync("position", "static");
+        // In the flow of the row: relative, the containing block of the visually hidden text it holds, never the
+        // absolute of a badge pinned over the corner.
+        await Expect(Page.Locator($"{inner} .bit-nav-sfx")).ToHaveCSSAsync("position", "relative");
         Assert.IsTrue(badge.Left >= icon.Right, "The inner badge is not after its icon.");
         Assert.IsTrue(badge.Right <= item.Right + 0.5, "The inner badge left its row.");
         await Expect(Page.Locator($"{inner} .bit-nav-bdg")).ToHaveCSSAsync("opacity", "1");

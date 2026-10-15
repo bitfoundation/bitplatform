@@ -75,6 +75,21 @@
     }
 }
 
+// Three buttons of 130px are wider than the narrowest previews, so there they share the row instead, give up
+// their minimum width and most of their inset, and the row keeps a small gap between them.
+@container demo-preview (max-width: #{rem2(480px)}) {
+    .position-btn > div {
+        gap: 0.25rem;
+    }
+
+    .position-btn ::deep .position-button {
+        width: auto;
+        min-width: 0;
+        flex: 1 1 0;
+        padding-inline: 0.125rem;
+    }
+}
+
 // The bar the DragElementSelector example drags its modal by.
 .modal-drag-handle {
     width: 100%;
