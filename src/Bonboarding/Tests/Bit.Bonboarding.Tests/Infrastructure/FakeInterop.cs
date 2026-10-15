@@ -29,6 +29,15 @@ internal sealed class FakeInterop : IBonboardingInterop
 
     public BonboardingSize PopoverSize { get; set; } = new(320, 200);
 
+    /// <summary>The popover corner radius the "stylesheet" reports; null when unmeasured.</summary>
+    public double? PopoverRadius { get; set; }
+
+    /// <summary>
+    /// Runs after a step's reply has been measured but before it is returned, the window in which
+    /// a real browser's observers can push a newer frame that overtakes the reply.
+    /// </summary>
+    public Func<BonboardingStepActivation, Task>? DuringActivation { get; set; }
+
     public List<BonboardingStepActivation> Activations { get; } = [];
 
     public int DeactivateCount { get; private set; }
@@ -75,11 +84,15 @@ internal sealed class FakeInterop : IBonboardingInterop
         return ValueTask.CompletedTask;
     }
 
-    public ValueTask<BonboardingStepGeometry> ActivateStepAsync(BonboardingStepActivation activation, CancellationToken cancellationToken = default)
+    public async ValueTask<BonboardingStepGeometry> ActivateStepAsync(BonboardingStepActivation activation, CancellationToken cancellationToken = default)
     {
         Throw();
         Activations.Add(activation);
-        return ValueTask.FromResult(Measure(activation.Target, activation.AdditionalTargets));
+
+        var reply = Measure(activation.Target, activation.AdditionalTargets);
+        if (DuringActivation is { } during) await during(activation);
+
+        return reply;
     }
 
     public ValueTask DeactivateStepAsync(string sessionId, CancellationToken cancellationToken = default)
@@ -229,6 +242,7 @@ internal sealed class FakeInterop : IBonboardingInterop
             Popover = PopoverSize,
             TargetVisible = found,
             Sequence = ++_sequence,
+            PopoverRadius = PopoverRadius,
         };
     }
 

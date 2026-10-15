@@ -4,6 +4,14 @@
 public sealed record BonboardingStepActivation
 {
     public required string SessionId { get; init; }
+
+    /// <summary>
+    /// Identifies this activation of the step. The default browser layer assigns it and echoes it
+    /// back with every callback the step raises, so a callback still in flight from an earlier step
+    /// can be recognised and dropped instead of being applied to the step that replaced it.
+    /// </summary>
+    public long Activation { get; init; }
+
     public required BonboardingTargetDescriptor Target { get; init; }
 
     /// <summary>Folded into the spotlight and into the rectangle used for positioning.</summary>

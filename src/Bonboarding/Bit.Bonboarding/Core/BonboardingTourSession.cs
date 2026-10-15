@@ -15,6 +15,12 @@ namespace Bit.Bonboarding;
 /// at the same moment safe: they queue instead of interleaving. Long-running work inside a
 /// transition also bumps <c>_generation</c>, so an await that resumes after the user has already
 /// moved on can detect it lost the race and abandon its results.
+/// <para>
+/// Awaits here deliberately do not use <c>ConfigureAwait(false)</c>. Application hooks run after
+/// them, and on Blazor Server a hook that touches a component (an <c>EventCallback</c>, a
+/// <c>StateHasChanged</c>) has to run on the renderer's dispatcher, which is the context commands
+/// arrive on.
+/// </para>
 /// </remarks>
 internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboardingInteropCallbacks, IDisposable, IAsyncDisposable
 {
@@ -31,18 +37,13 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     private readonly SemaphoreSlim _gate = new(1, 1);
 
     /// <summary>
-    /// Marks the async flow that currently owns <see cref="_gate"/>. Application hooks are awaited
-    /// while the lock is held and are entirely within their rights to call back into the session
-    /// (a validation handler that dismisses the tour, say), so those nested calls have to run
-    /// inline instead of waiting for a lock their own caller is holding. The flow carries the token
-    /// of the transition it belongs to, and only counts as the owner while that token is still
-    /// <see cref="_activeTransition"/>: a task a hook left running keeps the token after the lock is
-    /// released, and must then queue like any other caller.
+    /// The application hook the current async flow is running inside, if any. Hooks are awaited
+    /// while <see cref="_gate"/> is held and are entirely within their rights to call back into the
+    /// session (a validation handler that dismisses the tour, say), so those nested calls run inline
+    /// instead of waiting for a lock their own caller is holding. See <see cref="HookScope"/> for how
+    /// work a hook starts in the background is kept from running alongside the transition.
     /// </summary>
-    private readonly AsyncLocal<object?> _transitionOwner = new();
-
-    /// <summary>The token of the transition that currently holds <see cref="_gate"/>.</summary>
-    private object? _activeTransition;
+    private readonly AsyncLocal<HookScope?> _hookScope = new();
 
     /// <summary>Where the current step was entered from, for the hooks that run once its target appears.</summary>
     private BonboardingStepDefinition? _enteredFrom;
@@ -53,6 +54,13 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     /// does not report the step as shown a second time.
     /// </summary>
     private bool _stepShown;
+
+    /// <summary>
+    /// True once the current step got as far as <see cref="BonboardingStepDefinition.OnBeforeShow"/>,
+    /// so <see cref="BonboardingStepDefinition.OnBeforeLeave"/> runs exactly for the steps whose show
+    /// hook ran, including one that was then skipped because its target was missing.
+    /// </summary>
+    private bool _stepPrepared;
 
     private readonly List<string> _history = [];
     private readonly Dictionary<string, object?> _state = [];
@@ -185,42 +193,46 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
                 foreach (var (key, value) in options.State) _state[key] = value;
             }
 
-            _environment = await SafeInitializeAsync(ct).ConfigureAwait(false);
+            _environment = await SafeInitializeAsync(ct);
             CurrentOptions = ResolveOptions(null);
 
-            await SafeAttachAsync(ct).ConfigureAwait(false);
+            await SafeAttachAsync(ct);
             HookNavigation();
 
-            var startIndex = await DetermineStartIndexAsync(options, ct).ConfigureAwait(false);
+            var (startIndex, resumed) = await DetermineStartIndexAsync(options, ct);
 
             Status = BonboardingTourStatus.Running;
 
-            if (Tour.OnStarted is not null)
+            if (Tour.OnStarted is { } onStarted)
             {
-                await Tour.OnStarted(new BonboardingTourContext(Tour, _services, this)).ConfigureAwait(false);
+                await InvokeHookAsync(() => onStarted(new BonboardingTourContext(Tour, _services, this)));
             }
 
-            await PublishAsync(BonboardingEventKind.TourStarted).ConfigureAwait(false);
-            await MoveToAsync(startIndex, BonboardingStepChangeReason.Start, +1, ct).ConfigureAwait(false);
+            // Started comes first so an analytics stream always opens with it; resumed qualifies it.
+            await PublishAsync(BonboardingEventKind.TourStarted);
+            if (resumed) await PublishAsync(BonboardingEventKind.TourResumed);
+
+            await MoveToAsync(startIndex, BonboardingStepChangeReason.Start, +1, ct);
         }, cancellationToken);
 
-    private async Task<int> DetermineStartIndexAsync(BonboardingStartOptions options, CancellationToken cancellationToken)
+    /// <summary>Picks the first step, and reports whether that means resuming saved progress.</summary>
+    private async Task<(int Index, bool Resumed)> DetermineStartIndexAsync(BonboardingStartOptions options, CancellationToken cancellationToken)
     {
         if (options.StartAtStepId is { } stepId)
         {
             var explicitStep = Tour.IndexOf(stepId);
-            if (explicitStep >= 0) return explicitStep;
+            if (explicitStep >= 0) return (explicitStep, false);
         }
 
         if (options.StartAtIndex is { } explicitIndex)
         {
-            return Math.Clamp(explicitIndex, 0, Math.Max(0, Tour.Steps.Count - 1));
+            return (Math.Clamp(explicitIndex, 0, Math.Max(0, Tour.Steps.Count - 1)), false);
         }
 
-        if (!options.Resume || !ShouldPersist) return 0;
+        if (!options.Resume || !ShouldPersist) return (0, false);
 
-        var record = await SafeGetRecordAsync(cancellationToken).ConfigureAwait(false);
-        if (record is null || record.IsClosed || record.Version != Tour.Version) return 0;
+        var record = await SafeGetRecordAsync(cancellationToken);
+        if (record is null || record.IsClosed || record.Version != Tour.Version) return (0, false);
 
         // Prefer the id: indices shift as soon as a step is inserted.
         var resumeIndex = record.CurrentStepId is null ? -1 : Tour.IndexOf(record.CurrentStepId);
@@ -235,11 +247,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             {
                 _history.RemoveAt(_history.Count - 1);
             }
-
-            await PublishAsync(BonboardingEventKind.TourResumed).ConfigureAwait(false);
         }
 
-        return resumeIndex;
+        return (resumeIndex, resumeIndex > 0);
     }
 
     // ---- Public commands ---------------------------------------------------
@@ -250,15 +260,34 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     public Task PreviousAsync(CancellationToken cancellationToken = default)
         => RunGuardedAsync(PreviousCoreAsync, cancellationToken);
 
+    /// <remarks>
+    /// An unknown id is a mistake in the calling code, so it is reported to that code rather than
+    /// failing the user's tour. The id is checked again once the transition lock is held, because a
+    /// declarative tour can drop the step in between; that rare case ends the tour as failed.
+    /// </remarks>
     public Task GoToAsync(string stepId, CancellationToken cancellationToken = default)
-        => RunGuardedAsync(ct => GoToCoreAsync(stepId, ct), cancellationToken);
+    {
+        ArgumentNullException.ThrowIfNull(stepId);
+        if (Tour.IndexOf(stepId) < 0) throw StepNotFound(stepId);
 
+        return RunGuardedAsync(ct => GoToCoreAsync(stepId, ct), cancellationToken);
+    }
+
+    /// <remarks>
+    /// An out-of-range index is reported to the caller. One that only becomes out of range while the
+    /// command waits for the transition lock is ignored.
+    /// </remarks>
     public Task GoToAsync(int index, CancellationToken cancellationToken = default)
-        => RunGuardedAsync(ct =>
-        {
-            if (index < 0 || index >= Tour.Steps.Count) throw new ArgumentOutOfRangeException(nameof(index));
-            return MoveToAsync(index, BonboardingStepChangeReason.Jump, +1, ct);
-        }, cancellationToken);
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(index);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, Tour.Steps.Count);
+
+        return RunGuardedAsync(
+            ct => index < Tour.Steps.Count
+                ? MoveToAsync(index, BonboardingStepChangeReason.Jump, +1, ct)
+                : Task.CompletedTask,
+            cancellationToken);
+    }
 
     public Task SkipAsync(CancellationToken cancellationToken = default)
         => RunGuardedAsync(ct => EndAsync(BonboardingTourEndReason.Skipped, ct), cancellationToken);
@@ -278,8 +307,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             if (Status is not (BonboardingTourStatus.Running or BonboardingTourStatus.Waiting)) return;
 
             Status = BonboardingTourStatus.Paused;
-            await SafeDeactivateAsync().ConfigureAwait(false);
-            await PublishAsync(BonboardingEventKind.TourPaused).ConfigureAwait(false);
+            await SafeDeactivateAsync();
+            await PublishAsync(BonboardingEventKind.TourPaused);
             Notify(BonboardingTourSessionChange.Step);
         }, cancellationToken);
 
@@ -289,7 +318,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             if (Status != BonboardingTourStatus.Paused || CurrentIndex < 0) return;
 
             Status = BonboardingTourStatus.Running;
-            await MoveToAsync(CurrentIndex, BonboardingStepChangeReason.Resume, +1, ct).ConfigureAwait(false);
+            await MoveToAsync(CurrentIndex, BonboardingStepChangeReason.Resume, +1, ct);
         }, cancellationToken);
 
     public Task RefreshAsync(CancellationToken cancellationToken = default)
@@ -299,10 +328,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     {
         if (CurrentStep is null || Status != BonboardingTourStatus.Running) return;
 
-        var geometry = await SafeMeasureAsync().ConfigureAwait(false);
+        var geometry = await SafeMeasureAsync();
         if (geometry is null) return;
 
-        ApplyGeometry(geometry);
+        ApplyGeometryIfNewer(geometry);
         Notify(BonboardingTourSessionChange.Geometry);
     }
 
@@ -313,12 +342,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
             var step = CurrentStep;
 
-            if (action.OnClick is not null)
+            if (action.OnClick is { } onClick)
             {
-                await action.OnClick(CreateContext(step)).ConfigureAwait(false);
+                await InvokeHookAsync(() => onClick(CreateContext(step)));
             }
 
-            await PublishAsync(BonboardingEventKind.ActionInvoked, step, action).ConfigureAwait(false);
+            await PublishAsync(BonboardingEventKind.ActionInvoked, step, action);
 
             // The handler is allowed to end the tour or navigate itself.
             if (!IsActive || !ReferenceEquals(CurrentStep, step)) return;
@@ -326,22 +355,22 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             switch (action.Effect)
             {
                 case BonboardingStepActionEffect.Next:
-                    await NextCoreAsync(ct).ConfigureAwait(false);
+                    await NextCoreAsync(ct);
                     break;
                 case BonboardingStepActionEffect.Previous:
-                    await PreviousCoreAsync(ct).ConfigureAwait(false);
+                    await PreviousCoreAsync(ct);
                     break;
                 case BonboardingStepActionEffect.GoTo when action.TargetStepId is { } targetId:
-                    await GoToCoreAsync(targetId, ct).ConfigureAwait(false);
+                    await GoToCoreAsync(targetId, ct);
                     break;
                 case BonboardingStepActionEffect.Complete:
-                    await EndAsync(BonboardingTourEndReason.Completed, ct).ConfigureAwait(false);
+                    await EndAsync(BonboardingTourEndReason.Completed, ct);
                     break;
                 case BonboardingStepActionEffect.Skip:
-                    await EndAsync(BonboardingTourEndReason.Skipped, ct).ConfigureAwait(false);
+                    await EndAsync(BonboardingTourEndReason.Skipped, ct);
                     break;
                 case BonboardingStepActionEffect.Dismiss:
-                    await EndAsync(BonboardingTourEndReason.Dismissed, ct).ConfigureAwait(false);
+                    await EndAsync(BonboardingTourEndReason.Dismissed, ct);
                     break;
             }
         }, cancellationToken);
@@ -355,81 +384,83 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         var step = CurrentStep;
         var context = CreateContext(step);
 
-        if (step.CanAdvance is not null && !await step.CanAdvance(context).ConfigureAwait(false))
+        if (step.CanAdvance is { } canAdvance)
         {
-            return;
+            if (!await InvokeHookAsync(() => canAdvance(context))) return;
+
+            // The hook is allowed to end the tour or navigate itself.
+            if (IsFinished || !ReferenceEquals(CurrentStep, step)) return;
         }
 
-        if (step.ResolveNext is not null)
+        if (step.ResolveNext is { } resolveNext)
         {
-            var nextId = await step.ResolveNext(context).ConfigureAwait(false);
+            var nextId = await InvokeHookAsync(() => resolveNext(context));
+            if (IsFinished || !ReferenceEquals(CurrentStep, step)) return;
 
             if (nextId == BonboardingTourDefinition.EndStepId)
             {
-                await EndAsync(BonboardingTourEndReason.Completed, cancellationToken).ConfigureAwait(false);
+                await EndAsync(BonboardingTourEndReason.Completed, cancellationToken);
                 return;
             }
 
             if (nextId is not null)
             {
-                await GoToCoreAsync(nextId, cancellationToken).ConfigureAwait(false);
+                await GoToCoreAsync(nextId, cancellationToken);
                 return;
             }
         }
 
-        await MoveToAsync(null, BonboardingStepChangeReason.Next, +1, cancellationToken).ConfigureAwait(false);
+        await MoveToAsync(null, BonboardingStepChangeReason.Next, +1, cancellationToken);
     }
 
     private async Task PreviousCoreAsync(CancellationToken cancellationToken)
     {
         if (CurrentStep is null || IsFinished) return;
 
-        if (CurrentStep.ResolvePrevious is not null)
+        var step = CurrentStep;
+
+        if (step.ResolvePrevious is { } resolvePrevious)
         {
-            var previousId = await CurrentStep.ResolvePrevious(CreateContext(CurrentStep)).ConfigureAwait(false);
+            var previousId = await InvokeHookAsync(() => resolvePrevious(CreateContext(step)));
+            if (IsFinished || !ReferenceEquals(CurrentStep, step)) return;
+
             if (previousId is not null && Tour.IndexOf(previousId) is var explicitIndex and >= 0)
             {
-                PopHistory();
-                await MoveToAsync(explicitIndex, BonboardingStepChangeReason.Previous, -1, cancellationToken).ConfigureAwait(false);
+                await MoveToAsync(explicitIndex, BonboardingStepChangeReason.Previous, -1, cancellationToken);
                 return;
             }
         }
 
         // The visit history is authoritative: with branching, "the step before this one" is
-        // whatever the user actually saw, not the previous array element.
-        if (_history.Count >= 2)
-        {
-            var targetId = _history[^2];
-            var index = Tour.IndexOf(targetId);
-            if (index >= 0)
-            {
-                // Drop both the current entry and the destination; MoveToAsync re-pushes it.
-                _history.RemoveRange(_history.Count - 2, 2);
-                await MoveToAsync(index, BonboardingStepChangeReason.Previous, -1, cancellationToken).ConfigureAwait(false);
-                return;
-            }
-        }
+        // whatever the user actually saw, not the previous array element. Without one, fall back
+        // to the previous eligible step. MoveToAsync unwinds the history once the move is certain.
+        var visited = PreviousVisitedIndex();
+        await MoveToAsync(visited >= 0 ? visited : null, BonboardingStepChangeReason.Previous, -1, cancellationToken);
+    }
 
-        if (PreviousPlanned(CurrentIndex) < 0) return;
+    /// <summary>Index of the step the user saw before the current one, or <c>-1</c>.</summary>
+    private int PreviousVisitedIndex()
+    {
+        var end = _history.Count;
+        if (end > 0 && CurrentStep is not null && _history[^1] == CurrentStep.Id) end--;
 
-        PopHistory();
-        await MoveToAsync(null, BonboardingStepChangeReason.Previous, -1, cancellationToken).ConfigureAwait(false);
+        return end > 0 ? Tour.IndexOf(_history[end - 1]) : -1;
     }
 
     private Task GoToCoreAsync(string stepId, CancellationToken cancellationToken)
     {
         var index = Tour.IndexOf(stepId);
-        if (index < 0)
-        {
-            throw new BonboardingException($"Step '{stepId}' was not found in tour '{Tour.Id}'.")
-            {
-                TourId = Tour.Id,
-                StepId = stepId,
-            };
-        }
+        if (index < 0) throw StepNotFound(stepId);
 
         return MoveToAsync(index, BonboardingStepChangeReason.Jump, +1, cancellationToken);
     }
+
+    private BonboardingException StepNotFound(string stepId)
+        => new($"Step '{stepId}' was not found in tour '{Tour.Id}'.")
+        {
+            TourId = Tour.Id,
+            StepId = stepId,
+        };
 
     // ---- The transition itself --------------------------------------------
 
@@ -444,44 +475,93 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         if (_disposed || IsFinished) return;
 
         var previousStep = CurrentStep;
+        var previousShown = _stepShown;
         var isReentry = reason is BonboardingStepChangeReason.Resume or BonboardingStepChangeReason.Retarget;
+        var leaving = previousStep is not null && !isReentry;
 
-        if (previousStep is not null && !isReentry)
+        // Going back with nowhere to go is a no-op. That is decided before any leave hook runs, so
+        // the user is never left on a step whose hooks have already torn it down.
+        if (leaving && direction < 0)
         {
-            if (previousStep.OnBeforeLeave is not null)
-            {
-                await previousStep.OnBeforeLeave(CreateContext(previousStep)).ConfigureAwait(false);
-            }
-
-            await PublishAsync(BonboardingEventKind.StepLeft, previousStep, duration: DateTimeOffset.UtcNow - _stepShownAt)
-                .ConfigureAwait(false);
+            await RebuildPlanAsync();
+            if (ResolveDestination(requestedIndex, direction) < 0) return;
         }
 
-        await RebuildPlanAsync().ConfigureAwait(false);
+        if (leaving)
+        {
+            // Leave hooks pair with show hooks: a step still waiting for its route never ran
+            // OnBeforeShow and has nothing to undo, while one that was skipped for a missing target
+            // did and may have opened something to reveal it.
+            if (_stepPrepared && previousStep!.OnBeforeLeave is { } beforeLeave)
+            {
+                await InvokeHookAsync(() => beforeLeave(CreateContext(previousStep)));
 
-        var index = requestedIndex is { } explicitIndex
-            ? ResolveEligible(explicitIndex, direction)
-            : direction > 0 ? NextPlanned(CurrentIndex) : PreviousPlanned(CurrentIndex);
+                // The hook is allowed to end the tour or navigate itself.
+                if (IsFinished || !ReferenceEquals(CurrentStep, previousStep)) return;
+            }
+
+            // Only a step that was actually on screen can report how long it was there.
+            if (previousShown)
+            {
+                await PublishAsync(BonboardingEventKind.StepLeft, previousStep, duration: DateTimeOffset.UtcNow - _stepShownAt);
+            }
+        }
+
+        await RebuildPlanAsync();
+
+        var index = ResolveDestination(requestedIndex, direction);
 
         if (index < 0)
         {
-            // Nothing eligible ahead: forward means the tour is over, backward means stay put.
-            if (direction > 0) await EndAsync(BonboardingTourEndReason.Completed, cancellationToken).ConfigureAwait(false);
+            if (direction > 0)
+            {
+                // Nothing eligible ahead: the tour is over.
+                await EndAsync(BonboardingTourEndReason.Completed, cancellationToken);
+            }
+            else if (leaving)
+            {
+                // A leave hook changed what is eligible and took away the step to go back to.
+                // Its leave hooks have run, so show the step again rather than leave it torn down.
+                await MoveToAsync(CurrentIndex, BonboardingStepChangeReason.Retarget, +1, cancellationToken);
+            }
+
             return;
         }
 
         var generation = ++_generation;
+        var step = Tour.Steps[index];
 
-        // Re-entering the same step keeps where it was originally entered from. A step that was
-        // never shown (it was still waiting for its route) reports the transition that led to it;
-        // one that was already on screen reports the re-entry itself.
         if (!isReentry)
         {
-            _enteredFrom = previousStep;
+            // Back only ever lands on steps the user actually saw: moving back unwinds the current
+            // step's entry, and a step that never made it on screen leaves none behind.
+            if (previousStep is not null && (direction < 0 || !previousShown)
+                && _history.Count > 0 && _history[^1] == previousStep.Id)
+            {
+                _history.RemoveAt(_history.Count - 1);
+            }
+
+            // Steps being backed past that are no longer eligible are not somewhere to return to.
+            if (direction < 0)
+            {
+                while (_history.Count > 0 && _history[^1] != step.Id && !_plan.Contains(Tour.IndexOf(_history[^1])))
+                {
+                    _history.RemoveAt(_history.Count - 1);
+                }
+            }
+
+            // A step that never made it on screen is not where the user came from, so the hooks
+            // keep pointing at the last step they actually saw.
+            if (previousShown || previousStep is null) _enteredFrom = previousStep;
+
             _enteredBy = reason;
+            _stepPrepared = false;
         }
         else if (_stepShown)
         {
+            // Re-entering the same step keeps where it was originally entered from. A step that
+            // was never shown (it was still waiting for its route) reports the transition that led
+            // to it; one that was already on screen reports the re-entry itself.
             _enteredBy = reason;
         }
 
@@ -491,9 +571,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         _stepCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         var stepToken = _stepCts.Token;
 
-        await SafeDeactivateAsync().ConfigureAwait(false);
+        await SafeDeactivateAsync();
 
-        var step = Tour.Steps[index];
         CurrentStep = step;
         CurrentIndex = index;
         CurrentOptions = ResolveOptions(step);
@@ -506,39 +585,47 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         Notify(BonboardingTourSessionChange.Step);
 
         // Route handling comes first: the element cannot exist until the right page is rendered.
-        if (!EnsureRoute(step)) return;
+        if (!await EnsureRouteAsync(step)) return;
 
-        _resolvedTarget = await step.Target.ResolveAsync(CreateContext(step, stepToken)).ConfigureAwait(false);
+        var target = step.Target;
+        _resolvedTarget = target.IsDynamic
+            ? await InvokeHookAsync(() => target.ResolveAsync(CreateContext(step, stepToken)))
+            : target;
         if (generation != _generation) return;
 
-        if (step.OnBeforeShow is not null)
+        _stepPrepared = true;
+
+        if (step.OnBeforeShow is { } beforeShow)
         {
-            await step.OnBeforeShow(CreateContext(step, stepToken)).ConfigureAwait(false);
+            await InvokeHookAsync(() => beforeShow(CreateContext(step, stepToken)));
             if (generation != _generation) return;
         }
 
         var options = CurrentOptions!;
         var wantsTarget = !_resolvedTarget.IsNone;
-        var geometry = await ActivateInBrowserAsync(step, options, stepToken).ConfigureAwait(false);
+        var geometry = await ActivateInBrowserAsync(step, options, stepToken);
 
         if (generation != _generation) return;
 
         if (wantsTarget && geometry is { Found: false })
         {
-            await PublishAsync(BonboardingEventKind.TargetMissing, step).ConfigureAwait(false);
+            await PublishAsync(BonboardingEventKind.TargetMissing, step);
 
-            if (await HandleMissingTargetAsync(options.MissingTarget, step, direction, stepToken).ConfigureAwait(false))
+            // The command's token, not the step's: skipping starts a new transition, which cancels
+            // this step's token as its first act.
+            if (await HandleMissingTargetAsync(options.MissingTarget, step, direction, cancellationToken))
             {
                 return;
             }
         }
 
         // Applied for a centred fallback too: the browser may already have reported this exact
-        // frame, in which case it will not send it again and the card would never be placed.
+        // frame, in which case it will not send it again and the card would never be placed. A
+        // frame of this activation that overtook the reply is newer, and is kept.
         if (geometry is not null)
         {
-            ApplyGeometry(geometry);
-            if (geometry.Found) await PublishAsync(BonboardingEventKind.TargetResolved, step).ConfigureAwait(false);
+            ApplyGeometryIfNewer(geometry);
+            if (geometry.Found) await PublishAsync(BonboardingEventKind.TargetResolved, step);
         }
 
         Status = BonboardingTourStatus.Running;
@@ -546,7 +633,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         Notify(BonboardingTourSessionChange.Step);
 
-        await CompleteShowAsync(step, index, _enteredFrom, _enteredBy, stepToken).ConfigureAwait(false);
+        await CompleteShowAsync(step, index, _enteredFrom, _enteredBy, stepToken);
     }
 
     /// <summary>The part of showing a step that runs once it is actually on screen.</summary>
@@ -556,17 +643,18 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     {
         _stepShown = true;
 
-        await PersistAsync(stepToken).ConfigureAwait(false);
-        await PublishAsync(BonboardingEventKind.StepShown, step).ConfigureAwait(false);
+        await PersistAsync(stepToken);
+        await PublishAsync(BonboardingEventKind.StepShown, step);
 
-        if (Tour.OnStepChanged is not null)
+        if (Tour.OnStepChanged is { } onStepChanged)
         {
-            await Tour.OnStepChanged(new BonboardingStepChangedEventArgs(this, step, index, previousStep, reason)).ConfigureAwait(false);
+            await InvokeHookAsync(() => onStepChanged(new BonboardingStepChangedEventArgs(this, step, index, previousStep, reason)));
         }
 
-        if (step.OnShown is not null)
+        // OnStepChanged is allowed to end the tour or navigate itself.
+        if (step.OnShown is { } onShown && !IsFinished && ReferenceEquals(CurrentStep, step))
         {
-            await step.OnShown(CreateContext(step, stepToken)).ConfigureAwait(false);
+            await InvokeHookAsync(() => onShown(CreateContext(step, stepToken)));
         }
     }
 
@@ -574,7 +662,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     /// Returns false when the step cannot proceed yet because the route does not match. The
     /// transition then resumes from <see cref="HandleLocationChangedAsync"/>.
     /// </summary>
-    private bool EnsureRoute(BonboardingStepDefinition step)
+    private async Task<bool> EnsureRouteAsync(BonboardingStepDefinition step)
     {
         _pendingRoute = null;
 
@@ -590,7 +678,16 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         // A wildcard route is a constraint rather than a destination, so there is nowhere to go.
         if (_globalOptions.AutoNavigateToStepRoute && !step.Route.EndsWith('*'))
         {
-            _navigation.NavigateTo(step.Route);
+            // Navigating runs LocationChanged handlers, the application's and this session's own,
+            // and a router may do so before NavigateTo returns. Called like a hook, so a location
+            // change raised from inside the call resumes this step straight away instead of
+            // queueing behind the transition that caused it.
+            var route = step.Route;
+            await InvokeHookAsync(() =>
+            {
+                _navigation.NavigateTo(route);
+                return ValueTask.CompletedTask;
+            });
         }
 
         return false;
@@ -637,12 +734,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         try
         {
-            return await _interop.ActivateStepAsync(activation, cancellationToken).ConfigureAwait(false);
+            return await _interop.ActivateStepAsync(activation, cancellationToken);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
             // Circuit disconnects and prerender teardown must never take the tour down with them.
-            _logger.LogDebug(ex, "BonboardingService step activation could not reach the browser.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService step activation could not reach the browser.");
             return null;
         }
     }
@@ -672,14 +769,32 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         switch (behavior)
         {
             case BonboardingMissingTargetBehavior.Skip:
-                await PublishAsync(BonboardingEventKind.StepSkipped, step).ConfigureAwait(false);
+            {
+                await PublishAsync(BonboardingEventKind.StepSkipped, step);
 
-                await MoveToAsync(
-                    null,
-                    direction > 0 ? BonboardingStepChangeReason.Next : BonboardingStepChangeReason.Previous,
-                    direction,
-                    cancellationToken).ConfigureAwait(false);
+                // Skipping backwards past the first eligible step leaves nowhere to go back to, so
+                // carry on forwards rather than strand the user on a step that cannot be shown.
+                var turnedAround = false;
+                if (direction < 0)
+                {
+                    await RebuildPlanAsync();
+                    if (PreviousPlanned(CurrentIndex) < 0)
+                    {
+                        direction = +1;
+                        turnedAround = true;
+                    }
+                }
+
+                // A step that never made it on screen passes on the reason the user set off for it,
+                // so the step they land on reports how they really got there.
+                var reason = _stepShown || turnedAround
+                    || _enteredBy is BonboardingStepChangeReason.Resume or BonboardingStepChangeReason.Retarget
+                        ? direction > 0 ? BonboardingStepChangeReason.Next : BonboardingStepChangeReason.Previous
+                        : _enteredBy;
+
+                await MoveToAsync(null, reason, direction, cancellationToken);
                 return true;
+            }
 
             case BonboardingMissingTargetBehavior.Fail:
                 throw new BonboardingException($"Target for step '{step.Id}' of tour '{Tour.Id}' was not found.")
@@ -715,7 +830,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         for (var i = 0; i < Tour.Steps.Count; i++)
         {
             var step = Tour.Steps[i];
-            if (step.When is null || await step.When(CreateContext(step, index: i)).ConfigureAwait(false))
+            var index = i;
+
+            if (step.When is not { } when || await InvokeHookAsync(() => when(CreateContext(step, index: index))))
             {
                 plan.Add(i);
             }
@@ -723,6 +840,15 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         _plan = plan;
     }
+
+    /// <summary>
+    /// Where a transition lands: the requested step (snapped onto an eligible one), or the next
+    /// eligible step in the direction of travel. <c>-1</c> when there is none.
+    /// </summary>
+    private int ResolveDestination(int? requestedIndex, int direction)
+        => requestedIndex is { } explicitIndex
+            ? ResolveEligible(explicitIndex, direction)
+            : direction > 0 ? NextPlanned(CurrentIndex) : PreviousPlanned(CurrentIndex);
 
     /// <summary>Snaps a requested index onto the nearest planned step in the direction of travel.</summary>
     private int ResolveEligible(int requestedIndex, int direction)
@@ -768,11 +894,6 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         return -1;
     }
 
-    private void PopHistory()
-    {
-        if (_history.Count > 0) _history.RemoveAt(_history.Count - 1);
-    }
-
     // ---- Ending ------------------------------------------------------------
 
     private async Task EndAsync(BonboardingTourEndReason reason, CancellationToken cancellationToken)
@@ -782,10 +903,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         var lastStep = CurrentStep;
         var lastIndex = CurrentIndex;
 
-        if (lastStep is not null)
+        // Only a step that was actually on screen can report how long it was there.
+        if (lastStep is not null && _stepShown)
         {
-            await PublishAsync(BonboardingEventKind.StepLeft, lastStep, duration: DateTimeOffset.UtcNow - _stepShownAt)
-                .ConfigureAwait(false);
+            await PublishAsync(BonboardingEventKind.StepLeft, lastStep, duration: DateTimeOffset.UtcNow - _stepShownAt);
         }
 
         Status = reason switch
@@ -805,11 +926,11 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         _generation++;
         CancelStep();
-        await SafeDeactivateAsync().ConfigureAwait(false);
-        await RestoreFocusAsync().ConfigureAwait(false);
+        await SafeDeactivateAsync();
+        await RestoreFocusAsync();
         UnhookNavigation();
 
-        await PersistEndAsync(reason, lastStep, lastIndex).ConfigureAwait(false);
+        await PersistEndAsync(reason, lastStep, lastIndex);
 
         await PublishAsync(
             reason switch
@@ -821,17 +942,17 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
                 _ => BonboardingEventKind.TourDismissed,
             },
             lastStep,
-            reason: reason).ConfigureAwait(false);
+            reason: reason);
 
-        if (Tour.OnEnded is not null)
+        if (Tour.OnEnded is { } onEnded)
         {
-            await Tour.OnEnded(new BonboardingTourEndedEventArgs(this, reason, lastStep, lastIndex, Error)).ConfigureAwait(false);
+            await InvokeHookAsync(() => onEnded(new BonboardingTourEndedEventArgs(this, reason, lastStep, lastIndex, Error)));
         }
 
         if (_attached)
         {
             _attached = false;
-            await SafeDetachAsync().ConfigureAwait(false);
+            await SafeDetachAsync();
         }
 
         Notify(BonboardingTourSessionChange.Step | BonboardingTourSessionChange.Ended);
@@ -873,12 +994,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
             var stepToken = _stepCts?.Token ?? CancellationToken.None;
 
-            await PublishAsync(BonboardingEventKind.TargetResolved, step).ConfigureAwait(false);
+            await PublishAsync(BonboardingEventKind.TargetResolved, step);
 
             // A target that was lost and came back: the step was already shown once.
             if (_stepShown) return;
 
-            await CompleteShowAsync(step, CurrentIndex, _enteredFrom, _enteredBy, stepToken).ConfigureAwait(false);
+            await CompleteShowAsync(step, CurrentIndex, _enteredFrom, _enteredBy, stepToken);
         }, CancellationToken.None);
 
     public async ValueTask OnTargetLostAsync()
@@ -896,7 +1017,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             var options = CurrentOptions!;
             var stepToken = _stepCts?.Token ?? CancellationToken.None;
 
-            await PublishAsync(BonboardingEventKind.TargetMissing, step).ConfigureAwait(false);
+            await PublishAsync(BonboardingEventKind.TargetMissing, step);
 
             // The old rectangle no longer points at anything; drawing the spotlight there would lie.
             _geometry = null;
@@ -906,10 +1027,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             {
                 case BonboardingMissingTargetBehavior.Center:
                 {
-                    var geometry = await SafeMeasureAsync().ConfigureAwait(false);
+                    var geometry = await SafeMeasureAsync();
                     if (generation != _generation) return;
 
-                    if (geometry is not null) ApplyGeometry(geometry);
+                    if (geometry is not null) ApplyGeometryIfNewer(geometry);
                     Notify(BonboardingTourSessionChange.Step);
                     return;
                 }
@@ -921,14 +1042,14 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
                     // The browser stopped watching when it reported the loss, so hand the step back
                     // to it in waiting mode: it watches for the element and arms the wait timeout.
-                    var geometry = await ActivateInBrowserAsync(step, options, stepToken).ConfigureAwait(false);
+                    var geometry = await ActivateInBrowserAsync(step, options, stepToken);
                     if (generation != _generation || Status != BonboardingTourStatus.Waiting) return;
 
                     if (geometry is { Found: true })
                     {
-                        ApplyGeometry(geometry);
+                        ApplyGeometryIfNewer(geometry);
                         Status = BonboardingTourStatus.Running;
-                        await PublishAsync(BonboardingEventKind.TargetResolved, step).ConfigureAwait(false);
+                        await PublishAsync(BonboardingEventKind.TargetResolved, step);
                         Notify(BonboardingTourSessionChange.Step);
                     }
 
@@ -939,10 +1060,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
                     // Skip and Fail behave exactly as they do when the target is missing on arrival:
                     // a vanished target is not the user choosing to advance, so CanAdvance and
                     // branching do not get a say.
-                    await HandleMissingTargetAsync(options.MissingTarget, step, +1, ct).ConfigureAwait(false);
+                    await HandleMissingTargetAsync(options.MissingTarget, step, +1, ct);
                     return;
             }
-        }, CancellationToken.None).ConfigureAwait(false);
+        }, CancellationToken.None);
     }
 
     public async ValueTask OnKeyAsync(string key, bool shiftKey)
@@ -955,19 +1076,19 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         switch (key)
         {
             case "Escape" when options.CloseOnEscape:
-                await DismissAsync().ConfigureAwait(false);
+                await DismissAsync();
                 break;
             case "ArrowRight" when options.KeyboardNavigation:
-                await (rtl ? PreviousAsync() : NextAsync()).ConfigureAwait(false);
+                await (rtl ? PreviousAsync() : NextAsync());
                 break;
             case "ArrowLeft" when options.KeyboardNavigation:
-                await (rtl ? NextAsync() : PreviousAsync()).ConfigureAwait(false);
+                await (rtl ? NextAsync() : PreviousAsync());
                 break;
             case "Home" when options.KeyboardNavigation && _plan.Count > 0:
-                await GoToAsync(_plan[0]).ConfigureAwait(false);
+                await GoToAsync(_plan[0]);
                 break;
             case "End" when options.KeyboardNavigation && _plan.Count > 0:
-                await GoToAsync(_plan[^1]).ConfigureAwait(false);
+                await GoToAsync(_plan[^1]);
                 break;
         }
     }
@@ -977,13 +1098,13 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         if (_disposed || CurrentOptions is null || !IsActive) return;
         if (!CurrentOptions.CloseOnOverlayClick) return;
 
-        await DismissAsync().ConfigureAwait(false);
+        await DismissAsync();
     }
 
     public async ValueTask OnAdvanceTriggeredAsync()
     {
         if (_disposed || Status != BonboardingTourStatus.Running) return;
-        await NextAsync().ConfigureAwait(false);
+        await NextAsync();
     }
 
     public async ValueTask OnWaitTimedOutAsync()
@@ -1004,12 +1125,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
             if (behavior == BonboardingMissingTargetBehavior.Center)
             {
-                await ShowCenteredAfterTimeoutAsync(step, generation).ConfigureAwait(false);
+                await ShowCenteredAfterTimeoutAsync(step, generation);
                 return;
             }
 
-            await HandleMissingTargetAsync(behavior, step, +1, ct).ConfigureAwait(false);
-        }, CancellationToken.None).ConfigureAwait(false);
+            await HandleMissingTargetAsync(behavior, step, +1, ct);
+        }, CancellationToken.None);
     }
 
     /// <summary>
@@ -1023,10 +1144,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         _resolvedTarget = BonboardingStepTarget.None;
 
-        var geometry = await ActivateInBrowserAsync(step, CurrentOptions!, stepToken).ConfigureAwait(false);
+        var geometry = await ActivateInBrowserAsync(step, CurrentOptions!, stepToken);
         if (generation != _generation) return;
 
-        if (geometry is not null) ApplyGeometry(geometry);
+        if (geometry is not null) ApplyGeometryIfNewer(geometry);
 
         Status = BonboardingTourStatus.Running;
         _stepShownAt = DateTimeOffset.UtcNow;
@@ -1034,10 +1155,21 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         if (_stepShown) return;
 
-        await CompleteShowAsync(step, CurrentIndex, _enteredFrom, _enteredBy, stepToken).ConfigureAwait(false);
+        await CompleteShowAsync(step, CurrentIndex, _enteredFrom, _enteredBy, stepToken);
     }
 
     // ---- Geometry and placement -------------------------------------------
+
+    /// <summary>
+    /// Applies the reply to an activation or measurement request, unless a frame the browser
+    /// measured after it has already arrived and been applied.
+    /// </summary>
+    private void ApplyGeometryIfNewer(BonboardingStepGeometry geometry)
+    {
+        if (_geometry is not null && geometry.Sequence <= _lastSequence) return;
+
+        ApplyGeometry(geometry);
+    }
 
     private void ApplyGeometry(BonboardingStepGeometry geometry)
     {
@@ -1071,7 +1203,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             Offset = options.Offset,
             ViewportPadding = options.ViewportPadding,
             ArrowSize = options.ArrowSize,
-            CornerRadius = 12,
+            // The radius the stylesheet actually gave the popover, so a theme that changes it
+            // still keeps the arrow off the rounded corners.
+            CornerRadius = geometry.PopoverRadius ?? BonboardingDefaults.PopoverRadius,
             RightToLeft = options.RightToLeft,
             HasTarget = hasTarget,
         });
@@ -1084,11 +1218,11 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         try
         {
-            await _interop.SetPopoverAsync(Id, element, CurrentOptions?.TrapFocus ?? true).ConfigureAwait(false);
+            await _interop.SetPopoverAsync(Id, element, CurrentOptions?.TrapFocus ?? true);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not register the popover element.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not register the popover element.");
         }
     }
 
@@ -1101,15 +1235,15 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         {
             if (!_focusCaptured)
             {
-                await _interop.CaptureFocusAsync(Id).ConfigureAwait(false);
+                await _interop.CaptureFocusAsync(Id);
                 _focusCaptured = true;
             }
 
-            await _interop.FocusPopoverAsync(Id).ConfigureAwait(false);
+            await _interop.FocusPopoverAsync(Id);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not move focus into the popover.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not move focus into the popover.");
         }
     }
 
@@ -1144,7 +1278,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         {
             // Under the transition lock like every other state change, so a navigation cannot
             // interleave with a step that is halfway through being shown.
-            await RunGuardedAsync(ct => HandleLocationChangedCoreAsync(relative, ct), CancellationToken.None).ConfigureAwait(false);
+            await RunGuardedAsync(ct => HandleLocationChangedCoreAsync(relative, ct), CancellationToken.None);
         }
         catch (Exception ex)
         {
@@ -1166,7 +1300,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
             // Re-enter the same step now the page is right. Retarget skips the leave hooks so
             // the step is not counted as visited twice.
-            await MoveToAsync(CurrentIndex, BonboardingStepChangeReason.Retarget, +1, cancellationToken).ConfigureAwait(false);
+            await MoveToAsync(CurrentIndex, BonboardingStepChangeReason.Retarget, +1, cancellationToken);
             return;
         }
 
@@ -1179,7 +1313,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             Status = BonboardingTourStatus.Waiting;
             _geometry = null;
             Placement = null;
-            await SafeDeactivateAsync().ConfigureAwait(false);
+            await SafeDeactivateAsync();
             Notify(BonboardingTourSessionChange.Step);
             return;
         }
@@ -1187,7 +1321,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         // Same page, new content: the target may have been re-rendered underneath us.
         if (Status == BonboardingTourStatus.Running)
         {
-            await RefreshCoreAsync().ConfigureAwait(false);
+            await RefreshCoreAsync();
         }
     }
 
@@ -1197,24 +1331,31 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
     private async Task PersistAsync(CancellationToken cancellationToken)
     {
-        if (!ShouldPersist || CurrentStep is null) return;
+        if (!ShouldPersist || CurrentStep is not { } step) return;
+
+        var index = CurrentIndex;
+        var visited = _history.ToArray();
 
         try
         {
+            var existing = await _store.GetAsync(Tour.Id, cancellationToken);
+
             await _store.SetAsync(
                 new BonboardingRecord
                 {
                     TourId = Tour.Id,
                     Version = Tour.Version,
-                    CurrentStepId = CurrentStep.Id,
-                    CurrentIndex = CurrentIndex,
-                    VisitedStepIds = _history.ToArray(),
+                    CurrentStepId = step.Id,
+                    CurrentIndex = index,
+                    VisitedStepIds = visited,
+                    // Data belongs to the application: the library's own writes must carry it over.
+                    Data = existing?.Data,
                 },
-                cancellationToken).ConfigureAwait(false);
+                cancellationToken);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService progress could not be persisted.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService progress could not be persisted.");
         }
     }
 
@@ -1226,25 +1367,30 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         // it to resume from. The position was already written when the step was shown.
         if (reason == BonboardingTourEndReason.Cancelled) return;
 
+        var visited = _history.ToArray();
+
         try
         {
+            var existing = await _store.GetAsync(Tour.Id, CancellationToken.None);
+
             await _store.SetAsync(
                 new BonboardingRecord
                 {
                     TourId = Tour.Id,
                     Version = Tour.Version,
+                    Data = existing?.Data,
                     CurrentStepId = lastStep?.Id,
                     CurrentIndex = lastIndex,
                     Completed = reason == BonboardingTourEndReason.Completed,
                     Dismissed = reason is BonboardingTourEndReason.Dismissed or BonboardingTourEndReason.Skipped,
                     CompletedAt = reason == BonboardingTourEndReason.Completed ? DateTimeOffset.UtcNow : null,
-                    VisitedStepIds = _history.ToArray(),
+                    VisitedStepIds = visited,
                 },
-                CancellationToken.None).ConfigureAwait(false);
+                CancellationToken.None);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService completion could not be persisted.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService completion could not be persisted.");
         }
     }
 
@@ -1252,11 +1398,11 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     {
         try
         {
-            return await _store.GetAsync(Tour.Id, cancellationToken).ConfigureAwait(false);
+            return await _store.GetAsync(Tour.Id, cancellationToken);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService progress could not be read.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService progress could not be read.");
             return null;
         }
     }
@@ -1283,36 +1429,123 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     {
         if (_disposed) return;
 
-        // Re-entrant call from inside a hook: the lock is already ours, so just run.
-        if (_transitionOwner.Value is { } owner && ReferenceEquals(owner, Volatile.Read(ref _activeTransition)))
+        // Issued by an application hook while it runs: part of the transition that called the
+        // hook, which already holds the lock.
+        if (_hookScope.Value is { IsClosed: false } scope && await TryRunInHookScopeAsync(scope, action, cancellationToken))
         {
-            await RunAsync(action, cancellationToken).ConfigureAwait(false);
             return;
         }
 
         try
         {
-            await _gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _gate.WaitAsync(cancellationToken);
         }
         catch (Exception ex) when (ex is ObjectDisposedException or OperationCanceledException)
         {
             return;
         }
 
-        var token = new object();
-        Volatile.Write(ref _activeTransition, token);
-        _transitionOwner.Value = token;
+        // A flow that reaches here may still carry the closed scope of the hook that started it.
+        // That scope means nothing to the transition this flow now owns.
+        _hookScope.Value = null;
 
         try
         {
-            await RunAsync(action, cancellationToken).ConfigureAwait(false);
+            await RunAsync(action, cancellationToken);
         }
         finally
         {
-            _transitionOwner.Value = null;
-            Volatile.Write(ref _activeTransition, null);
             try { _gate.Release(); } catch (ObjectDisposedException) { }
         }
+    }
+
+    /// <summary>
+    /// Runs a command a hook issued, one at a time per hook. Returns false when the hook had already
+    /// returned by the time it was this command's turn, so the caller queues for the lock instead.
+    /// </summary>
+    private async Task<bool> TryRunInHookScopeAsync(HookScope scope, Func<CancellationToken, Task> action, CancellationToken cancellationToken)
+    {
+        try
+        {
+            await scope.Gate.WaitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return true;
+        }
+
+        try
+        {
+            if (scope.IsClosed) return false;
+
+            await RunAsync(action, cancellationToken);
+            return true;
+        }
+        finally
+        {
+            scope.Gate.Release();
+        }
+    }
+
+    /// <summary>
+    /// One call into application code made while a transition holds the lock.
+    /// </summary>
+    /// <remarks>
+    /// Commands the hook issues while it runs are part of that transition, so they run inline
+    /// (serialised among themselves) instead of waiting for the lock their own caller holds. The
+    /// scope is captured by the async flow, so work the hook starts in the background inherits it
+    /// too: when the hook returns the scope closes, the transition waits for any such command that
+    /// is already running, and any that only starts later queues for the lock like every other
+    /// caller. Nothing a hook starts can therefore run alongside the transition that called it.
+    /// </remarks>
+    private sealed class HookScope
+    {
+        private volatile bool _closed;
+
+        public SemaphoreSlim Gate { get; } = new(1, 1);
+
+        public bool IsClosed => _closed;
+
+        public void Close() => _closed = true;
+    }
+
+    private async Task InvokeHookAsync(Func<ValueTask> hook)
+    {
+        var scope = new HookScope();
+        _hookScope.Value = scope;
+
+        try
+        {
+            await hook();
+        }
+        finally
+        {
+            await CloseHookScopeAsync(scope);
+        }
+    }
+
+    private async Task<T> InvokeHookAsync<T>(Func<ValueTask<T>> hook)
+    {
+        var scope = new HookScope();
+        _hookScope.Value = scope;
+
+        try
+        {
+            return await hook();
+        }
+        finally
+        {
+            await CloseHookScopeAsync(scope);
+        }
+    }
+
+    /// <summary>Closes a hook's scope and waits out a command the hook left running.</summary>
+    private static async Task CloseHookScopeAsync(HookScope scope)
+    {
+        scope.Close();
+
+        await scope.Gate.WaitAsync();
+        scope.Gate.Release();
     }
 
     /// <summary>Runs a command body, turning an unhandled fault into a failed tour.</summary>
@@ -1320,7 +1553,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     {
         try
         {
-            await action(cancellationToken).ConfigureAwait(false);
+            await action(cancellationToken);
         }
         catch (OperationCanceledException)
         {
@@ -1333,7 +1566,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
             try
             {
-                await EndAsync(BonboardingTourEndReason.Failed, CancellationToken.None).ConfigureAwait(false);
+                await EndAsync(BonboardingTourEndReason.Failed, CancellationToken.None);
             }
             catch (Exception endFailure)
             {
@@ -1351,7 +1584,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     {
         var target = step ?? CurrentStep;
 
-        await _publish(new BonboardingEvent
+        var onboardingEvent = new BonboardingEvent
         {
             Kind = kind,
             Session = this,
@@ -1361,7 +1594,11 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             Reason = reason,
             Error = kind == BonboardingEventKind.TourFailed ? Error : null,
             Duration = duration,
-        }).ConfigureAwait(false);
+        };
+
+        // Observers and EventRaised handlers are application code like any other hook, and may
+        // call back into the session.
+        await InvokeHookAsync(() => _publish(onboardingEvent));
     }
 
     private void Notify(BonboardingTourSessionChange change)
@@ -1382,11 +1619,11 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     {
         try
         {
-            return await _interop.InitializeAsync(cancellationToken).ConfigureAwait(false);
+            return await _interop.InitializeAsync(cancellationToken);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not sample the browser environment.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not sample the browser environment.");
             return BonboardingBrowserEnvironment.Unknown;
         }
     }
@@ -1397,12 +1634,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         try
         {
-            await _interop.AttachAsync(Id, this, cancellationToken).ConfigureAwait(false);
+            await _interop.AttachAsync(Id, this, cancellationToken);
             _attached = true;
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not attach the session to the browser.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not attach the session to the browser.");
         }
     }
 
@@ -1412,11 +1649,11 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         try
         {
-            return await _interop.MeasureAsync(Id).ConfigureAwait(false);
+            return await _interop.MeasureAsync(Id);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not measure the current step.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not measure the current step.");
             return null;
         }
     }
@@ -1427,11 +1664,11 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         try
         {
-            await _interop.DeactivateStepAsync(Id).ConfigureAwait(false);
+            await _interop.DeactivateStepAsync(Id);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not deactivate the current step.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not deactivate the current step.");
         }
     }
 
@@ -1441,11 +1678,11 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         try
         {
-            await _interop.DetachAsync(Id).ConfigureAwait(false);
+            await _interop.DetachAsync(Id);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not detach the session.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not detach the session.");
         }
     }
 
@@ -1458,25 +1695,13 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         try
         {
-            await _interop.RestoreFocusAsync(Id).ConfigureAwait(false);
+            await _interop.RestoreFocusAsync(Id);
         }
-        catch (Exception ex) when (IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not restore focus.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not restore focus.");
         }
     }
-
-    /// <summary>
-    /// Interop failures during prerender, circuit teardown and page unload are expected rather than
-    /// bugs, and must degrade to "no browser available" instead of failing the tour.
-    /// </summary>
-    internal static bool IsTransientInteropFailure(Exception ex)
-        => ex is Microsoft.JSInterop.JSDisconnectedException
-            or Microsoft.JSInterop.JSException
-            or ObjectDisposedException
-            or OperationCanceledException
-            // Blazor throws this from JS interop during prerendering.
-            or InvalidOperationException;
 
     public async ValueTask DisposeAsync()
     {
@@ -1484,7 +1709,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         if (wasAttached)
         {
-            await SafeDetachAsync().ConfigureAwait(false);
+            await SafeDetachAsync();
         }
     }
 

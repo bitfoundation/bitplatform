@@ -8,6 +8,10 @@ namespace Bit.Bonboarding;
 /// The default <see cref="IBonboardingService"/>. Scoped, so it is per-circuit on Blazor Server and
 /// per-app on WebAssembly, which is exactly the lifetime a user's onboarding state wants.
 /// </summary>
+/// <remarks>
+/// Like the session, this deliberately does not use <c>ConfigureAwait(false)</c>: tour hooks such as
+/// <see cref="BonboardingTourDefinition.CanStart"/> run after its awaits and may touch components.
+/// </remarks>
 internal sealed class BonboardingService : IBonboardingService, IDisposable, IAsyncDisposable
 {
     private readonly BonboardingOptions _options;
@@ -20,6 +24,9 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     private readonly ILogger<BonboardingService> _logger;
     private readonly IReadOnlyList<IBonboardingObserver> _observers;
 
+    // Components register tours on the renderer while sessions end from browser callbacks and
+    // applications start tours from anywhere, so both collections are only touched under _sync.
+    private readonly object _sync = new();
     private readonly Dictionary<string, BonboardingTourDefinition> _registered = new(StringComparer.Ordinal);
     private readonly List<BonboardingTourSession> _sessions = [];
     private readonly SemaphoreSlim _startGate = new(1, 1);
@@ -49,9 +56,15 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
     public IBonboardingTourSession? Active { get; private set; }
 
-    public IReadOnlyList<IBonboardingTourSession> Sessions => _sessions;
+    public IReadOnlyList<IBonboardingTourSession> Sessions
+    {
+        get { lock (_sync) return _sessions.ToArray(); }
+    }
 
-    public IReadOnlyCollection<BonboardingTourDefinition> RegisteredTours => _registered.Values;
+    public IReadOnlyCollection<BonboardingTourDefinition> RegisteredTours
+    {
+        get { lock (_sync) return _registered.Values.ToArray(); }
+    }
 
     public event EventHandler<BonboardingEvent>? EventRaised;
 
@@ -64,17 +77,19 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         ArgumentNullException.ThrowIfNull(tour);
         ArgumentException.ThrowIfNullOrWhiteSpace(tour.Id);
 
-        _registered[tour.Id] = tour;
+        lock (_sync) _registered[tour.Id] = tour;
     }
 
     public void Unregister(string tourId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tourId);
-        _registered.Remove(tourId);
+        lock (_sync) _registered.Remove(tourId);
     }
 
     public BonboardingTourDefinition? GetTour(string tourId)
-        => _registered.GetValueOrDefault(tourId);
+    {
+        lock (_sync) return _registered.GetValueOrDefault(tourId);
+    }
 
     // ---- Starting ----------------------------------------------------------
 
@@ -93,7 +108,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
         if (!startOptions.Force && tour.CanStart is not null)
         {
-            var allowed = await tour.CanStart(new BonboardingTourContext(tour, _services)).ConfigureAwait(false);
+            var allowed = await tour.CanStart(new BonboardingTourContext(tour, _services));
             if (!allowed)
             {
                 throw new BonboardingException($"Tour '{tour.Id}' declined to start.") { TourId = tour.Id };
@@ -104,29 +119,32 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
         // The gate only covers the bookkeeping. Starting runs application hooks, and a hook that
         // starts another tour would otherwise wait on a gate its own caller is holding.
-        await _startGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        await _startGate.WaitAsync(cancellationToken);
         try
         {
             if (startOptions.StopOthers)
             {
-                await StopRunningSessionsAsync(BonboardingTourEndReason.Cancelled).ConfigureAwait(false);
+                await StopRunningSessionsAsync(BonboardingTourEndReason.Cancelled);
             }
 
             // Restarting a tour that is already running should not leave the old session attached.
-            var existing = _sessions.FirstOrDefault(s => s.Tour.Id == tour.Id && s.IsLive);
+            BonboardingTourSession? existing;
+            lock (_sync) existing = _sessions.FirstOrDefault(s => s.Tour.Id == tour.Id && s.IsLive);
+
             if (existing is not null)
             {
-                await existing.CancelAsync(CancellationToken.None).ConfigureAwait(false);
+                await existing.CancelAsync(CancellationToken.None);
             }
 
-            Register(tour);
-
+            // Starting does not register the tour: a definition built on the fly (one per user, say)
+            // would otherwise stay in RegisteredTours for the lifetime of the scope. Register it
+            // explicitly to make it startable by id.
             session = new BonboardingTourSession(
                 tour, _options, _interop, _store, _localizer, _navigation, _services,
                 _loggerFactory.CreateLogger<BonboardingTourSession>(), PublishAsync);
 
             session.Changed += OnSessionChanged;
-            _sessions.Add(session);
+            lock (_sync) _sessions.Add(session);
             Active = session;
         }
         finally
@@ -136,7 +154,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
         RaiseSessionsChanged();
 
-        await session.StartAsync(startOptions, cancellationToken).ConfigureAwait(false);
+        await session.StartAsync(startOptions, cancellationToken);
         return session;
     }
 
@@ -158,30 +176,30 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         if (!startOptions.Force)
         {
             // Compare against this definition rather than the registry, which may not hold it yet.
-            var record = await ReadRecordAsync(tour.Id, cancellationToken).ConfigureAwait(false);
+            var record = await ReadRecordAsync(tour.Id, cancellationToken);
             if (record is not null && record.Version == tour.Version && record.IsClosed) return null;
         }
 
         if (!startOptions.Force && tour.CanStart is not null)
         {
-            var allowed = await tour.CanStart(new BonboardingTourContext(tour, _services)).ConfigureAwait(false);
+            var allowed = await tour.CanStart(new BonboardingTourContext(tour, _services));
             if (!allowed) return null;
         }
 
         // CanStart has already been consulted; skip the second evaluation inside StartAsync.
-        return await StartAsync(tour, CloneForced(startOptions), cancellationToken).ConfigureAwait(false);
+        return await StartAsync(tour, CloneForced(startOptions), cancellationToken);
     }
 
     public async Task<IBonboardingTourSession> RestartAsync(BonboardingTourDefinition tour, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(tour);
 
-        await ResetAsync(tour.Id, cancellationToken).ConfigureAwait(false);
+        await ResetAsync(tour.Id, cancellationToken);
 
         return await StartAsync(
             tour,
             new BonboardingStartOptions { Resume = false, Force = true },
-            cancellationToken).ConfigureAwait(false);
+            cancellationToken);
     }
 
     private static BonboardingStartOptions CloneForced(BonboardingStartOptions source) => new()
@@ -198,48 +216,54 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
     public async Task StopAllAsync(BonboardingTourEndReason reason = BonboardingTourEndReason.Cancelled, CancellationToken cancellationToken = default)
     {
-        await StopRunningSessionsAsync(reason).ConfigureAwait(false);
+        await StopRunningSessionsAsync(reason);
         RaiseSessionsChanged();
     }
 
     private async Task StopRunningSessionsAsync(BonboardingTourEndReason reason)
     {
         // Paused sessions are still running as far as the application is concerned.
-        foreach (var session in _sessions.Where(s => s.IsLive).ToArray())
+        BonboardingTourSession[] live;
+        lock (_sync) live = _sessions.Where(s => s.IsLive).ToArray();
+
+        foreach (var session in live)
         {
             switch (reason)
             {
                 case BonboardingTourEndReason.Completed:
-                    await session.CompleteAsync(CancellationToken.None).ConfigureAwait(false);
+                    await session.CompleteAsync(CancellationToken.None);
                     break;
                 case BonboardingTourEndReason.Skipped:
-                    await session.SkipAsync(CancellationToken.None).ConfigureAwait(false);
+                    await session.SkipAsync(CancellationToken.None);
                     break;
                 case BonboardingTourEndReason.Dismissed:
-                    await session.DismissAsync(CancellationToken.None).ConfigureAwait(false);
+                    await session.DismissAsync(CancellationToken.None);
                     break;
                 default:
-                    await session.CancelAsync(CancellationToken.None).ConfigureAwait(false);
+                    await session.CancelAsync(CancellationToken.None);
                     break;
             }
         }
     }
 
     public IBonboardingTourSession? FindSession(string tourId)
-        => _sessions.LastOrDefault(s => s.Tour.Id == tourId && !s.IsFinished);
+    {
+        lock (_sync) return _sessions.LastOrDefault(s => s.Tour.Id == tourId && !s.IsFinished);
+    }
 
     public async Task<bool> IsCompletedAsync(string tourId, CancellationToken cancellationToken = default)
-        => (await GetRecordAsync(tourId, cancellationToken).ConfigureAwait(false))?.Completed ?? false;
+        => (await GetRecordAsync(tourId, cancellationToken))?.Completed ?? false;
 
     public async Task<bool> IsClosedAsync(string tourId, CancellationToken cancellationToken = default)
-        => (await GetRecordAsync(tourId, cancellationToken).ConfigureAwait(false))?.IsClosed ?? false;
+        => (await GetRecordAsync(tourId, cancellationToken))?.IsClosed ?? false;
 
     public async Task<BonboardingRecord?> GetRecordAsync(string tourId, CancellationToken cancellationToken = default)
     {
-        var record = await ReadRecordAsync(tourId, cancellationToken).ConfigureAwait(false);
+        var record = await ReadRecordAsync(tourId, cancellationToken);
 
-        // A record written by an earlier version of the tour is not usable.
-        if (record is not null && GetTour(tourId) is { } tour && record.Version != tour.Version)
+        // A record written by an earlier version of the tour is not usable. The registered
+        // definition says which version is current, or failing that the one a session is running.
+        if (record is not null && (GetTour(tourId) ?? FindRunningTour(tourId)) is { } tour && record.Version != tour.Version)
         {
             return null;
         }
@@ -247,15 +271,20 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         return record;
     }
 
+    private BonboardingTourDefinition? FindRunningTour(string tourId)
+    {
+        lock (_sync) return _sessions.LastOrDefault(s => s.Tour.Id == tourId)?.Tour;
+    }
+
     private async Task<BonboardingRecord?> ReadRecordAsync(string tourId, CancellationToken cancellationToken)
     {
         try
         {
-            return await _store.GetAsync(tourId, cancellationToken).ConfigureAwait(false);
+            return await _store.GetAsync(tourId, cancellationToken);
         }
-        catch (Exception ex) when (BonboardingTourSession.IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not read the record for tour {TourId}.", tourId);
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not read the record for tour {TourId}.", tourId);
             return null;
         }
     }
@@ -264,11 +293,11 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     {
         try
         {
-            await _store.RemoveAsync(tourId, cancellationToken).ConfigureAwait(false);
+            await _store.RemoveAsync(tourId, cancellationToken);
         }
-        catch (Exception ex) when (BonboardingTourSession.IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not reset tour {TourId}.", tourId);
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not reset tour {TourId}.", tourId);
         }
     }
 
@@ -276,11 +305,11 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     {
         try
         {
-            await _store.ClearAsync(cancellationToken).ConfigureAwait(false);
+            await _store.ClearAsync(cancellationToken);
         }
-        catch (Exception ex) when (BonboardingTourSession.IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not reset stored progress.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not reset stored progress.");
         }
     }
 
@@ -302,7 +331,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         {
             try
             {
-                await observer.OnEventAsync(onboardingEvent).ConfigureAwait(false);
+                await observer.OnEventAsync(onboardingEvent);
             }
             catch (Exception ex)
             {
@@ -320,12 +349,12 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         if (sender is BonboardingTourSession ended)
         {
             ended.Changed -= OnSessionChanged;
-            _sessions.Remove(ended);
+            lock (_sync) _sessions.Remove(ended);
         }
 
         if (ReferenceEquals(Active, sender))
         {
-            Active = _sessions.FirstOrDefault(s => s.IsActive);
+            lock (_sync) Active = _sessions.FirstOrDefault(s => s.IsActive);
         }
 
         RaiseSessionsChanged();
@@ -348,10 +377,10 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         if (_disposed) return;
         _disposed = true;
 
-        foreach (var session in _sessions)
+        foreach (var session in TakeSessions())
         {
             session.Changed -= OnSessionChanged;
-            await session.DisposeAsync().ConfigureAwait(false);
+            await session.DisposeAsync();
         }
 
         Cleanup();
@@ -366,7 +395,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         if (_disposed) return;
         _disposed = true;
 
-        foreach (var session in _sessions)
+        foreach (var session in TakeSessions())
         {
             session.Changed -= OnSessionChanged;
             session.Dispose();
@@ -375,9 +404,18 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
         Cleanup();
     }
 
+    private BonboardingTourSession[] TakeSessions()
+    {
+        lock (_sync)
+        {
+            var sessions = _sessions.ToArray();
+            _sessions.Clear();
+            return sessions;
+        }
+    }
+
     private void Cleanup()
     {
-        _sessions.Clear();
         Active = null;
         _startGate.Dispose();
     }

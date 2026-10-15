@@ -61,7 +61,7 @@ public sealed class BonboardingStepRenderContext
     public string SkipLabel => Step.SkipLabel ?? Labels.Skip;
 
     /// <summary>Progress text such as "2 of 5".</summary>
-    public string ProgressText => string.Format(Labels.ProgressFormat, Position, Count);
+    public string ProgressText => BonboardingLabels.Format(Labels.ProgressFormat, BonboardingLabels.DefaultProgressFormat, Position, Count);
 
     /// <summary>Advances, or completes the tour on the last step.</summary>
     public Task NextAsync() => Session.NextAsync();

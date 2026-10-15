@@ -58,6 +58,11 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
     /// Escape hatch for anything not exposed as a parameter. Runs after the parameters are applied
     /// and before the tour is registered.
     /// </summary>
+    /// <remarks>
+    /// The definition is rebuilt whenever the tour or one of its steps receives parameters, and
+    /// this runs on every rebuild, so it must be idempotent: assign values rather than appending to
+    /// collections or subscribing to events.
+    /// </remarks>
     [Parameter] public Action<BonboardingTourDefinition>? Configure { get; set; }
 
     // ---- Lifecycle callbacks ------------------------------------------------
@@ -182,16 +187,19 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
         definition.CloseOnEscape = CloseOnEscape;
         definition.CloseOnOverlayClick = CloseOnOverlayClick;
 
+        // Marshalled onto the renderer: the session can reach these from a browser callback or from
+        // code running off the renderer, and an EventCallback re-renders the component that owns
+        // it, which Blazor Server only allows on that component's dispatcher.
         definition.OnStarted = OnStarted.HasDelegate
-            ? _ => new ValueTask(OnStarted.InvokeAsync())
+            ? _ => new ValueTask(InvokeAsync(() => OnStarted.InvokeAsync()))
             : null;
 
         definition.OnStepChanged = OnStepChanged.HasDelegate
-            ? args => new ValueTask(OnStepChanged.InvokeAsync(args))
+            ? args => new ValueTask(InvokeAsync(() => OnStepChanged.InvokeAsync(args)))
             : null;
 
         definition.OnEnded = OnEnded.HasDelegate
-            ? args => new ValueTask(OnEnded.InvokeAsync(args))
+            ? args => new ValueTask(InvokeAsync(() => OnEnded.InvokeAsync(args)))
             : null;
 
         definition.Steps.Clear();

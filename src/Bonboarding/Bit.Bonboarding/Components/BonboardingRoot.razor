@@ -28,12 +28,21 @@
         {
             <div class="bit-bonboarding-blocker" style="inset:0" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
         }
-        else if (_options.Interaction == BonboardingInteractionMode.TargetOnly && SpotlightRect is { } hole)
+        else if (_options.Interaction == BonboardingInteractionMode.TargetOnly)
         {
-            <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Top, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
-            <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Bottom, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
-            <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Left, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
-            <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Right, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+            if (SpotlightRect is { } hole)
+            {
+                <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Top, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+                <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Bottom, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+                <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Left, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+                <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Right, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+            }
+            else
+            {
+                @* No target on screen (missing, hidden or not yet loaded): only the target was meant
+                   to be usable, so block the whole page rather than none of it. *@
+                <div class="bit-bonboarding-blocker" style="inset:0" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+            }
         }
 
         @* ---- The popover. The library owns the box so it can measure, place and focus it. ---- *@

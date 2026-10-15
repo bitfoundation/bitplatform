@@ -10,6 +10,12 @@ public static class BonboardingDefaults
     public const double ViewportPadding = 16;
     public const double ArrowSize = 10;
 
+    /// <summary>
+    /// Corner radius assumed for the popover when the browser has not measured it, matching the
+    /// default stylesheet. Only used to keep the arrow off the rounded corners.
+    /// </summary>
+    public const double PopoverRadius = 14;
+
     public const bool ShowSpotlight = true;
     public const double SpotlightPadding = 8;
     public const double SpotlightRadius = 10;

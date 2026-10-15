@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components;
+﻿using System.Collections.Concurrent;
+using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.JSInterop;
@@ -17,8 +18,16 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
     private readonly BonboardingOptions _options;
     private readonly ILogger<BonboardingInterop> _logger;
 
-    private readonly Dictionary<string, IBonboardingInteropCallbacks> _callbacks = new(StringComparer.Ordinal);
+    // Sessions attach and detach from the renderer while browser callbacks arrive, and a session can
+    // be driven from outside the renderer altogether, so both maps tolerate concurrent access.
+    private readonly ConcurrentDictionary<string, IBonboardingInteropCallbacks> _callbacks = new(StringComparer.Ordinal);
+
+    /// <summary>The live activation of each session's current step. Absent while no step is active.</summary>
+    private readonly ConcurrentDictionary<string, long> _activations = new(StringComparer.Ordinal);
+
     private readonly SemaphoreSlim _importGate = new(1, 1);
+
+    private long _activationSource;
 
     private IJSObjectReference? _module;
     private DotNetObjectReference<BonboardingInterop>? _self;
@@ -41,8 +50,11 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         return await module.InvokeAsync<BonboardingBrowserEnvironment>(
             "initialize",
             cancellationToken,
-            new { enableJsDiagnostics = _options.EnableJsDiagnostics }).ConfigureAwait(false);
+            new InitializeOptions(_options.EnableJsDiagnostics)).ConfigureAwait(false);
     }
+
+    /// <summary>Payload for <c>initialize</c>; a named type so the trimmer can be told to keep it.</summary>
+    internal sealed record InitializeOptions(bool EnableJsDiagnostics);
 
     private async ValueTask<IJSObjectReference?> EnsureModuleAsync(CancellationToken cancellationToken)
     {
@@ -80,7 +92,8 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
 
     public async ValueTask DetachAsync(string sessionId, CancellationToken cancellationToken = default)
     {
-        _callbacks.Remove(sessionId);
+        _callbacks.TryRemove(sessionId, out _);
+        _activations.TryRemove(sessionId, out _);
 
         if (_module is null) return;
         await _module.InvokeVoidAsync("detach", cancellationToken, sessionId).ConfigureAwait(false);
@@ -92,12 +105,19 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         var module = await EnsureModuleAsync(cancellationToken).ConfigureAwait(false);
         if (module is null) return BonboardingStepGeometry.Missing;
 
-        return await module.InvokeAsync<BonboardingStepGeometry>("activateStep", cancellationToken, activation)
-            .ConfigureAwait(false);
+        // Recorded before the call: frames of this activation can overtake the reply.
+        var id = Interlocked.Increment(ref _activationSource);
+        _activations[activation.SessionId] = id;
+
+        return await module.InvokeAsync<BonboardingStepGeometry>(
+            "activateStep", cancellationToken, activation with { Activation = id }).ConfigureAwait(false);
     }
 
     public async ValueTask DeactivateStepAsync(string sessionId, CancellationToken cancellationToken = default)
     {
+        // From here on, anything the old step still has in flight is stale.
+        _activations.TryRemove(sessionId, out _);
+
         if (_module is null) return;
         await _module.InvokeVoidAsync("deactivateStep", cancellationToken, sessionId).ConfigureAwait(false);
     }
@@ -174,25 +194,41 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
     /// <summary>Payload for <see cref="OnKey"/>; kept as an object so the shape can grow.</summary>
     public sealed record KeyPayload(string Key, bool ShiftKey);
 
-    [JSInvokable]
-    public ValueTask OnGeometryChanged(string sessionId, BonboardingStepGeometry geometry)
-        => Dispatch(sessionId, callbacks => callbacks.OnGeometryChangedAsync(geometry));
+    // Step-scoped callbacks carry the activation they were raised for. One that was in flight when
+    // its step was replaced must not be applied to the new step: a late advance trigger would skip
+    // a step the user never saw, and a late frame would briefly place the new card against the old
+    // target. Keys are not step-scoped: a key press always means the step on screen.
 
     [JSInvokable]
-    public ValueTask OnTargetLost(string sessionId)
-        => Dispatch(sessionId, callbacks => callbacks.OnTargetLostAsync());
+    public ValueTask OnGeometryChanged(string sessionId, BonboardingStepGeometry geometry)
+        => IsCurrent(sessionId, geometry.Activation)
+            ? Dispatch(sessionId, callbacks => callbacks.OnGeometryChangedAsync(geometry))
+            : ValueTask.CompletedTask;
+
+    [JSInvokable]
+    public ValueTask OnTargetLost(string sessionId, long activation)
+        => IsCurrent(sessionId, activation)
+            ? Dispatch(sessionId, callbacks => callbacks.OnTargetLostAsync())
+            : ValueTask.CompletedTask;
 
     [JSInvokable]
     public ValueTask OnKey(string sessionId, KeyPayload payload)
         => Dispatch(sessionId, callbacks => callbacks.OnKeyAsync(payload.Key, payload.ShiftKey));
 
     [JSInvokable]
-    public ValueTask OnAdvanceTriggered(string sessionId)
-        => Dispatch(sessionId, callbacks => callbacks.OnAdvanceTriggeredAsync());
+    public ValueTask OnAdvanceTriggered(string sessionId, long activation)
+        => IsCurrent(sessionId, activation)
+            ? Dispatch(sessionId, callbacks => callbacks.OnAdvanceTriggeredAsync())
+            : ValueTask.CompletedTask;
 
     [JSInvokable]
-    public ValueTask OnWaitTimedOut(string sessionId)
-        => Dispatch(sessionId, callbacks => callbacks.OnWaitTimedOutAsync());
+    public ValueTask OnWaitTimedOut(string sessionId, long activation)
+        => IsCurrent(sessionId, activation)
+            ? Dispatch(sessionId, callbacks => callbacks.OnWaitTimedOutAsync())
+            : ValueTask.CompletedTask;
+
+    private bool IsCurrent(string sessionId, long activation)
+        => _activations.TryGetValue(sessionId, out var current) && current == activation;
 
     private async ValueTask Dispatch(string sessionId, Func<IBonboardingInteropCallbacks, ValueTask> action)
     {
@@ -223,10 +259,10 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
             {
                 await module.DisposeAsync().ConfigureAwait(false);
             }
-            catch (Exception ex) when (BonboardingTourSession.IsTransientInteropFailure(ex))
+            catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
             {
                 // The circuit is already gone; there is nothing left to clean up in the browser.
-                _logger.LogDebug(ex, "BonboardingService could not dispose its browser module.");
+                _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not dispose its browser module.");
             }
         }
     }
@@ -244,6 +280,7 @@ internal sealed class BonboardingInterop : IBonboardingInterop, IDisposable
         _disposed = true;
 
         _callbacks.Clear();
+        _activations.Clear();
         _module = null;
         _self?.Dispose();
         _self = null;

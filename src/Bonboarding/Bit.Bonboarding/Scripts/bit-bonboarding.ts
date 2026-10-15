@@ -36,6 +36,8 @@ interface AdvanceTriggerDescriptor {
 
 interface StepActivation {
     sessionId: string;
+    // Echoed back with every step-scoped callback so .NET can drop ones that outlived their step.
+    activation: number;
     target: TargetDescriptor;
     additionalTargets?: TargetDescriptor[] | null;
     waitForTarget: boolean;
@@ -55,6 +57,8 @@ interface StepGeometry {
     popover: BonboardingSize;
     targetVisible: boolean;
     sequence: number;
+    activation: number;
+    popoverRadius: number | null;
 }
 
 interface BrowserEnvironment {
@@ -190,7 +194,7 @@ export function detach(sessionId: string) {
 
 export async function activateStep(spec: StepActivation): Promise<StepGeometry> {
     const session = sessions.get(spec.sessionId);
-    if (!session) return emptyGeometry();
+    if (!session) return emptyGeometry(spec.activation);
 
     clearStep(session);
     session.spec = spec;
@@ -202,7 +206,7 @@ export async function activateStep(spec: StepActivation): Promise<StepGeometry> 
     if (elements.length === 0 && wantsTarget(spec) && spec.waitForTarget) {
         attachKeyboard(session, spec);
         startWaiting(session, spec);
-        return emptyGeometry();
+        return emptyGeometry(spec.activation);
     }
 
     session.targets = elements;
@@ -212,7 +216,7 @@ export async function activateStep(spec: StepActivation): Promise<StepGeometry> 
     }
 
     // The step may have been replaced or the session detached while the smooth scroll settled.
-    if (session.disposed || session.spec !== spec) return emptyGeometry();
+    if (session.disposed || session.spec !== spec) return emptyGeometry(spec.activation);
 
     observe(session);
     attachKeyboard(session, spec);
@@ -363,7 +367,7 @@ function startWaiting(session: Session, spec: StepActivation) {
             if (settled || session.disposed) return;
             settled = true;
             stopWaiting(session);
-            invoke(session, 'OnWaitTimedOut');
+            invoke(session, 'OnWaitTimedOut', spec.activation);
         }, spec.waitTimeoutMs);
     }
 
@@ -466,7 +470,7 @@ function scheduleFrame(session: Session) {
                 if (session.spec && !session.advanceTimer) attachAdvanceTrigger(session, session.spec);
             } else {
                 session.targets = [];
-                invoke(session, 'OnTargetLost');
+                invoke(session, 'OnTargetLost', activationOf(session));
                 return;
             }
         }
@@ -504,11 +508,18 @@ function invoke(session: Session, method: string, arg?: unknown) {
 // Measurement
 // ---------------------------------------------------------------------------
 
+function activationOf(session: Session): number {
+    return session.spec ? session.spec.activation : 0;
+}
+
 function measureSession(session: Session): StepGeometry {
     const viewport = { x: 0, y: 0, width: viewportWidth(), height: viewportHeight() };
-    const popover = session.popover && session.popover.isConnected
-        ? { width: session.popover.offsetWidth, height: session.popover.offsetHeight }
+    const connectedPopover = session.popover && session.popover.isConnected ? session.popover : null;
+    const popover = connectedPopover
+        ? { width: connectedPopover.offsetWidth, height: connectedPopover.offsetHeight }
         : { width: 0, height: 0 };
+    const popoverRadius = connectedPopover ? cornerRadius(connectedPopover) : null;
+    const activation = activationOf(session);
 
     const connected = session.targets.filter((element) => element.isConnected);
 
@@ -519,7 +530,9 @@ function measureSession(session: Session): StepGeometry {
             viewport,
             popover,
             targetVisible: false,
-            sequence: ++sequence
+            sequence: ++sequence,
+            activation,
+            popoverRadius
         };
     }
 
@@ -537,8 +550,35 @@ function measureSession(session: Session): StepGeometry {
         viewport,
         popover,
         targetVisible: visible,
-        sequence: ++sequence
+        sequence: ++sequence,
+        activation,
+        popoverRadius
     };
+}
+
+/**
+ * The largest corner radius the stylesheet gave the popover, in pixels, so .NET can keep the arrow
+ * clear of the rounded corners whatever the theme sets. Null when it cannot be expressed in pixels.
+ */
+function cornerRadius(element: HTMLElement): number | null {
+    try {
+        const style = getComputedStyle(element);
+        let largest = 0;
+
+        for (const value of [style.borderTopLeftRadius, style.borderTopRightRadius, style.borderBottomRightRadius, style.borderBottomLeftRadius]) {
+            // An elliptical corner reads "12px 8px"; the first length is the horizontal radius.
+            const first = (value || '').trim().split(/\s+/)[0];
+            if (!first) continue;
+            if (!first.endsWith('px')) return null;
+
+            const radius = parseFloat(first);
+            if (isFinite(radius)) largest = Math.max(largest, radius);
+        }
+
+        return largest;
+    } catch {
+        return null;
+    }
 }
 
 function unionRect(elements: Element[]): BonboardingRect {
@@ -682,6 +722,11 @@ function attachKeyboard(session: Session, spec: StepActivation) {
             return;
         }
 
+        // The page beyond the tour belongs to the application. While it is usable (free or
+        // target-only interaction) and focus is out there, Escape and the arrow keys are left for
+        // the application's own menus, dialogs and widgets.
+        if (!ownsKeyboard(session, spec, event.target)) return;
+
         if (event.key === 'Escape' && spec.closeOnEscape) {
             event.preventDefault();
             event.stopPropagation();
@@ -702,6 +747,19 @@ function attachKeyboard(session: Session, spec: StepActivation) {
 
     session.keyListener = listener;
     document.addEventListener('keydown', listener, true);
+}
+
+/**
+ * True when a key press is the tour's to handle: the page is blocked, so nothing else can be
+ * focused, or focus is inside the popover, or nothing in particular has focus.
+ */
+function ownsKeyboard(session: Session, spec: StepActivation, target: EventTarget | null): boolean {
+    if (spec.interaction === 'blocked') return true;
+
+    const node = target as Node | null;
+    if (!node || node === document.body || node === document.documentElement || node === document) return true;
+
+    return !!session.popover && session.popover.contains(node);
 }
 
 function isTextEntry(target: EventTarget | null): boolean {
@@ -846,7 +904,7 @@ function attachAdvanceTrigger(session: Session, spec: StepActivation) {
 
         session.advanceTimer = window.setTimeout(() => {
             session.advanceTimer = null;
-            invoke(session, 'OnAdvanceTriggered');
+            invoke(session, 'OnAdvanceTriggered', spec.activation);
         }, trigger.delayMs || 0);
     };
 
@@ -897,14 +955,16 @@ function clearStep(session: Session) {
     session.lastFrame = null;
 }
 
-function emptyGeometry(): StepGeometry {
+function emptyGeometry(activation = 0): StepGeometry {
     return {
         found: false,
         target: { x: 0, y: 0, width: 0, height: 0 },
         viewport: { x: 0, y: 0, width: viewportWidth(), height: viewportHeight() },
         popover: { width: 0, height: 0 },
         targetVisible: false,
-        sequence: ++sequence
+        sequence: ++sequence,
+        activation,
+        popoverRadius: null
     };
 }
 

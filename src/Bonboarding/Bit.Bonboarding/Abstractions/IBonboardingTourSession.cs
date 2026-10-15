@@ -82,9 +82,11 @@ public interface IBonboardingTourSession
     Task PreviousAsync(CancellationToken cancellationToken = default);
 
     /// <summary>Jumps to a step by id.</summary>
+    /// <exception cref="BonboardingException">The tour has no step with that id.</exception>
     Task GoToAsync(string stepId, CancellationToken cancellationToken = default);
 
     /// <summary>Jumps to a step by index.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">The index is outside the tour's steps.</exception>
     Task GoToAsync(int index, CancellationToken cancellationToken = default);
 
     /// <summary>Ends the tour as skipped by the user.</summary>

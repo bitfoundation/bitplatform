@@ -635,6 +635,78 @@ public class ComponentTests : BunitContext
         Assert.IsTrue(_interop.TrapFocus);
         Assert.IsTrue(_interop.FocusPopoverCount > 0);
     }
+
+    [TestMethod]
+    public async Task Tour_Callbacks_Run_On_The_Renderer_When_The_Tour_Is_Driven_From_Elsewhere()
+    {
+        var cut = Render<CallbackTourHarness>();
+        var tour = cut.FindComponent<BonboardingTour>().Instance;
+        var session = await cut.InvokeAsync(() => tour.StartAsync());
+
+        // Off the renderer, as a timer or a background service would drive it. The callback
+        // re-renders its owner, which the renderer only allows on its own dispatcher.
+        await Task.Run(() => session.NextAsync());
+
+        Assert.IsNull(session.Error);
+        Assert.AreEqual("two", session.CurrentStep!.Id);
+        Assert.AreEqual(2, cut.Instance.StepChanges);
+    }
+
+    [TestMethod]
+    public void An_Explicit_Order_Places_A_Late_Step_Ahead_Of_The_Step_At_That_Position()
+    {
+        var cut = Render<OrderedTourHarness>();
+
+        cut.Render(parameters => parameters.Add(p => p.ShowAdvanced, true));
+
+        var tour = BonboardingService.GetTour("ordered");
+        CollectionAssert.AreEqual(new[] { "intro", "advanced", "finish" }, tour!.Steps.Select(step => step.Id).ToArray());
+    }
+
+    [TestMethod]
+    public async Task A_Malformed_Label_Format_Falls_Back_Instead_Of_Breaking_The_Render()
+    {
+        var tour = Tour(Step("a", "Broken labels"));
+        tour.Progress = BonboardingProgressStyle.Text;
+        tour.Labels = new BonboardingLabels { ProgressFormat = "{0 of {1}", StepAnnouncementFormat = "Step {0}. {2" };
+
+        await BonboardingService.StartAsync(tour);
+        var cut = Render<BonboardingRoot>();
+
+        Assert.AreEqual("1 of 1", cut.Find(".bit-bonboarding-progress-text").TextContent);
+        Assert.AreEqual("Step 1 of 1. Broken labels", cut.Find(".bit-bonboarding-live").TextContent);
+    }
+
+    [TestMethod]
+    public async Task A_Target_Only_Step_With_No_Target_On_Screen_Blocks_The_Page()
+    {
+        var step = Step("a", "Gone", "#missing");
+        step.Interaction = BonboardingInteractionMode.TargetOnly;
+        step.MissingTarget = BonboardingMissingTargetBehavior.Center;
+
+        await BonboardingService.StartAsync(Tour(step));
+        var cut = Render<BonboardingRoot>();
+
+        var blockers = cut.FindAll(".bit-bonboarding-blocker");
+        Assert.HasCount(1, blockers);
+        Assert.AreEqual("inset:0", blockers[0].GetAttribute("style"));
+    }
+
+    [TestMethod]
+    public async Task The_Live_Region_Empties_Between_Tours_So_A_Restart_Is_Announced()
+    {
+        var cut = Render<BonboardingRoot>();
+        var tour = Tour(Step("a", "Welcome"));
+
+        var first = await cut.InvokeAsync(() => BonboardingService.StartAsync(tour));
+        cut.WaitForAssertion(() => Assert.Contains("Welcome", cut.Find(".bit-bonboarding-live").TextContent));
+
+        await cut.InvokeAsync(() => first.DismissAsync());
+        cut.WaitForAssertion(() => Assert.AreEqual(string.Empty, cut.Find(".bit-bonboarding-live").TextContent.Trim()));
+
+        await cut.InvokeAsync(() => BonboardingService.StartAsync(tour));
+        cut.WaitForAssertion(() => Assert.Contains("Welcome", cut.Find(".bit-bonboarding-live").TextContent));
+    }
 }
 
 /// <summary>Markup fixture for the declarative component tests.</summary>
@@ -706,6 +778,64 @@ public sealed class ToggleableTourHarness : ComponentBase
             child.OpenComponent<BonboardingStep>(6);
             child.AddComponentParameter(7, nameof(BonboardingStep.Id), "three");
             child.AddComponentParameter(8, nameof(BonboardingStep.Selector), "#c");
+            child.CloseComponent();
+        }));
+        builder.CloseComponent();
+    }
+}
+
+/// <summary>Markup fixture whose tour reports step changes through an <see cref="EventCallback"/>.</summary>
+public sealed class CallbackTourHarness : ComponentBase
+{
+    public int StepChanges { get; private set; }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<BonboardingTour>(0);
+        builder.AddComponentParameter(1, nameof(BonboardingTour.Id), "callbacks");
+        builder.AddComponentParameter(2, nameof(BonboardingTour.OnStepChanged),
+            EventCallback.Factory.Create<BonboardingStepChangedEventArgs>(this, _ => StepChanges++));
+        builder.AddComponentParameter(3, nameof(BonboardingTour.ChildContent), (RenderFragment)(child =>
+        {
+            child.OpenComponent<BonboardingStep>(0);
+            child.AddComponentParameter(1, nameof(BonboardingStep.Id), "one");
+            child.AddComponentParameter(2, nameof(BonboardingStep.Selector), "#a");
+            child.CloseComponent();
+
+            child.OpenComponent<BonboardingStep>(3);
+            child.AddComponentParameter(4, nameof(BonboardingStep.Id), "two");
+            child.AddComponentParameter(5, nameof(BonboardingStep.Selector), "#b");
+            child.CloseComponent();
+        }));
+        builder.CloseComponent();
+    }
+}
+
+/// <summary>Markup fixture with a step that only renders later and pins its position with Order.</summary>
+public sealed class OrderedTourHarness : ComponentBase
+{
+    [Parameter] public bool ShowAdvanced { get; set; }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<BonboardingTour>(0);
+        builder.AddComponentParameter(1, nameof(BonboardingTour.Id), "ordered");
+        builder.AddComponentParameter(2, nameof(BonboardingTour.ChildContent), (RenderFragment)(child =>
+        {
+            child.OpenComponent<BonboardingStep>(0);
+            child.AddComponentParameter(1, nameof(BonboardingStep.Id), "intro");
+            child.CloseComponent();
+
+            if (ShowAdvanced)
+            {
+                child.OpenComponent<BonboardingStep>(2);
+                child.AddComponentParameter(3, nameof(BonboardingStep.Id), "advanced");
+                child.AddComponentParameter(4, nameof(BonboardingStep.Order), (int?)2);
+                child.CloseComponent();
+            }
+
+            child.OpenComponent<BonboardingStep>(5);
+            child.AddComponentParameter(6, nameof(BonboardingStep.Id), "finish");
             child.CloseComponent();
         }));
         builder.CloseComponent();

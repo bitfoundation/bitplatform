@@ -12,7 +12,10 @@ public interface IBonboardingService
     /// <summary>Every session created in this scope that has not been discarded.</summary>
     IReadOnlyList<IBonboardingTourSession> Sessions { get; }
 
-    /// <summary>Every tour registered with <see cref="Register"/> or by an <c>BonboardingTour</c> component.</summary>
+    /// <summary>
+    /// Every tour registered with <see cref="Register"/> or by a <c>BonboardingTour</c> component.
+    /// Starting a tour does not register it.
+    /// </summary>
     IReadOnlyCollection<BonboardingTourDefinition> RegisteredTours { get; }
 
     /// <summary>Raised for every lifecycle moment; the simplest analytics hook.</summary>
@@ -34,6 +37,13 @@ public interface IBonboardingService
     BonboardingTourDefinition? GetTour(string tourId);
 
     /// <summary>Starts a tour and returns its session.</summary>
+    /// <remarks>
+    /// A tour started while prerendering runs without a browser: nothing is measured or shown, but
+    /// its hooks run, its events are published and its progress is written to the store's
+    /// in-memory mirror, and the interactive render then starts it again in a new scope. Start
+    /// tours from <c>OnAfterRenderAsync</c>, which never runs while prerendering, from a user
+    /// action, or with <c>BonboardingTour.AutoStart</c>.
+    /// </remarks>
     Task<IBonboardingTourSession> StartAsync(BonboardingTourDefinition tour, BonboardingStartOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>Starts a previously registered tour by id.</summary>

@@ -1,9 +1,11 @@
 ﻿namespace Bit.Bonboarding;
 
 /// <summary>
-/// Supplies the user-visible strings. The default implementation merges
-/// <see cref="BonboardingOptions.Labels"/> with any <see cref="BonboardingTourDefinition.Labels"/>; replace it
-/// to source strings from <c>IStringLocalizer</c> or a translation service.
+/// Supplies the user-visible strings. The default implementation uses a tour's
+/// <see cref="BonboardingTourDefinition.Labels"/> when it has any, and
+/// <see cref="BonboardingOptions.Labels"/> otherwise; the two are not merged, so a tour-level set
+/// replaces the global one entirely (start from <see cref="BonboardingLabels.Clone"/> to override a
+/// few strings). Replace it to source strings from <c>IStringLocalizer</c> or a translation service.
 /// </summary>
 public interface IBonboardingLocalizer
 {

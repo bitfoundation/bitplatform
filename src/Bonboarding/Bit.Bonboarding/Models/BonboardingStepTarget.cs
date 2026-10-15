@@ -69,7 +69,7 @@ public abstract class BonboardingStepTarget : IEquatable<BonboardingStepTarget>
         // Guard against a resolver that keeps returning another dynamic target.
         for (var depth = 0; current is DynamicTarget dynamicTarget && depth < 8; depth++)
         {
-            current = await dynamicTarget.Resolver(context).ConfigureAwait(false) ?? None;
+            current = await dynamicTarget.Resolver(context) ?? None;
         }
         return current is DynamicTarget ? None : current;
     }

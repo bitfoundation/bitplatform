@@ -189,4 +189,41 @@ public class ResilienceTests
 
         Assert.AreEqual(current, session.Placement);
     }
+
+    [TestMethod]
+    public async Task A_Frame_That_Overtakes_The_Activation_Reply_Is_Kept()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var moved = new BonboardingRect(400, 300, 80, 30);
+
+        // The observers report a newer frame before the reply to the activation arrives.
+        harness.Interop.DuringActivation = async activation =>
+        {
+            harness.Interop.TargetRect = moved;
+            await harness.Interop.PushGeometryAsync(activation.SessionId);
+        };
+
+        var session = await harness.Service.StartAsync(Tour());
+
+        Assert.AreEqual(moved, session.TargetRect);
+    }
+
+    [TestMethod]
+    public void Only_Routine_Interop_Failures_Are_Logged_Quietly()
+    {
+        const Microsoft.Extensions.Logging.LogLevel Debug = Microsoft.Extensions.Logging.LogLevel.Debug;
+        const Microsoft.Extensions.Logging.LogLevel Warning = Microsoft.Extensions.Logging.LogLevel.Warning;
+
+        Assert.AreEqual(Debug, BonboardingInteropFailure.LevelFor(new JSDisconnectedException("the circuit is gone")));
+        Assert.AreEqual(Debug, BonboardingInteropFailure.LevelFor(new OperationCanceledException()));
+        Assert.AreEqual(Debug, BonboardingInteropFailure.LevelFor(new ObjectDisposedException("module")));
+        Assert.AreEqual(Debug, BonboardingInteropFailure.LevelFor(new InvalidOperationException(
+            "JavaScript interop calls cannot be issued at this time. This is because the component is being statically rendered.")));
+
+        // Still survivable, but a real problem someone should see.
+        Assert.AreEqual(Warning, BonboardingInteropFailure.LevelFor(new JSException("SyntaxError: not a valid selector")));
+        Assert.AreEqual(Warning, BonboardingInteropFailure.LevelFor(new InvalidOperationException("the custom store is misconfigured")));
+    }
 }

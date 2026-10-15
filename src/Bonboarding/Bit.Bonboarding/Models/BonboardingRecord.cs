@@ -36,7 +36,10 @@ public sealed record BonboardingRecord
 
     public DateTimeOffset? CompletedAt { get; init; }
 
-    /// <summary>Application-defined values round-tripped with the record.</summary>
+    /// <summary>
+    /// Application-defined values round-tripped with the record. Write them through your
+    /// <see cref="IBonboardingStore"/>; the library carries them over on every write of its own.
+    /// </summary>
     public IReadOnlyDictionary<string, string>? Data { get; init; }
 
     /// <summary>True when the tour is finished with, however it ended.</summary>

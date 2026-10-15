@@ -84,7 +84,9 @@ public sealed class BonboardingStepDefinition : BonboardingStepOptions
     public Func<BonboardingStepContext, ValueTask>? OnShown { get; set; }
 
     /// <summary>
-    /// Runs before leaving the step. Throwing fails the whole tour, with the exception attached;
+    /// Runs before leaving the step, for every step whose <see cref="OnBeforeShow"/> ran: including
+    /// one skipped because its target was missing, so whatever the show hook opened can be closed,
+    /// but not one that was still waiting for its route. Throwing fails the whole tour, with the exception attached;
     /// use <see cref="CanAdvance"/> to hold the user on the step instead.
     /// </summary>
     public Func<BonboardingStepContext, ValueTask>? OnBeforeLeave { get; set; }

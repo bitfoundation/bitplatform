@@ -49,9 +49,9 @@ public sealed class BonboardingBrowserStore : IBonboardingStore
             await RemoveAsync(tourId, cancellationToken).ConfigureAwait(false);
             return null;
         }
-        catch (Exception ex) when (BonboardingTourSession.IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService storage is unavailable; falling back to memory.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService storage is unavailable; falling back to memory.");
             return null;
         }
     }
@@ -67,9 +67,9 @@ public sealed class BonboardingBrowserStore : IBonboardingStore
             var json = JsonSerializer.Serialize(record, BonboardingJsonContext.Default.BonboardingRecord);
             await _interop.SetStorageAsync(KeyFor(record.TourId), json, cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex) when (BonboardingTourSession.IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService progress was kept in memory only.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService progress was kept in memory only.");
         }
     }
 
@@ -81,9 +81,9 @@ public sealed class BonboardingBrowserStore : IBonboardingStore
         {
             await _interop.RemoveStorageAsync(KeyFor(tourId), cancellationToken).ConfigureAwait(false);
         }
-        catch (Exception ex) when (BonboardingTourSession.IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not clear storage for tour {TourId}.", tourId);
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not clear storage for tour {TourId}.", tourId);
         }
     }
 
@@ -102,9 +102,9 @@ public sealed class BonboardingBrowserStore : IBonboardingStore
                 await _interop.RemoveStorageAsync(key, cancellationToken).ConfigureAwait(false);
             }
         }
-        catch (Exception ex) when (BonboardingTourSession.IsTransientInteropFailure(ex))
+        catch (Exception ex) when (BonboardingInteropFailure.IsTransient(ex))
         {
-            _logger.LogDebug(ex, "BonboardingService could not clear stored progress.");
+            _logger.Log(BonboardingInteropFailure.LevelFor(ex), ex, "BonboardingService could not clear stored progress.");
         }
     }
 }

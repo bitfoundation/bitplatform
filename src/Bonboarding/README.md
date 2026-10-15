@@ -440,7 +440,9 @@ The library is prerender-safe. During prerendering there is no browser, so:
 
 - no measurement happens and no popover is positioned;
 - the default store falls back to its in-memory mirror, so reads return nothing rather than throwing;
-- the engine still runs, so a tour started during prerendering does not crash the render.
+- the engine still runs, so a tour started during prerendering does not crash the render. Its hooks
+  run, its events are published and its progress is written to the in-memory mirror, all for a tour
+  nobody sees.
 
 The important consequence is **where you start a tour**. `OnInitializedAsync` runs during
 prerendering *and* again after hydration, which would start a tour twice in two different scopes.
@@ -521,11 +523,23 @@ running tour is picked up without restarting it.
 Steps normally keep their declaration order. A step with an `Id` that is removed and rendered again
 returns to its original position, but one that only appears after the others (inside an `@if` that
 starts out false, say) is placed last. Give a step an explicit `Order` when it is rendered
-conditionally and you need its position pinned, or keep it rendered and skip it with `When`:
+conditionally and you need its position pinned, or keep it rendered and skip it with `When`.
+
+`Order="n"` places a step as if it were the n-th step to render, just ahead of the step that actually
+rendered n-th. Steps with the same `Order` keep their render order among themselves:
 
 ```razor
-<BonboardingStep Order="10" ... />
+<BonboardingStep Id="intro" ... />
+@if (showAdvanced)
+{
+    <BonboardingStep Id="advanced" Order="2" ... />   @* always second, ahead of "finish" *@
+}
+<BonboardingStep Id="finish" ... />
 ```
+
+`Configure` on the tour and on each step runs every time the definition is rebuilt, which is whenever
+the tour or one of its steps receives parameters. Keep it idempotent: assign values, do not append
+to collections or subscribe to events.
 
 #### Programmatic
 
@@ -907,8 +921,10 @@ new BonboardingStepDefinition
 }
 ```
 
-Escape is handled at the document level, so it works regardless of where focus is. Keep it on unless
-the tour is genuinely mandatory; it is the escape hatch users reach for first.
+Escape is handled at the document level. On a `Blocked` step, or whenever focus is in the popover,
+it ends the tour wherever focus is. On a `TargetOnly` or `Free` step with focus out in the application,
+it is left alone so the application's own menus and dialogs still close. Keep it on unless the tour
+is genuinely mandatory; it is the escape hatch users reach for first.
 
 ### Very large and very small targets
 
@@ -2002,8 +2018,10 @@ The popover is a `role="dialog"` with `tabindex="-1"`, so it can receive focus.
 Arrow keys are ignored while focus is in a text input, textarea, select or contenteditable, so a step
 that asks the user to type something does not steal their cursor keys.
 
-Key handling is installed on the document in the capture phase, so `Escape` works wherever focus is
-- including inside the application, on a `Free` step.
+Key handling is installed on the document in the capture phase. On a `Blocked` step the tour owns the
+keyboard wherever focus is. On a `TargetOnly` or `Free` step it only handles `Escape` and the arrow
+keys while focus is in the popover (or on nothing in particular): with focus in the application,
+they belong to the application's menus, dialogs, sliders and lists.
 
 #### Announcements
 
@@ -2091,7 +2109,9 @@ public sealed record BonboardingRecord
 }
 ```
 
-A record is written after every step, and again when the tour ends.
+A record is written after every step, and again when the tour ends. `Data` belongs to your
+application: write it through your `IBonboardingStore`, and the library carries it over on every
+write of its own.
 
 ### How a tour ends matters
 
@@ -2226,7 +2246,7 @@ published as an `BonboardingEvent`, including how long each step was on screen.
 | `TourStarted` | A session started |
 | `TourResumed` | It resumed from saved progress rather than starting fresh |
 | `StepShown` | A step is on screen |
-| `StepLeft` | A step was left; `Duration` says for how long it was shown |
+| `StepLeft` | A step that was on screen was left; `Duration` says for how long. Steps skipped before they were shown do not raise it |
 | `StepSkipped` | A step was skipped because its target was missing |
 | `TargetMissing` | A target could not be found, or disappeared mid-step |
 | `TargetResolved` | A target was found, including after a wait |
@@ -2499,7 +2519,9 @@ but plenty of hosts and test frameworks do not, and a service that only supporte
 would make those throw.
 
 Interop failures during teardown - a dropped circuit, a page unload, prerendering - are treated as
-expected rather than as errors, so a closing tab never produces an exception in your logs.
+expected rather than as errors, so a closing tab never produces an exception in your logs. Other
+survivable failures, such as a JavaScript error in the browser layer or an `InvalidOperationException`
+from a custom store, do not stop the tour either, but are logged as warnings so they are not hidden.
 
 ### Measuring it yourself
 
@@ -2569,7 +2591,7 @@ Declares a tour in markup. Renders nothing.
 | `Labels` | `BonboardingLabels?` | Override the label set. |
 | `Persist` | `bool?` | Override global persistence. |
 | `Placement`, `Theme`, `Direction`, `Progress`, `Interaction`, `ShowOverlay`, `ShowSpotlight`, `ShowSkip`, `ShowClose`, `ShowPrevious`, `CloseOnEscape`, `CloseOnOverlayClick` | nullable | Defaults for every step. |
-| `Configure` | `Action<BonboardingTourDefinition>?` | Escape hatch for anything not exposed as a parameter. |
+| `Configure` | `Action<BonboardingTourDefinition>?` | Escape hatch for anything not exposed as a parameter. Runs on every rebuild, so keep it idempotent. |
 | `OnStarted` | `EventCallback` | |
 | `OnStepChanged` | `EventCallback<BonboardingStepChangedEventArgs>` | |
 | `OnEnded` | `EventCallback<BonboardingTourEndedEventArgs>` | |
@@ -2584,7 +2606,7 @@ Declares one step. Renders nothing. Must be inside an `BonboardingTour`.
 | Parameter | Type | Description |
 |---|---|---|
 | `Id` | `string?` | Strongly recommended for persistence and branching. |
-| `Order` | `int?` | Explicit ordering; otherwise declaration order. |
+| `Order` | `int?` | Explicit position: placed as the n-th step, ahead of the step that rendered n-th. Otherwise declaration order. |
 | `Target` | `BonboardingStepTarget?` | Any target kind. |
 | `Anchor` | `string?` | Shorthand for `BonboardingStepTarget.Anchor`. |
 | `Selector` | `string?` | Shorthand for `BonboardingStepTarget.Css`. |
@@ -2603,7 +2625,7 @@ Declares one step. Renders nothing. Must be inside an `BonboardingTour`.
 | `Data` | `object?` | Arbitrary payload. |
 | `NextLabel`, `PreviousLabel`, `SkipLabel`, `DoneLabel` | `string?` | Per-step label overrides. |
 | Presentation overrides | nullable | `Placement`, `PlacementFallbacks`, `Offset`, `ShowSpotlight`, `SpotlightPadding`, `SpotlightRadius`, `SpotlightShape`, `ShowOverlay`, `Interaction`, `Scroll`, `MissingTarget`, `WaitTimeout`, `WaitTimeoutBehavior`, `Progress`, `ShowNext`, `ShowPrevious`, `ShowSkip`, `ShowClose`, `PopoverClass` |
-| `Configure` | `Action<BonboardingStepDefinition>?` | Escape hatch. |
+| `Configure` | `Action<BonboardingStepDefinition>?` | Escape hatch. Runs on every rebuild, so keep it idempotent. |
 
 ---
 
@@ -2621,7 +2643,7 @@ IReadOnlyCollection<BonboardingTourDefinition> RegisteredTours { get; }
 event EventHandler<BonboardingEvent>? EventRaised;
 event EventHandler? SessionsChanged;
 
-void Register(BonboardingTourDefinition tour);
+void Register(BonboardingTourDefinition tour);   // StartAsync does not register a tour
 void Unregister(string tourId);
 BonboardingTourDefinition? GetTour(string tourId);
 

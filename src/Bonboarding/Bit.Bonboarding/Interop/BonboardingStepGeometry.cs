@@ -23,4 +23,13 @@ public sealed record BonboardingStepGeometry
 
     /// <summary>Monotonic counter, used to drop out-of-order frames.</summary>
     public long Sequence { get; init; }
+
+    /// <summary>The <see cref="BonboardingStepActivation.Activation"/> this frame was measured for.</summary>
+    public long Activation { get; init; }
+
+    /// <summary>
+    /// The popover's measured corner radius in pixels, so the arrow stays clear of the corners
+    /// whatever the theme sets. <see langword="null"/> when unknown.
+    /// </summary>
+    public double? PopoverRadius { get; init; }
 }

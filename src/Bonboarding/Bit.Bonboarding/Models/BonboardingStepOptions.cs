@@ -55,7 +55,12 @@ public abstract class BonboardingStepOptions
     /// <summary>Whether clicking the overlay ends the tour. Default <see langword="false"/>.</summary>
     public bool? CloseOnOverlayClick { get; set; }
 
-    /// <summary>Whether <c>Escape</c> ends the tour. Default <see langword="true"/>.</summary>
+    /// <summary>
+    /// Whether <c>Escape</c> ends the tour. Default <see langword="true"/>. While the page stays
+    /// usable (<see cref="BonboardingInteractionMode.TargetOnly"/> or
+    /// <see cref="BonboardingInteractionMode.Free"/>) and focus is in the application, Escape is left
+    /// to the application's own menus and dialogs.
+    /// </summary>
     public bool? CloseOnEscape { get; set; }
 
     // ---- Scrolling ---------------------------------------------------------
@@ -116,7 +121,11 @@ public abstract class BonboardingStepOptions
 
     // ---- Keyboard and focus -----------------------------------------------
 
-    /// <summary>Arrow keys / Enter navigate between steps. Default <see langword="true"/>.</summary>
+    /// <summary>
+    /// The arrow keys move between steps, and <c>Home</c> / <c>End</c> jump to the first and last.
+    /// Default <see langword="true"/>. Ignored in text fields, and, like Escape, left to the
+    /// application while its page is usable and focus is outside the popover.
+    /// </summary>
     public bool? KeyboardNavigation { get; set; }
 
     /// <summary>Keep <c>Tab</c> inside the popover (plus the target when it is interactive). Default <see langword="true"/>.</summary>

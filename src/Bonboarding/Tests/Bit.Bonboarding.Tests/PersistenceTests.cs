@@ -78,6 +78,33 @@ public class PersistenceTests
 
         Assert.AreEqual("b", resumed.CurrentStep!.Id);
         Assert.Contains(BonboardingEventKind.TourResumed, harness.Events.Kinds);
+
+        // A session's events always open with TourStarted; TourResumed qualifies it.
+        var kinds = harness.Events.Kinds.ToList();
+        var resumedAt = kinds.LastIndexOf(BonboardingEventKind.TourResumed);
+        Assert.AreEqual(BonboardingEventKind.TourStarted, kinds[resumedAt - 1]);
+    }
+
+    [TestMethod]
+    public async Task Application_Data_On_The_Record_Survives_The_Tour_Writing_It()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        await harness.Store.SetAsync(new BonboardingRecord
+        {
+            TourId = "persisted",
+            Data = new Dictionary<string, string> { ["plan"] = "pro" },
+        });
+
+        var session = await harness.Service.StartAsync(Tour(), new BonboardingStartOptions { Resume = false });
+        await session.NextAsync();
+        Assert.AreEqual("pro", (await harness.Store.GetAsync("persisted"))!.Data!["plan"]);
+
+        await session.CompleteAsync();
+        var record = await harness.Store.GetAsync("persisted");
+        Assert.IsTrue(record!.Completed);
+        Assert.AreEqual("pro", record.Data!["plan"]);
     }
 
     [TestMethod]

@@ -25,7 +25,8 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
     private string _titleId = string.Empty;
     private string _descriptionId = string.Empty;
     private string? _announcement;
-    private string? _announcedStepId;
+    /// <summary>Session and step last announced, so a new session re-announces even the same step id.</summary>
+    private string? _announcedKey;
     private string? _focusedStepId;
     private string? _claimedSessionId;
     private bool _disposed;
@@ -137,6 +138,11 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
             _step = null;
             _options = null;
             _renderContext = null;
+
+            // Empty the live region between tours: a polite region only speaks when its text
+            // changes, so a tour that starts again with the same first step would otherwise be silent.
+            _announcement = null;
+            _announcedKey = null;
             return;
         }
 
@@ -154,11 +160,14 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
             Description = Localizer.Localize(_step.Description),
         };
 
-        if (_announcedStepId != _step.Id && !session.IsWaiting)
+        var announcedKey = session.Id + "/" + _step.Id;
+
+        if (_announcedKey != announcedKey && !session.IsWaiting)
         {
-            _announcedStepId = _step.Id;
-            _announcement = string.Format(
+            _announcedKey = announcedKey;
+            _announcement = BonboardingLabels.Format(
                 _options.Labels.StepAnnouncementFormat,
+                BonboardingLabels.DefaultStepAnnouncementFormat,
                 session.DisplayPosition,
                 session.DisplayCount,
                 _renderContext.Title ?? _renderContext.Description ?? string.Empty).Trim();
@@ -166,7 +175,7 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
         else if (session.IsWaiting && _announcement != _options.Labels.WaitingAnnouncement)
         {
             _announcement = _options.Labels.WaitingAnnouncement;
-            _announcedStepId = null;
+            _announcedKey = null;
         }
     }
 

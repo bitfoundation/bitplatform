@@ -13,7 +13,10 @@ internal sealed class BonboardingHarness : IAsyncDisposable
     private readonly ServiceProvider _root;
     private readonly AsyncServiceScope _scope;
 
-    public BonboardingHarness(Action<BonboardingOptions>? configure = null, bool withNavigation = true)
+    public BonboardingHarness(
+        Action<BonboardingOptions>? configure = null,
+        bool withNavigation = true,
+        Action<IServiceCollection>? configureServices = null)
     {
         var services = new ServiceCollection();
 
@@ -32,6 +35,8 @@ internal sealed class BonboardingHarness : IAsyncDisposable
 
         Events = new RecordingObserver();
         services.AddSingleton<IBonboardingObserver>(Events);
+
+        configureServices?.Invoke(services);
 
         _root = services.BuildServiceProvider();
         _scope = _root.CreateAsyncScope();
@@ -86,6 +91,29 @@ internal sealed class TestNavigationManager : NavigationManager
         Uri = ToAbsoluteUri(relativeUri).ToString();
         NotifyLocationChanged(true);
     }
+}
+
+/// <summary>An in-memory store that records the token each write arrived with.</summary>
+internal sealed class TokenRecordingStore : IBonboardingStore
+{
+    private readonly BonboardingInMemoryStore _inner = new();
+
+    public List<(BonboardingRecord Record, bool Cancelled)> Writes { get; } = [];
+
+    public ValueTask<BonboardingRecord?> GetAsync(string tourId, CancellationToken cancellationToken = default)
+        => _inner.GetAsync(tourId, cancellationToken);
+
+    public ValueTask SetAsync(BonboardingRecord record, CancellationToken cancellationToken = default)
+    {
+        Writes.Add((record, cancellationToken.IsCancellationRequested));
+        return _inner.SetAsync(record, cancellationToken);
+    }
+
+    public ValueTask RemoveAsync(string tourId, CancellationToken cancellationToken = default)
+        => _inner.RemoveAsync(tourId, cancellationToken);
+
+    public ValueTask ClearAsync(CancellationToken cancellationToken = default)
+        => _inner.ClearAsync(cancellationToken);
 }
 
 /// <summary>Collects every event the service publishes, for assertions on analytics behaviour.</summary>

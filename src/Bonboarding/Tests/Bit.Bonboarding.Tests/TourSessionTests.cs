@@ -98,13 +98,37 @@ public class TourSessionTests
     }
 
     [TestMethod]
-    public async Task Jumping_To_An_Unknown_Step_Fails_The_Tour()
+    public async Task Jumping_To_An_Unknown_Step_Is_Reported_To_The_Caller()
     {
         await using var harness = new BonboardingHarness();
         harness.WithElements("#a");
 
         var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
-        await session.GoToAsync("nope");
+
+        // A typo in the calling code is that code's problem, not a reason to end the user's tour.
+        var thrown = Assert.ThrowsExactly<BonboardingException>(() => session.GoToAsync("nope"));
+        Assert.AreEqual("nope", thrown.StepId);
+
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => session.GoToAsync(5));
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => session.GoToAsync(-1));
+
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.AreEqual("a", session.CurrentStep!.Id);
+        Assert.IsNull(session.Error);
+    }
+
+    [TestMethod]
+    public async Task A_Branch_To_An_Unknown_Step_Still_Fails_The_Tour()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        // Inside the tour's own definition, a dangling id is a broken tour.
+        var a = Step("a", "#a");
+        a.ResolveNext = _ => ValueTask.FromResult<string?>("nope");
+
+        var session = await harness.Service.StartAsync(Tour(a, Step("b")));
+        await session.NextAsync();
 
         Assert.AreEqual(BonboardingTourStatus.Failed, session.Status);
         Assert.IsInstanceOfType<BonboardingException>(session.Error);
@@ -976,5 +1000,287 @@ public class TourSessionTests
 
         await session.NextAsync();
         Assert.AreEqual("b", session.CurrentStep!.Id);
+    }
+
+    // ---- Skipped steps, Back, and hooks calling back in ---------------------------
+
+    [TestMethod]
+    public async Task A_Skipped_Step_Is_Not_Visited_Left_Or_Returned_To()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#c");
+
+        var changes = new List<BonboardingStepChangedEventArgs>();
+        var b = Step("b", "#gone");
+        b.MissingTarget = BonboardingMissingTargetBehavior.Skip;
+
+        var bPrepared = 0;
+        var bLeft = 0;
+        b.OnBeforeShow = _ => { bPrepared++; return ValueTask.CompletedTask; };
+        b.OnBeforeLeave = _ => { bLeft++; return ValueTask.CompletedTask; };
+
+        var tour = Tour(Step("a", "#a"), b, Step("c", "#c"));
+        tour.OnStepChanged = args => { changes.Add(args); return ValueTask.CompletedTask; };
+
+        var session = await harness.Service.StartAsync(tour);
+        await session.NextAsync();
+
+        Assert.AreEqual("c", session.CurrentStep!.Id);
+        CollectionAssert.AreEqual(new[] { "a", "c" }, session.History.ToArray());
+
+        // The skipped step never reached the screen: it reports no time on it, and the step after
+        // it says the user came from the one they actually saw.
+        Assert.IsFalse(harness.Events.Events.Any(e => e.Kind == BonboardingEventKind.StepLeft && e.Step?.Id == "b"));
+        Assert.AreEqual("a", changes[^1].PreviousStep?.Id);
+        Assert.AreEqual(BonboardingStepChangeReason.Next, changes[^1].Reason);
+
+        // Its show hook did run, so its leave hook runs too, to undo whatever the show hook opened.
+        Assert.AreEqual(1, bPrepared);
+        Assert.AreEqual(1, bLeft);
+
+        // Back goes to the step the user saw, without trying the skipped one again.
+        await session.PreviousAsync();
+        Assert.AreEqual("a", session.CurrentStep!.Id);
+        Assert.AreEqual(1, bPrepared);
+    }
+
+    [TestMethod]
+    public async Task A_Skipped_First_Step_Hands_On_The_Start_Reason()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#b");
+
+        var changes = new List<BonboardingStepChangedEventArgs>();
+        var a = Step("a", "#gone");
+        a.MissingTarget = BonboardingMissingTargetBehavior.Skip;
+
+        var tour = Tour(a, Step("b", "#b"));
+        tour.OnStepChanged = args => { changes.Add(args); return ValueTask.CompletedTask; };
+
+        var session = await harness.Service.StartAsync(tour);
+
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+        Assert.HasCount(1, changes);
+        Assert.IsNull(changes[0].PreviousStep);
+        Assert.AreEqual(BonboardingStepChangeReason.Start, changes[0].Reason);
+        CollectionAssert.AreEqual(new[] { "b" }, session.History.ToArray());
+    }
+
+    [TestMethod]
+    public async Task Skipping_Back_Past_The_First_Step_Carries_On_Forwards()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+
+        var a = Step("a", "#a");
+        a.MissingTarget = BonboardingMissingTargetBehavior.Skip;
+
+        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")));
+        await session.NextAsync();
+
+        // The first step's target goes away while the user is on the second one.
+        harness.Interop.ExistingSelectors.Remove("#a");
+        await session.PreviousAsync();
+
+        // Nothing to go back to: the user lands on a step that can be shown, not on one that cannot.
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.IsNull(session.Error);
+    }
+
+    [TestMethod]
+    public async Task Back_From_The_First_Step_Runs_No_Leave_Hooks()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var left = 0;
+        var a = Step("a", "#a");
+        a.OnBeforeLeave = _ => { left++; return ValueTask.CompletedTask; };
+
+        var session = await harness.Service.StartAsync(Tour(a, Step("b")));
+        await session.PreviousAsync();
+
+        Assert.AreEqual("a", session.CurrentStep!.Id);
+        Assert.AreEqual(0, left);
+        Assert.DoesNotContain(BonboardingEventKind.StepLeft, harness.Events.Kinds);
+        CollectionAssert.AreEqual(new[] { "a" }, session.History.ToArray());
+    }
+
+    [TestMethod]
+    public async Task A_Leave_Hook_That_Removes_The_Way_Back_Shows_The_Step_Again()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+
+        var a = Step("a", "#a");
+        a.When = context => ValueTask.FromResult(!context.State.ContainsKey("hide-a"));
+
+        var shown = 0;
+        var b = Step("b", "#b");
+        b.OnBeforeShow = _ => { shown++; return ValueTask.CompletedTask; };
+        b.OnBeforeLeave = context => { context.State["hide-a"] = true; return ValueTask.CompletedTask; };
+
+        var session = await harness.Service.StartAsync(Tour(a, b));
+        await session.NextAsync();
+        await session.PreviousAsync();
+
+        // The leave hook took away the only step behind. Its hooks have run, so rather than leave
+        // the step half torn down it is shown again, with its history intact.
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.AreEqual(2, shown);
+        CollectionAssert.AreEqual(new[] { "a", "b" }, session.History.ToArray());
+    }
+
+    [TestMethod]
+    public async Task A_Hook_Can_Await_A_Command_Of_Its_Own()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+
+        var a = Step("a", "#a");
+        a.CanAdvance = async context =>
+        {
+            await context.Session.DismissAsync();
+            return true;
+        };
+
+        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")));
+        await session.NextAsync().WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.AreEqual(BonboardingTourStatus.Dismissed, session.Status);
+    }
+
+    [TestMethod]
+    public async Task A_Hook_Can_Await_A_Command_It_Runs_On_Another_Thread()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+
+        var a = Step("a", "#a");
+        a.OnShown = context => new ValueTask(Task.Run(() => context.Session.NextAsync()));
+
+        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b"))).WaitAsync(TimeSpan.FromSeconds(10));
+
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
+    public async Task Work_A_Hook_Leaves_Running_Waits_For_The_Transition()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b");
+
+        var go = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        Task? background = null;
+        string? seenWhileShowing = null;
+
+        var a = Step("a", "#a");
+
+        // Fire and forget, as a hook might when it does not want to hold the tour up.
+        a.OnBeforeShow = context =>
+        {
+            background = Task.Run(async () =>
+            {
+                await go.Task;
+                await context.Session.NextAsync();
+            });
+
+            return ValueTask.CompletedTask;
+        };
+
+        a.OnShown = async context =>
+        {
+            go.SetResult();
+            await Task.Delay(200);
+            seenWhileShowing = context.Session.CurrentStep?.Id;
+        };
+
+        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")));
+        await background!.WaitAsync(TimeSpan.FromSeconds(10));
+
+        // The background Next queued behind the transition that was still showing step a, instead
+        // of running inside it.
+        Assert.AreEqual("a", seenWhileShowing);
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
+    public async Task The_Step_After_A_Skipped_One_Is_Persisted_With_A_Live_Token()
+    {
+        await using var harness = new BonboardingHarness(
+            configureServices: services => services.AddBonboardingStore<TokenRecordingStore>());
+        harness.WithElements("#b");
+
+        var a = Step("a", "#gone");
+        a.MissingTarget = BonboardingMissingTargetBehavior.Skip;
+
+        var session = await harness.Service.StartAsync(Tour(a, Step("b", "#b")));
+
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+
+        // Skipping must not hand the skipped step's own token, cancelled the moment the next
+        // transition starts, to the step that replaces it.
+        var store = (TokenRecordingStore)harness.Store;
+        Assert.IsNotEmpty(store.Writes);
+        Assert.IsFalse(store.Writes.Any(write => write.Cancelled));
+        Assert.AreEqual("b", store.Writes[^1].Record.CurrentStepId);
+    }
+
+    [TestMethod]
+    public async Task The_Arrow_Keeps_Clear_Of_The_Measured_Popover_Corners()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        // A target at the left edge, so the arrow is pushed against the popover's corner.
+        harness.Interop.TargetRect = new BonboardingRect(0, 300, 10, 10);
+
+        var step = Step("a", "#a");
+        step.Placement = BonboardingPlacement.Bottom;
+
+        var session = await harness.Service.StartAsync(Tour(step));
+        var assumed = session.Placement!.Value.ArrowOffset;
+
+        harness.Interop.PopoverRadius = 30;
+        await session.RefreshAsync();
+        var measured = session.Placement!.Value.ArrowOffset;
+
+        // The inset is the corner radius plus half the arrow; unmeasured, the default stylesheet's.
+        Assert.AreEqual(BonboardingDefaults.PopoverRadius + (BonboardingDefaults.ArrowSize / 2), assumed);
+        Assert.AreEqual(30 + (BonboardingDefaults.ArrowSize / 2), measured);
+    }
+
+    // ---- Registration ---------------------------------------------------------
+
+    [TestMethod]
+    public async Task Starting_A_Tour_Does_Not_Register_It()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
+
+        Assert.IsTrue(session.IsActive);
+        Assert.IsNull(harness.Service.GetTour("test-tour"));
+        Assert.IsEmpty(harness.Service.RegisteredTours);
+    }
+
+    [TestMethod]
+    public async Task A_Running_Tour_Still_Decides_Which_Saved_Records_Are_Current()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        await harness.Store.SetAsync(new BonboardingRecord { TourId = "test-tour", Version = 1, Completed = true });
+
+        var tour = Tour(Step("a", "#a"));
+        tour.Version = 2;
+        tour.Persist = false;
+
+        await harness.Service.StartAsync(tour, new BonboardingStartOptions { Force = true });
+
+        Assert.IsNull(await harness.Service.GetRecordAsync("test-tour"));
     }
 }

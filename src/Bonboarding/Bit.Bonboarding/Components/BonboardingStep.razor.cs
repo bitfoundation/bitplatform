@@ -16,13 +16,22 @@ public sealed partial class BonboardingStep : ComponentBase, IDisposable
     public BonboardingStepDefinition Definition { get; } = new();
 
     /// <summary>
-    /// Explicit ordering. Steps without one keep the order they are first rendered in, which is the
+    /// Explicit position. Steps without one keep the order they are first rendered in, which is the
     /// declaration order unless a step only appears later (inside an <c>@if</c>, say): give such a
     /// step an <see cref="Order"/>, or keep it rendered and use <see cref="When"/> instead.
     /// </summary>
+    /// <remarks>
+    /// A step with <c>Order="n"</c> is placed as if it were the n-th step to render, just ahead of
+    /// the step that actually rendered n-th. Steps sharing the same <see cref="Order"/> keep their
+    /// render order among themselves.
+    /// </remarks>
     [Parameter] public int? Order { get; set; }
 
-    internal double SortKey => Order ?? _ordinal;
+    /// <summary>
+    /// Position, then explicit before implicit on a tie (so <c>Order="2"</c> lands ahead of the
+    /// second rendered step rather than after it), then render order.
+    /// </summary>
+    internal (int Position, int Precedence, int Ordinal) SortKey => (Order ?? _ordinal, Order is null ? 1 : 0, _ordinal);
 
     // ---- Targeting ----------------------------------------------------------
 
@@ -97,7 +106,7 @@ public sealed partial class BonboardingStep : ComponentBase, IDisposable
     [Parameter] public Func<BonboardingStepContext, ValueTask>? OnShown { get; set; }
 
     /// <summary>
-    /// Runs before the step is left. Throwing fails the whole tour; use <see cref="CanAdvance"/>
+    /// Runs before the step is left, for every step whose <see cref="OnBeforeShow"/> ran. Throwing fails the whole tour; use <see cref="CanAdvance"/>
     /// to hold the user on the step instead.
     /// </summary>
     [Parameter] public Func<BonboardingStepContext, ValueTask>? OnBeforeLeave { get; set; }
@@ -132,6 +141,10 @@ public sealed partial class BonboardingStep : ComponentBase, IDisposable
     [Parameter] public string? PopoverClass { get; set; }
 
     /// <summary>Escape hatch for anything not exposed as a parameter.</summary>
+    /// <remarks>
+    /// Runs after the parameters are applied, every time they are set, so it must be idempotent:
+    /// assign values rather than appending to collections or subscribing to events.
+    /// </remarks>
     [Parameter] public Action<BonboardingStepDefinition>? Configure { get; set; }
 
     protected override void OnInitialized()
