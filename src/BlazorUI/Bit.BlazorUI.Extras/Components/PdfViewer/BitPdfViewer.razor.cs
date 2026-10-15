@@ -1306,6 +1306,7 @@ public partial class BitPdfViewer : BitComponentBase
 
         _downloading = true;
         bool gateHeld = false;
+        string? failure = null;
         try
         {
             string fileName = DownloadFileName;
@@ -1334,17 +1335,29 @@ public partial class BitPdfViewer : BitComponentBase
 
             // Stream the bytes as a Blob rather than pushing a base64 data: URI (which
             // on Blazor Server would traverse SignalR as one huge string).
-            using Stream stream = source is not null ? source.OpenReadStream() : new MemoryStream(bytes!, writable: false);
-            using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
-            var download = _js.BitPdfViewerDownload(fileName, streamRef);
-            if (source is null) await download;
-            else await download.AsTask().WaitAsync(loadToken);
+            try
+            {
+                using Stream stream = source is not null ? source.OpenReadStream() : new MemoryStream(bytes!, writable: false);
+                using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
+                var download = _js.BitPdfViewerDownload(fileName, streamRef);
+                if (source is null) await download;
+                else await download.AsTask().WaitAsync(loadToken);
+            }
+            catch (Exception ex) when (source is not null && ex is not OperationCanceledException)
+            {
+                failure = ex.Message;
+            }
         }
         catch (Exception) when (IsDisposed || version != _loadVersion) { }
         finally
         {
             if (gateHeld) _renderGate.Release();
             _downloading = false;
+        }
+        // Host error handlers may reload or retry: release the gate and busy flag first.
+        if (failure is not null && !IsDisposed && version == _loadVersion)
+        {
+            await OnError.InvokeAsync(failure);
         }
     }
 
