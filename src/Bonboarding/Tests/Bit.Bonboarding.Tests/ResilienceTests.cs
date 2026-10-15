@@ -94,9 +94,12 @@ public class ResilienceTests
             Microsoft.Extensions.Options.Options.Create(new BonboardingOptions()),
             Microsoft.Extensions.Logging.Abstractions.NullLogger<BonboardingBrowserStore>.Instance);
 
+        harness.Interop.Failure = () => new JSDisconnectedException("the circuit is gone");
+
         await store.SetAsync(new BonboardingRecord { TourId = "resilient", CurrentStepId = "a" });
 
         Assert.IsNotNull(await store.GetAsync("resilient"));
+        Assert.AreEqual(0, harness.Interop.Storage.Count);
     }
 
     [TestMethod]

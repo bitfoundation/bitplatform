@@ -127,23 +127,31 @@ internal sealed class FakeInterop : IBonboardingInterop
     }
 
     public ValueTask<string?> GetStorageAsync(string key, CancellationToken cancellationToken = default)
-        => ValueTask.FromResult(Storage.GetValueOrDefault(key));
+    {
+        Throw();
+        return ValueTask.FromResult(Storage.GetValueOrDefault(key));
+    }
 
     public ValueTask SetStorageAsync(string key, string value, CancellationToken cancellationToken = default)
     {
+        Throw();
         Storage[key] = value;
         return ValueTask.CompletedTask;
     }
 
     public ValueTask RemoveStorageAsync(string key, CancellationToken cancellationToken = default)
     {
+        Throw();
         Storage.Remove(key);
         return ValueTask.CompletedTask;
     }
 
     public ValueTask<IReadOnlyList<string>> ListStorageKeysAsync(string prefix, CancellationToken cancellationToken = default)
-        => ValueTask.FromResult<IReadOnlyList<string>>(
+    {
+        Throw();
+        return ValueTask.FromResult<IReadOnlyList<string>>(
             Storage.Keys.Where(key => key.StartsWith(prefix, StringComparison.Ordinal)).ToArray());
+    }
 
     private void Throw()
     {

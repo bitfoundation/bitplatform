@@ -91,18 +91,22 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
         var startOptions = options ?? new BonboardingStartOptions();
 
+        if (!startOptions.Force && tour.CanStart is not null)
+        {
+            var allowed = await tour.CanStart(new BonboardingTourContext(tour, _services)).ConfigureAwait(false);
+            if (!allowed)
+            {
+                throw new BonboardingException($"Tour '{tour.Id}' declined to start.") { TourId = tour.Id };
+            }
+        }
+
+        BonboardingTourSession session;
+
+        // The gate only covers the bookkeeping. Starting runs application hooks, and a hook that
+        // starts another tour would otherwise wait on a gate its own caller is holding.
         await _startGate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            if (!startOptions.Force && tour.CanStart is not null)
-            {
-                var allowed = await tour.CanStart(new BonboardingTourContext(tour, _services)).ConfigureAwait(false);
-                if (!allowed)
-                {
-                    throw new BonboardingException($"Tour '{tour.Id}' declined to start.") { TourId = tour.Id };
-                }
-            }
-
             if (startOptions.StopOthers)
             {
                 await StopRunningSessionsAsync(BonboardingTourEndReason.Cancelled).ConfigureAwait(false);
@@ -117,23 +121,23 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
             Register(tour);
 
-            var session = new BonboardingTourSession(
+            session = new BonboardingTourSession(
                 tour, _options, _interop, _store, _localizer, _navigation, _services,
                 _loggerFactory.CreateLogger<BonboardingTourSession>(), PublishAsync);
 
             session.Changed += OnSessionChanged;
             _sessions.Add(session);
             Active = session;
-
-            RaiseSessionsChanged();
-
-            await session.StartAsync(startOptions, cancellationToken).ConfigureAwait(false);
-            return session;
         }
         finally
         {
             _startGate.Release();
         }
+
+        RaiseSessionsChanged();
+
+        await session.StartAsync(startOptions, cancellationToken).ConfigureAwait(false);
+        return session;
     }
 
     public Task<IBonboardingTourSession> StartAsync(string tourId, BonboardingStartOptions? options = null, CancellationToken cancellationToken = default)
@@ -151,9 +155,11 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
         var startOptions = options ?? new BonboardingStartOptions();
 
-        if (!startOptions.Force && await IsClosedAsync(tour.Id, cancellationToken).ConfigureAwait(false))
+        if (!startOptions.Force)
         {
-            return null;
+            // Compare against this definition rather than the registry, which may not hold it yet.
+            var record = await ReadRecordAsync(tour.Id, cancellationToken).ConfigureAwait(false);
+            if (record is not null && record.Version == tour.Version && record.IsClosed) return null;
         }
 
         if (!startOptions.Force && tour.CanStart is not null)
@@ -229,17 +235,22 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
     public async Task<BonboardingRecord?> GetRecordAsync(string tourId, CancellationToken cancellationToken = default)
     {
+        var record = await ReadRecordAsync(tourId, cancellationToken).ConfigureAwait(false);
+
+        // A record written by an earlier version of the tour is not usable.
+        if (record is not null && GetTour(tourId) is { } tour && record.Version != tour.Version)
+        {
+            return null;
+        }
+
+        return record;
+    }
+
+    private async Task<BonboardingRecord?> ReadRecordAsync(string tourId, CancellationToken cancellationToken)
+    {
         try
         {
-            var record = await _store.GetAsync(tourId, cancellationToken).ConfigureAwait(false);
-
-            // A record written by an earlier version of the tour is not usable.
-            if (record is not null && GetTour(tourId) is { } tour && record.Version != tour.Version)
-            {
-                return null;
-            }
-
-            return record;
+            return await _store.GetAsync(tourId, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex) when (BonboardingTourSession.IsTransientInteropFailure(ex))
         {

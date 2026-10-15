@@ -5,8 +5,8 @@
 /// </summary>
 public sealed class BonboardingAdvanceTrigger
 {
-    /// <summary>Advance when the step's own target is clicked.</summary>
-    public static BonboardingAdvanceTrigger TargetClick { get; } = new();
+    /// <summary>Advance when the step's own target is clicked. Each access returns a new instance.</summary>
+    public static BonboardingAdvanceTrigger TargetClick => new();
 
     /// <summary>DOM event name. Default <c>"click"</c>.</summary>
     public string EventName { get; set; } = "click";

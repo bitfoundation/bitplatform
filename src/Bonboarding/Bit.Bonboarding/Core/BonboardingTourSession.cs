@@ -34,9 +34,19 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     /// Marks the async flow that currently owns <see cref="_gate"/>. Application hooks are awaited
     /// while the lock is held and are entirely within their rights to call back into the session
     /// (a validation handler that dismisses the tour, say), so those nested calls have to run
-    /// inline instead of waiting for a lock their own caller is holding.
+    /// inline instead of waiting for a lock their own caller is holding. The flow carries the token
+    /// of the transition it belongs to, and only counts as the owner while that token is still
+    /// <see cref="_activeTransition"/>: a task a hook left running keeps the token after the lock is
+    /// released, and must then queue like any other caller.
     /// </summary>
-    private readonly AsyncLocal<bool> _inTransition = new();
+    private readonly AsyncLocal<object?> _transitionOwner = new();
+
+    /// <summary>The token of the transition that currently holds <see cref="_gate"/>.</summary>
+    private object? _activeTransition;
+
+    /// <summary>Where the current step was entered from, for the hooks that run once its target appears.</summary>
+    private BonboardingStepDefinition? _enteredFrom;
+    private BonboardingStepChangeReason _enteredBy;
 
     private readonly List<string> _history = [];
     private readonly Dictionary<string, object?> _state = [];
@@ -450,6 +460,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         }
 
         var generation = ++_generation;
+        _enteredFrom = previousStep;
+        _enteredBy = reason;
 
         CancelStep();
         _stepCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -507,6 +519,14 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         Notify(BonboardingTourSessionChange.Step);
 
+        await CompleteShowAsync(step, index, previousStep, reason, stepToken).ConfigureAwait(false);
+    }
+
+    /// <summary>The part of showing a step that runs once it is actually on screen.</summary>
+    private async Task CompleteShowAsync(
+        BonboardingStepDefinition step, int index, BonboardingStepDefinition? previousStep,
+        BonboardingStepChangeReason reason, CancellationToken stepToken)
+    {
         await PersistAsync(stepToken).ConfigureAwait(false);
         await PublishAsync(BonboardingEventKind.StepShown, step).ConfigureAwait(false);
 
@@ -803,15 +823,30 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         if (wasWaitingForTarget && geometry.Found)
         {
-            Status = BonboardingTourStatus.Running;
-            _stepShownAt = DateTimeOffset.UtcNow;
-            Notify(BonboardingTourSessionChange.Step);
-            return PublishAsync(BonboardingEventKind.TargetResolved, CurrentStep);
+            return new ValueTask(ShowResolvedTargetAsync(CurrentStep, _generation));
         }
 
         Notify(BonboardingTourSessionChange.Geometry);
         return ValueTask.CompletedTask;
     }
+
+    /// <summary>Finishes showing a step whose target turned up while the step was waiting for it.</summary>
+    private Task ShowResolvedTargetAsync(BonboardingStepDefinition step, int generation)
+        => RunGuardedAsync(async _ =>
+        {
+            // Another transition, or an earlier frame for the same target, got here first.
+            if (generation != _generation || !ReferenceEquals(CurrentStep, step)) return;
+            if (Status != BonboardingTourStatus.Waiting || _pendingRoute is not null) return;
+
+            Status = BonboardingTourStatus.Running;
+            _stepShownAt = DateTimeOffset.UtcNow;
+            Notify(BonboardingTourSessionChange.Step);
+
+            var stepToken = _stepCts?.Token ?? CancellationToken.None;
+
+            await PublishAsync(BonboardingEventKind.TargetResolved, step).ConfigureAwait(false);
+            await CompleteShowAsync(step, CurrentIndex, _enteredFrom, _enteredBy, stepToken).ConfigureAwait(false);
+        }, CancellationToken.None);
 
     public async ValueTask OnTargetLostAsync()
     {
@@ -1153,7 +1188,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         if (_disposed) return;
 
         // Re-entrant call from inside a hook: the lock is already ours, so just run.
-        if (_inTransition.Value)
+        if (_transitionOwner.Value is { } owner && ReferenceEquals(owner, Volatile.Read(ref _activeTransition)))
         {
             await RunAsync(action, cancellationToken).ConfigureAwait(false);
             return;
@@ -1168,7 +1203,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             return;
         }
 
-        _inTransition.Value = true;
+        var token = new object();
+        Volatile.Write(ref _activeTransition, token);
+        _transitionOwner.Value = token;
 
         try
         {
@@ -1176,7 +1213,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         }
         finally
         {
-            _inTransition.Value = false;
+            _transitionOwner.Value = null;
+            Volatile.Write(ref _activeTransition, null);
             try { _gate.Release(); } catch (ObjectDisposedException) { }
         }
     }

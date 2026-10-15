@@ -242,6 +242,8 @@ export function measure(sessionId: string): StepGeometry {
             if (changed) {
                 session.targets = elements;
                 observe(session);
+                // The trigger listened on the old node; a pending advance has already fired.
+                if (!session.advanceTimer) attachAdvanceTrigger(session, session.spec);
             }
         }
     }
@@ -460,6 +462,8 @@ function scheduleFrame(session: Session) {
                 // Same element, new DOM node: rebind rather than reporting it as lost.
                 session.targets = recovered;
                 observe(session);
+                // The trigger listened on the old node; a pending advance has already fired.
+                if (session.spec && !session.advanceTimer) attachAdvanceTrigger(session, session.spec);
             } else {
                 session.targets = [];
                 invoke(session, 'OnTargetLost');

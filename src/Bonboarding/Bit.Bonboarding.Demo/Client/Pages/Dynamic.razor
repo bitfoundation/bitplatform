@@ -172,13 +172,12 @@
             },
             OnEnded = args =>
             {
-                if (args.Reason == BonboardingTourEndReason.Failed)
-                {
-                    _failure = args.Error?.Message;
-                    StateHasChanged();
-                }
+                if (args.Reason != BonboardingTourEndReason.Failed) return ValueTask.CompletedTask;
 
-                return ValueTask.CompletedTask;
+                _failure = args.Error?.Message;
+
+                // The tour can end from a browser callback, outside the renderer's context.
+                return new ValueTask(InvokeAsync(StateHasChanged));
             },
         };
 

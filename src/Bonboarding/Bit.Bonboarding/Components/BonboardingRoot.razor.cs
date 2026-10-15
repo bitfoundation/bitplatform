@@ -344,7 +344,7 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
     private string? AriaLabel
         => string.IsNullOrEmpty(_renderContext?.Title)
-            ? _options?.Labels.DialogLabel ?? _session?.Tour.Title
+            ? string.IsNullOrEmpty(_session?.Tour.Title) ? _options?.Labels.DialogLabel : _session.Tour.Title
             : null;
 
     private string? AriaLabelledBy

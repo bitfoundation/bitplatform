@@ -2706,7 +2706,7 @@ parameters above, plus `Body` (the component's `ChildContent`) and `Metadata`.
 | `MatchSelector` | `null` | Only advance when the event came from a matching element. |
 | `DelayMs` | `150` | Settle time before advancing. |
 
-`BonboardingAdvanceTrigger.TargetClick` is a shared instance of the defaults.
+`BonboardingAdvanceTrigger.TargetClick` returns a new instance of the defaults on each access.
 
 #### `BonboardingStepContext` / `BonboardingTourContext`
 
