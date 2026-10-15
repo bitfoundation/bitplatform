@@ -566,7 +566,7 @@ The workflow follows a **security-focused two-phase deployment** pattern that se
 ```yaml
 # Phase 1: Build (no production access)
 build_api_blazor:
-  runs-on: ubuntu-24.04
+  runs-on: ubuntu-26.04
   steps:
     - uses: actions/checkout@v7
     - uses: actions/setup-dotnet@v6
@@ -578,7 +578,7 @@ build_api_blazor:
 # Phase 2: Deploy (has production access)
 deploy_api_blazor:
   needs: build_api_blazor  # Depends on Phase 1
-  runs-on: ubuntu-24.04
+  runs-on: ubuntu-26.04
   steps:
     - uses: actions/download-artifact@v8  # Get pre-built artifact
     - uses: azure/webapps-deploy@v3      # Deploy to production

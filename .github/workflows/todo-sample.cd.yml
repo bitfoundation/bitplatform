@@ -287,7 +287,7 @@ jobs:
   deploy_blazor_wasm_standalone_aot:
     name: build blazor wasm standalone (AOT)
     if: inputs.wasm
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     
@@ -341,7 +341,7 @@ jobs:
   deploy_blazor_wasm_standalone_offlineDb:
     name: build blazor wasm standalone (Offline database)
     if: inputs.wasm
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     
@@ -396,7 +396,7 @@ jobs:
   deploy_blazor_wasm_standalone_small:
     name: build blazor wasm standalone (small)
     if: inputs.wasm
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     
@@ -552,7 +552,7 @@ jobs:
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
     if: inputs.android
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       actions: read

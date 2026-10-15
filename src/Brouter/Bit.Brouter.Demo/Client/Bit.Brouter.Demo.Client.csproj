@@ -17,7 +17,7 @@
 
     <ItemGroup>
         <SupportedPlatform Include="browser" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.1.26425.128" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="11.0.0-rc.2.26504.105" />
     </ItemGroup>
 
     <ItemGroup>

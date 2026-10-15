@@ -21,7 +21,7 @@ jobs:
   # and without prerendering) in Chromium - on every runtime the library ships for where the runtime is what differs.
   e2e-web:
     name: Butil E2E - ${{ matrix.host }} (${{ matrix.framework }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -168,7 +168,7 @@ jobs:
   # it is visible in a Debug build.
   publish-gate:
     name: Butil publish gate (${{ matrix.name }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
