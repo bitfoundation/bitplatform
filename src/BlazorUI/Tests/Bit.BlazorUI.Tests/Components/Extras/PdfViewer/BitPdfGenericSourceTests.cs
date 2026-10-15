@@ -158,7 +158,7 @@ public class BitPdfGenericSourceTests
         Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => parser.Parse());
     }
 
-    private static byte[] Fixture(string name) => name switch
+    internal static byte[] Fixture(string name) => name switch
     {
         "hello" => TestPdf.HelloWorld(),
         "encrypted" => TestPdf.Encrypted("hunter2"),
@@ -305,7 +305,7 @@ public class BitPdfGenericSourceTests
                     int length = (int)args[1]!;
                     Assert.IsTrue(offset >= 0 && offset <= _bytes.Length && length >= 0 && length <= _bytes.Length - offset);
                     Views.Add((offset, length));
-                    return (ReadOnlyMemory<byte>)_bytes.AsMemory(offset, length);
+                    return Activator.CreateInstance(method.ReturnType, [(ReadOnlyMemory<byte>)_bytes.AsMemory(offset, length), null]);
                 case "CreateStream":
                     int start = (int)args![0]!;
                     int count = (int?)args[1] ?? _bytes.Length - start;

@@ -30,6 +30,18 @@ private async Task OnBasicFileChange(InputFileChangeEventArgs e)
     basicSource = BitPdfSource.FromBytes(bytes, e.File.Name);
 }";
 
+    private readonly string streamRazorCode = @"
+<BitPdfViewer Source=""streamSource"" />";
+    private readonly string streamCsharpCode = @"
+// Keep a stable source in a field. Open a fresh stream each time, without using:
+// the viewer owns it, including a separate stream for server prerendering.
+private readonly BitPdfSource streamSource = BitPdfSource.FromStreamFactory(
+    cancellationToken =>
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<Stream>(File.OpenRead(""document.pdf""));
+    }, ""document.pdf"");";
+
     private readonly string example2RazorCode = @"
 <BitButton Disabled=""heightSource is not null""
            OnClick='() => heightSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>

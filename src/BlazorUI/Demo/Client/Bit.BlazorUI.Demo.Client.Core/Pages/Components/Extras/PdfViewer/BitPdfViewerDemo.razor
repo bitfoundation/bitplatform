@@ -47,6 +47,32 @@
                 <BitPdfViewer Source="basicSource" AllowDropFile />
             </DemoExample>
 
+            <DemoExample Title="Seekable stream (server)" RazorCode="@streamRazorCode" CsharpCode="@streamCsharpCode" Id="seekable-stream">
+                <div>
+                    <b>FromStreamFactory</b> opens a fresh readable, seekable stream for each viewer load and owns it
+                    until replacement, closing or disposal. Password retries reuse that stream. Keep the source in a
+                    field; prerendering and interactive rendering each invoke the factory. The initial stream position
+                    is the PDF origin, and the remaining length must fit <b>Int32</b>. Keep its bytes and length stable;
+                    same-length changes cannot be detected. A caller needing different ownership can return a
+                    non-disposing wrapper.
+                    <br /><br />
+                    Stream sources use a bounded raw-byte cache. Server parsing, page/thumbnail rendering, search and
+                    print work run off the circuit even when <b>BackgroundRendering</b> is false. Download streams the
+                    original bytes without retaining a complete server buffer; decoded resources still use memory.
+                    <b>GetBytes()</b> returns null. <b>GetBytesAsync</b> explicitly returns a complete caller-owned copy
+                    without retaining it. Use <b>RenderPageHtmlAsync</b>, <b>ExtractPageTextAsync</b> and
+                    <b>ExtractTextAsync</b>; their synchronous counterparts throw for an active stream source. The
+                    document model, XRef and raw-file streams are valid only during that load; released access throws
+                    <b>ObjectDisposedException</b>.
+                    <br /><br />
+                    This example is for a file accessible to the server. <b>FromUrl</b> keeps its buffered behavior;
+                    HTTP Range loading is a later contribution. Browser uploads keep the <b>FromStreamAsync</b>
+                    snapshot path because <b>IBrowserFile</b> streams are not seekable and do not support synchronous
+                    reads. The viewer coordinates copies with rendering and asynchronous helpers. In a browser,
+                    await a copy before reading <b>Document</b> or its raw streams directly.
+                </div>
+            </DemoExample>
+
             <DemoExample Title="Dimensions" RazorCode="@example2RazorCode" CsharpCode="@example2CsharpCode" Id="example2">
                 <div>
                     <b>Height</b> and <b>Width</b> take any CSS length. Unset, the viewer fills its host's width and is at

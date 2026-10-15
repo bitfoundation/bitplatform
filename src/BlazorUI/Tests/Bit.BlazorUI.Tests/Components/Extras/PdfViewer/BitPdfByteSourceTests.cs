@@ -249,7 +249,7 @@ public class BitPdfByteSourceTests
             result = memory;
             return true;
         }
-        public ReadOnlyMemory<byte> GetMemory(int offset, int length)
+        public BitPdfByteSourceWindow GetMemory(int offset, int length)
             => throw new AssertFailedException("The contiguous fast path must not fetch blocks.");
         public BitPdfBaseStream CreateStream(int start = 0, int? length = null)
             => throw new AssertFailedException("Unexpected stream creation.");
@@ -262,7 +262,7 @@ public class BitPdfByteSourceTests
         public bool FailNextRead { get; set; }
         public byte[]? Content { get; init; }
 
-        public ReadOnlyMemory<byte> GetMemory(int offset, int count)
+        public BitPdfByteSourceWindow GetMemory(int offset, int count)
         {
             Views.Add((offset, count));
             if (FailNextRead)
@@ -273,14 +273,14 @@ public class BitPdfByteSourceTests
             Assert.IsTrue(offset >= 0 && offset <= Length && count >= 0 && count <= Length - offset);
             if (Content is not null)
             {
-                return Content.AsMemory(offset, count);
+                return new(Content.AsMemory(offset, count));
             }
             var bytes = new byte[count];
             for (int i = 0; i < count; i++)
             {
                 bytes[i] = (byte)((offset + i) & 255);
             }
-            return bytes;
+            return new(bytes);
         }
 
         public bool TryGetContiguous(out ReadOnlyMemory<byte> memory)
