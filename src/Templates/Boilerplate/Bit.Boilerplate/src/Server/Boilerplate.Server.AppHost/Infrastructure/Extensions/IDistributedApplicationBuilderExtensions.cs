@@ -5,6 +5,7 @@ using Aspire.Hosting.Azure;
 //#if (redis == true)
 using Azure.Provisioning.RedisEnterprise;
 //#endif
+using Boilerplate.Server.AppHost.Infrastructure.Services;
 
 namespace Aspire.Hosting;
 
@@ -43,8 +44,8 @@ public static class IDistributedApplicationBuilderExtensions
             return builder.AddAzureManagedRedis("redis-cache")
                 .RunAsContainer(redis => // Remove this RunAsContainer and related configuration to use actual Azure Redis instance
                 {
-                    redis.WithRedisInsight()
-                        .WithRedisCommander()
+                    redis.WithRedisInsight(redisInsight => redisInsight.WithExplicitStart())
+                        .WithRedisCommander(redisCommander => redisCommander.WithExplicitStart())
                         .WithImage("redis", "8")
                         .WithArgs(
                          "--save", "",                        // Backend API has its own L1 in-memory cache, no need to have RDB snapshots for the L2 redis cache in case of failures.
@@ -76,8 +77,8 @@ public static class IDistributedApplicationBuilderExtensions
             return builder.AddAzureManagedRedis("redis-persistent")
                 .RunAsContainer(redis => // Remove this RunAsContainer and related configuration to use actual Azure Redis instance
                 {
-                    redis.WithRedisInsight()
-                        .WithRedisCommander()
+                    redis.WithRedisInsight(redisInsight => redisInsight.WithExplicitStart())
+                        .WithRedisCommander(redisCommander => redisCommander.WithExplicitStart())
                         .WithImage("redis", "8")
                         .WithDataVolume()
                         .WithArgs(
@@ -118,7 +119,7 @@ public static class IDistributedApplicationBuilderExtensions
             return builder.AddAzureSqlServer("sqlserver")
                 .RunAsContainer(sqlServer => // Remove this RunAsContainer and related configuration to use actual Azure SQL Server instance
                 {
-                    sqlServer.WithDbGate(config => config.WithDataVolume())
+                    sqlServer.WithDbGate(dbGate => dbGate.WithDataVolume().WithExplicitStart())
                         .WithDataVolume()
                         .WithImage("mssql/server", "2025-latest") // Sql server 2025 supports embedded vector search.
                         .WithOtlpExporter();
@@ -137,7 +138,7 @@ public static class IDistributedApplicationBuilderExtensions
             return builder.AddAzurePostgresFlexibleServer("postgresserver")
                 .RunAsContainer(postgresDatabase => // Remove this RunAsContainer and related configuration to use actual Azure PostgreSQL instance
                 {
-                    postgresDatabase.WithPgAdmin()
+                    postgresDatabase.WithPgAdmin(pgAdmin => pgAdmin.WithExplicitStart())
                         .WithV18DataVolume()
                         .WithOptimizedSetup()
                         .WithImage("pgvector/pgvector", "pg18") // pgvector supports embedded vector search.
@@ -154,7 +155,7 @@ public static class IDistributedApplicationBuilderExtensions
         public IResourceBuilder<MySqlDatabaseResource> AddMySql()
         {
             return builder.AddMySql("mysqlserver")
-                .WithPhpMyAdmin()
+                .WithPhpMyAdmin(phpMyAdmin => phpMyAdmin.WithExplicitStart())
                 .WithDataVolume()
                 .WithOtlpExporter()
                 .AddDatabase("mysqldb");
@@ -168,7 +169,7 @@ public static class IDistributedApplicationBuilderExtensions
         public IResourceBuilder<SqliteResource> AddSqlite()
         {
             return builder.AddSqlite("sqlite", databaseFileName: "BoilerplateDb.db")
-                .WithSqliteWeb();
+                .WithSqliteWeb(sqliteWeb => sqliteWeb.WithExplicitStart());
         }
         //#endif
 
@@ -267,28 +268,19 @@ public static class IDistributedApplicationBuilderExtensions
         }
 
         /// <summary>
-        /// Whether the app host runs in an environment that exists only to work on this project: a Dev Container,
-        /// GitHub Codespaces, a GitHub Actions runner or an Azure DevOps pipeline agent. There, containers that outlive
-        /// a run bother nobody - they are thrown away together with the environment, or stay on a build agent where the
-        /// next run reuses them - so <see cref="UsePersistentContainers"/> only makes every run after the first faster,
-        /// e.g. a CI job that runs the tests several times (Blazor Server, WebAssembly, another browser, ...).
-        /// </summary>
-        public bool IsDedicatedEnvironment
-            => IsSet("REMOTE_CONTAINERS") // Dev Containers
-            || IsSet("CODESPACES") // GitHub Codespaces
-            || IsSet("GITHUB_ACTIONS") // GitHub Actions runner
-            || IsSet("TF_BUILD"); // Azure DevOps pipeline agent
-
-        /// <summary>
-        /// Gives every container of the application model a persistent lifetime, so that they are created once and are
-        /// then reused by every subsequent run, instead of being re-created and booted up from scratch each and every time.
+        /// Keeps every container of the application model alive between runs, so that each run reuses them instead of
+        /// booting them up from scratch, and stops them once the app host hasn't run for <paramref name="idleMinutes"/>.
+        /// If nothing can be started to stop them, they keep Aspire's default session lifetime instead.
         /// </summary>
         /// <remarks>
         /// Call it right before <see cref="IDistributedApplicationBuilder.Build"/>, so all the resources are already added
         /// while the application model is still mutable.
         /// </remarks>
-        public IDistributedApplicationBuilder UsePersistentContainers()
+        public IDistributedApplicationBuilder UsePersistentContainers(int idleMinutes = 15)
         {
+            if (ContainersKeeper.Start(builder, TimeSpan.FromMinutes(idleMinutes)) is false)
+                return builder;
+
             foreach (var container in builder.Resources.OfType<ContainerResource>().ToArray())
             {
                 builder.CreateResourceBuilder(container)
@@ -310,8 +302,4 @@ public static class IDistributedApplicationBuilderExtensions
             return builder;
         }
     }
-
-    /// <summary>These set their variable to "true" (Azure DevOps to "True").</summary>
-    private static bool IsSet(string environmentVariable)
-        => bool.TryParse(Environment.GetEnvironmentVariable(environmentVariable), out var value) && value;
 }

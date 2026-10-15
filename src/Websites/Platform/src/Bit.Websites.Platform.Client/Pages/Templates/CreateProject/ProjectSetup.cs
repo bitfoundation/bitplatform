@@ -25,7 +25,6 @@ public class ProjectSetup
     public bool Ads { get; set; }
     public bool Brouter { get; set; } = true;
     public bool Sample { get; set; }
-    public bool RealProject { get; set; }
     public bool Android { get; set; }
     public bool Ios { get; set; }
     public bool MacOS { get; set; }
@@ -57,7 +56,6 @@ public class ProjectSetup
         Ads = other.Ads;
         Brouter = other.Brouter;
         Sample = other.Sample;
-        RealProject = other.RealProject;
         Android = other.Android;
         Ios = other.Ios;
         MacOS = other.MacOS;
@@ -102,7 +100,6 @@ public class ProjectSetup
         Flag(command, "multitenant", Multitenant, defaults.Multitenant);
         Flag(command, "brouter", Brouter, defaults.Brouter);
         Choice(command, "theme", Theme, defaults.Theme);
-        Flag(command, "realProject", RealProject, defaults.RealProject);
 
         if (Android || Ios || MacOS || Windows)
         {
@@ -139,7 +136,6 @@ public class ProjectSetup
 
     public static ProjectSetup RealProduct() => new()
     {
-        RealProject = true,
         Database = "PostgreSQL",
         FilesStorage = "S3",
         Redis = true,
