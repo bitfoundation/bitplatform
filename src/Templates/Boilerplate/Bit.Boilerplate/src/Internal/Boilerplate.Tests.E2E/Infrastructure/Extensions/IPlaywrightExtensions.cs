@@ -138,7 +138,7 @@ public static class IPlaywrightExtensions
             await RunAdb($"shell pm clear {chromeAndroidPackage}");
             await RunAdb("shell \"echo '_ --disable-fre --no-default-browser-check --no-first-run' > /data/local/tmp/chrome-command-line\"");
             await RunAdb($"shell am set-debug-app --persistent {chromeAndroidPackage}");
-            await RunAdb($"shell pm grant {chromeAndroidPackage} android.permission.POST_NOTIFICATIONS");
+            await RunAdb($"shell pm grant {chromeAndroidPackage} android.permission.POST_NOTIFICATIONS", allowNonZeroExit: true);
             await RunAdb($"shell am start -a android.intent.action.VIEW -n {chromeAndroidPackage}/com.google.android.apps.chrome.Main -d '{url}'");
 
             await RunAdb($"forward tcp:{localPort} localabstract:chrome_devtools_remote");
