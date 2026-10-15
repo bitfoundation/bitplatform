@@ -82,6 +82,47 @@ public class RoutingTests
     }
 
     [TestMethod]
+    public async Task A_Step_Entered_Through_A_Route_Reports_The_Step_It_Came_From()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        var changes = new List<BonboardingStepChangedEventArgs>();
+        var tour = Tour();
+        tour.OnStepChanged = args => { changes.Add(args); return ValueTask.CompletedTask; };
+
+        var session = await harness.Service.StartAsync(tour);
+        await session.NextAsync();
+
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+        Assert.AreEqual("b", changes[^1].Step.Id);
+        Assert.AreEqual("a", changes[^1].PreviousStep?.Id);
+        Assert.AreEqual(BonboardingStepChangeReason.Next, changes[^1].Reason);
+    }
+
+    [TestMethod]
+    public async Task A_Paused_Tour_Ignores_Navigation_Until_It_Is_Resumed()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        var session = await harness.Service.StartAsync(Tour());
+        await session.NextAsync();
+        await session.PauseAsync();
+
+        harness.Navigation!.SimulateUserNavigation("dashboard");
+        Assert.AreEqual(BonboardingTourStatus.Paused, session.Status);
+
+        harness.Navigation.SimulateUserNavigation("settings");
+        Assert.AreEqual(BonboardingTourStatus.Paused, session.Status);
+
+        await session.ResumeAsync();
+
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
     public async Task Does_Not_Navigate_When_Auto_Navigation_Is_Disabled()
     {
         await using var harness = new BonboardingHarness(options => options.AutoNavigateToStepRoute = false);

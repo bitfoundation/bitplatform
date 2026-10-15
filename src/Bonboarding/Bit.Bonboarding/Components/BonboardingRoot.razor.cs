@@ -222,7 +222,13 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
 
     // ---- Computed presentation --------------------------------------------
 
-    private bool IsPlaced => _session?.Placement is not null;
+    /// <summary>
+    /// True when the popover may be shown. While the engine waits for a target or a route there is
+    /// nothing to place against, so the waiting card is centred by <see cref="PopoverStyle"/> instead.
+    /// </summary>
+    private bool IsPlaced => _session?.Placement is not null || IsWaitingUnplaced;
+
+    private bool IsWaitingUnplaced => _session is { IsWaiting: true, Placement: null };
 
     private BonboardingPlacementResult? Placement => _session?.Placement;
 
@@ -294,6 +300,12 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
     {
         get
         {
+            if (IsWaitingUnplaced)
+            {
+                // Centred by the stylesheet itself: the waiting card needs no measurement.
+                return "left:50%;top:50%;transform:translate3d(-50%,-50%,0)";
+            }
+
             if (Placement is not { } placement)
             {
                 // Off-screen but laid out, so it can be measured without ever being visible.

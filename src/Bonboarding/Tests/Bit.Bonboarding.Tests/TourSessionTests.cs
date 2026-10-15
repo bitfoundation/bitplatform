@@ -340,6 +340,9 @@ public class TourSessionTests
         Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
         Assert.AreEqual("a", session.CurrentStep!.Id);
         Assert.IsNull(session.TargetRect);
+
+        // The activation measurement is the only frame the browser is guaranteed to send.
+        Assert.IsNotNull(((BonboardingTourSession)session).Placement);
     }
 
     [TestMethod]
@@ -407,6 +410,96 @@ public class TourSessionTests
 
         Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
         Assert.IsNull(session.TargetRect);
+    }
+
+    [TestMethod]
+    public async Task A_Wait_That_Times_Out_Into_A_Centred_Card_Places_And_Shows_It()
+    {
+        await using var harness = new BonboardingHarness();
+
+        var shown = 0;
+        var missing = Step("a", "#never");
+        missing.MissingTarget = BonboardingMissingTargetBehavior.Wait;
+        missing.WaitTimeoutBehavior = BonboardingMissingTargetBehavior.Center;
+        missing.OnShown = _ => { shown++; return ValueTask.CompletedTask; };
+
+        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour(missing));
+        Assert.AreEqual(BonboardingTourStatus.Waiting, session.Status);
+        var activations = harness.Interop.Activations.Count;
+
+        await harness.Interop.TimeOutWaitAsync(session.Id);
+
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.IsNotNull(session.Placement);
+        Assert.AreEqual(1, shown);
+        Assert.Contains(BonboardingEventKind.StepShown, harness.Events.Kinds);
+
+        // The browser is handed the step again, without a target, so it keeps the card placed.
+        Assert.AreEqual(activations + 1, harness.Interop.Activations.Count);
+        Assert.AreEqual(BonboardingTargetKind.None, harness.Interop.LastActivation!.Target.Kind);
+    }
+
+    [TestMethod]
+    public async Task A_Lost_Target_Is_Watched_For_Again_And_Restored_Without_Re_Showing_The_Step()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var shown = 0;
+        var step = Step("a", "#a");
+        step.MissingTarget = BonboardingMissingTargetBehavior.Wait;
+        step.OnShown = _ => { shown++; return ValueTask.CompletedTask; };
+
+        var session = await harness.Service.StartAsync(Tour(step));
+        var activations = harness.Interop.Activations.Count;
+
+        await harness.Interop.LoseTargetAsync(session.Id);
+
+        // The browser stopped watching when it reported the loss, so it has to be asked to wait.
+        Assert.AreEqual(activations + 1, harness.Interop.Activations.Count);
+        Assert.IsTrue(harness.Interop.LastActivation!.WaitForTarget);
+
+        await harness.Interop.AppearAsync(session.Id, "#a");
+
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.IsNotNull(session.TargetRect);
+        Assert.AreEqual(1, shown);
+    }
+
+    [TestMethod]
+    public async Task A_Lost_Target_Set_To_Skip_Ignores_CanAdvance()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var step = Step("a", "#a");
+        step.MissingTarget = BonboardingMissingTargetBehavior.Skip;
+        step.CanAdvance = _ => ValueTask.FromResult(false);
+
+        var session = await harness.Service.StartAsync(Tour(step, Step("b")));
+
+        await harness.Interop.LoseTargetAsync(session.Id);
+
+        Assert.AreEqual("b", session.CurrentStep!.Id);
+        Assert.Contains(BonboardingEventKind.StepSkipped, harness.Events.Kinds);
+    }
+
+    [TestMethod]
+    public async Task A_Lost_Target_Set_To_Center_Is_Placed_As_A_Card()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var step = Step("a", "#a");
+        step.MissingTarget = BonboardingMissingTargetBehavior.Center;
+
+        var session = (BonboardingTourSession)await harness.Service.StartAsync(Tour(step));
+
+        await harness.Interop.LoseTargetAsync(session.Id);
+
+        Assert.AreEqual(BonboardingTourStatus.Running, session.Status);
+        Assert.IsNull(session.TargetRect);
+        Assert.IsNotNull(session.Placement);
     }
 
     // ---- Interaction --------------------------------------------------------
@@ -604,6 +697,20 @@ public class TourSessionTests
         Assert.AreEqual("b", session.CurrentStep!.Id);
     }
 
+    [TestMethod]
+    public async Task Stopping_Every_Tour_Also_Ends_A_Paused_One()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var session = await harness.Service.StartAsync(Tour(Step("a", "#a")));
+        await session.PauseAsync();
+
+        await harness.Service.StopAllAsync();
+
+        Assert.AreEqual(BonboardingTourStatus.Cancelled, session.Status);
+    }
+
     // ---- Cleanup and races ---------------------------------------------------
 
     [TestMethod]
@@ -668,6 +775,27 @@ public class TourSessionTests
         Assert.IsFalse(first.IsActive);
         Assert.IsTrue(second.IsActive);
         Assert.AreSame(second, harness.Service.Active);
+    }
+
+    [TestMethod]
+    public async Task FindSession_Returns_The_Live_Session_After_A_Restart()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var tour = Tour(Step("a", "#a"));
+
+        var first = await harness.Service.StartAsync(tour);
+        await first.CompleteAsync();
+
+        // Ended sessions are discarded rather than kept for the lifetime of the circuit.
+        Assert.IsNull(harness.Service.FindSession(tour.Id));
+        Assert.IsEmpty(harness.Service.Sessions);
+
+        var second = await harness.Service.RestartAsync(tour);
+
+        Assert.AreSame(second, harness.Service.FindSession(tour.Id));
+        Assert.ContainsSingle(harness.Service.Sessions);
     }
 
     [TestMethod]

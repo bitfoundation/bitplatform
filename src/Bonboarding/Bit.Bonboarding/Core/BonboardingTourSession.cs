@@ -48,6 +48,12 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     private BonboardingStepDefinition? _enteredFrom;
     private BonboardingStepChangeReason _enteredBy;
 
+    /// <summary>
+    /// True once the current step's show hooks have run, so a target that is lost and found again
+    /// does not report the step as shown a second time.
+    /// </summary>
+    private bool _stepShown;
+
     private readonly List<string> _history = [];
     private readonly Dictionary<string, object?> _state = [];
 
@@ -115,6 +121,9 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     public bool IsWaiting => Status == BonboardingTourStatus.Waiting;
 
     public bool IsActive => Status is BonboardingTourStatus.Running or BonboardingTourStatus.Waiting;
+
+    /// <summary>True while the tour has started and not yet ended, paused or not.</summary>
+    internal bool IsLive => IsActive || Status == BonboardingTourStatus.Paused;
 
     public IReadOnlyList<string> History => _history;
 
@@ -284,16 +293,18 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         }, cancellationToken);
 
     public Task RefreshAsync(CancellationToken cancellationToken = default)
-        => RunGuardedAsync(async _ =>
-        {
-            if (CurrentStep is null || Status != BonboardingTourStatus.Running) return;
+        => RunGuardedAsync(_ => RefreshCoreAsync(), cancellationToken);
 
-            var geometry = await SafeMeasureAsync().ConfigureAwait(false);
-            if (geometry is null) return;
+    private async Task RefreshCoreAsync()
+    {
+        if (CurrentStep is null || Status != BonboardingTourStatus.Running) return;
 
-            ApplyGeometry(geometry);
-            Notify(BonboardingTourSessionChange.Geometry);
-        }, cancellationToken);
+        var geometry = await SafeMeasureAsync().ConfigureAwait(false);
+        if (geometry is null) return;
+
+        ApplyGeometry(geometry);
+        Notify(BonboardingTourSessionChange.Geometry);
+    }
 
     public Task InvokeActionAsync(BonboardingStepAction action, CancellationToken cancellationToken = default)
         => RunGuardedAsync(async ct =>
@@ -460,8 +471,21 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         }
 
         var generation = ++_generation;
-        _enteredFrom = previousStep;
-        _enteredBy = reason;
+
+        // Re-entering the same step keeps where it was originally entered from. A step that was
+        // never shown (it was still waiting for its route) reports the transition that led to it;
+        // one that was already on screen reports the re-entry itself.
+        if (!isReentry)
+        {
+            _enteredFrom = previousStep;
+            _enteredBy = reason;
+        }
+        else if (_stepShown)
+        {
+            _enteredBy = reason;
+        }
+
+        _stepShown = false;
 
         CancelStep();
         _stepCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -508,7 +532,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
                 return;
             }
         }
-        else if (geometry is not null)
+
+        // Applied for a centred fallback too: the browser may already have reported this exact
+        // frame, in which case it will not send it again and the card would never be placed.
+        if (geometry is not null)
         {
             ApplyGeometry(geometry);
             if (geometry.Found) await PublishAsync(BonboardingEventKind.TargetResolved, step).ConfigureAwait(false);
@@ -519,7 +546,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         Notify(BonboardingTourSessionChange.Step);
 
-        await CompleteShowAsync(step, index, previousStep, reason, stepToken).ConfigureAwait(false);
+        await CompleteShowAsync(step, index, _enteredFrom, _enteredBy, stepToken).ConfigureAwait(false);
     }
 
     /// <summary>The part of showing a step that runs once it is actually on screen.</summary>
@@ -527,6 +554,8 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         BonboardingStepDefinition step, int index, BonboardingStepDefinition? previousStep,
         BonboardingStepChangeReason reason, CancellationToken stepToken)
     {
+        _stepShown = true;
+
         await PersistAsync(stepToken).ConfigureAwait(false);
         await PublishAsync(BonboardingEventKind.StepShown, step).ConfigureAwait(false);
 
@@ -845,6 +874,10 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             var stepToken = _stepCts?.Token ?? CancellationToken.None;
 
             await PublishAsync(BonboardingEventKind.TargetResolved, step).ConfigureAwait(false);
+
+            // A target that was lost and came back: the step was already shown once.
+            if (_stepShown) return;
+
             await CompleteShowAsync(step, CurrentIndex, _enteredFrom, _enteredBy, stepToken).ConfigureAwait(false);
         }, CancellationToken.None);
 
@@ -852,38 +885,64 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     {
         if (_disposed || CurrentStep is null || Status != BonboardingTourStatus.Running) return;
 
-        var behavior = CurrentOptions!.MissingTarget;
-        await PublishAsync(BonboardingEventKind.TargetMissing, CurrentStep).ConfigureAwait(false);
+        var step = CurrentStep;
+        var generation = _generation;
 
-        switch (behavior)
+        await RunGuardedAsync(async ct =>
         {
-            case BonboardingMissingTargetBehavior.Skip:
-                await NextAsync().ConfigureAwait(false);
-                break;
+            // Another transition got here first; the lost target belonged to a step that is gone.
+            if (generation != _generation || !ReferenceEquals(CurrentStep, step) || Status != BonboardingTourStatus.Running) return;
 
-            case BonboardingMissingTargetBehavior.Fail:
-                await RunGuardedAsync(
-                    _ => throw new BonboardingException($"Target for step '{CurrentStep.Id}' disappeared.")
+            var options = CurrentOptions!;
+            var stepToken = _stepCts?.Token ?? CancellationToken.None;
+
+            await PublishAsync(BonboardingEventKind.TargetMissing, step).ConfigureAwait(false);
+
+            // The old rectangle no longer points at anything; drawing the spotlight there would lie.
+            _geometry = null;
+            Placement = null;
+
+            switch (options.MissingTarget)
+            {
+                case BonboardingMissingTargetBehavior.Center:
+                {
+                    var geometry = await SafeMeasureAsync().ConfigureAwait(false);
+                    if (generation != _generation) return;
+
+                    if (geometry is not null) ApplyGeometry(geometry);
+                    Notify(BonboardingTourSessionChange.Step);
+                    return;
+                }
+
+                case BonboardingMissingTargetBehavior.Wait:
+                {
+                    Status = BonboardingTourStatus.Waiting;
+                    Notify(BonboardingTourSessionChange.Step);
+
+                    // The browser stopped watching when it reported the loss, so hand the step back
+                    // to it in waiting mode: it watches for the element and arms the wait timeout.
+                    var geometry = await ActivateInBrowserAsync(step, options, stepToken).ConfigureAwait(false);
+                    if (generation != _generation || Status != BonboardingTourStatus.Waiting) return;
+
+                    if (geometry is { Found: true })
                     {
-                        TourId = Tour.Id,
-                        StepId = CurrentStep.Id,
-                    },
-                    CancellationToken.None).ConfigureAwait(false);
-                break;
+                        ApplyGeometry(geometry);
+                        Status = BonboardingTourStatus.Running;
+                        await PublishAsync(BonboardingEventKind.TargetResolved, step).ConfigureAwait(false);
+                        Notify(BonboardingTourSessionChange.Step);
+                    }
 
-            case BonboardingMissingTargetBehavior.Center:
-                _geometry = null;
-                Placement = null;
-                Notify(BonboardingTourSessionChange.Step);
-                break;
+                    return;
+                }
 
-            default:
-                Status = BonboardingTourStatus.Waiting;
-                _geometry = null;
-                Placement = null;
-                Notify(BonboardingTourSessionChange.Step);
-                break;
-        }
+                default:
+                    // Skip and Fail behave exactly as they do when the target is missing on arrival:
+                    // a vanished target is not the user choosing to advance, so CanAdvance and
+                    // branching do not get a say.
+                    await HandleMissingTargetAsync(options.MissingTarget, step, +1, ct).ConfigureAwait(false);
+                    return;
+            }
+        }, CancellationToken.None).ConfigureAwait(false);
     }
 
     public async ValueTask OnKeyAsync(string key, bool shiftKey)
@@ -932,6 +991,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
         if (_disposed || CurrentStep is null || Status != BonboardingTourStatus.Waiting) return;
 
         var step = CurrentStep;
+        var generation = _generation;
         var behavior = CurrentOptions!.WaitTimeoutBehavior;
 
         // Waiting again after a wait expired would spin forever.
@@ -939,18 +999,42 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
 
         await RunGuardedAsync(async ct =>
         {
-            if (!ReferenceEquals(CurrentStep, step)) return;
+            if (generation != _generation || !ReferenceEquals(CurrentStep, step)) return;
+            if (Status != BonboardingTourStatus.Waiting || _pendingRoute is not null) return;
 
             if (behavior == BonboardingMissingTargetBehavior.Center)
             {
-                _resolvedTarget = BonboardingStepTarget.None;
-                Status = BonboardingTourStatus.Running;
-                Notify(BonboardingTourSessionChange.Step);
+                await ShowCenteredAfterTimeoutAsync(step, generation).ConfigureAwait(false);
                 return;
             }
 
             await HandleMissingTargetAsync(behavior, step, +1, ct).ConfigureAwait(false);
         }, CancellationToken.None).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gives up on the target and shows the step as a centred card. The browser stopped watching
+    /// when the wait expired, so the step is activated again without a target: that measures the
+    /// popover for placement and re-arms the observers that keep it placed.
+    /// </summary>
+    private async Task ShowCenteredAfterTimeoutAsync(BonboardingStepDefinition step, int generation)
+    {
+        var stepToken = _stepCts?.Token ?? CancellationToken.None;
+
+        _resolvedTarget = BonboardingStepTarget.None;
+
+        var geometry = await ActivateInBrowserAsync(step, CurrentOptions!, stepToken).ConfigureAwait(false);
+        if (generation != _generation) return;
+
+        if (geometry is not null) ApplyGeometry(geometry);
+
+        Status = BonboardingTourStatus.Running;
+        _stepShownAt = DateTimeOffset.UtcNow;
+        Notify(BonboardingTourSessionChange.Step);
+
+        if (_stepShown) return;
+
+        await CompleteShowAsync(step, CurrentIndex, _enteredFrom, _enteredBy, stepToken).ConfigureAwait(false);
     }
 
     // ---- Geometry and placement -------------------------------------------
@@ -1058,40 +1142,52 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
     {
         try
         {
-            if (_pendingRoute is { } pending)
-            {
-                if (!BonboardingRouteMatcher.Matches(pending, relative)) return;
-
-                _pendingRoute = null;
-
-                // Re-enter the same step now the page is right. Retarget skips the leave hooks so
-                // the step is not counted as visited twice.
-                await RunGuardedAsync(
-                    ct => MoveToAsync(CurrentIndex, BonboardingStepChangeReason.Retarget, +1, ct),
-                    CancellationToken.None).ConfigureAwait(false);
-                return;
-            }
-
-            if (CurrentStep?.Route is { } route && !BonboardingRouteMatcher.Matches(route, relative))
-            {
-                // The user navigated away from the step's page. Hold rather than yanking them back:
-                // fighting the user for control of the address bar is never the right call.
-                _pendingRoute = route;
-                Status = BonboardingTourStatus.Waiting;
-                await SafeDeactivateAsync().ConfigureAwait(false);
-                Notify(BonboardingTourSessionChange.Step);
-                return;
-            }
-
-            // Same page, new content: the target may have been re-rendered underneath us.
-            if (Status == BonboardingTourStatus.Running && CurrentStep is not null)
-            {
-                await RefreshAsync().ConfigureAwait(false);
-            }
+            // Under the transition lock like every other state change, so a navigation cannot
+            // interleave with a step that is halfway through being shown.
+            await RunGuardedAsync(ct => HandleLocationChangedCoreAsync(relative, ct), CancellationToken.None).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "BonboardingService failed to handle a location change.");
+        }
+    }
+
+    private async Task HandleLocationChangedCoreAsync(string relative, CancellationToken cancellationToken)
+    {
+        // A paused tour belongs to the application until it resumes; ResumeAsync re-checks the
+        // route, so there is nothing to track in the meantime.
+        if (CurrentStep is null || !IsActive) return;
+
+        if (_pendingRoute is { } pending)
+        {
+            if (!BonboardingRouteMatcher.Matches(pending, relative)) return;
+
+            _pendingRoute = null;
+
+            // Re-enter the same step now the page is right. Retarget skips the leave hooks so
+            // the step is not counted as visited twice.
+            await MoveToAsync(CurrentIndex, BonboardingStepChangeReason.Retarget, +1, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        if (CurrentStep.Route is { } route && !BonboardingRouteMatcher.Matches(route, relative))
+        {
+            // The user navigated away from the step's page. Hold rather than yanking them back:
+            // fighting the user for control of the address bar is never the right call.
+            _generation++;
+            _pendingRoute = route;
+            Status = BonboardingTourStatus.Waiting;
+            _geometry = null;
+            Placement = null;
+            await SafeDeactivateAsync().ConfigureAwait(false);
+            Notify(BonboardingTourSessionChange.Step);
+            return;
+        }
+
+        // Same page, new content: the target may have been re-rendered underneath us.
+        if (Status == BonboardingTourStatus.Running)
+        {
+            await RefreshCoreAsync().ConfigureAwait(false);
         }
     }
 

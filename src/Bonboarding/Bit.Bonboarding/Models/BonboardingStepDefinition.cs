@@ -84,7 +84,8 @@ public sealed class BonboardingStepDefinition : BonboardingStepOptions
     public Func<BonboardingStepContext, ValueTask>? OnShown { get; set; }
 
     /// <summary>
-    /// Runs before leaving the step. Throwing cancels the transition; use it for validation.
+    /// Runs before leaving the step. Throwing fails the whole tour, with the exception attached;
+    /// use <see cref="CanAdvance"/> to hold the user on the step instead.
     /// </summary>
     public Func<BonboardingStepContext, ValueTask>? OnBeforeLeave { get; set; }
 

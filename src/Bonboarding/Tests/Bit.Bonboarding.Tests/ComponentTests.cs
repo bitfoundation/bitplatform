@@ -426,6 +426,9 @@ public class ComponentTests : BunitContext
         var cut = Render<BonboardingRoot>();
         Assert.IsNotNull(cut.Find(".bit-bonboarding-waiting"));
 
+        // There is no target to place against, but the waiting card must still be visible.
+        Assert.AreEqual("true", cut.Find(".bit-bonboarding-popover").GetAttribute("data-bonboarding-placed"));
+
         await cut.InvokeAsync(() => _interop.AppearAsync(session.Id, "#late"));
 
         Assert.IsEmpty(cut.FindAll(".bit-bonboarding-waiting"));
@@ -517,6 +520,48 @@ public class ComponentTests : BunitContext
         await cut.InvokeAsync(() => tour.StopAsync());
 
         Assert.IsFalse(tour.IsRunning);
+    }
+
+    [TestMethod]
+    public async Task A_Running_Tour_Keeps_Its_Steps_When_Its_Markup_Is_Disposed()
+    {
+        _interop.ExistingSelectors.Add("[data-bonboarding-anchor=\"create\"]");
+
+        var cut = Render<ToggleableTourHarness>();
+        var tour = cut.FindComponent<BonboardingTour>().Instance;
+        var session = await cut.InvokeAsync(() => tour.StartAsync());
+
+        // Navigating to the next page of a multi-page tour tears the declaring markup down.
+        cut.Render(parameters => parameters.Add(p => p.Show, false));
+
+        Assert.IsTrue(session.IsActive);
+        CollectionAssert.AreEqual(new[] { "one", "two", "three" }, session.Tour.Steps.Select(step => step.Id).ToArray());
+
+        await session.NextAsync();
+        Assert.AreEqual("two", session.CurrentStep!.Id);
+    }
+
+    [TestMethod]
+    public void A_Step_Rendered_Again_Returns_To_Its_Declared_Position()
+    {
+        var cut = Render<ToggleableTourHarness>();
+
+        cut.Render(parameters => parameters.Add(p => p.ShowSecond, false));
+        cut.Render(parameters => parameters.Add(p => p.ShowSecond, true));
+
+        var tour = BonboardingService.GetTour("toggleable");
+        CollectionAssert.AreEqual(new[] { "one", "two", "three" }, tour!.Steps.Select(step => step.Id).ToArray());
+    }
+
+    [TestMethod]
+    public void An_Auto_Started_Tour_That_Declines_To_Start_Does_Not_Throw()
+    {
+        var cut = Render<ToggleableTourHarness>(parameters => parameters
+            .Add(p => p.AutoStart, BonboardingAutoStart.Always)
+            .Add(p => p.Configure, tour => tour.CanStart = _ => ValueTask.FromResult(false)));
+
+        Assert.IsNull(BonboardingService.Active);
+        Assert.IsNotNull(cut.Instance);
     }
 
     [TestMethod]
@@ -618,6 +663,49 @@ public sealed class DeclarativeTourHarness : ComponentBase
             child.OpenComponent<BonboardingStep>(9);
             child.AddComponentParameter(10, nameof(BonboardingStep.Id), "three");
             child.AddComponentParameter(11, nameof(BonboardingStep.Title), "Third");
+            child.CloseComponent();
+        }));
+        builder.CloseComponent();
+    }
+}
+
+/// <summary>Markup fixture whose tour, or one of its steps, can be removed and rendered again.</summary>
+public sealed class ToggleableTourHarness : ComponentBase
+{
+    [Parameter] public bool Show { get; set; } = true;
+
+    [Parameter] public bool ShowSecond { get; set; } = true;
+
+    [Parameter] public BonboardingAutoStart AutoStart { get; set; }
+
+    [Parameter] public Action<BonboardingTourDefinition>? Configure { get; set; }
+
+    protected override void BuildRenderTree(RenderTreeBuilder builder)
+    {
+        if (!Show) return;
+
+        builder.OpenComponent<BonboardingTour>(0);
+        builder.AddComponentParameter(1, nameof(BonboardingTour.Id), "toggleable");
+        builder.AddComponentParameter(2, nameof(BonboardingTour.AutoStart), AutoStart);
+        builder.AddComponentParameter(3, nameof(BonboardingTour.Configure), Configure);
+        builder.AddComponentParameter(4, nameof(BonboardingTour.ChildContent), (RenderFragment)(child =>
+        {
+            child.OpenComponent<BonboardingStep>(0);
+            child.AddComponentParameter(1, nameof(BonboardingStep.Id), "one");
+            child.AddComponentParameter(2, nameof(BonboardingStep.Anchor), "create");
+            child.CloseComponent();
+
+            if (ShowSecond)
+            {
+                child.OpenComponent<BonboardingStep>(3);
+                child.AddComponentParameter(4, nameof(BonboardingStep.Id), "two");
+                child.AddComponentParameter(5, nameof(BonboardingStep.Selector), "#b");
+                child.CloseComponent();
+            }
+
+            child.OpenComponent<BonboardingStep>(6);
+            child.AddComponentParameter(7, nameof(BonboardingStep.Id), "three");
+            child.AddComponentParameter(8, nameof(BonboardingStep.Selector), "#c");
             child.CloseComponent();
         }));
         builder.CloseComponent();

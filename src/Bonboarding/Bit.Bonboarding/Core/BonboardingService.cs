@@ -113,7 +113,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
             }
 
             // Restarting a tour that is already running should not leave the old session attached.
-            var existing = _sessions.FirstOrDefault(s => s.Tour.Id == tour.Id && s.IsActive);
+            var existing = _sessions.FirstOrDefault(s => s.Tour.Id == tour.Id && s.IsLive);
             if (existing is not null)
             {
                 await existing.CancelAsync(CancellationToken.None).ConfigureAwait(false);
@@ -204,7 +204,8 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
     private async Task StopRunningSessionsAsync(BonboardingTourEndReason reason)
     {
-        foreach (var session in _sessions.Where(s => s.IsActive).ToArray())
+        // Paused sessions are still running as far as the application is concerned.
+        foreach (var session in _sessions.Where(s => s.IsLive).ToArray())
         {
             switch (reason)
             {
@@ -225,7 +226,7 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     }
 
     public IBonboardingTourSession? FindSession(string tourId)
-        => _sessions.FirstOrDefault(s => s.Tour.Id == tourId);
+        => _sessions.LastOrDefault(s => s.Tour.Id == tourId && !s.IsFinished);
 
     public async Task<bool> IsCompletedAsync(string tourId, CancellationToken cancellationToken = default)
         => (await GetRecordAsync(tourId, cancellationToken).ConfigureAwait(false))?.Completed ?? false;
@@ -313,6 +314,14 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     private void OnSessionChanged(object? sender, BonboardingTourSessionChangedEventArgs e)
     {
         if (!e.Change.HasFlag(BonboardingTourSessionChange.Ended)) return;
+
+        // A finished session is discarded: it can never run again (a restart creates a new one),
+        // and keeping it would grow the list for the lifetime of the circuit.
+        if (sender is BonboardingTourSession ended)
+        {
+            ended.Changed -= OnSessionChanged;
+            _sessions.Remove(ended);
+        }
 
         if (ReferenceEquals(Active, sender))
         {

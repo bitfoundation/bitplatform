@@ -518,8 +518,10 @@ and registers it with the service. Neither component renders any markup.
 The definition is rebuilt whenever parameters change, and the same object is kept, so editing a
 running tour is picked up without restarting it.
 
-Steps normally keep their declaration order. Give a step an explicit `Order` when it is rendered
-conditionally and you need its position pinned:
+Steps normally keep their declaration order. A step with an `Id` that is removed and rendered again
+returns to its original position, but one that only appears after the others (inside an `@if` that
+starts out false, say) is placed last. Give a step an explicit `Order` when it is rendered
+conditionally and you need its position pinned, or keep it rendered and skip it with `When`:
 
 ```razor
 <BonboardingStep Order="10" ... />
@@ -701,7 +703,7 @@ new BonboardingStepDefinition
 {
     OnBeforeShow = async ctx => await ctx.Services.GetRequiredService<IDataLoader>().PreloadAsync(),
     OnShown      = ctx => { Log("shown", ctx.Step.Id); return ValueTask.CompletedTask; },
-    OnBeforeLeave = ctx => ValidateAsync(ctx),   // throwing cancels the transition
+    OnBeforeLeave = ctx => ValidateAsync(ctx),   // throwing fails the tour; use CanAdvance to block
 }
 ```
 

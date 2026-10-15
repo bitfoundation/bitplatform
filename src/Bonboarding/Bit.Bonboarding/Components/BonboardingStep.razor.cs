@@ -7,10 +7,7 @@ namespace Bit.Bonboarding;
 /// </summary>
 public sealed partial class BonboardingStep : ComponentBase, IDisposable
 {
-    private static int _sequenceSource;
-
-    private readonly int _sequence = Interlocked.Increment(ref _sequenceSource);
-
+    private int _ordinal;
     private bool _attached;
 
     [CascadingParameter] private BonboardingTour? Tour { get; set; }
@@ -18,10 +15,14 @@ public sealed partial class BonboardingStep : ComponentBase, IDisposable
     /// <summary>The definition this component maintains. Live: edits are picked up by a running tour.</summary>
     public BonboardingStepDefinition Definition { get; } = new();
 
-    /// <summary>Explicit ordering. Steps without one keep their declaration order.</summary>
+    /// <summary>
+    /// Explicit ordering. Steps without one keep the order they are first rendered in, which is the
+    /// declaration order unless a step only appears later (inside an <c>@if</c>, say): give such a
+    /// step an <see cref="Order"/>, or keep it rendered and use <see cref="When"/> instead.
+    /// </summary>
     [Parameter] public int? Order { get; set; }
 
-    internal double SortKey => Order ?? _sequence;
+    internal double SortKey => Order ?? _ordinal;
 
     // ---- Targeting ----------------------------------------------------------
 
@@ -95,7 +96,10 @@ public sealed partial class BonboardingStep : ComponentBase, IDisposable
     /// <summary>Runs once the step is on screen.</summary>
     [Parameter] public Func<BonboardingStepContext, ValueTask>? OnShown { get; set; }
 
-    /// <summary>Runs before the step is left; throw to cancel the transition.</summary>
+    /// <summary>
+    /// Runs before the step is left. Throwing fails the whole tour; use <see cref="CanAdvance"/>
+    /// to hold the user on the step instead.
+    /// </summary>
     [Parameter] public Func<BonboardingStepContext, ValueTask>? OnBeforeLeave { get; set; }
 
     /// <summary>Arbitrary payload carried through to callbacks and templates.</summary>
@@ -148,6 +152,7 @@ public sealed partial class BonboardingStep : ComponentBase, IDisposable
         if (!_attached)
         {
             _attached = true;
+            _ordinal = Tour.AssignOrdinal(Id);
             Tour.AttachStep(this);
         }
         else

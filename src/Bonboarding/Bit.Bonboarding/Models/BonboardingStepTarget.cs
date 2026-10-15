@@ -38,8 +38,10 @@ public abstract class BonboardingStepTarget : IEquatable<BonboardingStepTarget>
     public static BonboardingStepTarget Element(ElementReference element) => new ElementTarget(element);
 
     /// <summary>
-    /// Defers the decision until the step is activated. The resolver may return <see cref="None"/>
-    /// or <see langword="null"/>, which is treated as a missing target.
+    /// Defers the decision until the step is activated. Returning <see cref="None"/> or
+    /// <see langword="null"/> deliberately shows the step as a centred card, without applying the
+    /// missing-target behaviour. To have a step wait for, skip or fail on an element that may not
+    /// exist, return a concrete target for it and let the browser look it up.
     /// </summary>
     public static BonboardingStepTarget Dynamic(Func<BonboardingStepContext, ValueTask<BonboardingStepTarget?>> resolver)
     {

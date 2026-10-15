@@ -9,6 +9,9 @@ namespace Bit.Bonboarding;
 public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
 {
     private readonly List<BonboardingStep> _steps = [];
+    private readonly Dictionary<string, int> _ordinals = new(StringComparer.Ordinal);
+
+    private int _ordinalSource;
 
     private BonboardingTourDefinition? _definition;
     private bool _autoStarted;
@@ -72,6 +75,9 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
     /// <summary>True while this tour is on screen.</summary>
     public bool IsRunning => Session is { IsActive: true };
 
+    /// <summary>True while the tour has started and not ended, including while it is paused.</summary>
+    private bool IsLive => Session is { IsActive: true } or { Status: BonboardingTourStatus.Paused };
+
     protected override void OnParametersSet()
     {
         Rebuild();
@@ -94,7 +100,15 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
         }
         else
         {
-            await BonboardingService.StartAsync(Definition);
+            try
+            {
+                await BonboardingService.StartAsync(Definition);
+            }
+            catch (BonboardingException)
+            {
+                // CanStart declined. An automatic start has no caller to report that to, and an
+                // exception escaping a lifecycle method would take the whole circuit down.
+            }
         }
     }
 
@@ -111,7 +125,31 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
     internal void DetachStep(BonboardingStep step)
     {
         if (!_steps.Remove(step)) return;
+
+        // Blazor disposes a parent before its children, so once the tour itself is gone the steps
+        // are going with the page rather than being removed from the tour. A session that outlives
+        // the page (a multi-page tour) still needs the full step list on the shared definition.
+        if (_disposed) return;
+
         Rebuild();
+    }
+
+    /// <summary>
+    /// Hands out the fallback sort key for a step without an explicit <see cref="BonboardingStep.Order"/>.
+    /// A step that is removed and rendered again (inside an <c>@if</c>, say) gets its original key
+    /// back by id, so it returns to its declared position instead of moving to the end.
+    /// </summary>
+    internal int AssignOrdinal(string? stepId)
+    {
+        if (stepId is null) return ++_ordinalSource;
+
+        if (!_ordinals.TryGetValue(stepId, out var ordinal))
+        {
+            ordinal = ++_ordinalSource;
+            _ordinals[stepId] = ordinal;
+        }
+
+        return ordinal;
     }
 
     internal void NotifyStepChanged() => Rebuild();
@@ -182,7 +220,7 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
     /// <summary>Ends the tour if it is running.</summary>
     public Task StopAsync(BonboardingTourEndReason reason = BonboardingTourEndReason.Dismissed, CancellationToken cancellationToken = default)
     {
-        if (Session is not { IsActive: true } session) return Task.CompletedTask;
+        if (!IsLive || Session is not { } session) return Task.CompletedTask;
 
         return reason switch
         {
@@ -199,7 +237,7 @@ public sealed partial class BonboardingTour : ComponentBase, IAsyncDisposable
 
         // Leave a running session alone: the tour may legitimately outlive the markup that
         // declared it, for instance while navigating between the pages of a multi-page tour.
-        if (Session is not { IsActive: true })
+        if (!IsLive)
         {
             BonboardingService.Unregister(Id);
         }
