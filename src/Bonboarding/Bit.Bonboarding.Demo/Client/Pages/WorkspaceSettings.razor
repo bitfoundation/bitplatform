@@ -5,43 +5,51 @@
 
 <h1>Workspace settings</h1>
 
-<p class="lede">
+<p class="page-intro">
     The second half of the multi-page tour lives here. Starting the tour from this page works just
     as well: the engine navigates backwards to the first step's route.
 </p>
 
-<div class="row" style="margin-bottom:1.25rem">
-    <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the multi-page tour</button>
-    <a class="btn" href="workspace">Back to the workspace</a>
-</div>
+<section class="demo-section">
+    <h2>Settings</h2>
 
-<div class="grid">
-    <div class="card" data-bonboarding-anchor="profile">
-        <h3>Profile</h3>
-        <label for="display-name">Display name</label>
-        <input id="display-name" type="text" value="Alex Morgan" />
+    <div class="demo-actions">
+        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the multi-page tour</button>
+        <a class="btn" href="workspace">Back to the workspace</a>
     </div>
 
-    <div class="card" data-bonboarding-anchor="api-keys">
-        <h3>API keys</h3>
-        <p class="muted" style="margin-bottom:0.5rem">Two active keys.</p>
-        <table>
-            <thead>
-                <tr><th>Name</th><th>Created</th></tr>
-            </thead>
-            <tbody>
-                <tr><td>ci-pipeline</td><td>3 months ago</td></tr>
-                <tr><td>local-dev</td><td>11 days ago</td></tr>
-            </tbody>
-        </table>
-    </div>
+    <div class="grid">
+        <div class="card" data-bonboarding-anchor="profile">
+            <h3>Profile</h3>
+            <div>
+                <label for="display-name">Display name</label>
+                <input id="display-name" type="text" value="Alex Morgan" />
+            </div>
+        </div>
 
-    <div class="card" data-bonboarding-anchor="danger">
-        <h3>Danger zone</h3>
-        <p class="muted" style="margin-bottom:0.5rem">Deleting a workspace cannot be undone.</p>
-        <button type="button" class="btn">Delete workspace</button>
+        <div class="card" data-bonboarding-anchor="api-keys">
+            <h3>API keys</h3>
+            <p class="muted">Two active keys.</p>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr><th>Name</th><th>Created</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>ci-pipeline</td><td>3 months ago</td></tr>
+                        <tr><td>local-dev</td><td>11 days ago</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="card" data-bonboarding-anchor="danger">
+            <h3>Danger zone</h3>
+            <p class="muted">Deleting a workspace cannot be undone.</p>
+            <button type="button" class="btn">Delete workspace</button>
+        </div>
     </div>
-</div>
+</section>
 
 @code {
     private Task StartAsync() => BonboardingService.StartAsync(WorkspaceTour.Create());

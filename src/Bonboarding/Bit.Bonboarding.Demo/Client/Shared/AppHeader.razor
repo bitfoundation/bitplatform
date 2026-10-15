@@ -1,0 +1,81 @@
+﻿@* The site header: the mark, the library's name and the two top-level destinations at one end; the
+   repository and the theme switch at the other.
+
+   It is the one piece of chrome the landing page and the docs share, and it adapts to which of the
+   two it is sitting on: the menu button only exists on a docs page, because the landing page has no
+   nav panel to open. *@
+
+<header class="app-header">
+    <div class="app-header-inner">
+        <div class="header-start">
+            @* Only exists on a docs page, and only at the widths where the nav panel is a drawer;
+               CSS hides it above them. *@
+            @if (IsHomePage is false)
+            {
+                <button type="button" class="icon-btn menu-btn" @onclick="OnToggleNav"
+                        aria-label="Toggle navigation" aria-controls="nav-panel"
+                        aria-expanded="@(IsNavOpen ? "true" : "false")">
+                    <Icon Path="@Icons.Menu" />
+                </button>
+            }
+
+            <a class="header-brand" href="/" aria-label="Bonboarding home">
+                <span class="logo" aria-hidden="true"></span>
+                <span class="wordmark">Bonboarding</span>
+            </a>
+
+            <span class="header-version">@Version</span>
+
+            <nav class="header-links" aria-label="Sections">
+                <a class="link@(IsHomePage ? " active" : "")" href="/"
+                   aria-current="@(IsHomePage ? "page" : null)">Home</a>
+                <a class="link@(IsHomePage ? "" : " active")" href="@NavItem.All[0].Url"
+                   aria-current="@(IsHomePage ? null : "page")">Docs</a>
+            </nav>
+        </div>
+
+        <div class="header-end">
+            <a class="icon-btn" target="_blank" rel="noopener noreferrer"
+               aria-label="Bit.Bonboarding on GitHub (opens in a new tab)"
+               href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Bonboarding">
+                <span class="github-mark" aria-hidden="true"></span>
+            </a>
+
+            @* Exact complements: CSS shows the sun in the dark theme and the moon in the light one,
+               so exactly one of the pair is ever visible - including on the prerendered document,
+               before anything has been told which theme is applied. *@
+            <button type="button" class="icon-btn dark-theme" @onclick="OnToggleTheme"
+                    title="Switch to the light theme" aria-label="Switch to the light theme">
+                <Icon Path="@Icons.Sun" />
+            </button>
+            <button type="button" class="icon-btn light-theme" @onclick="OnToggleTheme"
+                    title="Switch to the dark theme" aria-label="Switch to the dark theme">
+                <Icon Path="@Icons.Moon" />
+            </button>
+        </div>
+    </div>
+</header>
+
+@code {
+    /// <summary>The frameworks the library targets, shown next to the name.</summary>
+    private const string Version = "net8+";
+
+    /// <summary>
+    /// True on the landing page. The shell owns this - it is the same flag that decides whether the
+    /// page gets the docs chrome at all - so the two can never disagree about which of the site's two
+    /// faces is on screen.
+    /// </summary>
+    [Parameter] public bool IsHomePage { get; set; }
+
+    /// <summary>Whether the nav drawer is currently open, for the menu button's aria-expanded.</summary>
+    [Parameter] public bool IsNavOpen { get; set; }
+
+    /// <summary>Raised by the menu button at the widths where the nav panel is a drawer.</summary>
+    [Parameter] public EventCallback OnToggleNav { get; set; }
+
+    /// <summary>
+    /// Raised by the theme switch. The shell owns flipping the theme, because the tours have to
+    /// follow it as well as the page.
+    /// </summary>
+    [Parameter] public EventCallback OnToggleTheme { get; set; }
+}

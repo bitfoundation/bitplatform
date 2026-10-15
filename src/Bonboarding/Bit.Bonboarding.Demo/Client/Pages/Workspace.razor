@@ -6,25 +6,36 @@
 
 <h1>Multi-page tour</h1>
 
-<p class="lede">
+<p class="page-intro">
     Steps can declare the route they belong to. The engine navigates there, waits for the page to
     render, and only then shows the step. If you wander off mid-tour it holds its place instead of
     dragging you back, and picks up where it left off when you return.
 </p>
 
-<div class="row" style="margin-bottom:1.25rem">
-    <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the multi-page tour</button>
-    <a class="btn" href="workspace/settings">Go to settings manually</a>
-</div>
+<section class="demo-section">
+    <h2>A tour across two pages</h2>
 
-<div class="note">
-    While the tour is on a settings step, try navigating back here with the sidebar. The tour waits,
-    and resumes the moment you return.
-</div>
+    <div class="demo-actions">
+        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the multi-page tour</button>
+        <a class="btn" href="workspace/settings">Go to settings manually</a>
+    </div>
 
-<AppWindow OnSettingsClick="GoToSettings" />
+    <div class="note">
+        <Icon Path="@Icons.Info" />
+        <span>
+            While the tour is on a settings step, try navigating back here with the nav panel. The tour
+            waits, and resumes the moment you return.
+        </span>
+    </div>
 
-<pre><code>@Example</code></pre>
+    <AppWindow OnSettingsClick="GoToSettings" />
+</section>
+
+<section class="demo-section">
+    <h2>Giving a step a route</h2>
+
+    <pre><code>@Example</code></pre>
+</section>
 
 @code {
     private void GoToSettings() => Navigation.NavigateTo("workspace/settings");

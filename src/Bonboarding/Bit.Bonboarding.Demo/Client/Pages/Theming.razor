@@ -5,14 +5,16 @@
 
 <h1>Theming &amp; RTL</h1>
 
-<p class="lede">
+<p class="page-intro">
     Every value in the default look is a CSS custom property under <code>.bit-bonboarding-root</code>. Restyling
     the library is a matter of overriding variables in your own stylesheet, with no selector fights
     and no framework to install.
 </p>
 
-<div class="card" style="margin-bottom:1.25rem">
-    <div class="row" style="align-items:flex-end">
+<section class="demo-section">
+    <h2>Try it</h2>
+
+    <div class="controls">
         <div class="field">
             <label for="theme">Theme</label>
             <select id="theme" @bind="_theme">
@@ -46,39 +48,57 @@
         <div class="field">
             <label for="skin">Skin</label>
             <select id="skin" @bind="_skin">
-                <option value="">Default</option>
+                <option value="">Fluent 2 (this site)</option>
                 <option value="brand-popover">Brand (amber on navy)</option>
             </select>
         </div>
 
         <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the tour</button>
     </div>
-</div>
 
-<AppWindow />
+    <div class="note">
+        <Icon Path="@Icons.Info" />
+        <span>
+            The site's own dark theme forces every tour dark, so switch the site to light to compare the
+            <code>Theme</code> values.
+        </span>
+    </div>
 
-<h2>Localisation</h2>
+    <AppWindow />
+</section>
 
-<p class="muted">
-    Button text comes from an <code>BonboardingLabels</code> instance, set globally or per tour. For
-    resource files or a translation service, register your own
-    <code>IBonboardingLocalizer</code> instead.
-</p>
+<section class="demo-section">
+    <h2>Localisation</h2>
 
-<div class="row" style="margin-bottom:1rem">
-    <button type="button" class="btn" @onclick='() => StartLocalizedAsync("en")'>English</button>
-    <button type="button" class="btn" @onclick='() => StartLocalizedAsync("de")'>Deutsch</button>
-    <button type="button" class="btn" @onclick='() => StartLocalizedAsync("ar")'>العربية (RTL)</button>
-</div>
+    <p>
+        Button text comes from an <code>BonboardingLabels</code> instance, set globally or per tour. For
+        resource files or a translation service, register your own
+        <code>IBonboardingLocalizer</code> instead.
+    </p>
 
-<h2>The variables</h2>
+    <div class="demo-actions">
+        <button type="button" class="btn" @onclick='() => StartLocalizedAsync("en")'>English</button>
+        <button type="button" class="btn" @onclick='() => StartLocalizedAsync("de")'>Deutsch</button>
+        <button type="button" class="btn" @onclick='() => StartLocalizedAsync("ar")'>العربية (RTL)</button>
+    </div>
 
-<pre><code>@ThemeExample</code></pre>
+    <p>
+        Direction affects more than text alignment: in a right-to-left tour the arrow keys swap, and
+        <code>Start</code> and <code>End</code> alignments mirror.
+    </p>
+</section>
 
-<p class="muted">
-    Direction affects more than text alignment: in a right-to-left tour the arrow keys swap, and
-    <code>Start</code> and <code>End</code> alignments mirror.
-</p>
+<section class="demo-section">
+    <h2>The variables</h2>
+
+    <p>
+        This site does exactly what the snippet below shows: every tour card on it is the library's
+        default markup with Fluent 2 values poured into these variables, light and dark, in the demo's
+        <code>wwwroot/css/app.css</code>. Not one of the library's selectors is overridden.
+    </p>
+
+    <pre><code>@ThemeExample</code></pre>
+</section>
 
 @code {
     private BonboardingTheme _theme = BonboardingTheme.System;

@@ -6,79 +6,89 @@
 
 <h1>Events &amp; persistence</h1>
 
-<p class="lede">
+<p class="page-intro">
     Every moment of a tour is published as an event, including how long each step was on screen.
     Subscribe to <code>IBonboardingService.EventRaised</code> for something quick, or register an
     <code>IBonboardingObserver</code> in DI to forward the stream to your analytics provider.
 </p>
 
-<div class="row" style="margin-bottom:1.25rem">
-    <button type="button" class="btn btn-primary" @onclick="StartAsync">Run a tour and watch the log</button>
-    <button type="button" class="btn" @onclick="Clear">Clear the log</button>
-</div>
+<section class="demo-section">
+    <h2>Live event stream</h2>
 
-<AppWindow />
-
-<h2>Live event stream</h2>
-
-@if (_log.Count == 0)
-{
-    <p class="muted">Nothing yet. Start the tour above.</p>
-}
-else
-{
-    <div class="log">
-        @foreach (var entry in _log)
-        {
-            <div class="log-row">
-                <span class="log-time">@entry.Time.ToString("HH:mm:ss.fff")</span>
-                <span class="log-kind">@entry.Kind</span>
-                <span>@entry.Detail</span>
-            </div>
-        }
+    <div class="demo-actions">
+        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run a tour and watch the log</button>
+        <button type="button" class="btn" @onclick="Clear">Clear the log</button>
     </div>
-}
 
-<h2>Persistence</h2>
+    <AppWindow />
 
-<p class="muted">
-    Progress is written to the registered <code>IBonboardingStore</code> after every step. The default
-    store uses <code>localStorage</code> with an in-memory mirror, so reads still work while
-    prerendering and in private browsing. Swap it for a server-side store with one call.
-</p>
+    @if (_log.Count == 0)
+    {
+        <p class="muted">Nothing yet. Start the tour above.</p>
+    }
+    else
+    {
+        <div class="log" role="log" aria-label="Tour events">
+            @foreach (var entry in _log)
+            {
+                <div class="log-row">
+                    <span class="log-time">@entry.Time.ToString("HH:mm:ss.fff")</span>
+                    <span class="log-kind">@entry.Kind</span>
+                    <span>@entry.Detail</span>
+                </div>
+            }
+        </div>
+    }
+</section>
 
-<div class="row" style="margin-bottom:1rem">
-    <button type="button" class="btn" @onclick="RefreshRecordAsync">Read the saved record</button>
-    <button type="button" class="btn" @onclick="ResetAsync">Forget this tour</button>
-    <button type="button" class="btn" @onclick="ResetAllAsync">Forget every tour</button>
-</div>
+<section class="demo-section">
+    <h2>Persistence</h2>
 
-@if (_record is not null)
-{
-    <table>
-        <tbody>
-            <tr><th>Tour</th><td>@_record.TourId</td></tr>
-            <tr><th>Version</th><td>@_record.Version</td></tr>
-            <tr><th>Current step</th><td>@(_record.CurrentStepId ?? "-")</td></tr>
-            <tr><th>Completed</th><td>@_record.Completed</td></tr>
-            <tr><th>Dismissed</th><td>@_record.Dismissed</td></tr>
-            <tr><th>Visited</th><td>@string.Join(", ", _record.VisitedStepIds)</td></tr>
-            <tr><th>Updated</th><td>@_record.UpdatedAt.ToLocalTime().ToString("g")</td></tr>
-        </tbody>
-    </table>
-}
-else if (_recordChecked)
-{
-    <p class="muted">No saved record for <code>@TourId</code>.</p>
-}
+    <p>
+        Progress is written to the registered <code>IBonboardingStore</code> after every step. The default
+        store uses <code>localStorage</code> with an in-memory mirror, so reads still work while
+        prerendering and in private browsing. Swap it for a server-side store with one call.
+    </p>
 
-<h2>Wiring it up</h2>
+    <div class="demo-actions">
+        <button type="button" class="btn" @onclick="RefreshRecordAsync">Read the saved record</button>
+        <button type="button" class="btn" @onclick="ResetAsync">Forget this tour</button>
+        <button type="button" class="btn" @onclick="ResetAllAsync">Forget every tour</button>
+    </div>
 
-<pre><code>@ObserverExample</code></pre>
+    @if (_record is not null)
+    {
+        <div class="table-wrap">
+            <table class="facts">
+                <tbody>
+                    <tr><th>Tour</th><td>@_record.TourId</td></tr>
+                    <tr><th>Version</th><td>@_record.Version</td></tr>
+                    <tr><th>Current step</th><td>@(_record.CurrentStepId ?? "-")</td></tr>
+                    <tr><th>Completed</th><td>@_record.Completed</td></tr>
+                    <tr><th>Dismissed</th><td>@_record.Dismissed</td></tr>
+                    <tr><th>Visited</th><td>@string.Join(", ", _record.VisitedStepIds)</td></tr>
+                    <tr><th>Updated</th><td>@_record.UpdatedAt.ToLocalTime().ToString("g")</td></tr>
+                </tbody>
+            </table>
+        </div>
+    }
+    else if (_recordChecked)
+    {
+        <p class="muted">No saved record for <code>@TourId</code>.</p>
+    }
+</section>
 
-<h2>A custom store</h2>
+<section class="demo-section">
+    <h2>Wiring it up</h2>
 
-<pre><code>@StoreExample</code></pre>
+    <pre><code>@ObserverExample</code></pre>
+</section>
+
+<section class="demo-section">
+    <h2>A custom store</h2>
+
+    <pre><code>@StoreExample</code></pre>
+</section>
 
 @code {
     private const string TourId = "analytics";

@@ -1,91 +1,128 @@
 ﻿@page "/"
-@inject IBonboardingService BonboardingService
 
-<PageTitle>Bit.Bonboarding</PageTitle>
+<PageTitle>Bit.Bonboarding - onboarding and product tours for Blazor</PageTitle>
 
-<div class="topbar">
-    <h1>A native Blazor onboarding library</h1>
-    <span class="pill">No JavaScript tour engine</span>
-</div>
+<div class="homepage">
+    <section class="homepage-section hero-section">
+        <div class="homepage-section-content">
+            <div class="hero-copy">
+                <a class="hero-eyebrow" href="mcp-server">
+                    <Icon Path="@Icons.Sparkle" />
+                    No JavaScript tour engine - and an MCP server for your AI agent
+                </a>
 
-<p class="lede">
-    Multi-step product tours, spotlights, contextual hints and full application walkthroughs, written
-    in C# and Razor. The browser layer does nothing but measure, observe and route keys; every
-    decision about what to show and when lives in the engine.
-</p>
+                <h1>Product tours for Blazor, <span class="accent">decided in C#</span></h1>
 
-<div class="row" style="margin-bottom:2rem">
-    <button type="button" class="btn btn-primary" @onclick="StartTourAsync">Take the tour</button>
-    <button type="button" class="btn" @onclick="RestartTourAsync">Restart from the beginning</button>
-    <a class="btn" href="placement">Explore the API</a>
-</div>
+                <p class="hero-lead">
+                    Multi-step product tours, spotlights, contextual hints and full application
+                    walkthroughs, written in C# and Razor. The browser layer does nothing but measure,
+                    observe and route keys; every decision about what to show and when lives in the engine.
+                </p>
 
-<AppWindow />
+                <div class="hero-actions">
+                    <button type="button" class="btn btn-primary btn-lg" @onclick="StartTourAsync">
+                        <Icon Path="@Icons.Play" />
+                        Take the tour
+                    </button>
+                    <button type="button" class="btn btn-lg" @onclick="RestartTourAsync">Restart from the beginning</button>
+                </div>
 
-<h2>The whole tour, in markup</h2>
+                <div class="install-line">
+                    <code><span class="prompt">&gt; </span>dotnet add package Bit.Bonboarding</code>
+                </div>
+            </div>
 
-<p class="muted">
-    This is the tour running above. Steps point at elements through
-    <code>data-bonboarding-anchor</code> attributes, so they survive re-renders and work with elements that
-    do not exist yet.
-</p>
+            @* The product the welcome tour below walks through. Every element it points at carries a
+               data-bonboarding-anchor attribute, and nothing else. *@
+            <AppWindow />
+        </div>
+    </section>
 
-<pre><code>@MarkupExample</code></pre>
+    <section class="homepage-section alt-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">One tour, two ways to write it</span>
+            <h2>The whole tour, in markup</h2>
+            <p class="section-lead">
+                This is the tour running above. Steps point at elements through
+                <code>data-bonboarding-anchor</code> attributes, so they survive re-renders and work with
+                elements that do not exist yet.
+            </p>
 
-<h2>Or as data</h2>
+            <div class="code-pair">
+                <div>
+                    <h3>As components</h3>
+                    <p>Declared next to the page it tours, and started from a button or on first visit.</p>
+                    <pre><code>@MarkupExample</code></pre>
+                </div>
 
-<p class="muted">
-    The declarative components build a <code>BonboardingTourDefinition</code>. Constructing one directly is
-    equally supported, and is what you want when tours come from configuration or a database.
-</p>
+                <div>
+                    <h3>Or as data</h3>
+                    <p>
+                        The components build a <code>BonboardingTourDefinition</code>. Constructing one directly
+                        is equally supported - it is what you want when tours come from configuration.
+                    </p>
+                    <pre><code>@CodeExample</code></pre>
+                </div>
+            </div>
+        </div>
+    </section>
 
-<pre><code>@CodeExample</code></pre>
+    <section class="homepage-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">What is in the box</span>
+            <h2>The hard parts of a tour, done once</h2>
+            <p class="section-lead">
+                Each of these is a page of the docs with a working tour on it, and every tour on this site
+                is the library's own default card - restyled in Fluent 2 through its CSS variables.
+            </p>
 
-<h2>What is in the box</h2>
+            <div class="feature-grid">
+                @foreach (var feature in Features)
+                {
+                    if (feature.Href is null)
+                    {
+                        <div class="feature-card">
+                            <span class="feature-card-icon"><Icon Path="@feature.Icon" /></span>
+                            <h3>@feature.Title</h3>
+                            <p>@feature.Description</p>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="feature-card" href="@feature.Href">
+                            <span class="feature-card-icon"><Icon Path="@feature.Icon" /></span>
+                            <h3>@feature.Title</h3>
+                            <p>@feature.Description</p>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+    </section>
 
-<div class="grid">
-    <div class="card">
-        <h3>Positioning that behaves</h3>
-        <p class="muted">
-            Collision-aware placement computed in C#: shift before flip, arrow clamping, viewport
-            padding, and correct behaviour for targets larger than the screen.
-        </p>
-    </div>
-    <div class="card">
-        <h3>Elements that are not there yet</h3>
-        <p class="muted">
-            Wait, skip, centre or fail. Waiting uses a mutation observer rather than a polling
-            timer, and a target replaced by a re-render is rebound rather than reported as lost.
-        </p>
-    </div>
-    <div class="card">
-        <h3>Accessibility built in</h3>
-        <p class="muted">
-            Dialog semantics, focus trap and restoration, keyboard navigation, live-region
-            announcements, reduced motion and forced-colors support.
-        </p>
-    </div>
-    <div class="card">
-        <h3>Branching and conditions</h3>
-        <p class="muted">
-            Steps can be gated, tours can fork, and Back follows the path the user actually took
-            rather than the declaration order.
-        </p>
-    </div>
-    <div class="card">
-        <h3>Route-aware</h3>
-        <p class="muted">
-            A tour can span pages. Navigate away mid-tour and it waits for you instead of dragging
-            you back.
-        </p>
-    </div>
-    <div class="card">
-        <h3>Yours to restyle</h3>
-        <p class="muted">
-            Public CSS variables, per-step templates, or a completely headless popover that still
-            gets measurement, placement and focus management for free.
-        </p>
-    </div>
+    <section class="homepage-section alt-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">The docs</span>
+            <h2>Every page is a working tour</h2>
+            <p class="section-lead">Start anywhere: each one demonstrates a single capability in depth.</p>
+
+            <div class="demo-index">
+                @foreach (var group in NavItem.Groups)
+                {
+                    <div class="demo-index-group">
+                        <h3><Icon Path="@group.Icon" />@group.Category</h3>
+                        @foreach (var item in group.Items)
+                        {
+                            <a class="demo-index-link" href="@item.Url">
+                                <span class="title">@item.Title</span>
+                                <span class="desc">@item.Description</span>
+                            </a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
 </div>
 
 @* The tour itself. It renders nothing; BonboardingRoot in the layout displays it. *@
@@ -121,13 +158,38 @@
 
     <BonboardingStep Id="done"
                      Title="That is the tour"
-                     Description="Every page in the sidebar demonstrates one capability in more depth."
+                     Description="Every page under Docs demonstrates one capability in more depth."
                      DoneLabel="Finish" />
 
 </BonboardingTour>
 
 @code {
     private BonboardingTour? _tour;
+
+    private sealed record Feature(string Title, string Description, string Icon, string? Href);
+
+    private static readonly Feature[] Features =
+    [
+        new("Positioning that behaves",
+            "Collision-aware placement computed in C#: shift before flip, arrow clamping, viewport padding, and correct behaviour for targets larger than the screen.",
+            Icons.Target, "placement"),
+        new("Elements that are not there yet",
+            "Wait, skip, centre or fail. Waiting uses a mutation observer rather than a polling timer, and a target replaced by a re-render is rebound rather than reported as lost.",
+            Icons.Clock, "dynamic"),
+        new("Branching and conditions",
+            "Steps can be gated, tours can fork, and Back follows the path the user actually took rather than the declaration order.",
+            Icons.Branch, "flows"),
+        new("Route-aware",
+            "A tour can span pages. Navigate away mid-tour and it waits for you instead of dragging you back.",
+            Icons.Pages, "workspace"),
+        new("Yours to restyle",
+            "Public CSS variables, per-step templates, or a completely headless popover that still gets measurement, placement and focus management for free.",
+            Icons.Palette, "theming"),
+        // Not a page of its own: it is true of every tour on every page.
+        new("Accessibility built in",
+            "Dialog semantics, focus trap and restoration, keyboard navigation, live-region announcements, reduced motion and forced-colors support.",
+            Icons.Accessibility, null),
+    ];
 
     private Task StartTourAsync() => _tour is null ? Task.CompletedTask : _tour.StartAsync();
 

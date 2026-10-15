@@ -5,21 +5,21 @@
 
 <h1>Conditional &amp; branching</h1>
 
-<p class="lede">
+<p class="page-intro">
     Not every user should see every step. Steps can be gated by a condition, tours can fork on an
     answer, and Back walks the path the user actually took rather than the order the steps were
     declared in.
 </p>
 
-<h2>Conditional steps</h2>
+<section class="demo-section">
+    <h2>Conditional steps</h2>
 
-<p class="muted">
-    The billing step only appears for an administrator, and the progress indicator counts only the
-    steps that will actually be shown. Change the role and run the tour again.
-</p>
+    <p>
+        The billing step only appears for an administrator, and the progress indicator counts only the
+        steps that will actually be shown. Change the role and run the tour again.
+    </p>
 
-<div class="card" style="margin-bottom:1.25rem">
-    <div class="row" style="align-items:flex-end">
+    <div class="controls">
         <div class="field">
             <label for="role">Signed in as</label>
             <select id="role" @bind="_role">
@@ -39,46 +39,50 @@
 
         <button type="button" class="btn btn-primary" @onclick="StartConditionalAsync">Run the conditional tour</button>
     </div>
-</div>
 
-<AppWindow>
-    @if (_betaEnabled)
-    {
-        <div class="tile" data-bonboarding-anchor="beta-panel">
-            <div class="tile-title">Beta</div>
-            <div class="tile-value">Insights</div>
-        </div>
-    }
-</AppWindow>
+    <AppWindow>
+        @if (_betaEnabled)
+        {
+            <div class="tile" data-bonboarding-anchor="beta-panel">
+                <div class="tile-title">Beta</div>
+                <div class="tile-value">Insights</div>
+            </div>
+        }
+    </AppWindow>
+</section>
 
-<h2>Branching on an answer</h2>
+<section class="demo-section">
+    <h2>Branching on an answer</h2>
 
-<p class="muted">
-    Footer buttons carry an effect. Combined with <code>BonboardingStepActionEffect.GoTo</code> this is the
-    whole of a branching tour: no state machine to write.
-</p>
+    <p>
+        Footer buttons carry an effect. Combined with <code>BonboardingStepActionEffect.GoTo</code> this is the
+        whole of a branching tour: no state machine to write.
+    </p>
 
-<div class="row" style="margin-bottom:1rem">
-    <button type="button" class="btn btn-primary" @onclick="StartBranchingAsync">Run the branching tour</button>
-    @if (_branchTaken is not null)
-    {
-        <span class="pill">Branch taken: @_branchTaken</span>
-    }
-</div>
+    <div class="demo-actions">
+        <button type="button" class="btn btn-primary" @onclick="StartBranchingAsync">Run the branching tour</button>
+        @if (_branchTaken is not null)
+        {
+            <span class="pill">Branch taken: @_branchTaken</span>
+        }
+    </div>
 
-<pre><code>@BranchExample</code></pre>
+    <pre><code>@BranchExample</code></pre>
+</section>
 
-<h2>Validation before advancing</h2>
+<section class="demo-section">
+    <h2>Validation before advancing</h2>
 
-<p class="muted">
-    <code>CanAdvance</code> blocks the forward button until the step is satisfied. Here the tour will
-    not move on until the field contains something.
-</p>
+    <p>
+        <code>CanAdvance</code> blocks the forward button until the step is satisfied. Here the tour will
+        not move on until the field contains something.
+    </p>
 
-<div class="row" style="margin-bottom:1rem">
-    <input type="text" data-bonboarding-anchor="project-name" placeholder="Project name" @bind="_projectName" @bind:event="oninput" />
-    <button type="button" class="btn btn-primary" @onclick="StartValidatingAsync">Run the validating tour</button>
-</div>
+    <div class="demo-actions">
+        <input type="text" data-bonboarding-anchor="project-name" placeholder="Project name" aria-label="Project name" @bind="_projectName" @bind:event="oninput" />
+        <button type="button" class="btn btn-primary" @onclick="StartValidatingAsync">Run the validating tour</button>
+    </div>
+</section>
 
 @code {
     private string _role = "Viewer";

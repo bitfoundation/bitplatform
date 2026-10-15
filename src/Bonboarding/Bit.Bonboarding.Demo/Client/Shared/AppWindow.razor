@@ -5,8 +5,8 @@
     <div class="app-toolbar">
         <button type="button" class="btn btn-primary" data-bonboarding-anchor="new-project">New project</button>
         <button type="button" class="btn" data-bonboarding-anchor="import">Import</button>
-        <input type="text" placeholder="Search projects" data-bonboarding-anchor="search" style="min-width:12rem" />
-        <span class="spacer" style="margin-inline-start:auto"></span>
+        <input type="text" placeholder="Search projects" aria-label="Search projects" data-bonboarding-anchor="search" />
+        <span class="spacer"></span>
         <button type="button" class="btn" data-bonboarding-anchor="settings" @onclick="OnSettingsClick">Settings</button>
         <button type="button" class="btn" data-bonboarding-anchor="account" aria-label="Account">@Initials</button>
     </div>
@@ -21,7 +21,7 @@
         </nav>
 
         <div class="app-main">
-            <div class="grid" data-bonboarding-anchor="metrics">
+            <div class="app-metrics" data-bonboarding-anchor="metrics">
                 <div class="tile">
                     <div class="tile-title">Active projects</div>
                     <div class="tile-value">12</div>

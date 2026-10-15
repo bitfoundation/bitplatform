@@ -5,19 +5,53 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Bit.Bonboarding - a Blazor-native onboarding and product tour library: spotlights, branching and multi-page tours, with every decision made in C#." />
+    <meta name="color-scheme" content="light dark" />
+    @* Painted behind the browser's own chrome on the platforms that colour it. js/demo.js keeps it
+       in step with the theme the page is actually in. *@
+    <meta name="theme-color" content="#FFFFFF" />
+
+    @* What a link to the site looks like when it is shared. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Bonboarding" />
+    <meta property="og:title" content="Bonboarding - onboarding and product tours for Blazor" />
+    <meta property="og:description" content="Spotlights, branching and multi-page product tours for Blazor. Every decision made in C#; the browser only measures, observes and routes keys." />
+    <meta name="twitter:card" content="summary" />
+
     <base href="/" />
     <ResourcePreloader />
+    <link rel="icon" href="favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
+    @* The library's stylesheet first: the site's own one restyles the tour card through the library's
+       custom properties, which only works if it comes later in the cascade. *@
     <link rel="stylesheet" href="@Assets["_content/Bit.Bonboarding/bit-bonboarding.css"]" />
-    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <link rel="stylesheet" href="@Assets["css/theme.css"]" />
+    <link rel="stylesheet" href="@Assets["css/app.css"]" />
     <link rel="stylesheet" href="@Assets["Bit.Bonboarding.Demo.Server.styles.css"]" />
+
+    @* The theme is applied here, in the head, rather than from js/demo.js at the end of the body:
+       the stylesheets key off the data-theme attribute, and setting it after the first paint would
+       show the reader a flash of the other theme. The same decision js/demo.js makes for the app's
+       lifetime - see window.boTheme there - kept short enough to inline. *@
+    <script>
+        (function () {
+            var stored = null;
+            try { stored = localStorage.getItem('bo-theme'); } catch (e) { /* no stored preference */ }
+            var theme = (stored === 'light' || stored === 'dark')
+                ? stored
+                : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+            document.documentElement.setAttribute('data-theme', theme);
+        })();
+    </script>
+
     <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
     <HeadOutlet @rendermode="InteractiveAuto" />
 </head>
 
 <body>
     <Routes @rendermode="InteractiveAuto" />
     <ReconnectModal />
+    @* Loaded before the Blazor script so the window.bo* helpers exist by the time the app is interactive. *@
+    <script src="@Assets["js/demo.js"]"></script>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 

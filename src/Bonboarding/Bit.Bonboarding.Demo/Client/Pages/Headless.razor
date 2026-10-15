@@ -5,52 +5,62 @@
 
 <h1>Headless UI</h1>
 
-<p class="lede">
+<p class="page-intro">
     When the default card is not what you want, replace it. The library still owns the popover
     element, so measurement, collision-aware placement, focus management and dialog semantics keep
     working; you own everything inside it.
 </p>
 
-<div class="row" style="margin-bottom:1.25rem">
-    <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the custom-rendered tour</button>
-    <span class="pill">Rendered by this page, not by the library</span>
-</div>
+<section class="demo-section">
+    <h2>A card the library did not draw</h2>
 
-<AppWindow />
+    <div class="demo-actions">
+        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the custom-rendered tour</button>
+        <span class="pill">Rendered by this page, not by the library</span>
+    </div>
 
-<h2>Three levels of customisation</h2>
+    <AppWindow />
+</section>
 
-<table>
-    <thead>
-        <tr><th>Level</th><th>How</th><th>Use it when</th></tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>Restyle</td>
-            <td><code>--bit-bonboarding-*</code> custom properties</td>
-            <td>The layout is right, the colours are not.</td>
-        </tr>
-        <tr>
-            <td>Recompose</td>
-            <td><code>BonboardingStepDefinition.Header</code>, <code>.Body</code>, <code>.Footer</code></td>
-            <td>One step needs a form, an image or a different set of buttons.</td>
-        </tr>
-        <tr>
-            <td>Replace</td>
-            <td><code>BonboardingRoot.ChildContent</code>, or a tour or step <code>Template</code></td>
-            <td>The card should look nothing like the default.</td>
-        </tr>
-    </tbody>
-</table>
+<section class="demo-section">
+    <h2>Three levels of customisation</h2>
 
-<h2>A per-step body</h2>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Level</th><th>How</th><th>Use it when</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Restyle</td>
+                    <td><code>--bit-bonboarding-*</code> custom properties</td>
+                    <td>The layout is right, the colours are not.</td>
+                </tr>
+                <tr>
+                    <td>Recompose</td>
+                    <td><code>BonboardingStepDefinition.Header</code>, <code>.Body</code>, <code>.Footer</code></td>
+                    <td>One step needs a form, an image or a different set of buttons.</td>
+                </tr>
+                <tr>
+                    <td>Replace</td>
+                    <td><code>BonboardingRoot.ChildContent</code>, or a tour or step <code>Template</code></td>
+                    <td>The card should look nothing like the default.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
 
-<p class="muted">
-    The second step of the tour above renders a form inside the popover and disables its own Next
-    button until the form is filled in. It is ordinary Razor.
-</p>
+<section class="demo-section">
+    <h2>A per-step body</h2>
 
-<pre><code>@Example</code></pre>
+    <p>
+        The second step of the tour above renders a form inside the popover and disables its own Next
+        button until the form is filled in. It is ordinary Razor.
+    </p>
+
+    <pre><code>@Example</code></pre>
+</section>
 
 @* A second, independently rendered host, driven by the session started below. Custom content
    replaces the card entirely while the engine keeps positioning it. *@
@@ -85,6 +95,9 @@
         max-width: calc(100vw - 2rem);
         pointer-events: auto;
         filter: drop-shadow(0 18px 40px rgba(8, 12, 30, 0.35));
+        /* The arrow is still the library's, and it is painted with these two: match the card. */
+        --bit-bonboarding-surface: #111827;
+        --bit-bonboarding-border: rgba(255, 255, 255, 0.12);
     }
 
     .custom-card {

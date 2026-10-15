@@ -5,14 +5,21 @@
 
 <h1>Placement &amp; spotlight</h1>
 
-<p class="lede">
+<p class="page-intro">
     Positioning is computed in C# from a measured rectangle. Pick a target near an edge and a
     placement that cannot fit, and watch the engine slide the popover along the target rather than
     jumping it to another side; it only flips when sliding is not enough.
 </p>
 
-<div class="card" style="margin-bottom:1.25rem">
-    <div class="row" style="align-items:flex-end">
+<section class="demo-section">
+    <h2>Try it</h2>
+
+    <p>
+        The panel below scrolls. Steps four and five sit outside the visible area, which exercises
+        scroll-into-view and the observers that keep the popover glued to a moving target.
+    </p>
+
+    <div class="controls">
         <div class="field">
             <label for="placement">Placement</label>
             <select id="placement" @bind="_placement">
@@ -55,60 +62,59 @@
 
         <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the tour</button>
     </div>
-</div>
 
-<p class="muted">
-    The panel below scrolls. Steps four and five sit outside the visible area, which exercises
-    scroll-into-view and the observers that keep the popover glued to a moving target.
-</p>
-
-<div class="playground">
-    <div class="playground-inner">
-        @foreach (var target in Targets)
-        {
-            <div class="dot-target"
-                 data-bonboarding-anchor="@target.Anchor"
-                 style="left:@(target.Left); top:@(target.Top)">@target.Label</div>
-        }
+    <div class="playground">
+        <div class="playground-inner">
+            @foreach (var target in Targets)
+            {
+                <div class="dot-target"
+                     data-bonboarding-anchor="@target.Anchor"
+                     style="left:@(target.Left); top:@(target.Top)">@target.Label</div>
+            }
+        </div>
     </div>
-</div>
+</section>
 
-<h2>What the options do</h2>
+<section class="demo-section">
+    <h2>What the options do</h2>
 
-<table>
-    <thead>
-        <tr><th>Option</th><th>Effect</th></tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td><code>Placement</code></td>
-            <td>The side and alignment to try first. <code>Auto</code> picks the side with the most free space.</td>
-        </tr>
-        <tr>
-            <td><code>PlacementFallbacks</code></td>
-            <td>An explicit order to try when the preferred placement does not fit. Left unset, the engine derives one.</td>
-        </tr>
-        <tr>
-            <td><code>SpotlightShape</code></td>
-            <td><code>Rounded</code>, <code>Rectangle</code>, <code>Circle</code>, or <code>None</code> to dim without a cut-out.</td>
-        </tr>
-        <tr>
-            <td><code>SpotlightPadding</code></td>
-            <td>Breathing room around the target. It also grows the rectangle the popover is positioned against.</td>
-        </tr>
-        <tr>
-            <td><code>Interaction</code></td>
-            <td>
-                <code>Blocked</code> swallows every click outside the popover, <code>TargetOnly</code> makes the
-                spotlight hole click-through, and <code>Free</code> leaves the page entirely usable.
-            </td>
-        </tr>
-        <tr>
-            <td><code>Scroll</code></td>
-            <td>How an off-screen target is brought into view, including doing nothing at all.</td>
-        </tr>
-    </tbody>
-</table>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Option</th><th>Effect</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Placement</code></td>
+                    <td>The side and alignment to try first. <code>Auto</code> picks the side with the most free space.</td>
+                </tr>
+                <tr>
+                    <td><code>PlacementFallbacks</code></td>
+                    <td>An explicit order to try when the preferred placement does not fit. Left unset, the engine derives one.</td>
+                </tr>
+                <tr>
+                    <td><code>SpotlightShape</code></td>
+                    <td><code>Rounded</code>, <code>Rectangle</code>, <code>Circle</code>, or <code>None</code> to dim without a cut-out.</td>
+                </tr>
+                <tr>
+                    <td><code>SpotlightPadding</code></td>
+                    <td>Breathing room around the target. It also grows the rectangle the popover is positioned against.</td>
+                </tr>
+                <tr>
+                    <td><code>Interaction</code></td>
+                    <td>
+                        <code>Blocked</code> swallows every click outside the popover, <code>TargetOnly</code> makes the
+                        spotlight hole click-through, and <code>Free</code> leaves the page entirely usable.
+                    </td>
+                </tr>
+                <tr>
+                    <td><code>Scroll</code></td>
+                    <td>How an off-screen target is brought into view, including doing nothing at all.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
 
 @code {
     private BonboardingPlacement _placement = BonboardingPlacement.Auto;

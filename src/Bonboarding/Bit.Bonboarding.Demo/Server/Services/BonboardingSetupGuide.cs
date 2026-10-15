@@ -81,7 +81,8 @@ public static partial class BonboardingSetupGuide
         builder.AppendLine(summary).AppendLine();
         builder.AppendLine(Checklist).AppendLine();
         builder.AppendLine("## The files, from this demo").AppendLine();
-        builder.AppendLine("Everything below compiles as-is; rename the projects and namespaces to your own.").AppendLine();
+        builder.AppendLine("Everything below compiles as-is once the projects and namespaces are renamed to your own - except `<SiteShell>` in `MainLayout.razor`, ")
+               .AppendLine("which is the demo's own header, navigation and footer: put your layout's markup in its place.").AppendLine();
 
         foreach (var path in _hostingFiles)
         {
