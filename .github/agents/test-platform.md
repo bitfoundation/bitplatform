@@ -64,7 +64,9 @@ answer, and repeat the plan back before starting:
    or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
    (`gh run list -R bitfoundation/bitplatform -w all.cd.yml -L 1`): it is often another branch than the one under test.
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
-7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org.
+7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
+   come from nuget.org at the template's version; when nuget.org's build of that version is older than the commit's
+   libraries, `-PrereleasePackages` takes them from the newest Prerelease nuget packages run instead.
 
 Start, change or skip nothing beyond the answers, and ask nothing more once they are in: the user is often away
 until the report. Then go in this order:
@@ -98,8 +100,8 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
 | `e2e [-Stage <stages>] [-Filter <filter>]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. |
 | `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. |
-| `devcontainer [-Sha <sha>] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
-| `aspire [-Sha <sha>] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
+| `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
+| `aspire [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
 
 ## 1. The CI run
 
@@ -379,6 +381,9 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 - With `-Sha`, bit and the template come from that commit, as in CI: bit is packed into a feed the container mounts,
   and the project's `nuget.config` maps `Bit.Cli` to that feed alone, so a newer prerelease on nuget.org can't stand
   in for it. Without `-Sha`, it tests what nuget.org serves, which is what users get.
+- `-PrereleasePackages` puts the packages of the newest Prerelease nuget packages run into that feed too, bit's
+  aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
+  doesn't have compiles against them.
 - It's heavy: a few GB in Docker Desktop's VM and about ten minutes, most of them for the container's image and the
   restore. Run it on its own, after the E2E suite, never next to it.
 - Done means every `bit setup` step passed and `bit doctor` exits with 0, with VS Code not needed inside a container.
@@ -402,7 +407,11 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
   key covers changed between the runs, such as its image, environment or ports.
 - After the second run the containers keep running for the idle time, then stop. Stopped, not removed: the third run
   brings them back on the same volumes.
-- `-Sha` works as for `devcontainer`; the Bit packages come from nuget.org at the version the template asks for.
+- `-Sha` and `-PrereleasePackages` work as for `devcontainer`. With `-PrereleasePackages` the project restores into a
+  packages folder of its own, since this machine's cache may hold nuget.org's build of the same version; without it
+  the Bit packages come from nuget.org at the version the template asks for. The project's `global.json` asks for
+  the repository's SDK, which needs the workloads the template's clients build with (`wasm-tools`): an SDK that
+  Visual Studio installed brings only its own.
 - It takes about half an hour, most of it the idle wait, and a few GB of Docker Desktop's memory while the app runs.
   Start it in the background early and go on with the other steps, but never next to `devcontainer`.
 
