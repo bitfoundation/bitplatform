@@ -25,7 +25,7 @@ internal sealed class BonboardingHarness : IAsyncDisposable
 
         Interop = new FakeInterop();
         services.AddSingleton<IBonboardingInterop>(Interop);
-        services.AddBonboardingInMemoryStore();
+        services.AddBitBonboardingInMemoryStore();
 
         if (withNavigation)
         {

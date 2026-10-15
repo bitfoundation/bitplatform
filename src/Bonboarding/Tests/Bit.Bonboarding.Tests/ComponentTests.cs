@@ -21,7 +21,7 @@ public class ComponentTests : BunitContext
         Services.AddLogging(builder => builder.SetMinimumLevel(LogLevel.None));
         Services.AddBitBonboardingServices();
         Services.AddSingleton<IBonboardingInterop>(_interop);
-        Services.AddBonboardingInMemoryStore();
+        Services.AddBitBonboardingInMemoryStore();
 
         _interop.ExistingSelectors.Add("#a");
         _interop.ExistingSelectors.Add("#b");

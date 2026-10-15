@@ -205,7 +205,7 @@
             }
         }
 
-        builder.Services.AddBonboardingObserver<TourAnalytics>();
+        builder.Services.AddBitBonboardingObserver<TourAnalytics>();
         """;
 
     private const string StoreExample = """
@@ -225,6 +225,6 @@
         }
 
         builder.Services.AddBitBonboardingServices();
-        builder.Services.AddBonboardingStore<ProfileOnboardingStore>();
+        builder.Services.AddBitBonboardingStore<ProfileOnboardingStore>();
         """;
 }

@@ -42,7 +42,7 @@ public static class BitBonboarding
     /// Replaces the persistence layer, for example to store progress against the user's profile on
     /// the server instead of in the browser.
     /// </summary>
-    public static IServiceCollection AddBonboardingStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>(this IServiceCollection services)
+    public static IServiceCollection AddBitBonboardingStore<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TStore>(this IServiceCollection services)
         where TStore : class, IBonboardingStore
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -53,11 +53,11 @@ public static class BitBonboarding
     }
 
     /// <summary>Keeps onboarding progress in memory only, so nothing is written to the browser.</summary>
-    public static IServiceCollection AddBonboardingInMemoryStore(this IServiceCollection services)
-        => services.AddBonboardingStore<BonboardingInMemoryStore>();
+    public static IServiceCollection AddBitBonboardingInMemoryStore(this IServiceCollection services)
+        => services.AddBitBonboardingStore<BonboardingInMemoryStore>();
 
     /// <summary>Replaces the label source, for example with an <c>IStringLocalizer</c> adapter.</summary>
-    public static IServiceCollection AddBonboardingLocalizer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TLocalizer>(this IServiceCollection services)
+    public static IServiceCollection AddBitBonboardingLocalizer<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TLocalizer>(this IServiceCollection services)
         where TLocalizer : class, IBonboardingLocalizer
     {
         ArgumentNullException.ThrowIfNull(services);
@@ -71,7 +71,7 @@ public static class BitBonboarding
     /// Adds an analytics sink. Several observers may be registered; each receives every event and
     /// a throwing observer can never break a tour.
     /// </summary>
-    public static IServiceCollection AddBonboardingObserver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TObserver>(this IServiceCollection services)
+    public static IServiceCollection AddBitBonboardingObserver<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TObserver>(this IServiceCollection services)
         where TObserver : class, IBonboardingObserver
     {
         ArgumentNullException.ThrowIfNull(services);

@@ -1210,7 +1210,7 @@ public class TourSessionTests
     public async Task The_Step_After_A_Skipped_One_Is_Persisted_With_A_Live_Token()
     {
         await using var harness = new BonboardingHarness(
-            configureServices: services => services.AddBonboardingStore<TokenRecordingStore>());
+            configureServices: services => services.AddBitBonboardingStore<TokenRecordingStore>());
         harness.WithElements("#b");
 
         var a = Step("a", "#gone");

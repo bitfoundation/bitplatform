@@ -278,7 +278,7 @@ Because a tour is registered by id, a help menu anywhere in the application can 
 ### 5. Know how it went
 
 ```csharp
-builder.Services.AddBonboardingObserver<TourAnalytics>();
+builder.Services.AddBitBonboardingObserver<TourAnalytics>();
 ```
 
 ```csharp
@@ -1924,7 +1924,7 @@ public sealed class ResourceOnboardingLocalizer(IStringLocalizer<Tours> localize
 
 ```csharp
 builder.Services.AddBitBonboardingServices();
-builder.Services.AddBonboardingLocalizer<ResourceOnboardingLocalizer>();
+builder.Services.AddBitBonboardingLocalizer<ResourceOnboardingLocalizer>();
 ```
 
 `Localize` is applied to step titles and descriptions before they are rendered. The default
@@ -2183,7 +2183,7 @@ your application.
 
 ```csharp
 builder.Services.AddBitBonboardingServices();
-builder.Services.AddBonboardingInMemoryStore();
+builder.Services.AddBitBonboardingInMemoryStore();
 ```
 
 #### Server-side
@@ -2210,7 +2210,7 @@ public sealed class ProfileOnboardingStore(IUserProfiles profiles, ICurrentUser 
 
 ```csharp
 builder.Services.AddBitBonboardingServices();
-builder.Services.AddBonboardingStore<ProfileOnboardingStore>();
+builder.Services.AddBitBonboardingStore<ProfileOnboardingStore>();
 ```
 
 The store is resolved as a scoped service, so injecting the current user is fine.
@@ -2328,7 +2328,7 @@ public sealed class TourAnalytics(IAnalyticsClient client, ILogger<TourAnalytics
 ```
 
 ```csharp
-builder.Services.AddBonboardingObserver<TourAnalytics>();
+builder.Services.AddBitBonboardingObserver<TourAnalytics>();
 ```
 
 An observer that throws is logged and the tour carries on. Analytics being down is never a reason for
@@ -2864,7 +2864,7 @@ inside a hook runs inline rather than deadlocking on the lock its caller holds.
 ValueTask OnEventAsync(BonboardingEvent onboardingEvent, CancellationToken ct = default);
 ```
 
-Register with `AddBonboardingObserver<T>()`. A throwing observer is logged and ignored.
+Register with `AddBitBonboardingObserver<T>()`. A throwing observer is logged and ignored.
 
 #### `BonboardingStepChangedEventArgs`
 
@@ -2989,10 +2989,10 @@ static string Normalize(string? path);
 
 ```csharp
 IServiceCollection AddBitBonboardingServices(Action<BonboardingOptions>? configure = null);
-IServiceCollection AddBonboardingStore<TStore>()       where TStore : class, IBonboardingStore;
-IServiceCollection AddBonboardingInMemoryStore();
-IServiceCollection AddBonboardingLocalizer<TLocalizer>() where TLocalizer : class, IBonboardingLocalizer;
-IServiceCollection AddBonboardingObserver<TObserver>()  where TObserver : class, IBonboardingObserver;
+IServiceCollection AddBitBonboardingStore<TStore>()       where TStore : class, IBonboardingStore;
+IServiceCollection AddBitBonboardingInMemoryStore();
+IServiceCollection AddBitBonboardingLocalizer<TLocalizer>() where TLocalizer : class, IBonboardingLocalizer;
+IServiceCollection AddBitBonboardingObserver<TObserver>()  where TObserver : class, IBonboardingObserver;
 ```
 
 All services are scoped.

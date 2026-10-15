@@ -17,9 +17,9 @@ interface DotNetObjectReference {
     invokeMethodAsync(method: string, ...args: unknown[]): Promise<unknown>;
 }
 
-interface BonboardingRect { x: number; y: number; width: number; height: number; }
+interface BitBonboardingRect { x: number; y: number; width: number; height: number; }
 
-interface BonboardingSize { width: number; height: number; }
+interface BitBonboardingSize { width: number; height: number; }
 
 interface TargetDescriptor {
     kind: 'None' | 'Selector' | 'Element';
@@ -52,9 +52,9 @@ interface StepActivation {
 
 interface StepGeometry {
     found: boolean;
-    target: BonboardingRect;
-    viewport: BonboardingRect;
-    popover: BonboardingSize;
+    target: BitBonboardingRect;
+    viewport: BitBonboardingRect;
+    popover: BitBonboardingSize;
     targetVisible: boolean;
     sequence: number;
     activation: number;
@@ -64,7 +64,7 @@ interface StepGeometry {
 interface BrowserEnvironment {
     reducedMotion: boolean;
     rightToLeft: boolean;
-    viewport: BonboardingSize;
+    viewport: BitBonboardingSize;
     coarsePointer: boolean;
 }
 
@@ -581,7 +581,7 @@ function cornerRadius(element: HTMLElement): number | null {
     }
 }
 
-function unionRect(elements: Element[]): BonboardingRect {
+function unionRect(elements: Element[]): BitBonboardingRect {
     let left = Infinity;
     let top = Infinity;
     let right = -Infinity;
