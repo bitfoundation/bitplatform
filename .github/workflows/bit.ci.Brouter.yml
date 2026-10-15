@@ -24,7 +24,7 @@ jobs:
   build-Brouter:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Brouter
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
 
@@ -83,7 +83,7 @@ jobs:
   e2e-web:
     needs: build-Brouter
     name: Brouter E2E - web render modes (${{ matrix.framework }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -216,7 +216,7 @@ jobs:
   publish-gate:
     needs: build-Brouter
     name: Brouter publish gate (${{ matrix.name }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:

@@ -24,7 +24,7 @@ jobs:
   build-Bswup:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Bswup
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
 
@@ -94,7 +94,7 @@ jobs:
   e2e-web:
     needs: build-Bswup
     name: Bswup E2E - browser (${{ matrix.framework }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -165,7 +165,7 @@ jobs:
   publish-gate:
     needs: build-Bswup
     name: Bswup publish gate
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Checkout source code

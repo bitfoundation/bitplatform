@@ -25,7 +25,7 @@ jobs:
   build-Butil:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Butil
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
 
@@ -115,7 +115,7 @@ jobs:
   e2e-web:
     needs: build-Butil
     name: Butil E2E - ${{ matrix.host }} (${{ matrix.framework }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -264,7 +264,7 @@ jobs:
   publish-gate:
     needs: build-Butil
     name: Butil publish gate (${{ matrix.name }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:

@@ -23,7 +23,7 @@ permissions:
 jobs:
   build-publish:
     name: build & publish
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment: code-signing
     permissions:
       contents: read

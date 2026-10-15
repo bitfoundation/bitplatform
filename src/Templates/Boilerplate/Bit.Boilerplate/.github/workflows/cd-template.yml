@@ -19,7 +19,7 @@ jobs:
 
   build_api_blazor:
     name: build api + blazor web
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       id-token: write
@@ -84,7 +84,7 @@ jobs:
   deploy_api_blazor:
     name: deploy api + blazor
     needs: build_api_blazor
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment:
       name: ${{ inputs.ENV_NAME }}
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
@@ -117,7 +117,7 @@ jobs:
 #if (api == "Standalone")
   build_api:
     name: build api
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       id-token: write
@@ -163,7 +163,7 @@ jobs:
   deploy_api:
     name: deploy api
     needs: build_api
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     environment:
       name: ${{ inputs.ENV_NAME }}
       url: ${{ steps.deploy-api-to-webapp.outputs.webapp-url }}
@@ -269,7 +269,7 @@ jobs:
 
   build_blazor_hybrid_android:
     name: build blazor hybrid (android)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       contents: read
       id-token: write

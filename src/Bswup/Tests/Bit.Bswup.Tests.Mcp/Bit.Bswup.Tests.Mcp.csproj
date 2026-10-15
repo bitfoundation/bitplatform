@@ -18,7 +18,7 @@
         <PackageReference Include="MSTest" Version="4.5.1" />
         <!-- Hosts the real Server project in-process, so the protocol tests drive the same
              pipeline (routing, rate limiter, MCP transport) a deployment runs. -->
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0-rc.1.26425.128" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="11.0.0-rc.2.26504.105" />
     </ItemGroup>
 
     <ItemGroup>

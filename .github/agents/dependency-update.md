@@ -120,11 +120,19 @@ the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinni
 `Xamarin.GooglePlayServices.Auth.Api.Phone` is held at 118.3.1 for the same reason: 118.3.1.1 pulls
 `GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0.
 
-**Linux runners are held at `ubuntu-24.04`**, in the GitHub workflows and the Azure DevOps `vmImage`.
-`ubuntu-26.04` defaults to JDK 25 (`(default)` in the image readme's Java table), and .NET for Android
-10 accepts up to 21 (`LatestSupportedJavaVersion` 21.0.99), so every Android build there fails. .NET 11
-RC1 still says 21.0.99 and RC2 raises it to 25.0.99 (`Xamarin.Android.Common.props.in` on dotnet/android's
-`release/11.0.1xx-rc*` branches); move the runners once the Android workload in use accepts 25.
+**EF Core in the Boilerplate follows its PostgreSQL provider.** A preview of
+`Npgsql.EntityFrameworkCore.PostgreSQL` asks for one exact EF Core version, and a provider built for another
+one fails at runtime ("Method not found"). So the Boilerplate's EF Core stays on the version the newest Npgsql
+names, together with every package that requires it (`Microsoft.EntityFrameworkCore.*`,
+`Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore`,
+`Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore`) and its `dnx dotnet-ef` calls, while the
+rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was missed.
+
+**Linux runners are on `ubuntu-26.04`**, in the GitHub workflows and the Azure DevOps `vmImage`. It
+defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
+RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). develop stays on
+`ubuntu-24.04`, since .NET for Android 10 accepts up to 21, so a runner pin that comes over from develop moves
+to `ubuntu-26.04` here.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.

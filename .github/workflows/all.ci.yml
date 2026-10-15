@@ -97,7 +97,7 @@ jobs:
   test_boilerplate_postgres:
     name: create project with bit new with postgresql and test it
     if: ${{ inputs.boilerplate_postgres }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Checkout source code
@@ -182,7 +182,7 @@ jobs:
   test_boilerplate_mysql:
     name: create project with bit new with mysql and test it
     if: ${{ inputs.boilerplate_mysql }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Checkout source code
@@ -267,7 +267,7 @@ jobs:
   test_boilerplate_mssql:
     name: create project with bit new with sql server and test it
     if: ${{ inputs.boilerplate_mssql }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Checkout source code
@@ -351,7 +351,7 @@ jobs:
   build_boilerplate_configurations:
     name: create several projects with bit new and build them
     if: ${{ inputs.boilerplate_configurations }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Checkout source code
@@ -412,7 +412,7 @@ jobs:
   build_blazorempty_configurations:
     name: build blazorempty based projects
     if: ${{ inputs.blazorempty }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Checkout source code
@@ -459,7 +459,7 @@ jobs:
   build_nuget_packages:
     name: build nuget packages locally
     if: ${{ inputs.nuget_packages }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Checkout source code

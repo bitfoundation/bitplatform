@@ -26,7 +26,7 @@ jobs:
   displayName: 'build api + blazor web'
 
   pool:
-    vmImage: 'ubuntu-24.04'
+    vmImage: 'ubuntu-26.04'
 
   steps:
   - task: UseDotNet@2
@@ -76,7 +76,7 @@ jobs:
   displayName: 'deploy api + blazor'
 
   pool:
-    vmImage: 'ubuntu-24.04'
+    vmImage: 'ubuntu-26.04'
 
   steps:
 
@@ -199,7 +199,7 @@ jobs:
   displayName: 'build blazor hybrid (android)'
 
   pool:
-    vmImage: 'ubuntu-24.04'
+    vmImage: 'ubuntu-26.04'
 
   steps:
   - task: UseDotNet@2
