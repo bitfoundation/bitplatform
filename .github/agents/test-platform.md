@@ -50,7 +50,9 @@ Steps 5 and 6 take a commit, usually the CI run's head. Without one, they test t
 Before doing anything, ask the user in one go what this run covers. Offer choices, fill in what the links already
 answer, and repeat the plan back before starting:
 
-1. **The branch**, or the commit, under test, unless a link names it.
+1. **The branch**, or the commit, under test, unless a link names it. Read this file and run the helper from a
+   checkout of that branch, pulled first: the helper takes the suite, its stages and the CD workflows from the
+   checkout it runs in.
 2. **The tests**: any of the CI run (step 1), the CD rollout and its versions check (step 2), the E2E suite (step 3,
    every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5) and the Aspire containers (step 6).
 3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
@@ -58,7 +60,8 @@ answer, and repeat the plan back before starting:
    user will. It publishes the branch's version to nuget.org when nuget.org doesn't have it yet.
 4. **All CI**: the linked run, a new run on the branch (every job, or which ones), or none.
 5. **All CD**: the linked run, a new run (every app, or which of `server`, `wasm`, `windows`, `android` and `ios`),
-   or none, which tests what is deployed now.
+   or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
+   (`gh run list -R bitfoundation/bitplatform -w all.cd.yml -L 1`): it is often another branch than the one under test.
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
 7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org.
 
@@ -155,6 +158,9 @@ websites - is checked. Every command prints what it checked and exits non-zero o
      `UseSharedCompilation=false`.
    - The Linux-only Chromium flakes (Brouter, some template UI tests) don't reproduce on Windows; they need CI or a
      Linux container.
+   - In a fresh worktree, a library whose build runs `npm install`, such as Bswup, breaks when its target frameworks
+     build in parallel: the installs race on `node_modules` (`ENOTEMPTY`), and the half-installed folder then fails
+     every build with `tsc` exiting 9009. Delete `node_modules`, build one framework (`-f net10.0`), then the rest.
    - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left. Never the `redis`
      container, which the demos use, nor another project's containers.
 
