@@ -56,8 +56,9 @@ answer, and repeat the plan back before starting:
 2. **The tests**: any of the CI run (step 1), the CD rollout and its versions check (step 2), the E2E suite (step 3,
    every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5) and the Aspire containers (step 6).
 3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
-   latter needs a successful prerelease run on the branch under test first: ask whether to start one or whether the
-   user will. It publishes the branch's version to nuget.org when nuget.org doesn't have it yet.
+   latter needs a successful prerelease run on the branch under test first. It publishes the branch's version to
+   nuget.org only when nuget.org doesn't have it yet, so at a version that is already there it builds packages and
+   nothing else: start it, and any later one a fix needs, without asking.
 4. **All CI**: the linked run, a new run on the branch (every job, or which ones), or none.
 5. **All CD**: the linked run, a new run (every app, or which of `server`, `wasm`, `windows`, `android` and `ios`),
    or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
@@ -65,7 +66,8 @@ answer, and repeat the plan back before starting:
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
 7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org.
 
-Start, change or skip nothing beyond the answers. Then go in this order:
+Start, change or skip nothing beyond the answers, and ask nothing more once they are in: the user is often away
+until the report. Then go in this order:
 
 1. The prerelease run, when asked for:
    `gh workflow run prerelease.nuget.org.yml -R bitfoundation/bitplatform --ref <branch>`. Wait for it to succeed
@@ -170,7 +172,8 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    `.editorconfig` says so - and CI's `dotnet format` fails on a BOM; check new files with
    `dotnet format whitespace <slnx> --verify-no-changes --include <folder>`.
 
-5. Commit on the run's branch and ask before pushing. A CI run on the pushed branch is the final proof:
+5. Commit on the run's branch. Push to a branch of your own without asking, for the user to review with the report;
+   ask before pushing to anyone else's. A CI run on the pushed branch is the final proof:
    `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed job
    (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix.
 
