@@ -13,12 +13,14 @@ runner (`D:\Runner`) is what the CD workflows deploy through, and the Android em
 the test suite all live on it. How the machine is put together, and how to rebuild it, is in
 `G:\My Drive\Bit Demo Assets\Infrastructure\README.md`.
 
-Two rules for working on it:
+Three rules for working on it:
 
-- **Memory is short.** The emulator alone takes over 3 GB. Run one heavy thing at a time - the emulator, Docker
-  Desktop and what runs in it, an Aspire app, the dev container - and stop whatever you started once it isn't needed:
-  the emulator and Docker Desktop if they were off, and any local app or `dotnet watch`. Never run
-  `dotnet build-server shutdown`: other sessions build on this machine too.
+- **Docker Desktop stays running.** The demos' Redis is its `redis` container (restart always, port 6379), and
+  without it TodoApi dies at startup with "No redis server available", which shows up as a 502 at
+  todo-api.bitplatform.dev. Start Docker Desktop when it is off, never stop it, and never remove that container.
+- **Memory is short.** The emulator alone takes over 3 GB. Run one heavy thing at a time - the emulator, an Aspire
+  app, the dev container - and stop whatever you started once it isn't needed: the emulator if it was off, and any
+  local app or `dotnet watch`. Never run `dotnet build-server shutdown`: other sessions build on this machine too.
 - **Read the configuration before changing it.** Before any fix to the machine itself (IIS, permissions, folders,
   tools), query what it really is: an app pool's identity (`appcmd list apppool /text:processModel.userName`,
   elevated), the deployed `appsettings.json` under `C:\inetpub\<site>`, a tool's version. PlatformWebsite's app pool,
