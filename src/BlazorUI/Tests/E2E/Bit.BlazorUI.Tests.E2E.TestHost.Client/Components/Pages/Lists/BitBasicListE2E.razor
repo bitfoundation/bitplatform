@@ -51,6 +51,16 @@
         <HeaderTemplate><div id="sticky-part-header" style="height: 30px">People</div></HeaderTemplate>
         <RowTemplate Context="person"><div role="listitem" class="bsl-row">@person.Name</div></RowTemplate>
     </BitBasicList>
+    <BitBasicList Id="sticky-ends" Items="_people" StickyHeader StickyFooter Class="bsl-box" Style="height: 200px">
+        <HeaderTemplate><div id="sticky-ends-header" style="height: 30px; background: #ddd">People</div></HeaderTemplate>
+        <RowTemplate Context="person"><div role="listitem" class="bsl-row" style="position: relative">@person.Name</div></RowTemplate>
+        <FooterTemplate><div id="sticky-ends-footer" style="height: 30px; background: #ddd">- end of the list -</div></FooterTemplate>
+    </BitBasicList>
+    <BitBasicList Id="sticky-ends-horizontal" Horizontal Items="_people" StickyHeader StickyFooter Class="bsl-box">
+        <HeaderTemplate><div id="sticky-ends-horizontal-header" style="width: 60px; height: 100%; background: #ddd">Start</div></HeaderTemplate>
+        <RowTemplate Context="person"><div role="listitem" class="bsl-card">@person.Name</div></RowTemplate>
+        <FooterTemplate><div id="sticky-ends-horizontal-footer" style="width: 60px; height: 100%; background: #ddd">End</div></FooterTemplate>
+    </BitBasicList>
 </E2ESection>
 
 <E2ESection Id="sec-loading" Title="Loading, LoadingLabel, LoadingTemplate, OnLoadingChange">

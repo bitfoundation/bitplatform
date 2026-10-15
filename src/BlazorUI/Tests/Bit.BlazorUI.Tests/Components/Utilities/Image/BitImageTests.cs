@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -2443,5 +2444,56 @@ public class BitImageTests : BunitTestContext
         Assert.IsTrue(template.ClassList.Contains("error-class"));
         StringAssert.Contains(template.GetAttribute("style"), "color:red");
         Assert.AreEqual("error!", template.TextContent);
+    }
+
+    [TestMethod]
+    public void BitImageShouldWriteItsSourcesAfterWhatSaysHowTheyAreFetched()
+    {
+        // The renderer writes the attributes of a new img one by one, and a browser may start the request the moment
+        // the src is written (at once for a URL in its memory cache), so a src ahead of loading="lazy" is fetched eagerly.
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.Srcset, "image-2x.png 2x");
+            parameters.Add(p => p.Sizes, "100px");
+            parameters.Add(p => p.Loading, BitImageLoading.Lazy);
+            parameters.Add(p => p.FetchPriority, BitImageFetchPriority.Low);
+            parameters.Add(p => p.CrossOrigin, BitImageCrossOrigin.Anonymous);
+            parameters.Add(p => p.ReferrerPolicy, BitImageReferrerPolicy.NoReferrer);
+        });
+
+        var names = component.Find(".bit-img-img").Attributes.Select(a => a.Name).Where(n => n.StartsWith("blazor:", StringComparison.Ordinal) is false).ToList();
+
+        CollectionAssert.AreEqual(new List<string> { "sizes", "srcset", "src" }, names.Skip(names.Count - 3).ToList());
+        Assert.IsTrue(names.IndexOf("loading") < names.IndexOf("sizes"));
+        Assert.IsTrue(names.IndexOf("fetchpriority") < names.IndexOf("sizes"));
+        Assert.IsTrue(names.IndexOf("crossorigin") < names.IndexOf("sizes"));
+        Assert.IsTrue(names.IndexOf("referrerpolicy") < names.IndexOf("sizes"));
+    }
+
+    [TestMethod]
+    public void BitImageShouldWriteTheSourcesOfImageAttributesLastAndLetItsParametersWin()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Srcset, "parameter-2x.png 2x");
+            parameters.Add(p => p.Loading, BitImageLoading.Lazy);
+            parameters.Add(p => p.ImageAttributes, new Dictionary<string, object>
+            {
+                ["SRC"] = "splatted.png",
+                ["srcSet"] = "splatted-2x.png 2x",
+                ["data-x"] = "1",
+            });
+        });
+
+        var img = component.Find(".bit-img-img");
+        var names = img.Attributes.Select(a => a.Name).Where(n => n.StartsWith("blazor:", StringComparison.Ordinal) is false).ToList();
+
+        Assert.AreEqual("src", names[^1]);
+        Assert.AreEqual("srcset", names[^2]);
+        Assert.IsTrue(names.IndexOf("loading") < names.IndexOf("srcset"));
+        Assert.AreEqual("splatted.png", img.GetAttribute("src"));
+        Assert.AreEqual("parameter-2x.png 2x", img.GetAttribute("srcset"));
+        Assert.AreEqual("1", img.GetAttribute("data-x"));
     }
 }

@@ -110,7 +110,9 @@ public partial class BitPdfViewer : BitComponentBase
     // canvases still need a JS replay after the current render.
     private readonly Dictionary<int, string> _canvasOps = [];
     private readonly List<int> _canvasDirty = [];
-    private double _paintedZoom = 1; // zoom the canvases were last rasterized at
+    // The zoom the canvases on screen were rasterized at, null while none has been painted since the slots were
+    // (re)built. A paint at another zoom leaves it alone, so the canvases painted before it are re-zoomed too.
+    private double? _paintedZoom;
     // A canvas-mode print parks here until OnAfterRenderAsync has actually painted the
     // freshly rendered canvases, so the print dialog never opens over blank pages. Also
     // completed on disposal so a parked print can't hang.
@@ -2652,7 +2654,10 @@ public partial class BitPdfViewer : BitComponentBase
             _canvasDirty.Clear();
             if (payload.Length > 0)
             {
-                _paintedZoom = Zoom;
+                // Only the first paint says what zoom the canvases are at. A later one at another zoom - the
+                // fit-width zoom of a viewer that has just opened, applied after its first page was painted at 100%
+                // - leaves the canvases painted before it at theirs, and the re-zoom below brings them along.
+                _paintedZoom ??= Zoom;
                 try
                 {
                     await _js.BitPdfViewerPaintCanvasPages(_containerRef, payload, Zoom);
@@ -2670,7 +2675,7 @@ public partial class BitPdfViewer : BitComponentBase
         // Uses the ops cached on each canvas element, so no display lists cross
         // the interop boundary again.
         if (RenderMode == BitPdfRenderMode.Canvas
-            && Math.Abs(Zoom - _paintedZoom) > 0.001 && _pages.Count > 0)
+            && _paintedZoom is { } paintedZoom && Math.Abs(Zoom - paintedZoom) > 0.001 && _pages.Count > 0)
         {
             _paintedZoom = Zoom;
             try
@@ -2826,6 +2831,7 @@ public partial class BitPdfViewer : BitComponentBase
             _thumbs.Clear();       // sidebar fragments belong to the old document
             _canvasOps.Clear();    // canvas display lists (with their base64 images) too
             _canvasDirty.Clear();
+            _paintedZoom = null;
             _failedPages.Clear();  // failures belonged to the old document
             _failedThumbs.Clear();
             _renderQueue.Clear(); // pending lazy renders belong to the old document
@@ -3094,6 +3100,7 @@ public partial class BitPdfViewer : BitComponentBase
         _pageHeights.Clear();
         _canvasOps.Clear();
         _canvasDirty.Clear();
+        _paintedZoom = null;
         _failedPages.Clear(); // a fresh set of slots deserves a fresh attempt at each
         _failedThumbs.Clear();
         _fitPageIndex = -1;   // the page the current fit was measured against is gone

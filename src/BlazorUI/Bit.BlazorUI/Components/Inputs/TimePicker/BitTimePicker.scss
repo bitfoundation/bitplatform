@@ -557,9 +557,14 @@ $tpc-private-properties: rl-clr, rl-txt, rl-hover, rl-active, rl-focus, inp-h, i
         color: var(--bit-TimePicker-disabled-color, #{$clr-fg-dis});
     }
 
+    // The spin button is not drawn, and it is not laid out either: Chromium steps a focused number input under the
+    // wheel through that button, as the default action of the wheel, and a button with no box never does. That leaves
+    // the wheel alone to scroll the page and NoMouseWheel to keep it off the input altogether, while the Shift+wheel
+    // the picker steps with itself is cancelled by its script (TimePicker.setup).
     &::-webkit-inner-spin-button, // Chrome, Safari, Edge, Opera
     &::-webkit-outer-spin-button {
         -webkit-appearance: none;
+        display: none;
         margin: 0;
     }
 

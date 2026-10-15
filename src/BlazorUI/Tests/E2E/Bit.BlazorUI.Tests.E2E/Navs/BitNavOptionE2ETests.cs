@@ -9,7 +9,7 @@ namespace Bit.BlazorUI.Tests.E2E.Navs;
 /// TemplateRenderMode, SuffixTemplate), FitWidth/FullWidth, Grouped, the manual mode followed through OnSelectItem and a
 /// two-way bound SelectedItem, IconOnly, SingleExpand, AllExpanded, NoCollapse, ReversedChevron with IndentValue, the
 /// nav's templates, the public API on options, the events and Reselectable, options added and removed at runtime in
-/// markup order, the BitParams cascade, Color/Size/Styles/Classes, RTL and the disabled nav. The automatic mode of the
+/// markup order (and walked in it with AutoReorderOptions), the BitParams cascade, Color/Size/Styles/Classes, RTL and the disabled nav. The automatic mode of the
 /// options is covered by BitNavUrlE2ETests.
 /// </summary>
 [TestClass]
@@ -291,19 +291,34 @@ public class BitNavOptionE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: BitNav walks its options in registration order, so an option rendered conditionally after the first render is reached by the arrow keys (and Home/End, type-ahead) last, not in its markup place; BitNavBar has AutoReorderOptions for this, BitNav has nothing.")]
-    public async Task Dynamic_AnOptionAddedLater_IsWalkedByTheKeyboardInItsMarkupPlace()
+    public async Task AutoReorderOptions_AnOptionAddedLater_IsWalkedByTheKeyboardInItsMarkupPlace()
     {
         await OpenAsync(PAGE);
 
+        await Page.Locator("#obtn-toggle-reorder").ClickAsync();
+        await Expect(Page.Locator("#onav-reorder .bit-nav-itx"))
+            .ToHaveTextAsync(["First", "Middle", "Group", "Child first", "Child middle", "Child last", "Last"]);
+        await Expect(Page.Locator("#onav-reorder [data-bit-nav-opt]")).ToHaveCountAsync(7);
+
+        // Both levels follow the markup: a root added between two roots, a child added between two children.
+        await Item("onav-reorder", "First").FocusAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Item("onav-reorder", "Middle")).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Item("onav-reorder", "Group")).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Item("onav-reorder", "Child first")).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("ArrowDown");
+        await Expect(Item("onav-reorder", "Child middle")).ToBeFocusedAsync();
+        await Page.Keyboard.PressAsync("End");
+        await Expect(Item("onav-reorder", "Last")).ToBeFocusedAsync();
+
+        // Without it the options are walked in the order they registered in, and the marker is not rendered.
         await Page.Locator("#obtn-toggle-middle").ClickAsync();
         await Expect(Page.Locator("#onav-dynamic .bit-nav-itx")).ToHaveTextAsync(["First", "Middle", "Last"]);
-
+        await Expect(Page.Locator("#onav-dynamic [data-bit-nav-opt]")).ToHaveCountAsync(0);
         await Item("onav-dynamic", "First").FocusAsync();
         await Page.Keyboard.PressAsync("ArrowDown");
-        await Expect(Item("onav-dynamic", "Middle")).ToBeFocusedAsync();
-
-        await Page.Keyboard.PressAsync("End");
         await Expect(Item("onav-dynamic", "Last")).ToBeFocusedAsync();
     }
 

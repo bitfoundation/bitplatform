@@ -24,6 +24,13 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "AutoReorderOptions",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the order of the options (what the arrow keys, Home, End and type-ahead walk), at every level of the tree, in sync with their markup order when options are added, removed or reordered after the first render. Opt-in, since it reads the DOM order back after each change.",
+        },
+        new()
+        {
             Name = "ChevronDownIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",

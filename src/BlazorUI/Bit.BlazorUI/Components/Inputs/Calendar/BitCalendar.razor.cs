@@ -39,7 +39,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private int _yearPickerEndYear;
     private int _yearPickerStartYear;
     private ElementReference _inputTimeHourRef = default!;
-    private ElementReference _inputTimeMinuteRef = default!;
     private TimeZoneInfo _timeZone = TimeZoneInfo.Local;
     private CultureInfo _culture = CultureInfo.CurrentUICulture;
     private CancellationTokenSource _cancellationTokenSource = new();
@@ -735,6 +734,10 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     /// <summary>
     /// Overrides the current date and time considered as "today" and "now" in the calendar (useful for testing or custom time providers).
     /// </summary>
+    /// <remarks>
+    /// A calendar with no value opens on the month of it. A later change - a time provider ticking past midnight -
+    /// moves the day highlighted as today without paging the calendar away from the month on screen.
+    /// </remarks>
     [Parameter] public DateTimeOffset? Today { get; set; }
 
     /// <summary>
@@ -797,6 +800,12 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
 
     protected override void OnInitialized()
     {
+        // The cascade is read here as well as in OnParametersSet because the view the calendar opens on is built
+        // while initializing, which is before OnParametersSet has run for the first time - a cascaded Today (which
+        // rebuilds nothing when it changes, so a ticking time provider never pages the calendar away from the month
+        // on screen) applied only there would arrive after the month it opens on was settled by the real clock.
+        CascadingParameters?.UpdateParameters(this);
+
         SetDefaultValue();
 
         OnValueChanged += HandleOnValueChanged;
@@ -2620,20 +2629,6 @@ public partial class BitCalendar : BitInputBase<DateTimeOffset?>
     private DateTime GetDateTime(DateTimeOffset dateTimeOffset)
     {
         return TimeZoneInfo.ConvertTimeFromUtc(dateTimeOffset.UtcDateTime, _timeZone);
-    }
-
-    private async Task HandleOnTimeHourFocus()
-    {
-        if (Disabled || ShowTimePicker is false || ReadOnly) return;
-
-        await _js.BitUtilsSelectText(_inputTimeHourRef);
-    }
-
-    private async Task HandleOnTimeMinuteFocus()
-    {
-        if (Disabled || ShowTimePicker is false || ReadOnly) return;
-
-        await _js.BitUtilsSelectText(_inputTimeMinuteRef);
     }
 
     private void HandleOnAmClick()

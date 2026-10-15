@@ -1141,6 +1141,103 @@ public class BitSearchBoxTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitSearchBoxAListClosedRightAfterTheFocusShouldStayClosed()
+    {
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+        });
+
+        FocusAndType(component, "apple");
+        component.WaitForState(() => component.Find(".bit-srb-inp").GetAttribute("aria-expanded") == "true");
+
+        component.Find(".bit-srb-inp").KeyDown(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+        WaitForClosedCallout(component);
+        component.Find(".bit-srb-inp").FocusOut();
+
+        // The focus coming back re-checks the list the field still holds results for a moment later. The user
+        // types and then dismisses the list before that moment: the dismissal is the last word, so the re-check
+        // that runs after it must not bring the list back.
+        var focusIn = component.Find(".bit-srb-inp").FocusInAsync(new FocusEventArgs());
+
+        var typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "appl" });
+        await component.Find(".bit-srb-inp").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+
+        await typing;
+        await focusIn;
+
+        Assert.AreEqual("false", component.Find(".bit-srb-inp").GetAttribute("aria-expanded"));
+        Assert.IsFalse(component.Instance.IsSuggestItemsOpen);
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxAListClosedWhileItIsBeingOpenedShouldNotBeReportedAsOpen()
+    {
+        var toggles = new List<bool>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItems, Fruits);
+            parameters.Add(p => p.OnSuggestItemsToggle, (bool open) => toggles.Add(open));
+        });
+
+        component.Find(".bit-srb-inp").FocusIn();
+
+        // The opening waits for the items to be rendered before it shows the list; an Alt+ArrowUp in that moment
+        // closes it, and the opening that resumes afterwards neither shows it again nor reports it as open.
+        var typing = component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "apple" });
+        await component.Find(".bit-srb-inp").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp", AltKey = true });
+
+        await typing;
+
+        Assert.IsFalse(component.Instance.IsSuggestItemsOpen);
+        Assert.AreEqual("false", component.Find(".bit-srb-inp").GetAttribute("aria-expanded"));
+        Assert.IsFalse(toggles.Contains(true));
+    }
+
+    [TestMethod]
+    public async Task BitSearchBoxShouldNotAskTheProviderAboutASupersededTerm()
+    {
+        var requests = new List<(string Term, bool CancelledOnArrival)>();
+        var toggles = new List<bool>();
+
+        var component = RenderComponent<BitSearchBox>(parameters =>
+        {
+            parameters.Add(p => p.Immediate, true);
+            parameters.Add(p => p.OnSuggestItemsToggle, (bool open) => toggles.Add(open));
+            parameters.Add(p => p.MinSuggestTriggerChars, 1);
+            parameters.Add(p => p.SuggestItemsProvider, (BitSearchBoxSuggestItemsProviderRequest req) =>
+            {
+                var term = req.SearchTerm ?? string.Empty;
+
+                requests.Add((term, req.CancellationToken.IsCancellationRequested));
+
+                return ValueTask.FromResult<IEnumerable<string>>(Fruits.Where(f => f.Contains(term, StringComparison.OrdinalIgnoreCase)));
+            });
+        });
+
+        component.Find(".bit-srb-inp").FocusIn();
+
+        // The search for the first term opens the list before it asks the provider, and the opening waits for a
+        // render; the second term supersedes it in the meantime, so the first one is never asked about at all.
+        await component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "a" });
+        await component.Find(".bit-srb-inp").InputAsync(new ChangeEventArgs { Value = "ap" });
+
+        // The first search reports the list it opened once that opening is done, and goes on to the provider (or
+        // not) in the same turn of the renderer, which the empty invocation below waits out.
+        component.WaitForAssertion(() => Assert.IsTrue(toggles.Contains(true)));
+        await component.InvokeAsync(() => { });
+
+        Assert.AreEqual(1, requests.Count);
+        Assert.AreEqual("ap", requests[0].Term);
+        Assert.IsFalse(requests[0].CancelledOnArrival);
+    }
+
+    [TestMethod]
     public void BitSearchBoxTabShouldCloseTheSuggestCallout()
     {
         var component = RenderComponent<BitSearchBox>(parameters =>
@@ -3882,6 +3979,7 @@ public class BitSearchBoxTests : BunitTestContext
         var clicks = 0;
         var focuses = 0;
         var focusIns = 0;
+        var focusOuts = 0;
         var keyUps = 0;
 
         var component = RenderComponent<BitSearchBox>(parameters =>
@@ -3890,6 +3988,7 @@ public class BitSearchBoxTests : BunitTestContext
             parameters.Add(p => p.OnClick, () => clicks++);
             parameters.Add(p => p.OnFocus, () => focuses++);
             parameters.Add(p => p.OnFocusIn, () => focusIns++);
+            parameters.Add(p => p.OnFocusOut, () => focusOuts++);
             parameters.Add(p => p.OnKeyUp, () => keyUps++);
         });
 
@@ -3898,11 +3997,13 @@ public class BitSearchBoxTests : BunitTestContext
         input.Click();
         input.Focus();
         input.FocusIn();
+        input.FocusOut();
         input.KeyUp(new KeyboardEventArgs { Key = "a" });
 
         Assert.AreEqual(0, clicks);
         Assert.AreEqual(0, focuses);
         Assert.AreEqual(0, focusIns);
+        Assert.AreEqual(0, focusOuts);
         Assert.AreEqual(0, keyUps);
         Assert.IsFalse(component.Find(".bit-srb").ClassList.Contains("bit-srb-foc"));
     }

@@ -663,4 +663,35 @@ public class BitDateRangePickerParamsTests : BunitTestContext
     }
 
     private static DateTimeOffset Utc(int year, int month, int day) => new(new DateTime(year, month, day), TimeSpan.Zero);
+
+    [TestMethod]
+    public void BitDateRangePickerParamsShouldCarryTheInputStatesOfAForm()
+    {
+        var @params = new BitDateRangePickerParams { ReadOnly = true, Required = true };
+
+        // The params of the picker derive from the ones every input's params do, so a form-wide BitParams reaches it
+        // the way it reaches a BitTextField.
+        Assert.IsInstanceOfType<BitInputBaseParams<BitDateRangePickerValue?>>(@params);
+
+        var component = RenderWithParams(@params);
+        var picker = component.FindComponent<BitDateRangePicker>().Instance;
+
+        Assert.IsTrue(picker.ReadOnly);
+        Assert.IsTrue(picker.Required);
+        Assert.IsTrue(component.Find(".bit-dtrp-inp").HasAttribute("readonly"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldKeepItsOwnInputStatesOverTheCascadedOnes()
+    {
+        var picker = RenderWithParams(new BitDateRangePickerParams { ReadOnly = true, Required = true }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitDateRangePicker.ReadOnly), false);
+            builder.AddAttribute(2, nameof(BitDateRangePicker.Required), false);
+        }).FindComponent<BitDateRangePicker>().Instance;
+
+        // A false written on the picker is a choice as much as a true is.
+        Assert.IsFalse(picker.ReadOnly);
+        Assert.IsFalse(picker.Required);
+    }
 }

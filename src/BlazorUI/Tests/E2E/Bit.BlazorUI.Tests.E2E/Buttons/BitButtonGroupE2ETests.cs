@@ -338,6 +338,30 @@ public class BitButtonGroupE2ETests : E2ETestBase
     [DataRow(ItemsApi)]
     [DataRow(CustomApi)]
     [DataRow(OptionsApi)]
+    public async Task DefaultToggleKeys_SeedTheSelectionWithoutRaisingOnToggleChangeInEitherMode(string route)
+    {
+        await OpenAsync(route);
+
+        // what the group starts with is a state, not a change the user made: neither mode reports it
+        await Expect(ItemAt("grp-toggle-default", 2)).ToHaveAttributeAsync("aria-checked", "true");
+        await Expect(ItemAt("grp-multi-fixed", 0)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Text("toggle-default-changes")).ToHaveTextAsync("0");
+        await Expect(Text("multi-fixed-changes")).ToHaveTextAsync("0");
+
+        // the first click is the first change, in both modes
+        await ItemAt("grp-toggle-default", 0).ClickAsync();
+        await Expect(ItemAt("grp-toggle-default", 0)).ToHaveAttributeAsync("aria-checked", "true");
+        await Expect(Text("toggle-default-changes")).ToHaveTextAsync("1");
+
+        await ItemAt("grp-multi-fixed", 1).ClickAsync();
+        await Expect(ItemAt("grp-multi-fixed", 1)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(Text("multi-fixed-changes")).ToHaveTextAsync("1");
+    }
+
+    [TestMethod]
+    [DataRow(ItemsApi)]
+    [DataRow(CustomApi)]
+    [DataRow(OptionsApi)]
     public async Task MultipleFixedToggle_NeverUntogglesTheLastItem(string route)
     {
         await OpenAsync(route);

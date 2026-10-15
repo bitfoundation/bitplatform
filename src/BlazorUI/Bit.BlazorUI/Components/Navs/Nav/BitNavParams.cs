@@ -41,6 +41,12 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
     public bool? AllExpanded { get; set; }
 
     /// <summary>
+    /// Keeps the order of the registered options in sync with their markup order when options are added,
+    /// removed or reordered after the first render.
+    /// </summary>
+    public bool? AutoReorderOptions { get; set; }
+
+    /// <summary>
     /// The icon for the chevron-down element of each nav item, from an external icon library.
     /// Takes precedence over <see cref="ChevronDownIconName"/> when both are set, and is not applied to a nav
     /// that sets its own ChevronDownIcon or ChevronDownIconName.
@@ -195,6 +201,11 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
         if (AllExpanded.HasValue)
         {
             bitNav.TakeFromCascade(nameof(AllExpanded), AllExpanded.Value, static n => n.AllExpanded, static (n, v) => n.AllExpanded = v);
+        }
+
+        if (AutoReorderOptions.HasValue)
+        {
+            bitNav.TakeFromCascade(nameof(AutoReorderOptions), AutoReorderOptions.Value, static n => n.AutoReorderOptions, static (n, v) => n.AutoReorderOptions = v);
         }
 
 

@@ -161,7 +161,6 @@ public class BitDropdownComboE2ETests : BitDropdownE2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: Tab out of a typed ComboBox input closes the list but keeps the term - the change event the browser raises on the blur re-applies it after the close discarded it (HandleOnComboChange), so the input keeps showing it and the next opening is filtered by it, against the documented 'discarded when the callout closes'.")]
     public async Task Combo_Tab_ClosesTheListAndMovesOn()
     {
         await OpenAsync(Url);
@@ -178,6 +177,11 @@ public class BitDropdownComboE2ETests : BitDropdownE2ETestBase
         await Expect(callout).ToBeHiddenAsync();
         await Expect(input).Not.ToBeFocusedAsync();
         await Expect(input).ToHaveValueAsync("");
+
+        // The term is gone for good: the next opening shows the whole list rather than the one filtered by it.
+        var opened = await OpenDropdownAsync("dd-combo");
+        await Expect(input).ToHaveValueAsync("");
+        await Expect(Option(opened, "Lettuce")).ToBeVisibleAsync();
     }
 
     [TestMethod]

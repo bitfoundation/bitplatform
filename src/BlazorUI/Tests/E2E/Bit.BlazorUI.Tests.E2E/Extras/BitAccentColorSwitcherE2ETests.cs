@@ -288,6 +288,37 @@ public class BitAccentColorSwitcherE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Params_BitParamsHandsEverySwitcherItsConfigAndLook_AndAnOwnParameterWins()
+    {
+        await OpenAsync(Route);
+
+        // The cascaded Config offers its accents, and the cascaded Dir and Classes reach the root and the swatches.
+        var swatches = Swatches("acs-params");
+        await Expect(swatches).ToHaveCountAsync(3);
+        await Expect(swatches.Nth(0)).ToHaveAttributeAsync("title", "Crimson");
+        await Expect(swatches.Nth(0)).ToHaveCSSAsync("background-color", "rgb(220, 20, 60)");
+        await Expect(swatches.Nth(0)).ToHaveClassAsync(HasClass("cascaded-swatch"));
+        await Expect(Page.Locator("#acs-params")).ToHaveClassAsync(HasClass("cascaded-root"));
+        await Expect(Page.Locator("#acs-params")).ToHaveAttributeAsync("dir", "rtl");
+
+        var first = await swatches.First.BoundingBoxAsync();
+        var last = await swatches.Last.BoundingBoxAsync();
+        Assert.IsTrue(first!.X > last!.X, $"first at {first.X}, last at {last.X}");
+
+        // What the switcher sets itself wins over what is cascaded; what it does not set - the Config - is still filled in.
+        var own = Swatches("acs-params-own");
+        await Expect(own).ToHaveCountAsync(3);
+        await Expect(own.Nth(0)).ToHaveClassAsync(HasClass("own-swatch"));
+        await Expect(own.Nth(0)).Not.ToHaveClassAsync(HasClass("cascaded-swatch"));
+        await Expect(Page.Locator("#acs-params-own")).ToHaveAttributeAsync("dir", "ltr");
+
+        // A cascaded switcher picks like any other.
+        await swatches.Nth(1).ClickAsync();
+        await Expect(swatches.Nth(1)).ToHaveAttributeAsync("aria-pressed", "true");
+        await Expect(own.Nth(1)).ToHaveAttributeAsync("aria-pressed", "true");
+    }
+
+    [TestMethod]
     public async Task Rtl_ExplicitAndInherited_LayTheSwatchesOutRightToLeft()
     {
         await OpenAsync(Route);

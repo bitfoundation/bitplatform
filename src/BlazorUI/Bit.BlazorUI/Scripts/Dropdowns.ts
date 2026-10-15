@@ -73,9 +73,14 @@
                         return;
                     }
 
+                    // Enter, Space and a character open the list from the field, and the opening moves the focus - to the
+                    // first option, or to the search box a character is typed into (see TypeIntoSearchBox). Under
+                    // WebAssembly that happens inside this very keydown, so the default the browser runs after it would
+                    // land where the focus went: Enter would pick the option, and the character would be typed into the
+                    // search box a second time. None of these keys has a default of its own on the field.
                     if (Dropdowns.TRIGGER_KEYS.indexOf(e.key) > -1 ||
                         (Dropdowns.CARET_KEYS.indexOf(e.key) > -1 && !isTextInput(e)) ||
-                        (e.key === ' ' && !isTextInput(e))) {
+                        ((e.key === ' ' || e.key === 'Enter' || isPrintable(e)) && !isTextInput(e))) {
                         e.preventDefault();
                     }
                 };
@@ -160,6 +165,26 @@
             }
         }
 
+        // Hands the focus back to the field once the callout is closed, but only when the close stranded it: the
+        // focus an opening hands to the list arrives in a round trip of its own, so an Escape pressed on the field
+        // before it lands is taken by the field, the focus then moves to an option, and the close the press runs
+        // hides the option holding it - which drops it to the body, where nothing (a dialog around the dropdown)
+        // hears the next key. A focus anywhere else was put there by the user and is left alone. Returns whether it
+        // moved, which is what tells the caller a focusin of its own is on the way.
+        public static reclaimFocus(calloutId: string, target: HTMLElement) {
+            if (!target) return false;
+
+            const active = document.activeElement;
+            if (active === target) return false;
+
+            const stranded = !active || active === document.body || !!document.getElementById(calloutId)?.contains(active);
+            if (!stranded) return false;
+
+            target.focus();
+
+            return document.activeElement === target;
+        }
+
         public static async focusItem(calloutId: string, mode: string, char: string | null, virtualize: boolean,
                                       selectedIndex: number = -1, itemSize: number = 0, noWrap: boolean = false) {
             const callout = document.getElementById(calloutId);
@@ -177,6 +202,10 @@
             let items = (virtualize && mode === 'selected' && selectedIndex > -1)
                             ? await Dropdowns._waitForItems(callout)
                             : Dropdowns._getItems(callout);
+
+            if (virtualize && mode === 'selected' && selectedIndex > -1 && scroller) {
+                items = await Dropdowns._waitForVisibleWindow(callout, scroller, items);
+            }
 
             // A newer key press took over while the list was being waited for.
             if (Dropdowns._focusGenerations.get(callout) !== generation) return;
@@ -227,6 +256,33 @@
             }
 
             return items;
+        }
+
+        // The first window a virtualized list renders on its opening is the one it measured while the callout was being
+        // shown, and that measurement can be taken before the list is laid out at its final size - which renders a window
+        // further down the list than the one on the screen, with the empty spacer in its place. Focusing a row of that
+        // window would scroll the list to it and open it there instead of on its top (or its selection), so the window is
+        // waited for until it is on the screen: the list measures itself again as the window it rendered changes its
+        // spacers. A list that never gets there is left with the rows it has.
+        private static async _waitForVisibleWindow(callout: HTMLElement, scroller: HTMLElement, items: HTMLElement[]) {
+            const deadline = performance.now() + Dropdowns.VIRTUALIZE_SETTLE_TIME;
+
+            while (items.length > 0 && !Dropdowns._isWindowVisible(scroller, items) && performance.now() < deadline) {
+                await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+
+                items = Dropdowns._getItems(callout);
+            }
+
+            return items;
+        }
+
+        private static _isWindowVisible(scroller: HTMLElement, items: HTMLElement[]) {
+            const view = scroller.getBoundingClientRect();
+
+            return items.some(item => {
+                const rect = item.getBoundingClientRect();
+                return rect.bottom > view.top && rect.top < view.bottom;
+            });
         }
 
         // The height one row actually takes, measured over two of them so that whatever sits between
@@ -317,7 +373,7 @@
             // wait out every frame below before falling back.
             const windowOf = (rendered: HTMLElement[]) => rendered.length === 0 ? '' :
                 [rendered[0].id, rendered[0].textContent,
-                 rendered[rendered.length - 1].id, rendered[rendered.length - 1].textContent].join(' ');
+                 rendered[rendered.length - 1].id, rendered[rendered.length - 1].textContent].join('\0');
 
             const before = windowOf(items);
 

@@ -520,7 +520,6 @@ public class BitPullToRefreshE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: the script writes touch-action inline on the root and caches what it wrote (touchActionInEffect), so a render that rewrites the root's style attribute (a runtime change of Color, CustomColor, Style, Styles.Root or Visibility) drops it for good until the scroller scrolls or a gesture parameter changes.")]
     public async Task TouchAction_SurvivesARenderThatRewritesTheRootStyle()
     {
         await OpenAsync(Route);

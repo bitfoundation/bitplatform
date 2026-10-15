@@ -740,10 +740,6 @@ public class BitAccordionListE2ETests : E2ETestBase
     // ---------- scroll into view ----------
 
     [TestMethod]
-    [Ignore("KNOWN BUG: ScrollIntoViewOnExpand scrolls the accordion root right after the render that expands it, while the "
-          + "grid row is still at the start of its transition and the item is only as tall as its header - so a block:'nearest' "
-          + "scroll of an item whose header is already in view does nothing and the panel grows off the scroll box. It works "
-          + "only where the transition is instant (TransitionDuration=0 or reduced motion); see the test below.")]
     public async Task ScrollIntoViewOnExpand_APanelOpenedAtTheBottomWithTheTransition_IsScrolledIntoView()
     {
         await OpenAsync(Route);

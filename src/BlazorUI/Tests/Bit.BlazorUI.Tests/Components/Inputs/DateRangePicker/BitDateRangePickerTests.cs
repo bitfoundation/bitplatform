@@ -16,6 +16,15 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.DateRangePicker;
 [TestClass]
 public class BitDateRangePickerTests : BunitTestContext
 {
+    // Every path that opens the callout - a click, OpenCallout and an initial IsOpen alike - fits it to the width of
+    // the viewport first, and a viewport the script answers no width for is too narrow for anything but overlays. So
+    // the range picker is laid out on a desktop-wide viewport here, and a test of a narrow one sets the width it needs.
+    [TestInitialize]
+    public void SetupViewportWidth()
+    {
+        Context.JSInterop.Setup<decimal>("BitBlazorUI.Utils.getBodyWidth").SetResult(1920m);
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false),
@@ -3830,6 +3839,7 @@ public class BitDateRangePickerTests : BunitTestContext
     public async Task BitDateRangePickerShouldFitTheMonthsWhenIsOpenIsSetFromOutside()
     {
         Context.JSInterop.Mode = JSRuntimeMode.Loose;
+        Context.JSInterop.Setup<decimal>("BitBlazorUI.Utils.getBodyWidth").SetResult(320m);
 
         var component = RenderComponent<BitDateRangePicker>(parameters =>
         {
@@ -3844,7 +3854,7 @@ public class BitDateRangePickerTests : BunitTestContext
         await component.InvokeAsync(() => Task.CompletedTask);
 
         // An open pushed in from the outside measures the width available exactly as a click on the field
-        // does - the width reported here being zero - so the extra months are dropped instead of being laid
+        // does - the width reported here being a phone's - so the extra months are dropped instead of being laid
         // out side by side past the edge of a viewport that cannot hold them.
         Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp .bit-dtrp-pkt, .bit-dtrp-dwp .bit-dtrp-ptb").Count);
     }
@@ -4923,16 +4933,19 @@ public class BitDateRangePickerTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow(true, 1),
-        DataRow(false, 0)
+        DataRow(true, false, 1),
+        DataRow(false, false, 0),
+        DataRow(true, true, 0)
     ]
-    public void BitDateRangePickerShouldSetUpTheSwipeOnlyWhenResponsive(bool responsive, int expected)
+    public void BitDateRangePickerShouldSetUpTheSwipeOnlyWhenResponsiveAndNotStandalone(bool responsive, bool standalone, int expected)
     {
         RenderComponent<BitDateRangePicker>(parameters =>
         {
             parameters.Add(p => p.Responsive, responsive);
+            parameters.Add(p => p.Standalone, standalone);
         });
 
+        // The swipe dismisses the callout, and standalone there is no callout to dismiss.
         Assert.AreEqual(expected, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swipes.setup"));
     }
 
@@ -5343,5 +5356,131 @@ public class BitDateRangePickerTests : BunitTestContext
 
             Assert.AreEqual(calloutId, call.Arguments[0]);
         }
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldKeepAnEndTimeSetBeforeTheEndDayIsPicked()
+    {
+        BitDateRangePickerValue? value = null;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Today, new DateTimeOffset(2024, 6, 12, 10, 0, 0, TimeSpan.Zero));
+            // A long delay keeps the press-and-hold spin out of the picture, so each press is exactly one step.
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        string EndHour() => component.FindAll(".bit-dtrp-eic .bit-dtrp-tin")[0].GetAttribute("value")!;
+
+        void DecreaseEndHour()
+        {
+            var button = component.Find("button[title='Decrease end hour']");
+            button.PointerDown();
+            button.PointerUp();
+        }
+
+        DecreaseEndHour();
+        Assert.AreEqual("22", EndHour());
+
+        // The start day changes the value, which re-derives the time fields from it - and it has no end date yet to
+        // read the end time from, so the one set for the end day still to be picked has to be kept.
+        component.Find("[id$='-day-2024-06-10']").Click();
+        Assert.AreEqual("22", EndHour());
+
+        // A change of the end time is a change of the value as well, once it has a start date.
+        DecreaseEndHour();
+        Assert.AreEqual("21", EndHour());
+
+        component.Find("[id$='-day-2024-06-14']").Click();
+
+        Assert.AreEqual(new DateTimeOffset(2024, 6, 10, 0, 0, 0, TimeSpan.Zero), value!.StartDate);
+        Assert.AreEqual(new DateTimeOffset(2024, 6, 14, 21, 59, 0, TimeSpan.Zero), value.EndDate);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldPutTheEndTimeBackOnceTheRangeIsCleared()
+    {
+        BitDateRangePickerValue? value = null;
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Add(p => p.TimeZone, TimeZoneInfo.Utc);
+            parameters.Add(p => p.Today, new DateTimeOffset(2024, 6, 12, 10, 0, 0, TimeSpan.Zero));
+            parameters.Add(p => p.ContinuousSpinDelay, 60_000);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        component.Find("[id$='-day-2024-06-10']").Click();
+
+        var button = component.Find("button[title='Decrease end hour']");
+        button.PointerDown();
+        button.PointerUp();
+
+        Assert.AreEqual("22", component.FindAll(".bit-dtrp-eic .bit-dtrp-tin")[0].GetAttribute("value"));
+
+        // A time set for a range that is gone has no end day left to wait for.
+        component.Find(".bit-dtrp-clr").Click();
+
+        Assert.AreEqual("23", component.FindAll(".bit-dtrp-eic .bit-dtrp-tin")[0].GetAttribute("value"));
+        Assert.AreEqual("59", component.FindAll(".bit-dtrp-eic .bit-dtrp-tin")[1].GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerStartingOpenShouldShowTheDayPickerBesideTheTimePicker()
+    {
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+        });
+
+        // An initial IsOpen opens onto the state a click opens onto: the day grid with the time picker beside it,
+        // rather than the time picker alone.
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-twp").Count);
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.getBodyWidth"));
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerStartingOpenShouldFitTheMonthsToTheViewport()
+    {
+        Context.JSInterop.Setup<decimal>("BitBlazorUI.Utils.getBodyWidth").SetResult(320m);
+
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MonthCount, 2);
+        });
+
+        // The extra months are dropped instead of being laid out side by side past the edge of the viewport.
+        Assert.AreEqual(1, component.FindAll(".bit-dtrp-dwp").Count);
+    }
+
+    [TestMethod]
+    public void BitDateRangePickerShouldLeaveSelectingTheTimeInputsToTheScript()
+    {
+        var component = RenderComponent<BitDateRangePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+        });
+
+        // The script selects the text as the focus lands (see Calendars.ts): a select() from .NET a round trip later
+        // would pull the focus back onto an input a quick Tab has already left.
+        foreach (var input in component.FindAll(".bit-dtrp-tin"))
+        {
+            Assert.IsFalse(input.HasAttribute("blazor:onfocus"));
+        }
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.selectText"));
     }
 }

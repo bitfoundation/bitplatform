@@ -1821,6 +1821,36 @@ public class BitCardTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitCardWithoutOnClickShouldKeepThePagesOwnOnclick()
+    {
+        // A card with no click of its own writes the page's onclick back rather than an empty handler, which would
+        // take the page's off the root.
+        var pageClicks = 0;
+
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => pageClicks++));
+        });
+
+        component.Find(".bit-crd").Click();
+
+        Assert.AreEqual(1, pageClicks);
+        Assert.IsFalse(component.Find(".bit-crd").ClassList.Contains("bit-crd-int"));
+    }
+
+    [TestMethod]
+    public void BitCardDisabledWithoutOnClickShouldDropThePagesOwnOnclick()
+    {
+        var component = RenderSplattedCard(builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCard.Disabled), true);
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+        });
+
+        Assert.IsFalse(component.Find(".bit-crd").HasAttribute("blazor:onclick"));
+    }
+
+    [TestMethod]
     public void BitCardTabIndexShouldReachTheStretchedButtonAndNotTheRoot()
     {
         var component = RenderComponent<BitCard>(parameters =>

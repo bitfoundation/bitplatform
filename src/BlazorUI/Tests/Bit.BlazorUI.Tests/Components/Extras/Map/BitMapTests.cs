@@ -523,6 +523,57 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMapShouldDoNothingWhenAMethodIsCalledBeforeItIsReady()
+    {
+        // The map loads on its own schedule, and a page's click or lifecycle method can always run ahead of it - or, as
+        // here, the map never gets there at all. A call made then must not throw: from an event handler of a Blazor
+        // Server page an exception tears the whole circuit down.
+        Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
+        Context.JSInterop.SetupVoid(INIT_SCRIPTS);
+        Context.JSInterop.SetupVoid(INIT, _ => true).SetException(new Microsoft.JSInterop.JSException("boom"));
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+        var map = component.Instance;
+        Assert.IsFalse(map.IsReady);
+        var invocations = Context.JSInterop.Invocations.Count;
+
+        await map.SetView(new BitMapLatLng(1, 2), 5);
+        await map.FlyTo(new BitMapLatLng(1, 2));
+        await map.SetZoom(4);
+        await map.ZoomIn();
+        await map.PanBy(10, 10);
+        await map.FitBounds(new BitMapLatLngBounds(new BitMapLatLng(0, 0), new BitMapLatLng(1, 1)));
+        await map.FitBoundsToMarkers();
+        await map.AddMarker(new BitMapMarker { Id = "m", Position = new BitMapLatLng(1, 2) });
+        await map.SetMarkerPosition("m", new BitMapLatLng(3, 4));
+        await map.OpenPopup("m");
+        await map.OpenMarkerPopup("m");
+        await map.RemoveMarker("m");
+        await map.ClearMarkers();
+        await map.SyncMarkers([]);
+        await map.AddPolyline("l", [new BitMapLatLng(0, 0), new BitMapLatLng(1, 1)]);
+        await map.SetLayerVisible("l", false);
+        await map.SetLayerStyle("l", null);
+        await map.RemoveLayer("l");
+        await map.ClearVectorLayers();
+        await map.SetTileOverlayVisible("o", false);
+        await map.SetTileOverlayOpacity("o", 0.5);
+        await map.RemoveTileOverlay("o");
+        await map.ClearTileOverlays();
+        Assert.IsNull(await map.Locate());
+        Assert.IsFalse(await map.CloseMarkerPopup());
+        Assert.IsFalse(await map.RequestFullscreen());
+
+        Assert.AreEqual(invocations, Context.JSInterop.Invocations.Count, "Nothing reaches the browser before the map is ready");
+        Assert.IsEmpty(map.MarkerIds);
+
+        // Only the read with no answer throws, and a call that is wrong whenever it is made still says so.
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await map.GetView());
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await map.AddMarker(null!));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await map.SetZoom(double.NaN));
+    }
+
+    [TestMethod]
     public void BitMapShouldReportFailedStateWhenTheProviderScriptCannotBeLoaded()
     {
         // A CDN outage must surface as the component's error state. Letting it propagate out of

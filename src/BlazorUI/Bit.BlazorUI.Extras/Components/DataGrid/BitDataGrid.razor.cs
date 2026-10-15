@@ -2543,7 +2543,12 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     /// Applies the grid-wide quick-search term, resetting to the first page. Passing <c>null</c> or an
     /// empty string clears the search. Raises <see cref="SearchTextChanged"/>.
     /// </summary>
-    public async Task SearchAsync(string? text)
+    public Task SearchAsync(string? text) => SearchAsync(text, typed: false);
+
+    // typed: the term comes from the search box, whose text stays exactly what was typed - and is never written back
+    // from here, after the awaits below: a keystroke typed while they run has put a newer text in the box, which an
+    // older one written back would overwrite under the caret.
+    private async Task SearchAsync(string? text, bool typed)
     {
         var normalized = string.IsNullOrWhiteSpace(text) ? null : text;
 
@@ -2555,7 +2560,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
         // The box always shows the term that is actually applied - including when a programmatic
         // search (or the clear button) supersedes what the user had typed into it.
-        _searchBoxText = normalized;
+        if (typed is false) _searchBoxText = normalized;
         if (_search == normalized) return;
 
         _search = normalized;
@@ -2601,16 +2606,13 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     }
 
     /// <summary>
-    /// Applies a term the user typed, then puts back exactly what they typed. <see cref="SearchAsync"/>
-    /// syncs the box to the <i>normalized</i> term so a programmatic search is reflected there, which
-    /// for a typed term would silently rewrite the input under the caret (a run of spaces normalizes to
-    /// "no search" and would be wiped from the box while the user is still typing).
+    /// Applies a term the user typed and leaves the box showing exactly what they typed. <see cref="SearchAsync(string?)"/>
+    /// syncs the box to the <i>normalized</i> term so a programmatic search is reflected there, which for a typed term
+    /// would silently rewrite the input under the caret (a run of spaces normalizes to "no search" and would be wiped
+    /// from the box while the user is still typing); and nothing is put back once the search has run, which would
+    /// write this keystroke's text over the ones typed while it ran.
     /// </summary>
-    private async Task ApplyTypedSearchAsync(string? text)
-    {
-        await SearchAsync(text);
-        _searchBoxText = text ?? string.Empty;
-    }
+    private Task ApplyTypedSearchAsync(string? text) => SearchAsync(text, typed: true);
 
     // The raw filter-editor text equivalent of a descriptor value, used to backfill _filterRaw when a
     // filter is applied programmatically or restored from a snapshot. Invariant formatting matches how
@@ -3498,6 +3500,19 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         _resizePress++;
         if (_resizingColumn is not null) EndResize();
+    }
+
+    /// <summary>The second press of a double click on a resize handle fits the column to its content. It is read off the
+    /// press (its click count) rather than the dblclick event: every press starts a drag whose overlay covers the page,
+    /// and where that overlay is rendered before the button comes back up - in WebAssembly, or over a fast link - the
+    /// release lands on it rather than on the handle, and the dblclick with it. The drag the press started is called off,
+    /// since there is nothing to follow.</summary>
+    internal async Task OnResizerMouseDownAsync(BitDataGridColumn<TItem> column, MouseEventArgs e)
+    {
+        if (e.Detail < 2 || e.Button != 0) return;
+
+        ReleaseResizeHandle();
+        await AutoFitAsync(column);
     }
 
     internal void OnResizeMove(double clientX)

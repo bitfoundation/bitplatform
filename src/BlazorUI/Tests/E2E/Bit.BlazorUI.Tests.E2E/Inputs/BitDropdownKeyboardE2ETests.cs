@@ -136,6 +136,9 @@ public class BitDropdownKeyboardE2ETests : BitDropdownE2ETestBase
 
         await Page.Keyboard.PressAsync("Escape");
         await Expect(callout).ToBeHiddenAsync();
+        // The close hands the focus back to the field in a round trip of its own; a Home pressed before it lands is
+        // pressed on the hidden option, which WebKit gets to before the round trip returns.
+        await Expect(trigger).ToBeFocusedAsync();
 
         await Page.Keyboard.PressAsync("Home");
         await Expect(callout).ToBeVisibleAsync();
@@ -160,10 +163,9 @@ public class BitDropdownKeyboardE2ETests : BitDropdownE2ETestBase
         await Page.Keyboard.PressAsync("PageDown");
         await Expect(Option(callout, "Item 30")).ToBeFocusedAsync();
 
-        // The focused item was scrolled into the list's view.
-        var scroller = await BoxAsync(ListBox(callout));
-        var item = await BoxAsync(Option(callout, "Item 30"));
-        Assert.IsTrue(item.Y + item.Height <= scroller.Y + scroller.Height + 1, "The focused item is in view.");
+        // The focused item is scrolled into the list's view - waited for, since the list may still be settling.
+        await Page.WaitForFunctionAsync("([list, item]) => item.getBoundingClientRect().bottom <= list.getBoundingClientRect().bottom + 1",
+                                        new[] { await ListBox(callout).ElementHandleAsync(), await Option(callout, "Item 30").ElementHandleAsync() });
 
         await Page.Keyboard.PressAsync("PageUp");
         await Expect(Option(callout, "Item 20")).ToBeFocusedAsync();
@@ -351,6 +353,33 @@ public class BitDropdownKeyboardE2ETests : BitDropdownE2ETestBase
 
         await Expect(Page.Locator("#dialog-open")).ToHaveTextAsync("False");
         await Expect(Page.Locator(".bit-dlg-ctn")).ToHaveCountAsync(0);
+    }
+
+    [TestMethod]
+    public async Task Dialog_EscapeBeforeTheOpeningFocusLands_KeepsTheFocusInTheDialog()
+    {
+        await OpenAsync(Url);
+
+        await Page.Locator("#btn-open-dialog").ClickAsync();
+        await Expect(Page.Locator(".bit-dlg-ctn")).ToBeVisibleAsync();
+
+        // The press goes in as soon as the list is on the screen, without waiting for the focus the opening hands to
+        // its option in a round trip of its own: that focus can land on the option after the field took the press, and
+        // the close the press runs would then hide the option holding the focus and drop it to the body, where the
+        // dialog never hears the next Escape.
+        await Trigger("dd-dlg").ClickAsync();
+        var callout = await CalloutAsync("dd-dlg");
+        await Expect(callout).ToBeVisibleAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Expect(callout).ToBeHiddenAsync();
+        await Expect(Page.Locator("#dialog-open")).ToHaveTextAsync("True");
+        await Expect(Trigger("dd-dlg")).ToBeFocusedAsync();
+
+        await Page.Keyboard.PressAsync("Escape");
+
+        await Expect(Page.Locator("#dialog-open")).ToHaveTextAsync("False");
     }
 
     [TestMethod]

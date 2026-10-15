@@ -523,6 +523,13 @@ arrives at runtime - in an `@attributes` dictionary or a `DynamicComponent`'s `P
 by its exact name, so it is still passed through to the element as a plain HTML attribute, without any of
 that. To disable a component, use `Disabled` itself.
 
+### `BitComponentBase.OnVisibilityChanged` is removed
+
+The protected virtual `OnVisibilityChanged(BitVisibility)` hook of `BitComponentBase` was never called: an override
+of it never ran, whatever `Visibility` was set to. It is removed. **A component of an app's own deriving from a bit
+component that overrides it** no longer compiles (CS0115); act on the change where the parameter arrives instead,
+comparing `Visibility` with the value it had in `OnParametersSet`, or read `Visibility` while rendering.
+
 ### Unified position, placement, shape, line-style and selection enums ([#13041](https://github.com/bitfoundation/bitplatform/issues/13041))
 
 Branch `13041-blazorui-position-enums-unification` (#13041) retires the per-component enums that each

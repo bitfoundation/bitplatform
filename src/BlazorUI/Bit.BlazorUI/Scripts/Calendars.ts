@@ -29,6 +29,12 @@
 
             root.addEventListener('keydown', e => Calendars.preventScroll(e), { signal: controller.signal });
 
+            // A time input takes the focus with its text selected, so the first digit typed into it replaces the part
+            // instead of being appended to it. It is selected here, as the focus lands, rather than from .NET a round
+            // trip later: by then the focus may have moved on - a quick Tab or Shift+Tab - and select() pulls it back
+            // onto the input in Chromium and WebKit. A read-only input has nothing to replace, so it is left alone.
+            root.addEventListener('focusin', e => Calendars.selectTimeInput(e), { signal: controller.signal });
+
             document.getElementById(componentId ?? '')
                 ?.addEventListener('keydown', e => Calendars.preventScroll(e), { signal: controller.signal });
 
@@ -45,6 +51,16 @@
 
         public static focusCell(cellId: string, preventScroll?: boolean) {
             document.getElementById(cellId)?.focus({ preventScroll: !!preventScroll });
+        }
+
+        private static selectTimeInput(e: FocusEvent) {
+            const target = e.target as HTMLInputElement | null;
+            if (!target || target.tagName !== 'INPUT' || !target.matches(Calendars._timeInputs)) return;
+            if (target.readOnly || target.disabled) return;
+
+            try {
+                target.select();
+            } catch { } // an input that takes no selection keeps what it has
         }
 
         // Which keys the browser has to be stopped from scrolling the page with depends on what holds the

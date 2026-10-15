@@ -675,7 +675,6 @@ public class BitChartE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: on Blazor Server ToBase64ImageAsync hands the whole data URL back through one JS interop result, and a chart rasterized at the default scale of 2 is larger than the default 32 KB SignalR message limit, so the circuit is torn down (Connection closed with an error) instead of the image arriving. A scale of 0.5 fits (Export_CsvSvgAndImage); a stream reference would lift the limit.")]
     public async Task Export_ToBase64ImageAtTheDefaultScale_ArrivesOnBlazorServer()
     {
         await OpenAsync(Route);

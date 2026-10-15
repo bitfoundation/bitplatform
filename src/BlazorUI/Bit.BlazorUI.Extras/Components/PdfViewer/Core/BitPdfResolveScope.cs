@@ -18,6 +18,13 @@ internal sealed class BitPdfResolveScope
     private readonly int _maxDepth;
     private int _budget;
 
+    /// <summary>
+    /// How often <see cref="TryEnter"/> has refused so far, for a caller that has to know whether a
+    /// part of what it built was replaced by a default (a default color space that leads back to the
+    /// device space it redirects, deep inside an Indexed one) rather than only whether it got a result.
+    /// </summary>
+    public int Refusals { get; private set; }
+
     /// <param name="maxDepth">The longest chain of nested objects resolved.</param>
     /// <param name="budget">The most objects one resolution enters in total.</param>
     public BitPdfResolveScope(int maxDepth, int budget)
@@ -35,6 +42,7 @@ internal sealed class BitPdfResolveScope
     {
         if (_active.Count >= _maxDepth || _budget <= 0 || !_active.Add(node))
         {
+            Refusals++;
             return false;
         }
         _budget--;

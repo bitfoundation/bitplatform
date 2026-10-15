@@ -44,7 +44,7 @@
 </E2ESection>
 
 <E2ESection Id="alignment" Title="Alignment, FullWidth, Gap">
-    @foreach (var alignment in new[] { BitAlignment.Start, BitAlignment.Center, BitAlignment.End, BitAlignment.SpaceBetween })
+    @foreach (var alignment in new[] { BitAlignment.Start, BitAlignment.Center, BitAlignment.End, BitAlignment.SpaceBetween, BitAlignment.Baseline, BitAlignment.Stretch })
     {
         <div style="width:600px">
             <BitPivot Id="@($"pv-align-{alignment}")" Alignment="alignment">

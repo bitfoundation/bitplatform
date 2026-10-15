@@ -419,13 +419,18 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
         await Expect(List("isc-members").Locator("[data-item='0']")).ToHaveCountAsync(0);
         await Expect(ItemsOf("isc-members")).ToHaveCountAsync(13);
 
+        // Three items leave the end of the box in view, so the next page follows on its own - sooner or later after
+        // the set, depending on where the page code runs: the set is read off the head of the list.
         await Page.Locator("#btn-m-set").ClickAsync();
-        await Expect(ItemsOf("isc-members")).ToHaveTextAsync(["Item 7", "Item 8", "Item 9"]);
+        await Expect(ItemsOf("isc-members").First).ToHaveTextAsync("Item 7");
+        await Expect(ItemsOf("isc-members").Nth(1)).ToHaveTextAsync("Item 8");
+        await Expect(ItemsOf("isc-members").Nth(2)).ToHaveTextAsync("Item 9");
+        await Expect(List("isc-members").Locator("[data-item='1001'], [data-item='-2']")).ToHaveCountAsync(0);
 
         // The next request skips what is loaded, and MaxItems narrows it to what is still missing.
-        await ScrollToEndAsync("#isc-members");
         await Expect(Page.Locator("#members-last")).ToHaveTextAsync("3:10");
         await Expect(ItemsOf("isc-members")).ToHaveCountAsync(13);
+        await Expect(ItemsOf("isc-members").Nth(3)).ToHaveTextAsync("Item 3");
         await ScrollToEndAsync("#isc-members");
         await Expect(Page.Locator("#members-last")).ToHaveTextAsync("13:7");
         await Expect(ItemsOf("isc-members")).ToHaveCountAsync(20);
@@ -476,6 +481,10 @@ public class BitInfiniteScrollingE2ETests : E2ETestBase
         await ScrollToEndAsync("#isc-reset");
         await Expect(ItemsOf("isc-reset")).ToHaveCountAsync(20);
 
+        // Back at the top first: a list reloaded while scrolled to its end fills the room its shorter first page leaves
+        // under the reader with the next page straight away, as it should - however soon after the first one lands.
+        await List("isc-reset").EvaluateAsync("e => e.scrollTop = 0");
+        await Page.WaitForFunctionAsync("() => document.querySelector('#isc-reset').scrollTop === 0");
         await Page.Locator("#btn-filter-odd").ClickAsync();
         await Expect(ItemsOf("isc-reset").First).ToHaveTextAsync("Item 1");
         await Expect(ItemsOf("isc-reset")).ToHaveCountAsync(10);

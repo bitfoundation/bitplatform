@@ -1654,7 +1654,6 @@ public class BitTimePickerE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: in Chromium a plain wheel over a focused time input steps it by 1 through the default action of the number input, so the wheel alone does not scroll the page as documented (TimePicker.ts only cancels Shift+wheel).")]
     public async Task Wheel_WithoutShift_LeavesTheFocusedInputAlone()
     {
         await OpenAsync(Url);
@@ -1691,7 +1690,6 @@ public class BitTimePickerE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: in Chromium a wheel (plain or with Shift) over a focused time input of a NoMouseWheel picker still steps it through the default action of the number input; TimePicker.ts only cancels the wheel when wheel spin is enabled.")]
     public async Task NoMouseWheel_TheWheelNeverMovesTheInputs()
     {
         await OpenAsync(Url);

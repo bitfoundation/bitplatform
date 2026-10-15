@@ -17,9 +17,9 @@ namespace Bit.BlazorUI.Tests.Components.Notifications.Message;
 [TestClass]
 public class BitMessageParamsTests : BunitTestContext
 {
-    // What a message says - its content, its title, the words that stand in for its icon, its role and urgency, the
-    // focus it takes - and the state and the callbacks of one showing of it are written per message, so they have no
-    // place on the params object.
+    // What a message says - its content, its title, the words that stand in for its icon, the focus it takes - and the
+    // state and the callbacks of one showing of it are written per message, so they have no place on the params object.
+    // How it is announced (its role and urgency) is shared like its look, so those two are cascaded.
     private static readonly string[] _notCascaded =
     [
         nameof(BitMessage.CascadingParameters),
@@ -35,8 +35,6 @@ public class BitMessageParamsTests : BunitTestContext
         nameof(BitMessage.IconTemplate),
         nameof(BitMessage.OnDismiss),
         nameof(BitMessage.OnDismissing),
-        nameof(BitMessage.Politeness),
-        nameof(BitMessage.Role),
         nameof(BitMessage.Title),
         nameof(BitMessage.TitleTemplate),
     ];
@@ -296,6 +294,42 @@ public class BitMessageParamsTests : BunitTestContext
         var message = component.FindComponent<BitMessage>();
 
         message.WaitForAssertion(() => Assert.IsEmpty(message.FindAll(".bit-msg")), TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitMessageShouldApplyTheCascadedRoleAndPoliteness()
+    {
+        // A region of standing notices sets how they are announced once, for every message in it.
+        var component = RenderWithParams(new BitMessageParams
+        {
+            Color = BitColor.Error,
+            Role = "note",
+            Politeness = BitPoliteness.Off,
+        });
+
+        var region = component.Find(".bit-msg-cnc");
+
+        Assert.AreEqual("note", region.GetAttribute("role"));
+        Assert.AreEqual("off", region.GetAttribute("aria-live"));
+    }
+
+    [TestMethod]
+    public void BitMessageOwnRoleAndPolitenessShouldWinOverTheCascadedOnes()
+    {
+        var component = RenderWithParams(new BitMessageParams
+        {
+            Role = "note",
+            Politeness = BitPoliteness.Off,
+        }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitMessage.Role), "alert");
+            builder.AddAttribute(2, nameof(BitMessage.Politeness), (BitPoliteness?)BitPoliteness.Assertive);
+        });
+
+        var region = component.Find(".bit-msg-cnc");
+
+        Assert.AreEqual("alert", region.GetAttribute("role"));
+        Assert.AreEqual("assertive", region.GetAttribute("aria-live"));
     }
 
     [TestMethod]

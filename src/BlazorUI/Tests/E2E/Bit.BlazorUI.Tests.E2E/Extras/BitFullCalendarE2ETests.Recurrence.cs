@@ -162,7 +162,7 @@ public partial class BitFullCalendarE2ETests
         var edit = EditDialog(RecCal);
         await Expect(edit.GetByLabel("Repeat", new() { Exact = true })).ToHaveValueAsync("Weekly");
         await Expect(edit.GetByLabel("Repeat every")).ToHaveValueAsync("1");
-        await Expect(edit.Locator(".bit-bfc-repeat-day[aria-pressed='true']")).ToHaveTextAsync(["M", "T", "W", "T", "F"]);
+        await Expect(edit.Locator(".bit-bfc-repeat-day[aria-pressed='true']")).ToHaveTextAsync(ServerOrWasm(["M", "T", "W", "T", "F"], ["Mo", "Tu", "We", "Th", "Fr"]));
         await Expect(edit.Locator(".bit-bfc-repeat-skipped .bit-bfc-date-chip-skipped")).ToContainTextAsync("7/21/2025");
         await edit.GetByPlaceholder("Event title").FillAsync("Team Sync");
         await edit.GetByRole(AriaRole.Button, new() { Name = "Save Changes" }).ClickAsync();
@@ -185,7 +185,7 @@ public partial class BitFullCalendarE2ETests
         await repeat.SelectOptionAsync("Weekly");
         await Expect(dialog.Locator(".bit-bfc-repeat-row:has(input.bit-bfc-repeat-number)").First).ToContainTextAsync("week(s)");
         // the start date's own weekday is picked to begin with
-        await Expect(dialog.Locator(".bit-bfc-repeat-day[aria-pressed='true']")).ToHaveTextAsync(["W"]);
+        await Expect(dialog.Locator(".bit-bfc-repeat-day[aria-pressed='true']")).ToHaveTextAsync(ServerOrWasm(["W"], ["We"]));
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Friday" }).ClickAsync();
         await Expect(dialog.GetByRole(AriaRole.Button, new() { Name = "Friday" })).ToHaveAttributeAsync("aria-pressed", "true");
         // the last weekday picked stays picked
@@ -244,7 +244,7 @@ public partial class BitFullCalendarE2ETests
         var on = dialog.GetByLabel("Repeat on");
         await Expect(on.Locator("option")).ToHaveTextAsync(["Day 16", "The first", "The second", "The third", "The fourth", "The last"]);
         await on.SelectOptionAsync("Third");
-        await Expect(dialog.Locator(".bit-bfc-repeat-day[aria-pressed='true']")).ToHaveTextAsync(["W"]);
+        await Expect(dialog.Locator(".bit-bfc-repeat-day[aria-pressed='true']")).ToHaveTextAsync(ServerOrWasm(["W"], ["We"]));
         await repeat.SelectOptionAsync("Yearly");
         await Expect(dialog.GetByLabel("Repeat on").Locator("option").First).ToHaveTextAsync("July 16");
 

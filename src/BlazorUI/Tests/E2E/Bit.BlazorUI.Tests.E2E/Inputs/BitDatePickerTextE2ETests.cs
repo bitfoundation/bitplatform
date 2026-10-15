@@ -199,6 +199,9 @@ public class BitDatePickerTextE2ETests : BitDatePickersE2ETestBase
     [TestMethod]
     public async Task Culture_PersianCalendarReadsWritesAndLaysOutRightToLeft()
     {
+        // The ICU data of .NET's WebAssembly runtime carries no fa locale - neither the sharded set it loads by default nor
+        // the full one - so under WebAssembly fa-IR has no Farsi names and reads left to right whatever the component does.
+
         await OpenAsync(Route);
 
         var root = Page.Locator("#dp-fa");
@@ -218,7 +221,7 @@ public class BitDatePickerTextE2ETests : BitDatePickersE2ETestBase
         await Expect(Callout(pid)).ToBeVisibleAsync();
         await Expect(Callout(pid)).ToHaveClassAsync(HasClass("bit-dtp-rtl"));
         await Expect(Callout(pid)).ToHaveCSSAsync("direction", "rtl");
-        await Expect(Title(Callout(pid))).ToHaveTextAsync("تیر 1403");
+        await Expect(Title(Callout(pid))).ToHaveTextAsync(IsWasm ? "Tir 1403" : "تیر 1403");
         await Expect(Callout(pid).Locator(".bit-dtp-gtb[title='برو به امروز']")).ToHaveCountAsync(1);
         await Expect(Day(pid, 2024, 6, 30)).ToBeFocusedAsync();
         await Expect(Day(pid, 2024, 6, 30)).ToHaveTextAsync("10");

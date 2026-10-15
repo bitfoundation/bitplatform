@@ -406,9 +406,10 @@ public partial class BitAccordionList<[DynamicallyAccessedMembers(DynamicallyAcc
     /// The item is moved as little as the browser can move it, so nothing happens to one that is already in
     /// view, and the scroll is instant rather than smooth for a reader who has asked for less motion. It
     /// covers the ways a single panel opens - a click on its header, <see cref="Expand(string)"/>,
-    /// <see cref="Toggle(string)"/> and the bound keys - and runs when the panel is put on screen rather than
-    /// when the transition that opens it ends. <see cref="ExpandAll"/> scrolls to nothing: there is no one
-    /// panel it opened.
+    /// <see cref="Toggle(string)"/> and the bound keys. It runs when the panel is put on screen, which brings
+    /// a header opened off screen into view at once, and again when the transition that opens the panel ends,
+    /// which brings in the panel at its full height - unless the reader has scrolled, pressed a key or touched
+    /// the page in the meantime. <see cref="ExpandAll"/> scrolls to nothing: there is no one panel it opened.
     /// </remarks>
     [Parameter] public bool ScrollIntoViewOnExpand { get; set; }
 

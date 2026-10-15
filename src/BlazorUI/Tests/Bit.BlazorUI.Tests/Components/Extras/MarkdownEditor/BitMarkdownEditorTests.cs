@@ -1831,21 +1831,30 @@ public class BitMarkdownEditorTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitMarkdownEditorShouldNotHideItsFocusGuardsFromAssistiveTech()
+    public void BitMarkdownEditorShouldTrapTheFocusOfItsHelpDialogInTheScript()
     {
         var component = RenderComponent<BitMarkdownEditor>();
 
         component.Find("[data-cmd=help]").Click();
 
-        var guards = component.FindAll(".bit-mde-guard");
-        Assert.AreEqual(2, guards.Count);
+        // Tab is kept inside the dialog by the library's one focus trap, which wraps the focus as the key goes down,
+        // rather than by focus guards bounced back through .NET, which let quick Tabs land outside it first.
+        var dialog = component.Find("[role=dialog]");
+        var id = dialog.GetAttribute("id");
+        Assert.IsFalse(string.IsNullOrEmpty(id));
+        Assert.AreEqual(0, component.FindAll(".bit-mde-guard").Count);
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"];
+        Assert.AreEqual(1, setup.Count);
+        Assert.AreEqual(id, setup[0].Arguments[0]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
 
-        foreach (var guard in guards)
-        {
-            // Focusable and aria-hidden at once is the aria-hidden-focus violation.
-            Assert.AreEqual("0", guard.GetAttribute("tabindex"));
-            Assert.IsNull(guard.GetAttribute("aria-hidden"));
-        }
+        component.Find(".bit-mde-hcl").Click();
+
+        Assert.AreEqual(0, component.FindAll("[role=dialog]").Count);
+        var dispose = Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"];
+        Assert.AreEqual(1, dispose.Count);
+        Assert.AreEqual(id, dispose[0].Arguments[0]);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
     }
 
     [TestMethod]

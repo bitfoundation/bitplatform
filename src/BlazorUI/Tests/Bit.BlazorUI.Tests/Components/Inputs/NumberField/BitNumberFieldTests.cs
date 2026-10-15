@@ -3554,6 +3554,66 @@ public class BitNumberFieldTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitNumberFieldShouldHandleAKeyPressedDuringTheReadOfTheInputAfterTheKeyBeforeIt()
+    {
+        // ArrowUp reads the live text of the input before it checks the bound, a round trip; Home pressed while that
+        // read is out must not run ahead of it. In the order pressed, the ArrowUp is blocked at the Max and the Home
+        // lands on the Min - run the other way round, the ArrowUp would step up from the Min the Home had set.
+        var liveValue = Context.JSInterop.Setup<string>("BitBlazorUI.Utils.getProperty", _ => true);
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Min, "0");
+            parameters.Add(p => p.Max, "3");
+            parameters.Add(p => p.DefaultValue, 3);
+        });
+
+        component.Find("input").Focus();
+
+        var arrowUp = component.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "ArrowUp" });
+        var home = component.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "Home" });
+
+        // Home waits for the ArrowUp, which waits for the read.
+        Assert.IsFalse(home.IsCompleted);
+        Assert.AreEqual(3, component.Instance.Value);
+
+        liveValue.SetResult("3");
+        await Task.WhenAll(arrowUp, home);
+
+        Assert.AreEqual(0, component.Instance.Value);
+    }
+
+    [TestMethod]
+    public async Task BitNumberFieldShouldGoOnHandlingKeysAfterOneWhoseHandlerFailed()
+    {
+        // A key whose handling throws reports that through its own event; the key after it is still handled.
+        var keys = new List<string?>();
+
+        var component = RenderComponent<BitNumberField<int>>(parameters =>
+        {
+            parameters.Add(p => p.Min, "0");
+            parameters.Add(p => p.Max, "3");
+            parameters.Add(p => p.DefaultValue, 3);
+            parameters.Add(p => p.OnKeyDown, async (KeyboardEventArgs e) =>
+            {
+                keys.Add(e.Key);
+                await Task.Yield();
+                if (e.Key == "a") throw new InvalidOperationException("the consumer failed");
+            });
+        });
+
+        var failed = component.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "a" });
+        var home = component.Find("input").KeyDownAsync(new KeyboardEventArgs { Key = "Home" });
+
+        // bUnit hands the failure to its renderer rather than to the task, which is all the same here.
+        try { await failed; } catch (InvalidOperationException) { }
+        await home;
+
+        CollectionAssert.AreEqual(new[] { "a", "Home" }, keys);
+        Assert.AreEqual(0, component.Instance.Value);
+    }
+
+    [TestMethod]
     public void BitNumberFieldShouldRenderTheBaseParametersOnItsRoot()
     {
         var component = RenderComponent<BitNumberField<int>>(parameters =>

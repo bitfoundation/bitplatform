@@ -131,10 +131,22 @@ public class BitPdfViewerE2ETests : E2ETestBase
     {
         await OpenLoadedAsync();
 
-        await Page.Locator("#pdv-main .bit-pdv-surface").EvaluateAsync("s => s.scrollTop = s.scrollHeight");
+        var surface = Page.Locator("#pdv-main .bit-pdv-surface");
+        await surface.EvaluateAsync("s => s.scrollTop = s.scrollHeight");
         await Expect(Page.Locator("#page-value")).ToHaveTextAsync("3");
-        await Expect(Page.Locator("#rendered-pages")).ToHaveTextAsync("1,2,3");
         await Expect(PageOf("pdv-main", 3).Locator(".bit-pdv-page-placeholder")).ToHaveCountAsync(0);
+        // Pages render as they come near the viewport, so a jump from the first page to the last one leaves the middle
+        // one a placeholder (at the fit-width zoom it is more than the render buffer away from either), until the
+        // surface is scrolled onto it too.
+        await Expect(Page.Locator("#rendered-pages")).ToHaveTextAsync(new Regex("^1,(2,)?3$"));
+
+        await surface.EvaluateAsync(@"s => {
+            const page = s.querySelector('[data-page=""2""]');
+            s.scrollTop += page.getBoundingClientRect().top - s.getBoundingClientRect().top;
+        }");
+        await Expect(Page.Locator("#page-value")).ToHaveTextAsync("2");
+        await Expect(Page.Locator("#rendered-pages")).ToHaveTextAsync("1,2,3");
+        await Expect(PageOf("pdv-main", 2).Locator(".bit-pdv-page-placeholder")).ToHaveCountAsync(0);
     }
 
     [TestMethod]
@@ -389,7 +401,13 @@ public class BitPdfViewerE2ETests : E2ETestBase
 
         var canvas = PageOf("pdv-canvas", 1).Locator("canvas[data-bit-pdv-canvas]");
         await Expect(canvas).ToHaveCountAsync(1);
-        await Expect(canvas).ToHaveAttributeAsync("width", "612");
+        // The backing store is rasterized at the zoom and the device's pixel ratio, so it matches the pixels the page
+        // takes on screen (the 612pt page at the fit-width zoom) rather than its size at 100%.
+        await Page.WaitForFunctionAsync(@"() => {
+            const c = document.querySelector('#pdv-canvas [data-page=""1""] canvas[data-bit-pdv-canvas]');
+            const w = c.getBoundingClientRect().width * devicePixelRatio;
+            return w > 0 && Math.abs(c.width - w) <= 2;
+        }");
         await Page.WaitForFunctionAsync(@"() => {
             const c = document.querySelector('#pdv-canvas [data-page=""1""] canvas');
             const d = c.getContext('2d').getImageData(60, 40, 300, 100).data;
@@ -873,6 +891,9 @@ public class BitPdfViewerE2ETests : E2ETestBase
     [TestMethod]
     public async Task States_EmptyErrorAndMissing_WithAndWithoutTemplates()
     {
+        // In WebAssembly the browser fetches the missing document itself, and logs its 404 in the console.
+        AllowConsoleErrors = IsWasm;
+
         await OpenAsync(Route);
 
         await Expect(Page.Locator("#pdv-empty .bit-pdv-empty")).ToHaveTextAsync("No document loaded.");
@@ -885,8 +906,13 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Expect(Page.Locator("#broken-error")).Not.ToBeEmptyAsync();
         await Expect(Page.Locator("#pdv-broken-tpl .tpl-error")).ToContainTextAsync("Failed: ");
 
+        await Page.ClickAsync("#btn-load-missing");
         await Expect(Page.Locator("#pdv-missing .bit-pdv-error")).ToContainTextAsync("Failed to fetch document");
         await Expect(Page.Locator("#missing-error")).ToContainTextAsync("404");
+        foreach (var error in ConsoleErrors)
+        {
+            StringAssert.Contains(error, "404", "the only console error is the browser's report of the missing document");
+        }
     }
 
     [TestMethod]
@@ -904,7 +930,8 @@ public class BitPdfViewerE2ETests : E2ETestBase
             var buffer = new byte[8192];
             await stream.ReadAsync(buffer);
             await release.Task;
-            var head = Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: application/pdf\r\nContent-Length: {sample.Length}\r\nConnection: close\r\n\r\n");
+            // In WebAssembly the browser fetches the document, from an origin other than the page's.
+            var head = Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: application/pdf\r\nContent-Length: {sample.Length}\r\nAccess-Control-Allow-Origin: *\r\nConnection: close\r\n\r\n");
             await stream.WriteAsync(head);
             await stream.WriteAsync(sample);
             await stream.FlushAsync();
@@ -948,10 +975,13 @@ public class BitPdfViewerE2ETests : E2ETestBase
         await Expect(Page.Locator("#pdv-open .bit-pdv-error")).ToBeVisibleAsync();
         await Expect(Page.Locator("#open-error")).Not.ToBeEmptyAsync();
 
+        // MaxOpenFileSize (100000 bytes here) refuses a bigger file before anything reads it: OnError says so, and
+        // OnFileOpened never hears of it.
         var big = new byte[200_000];
         sample.CopyTo(big, 0);
         await input.SetInputFilesAsync(new FilePayload { Name = "big.pdf", MimeType = "application/pdf", Buffer = big });
-        await Expect(Page.Locator("#open-error")).ToContainTextAsync(new Regex("big\\.pdf|size|large|MB|KB", RegexOptions.IgnoreCase));
+        await Expect(Page.Locator("#open-error")).ToContainTextAsync("200000 bytes exceeds the maximum of 100000 bytes");
+        await Expect(Page.Locator("#opened-name")).ToHaveTextAsync("text.pdf");
 
         // With no OnFileOpened, the viewer opens a picked file itself.
         await Page.Locator("#pdv-open-self input.bit-pdv-file").SetInputFilesAsync(new FilePayload { Name = "self.pdf", MimeType = "application/pdf", Buffer = sample });
@@ -970,6 +1000,22 @@ public class BitPdfViewerE2ETests : E2ETestBase
         }", sample.Select(b => (int)b).ToArray());
         Assert.IsTrue(await Page.EvaluateAsync<bool>("() => window.__pdvDropping"), "a file over the viewer does not mark it as a drop target");
         await Expect(Page.Locator("#opened-name")).ToHaveTextAsync("dropped.pdf");
+        await Expect(PageOf("pdv-open", 1)).ToContainTextAsync("Page One Heading");
+
+        // A dropped file is held to MaxOpenFileSize too, and the document on screen stays.
+        var bigDrop = new byte[150_000];
+        sample.CopyTo(bigDrop, 0);
+        await Page.Locator("#pdv-open").EvaluateAsync(@"(root, bytes) => {
+            const dt = new DataTransfer();
+            dt.items.add(new File([new Uint8Array(bytes)], 'big-dropped.pdf', { type: 'application/pdf' }));
+            const target = root.querySelector('.bit-pdv-surface');
+            target.dispatchEvent(new DragEvent('dragenter', { dataTransfer: dt, bubbles: true, cancelable: true }));
+            target.dispatchEvent(new DragEvent('dragover', { dataTransfer: dt, bubbles: true, cancelable: true }));
+            target.dispatchEvent(new DragEvent('drop', { dataTransfer: dt, bubbles: true, cancelable: true }));
+        }", bigDrop.Select(b => (int)b).ToArray());
+        await Expect(Page.Locator("#open-error")).ToContainTextAsync("150000 bytes exceeds the maximum of 100000 bytes");
+        await Expect(Page.Locator("#opened-name")).ToHaveTextAsync("dropped.pdf");
+        await Expect(Page.Locator("#pdv-open .bit-pdv-title")).ToHaveTextAsync("dropped.pdf");
         await Expect(PageOf("pdv-open", 1)).ToContainTextAsync("Page One Heading");
     }
 

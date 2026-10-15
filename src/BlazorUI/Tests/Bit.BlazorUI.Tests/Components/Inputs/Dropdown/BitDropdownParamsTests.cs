@@ -94,10 +94,11 @@ public class BitDropdownParamsTests : BunitTestContext
     [TestMethod]
     public void BitDropdownParamsShouldCarryEveryParameterThatIsNotPerDropdown()
     {
-        // ReadOnly and Required are not carried either: the params object derives from BitComponentBaseParams rather
-        // than from the generic BitInputBaseParams, so they count as base parameters here.
+        // ReadOnly and Required describe a whole area of a form, so they are carried like the parameters of every other
+        // input's params object - through BitInputBaseParams, which the params object derives from.
         var baseParameters = typeof(BitComponentBase).GetProperties().Select(p => p.Name)
                                                      .Concat(typeof(BitInputBase<string>).GetProperties().Select(p => p.Name))
+                                                     .Where(n => n is not (nameof(BitDropdown<BitDropdownItem<string>, string>.ReadOnly) or nameof(BitDropdown<BitDropdownItem<string>, string>.Required)))
                                                      .ToHashSet();
 
         var parameters = _dropdownType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
@@ -299,6 +300,42 @@ public class BitDropdownParamsTests : BunitTestContext
         Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
         Assert.IsTrue(root.ClassList.Contains("cascaded"));
         StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsShouldDeriveFromTheInputParams()
+    {
+        Assert.IsInstanceOfType<BitInputBaseParams<string>>(new BitDropdownParams<BitDropdownItem<string>, string>());
+    }
+
+    [TestMethod]
+    public void BitDropdownShouldTakeReadOnlyAndRequiredFromTheCascade()
+    {
+        var component = RenderWithParams(new BitDropdownParams<BitDropdownItem<string>, string> { ReadOnly = true, Required = true });
+
+        var instance = component.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance;
+        Assert.IsTrue(instance.ReadOnly);
+        Assert.IsTrue(instance.Required);
+
+        var root = component.Find(".bit-drp");
+        Assert.IsTrue(root.ClassList.Contains("bit-drp-rol"));
+        Assert.IsTrue(root.ClassList.Contains("bit-drp-req"));
+        Assert.AreEqual("true", component.Find(".bit-drp-wrp").GetAttribute("aria-required"));
+        Assert.AreEqual("true", component.Find(".bit-drp-wrp").GetAttribute("aria-readonly"));
+    }
+
+    [TestMethod]
+    public void BitDropdownParamsShouldNotOverwriteTheReadOnlyAndRequiredOfTheDropdown()
+    {
+        var component = RenderWithParams(new BitDropdownParams<BitDropdownItem<string>, string> { ReadOnly = true, Required = true }, builder =>
+        {
+            builder.AddAttribute(2, nameof(BitDropdown<BitDropdownItem<string>, string>.ReadOnly), false);
+            builder.AddAttribute(3, nameof(BitDropdown<BitDropdownItem<string>, string>.Required), false);
+        });
+
+        var instance = component.FindComponent<BitDropdown<BitDropdownItem<string>, string>>().Instance;
+        Assert.IsFalse(instance.ReadOnly);
+        Assert.IsFalse(instance.Required);
     }
 
     [TestMethod]

@@ -36,7 +36,8 @@ public partial class BitFullCalendarE2ETests
         var cal = Page.Locator("#fa-cal");
 
         await AssertRightToLeftLayoutAsync(cal);
-        await Expect(Title(cal)).ToHaveTextAsync("1404 تیر");
+        // the Persian calendar's own month names are not in the browser's ICU data (ServerOrWasm), its numbering is
+        await Expect(Title(cal)).ToHaveTextAsync(ServerOrWasm("1404 تیر", "1404 Tir AP"));
         await Expect(cal.Locator(".bit-bfc-view-tab")).ToHaveTextAsync(["روز", "هفته", "ماه", "سال", "برنامه"]);
         await Expect(cal.Locator(".bit-bfc-mode-tab")).ToHaveTextAsync(["رویدادها", "خط زمانی"]);
         await Expect(cal.Locator(".bit-bfc-header-left > .bit-bfc-btn").First).ToHaveTextAsync("امروز");
@@ -46,7 +47,7 @@ public partial class BitFullCalendarE2ETests
         await Expect(Page.Locator("#fa-range")).ToHaveTextAsync("2025-06-22|2025-07-22");
 
         await cal.Locator(".bit-bfc-btn-nav").Last.ClickAsync();
-        await Expect(Title(cal)).ToHaveTextAsync("1404 مرداد");
+        await Expect(Title(cal)).ToHaveTextAsync(ServerOrWasm("1404 مرداد", "1404 Mordad AP"));
         await Expect(Page.Locator("#fa-range")).ToHaveTextAsync("2025-07-23|2025-08-22");
     }
 
@@ -117,12 +118,12 @@ public partial class BitFullCalendarE2ETests
         var cal = Page.Locator("#ar-cal");
 
         await AssertRightToLeftLayoutAsync(cal);
-        await Expect(Title(cal)).ToHaveTextAsync("محرم 1447 بعد الهجرة");
+        await Expect(Title(cal)).ToHaveTextAsync(ServerOrWasm("محرم 1447 بعد الهجرة", "Muharram 1447 بعد الهجرة"));
         await Expect(cal.Locator(".bit-bfc-month-cell-day.today")).ToHaveTextAsync("21");
         await Expect(Badge(cal, "s1")).ToBeVisibleAsync();
 
         await cal.Locator(".bit-bfc-btn-nav").Last.ClickAsync();
-        await Expect(Title(cal)).ToHaveTextAsync("صفر 1447 بعد الهجرة");
+        await Expect(Title(cal)).ToHaveTextAsync(ServerOrWasm("صفر 1447 بعد الهجرة", "Safar 1447 بعد الهجرة"));
     }
 
     [TestMethod]

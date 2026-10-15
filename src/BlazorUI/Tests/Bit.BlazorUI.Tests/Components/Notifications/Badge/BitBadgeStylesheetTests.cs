@@ -107,6 +107,24 @@ public partial class BitBadgeStylesheetTests
     }
 
     [TestMethod]
+    public void BitBadgeInTheFlowShouldTakeThePointerBackWithoutOutweighingTheDisabledState()
+    {
+        var stylesheet = ReadStylesheet();
+
+        // The rule undoing the overlay insets of a standalone badge weighs as much as three classes, which would outweigh
+        // the disabled button and link (.bit-bdg-clk:disabled, [aria-disabled="true"]) and hand them the pointer back.
+        var insets = SourceFiles.GetScssBlock(stylesheet, "\n.bit-bdg > .bit-bdg-stl > .bit-bdg-ctn {");
+        Assert.IsFalse(insets.Contains("pointer-events"), "The heavy standalone rule sets the pointer events.");
+
+        // The pointer is taken back by a rule of the weight of .bit-bdg-ctn alone, which the disabled one outweighs.
+        var pointer = SourceFiles.GetScssBlock(stylesheet, "\n.bit-bdg-ctn:where(.bit-bdg-stl > *) {");
+        StringAssert.Contains(pointer, "pointer-events: auto;");
+
+        var disabled = SourceFiles.GetScssBlock(stylesheet, "\n    &:disabled,\n    &[aria-disabled=\"true\"] {");
+        StringAssert.Contains(disabled, "pointer-events: none;");
+    }
+
+    [TestMethod]
     public void BitBadgeShouldKeepItsOwnLookAwayFromABadgeNestedInItsChildContent()
     {
         var rules = SourceFiles.StripScssComments(ReadStylesheet()).Split('\n');

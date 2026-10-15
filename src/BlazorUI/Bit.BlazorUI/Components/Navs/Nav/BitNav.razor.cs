@@ -27,6 +27,7 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
     // The item an option of the interactive first render was selected as, before the render that reports it.
     private TItem? _unreportedSelection;
     private bool _expandSelectedPending;
+    private bool _optionsOrderDirty;
     private TItem? _focusedItem;
     private TItem? _pendingFocusItem;
     private string _typeAheadBuffer = string.Empty;
@@ -181,8 +182,77 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         var item = (option as TItem)!;
 
         _items.Add(item);
+        _optionsOrderDirty = true;
 
         StateHasChanged();
+    }
+
+    // Flags that an option has registered below another one, where it lands at the end of its parent's list no
+    // matter where in the markup it sits. Only that parent re-renders for it, so a nav that keeps the markup
+    // order renders as well, for the after-render pass that reads the order back.
+    internal void MarkOptionsOrderDirty()
+    {
+        _optionsOrderDirty = true;
+
+        if (AutoReorderOptions && IsRendered)
+        {
+            StateHasChanged();
+        }
+    }
+
+    // Reorders the registered options, at every level of the tree, by the DOM order of the markers they
+    // rendered, since an option that is rendered conditionally (or moved) after the first render registers
+    // itself at the end of its list no matter where in the markup it sits. Those lists are what the arrow keys,
+    // Home, End and type-ahead walk, so a nav whose options change would otherwise be walked in an order other
+    // than the one it is read in. Opt-in via AutoReorderOptions.
+    internal void ReorderOptions(string[] orderedOptionIds)
+    {
+        if (orderedOptionIds.Length == 0) return;
+
+        Dictionary<string, int> positions = [];
+        for (var i = 0; i < orderedOptionIds.Length; i++)
+        {
+            positions.TryAdd(orderedOptionIds[i], i);
+        }
+
+        var changed = false;
+
+        var roots = OrderByMarkup(_items, positions);
+        if (roots.SequenceEqual(_items) is false)
+        {
+            _items = roots;
+            changed = true;
+        }
+
+        foreach (var option in Flatten(_items).OfType<BitNavOption>().ToList())
+        {
+            var children = OrderByMarkup(option.ChildItems, positions);
+            if (children.SequenceEqual(option.ChildItems)) continue;
+
+            option.ChildItems = children;
+            changed = true;
+        }
+
+        if (changed is false) return;
+
+        // The automatic mode selects the first item that matches the current URL, so the item that wins a tie
+        // between two matching options is the one that comes first in the new order.
+        MarkSelectionDirty();
+        InvalidateSelectedAncestors();
+
+        RefreshOptions();
+        StateHasChanged();
+    }
+
+    // Emits the marker attribute the DOM read-back recovers the markup order of the options from. Only
+    // rendered while AutoReorderOptions is enabled (to keep the attribute off every other nav) and only for
+    // options: the Items collection is already in the order it is rendered in.
+    internal Dictionary<string, object>? GetItemMarkerAttributes(TItem item)
+    {
+        if (AutoReorderOptions is false) return null;
+        if (item is not BitNavOption option) return null;
+
+        return new() { [BitNavOption._OPTION_ID_ATTRIBUTE] = option._OptionId };
     }
 
     internal void UnregisterOption(BitNavOption option)
@@ -374,6 +444,14 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
         // nav's own parameters (Styles, IconOnly, ItemTemplate, ...) change, so push a re-render to each one.
         RefreshOptions();
 
+        // A pure reorder of the options registers and unregisters nothing, so the read-back is flagged to run
+        // after this render to detect it. It only mutates the lists when the order actually changed, so a set
+        // of options that stayed put costs a single DOM read.
+        if (AutoReorderOptions && (Options ?? ChildContent) is not null)
+        {
+            _optionsOrderDirty = true;
+        }
+
         base.OnParametersSet();
     }
 
@@ -404,6 +482,8 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        await ReorderOptionsByDomOrder();
+
         // A focus request for an item of a collapsed branch had to wait for the render that opens the
         // branch, since only then is there an element to move the focus to. The item may already carry one
         // (the options API keeps the collapsed children rendered), and the focus moves right here in that
@@ -563,6 +643,40 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
 
 
     private static bool AreEqual(TItem? first, TItem? second) => EqualityComparer<TItem?>.Default.Equals(first, second);
+
+    // The items of one list in the order their markers were read back in. An option that has registered but has
+    // not rendered its marker yet keeps its place at the end rather than being dropped from the nav altogether.
+    private static List<T> OrderByMarkup<T>(IList<T> items, Dictionary<string, int> positions) where T : class
+    {
+        return items.Select((item, index) => (item, index, position: item is BitNavOption option && positions.TryGetValue(option._OptionId, out var p) ? p : int.MaxValue))
+                    .OrderBy(e => e.position)
+                    .ThenBy(e => e.index)
+                    .Select(e => e.item)
+                    .ToList();
+    }
+
+    private async Task ReorderOptionsByDomOrder()
+    {
+        if (AutoReorderOptions is false) return;
+        if ((Options ?? ChildContent) is null) return;
+        if (_optionsOrderDirty is false) return;
+
+        _optionsOrderDirty = false;
+
+        try
+        {
+            var orderedOptionIds = await _js.BitUtilsGetChildrenAttributes(_Id, BitNavOption._OPTION_ID_ATTRIBUTE);
+
+            if (IsDisposed) return;
+
+            if (orderedOptionIds is not null)
+            {
+                ReorderOptions(orderedOptionIds);
+            }
+        }
+        catch (JSDisconnectedException) { } // the circuit is gone (the reader navigated away), nothing to reorder
+        catch (JSException) { } // a failure on the JS side is not fatal here, the current order is kept
+    }
 
     // Kept lazy (and in the original order: every descendant before the items of the level it belongs to)
     // so a URL match stops at the first hit instead of materializing the whole tree on every pass.

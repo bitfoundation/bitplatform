@@ -20,6 +20,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     private string _previewValue = string.Empty;
     private bool _showHelp;
     private bool _focusHelp;
+    private bool _helpTrapped;
     private bool _showFind;
     private bool _focusFind;
     private bool _matchCase;
@@ -37,7 +38,6 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     private string? _lastConfig;
     private IReadOnlyCollection<BitMarkdownEditorCommand> _activeFormats = [];
     private ElementReference _helpRef = default!;
-    private ElementReference _helpCloseRef = default!;
     private ElementReference _findRef = default!;
     private ElementReference _previewRef = default!;
     private CancellationTokenSource? _debounceCts;
@@ -873,6 +873,27 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
             try { await _js.BitMarkdownEditorSyncFocus(_Id); } catch (JSDisconnectedException) { }
         }
 
+        // The help dialog keeps Tab and Shift+Tab inside it through the library's one focus trap, which wraps the
+        // focus in the script as the key goes down: a .NET handler hears the key a round trip after the browser has
+        // already moved the focus on, out of the dialog and into the page behind it. Registered before the dialog
+        // takes the focus, so no key reaches it untrapped, and taken back once it is gone.
+        if (_showHelp != _helpTrapped)
+        {
+            _helpTrapped = _showHelp;
+            try
+            {
+                if (_showHelp)
+                {
+                    await _js.BitUtilsSetupFocusTrap(HelpDialogId);
+                }
+                else
+                {
+                    await _js.BitUtilsDisposeFocusTrap(HelpDialogId);
+                }
+            }
+            catch (JSDisconnectedException) { } // the circuit dropped; the page goes with it
+        }
+
         if (_focusHelp)
         {
             _focusHelp = false;
@@ -1117,6 +1138,7 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
     private string DescriptionId => $"{_Id}-des";
 
     private string HelpTitleId => $"{_Id}-hlt";
+    private string HelpDialogId => $"{_Id}-hlp";
 
     // By the menu's position in the toolbar: the Name of an item is neither required nor unique.
     private string GetMenuId(int index) => $"{_Id}-mnu-{index}";
@@ -1505,16 +1527,6 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
         await FindFromPanel(backwards: false);
     }
 
-    // Focus guards wrap the help dialog: tabbing onto either sentinel bounces focus
-    // back to the (only) focusable control, trapping keyboard focus inside the modal.
-    // They are deliberately not aria-hidden - hiding a focusable element from assistive
-    // tech is exactly what the aria-hidden-focus rule forbids - and carry no content, so
-    // nothing is announced when focus passes through them.
-    private async Task FocusHelpClose()
-    {
-        await _helpCloseRef.FocusSafelyAsync();
-    }
-
     private async Task CycleMode()
     {
         var next = Mode switch
@@ -1611,6 +1623,12 @@ public partial class BitMarkdownEditor : BitInputBase<string?>
             {
                 _scrollLocked = false;
                 await _js.BitUtilsUnlockScroll(_Id);
+            }
+
+            if (_helpTrapped)
+            {
+                _helpTrapped = false;
+                await _js.BitUtilsDisposeFocusTrap(HelpDialogId);
             }
 
             await _js.BitMarkdownEditorDispose(_Id);

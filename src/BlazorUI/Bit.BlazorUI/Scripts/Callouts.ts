@@ -186,6 +186,8 @@
                 return false;
             }
 
+            Callouts.makeOverlayTappable(overlayId ? document.getElementById(overlayId) : null);
+
             Callouts.moveCalloutToBody(calloutId, callout, overlayId, arrowId, rootId);
 
             Callouts.replaceCurrent({
@@ -1241,6 +1243,20 @@
                 ? (document.getElementById(entry.componentId)?.contains(node) ?? false)
                 : false;
         }
+
+        // WebKit on iOS dispatches no click for a tap on an element it does not take for a clickable one - one with
+        // neither a click listener of its own nor a pointer cursor - and Blazor listens on the document rather than
+        // on the element, so a tap on the overlay of an open popup would close nothing there. A listener of the
+        // overlay's own makes it clickable without changing its cursor on a desktop; it does nothing itself, the
+        // component's handler and dismissOnOverlayClick still take the click as it bubbles. Adding the same function
+        // again is a no-op, so an overlay opened over and over keeps the one listener. Every callout opened through
+        // toggle gets it; a component that renders an overlay of its own outside of it (BitPivot's overflow menu)
+        // calls it for that one.
+        public static makeOverlayTappable(overlay: HTMLElement | null) {
+            overlay?.addEventListener('click', Callouts.overlayClickTarget);
+        }
+
+        private static overlayClickTarget() { }
 
         // Relocating the callout to the body escapes the clipping, stacking contexts and transformed containing
         // blocks of its ancestors, but it also takes it out of everything it inherited from them: the custom

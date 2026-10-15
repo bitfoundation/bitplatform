@@ -72,6 +72,13 @@
     <BitAccentColorSwitcher Id="acs-forced" ForceAnimation />
 </E2ESection>
 
+<E2ESection Id="params" Title="BitParams">
+    <BitParams Parameters="@_params">
+        <BitAccentColorSwitcher Id="acs-params" />
+        <BitAccentColorSwitcher Id="acs-params-own" Dir="BitDir.Ltr" Classes="@(new() { Swatch = "own-swatch" })" />
+    </BitParams>
+</E2ESection>
+
 <E2ESection Id="runtime" Title="Mounted at runtime">
     <button id="btn-runtime-mount" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
     @if (_mounted)
@@ -105,8 +112,22 @@
         ]
     };
 
+    // The Config is the very instance the custom section hands its switcher: the configuration is app-wide, and a
+    // BitParams is how it is handed to every switcher alike.
+    private BitAccentColorSwitcherParams[] _params = [];
+
     protected override void OnInitialized()
     {
+        _params =
+        [
+            new()
+            {
+                Config = _customConfig,
+                Dir = BitDir.Rtl,
+                Classes = new() { Root = "cascaded-root", Swatch = "cascaded-swatch" },
+            },
+        ];
+
         AccentColorService.AccentChanged += HandleAccentChanged;
     }
 

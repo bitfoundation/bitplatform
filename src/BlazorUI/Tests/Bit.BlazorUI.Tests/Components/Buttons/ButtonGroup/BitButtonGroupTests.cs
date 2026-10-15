@@ -59,9 +59,10 @@ public class BitButtonGroupTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitButtonGroupToggleDefaultKeyShouldSetToggledItemAndRaiseOnToggleChange()
+    public void BitButtonGroupToggleDefaultKeyShouldSetToggledItemWithoutRaisingOnToggleChange()
     {
         string? toggledKey = null;
+        var changes = 0;
 
         var items = new List<BitButtonGroupItem>
         {
@@ -74,11 +75,13 @@ public class BitButtonGroupTests : BunitTestContext
             parameters.Add(p => p.Items, items);
             parameters.Add(p => p.Toggle, true);
             parameters.Add(p => p.DefaultToggleKey, "b");
-            parameters.Add(p => p.OnToggleChange, (BitButtonGroupItem it) => toggledKey = it?.Key);
+            parameters.Add(p => p.OnToggleChange, (BitButtonGroupItem it) => { toggledKey = it?.Key; changes++; });
         });
 
-        // After initialization the default toggled item should be applied
-        Assert.AreEqual("b", toggledKey);
+        // The default toggled item is a state the group starts in rather than a change the user made, so it is
+        // applied without raising OnToggleChange - the way DefaultToggleKeys is in the Multiple selection mode.
+        Assert.AreEqual(0, changes);
+        Assert.IsNull(toggledKey);
 
         // The rendered button with toggled class
         var toggled = comp.FindAll(".bit-btg-chk");
@@ -91,6 +94,70 @@ public class BitButtonGroupTests : BunitTestContext
 
         // Now toggledKey should change to 'a'
         Assert.AreEqual("a", toggledKey);
+        Assert.AreEqual(1, changes);
+    }
+
+    [TestMethod,
+        DataRow(BitSelectionMode.Single),
+        DataRow(BitSelectionMode.Multiple)]
+    public void BitButtonGroupBoundToggleKeysShouldBeAppliedWithoutRaisingAnythingInEitherMode(BitSelectionMode mode)
+    {
+        string? toggleKey = "b";
+        IEnumerable<string>? toggleKeys = ["b"];
+        var keyChanges = 0;
+        var toggleChanges = 0;
+
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItemsWithKeysAAndB);
+            parameters.Add(p => p.SelectionMode, mode);
+            parameters.Bind(p => p.ToggleKey, toggleKey, v => { toggleKey = v; keyChanges++; });
+            parameters.Bind(p => p.ToggleKeys, toggleKeys, v => { toggleKeys = v; keyChanges++; });
+            parameters.Add(p => p.OnToggleChange, (BitButtonGroupItem _) => toggleChanges++);
+        });
+
+        // the bound key the group starts with is applied, and nothing is raised for it
+        var toggled = comp.FindAll(".bit-btg-chk");
+        Assert.HasCount(1, toggled);
+        Assert.Contains("B", toggled[0].TextContent);
+        Assert.AreEqual(0, keyChanges);
+        Assert.AreEqual(0, toggleChanges);
+
+        // a key the page writes itself is followed without being reported back as a change either
+        comp.Render(parameters =>
+        {
+            parameters.Add(p => p.ToggleKey, "a");
+            parameters.Add(p => p.ToggleKeys, (IEnumerable<string>?)["a"]);
+        });
+
+        toggled = comp.FindAll(".bit-btg-chk");
+        Assert.HasCount(1, toggled);
+        Assert.Contains("A", toggled[0].TextContent);
+        Assert.AreEqual(0, keyChanges);
+        Assert.AreEqual(0, toggleChanges);
+    }
+
+    [TestMethod]
+    public void BitButtonGroupOneWayToggleKeyShouldShowTheItemItNamesToggled()
+    {
+        var comp = RenderComponent<BitButtonGroup<BitButtonGroupItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, BasicItemsWithKeysAAndB);
+            parameters.Add(p => p.SelectionMode, BitSelectionMode.Single);
+            parameters.Add(p => p.ToggleKey, "b");
+        });
+
+        // a ToggleKey bound one way is the page deciding the selection, so the group shows it as the Multiple
+        // mode shows a one-way ToggleKeys - only a click, which it cannot write back, is refused
+        var toggled = comp.FindAll(".bit-btg-chk");
+        Assert.HasCount(1, toggled);
+        Assert.Contains("B", toggled[0].TextContent);
+
+        comp.FindAll("button")[0].Click();
+
+        toggled = comp.FindAll(".bit-btg-chk");
+        Assert.HasCount(1, toggled);
+        Assert.Contains("B", toggled[0].TextContent);
     }
 
     [TestMethod]

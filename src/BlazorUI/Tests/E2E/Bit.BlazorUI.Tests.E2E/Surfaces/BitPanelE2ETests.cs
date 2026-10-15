@@ -87,20 +87,15 @@ public class BitPanelE2ETests : E2ETestBase
         return Page.EvaluateAsync<double[]>("() => [document.documentElement.clientWidth, window.innerHeight]");
     }
 
-    // The panel's event log, read without fixing where OnTransitionEnd falls: the transition runs in the browser while the
-    // open and close sequences make their round trips, so on a slow engine it can end before OnToggle and OnOpen (or
-    // OnToggle and OnDismiss) are raised. Every other event is in the order given, and so are the OnTransitionEnd ones.
+    // The panel's event log, in order: OnTransitionEnd comes after the OnToggle and OnOpen (or OnToggle and OnDismiss) of the
+    // change it ends, even on an engine whose transition ends while the open and close sequences make their round trips.
     private async Task ExpectBasicLogAsync(string expected, bool contains = false)
     {
         try
         {
             await Page.WaitForFunctionAsync(@"([expected, contains]) => {
-                const strip = s => s.split(',').filter(x => x && !x.startsWith('OnTransitionEnd')).join(',');
-                const ends = s => s.split(',').filter(x => x.startsWith('OnTransitionEnd')).join(',');
                 const actual = document.getElementById('basic-log').textContent;
-                return contains
-                    ? strip(actual).includes(strip(expected)) && ends(actual).includes(ends(expected))
-                    : strip(actual) === strip(expected) && ends(actual) === ends(expected);
+                return contains ? actual.includes(expected) : actual === expected;
             }", new object[] { expected, contains }, new() { Timeout = DefaultTimeout });
         }
         catch (TimeoutException)

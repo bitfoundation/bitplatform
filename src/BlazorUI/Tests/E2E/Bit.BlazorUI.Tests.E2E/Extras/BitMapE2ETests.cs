@@ -718,6 +718,22 @@ public class BitMapE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Failed_MethodsCalledOnAMapThatIsNotReady_DoNothingRatherThanThrow()
+    {
+        // The missing script is the setup: the browser logs its failed request.
+        AllowConsoleErrors = true;
+
+        await OpenAsync(Route);
+        await Page.Locator("#btn-show-failed").ClickAsync();
+        await Expect(Page.Locator("#failed-state")).ToHaveTextAsync("Failed");
+
+        await Page.Locator("#btn-call-failed").ClickAsync();
+        await Expect(Page.Locator("#failed-calls")).ToHaveTextAsync("ready=False;markers=0;located=False;closed=False");
+        Assert.IsFalse(await IsCircuitDeadAsync());
+        await AssertNoServerErrorsAsync();
+    }
+
+    [TestMethod]
     public async Task LazyLoad_WaitsUntilTheMapScrollsIntoView()
     {
         await OpenAsync(Route);

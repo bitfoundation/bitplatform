@@ -21,7 +21,7 @@
     protected override void OnInitialized()
     {
         // Every routable page of the host, read off its route attribute, so the list never lags the pages.
-        _pages = typeof(Program).Assembly.GetTypes()
+        _pages = typeof(Routes).Assembly.GetTypes()
             .Where(t => typeof(IComponent).IsAssignableFrom(t))
             .SelectMany(t => t.GetCustomAttributes<RouteAttribute>(true).Select(a => (a.Template, t.Name)))
             .Where(p => p.Template.StartsWith("/e2e/", StringComparison.Ordinal) && p.Template.Contains('{') is false)

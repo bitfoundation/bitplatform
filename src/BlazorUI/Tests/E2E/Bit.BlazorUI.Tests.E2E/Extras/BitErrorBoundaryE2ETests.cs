@@ -526,20 +526,49 @@ public class BitErrorBoundaryE2ETests : E2ETestBase
     [TestMethod]
     public async Task Logging_ACaughtExceptionIsNoErrorOfTheHostOrThePage_LoggedOrNot()
     {
-        await OpenAsync(Route);
+        // The boundary logs what it caught through the framework's IErrorBoundaryLogger. On the server that is a warning
+        // of the circuit, so neither boundary leaves an error in the host's log or the browser's console - a caught
+        // exception is a handled one - and the host's warnings are what pin NoLogging there. In the browser the
+        // WebAssembly logger writes it to the console as an error, which is what pins NoLogging: the unlogged boundary
+        // throws first ("Boom 1"), the logged one second ("Boom 2").
+        AllowConsoleErrors = IsWasm;
 
-        // The boundary logs what it caught as a warning (IErrorBoundaryLogger), so neither boundary leaves an error in the
-        // host's log or the browser's console: a caught exception is a handled one.
-        await Page.Locator("#logged-throw").ClickAsync();
-        await Expect(Page.Locator("#erb-logged")).ToBeVisibleAsync();
+        await OpenAsync(Route);
 
         await Page.Locator("#unlogged-throw").ClickAsync();
         await Expect(Page.Locator("#erb-unlogged")).ToBeVisibleAsync();
 
+        if (IsWasm)
+        {
+            await Page.RunAndWaitForConsoleMessageAsync(() => Page.Locator("#logged-throw").ClickAsync(),
+                                                        new() { Predicate = m => m.Type == "error" && m.Text.Contains("Boom", StringComparison.Ordinal) });
+        }
+        else
+        {
+            await Page.Locator("#logged-throw").ClickAsync();
+        }
+
+        await Expect(Page.Locator("#erb-logged")).ToBeVisibleAsync();
+
         var errors = await GetServerErrorsAsync();
         Assert.IsFalse(errors.Any(e => e.Contains("Boom", StringComparison.Ordinal)), string.Join(Environment.NewLine, errors));
-        Assert.AreEqual(0, ConsoleErrors.Count, string.Join(Environment.NewLine, ConsoleErrors));
         Assert.IsFalse(await IsCircuitDeadAsync());
+
+        if (IsWasm)
+        {
+            Assert.AreEqual(1, ConsoleErrors.Count, string.Join(Environment.NewLine, ConsoleErrors));
+            StringAssert.Contains(ConsoleErrors[0], "Microsoft.AspNetCore.Components.Web.ErrorBoundary");
+            StringAssert.Contains(ConsoleErrors[0], "Boom 2");
+        }
+        else
+        {
+            Assert.AreEqual(0, ConsoleErrors.Count, string.Join(Environment.NewLine, ConsoleErrors));
+
+            // The logged boundary's exception is a warning of the host; the NoLogging one's is nowhere.
+            var logs = await GetServerWarningsAndErrorsAsync();
+            Assert.AreEqual(1, logs.Count(l => l.Contains("Boom 2", StringComparison.Ordinal)), string.Join(Environment.NewLine, logs));
+            Assert.IsFalse(logs.Any(l => l.Contains("Boom 1", StringComparison.Ordinal)), string.Join(Environment.NewLine, logs));
+        }
     }
 
     [TestMethod]

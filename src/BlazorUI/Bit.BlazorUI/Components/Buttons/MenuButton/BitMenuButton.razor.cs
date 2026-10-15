@@ -15,6 +15,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     // search from the next (the APG menu pattern leaves the exact value to the implementation).
     private const int TypeaheadTimeout = 1000;
 
+    private int _clickId;
+    private bool _internalIsOpenChange;
+    private bool _repositionAfterRender;
     private List<TItem> _items = [];
     private bool _showLoading;
     internal BitButtonType _buttonType;
@@ -111,7 +114,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     public BitColorKind? Background { get; set; }
 
     /// <summary>
-    ///  The value of the type attribute of the menu button.
+    /// The value of the type attribute of the items, and of the main half of a split menu button when it is set.
+    /// Left unset, the items are submit buttons inside an <see cref="EditForm"/> and plain buttons elsewhere; a submit
+    /// or reset item acts on the form the menu button sits in, although its open menu is moved out of it to the body.
     /// </summary>
     [Parameter] public BitButtonType? ButtonType { get; set; }
 
@@ -206,6 +211,10 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     /// the header button and of the items). It lets a submit or reset command sit outside of its form element.
     /// </summary>
     [Parameter] public string? FormId { get; set; }
+
+    // The form the header and the items are associated with: FormId, or the form attribute the page wrote by hand,
+    // so the two halves of the component can never name different forms.
+    internal string? ResolvedFormId => FormId ?? GetSplattedAttribute("form");
 
     /// <summary>
     /// Expands the menu button width to 100% of the available width.
@@ -678,6 +687,26 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
             if (_autoFocus && IsDisposed is false)
             {
                 await _operatorButtonRef.FocusSafelyAsync();
+            }
+        }
+
+        // The menu is placed against the root as the toggle finds it, which can be before the render that shows the
+        // root open: a Styles.Opened or Classes.Opened that moves or resizes the root (a margin, a border) lands
+        // after the placement - in WebAssembly always, the toggle running in the click's own task. Left there, the
+        // menu points at where the root was, and the scroll the browser makes to keep the page steady under the
+        // shift reads as the page moving away from the menu, which dismisses it. So it is placed again once the
+        // open root is on the page.
+        if (_repositionAfterRender)
+        {
+            _repositionAfterRender = false;
+
+            if (IsOpen && IsDisposed is false)
+            {
+                try
+                {
+                    await _js.BitCalloutReposition();
+                }
+                catch (JSDisconnectedException) { } // we can ignore this exception here
             }
         }
     }
@@ -1298,7 +1327,16 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         if (item is not null && GetIsDisabled(item)) return;
 
-        if (AutoLoading)
+        var isLoading = IsLoading;
+
+        // The loading state belongs to the latest click alone (as BitButton's does). A Reclickable menu button's
+        // re-click arrives while that state is already on, so it only runs the command again: entering it again
+        // would be a no-op, and leaving it when this run ends would clear the spinner of the run that is still in
+        // flight - or, for a handler that abandons its previous run by throwing into it, clear it on the way out
+        // of the run the user has just replaced.
+        var clickId = ++_clickId;
+
+        if (AutoLoading && isLoading is false)
         {
             if (await AssignIsLoading(true) is false) return;
 
@@ -1319,7 +1357,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         }
         finally
         {
-            if (AutoLoading)
+            if (AutoLoading && clickId == _clickId)
             {
                 await AssignIsLoading(false);
 
@@ -1658,7 +1696,7 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
         var focusFirstItem = _focusFirstItemOnOpen;
         _focusFirstItemOnOpen = false;
 
-        if (await AssignIsOpen(true) is false) return false;
+        if (await AssignIsOpenInternal(true) is false) return false;
 
         await ToggleCallout();
 
@@ -1678,9 +1716,26 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
         ResetTypeahead();
 
-        if (await AssignIsOpen(false) is false) return;
+        if (await AssignIsOpenInternal(false) is false) return;
 
         await ToggleCallout();
+    }
+
+    // The open and close flows follow AssignIsOpen with a ToggleCallout of their own, which they await to order
+    // their focus work after it, so the change is marked as theirs and OnSetIsOpen does not toggle the callout a
+    // second time (see BitDropdown's twin). Toggled twice, the callout is placed twice in a row, and a click
+    // handled in the same task as the browser's event (WebAssembly) can see the second toggle undo the first.
+    private async Task<bool> AssignIsOpenInternal(bool value)
+    {
+        _internalIsOpenChange = true;
+        try
+        {
+            return await AssignIsOpen(value);
+        }
+        finally
+        {
+            _internalIsOpenChange = false;
+        }
     }
 
     // A menu that closes ends the search that was being typed into it, so the next one starts over rather
@@ -1747,6 +1802,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
     {
         if (Disabled || IsDisposed) return;
 
+        // Only an open state the page restyles the root for can move what the menu is placed against.
+        _repositionAfterRender = IsOpen && (Styles?.Opened.HasValue() is true || Classes?.Opened.HasValue() is true);
+
         await _js.BitCalloutToggleCallout(
             dotnetObj: _dotnetObj,
             componentId: _Id,
@@ -1776,6 +1834,9 @@ public partial class BitMenuButton<[DynamicallyAccessedMembers(DynamicallyAccess
 
     private void OnSetIsOpen()
     {
+        // The component's own open and close flows toggle the callout themselves, right after the assignment.
+        if (_internalIsOpenChange) return;
+
         _ = ToggleCalloutOnSetIsOpen();
     }
 

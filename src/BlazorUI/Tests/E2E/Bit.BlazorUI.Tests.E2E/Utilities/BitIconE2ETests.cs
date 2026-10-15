@@ -566,7 +566,10 @@ public class BitIconE2ETests : E2ETestBase
         foreach (var (id, classes) in expected)
         {
             await Expect(Page.Locator(id)).ToHaveClassAsync(new Regex($@"(^|\s){Regex.Escape(classes)}\s"));
-            Assert.IsTrue((await Page.Locator(id).BoundingBoxAsync())!.Width > 4, $"{id} draws its glyph.");
+
+            // Waited for rather than read once: the sets' stylesheet is a link of the page's head, which the interactive
+            // render of the head may put in again, and the glyph is drawn once it has been applied.
+            await Page.WaitForFunctionAsync("id => document.querySelector(id).getBoundingClientRect().width > 4", id);
         }
 
         await Expect(Page.Locator("#ico-ext-icon-wins")).Not.ToHaveClassAsync(HasClass("bit-icon--Accept"));

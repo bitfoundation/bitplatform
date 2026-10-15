@@ -171,6 +171,26 @@
     </BitNav>
 </E2ESection>
 
+<E2ESection Id="reorder" Title="AutoReorderOptions">
+    <button id="obtn-toggle-reorder" @onclick="() => _showReorderMiddle = !_showReorderMiddle">Toggle middle</button>
+    <BitNav Id="onav-reorder" TItem="BitNavOption" Mode="BitNavMode.Manual" AutoReorderOptions>
+        <BitNavOption Text="First" />
+        @if (_showReorderMiddle)
+        {
+            <BitNavOption Text="Middle" />
+        }
+        <BitNavOption Text="Group" IsExpanded="true">
+            <BitNavOption Text="Child first" />
+            @if (_showReorderMiddle)
+            {
+                <BitNavOption Text="Child middle" />
+            }
+            <BitNavOption Text="Child last" />
+        </BitNavOption>
+        <BitNavOption Text="Last" />
+    </BitNav>
+</E2ESection>
+
 <E2ESection Id="params" Title="Cascading parameters">
     <BitParams Parameters="@([new BitNavParams { IconOnly = true, Color = BitColor.Success }])">
         <BitNav Id="onav-params" TItem="BitNavOption">
@@ -229,6 +249,7 @@
     private int _reselects;
 
     private bool _showMiddle;
+    private bool _showReorderMiddle;
 
     private int _disabledClicks;
 }

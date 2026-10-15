@@ -26,8 +26,9 @@ public class BitImageE2ETests : E2ETestBase
     {
         var html = await (await Page.APIRequest.GetAsync($"{BaseUrl}{Path}")).TextAsync();
 
-        // Prerendered, the image is shown as the browser draws it, before any circuit exists.
-        StringAssert.Matches(html, new Regex("id=\"img-basic\" class=\"bit-img\"><img alt=\"A landscape picture\" src=\"samples/image-landscape.svg\" title=\"Hover title\" class=\"[^\"]*bit-img-vis bit-img-nat"));
+        // Prerendered, the image is shown as the browser draws it, before any circuit exists. Its src comes last,
+        // after everything that says how it is fetched (see BitImage.GetImageAttributes).
+        StringAssert.Matches(html, new Regex("id=\"img-basic\" class=\"bit-img\"><img alt=\"A landscape picture\" title=\"Hover title\" class=\"[^\"]*bit-img-vis bit-img-nat[^\"]*\" src=\"samples/image-landscape.svg\""));
         StringAssert.Contains(html, "<span id=\"status\">Loading</span>");
 
         await OpenAsync(Path);
@@ -580,9 +581,6 @@ public class BitImageE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: a prerendered Loading=Lazy BitImage far off screen is fetched as soon as the circuit takes the page over - "
-          + "the interactive render recreates the img, and Blazor fetches an img carrying @onload/@onerror at once (a plain "
-          + "<img loading=lazy @onload> on the same page behaves the same, one without the handlers stays deferred).")]
     public async Task Lazy_APrerenderedOffScreenImage_StaysDeferredAfterTheCircuitTakesOver()
     {
         var requested = false;
@@ -592,6 +590,9 @@ public class BitImageE2ETests : E2ETestBase
         };
 
         await OpenAsync(Path);
+
+        // The scroller is brought on screen, so what keeps the image away is its offset inside the scroller alone.
+        await Page.Locator("#lazy-scroller").ScrollIntoViewIfNeededAsync();
         for (var i = 0; i < 5; i++) await NextFramesAsync();
 
         Assert.IsFalse(requested, "Not fetched while far away.");

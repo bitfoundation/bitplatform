@@ -664,6 +664,40 @@ public class BitDataGridTests : BunitTestContext
         StringAssert.Contains(footer.TextContent, "15.5 (all rows)");
     }
 
+    // A keystroke typed while the search of an earlier one is still being read holds the newer text: the earlier search
+    // finishing must not write its own text back into the box, over what was typed since.
+    [TestMethod]
+    public void TypedSearchKeepsTheNewerTextWhenAnEarlierSearchFinishesLate()
+    {
+        var reads = new List<TaskCompletionSource<BitDataGridReadResult<TestRow>>>();
+        var component = RenderComponent<BitDataGrid<TestRow>>(parameters =>
+        {
+            parameters.Add(p => p.OnRead, (Func<BitDataGridReadRequest, Task<BitDataGridReadResult<TestRow>>>)(request =>
+            {
+                if (reads.Count == 0 && request.Search is null)
+                {
+                    reads.Add(new());
+                    return Task.FromResult(new BitDataGridReadResult<TestRow>(CreateRows(), 5));
+                }
+
+                var read = new TaskCompletionSource<BitDataGridReadResult<TestRow>>();
+                reads.Add(read);
+                return read.Task;
+            }));
+            parameters.Add(p => p.ChildContent, DefaultColumns());
+            parameters.Add(p => p.ShowSearchBox, true);
+            parameters.Add(p => p.SearchDebounce, 0);
+        });
+
+        component.Find("input.bit-dtg-search-input").Input("Al");
+        component.Find("input.bit-dtg-search-input").Input("Alp");
+
+        // The newer read lands first, the earlier one late.
+        foreach (var read in reads.Skip(1).Reverse().ToList()) read.TrySetResult(new BitDataGridReadResult<TestRow>(CreateRows().Take(1).ToList(), 1));
+
+        component.WaitForAssertion(() => Assert.AreEqual("Alp", component.Find("input.bit-dtg-search-input").GetAttribute("value")));
+    }
+
     [TestMethod]
     public async Task AriaIndicesReflectDatasetPositions()
     {
@@ -2344,6 +2378,27 @@ public class BitDataGridTests : BunitTestContext
 
         var template = component.Find(".bit-dtg-table").GetAttribute("style");
         StringAssert.Contains(template, "240px", "the measured width must become the column's track");
+    }
+
+    // The second press of a double click on a handle fits the column, read off the press's click count: the press opens
+    // the drag overlay, which takes the release - and the dblclick with it - wherever it renders before the button is up.
+    [TestMethod]
+    public void AutoFitRunsOnTheSecondPressOfADoubleClickOnTheResizeHandle()
+    {
+        Context.JSInterop.Setup<double>("BitBlazorUI.DataGrid.measureColumnContentWidth", _ => true).SetResult(240d);
+
+        var component = RenderGrid(configure: parameters => parameters.Add(p => p.Resizable, true));
+        var measures = () => Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.DataGrid.measureColumnContentWidth");
+
+        component.Find(".bit-dtg-resizer").MouseDown(new MouseEventArgs { Detail = 1, Button = 0 });
+        Assert.AreEqual(0, measures());
+
+        component.Find(".bit-dtg-resizer").PointerDown(new PointerEventArgs { ClientX = 100, Detail = 2 });
+        component.Find(".bit-dtg-resizer").MouseDown(new MouseEventArgs { Detail = 2, Button = 0 });
+
+        Assert.AreEqual(1, measures());
+        StringAssert.Contains(component.Find(".bit-dtg-table").GetAttribute("style"), "240px");
+        Assert.AreEqual(0, component.FindAll(".bit-dtg-resize-overlay").Count, "the press of a double click starts no drag");
     }
 
     [TestMethod]

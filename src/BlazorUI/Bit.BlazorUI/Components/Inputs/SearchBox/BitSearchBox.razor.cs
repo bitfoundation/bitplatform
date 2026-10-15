@@ -24,6 +24,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
     private bool _searchTriggered;
     private bool _suggestFailed;
     private int _lastTypedLength;
+    private int _calloutChanges;
     private bool _hasSuggestSource;
     private string? _announcement;
     private string? _foldedTerm;
@@ -691,6 +692,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         if (_isOpen is false) return;
 
         _isOpen = false;
+        _calloutChanges++;
         _selectedIndex = -1;
 
         ClassBuilder.Reset();
@@ -1094,18 +1096,32 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         }
         else
         {
+            // The re-check of a list the field already holds results for waits out the clicks that move the focus
+            // back to the input (a pick in a Modeless list), and it only stands for a focus nothing has acted on
+            // since: a list the user opened (by typing) or closed (Escape, Alt+ArrowUp, Tab, a pick, a click
+            // outside) in the meantime was a decision about the list, and reopening it behind that would undo it.
+            var calloutChanges = _calloutChanges;
+
             await Task.Delay(100);
+
+            if (calloutChanges != _calloutChanges) return;
+
             await OpenOrCloseCallout();
         }
     }
 
     private async Task HandleInputFocusOut(FocusEventArgs e)
     {
+        // The focus has left whatever the state of the field, so what follows it is updated either way; only the
+        // callback is held back for a disabled field, as the ones of the focus coming in are.
         _inputHasFocus = false;
         ClassBuilder.Reset();
         StyleBuilder.Reset();
 
-        await OnFocusOut.InvokeAsync(e);
+        if (Disabled is false)
+        {
+            await OnFocusOut.InvokeAsync(e);
+        }
 
         if (Modeless)
         {
@@ -1627,6 +1643,11 @@ public partial class BitSearchBox : BitTextInputBase<string?>
 
             try
             {
+                // Opening the list above awaits a render, and a newer search can have replaced this one in the
+                // meantime: the term it was started for is superseded, so the provider is not asked about it at
+                // all rather than being handed a token that is already cancelled.
+                if (cts.IsCancellationRequested || IsDisposed) return;
+
                 var items = await SuggestItemsProvider(new(term, MaxSuggestCount, cts.Token));
 
                 if (cts.IsCancellationRequested || IsDisposed) return;
@@ -1796,12 +1817,18 @@ public partial class BitSearchBox : BitTextInputBase<string?>
             if (_isOpen is false)
             {
                 _isOpen = true;
+                var opening = ++_calloutChanges;
 
                 ClassBuilder.Reset();
 
                 StateHasChanged();
 
                 await Task.Delay(100); // wait for UI to be rendered by Blazor before showing the callout so the calculation would be correct!
+
+                // Closed (and maybe opened again) while the list was being rendered - Escape right after the first
+                // character: the close has already hidden the list, and an opening after it shows it itself, so this
+                // one neither shows it nor reports it as opened a second time.
+                if (opening != _calloutChanges || IsDisposed) return;
 
                 await ToggleCallout();
 
@@ -1827,6 +1854,7 @@ public partial class BitSearchBox : BitTextInputBase<string?>
         var wasOpen = _isOpen;
 
         _isOpen = false;
+        _calloutChanges++;
 
         // A dismissed list must come back without a leftover virtual focus on it, otherwise
         // reopening it would silently highlight whatever was highlighted the previous time.

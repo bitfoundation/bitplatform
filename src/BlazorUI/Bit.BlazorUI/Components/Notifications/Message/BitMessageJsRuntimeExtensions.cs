@@ -11,6 +11,11 @@ internal static class BitMessageJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Message.observeOverflow", id, root, dotnetObj, reflow);
     }
 
+    internal static ValueTask BitMessageAfterPaint(this IJSRuntime jsRuntime)
+    {
+        return jsRuntime.InvokeVoid("BitBlazorUI.Message.afterPaint");
+    }
+
     internal static ValueTask BitMessageDispose(this IJSRuntime jsRuntime, string id)
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Message.dispose", id);

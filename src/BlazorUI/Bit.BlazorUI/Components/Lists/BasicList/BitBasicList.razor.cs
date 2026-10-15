@@ -21,7 +21,6 @@ public partial class BitBasicList<TItem> : BitComponentBase
     private bool _virtualizeTookOver;
     private int _internalLoadMoreSize = 20;
     private ICollection<TItem> _viewItems = [];
-    private string? _autoLoadMargin = null;
     private CancellationTokenSource? _globalCts;
     private ICollection<TItem>? _internalItems = null;
     private ElementReference _itemsElement = default!;
@@ -105,6 +104,27 @@ public partial class BitBasicList<TItem> : BitComponentBase
 
     private bool _ShowSentinel => LoadMore && AutoLoad && Disabled is false && _loadMoreFinished is false;
 
+    // The AutoLoadThreshold is the length of the sentinel: a strip that long, laid back over the end of the loaded items by
+    // a negative margin of the same length (so it takes no room), enters the visible region as soon as the end is that
+    // many pixels away from it. Drawn into the content rather than handed to the observer as a rootMargin, it is clipped
+    // by whichever box scrolls the list - the list itself, which is overflow:auto, a pane around it or the page - where a
+    // rootMargin would only ever grow the viewport, and so did nothing for a list scrolling its own content.
+    private string? _SentinelStyle
+    {
+        get
+        {
+            var threshold = Math.Max(0, AutoLoadThreshold);
+
+            if (threshold == 0) return null;
+
+            var length = threshold.ToString(CultureInfo.InvariantCulture);
+
+            return _IsHorizontal
+                ? $"width:{length}px;margin-inline-start:-{length}px"
+                : $"height:{length}px;margin-block-start:-{length}px";
+        }
+    }
+
     // Whether the virtualized items come straight off the provider rather than out of the items the list holds.
     private bool _VirtualizeProvider => ItemsProvider is not null && LoadMore is false;
 
@@ -155,7 +175,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
     /// <remarks>
     /// A positive value asks for the next page while the end is still that many pixels away, which is
     /// what keeps a fast scroll from reaching an empty region before the page arrives. A value of zero
-    /// only loads once the end is actually reached.
+    /// only loads once the end is actually reached. The distance is measured to the visible end of
+    /// whichever box scrolls the list - the list itself, a pane around it or the page - so a list that
+    /// is out of the view loads nothing until it comes into it.
     /// </remarks>
     [Parameter] public int AutoLoadThreshold { get; set; }
 
@@ -370,6 +392,36 @@ public partial class BitBasicList<TItem> : BitComponentBase
     public BitBasicListClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Keeps the footer in view at the end of the list while its rows scroll past it.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="FooterTemplate"/> is rendered into a wrapper of exactly its own size, so a sticky position given to
+    /// an element inside the template has no room to stick in; this pins the wrapper itself to the bottom of the list
+    /// (to its inline end in a <see cref="Horizontal"/> one). The wrapper has no background of its own: paint one in the
+    /// template or through <c>Styles.Footer</c> / <c>Classes.Footer</c>, so the rows passing underneath it do not show
+    /// through.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool StickyFooter { get; set; }
+
+    /// <summary>
+    /// Keeps the header in view at the start of the list while its rows scroll past it.
+    /// <br />
+    /// The default value is <strong>false</strong>.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="HeaderTemplate"/> is rendered into a wrapper of exactly its own size, so a sticky position given to
+    /// an element inside the template has no room to stick in and scrolls away with the rows; this pins the wrapper
+    /// itself to the top of the list (to its inline start in a <see cref="Horizontal"/> one). The wrapper has no
+    /// background of its own: paint one in the template or through <c>Styles.Header</c> / <c>Classes.Header</c>, so the
+    /// rows passing underneath it do not show through.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool StickyHeader { get; set; }
+
+    /// <summary>
     /// Enables virtualization in rendering the list.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -514,6 +566,9 @@ public partial class BitBasicList<TItem> : BitComponentBase
         ClassBuilder.Register(() => Classes?.Root);
 
         ClassBuilder.Register(() => _IsHorizontal ? "bit-bsl-hrz" : string.Empty);
+
+        ClassBuilder.Register(() => StickyHeader ? "bit-bsl-shd" : string.Empty);
+        ClassBuilder.Register(() => StickyFooter ? "bit-bsl-sft" : string.Empty);
     }
 
     protected override void RegisterCssStyles()
@@ -618,25 +673,21 @@ public partial class BitBasicList<TItem> : BitComponentBase
             }
         }
 
+        // The threshold is drawn into the sentinel itself (see _SentinelStyle), and an observer follows the geometry of
+        // the element it watches, so a changed threshold needs no new registration.
         if (_ShowSentinel)
         {
-            var margin = $"{Math.Max(0, AutoLoadThreshold)}px";
-
-            // A margin of its own is baked into the observer, so a changed threshold only takes effect by
-            // registering again, which replaces the observer registered under the same id.
-            if (_autoLoadRegistered is false || _autoLoadMargin != margin)
+            if (_autoLoadRegistered is false)
             {
                 _autoLoadRegistered = true;
-                _autoLoadMargin = margin;
                 _dotnetObj ??= DotNetObjectReference.Create(this);
 
-                await _js.BitObserversRegisterIntersection(_Id, _sentinelElement, _dotnetObj, margin);
+                await _js.BitObserversRegisterIntersection(_Id, _sentinelElement, _dotnetObj);
             }
         }
         else if (_autoLoadRegistered)
         {
             _autoLoadRegistered = false;
-            _autoLoadMargin = null;
 
             await _js.BitObserversUnregisterIntersection(_Id);
         }

@@ -16,7 +16,7 @@ public partial class BitMessageDemo
             Name = "Alignment",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "Determines the alignment of the content section of the message.",
+            Description = "Determines the alignment of the content section of the message: Start, End, Center and the three Space values place the icon and the text along the width; Baseline lines the icon up with the first line of the text and Stretch draws each the full height of the row, both keeping them at the start.",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
         },

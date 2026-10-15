@@ -505,7 +505,11 @@
                 }
             }
 
-            if ((e.key === ' ' || e.key === 'Spacebar') && target.tagName !== 'BUTTON' && target.getAttribute('role') === 'button') {
+            // An event or a slot drawn as a role="button" element is activated by its .NET keydown handler, so the
+            // browser's own reading of the key is withdrawn: Space would scroll the page, and Enter would go on to a
+            // keypress whose implicit click lands on whatever the handler focused - where the handler runs inside
+            // the keydown (WebAssembly), the first button of the dialog it just opened, which closes it again.
+            if ((e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') && target.tagName !== 'BUTTON' && target.getAttribute('role') === 'button') {
                 e.preventDefault();
                 return;
             }

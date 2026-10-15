@@ -66,8 +66,6 @@ public class BitDropMenuMobileE2ETests : E2ETestBase
     [TestMethod]
     public async Task OpenOnHover_OnATouchScreen_TheButtonTogglesTheCalloutOnATap()
     {
-        if (IsWebKit) Assert.Inconclusive("WebKit's mobile emulation dispatches no click for a tap on the drop menu's overlay (a div without a pointer cursor, which iOS does not treat as clickable), so the tap outside does not close the callout there.");
-
         await OpenAsync(Url);
 
         var button = Page.Locator("#dm-hover > .bit-drm-btn");
@@ -81,8 +79,11 @@ public class BitDropMenuMobileE2ETests : E2ETestBase
         await button.TapAsync();
         await Expect(callout).ToBeVisibleAsync();
         await Expect(Page.Locator("#hover-opens")).ToHaveTextAsync("1");
-        // No hover to close it, so the overlay takes the taps that close it like any other drop menu's.
+        // No hover to close it, so the overlay takes the taps that close it like any other drop menu's - in WebKit's
+        // mobile emulation too, which like iOS dispatches a click for a tap only on an element it takes for a
+        // clickable one: the overlay carries a click listener of its own for that, and no pointer cursor.
         await Expect(overlay).Not.ToHaveClassAsync(HasClass("bit-drm-ovl-hov"));
+        await Expect(overlay).Not.ToHaveCSSAsync("cursor", "pointer");
 
         await Page.Touchscreen.TapAsync(5, 5);
         await Expect(callout).ToBeHiddenAsync();

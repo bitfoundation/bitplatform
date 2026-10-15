@@ -1,0 +1,132 @@
+name: bit platform CI - BlazorUI E2E
+
+# The full end-to-end suite of bit BlazorUI (src/BlazorUI/Tests/E2E): every non-legacy component of Bit.BlazorUI and
+# Bit.BlazorUI.Extras driven by Playwright against a test host that renders each page either on the server
+# (InteractiveServer) or in the browser (InteractiveWebAssembly). One job per browser engine and render mode; the
+# suite is long, so it only runs when started by hand (Actions > this workflow > Run workflow).
+# See src/BlazorUI/Tests/E2E/README.md for running it locally.
+
+on:
+  workflow_dispatch:
+    inputs:
+      browsers:
+        description: Browser engines to run
+        type: choice
+        default: all
+        options:
+        - all
+        - chromium
+        - firefox
+        - webkit
+      render-modes:
+        description: Render modes to run
+        type: choice
+        default: all
+        options:
+        - all
+        - server
+        - wasm
+      filter:
+        description: Optional test filter (e.g. FullyQualifiedName~BitButtonE2ETests); empty runs everything
+        type: string
+        default: ''
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  # Turns the inputs into the job matrix, so a run can be narrowed to one engine or one render mode.
+  plan:
+    name: plan the E2E matrix
+    runs-on: ubuntu-24.04
+    outputs:
+      browsers: ${{ steps.matrix.outputs.browsers }}
+      modes: ${{ steps.matrix.outputs.modes }}
+    steps:
+    - id: matrix
+      env:
+        BROWSERS: ${{ inputs.browsers }}
+        MODES: ${{ inputs.render-modes }}
+      run: |
+        if [ "$BROWSERS" = "all" ]; then echo 'browsers=["chromium","firefox","webkit"]' >> "$GITHUB_OUTPUT"; else echo "browsers=[\"$BROWSERS\"]" >> "$GITHUB_OUTPUT"; fi
+        if [ "$MODES" = "all" ]; then echo 'modes=["server","wasm"]' >> "$GITHUB_OUTPUT"; else echo "modes=[\"$MODES\"]" >> "$GITHUB_OUTPUT"; fi
+
+  e2e-BlazorUI:
+    needs: plan
+    name: E2E ${{ matrix.browser }} / ${{ matrix.mode }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 180
+
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: ${{ fromJSON(needs.plan.outputs.browsers) }}
+        mode: ${{ fromJSON(needs.plan.outputs.modes) }}
+
+    env:
+      E2E_DIR: src/BlazorUI/Tests/E2E
+      E2E_HOST_URL: http://localhost:5290
+      BROWSER: ${{ matrix.browser }}
+      E2E_RENDER_MODE: ${{ matrix.mode }}
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    # The host builds the libraries it references (and their scripts and styles through npm) and the WebAssembly
+    # client that holds the pages; the test project only needs Playwright and MSTest.
+    - name: Build the E2E test host
+      run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost -f net10.0
+
+    - name: Build the E2E tests
+      run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E -f net10.0
+
+    - name: Install the Playwright browser
+      run: pwsh $E2E_DIR/Bit.BlazorUI.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
+
+    # Started once for the whole run (the tests attach to a host already answering at E2E_HOST_URL), with its output
+    # kept for the artifacts below.
+    - name: Start the E2E test host
+      run: |
+        nohup dotnet run --project $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost --no-build --framework net10.0 --urls $E2E_HOST_URL > host.log 2>&1 &
+        for i in $(seq 1 120); do
+          if curl -s -o /dev/null -w "%{http_code}" $E2E_HOST_URL/ | grep -q 200; then echo "host is up"; exit 0; fi
+          sleep 1
+        done
+        echo "the host did not come up"; cat host.log; exit 1
+
+    # dotnet exec on the built assembly: the MSTest runner reports "zero tests ran" through dotnet test here.
+    - name: Run the E2E tests
+      env:
+        FILTER: ${{ inputs.filter }}
+      run: |
+        cd $E2E_DIR/Bit.BlazorUI.Tests.E2E
+        args=(--report-trx --results-directory "$GITHUB_WORKSPACE/e2e-results")
+        if [ -n "$FILTER" ]; then args+=(--filter "$FILTER"); fi
+        dotnet exec bin/Debug/net10.0/Bit.BlazorUI.Tests.E2E.dll "${args[@]}"
+
+    - name: Upload the test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: e2e-results-${{ matrix.browser }}-${{ matrix.mode }}
+        path: |
+          e2e-results
+          host.log
+        if-no-files-found: ignore

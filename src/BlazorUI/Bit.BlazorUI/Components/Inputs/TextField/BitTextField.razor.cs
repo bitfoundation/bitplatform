@@ -261,7 +261,8 @@ public partial class BitTextField : BitTextInputBase<string?>
     /// inline suggestion. The user can accept it by pressing Tab or Enter, or clicking/touching the ghost text,
     /// and reject it with Escape, which then does nothing else: neither <see cref="ClearOnEscape"/>,
     /// <see cref="OnKeyDown"/> nor <see cref="OnEscape"/> hears it, the way a list that is open closes before
-    /// anything around it reacts to the key.
+    /// anything around it reacts to the key. A rejected suggestion stays hidden until the field is typed into or
+    /// a different one is set.
     /// </summary>
     [Parameter] public string? GhostText { get; set; }
 

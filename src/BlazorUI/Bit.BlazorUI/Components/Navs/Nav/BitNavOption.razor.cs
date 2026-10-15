@@ -2,6 +2,12 @@
 
 public partial class BitNavOption : ComponentBase, IDisposable
 {
+    // The marker the nav reads the markup order of the options back from, and the value that tells the
+    // options apart in that read-back.
+    internal const string _OPTION_ID_ATTRIBUTE = "data-bit-nav-opt";
+
+    internal string _OptionId { get; } = BitShortId.NewId();
+
     private bool _disposed;
     private bool _isExpanded;
     private bool? _isExpandedParameter;
@@ -244,6 +250,9 @@ public partial class BitNavOption : ComponentBase, IDisposable
         else
         {
             Parent.ChildItems.Add(this);
+
+            // Only the parent re-renders for a nested option, so the nav is told its tree may be out of markup order.
+            Nav?.MarkOptionsOrderDirty();
         }
 
         // A nested option only re-renders its parent, not the nav, so the tree the nav has cached the

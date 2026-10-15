@@ -106,6 +106,12 @@ public partial class BitPivot : BitComponentBase
     /// <summary>
     /// Determines the alignment of the header section of the pivot.
     /// </summary>
+    /// <remarks>
+    /// The distributions (Start, End, Center and the three Space ones) place the tabs along the header.
+    /// <see cref="BitAlignment.Baseline"/> and <see cref="BitAlignment.Stretch"/> keep them at the start and align them
+    /// across the header instead: Baseline lines the tabs up on the first line of their labels, Stretch draws each the
+    /// full height (or, in a vertical header, the full width) of the header.
+    /// </remarks>
     [Parameter, ResetStyleBuilder]
     public BitAlignment? Alignment { get; set; }
 
@@ -490,7 +496,10 @@ public partial class BitPivot : BitComponentBase
 
         StyleBuilder.Register(() => Gap.HasValue() ? $"--bit-pvt-gap:{Gap}" : string.Empty);
 
-        StyleBuilder.Register(() => Alignment switch
+        // Baseline and Stretch say nothing about where along the header the tabs go (justify-content has no baseline,
+        // and lays a stretch out as flex-start), so they leave the tabs at the start and line them up across the
+        // header instead: on the first line of their labels, or each the full height of the header.
+        StyleBuilder.Register(() => Alignment.ForMainAxis() switch
         {
             BitAlignment.Start => "--bit-pvt-hal:flex-start",
             BitAlignment.End => "--bit-pvt-hal:flex-end",
@@ -498,9 +507,14 @@ public partial class BitPivot : BitComponentBase
             BitAlignment.SpaceBetween => "--bit-pvt-hal:space-between",
             BitAlignment.SpaceAround => "--bit-pvt-hal:space-around",
             BitAlignment.SpaceEvenly => "--bit-pvt-hal:space-evenly",
-            BitAlignment.Baseline => "--bit-pvt-hal:baseline",
-            BitAlignment.Stretch => "--bit-pvt-hal:stretch",
             _ => "--bit-pvt-hal:flex-start"
+        });
+
+        StyleBuilder.Register(() => Alignment switch
+        {
+            BitAlignment.Baseline => "--bit-pvt-hai:baseline",
+            BitAlignment.Stretch => "--bit-pvt-hai:stretch",
+            _ => string.Empty
         });
     }
 
@@ -1290,11 +1304,11 @@ public partial class BitPivot : BitComponentBase
             // round trip.
             case "ArrowRight":
                 if (_isVertical) return;
-                next = index < 0 ? 0 : (await IsRtlAsync(_js, _headerRef) ? index - 1 : index + 1);
+                next = index < 0 ? 0 : (await IsRtlArrowAsync(_js, e.Key, _headerRef) ? index - 1 : index + 1);
                 break;
             case "ArrowLeft":
                 if (_isVertical) return;
-                next = index < 0 ? 0 : (await IsRtlAsync(_js, _headerRef) ? index + 1 : index - 1);
+                next = index < 0 ? 0 : (await IsRtlArrowAsync(_js, e.Key, _headerRef) ? index + 1 : index - 1);
                 break;
             case "ArrowDown":
                 if (_isVertical is false) return;

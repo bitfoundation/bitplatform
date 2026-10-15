@@ -347,7 +347,6 @@ public class BitPhoneInputE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: Alt+ArrowUp closes the open list but its default is not prevented (the prevent-keys script of Extras skips every modified key), so Chromium also scrolls the page by a screen, which in turn dismisses the callout as a page scroll and drops the focus to the body until the field takes it back. Alt+ArrowDown in an open list scrolls the page down, dismisses the list and leaves the focus on the body.")]
     public async Task Keyboard_AltArrowUp_LeavesThePageWhereItIs()
     {
         await OpenAsync(Route);
@@ -395,7 +394,6 @@ public class BitPhoneInputE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: a type-ahead letter pressed on the closed NoSearchBox dropdown is applied only after the open's interop round trips, so the letters pressed while those run are applied ahead of it: \"ger\" pressed at once lands on Eritrea rather than Germany. Typed at a person's pace on a local link it works (NoSearchBox_TheDropdownIsAComboboxWithTypeAhead).")]
     public async Task NoSearchBox_TypeAheadPressedAtOnceOnTheClosedDropdown_FindsTheCountry()
     {
         await OpenAsync(Route);

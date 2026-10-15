@@ -520,8 +520,13 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
     {
         // Last line of defense for every host of this dialog (add entry points and the details
         // dialog's edit overlay): read-only may have been switched on after the dialog opened, so
-        // refuse the save rather than mutating state the calendar no longer allows to change.
-        if (CanSubmit is false) return;
+        // refuse the save rather than mutating state the calendar no longer allows to change - and say so, the way
+        // a drop the read-only switch landed in is reported.
+        if (CanSubmit is false)
+        {
+            Notifier.ReportRefusal(BitFullCalendarChangeRefusal.ReadOnly);
+            return;
+        }
 
         // Guard against re-entrancy: a second click or Enter press while the first save is still
         // in flight would otherwise add/update the event twice before the dialog closes.
@@ -556,9 +561,12 @@ public partial class BitFcAddEditEventDialog : IAsyncDisposable
         // action instead of silently creating what the calendar would refuse from a drag: an event
         // outside the navigable window could never be reached again, one outside the business hours
         // breaks the constraint the consumer asked for, and one on a taken slot is a double booking.
+        // The refusal is reported like every other one (OnRefused), but the reason is shown here, next to the
+        // action, rather than as the calendar's notice behind the dialog.
         if (_errors.Count == 0)
         {
             var refusal = State.ValidateRange(editingId, _startDate, _endDate, resourceId);
+            Notifier.ReportRefusal(refusal, showNotice: false);
             switch (refusal)
             {
                 case BitFullCalendarChangeRefusal.OutOfRange:

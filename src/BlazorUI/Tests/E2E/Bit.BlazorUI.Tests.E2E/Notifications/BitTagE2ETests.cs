@@ -195,21 +195,31 @@ public class BitTagE2ETests : E2ETestBase
         await Expect(Root("dm-Design")).ToHaveCountAsync(0);
         await Expect(Dismiss("dm-Research")).ToBeFocusedAsync();
 
+        // Whether the default of each key was prevented, read on the window once every listener of the page has had it.
+        await Page.EvaluateAsync("() => { window.__tagKeys = []; window.addEventListener('keydown', e => window.__tagKeys.push(`${e.key}:${e.defaultPrevented}`)); }");
+
         await Page.Keyboard.PressAsync("Delete");
         await Expect(Page.Locator("#dismissed")).ToHaveTextAsync("Design,Research");
         await Expect(Dismiss("dm-Urgent")).ToBeFocusedAsync();
 
-        // WebKit's Windows build takes Backspace for the browser's Back as well (the tag acts on the key without preventing
-        // its default), so the page would be left; there the third tag is dismissed with Delete.
-        await Page.Keyboard.PressAsync(IsWebKit ? "Delete" : "Backspace");
+        // Backspace is the browser's Back in WebKit, so the key the tag acts on has its default prevented - the page stays.
+        var url = Page.Url;
+        await Page.Keyboard.PressAsync("Backspace");
         await Expect(Page.Locator("#dismissed")).ToHaveTextAsync("Design,Research,Urgent");
+        Assert.AreEqual(url, Page.Url);
 
-        // Other keys do nothing.
+        // Other keys do nothing, and keep their default.
         await Page.ClickAsync("#btn-dm-reset");
         await Dismiss("dm-Design").FocusAsync();
         await Page.Keyboard.PressAsync("a");
         await Page.Keyboard.PressAsync("Enter");
         await Expect(Page.Locator("#dismissed")).ToHaveTextAsync("Design");
+
+        var keys = await Page.EvaluateAsync<string[]>("() => window.__tagKeys");
+        CollectionAssert.Contains(keys, "Delete:true");
+        CollectionAssert.Contains(keys, "Backspace:true");
+        CollectionAssert.Contains(keys, "a:false");
+        CollectionAssert.Contains(keys, "Enter:false");
     }
 
     [TestMethod]
@@ -231,8 +241,16 @@ public class BitTagE2ETests : E2ETestBase
         await disabled.DispatchEventAsync("keydown", new { key = "Delete" });
         await Expect(Page.Locator("#other-dismissals")).ToHaveTextAsync("0");
 
-        await Dismiss("dm-custom").ClickAsync();
+        // A disabled tag does not act on Backspace, so it leaves the key its default.
+        await Expect(disabled).Not.ToHaveAttributeAsync("data-bit-tag-dsm", new System.Text.RegularExpressions.Regex(".*"));
+        Assert.IsTrue(await disabled.EvaluateAsync<bool>("el => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }))"),
+            "The default of a Backspace on a disabled tag is left alone.");
+        Assert.IsFalse(await Dismiss("dm-custom").EvaluateAsync<bool>("el => el.dispatchEvent(new KeyboardEvent('keydown', { key: 'Backspace', bubbles: true, cancelable: true }))"),
+            "The default of a Backspace on a tag that acts on it is prevented.");
         await Expect(Page.Locator("#other-dismissals")).ToHaveTextAsync("1");
+
+        await Dismiss("dm-custom").ClickAsync();
+        await Expect(Page.Locator("#other-dismissals")).ToHaveTextAsync("2");
     }
 
     [TestMethod]

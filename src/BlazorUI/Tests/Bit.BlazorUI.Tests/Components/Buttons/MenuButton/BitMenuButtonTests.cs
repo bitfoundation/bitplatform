@@ -1156,6 +1156,85 @@ public class BitMenuButtonTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMenuButtonReclickShouldRunTheCommandAgainWithoutTouchingTheLoadingState()
+    {
+        var loadingStates = new List<bool>();
+        var firstTcs = new TaskCompletionSource();
+        var secondTcs = new TaskCompletionSource();
+        var clickCount = 0;
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.Reclickable, true);
+            parameters.Add(p => p.IsLoadingChanged, (bool value) => loadingStates.Add(value));
+            // the second click abandons the run the first one started, the way a handler that replaces its own
+            // in-flight work does
+            parameters.Add(p => p.OnClick, (BitMenuButtonItem _) =>
+            {
+                clickCount++;
+                if (clickCount == 1) return firstTcs.Task;
+                firstTcs.TrySetException(new TaskCanceledException());
+                return secondTcs.Task;
+            });
+        });
+
+        var header = com.Find(".bit-mnb-opb");
+
+        var firstClick = header.ClickAsync(new MouseEventArgs());
+        var secondClick = header.ClickAsync(new MouseEventArgs());
+
+        // WhenAny rather than an await, since the abandoned run ends on the exception thrown into it
+        await Task.WhenAny(firstClick);
+
+        // the abandoned first run is gone, but the second one is still in flight and still loading
+        Assert.AreEqual(2, clickCount);
+        Assert.IsTrue(com.Instance.IsLoading);
+        CollectionAssert.AreEqual(new List<bool> { true }, loadingStates);
+
+        secondTcs.SetResult();
+        await secondClick;
+
+        Assert.IsFalse(com.Instance.IsLoading);
+        CollectionAssert.AreEqual(new List<bool> { true, false }, loadingStates);
+    }
+
+    [TestMethod]
+    public async Task BitMenuButtonReclickEndingFirstShouldNotClearTheLoadingOfTheLatestRun()
+    {
+        var firstTcs = new TaskCompletionSource();
+        var secondTcs = new TaskCompletionSource();
+        var clickCount = 0;
+
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, true);
+            parameters.Add(p => p.AutoLoading, true);
+            parameters.Add(p => p.Reclickable, true);
+            parameters.Add(p => p.OnClick, (BitMenuButtonItem _) => ++clickCount == 1 ? firstTcs.Task : secondTcs.Task);
+        });
+
+        var header = com.Find(".bit-mnb-opb");
+
+        var firstClick = header.ClickAsync(new MouseEventArgs());
+        var secondClick = header.ClickAsync(new MouseEventArgs());
+
+        // the run the re-click left behind ends first, and the spinner stays for the one still in flight
+        firstTcs.SetResult();
+        await firstClick;
+
+        Assert.IsTrue(com.Instance.IsLoading);
+
+        secondTcs.SetResult();
+        await secondClick;
+
+        Assert.IsFalse(com.Instance.IsLoading);
+    }
+
+    [TestMethod]
     public void BitMenuButtonLoadingDelayShouldHoldBackTheSpinner()
     {
         var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
@@ -1219,6 +1298,21 @@ public class BitMenuButtonTests : BunitTestContext
 
         Assert.AreEqual("the-form", com.Find(".bit-mnb-opb").GetAttribute("form"));
         Assert.AreEqual("the-form", com.Find("button.bit-mnb-itm").GetAttribute("form"));
+    }
+
+    [TestMethod]
+    public void BitMenuButtonFormAttributeShouldAssociateTheItemsAsWellAsTheHeader()
+    {
+        // The open menu is moved to the body, so an item reaches the form a hand-written form attribute names
+        // only through that attribute of its own - the header and the items can never name different forms.
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["form"] = "the-form" });
+        });
+
+        Assert.AreEqual("the-form", com.Find(".bit-mnb-opb").GetAttribute("form"));
+        Assert.IsTrue(com.FindAll("button.bit-mnb-itm").All(i => i.GetAttribute("form") == "the-form"));
     }
 
     [TestMethod]
@@ -1491,6 +1585,55 @@ public class BitMenuButtonTests : BunitTestContext
 
         Assert.AreEqual(com.Find(".bit-mnb").Id, toggle.Arguments[^2]);
         Assert.IsFalse((com.Find(".bit-mnb-cal").GetAttribute("style") ?? "").Contains("--bit-MenuButton-"));
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)]
+    public void BitMenuButtonShouldToggleItsCalloutOncePerOpenAndClose(bool split)
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Split, split);
+        });
+
+        int Toggles() => Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        // The open flow toggles the callout itself, so the IsOpen it assigns on the way must not toggle it again:
+        // placed twice in a row, the second toggle can undo the first when the click runs in the browser's task.
+        com.Find(split ? ".bit-mnb-chb" : ".bit-mnb-opb").Click();
+        Assert.AreEqual(1, Toggles());
+
+        com.Find(".bit-mnb-ovl").Click();
+        Assert.AreEqual(2, Toggles());
+
+        // an IsOpen written by the page still reaches the callout, once
+        com.Render(parameters => parameters.Add(p => p.IsOpen, true));
+        Assert.AreEqual(3, Toggles());
+    }
+
+    [TestMethod,
+        DataRow(null, null, 0),
+        DataRow("margin-top: 3px;", null, 1),
+        DataRow(null, "opened", 1)]
+    public void BitMenuButtonShouldPlaceItsMenuAgainOnceARestyledOpenRootIsRendered(string? openedStyle, string? openedClass, int expected)
+    {
+        var com = RenderComponent<BitMenuButton<BitMenuButtonItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.Styles, new BitMenuButtonClassStyles { Opened = openedStyle });
+            parameters.Add(p => p.Classes, new BitMenuButtonClassStyles { Opened = openedClass });
+        });
+
+        com.Find(".bit-mnb-opb").Click();
+
+        // the open root the page restyles can sit somewhere else than the one the toggle placed the menu against
+        Assert.AreEqual(expected, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.reposition"));
+
+        // closing it places nothing again
+        com.Find(".bit-mnb-ovl").Click();
+        Assert.AreEqual(expected, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.reposition"));
     }
 
     [TestMethod]

@@ -242,7 +242,7 @@
     @if (_showFailed)
     {
         <div class="map-box">
-            <BitMap TMapProvider="FailingProvider" Id="map-failed" OnLoadStateChanged="s => _failedState = s.ToString()" />
+            <BitMap @ref="_failedMap" TMapProvider="FailingProvider" Id="map-failed" OnLoadStateChanged="s => _failedState = s.ToString()" />
         </div>
         <div class="map-box">
             <BitMap TMapProvider="FailingProvider" Id="map-failed-template">
@@ -250,7 +250,11 @@
             </BitMap>
         </div>
     }
+    @* The map methods called on a map that never became ready: they do nothing rather than throw, which from this
+       handler would tear the circuit down. *@
+    <button id="btn-call-failed" @onclick="CallTheFailedMap">Call the failed map</button>
     <span id="failed-state">@(_failedState ?? "none")</span>
+    <span id="failed-calls">@(_failedCalls ?? "none")</span>
 </E2ESection>
 
 <E2ESection Id="lazy" Title="LazyLoad">
@@ -407,6 +411,19 @@
     private bool _dialogOpen;
     private bool _showFailed;
     private string? _failedState;
+    private string? _failedCalls;
+    private BitMap<FailingProvider> _failedMap = default!;
+
+    private async Task CallTheFailedMap()
+    {
+        await _failedMap.SetView(new BitMapLatLng(48.85, 2.35), 10);
+        await _failedMap.FlyTo(new BitMapLatLng(48.85, 2.35));
+        await _failedMap.AddMarker(new BitMapMarker { Id = "late", Position = new BitMapLatLng(48.85, 2.35) });
+        await _failedMap.ZoomIn();
+        var located = await _failedMap.Locate();
+        var closed = await _failedMap.CloseMarkerPopup();
+        _failedCalls = $"ready={_failedMap.IsReady};markers={_failedMap.MarkerIds.Count};located={located is not null};closed={closed}";
+    }
     private string? _lazyState;
     private bool _mounted = true;
 

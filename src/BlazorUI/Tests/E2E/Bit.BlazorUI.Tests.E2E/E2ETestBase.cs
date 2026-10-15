@@ -76,6 +76,21 @@ public abstract class E2ETestBase
         var name => name
     };
 
+    /// <summary>
+    /// Where the pages run, as <c>E2E_RENDER_MODE</c> names it: <c>server</c> (InteractiveServer, the default) or
+    /// <c>wasm</c> (InteractiveWebAssembly). The host reads it off a cookie every browser context of the run carries.
+    /// </summary>
+    protected static string RenderMode => (Environment.GetEnvironmentVariable("E2E_RENDER_MODE") ?? "server").ToLowerInvariant() switch
+    {
+        "wasm" or "webassembly" => "wasm",
+        _ => "server"
+    };
+
+    /// <summary>
+    /// Whether the pages run in the browser (InteractiveWebAssembly) rather than on the server.
+    /// </summary>
+    protected static bool IsWasm => RenderMode == "wasm";
+
     protected static bool IsChromium => BrowserName is "chromium" or "edge";
     protected static bool IsFirefox => BrowserName is "firefox";
     protected static bool IsWebKit => BrowserName is "webkit";
@@ -103,6 +118,7 @@ public abstract class E2ETestBase
         }
 
         _context = await _browser.NewContextAsync(ContextOptions);
+        await _context.AddCookiesAsync([new Cookie { Name = "e2e-render-mode", Value = RenderMode, Url = BaseUrl }]);
         Page = await _context.NewPageAsync();
         Page.SetDefaultTimeout(DefaultTimeout);
         Page.PageError += (_, error) => _pageErrors.Add(error);
@@ -159,14 +175,17 @@ public abstract class E2ETestBase
     /// <summary>
     /// Opens a page of the host (<c>/e2e/button</c>, or a full path with its query) and waits until its first
     /// interactive render has run, which every page reports through its E2EStatus ("Ready", or the status given).
+    /// A page whose test holds a resource back (an image answered through Page.RouteAsync only when the test says so)
+    /// passes <paramref name="waitForLoad"/> false: the navigation then returns once the document arrives instead of
+    /// waiting for the load event that resource would hold up.
     /// </summary>
-    protected async Task OpenAsync(string path, string status = "Ready")
+    protected async Task OpenAsync(string path, string status = "Ready", bool waitForLoad = true)
     {
         var url = path.StartsWith("http", StringComparison.OrdinalIgnoreCase) ? path : $"{BaseUrl}/{path.TrimStart('/')}";
 
         // Not WaitForLoadStateAsync(NetworkIdle): Blazor Server keeps its SignalR connection open, which Playwright
         // counts as network activity, so it would never fire.
-        await Page.GotoAsync(url);
+        await Page.GotoAsync(url, new() { WaitUntil = waitForLoad ? WaitUntilState.Load : WaitUntilState.Commit });
         await WaitForStatusAsync(status);
     }
 
@@ -205,6 +224,16 @@ public abstract class E2ETestBase
     protected async Task<IReadOnlyList<string>> GetServerErrorsAsync()
     {
         return (await ReadServerErrorsAsync(_serverErrorsBefore, _visitedPaths)).Entries;
+    }
+
+    /// <summary>
+    /// The warnings and errors the host has logged since this test began, for the pages this test visited (as
+    /// <see cref="GetServerErrorsAsync"/>) - what a handled exception the framework only warns about leaves behind, such
+    /// as one a BitErrorBoundary caught and logged.
+    /// </summary>
+    protected async Task<IReadOnlyList<string>> GetServerWarningsAndErrorsAsync()
+    {
+        return (await ReadServerErrorsAsync(_serverErrorsBefore, _visitedPaths, "Warning")).Entries;
     }
 
     /// <summary>
@@ -266,12 +295,12 @@ public abstract class E2ETestBase
         }
     }
 
-    private static async Task<ServerErrors> ReadServerErrorsAsync(int after, IEnumerable<string>? paths = null)
+    private static async Task<ServerErrors> ReadServerErrorsAsync(int after, IEnumerable<string>? paths = null, string level = "Error")
     {
         try
         {
             var query = paths is null ? string.Empty : $"&paths={Uri.EscapeDataString(string.Join(',', paths))}";
-            return await _http.GetFromJsonAsync<ServerErrors>($"{BaseUrl}/api/server-errors?after={after}{query}") ?? new(0, []);
+            return await _http.GetFromJsonAsync<ServerErrors>($"{BaseUrl}/api/server-errors?after={after}&level={level}{query}") ?? new(0, []);
         }
         catch (Exception ex) when (ex is HttpRequestException or TaskCanceledException)
         {

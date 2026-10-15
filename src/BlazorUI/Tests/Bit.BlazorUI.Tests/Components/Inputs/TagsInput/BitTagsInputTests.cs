@@ -1652,6 +1652,99 @@ public class BitTagsInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTagsInputSetupHandsTheScriptAReferenceToCommitSeparatedTextWithTest()
+    {
+        RenderComponent<BitTagsInput>(parameters => parameters.Add(p => p.Separators, [","]));
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.TagsInput.setup"].First();
+
+        Assert.IsInstanceOfType<Microsoft.JSInterop.DotNetObjectReference<BitTagsInput>>(setup.Arguments[2]);
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputASeparatorTheScriptCommitsAddsTheTagAndLeavesTheInputAloneTest()
+    {
+        var added = new List<string>();
+        var reported = new List<string>();
+
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.Separators, [","]);
+            parameters.Add(p => p.OnAdd, (IReadOnlyList<string> tags) => added.AddRange(tags));
+            parameters.Add(p => p.OnInput, (string text) => reported.Add(text));
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "ab" });
+
+        // The script empties the input in the keystroke of the separator, reports the emptied input, and hands the
+        // text over on its own; the keydown of the separator reaches the component after that, and finds nothing left
+        // to commit.
+        await input.InputAsync(new ChangeEventArgs { Value = string.Empty });
+        var handBack = await com.InvokeAsync(() => com.Instance._CommitSeparatedText("ab"));
+        await com.Find(".bit-tgi-inp").KeyDownAsync(new KeyboardEventArgs { Key = "," });
+
+        Assert.IsFalse(handBack);
+        CollectionAssert.AreEqual(new[] { "ab" }, added);
+        CollectionAssert.AreEqual(new[] { "ab" }, com.Instance.Value!.ToArray());
+        Assert.AreEqual(string.Empty, com.Find(".bit-tgi-inp").GetAttribute("value"));
+
+        // The keys typed meanwhile land in the emptied input, and stay apart from the tag.
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "c" });
+
+        CollectionAssert.AreEqual(new[] { "ab" }, added);
+        CollectionAssert.AreEqual(new[] { "ab", string.Empty, "c" }, reported);
+        Assert.AreEqual("c", com.Find(".bit-tgi-inp").GetAttribute("value"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputASeparatedTextThatIsRefusedIsHandedBackWithItsRefusalTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.Separators, [","]);
+            parameters.Add(p => p.Pattern, "^[a-z]+$");
+        });
+
+        var input = com.Find(".bit-tgi-inp");
+        await input.InputAsync(new ChangeEventArgs { Value = "a1" });
+        await input.InputAsync(new ChangeEventArgs { Value = string.Empty });
+
+        var handBack = await com.InvokeAsync(() => com.Instance._CommitSeparatedText("a1"));
+
+        Assert.IsTrue(handBack);
+        Assert.IsNull(com.Instance.Value);
+        Assert.AreEqual("true", com.Find(".bit-tgi-inp").GetAttribute("aria-invalid"));
+
+        // The script puts the text back into the input it was typed in; that input event is the refusal being shown,
+        // not the user answering it, so the mark stays...
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "a1" });
+
+        Assert.AreEqual("true", com.Find(".bit-tgi-inp").GetAttribute("aria-invalid"));
+        Assert.AreEqual("a1", com.Find(".bit-tgi-inp").GetAttribute("value"));
+
+        // ...until the user types the correction.
+        await com.Find(".bit-tgi-inp").InputAsync(new ChangeEventArgs { Value = "a" });
+
+        Assert.IsFalse(com.Find(".bit-tgi-inp").HasAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public async Task BitTagsInputASeparatedTextIsNotCommittedIntoADisabledOrReadOnlyFieldTest()
+    {
+        var com = RenderComponent<BitTagsInput>(parameters =>
+        {
+            parameters.Add(p => p.Separators, [","]);
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        var handBack = await com.InvokeAsync(() => com.Instance._CommitSeparatedText("ab"));
+
+        Assert.IsFalse(handBack);
+        Assert.IsNull(com.Instance.Value);
+    }
+
+    [TestMethod]
     public async Task BitTagsInputClearOnBlurDiscardsWhatCouldNotBeAddedTest()
     {
         string? typed = null;

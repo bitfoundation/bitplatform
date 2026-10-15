@@ -878,6 +878,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitComponentBase.OnVisibilityChanged(Bit.BlazorUI.BitVisibility)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitComponentBaseParams.get_IsEnabled</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
@@ -2047,6 +2054,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitComponentBase.OnVisibilityChanged(Bit.BlazorUI.BitVisibility)</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitComponentBaseParams.get_IsEnabled</Target>
     <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
@@ -3210,6 +3224,13 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitComponentBase.set_IsEnabled(System.Boolean)</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitComponentBase.OnVisibilityChanged(Bit.BlazorUI.BitVisibility)</Target>
     <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

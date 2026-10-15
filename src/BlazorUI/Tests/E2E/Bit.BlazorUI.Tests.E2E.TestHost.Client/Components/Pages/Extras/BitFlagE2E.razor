@@ -156,10 +156,10 @@
              Title="Not shipped to Portugal yet"
              Country="BitCountries.Portugal"
              OnClick="e => Select(BitCountries.Portugal, e)" />
-    @* A flag with no OnClick of its own whose page handlers are splatted: they run while it is enabled and are
-       dropped while it is disabled. *@
+    @* A flag with no OnClick of its own whose page handlers are splatted: they run while it is enabled - its onclick
+       and onkeydown too, which the flag writes no handler of its own over - and are dropped while it is disabled. *@
     <BitFlag Id="flag-page-handler" Disabled="_pageHandlerDisabled" Country="BitCountries.Greece"
-             HtmlAttributes="@(new() { ["onpointerdown"] = EventCallback.Factory.Create<PointerEventArgs>(this, () => _pageClicks++), ["ondblclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageDblClicks++), ["onkeydown"] = EventCallback.Factory.Create<KeyboardEventArgs>(this, () => _pageKeys++), ["onmouseover"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageHovers++), ["tabindex"] = "-1" })" />
+             HtmlAttributes="@(new() { ["onpointerdown"] = EventCallback.Factory.Create<PointerEventArgs>(this, () => _pageClicks++), ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageOnClicks++), ["ondblclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageDblClicks++), ["onkeydown"] = EventCallback.Factory.Create<KeyboardEventArgs>(this, () => _pageKeys++), ["onmouseover"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageHovers++), ["tabindex"] = "-1" })" />
     <BitFlag Id="flag-click-tabindex" TabIndex="-1" Country="BitCountries.Italy" OnClick="e => Select(BitCountries.Italy, e)" />
     <BitFlag Id="flag-focusable" TabIndex="0" Country="BitCountries.Italy" />
     <button id="btn-toggle-disabled" @onclick="() => _clickDisabled = !_clickDisabled">Toggle disabled</button>
@@ -172,6 +172,7 @@
     <span id="last-shift">@_lastShift</span>
     <span id="page-clicks">@_pageClicks</span>
     <span id="page-keys">@_pageKeys</span>
+    <span id="page-onclicks">@_pageOnClicks</span>
     <span id="page-dblclicks">@_pageDblClicks</span>
     <span id="page-hovers">@_pageHovers</span>
 </E2ESection>
@@ -307,6 +308,7 @@
     private bool _lastShift;
     private int _pageClicks;
     private int _pageKeys;
+    private int _pageOnClicks;
     private int _pageDblClicks;
     private int _pageHovers;
     private bool _clickDisabled = true;

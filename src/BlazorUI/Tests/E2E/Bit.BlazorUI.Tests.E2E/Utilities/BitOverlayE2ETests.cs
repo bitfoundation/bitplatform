@@ -256,10 +256,6 @@ public class BitOverlayE2ETests : E2ETestBase
 
         // And the drag selected the text of the content, which the layer hands its selectability back to.
         var selection = await Page.EvaluateAsync<string>("() => window.getSelection().toString()");
-        if (IsFirefox && selection.Length == 0)
-        {
-            Assert.Inconclusive("KNOWN BUG (Firefox): the content of an Overlay cannot be selected - Firefox resolves its user-select:auto against the .bit-ovl layer (user-select:none), skipping the display:contents .bit-ovl-cnt box that hands user-select:text back.");
-        }
         Assert.IsTrue(selection.Length > 0, "The drag selected no text of the content.");
 
         // A plain click on the layer afterwards dismisses as usual.
@@ -497,13 +493,11 @@ public class BitOverlayE2ETests : E2ETestBase
         Assert.AreEqual(container.Width - 2, box.Width, 1);
         Assert.AreEqual(container.Height - 2, box.Height, 1);
 
-        // What it covers is unreachable; what is outside the container is not.
+        // What it covers is unreachable; what is outside the container is not. The covered button is probed at its
+        // center: it sits in the container's corner, and the layer takes that corner's rounding, which hit testing
+        // follows - a point a few pixels into the button's own corner lies outside the arc in some engines' layout.
         var behind = (await Page.Locator("#abs-behind").BoundingBoxAsync())!;
-        var hit = await Page.EvaluateAsync<string>($"() => document.elementFromPoint({behind.X + 3}, {behind.Y + 3}).closest('.bit-ovl')?.id ?? ''");
-        if (IsFirefox && hit != "ovl-abs")
-        {
-            Assert.Inconclusive("KNOWN ISSUE (Firefox): an open AbsolutePosition Overlay (z-index auto) is skipped by Firefox's hit testing over the content it covers, so that content stays reachable there.");
-        }
+        var hit = await Page.EvaluateAsync<string>($"() => document.elementFromPoint({behind.X + behind.Width / 2}, {behind.Y + behind.Height / 2}).closest('.bit-ovl')?.id ?? ''");
         Assert.AreEqual("ovl-abs", hit);
         await Page.ClickAsync("#abs-outside");
         await Expect(Page.Locator("#abs-outside")).ToBeFocusedAsync();
@@ -658,7 +652,7 @@ public class BitOverlayE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    public async Task ScrollForward_TheWheelOnAFixedLayerScrollsItsScrollerSelector_UnlessTheContentTakesIt()
+    public async Task ScrollForward_TheWheelOnAFixedLayer_ScrollsItsScrollerSelector()
     {
         await OpenAsync(Route);
 
@@ -674,13 +668,29 @@ public class BitOverlayE2ETests : E2ETestBase
         await Page.Mouse.MoveAsync(viewport.Width - 50, viewport.Height - 50);
         await Page.Mouse.WheelAsync(0, 120);
         await Page.WaitForFunctionAsync("() => document.getElementById('fwd-box').scrollTop > 0");
-        var outerTop = await outer.EvaluateAsync<double>("el => el.scrollTop");
 
-        // On a scroller of the content: that one takes it, and the one behind stays put.
+        Assert.AreEqual(0, await inner.EvaluateAsync<double>("el => el.scrollTop"));
+    }
+
+    // A test of its own rather than a second wheel of the one above: Firefox sends every wheel of a transaction - the
+    // ones that follow the first within a second or so, a pointer moved in the meantime included - to the target the
+    // first one scrolled, so a wheel over the content right after one over the layer would still go to the layer.
+    [TestMethod]
+    public async Task ScrollForward_TheWheelOnAScrollerOfTheContent_ScrollsThatScrollerAndNotTheOneBehind()
+    {
+        await OpenAsync(Route);
+
+        await Page.ClickAsync("#btn-open-fwd");
+        await Expect(Page.Locator("#ovl-fwd")).ToHaveClassAsync(HasClass("bit-ovl-opn"));
+        await Expect(Page.Locator("#ovl-fwd")).ToHaveCSSAsync("opacity", "1");
+
+        var outer = Page.Locator("#fwd-box");
+        var inner = Page.Locator("#fwd-content");
+
         await inner.HoverAsync();
         await Page.Mouse.WheelAsync(0, 120);
         await Page.WaitForFunctionAsync("() => document.getElementById('fwd-content').scrollTop > 0");
-        Assert.AreEqual(outerTop, await outer.EvaluateAsync<double>("el => el.scrollTop"), 1);
+        Assert.AreEqual(0, await outer.EvaluateAsync<double>("el => el.scrollTop"), 1);
     }
 
     [TestMethod]

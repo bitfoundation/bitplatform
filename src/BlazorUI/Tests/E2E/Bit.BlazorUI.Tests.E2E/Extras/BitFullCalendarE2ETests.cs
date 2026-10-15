@@ -23,6 +23,13 @@ public partial class BitFullCalendarE2ETests : E2ETestBase
 
     private ILocator Title(ILocator calendar) => calendar.Locator(".bit-bfc-header-title");
 
+    // What the culture data says differs by where the page runs: the ICU data .NET ships for WebAssembly is trimmed, so
+    // in the browser GetShortestDayName has no narrow (one-letter) day names and gives the short ones ("Su", "Mo."), and
+    // the Persian and Hijri calendars have no month names in their own language. The server reads the full ICU data.
+    private static string[] ServerOrWasm(string[] server, string[] wasm) => IsWasm ? wasm : server;
+
+    private static string ServerOrWasm(string server, string wasm) => IsWasm ? wasm : server;
+
     private ILocator Dialog(ILocator calendar) => calendar.Locator(".bit-bfc-dialog[role='dialog']");
 
     private ILocator Badge(ILocator calendar, string id) => calendar.Locator($"[data-bit-bfc-event='{id}'][role='button']");
@@ -96,7 +103,7 @@ public partial class BitFullCalendarE2ETests : E2ETestBase
         await Expect(Title(Cal)).ToHaveTextAsync("July 2025");
         await Expect(Cal.Locator(".bit-bfc-month-cell-day.today")).ToHaveTextAsync("16");
         await Expect(Cal.Locator(".bit-bfc-month-cell:not(.bit-bfc-month-cell-blank)")).ToHaveCountAsync(35);
-        await Expect(Cal.Locator(".bit-bfc-month-header-cell")).ToHaveTextAsync(["S", "M", "T", "W", "T", "F", "S"]);
+        await Expect(Cal.Locator(".bit-bfc-month-header-cell")).ToHaveTextAsync(ServerOrWasm(["S", "M", "T", "W", "T", "F", "S"], ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]));
 
         var body = Page.Locator("#cal-body");
         await Expect(body).ToHaveAttributeAsync("role", "tabpanel");

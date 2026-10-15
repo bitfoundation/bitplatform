@@ -147,7 +147,7 @@ public partial class BitFullCalendarE2ETests
     }
 
     [TestMethod]
-    public async Task Rules_ADialogSaveTheRulesRefuse_ShowsTheReasonInTheDialog()
+    public async Task Rules_ADialogSaveTheRulesRefuse_ShowsTheReasonInTheDialog_AndRaisesOnRefused()
     {
         await OpenAsync(RulesPage);
         var cal = Page.Locator("#rules-cal");
@@ -160,6 +160,10 @@ public partial class BitFullCalendarE2ETests
         await Expect(dialog.Locator(".bit-bfc-dialog-footer [role='alert']")).ToHaveTextAsync("That time is unavailable.");
         await Expect(dialog).ToBeVisibleAsync();
         await Expect(Page.Locator("#rules-change-count")).ToHaveTextAsync("0");
+        // reported like a refused drag or resize, but said once, in the dialog - not again as the calendar's notice
+        await Expect(Page.Locator("#refused-count")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#last-refusal")).ToHaveTextAsync("Blocked");
+        await Expect(ErrorToast(cal)).ToHaveCountAsync(0);
 
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Cancel" }).ClickAsync();
         await Expect(dialog).ToHaveCountAsync(0);
@@ -168,6 +172,9 @@ public partial class BitFullCalendarE2ETests
         await dialog.GetByPlaceholder("Event title").FillAsync("After hours");
         await dialog.GetByRole(AriaRole.Button, new() { Name = "Create Event" }).ClickAsync();
         await Expect(dialog.Locator(".bit-bfc-dialog-footer [role='alert']")).ToHaveTextAsync("That time is outside business hours.");
+        await Expect(Page.Locator("#refused-count")).ToHaveTextAsync("2");
+        await Expect(Page.Locator("#last-refusal")).ToHaveTextAsync("OutsideBusinessHours");
+        await Expect(ErrorToast(cal)).ToHaveCountAsync(0);
     }
 
     [TestMethod]

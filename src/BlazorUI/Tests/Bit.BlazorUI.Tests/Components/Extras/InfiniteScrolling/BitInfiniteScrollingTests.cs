@@ -462,6 +462,32 @@ public class BitInfiniteScrollingTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitInfiniteScrollingShouldWatchTheSentinelAgainAfterAPageThatRendersWithinTheLoad()
+    {
+        // A provider that answers at once lets the renderer put the page on the screen inside the load itself - the
+        // way a WebAssembly renderer always does, and this one too - so the render that is to re-observe the sentinel
+        // runs before the load returns. It has to know by then that it is to: otherwise the list stops after a page.
+        var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>
+        {
+            parameters.Add(p => p.ItemsProvider, PagedProvider(100));
+            parameters.Add(p => p.ItemTemplate, ItemTemplate());
+            parameters.Add(p => p.PageSize, 10);
+        });
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve"));
+
+        await component.InvokeAsync(() => component.Instance._LoadMoreItems());
+
+        Assert.AreEqual(10, component.Instance.Items.Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve"));
+
+        await component.InvokeAsync(() => component.Instance._LoadMoreItems());
+
+        Assert.AreEqual(20, component.Instance.Items.Count);
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.InfiniteScrolling.reobserve"));
+    }
+
+    [TestMethod]
     public async Task BitInfiniteScrollingAutoLoadLimitShouldSwitchToTheButtonAfterItsPages()
     {
         var component = RenderComponent<BitInfiniteScrolling<int>>(parameters =>

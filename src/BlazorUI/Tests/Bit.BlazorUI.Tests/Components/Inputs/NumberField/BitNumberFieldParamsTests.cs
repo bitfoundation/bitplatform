@@ -322,6 +322,37 @@ public class BitNumberFieldParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitNumberFieldShouldApplyTheCascadedReadOnlyAndRequired()
+    {
+        // The two input-base parameters BitInputBaseParams carries for the other inputs reach a field of any value
+        // type through the field's own params object.
+        var component = RenderWithParams<decimal>(new BitNumberFieldParams { ReadOnly = true, Required = true });
+
+        var field = component.FindComponent<BitNumberField<decimal>>().Instance;
+        Assert.IsTrue(field.ReadOnly);
+        Assert.IsTrue(field.Required);
+
+        var input = component.Find("input");
+        Assert.IsTrue(input.HasAttribute("readonly"));
+        Assert.IsTrue(input.HasAttribute("required"));
+    }
+
+    [TestMethod]
+    public void BitNumberFieldShouldKeepItsOwnReadOnlyAndRequiredOverTheCascadedOnes()
+    {
+        var component = RenderWithParams<int>(new BitNumberFieldParams { ReadOnly = true, Required = true }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitNumberField<int>.ReadOnly), false);
+            builder.AddAttribute(2, nameof(BitNumberField<int>.Required), false);
+        });
+
+        // A false written on the field is a choice as much as a true is.
+        var field = component.FindComponent<BitNumberField<int>>().Instance;
+        Assert.IsFalse(field.ReadOnly);
+        Assert.IsFalse(field.Required);
+    }
+
+    [TestMethod]
     public void BitNumberFieldShouldKeepItsOwnValuesOverTheCascadedOnes()
     {
         var component = RenderWithParams<int>(new BitNumberFieldParams

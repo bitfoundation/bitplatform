@@ -607,8 +607,11 @@ public class BitScrollablePaneE2ETests : E2ETestBase
         await Page.Mouse.UpAsync();
         Assert.AreEqual(before, await pane.EvaluateAsync<double>("el => el.scrollLeft"), 0.5);
 
-        await El("scp-drag-button").ClickAsync();
+        // The press and the release were both on the button, so the gesture was its click.
         await Expect(El("drag-button-clicks")).ToHaveTextAsync("1");
+
+        await El("scp-drag-button").ClickAsync();
+        await Expect(El("drag-button-clicks")).ToHaveTextAsync("2");
     }
 
     [TestMethod]

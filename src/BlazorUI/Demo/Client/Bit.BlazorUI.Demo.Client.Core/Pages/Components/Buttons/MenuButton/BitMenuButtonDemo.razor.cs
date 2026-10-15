@@ -48,7 +48,7 @@ public partial class BitMenuButtonDemo
             Name = "ButtonType",
             Type = "BitButtonType?",
             DefaultValue = "null",
-            Description = "The value of the type attribute of the menu button.",
+            Description = "The value of the type attribute of the items, and of the main half of a split menu button when it is set. Left unset, the items are submit buttons inside an EditForm and plain buttons elsewhere; a submit or reset item acts on the form the menu button sits in, although its open menu is moved out of it to the body.",
             LinkType = LinkType.Link,
             Href = "#button-type-enum"
         },

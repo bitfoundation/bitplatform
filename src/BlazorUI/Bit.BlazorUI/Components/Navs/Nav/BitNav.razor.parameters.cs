@@ -22,6 +22,17 @@ public partial class BitNav<TItem>
     [Parameter] public bool AllExpanded { get; set; }
 
     /// <summary>
+    /// Keeps the order of the registered options in sync with the markup order of the options, at every level
+    /// of the tree, even when an option is added, removed or reordered conditionally after the first render (an
+    /// option that shows up later registers itself at the end of its list, no matter where in the markup it
+    /// sits, which leaves the arrow keys, Home, End and type-ahead moving between the items in another order
+    /// than the one they are rendered in). This is achieved by reading the DOM order of the options after each
+    /// change, so it adds a JS interop call per change and is opt-in. It only applies to the options; the Items
+    /// collection already keeps its own order.
+    /// </summary>
+    [Parameter] public bool AutoReorderOptions { get; set; }
+
+    /// <summary>
     /// The icon for the chevron-down element of each nav item.
     /// Takes precedence over <see cref="ChevronDownIconName"/> when both are set.
     /// Use this property to render icons from external libraries like FontAwesome, Material Icons, or Bootstrap Icons.

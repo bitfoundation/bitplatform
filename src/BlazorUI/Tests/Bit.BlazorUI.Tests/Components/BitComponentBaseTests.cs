@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -352,6 +353,137 @@ public class BitComponentBaseTests : BunitTestContext
         // round trip - even in a layout that is right to left.
         Assert.IsFalse(await IsRtlArrowAsync(component.Instance, Context.JSInterop.JSRuntime, key));
         Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+    }
+
+    [TestMethod,
+        DataRow(BitDir.Rtl, true),
+        DataRow(BitDir.Ltr, false)
+    ]
+    public async Task IsRtlArrowAsyncShouldAnswerANamedDirectionWithoutARoundTrip(BitDir dir, bool expected)
+    {
+        var component = RenderComponent<BitElement>(parameters => parameters.Add(p => p.Dir, dir));
+
+        Assert.AreEqual(expected, await IsRtlArrowAsync(component.Instance, Context.JSInterop.JSRuntime, "ArrowLeft"));
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.isRtl");
+    }
+
+    [TestMethod]
+    public async Task IsRtlArrowAsyncShouldTellTheBrowserTheQuestionIsAnArrowKeys()
+    {
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(false);
+
+        var component = RenderComponent<BitElement>();
+
+        Assert.IsFalse(await IsRtlArrowAsync(component.Instance, Context.JSInterop.JSRuntime, "ArrowRight"));
+
+        // The flag is what lets the script refuse an arrow the user has moved on from; a plain IsRtlAsync (a pointer,
+        // a measurement) is never refused.
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.isRtl");
+        Assert.AreEqual(component.Instance.RootElement, invocation.Arguments[0]);
+        Assert.AreEqual(true, invocation.Arguments[1]);
+    }
+
+    [TestMethod]
+    public async Task IsRtlArrowAsyncShouldCancelAnArrowTheBrowserReportsOvertaken()
+    {
+        // The script throws ARROW_KEY_OVERTAKEN for an arrow whose focus a Tab or a click has taken elsewhere while the
+        // round trip was out, and the handler waiting on it is cancelled rather than stealing that focus back.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true)
+                         .SetException(new JSException($"Error: {ArrowKeyOvertaken}\n    at Utils.isRtl (bit.blazorui.js:1:1)"));
+
+        var component = RenderComponent<BitElement>();
+
+        await Assert.ThrowsAsync<OperationCanceledException>(async () => await IsRtlArrowAsync(component.Instance, Context.JSInterop.JSRuntime, "ArrowLeft"));
+    }
+
+    [TestMethod]
+    public async Task IsRtlAsyncShouldNeverCancel()
+    {
+        // Only the arrow keys are ever refused: a direction read for anything else falls back to left to right on any
+        // failure of the call, the refusal included.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetException(new JSException(ArrowKeyOvertaken));
+
+        var component = RenderComponent<BitElement>();
+
+        Assert.IsFalse(await IsRtlAsync(component.Instance, Context.JSInterop.JSRuntime));
+    }
+
+    [TestMethod]
+    public void AKeyHandlerWhoseArrowIsOvertakenShouldStopWithoutAnError()
+    {
+        // What Blazor does with the cancellation: the handler stops where it awaited the direction - no focus moved, no
+        // state changed - and the event is not reported as an unhandled error.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetException(new JSException(ArrowKeyOvertaken));
+
+        var component = RenderComponent<ArrowProbe>();
+
+        component.Find("div").KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        Assert.AreEqual(1, component.Instance.Started);
+        Assert.AreEqual(0, component.Instance.Moved);
+
+        // The next arrow, whose direction does come back, is acted on.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true).SetResult(true);
+
+        component.Find("div").KeyDown(new KeyboardEventArgs { Key = "ArrowLeft" });
+
+        Assert.AreEqual(2, component.Instance.Started);
+        Assert.AreEqual(1, component.Instance.Moved);
+        Assert.IsTrue(component.Instance.LastRtl);
+    }
+
+    [TestMethod]
+    public void TheRefusalOfAnOvertakenArrowShouldBeTheSameTextInTheScriptAndInDotNet()
+    {
+        var utils = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");
+
+        StringAssert.Contains(utils, $"ARROW_KEY_OVERTAKEN = '{ArrowKeyOvertaken}'");
+
+        // The script follows the keys and the presses that take the focus away from the start of their dispatch.
+        var general = SourceFiles.Read("Bit.BlazorUI", "Scripts", "general.ts");
+        StringAssert.Contains(general, "document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);");
+        StringAssert.Contains(general, "document.documentElement.addEventListener('pointerdown', (e: PointerEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);");
+    }
+
+    private static readonly PropertyInfo RootElementProperty = typeof(BitComponentBase).GetProperty(nameof(BitComponentBase.RootElement))!;
+
+    private static string ArrowKeyOvertaken => (string)typeof(BitComponentBase).Assembly
+                                                                               .GetType("Bit.BlazorUI.UtilsJsRuntimeExtensions")!
+                                                                               .GetField("ArrowKeyOvertaken", BindingFlags.NonPublic | BindingFlags.Static)!
+                                                                               .GetValue(null)!;
+
+    /// <summary>
+    /// A component with one key handler that moves along the inline axis the way every arrow-key navigation of the
+    /// library does: it asks for the direction, then acts on it.
+    /// </summary>
+    public sealed class ArrowProbe : BitComponentBase
+    {
+        [Inject] private IJSRuntime _js { get; set; } = default!;
+
+        public int Started { get; private set; }
+
+        public int Moved { get; private set; }
+
+        public bool LastRtl { get; private set; }
+
+        protected override string RootElementClass => "arrow-probe";
+
+        private async Task HandleKeyDown(KeyboardEventArgs e)
+        {
+            Started++;
+
+            LastRtl = await IsRtlArrowAsync(this, _js, e.Key);
+
+            Moved++;
+        }
+
+        protected override void BuildRenderTree(RenderTreeBuilder builder)
+        {
+            builder.OpenElement(0, "div");
+            builder.AddAttribute(1, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleKeyDown));
+            builder.AddElementReferenceCapture(2, element => RootElementProperty.SetValue(this, element));
+            builder.CloseElement();
+        }
     }
 
 

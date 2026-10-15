@@ -1773,6 +1773,18 @@ public class BitTextFieldE2ETests : E2ETestBase
         await Expect(Text("ghost-escapes")).ToHaveTextAsync("0");
         await Expect(Text("ghost-escape-keys")).ToHaveTextAsync("0");
 
+        // The renders that follow push the same suggestion again (the keyup of every key is one), and a rejected one
+        // stays rejected through them: two presses of a modifier alone, the second one handled after the keyup of the
+        // first, leave the overlay as it was.
+        await Page.Keyboard.PressAsync("Shift");
+        await Page.Keyboard.PressAsync("Shift");
+        await Expect(Text("ghost-escape-keys")).ToHaveTextAsync("2");
+        await NextFramesAsync();
+        await Expect(overlay).ToHaveTextAsync("typed");
+
+        // Typing into the field is a new context, where the suggestion the app keeps giving is shown again.
+        await Page.Keyboard.TypeAsync("!");
+        await Expect(overlay).ToHaveTextAsync("typed! suggestion");
     }
 
     [TestMethod]

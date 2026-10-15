@@ -315,17 +315,32 @@ public class BitFooterE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: a Sticky Reveal footer inside a scrolling box stays hidden at the end of the scroll when the end is reached while its hide transition is still running. Its translateY(100%) adds its own height to the box's scrollable overflow as it slides out, so the end the scroll reached (Footers.atEnd) is no longer the end once the transition is over, no scroll event follows, and the footer is left hidden over an empty strip at the bottom of the box.")]
     public async Task Reveal_ReachingTheEndWhileTheFooterIsStillSlidingAway_ShowsItAtTheEnd()
     {
         await OpenAsync("/e2e/footer");
 
-        await ScrollBoxAsync("#reveal-box", 300);
-        await Expect(Page.Locator("#reveal-state")).ToHaveTextAsync("False");
+        // Scrolled down, and then straight on to the end in the middle of the slide that follows: the footer is part
+        // way out, so its translation is already lengthening the box, and goes on doing so after the end was reached
+        // with no scroll event to say so.
+        await Page.EvaluateAsync(@"() => new Promise(resolve => {
+            const box = document.getElementById('reveal-box'), footer = document.getElementById('reveal-footer');
+            box.scrollTop = 300;
+            const tick = () => {
+                const shift = new DOMMatrixReadOnly(getComputedStyle(footer).transform).m42;
+                // A quarter of the way out, where the slide is fast enough to lengthen the box by more than the
+                // pixel of slack the end is read with between two frames.
+                if (shift >= footer.offsetHeight / 4) {
+                    box.scrollTop = box.scrollHeight;
+                    resolve();
+                } else {
+                    requestAnimationFrame(tick);
+                }
+            };
+            tick();
+        })");
 
-        // Straight on to the end, without waiting for the slide to finish.
-        await ScrollBoxAsync("#reveal-box", 5000);
-
+        // Hidden once, and shown again at the end.
+        await Expect(Page.Locator("#reveal-count")).ToHaveTextAsync("2");
         await Expect(Page.Locator("#reveal-state")).ToHaveTextAsync("True");
         await Expect(Page.Locator("#reveal-footer")).Not.ToHaveClassAsync(HasClass("bit-ftr-hdn"));
     }

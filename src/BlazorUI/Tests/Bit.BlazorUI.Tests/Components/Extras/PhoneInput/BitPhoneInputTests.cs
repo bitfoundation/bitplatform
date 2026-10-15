@@ -1363,6 +1363,59 @@ public class BitPhoneInputTests : BunitTestContext
         Assert.IsTrue(component.FindAll("button.bit-phi-itm")[0].ClassList.Contains("bit-phi-act"));
     }
 
+    // Alt+ArrowDown and Alt+ArrowUp open, walk and close the list the way the combobox pattern has them, and their
+    // default scrolls the page by a screen, which would dismiss the list as a page scroll and drop the focus to the body:
+    // the field prevents them closed and open, and so does the search box.
+    [TestMethod]
+    public void BitPhoneInputShouldPreventTheAltArrowsItActsOn()
+    {
+        var altArrows = new[] { "Alt+ArrowDown", "Alt+ArrowUp" };
+        var component = RenderComponent<BitPhoneInput>();
+
+        CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: true));
+
+        component.Find("button.bit-phi-drp").Click();
+
+        CollectionAssert.Contains(LastPreventKeys(field: true), "Enter");
+        CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: true));
+        CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: false));
+    }
+
+    // A character typed on the trigger is applied by the component itself - to the type-ahead, or as the search term
+    // while the focus moves to the search box - so the trigger keeps the browser from typing it a second time into the
+    // box the focus is already in where the handler runs first (WebAssembly). The search box types its own.
+    [TestMethod]
+    public void BitPhoneInputShouldKeepTheCharactersTypedOnItsTriggerToItself()
+    {
+        var component = RenderComponent<BitPhoneInput>();
+
+        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
+
+        component.Find("button.bit-phi-drp").Click();
+
+        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
+        CollectionAssert.DoesNotContain(LastPreventKeys(field: false), "Character");
+    }
+
+    // The keys pressed in the moment the list takes to open are answered by the list that is already open, so the key
+    // that opened it has to land before the open's round trips run, or the letters typed at once are applied out of
+    // order. The prevent-keys call the open makes is held pending here, the way a slow link holds it.
+    [TestMethod]
+    public void BitPhoneInputShouldTypeAheadTheLettersTypedWhileItOpensInOrder()
+    {
+        var component = RenderComponent<BitPhoneInput>(parameters => parameters.Add(p => p.NoSearchBox, true));
+        var keys = Context.JSInterop.SetupVoid("BitBlazorUI.Extras.setPreventKeys", _ => true);
+
+        foreach (var key in new[] { "g", "e", "r" })
+        {
+            component.Find("button.bit-phi-drp").KeyDown(key);
+        }
+
+        keys.SetVoidResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual("Germany", component.Find("button.bit-phi-itm.bit-phi-act").GetAttribute("title")));
+    }
+
     [TestMethod]
     public void BitPhoneInputShouldTypeAheadWhenThereIsNoSearchBox()
     {
@@ -3473,5 +3526,14 @@ public class BitPhoneInputTests : BunitTestContext
         [Required]
         [RegularExpression(@"^\+[0-9]{8,15}$")]
         public string? Phone { get; set; }
+    }
+
+    // The keys the field's listener was last handed (its sets are the ones that carry Home, which the search box leaves
+    // to its caret), and the ones the search box's was.
+    private string[] LastPreventKeys(bool field)
+    {
+        return (string[])Context.JSInterop.Invocations
+                                .Last(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys" && ((string[])i.Arguments[1]!).Contains("Home") == field)
+                                .Arguments[1]!;
     }
 }

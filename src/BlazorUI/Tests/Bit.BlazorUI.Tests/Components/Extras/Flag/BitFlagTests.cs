@@ -1614,8 +1614,8 @@ public class BitFlagTests : BunitTestContext
 
         var enabled = Context.Render(FlagWithPageHandlers(false));
 
-        // A double click rather than a click: the flag writes its own @onclick after the splat, which replaces the
-        // page's whatever the state (as on every component of BitDisabledActivationContractTests).
+        // A double click rather than a click, the one handler the flag never writes itself (its click is pinned by
+        // BitFlagShouldKeepThePageHandlersOfAFlagWithNoClickOfItsOwn).
         enabled.Find(".bit-flg").DoubleClick();
         enabled.Find(".bit-flg").MouseOver();
 
@@ -1632,6 +1632,54 @@ public class BitFlagTests : BunitTestContext
 
         Assert.AreEqual(1, clicks);
         Assert.AreEqual(2, hovers);
+    }
+
+    // A flag with no OnClick listens to nothing of its own, and writing an empty handler after the splat would take the
+    // page's off the root - so a page's onclick and onkeydown on a plain flag still run, and a disabled flag still drops
+    // them (the disabled-aware splat), while a clickable one answers with its own.
+    [TestMethod]
+    public void BitFlagShouldKeepThePageHandlersOfAFlagWithNoClickOfItsOwn()
+    {
+        var pageClicks = 0;
+        var pageKeys = 0;
+        var pageBlurs = 0;
+        var ownClicks = 0;
+
+        RenderFragment Flag(bool disabled, bool clickable) => builder =>
+        {
+            builder.OpenComponent<BitFlag>(0);
+            builder.AddAttribute(1, nameof(BitFlag.Iso2), "nl");
+            builder.AddAttribute(2, nameof(BitFlag.Disabled), disabled);
+            if (clickable) builder.AddAttribute(3, nameof(BitFlag.OnClick), EventCallback.Factory.Create<MouseEventArgs>(this, () => ownClicks++));
+            builder.AddAttribute(4, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => pageClicks++));
+            builder.AddAttribute(5, "onkeydown", EventCallback.Factory.Create<KeyboardEventArgs>(this, () => pageKeys++));
+            builder.AddAttribute(6, "onblur", EventCallback.Factory.Create<FocusEventArgs>(this, () => pageBlurs++));
+            builder.CloseComponent();
+        };
+
+        var plain = Context.Render(Flag(disabled: false, clickable: false));
+        plain.Find(".bit-flg").Click();
+        plain.Find(".bit-flg").KeyDown(new KeyboardEventArgs { Key = "a" });
+        plain.Find(".bit-flg").Blur();
+
+        Assert.AreEqual(1, pageClicks);
+        Assert.AreEqual(1, pageKeys);
+        Assert.AreEqual(1, pageBlurs);
+
+        var disabled = Context.Render(Flag(disabled: true, clickable: false));
+        try { disabled.Find(".bit-flg").Click(); }
+        catch (MissingEventHandlerException) { }
+        try { disabled.Find(".bit-flg").KeyDown(new KeyboardEventArgs { Key = "a" }); }
+        catch (MissingEventHandlerException) { }
+
+        Assert.AreEqual(1, pageClicks);
+        Assert.AreEqual(1, pageKeys);
+
+        var clickable = Context.Render(Flag(disabled: false, clickable: true));
+        clickable.Find(".bit-flg").Click();
+
+        Assert.AreEqual(1, ownClicks);
+        Assert.AreEqual(1, pageClicks);
     }
 
     [TestMethod]

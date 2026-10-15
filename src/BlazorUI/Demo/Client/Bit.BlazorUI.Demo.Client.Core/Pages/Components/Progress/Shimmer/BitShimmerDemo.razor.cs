@@ -94,7 +94,7 @@ public partial class BitShimmerDemo
             Name = "Inline",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Lays the shimmer out in a line of text, rendered as a span. Without a Width it takes the theme's minimum control width."
+            Description = "Lays the shimmer out in a line of text, rendered as a span. Without a Width it is eight spacing units (64px) wide."
         },
         new()
         {

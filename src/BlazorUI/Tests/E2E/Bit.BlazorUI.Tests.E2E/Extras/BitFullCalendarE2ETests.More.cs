@@ -106,11 +106,11 @@ public partial class BitFullCalendarE2ETests
 
         var german = Page.Locator("#de-cal");
         await Expect(Title(german)).ToHaveTextAsync("Juli 2025");
-        await Expect(german.Locator(".bit-bfc-month-header-cell").First).ToHaveTextAsync("M");
+        await Expect(german.Locator(".bit-bfc-month-header-cell").First).ToHaveTextAsync(ServerOrWasm("M", "Mo."));
         await Expect(german.Locator(".bit-bfc-month-cell-day.today")).ToHaveTextAsync("16");
 
         await Expect(Title(Page.Locator("#both-cal"))).ToHaveTextAsync("juillet 2025");
-        await Expect(Page.Locator("#both-cal .bit-bfc-month-header-cell").First).ToHaveTextAsync("L");
+        await Expect(Page.Locator("#both-cal .bit-bfc-month-header-cell").First).ToHaveTextAsync(ServerOrWasm("L", "lu"));
     }
 
     [TestMethod]

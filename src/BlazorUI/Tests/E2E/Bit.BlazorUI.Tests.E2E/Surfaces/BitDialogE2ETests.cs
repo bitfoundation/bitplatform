@@ -1055,8 +1055,9 @@ public class BitDialogE2ETests : E2ETestBase
         var afterBody = await BoxAsync(Container("handle-dialog"));
         Assert.AreEqual(before.X, afterBody.X, 1, "a drag on the body does not move the dialog");
 
-        // The press on the body selected text, and a press on selected text starts dragging that text in Firefox.
-        await Page.EvaluateAsync("() => window.getSelection().removeAllRanges()");
+        // The press on the body selected text, and that selection is left in place: a press on the handle is a move all
+        // the same - Firefox would otherwise drag the selected text away instead of moving the dialog.
+        await Expect(Page.Locator("#handle-bar")).ToHaveCSSAsync("user-select", "none");
 
         await DragAsync(Page.Locator("#handle-bar"), 100, 50, offsetX: 10);
         var afterHandle = await BoxAsync(Container("handle-dialog"));

@@ -1256,6 +1256,39 @@ public class BitPanelTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { true, false }, settled);
     }
 
+    // The open sequence makes round trips of its own before it calls OnToggle and OnOpen, and a short transition can
+    // end in the browser while it is under way; its end is still reported after them.
+    [TestMethod]
+    public async Task BitPanelOnTransitionEndShouldComeAfterTheCallbacksOfTheChangeItEnds()
+    {
+        var log = new System.Collections.Generic.List<string>();
+        var toggleOverflow = Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true);
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.OnToggle, (bool v) => log.Add($"OnToggle:{v}"));
+            parameters.Add(p => p.OnOpen, () => log.Add("OnOpen"));
+            parameters.Add(p => p.OnTransitionEnd, (bool v) => log.Add($"OnTransitionEnd:{v}"));
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTransitionEnd"].Count));
+
+        // The open sequence is held on its round trip to toggle the page's overflow when the transition ends.
+        com.Render(p => p.Add(x => x.IsOpen, true));
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+
+        var transitionEnd = com.InvokeAsync(() => com.Instance._OnTransitionEnd());
+
+        Assert.AreEqual(0, log.Count);
+
+        toggleOverflow.SetResult(0);
+        await transitionEnd;
+
+        com.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "OnToggle:True", "OnOpen", "OnTransitionEnd:True" }, log));
+    }
+
     // The content is only taken out once the panel has finished sliding away with it, so the closing is still
     // seen with something in it.
     [TestMethod]

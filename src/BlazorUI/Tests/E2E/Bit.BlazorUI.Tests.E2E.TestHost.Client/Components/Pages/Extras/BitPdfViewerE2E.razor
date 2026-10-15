@@ -1,6 +1,6 @@
 ﻿@page "/e2e/pdf-viewer"
 @inject NavigationManager Nav
-@inject IWebHostEnvironment Env
+@inject HttpClient Http
 
 <PageTitle>BitPdfViewer E2E</PageTitle>
 
@@ -147,6 +147,9 @@
     <BitPdfViewer Id="pdv-broken-tpl" Source="_brokenSource" Height="200px">
         <ErrorTemplate><span class="tpl-error">Failed: @context</span></ErrorTemplate>
     </BitPdfViewer>
+    @* Loaded on demand: in WebAssembly the browser fetches the document and logs the 404 in the console, which only
+       the test of this state expects. *@
+    <button id="btn-load-missing" @onclick="LoadMissing">Load missing</button>
     <BitPdfViewer Id="pdv-missing" Source="_missingSource" Height="200px" OnError="e => _missingError = e" />
     <div>Missing: <span id="missing-error">@_missingError</span></div>
     <button id="btn-load-slow" @onclick="LoadSlow">Load slow</button>
@@ -222,7 +225,7 @@
     private BitPdfSource _encryptedSource = default!;
     private BitPdfSource _encryptedKnownSource = default!;
     private BitPdfSource _brokenSource = default!;
-    private BitPdfSource _missingSource = default!;
+    private BitPdfSource? _missingSource;
     private BitPdfSource? _slowSource;
     private byte[] _sampleBytes = [];
 
@@ -301,22 +304,26 @@
         }
     ];
 
-    protected override void OnInitialized()
+    // The samples are fetched from the host rather than read off its disk, so the page runs the same in either render
+    // mode - a WebAssembly page has no disk of the server to read.
+    protected override async Task OnInitializedAsync()
     {
-        _sampleBytes = File.ReadAllBytes(Path.Combine(Env.WebRootPath, "samples", "pdf-sample.pdf"));
+        _sampleBytes = await Http.GetByteArrayAsync(Abs("samples/pdf-sample.pdf"));
         _mainSource = BitPdfSource.FromUrl(Abs("samples/pdf-sample.pdf"), "pdf-sample.pdf");
         _bytesSource = BitPdfSource.FromBytes(_sampleBytes, "pdf-sample.pdf");
-        var encrypted = File.ReadAllBytes(Path.Combine(Env.WebRootPath, "samples", "pdf-encrypted.pdf"));
+        var encrypted = await Http.GetByteArrayAsync(Abs("samples/pdf-encrypted.pdf"));
         _encryptedSource = BitPdfSource.FromBytes(encrypted, "pdf-encrypted.pdf");
         _encryptedKnownSource = BitPdfSource.FromBytes(encrypted, "pdf-encrypted.pdf").WithPassword("hunter2");
         _brokenSource = BitPdfSource.FromUrl(Abs("samples/pdf-not-a-pdf.pdf"), "pdf-not-a-pdf.pdf");
-        _missingSource = BitPdfSource.FromUrl(Abs("samples/pdf-missing-file.pdf"), "pdf-missing-file.pdf");
     }
 
     private string Abs(string relative) => Nav.ToAbsoluteUri(relative).ToString();
 
+    private void LoadMissing() => _missingSource = BitPdfSource.FromUrl(Abs("samples/pdf-missing-file.pdf"), "pdf-missing-file.pdf");
+
     // The address of a server the test runs itself, which answers only when the test says so: the one way to hold a
-    // load open long enough to see the loading state, since the document is fetched by the server, not the browser.
+    // load open long enough to see the loading state. The viewer fetches a URL through the page's HttpClient - the
+    // server's in server mode, the browser's in WebAssembly, where that server is another origin and answers CORS.
     [SupplyParameterFromQuery(Name = "slowUrl")] public string? SlowUrl { get; set; }
 
     private void LoadSlow() => _slowSource = BitPdfSource.FromUrl(SlowUrl ?? Abs("samples/pdf-sample.pdf"), "slow.pdf");

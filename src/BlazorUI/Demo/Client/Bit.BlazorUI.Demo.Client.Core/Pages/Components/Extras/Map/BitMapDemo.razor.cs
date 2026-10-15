@@ -290,7 +290,7 @@ public partial class BitMapDemo
             Name = "OnReady",
             Type = "EventCallback",
             DefaultValue = "",
-            Description = "Fires once the map can take imperative calls, and again after a swap to a provider with another backend.",
+            Description = "Fires once the map can take imperative calls, and again after a swap to a provider with another backend. A call made before it does nothing; only GetView throws.",
         },
         new()
         {
@@ -1076,7 +1076,7 @@ public partial class BitMapDemo
             Name = "IsReady",
             Type = "bool",
             DefaultValue = "false",
-            Description = "True after the map is ready for interop calls.",
+            Description = "True after the map is ready for interop calls. Until then the imperative methods do nothing.",
          },
          new()
          {
@@ -1146,7 +1146,7 @@ public partial class BitMapDemo
             Name = "GetView",
             Type = "Func<ValueTask<BitMapViewState>>",
             DefaultValue = "",
-            Description = "Returns a snapshot of the current viewport.",
+            Description = "Returns a snapshot of the current viewport. Throws an InvalidOperationException before the map is ready.",
          },
          new()
          {

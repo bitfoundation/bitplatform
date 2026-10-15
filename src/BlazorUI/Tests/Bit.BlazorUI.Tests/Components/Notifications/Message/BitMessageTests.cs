@@ -225,8 +225,8 @@ public class BitMessageTests : BunitTestContext
         DataRow(BitAlignment.SpaceBetween, "space-between"),
         DataRow(BitAlignment.SpaceAround, "space-around"),
         DataRow(BitAlignment.SpaceEvenly, "space-evenly"),
-        DataRow(BitAlignment.Baseline, "baseline"),
-        DataRow(BitAlignment.Stretch, "stretch"),
+        DataRow(BitAlignment.Baseline, "flex-start"),
+        DataRow(BitAlignment.Stretch, "flex-start"),
         DataRow(null, "flex-start")
     ]
     public void BitMessageShouldRespectAlignment(BitAlignment? alignment, string expectedValue)
@@ -239,6 +239,33 @@ public class BitMessageTests : BunitTestContext
         var style = component.Find(".bit-msg").GetAttribute("style");
 
         StringAssert.Contains(style, $"--bit-msg-justifycontent:{expectedValue}");
+    }
+
+    [TestMethod,
+        DataRow(BitAlignment.Baseline, "baseline"),
+        DataRow(BitAlignment.Stretch, "stretch"),
+        DataRow(BitAlignment.Center, null),
+        DataRow(null, null)
+    ]
+    public void BitMessageShouldAlignTheContentAcrossTheRowForBaselineAndStretch(BitAlignment? alignment, string? expectedValue)
+    {
+        // justify-content has no baseline, and lays a stretch out as flex-start, so those two align the icon and the
+        // text across the row instead; the distributions publish nothing there.
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        var style = component.Find(".bit-msg").GetAttribute("style") ?? string.Empty;
+
+        if (expectedValue is null)
+        {
+            Assert.DoesNotContain("--bit-msg-alignitems", style);
+        }
+        else
+        {
+            StringAssert.Contains(style, $"--bit-msg-alignitems:{expectedValue}");
+        }
     }
 
     [TestMethod,
@@ -2750,6 +2777,27 @@ public class BitMessageTests : BunitTestContext
 
         // A re-shown message is a new sighting of it, so its text is handed to the region a second time.
         Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitMessageShouldHoldTheDelayedTextBackUntilThePageHasBeenPainted()
+    {
+        // On WebAssembly the render right after the first one lands in the same browser task, so the region would reach
+        // the accessibility tree with its text already in it: the text waits for the browser to paint the empty region.
+        var paint = Context.JSInterop.SetupVoid("BitBlazorUI.Message.afterPaint");
+
+        var component = RenderComponent<BitMessage>(parameters =>
+        {
+            parameters.Add(p => p.DelayedAnnouncement, true);
+            parameters.AddChildContent("Hello");
+        });
+
+        Assert.HasCount(1, component.FindAll(".bit-msg-cnc"));
+        Assert.IsEmpty(component.FindAll(".bit-msg-cnt"));
+
+        paint.SetVoidResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual("Hello", component.Find(".bit-msg-cnt").TextContent.Trim()));
     }
 
 

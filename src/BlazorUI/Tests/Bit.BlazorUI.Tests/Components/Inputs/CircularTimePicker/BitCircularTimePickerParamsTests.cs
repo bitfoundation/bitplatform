@@ -18,14 +18,13 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.CircularTimePicker;
 [TestClass]
 public class BitCircularTimePickerParamsTests : BunitTestContext
 {
-    // What a picker is about rather than how it looks - its label, the open state it is bound to and the callbacks it
-    // answers with - is written per picker, so it has no place on the params object.
+    // What one picker alone is bound to - the open state and the callbacks it answers with - is written per picker, so
+    // it has no place on the params object. Its label is carried, as it is by BitTimePickerParams and the params of
+    // the other inputs that have one.
     private static readonly string[] _notCascaded =
     [
         nameof(BitCircularTimePicker.CascadingParameters),
         nameof(BitCircularTimePicker.IsOpen),
-        nameof(BitCircularTimePicker.Label),
-        nameof(BitCircularTimePicker.LabelTemplate),
         nameof(BitCircularTimePicker.OnClear),
         nameof(BitCircularTimePicker.OnClick),
         nameof(BitCircularTimePicker.OnClose),
@@ -152,6 +151,57 @@ public class BitCircularTimePickerParamsTests : BunitTestContext
         // What the markup left alone still comes from the cascade.
         Assert.IsTrue(root.ClassList.Contains("bit-ctp-sta"));
         Assert.AreEqual(1, component.FindAll(".bit-ctp-abn").Count);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldApplyTheCascadedLabel()
+    {
+        var component = RenderCascaded(new BitCircularTimePickerParams { Label = "Cascaded label" });
+
+        var label = component.Find(".bit-ctp-lbl");
+        Assert.AreEqual("Cascaded label", label.TextContent.Trim());
+        Assert.AreEqual(label.Id, component.Find(".bit-ctp-inp").GetAttribute("aria-labelledby"));
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldApplyTheCascadedLabelTemplateAheadOfItsOwnLabel()
+    {
+        // A template, from the markup or the cascade, is what the picker renders in place of a plain label; the
+        // picker's own Label still wins over a cascaded one.
+        var component = RenderCascaded(
+            new BitCircularTimePickerParams
+            {
+                Label = "Cascaded label",
+                LabelTemplate = builder => builder.AddMarkupContent(0, "<b class=\"cascaded-template\">Template</b>")
+            },
+            builder => builder.AddAttribute(1, nameof(BitCircularTimePicker.Label), "Own label"));
+
+        var picker = component.FindComponent<BitCircularTimePicker>().Instance;
+        Assert.AreEqual("Own label", picker.Label);
+        Assert.IsNotNull(picker.LabelTemplate);
+        Assert.AreEqual(1, component.FindAll(".cascaded-template").Count);
+    }
+
+    [TestMethod]
+    public void BitCircularTimePickerShouldApplyTheCascadedReadOnlyAndRequired()
+    {
+        // The params object is an input's, so the two parameters BitInputBaseParams carries for every input reach the
+        // picker too, and a value the picker wrote for itself - a false included - is left alone.
+        var cascaded = RenderCascaded(new BitCircularTimePickerParams { ReadOnly = true, Required = true });
+
+        var picker = cascaded.FindComponent<BitCircularTimePicker>().Instance;
+        Assert.IsTrue(picker.ReadOnly);
+        Assert.IsTrue(picker.Required);
+
+        var own = RenderCascaded(new BitCircularTimePickerParams { ReadOnly = true, Required = true }, builder =>
+        {
+            builder.AddAttribute(1, nameof(BitCircularTimePicker.ReadOnly), false);
+            builder.AddAttribute(2, nameof(BitCircularTimePicker.Required), false);
+        });
+
+        var ownPicker = own.FindComponent<BitCircularTimePicker>().Instance;
+        Assert.IsFalse(ownPicker.ReadOnly);
+        Assert.IsFalse(ownPicker.Required);
     }
 
     [TestMethod]

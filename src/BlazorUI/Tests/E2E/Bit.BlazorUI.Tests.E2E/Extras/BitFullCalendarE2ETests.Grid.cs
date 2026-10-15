@@ -102,7 +102,7 @@ public partial class BitFullCalendarE2ETests
         await Expect(cal.Locator(".bit-bfc-week-header-time .bit-bfc-weeknum-cell [aria-hidden='true']")).ToHaveTextAsync("W30");
 
         await SwitchViewAsync(cal, "Month");
-        await Expect(cal.Locator(".bit-bfc-month-header-cell:not(.bit-bfc-weeknum-header)")).ToHaveTextAsync(["M", "T", "W", "T", "F"]);
+        await Expect(cal.Locator(".bit-bfc-month-header-cell:not(.bit-bfc-weeknum-header)")).ToHaveTextAsync(ServerOrWasm(["M", "T", "W", "T", "F"], ["Mo", "Tu", "We", "Th", "Fr"]));
         await Expect(cal.Locator(".bit-bfc-month-grid .bit-bfc-weeknum-cell [aria-hidden='true']").First).ToHaveTextAsync("W27");
     }
 

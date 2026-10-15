@@ -44,10 +44,14 @@
     @include focus-anchor;
 }
 
-// Put on the drag handle of a draggable Modal (by the drag-drop script) so that a touch drag moves the
-// Modal instead of scrolling whatever is under the finger.
+// Put on the drag handle of a draggable Modal or Dialog (by the drag-drop script) so that a touch drag moves
+// the surface instead of scrolling whatever is under the finger. A press on the handle is a move for the same
+// reason, never the start of a text selection running through the title it drags by. (A press on text an earlier
+// selection reached, which Firefox would drag away, is the script's to stop: it cancels the dragstart.)
 .bit-mdl-nta {
     touch-action: none;
+    -webkit-user-select: none;
+    user-select: none;
 
     * {
         touch-action: none;

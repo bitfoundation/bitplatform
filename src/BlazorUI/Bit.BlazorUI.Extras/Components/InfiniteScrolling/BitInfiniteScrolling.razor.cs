@@ -950,6 +950,15 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
 
         if (version != _loadVersion || IsDisposed) return;
 
+        if (_error is null && _pendingScrollToEnd is false && _pendingScrollAdjust is false)
+        {
+            // Not from here: the interop call would reach the browser ahead of the render that puts the page on
+            // the screen, and the observer would measure the list as it was - empty right after a refresh, with
+            // its sentinel in view - and ask for a page the reader never scrolled to. It is asked for before the
+            // render is: a WebAssembly renderer runs that render, and its OnAfterRenderAsync, inside the call.
+            _pendingReobserve = true;
+        }
+
         StateHasChanged();
 
         if (_error is not null)
@@ -959,14 +968,6 @@ public partial class BitInfiniteScrolling<TItem> : BitComponentBase
             await UnobserveAsync();
             await OnError.InvokeAsync(_error);
             return;
-        }
-
-        if (_pendingScrollToEnd is false && _pendingScrollAdjust is false)
-        {
-            // Not from here: the interop call would reach the browser ahead of the render that puts the page on
-            // the screen, and the observer would measure the list as it was - empty right after a refresh, with
-            // its sentinel in view - and ask for a page the reader never scrolled to.
-            _pendingReobserve = true;
         }
 
         if (newItems is { Length: > 0 })

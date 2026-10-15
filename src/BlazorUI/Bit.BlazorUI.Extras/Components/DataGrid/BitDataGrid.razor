@@ -42,12 +42,17 @@
                         @* type="search" already carries the searchbox role, so none is declared here. *@
                         @* The term is applied as the user types, debounced by SearchDebounce, so the
                            grid answers a keystroke instead of waiting for Enter or a blur - while a
-                           burst of typing still issues a single search. *@
+                           burst of typing still issues a single search. It is a binding rather than a value
+                           and an oninput handler (see RenderFilterInput): a binding is what has Blazor take
+                           what the box held when each keystroke was sent as what it last rendered, so a
+                           render that arrives while later keystrokes are on their way never writes an older
+                           text back over them. *@
                         <input disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="search" class="bit-dtg-search-input"
                                placeholder="@Strings.SearchPlaceholder"
                                aria-label="@Strings.SearchLabel"
-                               value="@(_searchBoxText ?? _search)"
-                               @oninput="e => DebouncedSearchAsync((string?)e.Value)" />
+                               @bind:get="_searchBoxText ?? _search"
+                               @bind:set="DebouncedSearchAsync"
+                               @bind:event="oninput" />
                         @if (!string.IsNullOrEmpty(_search))
                         {
                             <button disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" type="button" class="bit-dtg-icon-btn bit-dtg-search-clear"
@@ -303,8 +308,10 @@
                                 @if (ColumnResizable(column))
                                 {
                                     @* Double-click auto-fits the column to its widest rendered content,
-                                       the gesture desktop grids share; stopPropagation keeps it off the
-                                       header's own sort handler. The handle is also a focusable separator
+                                       the gesture desktop grids share - read off the second press (see
+                                       OnResizerMouseDownAsync), since the release of a press can land on the
+                                       drag overlay it opened; stopPropagation keeps the double click off the
+                                       header's own handlers. The handle is also a focusable separator
                                        (the APG window splitter): the arrow keys resize the column, Home and
                                        End take it to its limits and Enter fits it, so resizing is not a
                                        pointer-only gesture. Its value is the column's width in pixels. *@
@@ -318,7 +325,7 @@
                                           @onpointerdown="e => StartResizeAsync(column, e.ClientX)"
                                           @onpointerdown:stopPropagation="true"
                                           @onpointerup="ReleaseResizeHandle"
-                                          @ondblclick="() => AutoFitAsync(column)"
+                                          @onmousedown="e => OnResizerMouseDownAsync(column, e)"
                                           @ondblclick:stopPropagation="true"
                                           @onkeydown="e => OnResizerKeyDownAsync(column, e)"
                                           @onkeydown:stopPropagation="true"></span>
@@ -814,12 +821,19 @@
         // it targets (placeholders and bare selects are not exposed as accessible names).
         var filterLabel = string.Format(Strings.FilterByFormat, column.DisplayTitle);
 
+        @* The typed boxes bind their text rather than write a value and listen to oninput: only a binding has Blazor
+           take what a box held when each keystroke was sent as what it last rendered there. With a value and a
+           handler of its own, every render writes the text of the last keystroke the server has handled back into
+           the box - and on a slow link, or with FilterDebounce at 0 and a server-side grid that renders as its
+           request comes and goes, the keystrokes typed since are lost under it. *@
+
         if (type is BitDataGridColumnDataType.Text or BitDataGridColumnDataType.Number && IsSetOperator(EffectiveFilterOperator(column)))
         {
             <input disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" class="bit-dtg-filter-input" placeholder="@Strings.FilterListPlaceholder" aria-label="@filterLabel"
                    inputmode="@(type is BitDataGridColumnDataType.Number ? "decimal" : null)"
-                   value="@EditorText(column, FormatFilterRaw(current))"
-                   @oninput="e => OnFilterInputAsync(column, (string?)e.Value)"
+                   @bind:get="EditorText(column, FormatFilterRaw(current))"
+                   @bind:set="raw => OnFilterInputAsync(column, raw)"
+                   @bind:event="oninput"
                    @onchange="e => OnFilterCommitAsync(column, (string?)e.Value)" />
         }
         else if (type is BitDataGridColumnDataType.Number)
@@ -827,8 +841,9 @@
             @* A text box, not type="number": a number input reports what it cannot parse yet ("-", "12.") as an empty
                value, and the render that follows a keystroke would write that empty value back over the typing. *@
             <input disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" class="bit-dtg-filter-input" type="text" inputmode="decimal" autocomplete="off" placeholder="=" aria-label="@filterLabel"
-                   value="@EditorText(column, FormatFilterNumber(current))"
-                   @oninput="e => OnFilterInputAsync(column, (string?)e.Value)"
+                   @bind:get="EditorText(column, FormatFilterNumber(current))"
+                   @bind:set="raw => OnFilterInputAsync(column, raw)"
+                   @bind:event="oninput"
                    @onchange="e => OnFilterCommitAsync(column, (string?)e.Value)" />
         }
         else if (type is BitDataGridColumnDataType.Date or BitDataGridColumnDataType.DateTime or BitDataGridColumnDataType.DateTimeOffset)
@@ -860,8 +875,9 @@
         else
         {
             <input disabled="@(Disabled)" aria-disabled="@(Disabled ? "true" : null)" class="bit-dtg-filter-input" placeholder="@Strings.FilterPlaceholder" aria-label="@filterLabel"
-                   value="@EditorText(column, current?.ToString())"
-                   @oninput="e => OnFilterInputAsync(column, (string?)e.Value)"
+                   @bind:get="EditorText(column, current?.ToString())"
+                   @bind:set="raw => OnFilterInputAsync(column, raw)"
+                   @bind:event="oninput"
                    @onchange="e => OnFilterCommitAsync(column, (string?)e.Value)" />
         }
     };

@@ -1411,7 +1411,6 @@ public class BitNumberFieldE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: a key handler awaits a JS read of the input (CommitPendingInputValue) before it checks the bound and steps, so a key pressed during that round trip runs first: ArrowUp on a value at Max followed at once by Home lands on Min + Step, the blocked ArrowUp stepping after the Home it was pressed before.")]
     public async Task RapidKeys_HomeRightAfterABlockedArrowUp_EndsAtTheMin()
     {
         await OpenAsync(Url);

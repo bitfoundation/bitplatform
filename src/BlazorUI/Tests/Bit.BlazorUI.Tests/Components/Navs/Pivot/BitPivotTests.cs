@@ -148,8 +148,6 @@ public class BitPivotTests : BunitTestContext
          DataRow(BitAlignment.SpaceBetween, "space-between"),
          DataRow(BitAlignment.SpaceAround, "space-around"),
          DataRow(BitAlignment.SpaceEvenly, "space-evenly"),
-         DataRow(BitAlignment.Baseline, "baseline"),
-         DataRow(BitAlignment.Stretch, "stretch")
     ]
     public void BitPivotShouldRespectAlignment(BitAlignment alignment, string expectedValue)
     {
@@ -158,7 +156,29 @@ public class BitPivotTests : BunitTestContext
             parameters.Add(p => p.Alignment, alignment);
         });
 
-        Assert.IsTrue(component.Find(".bit-pvt").GetAttribute("style")!.Contains($"--bit-pvt-hal:{expectedValue}"));
+        var style = component.Find(".bit-pvt").GetAttribute("style")!;
+
+        Assert.IsTrue(style.Contains($"--bit-pvt-hal:{expectedValue}"));
+        Assert.IsFalse(style.Contains("--bit-pvt-hai"));
+    }
+
+    [TestMethod,
+         DataRow(BitAlignment.Baseline, "baseline"),
+         DataRow(BitAlignment.Stretch, "stretch")
+    ]
+    public void BitPivotShouldAlignTheTabsAcrossTheHeaderForBaselineAndStretch(BitAlignment alignment, string expectedValue)
+    {
+        // justify-content has no baseline and lays a stretch out as flex-start, so the two keep the tabs at the start
+        // of the header and align them across it instead.
+        var component = RenderComponent<BitPivot>(parameters =>
+        {
+            parameters.Add(p => p.Alignment, alignment);
+        });
+
+        var style = component.Find(".bit-pvt").GetAttribute("style")!;
+
+        Assert.IsTrue(style.Contains("--bit-pvt-hal:flex-start"));
+        Assert.IsTrue(style.Contains($"--bit-pvt-hai:{expectedValue}"));
     }
 
 

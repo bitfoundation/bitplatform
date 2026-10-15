@@ -2324,6 +2324,31 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         }
     }
 
+    // The focus a close stranded in the hidden callout (or dropped to the body) goes back to the trigger, and a focus
+    // anywhere else stays where it is - which only the browser knows, so it is the script that decides. Like
+    // RestoreFocusToTrigger, the move must not reopen the list through OpenOnFocus, so the note is left first and
+    // taken back when nothing moved: no focusin is on its way to consume it then.
+    private async Task ReclaimFocusFromTheCallout()
+    {
+        if (IsRendered is false || IsDisposed) return;
+
+        _suppressOpenOnFocus = true;
+
+        try
+        {
+            var moved = await _js.BitDropdownsReclaimFocus(_calloutId, Combo ? _comboBoxInputRef : InputElement);
+
+            if (moved is false)
+            {
+                _suppressOpenOnFocus = false;
+            }
+        }
+        catch
+        {
+            _suppressOpenOnFocus = false;
+        }
+    }
+
     // Dismissing the callout hides whatever inside it has the focus (an option, the search box), which
     // would otherwise drop the focus to the document body and strand a keyboard user at the top of the
     // page. Every dismissal the user asks for by hand goes through here so the focus comes back to the
@@ -2390,6 +2415,13 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
             if (IsOpen)
             {
                 await CloseCallout();
+
+                // The press was taken on the field, but the focus the opening hands to the list may have landed on
+                // an option since, and the close has just hidden it.
+                if (IsOpen is false)
+                {
+                    await ReclaimFocusFromTheCallout();
+                }
             }
             else
             {
@@ -3786,6 +3818,14 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (ReadOnly) return;
         if (Disabled || InvalidValueBinding()) return;
 
+        // The input event has already searched for everything that was typed, so the change event - the
+        // commit the browser raises when the input loses the focus (Tab, a click elsewhere) or on Enter -
+        // only ever restates a term. Those are the moments the dropdown closes the callout for, and closing
+        // discards the term (see OnSetIsOpen), so a change arriving with the callout closed is the stale
+        // commit of a term that is already gone: taking it would put the term back into the input and
+        // filter the next opening by it.
+        if (IsOpen is false) return;
+
         _comboInputText = e.Value?.ToString();
 
         if (Immediate) return;
@@ -3796,9 +3836,8 @@ public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessed
         // reports.
         if (string.Equals(_searchText ?? string.Empty, _comboInputText ?? string.Empty, StringComparison.Ordinal)) return;
 
-        // The change event of an input is the commit of what was typed, which the browser raises when the
-        // input loses the focus (and when Enter is pressed). Both of those are moments the dropdown has
-        // just dismissed the callout for, so the search here must not reveal it again behind the user.
+        // A commit that reaches an open list before its close is the term the list is showing; it is
+        // applied without opening anything, since the close it precedes is on its way.
         await SearchComboItems(e, openCallout: false);
     }
 

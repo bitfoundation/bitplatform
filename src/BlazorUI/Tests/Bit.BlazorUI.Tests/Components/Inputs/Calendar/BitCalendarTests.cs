@@ -3571,4 +3571,22 @@ public class BitCalendarTests : BunitTestContext
 
         Assert.AreEqual("true", component.Find(".bit-cal-grd").GetAttribute("aria-required"));
     }
+
+    [TestMethod]
+    public void BitCalendarShouldLeaveSelectingTheTimeInputsToTheScript()
+    {
+        var component = RenderComponent<BitCalendar>(parameters =>
+        {
+            parameters.Add(p => p.ShowTimePicker, true);
+        });
+
+        // The script selects the text as the focus lands (see Calendars.ts): a select() from .NET a round trip later
+        // would pull the focus back onto an input a quick Tab has already left.
+        foreach (var input in component.FindAll(".bit-cal-tin"))
+        {
+            Assert.IsFalse(input.HasAttribute("blazor:onfocus"));
+        }
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.selectText"));
+    }
 }

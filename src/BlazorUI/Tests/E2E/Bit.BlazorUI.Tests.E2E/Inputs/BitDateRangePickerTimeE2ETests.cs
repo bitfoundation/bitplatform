@@ -129,7 +129,6 @@ public class BitDateRangePickerTimeE2ETests : BitDatePickersE2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: while the range has no end date, every change of the value (the pick of the start day, or a change of the start time or the end time itself) runs OnSetParameters, which re-derives the end time from StartingValue or the default 23:59 - so an end time set before the end day is picked is lost.")]
     public async Task Time_AnEndTimeSetBeforeTheEndDayIsPickedIsKept()
     {
         await OpenAsync(Route);

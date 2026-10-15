@@ -588,6 +588,11 @@ public class BitBadgeE2ETests : E2ETestBase
         await Expect(button).ToHaveAttributeAsync("aria-disabled", "true");
         Assert.AreEqual("none", await ComputedStyleAsync("#click-disabled button", "pointer-events"));
 
+        // A badge laid out in the flow takes the pointer back - unless it is disabled.
+        Assert.AreEqual("auto", await ComputedStyleAsync("#click-tabindex button", "pointer-events"));
+        Assert.AreEqual("none", await ComputedStyleAsync("#click-disabled-standalone button", "pointer-events"));
+        await Page.Locator("#click-disabled-standalone button").ClickAsync(new() { Force = true });
+
         await button.DispatchEventAsync("click");
         await button.ClickAsync(new() { Force = true });
         await Expect(Page.Locator("#clicks")).ToHaveTextAsync("0");
@@ -656,6 +661,10 @@ public class BitBadgeE2ETests : E2ETestBase
         await Expect(link).ToHaveAttributeAsync("aria-disabled", "true");
         Assert.AreEqual("default", await ComputedStyleAsync("#href-disabled a", "cursor"));
         Assert.AreEqual("none", await ComputedStyleAsync("#href-disabled-overlay a", "pointer-events"));
+
+        // The standalone one too: the rule that hands a badge in the flow the pointer back does not outweigh the disabled one.
+        Assert.AreEqual("none", await ComputedStyleAsync("#href-disabled a", "pointer-events"));
+        Assert.AreEqual("auto", await ComputedStyleAsync("#href-badge a", "pointer-events"));
 
         var url = Page.Url;
         await link.ClickAsync(new() { Force = true });

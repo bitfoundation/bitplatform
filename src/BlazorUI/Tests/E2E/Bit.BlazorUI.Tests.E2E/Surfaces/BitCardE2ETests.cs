@@ -1015,7 +1015,6 @@ public class BitCardE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: BitCard renders its own @onclick after the splatted attributes even when the card has no click of its own (a default EventCallback), which takes the page's own onclick off the root: a page @onclick on a card without OnClick never runs, enabled or not.")]
     public async Task Enabled_ThePagesOwnOnclick_RunsOnACardWithoutAClickOfItsOwn()
     {
         await OpenAsync(Url);

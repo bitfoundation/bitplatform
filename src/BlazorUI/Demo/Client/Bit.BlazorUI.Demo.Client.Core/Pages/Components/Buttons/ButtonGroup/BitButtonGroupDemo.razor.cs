@@ -150,7 +150,7 @@ public partial class BitButtonGroupDemo
         {
             Name = "OnToggleChange",
             Type = "EventCallback<TItem>",
-            Description = "The callback that called when toggled item change."
+            Description = "The callback that is called when the user toggles or un-toggles an item, with that item. Only a change the user makes raises it, in both selection modes: the toggled items the group starts with (DefaultToggleKey, DefaultToggleKeys, a bound key) and the keys the page writes itself are applied without raising it."
         },
         new()
         {

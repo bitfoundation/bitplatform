@@ -168,6 +168,31 @@ public class BitDataGridDataE2ETests : BitDataGridE2ETestBase
     }
 
     [TestMethod]
+    public async Task Server_TypingFastIntoTheFilterAndTheSearchBox_KeepsEveryCharacter()
+    {
+        await OpenAsync(Url);
+
+        const string id = "grid-server";
+        await Expect(Cell(id, 0, 2)).ToHaveTextAsync("Item 0001");
+
+        // FilterDebounce and SearchDebounce are 0, so every keystroke starts a request and the page renders as each one
+        // comes and goes: none of those renders may write the text of an earlier keystroke back over the ones typed
+        // since.
+        var filter = FilterRow(id).Locator("[aria-label='Filter by Name']");
+        await filter.PressSequentiallyAsync("Item 0072");
+        await ExpectColumnAsync(id, 2, "Item 0072");
+        await Expect(filter).ToHaveValueAsync("Item 0072");
+
+        await filter.FillAsync("");
+        await ExpectColumnAsync(id, 2, Enumerable.Range(1, 10).Select(i => $"Item {i:0000}").ToArray());
+
+        var search = Toolbar(id).Locator("input.bit-dtg-search-input");
+        await search.PressSequentiallyAsync("Item 0035");
+        await ExpectColumnAsync(id, 2, "Item 0035");
+        await Expect(search).ToHaveValueAsync("Item 0035");
+    }
+
+    [TestMethod]
     public async Task ServerVirtualize_Scrolling_FetchesTheWindowsInViewAndTheFooterShowsTheServersTotals()
     {
         await OpenAsync(Url);

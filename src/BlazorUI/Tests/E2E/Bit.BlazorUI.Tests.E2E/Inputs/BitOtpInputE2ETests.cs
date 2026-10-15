@@ -234,6 +234,38 @@ public class BitOtpInputE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Arrow_FollowedAtOnceByTab_NeverPullsTheFocusBack()
+    {
+        await OpenAsync(Url);
+
+        // The direction of a Dir left unset is read in a round trip before the arrow moves the focus. A Tab pressed
+        // while it is out has taken the focus on by the time it comes back, and the arrow must not pull it back.
+        await Page.EvaluateAsync(@"() => {
+            const utils = BitBlazorUI.Utils;
+            const isRtl = utils.isRtl;
+            window.__isRtlCalls = 0;
+            utils.isRtl = function (...args) { window.__isRtlCalls++; return isRtl.apply(this, args); };
+        }");
+
+        await StartTypingAsync("otp-noshift", 2);
+        await Page.Keyboard.PressAsync("ArrowLeft");
+        await Page.Keyboard.PressAsync("Tab");
+
+        // Once the direction has been asked for, the answer is on its way, and an event raised after it reaches the
+        // page behind it: by the time that event has rendered, the arrow has done whatever it was going to do. A
+        // script's click() moves no focus of its own.
+        await Page.WaitForFunctionAsync("() => window.__isRtlCalls > 0");
+        await Page.Locator("#btn-set-oneway").EvaluateAsync("b => b.click()");
+        await Expect(Text("oneway-value")).ToHaveTextAsync("[98765]");
+        await NextFramesAsync();
+
+        // Either the arrow landed before the Tab (box 1, then the Tab on to box 2) or the Tab overtook it and the
+        // arrow was dropped (the Tab from box 2 on to box 3); never back on box 1.
+        var focused = await Inputs("otp-noshift").EvaluateAllAsync<int>("els => els.indexOf(document.activeElement)");
+        Assert.IsTrue(focused is 2 or 3, $"The focus was pulled back to box {focused}.");
+    }
+
+    [TestMethod]
     public async Task Arrows_HomeAndEnd_WalkTheCode()
     {
         await OpenAsync(Url);
@@ -904,9 +936,14 @@ public class BitOtpInputE2ETests : E2ETestBase
         await Expect(Text("ev-change")).ToHaveTextAsync("[abc]");
         await Expect(Text("ev-fill-count")).ToHaveTextAsync("1");
 
-        // The same character typed over the last box leaves the code as it was: no second fill.
+        // The same character typed again into the last box, which keeps the focus and holds it with the caret after it,
+        // leaves the code as it was: no second fill. The input event reports what the input received - the character
+        // added to the one it held, which the box is then cut back to (the first event's "c@2" is no proof the second
+        // one was handled, so the raw value is what is waited for).
         await Page.Keyboard.TypeAsync("c");
-        await Expect(Text("ev-input")).ToHaveTextAsync("c@2");
+        await Expect(Text("ev-input")).ToHaveTextAsync("cc@2");
+        await Expect(Box("otp-events", 2)).ToHaveValueAsync("c");
+        await Expect(Text("ev-change")).ToHaveTextAsync("[abc]");
         await Expect(Text("ev-fill-count")).ToHaveTextAsync("1");
     }
 

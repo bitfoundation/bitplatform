@@ -964,6 +964,7 @@ public class BitMenuButtonE2ETests : E2ETestBase
             el => {
                 window.__delay = {};
                 const start = performance.now();
+                el.addEventListener('click', () => { window.__delay.click ??= performance.now() - start; }, { capture: true });
                 new MutationObserver(() => {
                     if (el.getAttribute('aria-busy') === 'true' && window.__delay.busy === undefined) window.__delay.busy = performance.now() - start;
                     if (el.querySelector('.bit-mnb-spn') && window.__delay.spinner === undefined) window.__delay.spinner = performance.now() - start;
@@ -974,9 +975,14 @@ public class BitMenuButtonE2ETests : E2ETestBase
         await opb.ClickAsync();
         await Expect(opb.Locator(".bit-mnb-spn")).ToBeVisibleAsync();
 
+        // The delay runs from the click, which is when the loading state starts. It is measured from there rather
+        // than from the busy attribute showing up: that is a render, and in WebAssembly the first render after the
+        // click can take long enough to eat into the delay without the spinner coming any earlier.
+        var click = await Page.EvaluateAsync<double>("() => window.__delay.click");
         var busy = await Page.EvaluateAsync<double>("() => window.__delay.busy");
         var spinner = await Page.EvaluateAsync<double>("() => window.__delay.spinner");
-        Assert.IsTrue(spinner - busy >= 450, $"The spinner came {spinner - busy}ms after the busy state; the delay is 500ms.");
+        Assert.IsTrue(busy < spinner, $"The busy state came at {busy}ms, after the spinner at {spinner}ms.");
+        Assert.IsTrue(spinner - click >= 450, $"The spinner came {spinner - click}ms after the click; the delay is 500ms.");
 
         await Page.Locator("#btn-release-delay").ClickAsync();
         await Expect(opb.Locator(".bit-mnb-spn")).ToHaveCountAsync(0);
@@ -984,7 +990,6 @@ public class BitMenuButtonE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: inside an EditForm the items default to type=submit, but the open menu is moved to the body, out of the <form>, and they render no form attribute without FormId - so clicking one submits nothing.")]
     public async Task Items_InsideAnEditForm_SubmitTheFormTheyDefaultToSubmitting()
     {
         await OpenAsync(ItemsApi);

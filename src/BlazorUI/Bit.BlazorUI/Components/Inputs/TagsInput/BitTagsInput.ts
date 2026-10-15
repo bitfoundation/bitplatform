@@ -8,7 +8,7 @@
         // with would take a scroll away from the user and give nothing back.
         private static readonly tagKeys = ['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Backspace', 'Delete', 'Enter', 'F2'];
 
-        public static setup(input: HTMLInputElement, isEdit: boolean = false) {
+        public static setup(input: HTMLInputElement, isEdit: boolean = false, dotnetObj: DotNetObject | null = null) {
             // The little input that replaces a tag while it is being corrected in place is set up every
             // time an edit is opened, and the engine may well hand the very same element back for the
             // next one, so the listeners are only ever attached once per element.
@@ -40,6 +40,15 @@
                     return;
                 }
 
+                // Backspace in an empty input removes the last tag, or puts it back into the input to be corrected
+                // (BackspaceEditsLastTag) - which under WebAssembly is done inside this very keydown, so the deletion
+                // the browser runs after it would take the last character of that tag. An empty input has nothing for
+                // the key to delete, so its default is nothing to lose.
+                if (e.key === 'Backspace' && input.value.length === 0) {
+                    e.preventDefault();
+                    return;
+                }
+
                 const noTrim = input.dataset.noTrim === 'true';
                 const hasText = (noTrim ? input.value : input.value.trim()).length > 0;
 
@@ -68,6 +77,10 @@
                 const separators = TagsInput.getSeparators(input);
                 if (e.key.length === 1 && separators.includes(e.key)) {
                     e.preventDefault();
+
+                    if (hasText && dotnetObj) {
+                        TagsInput.commitSeparatedText(input, dotnetObj);
+                    }
                 }
             }, true); // capture phase - runs before the browser default and Blazor's handler
 
@@ -117,6 +130,26 @@
                     input.dispatchEvent(new Event('input', { bubbles: true }));
                 }
             });
+        }
+
+        // The text a separator closes is taken out of the input in the keystroke of the separator itself, rather than by
+        // the round trip of the commit: the keys typed while that round trip is on its way would land on the text being
+        // committed and join it ("ab," followed quickly by "cd," gave the tags "ab" and "abcd"). The input event raised
+        // here (ahead of Blazor's keydown, which then finds nothing left to commit) tells the component what the input
+        // holds now, and the text goes to it on its own. A text it does not take - refused, or called off - comes back,
+        // into the input it was typed in, unless the next one is already being typed there.
+        private static commitSeparatedText(input: HTMLInputElement, dotnetObj: DotNetObject) {
+            const text = input.value;
+
+            input.value = '';
+            input.dispatchEvent(new Event('input', { bubbles: true }));
+
+            dotnetObj.invokeMethodAsync<boolean>('CommitSeparatedText', text).then(handBack => {
+                if (!handBack || input.value !== '' || input.readOnly || input.disabled) return;
+
+                input.value = text;
+                input.dispatchEvent(new Event('input', { bubbles: true }));
+            }).catch(() => { }); // the component went away (or the circuit did) with the commit on its way
         }
 
         // The keys the chips answer to are handled on the .NET side, which runs long after the browser

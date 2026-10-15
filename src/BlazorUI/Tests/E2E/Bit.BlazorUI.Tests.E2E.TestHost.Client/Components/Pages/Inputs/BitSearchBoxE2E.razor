@@ -250,6 +250,7 @@
                       OnSuggestItemSelect="v => _providerSelected = v" />
         <span id="provider-terms">@string.Join(",", _providerTerms)</span>
         <span id="provider-cancelled">@_providerCancelled</span>
+        <span id="provider-cancelled-on-arrival">@_providerCancelledOnArrival</span>
         <span id="provider-selected">[@_providerSelected]</span>
         <BitSearchBox Id="sb-suggest-modeless" Immediate Modeless FixedCalloutWidth MinSuggestTriggerChars="1" SuggestItems="_longItems" />
         <div style="width: 240px;">
@@ -508,6 +509,7 @@
     private int _suggestToggles;
     private readonly List<string> _providerTerms = [];
     private int _providerCancelled;
+    private int _providerCancelledOnArrival;
     private string? _providerSelected;
     private string? _failure;
     private string? _autoSelectValue;
@@ -559,6 +561,7 @@
     private async ValueTask<IEnumerable<string>> LoadItems(BitSearchBoxSuggestItemsProviderRequest request)
     {
         _providerTerms.Add(request.SearchTerm ?? string.Empty);
+        if (request.CancellationToken.IsCancellationRequested) _providerCancelledOnArrival++;
         await InvokeAsync(StateHasChanged);
         try
         {

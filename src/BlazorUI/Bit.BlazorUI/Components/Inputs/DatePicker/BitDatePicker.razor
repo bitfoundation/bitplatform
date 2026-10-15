@@ -791,8 +791,7 @@
                                    style="@Styles?.TimePickerIncreaseMinuteIcon"
                                    class="bit-dtp-cic @increaseMinuteIconCss @Classes?.TimePickerIncreaseMinuteIcon" />
                             </button>
-                            <input @ref="_inputTimeMinuteRef"
-                                   @bind="@_minuteView"
+                            <input @bind="@_minuteView"
                                    @bind:event="oninput"
                                    @onchange="() => HandleOnTimeInputChange(TimeUnit.Minute)"
                                    @onfocus="HandleOnTimeMinuteFocus"
@@ -845,8 +844,7 @@
                                        style="@Styles?.TimePickerIncreaseSecondIcon"
                                        class="bit-dtp-cic @increaseSecondIconCss @Classes?.TimePickerIncreaseSecondIcon" />
                                 </button>
-                                <input @ref="_inputTimeSecondRef"
-                                       @bind="@_secondView"
+                                <input @bind="@_secondView"
                                        @bind:event="oninput"
                                        @onchange="() => HandleOnTimeInputChange(TimeUnit.Second)"
                                        @onfocus="HandleOnTimeSecondFocus"

@@ -3,12 +3,15 @@
         private static _resizeObservers: Record<string, ResizeObserver> = {};
         private static _intersectionObservers: Record<string, IntersectionObserver> = {};
 
-        // Watches an element for entering the visible region of its nearest scrollable ancestor and
-        // reports it back to .NET. Used by lists that load their next page as the end of the loaded
-        // items comes into view, where the element observed is a zero height sentinel sitting after
-        // the last one. rootMargin grows the region the sentinel is measured against, so a positive
-        // margin fires the callback before the sentinel itself is actually reached.
-        public static registerIntersection(id: string, element: HTMLElement, obj: DotNetObject, rootMargin: string) {
+        // Watches an element for entering the visible region (the viewport, as clipped by every scrolling
+        // ancestor in between) and reports it back to .NET. Used by lists that load their next page as the
+        // end of the loaded items comes into view, where the element observed is a sentinel sitting after the
+        // last one. An early start is drawn into the sentinel itself (BitBasicList lays a strip of the length
+        // of its threshold back over the end of its items), since that is clipped by whichever box scrolls
+        // the list; a rootMargin only ever grows the viewport, and so does nothing for a list that scrolls
+        // its own content. rootMargin is still taken for an observer that is meant to be measured against
+        // the viewport alone.
+        public static registerIntersection(id: string, element: HTMLElement, obj: DotNetObject, rootMargin?: string) {
             if (!element || !(element instanceof Element)) return;
 
             try {

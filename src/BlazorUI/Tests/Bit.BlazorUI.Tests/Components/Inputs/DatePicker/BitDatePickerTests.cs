@@ -16,6 +16,15 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.DatePicker;
 [TestClass]
 public class BitDatePickerTests : BunitTestContext
 {
+    // Every path that opens the callout - a click, OpenCallout and an initial IsOpen alike - fits it to the width of
+    // the viewport first, and a viewport the script answers no width for is too narrow for anything but overlays. So
+    // the picker is laid out on a desktop-wide viewport here, and a test of a narrow one sets the width it needs.
+    [TestInitialize]
+    public void SetupViewportWidth()
+    {
+        Context.JSInterop.Setup<decimal>("BitBlazorUI.Utils.getBodyWidth").SetResult(1920m);
+    }
+
     [TestMethod,
         DataRow(true),
         DataRow(false),
@@ -5668,5 +5677,112 @@ public class BitDatePickerTests : BunitTestContext
     private static bool IsEventCallback(Type type)
     {
         return type == typeof(EventCallback) || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EventCallback<>));
+    }
+
+    [TestMethod]
+    public void BitDatePickerStartingOpenShouldShowTheDayPickerBesideTheTimePicker()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+        });
+
+        // An initial IsOpen opens onto the state a click opens onto: the day grid with the time picker beside it,
+        // rather than the time picker alone.
+        Assert.AreEqual(1, component.FindAll(".bit-dtp-dwp").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-dtp-twp").Count);
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.getBodyWidth"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerStartingOpenShouldFitTheMonthsToTheViewport()
+    {
+        Context.JSInterop.Setup<decimal>("BitBlazorUI.Utils.getBodyWidth").SetResult(320m);
+
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.MonthCount, 2);
+        });
+
+        // The extra months are dropped instead of being laid out side by side past the edge of the viewport.
+        Assert.AreEqual(1, component.FindAll(".bit-dtp-dwp").Count);
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldLeaveSelectingTheTimeInputsToTheScript()
+    {
+        var component = RenderComponent<BitDatePicker>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowTimePicker, true);
+            parameters.Add(p => p.ShowSeconds, true);
+        });
+
+        var inputs = component.FindAll(".bit-dtp-tin");
+        Assert.AreEqual(3, inputs.Count);
+
+        foreach (var input in inputs)
+        {
+            input.Focus();
+        }
+
+        // The script selects the text as the focus lands (see Calendars.ts): a select() from .NET a round trip later
+        // would pull the focus back onto an input a quick Tab has already left.
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.selectText"));
+    }
+
+    [TestMethod]
+    public void BitDatePickerShouldOpenOnTheMonthOfACascadedToday()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+            {
+                new BitDatePickerParams
+                {
+                    Culture = CultureInfo.InvariantCulture,
+                    TimeZone = TimeZoneInfo.Utc,
+                    Today = new DateTimeOffset(2024, 3, 15, 10, 0, 0, TimeSpan.Zero),
+                }
+            });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.AddAttribute(1, nameof(BitDatePicker.IsOpen), true);
+                builder.CloseComponent();
+            });
+        });
+
+        // The view is built while initializing, so the cascaded Today has to be in by then - one applied after it would
+        // highlight its day on a calendar showing the month of the real clock.
+        Assert.AreEqual("date", component.Find("[id$='-day-2024-03-15']").GetAttribute("aria-current"));
+        Assert.AreEqual("March 2024", component.FindAll(".bit-dtp-dwp .bit-dtp-pkt, .bit-dtp-dwp .bit-dtp-ptb")[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDatePickerParamsShouldCarryTheInputStatesOfAForm()
+    {
+        var @params = new BitDatePickerParams { ReadOnly = true, Required = true };
+
+        // The params of the picker derive from the ones every input's params do, so a form-wide BitParams reaches it
+        // the way it reaches a BitTextField.
+        Assert.IsInstanceOfType<BitInputBaseParams<DateTimeOffset?>>(@params);
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { @params });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDatePicker>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var picker = component.FindComponent<BitDatePicker>().Instance;
+
+        Assert.IsTrue(picker.ReadOnly);
+        Assert.IsTrue(picker.Required);
     }
 }

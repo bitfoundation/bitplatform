@@ -211,8 +211,9 @@ public class BitNavPanelE2ETests : E2ETestBase
         Assert.IsTrue(fit < 300, $"FitWidth takes its widest item's width, was {fit}.");
         Assert.IsFalse(await Panel("npn-fit").EvaluateAsync<bool>("e => e.scrollWidth > e.clientWidth"), "Nothing of it is cut off.");
         await Expect(Panel("npn-full")).ToHaveClassAsync(HasClass("bit-npn-fuw"));
-        Assert.IsTrue(await WidthAsync("npn-full") >= 300, "FullWidth stretches over its container and ignores Width.");
-        await Expect(Panel("npn-full")).ToHaveCSSAsync("width", "300px");
+        // FullWidth fills its container, its padding included, and ignores Width.
+        Assert.AreEqual(300, await WidthAsync("npn-full"), 1, "FullWidth stretches over its container and ignores Width.");
+        await Expect(Panel("npn-full")).ToHaveCSSAsync("width", $"{300 - padding}px");
 
         await ToggleButton("npn-width").ClickAsync();
         await Expect(Panel("npn-width")).ToHaveCSSAsync("max-width", "72px");
@@ -220,8 +221,6 @@ public class BitNavPanelE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: a FullWidth panel is width:100% of its container on a content-box root, so its own padding (spacing(2) "
-          + "on each side) is added on top and the panel overflows its container by 32px instead of filling it.")]
     public async Task FullWidth_ThePanel_FillsItsContainerWithoutOverflowingIt()
     {
         await OpenAsync(Route);

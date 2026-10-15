@@ -524,9 +524,7 @@ public class BitSnackBarE2ETests : E2ETestBase
         await Expect(item).ToBeVisibleAsync();
         await Expect(Page.Locator("#dismissed-count")).ToHaveTextAsync("0");
 
-        // A long one throws it away. The short drag selected the text under it, and a drag that starts on a selection
-        // is the browser's own drag and drop (see the KNOWN BUG test below), so the selection is cleared first.
-        await Page.EvaluateAsync("() => window.getSelection().removeAllRanges()");
+        // A long one throws it away.
         await Page.Mouse.MoveAsync((float)(box.CenterX), (float)y);
         await Page.Mouse.DownAsync();
         await Page.Mouse.MoveAsync((float)(box.CenterX - 120), (float)y, new() { Steps = 8 });
@@ -555,7 +553,6 @@ public class BitSnackBarE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: a mouse swipe selects the text it drags across, and the next swipe started on that selection becomes the browser's native drag and drop - pointercancel arrives after the first move and the item springs back. SnackBars.startSwipe neither suppresses the selection nor the native drag.")]
     public async Task Swipe_ASecondMouseSwipeOverTheTextTheFirstSelected_StillThrowsTheItemAway()
     {
         await OpenSnackBarAsync("sw=true&th=60");
@@ -568,7 +565,12 @@ public class BitSnackBarE2ETests : E2ETestBase
         await Page.Mouse.MoveAsync((float)box.CenterX, (float)box.CenterY);
         await Page.Mouse.DownAsync();
         await Page.Mouse.MoveAsync((float)(box.CenterX - 25), (float)box.CenterY, new() { Steps = 5 });
+
+        // The item does not select the text the pointer drags it across, and gives the selection back once it is let go.
+        Assert.AreEqual("", await Page.EvaluateAsync<string>("() => window.getSelection().toString()"));
+        Assert.AreEqual("none", await item.EvaluateAsync<string>("el => getComputedStyle(el).userSelect || getComputedStyle(el).webkitUserSelect"));
         await Page.Mouse.UpAsync();
+        await Expect(item).ToHaveAttributeAsync("style", new Regex("^(?!.*(translateX|user-select)).*$"));
 
         await Page.Mouse.MoveAsync((float)box.CenterX, (float)box.CenterY);
         await Page.Mouse.DownAsync();
@@ -576,6 +578,24 @@ public class BitSnackBarE2ETests : E2ETestBase
         await Page.Mouse.UpAsync();
 
         await Expect(item).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#dismissed-log")).ToHaveTextAsync("Info 1:Swipe;");
+
+        // A swipe that starts on text selected some other way - a double click, the keyboard - is a swipe too, rather
+        // than the browser's own drag and drop of that text.
+        await Page.ClickAsync("#btn-info");
+        var second = Item("Info 2");
+        await SettleAsync(second);
+        await second.Locator(".bit-snb-ttl").EvaluateAsync("el => { const r = document.createRange(); r.selectNodeContents(el); const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }");
+        Assert.AreEqual("Info 2", (await Page.EvaluateAsync<string>("() => window.getSelection().toString()")).Trim());
+
+        var title = await second.Locator(".bit-snb-ttl").BoxAsync();
+        await Page.Mouse.MoveAsync((float)title.CenterX, (float)title.CenterY);
+        await Page.Mouse.DownAsync();
+        await Page.Mouse.MoveAsync((float)(title.CenterX - 120), (float)title.CenterY, new() { Steps = 8 });
+        await Page.Mouse.UpAsync();
+
+        await Expect(second).ToHaveCountAsync(0);
+        await Expect(Page.Locator("#dismissed-log")).ToHaveTextAsync("Info 1:Swipe;Info 2:Swipe;");
     }
 
     [TestMethod]
@@ -669,8 +689,8 @@ public class BitSnackBarE2ETests : E2ETestBase
 
         var expected = new (string Button, string Title, string Icon)[]
         {
-            ("#btn-info", "Info 1", "Info"), ("#btn-success", "Success 2", "Completed"), ("#btn-warning", "Warning 3", "Info"),
-            ("#btn-severe", "SevereWarning 4", "Warning"), ("#btn-error", "Error 5", "ErrorBadge"),
+            ("#btn-info", "Info 1", "Info"), ("#btn-success", "Success 2", "Completed"), ("#btn-warning", "Warning 3", "Warning"),
+            ("#btn-severe", "SevereWarning 4", "WarningSolid"), ("#btn-error", "Error 5", "ErrorBadge"),
         };
 
         foreach (var (button, title, icon) in expected)

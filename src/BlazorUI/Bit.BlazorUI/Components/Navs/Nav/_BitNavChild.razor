@@ -1,7 +1,7 @@
 ﻿@namespace Bit.BlazorUI
 @typeparam TItem
 
-<li role="listitem" style="@Nav.GetStyle(Item)" class="@Nav.GetClass(Item)">
+<li role="listitem" style="@Nav.GetStyle(Item)" class="@Nav.GetClass(Item)" @attributes="Nav.GetItemMarkerAttributes(Item)">
     @{
         var template = Nav.GetTemplate(Item);
         var templateRenderMode = Nav.GetTemplateRenderMode(Item);

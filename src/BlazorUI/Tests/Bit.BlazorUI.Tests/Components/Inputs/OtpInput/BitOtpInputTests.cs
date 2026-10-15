@@ -5,6 +5,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
 
@@ -1572,6 +1573,55 @@ public class BitOtpInputTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitOtpInputShouldLetALaterInputEventOfTheSameInputDecide()
+    {
+        // An input event waits a moment before it reads what the browser did, and nothing promises the two resume in
+        // the order they were raised (a WebAssembly timer does not). The earlier one, overtaken by a later event of the
+        // same input while it waited, steps aside: it would otherwise put back the value it saw before it - the
+        // rejected character's - over the one the later event wrote.
+        var invalids = new List<string?>();
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 4);
+            parameters.Add(p => p.Pattern, "^[A-Z]$");
+            parameters.Add(p => p.OnInvalid, args => invalids.Add(args.Value));
+        });
+
+        var rejected = com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "a" });
+        var accepted = com.FindAll(".bit-otp-inp")[0].InputAsync(new ChangeEventArgs { Value = "A" });
+
+        await Task.WhenAll(rejected, accepted);
+
+        Assert.AreEqual("A", com.Instance.Value);
+        Assert.AreEqual(0, invalids.Count);
+    }
+
+    [TestMethod]
+    public async Task BitOtpInputArrowOvertakenByATabShouldMoveNoFocusButStillBeReported()
+    {
+        // The browser refuses the direction of an arrow whose focus a Tab took elsewhere while it was being asked for
+        // (BitComponentBase.IsRtlArrowAsync): the input does not pull the focus back, and the consumer still hears of
+        // the keystroke.
+        Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isRtl", _ => true)
+                         .SetException(new JSException("Error: BitBlazorUI: the arrow key was overtaken"));
+
+        var keys = new List<string?>();
+
+        var com = RenderComponent<BitOtpInput>(parameters =>
+        {
+            parameters.Add(p => p.Length, 3);
+            parameters.Add(p => p.OnKeyDown, args => keys.Add(args.Event.Key));
+        });
+
+        await com.FindAll(".bit-otp-inp")[1].KeyDownAsync(new KeyboardEventArgs { Code = "ArrowLeft", Key = "ArrowLeft" });
+
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        CollectionAssert.AreEqual(new[] { "ArrowLeft" }, keys);
+    }
+
+    [TestMethod]
     public async Task BitOtpInputShouldClearASingleInputOnDeleteWithoutAutoShift()
     {
         var com = RenderComponent<BitOtpInput>(parameters =>
@@ -3077,6 +3127,7 @@ public class BitOtpInputTests : BunitTestContext
         var focusInCount = 0;
         var keyDownCount = 0;
         var pasteCount = 0;
+        var inputCount = 0;
 
         var com = RenderComponent<BitOtpInput>(parameters =>
         {
@@ -3087,6 +3138,7 @@ public class BitOtpInputTests : BunitTestContext
             parameters.Add(p => p.OnFocusIn, _ => focusInCount++);
             parameters.Add(p => p.OnKeyDown, _ => keyDownCount++);
             parameters.Add(p => p.OnPaste, _ => pasteCount++);
+            parameters.Add(p => p.OnInput, _ => inputCount++);
         });
 
         await com.FindAll(".bit-otp-inp")[2].FocusInAsync(new FocusEventArgs());
@@ -3097,6 +3149,9 @@ public class BitOtpInputTests : BunitTestContext
         Assert.AreEqual(0, focusInCount);
         Assert.AreEqual(0, keyDownCount);
         Assert.AreEqual(0, pasteCount);
+        // Unlike a read-only one (BitOtpInputShouldStillForwardOnInputWhileReadOnly), a disabled component reports
+        // no input event either: nothing the page listens for runs while it is unavailable.
+        Assert.AreEqual(0, inputCount);
         Assert.AreEqual("12", com.Instance.Value);
         Assert.IsFalse(com.FindAll(".bit-otp-inp")[2].ClassList.Contains("custom-focused"));
         Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);

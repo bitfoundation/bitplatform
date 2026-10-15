@@ -22,10 +22,16 @@ internal sealed class BitCountryList
     // Home and End are deliberately absent from the search box set: inside a text field they move the caret, which
     // is what a user typing a search term expects them to keep doing. Enter and Space are left alone on the closed
     // trigger, whose native click is what opens the list; on the open one they pick the active country, and the click
-    // they would also fire would close the list again.
-    internal static readonly string[] SearchBoxKeys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Enter"];
-    internal static readonly string[] TriggerClosedKeys = ["ArrowDown", "ArrowUp", "Home", "End"];
-    internal static readonly string[] TriggerOpenKeys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", "Enter", " ", "Spacebar"];
+    // they would also fire would close the list again. Alt+ArrowDown and Alt+ArrowUp open, walk and close the list the
+    // way the combobox pattern has them, and their default scrolls the page by a screen in Chromium, which would
+    // dismiss the list as a page scroll and drop the focus to the body - so they are prevented wherever they are acted on.
+    // A character typed on the trigger ("Character", any key that types one) is applied by the component itself - to
+    // the type-ahead, or as the search term along with the focus moving to the search box - so the browser must not
+    // type it again: where the handler runs before the key's default (WebAssembly), the focus is already in the search
+    // box by then, and the letter would land in it twice.
+    internal static readonly string[] SearchBoxKeys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Enter", "Alt+ArrowDown", "Alt+ArrowUp"];
+    internal static readonly string[] TriggerClosedKeys = ["ArrowDown", "ArrowUp", "Home", "End", "Alt+ArrowDown", "Alt+ArrowUp", "Character"];
+    internal static readonly string[] TriggerOpenKeys = ["ArrowDown", "ArrowUp", "PageDown", "PageUp", "Home", "End", "Enter", " ", "Spacebar", "Alt+ArrowDown", "Alt+ArrowUp", "Character"];
 
     private static readonly TimeSpan _typeAheadTimeout = TimeSpan.FromMilliseconds(1000);
 

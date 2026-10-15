@@ -2049,7 +2049,13 @@ public class BitDropdownTests : BunitTestContext
         });
 
         // OnSearch covers the ComboBox input as well as the search box, so a consumer loading its own
-        // data does not have to know which of the two the user is typing in.
+        // data does not have to know which of the two the user is typing in. The combo box searches as it
+        // is typed, so it is the input event that reports it; the change event the browser raises later
+        // only restates the term.
+        component.Find(".bit-drp-inp").Input("app");
+
+        CollectionAssert.AreEqual(new[] { "app" }, searches);
+
         component.Find(".bit-drp-inp").Change("app");
 
         CollectionAssert.AreEqual(new[] { "app" }, searches);
@@ -3233,6 +3239,61 @@ public class BitDropdownTests : BunitTestContext
         component.Find(".bit-drp-inp").Change("app");
 
         Assert.IsFalse(component.Instance.IsOpen);
+    }
+
+    [TestMethod]
+    public void BitDropdownEscapeOnTheFieldShouldReclaimAFocusTheOpeningMovedIntoTheList()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+        });
+
+        component.Find(".bit-drp-wrp").Click();
+        Assert.IsTrue(component.Instance.IsOpen);
+
+        // The press reached the field, but the focus the opening hands to the list may have landed on an option since:
+        // the close asks the script to bring a focus it stranded back to the field.
+        component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        Assert.IsFalse(component.Instance.IsOpen);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Dropdowns.reclaimFocus"].Count);
+    }
+
+    [TestMethod]
+    public void BitDropdownComboChangeAfterTheCloseShouldNotBringTheDiscardedTermBack()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var searches = new List<string?>();
+        var component = RenderComponent<BitDropdown<BitDropdownItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Combo, true);
+            parameters.Add(p => p.Items, GetShortDropdownItems());
+            parameters.Add(p => p.OnSearch, v => searches.Add(v));
+        });
+
+        component.Find(".bit-drp-inp").Input("app");
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(1, component.FindAll(".bit-drp-itm").Count);
+
+        // Tab closes the list, which discards the term that never became a selection; the change event
+        // the browser raises on the blur arrives after that and restates the term. Taking it would put the
+        // term back into the input and filter the next opening by it.
+        component.Find(".bit-drp-wrp").KeyDown(new KeyboardEventArgs { Key = "Tab" });
+        Assert.IsFalse(component.Instance.IsOpen);
+
+        component.Find(".bit-drp-inp").Change("app");
+
+        Assert.IsTrue(component.Find(".bit-drp-inp").GetAttribute("value").HasNoValue());
+        CollectionAssert.AreEqual(new string?[] { "app", null }, searches);
+
+        component.Find(".bit-drp-wrp").Click();
+
+        Assert.IsTrue(component.Instance.IsOpen);
+        Assert.AreEqual(4, component.FindAll(".bit-drp-itm").Count);
     }
 
     [TestMethod]

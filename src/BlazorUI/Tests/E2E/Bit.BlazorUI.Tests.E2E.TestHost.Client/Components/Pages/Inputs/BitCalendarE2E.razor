@@ -74,14 +74,17 @@
     </E2ESection>
 
     <E2ESection Id="time-picker" Title="Time picker">
-        <BitCalendar Today="_today" Id="cal-time" ShowTimePicker @bind-Value="_timeValue"
+        @* The steps of these two are single presses, so the press-and-hold spin is kept out of their way: a press whose
+           release reaches the page only after the render of the value it stepped - which re-renders this whole page and
+           can outlast the default 400ms delay under WebAssembly on a busy machine - would start it. *@
+        <BitCalendar Today="_today" Id="cal-time" ShowTimePicker ContinuousSpinDelay="60000" @bind-Value="_timeValue"
                      TimePickerHourTitle="Hours" TimePickerMinuteTitle="Minutes" TimePickerIncreaseHourTitle="More hours" TimePickerDecreaseHourTitle="Fewer hours"
                      TimePickerIncreaseMinuteTitle="More minutes" TimePickerDecreaseMinuteTitle="Fewer minutes" NowButtonTitle="Right now" />
         <span id="time-value">@Fmt(_timeValue)</span>
         <BitCalendar Today="_today" Id="cal-time12" ShowTimePicker ShowNowButton="false" TimeFormat="BitTimeFormat.TwelveHours" @bind-Value="_time12Value" />
         <span id="time12-value">@Fmt(_time12Value)</span>
         <BitCalendar Today="_today" Id="cal-time-overlay" ShowTimePicker ShowTimePickerAsOverlay ShowTimePickerTitle="Open the clock" HideTimePickerTitle="Close the clock" />
-        <BitCalendar Today="_today" Id="cal-time-step" ShowTimePicker HourStep="3" MinuteStep="15" @bind-Value="_timeStepValue" />
+        <BitCalendar Today="_today" Id="cal-time-step" ShowTimePicker ContinuousSpinDelay="60000" HourStep="3" MinuteStep="15" @bind-Value="_timeStepValue" />
         <span id="time-step-value">@Fmt(_timeStepValue)</span>
         <BitCalendar Today="_today" Id="cal-time-spin" ShowTimePicker ContinuousSpinDelay="150" ContinuousSpinInterval="60" @bind-Value="_timeSpinValue" />
         <span id="time-spin-value">@Fmt(_timeSpinValue)</span>

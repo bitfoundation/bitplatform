@@ -108,6 +108,7 @@ public class BitDataGridColumnsE2ETests : BitDataGridE2ETestBase
 
         // Enter fits the content: the short names need less than MaxWidth, and no less than MinWidth is given.
         await Page.Keyboard.PressAsync("End");
+        await Expect(resizer).ToHaveAttributeAsync("aria-valuenow", "300");
         await Page.Keyboard.PressAsync("Enter");
         await Expect(resizer).Not.ToHaveAttributeAsync("aria-valuenow", "300");
         var fitted = await resizer.GetAttributeAsync("aria-valuenow");

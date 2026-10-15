@@ -88,14 +88,38 @@ public class BitBasicListE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG (demo guidance): the demo's Header & Footer example says to give the header 'position: sticky' to keep it in view, and does so on the element inside HeaderTemplate. That element is wrapped in .bit-bsl-hdr, a box exactly its own size, so it has no room to stick in and scrolls away with the rows; only Styles.Header / Classes.Header (the wrapper) can make the header sticky.")]
-    public async Task HeaderTemplate_AStickyElementInsideIt_StaysInView()
+    public async Task StickyHeaderAndStickyFooter_KeepTheTemplatesInViewWhileTheRowsScroll()
     {
         await OpenAsync("/e2e/basic-list");
 
-        await ScrollAsync("#header-footer", 2000);
+        var list = Page.Locator("#sticky-ends");
+        await Expect(list).ToHaveClassAsync(HasClass("bit-bsl-shd"));
+        await Expect(list).ToHaveClassAsync(HasClass("bit-bsl-sft"));
+        await list.ScrollIntoViewIfNeededAsync();
 
-        AssertClose((await BoxAsync("#header-footer")).Y + 1, (await BoxAsync("#list-header")).Y, "the sticky header stays in view");
+        // The footer is pinned to the bottom of the list from the start, ahead of the rows it comes after.
+        var root = await BoxAsync("#sticky-ends");
+        AssertClose(root.Bottom - 1, (await BoxAsync("#sticky-ends-footer")).Bottom, "the sticky footer sits at the bottom of the list");
+        AssertClose(root.Y + 1, (await BoxAsync("#sticky-ends-header")).Y, "the header starts at the top");
+
+        // Scrolled to the middle, both stay in view, and over the (positioned) rows passing underneath them.
+        await ScrollAsync("#sticky-ends", 120);
+        root = await BoxAsync("#sticky-ends");
+        var header = await BoxAsync("#sticky-ends-header");
+        var footer = await BoxAsync("#sticky-ends-footer");
+        AssertClose(root.Y + 1, header.Y, "the sticky header stays in view");
+        AssertClose(root.Bottom - 1, footer.Bottom, "the sticky footer stays in view");
+        Assert.AreEqual("sticky-ends-header", await Page.EvaluateAsync<string>("([x, y]) => document.elementFromPoint(x, y).id", new[] { header.X + 5, header.Y + 5 }), "the header is painted over the rows");
+        Assert.AreEqual("sticky-ends-footer", await Page.EvaluateAsync<string>("([x, y]) => document.elementFromPoint(x, y).id", new[] { footer.X + 5, footer.Bottom - 5 }), "the footer is painted over the rows");
+
+        // A horizontal list pins them to the two ends of its strip instead.
+        var strip = Page.Locator("#sticky-ends-horizontal");
+        await strip.ScrollIntoViewIfNeededAsync();
+        await strip.EvaluateAsync("el => el.scrollLeft = 200");
+        await Expect(strip).ToHaveJSPropertyAsync("scrollLeft", 200);
+        var box = await BoxAsync("#sticky-ends-horizontal");
+        AssertClose(box.X + 1, (await BoxAsync("#sticky-ends-horizontal-header")).X, "the sticky header stays at the inline start");
+        AssertClose(box.Right - 1, (await BoxAsync("#sticky-ends-horizontal-footer")).Right, "the sticky footer stays at the inline end");
     }
 
     [TestMethod]
@@ -319,15 +343,23 @@ public class BitBasicListE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: AutoLoadThreshold has no effect on a list that scrolls itself, which is every list (the root is overflow:auto with a fixed height). The threshold is handed to Observers.registerIntersection as the rootMargin of an IntersectionObserver without a root, so it only grows the viewport; the sentinel is still clipped by the list's own overflow and only intersects once it is actually visible inside the list.")]
     public async Task AutoLoadThreshold_RequestsTheNextPageThatManyPixelsEarlier()
     {
         await OpenAsync("/e2e/basic-list");
 
         // Ten 40px rows end 100px below the bottom of the 300px list: within the 150px threshold, so the next page is
-        // requested without any scrolling, while the list without a threshold stays where it is.
+        // requested as soon as the list is in view, without scrolling it, while the list without a threshold stays
+        // where it is.
+        var list = Page.Locator("#auto-load-threshold");
+        await list.ScrollIntoViewIfNeededAsync();
         await Expect(Page.Locator("#threshold-count")).ToHaveTextAsync("20");
         await Expect(Page.Locator("#auto-count")).ToHaveTextAsync("10");
+
+        // The list scrolls itself: scrolled to 100px short of its end, the next page is requested again.
+        await Expect(list.GetByRole(AriaRole.Listitem)).ToHaveCountAsync(20);
+        await list.EvaluateAsync("el => el.scrollTop = el.scrollHeight - el.clientHeight - 100");
+        await Expect(Page.Locator("#threshold-count")).ToHaveTextAsync("30");
+        await Expect(list.GetByRole(AriaRole.Listitem)).ToHaveCountAsync(30);
     }
 
     [TestMethod]

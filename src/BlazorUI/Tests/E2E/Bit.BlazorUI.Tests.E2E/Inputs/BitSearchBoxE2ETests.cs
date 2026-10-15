@@ -73,10 +73,6 @@ public class BitSearchBoxE2ETests : E2ETestBase
         return box;
     }
 
-    // A focus re-checks the list 100ms after it lands (HandleInputFocusIn) and reopens one closed before then. That
-    // internal delay has no outcome of its own to wait on, so a test closing a list right after the focus waits it out.
-    private Task WaitOutTheFocusRecheckAsync() => Page.WaitForTimeoutAsync(200);
-
     private static Task<double> WidthAsync(ILocator locator) =>
         locator.EvaluateAsync<double>("el => el.getBoundingClientRect().width");
 
@@ -602,7 +598,6 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await Page.Keyboard.TypeAsync("app");
         await Expect(Input("sb-dialog")).ToHaveAttributeAsync("aria-expanded", "true");
         await Expect(Input("sb-dialog")).ToHaveAttributeAsync("data-bit-esc", "claim");
-        await WaitOutTheFocusRecheckAsync();
 
         await Page.Keyboard.PressAsync("Escape");
         await Expect(Input("sb-dialog")).ToHaveAttributeAsync("aria-expanded", "false");
@@ -923,7 +918,6 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await input.PressSequentiallyAsync("app", Typing);
         await Expect(input).ToHaveAttributeAsync("aria-expanded", "true");
 
-        await WaitOutTheFocusRecheckAsync();
 
         await Page.Keyboard.PressAsync("Alt+ArrowUp");
         await Expect(input).ToHaveAttributeAsync("aria-expanded", "false");
@@ -949,7 +943,6 @@ public class BitSearchBoxE2ETests : E2ETestBase
         var input = Input("sb-suggest");
         await input.PressSequentiallyAsync("app", Typing);
         await Expect(input).ToHaveAttributeAsync("aria-expanded", "true");
-        await WaitOutTheFocusRecheckAsync();
 
         var field = await BoxOfAsync(Box("sb-suggest"));
         await Page.Mouse.ClickAsync(field.X + field.Width + 300, field.Y + 5);
@@ -999,12 +992,14 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await Expect(callout.Locator(".bit-srb-lod")).ToHaveCountAsync(0);
         await ExpectNoAttributeAsync(await ListboxAsync("sb-suggest-provider"), "aria-busy");
 
-        // Every term was asked for, and every superseded call was cancelled through its token: only the last one
-        // completed. (The first term reaches the provider after the other two, since its search waits for the callout
-        // to open before it asks, by which time its token is already cancelled.)
-        await Expect(Text("provider-cancelled")).ToHaveTextAsync("2");
+        // Every call that was made for a superseded term was cancelled through its token, and only the last one
+        // completed. A term superseded before it reached the provider - the first one, whose search waits for the
+        // callout to open before it asks - is never asked about at all, rather than with a token already cancelled.
+        await Expect(Text("provider-cancelled-on-arrival")).ToHaveTextAsync("0");
         var terms = (await Text("provider-terms").TextContentAsync())!.Split(',');
-        CollectionAssert.AreEquivalent(new[] { "p", "pr", "pro" }, terms);
+        Assert.AreEqual("pro", terms[^1]);
+        CollectionAssert.IsSubsetOf(terms, new[] { "p", "pr", "pro" });
+        await Expect(Text("provider-cancelled")).ToHaveTextAsync((terms.Length - 1).ToString());
 
         await options.Nth(3).ClickAsync();
         await Expect(Text("provider-selected")).ToHaveTextAsync("[Promotion]");
@@ -1212,9 +1207,9 @@ public class BitSearchBoxE2ETests : E2ETestBase
         await OpenAsync(Url);
 
         await Input("sb-suggest-readonly").ClickAsync();
-        // The list ShowSuggestItemsOnFocus opens is laid out again by the focus re-check; the press waits for it.
-        await WaitOutTheFocusRecheckAsync();
         var options = await OptionsAsync("sb-suggest-readonly");
+        // The list is rendered a moment before it is shown, which is when a click can reach a row of it.
+        await Expect(await ListboxAsync("sb-suggest-readonly")).ToBeVisibleAsync();
         await Expect(options.First).ToHaveAttributeAsync("aria-disabled", "true");
         await Page.Keyboard.PressAsync("ArrowDown");
         await Expect(options.First).ToHaveAttributeAsync("aria-selected", "true");

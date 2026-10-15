@@ -140,8 +140,10 @@ public abstract class BitPdfColorSpace
     // the resource's ColorSpace dict (/DefaultRGB etc.). Resolve that, but guard
     // against a default that just names the same device space (infinite loop). A
     // default that leads back here some longer way (/DefaultRGB /CalRGB, or an
-    // Indexed space over DeviceRGB) is refused by the scope, and the device space
-    // itself is used.
+    // Indexed space over DeviceGray as /DefaultGray) is refused as a whole, and the
+    // device space itself is used: the scope refuses the inner device space, and
+    // keeping what was built around that refusal (an Indexed palette over the gray
+    // that stood in for it) would read every gray value as a palette index instead.
     private static BitPdfColorSpace? ResolveDefault(BitPdfDict? resources, string key, IBitPdfXRef xref, BitPdfResolveScope scope)
     {
         if (resources?.Get("ColorSpace") is not BitPdfDict csDict || !csDict.Has(key))
@@ -153,7 +155,9 @@ public abstract class BitPdfColorSpace
         {
             return null;
         }
-        return TryCreate(csDict.Get(key), xref, resources, scope);
+        int refusals = scope.Refusals;
+        var space = TryCreate(csDict.Get(key), xref, resources, scope);
+        return scope.Refusals == refusals ? space : null;
     }
 
     /// <summary>

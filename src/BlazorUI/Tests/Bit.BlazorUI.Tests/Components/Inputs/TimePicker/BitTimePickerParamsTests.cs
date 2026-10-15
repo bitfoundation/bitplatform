@@ -87,6 +87,36 @@ public class BitTimePickerParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTimePickerShouldApplyTheCascadedReadOnlyAndRequired()
+    {
+        // The params object is an input's, so the two parameters BitInputBaseParams carries for every input reach the
+        // picker too, and a value the picker wrote for itself - a false included - is left alone.
+        var cascaded = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitTimePickerParams { ReadOnly = true, Required = true } });
+            parameters.AddChildContent(RenderTimePicker());
+        });
+
+        var picker = cascaded.FindComponent<BitTimePicker>().Instance;
+        Assert.IsTrue(picker.ReadOnly);
+        Assert.IsTrue(picker.Required);
+
+        var own = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitTimePickerParams { ReadOnly = true, Required = true } });
+            parameters.AddChildContent(RenderTimePicker(builder =>
+            {
+                builder.AddAttribute(1, nameof(BitTimePicker.ReadOnly), false);
+                builder.AddAttribute(2, nameof(BitTimePicker.Required), false);
+            }));
+        });
+
+        var ownPicker = own.FindComponent<BitTimePicker>().Instance;
+        Assert.IsFalse(ownPicker.ReadOnly);
+        Assert.IsFalse(ownPicker.Required);
+    }
+
+    [TestMethod]
     public void BitTimePickerDirectParametersShouldOverrideCascadingParameters()
     {
         var paramsList = new List<IBitComponentParams>

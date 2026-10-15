@@ -182,10 +182,11 @@ public class BitLinkE2ETests : E2ETestBase
         await Expect(Page.Locator("#lnk-icon-both > i")).ToHaveClassAsync(new Regex(@"bi bi-github$"));
         await Expect(Page.Locator("#lnk-icon-both > i")).Not.ToHaveClassAsync(new Regex("bit-icon--Link"));
 
-        // Each set's stylesheet draws its glyph into the element.
+        // Each set's stylesheet draws its glyph into the element - waited for rather than read once, since the stylesheet
+        // is a link of the page's head, which the interactive render of the head may put in again.
         foreach (var id in new[] { "#lnk-icon-fa", "#lnk-icon-bi", "#lnk-icon-css" })
         {
-            Assert.IsTrue((await Page.Locator($"{id} > i").BoundingBoxAsync())!.Width > 2, $"{id} draws a glyph.");
+            await Page.WaitForFunctionAsync("sel => document.querySelector(sel).getBoundingClientRect().width > 2", $"{id} > i");
         }
     }
 

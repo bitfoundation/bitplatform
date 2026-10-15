@@ -37,6 +37,7 @@
   <Folder Name="/Tests/E2E/">
     <File Path="Tests/E2E/README.md" />
     <Project Path="Tests/E2E/Bit.BlazorUI.Tests.E2E.TestHost/Bit.BlazorUI.Tests.E2E.TestHost.csproj" />
+    <Project Path="Tests/E2E/Bit.BlazorUI.Tests.E2E.TestHost.Client/Bit.BlazorUI.Tests.E2E.TestHost.Client.csproj" />
     <Project Path="Tests/E2E/Bit.BlazorUI.Tests.E2E/Bit.BlazorUI.Tests.E2E.csproj" />
   </Folder>
   <Folder Name="/Tests/Performance/">

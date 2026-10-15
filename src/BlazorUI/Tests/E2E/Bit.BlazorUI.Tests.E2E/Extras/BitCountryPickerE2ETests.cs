@@ -325,7 +325,6 @@ public class BitCountryPickerE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: Alt+ArrowUp closes the open list but its default is not prevented (the prevent-keys script of Extras skips every modified key), so Chromium also scrolls the page by a screen, which in turn dismisses the callout as a page scroll and drops the focus to the body until the field takes it back. Alt+ArrowDown in an open list scrolls the page down, dismisses the list and leaves the focus on the body.")]
     public async Task Keyboard_AltArrowUpAndDown_LeaveThePageWhereItIs()
     {
         await OpenAsync(Route);
@@ -580,9 +579,14 @@ public class BitCountryPickerE2ETests : E2ETestBase
         await Expect(root).Not.ToHaveClassAsync(HasClass("bit-dis"));
         await Expect(Field("cnp-disabled")).ToBeEnabledAsync();
         await Expect(Field("cnp-disabled")).Not.ToHaveAttributeAsync("aria-disabled", new Regex(".*"));
-        await Field("cnp-disabled").DblClickAsync();
+        await Field("cnp-disabled").ClickAsync();
+        await Expect(Page.Locator("#page-pointerdowns")).ToHaveTextAsync("1");
+        await Page.Keyboard.PressAsync("Escape");
+
+        // A second real click would land on the overlay of the list the first one opened - at once where the page runs
+        // in the browser - so the double click is dispatched on the field.
+        await Field("cnp-disabled").DispatchEventAsync("dblclick");
         await Expect(Page.Locator("#page-dblclicks")).ToHaveTextAsync("1");
-        await Expect(Page.Locator("#page-pointerdowns")).ToHaveTextAsync("2");
     }
 
     [TestMethod]

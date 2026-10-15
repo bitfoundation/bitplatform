@@ -48,6 +48,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private bool _isSelfValueChangePending;
     private string? _uncommittedImmediateText;
     private int _selfValueChangeVersion;
+    private Task _pendingKeyDown = Task.CompletedTask;
     private CancellationTokenSource _continuousChangeValueCts = new();
 
 
@@ -1446,7 +1447,39 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private async Task HandleOnKeyDown(KeyboardEventArgs e)
+    /// <summary>
+    /// Handles the keys in the order they were pressed. A key handler awaits a round trip before it decides
+    /// (<see cref="CommitPendingInputValue"/> reads the live text of the input, the consumer's OnKeyDown may await
+    /// anything), and every key arrives as an event of its own, so a key pressed while that round trip is out would
+    /// otherwise be handled first: an ArrowUp on a value at the Max followed at once by Home would land on the Min
+    /// and then step from there, the blocked ArrowUp running after the Home that was pressed after it. So each key
+    /// waits for the one before it to be handled.
+    /// </summary>
+    private Task HandleOnKeyDown(KeyboardEventArgs e)
+    {
+        var previous = _pendingKeyDown;
+
+        // The dispatcher runs one handler at a time, so reading and replacing the pending key needs no lock; a key
+        // with none in front of it starts at once, which keeps the common case synchronous up to its first await.
+        var current = previous.IsCompleted ? HandleOnKeyDownCore(e) : HandleOnKeyDownAfter(previous, e);
+
+        _pendingKeyDown = current;
+
+        return current;
+    }
+
+    private async Task HandleOnKeyDownAfter(Task previous, KeyboardEventArgs e)
+    {
+        // A key whose handling failed has had its failure reported through its own event; the next one is handled all
+        // the same, as it would have been had the two not overlapped.
+        try { await previous; } catch { }
+
+        if (IsDisposed) return;
+
+        await HandleOnKeyDownCore(e);
+    }
+
+    private async Task HandleOnKeyDownCore(KeyboardEventArgs e)
     {
         if (Disabled) return;
 

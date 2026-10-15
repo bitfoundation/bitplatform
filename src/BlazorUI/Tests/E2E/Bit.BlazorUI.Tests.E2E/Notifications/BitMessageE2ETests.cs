@@ -286,19 +286,33 @@ public class BitMessageE2ETests : E2ETestBase
         var expected = new (string Name, string Css)[]
         {
             ("Start", "flex-start"), ("End", "flex-end"), ("Center", "center"), ("SpaceBetween", "space-between"),
-            ("SpaceAround", "space-around"), ("SpaceEvenly", "space-evenly"), ("Baseline", "baseline"), ("Stretch", "stretch"),
+            // Baseline and Stretch say nothing about the width, so they keep the content at the start (see below).
+            ("SpaceAround", "space-around"), ("SpaceEvenly", "space-evenly"), ("Baseline", "flex-start"), ("Stretch", "flex-start"),
         };
 
         foreach (var (name, css) in expected)
         {
             await Expect(Root($"al-{name}")).ToHaveAttributeAsync("style", new Regex($"--bit-msg-justifycontent:{css}"));
+            Assert.AreEqual(css, await ComputedStyleAsync($"#al-{name} .bit-msg-con", "justify-content"), name);
 
-            // justify-content has no baseline value, so the browser falls back to normal - the start of the line.
-            var computed = name is "Baseline" ? "normal" : css;
-            Assert.AreEqual(computed, await ComputedStyleAsync($"#al-{name} .bit-msg-con", "justify-content"), name);
+            var across = name switch { "Baseline" => "baseline", "Stretch" => "stretch", _ => "start" };
+            Assert.AreEqual(across, await ComputedStyleAsync($"#al-{name} .bit-msg-con", "align-items"), name);
         }
 
         Assert.AreEqual("flex-start", await ComputedStyleAsync("#al-default .bit-msg-con", "justify-content"));
+        Assert.AreEqual("start", await ComputedStyleAsync("#al-default .bit-msg-con", "align-items"));
+
+        // Next to an icon taller than the text, Baseline brings the text down to the line the glyph stands on, and Stretch
+        // draws the text's box the full height of the row; by default both sit at the top.
+        var iconRow = await Page.BoxAsync("#al-icon-default .bit-msg-con");
+        var topText = await Page.BoxAsync("#al-icon-default .bit-msg-cnc");
+        var baselineRow = await Page.BoxAsync("#al-icon-Baseline .bit-msg-con");
+        var baselineText = await Page.BoxAsync("#al-icon-Baseline .bit-msg-cnc");
+        var stretchRow = await Page.BoxAsync("#al-icon-Stretch .bit-msg-con");
+        var stretchText = await Page.BoxAsync("#al-icon-Stretch .bit-msg-cnc");
+        Assert.IsTrue(topText.Height < iconRow.Height - 10, "The default keeps the text its own height.");
+        Assert.IsTrue(baselineText.Top - baselineRow.Top > topText.Top - iconRow.Top + 10, "Baseline lines the text up with the glyph.");
+        Assert.AreEqual(stretchRow.Height, stretchText.Height, 1, "Stretch draws the text the full height of the row.");
 
         var container = await Page.BoxAsync("#al-Center .bit-msg-con");
         var centered = await Page.BoxAsync("#al-Center .bit-msg-cnc");

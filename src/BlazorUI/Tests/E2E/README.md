@@ -1,7 +1,8 @@
 ﻿# Bit.BlazorUI E2E Tests
 
 End-to-end tests of every non-legacy component of `Bit.BlazorUI` and `Bit.BlazorUI.Extras`, driven in a real browser
-with Playwright against a Blazor Server host that renders each component in every configuration its features need.
+with Playwright against a host that renders each component in every configuration its features need - on the server
+(InteractiveServer) or in the browser (InteractiveWebAssembly), whichever mode the run asks for.
 Where the unit tests (`Tests/Bit.BlazorUI.Tests`) pin the markup a component renders, these pin what a user gets: the
 scripts, the stylesheets, the keyboard, the pointer, the focus, the layout and the round trips, in every engine.
 
@@ -9,14 +10,18 @@ scripts, the stylesheets, the keyboard, the pointer, the focus, the layout and t
 
 ```
 E2E/
-├── Bit.BlazorUI.Tests.E2E.TestHost/        # Blazor Server app hosting one page per component
+├── Bit.BlazorUI.Tests.E2E.TestHost/        # the ASP.NET Core host
+│   ├── Components/App.razor                # picks the render mode per request (e2e-render-mode cookie)
+│   ├── Program.cs                          # services, upload endpoints, /api/server-errors
+│   └── wwwroot/                            # the host's own stylesheet and the sample files pages serve
+│
+├── Bit.BlazorUI.Tests.E2E.TestHost.Client/ # WebAssembly project holding the pages, so each runs in either mode
 │   ├── Components/
-│   │   ├── App.razor, Routes.razor
+│   │   ├── Routes.razor
 │   │   ├── Shared/E2EStatus.razor          # the status line every page carries ("Ready" once interactive)
 │   │   ├── Shared/E2ESection.razor         # one titled, id-ed section per feature
 │   │   └── Pages/<Category>/Bit<Component>E2E.razor   # @page "/e2e/<component>"
-│   ├── Program.cs                          # services, upload endpoints, /api/server-errors
-│   └── wwwroot/                            # the host's own stylesheet and the sample files pages serve
+│   └── Program.cs                          # the browser-side services, the same the host registers
 │
 └── Bit.BlazorUI.Tests.E2E/                 # the Playwright + MSTest project
     ├── E2ETestBase.cs                      # host and browser lifecycle, OpenAsync, error capture
@@ -43,6 +48,7 @@ dotnet run --project Bit.BlazorUI.Tests.E2E.TestHost --framework net10.0 --urls 
 
 | Variable | Meaning |
 |----------|---------|
+| `E2E_RENDER_MODE` | `server` (default, InteractiveServer) or `wasm` (InteractiveWebAssembly) |
 | `BROWSER` | `chromium` (default), `edge`, `firefox` or `webkit` |
 | `HEADED=1` | watch the browser |
 | `E2E_HOST_URL` | the host to drive instead of `http://localhost:5290` |
@@ -76,3 +82,17 @@ E2E_HOST_URL=http://localhost:5290 dotnet exec bin/Debug/net10.0/Bit.BlazorUI.Te
 - A category whose tests share helpers keeps them in a file of its own (`ButtonsE2EHelpers.cs`,
   `NotificationsE2EHelpers.cs`, `BitDataGridE2ETestBase.cs`, `BitDropdownE2ETestBase.cs`, `BitDatePickersE2ETestBase.cs`).
 - An engine-specific gap is skipped with `Assert.Inconclusive` behind `IsFirefox` / `IsWebKit`, with the reason.
+
+## Render modes
+
+Every page runs in both modes: the tests put an `e2e-render-mode` cookie on each browser context (from
+`E2E_RENDER_MODE`) and the host renders the page with that mode. A test that genuinely differs between the two branches
+on `IsWasm`; everything else is written once. In `wasm` mode there is no circuit: an unhandled exception shows
+`#blazor-error-ui` and logs a console error (which fails the test), and the host only prerenders. Each browser context
+downloads the WebAssembly runtime, so a `wasm` run takes several times longer than a `server` one.
+
+## CI
+
+`.github/workflows/bit.ci.BlazorUI.e2e.yml` runs the whole suite on demand only (Actions > "bit platform CI - BlazorUI
+E2E" > Run workflow): one job per browser engine and render mode, narrowed through its inputs (engines, modes, an
+optional test filter). The test results (TRX) and the host's log are uploaded as artifacts of each job.

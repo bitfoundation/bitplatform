@@ -1490,21 +1490,14 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
             // (see BitCountryList.TriggerClosedKeys) so the native click can open the callout.
             if (key is "ArrowDown" or "ArrowUp" or "Home" or "End")
             {
-                await OpenCallout(fromButton: true);
-
                 // Home and End say where in the list to land, the way they do on a native select.
-                if (key is "Home" or "End")
-                {
-                    _list.Navigate(key, fromSearchBox: false, NoWrapNavigation);
-                }
+                await OpenCallout(fromButton: true, key is "Home" or "End" ? key : null);
             }
             else if (NoSearchBox && BitCountryList.IsTypeAheadKey(e))
             {
                 // A selector with no search box is a select-only combobox, and typing on one opens it on the
                 // country the letters start - there is no box for the letters to go into instead.
-                await OpenCallout(fromButton: true);
-
-                _list.TypeAhead(key);
+                await OpenCallout(fromButton: true, key);
             }
 
             return;
@@ -1629,7 +1622,7 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         return true;
     }
 
-    private async Task OpenCallout(bool fromButton)
+    private async Task OpenCallout(bool fromButton, string? openingKey = null)
     {
         if (CanOpen is false) return;
 
@@ -1644,6 +1637,19 @@ public partial class BitPhoneInput : BitTextInputBase<string?>
         ResetActiveIndexToSelection();
 
         _list.ResetTypeAhead();
+
+        // The key the list was opened with is applied before anything is awaited. The keys pressed while the open's round
+        // trips run are answered by the list that is already open, so the first key, applied after them, would land out of
+        // order: "ger" typed at once would end on Eritrea rather than Germany.
+        // Home and End land on the first and the last country, a letter on the country it starts.
+        if (openingKey is "Home" or "End")
+        {
+            _list.Navigate(openingKey, fromSearchBox: false, NoWrapNavigation);
+        }
+        else if (openingKey is not null)
+        {
+            _list.TypeAhead(openingKey);
+        }
 
         await SyncDropdownKeys();
 

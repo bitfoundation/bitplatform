@@ -439,6 +439,8 @@ public class BitFileInputE2ETests : E2ETestBase
         // From the keyboard too, and the last one hands the focus back to the browse button.
         await Page.Keyboard.PressAsync("Enter");
         await ExpectTextAsync("removable-value", "c.txt");
+        // The focus is handed on once the removal has rendered; a key pressed before that lands nowhere.
+        await Expect(Items("fin-removable").First.Locator(".bit-fin-rbt")).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Space");
         await ExpectTextAsync("removable-value", "null");
         await Expect(Browse("fin-removable")).ToBeFocusedAsync();

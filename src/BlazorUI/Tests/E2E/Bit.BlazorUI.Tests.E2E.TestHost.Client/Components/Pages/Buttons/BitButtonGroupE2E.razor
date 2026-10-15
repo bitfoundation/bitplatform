@@ -41,7 +41,8 @@
     <button id="btn-toggle-key-forward" type="button" @onclick="SetToggleKeyForward">Set forward</button>
     <button id="btn-toggle-key-clear" type="button" @onclick="() => _toggleKey = null">Clear</button>
     <br />
-    <BitButtonGroup Id="grp-toggle-default" Toggle Items="@(L("grp-toggle-default", Toggles))" DefaultToggleKey="forward" />
+    <BitButtonGroup Id="grp-toggle-default" Toggle Items="@(L("grp-toggle-default", Toggles))" DefaultToggleKey="forward" OnToggleChange="(BitButtonGroupItem _) => _defaultToggleChanges++" />
+    <span id="toggle-default-changes">@_defaultToggleChanges</span>
     <BitButtonGroup Id="grp-toggle-fixed" Toggle FixedToggle Items="@(L("grp-toggle-fixed", Toggles))" DefaultToggleKey="play" />
 </E2ESection>
 
@@ -67,7 +68,8 @@
     <span id="multi-max-keys">@string.Join(",", _maxKeys ?? [])</span>
     <button id="btn-max-1" type="button" @onclick="() => _maxToggles = 1">Max 1</button>
     <br />
-    <BitButtonGroup Id="grp-multi-fixed" SelectionMode="BitSelectionMode.Multiple" FixedToggle Items="@(L("grp-multi-fixed", Formats))" DefaultToggleKeys="@(["bold"])" />
+    <BitButtonGroup Id="grp-multi-fixed" SelectionMode="BitSelectionMode.Multiple" FixedToggle Items="@(L("grp-multi-fixed", Formats))" DefaultToggleKeys="@(["bold"])" OnToggleChange="(BitButtonGroupItem _) => _multiFixedChanges++" />
+    <span id="multi-fixed-changes">@_multiFixedChanges</span>
 </E2ESection>
 
 <E2ESection Id="indicator" Title="SelectionIndicator">
@@ -270,6 +272,8 @@
     private int _ownClicks;
     private IEnumerable<string>? _toggleKeys = [];
     private int _multiChanges;
+    private int _defaultToggleChanges;
+    private int _multiFixedChanges;
     private IEnumerable<string>? _maxKeys = [];
     private int? _maxToggles = 2;
     private readonly List<string> _loadingClicks = [];

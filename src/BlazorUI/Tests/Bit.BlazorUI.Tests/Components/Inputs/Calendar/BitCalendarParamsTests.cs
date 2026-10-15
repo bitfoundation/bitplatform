@@ -347,4 +347,59 @@ public class BitCalendarParamsTests : BunitTestContext
         Assert.IsFalse(root.HasAttribute("role"));
         Assert.AreEqual(1, component.FindAll(".bit-cal-dwp").Count);
     }
+
+    [TestMethod]
+    public void BitCalendarParamsShouldOpenTheCalendarOnTheMonthOfTheCascadedToday()
+    {
+        var component = RenderWithParams(new BitCalendarParams
+        {
+            Culture = CultureInfo.InvariantCulture,
+            TimeZone = TimeZoneInfo.Utc,
+            Today = new DateTimeOffset(2024, 3, 15, 10, 0, 0, TimeSpan.Zero),
+        });
+
+        // The view a calendar opens on is built while initializing, so the cascaded Today has to be in by then - one
+        // applied after it would highlight its day on a calendar showing the month of the real clock.
+        Assert.AreEqual("March 2024", component.FindAll(".bit-cal-pkt")[0].TextContent.Trim());
+        Assert.AreEqual("date", component.Find("[id$='-day-2024-03-15']").GetAttribute("aria-current"));
+    }
+
+    [TestMethod]
+    public void BitCalendarParamsShouldNotPageTheCalendarWhenTheCascadedTodayMovesOn()
+    {
+        var component = RenderWithParams(new BitCalendarParams
+        {
+            Culture = CultureInfo.InvariantCulture,
+            TimeZone = TimeZoneInfo.Utc,
+            Today = new DateTimeOffset(2024, 3, 31, 23, 59, 0, TimeSpan.Zero),
+        });
+
+        // A time provider ticking past midnight moves Today on, which must not take the calendar away from the month
+        // the user is looking at.
+        component.Render(parameters => parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+        {
+            new BitCalendarParams
+            {
+                Culture = CultureInfo.InvariantCulture,
+                TimeZone = TimeZoneInfo.Utc,
+                Today = new DateTimeOffset(2024, 4, 1, 0, 0, 0, TimeSpan.Zero),
+            }
+        }));
+
+        Assert.AreEqual(new DateTimeOffset(2024, 4, 1, 0, 0, 0, TimeSpan.Zero), component.FindComponent<BitCalendar>().Instance.Today);
+        Assert.AreEqual("March 2024", component.FindAll(".bit-cal-pkt")[0].TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitCalendarParamsShouldCarryTheInputStatesOfAForm()
+    {
+        var @params = new BitCalendarParams { ReadOnly = true, Required = true };
+
+        Assert.IsInstanceOfType<BitInputBaseParams<DateTimeOffset?>>(@params);
+
+        var calendar = RenderWithParams(@params).FindComponent<BitCalendar>().Instance;
+
+        Assert.IsTrue(calendar.ReadOnly);
+        Assert.IsTrue(calendar.Required);
+    }
 }

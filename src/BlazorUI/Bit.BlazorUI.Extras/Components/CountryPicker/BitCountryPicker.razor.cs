@@ -867,29 +867,15 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
             // the callout.
             if (key is "ArrowDown" or "ArrowUp" or "Home" or "End")
             {
-                await OpenCallout();
-
                 // Home and End say where in the list to land, the way they do on a native select.
-                if (key is "Home" or "End")
-                {
-                    _list.Navigate(key, fromSearchBox: false, NoWrapNavigation);
-                }
+                await OpenCallout(key is "Home" or "End" ? key : null);
             }
             else if (BitCountryList.IsTypeAheadKey(e))
             {
                 // Typing on the closed field opens it on what was typed, the way it does on a native select: on the
                 // country the letters start when there is no search box, and as the first letter of the search term
                 // when there is one.
-                await OpenCallout();
-
-                if (NoSearchBox)
-                {
-                    _list.TypeAhead(key);
-                }
-                else
-                {
-                    await ApplySearchText(key);
-                }
+                await OpenCallout(key);
             }
 
             return;
@@ -1013,7 +999,7 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
         return true;
     }
 
-    private async Task OpenCallout()
+    private async Task OpenCallout(string? openingKey = null)
     {
         if (CanOpen is false) return;
 
@@ -1027,11 +1013,44 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
 
         _list.ResetTypeAhead();
 
+        // The key the list was opened with is applied before anything is awaited. The keys pressed while the open's round
+        // trips run are answered by the list that is already open, so the first key, applied after them, would land out of
+        // order: "ger" typed at once would end on Eritrea rather than Germany.
+        var searched = ApplyOpeningKey(openingKey);
+
         await SyncFieldKeys();
 
         _pendingCalloutToggle = true;
 
         await OnOpen.InvokeAsync();
+
+        if (searched)
+        {
+            await OnSearch.InvokeAsync(_list.SearchText);
+        }
+    }
+
+    // Lands the list a key opened where that key says: Home and End on the first and the last country, a letter on the
+    // country it starts, or as the first letter of the search term when there is a search box. Reports whether it started
+    // a search, whose OnSearch is raised once the list is open.
+    private bool ApplyOpeningKey(string? key)
+    {
+        if (key is null) return false;
+
+        if (key is "Home" or "End")
+        {
+            _list.Navigate(key, fromSearchBox: false, NoWrapNavigation);
+            return false;
+        }
+
+        if (NoSearchBox)
+        {
+            _list.TypeAhead(key);
+            return false;
+        }
+
+        SearchFor(key);
+        return true;
     }
 
     private async Task CloseCallout()
@@ -1201,14 +1220,19 @@ public partial class BitCountryPicker : BitInputBase<BitCountry?>
 
     private async Task ApplySearchText(string? text)
     {
+        SearchFor(text);
+
+        await OnSearch.InvokeAsync(_list.SearchText);
+    }
+
+    private void SearchFor(string? text)
+    {
         // The active option moves to the first match, so pressing Enter selects it instead of a stale one.
         var count = _list.Search(text);
 
         // The list the term filtered down to is inside a callout, so its length is only ever seen: it is announced
         // here for the users who cannot see it.
         Announce(BitCountryList.GetSearchAnnouncement(count, NoResultsMessage, SearchResultsAnnouncement));
-
-        await OnSearch.InvokeAsync(_list.SearchText);
     }
 
     private Task HandleOnCountrySelect(BitCountry country) => SelectCountry(country, focusField: true);

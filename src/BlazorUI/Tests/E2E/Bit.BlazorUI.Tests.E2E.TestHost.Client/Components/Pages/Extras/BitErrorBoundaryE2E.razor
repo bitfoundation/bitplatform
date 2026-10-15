@@ -7,32 +7,34 @@
 
 @* Every child that throws is a component of its own (a BitButton whose OnClick throws, a component that throws while it
    renders or initializes), since a boundary catches what the components inside it throw - an exception thrown by a
-   handler of this page's own would be routed to this page instead. *@
+   handler of this page's own would be routed to this page instead.
+   Every boundary but the Logging section's is NoLogging: where the page code runs in the browser, the framework's
+   IErrorBoundaryLogger writes a caught exception to the console as an error, which is that section's subject alone. *@
 
 <E2ESection Id="basic" Title="Basic">
-    <BitErrorBoundary Id="erb-basic">
+    <BitErrorBoundary Id="erb-basic" NoLogging>
         <BitButton Id="basic-throw" OnClick="Throw">Throw</BitButton>
         <span id="basic-content">Content</span>
     </BitErrorBoundary>
 </E2ESection>
 
 <E2ESection Id="title-message" Title="Title and Message">
-    <BitErrorBoundary Id="erb-title" Title="This report could not be built" Message="Try again in a minute.">
+    <BitErrorBoundary Id="erb-title" NoLogging Title="This report could not be built" Message="Try again in a minute.">
         <BitButton Id="title-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-no-title" Title="" Message="Only a message.">
+    <BitErrorBoundary Id="erb-no-title" NoLogging Title="" Message="Only a message.">
         <BitButton Id="no-title-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-bare" Title="" HideIcon HideRefreshButton HideHomeButton HideRecoverButton>
+    <BitErrorBoundary Id="erb-bare" NoLogging Title="" HideIcon HideRefreshButton HideHomeButton HideRecoverButton>
         <BitButton Id="bare-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
 </E2ESection>
 
 <E2ESection Id="icon" Title="Icon">
-    <BitErrorBoundary Id="erb-icon-name" IconName="@BitIconName.ErrorBadge">
+    <BitErrorBoundary Id="erb-icon-name" NoLogging IconName="@BitIconName.ErrorBadge">
         <BitButton Id="icon-name-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-icon-template">
+    <BitErrorBoundary Id="erb-icon-template" NoLogging>
         <ChildContent>
             <BitButton Id="icon-template-throw" OnClick="Throw">Throw</BitButton>
         </ChildContent>
@@ -40,31 +42,31 @@
             <span id="custom-icon" aria-hidden="true">!</span>
         </IconTemplate>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-hide-icon" HideIcon>
+    <BitErrorBoundary Id="erb-hide-icon" NoLogging HideIcon>
         <BitButton Id="hide-icon-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-external-icon" Icon="@BitIconInfo.Css("my-icon-lib my-icon-warning")" IconName="@BitIconName.ErrorBadge">
+    <BitErrorBoundary Id="erb-external-icon" NoLogging Icon="@BitIconInfo.Css("my-icon-lib my-icon-warning")" IconName="@BitIconName.ErrorBadge">
         <BitButton Id="external-icon-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
 </E2ESection>
 
 <E2ESection Id="details" Title="Exception details">
-    <BitErrorBoundary Id="erb-details" ShowException ShowCopyButton>
+    <BitErrorBoundary Id="erb-details" NoLogging ShowException ShowCopyButton>
         <BitButton Id="details-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-details-custom" ShowException ShowCopyButton ExceptionLabel="Server response" CopyText="Copy it" CopiedText="Done">
+    <BitErrorBoundary Id="erb-details-custom" NoLogging ShowException ShowCopyButton ExceptionLabel="Server response" CopyText="Copy it" CopiedText="Done">
         <BitButton Id="details-custom-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-details-unlabeled" ShowException ExceptionLabel="">
+    <BitErrorBoundary Id="erb-details-unlabeled" NoLogging ShowException ExceptionLabel="">
         <BitButton Id="details-unlabeled-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
 </E2ESection>
 
 <E2ESection Id="actions" Title="Actions">
-    <BitErrorBoundary Id="erb-actions" HomeUrl="/e2e/error-boundary?home=1" HomeText="Back home" RecoverText="Try again" RefreshText="Reload">
+    <BitErrorBoundary Id="erb-actions" NoLogging HomeUrl="/e2e/error-boundary?home=1" HomeText="Back home" RecoverText="Try again" RefreshText="Reload">
         <BitButton Id="actions-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-additional" HideRefreshButton HideHomeButton>
+    <BitErrorBoundary Id="erb-additional" NoLogging HideRefreshButton HideHomeButton>
         <ChildContent>
             <BitButton Id="additional-throw" OnClick="Throw">Throw</BitButton>
         </ChildContent>
@@ -72,7 +74,7 @@
             <BitButton Id="additional-report" OnClick="() => _reportCount++">Report</BitButton>
         </AdditionalButtons>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-footer" @ref="_footerBoundary">
+    <BitErrorBoundary Id="erb-footer" NoLogging @ref="_footerBoundary">
         <ChildContent>
             <BitButton Id="footer-throw" OnClick="Throw">Throw</BitButton>
         </ChildContent>
@@ -84,7 +86,7 @@
 </E2ESection>
 
 <E2ESection Id="templates" Title="ErrorTemplate and ErrorContent">
-    <BitErrorBoundary Id="erb-template">
+    <BitErrorBoundary Id="erb-template" NoLogging>
         <ChildContent>
             <BitButton Id="template-throw" OnClick="Throw">Throw</BitButton>
         </ChildContent>
@@ -95,7 +97,7 @@
             </div>
         </ErrorTemplate>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-content">
+    <BitErrorBoundary Id="erb-content" NoLogging>
         <ChildContent>
             <BitButton Id="content-throw" OnClick="Throw">Throw</BitButton>
         </ChildContent>
@@ -103,7 +105,7 @@
             <div id="content-ui">ErrorContent: @ex.Message</div>
         </ErrorContent>
     </BitErrorBoundary>
-    <BitErrorBoundary Id="erb-both">
+    <BitErrorBoundary Id="erb-both" NoLogging>
         <ChildContent>
             <BitButton Id="both-throw" OnClick="Throw">Throw</BitButton>
         </ChildContent>
@@ -117,7 +119,7 @@
 </E2ESection>
 
 <E2ESection Id="events" Title="OnError and OnRecover">
-    <BitErrorBoundary Id="erb-events" OnError="HandleError" OnRecover="HandleRecover">
+    <BitErrorBoundary Id="erb-events" NoLogging OnError="HandleError" OnRecover="HandleRecover">
         <BitButton Id="events-throw" OnClick="Throw">Throw</BitButton>
     </BitErrorBoundary>
     <div>Errors: <span id="error-count">@_errorCount</span> last: <span id="last-error">@_lastError</span></div>

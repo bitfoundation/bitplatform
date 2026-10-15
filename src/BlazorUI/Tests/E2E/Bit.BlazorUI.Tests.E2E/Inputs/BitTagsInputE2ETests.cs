@@ -44,9 +44,8 @@ public class BitTagsInputE2ETests : E2ETestBase
     private Task TypeAsync(string id, string text) => Input(id).PressSequentiallyAsync(text, new() { Delay = 40 });
 
     /// <summary>
-    /// Types one tag after another, each closed by a separator, waiting for every one to be committed and the input to
-    /// be emptied before the next one is typed: the input is emptied by a round trip, and what is typed while it is on
-    /// its way lands on the text that is about to be cleared.
+    /// Types one tag after another, each closed by a separator, and checks the value and the emptied input after every
+    /// one of them.
     /// </summary>
     private async Task TypeTagsAsync(string id, string valueId, params (string Typed, string Value)[] steps)
     {
@@ -378,6 +377,22 @@ public class BitTagsInputE2ETests : E2ETestBase
     }
 
     [TestMethod]
+    public async Task Separators_TypedWithoutAPause_EveryTagKeepsItsOwnText()
+    {
+        await OpenAsync(Route);
+
+        // The separator takes the text out of the input in its own keystroke, so the keys typed while the commit is
+        // on its way land in an empty field rather than on the text being committed.
+        await Input("tgi-sep").PressSequentiallyAsync("ab,cd;ef,gh");
+        await ExpectTextAsync("sep-value", "ab|cd|ef");
+        await Expect(Input("tgi-sep")).ToHaveValueAsync("gh");
+
+        await Input("tgi-sep").PressAsync("Enter");
+        await ExpectTextAsync("sep-value", "ab|cd|ef|gh");
+        await Expect(Input("tgi-sep")).ToHaveValueAsync("");
+    }
+
+    [TestMethod]
     public async Task Separators_APastedListBecomesATagEach_AndAPastedColumnToo()
     {
         await OpenAsync(Route);
@@ -547,6 +562,9 @@ public class BitTagsInputE2ETests : E2ETestBase
         await TypeAsync("tgi-email", "not-an-email ");
         await ExpectTextAsync("email-value", "null");
         await Expect(InvalidMessage("tgi-email")).ToHaveTextAsync("'not-an-email' is not an email address.");
+        // The refused text is handed back into the input to be corrected, and the refusal stays on the screen with it.
+        await Expect(Input("tgi-email")).ToHaveValueAsync("not-an-email");
+        await Expect(Input("tgi-email")).ToHaveAttributeAsync("aria-invalid", "true");
 
         await Input("tgi-email").FillAsync("");
         await TypeAsync("tgi-email", "ada@example.com;");
@@ -675,10 +693,13 @@ public class BitTagsInputE2ETests : E2ETestBase
         await Expect(Tags("tgi-reorder").Nth(1)).ToBeFocusedAsync();
         await Expect(Live("tgi-reorder")).ToHaveTextAsync("first moved to position 2 of 4.");
 
+        // The focus follows the moved tag once the move has rendered, and the next press is meant for it.
         await Page.Keyboard.PressAsync("Alt+End");
         await ExpectTextAsync("reorder-value", "second|third|fourth|first");
+        await Expect(Tags("tgi-reorder").Nth(3)).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Alt+ArrowLeft");
         await ExpectTextAsync("reorder-value", "second|third|first|fourth");
+        await Expect(Tags("tgi-reorder").Nth(2)).ToBeFocusedAsync();
         await Page.Keyboard.PressAsync("Alt+Home");
         await ExpectTextAsync("reorder-value", "first|second|third|fourth");
         await ExpectTextAsync("reorder-args", "first:2>0");

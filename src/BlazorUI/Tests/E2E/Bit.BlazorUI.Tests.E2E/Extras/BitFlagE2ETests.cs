@@ -705,16 +705,20 @@ public class BitFlagE2ETests : E2ETestBase
         await Expect(Page.Locator("#page-clicks")).ToHaveTextAsync("0");
         await Expect(Page.Locator("#page-dblclicks")).ToHaveTextAsync("0");
         await Expect(Page.Locator("#page-keys")).ToHaveTextAsync("0");
+        await Expect(Page.Locator("#page-onclicks")).ToHaveTextAsync("0");
 
+        // Enabled, every handler of the page runs - its onclick and onkeydown too: a flag with no OnClick writes no
+        // handler of its own over them.
         await Page.Locator("#btn-toggle-page-handler").ClickAsync();
         await Expect(flag).Not.ToHaveClassAsync(HasClass("bit-dis"));
         await flag.ClickAsync();
         await Expect(Page.Locator("#page-clicks")).ToHaveTextAsync("1");
+        await Expect(Page.Locator("#page-onclicks")).ToHaveTextAsync("1");
         await flag.DblClickAsync();
         await Expect(Page.Locator("#page-dblclicks")).ToHaveTextAsync("1");
-
-        // onclick and onkeydown are the flag's own events (written after the splat even with no OnClick), so the
-        // page's are not expected to reach the element either way; dblclick and pointerdown are the page's alone.
+        await flag.FocusAsync();
+        await Page.Keyboard.PressAsync("Enter");
+        await Expect(Page.Locator("#page-keys")).ToHaveTextAsync("1");
     }
 
     [TestMethod]

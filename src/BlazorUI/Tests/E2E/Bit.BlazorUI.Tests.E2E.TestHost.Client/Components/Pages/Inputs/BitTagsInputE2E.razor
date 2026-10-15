@@ -197,10 +197,12 @@
                   OnInput="t => _lastInput = t" OnKeyDown="k => _lastKey = k.Key"
                   OnFocusIn="@(() => Log("focusin"))" OnFocusOut="@(() => Log("focusout"))"
                   OnTagClick="@(t => Log($"click:{t}"))" OnInvalid="@(i => Log($"invalid:{i.Tag}:{i.Reason}"))" Duplicates="false" />
+    @* The button comes ahead of the log: the focusout its own press raises grows the log, and a button after it on the same
+       line would move between the press and the release (under WebAssembly the log renders in between). *@
+    <button id="btn-clear-log" @onclick="() => _log.Clear()">clear log</button>
     <span id="events-log">@string.Join(";", _log)</span>
     <span id="last-input">@_lastInput</span>
     <span id="last-key">@_lastKey</span>
-    <button id="btn-clear-log" @onclick="() => _log.Clear()">clear log</button>
 </E2ESection>
 
 <E2ESection Id="api" Title="Public API">

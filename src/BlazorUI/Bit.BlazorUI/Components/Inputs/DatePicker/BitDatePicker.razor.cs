@@ -78,8 +78,6 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
     private readonly BitPublicCssVariables _standaloneCssVariables = new("--bit-DatePicker-");
     private string _ariaDescriptionId = string.Empty;
     private ElementReference _inputTimeHourRef = default!;
-    private ElementReference _inputTimeMinuteRef = default!;
-    private ElementReference _inputTimeSecondRef = default!;
 
 
 
@@ -1374,8 +1372,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
                 // callout element to toggle yet, so the open state is applied here instead - with the focus
                 // handling and the event of the hook, so a picker that starts open and one opened from the
                 // outside a moment later end up in the same state.
+                // It is brought to the state every other path opens it onto as well: without that, the month count
+                // is never fitted to the viewport and, beside a time picker, the callout opens on the time picker
+                // alone, with neither the day grid nor the month grid on screen.
                 if (IsOpen && Standalone is false)
                 {
+                    await PrepareCalloutForOpen();
+                    StateHasChanged();
+
                     await ToggleCallout();
 
                     if (AllowTextInput is false || ReadOnly)
@@ -3464,50 +3468,14 @@ public partial class BitDatePicker : BitInputBase<DateTimeOffset?>
         return TimeZoneInfo.ConvertTimeFromUtc(dateTimeOffset.UtcDateTime, _timeZone);
     }
 
-    private async Task HandleOnTimeHourFocus()
-    {
-        // A new edit of the field starts here, so an edit left uncommitted - typed and then typed back -
-        // does not count towards it.
-        _hourInputCount = 0;
+    // A new edit of the field starts as it takes the focus, so an edit left uncommitted - typed and then typed
+    // back - does not count towards it. Its text is selected by the script as the focus lands (see Calendars.ts)
+    // rather than from here a round trip later, when the focus may already have moved on.
+    private void HandleOnTimeHourFocus() => _hourInputCount = 0;
 
-        if (Disabled || ShowTimePicker is false || ReadOnly) return;
+    private void HandleOnTimeMinuteFocus() => _minuteInputCount = 0;
 
-        try
-        {
-            await _js.BitUtilsSelectText(_inputTimeHourRef);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-    }
-
-    private async Task HandleOnTimeMinuteFocus()
-    {
-        // A new edit of the field starts here, so an edit left uncommitted - typed and then typed back -
-        // does not count towards it.
-        _minuteInputCount = 0;
-
-        if (Disabled || ShowTimePicker is false || ReadOnly) return;
-
-        try
-        {
-            await _js.BitUtilsSelectText(_inputTimeMinuteRef);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-    }
-
-    private async Task HandleOnTimeSecondFocus()
-    {
-        // A new edit of the field starts here, so an edit left uncommitted - typed and then typed back -
-        // does not count towards it.
-        _secondInputCount = 0;
-
-        if (Disabled || ShowTimePicker is false || ReadOnly) return;
-
-        try
-        {
-            await _js.BitUtilsSelectText(_inputTimeSecondRef);
-        }
-        catch (JSDisconnectedException) { } // we can ignore this exception here
-    }
+    private void HandleOnTimeSecondFocus() => _secondInputCount = 0;
 
     private async Task HandleOnAmClick()
     {

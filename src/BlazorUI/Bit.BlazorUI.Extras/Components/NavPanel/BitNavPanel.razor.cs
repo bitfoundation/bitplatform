@@ -203,7 +203,8 @@ public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessed
     [Parameter] public RenderFragment? Footer { get; set; }
 
     /// <summary>
-    /// Renders the nav panel with full (100%) width.
+    /// Renders the nav panel with full (100%) width: it fills its container, its padding included, and
+    /// ignores the <see cref="Width"/>.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }

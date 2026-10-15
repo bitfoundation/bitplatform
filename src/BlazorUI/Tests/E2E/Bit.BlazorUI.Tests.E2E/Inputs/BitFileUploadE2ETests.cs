@@ -486,6 +486,10 @@ public class BitFileUploadE2ETests : E2ETestBase
     [TestMethod]
     public async Task Remove_AFailingServerRemovalKeepsTheFileAndSaysSo()
     {
+        // Under WebAssembly the removal request is sent by the browser, which logs its refusal as a console error; the
+        // refusal is the subject. Over a circuit the server sends it, and the page logs nothing.
+        AllowConsoleErrors = IsWasm;
+
         await OpenAsync(Route);
 
         await SelectAsync("upl-remove-fail", Text("x.txt"));

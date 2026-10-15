@@ -28,10 +28,9 @@ internal static class ObserversJsRuntimeExtensions
         this IJSRuntime jsRuntime,
         string id,
         ElementReference element,
-        DotNetObjectReference<T> obj,
-        string rootMargin) where T : class
+        DotNetObjectReference<T> obj) where T : class
     {
-        return jsRuntime.InvokeVoid("BitBlazorUI.Observers.registerIntersection", id, element, obj, rootMargin);
+        return jsRuntime.InvokeVoid("BitBlazorUI.Observers.registerIntersection", id, element, obj);
     }
 
     internal static ValueTask BitObserversUnregisterIntersection(this IJSRuntime jsRuntime, string id)

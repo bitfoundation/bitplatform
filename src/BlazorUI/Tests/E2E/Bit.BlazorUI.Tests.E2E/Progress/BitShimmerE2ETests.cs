@@ -165,14 +165,12 @@ public class BitShimmerE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [Ignore("KNOWN BUG: an Inline shimmer without a Width is 0px wide under the Fluent theme - it falls back to "
-          + "--bit-siz-ctrl-min-width, whose Fluent value is 'auto' (BitShimmer.scss .bit-smr-lin.bit-smr-inl), so the "
-          + "placeholder the docs say takes the theme's minimum control width draws nothing.")]
     public async Task Inline_WithoutAWidth_FallsBackToAVisibleWidth()
     {
         await OpenAsync(Path);
 
-        Assert.IsTrue((await Page.Locator("#smr-inline-default").BoundingBoxAsync())!.Width > 0);
+        // Eight spacing units: 64px at the default density, whatever the theme makes of a button's minimum width.
+        Assert.AreEqual(64, (int)Math.Round((await Page.Locator("#smr-inline-default").BoundingBoxAsync())!.Width));
     }
 
     [TestMethod]

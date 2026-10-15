@@ -26,7 +26,7 @@
     var headerButtonType = (Split && ButtonType.HasValue) ? ButtonType.Value.GetValue() : "button";
     // The association only matters for a header or an item that submits or resets, but it is written wherever
     // the page asked for it rather than guessed at from the button type the component happens to have resolved.
-    var formId = FormId ?? GetSplattedAttribute("form");
+    var formId = ResolvedFormId;
     // A menu button hidden from assistive technologies must not be reachable by Tab either, or a keyboard user
     // lands on a control a screen reader has nothing to say about (WCAG 4.1.2). The native disabled attribute is
     // not there to do it here - a disabled button kept interactive does not carry one - so the tab order of both

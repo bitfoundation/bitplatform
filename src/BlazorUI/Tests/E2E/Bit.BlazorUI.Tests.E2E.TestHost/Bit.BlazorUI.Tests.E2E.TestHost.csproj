@@ -19,6 +19,8 @@
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+        <!-- The pages, rendered on the server or in the browser as each test asks (see App.razor). -->
+        <ProjectReference Include="..\Bit.BlazorUI.Tests.E2E.TestHost.Client\Bit.BlazorUI.Tests.E2E.TestHost.Client.csproj" />
     </ItemGroup>
 
 </Project>

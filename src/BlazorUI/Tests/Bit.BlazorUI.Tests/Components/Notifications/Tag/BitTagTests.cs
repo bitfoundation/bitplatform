@@ -882,6 +882,47 @@ public class BitTagTests : BunitTestContext
         Assert.IsFalse(dismissed);
     }
 
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(false, true)]
+    [DataRow(true, false)]
+    public void BitTagShouldClaimTheDismissKeysExactlyWhileItActsOnThem(bool disabled, bool link)
+    {
+        // The browser prevents the default of Delete and Backspace (the Back of WebKit) on the controls that say so,
+        // which they do exactly while the key handler dismisses the tag on those keys.
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.AllowDisabledFocus, true);
+            if (link)
+            {
+                parameters.Add(p => p.Href, "/somewhere");
+            }
+            else
+            {
+                parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => { }));
+            }
+            parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => { }));
+        });
+
+        var expected = disabled ? null : "true";
+
+        Assert.AreEqual(expected, component.Find(".bit-tag-cls").GetAttribute("data-bit-tag-dsm"));
+        Assert.AreEqual(expected, component.Find(".bit-tag-cnt").GetAttribute("data-bit-tag-dsm"));
+        Assert.IsNull(component.Find(".bit-tag").GetAttribute("data-bit-tag-dsm"));
+    }
+
+    [TestMethod]
+    public void BitTagShouldNotClaimTheDismissKeysWithNothingToDismiss()
+    {
+        var component = RenderComponent<BitTag>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, EventCallback.Factory.Create<MouseEventArgs>(this, (MouseEventArgs e) => { }));
+        });
+
+        Assert.IsEmpty(component.FindAll("[data-bit-tag-dsm]"));
+    }
+
 
     [TestMethod]
     [DataRow(true)]

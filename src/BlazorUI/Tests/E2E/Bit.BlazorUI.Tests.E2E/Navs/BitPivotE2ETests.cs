@@ -147,17 +147,22 @@ public class BitPivotE2ETests : E2ETestBase
     }
 
     [TestMethod]
-    [DataRow("Start", "flex-start")]
-    [DataRow("Center", "center")]
-    [DataRow("End", "flex-end")]
-    [DataRow("SpaceBetween", "space-between")]
-    public async Task Alignment_PlacesTheTabsAlongTheHeader(string alignment, string justify)
+    [DataRow("Start", "flex-start", "normal")]
+    [DataRow("Center", "center", "normal")]
+    [DataRow("End", "flex-end", "normal")]
+    [DataRow("SpaceBetween", "space-between", "normal")]
+    // Baseline and Stretch mean nothing along the header (justify-content has no baseline, and lays a stretch out as
+    // flex-start), so they keep the tabs at the start and align them across the header instead.
+    [DataRow("Baseline", "flex-start", "baseline")]
+    [DataRow("Stretch", "flex-start", "stretch")]
+    public async Task Alignment_PlacesTheTabsAlongTheHeader(string alignment, string justify, string align)
     {
         await OpenAsync(Url);
 
         var id = $"pv-align-{alignment}";
         var tablist = Root(id).Locator("> .bit-pvt-hwr > [role='tablist']");
         await Expect(tablist).ToHaveCSSAsync("justify-content", justify);
+        await Expect(tablist).ToHaveCSSAsync("align-items", align);
 
         var header = await BoxAsync(tablist);
         var first = await BoxAsync(Tab(id, "File"));
@@ -167,7 +172,7 @@ public class BitPivotE2ETests : E2ETestBase
 
         switch (alignment)
         {
-            case "Start": Assert.IsTrue(left < 2 && right > 100); break;
+            case "Start" or "Baseline" or "Stretch": Assert.IsTrue(left < 2 && right > 100); break;
             case "End": Assert.IsTrue(right < 2 && left > 100); break;
             case "Center": Assert.AreEqual(left, right, 3); break;
             default: Assert.IsTrue(left < 2 && right < 2); break;
@@ -881,9 +886,11 @@ public class BitPivotE2ETests : E2ETestBase
         await Expect(Page.Locator("#tab-activations")).ToHaveTextAsync("0");
         await Expect(Tab("pv-disabled", "File")).ToHaveAttributeAsync("aria-selected", "true");
 
-        // The root hosts the open panel, which stays live, so it keeps the page's handlers.
-        await root.DispatchEventAsync("dblclick");
+        // The root hosts the open panel, which stays live, so it keeps the page's handlers - and the tab's dblclick,
+        // which the tab's own handler no longer takes, bubbles up to the root's like any event of its content.
         await Expect(Page.Locator("#root-activations")).ToHaveTextAsync("1");
+        await root.DispatchEventAsync("dblclick");
+        await Expect(Page.Locator("#root-activations")).ToHaveTextAsync("2");
 
         await Page.Locator("#btn-toggle-disabled").ClickAsync();
         await Expect(root).Not.ToHaveClassAsync(HasClass("bit-dis"));

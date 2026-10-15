@@ -30,6 +30,11 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private int? _focusedMonthCell;
     private bool _focusTimePickerAfterRender;
     private string? _focusElementIdAfterRender;
+
+    // Whether the end time on screen is one the user set while the range had no end date yet. Every change of the
+    // value re-derives the four time fields from it, and with no end date to read the end time from, that would
+    // put a time the user chose for the end back to the starting one before the end day it is meant for is picked.
+    private bool _endTimeChosen;
     private DateTime? _focusedDate;
     private DateTime? _hoveredDate;
     private HashSet<DateTime> _disabledDates = [];
@@ -69,9 +74,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
     private string _overlayId = string.Empty;
     private string _dateRangePickerId = string.Empty;
     private ElementReference _startTimeHourInputRef = default!;
-    private ElementReference _startTimeMinuteInputRef = default!;
-    private ElementReference _endTimeHourInputRef = default!;
-    private ElementReference _endTimeMinuteInputRef = default!;
 
 
 
@@ -196,7 +198,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
             _endTimeHour = value;
 
-            UpdateTime();
+            UpdateTime(endTimeChanged: true);
         }
     }
 
@@ -220,7 +222,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
             _endTimeMinute = value;
 
-            UpdateTime();
+            UpdateTime(endTimeChanged: true);
         }
     }
 
@@ -1426,7 +1428,8 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 // instead is a hidden input nobody can land on.
                 await _js.BitCalendarsSetup(_calloutId, Standalone ? null : _dateRangePickerId);
 
-                if (Responsive)
+                // The swipe dismisses the callout, and standalone there is no callout to dismiss.
+                if (Responsive && Standalone is false)
                 {
                     await _js.BitSwipesSetup(
                         id: _calloutId,
@@ -1451,9 +1454,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                 // callout element to toggle yet, so the open state is applied here instead - with the focus
                 // handling and the event of the hook, so a picker that starts open and one opened from the
                 // outside a moment later end up in the same state.
+                // It is brought to the state every other path opens it onto as well: without that, the month count
+                // is never fitted to the viewport and, beside a time picker, the callout opens on the time picker
+                // alone, with neither the day grid nor the month grid on screen.
                 if (IsOpen && Standalone is false)
                 {
                     CaptureValueSnapshot();
+
+                    await PrepareCalloutForOpen();
+                    StateHasChanged();
 
                     await ToggleCallout();
 
@@ -1700,14 +1709,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
                 await PrepareCalloutForOpen();
 
-                // The callout holds the tab order while it is open, so an open pushed in from the outside has
-                // to move the focus into it exactly as a click on the field does - otherwise the focus is left
-                // on the page behind an overlay that it can no longer reach.
-                if (AllowTextInput is false)
-                {
-                    MoveFocusToTheVisiblePicker();
-                }
-
                 StateHasChanged();
             }
 
@@ -1717,6 +1718,16 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             }
 
             await ToggleCallout();
+
+            // The callout holds the tab order while it is open, so an open pushed in from the outside has
+            // to move the focus into it exactly as a click on the field does - otherwise the focus is left
+            // on the page behind an overlay that it can no longer reach. It moves once the callout is shown:
+            // a cell of a callout still hidden takes no focus (see Open).
+            if (isOpen && AllowTextInput is false)
+            {
+                MoveFocusToTheVisiblePicker();
+                StateHasChanged();
+            }
 
             await (isOpen ? OnOpen.InvokeAsync() : OnClose.InvokeAsync());
         });
@@ -1757,13 +1768,9 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
 
         await PrepareCalloutForOpen();
 
-        // The callout is a dialog, so the keyboard focus moves into it. An editable input keeps the focus
-        // instead, since the user may well want to go on typing the range.
-        if (AllowTextInput is false)
-        {
-            MoveFocusToTheVisiblePicker();
-        }
-        else
+        // The callout is a dialog, so the keyboard focus moves into it (below, once it is shown). An editable
+        // input keeps the focus instead, since the user may well want to go on typing the range.
+        if (AllowTextInput)
         {
             // A click that landed on the icon rather than on the input never moved the focus into the
             // field, so the picker would open with none of the focus cues the very same click on the
@@ -1788,6 +1795,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             await ToggleCallout();
 
             await OnOpen.InvokeAsync();
+        }
+
+        // The focus moves into the callout only once it is shown. Asked for before, it is placed by the render that
+        // follows - which under WebAssembly runs before the toggle has shown the callout, and a cell of a hidden
+        // callout takes no focus.
+        if (AllowTextInput is false)
+        {
+            MoveFocusToTheVisiblePicker();
+            StateHasChanged();
         }
 
         await OnClick.InvokeAsync();
@@ -1994,16 +2010,28 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
                                 ? StartingValue!.StartDate!.Value.Minute
                                 : 0);
 
-        _endTimeHour = endDateHasValue
-                        ? CurrentValue!.EndDate!.Value.Hour
-                        : (startingValueEndDateHasValue
-                           ? StartingValue!.EndDate!.Value.Hour
-                           : 23);
-        _endTimeMinute = endDateHasValue
-                          ? CurrentValue!.EndDate!.Value.Minute
-                          : (startingValueEndDateHasValue
-                             ? StartingValue!.EndDate!.Value.Minute
-                             : 59);
+        // An end date holds the end time from now on, so a time chosen before it was picked has done its job; a
+        // value with no date at all - cleared, or rolled back by Cancel or Escape - has no range left to keep it for.
+        if (endDateHasValue || startDateHasValue is false)
+        {
+            _endTimeChosen = false;
+        }
+
+        // With no end date to read it from, the end time is the one the user set for the end day still to be
+        // picked, or else the starting one.
+        if (_endTimeChosen is false)
+        {
+            _endTimeHour = endDateHasValue
+                            ? CurrentValue!.EndDate!.Value.Hour
+                            : (startingValueEndDateHasValue
+                               ? StartingValue!.EndDate!.Value.Hour
+                               : 23);
+            _endTimeMinute = endDateHasValue
+                              ? CurrentValue!.EndDate!.Value.Minute
+                              : (startingValueEndDateHasValue
+                                 ? StartingValue!.EndDate!.Value.Minute
+                                 : 59);
+        }
 
         if (endDateHasValue is false && MaxRange.HasValue && MaxRange.Value.TotalHours < 24)
         {
@@ -3785,8 +3813,15 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         return GetDateTime(CurrentValue.StartDate.Value).Date == endDate && date == endDate;
     }
 
-    private void UpdateTime()
+    private void UpdateTime(bool endTimeChanged = false)
     {
+        // An end time set before its end day is picked waits for that day, rather than being put back to the
+        // starting one by the next change of the value (see OnSetParameters).
+        if (endTimeChanged && CurrentValue?.EndDate.HasValue is not true)
+        {
+            _endTimeChosen = true;
+        }
+
         if (CurrentValue is null) return;
         if (CurrentValue.StartDate.HasValue is false && CurrentValue.EndDate.HasValue is false) return;
 
@@ -3837,20 +3872,6 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
         await ChangeTime(e.Key is "PageUp", isHour, isStartTime);
     }
 
-    private async Task HandleOnHourInputFocus(bool isStartTime)
-    {
-        if (Disabled || ShowTimePicker is false || ReadOnly) return;
-
-        await _js.BitUtilsSelectText(isStartTime ? _startTimeHourInputRef : _endTimeHourInputRef);
-    }
-
-    private async Task HandleOnMinuteInputFocus(bool isStartTime)
-    {
-        if (Disabled || ShowTimePicker is false || ReadOnly) return;
-
-        await _js.BitUtilsSelectText(isStartTime ? _startTimeMinuteInputRef : _endTimeMinuteInputRef);
-    }
-
     private void HandleOnAmClick(bool isStartTime)
     {
         if (ReadOnly) return;
@@ -3865,7 +3886,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             _endTimeHour %= 12;  // "12:-- am" is "00:--" in 24h
         }
 
-        UpdateTime();
+        UpdateTime(endTimeChanged: isStartTime is false);
     }
 
     private void HandleOnPmClick(bool isStartTime)
@@ -3892,7 +3913,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             _endTimeHour %= 24;
         }
 
-        UpdateTime();
+        UpdateTime(endTimeChanged: isStartTime is false);
     }
 
     // Reflects the hour the time picker is currently showing, so the AM/PM pair stays in sync with
@@ -4022,7 +4043,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             _endTimeHour = ChangeHour(_endTimeHour, isNext);
         }
 
-        UpdateTime();
+        UpdateTime(endTimeChanged: isStartTime is false);
     }
 
     // The step lays a grid over the day rather than adding itself to whatever the hour happens to be, so every
@@ -4044,7 +4065,7 @@ public partial class BitDateRangePicker : BitInputBase<BitDateRangePickerValue?>
             _endTimeMinute = ChangeMinute(_endTimeMinute, isNext);
         }
 
-        UpdateTime();
+        UpdateTime(endTimeChanged: isStartTime is false);
     }
 
     /// <inheritdoc cref="ChangeHour(int, bool)"/>

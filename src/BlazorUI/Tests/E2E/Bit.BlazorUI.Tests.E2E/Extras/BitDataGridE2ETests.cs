@@ -857,7 +857,10 @@ public class BitDataGridE2ETests : BitDataGridE2ETestBase
         await Page.Keyboard.PressAsync("ArrowDown");
         await FilterRow("grid-lifecycle").Locator("input").Last.FillAsync("La");
 
-        await Page.Locator("#btn-unmount").ClickAsync();
+        // The grid goes away with the keystroke still waiting out its debounce. A real click would move the focus off
+        // the box first, and the blur applies the filter - which, where it renders before the button comes back up (the
+        // page running in the browser), shortens the page under the pointer so the click misses the button.
+        await Page.Locator("#btn-unmount").DispatchEventAsync("click");
 
         await Expect(Text("lifecycle-state")).ToHaveTextAsync("unmounted");
         await Expect(Grid("grid-lifecycle")).ToHaveCountAsync(0);

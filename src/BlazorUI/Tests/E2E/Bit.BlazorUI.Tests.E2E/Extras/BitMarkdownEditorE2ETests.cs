@@ -1641,12 +1641,15 @@ public class BitMarkdownEditorE2ETests : E2ETestBase
         await Expect(dialog.Locator("dl > div", new() { HasTextString = "Insert stamp" })).ToContainTextAsync("Ctrl+Shift+K");
         await Expect(dialog.Locator("dl > div", new() { HasTextString = "Count words" })).ToContainTextAsync("F2");
 
-        // Tab stays inside the dialog.
-        await Page.Keyboard.PressAsync("Tab");
-        await Page.Keyboard.PressAsync("Tab");
-        await Page.Keyboard.PressAsync("Tab");
-        // The guards at either end hand the focus back through a round trip, so where it settles is waited for.
-        await Expect(dialog.Locator(":focus")).ToHaveCountAsync(1);
+        // Tab stays inside the dialog, and never leaves it even for a moment: the trap wraps the focus in the script as
+        // the key goes down, so it is read straight after each press rather than waited for. The close button is the
+        // dialog's one control, so every Tab and Shift+Tab lands on it.
+        var close = dialog.Locator(".bit-mde-hcl");
+        foreach (var key in new[] { "Tab", "Tab", "Tab", "Shift+Tab", "Shift+Tab" })
+        {
+            await Page.Keyboard.PressAsync(key);
+            Assert.IsTrue(await close.EvaluateAsync<bool>("b => document.activeElement === b"), $"{key} took the focus out of the help dialog");
+        }
 
         await Page.Keyboard.PressAsync("Escape");
         await Expect(dialog).ToHaveCountAsync(0);

@@ -96,6 +96,10 @@ public class BitPdfEngineLimitsTests
     [TestMethod]
     [DataRow("/DeviceRGB", "/CalRGB", 3, DisplayName = "A default naming the calibrated twin of the device space")]
     [DataRow("/DeviceCMYK", "/DeviceCMYK", 4, DisplayName = "A default naming the device space itself")]
+    // Only the inner DeviceGray is refused by the scope; the Indexed space around it is refused with it, since keeping it
+    // would read every gray value as an index into its palette.
+    [DataRow("/DeviceGray", "[/Indexed /DeviceGray 1 <00FF>]", 1, DisplayName = "A default that is an Indexed space over the device space")]
+    [DataRow("/DeviceRGB", "[/Separation /Spot /DeviceRGB << /FunctionType 2 /Domain [0 1] /C0 [0 0 0] /C1 [1 0 0] /N 1 >>]", 3, DisplayName = "A default whose alternate is the device space")]
     public void ADefaultSpaceThatLeadsBackToTheDeviceSpaceShouldLeaveTheDeviceSpace(string device, string @default, int components)
     {
         string key = device switch { "/DeviceRGB" => "DefaultRGB", "/DeviceGray" => "DefaultGray", _ => "DefaultCMYK" };
