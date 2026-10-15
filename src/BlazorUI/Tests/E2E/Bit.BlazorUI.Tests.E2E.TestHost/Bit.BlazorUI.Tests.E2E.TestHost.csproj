@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <!-- Matches the referenced Bit.BlazorUI projects: Debug builds the latest TFM only, CI passes
-             -p:BuildAllTfms=true to cover net9.0 and net8.0 as well. -->
-        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
+             -p:BuildAllTfms=true to cover net10.0, net9.0 and net8.0 as well. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net11.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>preview</LangVersion>
@@ -15,6 +15,7 @@
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="8.0.31" />
         <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="9.0.20" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net11.0'" Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="11.0.0-rc.1.26425.128" />
     </ItemGroup>
 
     <ItemGroup>
