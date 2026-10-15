@@ -42,9 +42,8 @@ private readonly List<PageInfo> CustomBreadcrumbItemsDisabled =
 private readonly List<PageInfo> CustomBreadcrumbItemsWithTarget =
 [
     new() { Name = ""Custom 1"", Address = ""/components/breadcrumb"" },
-    new() { Name = ""Custom 2"", Address = ""/components/breadcrumb"" },
     new() { Name = ""bit BlazorUI"", Address = ""https://blazorui.bitplatform.dev"", OpenIn = ""_blank"", Tooltip = ""Opens the bit BlazorUI website in a new tab"" },
-    new() { Name = ""Custom 4"", Address = ""/components/breadcrumb"", IsCurrent = true }
+    new() { Name = ""Custom 3"", Address = ""/components/breadcrumb"", IsCurrent = true }
 ];
 
 private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
@@ -206,9 +205,10 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
                DividerIconName=""@BitIconName.CaretRightSolid8""
                OverflowIconName=""@BitIconName.ChevronDown""
                MaxDisplayedItems=""3""
-               OverflowIndex=""2"" />
+               OverflowIndex=""2""
+               Wrap />
 
-<BitBreadcrumb Items=""CustomBreadcrumbItemsWithIcon"" NameSelectors=""nameSelectors"" IconPlacement=""BitPlacement.End"" />
+<BitBreadcrumb Items=""CustomBreadcrumbItemsWithIcon"" NameSelectors=""nameSelectors"" IconPlacement=""BitPlacement.End"" Wrap />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithHomeIcon"" NameSelectors=""nameSelectors"" DividerText=""/"" />";
     private readonly string example6CsharpCode = @"
@@ -454,19 +454,19 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon1""
                NameSelectors=""nameSelectors""
-               MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon2""
                NameSelectors=""nameSelectors""
-               MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon3""
                NameSelectors=""nameSelectors""
-               MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />
 
 <BitBreadcrumb Items=""CustomBreadcrumbItemsWithExternalIcon4""
                NameSelectors=""nameSelectors""
-               MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />";
     private readonly string example12CsharpCode = @"
 public class PageInfo
 {
@@ -515,11 +515,11 @@ private readonly BitBreadcrumbNameSelectors<PageInfo> nameSelectors = new()
 };";
 
     private readonly string example13RazorCode = @"
-<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Size=""BitSize.Small"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Size=""BitSize.Small"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />
 
-<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Size=""BitSize.Medium"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Size=""BitSize.Medium"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />
 
-<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Size=""BitSize.Large"" MaxDisplayedItems=""3"" OverflowIndex=""2"" />";
+<BitBreadcrumb Items=""CustomBreadcrumbItems"" NameSelectors=""nameSelectors"" Size=""BitSize.Large"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap />";
     private readonly string example13CsharpCode = @"
 private readonly List<PageInfo> CustomBreadcrumbItems =
 [

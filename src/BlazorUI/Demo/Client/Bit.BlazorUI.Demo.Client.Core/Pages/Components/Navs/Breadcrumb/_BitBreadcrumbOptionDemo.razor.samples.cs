@@ -33,10 +33,9 @@ public partial class _BitBreadcrumbOptionDemo
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption"">
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
-    <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
     <BitBreadcrumbOption Text=""bit BlazorUI"" Href=""https://blazorui.bitplatform.dev"" Target=""_blank""
                          Title=""Opens the bit BlazorUI website in a new tab"" />
-    <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IsSelected />
+    <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IsSelected />
 </BitBreadcrumb>";
 
     private readonly string example2RazorCode = @"
@@ -170,14 +169,15 @@ public partial class _BitBreadcrumbOptionDemo
                DividerIconName=""@BitIconName.CaretRightSolid8""
                OverflowIconName=""@BitIconName.ChevronDown""
                MaxDisplayedItems=""3""
-               OverflowIndex=""2"">
+               OverflowIndex=""2""
+               Wrap>
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AdminELogoInverse32"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AppsContent"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AzureIcon"" />
     <BitBreadcrumbOption Text=""Option 4"" Href=""/components/breadcrumb"" IconName=""@BitIconName.ClassNotebookLogo16"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" IconPlacement=""BitPlacement.End"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" IconPlacement=""BitPlacement.End"" Wrap>
     <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AdminELogoInverse32"" />
     <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AppsContent"" />
     <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" IconName=""@BitIconName.AzureIcon"" />
@@ -334,7 +334,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
 <link rel=""stylesheet"" href=""https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"" />
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption""
-               MaxDisplayedItems=""3"" OverflowIndex=""2"">
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap>
     <BitBreadcrumbOption Text=""Home"" Icon=""@(""fa-solid fa-house"")"" />
     <BitBreadcrumbOption Text=""Products"" Icon=""@(""fa-solid fa-box"")"" />
     <BitBreadcrumbOption Text=""Electronics"" Icon=""@(""fa-solid fa-microchip"")"" />
@@ -342,7 +342,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
 </BitBreadcrumb>
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption""
-               MaxDisplayedItems=""3"" OverflowIndex=""2"">
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap>
     <BitBreadcrumbOption Text=""Home"" Icon=""@BitIconInfo.Css(""fa-solid fa-house"")"" />
     <BitBreadcrumbOption Text=""Products"" Icon=""@BitIconInfo.Css(""fa-solid fa-box"")"" />
     <BitBreadcrumbOption Text=""Electronics"" Icon=""@BitIconInfo.Css(""fa-solid fa-microchip"")"" />
@@ -350,14 +350,14 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
 </BitBreadcrumb>
 
 <BitBreadcrumb TItem=""BitBreadcrumbOption""
-               MaxDisplayedItems=""3"" OverflowIndex=""2"">
+               MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap>
     <BitBreadcrumbOption Text=""Home"" Icon=""@BitIconInfo.Fa(""solid house"")"" />
     <BitBreadcrumbOption Text=""Products"" Icon=""@BitIconInfo.Fa(""solid box"")"" />
     <BitBreadcrumbOption Text=""Electronics"" Icon=""@BitIconInfo.Fa(""solid microchip"")"" />
     <BitBreadcrumbOption Text=""Laptops"" Icon=""@BitIconInfo.Fa(""solid laptop"")"" IsSelected />
 </BitBreadcrumb>
 
-<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
+<BitBreadcrumb TItem=""BitBreadcrumbOption"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap>
     <BitBreadcrumbOption Text=""Home"" Icon=""@BitIconInfo.Bi(""house-fill"")"" />
     <BitBreadcrumbOption Text=""Products"" Icon=""@BitIconInfo.Bi(""box-seam-fill"")"" />
     <BitBreadcrumbOption Text=""Electronics"" Icon=""@BitIconInfo.Bi(""cpu-fill"")"" />
@@ -367,7 +367,7 @@ private readonly BitBreadcrumbParams[] breadcrumbParams =
     private readonly string example13RazorCode = @"
 @foreach (var size in sizes)
 {
-    <BitBreadcrumb TItem=""BitBreadcrumbOption"" Size=""size"" MaxDisplayedItems=""3"" OverflowIndex=""2"">
+    <BitBreadcrumb TItem=""BitBreadcrumbOption"" Size=""size"" MaxDisplayedItems=""3"" OverflowIndex=""2"" Wrap>
         <BitBreadcrumbOption Text=""Option 1"" Href=""/components/breadcrumb"" />
         <BitBreadcrumbOption Text=""Option 2"" Href=""/components/breadcrumb"" />
         <BitBreadcrumbOption Text=""Option 3"" Href=""/components/breadcrumb"" />

@@ -223,7 +223,7 @@ private double gap = 1;
 </BitStack>";
 
     private readonly string example6RazorCode = @"
-<BitStack Horizontal HorizontalAlign=""BitAlignment.SpaceAround"" Class=""stack"">
+<BitStack Horizontal Wrap HorizontalAlign=""BitAlignment.SpaceAround"" Class=""stack"">
     <div class=""item"">Item 1</div>
     <BitStack>
         <div class=""item"">Item 2-1</div>
@@ -426,7 +426,7 @@ private double gap = 1;
 </BitStack>";
 
     private readonly string example10RazorCode = @"
-<BitStack Horizontal Gap=""1rem"" AutoHeight>
+<BitStack Horizontal Wrap Gap=""1rem"" AutoHeight>
     <BitStack Padding=""1rem"" Class=""stack"" AutoHeight>
         <div class=""item"">Padding 1rem</div>
     </BitStack>

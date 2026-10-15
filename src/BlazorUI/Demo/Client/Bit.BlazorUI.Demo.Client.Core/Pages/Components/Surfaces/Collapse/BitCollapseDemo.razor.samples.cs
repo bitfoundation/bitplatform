@@ -20,7 +20,7 @@ private bool expanded = true;";
     The button and the collapse share one value: <b>@boundExpanded</b>.
 </BitCollapse>
 
-<div style=""display:flex;align-items:center;gap:0.5rem"">
+<div style=""display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem"">
     <BitButton OnClick=""() => collapseRef?.ExpandAsync()"">Expand</BitButton>
     <BitButton OnClick=""() => collapseRef?.CollapseAsync()"">Collapse</BitButton>
     <BitButton OnClick=""() => collapseRef?.ToggleAsync()"">Toggle</BitButton>

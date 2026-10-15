@@ -375,7 +375,7 @@ private BitNavBarOption? eventsSelectedOption;";
 </BitNavBar>";
 
     private readonly string example15RazorCode = @"
-<BitStack Horizontal>
+<BitStack Horizontal Wrap>
     <BitButton OnClick=""AddDynamicOption"">Add item</BitButton>
     <BitButton OnClick=""RemoveDynamicOption"">Remove item</BitButton>
     <BitButton OnClick=""ReverseDynamicOptions"">Reverse items</BitButton>
