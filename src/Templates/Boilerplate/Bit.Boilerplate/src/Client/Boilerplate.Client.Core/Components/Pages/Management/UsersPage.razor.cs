@@ -201,6 +201,7 @@ public partial class UsersPage
         {
             Key = u.Id.ToString(),
             Text = u.DisplayName ?? string.Empty,
+            Description = u.DisplayUserName != u.DisplayName ? u.DisplayUserName : null,
             Data = u
         })];
     }

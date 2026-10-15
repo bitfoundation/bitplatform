@@ -3,6 +3,8 @@
 
 <section>
     <BitDropMenu Transparent @bind-IsOpen="isOpen" Responsive
+                 Width="20rem"
+                 MaxWidth="calc(100vw - 1rem)"
                  OnDismiss="OnDropMenuDismiss"
                  OnOpen="WrapHandled(OnDropMenuOpen)"
                  AriaLabel="@AccountMenuLabel"
@@ -26,7 +28,7 @@
                                 Classes="@(new() { DetailsContainer = "persona-details" })"
                                 Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
                         <CoinTemplate>
-                            <BitIcon IconName="@BitIconName.Contact" Size="BitSize.Small" Color="BitColor.Info" Class="menu-icon" />
+                            <BitIcon IconName="@BitIconName.Contact" Size="BitSize.Small" Variant="BitVariant.Fill" Circular Color="BitColor.Info" Class="menu-icon" />
                         </CoinTemplate>
                     </BitPersona>
                 </NotAuthorized>
@@ -45,11 +47,8 @@
                                             Size="BitPersonaSize.Size48"
                                             PrimaryText="@CurrentUser?.DisplayName"
                                             SecondaryText="@(CurrentUser?.Email ?? CurrentUser?.PhoneNumber)"
-                                            Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)">
-                                    <ImageOverlayTemplate>
-                                        <span>@Localizer[nameof(AppStrings.Edit)]</span>
-                                    </ImageOverlayTemplate>
-                                </BitPersona>
+                                            ImageOverlayText="@Localizer[nameof(AppStrings.Edit)]"
+                                            Presence="@(IsOnline is null ? BitPersonaPresence.None : IsOnline is true ? BitPersonaPresence.Online : BitPersonaPresence.Offline)" />
 
                                 <BitSeparator />
 
@@ -123,14 +122,15 @@
                                     @Localizer[nameof(AppStrings.Notifications)]
                                 </BitActionButton>
                                 @* One-way bound on purpose: the preference lives in NotificationPreferenceService, so the switch only reports the click. *@
-                                <BitToggle AriaLabel="@NotificationsToggleLabel"
+                                <BitToggle AutoLoading
+                                           AriaLabel="@NotificationsToggleLabel"
                                            OnChange="WrapHandled(ToggleNotifications)"
                                            Value="notificationsEnabled" />
                             </BitStack>
                             @*#if (notification == true)*@
                             @if (pushNotificationsBlocked)
                             {
-                                <BitText Typography="BitTypography.Caption1" Color="BitColor.Warning" Class="push-blocked-hint">
+                                <BitText Block Typography="BitTypography.Caption1" Color="BitColor.Warning" Class="push-blocked-hint">
                                     @Localizer[nameof(AppStrings.PushNotificationsBlockedMessage)]
                                 </BitText>
                             }
@@ -150,7 +150,7 @@
                                        Value="CurrentTheme == AppThemeType.Light" />
                         </BitStack>
                         
-                        <BitAccentColorSwitcher Class="accent-color-switcher" />
+                        <BitAccentColorSwitcher Class="accent-color-switcher" Classes="@(new() { Swatch = "accent-color-swatch" })" />
 
                         <AuthorizeView>
                             <BitActionButton FullWidth
@@ -166,7 +166,6 @@
                 {
                     <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
                         <BitActionButton FullWidth
-                                         Style="align-items:flex-end"
                                          OnClick="() => showCultures = false"
                                          IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
                             @Localizer[nameof(AppStrings.SelectLanguage)]
@@ -174,14 +173,14 @@
 
                         <BitSeparator />
 
-                        <BitChoiceGroup Items="cultures" NoCircle Style="width:100%"
+                        <BitChoiceGroup Items="cultures" NoCircle FullWidth StretchItemLabel
+                                        AriaLabel="@Localizer[nameof(AppStrings.SelectLanguage)]"
                                         DefaultValue="@CultureInfo.CurrentUICulture.Name"
-                                        OnChange="WrapHandled((string? c) => OnCultureChanged(c))"
-                                        Styles="@(new() { ItemLabel = "flex-grow:1" })">
+                                        OnChange="WrapHandled((string? c) => OnCultureChanged(c))">
                             <ItemTemplate Context="item">
-                                <BitStack Horizontal VerticalAlign="BitAlignment.Center" Style="cursor:pointer">
+                                <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                                     <BitFlag Iso2="@CultureInfoManager.FindRegionIso2(item.Value)" />
-                                    <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
+                                    <BitText Typography="BitTypography.Body1" Weight="@(item.IsSelected ? BitFontWeight.Bold : null)">
                                         @item.Text
                                     </BitText>
                                 </BitStack>
@@ -193,7 +192,6 @@
                 {
                     <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
                         <BitActionButton FullWidth
-                                         Style="align-items:flex-end"
                                          OnClick="WrapHandled(() => showTimeZones = false)"
                                          IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
                             @Localizer[nameof(AppStrings.SelectTimeZone)]
@@ -207,6 +205,7 @@
                         <BitSeparator />
 
                         <BitBasicList Virtualize
+                                      FullWidth
                                       ItemSize="44"
                                       Role="radiogroup"
                                       Class="time-zone-list"
@@ -236,7 +235,6 @@
                     <BitStack HorizontalAlign="BitAlignment.Start" AutoSize>
 
                         <BitActionButton FullWidth
-                                         Style="align-items:flex-end"
                                          OnClick="() => showTenants = false"
                                          IconName="@(CurrentDir is BitDir.Rtl ? BitIconName.ChromeBackMirrored : BitIconName.ChromeBack)">
                             @Localizer[nameof(AppStrings.SwitchTenant)]
@@ -246,16 +244,16 @@
                         {
                             <BitSeparator />
 
-                            <BitChoiceGroup Items="tenants" NoCircle Style="width:100%"
+                            <BitChoiceGroup Items="tenants" NoCircle FullWidth StretchItemLabel
+                                            AriaLabel="@Localizer[nameof(AppStrings.SwitchTenant)]"
                                             DefaultValue="@currentTenantId"
-                                            OnChange="WrapHandled((string? t) => OnTenantChanged(t))"
-                                            Styles="@(new() { ItemLabel = "flex-grow:1" })">
+                                            OnChange="WrapHandled((string? t) => OnTenantChanged(t))">
                                 <ItemTemplate Context="item">
-                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center" Style="cursor:pointer">
+                                    <BitStack Horizontal VerticalAlign="BitAlignment.Center">
                                         <BitIcon Size="BitSize.Small"
                                                  IconName="@(IsPendingInvitation(item.Value) ? BitIconName.Mail : BitIconName.Org)"
                                                  Color="@(IsPendingInvitation(item.Value) ? BitColor.Warning : BitColor.Info)" />
-                                        <BitText Typography="BitTypography.Body1" Style="@(item.IsSelected ? "font-weight:bold" : "")">
+                                        <BitText Typography="BitTypography.Body1" Weight="@(item.IsSelected ? BitFontWeight.Bold : null)">
                                             @item.Text
                                         </BitText>
                                         @if (IsPendingInvitation(item.Value))

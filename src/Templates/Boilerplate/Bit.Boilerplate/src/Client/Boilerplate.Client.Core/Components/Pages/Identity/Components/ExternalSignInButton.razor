@@ -7,11 +7,12 @@
 
 <BitButton AutoLoading
            Title="@Title"
+           AriaLabel="@Title"
            OnClick="OnClick"
            Size="BitSize.Large"
            Class="external-sign-in-button"
            Variant="BitVariant.Fill"
-           IsEnabled="IsWaiting is false"
+           Disabled="IsWaiting"
            ButtonType="BitButtonType.Button"
            Color="BitColor.SecondaryBackground">
     @ChildContent

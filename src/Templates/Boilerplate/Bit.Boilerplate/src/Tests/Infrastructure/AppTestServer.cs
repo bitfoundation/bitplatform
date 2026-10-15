@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
+using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Tests.Infrastructure;
@@ -366,6 +367,8 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         ctx.Services.AddScoped<IStorageService, TestStorageService>();
 
         ctx.SetRendererInfo(new RendererInfo("Server", isInteractive: true));
+
+        ctx.RenderTree.Add<AppBitParams>();
 
         return ctx;
     }

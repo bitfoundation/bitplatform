@@ -8,13 +8,8 @@
 
         <BitOtpInput AutoFocus
                      NoValidate
-                     Length="6"
-                     NormalizeDigits
                      @bind-Value="otpCode"
                      IsLoading="IsWaiting"
-                     Size="BitSize.Large"
-                     Type="BitInputType.Number"
-                     InputMode="BitInputMode.Tel"
                      OnChange="@(_ => SyncTwoFactorCode())"
                      OnFill="WrapHandled(OnTokenProvided.InvokeAsync)"
                      Label="@Localizer[nameof(AppStrings.Code)]" />
@@ -22,13 +17,13 @@
         <BitTextField NoValidate
                       Immediate
                       @bind-Value="recoveryCode"
-                      IsEnabled="IsWaiting is false"
+                      Disabled="IsWaiting"
                       OnChange="@(_ => SyncTwoFactorCode())"
                       Label="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]"
                       AutoComplete="@BitAutoCompleteValue.OneTimeCode"
                       Placeholder="@Localizer[nameof(AppStrings.TwoFactorRecoveryCode)]" />
 
-        <BitButton IsLoading="IsWaiting" IsEnabled="IsWaiting is false" ButtonType="BitButtonType.Submit">
+        <BitButton IsLoading="IsWaiting" ButtonType="BitButtonType.Submit">
             @Localizer[nameof(AppStrings.Continue)]
         </BitButton>
 
@@ -41,7 +36,6 @@
                     <BitButton IsLoading="IsWaiting"
                                Color="BitColor.Tertiary"
                                Variant="BitVariant.Outline"
-                               IsEnabled="IsWaiting is false"
                                ButtonType="BitButtonType.Button"
                                OnClick="WrapHandled(OnSendTfaToken.InvokeAsync)">
                         @Localizer[nameof(AppStrings.TfaPanelAnotherWayGetCode)]

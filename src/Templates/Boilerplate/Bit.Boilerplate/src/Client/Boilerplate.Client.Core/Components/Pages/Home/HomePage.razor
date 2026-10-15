@@ -50,6 +50,7 @@
                       Color="BitColor.Secondary"
                       AriaLabel="@Localizer[nameof(AppStrings.SearchProducts)]"
                       Placeholder="@Localizer[nameof(AppStrings.SearchProducts)]"
+                      OnSearch="WrapHandled(HandleOnSearchBoxClick)"
                       @onclick="WrapHandled(HandleOnSearchBoxClick)" />
         @*#endif*@
 
@@ -154,7 +155,7 @@
             </BitStack>
         </BitCard>
 
-        <BitStack Horizontal Gap="2rem" Class="bit-products-stack">
+        <BitStack Horizontal Wrap WrapSm="false" Gap="2rem">
             <BitCard Style="padding:3rem" FullWidth>
                 <BitStack HorizontalAlign="BitAlignment.Center">
                     <BitText Typography="BitTypography.H5">bit BlazorUI</BitText>

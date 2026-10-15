@@ -14,7 +14,7 @@ public partial class ProductsSection
             return await productViewController
                             .WithQuery(new ODataQuery
                             {
-                                Top = 10,
+                                Top = request.Count,
                                 Skip = request.Skip,
                                 OrderBy = nameof(ProductDto.Name)
                             })

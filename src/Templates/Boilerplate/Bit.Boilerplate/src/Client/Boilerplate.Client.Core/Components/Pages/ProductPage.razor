@@ -32,14 +32,14 @@
         @if (isLoadingProduct)
         {
             <BitCard FullWidth Style="padding:3rem 1rem;">
-                <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem" Class="product-stack">
+                <BitStack HorizontalSm="true" Gap="2rem">
                     <BitShimmer Height="256px" Width="50%" Background="BitColor.PrimaryBackground" />
                     <BitStack AutoWidth Grows>
-                        <BitShimmer Height="6rem" Width="100%" />
-                        <BitShimmer Height="1rem" Width="100%" />
-                        <BitShimmer Height="1rem" Width="100%" />
-                        <BitShimmer Height="1rem" Width="100%" />
-                        <BitShimmer Height="3rem" Width="100%" />
+                        <BitShimmer Height="6rem" Background="BitColor.PrimaryBackground" />
+                        <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                        <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                        <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                        <BitShimmer Height="3rem" Background="BitColor.PrimaryBackground" />
                     </BitStack>
                 </BitStack>
             </BitCard>
@@ -53,7 +53,7 @@
             else
             {
                 <BitCard FullWidth Style="padding:3rem 1rem;">
-                    <BitStack Horizontal HorizontalAlign="BitAlignment.Center" Gap="2rem" Class="product-stack">
+                    <BitStack HorizontalSm="true" Gap="2rem">
                         <ProductImage Src="@GetProductImageUrl(product)" Alt="@product.PrimaryImageAltText" Width="50%" />
                         <BitStack AutoWidth Grows>
                             <BitText Typography="BitTypography.H2">@product.Name</BitText>
@@ -108,16 +108,16 @@
             <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SimilarProducts)]</BitText>
 
             <BitScrollablePane Width="100%" Style="padding:0.5rem 1.5px">
-                <BitStack Horizontal FitWidth Style="align-items:unset">
+                <BitStack Horizontal FitWidth VerticalAlign="BitAlignment.Stretch">
                     @foreach (var itm in Enumerable.Range(0, 10))
                     {
-                        <BitCard FullSize Style="width:250px">
+                        <BitCard FullHeight Width="250px">
                             <BitStack>
-                                <BitShimmer Height="220px" Width="100%" Background="BitColor.PrimaryBackground" />
-                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                                <BitShimmer Height="2rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="220px" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="2rem" Background="BitColor.PrimaryBackground" />
                             </BitStack>
                         </BitCard>
                     }
@@ -129,7 +129,7 @@
             <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SimilarProducts)]</BitText>
 
             <BitScrollablePane Width="100%" Style="padding:0.5rem 1.5px">
-                <BitStack Horizontal FitWidth Style="align-items:unset">
+                <BitStack Horizontal FitWidth VerticalAlign="BitAlignment.Stretch">
                     @foreach (var prd in similarProducts)
                     {
                         <BitLink Href="@prd.PageUrl" NoUnderline Style="width:250px">
@@ -154,16 +154,16 @@
             <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SiblingProducts)]</BitText>
 
             <BitScrollablePane Width="100%" Style="padding:0.5rem 1.5px">
-                <BitStack Horizontal FitWidth Style="align-items:unset">
+                <BitStack Horizontal FitWidth VerticalAlign="BitAlignment.Stretch">
                     @foreach (var itm in Enumerable.Range(0, 10))
                     {
-                        <BitCard FullSize Style="width:250px">
+                        <BitCard FullHeight Width="250px">
                             <BitStack>
-                                <BitShimmer Height="220px" Width="100%" Background="BitColor.PrimaryBackground" />
-                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                                <BitShimmer Height="1rem" Width="100%" Background="BitColor.PrimaryBackground" />
-                                <BitShimmer Height="2rem" Width="100%" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="220px" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="1rem" Background="BitColor.PrimaryBackground" />
+                                <BitShimmer Height="2rem" Background="BitColor.PrimaryBackground" />
                             </BitStack>
                         </BitCard>
                     }
@@ -175,7 +175,7 @@
             <BitText Typography="BitTypography.H4">@Localizer[nameof(AppStrings.SiblingProducts)]</BitText>
 
             <BitScrollablePane Width="100%" Style="padding:0.5rem 1.5px">
-                <BitStack Horizontal FitWidth Style="align-items:unset">
+                <BitStack Horizontal FitWidth VerticalAlign="BitAlignment.Stretch">
                     @foreach (var prd in siblingProducts)
                     {
                         <BitLink Href="@prd.PageUrl" NoUnderline Style="width:250px">

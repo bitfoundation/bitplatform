@@ -11,7 +11,6 @@
                              IconNavUrl="/"
                              Class="nav-panel"
                              Items="NavPanelItems"
-                             Accent="BitColor.SecondaryBackground"
                              IconUrl="_content/Boilerplate.Client.Core/images/bit-logo.svg">
                     <Footer>
                         <BitStack Class="footer-stack">
@@ -49,7 +48,7 @@
                                                      IconName="@BitIconName.Org"
                                                      Href="@PageUrls.ManageMyTenants"
                                                      Title="@Localizer[nameof(AppStrings.CurrentTenant)]"
-                                                     Styles="@(new() { Content = "overflow:hidden;white-space:nowrap;text-overflow:ellipsis" })">
+                                                     NoWrap>
                                         <BitText Typography="BitTypography.Caption2">
                                             @(string.IsNullOrWhiteSpace(CurrentTenant.Title) ? CurrentTenant.Name : CurrentTenant.Title)
                                         </BitText>

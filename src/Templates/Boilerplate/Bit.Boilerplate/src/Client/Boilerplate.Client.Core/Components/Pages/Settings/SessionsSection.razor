@@ -2,15 +2,15 @@
 @inherits AppComponentBase
 
 <section>
-    <BitStack Style="padding:1px">
+    <BitStack Padding="1px">
         @if (isLoading)
         {
             <BitStack Horizontal VerticalAlign="BitAlignment.Center">
-                <BitShimmer Height="5rem" Circle />
+                <BitShimmer Height="5rem" Circle Background="BitColor.PrimaryBackground" />
                 <BitStack Gap="0.5rem">
-                    <BitShimmer Height="1rem" Width="13rem" />
-                    <BitShimmer Height="1rem" Width="13rem" />
-                    <BitShimmer Height="1rem" Width="13rem" />
+                    <BitShimmer Height="1rem" Width="13rem" Background="BitColor.PrimaryBackground" />
+                    <BitShimmer Height="1rem" Width="13rem" Background="BitColor.PrimaryBackground" />
+                    <BitShimmer Height="1rem" Width="13rem" Background="BitColor.PrimaryBackground" />
                 </BitStack>
             </BitStack>
         }
@@ -18,7 +18,7 @@
         {
             @if (hasUnlimitedPrivilegedSessions is false)
             {
-                <BitText Element="pre" Style="word-break:break-all;white-space:break-spaces" Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.PrivilegedDeviceLimitMessage), maxPrivilegedSessionsCount.ToString("N0"), currentPrivilegedSessionsCount.ToString("N0")]</BitText>
+                <BitText Element="pre" ForceBreak PreserveWhitespace Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.PrivilegedDeviceLimitMessage), maxPrivilegedSessionsCount.ToString("N0"), currentPrivilegedSessionsCount.ToString("N0")]</BitText>
             }
             <BitText>@Localizer[nameof(AppStrings.CurrentSession)]</BitText>
             <BitCard FullWidth>
@@ -54,11 +54,11 @@
         @if (otherSessions is not null && otherSessions.Any())
         {
             <br />
-            <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadSessions(false))" ScrollerSelector=".sessions-list" Style="width:100%">
+            <BitPullToRefresh OnRefresh="WrapHandled(async () => await LoadSessions(false))" ScrollerSelector=".sessions-list" FullWidth>
                 <BitText>@Localizer[nameof(AppStrings.OtherSessions)]</BitText>
-                <BitBasicList Items="otherSessions" Virtualize ItemSize="135" Class="sessions-list">
+                <BitBasicList Items="otherSessions" Virtualize ItemSize="135" FullWidth Class="sessions-list">
                     <RowTemplate Context="session">
-                        <BitCard FullWidth Style="margin-bottom:1rem">
+                        <BitCard role="listitem" FullWidth Style="margin-bottom:1rem">
                             @if (string.IsNullOrEmpty(session.OAuthClientId) is false)
                             {
                                 @* An application the user authorized, not a device of theirs. *@
@@ -80,7 +80,7 @@
                                         </BitText>
                                     }
 
-                                    <BitText Typography="BitTypography.Caption1" Class="oauth-client-id" Color="BitColor.SecondaryForeground" Title="@session.OAuthClientId">
+                                    <BitText Typography="BitTypography.Caption1" Color="BitColor.SecondaryForeground" NoWrap Monospace Dir="BitDir.Ltr" title="@session.OAuthClientId">
                                         @session.OAuthClientId
                                     </BitText>
                                 </BitStack>

@@ -38,6 +38,7 @@
                                 <BitTextField @bind-Value="signUpModel.Email"
                                               TabIndex="1"
                                               Type="BitInputType.Email"
+                                              AutoComplete="@BitAutoCompleteValue.Email"
                                               Label="@Localizer[nameof(AppStrings.Email)]"
                                               Placeholder="@Localizer[nameof(AppStrings.EmailPlaceholder)]" />
                                 <ValidationMessage For="@(() => signUpModel.Email)" />
@@ -45,8 +46,7 @@
 
                             <BitPivotItem Key="@PhoneNumberTabKey" HeaderText="@Localizer[nameof(AppStrings.Phone)]">
                                 <BitPhoneInput @bind-Value="signUpModel.PhoneNumber"
-                                               AutoFocus TabIndex="1" FullWidth
-                                              DefaultCountry="@BitCountries.Current"
+                                               AutoFocus TabIndex="1"
                                               Label="@Localizer[nameof(AppStrings.PhoneNumber)]"
                                               Placeholder="@Localizer[nameof(AppStrings.PhoneNumberPlaceholder)]" />
                                 <ValidationMessage For="@(() => signUpModel.PhoneNumber)" />
@@ -74,14 +74,14 @@
             <br />
             <BitText Typography="BitTypography.Body2">
                 @Localizer[nameof(AppStrings.SignInMessageInSignUp)]
-                <BitLink Href="@($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? PageUrls.Home)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
+                <BitLink Underlined Href="@($"{PageUrls.SignIn}?return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? PageUrls.Home)}")">@Localizer[nameof(AppStrings.SignIn)]</BitLink>
                 @Localizer[nameof(AppStrings.Or)]
-                <BitLink Href="@($"{PageUrls.Confirm}?email={Uri.EscapeDataString(signUpModel.Email ?? "")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber ?? "")}&return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? PageUrls.Home)}")">
+                <BitLink Underlined Href="@($"{PageUrls.Confirm}?email={Uri.EscapeDataString(signUpModel.Email ?? "")}&phoneNumber={Uri.EscapeDataString(signUpModel.PhoneNumber ?? "")}&return-url={Uri.EscapeDataString(ReturnUrlQueryString ?? PageUrls.Home)}")">
                     @Localizer[nameof(AppStrings.Confirm)]
                 </BitLink>
             </BitText>
             <BitText Typography="BitTypography.Body2">
-                @Localizer[nameof(AppStrings.AgreeToTermsMessage)] <BitLink Href="@PageUrls.Terms">@Localizer[nameof(AppStrings.Terms)]</BitLink>
+                @Localizer[nameof(AppStrings.AgreeToTermsMessage)] <BitLink Underlined Href="@PageUrls.Terms">@Localizer[nameof(AppStrings.Terms)]</BitLink>
             </BitText>
         </BitStack>
     </BitStack>
