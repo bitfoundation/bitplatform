@@ -110,7 +110,8 @@ the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrix
 ([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). develop holds MAUI at 10.0.100 for it. On
 this branch MAUI can't stay behind: a MAUI built for an older preview doesn't compile against the newer
 preview's Android workload (CS1705 on `Java.Interop`). So MAUI follows the SDK here, and the app icons of the
-Boilerplate and the BlazorUI demo carry no drop shadow (their `<filter>`) until that issue is fixed.
+Boilerplate and the BlazorUI demo carry no drop shadow (their `<filter>`) until that issue is fixed; the Todo CD
+strips it from the icon it takes from the `TODO_ICON` variable.
 
 **`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
 (through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
