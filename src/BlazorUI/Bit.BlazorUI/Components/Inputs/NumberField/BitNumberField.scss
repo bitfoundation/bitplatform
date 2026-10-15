@@ -58,6 +58,10 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
                          spn-size, clr, clr-focus, clr-bg, clr-brd, clr-brd-hover;
 
 .bit-nfl {
+    // The containing block of the visually hidden .bit-nfl-dsc inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     display: flex;
     font-weight: $tg-fw-regular;
     align-items: center;
@@ -221,6 +225,7 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
 }
 
 .bit-nfl-lct {
+    max-width: 100%;
     align-items: center;
     display: inline-flex;
     flex-flow: row nowrap;
@@ -237,7 +242,9 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
 
 .bit-nfl-lbl {
     box-shadow: none;
-    white-space: nowrap;
+    // A label longer than the room it is given wraps onto more lines, the way a text field's does, rather than
+    // holding one line and running past the side of the field and of a phone's screen with it.
+    overflow-wrap: break-word;
     box-sizing: border-box;
     padding: spacing(0.625) 0;
     line-height: spacing(2.5);

@@ -63,6 +63,10 @@ $_block-spacing: var(--bit-MarkdownViewer-block-spacing, 1em);
 }
 
 .bit-mdv {
+    // The containing block of the visually hidden .bit-mdv-sr-only inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     width: 100%;
     overflow-wrap: break-word;
     color: var(--bit-MarkdownViewer-color, #{$clr-fg-pri});

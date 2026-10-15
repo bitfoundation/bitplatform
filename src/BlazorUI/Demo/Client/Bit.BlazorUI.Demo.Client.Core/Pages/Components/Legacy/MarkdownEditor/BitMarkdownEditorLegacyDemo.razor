@@ -101,12 +101,12 @@
                 to the github one.
             </div>
             <br />
-            <div style="display:flex;gap:1rem;margin-bottom:1rem">
+            <div style="display:flex;flex-wrap:wrap;gap:1rem;margin-bottom:1rem">
                 <BitToggleButton Color="BitColor.Tertiary" Variant="BitVariant.Outline" OnText="Write" OffText="Preview" @bind-IsChecked="showPreview" />
             
                 <div style="flex-grow:1"></div>
 
-                <div style="display:@(showPreview ? "none" : "flex");gap:0.5rem;align-items:center">
+                <div style="display:@(showPreview ? "none" : "flex");flex-wrap:wrap;gap:0.5rem;align-items:center">
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Heading" 
                                OnClick="async () => await advancedRef.Run(BitMarkdownEditorLegacyCommand.Heading)">H</BitButton>
                     <BitButton Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" FixedColor Title="Bold"

@@ -7,9 +7,12 @@
     align-items: flex-start;
     grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
 
+    // minmax(0, ...): a bare 1fr never shrinks below its content's min-content width, which for the
+    // swipeable strip of rows below is all of them side by side - so the column, and the page, would
+    // grow to that width instead of the strip scrolling inside it.
     @include lt-lg {
         gap: $doc-space-md;
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 }
 

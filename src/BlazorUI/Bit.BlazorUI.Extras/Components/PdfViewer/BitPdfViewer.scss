@@ -207,6 +207,10 @@ $pdv-private-properties: scale;
 }
 
 .bit-pdv-group {
+    // The containing block of the visually hidden .bit-pdv-sr inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     display: flex;
     gap: spacing(0.5);
     align-items: center;

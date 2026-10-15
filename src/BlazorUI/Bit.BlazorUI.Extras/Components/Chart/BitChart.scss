@@ -38,6 +38,10 @@
 $cht-private-properties: dur-full, ease;
 
 .bit-cht {
+    // The containing block of the visually hidden .bit-cht-sr inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     // What the component writes into an inline style starts out unset on every root, so an instance nested in
     // another one never takes the outer one's value for its own; the inline declaration still wins on its element.
     @each $name in $cht-private-properties {

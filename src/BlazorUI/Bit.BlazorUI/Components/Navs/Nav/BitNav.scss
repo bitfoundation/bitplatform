@@ -211,6 +211,8 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
 
 .bit-nav-ftw {
     width: fit-content;
+    // Never wider than its container, so the items' ellipsis shows instead of the nav overflowing.
+    max-width: 100%;
 }
 
 .bit-nav-flw {
@@ -427,6 +429,10 @@ $nav-private-properties: item-font-size, item-min-height, icon-size, des-font-si
 // The end of an item: its suffix template and its badge, kept whole at the far end of the row while the text before
 // it gives up its room to an ellipsis.
 .bit-nav-sfx {
+    // The containing block of the visually hidden .bit-nav-vhd inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     flex-shrink: 0;
     display: inline-flex;
     gap: spacing(0.5);

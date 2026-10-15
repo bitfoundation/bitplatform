@@ -73,6 +73,10 @@ $sld-private-properties:
     vlb-min, inp-start, inp-end, inp-mid, bar-start, bar-end;
 
 .bit-sld {
+    // The containing block of the visually hidden .bit-sld-dsc inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     // The values the Color and Size classes publish start out unset on every root, which those classes -
     // declared further down at the same weight - still win over on the root that carries them. That keeps a
     // slider placed in a label template of another one from inheriting the outer one's choice, and it is what

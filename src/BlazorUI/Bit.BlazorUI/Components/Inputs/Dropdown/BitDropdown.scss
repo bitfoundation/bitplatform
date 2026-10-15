@@ -384,6 +384,10 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 // Carries the id the combobox is named by, around the selection display alone. It takes no part in
 // the layout so the chips stay the direct flex items of the text container they were before it.
 .bit-drp-tdp {
+    // The containing block of the visually hidden .bit-drp-vhd inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     display: contents;
 }
 
@@ -512,6 +516,10 @@ $drp-private-properties: sz-fs, sz-h, sz-lbl-lh, sz-itm-h, sz-itm-fs, sz-ico, sz
 }
 
 .bit-drp-chp {
+    // The containing block of the visually hidden .bit-drp-vhd inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     display: flex;
     cursor: default;
     gap: spacing(0.5);

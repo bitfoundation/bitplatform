@@ -98,6 +98,34 @@ key came from, or whether the surface is open, itself. A `@onkeydown:stopPropaga
 surface's content is not the way: `BitModal`, `BitPanel` and `BitCallout` listen on their root, above that
 content, for the Escape they close on.
 
+### Components no longer run past the side of a narrow container ([#13834](https://github.com/bitfoundation/bitplatform/issues/13834))
+
+A component in a horizontally scrolling box, or on a phone, widened the page around it: the visually hidden text it
+keeps for screen readers is absolutely positioned, and with nothing of the component positioned it was placed
+against whatever positioned ancestor the page had, outside the box that scrolls. The element each such text is
+rendered in now declares `position: relative`:
+
+- the root of `BitButton`, `BitChart`, `BitCheckbox`, `BitCountryPicker`, `BitFileInput`, `BitFileUpload`,
+  `BitLink`, `BitLoading`, `BitMarkdownViewer`, `BitNumberField`, `BitOtpInput`, `BitPhoneInput`, `BitRating`,
+  `BitSlider`, `BitTag`, `BitTimeZonePicker` and `BitToggle`;
+- a part of `BitBreadcrumb` (an item), `BitDropdown` (a chip, the text of the field), `BitFullCalendar` (a week
+  number cell), `BitMap` (a column header of the marker list), `BitMessage` (the content wrapper), `BitNav` (the
+  suffix of an item), `BitNavPanel` (its content), `BitPdfViewer` (a toolbar group), `BitPhoneInput` (the country
+  button) and `BitTimeZonePicker` (an option's text).
+
+An element of your own that is absolutely positioned inside the content of one of them (a corner marker in a
+button's child content, in a tag, in a message) is now placed against that element rather than against an ancestor
+further out. To keep it where it was, position the element you meant it to follow.
+
+A few components also give up width they used to hold, so they fit the container they are given:
+
+- **`BitOtpInput`**: the root is never wider than its container, and its boxes narrow evenly when the row would be.
+- **`BitNumberField`**: a label longer than its line wraps, as `BitTextField`'s does, rather than holding one line.
+- **`BitSearchBox`**: the input gives up the width of its `size` attribute, so the field shrinks in a flex row.
+- **`BitPhoneInput`**: the root is never wider than its container.
+- **`BitTimeline`**: a `--bit-Timeline-content-gap` wider than half the dot no longer pushes the items past the side.
+- **`BitMap`**: the on-screen marker list scrolls sideways in its own box.
+
 ### `BitColorPicker`, `BitFileInput` and `BitFileUpload` are form inputs ([#1530](https://github.com/bitfoundation/bitplatform/issues/1530))
 
 The three were the last inputs that did not derive from `BitInputBase<TValue>`, so none of them took part in an

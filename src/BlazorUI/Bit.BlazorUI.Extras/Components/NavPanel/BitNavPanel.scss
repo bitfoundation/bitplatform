@@ -320,6 +320,10 @@ $npn-private-properties: w, tw;
 }
 
 .bit-npn-cnt {
+    // The containing block of the visually hidden .bit-npn-lvr inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     width: auto;
     display: flex;
     gap: var(--bit-NavPanel-gap, #{spacing(2)});
