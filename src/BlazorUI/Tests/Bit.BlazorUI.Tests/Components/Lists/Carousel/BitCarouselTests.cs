@@ -2540,6 +2540,27 @@ public partial class BitCarouselTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCarouselShouldLeaveTheBrowserAloneWhenItGoesAwayDuringItsFirstRender()
+    {
+        var reducedMotion = Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true);
+
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 50d);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        await Context.DisposeComponentsAsync();
+
+        reducedMotion.SetResult(false);
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.registerNavigationKeys"));
+        Assert.IsFalse(carousel.IsPlaying);
+    }
+
+    [TestMethod]
     public async Task BitCarouselShouldNotNavigateWithKeyboardWhenNoKeyboard()
     {
         var component = RenderComponent<BitCarouselTest>(parameters =>
