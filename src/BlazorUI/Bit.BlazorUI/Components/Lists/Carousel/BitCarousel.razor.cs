@@ -1000,9 +1000,7 @@ public partial class BitCarousel : BitComponentBase
 
     private async Task RegisterPreventDefaultsAsync()
     {
-        if (IsDisposing) return;
-
-        var keys =(NoKeyboard || Disabled) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
+        var keys = (NoKeyboard || Disabled) ? [] : (Vertical ? _verticalNavigationKeys : _horizontalNavigationKeys);
 
         await _js.BitUtilsRegisterNavigationKeys(RootElement, keys, _dotnetObj);
 
@@ -2050,7 +2048,7 @@ public partial class BitCarousel : BitComponentBase
         // The page visibility event can still reach a carousel that was disposed while the event was
         // being raised (the handlers are snapshotted before they are awaited), and re-creating the
         // timer here at that point would leak it, ticking, for the rest of the process.
-        if (IsDisposing) return;
+        if (IsDisposed) return;
 
         // Before the first render there is nothing to rotate yet, and a timer started during
         // prerendering would tick on the server against a carousel that is not on screen.
