@@ -76,8 +76,8 @@ until the report. Then go in this order:
    (`gh run watch <run-id> -R bitfoundation/bitplatform --exit-status`) before anything that takes its packages.
 2. `APP_VERSION`, then All CI and All CD together, both with the chosen `prerelease_packages`. All CI's inputs name
    its jobs and all default to on; `-f <job>=false` leaves one out.
-3. While they run: step 6 in the background, and step 1 as CI jobs fail.
-4. Once CD is done: step 2, then steps 3 and 4.
+3. While they run: step 1 as CI jobs fail.
+4. Once CD is done: step 2, then steps 3 and 4, with step 6 in the background next to the web stages of step 3.
 5. Step 5 last, on its own.
 
 Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows that version everywhere: as
@@ -413,7 +413,10 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
   the repository's SDK, which needs the workloads the template's clients build with (`wasm-tools`): an SDK that
   Visual Studio installed brings only its own.
 - It takes about half an hour, most of it the idle wait, and a few GB of Docker Desktop's memory while the app runs.
-  Start it in the background early and go on with the other steps, but never next to `devcontainer`.
+  Start it in the background once the CD's deploy jobs are done, and never next to `devcontainer` or the Android
+  stage. Its containers hold that memory, and Docker Desktop's VM keeps it for a while after they stop: IIS sites
+  deployed next to them took minutes to start, and one never did ("Managed server didn't initialize after 120000
+  ms" in the Application log), which a CD reports as a failed health check.
 
 Two things are expected and are not failures. `dotnet test` and a `dotnet run` or `aspire start` re-create each
 other's containers, since the test host picks random ports and the ports are part of the lifecycle key. And a run

@@ -310,7 +310,7 @@ function Get-CdRunId {
 # With its prerelease_packages option, every job of a CD run that took the Bit packages of a Prerelease nuget packages
 # run leaves a "Bit packages" notice naming that run (.github/actions/use-prerelease-packages). No notice: nuget.org.
 function Get-BitPackagesSource([string] $runId) {
-    $notices = foreach ($jobId in gh api "repos/$repository/actions/runs/$runId/jobs" --paginate --jq '.jobs[].id') {
+    $notices = foreach ($jobId in gh api "repos/$repository/actions/runs/$runId/jobs?filter=all&per_page=100" --paginate --jq '.jobs[].id') {
         gh api "repos/$repository/check-runs/$jobId/annotations" --jq '.[] | select(.title == "Bit packages") | .message'
     }
 
