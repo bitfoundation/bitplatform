@@ -1,6 +1,6 @@
 ---
 name: test-platform
-description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit, and check that its Aspire containers are reused from one run to the next and stopped once it sits idle. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
+description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit, and check that its Aspire containers are reused from one run to the next and stopped once it sits idle. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
 ---
 
 # Test the platform
@@ -42,6 +42,34 @@ Without a CD link, step 2 only verifies: the suite tests whatever is deployed. W
 instead, step 2 says how to start one.
 
 Steps 5 and 6 take a commit, usually the CI run's head. Without one, they test the bit packages nuget.org serves.
+
+## First, ask
+
+Before doing anything, ask the user in one go what this run covers. Offer choices, fill in what the links already
+answer, and repeat the plan back before starting:
+
+1. **The branch**, or the commit, under test, unless a link names it.
+2. **The tests**: any of the CI run (step 1), the CD rollout and its versions check (step 2), the E2E suite (step 3,
+   every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5) and the Aspire containers (step 6).
+3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
+   latter needs a successful prerelease run on the branch under test first: ask whether to start one or whether the
+   user will. It publishes the branch's version to nuget.org when nuget.org doesn't have it yet.
+4. **All CI**: the linked run, a new run on the branch (every job, or which ones), or none.
+5. **All CD**: the linked run, a new run (every app, or which of `server`, `wasm`, `windows`, `android` and `ios`),
+   or none, which tests what is deployed now.
+6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
+7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org.
+
+Start, change or skip nothing beyond the answers. Then go in this order:
+
+1. The prerelease run, when asked for:
+   `gh workflow run prerelease.nuget.org.yml -R bitfoundation/bitplatform --ref <branch>`. Wait for it to succeed
+   (`gh run watch <run-id> -R bitfoundation/bitplatform --exit-status`) before anything that takes its packages.
+2. `APP_VERSION`, then All CI and All CD together, both with the chosen `prerelease_packages`. All CI's inputs name
+   its jobs and all default to on; `-f <job>=false` leaves one out.
+3. While they run: step 6 in the background, and step 1 as CI jobs fail.
+4. Once CD is done: step 2, then steps 3 and 4.
+5. Step 5 last, on its own.
 
 Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows that version everywhere: as
 `<APP_VERSION>+<sha>` in the ProductVersion of the IIS assemblies and the Windows executables, as `versionName` on
