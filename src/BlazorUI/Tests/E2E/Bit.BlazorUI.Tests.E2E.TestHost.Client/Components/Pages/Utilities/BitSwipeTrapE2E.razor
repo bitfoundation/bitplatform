@@ -1,0 +1,324 @@
+﻿@page "/e2e/swipe-trap"
+
+@* Every feature of BitSwipeTrap, one section each. Every trap holds a 300x200 box, so a fractional trigger of 0.25 is
+   75px across and 50px down. Each trap writes what its events reported into a line of its own: the count of each
+   event and the arguments of the last one. *@
+
+<PageTitle>BitSwipeTrap E2E</PageTitle>
+
+<style>
+    .e2e-stp-box {
+        width: 300px;
+        height: 200px;
+        background: rgb(230, 240, 255);
+        position: relative;
+    }
+
+    .e2e-stp-box > button, .e2e-stp-box > input, .e2e-stp-box > .e2e-skip {
+        position: absolute;
+        left: 10px;
+        top: 10px;
+    }
+
+    .e2e-skip {
+        width: 80px;
+        height: 40px;
+        background: rgb(255, 220, 220);
+    }
+
+    .e2e-stp-class {
+        background-color: rgb(1, 2, 3);
+    }
+
+    .e2e-stp-vars {
+        --bit-SwipeTrap-cursor: pointer;
+        --bit-SwipeTrap-swiping-cursor: crosshair;
+        --bit-SwipeTrap-focus-color: rgb(255, 0, 0);
+    }
+
+    .e2e-stp-log {
+        font-family: monospace;
+        display: block;
+    }
+</style>
+
+<E2ESection Id="basic" Title="Basic: OnStart, OnMove, OnEnd, OnTrigger">
+    <BitSwipeTrap Id="stp-basic" OnStart="e => Log(_basic, e, 's')" OnMove="e => Log(_basic, e, 'm')"
+                  OnEnd="e => Log(_basic, e, 'e')" OnTrigger="t => LogTrigger(_basic, t)">
+        <div class="e2e-stp-box">
+            <button id="basic-child" @onclick="() => _basicChildClicks++">Child</button>
+        </div>
+    </BitSwipeTrap>
+    <span id="basic-child-clicks">@_basicChildClicks</span>
+    @LogLine("basic", _basic)
+</E2ESection>
+
+<E2ESection Id="trigger" Title="Trigger (fraction, pixels), TriggerVelocity, Trigger changed at runtime">
+    <BitSwipeTrap Id="stp-fraction" Trigger="_fraction" OnEnd="e => Log(_fractionLog, e, 'e')" OnTrigger="t => LogTrigger(_fractionLog, t)">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    <button id="btn-fraction" @onclick="() => _fraction = _fraction == 0.5m ? 0.9m : 0.5m">Toggle 0.5 / 0.9</button>
+    <span id="fraction-value">@_fraction</span>
+    @LogLine("fraction", _fractionLog)
+
+    <BitSwipeTrap Id="stp-pixels" Trigger="80" OnEnd="e => Log(_pixelsLog, e, 'e')" OnTrigger="t => LogTrigger(_pixelsLog, t)">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("pixels", _pixelsLog)
+
+    <BitSwipeTrap Id="stp-flick" TriggerVelocity="0.5m" OnEnd="e => Log(_flickLog, e, 'e')" OnTrigger="t => LogTrigger(_flickLog, t)">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("flick", _flickLog)
+</E2ESection>
+
+<E2ESection Id="orientation" Title="OrientationLock: None, Horizontal, Vertical, Auto">
+    @foreach (var lockValue in new BitSwipeOrientation?[] { null, BitSwipeOrientation.None, BitSwipeOrientation.Horizontal, BitSwipeOrientation.Vertical, BitSwipeOrientation.Auto })
+    {
+        var name = lockValue?.ToString() ?? "Unset";
+        var log = _lockLogs[name];
+        <BitSwipeTrap Id="@($"stp-lock-{name}")" OrientationLock="lockValue"
+                      OnMove="e => Log(log, e, 'm')" OnEnd="e => Log(log, e, 'e')" OnTrigger="t => LogTrigger(log, t)">
+            <div class="e2e-stp-box"></div>
+        </BitSwipeTrap>
+        @LogLine($"lock-{name}", log)
+    }
+    <button id="btn-lock-runtime" @onclick="ToggleRuntimeLock">Toggle runtime lock</button>
+    <span id="runtime-lock">@_runtimeLock</span>
+    <BitSwipeTrap Id="stp-lock-runtime" OrientationLock="_runtimeLock" OnTrigger="t => LogTrigger(_runtimeLockLog, t)" OnEnd="e => Log(_runtimeLockLog, e, 'e')">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("lock-runtime", _runtimeLockLog)
+</E2ESection>
+
+<E2ESection Id="threshold" Title="Threshold and Throttle">
+    <BitSwipeTrap Id="stp-threshold" Threshold="30" OnMove="e => Log(_thresholdLog, e, 'm')" OnEnd="e => Log(_thresholdLog, e, 'e')"
+                  OnTrigger="t => LogTrigger(_thresholdLog, t)">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("threshold", _thresholdLog)
+
+    <BitSwipeTrap Id="stp-throttle" Throttle="200" OnMove="e => Log(_throttleLog, e, 'm')" OnEnd="e => Log(_throttleLog, e, 'e')">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("throttle", _throttleLog)
+</E2ESection>
+
+<E2ESection Id="filtering" Title="TouchOnly, SkipSelector, Disabled">
+    <BitSwipeTrap Id="stp-touchonly" TouchOnly OnStart="e => Log(_touchOnlyLog, e, 's')" OnEnd="e => Log(_touchOnlyLog, e, 'e')"
+                  OnTrigger="t => LogTrigger(_touchOnlyLog, t)">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("touchonly", _touchOnlyLog)
+
+    <BitSwipeTrap Id="stp-skip" SkipSelector=".e2e-skip" OnStart="e => Log(_skipLog, e, 's')" OnEnd="e => Log(_skipLog, e, 'e')"
+                  OnTrigger="t => LogTrigger(_skipLog, t)">
+        <div class="e2e-stp-box">
+            <div id="skip-child" class="e2e-skip">Skipped</div>
+        </div>
+    </BitSwipeTrap>
+    @LogLine("skip", _skipLog)
+
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle Disabled</button>
+    <span id="disabled-value">@_disabled</span>
+    <BitSwipeTrap Id="stp-disabled" Disabled="_disabled" KeyboardTrigger OnStart="e => Log(_disabledLog, e, 's')"
+                  OnEnd="e => Log(_disabledLog, e, 'e')" OnTrigger="t => LogTrigger(_disabledLog, t)">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("disabled", _disabledLog)
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="KeyboardTrigger">
+    <button id="before-keyboard">Before</button>
+    <BitSwipeTrap Id="stp-keyboard" KeyboardTrigger AriaLabel="Left: snooze, right: archive" Class="e2e-stp-vars"
+                  OnTrigger="t => LogTrigger(_keyboardLog, t)">
+        <div class="e2e-stp-box">
+            <input id="keyboard-input" />
+        </div>
+    </BitSwipeTrap>
+    @LogLine("keyboard", _keyboardLog)
+
+    <BitSwipeTrap Id="stp-keyboard-hrz" KeyboardTrigger OrientationLock="BitSwipeOrientation.Horizontal" OnTrigger="t => LogTrigger(_keyboardHrzLog, t)">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("keyboard-hrz", _keyboardHrzLog)
+
+    <BitSwipeTrap Id="stp-keyboard-vrt" KeyboardTrigger OrientationLock="BitSwipeOrientation.Vertical" TabIndex="-1" OnTrigger="t => LogTrigger(_keyboardVrtLog, t)">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("keyboard-vrt", _keyboardVrtLog)
+
+    <BitSwipeTrap Id="stp-no-keyboard">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+</E2ESection>
+
+<E2ESection Id="in-overlay" Title="Escape puts back a swipe inside an open Overlay without closing it">
+    <button id="btn-open-overlay" @onclick="() => _overlayOpen = true">Open overlay</button>
+    <span id="overlay-open">@_overlayOpen</span>
+    <BitOverlay @bind-IsOpen="_overlayOpen" ModeFull Position="BitPosition.Center">
+        <BitSwipeTrap Id="stp-overlay" OnEnd="e => Log(_overlayLog, e, 'e')" OnTrigger="t => LogTrigger(_overlayLog, t)">
+            <div class="e2e-stp-box"></div>
+        </BitSwipeTrap>
+    </BitOverlay>
+    @LogLine("overlay", _overlayLog)
+</E2ESection>
+
+<E2ESection Id="cascade" Title="BitParams cascade">
+    <button id="btn-cascade-change" @onclick="ChangeCascade">Change cascade</button>
+    <BitParams Parameters="_swipeParams">
+        <BitSwipeTrap Id="stp-cascade" OnTrigger="t => LogTrigger(_cascadeLog, t)" OnEnd="e => Log(_cascadeLog, e, 'e')">
+            <div class="e2e-stp-box"></div>
+        </BitSwipeTrap>
+        <BitSwipeTrap Id="stp-cascade-own" OrientationLock="BitSwipeOrientation.Vertical">
+            <div class="e2e-stp-box"></div>
+        </BitSwipeTrap>
+    </BitParams>
+    @LogLine("cascade", _cascadeLog)
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Id, Style, Class, Visibility, attributes, Dir, the --bit-SwipeTrap-* variables">
+    <BitSwipeTrap Id="stp-style" Style="background-color: rgb(200, 0, 0); padding: 4px;">
+        <div class="e2e-stp-box" style="width: 40px; height: 20px;"></div>
+    </BitSwipeTrap>
+    <BitSwipeTrap Id="stp-class" Class="e2e-stp-class" data-e2e="trap-attr" title="trap title">
+        <div class="e2e-stp-box" style="width: 40px; height: 20px;"></div>
+    </BitSwipeTrap>
+    <BitSwipeTrap Id="stp-labelledby" aria-labelledby="stp-class">
+        <div class="e2e-stp-box" style="width: 40px; height: 20px;"></div>
+    </BitSwipeTrap>
+    <BitSwipeTrap Id="stp-own-role" AriaLabel="Named" role="region">
+        <div class="e2e-stp-box" style="width: 40px; height: 20px;"></div>
+    </BitSwipeTrap>
+    <button id="btn-vis-visible" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-vis-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-vis-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <BitSwipeTrap Id="stp-vis" Visibility="_visibility">
+        <div class="e2e-stp-box" style="width: 40px; height: 20px;"></div>
+    </BitSwipeTrap>
+    <BitSwipeTrap Id="stp-vars" Class="e2e-stp-vars" OnEnd="e => Log(_varsLog, e, 'e')">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("vars", _varsLog)
+    <BitSwipeTrap Id="stp-rtl" Dir="BitDir.Rtl" OnTrigger="t => LogTrigger(_rtlLog, t)">
+        <div class="e2e-stp-box"></div>
+    </BitSwipeTrap>
+    @LogLine("rtl", _rtlLog)
+</E2ESection>
+
+<E2ESection Id="unmount" Title="A trap removed in the middle of a gesture">
+    <button id="btn-unmount" @onclick="() => _unmountShown = !_unmountShown">Toggle mounted</button>
+    <span id="unmount-shown">@_unmountShown</span>
+    @if (_unmountShown)
+    {
+        <BitSwipeTrap Id="stp-unmount" OnStart="e => Log(_unmountLog, e, 's')" OnEnd="e => Log(_unmountLog, e, 'e')">
+            <div class="e2e-stp-box"></div>
+        </BitSwipeTrap>
+    }
+    @LogLine("unmount", _unmountLog)
+</E2ESection>
+
+@* Room for the page to scroll, which the arrow keys of a keyboard trap must not do. *@
+<div style="height: 1500px;"></div>
+
+<E2EStatus />
+
+@code {
+    private readonly SwipeLog _basic = new();
+    private int _basicChildClicks;
+
+    private decimal _fraction = 0.5m;
+    private readonly SwipeLog _fractionLog = new();
+    private readonly SwipeLog _pixelsLog = new();
+    private readonly SwipeLog _flickLog = new();
+
+    private readonly Dictionary<string, SwipeLog> _lockLogs = new()
+    {
+        ["Unset"] = new(),
+        ["None"] = new(),
+        ["Horizontal"] = new(),
+        ["Vertical"] = new(),
+        ["Auto"] = new()
+    };
+    private BitSwipeOrientation _runtimeLock = BitSwipeOrientation.Horizontal;
+    private readonly SwipeLog _runtimeLockLog = new();
+
+    private readonly SwipeLog _thresholdLog = new();
+    private readonly SwipeLog _throttleLog = new();
+
+    private readonly SwipeLog _touchOnlyLog = new();
+    private readonly SwipeLog _skipLog = new();
+    private bool _disabled = true;
+    private readonly SwipeLog _disabledLog = new();
+
+    private readonly SwipeLog _keyboardLog = new();
+    private readonly SwipeLog _keyboardHrzLog = new();
+    private readonly SwipeLog _keyboardVrtLog = new();
+
+    private bool _overlayOpen;
+    private readonly SwipeLog _overlayLog = new();
+
+    private BitSwipeTrapParams[] _swipeParams = [new() { OrientationLock = BitSwipeOrientation.Horizontal, Trigger = 50 }];
+    private readonly SwipeLog _cascadeLog = new();
+
+    private BitVisibility _visibility;
+    private readonly SwipeLog _varsLog = new();
+    private readonly SwipeLog _rtlLog = new();
+
+    private bool _unmountShown = true;
+    private readonly SwipeLog _unmountLog = new();
+
+    private static string F(decimal value) => Math.Round(value, 1).ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+    private static void Log(SwipeLog log, BitSwipeTrapEventArgs e, char kind)
+    {
+        var line = $"{F(e.StartX)},{F(e.StartY)}|{F(e.DiffX)},{F(e.DiffY)}|{(e.VelocityX > 0 ? "+" : e.VelocityX < 0 ? "-" : "0")}{(e.VelocityY > 0 ? "+" : e.VelocityY < 0 ? "-" : "0")}|{e.PointerType}|{e.IsCanceled}|{(e.Duration > 0 ? "dur" : "nodur")}";
+
+        switch (kind)
+        {
+            case 's': log.Starts++; log.Start = line; break;
+            case 'm': log.Moves++; log.Move = line; break;
+            default: log.Ends++; log.End = line; break;
+        }
+    }
+
+    private static void LogTrigger(SwipeLog log, BitSwipeTrapTriggerArgs t)
+    {
+        log.Triggers++;
+        log.Trigger = $"{t.Direction}|{F(t.DiffX)},{F(t.DiffY)}|{(t.VelocityX > 0 ? "+" : t.VelocityX < 0 ? "-" : "0")}{(t.VelocityY > 0 ? "+" : t.VelocityY < 0 ? "-" : "0")}|{t.PointerType}|{(t.Duration > 0 ? "dur" : "nodur")}";
+    }
+
+    private void ToggleRuntimeLock()
+    {
+        _runtimeLock = _runtimeLock == BitSwipeOrientation.Horizontal ? BitSwipeOrientation.Vertical : BitSwipeOrientation.Horizontal;
+    }
+
+    private void ChangeCascade()
+    {
+        _swipeParams = [new() { OrientationLock = BitSwipeOrientation.Auto, Trigger = 200 }];
+    }
+
+    public sealed class SwipeLog
+    {
+        public int Starts { get; set; }
+        public int Moves { get; set; }
+        public int Ends { get; set; }
+        public int Triggers { get; set; }
+        public string Start { get; set; } = "";
+        public string Move { get; set; } = "";
+        public string End { get; set; } = "";
+        public string Trigger { get; set; } = "";
+    }
+
+    // One line of what a trap reported: the counts and the arguments of the last of each event.
+    private RenderFragment LogLine(string prefix, SwipeLog log) => @<div class="e2e-stp-log">
+        <span id="@($"{prefix}-starts")">@log.Starts</span>
+        <span id="@($"{prefix}-moves")">@log.Moves</span>
+        <span id="@($"{prefix}-ends")">@log.Ends</span>
+        <span id="@($"{prefix}-triggers")">@log.Triggers</span>
+        <span id="@($"{prefix}-start")">@log.Start</span>
+        <span id="@($"{prefix}-move")">@log.Move</span>
+        <span id="@($"{prefix}-end")">@log.End</span>
+        <span id="@($"{prefix}-trigger")">@log.Trigger</span>
+    </div>;
+}

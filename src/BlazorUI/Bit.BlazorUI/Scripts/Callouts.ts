@@ -186,6 +186,8 @@
                 return false;
             }
 
+            Callouts.makeOverlayTappable(overlayId ? document.getElementById(overlayId) : null);
+
             Callouts.moveCalloutToBody(calloutId, callout, overlayId, arrowId, rootId);
 
             Callouts.replaceCurrent({
@@ -427,7 +429,16 @@
                 }
 
                 setTimeout(() => {
-                    scrollContainer.style.maxHeight = cap(Math.max(0, rawBottom - scrollContainer.getBoundingClientRect().y - footerHeight - 10)) + 'px';
+                    // The panel is still sliding in when this runs, and the slide carries the scroll container along
+                    // with it - from below the screen for a bottom panel, where measured as it is it would be left no
+                    // room at all and collapse the panel to nothing. Its top is read where the panel comes to rest
+                    // instead: the slide taken back off its box, and for a panel growing upwards from the bottom edge
+                    // no lower than its place in a panel as tall as the screen.
+                    const box = scrollContainer.getBoundingClientRect().y;
+                    const transform = getComputedStyle(callout).transform;
+                    const slide = transform && transform !== 'none' ? new DOMMatrixReadOnly(transform).m42 : 0;
+                    const top = Math.min(box - slide, rawTop + (box - callout.getBoundingClientRect().y));
+                    scrollContainer.style.maxHeight = cap(Math.max(0, rawBottom - top - footerHeight - 10)) + 'px';
                 });
 
                 return true;
@@ -1233,6 +1244,20 @@
                 : false;
         }
 
+        // WebKit on iOS dispatches no click for a tap on an element it does not take for a clickable one - one with
+        // neither a click listener of its own nor a pointer cursor - and Blazor listens on the document rather than
+        // on the element, so a tap on the overlay of an open popup would close nothing there. A listener of the
+        // overlay's own makes it clickable without changing its cursor on a desktop; it does nothing itself, the
+        // component's handler and dismissOnOverlayClick still take the click as it bubbles. Adding the same function
+        // again is a no-op, so an overlay opened over and over keeps the one listener. Every callout opened through
+        // toggle gets it; a component that renders an overlay of its own outside of it (BitPivot's overflow menu)
+        // calls it for that one.
+        public static makeOverlayTappable(overlay: HTMLElement | null) {
+            overlay?.addEventListener('click', Callouts.overlayClickTarget);
+        }
+
+        private static overlayClickTarget() { }
+
         // Relocating the callout to the body escapes the clipping, stacking contexts and transformed containing
         // blocks of its ancestors, but it also takes it out of everything it inherited from them: the custom
         // properties set on an ancestor or through a class (a component's public --bit-<Component>-* variables, a
@@ -1643,8 +1668,11 @@
         // Puts the relocated parts of a callout back where they came from and takes the wrapper they were
         // moved into out of the body. A null callout is one Blazor has already removed from the page - the
         // component was disposed while it was open - and there is then nothing left to put back, only the
-        // wrapper to clear away so it does not outlive the callout it was made for. A panel still sliding out
-        // is left to the timer that waits for it (see restoreAfterTransition).
+        // wrapper to clear away so it does not outlive the callout it was made for. The overlay and the arrow
+        // are held by reference rather than looked up, so the ones Blazor removed along with that component are
+        // told apart by being out of the document: putting them back would return an open overlay - a fixed
+        // layer over the whole viewport - to a page whose component is gone, taking every click of that page.
+        // A panel still sliding out is left to the timer that waits for it (see restoreAfterTransition).
         private static restoreCalloutToOriginalParent(calloutId: string, callout: HTMLElement | null) {
             if (Callouts._pendingRestores.has(calloutId)) return;
 
@@ -1663,7 +1691,7 @@
                 }
             }
 
-            if (original.overlay && original.overlayParent) {
+            if (original.overlay && original.overlayParent && original.overlay.isConnected) {
                 if (original.overlayNextSibling && original.overlayNextSibling.parentNode === original.overlayParent) {
                     original.overlayParent.insertBefore(original.overlay, original.overlayNextSibling);
                 } else {
@@ -1671,7 +1699,7 @@
                 }
             }
 
-            if (original.arrow && original.arrowParent) {
+            if (original.arrow && original.arrowParent && original.arrow.isConnected) {
                 if (original.arrowNextSibling && original.arrowNextSibling.parentNode === original.arrowParent) {
                     original.arrowParent.insertBefore(original.arrow, original.arrowNextSibling);
                 } else {

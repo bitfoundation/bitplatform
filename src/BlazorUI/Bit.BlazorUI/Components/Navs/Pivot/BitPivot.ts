@@ -1,7 +1,7 @@
 ﻿namespace BitBlazorUI {
     export class Pivot {
         private static _instances: Record<string, PivotInstance> = {};
-        private static _keyHandlers: Record<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void }> = {};
+        private static _keyHandlers: Record<string, { element: HTMLElement, handler: (e: KeyboardEvent) => void, mouseDownHandler: (e: MouseEvent) => void }> = {};
 
         public static setup(
             id: string,
@@ -135,7 +135,20 @@
 
             header.addEventListener('keydown', handler);
 
-            Pivot._keyHandlers[headerId] = { element: header, handler };
+            // The tablist carries tabindex="-1" to keep a scrolling header out of the tab order (Firefox gives a
+            // scroll container a tab stop of its own), which also makes it focusable by a click on its own padding.
+            // That focus would belong to no tab, and the keys the handler above takes would then act on the tab the
+            // component last knew of; so a press on the header itself - never on a tab or anything inside it - leaves
+            // the focus where it is, as it did before the tablist became focusable at all.
+            const mouseDownHandler = (e: MouseEvent) => {
+                if (e.target === header) {
+                    e.preventDefault();
+                }
+            };
+
+            header.addEventListener('mousedown', mouseDownHandler);
+
+            Pivot._keyHandlers[headerId] = { element: header, handler, mouseDownHandler };
         }
 
         public static disposeKeys(headerId: string) {
@@ -143,6 +156,7 @@
             if (!entry) return;
 
             entry.element.removeEventListener('keydown', entry.handler);
+            entry.element.removeEventListener('mousedown', entry.mouseDownHandler);
             delete Pivot._keyHandlers[headerId];
         }
 
@@ -166,6 +180,8 @@
 
     class PivotInstance {
         public static readonly hiddenClass = 'bit-pvt-ovh';
+        // The keys of the overflow menu whose default BitPivot.HandleMenuKeyDown takes the place of.
+        private static readonly menuKeys = ['Tab', 'Enter', ' ', 'ArrowUp', 'ArrowDown', 'Home', 'End'];
 
         private id: string;
         private header: HTMLElement;
@@ -181,6 +197,8 @@
         private scrollHandler: ((() => void) & { cancel(): void }) | null = null;
         private wheelHandler: ((e: WheelEvent) => void) | null = null;
         private dragStartHandler: ((e: DragEvent) => void) | null = null;
+        private menu: HTMLElement | null = null;
+        private menuKeyHandler: ((e: KeyboardEvent) => void) | null = null;
         private lastOverflow: string = '';
         private lastSlideState: string = '';
 
@@ -265,6 +283,34 @@
                         } catch { }
                     };
                     this.header.addEventListener('dragstart', this.dragStartHandler);
+                }
+
+                if (this.isMenu && this.moreButton) {
+                    // the keys of the overflow menu are answered by its Blazor keydown handler, which cannot
+                    // decide on their default per key (its flag is applied by the render that follows the key),
+                    // so their defaults are suppressed here: the arrows, Home, End and Space would scroll the
+                    // page, and the keys that close the menu and hand the focus back to the More button (or to
+                    // the chosen tab) would act once more on the element the focus is handed to - Tab moving it
+                    // on, Enter and Space clicking the button and opening the menu again. Where the handler runs
+                    // a round trip later (Blazor Server) that default has acted before the focus moves, but where
+                    // it runs during the keydown itself (WebAssembly) it acts after, on the new focus.
+                    const menuId = this.moreButton.getAttribute('aria-controls');
+                    const menu = menuId ? document.getElementById(menuId) : null;
+                    if (menu) {
+                        this.menu = menu;
+                        this.menuKeyHandler = (e: KeyboardEvent) => {
+                            if (e.target !== menu) return;
+                            if (e.altKey || e.ctrlKey || e.metaKey) return;
+                            if (PivotInstance.menuKeys.indexOf(e.key) === -1) return;
+
+                            e.preventDefault();
+                        };
+                        menu.addEventListener('keydown', this.menuKeyHandler);
+
+                        // the overlay that closes the menu on a click away sits beside it, rendered by the pivot
+                        // itself rather than opened through a callout, so it is made tappable here.
+                        Callouts.makeOverlayTappable(menu.parentElement?.querySelector<HTMLElement>(':scope > .bit-pvt-ovl') ?? null);
+                    }
                 }
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.start:', e);
@@ -467,6 +513,11 @@
                 if (this.dragStartHandler) {
                     this.header.removeEventListener('dragstart', this.dragStartHandler);
                     this.dragStartHandler = null;
+                }
+                if (this.menu && this.menuKeyHandler) {
+                    this.menu.removeEventListener('keydown', this.menuKeyHandler);
+                    this.menu = null;
+                    this.menuKeyHandler = null;
                 }
             } catch (e) {
                 console.error('BitBlazorUI.Pivot.dispose:', e);

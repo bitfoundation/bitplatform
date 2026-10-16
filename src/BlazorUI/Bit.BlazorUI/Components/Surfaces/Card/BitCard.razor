@@ -101,14 +101,20 @@
 
     @* The keys a root made a control answers - Enter as it goes down, Space as it comes back up, neither one
        scrolling the page - are wired up in the browser (see OnAfterRenderAsync), where they turn into this same
-       click. The stretched button answers them natively, and its click bubbles up to here like any other. *@
-    var onClick = _IsClickable
-                ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick)
-                : default;
+       click. The stretched button answers them natively, and its click bubbles up to here like any other.
+
+       A card with no click of its own writes back the onclick the page splatted on it instead: an attribute written
+       after the splat wins over it, and an empty handler written there would not leave the page's alone but take it
+       off the root, so the page's handler would never run. The splat is the disabled-aware one, so a disabled card
+       still has none to write back. *@
+    TryFindAttribute(DisabledAwareHtmlAttributes, "onclick", out var splattedOnClick);
+    object? onClick = _IsClickable
+                    ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick)
+                    : splattedOnClick;
 }
 
 <div @ref="RootElement" @attributes="DisabledAwareHtmlAttributes"
-     @onclick="onClick"
+     onclick="@onClick"
      @onclick:stopPropagation="StopPropagation"
      id="@_Id"
      role="@role"

@@ -87,6 +87,29 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitPdfViewerShouldPrerenderTheLoadingStateOfAnEncryptedDocumentInsteadOfWaitingForAPassword()
+    {
+        var errors = new List<string?>();
+
+        // Nobody can answer the built-in password dialog of a prerender, so awaiting it would never finish the page.
+        var render = Prerenderer.RenderAsync<BitPdfViewer>(new Dictionary<string, object?>
+        {
+            [nameof(BitPdfViewer.Source)] = BitPdfSource.FromBytes(TestPdf.Encrypted("hunter2")),
+            [nameof(BitPdfViewer.OnError)] = EventCallback.Factory.Create<string?>(this, errors.Add),
+        });
+
+        var finished = await Task.WhenAny(render, Task.Delay(TimeSpan.FromSeconds(10)));
+        Assert.AreSame(render, finished, "The prerender waited for a password nobody can enter.");
+
+        var document = Parse(await render);
+
+        Assert.IsNotNull(document.QuerySelector(".bit-pdv-page-loading"));
+        Assert.IsNull(document.QuerySelector("[role='dialog']"));
+        Assert.IsNull(document.QuerySelector(".bit-pdv-error"));
+        Assert.AreEqual(0, errors.Count);
+    }
+
+    [TestMethod]
     public void BitPdfViewerShouldStillReportALoadThatFailsOnceRendered()
     {
         // Interactive, the first render comes before the fetch does, so its failure is the document's own and is

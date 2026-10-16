@@ -124,7 +124,11 @@
                         var itemIcon = Dropdown.GetIcon(Item);
                         @if (itemIcon is not null)
                         {
-                            <i style="@Dropdown.Styles?.ItemIcon"
+                            @* The glyph is decoration beside the text that names the item, so it is hidden from
+                               assistive technologies like every other icon of the component: its font character
+                               would otherwise become part of the accessible name of the option. *@
+                            <i aria-hidden="true"
+                               style="@Dropdown.Styles?.ItemIcon"
                                class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
                         }
                         <span style="@Dropdown.Styles?.ItemText" class="bit-drp-itx @Dropdown.Classes?.ItemText">
@@ -169,7 +173,9 @@
                     var itemIcon = Dropdown.GetIcon(Item);
                     @if (itemIcon is not null)
                     {
-                        <i style="@Dropdown.Styles?.ItemIcon"
+                        @* Hidden from assistive technologies for the same reason as the multi select one above. *@
+                        <i aria-hidden="true"
+                           style="@Dropdown.Styles?.ItemIcon"
                            class="bit-drp-iic @itemIcon.GetCssClasses() @Dropdown.Classes?.ItemIcon" />
                     }
                     <span style="@Dropdown.Styles?.ItemText" class="bit-drp-itx @Dropdown.Classes?.ItemText">

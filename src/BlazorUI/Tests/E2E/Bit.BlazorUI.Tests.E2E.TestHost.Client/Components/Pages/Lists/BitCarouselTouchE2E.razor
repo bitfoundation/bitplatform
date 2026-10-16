@@ -1,0 +1,17 @@
+﻿@page "/e2e/carousel/touch"
+
+<PageTitle>BitCarousel touch E2E</PageTitle>
+
+@* A carousel alone on a phone-sized page, for the touch tests. *@
+<div style="width: 360px">
+    <BitCarousel Id="touch" AnimationDuration="0.1" Style="height: 200px">
+        @for (var i = 1; i <= 4; i++)
+        {
+            var index = i;
+            <BitCarouselItem><div style="height: 100%; display: flex; align-items: center; justify-content: center; background: #ddd">S@(index)</div></BitCarouselItem>
+        }
+    </BitCarousel>
+</div>
+<div style="height: 1500px">Room to scroll the page.</div>
+
+<E2EStatus />

@@ -2355,16 +2355,16 @@ public partial class BitCarouselTests : BunitTestContext
         // The first page cannot go back, so the button that would is out of the way.
         component.WaitForAssertion(() =>
         {
-            StringAssert.Contains(component.Find(".bit-csl-rbt").GetAttribute("style"), "display:none");
-            Assert.IsFalse(component.Find(".bit-csl-lbt").GetAttribute("style")!.Contains("display:none"));
+            StringAssert.Contains(component.Find(".bit-csl-rbt").GetAttribute("style") ?? "", "display:none");
+            Assert.IsFalse(component.Find(".bit-csl-lbt").GetAttribute("style")?.Contains("display:none") is true);
         });
 
         component.FindAll(".bit-csl-dot")[2].Click();
 
         component.WaitForAssertion(() =>
         {
-            StringAssert.Contains(component.Find(".bit-csl-lbt").GetAttribute("style"), "display:none");
-            Assert.IsFalse(component.Find(".bit-csl-rbt").GetAttribute("style")!.Contains("display:none"));
+            StringAssert.Contains(component.Find(".bit-csl-lbt").GetAttribute("style") ?? "", "display:none");
+            Assert.IsFalse(component.Find(".bit-csl-rbt").GetAttribute("style")?.Contains("display:none") is true);
         });
     }
 
@@ -2378,8 +2378,8 @@ public partial class BitCarouselTests : BunitTestContext
 
         component.WaitForAssertion(() =>
         {
-            Assert.IsFalse(component.Find(".bit-csl-lbt").GetAttribute("style")!.Contains("display:none"));
-            Assert.IsFalse(component.Find(".bit-csl-rbt").GetAttribute("style")!.Contains("display:none"));
+            Assert.IsFalse(component.Find(".bit-csl-lbt").GetAttribute("style")?.Contains("display:none") is true);
+            Assert.IsFalse(component.Find(".bit-csl-rbt").GetAttribute("style")?.Contains("display:none") is true);
         });
     }
 
@@ -2537,6 +2537,27 @@ public partial class BitCarouselTests : BunitTestContext
         var firstLayout = identifiers.IndexOf("BitBlazorUI.Utils.getBoundingClientRect");
 
         Assert.IsTrue(reducedMotion >= 0 && reducedMotion < firstLayout);
+    }
+
+    [TestMethod]
+    public async Task BitCarouselShouldLeaveTheBrowserAloneWhenItGoesAwayDuringItsFirstRender()
+    {
+        var reducedMotion = Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.prefersReducedMotion", _ => true);
+
+        var component = RenderComponent<BitCarouselTest>(parameters =>
+        {
+            parameters.Add(p => p.AutoPlay, true);
+            parameters.Add(p => p.AutoPlayInterval, 50d);
+        });
+
+        var carousel = component.Instance.Carousel;
+
+        await Context.DisposeComponentsAsync();
+
+        reducedMotion.SetResult(false);
+
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.registerNavigationKeys"));
+        Assert.IsFalse(carousel.IsPlaying);
     }
 
     [TestMethod]

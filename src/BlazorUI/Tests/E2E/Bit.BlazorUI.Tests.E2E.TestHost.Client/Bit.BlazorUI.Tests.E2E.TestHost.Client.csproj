@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- The pages of the E2E test host. They live in a WebAssembly project so the host can render every one of them
+         either on the server (InteractiveServer) or in the browser (InteractiveWebAssembly); the host picks the mode
+         per browser context from the e2e-render-mode cookie the tests set (see App.razor). The root namespace is the
+         host's, so the pages keep the namespaces they had when they lived in the host itself. -->
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- Matches the referenced Bit.BlazorUI projects: Debug builds the latest TFM only, CI passes
+             -p:BuildAllTfms=true to cover net9.0 and net8.0 as well. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>Bit.BlazorUI.Tests.E2E.TestHost</RootNamespace>
+        <!-- A test host: the browser downloads the whole framework once per test context, so it is kept untrimmed and
+             unlinked for a fast build rather than small. -->
+        <BlazorWebAssemblyPreserveCollationData>true</BlazorWebAssemblyPreserveCollationData>
+        <!-- Every culture the pages exercise (fa-IR, ar-SA, de-DE, ...), not just the shard of the browser's own locale. -->
+        <BlazorWebAssemblyLoadAllGlobalizationData>true</BlazorWebAssemblyLoadAllGlobalizationData>
+        <InvariantGlobalization>false</InvariantGlobalization>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.31" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="9.0.20" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+    </ItemGroup>
+
+</Project>

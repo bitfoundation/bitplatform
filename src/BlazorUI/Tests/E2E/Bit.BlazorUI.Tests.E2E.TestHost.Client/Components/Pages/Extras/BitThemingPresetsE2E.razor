@@ -1,0 +1,65 @@
+﻿@page "/e2e/theming/presets"
+@inject BitThemeManager ThemeManager
+
+<PageTitle>Theme presets E2E</PageTitle>
+
+@* The packaged Fluent 2, Material and Cupertino presets are override-only bundles linked after the core stylesheet. *@
+<HeadContent>
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
+</HeadContent>
+
+<h1>Theme presets</h1>
+
+<div id="probe-surface" style="background-color: var(--bit-clr-bg-pri); color: var(--bit-clr-fg-pri); padding: 4px;">
+    <BitButton Id="probe-button">Probe</BitButton>
+</div>
+
+<E2ESection Id="document" Title="Presets applied to the document">
+    @foreach (var preset in _presets)
+    {
+        <button id="btn-preset-@preset" type="button" @onclick="() => Apply(preset)">@preset</button>
+    }
+    <div>Applied: <span id="applied">@_applied</span></div>
+</E2ESection>
+
+<E2ESection Id="scoped" Title="Scoped presets">
+    <div id="scope-material-dark" bit-theme="material-dark" style="background-color: var(--bit-clr-bg-pri); padding: 4px;">
+        <BitButton Id="scoped-material-dark-button">Material dark</BitButton>
+    </div>
+    <div id="scope-cupertino-light" bit-theme="cupertino-light" style="background-color: var(--bit-clr-bg-pri); padding: 4px;">
+        <BitButton Id="scoped-cupertino-light-button">Cupertino light</BitButton>
+        @* A region of another theme nested in a region: the nearest one wins. *@
+        <div id="scope-fluent2-dark" bit-theme="fluent2-dark" style="background-color: var(--bit-clr-bg-pri); padding: 4px;">
+            <BitButton Id="scoped-fluent2-dark-button">Fluent 2 dark inside Cupertino light</BitButton>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="names" Title="The preset names">
+    <span id="name-fluent2-light">@BitThemePresets.Fluent2Light</span>
+    <span id="name-material-dark">@BitThemePresets.MaterialDark</span>
+    <span id="name-cupertino-light">@BitThemePresets.CupertinoLight</span>
+    <span id="name-extra-material-light">@BitExtraThemePresets.MaterialLight</span>
+    <span id="surface-material-dark">@(BitThemeSurfaces.BackgroundPrimary.TryGetValue(BitThemePresets.MaterialDark, out var surface) ? surface : "(none)")</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly string[] _presets =
+    [
+        BitThemePresets.Light, BitThemePresets.Dark,
+        BitThemePresets.Fluent2Light, BitThemePresets.Fluent2Dark,
+        BitThemePresets.MaterialLight, BitThemePresets.MaterialDark,
+        BitThemePresets.CupertinoLight, BitThemePresets.CupertinoDark,
+    ];
+
+    private string? _applied;
+
+    private async Task Apply(string preset)
+    {
+        _applied = await ThemeManager.SetThemeAsync(preset);
+    }
+}

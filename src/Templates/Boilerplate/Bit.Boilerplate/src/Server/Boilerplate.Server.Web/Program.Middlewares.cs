@@ -234,6 +234,8 @@ public static partial class Program
 
             app.UseSiteMap();
 
+            app.MapStaticAssets();
+
             // Handle the rest of requests with blazor
             var blazorApp = app.MapRazorComponents<Components.App>()
                 .CacheOutput("AppResponseCachePolicy")

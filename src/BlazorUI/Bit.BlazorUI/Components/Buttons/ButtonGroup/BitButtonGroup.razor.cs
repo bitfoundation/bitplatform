@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// Give the group an accessible name through <see cref="BitComponentBase.AriaLabel"/>, since assistive technologies
 /// do not announce an unlabeled group or toolbar.
 /// </remarks>
-public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : class
+public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     private int _optionKeySeed;
     private bool _autoFocusDone;
@@ -216,8 +216,13 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
     [Parameter] public EventCallback<TItem> OnItemClick { get; set; }
 
     /// <summary>
-    /// The callback that called when toggled item change.
+    /// The callback that is called when the user toggles or un-toggles an item, with that item.
     /// </summary>
+    /// <remarks>
+    /// Only a change the user makes raises it, in both selection modes: the toggled items the group starts with
+    /// (<see cref="DefaultToggleKey"/>, <see cref="DefaultToggleKeys"/>, a bound key) and the keys the page writes
+    /// itself are applied without raising it, or writing the bound key back.
+    /// </remarks>
     [Parameter] public EventCallback<TItem> OnToggleChange { get; set; }
 
     /// <summary>
@@ -375,7 +380,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
             if (toggleKey.HasValue() && option.Key == toggleKey)
             {
-                _ = UpdateItemToggle(item, allowUntoggle: false);
+                ApplyToggleKey(item);
             }
         }
         else if (_Mode is BitSelectionMode.Multiple)
@@ -578,8 +583,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
 
                 if (toggleKey.HasValue())
                 {
-                    var item = Items.FirstOrDefault(i => GetItemKey(i) == toggleKey);
-                    await UpdateItemToggle(item, allowUntoggle: false);
+                    var item = _items.FirstOrDefault(i => GetItemKey(i) == toggleKey);
+                    if (item is not null)
+                    {
+                        ApplyToggleKey(item);
+                    }
                 }
             }
             else if (_Mode is BitSelectionMode.Multiple)
@@ -629,7 +637,8 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
             }
         }
 
-        if (_internalToggleKey != ToggleKey)
+        // ToggleKey is the Single selection mode's alone; the Multiple mode follows ToggleKeys below.
+        if (_Mode is BitSelectionMode.Single && _internalToggleKey != ToggleKey)
         {
             _internalToggleKey = ToggleKey;
 
@@ -637,17 +646,11 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                         ? _items.FirstOrDefault(i => GetItemKey(i) == _internalToggleKey)
                         : null;
 
-            if (item is not null)
-            {
-                await UpdateItemToggle(item, allowUntoggle: false);
-            }
-            else if (_Mode is BitSelectionMode.Single)
-            {
-                // The bound key now names no item at all - it was cleared, or it was pointed at something this
-                // group does not hold. Left alone, the item toggled before it would stay toggled and the group
-                // would be reporting a selection the key it is bound to says is gone.
-                ClearToggle();
-            }
+            // The page wrote the key itself, so the group follows it without raising anything, the way the
+            // Multiple mode follows ToggleKeys. A key naming no item at all - cleared, or pointed at something this
+            // group does not hold - takes the selection back: left alone, the item toggled before it would stay
+            // toggled and the group would be reporting a selection the key it is bound to says is gone.
+            ApplyToggleKey(item);
         }
 
         if (_Mode is BitSelectionMode.Multiple &&
@@ -1265,7 +1268,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 if (onIcon is not null) return onIcon;
 
                 var onIconName = GetOnIconName(item);
-                if (onIconName.HasValue()) return new BitIconInfo(onIconName!);
+                if (onIconName.HasValue()) return BitIconInfo.Bit(onIconName!);
             }
             else
             {
@@ -1273,7 +1276,7 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
                 if (offIcon is not null) return offIcon;
 
                 var offIconName = GetOffIconName(item);
-                if (offIconName.HasValue()) return new BitIconInfo(offIconName!);
+                if (offIconName.HasValue()) return BitIconInfo.Bit(offIconName!);
             }
         }
 
@@ -1384,20 +1387,27 @@ public partial class BitButtonGroup<TItem> : BitComponentBase where TItem : clas
         }
     }
 
-    // Takes the Single mode's selection back without raising the change callbacks, which is what a bound
-    // ToggleKey cleared by the page needs: the page has already written the new value, so there is nothing to
-    // hand back to it, and nothing the user did for an OnToggleChange to report.
-    private void ClearToggle()
+    // Toggles the given item of the Single selection mode - or none, which takes the selection back - without
+    // raising the change callbacks, the Single twin of ApplyToggleKeys. It is what the initial toggle key and a
+    // ToggleKey written by the page need: the page has already written the value, so there is nothing to hand back
+    // to it, and nothing the user did for an OnToggleChange to report.
+    private void ApplyToggleKey(TItem? item)
     {
         var toggled = _items.Where(IsItemToggled).ToArray();
-        if (toggled.Length == 0 && _toggleItem is null) return;
+        if (toggled.Length == 0 && _toggleItem is null && item is null) return;
+        if (item is not null && _toggleItem == item && toggled.Length == 1 && toggled[0] == item) return;
 
-        foreach (var item in toggled)
+        foreach (var old in toggled)
         {
-            SetIsToggled(item, false);
+            SetIsToggled(old, false);
         }
 
-        _toggleItem = null;
+        _toggleItem = item;
+
+        if (item is not null)
+        {
+            SetIsToggled(item, true);
+        }
 
         RefreshOptions();
         StateHasChanged();

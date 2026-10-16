@@ -515,6 +515,34 @@ public class BitAppShellTests : BunitTestContext
         Context.JSInterop.VerifyInvoke("BitBlazorUI.AppShell.afterRenderScroll");
     }
 
+    [TestMethod]
+    public async Task BitAppShellShouldOutliveAFailingScript()
+    {
+        // A script that throws (or is briefly missing while the bundle is rebuilt) only costs the shell its scroll and
+        // keyboard behaviour: none of its calls may surface the JSException, which would tear the circuit down.
+        Context.JSInterop.SetupVoid(_ => true).SetException(new Microsoft.JSInterop.JSException("Could not find 'BitBlazorUI.AppShell'."));
+        Context.JSInterop.Setup<BitScrollOffset>(_ => true).SetException(new Microsoft.JSInterop.JSException("Could not find 'BitBlazorUI.ScrollablePane'."));
+
+        var component = RenderComponent<BitAppShell>(parameters =>
+        {
+            parameters.Add(p => p.PersistScroll, true);
+            parameters.Add(p => p.AutoGoToTop, true);
+            parameters.Add(p => p.OnScroll, (BitScrollOffset _) => { });
+        });
+
+        await component.InvokeAsync(() => InvokeLocationChanged(component.Instance, "https://example.com/page2"));
+        component.Render();
+
+        await component.InvokeAsync(() => component.Instance.GoToTop());
+        await component.InvokeAsync(() => component.Instance.ScrollBy(0, 10));
+        await component.InvokeAsync(() => component.Instance.ClearPersistedScroll());
+        Assert.IsNull(await component.InvokeAsync(() => component.Instance.GetScrollOffset()));
+
+        Assert.IsTrue(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.AppShell.initScroll"));
+
+        await Context.DisposeComponentsAsync();
+    }
+
     [TestMethod,
         DataRow(null, false),
         DataRow(BitAppShellScrollRestoration.Url, false),

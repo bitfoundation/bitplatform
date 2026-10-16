@@ -23,7 +23,7 @@ public class EngineFrameTests
     [TestMethod]
     public async Task Frame_ProgressesAColorTween_AndCompletesNaturally()
     {
-        var engine = NewEngine();
+        await using var engine = NewEngine();
         engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
 
         var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -44,32 +44,41 @@ public class EngineFrameTests
     [TestMethod]
     public async Task Interruption_FoldsRunningAnimation_WithoutRaisingItsCompletion()
     {
-        var engine = NewEngine();
+        await using var engine = NewEngine();
         engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
 
-        var firstCompleted = false;
-        await engine.AnimateToAsync("el", ToRed, Bm.Tween(0.5).ToConfig(),
-            onComplete: () => { firstCompleted = true; return Task.CompletedTask; });
+        // AnimateToAsync raises onComplete only when the animation's completion source resolves
+        // with true, so observing that source directly pins the behaviour without waiting on a
+        // thread-pool continuation that may or may not have run yet.
+        var first = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        engine.GetState("el")!.AnimateTo(ToRed, Bm.Tween(0.5).ToConfig(), first);
+        await engine.EnsureLoopRunningAsync();
 
         engine.ComputeFrame(0);
         engine.ComputeFrame(100); // 20% through the first animation
+        Assert.IsFalse(first.Task.IsCompleted, "the first animation is still running");
 
         // Interrupt with a new animation on the same property before the first finishes.
+        var second = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         await engine.AnimateToAsync("el",
             new Dictionary<string, object?> { ["backgroundColor"] = "#00ff00" },
-            Bm.Tween(0.1).ToConfig());
+            Bm.Tween(0.1).ToConfig(),
+            onComplete: () => { second.TrySetResult(); return Task.CompletedTask; });
+
+        // The interruption settles the superseded batch synchronously - and with false, which is
+        // what keeps its OnAnimationComplete from being raised.
+        Assert.IsTrue(first.Task.IsCompleted, "a superseded animation must settle, not hang");
+        Assert.IsFalse(first.Task.Result, "a superseded animation must not report a natural completion");
 
         engine.ComputeFrame(150);
         engine.ComputeFrame(260); // let the second animation finish
-
-        await Task.Delay(50); // give any (incorrect) continuation a chance to run
-        Assert.IsFalse(firstCompleted, "a superseded animation must not raise OnAnimationComplete");
+        await second.Task.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
     [TestMethod]
     public async Task Frame_IsIdle_WhenNothingIsAnimating_AndAfterCompletion()
     {
-        var engine = NewEngine();
+        await using var engine = NewEngine();
         engine.RegisterElement("el", null); // no seeded values ⇒ nothing to flush
 
         // No animation started → an idle tick produces no updates.
@@ -90,7 +99,7 @@ public class EngineFrameTests
     [TestMethod]
     public async Task Stop_HaltsAnAnimationMidFlight()
     {
-        var engine = NewEngine();
+        await using var engine = NewEngine();
         engine.RegisterElement("el", new Dictionary<string, object?> { ["backgroundColor"] = "#000000" });
 
         await engine.AnimateToAsync("el", ToRed, Bm.Tween(1.0).ToConfig());

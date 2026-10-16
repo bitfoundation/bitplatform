@@ -411,6 +411,10 @@ public partial class BitSnackBar : BitComponentBase
     /// <summary>
     /// Renders a leading icon in each snack bar item, chosen from its color unless one is provided.
     /// </summary>
+    /// <remarks>
+    /// The glyphs are the ones a <see cref="BitMessage"/> of the same color carries: Completed for Success, Warning for
+    /// Warning, WarningSolid for SevereWarning, ErrorBadge for Error and Info for every other color.
+    /// </remarks>
     [Parameter] public bool ShowIcon { get; set; }
 
     /// <summary>
@@ -2073,8 +2077,8 @@ public partial class BitSnackBar : BitComponentBase
         [BitColor.Tertiary] = "Info",
         [BitColor.Info] = "Info",
         [BitColor.Success] = "Completed",
-        [BitColor.Warning] = "Info",
-        [BitColor.SevereWarning] = "Warning",
+        [BitColor.Warning] = "Warning",
+        [BitColor.SevereWarning] = "WarningSolid",
         [BitColor.Error] = "ErrorBadge",
         [BitColor.PrimaryBackground] = "Info",
         [BitColor.SecondaryBackground] = "Info",

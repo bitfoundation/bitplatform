@@ -156,9 +156,9 @@
 
             @{
                 var today = GetToday();
-                var todayYear = _culture.Calendar.GetYear(today);
-                var todayMonth = _culture.Calendar.GetMonth(today);
-                var todayDay = _culture.Calendar.GetDayOfMonth(today);
+                var todayYear = _culture.DateTimeFormat.Calendar.GetYear(today);
+                var todayMonth = _culture.DateTimeFormat.Calendar.GetMonth(today);
+                var todayDay = _culture.DateTimeFormat.Calendar.GetDayOfMonth(today);
                 var showTimePicker = ShowTimePicker && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
             }
 
@@ -510,7 +510,7 @@
 
                                         if (month > monthsInYear) continue;
 
-                                        var monthName = _culture.DateTimeFormat.GetMonthName(month);
+                                        var monthName = GetMonthName(_currentYear, month);
                                         var disabled = Disabled || IsMonthOutOfMinAndMaxDate(month);
                                         var selected = month == _currentMonth;
                                         <button @onclick="() => SelectMonth(month)"
@@ -533,7 +533,7 @@
                                             }
                                             else
                                             {
-                                                @_culture.DateTimeFormat.GetAbbreviatedMonthName(month)
+                                                @GetAbbreviatedMonthName(_currentYear, month)
                                             }
                                         </button>
                                     }
@@ -689,6 +689,7 @@
                                 <button @onpointerup="HandleOnPointerUpOrOut"
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(true, true, true)"
+                                        @onclick="e => HandleOnSpinClick(e, true, true, true)"
                                         type="button"
                                         title="@StartTimeIncreaseHourTitle"
                                         aria-label="@StartTimeIncreaseHourTitle"
@@ -704,7 +705,6 @@
                                        @onkeydown="e => HandleOnTimeInputKeyDown(e, true, true)"
                                        @bind="@_startTimeHourView"
                                        @bind:event="oninput"
-                                       @onfocus="() => HandleOnHourInputFocus(true)"
                                        min="0"
                                        max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                        type="number"
@@ -719,6 +719,7 @@
                                 <button @onpointerup="HandleOnPointerUpOrOut"
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(false, true, true)"
+                                        @onclick="e => HandleOnSpinClick(e, false, true, true)"
                                         type="button"
                                         title="@StartTimeDecreaseHourTitle"
                                         aria-label="@StartTimeDecreaseHourTitle"
@@ -736,6 +737,7 @@
                                 <button @onpointerup="HandleOnPointerUpOrOut"
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(true, false, true)"
+                                        @onclick="e => HandleOnSpinClick(e, true, false, true)"
                                         type="button"
                                         title="@StartTimeIncreaseMinuteTitle"
                                         aria-label="@StartTimeIncreaseMinuteTitle"
@@ -747,11 +749,9 @@
                                        style="@Styles?.StartTimeIncreaseMinuteIcon"
                                        class="bit-dtrp-cic @startIncreaseMinuteIconCss @Classes?.StartTimeIncreaseMinuteIcon" />
                                 </button>
-                                <input @ref="_startTimeMinuteInputRef"
-                                       @onkeydown="e => HandleOnTimeInputKeyDown(e, false, true)"
+                                <input @onkeydown="e => HandleOnTimeInputKeyDown(e, false, true)"
                                        @bind="@_startTimeMinuteView"
                                        @bind:event="oninput"
-                                       @onfocus="() => HandleOnMinuteInputFocus(true)"
                                        min="0"
                                        max="59"
                                        type="number"
@@ -766,6 +766,7 @@
                                 <button @onpointerup="HandleOnPointerUpOrOut"
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(false, false, true)"
+                                        @onclick="e => HandleOnSpinClick(e, false, false, true)"
                                         type="button"
                                         title="@StartTimeDecreaseMinuteTitle"
                                         aria-label="@StartTimeDecreaseMinuteTitle"
@@ -814,6 +815,7 @@
                                 <button @onpointerup="HandleOnPointerUpOrOut"
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(true, true, false)"
+                                        @onclick="e => HandleOnSpinClick(e, true, true, false)"
                                         type="button"
                                         title="@EndTimeIncreaseHourTitle"
                                         aria-label="@EndTimeIncreaseHourTitle"
@@ -825,11 +827,9 @@
                                        style="@Styles?.EndTimeIncreaseHourIcon"
                                        class="bit-dtrp-cic @endIncreaseHourIconCss @Classes?.EndTimeIncreaseHourIcon" />
                                 </button>
-                                <input @ref="_endTimeHourInputRef"
-                                       @onkeydown="e => HandleOnTimeInputKeyDown(e, true, false)"
+                                <input @onkeydown="e => HandleOnTimeInputKeyDown(e, true, false)"
                                        @bind="@_endTimeHourView"
                                        @bind:event="oninput"
-                                       @onfocus="() => HandleOnHourInputFocus(false)"
                                        min="0"
                                        max="@(TimeFormat == BitTimeFormat.TwelveHours ? "12" : "23")"
                                        type="number"
@@ -844,6 +844,7 @@
                                 <button @onpointerup="HandleOnPointerUpOrOut"
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(false, true, false)"
+                                        @onclick="e => HandleOnSpinClick(e, false, true, false)"
                                         type="button"
                                         title="@EndTimeDecreaseHourTitle"
                                         aria-label="@EndTimeDecreaseHourTitle"
@@ -861,6 +862,7 @@
                                 <button @onpointerup="HandleOnPointerUpOrOut"
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(true, false, false)"
+                                        @onclick="e => HandleOnSpinClick(e, true, false, false)"
                                         type="button"
                                         title="@EndTimeIncreaseMinuteTitle"
                                         aria-label="@EndTimeIncreaseMinuteTitle"
@@ -872,11 +874,9 @@
                                        style="@Styles?.EndTimeIncreaseMinuteIcon"
                                        class="bit-dtrp-cic @endIncreaseMinuteIconCss @Classes?.EndTimeIncreaseMinuteIcon" />
                                 </button>
-                                <input @ref="_endTimeMinuteInputRef"
-                                       @onkeydown="e => HandleOnTimeInputKeyDown(e, false, false)"
+                                <input @onkeydown="e => HandleOnTimeInputKeyDown(e, false, false)"
                                        @bind="@_endTimeMinuteView"
                                        @bind:event="oninput"
-                                       @onfocus="() => HandleOnMinuteInputFocus(false)"
                                        min="0"
                                        max="59"
                                        type="number"
@@ -891,6 +891,7 @@
                                 <button @onpointerup="HandleOnPointerUpOrOut"
                                         @onpointerout="HandleOnPointerUpOrOut"
                                         @onpointerdown="() => HandleOnPointerDown(false, false, false)"
+                                        @onclick="e => HandleOnSpinClick(e, false, false, false)"
                                         type="button"
                                         title="@EndTimeDecreaseMinuteTitle"
                                         aria-label="@EndTimeDecreaseMinuteTitle"

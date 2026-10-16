@@ -206,11 +206,13 @@ $clo-cal-private-properties: wid, mnw, mnw-def, mxw, mxh;
 
     // A callout is as wide as its content asks to be, which is a min-width of max-content: without it a
     // fixed-positioned element is laid out against the room its position leaves rather than against its
-    // content. That floor would win over a width the consumer asked for - a maximum one, or a width of
-    // its own - so a callout that was given either drops it and lets the content wrap inside the width it
-    // was told to take, which is the whole point of asking for one.
+    // content. That floor would win over a width the consumer asked for - a maximum one, a width of its
+    // own, or the width of its anchor FixedCalloutWidth holds it to - so a callout that was given one drops
+    // it and lets the content wrap inside the width it was told to take, which is the whole point of asking
+    // for one.
     &.bit-clo-mxw,
-    &.bit-clo-wid {
+    &.bit-clo-wid,
+    &.bit-clo-fxw {
         --bit-clo-mnw-def: auto;
     }
 

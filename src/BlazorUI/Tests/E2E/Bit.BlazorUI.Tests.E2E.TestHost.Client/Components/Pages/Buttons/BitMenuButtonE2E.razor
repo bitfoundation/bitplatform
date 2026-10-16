@@ -1,0 +1,555 @@
+﻿@page "/e2e/menu-button"
+
+<PageTitle>BitMenuButton E2E (Items)</PageTitle>
+
+@* The Items API of BitMenuButton. The custom-item (/e2e/menu-button/custom) and the option (/e2e/menu-button/options)
+   pages render the item-level sections of this one with the same ids and the same data through their own API, so one
+   test drives all three. The group-level sections after them are the same for every API and are only here. *@
+<h1>BitMenuButton (Items)</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitMenuButton Id="mnb-basic" Text="Actions" Items="_basic" OnClick="(BitMenuButtonItem? i) => BasicClick(i)" />
+    <span id="basic-clicked">@_clicked</span>
+</E2ESection>
+
+<E2ESection Id="split" Title="Split">
+    <BitMenuButton Id="mnb-split" Split Text="Save" Items="_split" OnClick="(BitMenuButtonItem? i) => SplitClick(i)" />
+    <span id="split-clicked">@_splitClicked</span>
+</E2ESection>
+
+<E2ESection Id="sticky" Title="Sticky">
+    <BitMenuButton Id="mnb-sticky" Sticky Items="_sticky" @bind-SelectedItem="_stickySelected" OnChange="(BitMenuButtonItem item) => _stickyChanges.Add(item.Key!)" />
+    <span id="sticky-selected">@(_stickySelected?.Key ?? "null")</span>
+    <span id="sticky-changes">@string.Join(",", _stickyChanges)</span>
+    <BitMenuButton Id="mnb-sticky-default" Sticky Items="_stickyDefault" DefaultSelectedItem="_stickyDefault[1]" />
+    <BitMenuButton Id="mnb-sticky-isselected" Sticky Items="_stickyIsSelected" />
+    <BitMenuButton Id="mnb-split-sticky" Split Sticky Items="_splitSticky" OnClick="(BitMenuButtonItem? i) => SplitStickyClick(i)" />
+    <span id="split-sticky-header">@_splitStickyHeader</span>
+    <span id="split-sticky-actions">@_splitStickyActions</span>
+</E2ESection>
+
+<E2ESection Id="icons" Title="Icons">
+    <BitMenuButton Id="mnb-icons" Text="Insert" IconName="@BitIconName.Add" Items="_icons" />
+    <BitMenuButton Id="mnb-icononly" IconOnly AriaLabel="More actions" IconName="@BitIconName.More" Items="_iconOnly" />
+    <BitMenuButton Id="mnb-noicon" NoIcon Text="No icon" IconName="@BitIconName.Add" Items="_noIcon" />
+    <BitMenuButton Id="mnb-ext-icon" Text="External" Icon="@BitIconInfo.Css("fa-solid fa-house")" Items="_extIcon" />
+</E2ESection>
+
+<E2ESection Id="toggle" Title="Toggle">
+    <BitMenuButton Id="mnb-toggle" Split Toggle Text="Bold" Items="_toggle" @bind-IsToggled="_isToggled" OnToggleChange="v => _toggleChanges.Add(v.ToString())" />
+    <span id="toggle-value">@_isToggled</span>
+    <span id="toggle-changes">@string.Join(",", _toggleChanges)</span>
+    <BitMenuButton Id="mnb-toggle-default" Split Toggle DefaultIsToggled="true" Text="Italic" Items="_toggleDefault" />
+</E2ESection>
+
+<E2ESection Id="checkable" Title="Checkable">
+    <BitMenuButton Id="mnb-check" Text="Format" Items="_check" CloseOnItemClick="false" OnClick="(BitMenuButtonItem? i) => _checkClicks++" />
+    <span id="check-state">@string.Join(",", _check.Where(i => i.IsChecked).Select(i => i.Key))</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitMenuButton Id="mnb-header-template" Items="_headerTemplate">
+        <HeaderTemplate><b class="tpl-header">Custom header</b></HeaderTemplate>
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-item-template" Text="Item template" Items="_itemTemplate">
+        <ItemTemplate Context="item"><i class="tpl-item">@item?.Text</i></ItemTemplate>
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-own-template" Text="Own template" Items="_ownTemplate" />
+</E2ESection>
+
+<E2ESection Id="binding" Title="Binding">
+    <BitMenuButton Id="mnb-open-bind" Text="Bound open" Items="_openBind" @bind-IsOpen="_isOpen" />
+    <span id="open-value">@_isOpen</span>
+    <button id="btn-open" type="button" @onclick="() => _isOpen = true">Open from the page</button>
+</E2ESection>
+
+<E2ESection Id="grouping" Title="Grouping">
+    <BitMenuButton Id="mnb-grouping" Text="Grouped" Items="_grouping" />
+</E2ESection>
+
+<E2ESection Id="details" Title="Item details">
+    <BitMenuButton Id="mnb-details" Text="Details" Items="_details" DisabledInteractive="false" OnClick="(BitMenuButtonItem? i) => DetailsClick(i)" />
+    <span id="details-clicked">@_detailsClicked</span>
+    <BitMenuButton Id="mnb-disabled-interactive" Text="Disabled interactive" Items="_disabledInteractive" DisabledInteractive />
+</E2ESection>
+
+<E2ESection Id="links" Title="Links">
+    <BitMenuButton Id="mnb-links" Text="Links" Items="_links" />
+    <BitMenuButton Id="mnb-links-hint" Text="Links (own hint)" Items="_linksHint" NewTabHint="(new window)" />
+    <BitMenuButton Id="mnb-links-nohint" Text="Links (no hint)" Items="_linksNoHint" NoNewTabHint />
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading">
+    <BitMenuButton Id="mnb-loading" Split Text="Save" IconName="@BitIconName.Save" Items="_loadingItems" AutoLoading LoadingLabel="Saving..."
+                   OnClick="(BitMenuButtonItem? i) => LoadingClick()" @bind-IsLoading="_loadingValue" />
+    <span id="loading-clicks">@_loadingClicks</span>
+    <span id="loading-value">@_loadingValue</span>
+    <button id="btn-release-loading" type="button" @onclick="() => _loadingTcs.TrySetResult()">Release</button>
+    <BitMenuButton Id="mnb-loading-plain" Text="Busy" Items="_loadingPlain" IsLoading LoadingLabel="Working..." />
+    <BitMenuButton Id="mnb-loading-template" Text="Template" Items="_loadingTemplate" IsLoading>
+        <LoadingTemplate><span class="tpl-loading">Please wait</span></LoadingTemplate>
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-loading-reclickable" Split Text="Again" Items="_loadingReclick" IsLoading Reclickable OnClick="(BitMenuButtonItem? i) => _reclicks++" />
+    <span id="reclicks">@_reclicks</span>
+</E2ESection>
+
+<E2ESection Id="events" Title="StopPropagation &amp; LoadingDelay">
+    <div id="mnb-stop-parent" @onclick="() => _parentClicks++">
+        <BitMenuButton Id="mnb-stop" Split StopPropagation Text="Stops" Items="@(L("stop"))" OnClick="(BitMenuButtonItem? i) => _headerClicks++" />
+        <BitMenuButton Id="mnb-bubble" Split Text="Bubbles" Items="@(L("bubble"))" OnClick="(BitMenuButtonItem? i) => _headerClicks++" />
+    </div>
+    <span id="header-clicks">@_headerClicks</span>
+    <span id="parent-clicks">@_parentClicks</span>
+    <BitMenuButton Id="mnb-delay" Split AutoLoading LoadingDelay="500" Text="Delayed" Items="@(L("delay"))" OnClick="(BitMenuButtonItem? i) => DelayClick()" />
+    <button id="btn-release-delay" type="button" @onclick="() => _delayTcs.TrySetResult()">Release delay</button>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard">
+    <input id="kbd-before" aria-label="before" />
+    <BitMenuButton Id="mnb-keys" Text="Fruits" Items="_fruits" OnClick="(BitMenuButtonItem? i) => KeysClick(i)" />
+    <span id="keys-clicked">@_keysClicked</span>
+    <input id="kbd-after" aria-label="after" />
+</E2ESection>
+
+<E2ESection Id="submenu" Title="Submenu">
+    <BitMenuButton Id="mnb-submenu" Text="Insert" Items="_submenu" OnClick="(BitMenuButtonItem? i) => SubmenuClick(i)" />
+    <span id="submenu-clicked">@_submenuClicked</span>
+</E2ESection>
+
+<E2ESection Id="item-styles" Title="Item Class &amp; Style">
+    <BitMenuButton Id="mnb-item-styles" Text="Styled items" Items="_itemStyles" />
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Items at runtime">
+    <BitMenuButton Id="mnb-dynamic" Text="Dynamic" Items="_dynamic" />
+    <button id="btn-add-item" type="button" @onclick="AddItem">Add item</button>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitMenuButton Id="mnb-mounted" Text="Mounted" Items="_mountedItems" />
+    }
+    <button id="btn-unmount" type="button" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+</E2ESection>
+
+@* ---------- the group-level sections, the same for every API ---------- *@
+
+<E2ESection Id="variant" Title="Variant">
+    @foreach (var variant in Enum.GetValues<BitVariant>())
+    {
+        <BitMenuButton Id="@($"mnb-variant-{variant}")" Variant="variant" Text="@variant.ToString()" Items="@(L($"variant-{variant}"))" />
+        <BitMenuButton Id="@($"mnb-variant-split-{variant}")" Split Variant="variant" Text="@variant.ToString()" Items="@(L($"variant-split-{variant}"))" />
+        <BitMenuButton Id="@($"mnb-variant-dis-{variant}")" Disabled Variant="variant" Text="@variant.ToString()" Items="@(L($"variant-dis-{variant}"))" />
+    }
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var color in Enum.GetValues<BitColor>())
+    {
+        <BitMenuButton Id="@($"mnb-color-{color}")" Color="color" Text="@color.ToString()" Items="@(L($"color-{color}"))" />
+        <BitMenuButton Id="@($"mnb-color-outline-{color}")" Color="color" Variant="BitVariant.Outline" Text="@color.ToString()" Items="@(L($"color-outline-{color}"))" />
+        <BitMenuButton Id="@($"mnb-color-toggle-{color}")" Color="color" Split Toggle DefaultIsToggled="true" Text="@color.ToString()" Items="@(L($"color-toggle-{color}"))" />
+        <BitMenuButton Id="@($"mnb-color-dis-{color}")" Color="color" Disabled Text="@color.ToString()" Items="@(L($"color-dis-{color}"))" />
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitMenuButton Id="mnb-size-default" Text="Default" IconName="@BitIconName.Add" Items="@(L("size-default"))" />
+    @foreach (var size in Enum.GetValues<BitSize>())
+    {
+        <BitMenuButton Id="@($"mnb-size-{size}")" Size="size" Text="@size.ToString()" IconName="@BitIconName.Add" Items="@(L($"size-{size}"))" />
+        <BitMenuButton Id="@($"mnb-size-icon-{size}")" Size="size" IconOnly AriaLabel="More" IconName="@BitIconName.More" Items="@(L($"size-icon-{size}"))" />
+    }
+</E2ESection>
+
+<E2ESection Id="layout" Title="FullWidth, chevron &amp; callout">
+    <div id="fw-container" style="width: 420px;">
+        <BitMenuButton Id="mnb-fullwidth" FullWidth Text="Full width" Items="@(L("fullwidth"))" />
+    </div>
+    <BitMenuButton Id="mnb-chevron" Split Text="Chevron" Items="@(L("chevron"))" ChevronDownIconName="@BitIconName.ChevronDownMed" ChevronDownAriaLabel="Show the save options" ChevronDownTitle="More save options" />
+    <BitMenuButton Id="mnb-icons-custom" Text="Custom marks" Items="_customMarks" CloseOnItemClick="false"
+                   CheckIconName="@BitIconName.CheckboxComposite" RadioIconName="@BitIconName.RadioBtnOn" SubmenuIconName="@BitIconName.ChevronRightMed" />
+    @foreach (var kind in Enum.GetValues<BitColorKind>())
+    {
+        <BitMenuButton Id="@($"mnb-background-{kind}")" Text="@kind.ToString()" Items="@(L($"background-{kind}"))" Background="kind" />
+    }
+    <BitMenuButton Id="mnb-maxheight" Text="Scrolling" Items="_long" MaxHeight="10rem" />
+    <BitMenuButton Id="mnb-stays-open" Text="Stays open" Items="@(L("stays-open"))" CloseOnItemClick="false" />
+</E2ESection>
+
+<E2ESection Id="form" Title="ButtonType &amp; FormId">
+    <EditForm Model="_formModel" OnValidSubmit="() => _submits++" novalidate>
+        <BitMenuButton Id="mnb-form-split" Split Text="Submit" ButtonType="BitButtonType.Submit" Items="_formItems" />
+        <BitMenuButton Id="mnb-form-plain" Text="Plain" Items="@(L("form-plain"))" />
+    </EditForm>
+    <form id="mnb-ext-form" @onsubmit="() => _extSubmits++" @onsubmit:preventDefault></form>
+    <BitMenuButton Id="mnb-form-external" Split Text="External" ButtonType="BitButtonType.Submit" FormId="mnb-ext-form" Items="@(L("form-external"))" />
+    <span id="form-submits">@_submits</span>
+    <span id="form-ext-submits">@_extSubmits</span>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitMenuButton Id="mnb-a11y" Text="Hover over me" Title="The menu button tooltip" AriaDescription="Opens the actions menu" aria-describedby="a11y-extra" Items="@(L("a11y"))" />
+    <span id="a11y-extra">Author description</span>
+    <BitMenuButton Id="mnb-a11y-hidden" AriaHidden Split Text="Hidden" Items="@(L("a11y-hidden"))" />
+    <BitMenuButton @ref="_focusRef" Id="mnb-focus" Text="Focus target" Items="@(L("focus"))" />
+    <button id="btn-focus" type="button" @onclick="async () => await _focusRef.FocusAsync()">FocusAsync</button>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitMenuButton Id="mnb-disabled" Disabled="_disabled" Split Text="Disabled" Items="@(L("disabled"))" OnClick="(BitMenuButtonItem? i) => _disabledClicks++"
+                   HtmlAttributes="_disabledPageHandlers" />
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="disabled-page-events">@_disabledPageEvents</span>
+    <BitMenuButton Id="mnb-disabled-focusable" Disabled DisabledInteractive Text="Disabled, focusable" Items="@(L("disabled-focusable"))" />
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="@_params">
+        <BitMenuButton Id="params-inherit" Text="Inherit" Items="@(L("params-inherit"))" />
+        <BitMenuButton Id="params-own" Text="Own" Variant="BitVariant.Fill" Items="@(L("params-own"))" />
+    </BitParams>
+    <BitMenuButton Id="params-outside" Text="Outside" Items="@(L("params-outside"))" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style &amp; Class">
+    <BitMenuButton Id="sc-style" Style="margin-left: 11px;" Class="e2e-custom-class" Text="Styled" Items="@(L("sc-style"))" data-e2e="custom-attribute" />
+    <BitMenuButton Id="sc-styles" Split Toggle DefaultIsToggled="true" Text="Styles" IconName="@BitIconName.Add" Items="_stylesItems" CloseOnItemClick="false"
+                   Styles="@(new() { Root = "outline: 3px dotted rgb(9, 9, 9);", Toggled = "border-color: rgb(0, 0, 255);", Opened = "margin-top: 3px;", OperatorButton = "letter-spacing: 2px;", Icon = "color: rgb(255, 0, 0);", Text = "text-decoration: underline;", ChevronDownButton = "padding-left: 9px;", ChevronDown = "color: rgb(0, 128, 0);", Separator = "width: 5px;", Callout = "border: 2px solid rgb(255, 0, 255);", CalloutContainer = "padding-top: 6px;", ItemWrapper = "margin-left: 4px;", ItemButton = "letter-spacing: 3px;", ItemIcon = "color: rgb(128, 0, 128);", ItemText = "text-decoration: underline;", ItemSecondaryText = "color: rgb(0, 0, 255);", ItemCheckIcon = "color: rgb(255, 165, 0);", ItemHeader = "color: rgb(0, 100, 0);", ItemSeparator = "height: 4px;", ItemChevron = "color: rgb(10, 10, 10);", Submenu = "padding-top: 7px;" })" />
+    <BitMenuButton Id="sc-classes" Split Toggle DefaultIsToggled="true" Text="Classes" IconName="@BitIconName.Add" Items="_classesItems" CloseOnItemClick="false"
+                   Classes="@(new() { Root = "c-root", Toggled = "c-toggled", Opened = "c-opened", OperatorButton = "c-opb", Icon = "c-icon", Text = "c-text", ChevronDownButton = "c-chb", ChevronDown = "c-chv", Separator = "c-spb", Callout = "c-callout", CalloutContainer = "c-cul", ItemWrapper = "c-iwr", ItemButton = "c-itm", ItemIcon = "c-iic", ItemText = "c-itx", ItemSecondaryText = "c-isc", ItemCheckIcon = "c-ick", ItemHeader = "c-ihd", ItemSeparator = "c-isp", ItemChevron = "c-sch", Submenu = "c-sub", Overlay = "c-ovl" })" />
+    <BitMenuButton Id="sc-sticky" Sticky Items="_stickyStyles" Styles="@(new() { OperatorButtonIcon = "color: rgb(255, 0, 0);", OperatorButtonText = "color: rgb(0, 128, 0);" })"
+                   Classes="@(new() { OperatorButtonIcon = "c-obi", OperatorButtonText = "c-obt" })" />
+    <BitMenuButton Id="sc-spinner" Text="Spinner" IsLoading Items="@(L("sc-spinner"))" Styles="@(new() { Spinner = "border-top-color: rgb(218, 165, 32);" })" Classes="@(new() { Spinner = "c-spinner" })" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div style="--bit-MenuButton-background: rgb(10, 20, 30); --bit-MenuButton-color: rgb(250, 240, 230); --bit-MenuButton-border-color: rgb(200, 0, 0); --bit-MenuButton-radius: 0px; --bit-MenuButton-border-width: 3px; --bit-MenuButton-min-height: 50px; --bit-MenuButton-font-size: 19px; --bit-MenuButton-icon-size: 25px; --bit-MenuButton-padding: 3px 21px; --bit-MenuButton-gap: 12px; --bit-MenuButton-callout-background: rgb(240, 240, 200); --bit-MenuButton-item-color: rgb(1, 2, 3); --bit-MenuButton-item-min-height: 44px; --bit-MenuButton-callout-radius: 9px; --bit-MenuButton-hover-background: rgb(255, 128, 0); --bit-MenuButton-toggled-background: rgb(0, 0, 150); --bit-MenuButton-disabled-background: rgb(77, 77, 77); --bit-MenuButton-item-hover-background: rgb(0, 255, 255);">
+        <BitMenuButton Id="vars-default" Text="Restyled" IconName="@BitIconName.Add" Items="@(L("vars-default"))" />
+        <BitMenuButton Id="vars-color" Color="BitColor.Error" Text="Explicit color" Items="@(L("vars-color"))" />
+        <BitMenuButton Id="vars-size" Size="BitSize.Small" Text="Explicit size" Items="@(L("vars-size"))" />
+        <BitMenuButton Id="vars-toggled" Split Toggle DefaultIsToggled="true" Text="Toggled" Items="@(L("vars-toggled"))" />
+        <BitMenuButton Id="vars-disabled" Disabled Text="Disabled" Items="@(L("vars-disabled"))" />
+        <BitMenuButton Id="vars-background" Background="BitColorKind.Tertiary" Text="Explicit background" Items="@(L("vars-background"))" />
+    </div>
+    <div style="--bit-MenuButton-outline-border-color: rgb(200, 0, 200); --bit-MenuButton-text-color: rgb(0, 0, 200);">
+        <BitMenuButton Id="vars-twin-fill" Text="Fill" Items="@(L("vars-twin-fill"))" />
+        <BitMenuButton Id="vars-twin-outline" Variant="BitVariant.Outline" Text="Outline" Items="@(L("vars-twin-outline"))" />
+        <BitMenuButton Id="vars-twin-text" Variant="BitVariant.Text" Text="Text" Items="@(L("vars-twin-text"))" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    @* Kept to the right of the page, so its submenu has the room to open on the left the way RTL asks for. *@
+    <div style="display: flex; justify-content: flex-end;">
+        <BitMenuButton Id="mnb-rtl" Dir="BitDir.Rtl" Text="درج" IconName="@BitIconName.Add" Items="_rtlSubmenu" />
+    </div>
+    <div dir="rtl">
+        <BitMenuButton Id="mnb-rtl-inherited" Text="درج" IconName="@BitIconName.Add" Items="_rtlInheritedSubmenu" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility">
+    <BitMenuButton Id="mnb-visibility" Visibility="_visibility" Text="Visibility" Items="@(L("visibility"))" />
+    <button id="btn-vis-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-vis-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-vis-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+</E2ESection>
+
+<E2ESection Id="rerender" Title="Group parameters at runtime">
+    <BitMenuButton Id="mnb-rerender" Text="@_rerenderText" Variant="_rerenderVariant" Color="_rerenderColor" Size="_rerenderSize" Split="_rerenderSplit" IconName="@_rerenderIcon" Items="@(L("rerender"))" />
+    <button id="btn-rerender" type="button" @onclick="ChangeRerender">Change parameters</button>
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Escape inside a dialog">
+    <button id="btn-open-modal" type="button" @onclick="() => _modalOpen = true">Open modal</button>
+    <span id="modal-open">@_modalOpen</span>
+    <BitModal @bind-IsOpen="_modalOpen" Id="mnb-modal">
+        <div style="padding: 24px;">
+            <BitMenuButton Id="mnb-in-modal" Text="In a modal" Items="@(L("in-modal"))" />
+            <BitMenuButton Id="mnb-in-modal-split" Split Text="Split in a modal" Items="@(L("in-modal-split"))" />
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <BitMenuButton Id="motion-default" Text="Default" Items="@(L("motion-default"))" />
+    <BitMenuButton Id="motion-forced" ForceAnimation Text="ForceAnimation" Items="@(L("motion-forced"))" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private string _clicked = "none";
+    private string _splitClicked = "none";
+    private BitMenuButtonItem? _stickySelected;
+    private readonly List<string> _stickyChanges = [];
+    private string _splitStickyHeader = "none";
+    private int _splitStickyActions;
+    private bool _isToggled;
+    private readonly List<string> _toggleChanges = [];
+    private bool _isOpen;
+    private int _checkClicks;
+    private string _detailsClicked = "none";
+    private int _loadingClicks;
+    private bool _loadingValue;
+    private TaskCompletionSource _loadingTcs = new();
+    private int _reclicks;
+    private int _headerClicks;
+    private int _parentClicks;
+    private TaskCompletionSource _delayTcs = new();
+    private string _keysClicked = "none";
+    private string _submenuClicked = "none";
+    private bool _mounted = true;
+    private readonly FormModel _formModel = new();
+    private int _submits;
+    private int _extSubmits;
+    private BitMenuButton<BitMenuButtonItem> _focusRef = default!;
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _disabledPageEvents;
+    private BitVisibility _visibility;
+    private string _rerenderText = "Before";
+    private BitVariant? _rerenderVariant;
+    private BitColor? _rerenderColor;
+    private BitSize? _rerenderSize;
+    private bool _rerenderSplit;
+    private string? _rerenderIcon;
+    private bool _modalOpen;
+    private int _dynamicCounter;
+
+    private readonly BitMenuButtonParams[] _params =
+    [
+        new()
+        {
+            Variant = BitVariant.Outline,
+            Size = BitSize.Small,
+            Color = BitColor.Secondary,
+            Split = true,
+        }
+    ];
+
+    private readonly List<BitMenuButtonItem> _basic = Basic();
+    private readonly List<BitMenuButtonItem> _split = Basic();
+    private readonly List<BitMenuButtonItem> _sticky = Basic();
+    private readonly List<BitMenuButtonItem> _stickyDefault = Basic();
+    private readonly List<BitMenuButtonItem> _stickyIsSelected =
+    [
+        new() { Key = "add", Text = "Add" },
+        new() { Key = "edit", Text = "Edit" },
+        new() { Key = "delete", Text = "Delete", IsSelected = true }
+    ];
+    private readonly List<BitMenuButtonItem> _splitSticky;
+    private readonly List<BitMenuButtonItem> _icons =
+    [
+        new() { Key = "add", Text = "Add", IconName = BitIconName.Add },
+        new() { Key = "edit", Text = "Edit", IconName = BitIconName.Edit },
+        new() { Key = "delete", Text = "Delete", Icon = BitIconInfo.Bi("trash") }
+    ];
+    private readonly List<BitMenuButtonItem> _iconOnly = Basic();
+    private readonly List<BitMenuButtonItem> _noIcon = Basic();
+    private readonly List<BitMenuButtonItem> _extIcon = Basic();
+    private readonly List<BitMenuButtonItem> _toggle = Basic();
+    private readonly List<BitMenuButtonItem> _toggleDefault = Basic();
+    private readonly List<BitMenuButtonItem> _check =
+    [
+        new() { Key = "bold", Text = "Bold", Checkable = true },
+        new() { Key = "italic", Text = "Italic", Checkable = true, IsChecked = true },
+        new() { IsSeparator = true },
+        new() { Key = "left", Text = "Left", RadioGroup = "align", IsChecked = true },
+        new() { Key = "center", Text = "Center", RadioGroup = "align" },
+        new() { Key = "right", Text = "Right", RadioGroup = "align" }
+    ];
+    private readonly List<BitMenuButtonItem> _headerTemplate = Basic();
+    private readonly List<BitMenuButtonItem> _itemTemplate = Basic();
+    private readonly List<BitMenuButtonItem> _ownTemplate =
+    [
+        new() { Key = "custom", Text = "Custom", Template = item => @<span class="tpl-own">@item.Text template</span> },
+        new() { Key = "plain", Text = "Plain" }
+    ];
+    private readonly List<BitMenuButtonItem> _openBind = Basic();
+    private readonly List<BitMenuButtonItem> _grouping =
+    [
+        new() { IsHeader = true, Text = "Files", Title = "File commands" },
+        new() { Key = "new", Text = "New" },
+        new() { Key = "open", Text = "Open" },
+        new() { IsSeparator = true },
+        new() { IsHeader = true, Text = "Edit" },
+        new() { Key = "cut", Text = "Cut" }
+    ];
+    private readonly List<BitMenuButtonItem> _details =
+    [
+        new() { Key = "save", Text = "Save", SecondaryText = "Ctrl+S", Title = "Save the document" },
+        new() { Key = "locked", Text = "Locked", IsDisabled = true },
+        new() { Key = "named", Text = "Named", AriaLabel = "A named item" }
+    ];
+    private readonly List<BitMenuButtonItem> _disabledInteractive =
+    [
+        new() { Key = "a", Text = "First" },
+        new() { Key = "b", Text = "Disabled", IsDisabled = true },
+        new() { Key = "c", Text = "Last" }
+    ];
+    private readonly List<BitMenuButtonItem> _links = Links();
+    private readonly List<BitMenuButtonItem> _linksHint = Links();
+    private readonly List<BitMenuButtonItem> _linksNoHint = Links();
+    private readonly List<BitMenuButtonItem> _loadingItems = Basic();
+    private readonly List<BitMenuButtonItem> _loadingPlain = Basic();
+    private readonly List<BitMenuButtonItem> _loadingTemplate = Basic();
+    private readonly List<BitMenuButtonItem> _loadingReclick = Basic();
+    private readonly List<BitMenuButtonItem> _fruits =
+    [
+        new() { Key = "apple", Text = "Apple" },
+        new() { Key = "banana", Text = "Banana" },
+        new() { Key = "blueberry", Text = "Blueberry" },
+        new() { Key = "cherry", Text = "Cherry" }
+    ];
+    private readonly List<BitMenuButtonItem> _submenu;
+    private readonly List<BitMenuButtonItem> _itemStyles =
+    [
+        new() { Key = "classed", Text = "Classed", Class = "item-own-class" },
+        new() { Key = "styled", Text = "Styled", Style = "color: rgb(255, 0, 255);" }
+    ];
+    private List<BitMenuButtonItem> _dynamic = [new() { Key = "a", Text = "A" }];
+    private readonly List<BitMenuButtonItem> _mountedItems = Basic();
+    private readonly List<BitMenuButtonItem> _customMarks =
+    [
+        new() { Key = "check", Text = "Check", Checkable = true, IsChecked = true },
+        new() { Key = "radio", Text = "Radio", RadioGroup = "g", IsChecked = true },
+        new() { Key = "sub", Text = "Sub", ChildItems = [new() { Key = "child", Text = "Child" }] }
+    ];
+    private readonly List<BitMenuButtonItem> _long = Enumerable.Range(1, 20).Select(i => new BitMenuButtonItem { Key = $"l{i}", Text = $"Item {i}" }).ToList();
+    private readonly List<BitMenuButtonItem> _formItems = Basic();
+    private readonly List<BitMenuButtonItem> _stylesItems;
+    private readonly List<BitMenuButtonItem> _classesItems;
+    private readonly List<BitMenuButtonItem> _stickyStyles =
+    [
+        new() { Key = "add", Text = "Add", IconName = BitIconName.Add },
+        new() { Key = "edit", Text = "Edit", IconName = BitIconName.Edit }
+    ];
+    private readonly List<BitMenuButtonItem> _rtlSubmenu;
+    private readonly List<BitMenuButtonItem> _rtlInheritedSubmenu;
+
+    private readonly Dictionary<string, List<BitMenuButtonItem>> _lists = [];
+
+    // The page's own handlers of the events that activate an element, splatted onto the root: written as @onclick on
+    // the component they would be taken for its OnClick parameter.
+    private readonly Dictionary<string, object> _disabledPageHandlers;
+
+    public BitMenuButtonE2E()
+    {
+        _disabledPageHandlers = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledPageEvents++),
+            ["onmousedown"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledPageEvents++),
+        };
+        _splitSticky =
+        [
+            new() { Key = "add", Text = "Add", OnClick = _ => { _splitStickyActions++; InvokeAsync(StateHasChanged); } },
+            new() { Key = "edit", Text = "Edit", OnClick = _ => { _splitStickyActions += 10; InvokeAsync(StateHasChanged); } }
+        ];
+        _submenu = Submenu();
+        _rtlSubmenu = Submenu();
+        _rtlInheritedSubmenu = Submenu();
+        _stylesItems = StyledParts();
+        _classesItems = StyledParts();
+    }
+
+    // One list per menu, made once, for the menus whose items are plain.
+    private List<BitMenuButtonItem> L(string id)
+    {
+        if (_lists.TryGetValue(id, out var list) is false)
+        {
+            _lists[id] = list = Basic();
+        }
+
+        return list;
+    }
+
+    private static List<BitMenuButtonItem> Basic() =>
+    [
+        new() { Key = "add", Text = "Add" },
+        new() { Key = "edit", Text = "Edit" },
+        new() { Key = "delete", Text = "Delete" }
+    ];
+
+    private static List<BitMenuButtonItem> Links() =>
+    [
+        new() { Key = "home", Text = "Home", Href = "/", Target = "_blank" },
+        new() { Key = "docs", Text = "Docs", Href = "https://example.com", Rel = BitLinkRels.NoFollow },
+        new() { Key = "self", Text = "Self", Href = "e2e/menu-button#links" }
+    ];
+
+    private List<BitMenuButtonItem> Submenu() =>
+    [
+        new() { Key = "text", Text = "Text box" },
+        new()
+        {
+            Key = "share", Text = "Share", IconName = BitIconName.Share,
+            ChildItems =
+            [
+                new() { Key = "email", Text = "Email", OnClick = _ => { _submenuClicked = "email-own"; InvokeAsync(StateHasChanged); } },
+                new() { Key = "link", Text = "Link" }
+            ]
+        },
+        new()
+        {
+            Key = "more", Text = "More",
+            ChildItems =
+            [
+                new() { Key = "print", Text = "Print", ChildItems = [new() { Key = "pdf", Text = "PDF" }] },
+                new() { Key = "export", Text = "Export" }
+            ]
+        }
+    ];
+
+    private static List<BitMenuButtonItem> StyledParts() =>
+    [
+        new() { IsHeader = true, Text = "Header" },
+        new() { Key = "add", Text = "Add", IconName = BitIconName.Add, SecondaryText = "Ctrl+A", Checkable = true, IsChecked = true },
+        new() { IsSeparator = true },
+        new() { Key = "sub", Text = "Sub", ChildItems = [new() { Key = "child", Text = "Child" }] }
+    ];
+
+    private void BasicClick(BitMenuButtonItem? item) => _clicked = item?.Text ?? "header";
+    private void SplitClick(BitMenuButtonItem? item) => _splitClicked = item?.Text ?? "header";
+    private void SplitStickyClick(BitMenuButtonItem? item) => _splitStickyHeader = item?.Key ?? "none";
+    private void DetailsClick(BitMenuButtonItem? item) => _detailsClicked = item?.Key ?? "header";
+    private void KeysClick(BitMenuButtonItem? item) => _keysClicked = item?.Key ?? "header";
+    private void SubmenuClick(BitMenuButtonItem? item) => _submenuClicked = item?.Key ?? "header";
+
+    private async Task DelayClick()
+    {
+        _delayTcs = new();
+        await _delayTcs.Task;
+    }
+
+    private async Task LoadingClick()
+    {
+        _loadingClicks++;
+        _loadingTcs = new();
+        await _loadingTcs.Task;
+    }
+
+    private void AddItem()
+    {
+        _dynamicCounter++;
+        _dynamic = [.. _dynamic, new() { Key = $"n{_dynamicCounter}", Text = $"New {_dynamicCounter}" }];
+    }
+
+    private void ChangeRerender()
+    {
+        _rerenderText = "After";
+        _rerenderVariant = BitVariant.Outline;
+        _rerenderColor = BitColor.Error;
+        _rerenderSize = BitSize.Large;
+        _rerenderSplit = true;
+        _rerenderIcon = BitIconName.Add;
+    }
+
+    private sealed class FormModel
+    {
+        public string? Text { get; set; }
+    }
+}

@@ -1,0 +1,22 @@
+﻿/* The host's own chrome: enough to keep the sections apart and readable, nothing that restyles a component. */
+body {
+    margin: 0;
+    padding: 16px;
+    font-family: Segoe UI, sans-serif;
+}
+
+.e2e-status {
+    font-family: monospace;
+    margin: 0 0 16px;
+}
+
+.e2e-section {
+    padding: 12px;
+    margin-bottom: 16px;
+    border: 1px solid #ddd;
+}
+
+.e2e-section-title {
+    font-size: 14px;
+    margin: 0 0 8px;
+}

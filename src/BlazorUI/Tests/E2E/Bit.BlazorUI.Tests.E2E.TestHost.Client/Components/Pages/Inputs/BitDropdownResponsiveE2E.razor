@@ -1,0 +1,123 @@
+﻿@page "/e2e/dropdown/responsive"
+@using System.Reflection
+
+@* The Responsive mode of BitDropdown on a phone: the side panel with its label and close button, the swipe that
+   dismisses it, the RTL panel, the ComboBox panel input and add button (with their icons and accessible names), the
+   search box in the panel, the parts' Styles and Classes, and a dropdown that is not responsive on the same phone. *@
+
+<PageTitle>BitDropdown responsive E2E</PageTitle>
+
+<h1>BitDropdown responsive</h1>
+
+<E2ESection Id="responsive" Title="Responsive panel">
+    <BitDropdown Id="dd-resp"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Responsive"
+                 Responsive
+                 ResponsiveCloseButtonAriaLabel="Dismiss panel"
+                 Styles="_styles"
+                 Classes="_classes"
+                 Items="@L("resp")"
+                 @bind-Value="_respValue"
+                 OnClose="() => _respCloseCount++" />
+    <p>Value: <span id="resp-value">@_respValue</span> | OnClose: <span id="resp-close-count">@_respCloseCount</span></p>
+    <BitDropdown Id="dd-resp-rtl"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Responsive RTL"
+                 Responsive
+                 Dir="BitDir.Rtl"
+                 Items="@L("resp-rtl")"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-resp-search"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Responsive search"
+                 Responsive
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 Items="@L("resp-search")"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-nonresp"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Not responsive"
+                 Items="@L("nonresp")"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2ESection Id="responsive-combo" Title="Responsive ComboBox">
+    <BitDropdown Id="dd-resp-combo"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Responsive combo"
+                 Combo
+                 Dynamic
+                 Responsive
+                 ComboBoxAddButtonAriaLabel="Add it"
+                 ResponsiveCloseIconName="ChromeClose"
+                 ComboBoxAddButtonIconName="CircleAddition"
+                 DynamicValueGenerator="GenerateValue"
+                 Styles="_styles"
+                 Classes="_classes"
+                 Items="@L("resp-combo")"
+                 @bind-Value="_respComboValue" />
+    <p>Value: <span id="resp-combo-value">@_respComboValue</span></p>
+    <BitDropdown Id="dd-resp-combo-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Responsive combo multi"
+                 Combo
+                 Chips
+                 Dynamic
+                 MultiSelect
+                 Responsive
+                 ResponsiveCloseIcon="@BitIconInfo.Css("ext-close")"
+                 ComboBoxAddButtonIcon="@BitIconInfo.Css("ext-add")"
+                 DynamicValueGenerator="GenerateValue"
+                 Items="@L("resp-combo-multi")"
+                 @bind-Values="_respComboMultiValues" />
+    <p>Values: <span id="resp-combo-multi-values">@string.Join(',', _respComboMultiValues ?? [])</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly Dictionary<string, List<BitDropdownItem<string>>> _lists = [];
+
+    private List<BitDropdownItem<string>> L(string key)
+    {
+        if (_lists.TryGetValue(key, out var list) is false)
+        {
+            _lists[key] = list =
+            [
+                new() { Text = "Apple", Value = "f-app" },
+                new() { Text = "Banana", Value = "f-ban" },
+                new() { Text = "Grape", Value = "f-gra" },
+            ];
+        }
+
+        return list;
+    }
+
+    private static string GenerateValue(BitDropdownItem<string>? item) => $"dyn-{item?.Text?.ToLowerInvariant()}";
+
+    private string? _respValue;
+    private int _respCloseCount;
+    private string? _respComboValue;
+    private IEnumerable<string?>? _respComboMultiValues = [];
+
+    private readonly BitDropdownClassStyles _styles = Mark(name => $"--part-{name}: 1;");
+    private readonly BitDropdownClassStyles _classes = Mark(name => $"c-{name}");
+
+    private static BitDropdownClassStyles Mark(Func<string, string> value)
+    {
+        var styles = new BitDropdownClassStyles();
+
+        foreach (var property in typeof(BitDropdownClassStyles).GetProperties(BindingFlags.Public | BindingFlags.Instance))
+        {
+            if (property.PropertyType == typeof(string) && property.CanWrite)
+            {
+                property.SetValue(styles, value(property.Name));
+            }
+        }
+
+        return styles;
+    }
+}

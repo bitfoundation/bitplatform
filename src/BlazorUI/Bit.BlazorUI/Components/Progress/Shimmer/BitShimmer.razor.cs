@@ -295,7 +295,7 @@ public partial class BitShimmer : BitComponentBase
     /// <remarks>
     /// A block shimmer takes the full width of its container, which is what a placeholder standing in for a
     /// paragraph or a card wants. An inline one sits next to the words around it and takes the width given by
-    /// <see cref="Width"/>, falling back to the minimum control width of the theme.
+    /// <see cref="Width"/>, falling back to eight spacing units (64px at the default density).
     /// <br />
     /// A <see cref="Height"/> of <c>1em</c> keeps it exactly as tall as the type it sits in, whatever that
     /// type turns out to be.

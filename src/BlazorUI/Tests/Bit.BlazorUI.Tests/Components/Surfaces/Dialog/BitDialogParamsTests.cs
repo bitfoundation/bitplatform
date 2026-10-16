@@ -1,4 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -7,12 +11,46 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Dialog;
 
 /// <summary>
-/// Covers the BitParams cascade of the Dialog: what a BitDialogParams fills in, and what it leaves alone because
-/// the dialog wrote it for itself.
+/// Covers the BitParams cascade of the Dialog: that every parameter which is not about one dialog has a counterpart
+/// on BitDialogParams, what a BitDialogParams fills in - the look, the size, the behavior of the showing and what the
+/// dialog registers on the JS side - and what it leaves alone because the dialog wrote it for itself.
 /// </summary>
 [TestClass]
 public class BitDialogParamsTests : BunitTestContext
 {
+    // What a dialog is about rather than how every dialog behaves - its content, its state, what points at elements
+    // of one dialog or one page, and what it answers - is written per dialog, so it has no place on the params object
+    // (see the remarks of BitDialogParams).
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitDialog.CascadingParameters),
+        nameof(BitDialog.AutoFocusSelector),
+        nameof(BitDialog.Body),
+        nameof(BitDialog.ChildContent),
+        nameof(BitDialog.DefaultIsOpen),
+        nameof(BitDialog.DragElementSelector),
+        nameof(BitDialog.FooterTemplate),
+        nameof(BitDialog.HeaderTemplate),
+        nameof(BitDialog.IsAlert),
+        nameof(BitDialog.IsCancelButtonEnabled),
+        nameof(BitDialog.IsOkButtonEnabled),
+        nameof(BitDialog.IsOpen),
+        nameof(BitDialog.Message),
+        nameof(BitDialog.OnCancel),
+        nameof(BitDialog.OnClose),
+        nameof(BitDialog.OnDismiss),
+        nameof(BitDialog.OnDismissing),
+        nameof(BitDialog.OnDismissPrevented),
+        nameof(BitDialog.OnOk),
+        nameof(BitDialog.OnOpen),
+        nameof(BitDialog.OnOverlayClick),
+        nameof(BitDialog.ScrollerElement),
+        nameof(BitDialog.Subtitle),
+        nameof(BitDialog.SubtitleAriaId),
+        nameof(BitDialog.Title),
+        nameof(BitDialog.TitleAriaId),
+    ];
+
     private static RenderFragment RenderDialog(Action<RenderTreeBuilder>? extraAttributes = null)
     {
         return builder =>
@@ -289,5 +327,220 @@ public class BitDialogParamsTests : BunitTestContext
         var component = RenderWithParams(@params, RenderDialog());
 
         Assert.IsTrue(component.Find(".bit-dlg-cli").ClassList.Contains("cascaded-icon"));
+    }
+
+    [TestMethod]
+    public void BitDialogParamsShouldCarryEveryParameterThatIsNotPerDialog()
+    {
+        var baseParameters = typeof(BitComponentBase).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var parameters = typeof(BitDialog).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                          .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                          .Select(p => p.Name)
+                                          .Where(n => baseParameters.Contains(n) is false
+                                                   && _notCascaded.Contains(n) is false
+                                                   && n.EndsWith("Changed", StringComparison.Ordinal) is false);
+
+        foreach (var name in parameters)
+        {
+            Assert.IsNotNull(typeof(BitDialogParams).GetProperty(name), $"BitDialogParams has no {name}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitDialogParamsShouldNotCascadeWhatBelongsToOneDialog()
+    {
+        foreach (var name in _notCascaded.Where(n => n != nameof(BitDialog.CascadingParameters)))
+        {
+            Assert.IsNull(typeof(BitDialogParams).GetProperty(name), $"BitDialogParams cascades {name}, which belongs to one dialog.");
+        }
+    }
+
+    [TestMethod]
+    public void BitDialogCascadedSizesShouldAllReachTheSurface()
+    {
+        var @params = new BitDialogParams
+        {
+            Height = "24rem",
+            MinHeight = "10rem",
+            MinWidth = "20rem",
+            MaxWidth = "40rem",
+        };
+
+        var component = RenderWithParams(@params, RenderDialog());
+
+        var style = component.Find(".bit-dlg-ctn").GetAttribute("style");
+
+        StringAssert.Contains(style, "--bit-dlg-hei:24rem;");
+        StringAssert.Contains(style, "--bit-dlg-mnh:10rem;");
+        StringAssert.Contains(style, "--bit-dlg-mnw:20rem;");
+        // A cascaded MaxWidth replaces the theme's ceiling the way one written on the dialog does.
+        StringAssert.Contains(style, "--bit-dlg-mxw:40rem;");
+        Assert.IsFalse(style!.Contains("--bit-Dialog-max-width"));
+    }
+
+    [TestMethod]
+    public void BitDialogCascadedFocusOptionsShouldReachTheOpening()
+    {
+        // AutoFocus, RestoreFocus and TrapFocus default to true, so the cascade turning them off has to win over the
+        // default rather than being mistaken for a value the dialog set for itself.
+        var @params = new BitDialogParams
+        {
+            AutoFocus = false,
+            RestoreFocus = false,
+            TrapFocus = false,
+        };
+
+        RenderWithParams(@params, RenderDialog());
+
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.storeFocus"]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"]);
+    }
+
+    [TestMethod]
+    public void BitDialogCascadedScrollOptionsShouldHoldTheNamedScroller()
+    {
+        var @params = new BitDialogParams
+        {
+            AutoToggleScroll = true,
+            ScrollerSelector = ".my-scroller",
+        };
+
+        RenderWithParams(@params, RenderDialog());
+
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][0];
+
+        Assert.AreEqual(".my-scroller", invocation.Arguments[1]);
+        Assert.AreEqual(true, invocation.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitDialogCascadedIsDraggableShouldRegisterTheDragHandlers()
+    {
+        var component = RenderWithParams(new BitDialogParams { IsDraggable = true }, RenderDialog());
+
+        var containerId = component.Find(".bit-dlg-ctn").GetAttribute("id");
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.DragDrop.setup"];
+
+        Assert.HasCount(1, setup);
+        Assert.AreEqual($"[id=\"{containerId}\"] > .bit-dlg-hdr", setup[0].Arguments[2]);
+    }
+
+    [TestMethod]
+    public async Task BitDialogCascadedCloseOnEscapeShouldRefuseTheKey()
+    {
+        BitDialogDismissReason? prevented = null;
+
+        var component = RenderWithParams(new BitDialogParams { CloseOnEscape = false, NoDismissPreventedAnimation = true }, RenderDialog(builder =>
+        {
+            builder.AddAttribute(10, nameof(BitDialog.OnDismissPrevented), EventCallback.Factory.Create<BitDialogDismissReason>(this, r => prevented = r));
+        }));
+
+        var dialog = component.FindComponent<BitDialog>();
+
+        await dialog.InvokeAsync(dialog.Instance._OnEscape);
+
+        Assert.IsTrue(dialog.Instance.IsOpen);
+        Assert.AreEqual(BitDialogDismissReason.Escape, prevented);
+        // The cascaded NoDismissPreventedAnimation leaves the surface still.
+        Assert.IsFalse(component.Find(".bit-dlg-ctn").ClassList.Contains("bit-dlg-prv"));
+    }
+
+    [TestMethod]
+    public void BitDialogCascadedKeepMountedShouldKeepTheClosedDialogInThePage()
+    {
+        var isOpen = true;
+
+        var component = RenderWithParams(new BitDialogParams { KeepMounted = true }, builder =>
+        {
+            builder.OpenComponent<BitDialog>(0);
+            builder.AddAttribute(1, nameof(BitDialog.IsOpen), isOpen);
+            builder.AddAttribute(2, nameof(BitDialog.IsOpenChanged), EventCallback.Factory.Create<bool>(this, v => isOpen = v));
+            builder.AddAttribute(3, nameof(BitDialog.Title), "Title");
+            builder.CloseComponent();
+        });
+
+        component.Find(".bit-dlg-cls").Click();
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(isOpen);
+            Assert.IsTrue(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-hdn"));
+            Assert.AreEqual("Title", component.Find(".bit-dlg-ttl").TextContent);
+        }, TimeSpan.FromSeconds(5));
+    }
+
+    [TestMethod]
+    public void BitDialogCascadedBaseParametersShouldReachTheRoot()
+    {
+        var @params = new BitDialogParams
+        {
+            Dir = BitDir.Rtl,
+            Style = "z-index: 7;",
+            AriaLabel = "Cascaded",
+        };
+
+        var component = RenderWithParams(@params, RenderDialog());
+
+        var root = component.Find(".bit-dlg");
+
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        StringAssert.Contains(root.GetAttribute("style"), "z-index: 7;");
+        Assert.AreEqual("Cascaded", component.Find(".bit-dlg-ctn").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitDialogShouldGoBackToItsDefaultsOnceTheCascadeStopsCarryingAValue()
+    {
+        var component = RenderWithParams(new BitDialogParams { Color = BitColor.Error, Modeless = true, OkText = "Delete" }, RenderDialog());
+
+        Assert.IsTrue(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-err"));
+        Assert.IsTrue(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-mls"));
+        Assert.AreEqual("Delete", component.Find(".bit-dlg-okb").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.Parameters, [new BitDialogParams()]));
+
+        var dialog = component.FindComponent<BitDialog>().Instance;
+
+        Assert.IsNull(dialog.Color);
+        Assert.IsFalse(dialog.Modeless);
+        Assert.AreEqual("Ok", dialog.OkText);
+        Assert.IsFalse(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-err"));
+        Assert.IsFalse(component.Find(".bit-dlg").ClassList.Contains("bit-dlg-mls"));
+        Assert.AreEqual("Ok", component.Find(".bit-dlg-okb").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitDialogShouldNotBeAffectedByAnEmptyParamsObject()
+    {
+        var component = RenderWithParams(new BitDialogParams(), RenderDialog());
+
+        var dialog = component.FindComponent<BitDialog>().Instance;
+
+        Assert.IsNull(dialog.Color);
+        Assert.IsNull(dialog.Width);
+        Assert.IsNull(dialog.MaxWidth);
+        Assert.IsNull(dialog.TrapFocus);
+        Assert.IsNull(dialog.AutoFocusButton);
+        Assert.IsNull(dialog.CloseButtonTitle);
+        Assert.IsTrue(dialog.AutoFocus);
+        Assert.IsTrue(dialog.CloseOnEscape);
+        Assert.IsTrue(dialog.CloseOnOverlayClick);
+        Assert.IsTrue(dialog.RestoreFocus);
+        Assert.IsTrue(dialog.ShowOkButton);
+        Assert.IsTrue(dialog.ShowCancelButton);
+        Assert.IsTrue(dialog.ShowCloseButton);
+        Assert.IsFalse(dialog.Blocking);
+        Assert.IsFalse(dialog.Modeless);
+        Assert.IsFalse(dialog.KeepMounted);
+        Assert.AreEqual(BitPosition.Center, dialog.Position);
+        Assert.AreEqual("Ok", dialog.OkText);
+        Assert.AreEqual("Cancel", dialog.CancelText);
+
+        Assert.AreEqual(1, component.Find(".bit-dlg").ClassList.Length);
+        Assert.IsTrue(component.Find(".bit-dlg-doc").ClassList.Contains("bit-dlg-ctr"));
+        Assert.AreEqual("dialog", component.Find(".bit-dlg-ctn").GetAttribute("role"));
     }
 }

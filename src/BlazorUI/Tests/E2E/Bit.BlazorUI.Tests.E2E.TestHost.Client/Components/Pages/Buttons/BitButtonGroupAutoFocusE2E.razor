@@ -1,0 +1,20 @@
+﻿@page "/e2e/button-group/autofocus"
+
+<PageTitle>BitButtonGroup AutoFocus E2E</PageTitle>
+
+@* AutoFocus acts on the first render only, so it gets a page of its own where nothing else asks for the focus. *@
+<E2ESection Id="autofocus" Title="AutoFocus">
+    <input id="autofocus-before" aria-label="before" />
+    <BitButtonGroup Id="grp-autofocus" AutoFocus Toggle DefaultToggleKey="edit" Items="_items" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly List<BitButtonGroupItem> _items =
+    [
+        new() { Key = "add", Text = "Add" },
+        new() { Key = "edit", Text = "Edit" },
+        new() { Key = "delete", Text = "Delete" }
+    ];
+}

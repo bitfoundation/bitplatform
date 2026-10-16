@@ -111,15 +111,19 @@ public class BitParams : ComponentBase
 
 
 
+    // Opening the provider keeps all of its members, its annotated _cascadingValueType field among them. That field only
+    // ever holds typeof(CascadingValue<>), which the trimmer sees assigned, so what the annotation asks for is kept.
+    // The suppression is unconditional so the trimmer honours it as well as the compiler's analyzer.
+    [UnconditionalSuppressMessage("Trimming", "IL2110", Justification = "BitCascadingValueProvider._cascadingValueType only ever holds typeof(CascadingValue<>), whose members its annotation keeps.")]
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(IBitComponentParams))]
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
-#pragma warning disable ASP0006, IL2110
+#pragma warning disable ASP0006
         builder.OpenComponent<BitCascadingValueProvider>(0);
         builder.AddComponentParameter(1, nameof(BitCascadingValueProvider.Values), _values);
         builder.AddComponentParameter(2, nameof(BitCascadingValueProvider.ChildContent), _renderContent);
         builder.CloseComponent();
-#pragma warning restore ASP0006, IL2110
+#pragma warning restore ASP0006
     }
 
 

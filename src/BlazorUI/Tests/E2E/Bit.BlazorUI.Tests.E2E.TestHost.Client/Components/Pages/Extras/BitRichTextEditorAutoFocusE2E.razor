@@ -1,0 +1,35 @@
+﻿@page "/e2e/rich-text-editor/autofocus"
+
+<PageTitle>BitRichTextEditor AutoFocus E2E</PageTitle>
+
+<h1>BitRichTextEditor - AutoFocus and base parameters</h1>
+
+<E2ESection Id="autofocus" Title="AutoFocus">
+    <input id="before-editor" />
+    <BitRichTextEditor Id="rte-autofocus" AutoFocus Value="@FocusedHtml" Height="4rem" />
+</E2ESection>
+
+<E2ESection Id="base" Title="Visibility and HtmlAttributes">
+    <button id="btn-visibility" @onclick="CycleVisibility">Cycle visibility</button>
+    <span id="visibility">@_visibility</span>
+    <BitRichTextEditor Id="rte-visibility" Visibility="_visibility" HtmlAttributes="_attributes" Height="4rem" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string FocusedHtml = "<p>focused on load</p>";
+
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private readonly Dictionary<string, object> _attributes = new() { ["data-test"] = "rte-data", ["title"] = "Editor title" };
+
+    private void CycleVisibility()
+    {
+        _visibility = _visibility switch
+        {
+            BitVisibility.Visible => BitVisibility.Hidden,
+            BitVisibility.Hidden => BitVisibility.Collapsed,
+            _ => BitVisibility.Visible
+        };
+    }
+}

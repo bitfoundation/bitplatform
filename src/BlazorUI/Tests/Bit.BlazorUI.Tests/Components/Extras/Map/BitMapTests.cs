@@ -523,6 +523,57 @@ public class BitMapTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitMapShouldDoNothingWhenAMethodIsCalledBeforeItIsReady()
+    {
+        // The map loads on its own schedule, and a page's click or lifecycle method can always run ahead of it - or, as
+        // here, the map never gets there at all. A call made then must not throw: from an event handler of a Blazor
+        // Server page an exception tears the whole circuit down.
+        Context.JSInterop.SetupVoid(INIT_STYLESHEETS);
+        Context.JSInterop.SetupVoid(INIT_SCRIPTS);
+        Context.JSInterop.SetupVoid(INIT, _ => true).SetException(new Microsoft.JSInterop.JSException("boom"));
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+        var map = component.Instance;
+        Assert.IsFalse(map.IsReady);
+        var invocations = Context.JSInterop.Invocations.Count;
+
+        await map.SetView(new BitMapLatLng(1, 2), 5);
+        await map.FlyTo(new BitMapLatLng(1, 2));
+        await map.SetZoom(4);
+        await map.ZoomIn();
+        await map.PanBy(10, 10);
+        await map.FitBounds(new BitMapLatLngBounds(new BitMapLatLng(0, 0), new BitMapLatLng(1, 1)));
+        await map.FitBoundsToMarkers();
+        await map.AddMarker(new BitMapMarker { Id = "m", Position = new BitMapLatLng(1, 2) });
+        await map.SetMarkerPosition("m", new BitMapLatLng(3, 4));
+        await map.OpenPopup("m");
+        await map.OpenMarkerPopup("m");
+        await map.RemoveMarker("m");
+        await map.ClearMarkers();
+        await map.SyncMarkers([]);
+        await map.AddPolyline("l", [new BitMapLatLng(0, 0), new BitMapLatLng(1, 1)]);
+        await map.SetLayerVisible("l", false);
+        await map.SetLayerStyle("l", null);
+        await map.RemoveLayer("l");
+        await map.ClearVectorLayers();
+        await map.SetTileOverlayVisible("o", false);
+        await map.SetTileOverlayOpacity("o", 0.5);
+        await map.RemoveTileOverlay("o");
+        await map.ClearTileOverlays();
+        Assert.IsNull(await map.Locate());
+        Assert.IsFalse(await map.CloseMarkerPopup());
+        Assert.IsFalse(await map.RequestFullscreen());
+
+        Assert.AreEqual(invocations, Context.JSInterop.Invocations.Count, "Nothing reaches the browser before the map is ready");
+        Assert.IsEmpty(map.MarkerIds);
+
+        // Only the read with no answer throws, and a call that is wrong whenever it is made still says so.
+        await Assert.ThrowsAsync<InvalidOperationException>(async () => await map.GetView());
+        await Assert.ThrowsAsync<ArgumentNullException>(async () => await map.AddMarker(null!));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await map.SetZoom(double.NaN));
+    }
+
+    [TestMethod]
     public void BitMapShouldReportFailedStateWhenTheProviderScriptCannotBeLoaded()
     {
         // A CDN outage must surface as the component's error state. Letting it propagate out of
@@ -3397,6 +3448,121 @@ public class BitMapTests : BunitTestContext
         await component.Instance.DisposeAsync();
 
         Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == CHROME_CANCEL_WAIT_VISIBLE));
+    }
+
+    // ---------------------------------------------------------------- view announcements
+
+    [TestMethod]
+    public async Task BitMapShouldNotAnnounceAViewChangeUnlessAskedTo()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>();
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+
+        // The live region is always there, so a later announcement has a region to land in, but it stays empty.
+        Assert.AreEqual(string.Empty, component.Find(".bit-map-live").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldAnnounceASettledViewInTheBuiltInWording()
+    {
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12.34567, -5.5, 5.4));
+
+        // Four decimals of the centre and a whole zoom level, in the page's own number format.
+        Assert.AreEqual($"Map centred at {12.34567:F4}, {-5.5:F4}, zoom level {5.4:F0}.", component.Find(".bit-map-live").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldNudgeARepeatedAnnouncementSoItIsSpokenAgain()
+    {
+        // A screen reader ignores a live region whose text did not change, so the same view twice is announced
+        // through a trailing zero-width space - a change of text, not of what is spoken.
+        SetupSuccessfulMount();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.Zero);
+            parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter, v => $"zoom {v.Zoom:F0}");
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        Assert.AreEqual("zoom 5", component.Find(".bit-map-live").TextContent);
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        Assert.AreEqual("zoom 5​", component.Find(".bit-map-live").TextContent);
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        Assert.AreEqual("zoom 5", component.Find(".bit-map-live").TextContent, "the nudge alternates rather than piling up");
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldHoldBackAViewInsideTheThrottleWindow()
+    {
+        SetupSuccessfulMount();
+
+        var formatted = new List<double>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.FromHours(1));
+            parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter, v =>
+            {
+                formatted.Add(v.Zoom);
+                return $"zoom {v.Zoom:F0}";
+            });
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 6));
+
+        // The second view is kept for the end of the window rather than spoken over the first or dropped.
+        Assert.AreEqual("zoom 5", component.Find(".bit-map-live").TextContent);
+        CollectionAssert.AreEqual(new[] { 5d }, formatted);
+
+        // Disposal takes the held-back announcement with it rather than leaving a timer behind.
+        await component.Instance.DisposeAsync();
+    }
+
+    [TestMethod]
+    public async Task BitMapShouldSpeakTheLastHeldBackViewOnTheRenderersDispatcher()
+    {
+        // The trailing announcement ends in the consumer's formatter and a render, so it runs on the renderer's
+        // dispatcher rather than on a thread-pool thread (Task.Run), which could render concurrently.
+        SetupSuccessfulMount();
+
+        var formatted = new List<(double Zoom, bool OnDispatcher)>();
+
+        var component = RenderComponent<BitMap<BitLeafletMapProvider>>(parameters =>
+        {
+            parameters.Add(p => p.AnnounceViewChanges, true);
+            parameters.Add(p => p.ViewAnnouncementThrottle, TimeSpan.FromMilliseconds(100));
+            parameters.Add<Func<BitMapViewState, string>?>(p => p.ViewAnnouncementFormatter, v =>
+            {
+                formatted.Add((v.Zoom, Renderer.Dispatcher.CheckAccess()));
+                return $"zoom {v.Zoom:F0}";
+            });
+        });
+
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 5));
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 6));
+        await component.Instance._OnViewChanged(ViewPayload(12, 34, 7));
+
+        component.WaitForAssertion(() => Assert.AreEqual("zoom 7", component.Find(".bit-map-live").TextContent), TimeSpan.FromSeconds(10));
+
+        // The view superseded inside the window is never spoken; the last one is, from the dispatcher.
+        CollectionAssert.AreEqual(new[] { 5d, 7d }, formatted.Select(f => f.Zoom).ToArray());
+        Assert.IsTrue(formatted[^1].OnDispatcher);
     }
 
     /// <summary>A popup body with no content of its own, for tests that only care about the shell.</summary>

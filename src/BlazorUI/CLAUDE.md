@@ -8,7 +8,7 @@ Guidance for the bit BlazorUI component library and its demo app. Coding style c
 **`src/BlazorUI` is the edit boundary, and it holds for every task.** The library, Extras, Legacy,
 Icons, Assets, the source generators, the demo app and the tests are all inside it, so the work belongs
 here. Every sibling under `src/` - `Templates` (the Boilerplate), `Butil`, `Bswup`, `Besql`, `Bmotion`,
-`Brouter`, `Websites`, `CodeAnalyzers`, the rest - and the repo root are off limits, no matter what a
+`Bonboarding`, `Brouter`, `Websites`, `CodeAnalyzers`, the rest - and the repo root are off limits, no matter what a
 change in here does to them.
 
 This bites hardest on a rename or a deletion in the public API: the Boilerplate consumes bit BlazorUI,
@@ -240,7 +240,10 @@ right - the layout and the behaviour would disagree.
 - **.NET asks at the moment it acts**: `await IsRtlAsync(_js)` (`Utils.isRtl` off the root, or the element given)
   answers a named direction without a round trip; a key handler asks through `await IsRtlArrowAsync(_js, e.Key)`, which
   answers false without asking for every key but the horizontal arrows, and only once nothing else has turned the key
-  away. A component that knows more than `Dir` says (a culture that writes right to left) overrides `ExplicitRtl` with
+  away. An arrow the user moved on from while that round trip was out (a Tab, a click took the focus elsewhere) is
+  refused by the script and cancels the handler with an `OperationCanceledException`, which Blazor drops, so the
+  handler never steals the focus back; a handler that still owes the key a consumer callback catches it around the part
+  the key drives (BitOtpInput), and a key handler never asks through `IsRtlAsync`. A component that knows more than `Dir` says (a culture that writes right to left) overrides `ExplicitRtl` with
   `BitCssClasses.ExplicitRtl(Dir, _culture)`, and both helpers follow it. Two reads that do not depend on each other are
   sent together (BitCarousel's measurement and direction), and one a later handler of the same gesture depends on is
   kept as a task it awaits (BitNavPanel's swipe), since a JS-invoked .NET handler can run before an earlier one's round

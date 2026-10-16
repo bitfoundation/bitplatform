@@ -1,0 +1,203 @@
+﻿@page "/e2e/shimmer"
+
+<PageTitle>BitShimmer E2E</PageTitle>
+
+<h1>BitShimmer</h1>
+
+<div style="width: 400px;">
+
+    <E2ESection Id="basic" Title="Basic">
+        <BitShimmer Id="smr-basic" />
+        <BitShimmer Id="smr-height" Height="80px" />
+        <BitShimmer Id="smr-width" Width="160px" />
+    </E2ESection>
+
+    <E2ESection Id="shape" Title="Shape and radius">
+        <BitShimmer Id="smr-shape-default" Height="32px" />
+        <BitShimmer Id="smr-shape-Rounded" Shape="BitShape.Rounded" Height="32px" />
+        <BitShimmer Id="smr-shape-Square" Shape="BitShape.Square" Height="32px" />
+        <BitShimmer Id="smr-shape-Pill" Shape="BitShape.Pill" Height="32px" Width="128px" />
+        <BitShimmer Id="smr-shape-Circle" Shape="BitShape.Circle" Height="48px" Lines="3" />
+        <BitShimmer Id="smr-circle-width" Circle Width="64px" />
+        <BitShimmer Id="smr-radius" Height="32px" Radius="16px" />
+        <BitShimmer Id="smr-radius-wins" Height="32px" Shape="BitShape.Pill" Radius="0" />
+    </E2ESection>
+
+    <E2ESection Id="lines" Title="Lines">
+        <BitShimmer Id="smr-lines" Lines="3" Height="12px" />
+        <BitShimmer Id="smr-lines-gap" Lines="4" Height="8px" Gap="16px" LastLineWidth="35%" />
+        <BitShimmer Id="smr-lines-widths" Lines="4" Height="12px" LineWidths="@(["100%", "88%", "94%"])" />
+    </E2ESection>
+
+    <E2ESection Id="animation" Title="Animation">
+        <BitShimmer Id="smr-anim-default" Height="48px" />
+        <BitShimmer Id="smr-anim-Wave" Animation="BitShimmerAnimation.Wave" Height="48px" />
+        <BitShimmer Id="smr-anim-Pulse" Animation="BitShimmerAnimation.Pulse" Height="48px" />
+        <BitShimmer Id="smr-anim-pulse-flag" Pulse Height="48px" />
+        <BitShimmer Id="smr-anim-Fade" Animation="BitShimmerAnimation.Fade" Height="48px" />
+        <BitShimmer Id="smr-anim-None" Animation="BitShimmerAnimation.None" Height="48px" />
+        <BitShimmer Id="smr-anim-timing" Height="48px" Duration="5000" Delay="1000" />
+        <BitShimmer Id="smr-anim-stagger" Lines="4" Height="12px" Stagger="200" />
+        <BitShimmer Id="smr-anim-force" Height="48px" ForceAnimation />
+    </E2ESection>
+
+    <E2ESection Id="inline" Title="Inline">
+        <p id="inline-paragraph">The plan costs <BitShimmer Id="smr-inline" Inline Width="64px" Height="1em" /> per month and renews on <BitShimmer Id="smr-inline-default" Inline /> later.</p>
+    </E2ESection>
+
+    <E2ESection Id="loaded" Title="Loaded">
+        <BitShimmer Id="smr-loaded" Loaded="_loaded" Height="24px">
+            <div id="loaded-content">The content has arrived. <button id="loaded-button">Act</button></div>
+        </BitShimmer>
+        <BitShimmer Id="smr-loaded-content" Loaded="_loaded" Height="24px" Content="_contentFragment" />
+        <button id="btn-toggle-loaded" @onclick="() => _loaded = !_loaded">Toggle loaded</button>
+    </E2ESection>
+
+    <E2ESection Id="timing" Title="ShowDelay and MinShowTime">
+        <button id="btn-start-timing" @onclick="StartTiming">Start</button>
+        <button id="btn-finish-timing" @onclick="() => _timingLoaded = true">Finish</button>
+        @if (_timingStarted)
+        {
+            <BitShimmer Id="smr-plain" Loaded="_timingLoaded" Height="24px"><span id="plain-content">Plain is in.</span></BitShimmer>
+            <BitShimmer Id="smr-show-delay" Loaded="_timingLoaded" ShowDelay="2000" Height="24px"><span id="show-delay-content">Delayed is in.</span></BitShimmer>
+            <BitShimmer Id="smr-min-show" Loaded="_timingLoaded" MinShowTime="3000" Height="24px"><span id="min-show-content">Held is in.</span></BitShimmer>
+            <BitShimmer Id="smr-overlay-min" Overlay Loaded="_timingLoaded" MinShowTime="3000"><span id="overlay-min-content">Covered is in.</span></BitShimmer>
+        }
+    </E2ESection>
+
+    <E2ESection Id="overlay" Title="Overlay">
+        <button id="before-overlay">before</button>
+        <BitShimmer Id="smr-overlay" Overlay Loaded="_overlayLoaded" Radius="8px" Lines="3">
+            <div id="overlay-content" style="width: 200px; height: 90px;">Content already on the page <button id="overlay-button">Act</button></div>
+        </BitShimmer>
+        <button id="after-overlay">after</button>
+        <button id="btn-toggle-overlay" @onclick="() => _overlayLoaded = !_overlayLoaded">Toggle overlay</button>
+    </E2ESection>
+
+    <E2ESection Id="template" Title="Template">
+        <BitShimmer Id="smr-template" Loaded="_templateLoaded" Width="240px" ShowDelay="300">
+            <Template>
+                <div id="skeleton" style="display: flex; gap: 8px;">
+                    <BitShimmer Id="smr-skeleton-circle" Circle Height="56px" />
+                    <BitShimmer Id="smr-skeleton-line" Height="20px" Width="136px" />
+                </div>
+            </Template>
+            <ChildContent><div id="template-content">Loaded card</div></ChildContent>
+        </BitShimmer>
+        <button id="btn-toggle-template" @onclick="() => _templateLoaded = !_templateLoaded">Toggle template</button>
+    </E2ESection>
+
+    <E2ESection Id="a11y" Title="Accessibility">
+        <BitShimmer Id="smr-label" Loaded="_a11yLoaded" Label="Loading the profile" LoadedLabel="Profile loaded" Height="24px"><span>Profile</span></BitShimmer>
+        <BitShimmer Id="smr-assertive" Loaded="_a11yLoaded" Label="Loading urgently" Politeness="BitPoliteness.Assertive" Height="24px" />
+        <BitShimmer Id="smr-off" Loaded="_a11yLoaded" Label="Loading quietly" Politeness="BitPoliteness.Off" Height="24px" />
+        <BitShimmer Id="smr-aria-label" Loaded="_a11yLoaded" AriaLabel="Loading the chart" Height="24px"><span>Chart</span></BitShimmer>
+        <BitShimmer Id="smr-label-hidden" Label="Hidden label" Visibility="BitVisibility.Hidden" Height="24px" />
+        <BitShimmer Id="smr-label-lang" Label="Chargement" Dir="BitDir.Rtl" HtmlAttributes="@(new Dictionary<string, object> { ["lang"] = "fr" })" Height="24px" />
+        <button id="btn-toggle-a11y" @onclick="() => _a11yLoaded = !_a11yLoaded">Toggle a11y</button>
+    </E2ESection>
+
+    <E2ESection Id="params" Title="Cascading parameters">
+        <BitParams Parameters="_shimmerParams">
+            <BitShimmer Id="smr-params-1" Lines="3" />
+            <BitShimmer Id="smr-params-2" Lines="3" Animation="BitShimmerAnimation.Wave" Height="20px" />
+        </BitParams>
+    </E2ESection>
+
+    <E2ESection Id="colors" Title="Color and Background">
+        @foreach (var color in _colors)
+        {
+            <BitShimmer Id="@($"smr-color-{color}")" Height="16px" Pulse Color="color" />
+            <BitShimmer Id="@($"smr-bg-{color}")" Height="16px" Animation="BitShimmerAnimation.None" Background="color" />
+        }
+        <BitShimmer Id="smr-color-wave" Height="16px" Color="BitColor.Error" />
+    </E2ESection>
+
+    <E2ESection Id="sizes" Title="Size">
+        @foreach (var size in _sizes)
+        {
+            <BitShimmer Id="@($"smr-size-{size}")" Size="size" />
+            <BitShimmer Id="@($"smr-cir-size-{size}")" Circle Size="size" />
+        }
+        <BitShimmer Id="smr-size-height-wins" Size="BitSize.Large" Height="10px" />
+    </E2ESection>
+
+    <E2ESection Id="style-class" Title="Style and Class">
+        <BitShimmer Id="smr-style" Height="40px" Style="border: 2px solid rgb(128, 128, 128)" Class="e2e-shimmer-class" />
+        <BitShimmer Id="smr-styles" Height="40px" Lines="2" Label="Styled label"
+                    Styles="@(new() { Root = "padding: 3px", ShimmerWrapper = "background-color: rgb(139, 69, 19)", Shimmer = "background: rgb(1, 2, 3)", Label = "color: rgb(4, 5, 6)" })"
+                    Classes="@(new() { Root = "e2e-root", ShimmerWrapper = "e2e-wrapper", Shimmer = "e2e-shimmer", Label = "e2e-label" })" />
+        <BitShimmer Id="smr-styles-content" Loaded Styles="@(new() { Content = "color: rgb(7, 8, 9)" })" Classes="@(new() { Content = "e2e-content" })"><span>Content</span></BitShimmer>
+        <BitShimmer Id="smr-hidden" Visibility="BitVisibility.Hidden" Height="20px" />
+        <BitShimmer Id="smr-collapsed" Visibility="BitVisibility.Collapsed" Height="20px" />
+    </E2ESection>
+
+    <E2ESection Id="css-vars" Title="CSS variables">
+        <div style="--bit-Shimmer-background: rgb(10, 20, 30); --bit-Shimmer-color: rgb(40, 50, 60); --bit-Shimmer-height: 21px; --bit-Shimmer-circle-size: 44px; --bit-Shimmer-radius: 7px; --bit-Shimmer-gap: 13px; --bit-Shimmer-last-line-width: 25%; --bit-Shimmer-animation-duration: 3s; --bit-Shimmer-animation-delay: 0.2s;">
+            <BitShimmer Id="smr-css" Pulse />
+            <BitShimmer Id="smr-css-lines" Lines="2" />
+            <BitShimmer Id="smr-css-circle" Circle />
+            <BitShimmer Id="smr-css-params" Height="9px" Radius="2px" Color="BitColor.Error" Background="BitColor.Success" Pulse Duration="700" Delay="300" Size="BitSize.Large" />
+        </div>
+    </E2ESection>
+
+    <E2ESection Id="rtl" Title="RTL">
+        <BitShimmer Id="smr-rtl" Dir="BitDir.Rtl" Lines="3" Height="16px" />
+        <div dir="rtl">
+            <BitShimmer Id="smr-rtl-inherited" Height="16px" />
+        </div>
+    </E2ESection>
+
+    <E2ESection Id="runtime" Title="Runtime">
+        <button id="btn-toggle-mounted" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+        <button id="btn-load-mounted" @onclick="() => _mountedLoaded = true">Load mounted</button>
+        @if (_mounted)
+        {
+            <BitShimmer Id="smr-mounted" Loaded="_mountedLoaded" MinShowTime="5000" Height="16px"><span>Mounted</span></BitShimmer>
+        }
+        <span id="mounted">@_mounted</span>
+    </E2ESection>
+
+</div>
+
+<E2EStatus />
+
+@code {
+    private bool _loaded;
+    private bool _timingStarted;
+    private bool _timingLoaded;
+    private bool _overlayLoaded;
+    private bool _templateLoaded;
+    private bool _a11yLoaded;
+    private bool _mounted = true;
+    private bool _mountedLoaded;
+
+    private readonly RenderFragment _contentFragment = @<span id="content-parameter">From the Content parameter</span>;
+
+    private readonly BitSize[] _sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly BitShimmerParams[] _shimmerParams =
+    [
+        new()
+        {
+            Animation = BitShimmerAnimation.Pulse,
+            Height = "12px",
+            LastLineWidth = "40%",
+            Stagger = 150,
+        }
+    ];
+
+    private void StartTiming()
+    {
+        _timingLoaded = false;
+        _timingStarted = true;
+    }
+}

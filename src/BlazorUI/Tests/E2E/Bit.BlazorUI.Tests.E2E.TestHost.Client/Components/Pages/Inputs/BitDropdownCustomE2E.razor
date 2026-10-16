@@ -1,0 +1,217 @@
+﻿@page "/e2e/dropdown/custom"
+
+@* The custom item API of BitDropdown: items of an app's own class read through NameSelectors - by selector and by
+   property name - for every item member, the IsSelected property the component writes back, the Dynamic ComboBox
+   creating a custom item through TextSetter / ValueSetter and through the property names, multi select chips, search,
+   and the NameSelectors handed down by a BitParams cascade. *@
+
+<PageTitle>BitDropdown custom E2E</PageTitle>
+
+<h1>BitDropdown custom</h1>
+
+<E2ESection Id="custom-selectors" Title="NameSelectors by selector">
+    <BitDropdown Id="dd-cus"
+                 TItem="Product" TValue="string"
+                 Label="Custom items"
+                 Items="_products1"
+                 NameSelectors="_selectors"
+                 @bind-Value="_cusValue"
+                 OnSelectItem="(Product p) => _cusPayload = p.Payload?.ToString()" />
+    <p>
+        Value: <span id="cus-value">@_cusValue</span> |
+        Payload: <span id="cus-payload">@_cusPayload</span> |
+        Selected flags: <span id="cus-selected">@_selectedFlags</span>
+    </p>
+    <button id="btn-read-flags" @onclick="ReadFlags">Read the IsSelected flags</button>
+</E2ESection>
+
+<E2ESection Id="custom-names" Title="NameSelectors by property name">
+    <BitDropdown Id="dd-cus-names"
+                 TItem="Fruit" TValue="int"
+                 Label="By name"
+                 Items="_fruits"
+                 NameSelectors="_nameSelectors"
+                 @bind-Value="_namesValue" />
+    <p>Value: <span id="names-value">@_namesValue</span></p>
+</E2ESection>
+
+<E2ESection Id="custom-multi" Title="Multi select, chips and search">
+    <BitDropdown Id="dd-cus-multi"
+                 TItem="Product" TValue="string"
+                 Label="Custom multi"
+                 MultiSelect
+                 Chips
+                 ShowSearchBox
+                 Immediate
+                 HighlightSearch
+                 Items="_products2"
+                 NameSelectors="_selectors"
+                 @bind-Values="_cusMultiValues" />
+    <p>Values: <span id="cus-multi-values">@string.Join(',', _cusMultiValues ?? [])</span></p>
+</E2ESection>
+
+<E2ESection Id="custom-dynamic" Title="Dynamic ComboBox with custom items">
+    <BitDropdown Id="dd-cus-dyn"
+                 TItem="Product" TValue="string"
+                 Label="Setters"
+                 Combo
+                 Dynamic
+                 Items="_products3"
+                 NameSelectors="_comboSelectors"
+                 DynamicValueGenerator="GenerateDynValue"
+                 @bind-Value="_cusDynValue"
+                 OnDynamicAdd="(Product p) => _cusDynAdded = p.Text + '|' + p.Value" />
+    <p>Value: <span id="cus-dyn-value">@_cusDynValue</span> | Added: <span id="cus-dyn-added">@_cusDynAdded</span></p>
+    <BitDropdown Id="dd-cus-dyn-names"
+                 TItem="Product" TValue="string"
+                 Label="Property names"
+                 Combo
+                 Dynamic
+                 Items="_products4"
+                 NameSelectors="_namedComboSelectors"
+                 DynamicValueGenerator="GenerateNamedValue"
+                 @bind-Value="_cusDynNamesValue"
+                 OnDynamicAdd="(Product p) => _cusDynNamesAdded = p.Text + '|' + p.Value" />
+    <p>Value: <span id="cus-dyn-names-value">@_cusDynNamesValue</span> | Added: <span id="cus-dyn-names-added">@_cusDynNamesAdded</span></p>
+</E2ESection>
+
+<E2ESection Id="custom-params" Title="NameSelectors from a BitParams cascade">
+    <BitParams Parameters="_params">
+        <BitDropdown Id="dd-cus-params"
+                     TItem="Product" TValue="string"
+                     Label="Cascaded selectors"
+                     Items="_products5"
+                     @bind-Value="_cusParamsValue" />
+    </BitParams>
+    <p>Value: <span id="cus-params-value">@_cusParamsValue</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Product
+    {
+        public string? Label { get; set; }
+        public string? CssClass { get; set; }
+        public string? Key { get; set; }
+        public object? Payload { get; set; }
+        public bool Disabled { get; set; }
+        public bool Visible { get; set; } = true;
+        public BitDropdownItemType Type { get; set; } = BitDropdownItemType.Normal;
+        public string? CssStyle { get; set; }
+        public string? Text { get; set; }
+        public string? Title { get; set; }
+        public string? Value { get; set; }
+        public BitIconInfo? Icon { get; set; }
+        public string? IconName { get; set; }
+        public bool Picked { get; set; }
+    }
+
+    public class Fruit
+    {
+        public string? Name { get; set; }
+        public int Code { get; set; }
+        public bool Off { get; set; }
+    }
+
+    private static List<Product> Products() =>
+    [
+        new() { Type = BitDropdownItemType.Header, Text = "Fruits", Key = "cus-header" },
+        new() { Text = "Apple", Value = "f-app", Key = "cus-apple", CssClass = "cus-cls", CssStyle = "color: rgb(0, 0, 255)", Title = "Apple title", Label = "Apple aria", Payload = "apple-payload", IconName = "Heart" },
+        new() { Text = "Banana", Value = "f-ban", Icon = BitIconInfo.Css("cus-ext-icon") },
+        new() { Text = "Orange", Value = "f-ora", Disabled = true },
+        new() { Text = "Hidden", Value = "f-hid", Visible = false },
+        new() { Type = BitDropdownItemType.Divider },
+        new() { Type = BitDropdownItemType.Header, Text = "Vegetables" },
+        new() { Text = "Carrot", Value = "v-car" },
+    ];
+
+    private readonly List<Product> _products1 = Products();
+    private readonly List<Product> _products2 = Products();
+    private readonly List<Product> _products3 = Products();
+    private readonly List<Product> _products4 = Products();
+    private readonly List<Product> _products5 = Products();
+
+    private readonly BitDropdownNameSelectors<Product, string> _selectors = new()
+    {
+        AriaLabel = { Selector = c => c.Label },
+        Class = { Selector = c => c.CssClass },
+        Id = { Selector = c => c.Key },
+        Data = { Selector = c => c.Payload },
+        IsDisabled = { Selector = c => c.Disabled },
+        IsHidden = { Selector = c => c.Visible is false },
+        ItemType = { Selector = c => c.Type },
+        Style = { Selector = c => c.CssStyle },
+        Text = { Selector = c => c.Text },
+        Title = { Selector = c => c.Title },
+        Value = { Selector = c => c.Value },
+        Icon = { Selector = c => c.Icon },
+        IconName = { Selector = c => c.IconName },
+        IsSelected = nameof(Product.Picked),
+    };
+
+    private readonly BitDropdownNameSelectors<Product, string> _comboSelectors = new()
+    {
+        ItemType = { Selector = c => c.Type },
+        IsDisabled = { Selector = c => c.Disabled },
+        IsHidden = { Selector = c => c.Visible is false },
+        Text = { Selector = c => c.Text },
+        Value = { Selector = c => c.Value },
+        TextSetter = (text, item) => item.Text = text,
+        ValueSetter = (item, value) => item.Value = value,
+    };
+
+    private readonly BitDropdownNameSelectors<Product, string> _namedComboSelectors = new()
+    {
+        ItemType = { Name = nameof(Product.Type) },
+        IsHidden = { Selector = c => c.Visible is false },
+        Text = { Name = nameof(Product.Text) },
+        Value = { Name = nameof(Product.Value) },
+    };
+
+    private readonly List<Fruit> _fruits =
+    [
+        new() { Name = "Mango", Code = 1 },
+        new() { Name = "Peach", Code = 2, Off = true },
+        new() { Name = "Plum", Code = 3 },
+    ];
+
+    private readonly BitDropdownNameSelectors<Fruit, int> _nameSelectors = new()
+    {
+        Text = { Name = nameof(Fruit.Name) },
+        Value = { Name = nameof(Fruit.Code) },
+        IsDisabled = { Name = nameof(Fruit.Off) },
+    };
+
+    private readonly BitDropdownParams<Product, string>[] _params =
+    [
+        new()
+        {
+            NameSelectors = new()
+            {
+                Id = { Selector = c => c.Key },
+                ItemType = { Selector = c => c.Type },
+                Text = { Selector = c => c.Text },
+                Value = { Selector = c => c.Value },
+            },
+            Placeholder = "Cascaded placeholder",
+        }
+    ];
+
+    private string? _cusValue;
+    private string? _cusPayload;
+    private string? _selectedFlags;
+    private int _namesValue;
+    private IEnumerable<string?>? _cusMultiValues = ["v-car"];
+    private string? _cusDynValue;
+    private string? _cusDynAdded;
+    private string? _cusDynNamesValue;
+    private string? _cusDynNamesAdded;
+    private string? _cusParamsValue;
+
+    private static string GenerateDynValue(Product? p) => $"dyn-{p?.Text}";
+
+    private static string GenerateNamedValue(Product? p) => $"named-{p?.Text}";
+
+    private void ReadFlags() => _selectedFlags = string.Join(',', _products1.Where(p => p.Picked).Select(p => p.Text));
+}

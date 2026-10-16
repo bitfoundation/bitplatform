@@ -19,7 +19,7 @@ internal sealed class BitPdfStitchingFunction : BitPdfFunction
         _domain = domain;
     }
 
-    public static BitPdfStitchingFunction? Build(BitPdfDict dict, IBitPdfXRef xref)
+    public static BitPdfStitchingFunction? Build(BitPdfDict dict, IBitPdfXRef xref, BitPdfResolveScope scope)
     {
         if (dict.Get("Functions") is not List<object?> fnArr)
         {
@@ -28,7 +28,9 @@ internal sealed class BitPdfStitchingFunction : BitPdfFunction
         var functions = new List<BitPdfFunction>();
         foreach (var item in fnArr)
         {
-            var fn = Create(item, xref);
+            // Within the same scope: a sub-function that is this function (or leads back
+            // to it) is refused and stands in as the constant below, not recursed into.
+            var fn = Create(item, xref, scope);
             functions.Add(fn ?? new BitPdfConstantFunction([0]));
         }
 

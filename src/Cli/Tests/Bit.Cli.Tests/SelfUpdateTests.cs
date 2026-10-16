@@ -10,8 +10,8 @@ public class SelfUpdateTests
     [TestMethod]
     [DataRow("10.7.0", "10.6.2", 1)]
     [DataRow("10.10.0", "10.9.3", 1)]
-    [DataRow("10.7.0", "10.7.0-pre-01", 1)]
-    [DataRow("10.7.0-pre-02", "10.7.0-pre-01", 1)]
+    [DataRow("10.7.0", "10.7.0-pre-02", 1)]
+    [DataRow("10.7.0-pre-02", "10.7.0-pre-02", 1)]
     [DataRow("10.6.2", "10.6.2", 0)]
     [DataRow("10.6", "10.6.0", 0)]
     public void Versions_Should_CompareTheWayNuGetDoes(string left, string right, int expected)
@@ -45,7 +45,7 @@ public class SelfUpdateTests
         Assert.AreEqual("10.7.0", await Official(host).LatestVersionAsync(CancellationToken.None));
         CollectionAssert.AreEqual(new[] { "package", "search", "Bit.Cli", "--exact-match", "--format", "json" }, host.Runner.Calls.Single().Arguments.ToArray());
 
-        Assert.AreEqual("10.8.0-pre-01", await Official(host, "10.7.0-pre-01").LatestVersionAsync(CancellationToken.None));
+        Assert.AreEqual("10.8.0-pre-01", await Official(host, "10.7.0-pre-02").LatestVersionAsync(CancellationToken.None));
         CollectionAssert.Contains(host.Runner.Calls.Last().Arguments.ToList(), "--prerelease");
     }
 
@@ -175,12 +175,12 @@ public class SelfUpdateTests
         using var host = new TestHost(HostOs.Linux, variables);
         host.AllToolsInstalled();
         host.Services.SelfUpdate = update(host);
-        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "10.7.0" })));
+        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "99.0.0" })));
 
         Assert.AreEqual(0, await host.RunAsync(["new", "Contoso", "--dry-run", "--yes", .. extra]), host.Output);
 
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["package", "search", ..]), host.Output);
-        Assert.IsFalse(host.Output.Contains("10.7.0", StringComparison.Ordinal), host.Output);
+        Assert.IsFalse(host.Output.Contains("99.0.0", StringComparison.Ordinal), host.Output);
     }
 
     private static SelfUpdate Official(TestHost host, string version = "10.6.2", string install = "tool")

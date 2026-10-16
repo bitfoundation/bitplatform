@@ -113,22 +113,25 @@ public class SpringDriverTests
     [TestMethod]
     public void Cancel_CompletesImmediately()
     {
-        double lastValue = 0;
+        var values = new List<double>();
         var driver = new BmotionSpringDriver(0, 100, new BmotionTransitionConfig
         {
             Stiffness = 100,
             Damping = 10,
             Mass = 1,
-        }, v => lastValue = v);
+        }, v => values.Add(v));
 
         driver.Tick(0);
         driver.Tick(16);
+        int emittedBeforeCancel = values.Count;
         driver.Cancel();
         bool done = driver.Tick(32);
 
         // Cancel() freezes the animation in place; it does not snap to the target. Only
         // completion is guaranteed (Complete() is the operation that writes the end value).
         Assert.IsTrue(done);
+        // A cancelled Tick must exit before applying, so no new value is emitted after Cancel().
+        Assert.AreEqual(emittedBeforeCancel, values.Count);
     }
 
     // ── Initial velocity ──────────────────────────────────────────────────────

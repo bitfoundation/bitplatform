@@ -10,11 +10,11 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.Bswup\Bit.Bswup.csproj" />
         <ProjectReference Include="..\Client\Bit.Bswup.Demo.Client.csproj" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
         <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
         <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
         <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
-        <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
     </ItemGroup>
 
     <ItemGroup>

@@ -1256,6 +1256,39 @@ public class BitPanelTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { true, false }, settled);
     }
 
+    // The open sequence makes round trips of its own before it calls OnToggle and OnOpen, and a short transition can
+    // end in the browser while it is under way; its end is still reported after them.
+    [TestMethod]
+    public async Task BitPanelOnTransitionEndShouldComeAfterTheCallbacksOfTheChangeItEnds()
+    {
+        var log = new System.Collections.Generic.List<string>();
+        var toggleOverflow = Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true);
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.OnToggle, (bool v) => log.Add($"OnToggle:{v}"));
+            parameters.Add(p => p.OnOpen, () => log.Add("OnOpen"));
+            parameters.Add(p => p.OnTransitionEnd, (bool v) => log.Add($"OnTransitionEnd:{v}"));
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupTransitionEnd"].Count));
+
+        // The open sequence is held on its round trip to toggle the page's overflow when the transition ends.
+        com.Render(p => p.Add(x => x.IsOpen, true));
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+
+        var transitionEnd = com.InvokeAsync(() => com.Instance._OnTransitionEnd());
+
+        Assert.AreEqual(0, log.Count);
+
+        toggleOverflow.SetResult(0);
+        await transitionEnd;
+
+        com.WaitForAssertion(() => CollectionAssert.AreEqual(new[] { "OnToggle:True", "OnOpen", "OnTransitionEnd:True" }, log));
+    }
+
     // The content is only taken out once the panel has finished sliding away with it, so the closing is still
     // seen with something in it.
     [TestMethod]
@@ -2071,5 +2104,370 @@ public class BitPanelTests : BunitTestContext
         var com = RenderComponent<BitPanel>();
 
         Assert.IsTrue(com.Find(".bit-pnl-ovl").HasAttribute("data-no-swipe"));
+    }
+
+    // The gesture reports both axes; the panel hands its consumer the one it slides on.
+    [TestMethod,
+        DataRow(BitPlacement.Start, true),
+        DataRow(BitPlacement.End, true),
+        DataRow(BitPlacement.Left, true),
+        DataRow(BitPlacement.Right, true),
+        DataRow(BitPlacement.Top, false),
+        DataRow(BitPlacement.Bottom, false)
+    ]
+    public async Task BitPanelSwipeCallbacksShouldReportTheAxisThePanelSlidesOn(BitPlacement placement, bool horizontal)
+    {
+        var starts = new System.Collections.Generic.List<decimal>();
+        var moves = new System.Collections.Generic.List<decimal>();
+        var ends = new System.Collections.Generic.List<decimal>();
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Placement, placement);
+            parameters.Add(p => p.OnSwipeStart, (decimal v) => starts.Add(v));
+            parameters.Add(p => p.OnSwipeMove, (decimal v) => moves.Add(v));
+            parameters.Add(p => p.OnSwipeEnd, (decimal v) => ends.Add(v));
+        });
+
+        await com.InvokeAsync(() => com.Instance._OnStart(10, 20));
+        await com.InvokeAsync(() => com.Instance._OnMove(30, 40));
+        await com.InvokeAsync(() => com.Instance._OnEnd(50, 60));
+
+        CollectionAssert.AreEqual(new[] { horizontal ? 10m : 20m }, starts);
+        CollectionAssert.AreEqual(new[] { horizontal ? 30m : 40m }, moves);
+        CollectionAssert.AreEqual(new[] { horizontal ? 50m : 60m }, ends);
+    }
+
+    // The room the scrollbar gave back is what an absolutely positioned panel is pushed down by, so it stays
+    // where the eye left it rather than jumping to the top of the scroller it is laid out in.
+    [TestMethod]
+    public void BitPanelLaidOutInABoxShouldBePushedDownByTheRoomTheScrollbarGaveBack()
+    {
+        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(48);
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AbsolutePosition, true);
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => StringAssert.Contains(com.Find(".bit-pnl").GetAttribute("style"), "top:48px"));
+    }
+
+    // A panel anchored to the screen is positioned against the viewport, which never moved.
+    [TestMethod]
+    public void BitPanelAnchoredToTheScreenShouldNotBePushedDownByTheScrollbar()
+    {
+        Context.JSInterop.Setup<float>("BitBlazorUI.Utils.toggleOverflow", _ => true).SetResult(48);
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+
+        Assert.IsFalse((com.Find(".bit-pnl").GetAttribute("style") ?? string.Empty).Contains("top:"));
+    }
+
+    // The overflow is taken off the scroller the panel was pointed at, as an element where one is to be had.
+    [TestMethod]
+    public void BitPanelAutoToggleScrollShouldTakeTheOverflowOffTheScrollerElementItWasGiven()
+    {
+        var own = new ElementReference("own-container");
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.ScrollerSelector, ".ignored");
+            parameters.Add(p => p.ScrollerElement, (ElementReference?)own);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() =>
+        {
+            var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
+            Assert.AreEqual(own, toggled.Arguments[1]);
+            Assert.AreEqual(true, toggled.Arguments[2]);
+        });
+    }
+
+    [TestMethod]
+    public void BitPanelAutoToggleScrollShouldTakeTheOverflowOffTheNamedScroller()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.ScrollerSelector, ".scroller");
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() =>
+        {
+            var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
+            Assert.AreEqual(".scroller", toggled.Arguments[1]);
+        });
+    }
+
+    // The close reuses the decision taken at open time: an overflow that was taken away is handed back even when
+    // AutoToggleScroll was turned off in the meantime, and one that was never taken is never handed back.
+    [TestMethod]
+    public void BitPanelShouldHandTheOverflowBackIfAndOnlyIfItWasTaken()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+
+        com.Render(p => p.Add(x => x.AutoToggleScroll, false));
+        com.Render(p => p.Add(x => x.IsOpen, false));
+
+        com.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+            Assert.AreEqual(false, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1].Arguments[2]);
+        });
+
+        // Opened with it off and turned on while open, there was nothing taken, so there is nothing to hand back.
+        com.Render(p => p.Add(x => x.IsOpen, true));
+        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count));
+
+        com.Render(p => p.Add(x => x.AutoToggleScroll, true));
+        com.Render(p => p.Add(x => x.IsOpen, false));
+
+        com.WaitForAssertion(() => Assert.AreNotEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count));
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+    }
+
+    // Everything the panel registered on the page goes with it, under the ids it was registered with.
+    [TestMethod]
+    public void BitPanelShouldReleaseEverythingItRegisteredWhenDisposed()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.AutoToggleScroll, true);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        com.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count));
+
+        var rootId = com.Find(".bit-pnl").Id;
+        var containerId = com.Find(".bit-pnl-cnt").Id;
+
+        com.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"][^1].Arguments[0]);
+        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"][^1].Arguments[0]);
+        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Swipes.dispose"][^1].Arguments[0]);
+        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeTransitionEnd"][^1].Arguments[0]);
+        Assert.AreEqual(rootId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeEscapeGuard"][^1].Arguments[0]);
+
+        // The overflow it took off its scroller is handed back too.
+        var toggled = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1];
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+        Assert.AreEqual(false, toggled.Arguments[2]);
+    }
+
+    [TestMethod]
+    public void BitPanelShouldSurviveBeingDisposedTwice()
+    {
+        var com = RenderComponent<BitPanel>(parameters => parameters.Add(p => p.IsOpen, true));
+
+        com.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        com.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeEscapeGuard"].Count);
+    }
+
+    // A native control rendered disabled writes both attributes, so :disabled and [aria-disabled="true"] each find it.
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public void BitPanelCloseButtonShouldPairDisabledWithAriaDisabled(bool disabled)
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        var button = com.Find(".bit-pnl-cls");
+
+        Assert.AreEqual(disabled, button.HasAttribute("disabled"));
+        Assert.AreEqual(disabled ? "true" : null, button.GetAttribute("aria-disabled"));
+        Assert.AreEqual("button", button.GetAttribute("type"));
+        Assert.AreEqual("true", com.Find(".bit-pnl-cli").GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitPanelShouldRenderTheBaseParametersOnItsRoot()
+    {
+        // An arbitrary attribute reaches the panel through the render tree, as real markup hands it over: HtmlAttributes
+        // is a plain parameter on BitComponentBase rather than a CaptureUnmatchedValues one, so bUnit's AddUnmatched
+        // cannot feed it.
+        var com = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitPanel>(0);
+            builder.AddAttribute(1, nameof(BitPanel.Id), "the-panel");
+            builder.AddAttribute(2, nameof(BitPanel.Class), "custom-class");
+            builder.AddAttribute(3, nameof(BitPanel.Style), "margin:1px");
+            builder.AddAttribute(4, nameof(BitPanel.Dir), (BitDir?)BitDir.Rtl);
+            builder.AddAttribute(5, "data-test", "value");
+            builder.CloseComponent();
+        });
+
+        var root = com.Find(".bit-pnl");
+
+        Assert.AreEqual("the-panel", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.AreEqual("value", root.GetAttribute("data-test"));
+
+        // The parts are named after the root, so a consumer who names the panel can find them.
+        Assert.AreEqual("the-panel", Context.JSInterop.Invocations["BitBlazorUI.Utils.setupEscapeGuard"][^1].Arguments[0]);
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, null),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitPanelVisibilityShouldBeWrittenOnTheRoot(BitVisibility visibility, string? expected)
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = com.Find(".bit-pnl").GetAttribute("style") ?? string.Empty;
+
+        if (expected is null)
+        {
+            Assert.IsFalse(style.Contains("visibility") || style.Contains("display"));
+        }
+        else
+        {
+            StringAssert.Contains(style, expected);
+        }
+    }
+
+    // Body is an alias of ChildContent, so it wins whether or not the panel builds a body of its own.
+    [TestMethod]
+    public void BitPanelBodyShouldWinOverChildContentOnAPlainPanelToo()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Body, Markup("<div>Aliased Body</div>"));
+            parameters.AddChildContent("<div>Child Content</div>");
+        });
+
+        Assert.AreEqual("Aliased Body", com.Find(".bit-pnl-cnt").TextContent.Trim());
+        Assert.AreEqual(0, com.FindAll(".bit-pnl-bdy").Count);
+    }
+
+    [TestMethod]
+    public void BitPanelSizeAndContainerStyleShouldBothReachTheContainer()
+    {
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Size, 320);
+            parameters.Add(p => p.Styles, new BitPanelClassStyles { Container = "padding:1rem" });
+        });
+
+        Assert.AreEqual("width:320px;padding:1rem", com.Find(".bit-pnl-cnt").GetAttribute("style"));
+    }
+
+    // The click that dismissed the panel is handed on, and a dismissal with no click carries an empty one rather
+    // than nothing, so a consumer reading it never has to guard against null.
+    [TestMethod]
+    public void BitPanelOnDismissShouldCarryTheClickThatDismissedThePanel()
+    {
+        var isOpen = true;
+        MouseEventArgs? received = null;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnDismiss, (MouseEventArgs e) => received = e);
+        });
+
+        com.Find(".bit-pnl-ovl").Click(new MouseEventArgs { ClientX = 12, ClientY = 34 });
+
+        com.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(received);
+            Assert.AreEqual(12, received.ClientX);
+            Assert.AreEqual(34, received.ClientY);
+        });
+
+        received = null;
+        com.Render(p => p.Add(x => x.IsOpen, true));
+        com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+
+        com.WaitForAssertion(() =>
+        {
+            Assert.IsNotNull(received);
+            Assert.AreEqual(0, received.ClientX);
+        });
+    }
+
+    // A panel opened through Open is reported the way one opened through the flag is.
+    [TestMethod]
+    public async Task BitPanelOpenShouldReportTheOpening()
+    {
+        var isOpen = false;
+        var opened = 0;
+        var toggles = new System.Collections.Generic.List<bool>();
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnOpen, () => opened++);
+            parameters.Add(p => p.OnToggle, (bool v) => toggles.Add(v));
+        });
+
+        await com.InvokeAsync(() => com.Instance.Open());
+
+        com.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, opened);
+            CollectionAssert.AreEqual(new[] { true }, toggles);
+        });
+
+        // Opening an open panel is nothing to report again.
+        await com.InvokeAsync(() => com.Instance.Open());
+        Assert.AreEqual(1, opened);
+    }
+
+    // A one-way IsOpen is the consumer's to change: the panel leaves it as it was given.
+    [TestMethod]
+    public async Task BitPanelShouldNotCloseAOneWayBoundPanel()
+    {
+        var dismissed = 0;
+
+        var com = RenderComponent<BitPanel>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.OnDismiss, () => dismissed++);
+        });
+
+        com.Find(".bit-pnl-ovl").Click();
+        com.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        await com.InvokeAsync(() => com.Instance.Close());
+
+        Assert.IsTrue(com.Instance.IsOpen);
+        Assert.IsTrue(com.Find(".bit-pnl-cnt").ClassList.Contains("bit-pnl-opn"));
+        Assert.AreEqual(0, dismissed);
     }
 }

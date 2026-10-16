@@ -1,0 +1,55 @@
+﻿@page "/e2e/date-range-picker/surfaces"
+@using System.Globalization
+
+@* BitDateRangePicker inside the surfaces that close on Escape - a BitDialog, a BitModal and a BitPanel. The picker's
+   callout is opened through Callouts, so its Escape is the picker's alone: the first press closes the callout (and
+   rolls back an unapplied range) and the surface stays open for the next one. *@
+
+<PageTitle>BitDateRangePicker surfaces E2E</PageTitle>
+
+<h1>BitDateRangePicker - inside a dialog, a modal and a panel</h1>
+
+<E2ESection Id="s-dialog" Title="BitDialog">
+    <button id="btn-open-dialog" type="button" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <div>Dialog open: <span id="dialog-open">@_dialogOpen</span></div>
+    <BitDialog @bind-IsOpen="_dialogOpen" Title="Pick a range" ShowOkButton="false" ShowCancelButton="false">
+        <BitDateRangePicker Id="drp-dialog" Culture="_en" Today="_today" @bind-Value="_dialogValue" />
+        <BitDateRangePicker Id="drp-dialog-apply" AutoApply="false" Culture="_en" Today="_today" @bind-Value="_applyValue" />
+        <div>Value: <span id="dialog-value">@Fmt(_dialogValue)</span>, apply value: <span id="apply-value">@Fmt(_applyValue)</span></div>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="s-modal" Title="BitModal">
+    <button id="btn-open-modal" type="button" @onclick="() => _modalOpen = true">Open modal</button>
+    <div>Modal open: <span id="modal-open">@_modalOpen</span></div>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div style="padding: 16px; width: 360px;">
+            <BitDateRangePicker Id="drp-modal" Culture="_en" Today="_today" />
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="s-panel" Title="BitPanel">
+    <button id="btn-open-panel" type="button" @onclick="() => _panelOpen = true">Open panel</button>
+    <div>Panel open: <span id="panel-open">@_panelOpen</span></div>
+    <BitPanel @bind-IsOpen="_panelOpen">
+        <div style="padding: 16px;">
+            <BitDateRangePicker Id="drp-panel" Culture="_en" Today="_today" />
+        </div>
+    </BitPanel>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+
+    private readonly DateTimeOffset _today = new(new DateTime(2024, 6, 12, 10, 30, 0), TimeZoneInfo.Local.GetUtcOffset(new DateTime(2024, 6, 12, 10, 30, 0)));
+
+    private static string Fmt(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "-";
+
+    private static string Fmt(BitDateRangePickerValue? value) => value is null ? "null" : $"{Fmt(value.StartDate)} / {Fmt(value.EndDate)}";
+
+    private bool _dialogOpen, _modalOpen, _panelOpen;
+    private BitDateRangePickerValue? _dialogValue, _applyValue;
+}

@@ -926,14 +926,38 @@ public partial class BitImage : BitComponentBase
     /// The comparer is case insensitive because HTML attribute names are: an attribute put in the
     /// dictionary as "srcSet" and one written here as "srcset" are the same attribute, and the render
     /// tree would otherwise emit both.
+    /// <br />
+    /// The sources come last, after everything that says how they are to be fetched (loading,
+    /// fetchpriority, crossorigin, referrerpolicy): the renderer writes the attributes of a new img one by
+    /// one, in this order, and a browser may start the request the moment the src is written - at once
+    /// when the URL is already in its memory cache, as the image a prerendered page deferred is when the
+    /// interactive render replaces it. Written ahead of the loading attribute, a lazy image far off screen
+    /// would then be fetched as an eager one.
     /// </remarks>
     private Dictionary<string, object> GetImageAttributes()
     {
         Dictionary<string, object> attributes = new(ImageAttributes.Count + 14, StringComparer.OrdinalIgnoreCase);
 
+        object? splattedSrc = null, splattedSrcset = null, splattedSizes = null;
+
         foreach (var attribute in ImageAttributes)
         {
-            attributes[attribute.Key] = attribute.Value;
+            if (string.Equals(attribute.Key, "src", StringComparison.OrdinalIgnoreCase))
+            {
+                splattedSrc = attribute.Value;
+            }
+            else if (string.Equals(attribute.Key, "srcset", StringComparison.OrdinalIgnoreCase))
+            {
+                splattedSrcset = attribute.Value;
+            }
+            else if (string.Equals(attribute.Key, "sizes", StringComparison.OrdinalIgnoreCase))
+            {
+                splattedSizes = attribute.Value;
+            }
+            else
+            {
+                attributes[attribute.Key] = attribute.Value;
+            }
         }
 
         // An image is never left without an alt: one that has no text of its own is decorative, which
@@ -943,9 +967,6 @@ public partial class BitImage : BitComponentBase
             attributes["alt"] = Alt ?? string.Empty;
         }
 
-        Set(attributes, "src", _src);
-        Set(attributes, "srcset", Srcset);
-        Set(attributes, "sizes", Sizes);
         Set(attributes, "title", Title);
         Set(attributes, "loading", Loading?.ToString().ToLowerInvariant());
         Set(attributes, "decoding", Decoding?.ToString().ToLowerInvariant());
@@ -998,7 +1019,25 @@ public partial class BitImage : BitComponentBase
                                                 ? splattedClass?.ToString()
                                                 : null);
 
+        // Last, in the order a browser reads them in: the sizes the srcset is chosen against, the srcset,
+        // and the src. A parameter wins over what the page put in ImageAttributes, as everywhere above.
+        SetOrKeep(attributes, "sizes", Sizes, splattedSizes);
+        SetOrKeep(attributes, "srcset", Srcset, splattedSrcset);
+        SetOrKeep(attributes, "src", _src, splattedSrc);
+
         return attributes;
+
+        static void SetOrKeep(Dictionary<string, object> attributes, string name, string? value, object? splatted)
+        {
+            if (value.HasValue())
+            {
+                attributes[name] = value!;
+            }
+            else if (splatted is not null)
+            {
+                attributes[name] = splatted;
+            }
+        }
 
         static void Set(Dictionary<string, object> attributes, string name, string? value)
         {

@@ -1,0 +1,311 @@
+﻿@page "/e2e/virtualize"
+
+<PageTitle>BitVirtualize E2E</PageTitle>
+
+<h1>BitVirtualize</h1>
+
+<style>
+    .vir-box { height: 300px; border: 1px solid #ccc; }
+    .vir-h-box { width: 400px; height: 80px; border: 1px solid #ccc; }
+    .vir-row { height: 100%; box-sizing: border-box; border-bottom: 1px solid #eee; }
+</style>
+
+<p>Log: <span id="vir-log">@string.Join(",", _log)</span></p>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitVirtualize Id="vir-basic" Items="_million" ItemSize="50" TItem="int" Class="vir-box">
+        <div class="vir-row">Item @context</div>
+    </BitVirtualize>
+    <BitVirtualize Id="vir-overscan" Items="_thousand" ItemSize="50" OverscanCount="10" TItem="int" Class="vir-box">
+        <div class="vir-row">Item @context</div>
+    </BitVirtualize>
+</E2ESection>
+
+<E2ESection Id="provider" Title="ItemsProvider">
+    <BitVirtualize Id="vir-provider" TItem="string" ItemsProvider="LoadWindow" ItemSize="40" Class="vir-box">
+        <ItemTemplate Context="item"><div class="vir-row prov-item">@item</div></ItemTemplate>
+        <PlaceholderTemplate Context="ph"><div class="vir-row prov-ph" data-size="@ph.Size">Loading @ph.Index</div></PlaceholderTemplate>
+        <LoadingTemplate><span id="prov-loading">Loading the list</span></LoadingTemplate>
+    </BitVirtualize>
+    <button id="btn-release-provider" @onclick="ReleaseProvider">Release the provider</button>
+    <span id="prov-requests">@string.Join("|", _requests)</span>
+    <BitVirtualize Id="vir-provider-ph" TItem="string" ItemsProvider="LoadGated" ItemSize="40" Class="vir-box">
+        <ItemTemplate Context="item"><div class="vir-row">@item</div></ItemTemplate>
+        <PlaceholderTemplate Context="ph"><div class="vir-row ph-only">Placeholder @ph.Index (@ph.Size)</div></PlaceholderTemplate>
+    </BitVirtualize>
+    <button id="btn-release-gated" @onclick="ReleaseGated">Release the gated provider</button>
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Dynamic size">
+    <BitVirtualize Id="vir-dynamic" Items="_posts" Dynamic EstimatedItemSize="60" TItem="int" Class="vir-box">
+        <div class="post" style="height:@(30 + (context % 4) * 30)px; box-sizing:border-box; border-bottom:1px solid #eee">Post @context</div>
+    </BitVirtualize>
+</E2ESection>
+
+<E2ESection Id="horizontal" Title="Horizontal">
+    <BitVirtualize Id="vir-horizontal" Items="_thousand" ItemSize="100" Horizontal TItem="int" Class="vir-h-box">
+        <div class="tile">Tile @context</div>
+    </BitVirtualize>
+</E2ESection>
+
+<E2ESection Id="grid" Title="Grid (Lanes)">
+    <button id="btn-lanes" @onclick="() => _lanes = _lanes == 3 ? 4 : 3">Toggle lanes</button>
+    <div style="width:600px">
+        <BitVirtualize Id="vir-grid" Items="_thousand" ItemSize="60" Lanes="_lanes" Gap="8" TItem="int" Class="vir-box">
+            <div class="grid-tile" style="height:100%;background:#eef">G @context</div>
+        </BitVirtualize>
+    </div>
+    <div style="width:600px">
+        <BitVirtualize Id="vir-grid-min" Items="_thousand" ItemSize="60" MinLaneSize="190" TItem="int" Class="vir-box">
+            <div style="height:100%">M @context</div>
+        </BitVirtualize>
+    </div>
+</E2ESection>
+
+<E2ESection Id="scrolling" Title="Scrolling">
+    <button id="btn-to-500-start" @onclick="() => _scrollRef!.ScrollToIndexAsync(500, BitScrollAlignment.Start)">500 Start</button>
+    <button id="btn-to-500-center" @onclick="() => _scrollRef!.ScrollToIndexAsync(500, BitScrollAlignment.Center)">500 Center</button>
+    <button id="btn-to-500-end" @onclick="() => _scrollRef!.ScrollToIndexAsync(500, BitScrollAlignment.End)">500 End</button>
+    <button id="btn-to-503-nearest" @onclick="() => _scrollRef!.ScrollToIndexAsync(503, BitScrollAlignment.Nearest)">503 Nearest</button>
+    <button id="btn-to-start" @onclick="() => _scrollRef!.ScrollToStartAsync()">To start</button>
+    <button id="btn-to-end" @onclick="() => _scrollRef!.ScrollToEndAsync()">To end</button>
+    <button id="btn-by-plus" @onclick="() => _scrollRef!.ScrollByAsync(480)">+480px</button>
+    <button id="btn-to-offset" @onclick="() => _scrollRef!.ScrollToOffsetAsync(4800)">Offset 4800</button>
+    <button id="btn-smooth" @onclick="() => _scrollRef!.ScrollToIndexAsync(900, BitScrollAlignment.Start, smooth: true)">900 smooth</button>
+    <button id="btn-refresh" @onclick="() => _scrollRef!.RefreshDataAsync()">RefreshDataAsync</button>
+    <span id="vir-range">@_range.Start-@_range.End</span>
+    <span id="vir-at-start">@_atStart</span>
+    <span id="vir-at-end">@_atEnd</span>
+    <BitVirtualize @ref="_scrollRef" Id="vir-scroll" Items="_thousand" ItemSize="48" InitialIndex="200" TItem="int" Class="vir-box"
+                   OnVisibleRangeChanged="r => _range = r" OnAtStartChanged="v => _atStart = v" OnAtEndChanged="v => _atEnd = v">
+        <div class="vir-row">Row @context</div>
+    </BitVirtualize>
+</E2ESection>
+
+<E2ESection Id="scroller" Title="ScrollerSelector">
+    <div id="vir-outer" style="height:300px;overflow:auto;border:1px solid #ccc">
+        <div style="height:100px">Content above the list.</div>
+        <BitVirtualize Id="vir-scroller" Items="_thousand" ItemSize="50" ScrollerSelector="#vir-outer" TItem="int">
+            <div class="vir-row">Outer @context</div>
+        </BitVirtualize>
+        <div id="vir-outer-below">Content below the list.</div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard & accessibility">
+    <button id="before-feed">Before</button>
+    <BitVirtualize Id="vir-feed" Items="_thousand" ItemSize="50" TItem="int" Class="vir-box"
+                   Role="feed" ItemRole="article" AriaLabel="News feed"
+                   ItemAttributes="@(i => new Dictionary<string, object> { ["aria-label"] = $"Article {i}", ["data-article"] = i, ["class"] = "art-class" })">
+        <div class="vir-row">Article @context <input class="art-input" aria-label="Input @context" /></div>
+    </BitVirtualize>
+    <BitVirtualize Id="vir-default-roles" Items="_thousand" ItemSize="50" TItem="int" Class="vir-box">
+        <div class="vir-row">Item @context</div>
+    </BitVirtualize>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <button id="btn-empty" @onclick="() => _templateItems = []">Empty the list</button>
+    <button id="btn-refill" @onclick="() => _templateItems = [.. Enumerable.Range(0, 1000)]">Refill the list</button>
+    <BitVirtualize Id="vir-templates" Items="_templateItems" ItemSize="48" TItem="int" Class="vir-box">
+        <HeaderTemplate><div class="tpl-header">Header · @_templateItems.Count items</div></HeaderTemplate>
+        <IndexedItemTemplate Context="ctx"><div class="vir-row tpl-row @(ctx.Index % 2 == 1 ? "odd" : null)">@(ctx.Index + 1). Item @ctx.Item</div></IndexedItemTemplate>
+        <FooterTemplate><div class="tpl-footer">Footer · end of the list</div></FooterTemplate>
+        <EmptyTemplate><span class="tpl-empty">No items to show</span></EmptyTemplate>
+    </BitVirtualize>
+</E2ESection>
+
+<E2ESection Id="infinite" Title="Infinite scrolling">
+    <BitVirtualize @ref="_feedRef" Id="vir-infinite" Items="_feedItems" ItemSize="50" TItem="string" OnEndReached="LoadMore" ReachedThreshold="5" Class="vir-box">
+        <ItemTemplate Context="item"><div class="vir-row">@item</div></ItemTemplate>
+    </BitVirtualize>
+    <span id="feed-count">@_feedItems.Count</span>
+</E2ESection>
+
+<E2ESection Id="sticky" Title="Sticky headers">
+    <BitVirtualize Id="vir-sticky" Items="_contacts" ItemSize="40" TItem="string" IsStickyItem="@(c => c.Length == 1)" Class="vir-box">
+        <ItemTemplate Context="c"><div class="vir-row @(c.Length == 1 ? "group-header" : "contact")">@c</div></ItemTemplate>
+        <StickyTemplate Context="c"><div class="vir-row pinned">Pinned @c</div></StickyTemplate>
+    </BitVirtualize>
+</E2ESection>
+
+<E2ESection Id="itemkey" Title="ItemKey">
+    <button id="btn-add-tasks" @onclick="AddTasks">Add 5 at the top</button>
+    <BitVirtualize Id="vir-keyed" Items="_tasks" ItemSize="48" ItemKey="t => t" TItem="int" Class="vir-box">
+        <div class="vir-row"><label><input type="checkbox" class="task-check" /> Task @context</label></div>
+    </BitVirtualize>
+    <BitVirtualize Id="vir-unkeyed" Items="_tasks" ItemSize="48" TItem="int" Class="vir-box">
+        <div class="vir-row"><label><input type="checkbox" class="task-check" /> Task @context</label></div>
+    </BitVirtualize>
+</E2ESection>
+
+<E2ESection Id="chat" Title="Reversed (chat)">
+    <button id="btn-send" @onclick="Send">Send</button>
+    <button id="btn-jump" @onclick="() => _chatRef!.ScrollToEndAsync()">Jump to latest</button>
+    <span id="chat-at-end">@_chatAtEnd</span>
+    <BitVirtualize @ref="_chatRef" Id="vir-chat" Items="_messages" ItemSize="40" TItem="int" Reversed ItemKey="m => m"
+                   OnStartReached="LoadHistory" ReachedThreshold="3" OnAtEndChanged="v => _chatAtEnd = v" AriaLabel="Messages" Class="vir-box">
+        <ItemTemplate Context="m"><div class="vir-row msg">Message @m</div></ItemTemplate>
+    </BitVirtualize>
+    <BitVirtualize Id="vir-short" Items="_short" ItemSize="40" TItem="int" Reversed AlignToEnd Class="vir-box">
+        <ItemTemplate Context="m"><div class="vir-row short-msg">Short @m</div></ItemTemplate>
+    </BitVirtualize>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="_params">
+        <BitVirtualize Id="vir-cas" Items="_thousand" TItem="int" Class="vir-box">
+            <div class="vir-row">Cas @context</div>
+        </BitVirtualize>
+        <BitVirtualize Id="vir-cas-own" Items="_thousand" ItemSize="64" TItem="int" Class="vir-box">
+            <div class="vir-row">Own @context</div>
+        </BitVirtualize>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <BitVirtualize Id="vir-styled" Items="_thousand" ItemSize="48" TItem="int" IsStickyItem="i => i % 10 == 0"
+                   Style="height: 240px; border: 2px solid rgb(30, 144, 255)" Class="vir-root-class"
+                   Classes="@(new() { Root = "c-root", Header = "c-header", Item = "c-item", Sticky = "c-sticky", Footer = "c-footer" })"
+                   Styles="@(new() { Root = "padding-top: 1px", Header = "color: rgb(255, 0, 0)", Item = "padding-left: 7px", Sticky = "color: rgb(0, 0, 255)", Footer = "color: rgb(0, 128, 0)" })">
+        <HeaderTemplate>Header</HeaderTemplate>
+        <ItemTemplate Context="item"><div class="vir-row">S @item</div></ItemTemplate>
+        <FooterTemplate>Footer</FooterTemplate>
+    </BitVirtualize>
+    <BitVirtualize Id="vir-styled-empty" Items="_none" ItemSize="48" TItem="int" Class="vir-box"
+                   Classes="@(new() { Empty = "c-empty" })" Styles="@(new() { Empty = "letter-spacing: 2px" })">
+        <ItemTemplate Context="item"><div>@item</div></ItemTemplate>
+        <EmptyTemplate>Nothing</EmptyTemplate>
+    </BitVirtualize>
+    <BitVirtualize Id="vir-styled-loading" TItem="int" ItemsProvider="LoadNever" ItemSize="48" Class="vir-box"
+                   Classes="@(new() { Loading = "c-loading" })" Styles="@(new() { Loading = "letter-spacing: 3px" })">
+        <ItemTemplate Context="item"><div>@item</div></ItemTemplate>
+        <LoadingTemplate>Loading forever</LoadingTemplate>
+    </BitVirtualize>
+    <div style="--bit-Virtualize-focus-color: rgb(0, 200, 0); --bit-Virtualize-sticky-background: rgb(250, 250, 0); --bit-Virtualize-sticky-shadow: rgb(1, 1, 1) 0px 2px 4px 0px;
+                --bit-Virtualize-state-color: rgb(2, 2, 2); --bit-Virtualize-state-font-size: 19px; --bit-Virtualize-state-padding: 23px">
+        <BitVirtualize Id="vir-vars" Items="_thousand" ItemSize="48" TItem="int" IsStickyItem="i => i % 10 == 0" Class="vir-box">
+            <div class="vir-row">V @context</div>
+        </BitVirtualize>
+        <BitVirtualize Id="vir-vars-empty" Items="_none" ItemSize="48" TItem="int" Class="vir-box">
+            <ItemTemplate Context="item"><div>@item</div></ItemTemplate>
+            <EmptyTemplate>Empty with variables</EmptyTemplate>
+        </BitVirtualize>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitVirtualize Id="vir-rtl" Dir="BitDir.Rtl" Items="_thousand" ItemSize="100" Horizontal TItem="int" Class="vir-h-box">
+        <div class="tile">کاشی @context</div>
+    </BitVirtualize>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitVirtualize Id="vir-mounted" TItem="int" ItemsProvider="LoadNever" ItemSize="48" Class="vir-box">
+            <ItemTemplate Context="item"><div>@item</div></ItemTemplate>
+        </BitVirtualize>
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly List<string> _log = [];
+    private readonly List<int> _million = [.. Enumerable.Range(0, 1_000_000)];
+    private readonly List<int> _thousand = [.. Enumerable.Range(0, 1000)];
+    private readonly List<int> _posts = [.. Enumerable.Range(0, 500)];
+    private readonly List<int> _none = [];
+    private List<int> _templateItems = [.. Enumerable.Range(0, 1000)];
+    private List<string> _feedItems = [.. Enumerable.Range(0, 30).Select(i => $"Feed {i}")];
+    private readonly List<string> _contacts = [.. "ABCDEFGH".SelectMany(c => new[] { c.ToString() }.Concat(Enumerable.Range(1, 12).Select(i => $"{c}{i:00} contact")))];
+    private List<int> _tasks = [.. Enumerable.Range(0, 200)];
+    private List<int> _messages = [.. Enumerable.Range(100, 30)];
+    private readonly List<int> _short = [1, 2];
+    private readonly List<string> _requests = [];
+    private int _lanes = 3;
+    private int _taskSeed = -1;
+    private int _historyStart = 100;
+    private (int Start, int End) _range;
+    private bool _atStart;
+    private bool _atEnd;
+    private bool _chatAtEnd;
+    private bool _mounted = true;
+    private BitVirtualize<int>? _scrollRef;
+    private BitVirtualize<string>? _feedRef;
+    private BitVirtualize<int>? _chatRef;
+    private TaskCompletionSource _providerGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private TaskCompletionSource _gatedGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private bool _providerReleased;
+
+    private readonly BitVirtualizeParams[] _params =
+    [
+        new() { ItemSize = 30, OverscanCount = 1, Role = "grid", ItemRole = "row" }
+    ];
+
+    private void Log(string entry) => _log.Add(entry);
+
+    private async ValueTask<BitVirtualizeItemsProviderResult<string>> LoadWindow(BitVirtualizeItemsProviderRequest request)
+    {
+        _requests.Add($"{request.StartIndex}:{request.Count}");
+        await InvokeAsync(StateHasChanged);
+        if (_providerReleased is false) await _providerGate.Task;
+        var items = Enumerable.Range(request.StartIndex, Math.Max(0, Math.Min(request.Count, 10_000 - request.StartIndex))).Select(i => $"Record {i}").ToList();
+        return new BitVirtualizeItemsProviderResult<string>(items, 10_000);
+    }
+
+    private void ReleaseProvider()
+    {
+        _providerReleased = true;
+        _providerGate.TrySetResult();
+    }
+
+    private async ValueTask<BitVirtualizeItemsProviderResult<string>> LoadGated(BitVirtualizeItemsProviderRequest request)
+    {
+        // The count is known from the start, so every slot that is still loading shows its placeholder.
+        if (request.StartIndex > 0) await _gatedGate.Task.WaitAsync(request.CancellationToken);
+        var items = Enumerable.Range(request.StartIndex, Math.Max(0, Math.Min(request.Count, 5000 - request.StartIndex))).Select(i => $"Gated {i}").ToList();
+        return new BitVirtualizeItemsProviderResult<string>(items, 5000);
+    }
+
+    private void ReleaseGated()
+    {
+        var gate = _gatedGate;
+        _gatedGate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        gate.TrySetResult();
+    }
+
+    private static async ValueTask<BitVirtualizeItemsProviderResult<int>> LoadNever(BitVirtualizeItemsProviderRequest request)
+    {
+        await Task.Delay(Timeout.Infinite, request.CancellationToken);
+        return new([], 0);
+    }
+
+    private async Task LoadMore()
+    {
+        Log($"end-reached:{_feedItems.Count}");
+        _feedItems = [.. _feedItems, .. Enumerable.Range(_feedItems.Count, 30).Select(i => $"Feed {i}")];
+        await Task.CompletedTask;
+    }
+
+    private void AddTasks()
+    {
+        _tasks = [.. Enumerable.Range(_taskSeed - 4, 5), .. _tasks];
+        _taskSeed -= 5;
+    }
+
+    private void Send()
+    {
+        _messages = [.. _messages, _messages[^1] + 1];
+    }
+
+    private void LoadHistory()
+    {
+        if (_historyStart <= 0) return;
+        Log($"start-reached:{_historyStart}");
+        _messages = [.. Enumerable.Range(_historyStart - 20, 20), .. _messages];
+        _historyStart -= 20;
+    }
+}

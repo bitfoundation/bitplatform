@@ -305,7 +305,14 @@ internal sealed class BitCascadeMap
         {
             RunSetupHook(component);
 
-            return _onSetAsync?.Invoke(component, null) as Task ?? Task.CompletedTask;
+            // A hook may return a ValueTask as well as a Task (BitMap's), and the generated code awaits either, so
+            // both are handed back to be awaited here too rather than dropped as something that is not a Task.
+            return _onSetAsync?.Invoke(component, null) switch
+            {
+                Task task => task,
+                ValueTask valueTask => valueTask.AsTask(),
+                _ => Task.CompletedTask
+            };
         }
 
         /// <summary>

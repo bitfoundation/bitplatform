@@ -2,6 +2,9 @@
     export class Calendars {
         private static _handlers = new Map<string, AbortController>();
 
+        // The time input a press of the pointer is giving the focus to, until the press is released.
+        private static _pressedTimeInput: HTMLInputElement | null = null;
+
         private static _navKeys = ['ArrowDown', 'ArrowUp', 'ArrowLeft', 'ArrowRight', 'Home', 'End', 'PageUp', 'PageDown'];
 
         // The hour and minute inputs of the time picker a calendar can carry.
@@ -29,6 +32,17 @@
 
             root.addEventListener('keydown', e => Calendars.preventScroll(e), { signal: controller.signal });
 
+            // A time input takes the focus with its text selected, so the first digit typed into it replaces the part
+            // instead of being appended to it. It is selected here, as the focus lands, rather than from .NET a round
+            // trip later: by then the focus may have moved on - a quick Tab or Shift+Tab - and select() pulls it back
+            // onto the input in Chromium and WebKit. A read-only input has nothing to replace, so it is left alone.
+            root.addEventListener('focusin', e => Calendars.selectTimeInput(e), { signal: controller.signal });
+
+            // A press of the pointer that gives a time input the focus goes on to collapse that selection to a caret at
+            // the press point in WebKit, so the release of the press selects the text once more.
+            root.addEventListener('mousedown', e => Calendars.notePressedTimeInput(e), { signal: controller.signal });
+            root.addEventListener('mouseup', e => Calendars.reselectPressedTimeInput(e), { signal: controller.signal });
+
             document.getElementById(componentId ?? '')
                 ?.addEventListener('keydown', e => Calendars.preventScroll(e), { signal: controller.signal });
 
@@ -45,6 +59,44 @@
 
         public static focusCell(cellId: string, preventScroll?: boolean) {
             document.getElementById(cellId)?.focus({ preventScroll: !!preventScroll });
+        }
+
+        private static selectTimeInput(e: FocusEvent) {
+            const input = Calendars.timeInputOf(e.target);
+            if (input) Calendars.selectText(input);
+        }
+
+        // Only a press that moves the focus onto the input counts: one in an input that already has it places the
+        // caret, as a press in any input does.
+        private static notePressedTimeInput(e: MouseEvent) {
+            const input = e.button === 0 ? Calendars.timeInputOf(e.target) : null;
+            Calendars._pressedTimeInput = input && input !== document.activeElement ? input : null;
+        }
+
+        private static reselectPressedTimeInput(e: MouseEvent) {
+            const input = Calendars._pressedTimeInput;
+            Calendars._pressedTimeInput = null;
+
+            // A press released outside the input, or one that left it without the focus, is not a click into it.
+            if (!input || e.target !== input || input !== document.activeElement) return;
+
+            // The release's default is prevented too, for an engine that collapses the selection on the release itself.
+            e.preventDefault();
+            Calendars.selectText(input);
+        }
+
+        // The hour or minute input of a calendar's time picker, unless it is read-only or disabled.
+        private static timeInputOf(target: EventTarget | null) {
+            const input = target as HTMLInputElement | null;
+            if (!input || input.tagName !== 'INPUT' || !input.matches(Calendars._timeInputs)) return null;
+
+            return input.readOnly || input.disabled ? null : input;
+        }
+
+        private static selectText(input: HTMLInputElement) {
+            try {
+                input.select();
+            } catch { } // an input that takes no selection keeps what it has
         }
 
         // Which keys the browser has to be stopped from scrolling the page with depends on what holds the

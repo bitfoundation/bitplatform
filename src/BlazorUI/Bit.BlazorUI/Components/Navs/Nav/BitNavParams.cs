@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitNav{TItem}"/> component.
@@ -37,6 +39,12 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
     /// Expands all items when they are first rendered.
     /// </summary>
     public bool? AllExpanded { get; set; }
+
+    /// <summary>
+    /// Keeps the order of the registered options in sync with their markup order when options are added,
+    /// removed or reordered after the first render.
+    /// </summary>
+    public bool? AutoReorderOptions { get; set; }
 
     /// <summary>
     /// The icon for the chevron-down element of each nav item, from an external icon library.
@@ -179,7 +187,7 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
     /// <param name="bitNav">
     /// The <see cref="BitNav{TItem}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TItem>(BitNav<TItem> bitNav) where TItem : class
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitNav<TItem> bitNav) where TItem : class
     {
         if (bitNav is null) return;
 
@@ -193,6 +201,11 @@ public class BitNavParams : BitComponentBaseParams, IBitComponentParams
         if (AllExpanded.HasValue)
         {
             bitNav.TakeFromCascade(nameof(AllExpanded), AllExpanded.Value, static n => n.AllExpanded, static (n, v) => n.AllExpanded = v);
+        }
+
+        if (AutoReorderOptions.HasValue)
+        {
+            bitNav.TakeFromCascade(nameof(AutoReorderOptions), AutoReorderOptions.Value, static n => n.AutoReorderOptions, static (n, v) => n.AutoReorderOptions = v);
         }
 
 

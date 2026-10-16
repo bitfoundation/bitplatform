@@ -1091,6 +1091,51 @@ public class BitIconTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitIconWithOnClickShouldBeNamedByItsTitleOverItsGlyph()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "FavoriteStar");
+            parameters.Add(p => p.Title, "Favorite");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        // A button takes its name from its content before its title, and the glyph drawn through ::before is
+        // content, so the Title is written as the aria-label too rather than left to describe a private-use character.
+        var icon = component.Find("i");
+
+        Assert.AreEqual("button", icon.GetAttribute("role"));
+        Assert.AreEqual("Favorite", icon.GetAttribute("aria-label"));
+        Assert.AreEqual("Favorite", icon.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitIconWithOnClickShouldPreferItsAriaLabelOverItsTitle()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Delete this row");
+            parameters.Add(p => p.Title, "Deletes it for good");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        Assert.AreEqual("Delete this row", component.Find("i").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitIconWithoutOnClickShouldKeepItsTitleAsItsOnlyName()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.IconName, "Info");
+            parameters.Add(p => p.Title, "More about this field");
+        });
+
+        // An img takes no name from its content, so its title already is its name.
+        Assert.IsFalse(component.Find("i").HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
     public void BitIconWithOnClickShouldFallBackToTheNameTheResolverWasGiven()
     {
         var component = RenderComponent<BitIcon>(parameters =>
@@ -1225,6 +1270,26 @@ public class BitIconTests : BunitTestContext
         Assert.AreEqual(0, clicked);
 
         component.Find("i").KeyUp(new KeyboardEventArgs { Key = " ", Code = "Space" });
+
+        Assert.AreEqual(1, clicked);
+    }
+
+    [TestMethod,
+        DataRow("Spacebar", null),
+        DataRow("Unidentified", "Space")
+    ]
+    public void BitIconShouldReadTheSpaceKeyHoweverTheBrowserSpellsIt(string key, string? code)
+    {
+        var clicked = 0;
+
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => clicked++);
+        });
+
+        // The legacy "Spacebar" name of the older engines, and a code of "Space" beside a key the engine could not name.
+        component.Find("i").KeyDown(new KeyboardEventArgs { Key = key, Code = code! });
+        component.Find("i").KeyUp(new KeyboardEventArgs { Key = key, Code = code! });
 
         Assert.AreEqual(1, clicked);
     }
@@ -1377,6 +1442,37 @@ public class BitIconTests : BunitTestContext
 
         Assert.AreEqual(2, invocations.Count);
         Assert.AreEqual(0, ((string[])invocations[1].Arguments[1]!).Length);
+    }
+
+    [TestMethod]
+    public void BitIconShouldTryRegisteringThePreventedKeysAgainAfterAFailedCall()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Utils.registerPreventKeys", _ => true).SetException(new Microsoft.JSInterop.JSException("boom"));
+
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        // A call that did not land is not a listener: flagging it beforehand would leave the guard believing one is
+        // installed and never let it be tried again. The failure itself only costs the page-scroll prevention.
+        component.Render(parameters => parameters.Add(p => p.Color, BitColor.Error));
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+    }
+
+    [TestMethod]
+    public void BitIconShouldRegisterThePreventedKeysOnTheRoot()
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerPreventKeys");
+
+        Assert.AreEqual(component.Instance.RootElement, invocation.Arguments[0]);
+        CollectionAssert.AreEquivalent(new[] { " ", "Spacebar" }, (string[])invocation.Arguments[1]!);
     }
 
     [TestMethod]
@@ -1611,6 +1707,33 @@ public class BitIconTests : BunitTestContext
         await component.InvokeAsync(() => component.Instance.FocusAsync());
 
         Context.JSInterop.VerifyFocusAsyncInvoke();
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public async Task BitIconFocusAsyncShouldPassThePreventScrollFlagItIsGiven(bool preventScroll)
+    {
+        var component = RenderComponent<BitIcon>(parameters =>
+        {
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        if (preventScroll)
+        {
+            await component.Instance.FocusAsync(true);
+        }
+        else
+        {
+            await component.Instance.FocusAsync();
+        }
+
+        var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.AreEqual(1, invocations.Count);
+        Assert.AreEqual(component.Instance.RootElement, invocations[0].Arguments[0]);
+        Assert.AreEqual(preventScroll, invocations[0].Arguments[1]);
     }
 
     [TestMethod]

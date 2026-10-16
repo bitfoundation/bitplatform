@@ -68,11 +68,12 @@ public sealed class BitComponentDirFallbackTests
         ".bit-brc.bit-rtl",
         // The direction a right-to-left culture implies for a picker whose Dir is unset: the class is the whole of it.
         ".bit-dtp-cal.bit-dtp-rtl",
+        ".bit-dtrp-cal.bit-dtrp-rtl",
         ".bit-tpc-cal.bit-tpc-rtl",
-        // The calendar writes the direction it resolved (its culture's, or the one read back for Auto) on its root and
-        // in bit-bfc-rtl, so the class and the attribute are what it is laid out in.
+        // The calendar writes the direction it resolved (its culture's, or the one read back for Auto) in bit-bfc-rtl on
+        // its root, so the class is what it is laid out in - never a [dir="rtl"] ancestor, which also matched the page
+        // around a calendar laid out left to right.
         ".bit-bfc-rtl ",
-        "[dir=\"rtl\"] .bit-bfc-",
         // The safe-area insets of the page, mapped onto the inline sides of whatever declares a direction.
         ":root [dir=\"rtl\"]",
     ];

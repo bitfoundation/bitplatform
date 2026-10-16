@@ -110,7 +110,9 @@ public partial class BitPdfViewer : BitComponentBase
     // canvases still need a JS replay after the current render.
     private readonly Dictionary<int, string> _canvasOps = [];
     private readonly List<int> _canvasDirty = [];
-    private double _paintedZoom = 1; // zoom the canvases were last rasterized at
+    // The zoom the canvases on screen were rasterized at, null while none has been painted since the slots were
+    // (re)built. A paint at another zoom leaves it alone, so the canvases painted before it are re-zoomed too.
+    private double? _paintedZoom;
     // A canvas-mode print parks here until OnAfterRenderAsync has actually painted the
     // freshly rendered canvases, so the print dialog never opens over blank pages. Also
     // completed on disposal so a parked print can't hang.
@@ -183,6 +185,7 @@ public partial class BitPdfViewer : BitComponentBase
     // The built-in password dialog. The load parks on this completion source while
     // the reader types; submitting or cancelling completes it.
     private TaskCompletionSource<string?>? _passwordRequest;
+    private TaskCompletionSource<string?>? _passwordDialogRenderedFor; // the request the dialog on the page was drawn for
     private string _passwordInput = "";
     private bool _passwordRejected; // a password was supplied and turned out wrong
     private ElementReference _passwordInputRef;
@@ -2484,7 +2487,9 @@ public partial class BitPdfViewer : BitComponentBase
 
         // Likewise the password box: a dialog the reader cannot type into without
         // first clicking it would be a poor way to ask.
-        if (_focusPasswordPending && _passwordRequest is not null)
+        // Only once the dialog is on the page: a pass still running from a render before the request would otherwise
+        // hand the trap an element reference that was never captured, which fails in the browser and ends the circuit.
+        if (_focusPasswordPending && _passwordRequest is not null && ReferenceEquals(_passwordDialogRenderedFor, _passwordRequest))
         {
             _focusPasswordPending = false;
             try
@@ -2649,7 +2654,10 @@ public partial class BitPdfViewer : BitComponentBase
             _canvasDirty.Clear();
             if (payload.Length > 0)
             {
-                _paintedZoom = Zoom;
+                // Only the first paint says what zoom the canvases are at. A later one at another zoom - the
+                // fit-width zoom of a viewer that has just opened, applied after its first page was painted at 100%
+                // - leaves the canvases painted before it at theirs, and the re-zoom below brings them along.
+                _paintedZoom ??= Zoom;
                 try
                 {
                     await _js.BitPdfViewerPaintCanvasPages(_containerRef, payload, Zoom);
@@ -2667,7 +2675,7 @@ public partial class BitPdfViewer : BitComponentBase
         // Uses the ops cached on each canvas element, so no display lists cross
         // the interop boundary again.
         if (RenderMode == BitPdfRenderMode.Canvas
-            && Math.Abs(Zoom - _paintedZoom) > 0.001 && _pages.Count > 0)
+            && _paintedZoom is { } paintedZoom && Math.Abs(Zoom - paintedZoom) > 0.001 && _pages.Count > 0)
         {
             _paintedZoom = Zoom;
             try
@@ -2823,6 +2831,7 @@ public partial class BitPdfViewer : BitComponentBase
             _thumbs.Clear();       // sidebar fragments belong to the old document
             _canvasOps.Clear();    // canvas display lists (with their base64 images) too
             _canvasDirty.Clear();
+            _paintedZoom = null;
             _failedPages.Clear();  // failures belonged to the old document
             _failedThumbs.Clear();
             _renderQueue.Clear(); // pending lazy renders belong to the old document
@@ -2957,6 +2966,15 @@ public partial class BitPdfViewer : BitComponentBase
                     // Source or a disposal; don't prompt on a load already superseded.
                     if (IsDisposed || version != _loadVersion) return;
 
+                    // Before the first render (a prerender above all) nobody can answer the built-in dialog, and
+                    // awaiting it would hold the server's response open for good. The loading state stays up for
+                    // the first render, which opens the document again and asks then (see _loadDeferred).
+                    if (OnPasswordRequested is null && ShowPasswordPrompt && IsRendered is false)
+                    {
+                        _loadDeferred = true;
+                        return;
+                    }
+
                     string? entered = OnPasswordRequested is not null
                         ? await OnPasswordRequested()
                         : ShowPasswordPrompt ? await PromptForPasswordAsync(ex.WasProvided) : null;
@@ -3053,7 +3071,8 @@ public partial class BitPdfViewer : BitComponentBase
         {
             // Only the load that still owns _loadVersion may clear the progress
             // bar; a superseded load finishing late must not hide the newer one's.
-            if (version == _loadVersion)
+            // A load deferred to the first render keeps it up until that render retries.
+            if (version == _loadVersion && _loadDeferred is false)
             {
                 _loading = false;
                 _progress = null;
@@ -3081,6 +3100,7 @@ public partial class BitPdfViewer : BitComponentBase
         _pageHeights.Clear();
         _canvasOps.Clear();
         _canvasDirty.Clear();
+        _paintedZoom = null;
         _failedPages.Clear(); // a fresh set of slots deserves a fresh attempt at each
         _failedThumbs.Clear();
         _fitPageIndex = -1;   // the page the current fit was measured against is gone

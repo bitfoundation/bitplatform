@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -285,4 +288,109 @@ public class BitNavParamsTests : BunitTestContext
         Assert.IsTrue(chevronIcon.ClassList.Contains("bit-icon--Add"));
         Assert.IsFalse(chevronIcon.ClassList.Contains("fa-angle-right"));
     }
+
+
+
+    // What is typed over the item type - the items, the selection, the templates rendering an item, the name selectors
+    // and the callbacks - belongs to one nav, so it has no place on the params object, which is what lets one
+    // non-generic object fit every nav whatever it is generic over.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitNav<BitNavItem>.CascadingParameters),
+        nameof(BitNav<BitNavItem>.ChildContent),
+        nameof(BitNav<BitNavItem>.DefaultSelectedItem),
+        nameof(BitNav<BitNavItem>.HeaderTemplate),
+        nameof(BitNav<BitNavItem>.Items),
+        nameof(BitNav<BitNavItem>.ItemSuffixTemplate),
+        nameof(BitNav<BitNavItem>.ItemTemplate),
+        nameof(BitNav<BitNavItem>.NameSelectors),
+        nameof(BitNav<BitNavItem>.OnItemClick),
+        nameof(BitNav<BitNavItem>.OnItemToggle),
+        nameof(BitNav<BitNavItem>.OnSelectItem),
+        nameof(BitNav<BitNavItem>.Options),
+        nameof(BitNav<BitNavItem>.SelectedItem),
+        nameof(BitNav<BitNavItem>.SelectedItemChanged),
+    ];
+
+    [TestMethod]
+    public void BitNavParamsShouldCarryEveryParameterThatIsNotPerNav()
+    {
+        var baseParameters = typeof(BitComponentBase).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var parameters = typeof(BitNav<BitNavItem>).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                                   .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                                   .Select(p => p.Name)
+                                                   .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
+                                                   .ToList();
+
+        Assert.IsTrue(parameters.Count > 0);
+
+        foreach (var name in parameters)
+        {
+            Assert.IsNotNull(typeof(BitNavParams).GetProperty(name), $"BitNavParams has no {name}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitNavShouldNotBeAffectedByAnEmptyParamsObject()
+    {
+        var alone = RenderComponent<BitNav<BitNavItem>>(parameters => parameters.Add(p => p.Items, GetItems()));
+
+        var cascaded = RenderWithParams(new BitNavParams(), GetItems()).FindComponent<BitNav<BitNavItem>>();
+
+        // The ids of the two instances are the only thing that may tell their markup apart.
+        var expected = WithoutRenderIds(alone.Markup.Replace(alone.Instance.UniqueId, "{id}"));
+        var actual = WithoutRenderIds(cascaded.Markup.Replace(cascaded.Instance.UniqueId, "{id}"));
+
+        Assert.AreEqual(expected, actual);
+    }
+
+    [TestMethod]
+    public void BitNavShouldKeepAnExplicitFalseOverACascadedTrue()
+    {
+        var component = RenderWithParams(new BitNavParams { NoCollapse = true, FitWidth = true, ReversedChevron = true }, GetItems(), builder =>
+        {
+            builder.AddAttribute(2, nameof(BitNav<BitNavItem>.NoCollapse), false);
+            builder.AddAttribute(3, nameof(BitNav<BitNavItem>.FitWidth), false);
+        });
+
+        var root = component.Find(".bit-nav");
+
+        // A false the nav wrote for itself is a choice, not an absence the cascade may fill in: the branch keeps its
+        // chevron, and the nav keeps its full width.
+        Assert.AreEqual(1, component.FindAll(".bit-nav-cbt").Count);
+        Assert.IsFalse(root.ClassList.Contains("bit-nav-ftw"));
+        // What it left unset still comes from the cascade.
+        StringAssert.Contains(component.Find(".bit-nav-mct").GetAttribute("style"), "row-reverse");
+    }
+
+    [TestMethod]
+    public void BitNavParamsShouldApplyCascadedBaseParameters()
+    {
+        var component = RenderWithParams(new BitNavParams
+        {
+            Id = "cascaded-id",
+            Style = "margin:1px",
+            Dir = BitDir.Rtl,
+            Disabled = true,
+        }, GetItems());
+
+        var root = component.Find(".bit-nav");
+
+        Assert.AreEqual("cascaded-id", root.Id);
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+
+        // A disabled nav disables everything it renders: the links drop their href and say so.
+        var items = component.FindAll(".bit-nav-ict");
+
+        Assert.AreEqual(2, items.Count);
+        Assert.IsTrue(items.All(i => i.HasAttribute("href") is false && i.GetAttribute("aria-disabled") == "true"));
+    }
+
+    // bUnit writes every element reference and event handler as a blazor:* attribute holding an id numbered per
+    // render, so two renders of the very same markup only compare equal without them.
+    private static string WithoutRenderIds(string markup) => Regex.Replace(markup, @"\s+blazor:[^=\s>]+=""[^""]*""", string.Empty);
 }

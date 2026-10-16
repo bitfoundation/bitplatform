@@ -213,6 +213,35 @@ public class BitFullCalendarHelpersTests
     }
 
     [TestMethod]
+    public void CulturalAnchorsShouldFollowTheCalendarOfTheDateTimeFormatRatherThanTheCulturesDefault()
+    {
+        // DateTimeFormat.Calendar is the documented way of switching the calendar of a culture; CultureInfo.Calendar
+        // stays the culture's default (Persian for fa-IR), so anchoring on it would lay a culture switched to the
+        // Gregorian calendar out as Persian.
+        var culture = (CultureInfo)CultureInfo.GetCultureInfo("fa-IR").Clone();
+        culture.DateTimeFormat.Calendar = new GregorianCalendar();
+        Assert.IsInstanceOfType<PersianCalendar>(culture.Calendar);
+        var date = new DateTime(2024, 7, 4);
+
+        Assert.AreEqual(new DateTime(2024, 7, 1), BitFullCalendarHelpers.StartOfCulturalMonth(date, culture));
+        Assert.AreEqual(new DateTime(2024, 7, 31), BitFullCalendarHelpers.EndOfCulturalMonth(date, culture));
+        Assert.AreEqual(new DateTime(2024, 1, 1), BitFullCalendarHelpers.StartOfCulturalYear(date, culture));
+        Assert.AreEqual(new DateTime(2024, 12, 31), BitFullCalendarHelpers.EndOfCulturalYear(date, culture));
+        Assert.AreEqual(4, BitFullCalendarHelpers.GetCulturalDayOfMonth(date, culture));
+        Assert.AreEqual(new DateTime(2024, 8, 4), BitFullCalendarHelpers.NavigateDate(date, BitFullCalendarView.Month, forward: true, culture));
+        Assert.AreEqual(new DateTime(2025, 7, 4), BitFullCalendarHelpers.NavigateDate(date, BitFullCalendarView.Year, forward: true, culture));
+        Assert.AreEqual("2024", BitFullCalendarHelpers.RangeText(BitFullCalendarView.Year, date, culture));
+
+        var (start, end) = BitFullCalendarHelpers.GetDateRange(BitFullCalendarView.Month, date, culture);
+        Assert.AreEqual(new DateTime(2024, 7, 1), start);
+        Assert.AreEqual(new DateTime(2024, 7, 31), end);
+
+        var cells = BitFullCalendarHelpers.GetCalendarCells(date, culture, null, null);
+        Assert.AreEqual(31, cells.Count(c => c.CurrentMonth));
+        Assert.AreEqual(new DateTime(2024, 7, 1), cells.First(c => c.CurrentMonth).Date);
+    }
+
+    [TestMethod]
     public void GetDateRangeShouldFollowTheFirstDayOverrideInTheWeekView()
     {
         var (start, end) = BitFullCalendarHelpers.GetDateRange(
@@ -310,9 +339,14 @@ public class BitFullCalendarHelpersTests
         // The full window always contains "now"; a one-hour window an hour away never does.
         Assert.IsTrue(BitFullCalendarHelpers.IsNowInVisibleHours(0, 24));
 
-        var nowHour = DateTime.Now.Hour;
-        var awayStart = (nowHour + 2) % 23;
-        Assert.IsFalse(BitFullCalendarHelpers.IsNowInVisibleHours(awayStart, awayStart + 1));
+        // A pinned clock, so the window's edges are what is tested rather than the time of day the test runs at.
+        var now = new DateTime(2026, 3, 18, 10, 30, 0);
+        Assert.IsTrue(BitFullCalendarHelpers.IsNowInVisibleHours(10, 11, now));
+        Assert.IsTrue(BitFullCalendarHelpers.IsNowInVisibleHours(8, 18, now));
+        Assert.IsFalse(BitFullCalendarHelpers.IsNowInVisibleHours(12, 13, now));
+        // The start is inclusive and the end exclusive.
+        Assert.IsTrue(BitFullCalendarHelpers.IsNowInVisibleHours(10, 11, new DateTime(2026, 3, 18, 10, 0, 0)));
+        Assert.IsFalse(BitFullCalendarHelpers.IsNowInVisibleHours(9, 10, new DateTime(2026, 3, 18, 10, 0, 0)));
     }
 
     #endregion
@@ -1154,12 +1188,14 @@ public class BitFullCalendarHelpersTests
     [TestMethod]
     public void GetCurrentTimeLineOffsetHoursShouldStayInStepWithThePixelOffset()
     {
-        var hours = BitFullCalendarHelpers.GetCurrentTimeLineOffsetHours(8);
-        var px = BitFullCalendarHelpers.GetCurrentTimeLineTopPx(8);
+        // One pinned clock for both reads, so the assertion is about the unit conversion rather than about a tick
+        // straddled between two reads of DateTime.Now.
+        var now = new DateTime(2026, 3, 18, 10, 30, 0);
+        var hours = BitFullCalendarHelpers.GetCurrentTimeLineOffsetHours(8, now);
+        var px = BitFullCalendarHelpers.GetCurrentTimeLineTopPx(8, now);
 
-        // Both read DateTime.Now, so the two calls can straddle a tick; a minute of slack keeps the
-        // assertion about the unit conversion rather than about the clock.
-        Assert.AreEqual(hours * BitFullCalendarHelpers.HourHeightPx, px, BitFullCalendarHelpers.HourHeightPx / 60.0);
+        Assert.AreEqual(2.5, hours, 0.0001);
+        Assert.AreEqual(hours * BitFullCalendarHelpers.HourHeightPx, px, 0.0001);
     }
 
     #endregion

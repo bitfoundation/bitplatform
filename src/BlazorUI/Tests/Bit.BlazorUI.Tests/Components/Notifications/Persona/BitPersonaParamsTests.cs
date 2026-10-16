@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -370,6 +372,62 @@ public class BitPersonaParamsTests : BunitTestContext
         Assert.AreSame(unknownIcon, persona.UnknownIcon);
         Assert.AreEqual("Help", persona.UnknownIconName);
         Assert.IsTrue(persona.Vertical);
+    }
+
+    // Who the persona is - the name, the texts, the picture, the presence and the state of this one person - and the
+    // markup put in its slots and the callbacks of this one coin are written per persona, so they have no place on
+    // the params object.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitPersona.CascadingParameters),
+        nameof(BitPersona.ActionTemplate),
+        nameof(BitPersona.Active),
+        nameof(BitPersona.CoinColorSeed),
+        nameof(BitPersona.CoinTemplate),
+        nameof(BitPersona.Href),
+        nameof(BitPersona.ImageAlt),
+        nameof(BitPersona.ImageAttributes),
+        nameof(BitPersona.ImageInitials),
+        nameof(BitPersona.ImageOverlayTemplate),
+        nameof(BitPersona.ImageSizes),
+        nameof(BitPersona.ImageSrcSet),
+        nameof(BitPersona.ImageUrl),
+        nameof(BitPersona.Inactive),
+        nameof(BitPersona.OnActionClick),
+        nameof(BitPersona.OnImageClick),
+        nameof(BitPersona.OnImageError),
+        nameof(BitPersona.OnImageLoad),
+        nameof(BitPersona.OptionalText),
+        nameof(BitPersona.OptionalTextTemplate),
+        nameof(BitPersona.Presence),
+        nameof(BitPersona.PresenceIcon),
+        nameof(BitPersona.PresenceIconName),
+        nameof(BitPersona.PresenceTitle),
+        nameof(BitPersona.PrimaryText),
+        nameof(BitPersona.PrimaryTextTemplate),
+        nameof(BitPersona.SecondaryText),
+        nameof(BitPersona.SecondaryTextTemplate),
+        nameof(BitPersona.TertiaryText),
+        nameof(BitPersona.TertiaryTextTemplate),
+        nameof(BitPersona.Unknown),
+    ];
+
+    [TestMethod]
+    public void BitPersonaParamsShouldCarryEveryParameterThatIsNotPerPersona()
+    {
+        // A parameter added to the persona without its counterpart here is one a BitParams cascade silently ignores,
+        // so a new one either gets a property here or is named above as belonging to one person.
+        var baseParameters = typeof(BitComponentBase).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var parameters = typeof(BitPersona).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                           .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                           .Select(p => p.Name)
+                                           .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false);
+
+        foreach (var name in parameters)
+        {
+            Assert.IsNotNull(typeof(BitPersonaParams).GetProperty(name), $"BitPersonaParams has no {name}.");
+        }
     }
 
     [TestMethod]

@@ -1,0 +1,56 @@
+﻿@page "/e2e/theme-switcher/persist"
+@page "/e2e/theme-switcher/available"
+@inject BitThemeManager ThemeManager
+@inject NavigationManager Navigation
+
+<PageTitle>BitThemeSwitcher persistence E2E</PageTitle>
+
+@* The host page's <html> carries no theme attribute, so this page writes the ones it needs the way an app's host page
+   would - before the theme script self-initializes from them at the end of <body>: persistence (localStorage and the
+   cookie) on the persist route, the list of the themes the page ships on the available route. The inline script is
+   prerendered into <head>, so it runs while the document is still being parsed. *@
+<HeadContent>
+    @((MarkupString)(_available ? AvailableScript : PersistScript))
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
+</HeadContent>
+
+<h1>BitThemeSwitcher @(_available ? "available themes" : "persistence")</h1>
+
+<div id="probe-surface" style="background-color: var(--bit-clr-bg-pri); padding: 4px;">
+    <BitButton Id="probe-button">Probe</BitButton>
+</div>
+
+<E2ESection Id="persist" Title="Persisted across a reload">
+    <BitThemeSwitcher Id="ths-persist" OnChange="t => { _lastTheme = t; _changeCount++; }" />
+    <div>OnChange theme: <span id="persist-last-theme">@_lastTheme</span> (<span id="persist-change-count">@_changeCount</span>)</div>
+    <button id="btn-read-persisted" type="button" @onclick="ReadPersisted">GetCurrentPersistedThemeAsync</button>
+    <div>Persisted preference: <span id="persisted-theme">@_persisted</span></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string PersistScript =
+        "<script>document.documentElement.setAttribute('bit-theme-persist','');" +
+        "document.documentElement.setAttribute('bit-theme-persist-cookie','');</script>";
+
+    private const string AvailableScript =
+        "<script>document.documentElement.setAttribute('bit-theme-available','light dark material-light material-dark');</script>";
+
+    private bool _available;
+    private string? _lastTheme;
+    private int _changeCount;
+    private string? _persisted;
+
+    protected override void OnInitialized()
+    {
+        _available = new Uri(Navigation.Uri).AbsolutePath.EndsWith("/available", StringComparison.Ordinal);
+    }
+
+    private async Task ReadPersisted()
+    {
+        _persisted = await ThemeManager.GetCurrentPersistedThemeAsync() ?? "(none)";
+    }
+}

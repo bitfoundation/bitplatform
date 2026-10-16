@@ -2194,6 +2194,55 @@ public class BitChartTests : BunitTestContext
 
         Assert.AreEqual("false", root.GetAttribute("aria-busy"));
     }
+
+    // ---- export ----
+
+    // A data URL or a markup of a sizeable chart is far larger than the 32 KB one message of a Blazor Server circuit
+    // holds, and an interop result past it tears the circuit down, so both come back as a stream of the text's bytes.
+    [TestMethod]
+    public async Task BitChartShouldReadItsImageAndMarkupBackAsAStream()
+    {
+        var dataUrl = "data:image/png;base64," + new string('A', 600_000);
+        var markup = "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>Ünïcode</text></svg>";
+
+        Context.JSInterop.Setup<Microsoft.JSInterop.IJSStreamReference?>("BitBlazorUI.BitChart.toDataUrl", _ => true)
+               .SetResult(new TextStreamReference(dataUrl));
+        Context.JSInterop.Setup<Microsoft.JSInterop.IJSStreamReference?>("BitBlazorUI.BitChart.toSvgString", _ => true)
+               .SetResult(new TextStreamReference(markup));
+
+        var component = RenderChart();
+
+        Assert.AreEqual(dataUrl, await component.Instance.ToBase64ImageAsync());
+        Assert.AreEqual(markup, await component.Instance.ToSvgStringAsync());
+    }
+
+    [TestMethod]
+    public async Task BitChartShouldAnswerNullWhenThereIsNoPictureToRead()
+    {
+        Context.JSInterop.Setup<Microsoft.JSInterop.IJSStreamReference?>("BitBlazorUI.BitChart.toDataUrl", _ => true)
+               .SetResult(new TextStreamReference(string.Empty));
+
+        var component = RenderChart();
+
+        Assert.IsNull(await component.Instance.ToBase64ImageAsync());
+        Assert.IsNull(await component.Instance.ToSvgStringAsync());
+    }
+
+    private sealed class TextStreamReference(string text) : Microsoft.JSInterop.IJSStreamReference
+    {
+        private readonly byte[] _bytes = System.Text.Encoding.UTF8.GetBytes(text);
+
+        public long Length => _bytes.Length;
+
+        public ValueTask<System.IO.Stream> OpenReadStreamAsync(long maxAllowedSize = 512000, System.Threading.CancellationToken cancellationToken = default)
+        {
+            if (_bytes.Length > maxAllowedSize) throw new InvalidOperationException("The stream is larger than allowed.");
+
+            return ValueTask.FromResult<System.IO.Stream>(new System.IO.MemoryStream(_bytes));
+        }
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
 }
 
 internal static class BitChartTestExtensions

@@ -288,11 +288,12 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
 
 // Two stacked buttons split the height of the field between them, which at the default 32px leaves each of
 // them 16px tall - under the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8), and well under what a
-// finger can hit. On a coarse pointer the field grows so that each half clears it; a mouse keeps the
-// compact stack that the layout is there for.
+// finger can hit. On a coarse pointer the field grows so that each half clears it - the border is added on top,
+// since the field is border-box and the stack only gets what is inside it; a mouse keeps the compact stack that
+// the layout is there for.
 @media (pointer: coarse) {
     .bit-nfl-mcp .bit-nfl-cnt {
-        height: max(var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md})), #{spacing(6)});
+        height: max(var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md})), calc(#{spacing(6)} + 2 * var(--bit-NumberField-border-width, #{$shp-border-width})));
     }
 }
 
@@ -300,7 +301,7 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
 // full-sized target, which is the equivalent-control exception SC 2.5.8 allows for. HideInput takes that
 // input away, so there the pair has to clear the minimum on every pointer.
 .bit-nfl-mcp .bit-nfl-hdi {
-    height: max(var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md})), #{spacing(6)});
+    height: max(var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md})), calc(#{spacing(6)} + 2 * var(--bit-NumberField-border-width, #{$shp-border-width})));
 }
 
 .bit-nfl-inp {

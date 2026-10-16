@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitNavPanel{TItem}"/> component.
@@ -390,7 +392,7 @@ public class BitNavPanelParams : BitComponentBaseParams, IBitComponentParams
     /// <param name="bitNavPanel">
     /// The <see cref="BitNavPanel{TItem}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TItem>(BitNavPanel<TItem> bitNavPanel) where TItem : class
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitNavPanel<TItem> bitNavPanel) where TItem : class
     {
         if (bitNavPanel is null) return;
 

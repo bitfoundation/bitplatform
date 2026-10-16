@@ -8,7 +8,9 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitActionButton : BitComponentBase
 {
+    private int _clickId;
     private string? _rel;
+    private bool _autoFocus;
     private bool _showLoading;
     private BitButtonType _buttonType;
     private CancellationTokenSource? _loadingDelayCts;
@@ -234,7 +236,12 @@ public partial class BitActionButton : BitComponentBase
     /// Enables re-clicking the action button while it is in the loading state.
     /// By default, clicks are ignored while the button is loading to protect against double submissions.
     /// </summary>
-    [Parameter] public bool Reclickable { get; set; }
+    /// <remarks>
+    /// The re-click only raises <see cref="OnClick"/>: with <see cref="AutoLoading"/>, the state stays as it is until
+    /// the run the last click started has ended.
+    /// </remarks>
+    [Parameter, ResetClassBuilder]
+    public bool Reclickable { get; set; }
 
     /// <summary>
     /// Gets or sets the relationship type between the current element and the linked resource, as defined by the link's rel attribute.
@@ -329,6 +336,11 @@ public partial class BitActionButton : BitComponentBase
 
         ClassBuilder.Register(() => IsLoading ? "bit-acb-lod" : string.Empty);
 
+        // The pointer is taken away from a loading button only while it refuses the click: a Reclickable one is
+        // still there to be clicked, and a rule keyed on the loading state alone would block the very re-click
+        // Reclickable exists for.
+        ClassBuilder.Register(() => IsLoading && Reclickable is false ? "bit-acb-lnc" : string.Empty);
+
         ClassBuilder.Register(() => NoWrap ? "bit-acb-nwr" : string.Empty);
 
         ClassBuilder.Register(() => BitCssClasses.Size(Size, "bit-acb"));
@@ -362,7 +374,16 @@ public partial class BitActionButton : BitComponentBase
         if (Disabled) return;
         if (IsLoading && Reclickable is false) return;
 
-        if (AutoLoading)
+        var isLoading = IsLoading;
+
+        // The loading state belongs to the latest click alone. A Reclickable button's re-click arrives while
+        // that state is already on, so it only raises the event: entering it again would be a no-op, and
+        // leaving it when this run ends would clear the spinner of the run that is still in flight - or,
+        // for a handler that abandons its previous run by throwing into it, clear it on the way out of the
+        // run the user has just replaced.
+        var clickId = ++_clickId;
+
+        if (AutoLoading && isLoading is false)
         {
             if (await AssignIsLoading(true) is false) return;
 
@@ -375,7 +396,9 @@ public partial class BitActionButton : BitComponentBase
         }
         finally
         {
-            if (AutoLoading)
+            // in a finally so that a handler that throws leaves the button clickable again instead of
+            // stranding it in a loading state that nothing will ever clear.
+            if (AutoLoading && clickId == _clickId)
             {
                 await AssignIsLoading(false);
 
@@ -386,11 +409,26 @@ public partial class BitActionButton : BitComponentBase
 
 
 
+    // Only the Rel parameter itself is kept here, never the noopener a new tab adds to it: a null left for a link
+    // that has no Rel is what lets GetRel fall back to a rel written by hand.
     internal void OnSetHrefRelAndTarget()
     {
-        // protects against reverse-tabnabbing when opening the link in a new browsing context, unless the
-        // author already said what the opener relationship should be.
-        _rel = BitNewTabUtils.ResolveRel(Href, Rel, Target);
+        _rel = BitNewTabUtils.IsInPageHref(Href) || Rel.HasValue is false ? null : BitLinkRelUtils.GetRels(Rel.Value);
+    }
+
+
+
+    // Neither a target nor a rel written by hand is a parameter, so the rel the anchor renders is resolved against the
+    // splatted one instead of overwriting it with the Rel parameter's null, and the reverse-tabnabbing guard is applied
+    // once, here, against the target the anchor actually renders - unless the author already said what the opener
+    // relationship should be.
+    private string? GetRel(string? target)
+    {
+        var rel = _rel ?? GetSplattedAttribute("rel");
+
+        if (BitNewTabUtils.IsInPageHref(Href)) return rel;
+
+        return BitNewTabUtils.AddNoOpener(rel, target);
     }
 
 
@@ -463,6 +501,24 @@ public partial class BitActionButton : BitComponentBase
         _loadingDelayCts.Cancel();
         _loadingDelayCts.Dispose();
         _loadingDelayCts = null;
+    }
+
+
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (IsDisposed) return;
+
+        // The autofocus attribute is written on the button, but a browser honors it only while the document is
+        // still loading: an interactive render replaces the prerendered markup that took the focus, and a
+        // WebAssembly page or a button rendered later never gets that far. So the first render gives the focus
+        // itself, by the very rule the attribute is written by.
+        if (firstRender && _autoFocus)
+        {
+            await RootElement.FocusSafelyAsync();
+        }
     }
 
 

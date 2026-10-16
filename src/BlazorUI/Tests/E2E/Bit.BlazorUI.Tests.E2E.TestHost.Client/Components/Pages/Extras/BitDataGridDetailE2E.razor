@@ -1,0 +1,106 @@
+﻿@page "/e2e/data-grid/detail"
+
+@* BitDataGrid's master-detail rows: the toggle column, a nested grid as the DetailTemplate, the two-way
+   ExpandedDetailItems, OnDetailToggle, ExpandAllDetailsAsync / CollapseAllDetailsAsync and the per-row API,
+   ExpandDetailOnRowClick with and without the toggle column and with selection, and Enter on a navigable cell. *@
+
+<PageTitle>BitDataGrid detail rows E2E</PageTitle>
+
+<h1>BitDataGrid detail rows</h1>
+
+<E2ESection Id="detail" Title="Detail rows">
+    <button id="btn-expand-details" type="button" @onclick="() => _detailGrid.ExpandAllDetailsAsync()">Expand all</button>
+    <button id="btn-collapse-details" type="button" @onclick="() => _detailGrid.CollapseAllDetailsAsync()">Collapse all</button>
+    <button id="btn-set-expanded" type="button" @onclick="() => _expanded = [_suppliers[1]]">Expand Globex from the page</button>
+    <button id="btn-toggle-api" type="button" @onclick="() => _detailGrid.ToggleDetailAsync(_suppliers[2])">ToggleDetailAsync(Initech)</button>
+    <button id="btn-read-detail" type="button" @onclick="ReadDetail">IsDetailExpanded(Initech)</button>
+    <button id="btn-expand-acme" type="button" @onclick="() => _detailGrid.ExpandDetailAsync(_suppliers[0])">ExpandDetailAsync(Acme)</button>
+    <button id="btn-collapse-acme" type="button" @onclick="() => _detailGrid.CollapseDetailAsync(_suppliers[0])">CollapseDetailAsync(Acme)</button>
+    <button id="btn-set-globex" type="button" @onclick="() => _detailGrid.SetDetailExpandedAsync(_suppliers[1], true)">SetDetailExpandedAsync(Globex, true)</button>
+    <span id="detail-read">@_detailRead</span>
+    <BitDataGrid @ref="_detailGrid" TItem="Supplier" Id="grid-detail" Items="@_suppliers" KeyField="s => s.Name"
+                 @bind-ExpandedDetailItems="_expanded"
+                 OnDetailToggle="OnDetailToggle">
+        <DetailTemplate Context="supplier">
+            <BitDataGrid TItem="Product" Id="@($"nested-{supplier.Name}")" Items="supplier.Products" AriaLabel="@($"Products of {supplier.Name}")">
+                <BitDataGridColumn Property="p => p.Name" />
+                <BitDataGridColumn Property="p => p.Stock" />
+            </BitDataGrid>
+        </DetailTemplate>
+        <Columns>
+            <BitDataGridColumn Property="s => s.Name" Title="Supplier" />
+            <BitDataGridColumn Property="s => s.Count" Title="Products" />
+        </Columns>
+    </BitDataGrid>
+    <p>expanded <span id="expanded-items">@string.Join(",", _expanded.Select(s => s.Name))</span> | toggles <span id="toggle-count">@_toggleCount</span> <span id="toggle-log">@_toggleLog</span></p>
+</E2ESection>
+
+<E2ESection Id="detail-rowclick" Title="A row click toggles, without the toggle column">
+    <BitDataGrid TItem="Supplier" Id="grid-detail-rowclick" Items="@_suppliers" KeyField="s => s.Name"
+                 ExpandDetailOnRowClick="true" ShowDetailToggle="false">
+        <DetailTemplate Context="supplier"><div class="detail-text">Detail of @supplier.Name</div></DetailTemplate>
+        <Columns>
+            <BitDataGridColumn Property="s => s.Name" Title="Supplier" />
+            <BitDataGridColumn Property="s => s.Count" Title="Products" />
+        </Columns>
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="detail-select" Title="A row click selects and toggles">
+    <BitDataGrid TItem="Supplier" Id="grid-detail-select" Items="@_suppliers" KeyField="s => s.Name"
+                 ExpandDetailOnRowClick="true" SelectionMode="BitSelectionMode.Single" @bind-SelectedItems="_selected">
+        <DetailTemplate Context="supplier"><div class="detail-text">Detail of @supplier.Name</div></DetailTemplate>
+        <Columns>
+            <BitDataGridColumn Property="s => s.Name" Title="Supplier" />
+        </Columns>
+    </BitDataGrid>
+    <p>selected <span id="detail-selected">@string.Join(",", _selected.Select(s => s.Name))</span></p>
+</E2ESection>
+
+<E2ESection Id="detail-nav" Title="Enter on a navigable cell">
+    <BitDataGrid TItem="Supplier" Id="grid-detail-nav" Items="@_suppliers" KeyField="s => s.Name" CellNavigation="true">
+        <DetailTemplate Context="supplier"><div class="detail-text">Detail of @supplier.Name</div></DetailTemplate>
+        <Columns>
+            <BitDataGridColumn Property="s => s.Name" Title="Supplier" />
+        </Columns>
+    </BitDataGrid>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Product
+    {
+        public string Name { get; set; } = "";
+        public int Stock { get; set; }
+    }
+
+    public class Supplier
+    {
+        public string Name { get; set; } = "";
+        public List<Product> Products { get; set; } = [];
+        public int Count => Products.Count;
+    }
+
+    private readonly List<Supplier> _suppliers =
+    [
+        new() { Name = "Acme", Products = [new() { Name = "Laptop", Stock = 5 }, new() { Name = "Lamp", Stock = 30 }, new() { Name = "Cookbook", Stock = 60 }] },
+        new() { Name = "Globex", Products = [new() { Name = "Novel", Stock = 120 }, new() { Name = "Drone", Stock = 8 }] },
+        new() { Name = "Initech", Products = [new() { Name = "Jacket", Stock = 0 }] },
+    ];
+
+    private BitDataGrid<Supplier> _detailGrid = default!;
+    private IReadOnlyList<Supplier> _expanded = [];
+    private IReadOnlyList<Supplier> _selected = [];
+    private int _toggleCount;
+    private string _toggleLog = "";
+    private string _detailRead = "";
+
+    private void OnDetailToggle(BitDataGridDetailEventArgs<Supplier> args)
+    {
+        _toggleCount++;
+        _toggleLog = $"{args.Item.Name}:{args.Expanded}";
+    }
+
+    private void ReadDetail() => _detailRead = _detailGrid.IsDetailExpanded(_suppliers[2]) ? "expanded" : "collapsed";
+}

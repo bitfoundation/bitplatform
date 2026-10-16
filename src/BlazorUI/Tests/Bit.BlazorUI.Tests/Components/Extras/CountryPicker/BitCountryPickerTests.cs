@@ -734,6 +734,75 @@ public class BitCountryPickerTests : BunitTestContext
         Assert.IsFalse(component.Instance.IsOpen);
     }
 
+    // Alt+ArrowDown and Alt+ArrowUp open, walk and close the list the way the combobox pattern has them, and their
+    // default scrolls the page by a screen, which would dismiss the list as a page scroll and drop the focus to the body:
+    // the field prevents them closed and open, and so does the search box.
+    [TestMethod]
+    public void BitCountryPickerShouldPreventTheAltArrowsItActsOn()
+    {
+        var altArrows = new[] { "Alt+ArrowDown", "Alt+ArrowUp" };
+        var component = RenderComponent<BitCountryPicker>();
+
+        CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: true));
+
+        component.Find("button.bit-cnp-fld").Click();
+
+        CollectionAssert.Contains(LastPreventKeys(field: true), "Enter");
+        CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: true));
+        CollectionAssert.IsSubsetOf(altArrows, LastPreventKeys(field: false));
+    }
+
+    // A character typed on the trigger is applied by the component itself - to the type-ahead, or as the search term
+    // while the focus moves to the search box - so the trigger keeps the browser from typing it a second time into the
+    // box the focus is already in where the handler runs first (WebAssembly). The search box types its own.
+    [TestMethod]
+    public void BitCountryPickerShouldKeepTheCharactersTypedOnItsTriggerToItself()
+    {
+        var component = RenderComponent<BitCountryPicker>();
+
+        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
+
+        component.Find("button.bit-cnp-fld").Click();
+
+        CollectionAssert.Contains(LastPreventKeys(field: true), "Character");
+        CollectionAssert.DoesNotContain(LastPreventKeys(field: false), "Character");
+    }
+
+    // The keys pressed in the moment the list takes to open are answered by the list that is already open, so the key
+    // that opened it has to land before the open's round trips run, or the letters typed at once are applied out of
+    // order. The prevent-keys call the open makes is held pending here, the way a slow link holds it.
+    [TestMethod]
+    public void BitCountryPickerShouldTypeAheadTheLettersTypedWhileItOpensInOrder()
+    {
+        var component = RenderComponent<BitCountryPicker>(parameters => parameters.Add(p => p.NoSearchBox, true));
+        var keys = Context.JSInterop.SetupVoid("BitBlazorUI.Extras.setPreventKeys", _ => true);
+
+        foreach (var key in new[] { "g", "e", "r" })
+        {
+            component.Find("button.bit-cnp-fld").KeyDown(key);
+        }
+
+        keys.SetVoidResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual("Germany", component.Find("button.bit-cnp-act").GetAttribute("title")));
+    }
+
+    [TestMethod]
+    public void BitCountryPickerShouldSearchForTheLettersTypedWhileItOpensInOrder()
+    {
+        var component = RenderComponent<BitCountryPicker>();
+        var keys = Context.JSInterop.SetupVoid("BitBlazorUI.Extras.setPreventKeys", _ => true);
+
+        foreach (var key in new[] { "n", "o", "r" })
+        {
+            component.Find("button.bit-cnp-fld").KeyDown(key);
+        }
+
+        keys.SetVoidResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual("nor", component.Find(".bit-cnp-srch").GetAttribute("value")));
+    }
+
     [TestMethod]
     public void BitCountryPickerShouldTypeAheadWithoutASearchBox()
     {
@@ -1677,6 +1746,22 @@ public class BitCountryPickerTests : BunitTestContext
                                 .Arguments[1]!;
     }
 
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitDir.Rtl, true),
+        DataRow(BitDir.Ltr, false),
+        DataRow(BitDir.Auto, null)]
+    public void BitCountryPickerShouldHandTheCalloutOnlyADirectionItsDirNames(BitDir? dir, bool? expected)
+    {
+        var component = RenderComponent<BitCountryPicker>(parameters => parameters.Add(p => p.Dir, dir));
+
+        component.Find("button.bit-cnp-fld").Click();
+
+        // A Dir left unset inherits the page's direction, and Auto takes the content's: the script reads it off the
+        // element itself then (isRtl: null), rather than being told the page is left to right.
+        Assert.AreEqual(expected, LastToggle().Arguments[9]);
+    }
+
     private int CountInvocations(string identifier)
     {
         return Context.JSInterop.Invocations.Count(i => i.Identifier == identifier);
@@ -1691,5 +1776,14 @@ public class BitCountryPickerTests : BunitTestContext
     {
         [Required]
         public BitCountry? Country { get; set; }
+    }
+
+    // The keys the field's listener was last handed (its sets are the ones that carry Home, which the search box leaves
+    // to its caret), and the ones the search box's was.
+    private string[] LastPreventKeys(bool field)
+    {
+        return (string[])Context.JSInterop.Invocations
+                                .Last(i => i.Identifier == "BitBlazorUI.Extras.setPreventKeys" && ((string[])i.Arguments[1]!).Contains("Home") == field)
+                                .Arguments[1]!;
     }
 }

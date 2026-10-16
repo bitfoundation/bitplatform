@@ -567,4 +567,133 @@ public class BitMarkdownViewerAccessibilityTests : BunitTestContext
         Assert.AreEqual("currentColor", icon.GetAttribute("stroke"));
         Assert.AreEqual("Warning", component.Find(".bit-mdv .markdown-alert-title").TextContent);
     }
+
+    [TestMethod,
+        DataRow(false, false, true),
+        DataRow(true, true, true),
+        DataRow(true, false, false)]
+    public void BitMarkdownViewerShouldPairAriaDisabledWithTheDisabledOfATaskCheckbox(bool hasHandler, bool disabled, bool readOnly)
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "- [ ] one\n- [x] two");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+            parameters.Add(p => p.Disabled, disabled);
+            if (hasHandler) parameters.Add(p => p.OnTaskChanged, _ => { });
+        });
+
+        // A read-only box is disabled the way every disabled native control of the library is: with aria-disabled
+        // beside the disabled attribute, so either selector finds it - and an interactive one carries neither.
+        foreach (var checkbox in component.FindAll(".bit-mdv input[type=checkbox]"))
+        {
+            Assert.AreEqual(readOnly, checkbox.HasAttribute("disabled"));
+            Assert.AreEqual(readOnly ? "true" : null, checkbox.GetAttribute("aria-disabled"));
+        }
+
+        Assert.AreEqual(disabled, component.Find(".bit-mdv").ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldKeepTheCheckedStateOfAReadOnlyTask()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "- [ ] one\n- [x] two");
+            parameters.Add(p => p.Pipeline, BitMarkdownPipelines.GitHub);
+        });
+
+        var boxes = component.FindAll(".bit-mdv input[type=checkbox]");
+
+        Assert.IsFalse(boxes[0].HasAttribute("checked"));
+        Assert.IsTrue(boxes[1].HasAttribute("checked"));
+        // Nothing names a box nobody can tick: it is not a control of the page.
+        Assert.IsFalse(boxes[0].HasAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderTheBaseParametersOnItsRoot()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "text");
+            parameters.Add(p => p.Id, "the-doc");
+            parameters.Add(p => p.Class, "own-class");
+            parameters.Add(p => p.Style, "margin:1px");
+            parameters.Add(p => p.Visibility, BitVisibility.Hidden);
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        var root = component.Find(".bit-mdv");
+
+        Assert.AreEqual("the-doc", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("own-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+    }
+
+    [TestMethod,
+        DataRow(null, null),
+        DataRow(BitDir.Ltr, "ltr"),
+        DataRow(BitDir.Auto, "auto")]
+    public void BitMarkdownViewerShouldRenderTheDirItIsGiven(BitDir? dir, string? expected)
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "text");
+            parameters.Add(p => p.Dir, dir);
+        });
+
+        // A Dir left unset inherits the page's direction, so nothing is written for it.
+        Assert.AreEqual(expected, component.Find(".bit-mdv").GetAttribute("dir"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldCollapseWhenAskedTo()
+    {
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "text");
+            parameters.Add(p => p.Visibility, BitVisibility.Collapsed);
+        });
+
+        StringAssert.Contains(component.Find(".bit-mdv").GetAttribute("style"), "display:none");
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldSplatTheAttributesItWasGivenOnItsRoot()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMarkdownViewer>(0);
+            builder.AddAttribute(1, nameof(BitMarkdownViewer.Markdown), "text");
+            builder.AddAttribute(2, "data-test", "doc");
+            builder.AddAttribute(3, "title", "The document");
+            builder.CloseComponent();
+        }).FindComponent<BitMarkdownViewer>();
+
+        var root = component.Find(".bit-mdv");
+
+        Assert.AreEqual("doc", root.GetAttribute("data-test"));
+        Assert.AreEqual("The document", root.GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldStopFollowingThePageOnceDisposed()
+    {
+        NavigateTo("/a");
+
+        var component = RenderComponent<BitMarkdownViewer>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "[top](#top)");
+        });
+
+        Assert.AreEqual("/a#top", component.Find(".bit-mdv a").GetAttribute("href"));
+
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+
+        // The address changing under a viewer that is gone must not reach a renderer that is gone with it.
+        NavigateTo("/b");
+    }
 }

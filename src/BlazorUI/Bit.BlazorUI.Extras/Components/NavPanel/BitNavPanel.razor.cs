@@ -18,7 +18,7 @@ namespace Bit.BlazorUI;
 /// <see cref="NoRestoreFocus"/> give back, and none of which a panel with <see cref="NoOverlay"/> takes in
 /// the first place.
 /// </remarks>
-public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
+public partial class BitNavPanel<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     // The accessible names the panel falls back to. They are only ever read where the API offers no name of
     // its own (ToggleAriaLabel, SearchBoxPlaceholder), so a localized app overrides them through those.
@@ -203,7 +203,8 @@ public partial class BitNavPanel<TItem> : BitComponentBase where TItem : class
     [Parameter] public RenderFragment? Footer { get; set; }
 
     /// <summary>
-    /// Renders the nav panel with full (100%) width.
+    /// Renders the nav panel with full (100%) width: it fills its container, its padding included, and
+    /// ignores the <see cref="Width"/>.
     /// </summary>
     [Parameter, ResetClassBuilder]
     public bool FullWidth { get; set; }

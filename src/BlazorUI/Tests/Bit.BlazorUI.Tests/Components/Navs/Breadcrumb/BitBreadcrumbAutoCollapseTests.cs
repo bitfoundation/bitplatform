@@ -1,7 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.JSInterop;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Navs.Breadcrumb;
@@ -234,6 +236,40 @@ public class BitBreadcrumbAutoCollapseTests : BunitTestContext
 
         component.WaitForAssertion(() => Assert.AreEqual(4, GetRenderedItemCount(component)));
         Assert.IsFalse(component.Find(".bit-brc").ClassList.Contains("bit-brc-trc"));
+    }
+
+    [TestMethod]
+    public void BitBreadcrumbShouldHandItsResizeObserverAReferenceOfItsOwnEachTimeAutoCollapseComesBack()
+    {
+        // The script's unregisterResize disposes the reference it is handed, so the observer must never be handed the
+        // one the overflow callout answers through: turning AutoCollapse off and on again would leave every later
+        // callback of the breadcrumb going to a released reference.
+        var handler = Context.JSInterop.Setup<BitOverflowMetrics?>("BitBlazorUI.Utils.getOverflowMetrics", _ => true);
+        handler.SetResult(new BitOverflowMetrics { Available = 800, Content = 460, Widths = Widths });
+
+        var component = RenderComponent<BitBreadcrumb<BitBreadcrumbItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetBreadcrumbItems());
+            parameters.Add(p => p.AutoCollapse, true);
+        });
+
+        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"]));
+        var firstObserverRef = Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"][0].Arguments[2];
+
+        component.Render(parameters => parameters.Add(p => p.AutoCollapse, false));
+
+        component.WaitForAssertion(() => Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Observers.unregisterResize"]));
+        Assert.AreSame(firstObserverRef, Context.JSInterop.Invocations["BitBlazorUI.Observers.unregisterResize"][0].Arguments[2]);
+
+        component.Render(parameters => parameters.Add(p => p.AutoCollapse, true));
+
+        component.WaitForAssertion(() => Assert.HasCount(2, Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"]));
+        var secondObserverRef = (DotNetObjectReference<BitBreadcrumb<BitBreadcrumbItem>>)Context.JSInterop.Invocations["BitBlazorUI.Observers.registerResize"][1].Arguments[2]!;
+
+        Assert.AreNotSame(firstObserverRef, secondObserverRef);
+        // The first one is released along with its observer, the second one is live.
+        Assert.ThrowsExactly<ObjectDisposedException>(() => _ = ((DotNetObjectReference<BitBreadcrumb<BitBreadcrumbItem>>)firstObserverRef!).Value);
+        Assert.AreSame(component.Instance, secondObserverRef.Value);
     }
 
     private static int GetRenderedItemCount(IRenderedComponent<BitBreadcrumb<BitBreadcrumbItem>> component)

@@ -33,7 +33,7 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
     {
         // A modal of its own on top of the details dialog, so it takes focus and traps Tab the same way.
         if (firstRender)
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _titleId);
     }
 
     private async Task OnDialogKeyDown(KeyboardEventArgs e)
@@ -48,6 +48,6 @@ public partial class BitFcRecurrenceScopeDialog : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
+        await BitFcDialogInterop.TeardownAsync(JS, _titleId);
     }
 }

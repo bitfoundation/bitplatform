@@ -143,6 +143,9 @@ public sealed class BmotionPresenceGroup<TItem> : ComponentBase
     private void OnEntryExited(Entry entry)
     {
         if (!entry.Exiting) return; // stale callback from a cancelled/superseded exit
+        // Done exiting: the children's disposal (Unregister) re-evaluates completion and would raise
+        // AllExitsComplete - and OnExitComplete - a second time for this same entry.
+        entry.Exiting = false;
         _entries.Remove(entry);
 
         _ = InvokeAsync(async () =>

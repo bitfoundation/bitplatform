@@ -1,0 +1,161 @@
+﻿@page "/e2e/data-grid/filtering"
+
+@* BitDataGrid's filtering and quick search: the filter row with an editor per data type, every operator of the
+   operator picker, the debounce (default, 0 and negative), a FilterTemplate driving the filter context, the
+   toolbar's Clear filters, OnFilterChange, and the search box with its two-way SearchText and debounce. *@
+
+<PageTitle>BitDataGrid filtering E2E</PageTitle>
+
+<h1>BitDataGrid filtering</h1>
+
+<E2ESection Id="filter" Title="Filter row">
+    <BitDataGrid TItem="Product" Id="grid-filter" Items="@_products" Filterable="true" ShowToolbar="true"
+                 OnFilterChange="fs => { _filterCount++; _filterLog = Describe(fs); }">
+        <BitDataGridColumn Property="p => p.Id" Filterable="false" />
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Category" />
+        <BitDataGridColumn Property="p => p.Stock" />
+        <BitDataGridColumn Property="p => p.Discontinued" />
+        <BitDataGridColumn Property="p => p.ReleaseDate" Format="yyyy-MM-dd" />
+    </BitDataGrid>
+    <p>filter changes <span id="filter-count">@_filterCount</span> | <span id="filter-log">@_filterLog</span></p>
+</E2ESection>
+
+<E2ESection Id="ops" Title="Filter operators">
+    <BitDataGrid TItem="Product" Id="grid-ops" Items="@_products" Filterable="true" FilterOperators="true" FilterDebounce="0"
+                 OnFilterChange="fs => { _opsCount++; _opsLog = Describe(fs); }">
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Stock" />
+        <BitDataGridColumn Property="p => p.ReleaseDate" Format="yyyy-MM-dd" />
+        <BitDataGridColumn Property="p => p.Note" />
+        <BitDataGridColumn Property="p => p.Supplier" FilterOperators="false" />
+        <BitDataGridColumn Property="p => p.Category" />
+        <BitDataGridColumn Property="p => p.Discontinued" />
+    </BitDataGrid>
+    <p>operator filter changes <span id="ops-count">@_opsCount</span> | <span id="ops-log">@_opsLog</span></p>
+</E2ESection>
+
+<E2ESection Id="debounce" Title="Filter debounce">
+    <BitDataGrid TItem="Product" Id="grid-debounce-default" Items="@_products" Filterable="true"
+                 OnFilterChange="fs => _debounceDefaultCount++">
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+    <p>default debounce changes <span id="debounce-default-count">@_debounceDefaultCount</span></p>
+    <BitDataGrid TItem="Product" Id="grid-debounce-negative" Items="@_products" Filterable="true" FilterDebounce="-1"
+                 OnFilterChange="fs => _debounceNegativeCount++">
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+    <p>negative debounce changes <span id="debounce-negative-count">@_debounceNegativeCount</span></p>
+</E2ESection>
+
+<E2ESection Id="filter-template" Title="FilterTemplate">
+    <BitDataGrid TItem="Product" Id="grid-filter-template" Items="@_products" Filterable="true"
+                 OnFilterChange="fs => _templateLog = Describe(fs)">
+        <BitDataGridColumn Property="p => p.Name" Filterable="false" />
+        <BitDataGridColumn Property="p => p.Category">
+            <FilterTemplate>
+                <div class="category-filter" aria-label="@context.Label">
+                    <button id="btn-filter-books-toys" type="button" disabled="@context.Disabled"
+                            @onclick="() => context.ApplyAsync(BitDataGridFilterOperator.In, new List<object?> { Category.Books, Category.Toys })">Books or toys</button>
+                    <button id="btn-filter-clear" type="button" @onclick="() => context.ClearAsync()">Any category</button>
+                    <span id="filter-context">@($"{context.ColumnId}|{context.Title}|{context.Label}|{context.ValueType?.Name}|{context.IsActive}|{context.Operator}|{context.Filters.Count}|{context.Disabled}")</span>
+                </div>
+            </FilterTemplate>
+        </BitDataGridColumn>
+        <BitDataGridColumn Property="p => p.Stock">
+            <FilterTemplate>
+                <button id="btn-filter-range" type="button" @onclick="() => context.ApplyRangeAsync(30, 100)">30 to 99</button>
+                <span id="range-context">@($"{context.IsActive}|{context.Filters.Count}")</span>
+            </FilterTemplate>
+        </BitDataGridColumn>
+    </BitDataGrid>
+    <p>template filters <span id="template-log">@_templateLog</span></p>
+</E2ESection>
+
+<E2ESection Id="search" Title="Quick search">
+    <button id="btn-set-search" type="button" @onclick="SetSearch">Search for acme</button>
+    <button id="btn-search-api" type="button" @onclick="SearchFromApi">SearchAsync(globex)</button>
+    <span id="search-text">@_searchText</span> | changes <span id="search-count">@_searchCount</span> | active <span id="active-search">@_searchGrid?.ActiveSearch</span>
+    <BitDataGrid @ref="_searchGrid" TItem="Product" Id="grid-search" Items="@_products" ShowSearchBox="true"
+                 SearchText="@_searchText" SearchTextChanged="OnSearchTextChanged"
+                 Pageable="true" PageSize="5">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Category" />
+        <BitDataGridColumn Property="p => p.Supplier" />
+        <BitDataGridColumn Property="p => p.Stock" Searchable="false" />
+    </BitDataGrid>
+    <BitDataGrid TItem="Product" Id="grid-search-instant" Items="@_products" ShowSearchBox="true" SearchDebounce="0"
+                 SearchTextChanged="t => { _instantCount++; _instantText = t; }">
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+    <p>instant search changes <span id="instant-count">@_instantCount</span> | <span id="instant-text">@_instantText</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public enum Category { Electronics, Books, Clothing, Home, Toys }
+
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public Category Category { get; set; }
+        public int Stock { get; set; }
+        public bool Discontinued { get; set; }
+        public DateTime ReleaseDate { get; set; }
+        public string Supplier { get; set; } = "";
+        public string? Note { get; set; }
+    }
+
+    private readonly List<Product> _products =
+    [
+        new() { Id = 1, Name = "Laptop", Category = Category.Electronics, Stock = 5, ReleaseDate = new(2023, 5, 1), Supplier = "Acme", Note = "Bestseller" },
+        new() { Id = 2, Name = "Novel", Category = Category.Books, Stock = 120, ReleaseDate = new(2022, 1, 15), Supplier = "Globex" },
+        new() { Id = 3, Name = "Jacket", Category = Category.Clothing, Stock = 0, Discontinued = true, ReleaseDate = new(2021, 11, 20), Supplier = "Initech" },
+        new() { Id = 4, Name = "Lamp", Category = Category.Home, Stock = 30, ReleaseDate = new(2023, 2, 10, 15, 30, 0), Supplier = "Acme" },
+        new() { Id = 5, Name = "Drone", Category = Category.Toys, Stock = 8, ReleaseDate = new(2024, 3, 5), Supplier = "Globex", Note = "New" },
+        new() { Id = 6, Name = "Camera", Category = Category.Electronics, Stock = 12, ReleaseDate = new(2023, 8, 22), Supplier = "Initech" },
+        new() { Id = 7, Name = "Cookbook", Category = Category.Books, Stock = 60, Discontinued = true, ReleaseDate = new(2020, 6, 30), Supplier = "Acme" },
+        new() { Id = 8, Name = "Sneaker", Category = Category.Clothing, Stock = 45, ReleaseDate = new(2024, 1, 12), Supplier = "Umbrella" },
+        new() { Id = 9, Name = "Mug", Category = Category.Home, Stock = 200, ReleaseDate = new(2022, 9, 9), Supplier = "Umbrella", Note = "" },
+        new() { Id = 10, Name = "Puzzle", Category = Category.Toys, Stock = 70, ReleaseDate = new(2021, 4, 18), Supplier = "Globex" },
+    ];
+
+    private BitDataGrid<Product> _searchGrid = default!;
+
+    private int _filterCount;
+    private string _filterLog = "";
+    private int _opsCount;
+    private string _opsLog = "";
+    private int _debounceDefaultCount;
+    private int _debounceNegativeCount;
+    private string _templateLog = "";
+    private string? _searchText;
+    private int _searchCount;
+    private int _instantCount;
+    private string? _instantText;
+
+    private void SetSearch() => _searchText = "acme";
+
+    private Task SearchFromApi() => _searchGrid.SearchAsync("globex");
+
+    private void OnSearchTextChanged(string? text)
+    {
+        _searchCount++;
+        _searchText = text;
+    }
+
+    private static string Describe(IReadOnlyList<BitDataGridFilterDescriptor> filters)
+        => string.Join(",", filters.Select(f => $"{f.ColumnId}:{f.Operator}:{FormatValue(f.Value)}"));
+
+    private static string FormatValue(object? value) => value switch
+    {
+        null => "null",
+        DateTime d => d.ToString("yyyy-MM-dd"),
+        string s => s,
+        System.Collections.IEnumerable e => "[" + string.Join(";", e.Cast<object?>().Select(FormatValue)) + "]",
+        _ => value.ToString() ?? ""
+    };
+}

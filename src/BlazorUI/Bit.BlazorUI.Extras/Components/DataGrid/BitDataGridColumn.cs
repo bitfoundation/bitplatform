@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using Microsoft.AspNetCore.Components;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -9,12 +10,17 @@ namespace Bit.BlazorUI;
 /// or be a purely template-driven column.
 /// </summary>
 /// <typeparam name="TItem">The row item type.</typeparam>
-public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
+public class BitDataGridColumn<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : ComponentBase, IDisposable
 {
     [CascadingParameter] internal BitDataGrid<TItem>? Grid { get; set; }
 
     /// <summary>Name of the property this column is bound to. Supports nested paths ("Address.City").
     /// Prefer <see cref="Property"/> for a strongly typed, refactor-safe alternative.</summary>
+    /// <remarks>
+    /// In a trimmed app the public properties of <typeparamref name="TItem"/> are kept for this lookup, but the
+    /// properties a nested path reaches on other types are kept only when the app reads them somewhere itself;
+    /// <see cref="Property"/> names every member of the chain, so it keeps them all.
+    /// </remarks>
     [Parameter] public string? Field { get; set; }
 
     /// <summary>
@@ -292,6 +298,22 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
     private bool _lastFrozen;
     private bool _lastFrozenEnd;
 
+    // The parameters that only change how the grid presents the column. The grid renders its header and cells ahead
+    // of the columns that describe them, so a change to one of these from the parent reached the screen only on some
+    // later render of the grid: a renamed title or a new width stayed stale until then.
+    private ColumnPresentation _lastPresentation;
+
+    private readonly record struct ColumnPresentation(
+        string? Title, string? Width, int MinWidth, int? MaxWidth, BitTextAlign Align, string? Group,
+        string? HeaderClass, string? CellClass, bool? Sortable, bool SortDescendingFirst, bool? Filterable,
+        bool? FilterOperators, bool? Resizable, bool? Reorderable, bool? Editable, bool? Groupable,
+        bool? ShowTooltip, bool? WrapText, bool RowHeader, BitDataGridColumnDataType DataType);
+
+    private ColumnPresentation CurrentPresentation()
+        => new(Title, Width, MinWidth, MaxWidth, Align, Group, HeaderClass, CellClass, Sortable, SortDescendingFirst,
+               Filterable, FilterOperators, Resizable, Reorderable, Editable, Groupable, ShowTooltip, WrapText,
+               RowHeader, DataType);
+
     internal string DisplayTitle => Title ?? Humanize(EffectiveField) ?? Id;
 
     internal bool HasField => !string.IsNullOrWhiteSpace(EffectiveField);
@@ -344,6 +366,7 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         _lastVisible = Visible;
         _lastFrozen = Frozen;
         _lastFrozenEnd = FrozenEnd;
+        _lastPresentation = CurrentPresentation();
     }
 
     protected override void OnParametersSet()
@@ -368,6 +391,14 @@ public class BitDataGridColumn<TItem> : ComponentBase, IDisposable
         {
             _lastFrozen = Frozen;
             _lastFrozenEnd = FrozenEnd;
+            if (_registeredId is not null) Grid?.NotifyColumnVisibilityChanged();
+        }
+
+        // So do the parameters that change how the column is presented: the grid renders again with them.
+        var presentation = CurrentPresentation();
+        if (presentation != _lastPresentation)
+        {
+            _lastPresentation = presentation;
             if (_registeredId is not null) Grid?.NotifyColumnVisibilityChanged();
         }
 

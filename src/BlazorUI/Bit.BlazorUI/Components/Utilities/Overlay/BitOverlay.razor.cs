@@ -482,8 +482,14 @@ public partial class BitOverlay : BitComponentBase
     // What the overflow toggle acts on, in the order the consumer's intent is expressed: the element it
     // named, then the selector it named, then the scroller of the application shell the Overlay is inside
     // of, and the page when it is inside none.
-    private ElementReference? ScrollerElementTarget => ScrollerElement
-                                                       ?? (ScrollerSelector.HasValue() ? null : AppShellContainer);
+    // A reference that is not captured yet points at no element - it is what an Overlay opening on its first
+    // render is handed, since an @ref is only assigned once that render is done - and the script would take
+    // the bare object it arrives as for a selector and fail on it, taking the circuit down. It counts as not
+    // named until it is captured, and the render that hands the captured one over moves the hold onto it.
+    private ElementReference? ScrollerElementTarget => Captured(ScrollerElement)
+                                                       ?? (ScrollerSelector.HasValue() ? null : Captured(AppShellContainer));
+
+    private static ElementReference? Captured(ElementReference? reference) => reference is { Id.Length: > 0 } ? reference : null;
 
     // The scroll handling the Overlay does itself: the overflow of the scroller is taken away while the
     // Overlay is open and handed back once it closes, and the room that gave back is what an absolutely

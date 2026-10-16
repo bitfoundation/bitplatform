@@ -12,16 +12,8 @@ public class BitCollapseTests : BunitTestContext
 {
     // The transition callbacks are raised on a timer and hand their value to a plain delegate rather than to a
     // component, so nothing re-renders when they land and WaitForAssertion - which only re-checks on a render -
-    // would never look again. This polls the value itself instead.
-    private static void WaitUntil(Func<bool> condition, int timeoutInMs = 3000)
-    {
-        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutInMs);
-
-        while (condition() is false && DateTime.UtcNow < deadline)
-        {
-            Thread.Sleep(20);
-        }
-    }
+    // would never look again. This polls the value itself instead, yielding between the looks.
+    private static void WaitUntil(Func<bool> condition, int timeoutInMs = 3000) => SpinWait.SpinUntil(condition, timeoutInMs);
 
 
 
@@ -819,8 +811,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, false);
         });
 
-        Thread.Sleep(200);
-
+        // NoAnimation ends the close within the render that started it, so what the end does has been done.
         component.Render();
 
         Assert.IsTrue(component.Markup.Contains("peeked content"));
@@ -871,16 +862,22 @@ public class BitCollapseTests : BunitTestContext
     [TestMethod]
     public void BitCollapseShouldStopClippingOnlyOnceTheExpandTransitionHasFinished()
     {
+        // NoClip waits for the end of the open the browser plays; the answer is held back here, so the clipping is
+        // observed to stay on for as long as the open is playing.
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
+
         var component = RenderComponent<BitCollapse>(parameters =>
         {
             parameters.Add(p => p.NoClip, true);
-            parameters.Add(p => p.Duration, 200);
             parameters.Add(p => p.Expanded, false);
         });
 
         component.Render(parameters => parameters.Add(p => p.Expanded, true));
 
+        Assert.AreEqual(1, invocation.Invocations.Count);
         Assert.IsFalse(component.Find(".bit-col").ClassList.Contains("bit-col-ncl"));
+
+        invocation.SetResult(0);
 
         component.WaitForAssertion(() => Assert.IsTrue(component.Find(".bit-col").ClassList.Contains("bit-col-ncl")),
                                    TimeSpan.FromSeconds(2));
@@ -959,8 +956,7 @@ public class BitCollapseTests : BunitTestContext
             parameters.Add(p => p.Expanded, true);
         });
 
-        Thread.Sleep(200);
-
+        // Nothing was drawn before the state it starts in, so no transition was ever scheduled to end.
         component.Render();
 
         Assert.AreEqual(0, expandedCount);
@@ -996,12 +992,15 @@ public class BitCollapseTests : BunitTestContext
     [TestMethod]
     public void BitCollapseShouldReportOnlyTheLastOfSeveralTransitionsInARow()
     {
+        // Every end waits on the browser's answer, which is held back here so the three transitions overlap
+        // whatever the speed of the machine: each change calls off the end of the one before it.
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
+
         var expandedCount = 0;
         var collapsedCount = 0;
 
         var component = RenderComponent<BitCollapse>(parameters =>
         {
-            parameters.Add(p => p.Duration, 400);
             parameters.Add(p => p.OnExpanded, () => expandedCount++);
             parameters.Add(p => p.OnCollapsed, () => collapsedCount++);
             parameters.Add(p => p.Expanded, false);
@@ -1011,32 +1010,49 @@ public class BitCollapseTests : BunitTestContext
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
         component.Render(parameters => parameters.Add(p => p.Expanded, true));
 
+        Assert.AreEqual(3, invocation.Invocations.Count);
+
+        invocation.SetResult(0);
+
         WaitUntil(() => expandedCount == 1);
 
         Assert.AreEqual(1, expandedCount);
-
         Assert.AreEqual(0, collapsedCount);
     }
 
     [TestMethod]
     public void BitCollapseShouldNotUnmountTheContentOfACollapseThatWasReopenedDuringTheTransition()
     {
+        // The close asks the browser how long it has left and waits on the answer, which is held back here; the
+        // open that lands meanwhile calls the close off, so the answer finds nothing left to unmount.
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
+
+        var collapsedCount = 0;
+
         var component = RenderComponent<BitCollapse>(parameters =>
         {
             parameters.Add(p => p.UnmountOnCollapse, true);
-            parameters.Add(p => p.Duration, 300);
+            parameters.Add(p => p.OnCollapsed, () => collapsedCount++);
             parameters.Add(p => p.Expanded, true);
             parameters.AddChildContent("<div>unmounted content</div>");
         });
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        Assert.AreEqual(1, invocation.Invocations.Count);
+
         component.Render(parameters => parameters.Add(p => p.Expanded, true));
 
-        Thread.Sleep(600);
+        invocation.SetResult(0);
+
+        // The close the answer was asked for has been called off, so nothing it would have done is done, and
+        // nothing is reported for it; the open asks nothing, since nothing waits for its end.
+        Assert.AreEqual(1, invocation.Invocations.Count);
 
         component.Render();
 
         Assert.IsTrue(component.Markup.Contains("unmounted content"));
+        Assert.AreEqual(0, collapsedCount);
     }
 
     [TestMethod]
@@ -1487,9 +1503,8 @@ public class BitCollapseTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
 
-        Thread.Sleep(200);
-
-        component.Render();
+        // NoAnimation ends the close at once; the content it would have taken out stays, to be found.
+        component.WaitForAssertion(() => Assert.AreEqual("until-found", component.Find(".bit-col-con").GetAttribute("hidden")));
 
         Assert.IsTrue(component.Markup.Contains("searchable content"));
     }
@@ -1633,7 +1648,8 @@ public class BitCollapseTests : BunitTestContext
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
 
-        Thread.Sleep(100);
+        // NoAnimation ends the close within the render that started it, so what the end does has been done.
+        component.Render();
 
         Assert.IsTrue(component.Find(".bit-col-wrp").InnerHtml.Contains("printable"));
     }
@@ -1662,24 +1678,28 @@ public class BitCollapseTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitCollapseShouldWaitForTheLongerTransitionTheBrowserPlays()
+    public void BitCollapseShouldWaitForTheTransitionTheBrowserPlays()
     {
-        // A theme preset with a longer motion token than the default: the end waits for it rather than for the
-        // estimate, so nothing is unmounted while the close is still playing.
-        Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true).SetResult(700);
+        // A theme preset with a longer motion token than the default: the end waits for what the browser says is
+        // left rather than for the estimate, so nothing is unmounted while the close is still playing. The answer
+        // is held back here, so nothing depends on the speed of the machine.
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
 
         var component = RenderComponent<BitCollapse>(parameters =>
         {
             parameters.Add(p => p.UnmountOnCollapse, true);
+            parameters.Add(p => p.Duration, 0);
             parameters.Add(p => p.Expanded, true);
             parameters.AddChildContent("<div>content</div>");
         });
 
         component.Render(parameters => parameters.Add(p => p.Expanded, false));
 
-        Thread.Sleep(400);
-
+        // The estimate is over, and the content is still there: the browser has not said the close is.
+        Assert.AreEqual(1, invocation.Invocations.Count);
         Assert.IsTrue(component.Find(".bit-col-wrp").InnerHtml.Contains("content"));
+
+        invocation.SetResult(0);
 
         component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-col-wrp").InnerHtml.Contains("content")),
                                    TimeSpan.FromSeconds(3));
@@ -1852,10 +1872,40 @@ public class BitCollapseTests : BunitTestContext
     }
 
     [TestMethod]
-    public async Task BitCollapseFocusAsyncShouldNotThrow()
+    public async Task BitCollapseFocusAsyncShouldFocusTheContentRegion()
     {
         var component = RenderComponent<BitCollapse>(parameters => parameters.Add(p => p.Expanded, true));
 
         await component.InvokeAsync(async () => await component.Instance.FocusAsync());
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitCollapseShouldCallOffThePendingEndOfATransitionWhenItIsDisposed()
+    {
+        // The close asks the browser how long it has left; a page that navigates away meanwhile disposes the
+        // collapse, and the answer landing afterwards must neither unmount nor report anything.
+        var invocation = Context.JSInterop.Setup<double?>("BitBlazorUI.Collapse.getRemainingTransitionTime", _ => true);
+
+        var collapsedCount = 0;
+
+        var component = RenderComponent<BitCollapse>(parameters =>
+        {
+            parameters.Add(p => p.OnCollapsed, () => collapsedCount++);
+            parameters.Add(p => p.Expanded, true);
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Expanded, false));
+
+        Assert.AreEqual(1, invocation.Invocations.Count);
+
+        await Context.DisposeComponentsAsync();
+
+        invocation.SetResult(0);
+
+        await Task.Yield();
+
+        Assert.AreEqual(0, collapsedCount);
     }
 }

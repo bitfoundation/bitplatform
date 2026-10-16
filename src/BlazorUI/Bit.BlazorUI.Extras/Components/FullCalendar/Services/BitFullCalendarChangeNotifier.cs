@@ -22,16 +22,22 @@ public sealed class BitFullCalendarChangeNotifier
 
     /// <summary>
     /// Invoked when the calendar refuses a user-driven change (an overlap while overlaps are
-    /// disallowed, a target outside the allowed date window, a locked event). The component wires
-    /// this to the in-calendar notice so every refusal path reports itself the same way.
+    /// disallowed, a target outside the allowed date window, a locked event), whatever it came from:
+    /// a drop, a resize, their keyboard equivalents or a dialog's save. The second argument says whether
+    /// the in-calendar notice should be shown, which a caller that already says why where the user is
+    /// looking (a dialog's inline message) turns off. The component wires this to that notice and to its
+    /// <c>OnRefused</c> callback, so every refusal path reports itself the same way.
     /// </summary>
-    public Action<BitFullCalendarChangeRefusal>? RefusalReporter { get; set; }
+    public Action<BitFullCalendarChangeRefusal, bool>? RefusalReporter { get; set; }
 
-    /// <summary>Reports a refusal through <see cref="RefusalReporter"/> when one was set.</summary>
-    public void ReportRefusal(BitFullCalendarChangeRefusal refusal)
+    /// <summary>
+    /// Reports a refusal through <see cref="RefusalReporter"/> when one was set; <paramref name="showNotice"/>
+    /// is <c>false</c> for a caller that shows the reason itself.
+    /// </summary>
+    public void ReportRefusal(BitFullCalendarChangeRefusal refusal, bool showNotice = true)
     {
         if (refusal is not BitFullCalendarChangeRefusal.None)
-            RefusalReporter?.Invoke(refusal);
+            RefusalReporter?.Invoke(refusal, showNotice);
     }
 
     /// <summary>

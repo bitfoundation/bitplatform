@@ -42,6 +42,16 @@ internal static class UtilsJsRuntimeExtensions
         return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isRtl", element);
     }
 
+    // The same, asked for a horizontal arrow the key handler moves the focus for: the script refuses it with
+    // ArrowKeyOvertaken once a Tab or a pointer press has taken the focus from where the key was pressed.
+    internal static ValueTask<bool> BitUtilsIsRtlArrow(this IJSRuntime jsRuntime, ElementReference element)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Utils.isRtl", element, true);
+    }
+
+    // What Utils.isRtl throws for an arrow key the user has moved on from (Utils.ARROW_KEY_OVERTAKEN).
+    internal const string ArrowKeyOvertaken = "BitBlazorUI: the arrow key was overtaken";
+
 
     internal static ValueTask<BoundingClientRect> BitUtilsGetBoundingClientRect(this IJSRuntime jsRuntime, ElementReference element)
     {
@@ -416,7 +426,7 @@ internal static class UtilsJsRuntimeExtensions
     }
 
 
-    internal static ValueTask BitUtilsRegisterNavigationKeys<T>(this IJSRuntime jsRuntime, ElementReference element, string[] keys, DotNetObjectReference<T> dotnetObj) where T : class
+    internal static ValueTask BitUtilsRegisterNavigationKeys<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicMethods)] T>(this IJSRuntime jsRuntime, ElementReference element, string[] keys, DotNetObjectReference<T> dotnetObj) where T : class
     {
         return jsRuntime.InvokeVoid("BitBlazorUI.Utils.registerNavigationKeys", element, keys, dotnetObj);
     }

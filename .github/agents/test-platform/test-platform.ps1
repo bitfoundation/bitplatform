@@ -217,6 +217,16 @@ function Initialize-Adb {
     }
 
     $script:adb = Join-Path $script:androidSdk 'platform-tools\adb.exe'
+
+    if (-not (Get-NetTCPConnection -LocalPort 5037 -State Listen -ErrorAction SilentlyContinue)) {
+        Start-Process $script:adb -ArgumentList 'start-server' -WindowStyle Hidden
+
+        $deadline = (Get-Date).AddSeconds(30)
+
+        while (-not (Get-NetTCPConnection -LocalPort 5037 -State Listen -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline) {
+            Start-Sleep -Milliseconds 500
+        }
+    }
 }
 
 function Invoke-Adb {
@@ -358,6 +368,18 @@ function Install-AndroidApps {
             Write-Host "  $($Matches[0]): uninstalling it first, which drops its data."
             Invoke-Adb uninstall $apk.Package | Out-Null
             $output = Invoke-Adb install $apk.Path
+        }
+
+        if ($output -match 'INSTALL_FAILED_INSUFFICIENT_STORAGE') {
+            Write-Host "  $($Matches[0]): retrying with the low-storage limit lowered to 100 MB for this install."
+            Invoke-Adb shell settings put global sys_storage_threshold_max_bytes 104857600 | Out-Null
+
+            try {
+                $output = Invoke-Adb install -r -d $apk.Path
+            }
+            finally {
+                Invoke-Adb shell settings delete global sys_storage_threshold_max_bytes | Out-Null
+            }
         }
 
         if ($output -notmatch '(?m)^Success') {

@@ -1,0 +1,148 @@
+﻿@page "/e2e/date-picker/text"
+@using System.Globalization
+@using System.Reflection
+
+@* BitDatePicker's text: DateFormat, typed dates (AllowTextInput) with their messages, the formats of three cultures
+   (en-US, de-DE and fa-IR with its Persian calendar) and a TimeZone of its own. "Today" is June 12, 2024, 10:30. *@
+
+<PageTitle>BitDatePicker text E2E</PageTitle>
+
+<h1>BitDatePicker - formats, typed dates, cultures and time zones</h1>
+
+<E2ESection Id="x-format" Title="DateFormat">
+    <BitDatePicker Id="dp-format" DateFormat="dd=MM(yy)" Culture="_en" Today="_today" @bind-Value="_formatValue" />
+    <div>Value: <span id="format-value">@Fmt(_formatValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-input" Title="AllowTextInput">
+    <BitDatePicker Id="dp-text"
+                   AllowTextInput
+                   DateFormat="dd/MM/yyyy"
+                   DateFormatAriaDescription="Write it as {0}"
+                   Placeholder="dd/MM/yyyy"
+                   Culture="_en"
+                   Today="_today"
+                   @bind-Value="_textValue" />
+    <div>Value: <span id="text-value">@Fmt(_textValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-messages" Title="Custom error messages">
+    <EditForm Model="_messagesModel">
+        <DataAnnotationsValidator />
+        <BitDatePicker Id="dp-text-msg"
+                       AllowTextInput
+                       DateFormat="dd/MM/yyyy"
+                       MinDate="_today.AddDays(-5)"
+                       MaxDate="_today.AddDays(5)"
+                       DisabledDaysOfWeek="_weekend"
+                       InvalidErrorMessage="The date format must be dd/MM/yyyy."
+                       OutOfRangeErrorMessage="Only the days around today are allowed."
+                       DisabledDateErrorMessage="That day of the week is not available."
+                       Culture="_en"
+                       Today="_today"
+                       @bind-Value="_messagesModel.Date" />
+        <div id="msg-message"><ValidationMessage For="() => _messagesModel.Date" /></div>
+    </EditForm>
+    <div>Value: <span id="msg-value">@Fmt(_messagesModel.Date)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-defaults" Title="Default error messages">
+    <EditForm Model="_defaultsModel">
+        <DataAnnotationsValidator />
+        <BitDatePicker Id="dp-text-default"
+                       AllowTextInput
+                       DisplayName="Appointment"
+                       MinDate="Local(2024, 6, 1)"
+                       DisabledDates="_disabledDates"
+                       Culture="_en"
+                       Today="_today"
+                       @bind-Value="_defaultsModel.Date" />
+        <div id="default-message"><ValidationMessage For="() => _defaultsModel.Date" /></div>
+    </EditForm>
+    <div>Value: <span id="default-value">@Fmt(_defaultsModel.Date)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-novalidate" Title="NoValidate">
+    <EditForm Model="_noValidateModel">
+        <DataAnnotationsValidator />
+        <BitDatePicker Id="dp-novalidate" AllowTextInput NoValidate Culture="_en" Today="_today" @bind-Value="_noValidateModel.Date" />
+        <div id="novalidate-message"><ValidationMessage For="() => _noValidateModel.Date" /></div>
+    </EditForm>
+    <div>Value: <span id="novalidate-value">@Fmt(_noValidateModel.Date)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-time-text" Title="Typed dates with a time">
+    <BitDatePicker Id="dp-text-time" AllowTextInput ShowTimePicker Culture="_en" Today="_today" @bind-Value="_timeTextValue" />
+    <div>Value: <span id="time-text-value">@Fmt(_timeTextValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-month-text" Title="A typed month">
+    <BitDatePicker Id="dp-month-text" AllowTextInput Mode="BitDatePickerMode.MonthPicker" Culture="_en" Today="_today" @bind-Value="_monthTextValue" />
+    <div>Value: <span id="month-text-value">@Fmt(_monthTextValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-de" Title="de-DE">
+    <BitDatePicker Id="dp-de" AllowTextInput Culture="_de" Today="_today" @bind-Value="_deValue" />
+    <div>Value: <span id="de-value">@Fmt(_deValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="x-fa" Title="fa-IR with the Persian calendar">
+    <BitDatePicker Id="dp-fa" AllowTextInput GoToTodayTitle="برو به امروز" Culture="_fa" Today="_today" @bind-Value="_faValue" />
+    <div>Value: <span id="fa-value">@Fmt(_faValue)</span></div>
+    <button id="btn-fa-set" type="button" @onclick="() => _faValue = Local(2024, 6, 15)">Set June 15, 2024</button>
+</E2ESection>
+
+<E2ESection Id="x-tz" Title="TimeZone">
+    <BitDatePicker Id="dp-tz" ShowTimePicker TimeZone="_plusNine" Culture="_en" Today="_today" @bind-Value="_tzValue" />
+    <div>Value: <span id="tz-value">@(_tzValue?.ToString("yyyy-MM-dd HH:mm zzz", CultureInfo.InvariantCulture) ?? "null")</span></div>
+    <button id="btn-tz-set" type="button" @onclick="() => _tzValue = new DateTimeOffset(2024, 6, 20, 23, 0, 0, TimeSpan.Zero)">Set 2024-06-20 23:00 UTC</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+    private static readonly CultureInfo _de = CultureInfo.GetCultureInfo("de-DE");
+    private static readonly CultureInfo _fa = CreatePersianCulture();
+
+    // A zone nine hours ahead of UTC with no daylight saving, made here so it reads the same on every OS.
+    private static readonly TimeZoneInfo _plusNine = TimeZoneInfo.CreateCustomTimeZone("E2E+09", TimeSpan.FromHours(9), "E2E+09", "E2E+09");
+
+    // fa-IR on the Persian calendar, the way the demo's CultureInfoHelper builds it, so its dates read 1403/03/26.
+    private static CultureInfo CreatePersianCulture()
+    {
+        var culture = CultureInfo.CreateSpecificCulture("fa-IR");
+        culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(culture, new PersianCalendar());
+        culture.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
+        return culture;
+    }
+
+    private static DateTimeOffset Local(int year, int month, int day, int hour = 0, int minute = 0)
+    {
+        var dateTime = new DateTime(year, month, day, hour, minute, 0);
+        return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    }
+
+    private static string Fmt(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "null";
+
+    private readonly DateTimeOffset _today = Local(2024, 6, 12, 10, 30);
+    private readonly DayOfWeek[] _weekend = [DayOfWeek.Saturday, DayOfWeek.Sunday];
+    private readonly DateTimeOffset[] _disabledDates = [Local(2024, 6, 14)];
+
+    private DateTimeOffset? _formatValue = Local(2024, 6, 20);
+    private DateTimeOffset? _textValue;
+    private DateTimeOffset? _timeTextValue;
+    private DateTimeOffset? _monthTextValue;
+    private DateTimeOffset? _deValue;
+    private DateTimeOffset? _faValue;
+    private DateTimeOffset? _tzValue;
+
+    private readonly DateModel _messagesModel = new();
+    private readonly DateModel _defaultsModel = new();
+    private readonly DateModel _noValidateModel = new();
+
+    public class DateModel
+    {
+        public DateTimeOffset? Date { get; set; }
+    }
+}

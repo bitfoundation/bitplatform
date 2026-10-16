@@ -1,0 +1,19 @@
+﻿@page "/e2e/panel/prerender"
+
+<PageTitle>BitPanel prerender E2E</PageTitle>
+
+<h1>BitPanel prerendered open</h1>
+
+<E2ESection Id="open-at-start" Title="A panel open from the first render">
+    <span id="initial-open">@_open</span>
+    <BitPanel Id="initial-panel" @bind-IsOpen="_open" Modeless NoAutoFocus Placement="BitPlacement.Bottom" HeaderText="Prerendered panel"
+              ShowCloseButton>
+        <p id="initial-content">Open before the circuit connects.</p>
+    </BitPanel>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _open = true;
+}

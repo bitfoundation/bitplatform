@@ -45,7 +45,7 @@ $msg-private-properties:
     clr, clr-bg, clr-txt, clr-focus, clr-tint, margin, fontsize, ico-margin, ico-fontsize, btn-size, btn-icosize,
     act-maxheight, track-size,
     // What the component writes into an inline style, which wins over this on the element it is written on.
-    justifycontent, maxlines;
+    justifycontent, alignitems, maxlines;
 
 .bit-msg {
     width: 100%;
@@ -110,9 +110,10 @@ $msg-private-properties:
     width: 100%;
     display: flex;
     overflow: hidden;
-    align-items: start;
     line-height: var(--bit-Message-line-height, normal);
     padding: 0 spacing(0.5);
+    // The Alignment parameter: a distribution along the width, or (Baseline, Stretch) an alignment across the row.
+    align-items: var(--bit-msg-alignitems, start);
     justify-content: var(--bit-msg-justifycontent);
 }
 

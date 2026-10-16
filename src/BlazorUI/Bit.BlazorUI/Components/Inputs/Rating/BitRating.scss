@@ -78,8 +78,10 @@ $rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, 
     // rule at rest paints it: a fill the app paints through Classes keeps that paint under the pointer.
     @media (hover: hover) {
         // Scoped to the box the items live in rather than to the root: the pointer resting on the label
-        // or the description previews nothing, so it must not repaint the fill as though it did.
-        &:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):not(.bit-rtg-nhp) .bit-rtg-cnt:hover .bit-rtg-ifl {
+        // or the description previews nothing, so it must not repaint the fill as though it did. The
+        // NoHoverPreview exclusion adds no weight (:where), which keeps this rule exactly as heavy as the
+        // press below, so the press outranks it on source order as that rule says.
+        &:not(.bit-dis):not(.bit-inv):not(.bit-rtg-rdl):where(:not(.bit-rtg-nhp)) .bit-rtg-cnt:hover .bit-rtg-ifl {
             --bit-rtg-ifl-clr: var(--bit-rtg-clr-hover, var(--bit-Rating-hover-color, #{$clr-pri-hover}));
         }
 
@@ -136,6 +138,10 @@ $rtg-private-properties: clr, clr-hover, clr-active, clr-focus, size, lbl-size, 
         .bit-rtg-lbl::after,
         .bit-rtg-ltp::after {
             content: " *";
+            // The same asterisk with empty alternative text, so the decorative mark is not read out as part
+            // of the name the label gives the group. Declared second, and left out by an engine that does not
+            // know the syntax, which keeps the plain asterisk above.
+            content: " *" / "";
             color: $clr-req;
             padding-inline-end: spacing(1.5);
         }

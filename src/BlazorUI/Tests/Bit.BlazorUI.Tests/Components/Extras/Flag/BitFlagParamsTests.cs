@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -15,11 +17,101 @@ public class BitFlagParamsTests : BunitTestContext
 {
     private const string PackagedNetherlands = "_content/Bit.BlazorUI.Extras/flags/NL-flat-16.webp";
 
+    // What makes one flag the flag it is - its country, its own name and tooltip, its own image and its callbacks -
+    // is written per flag, so it has no place on the params object.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitFlag.Alt),
+        nameof(BitFlag.CascadingParameters),
+        nameof(BitFlag.Code),
+        nameof(BitFlag.Country),
+        nameof(BitFlag.Iso2),
+        nameof(BitFlag.Iso3),
+        nameof(BitFlag.Name),
+        nameof(BitFlag.OnClick),
+        nameof(BitFlag.OnError),
+        nameof(BitFlag.OnLoad),
+        nameof(BitFlag.Src),
+        nameof(BitFlag.Title),
+    ];
+
     [TestMethod]
     public void BitFlagParamsShouldHaveCorrectParamName()
     {
         Assert.AreEqual("BitParams.BitFlag", BitFlagParams.ParamName);
         Assert.AreEqual(BitFlagParams.ParamName, new BitFlagParams().Name);
+        Assert.IsInstanceOfType<IBitComponentParams>(new BitFlagParams());
+    }
+
+    [TestMethod]
+    public void BitFlagParamsShouldCarryEveryParameterThatIsNotPerFlag()
+    {
+        var baseParameters = typeof(BitComponentBase).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var parameters = typeof(BitFlag).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                        .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                        .Select(p => p.Name)
+                                        .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false);
+
+        foreach (var name in parameters)
+        {
+            Assert.IsNotNull(typeof(BitFlagParams).GetProperty(name), $"BitFlagParams has no {name}.");
+        }
+    }
+
+    // Every property of the params object is one the flag takes from the cascade - except the ImageAttributes, which
+    // are rendered under the flag's own rather than written onto it - so a property added to one and not wired to
+    // the other fails here rather than going silently unapplied. The ones that outrank each other are left at
+    // values that do not: Circular beside Rounded, Emoji beside an image set, a Size beside no length.
+    [TestMethod]
+    public void BitFlagParamsShouldApplyEveryOneOfItsProperties()
+    {
+        var defaults = new BitFlag();
+        var flagParams = new BitFlagParams();
+        var supplied = new Dictionary<string, object>();
+
+        foreach (var property in typeof(BitFlagParams).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(p => p.CanWrite))
+        {
+            var parameter = typeof(BitFlag).GetProperty(property.Name);
+
+            Assert.IsNotNull(parameter, $"{property.Name} is not a property of BitFlag.");
+            Assert.IsTrue(parameter.IsDefined(typeof(ParameterAttribute), true), $"{property.Name} is not a parameter of BitFlag.");
+
+            if (property.Name is nameof(BitFlagParams.ImageAttributes)) continue;
+
+            var value = SampleValue(property.Name, property.PropertyType, parameter.GetValue(defaults));
+
+            property.SetValue(flagParams, value);
+            supplied.Add(property.Name, value);
+        }
+
+        var flag = RenderWithParams(flagParams).FindComponent<BitFlag>().Instance;
+
+        foreach (var (name, value) in supplied)
+        {
+            Assert.AreEqual(value, typeof(BitFlag).GetProperty(name)!.GetValue(flag), $"{name} is not applied by the cascade.");
+        }
+    }
+
+    private static object SampleValue(string name, Type type, object? defaultValue)
+    {
+        var valueType = Nullable.GetUnderlyingType(type) ?? type;
+
+        // Circular would take the cascaded Rounded off, and Emoji the image set: each pair keeps the one that stands.
+        if (name is nameof(BitFlagParams.Circular) or nameof(BitFlagParams.Emoji)) return false;
+        if (valueType == typeof(bool)) return defaultValue is true ? false : true;
+        if (name is nameof(BitFlagParams.AspectRatio)) return "3/2";
+        if (name is nameof(BitFlagParams.Width) or nameof(BitFlagParams.Height)) return "2rem";
+        if (name is nameof(BitFlagParams.SrcPattern)) return "/flags/{iso2}.svg";
+        if (valueType == typeof(BitSize)) return BitSize.Large;
+        if (valueType == typeof(BitImageFit)) return BitImageFit.Contain;
+        if (valueType == typeof(BitImageLoading)) return BitImageLoading.Eager;
+        if (valueType == typeof(BitFlagImageSet)) return BitFlagImageSet.Shiny;
+        if (valueType == typeof(BitFlagImageSize)) return BitFlagImageSize.Size32;
+        if (valueType == typeof(RenderFragment)) return (RenderFragment)(_ => { });
+        if (valueType == typeof(BitFlagClassStyles)) return new BitFlagClassStyles();
+
+        throw new NotSupportedException($"No sample value for {name} ({type}).");
     }
 
     [TestMethod]

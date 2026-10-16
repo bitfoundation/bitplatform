@@ -1,0 +1,114 @@
+%PDF-1.7
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R /Outlines 10 0 R /OCProperties << /OCGs [17 0 R 18 0 R] /D << /OFF [18 0 R] >> >> /Names << /EmbeddedFiles << /Names [(notes.txt) 19 0 R] >> >> >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R 4 0 R 5 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 6 0 R /Resources << /Font << /F1 9 0 R >> /Properties << /OC1 17 0 R /OC2 18 0 R >> >> /Annots [16 0 R] >>
+endobj
+4 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 7 0 R /Resources << /Font << /F1 9 0 R >> /Properties << /OC1 17 0 R /OC2 18 0 R >> >> >>
+endobj
+5 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 8 0 R /Resources << /Font << /F1 9 0 R >> /Properties << /OC1 17 0 R /OC2 18 0 R >> >> >>
+endobj
+6 0 obj
+<< /Length 373 >>
+stream
+BT /F1 24 Tf 72 720 Td (Page One Heading) Tj ET
+BT /F1 12 Tf 72 690 Td (The quick brown fox jumps over the lazy dog.) Tj ET
+BT /F1 12 Tf 72 670 Td (Searchable alpha keyword on page one.) Tj ET
+BT /F1 12 Tf 72 605 Td (Go to the third page) Tj ET
+/OC /OC1 BDC BT /F1 12 Tf 72 560 Td (Base layer text) Tj ET
+EMC /OC /OC2 BDC BT /F1 12 Tf 72 540 Td (Notes layer text) Tj ET
+EMC
+endstream
+endobj
+7 0 obj
+<< /Length 173 >>
+stream
+BT /F1 24 Tf 72 720 Td (Page Two Heading) Tj ET
+BT /F1 12 Tf 72 690 Td (Bravo keyword lives on page two.) Tj ET
+BT /F1 12 Tf 72 670 Td (And alpha appears again here.) Tj ET
+
+endstream
+endobj
+8 0 obj
+<< /Length 159 >>
+stream
+BT /F1 24 Tf 72 720 Td (Page Three Heading) Tj ET
+BT /F1 12 Tf 72 690 Td (Charlie keyword on the final page.) Tj ET
+BT /F1 12 Tf 72 670 Td (Final page.) Tj ET
+
+endstream
+endobj
+9 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>
+endobj
+10 0 obj
+<< /Type /Outlines /First 11 0 R /Last 13 0 R /Count 4 >>
+endobj
+11 0 obj
+<< /Title (Chapter One) /Parent 10 0 R /Next 12 0 R /Dest [3 0 R /XYZ 0 792 0] >>
+endobj
+12 0 obj
+<< /Title (Chapter Two) /Parent 10 0 R /Prev 11 0 R /Next 13 0 R /First 14 0 R /Last 14 0 R /Count 1 /Dest [4 0 R /XYZ 0 792 0] >>
+endobj
+13 0 obj
+<< /Title (Chapter Three) /Parent 10 0 R /Prev 12 0 R /Dest [5 0 R /XYZ 0 792 0] >>
+endobj
+14 0 obj
+<< /Title (Section Two A) /Parent 12 0 R /Dest [4 0 R /XYZ 0 700 0] >>
+endobj
+15 0 obj
+<< /Title (E2E Sample Document) /Author (Agent Twenty) /Subject (Viewer testing) /Keywords (pdf e2e sample) /Creator (e2e generator) /Producer (python stdlib) /CreationDate (D:20260101120000Z) /ModDate (D:20260102130000Z) >>
+endobj
+16 0 obj
+<< /Type /Annot /Subtype /Link /Rect [70 600 260 620] /Border [0 0 0] /Dest [5 0 R /XYZ 0 792 0] >>
+endobj
+17 0 obj
+<< /Type /OCG /Name (Base drawing) >>
+endobj
+18 0 obj
+<< /Type /OCG /Name (Notes) >>
+endobj
+19 0 obj
+<< /Type /Filespec /F (notes.txt) /UF (notes.txt) /Desc (Some notes) /EF << /F 20 0 R >> >>
+endobj
+20 0 obj
+<< /Length 16 /Type /EmbeddedFile /Subtype /text#2Fplain >>
+stream
+hello attachment
+endstream
+endobj
+xref
+0 21
+0000000000 65535 f 
+0000000015 00000 n 
+0000000208 00000 n 
+0000000277 00000 n 
+0000000462 00000 n 
+0000000630 00000 n 
+0000000798 00000 n 
+0000001222 00000 n 
+0000001446 00000 n 
+0000001656 00000 n 
+0000001753 00000 n 
+0000001827 00000 n 
+0000001925 00000 n 
+0000002072 00000 n 
+0000002172 00000 n 
+0000002259 00000 n 
+0000002500 00000 n 
+0000002616 00000 n 
+0000002670 00000 n 
+0000002717 00000 n 
+0000002825 00000 n 
+trailer
+<< /Size 21 /Root 1 0 R /Info 15 0 R >>
+startxref
+2935
+%%EOF

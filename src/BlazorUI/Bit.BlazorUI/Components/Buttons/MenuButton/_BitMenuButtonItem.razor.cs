@@ -1,6 +1,8 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
 
-public partial class _BitMenuButtonItem<TItem> : IBitMenuButtonSubmenu, IAsyncDisposable where TItem : class
+namespace Bit.BlazorUI;
+
+public partial class _BitMenuButtonItem<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : IBitMenuButtonSubmenu, IAsyncDisposable where TItem : class
 {
     // How long the pointer rests on a row before the submenu beside it opens, or before the one already
     // open is taken away. Short enough to feel immediate, long enough that sweeping the pointer across

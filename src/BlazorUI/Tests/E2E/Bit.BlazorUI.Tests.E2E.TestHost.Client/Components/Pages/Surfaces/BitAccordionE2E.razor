@@ -1,0 +1,467 @@
+﻿@page "/e2e/accordion"
+
+<PageTitle>BitAccordion E2E</PageTitle>
+
+@* The classes the Classes / Class sections hand the parts, styled here so a test can read their effect back. *@
+<style>
+    .e2e-acd-class { outline: 3px dashed rgb(1, 2, 3); }
+    .e2e-acd-title { color: rgb(10, 20, 30); }
+    .e2e-acd-content { letter-spacing: 3px; }
+    .e2e-acd-header { text-decoration: underline; }
+</style>
+
+<h1>BitAccordion</h1>
+
+<E2ESection Id="basic" Title="Basic: Title, Description, IconName, DefaultIsExpanded">
+    <BitAccordion Id="acd-basic" Title="Basic title" Description="Basic description" IconName="Settings">
+        <p id="basic-content">Basic content of the panel.</p>
+    </BitAccordion>
+    <BitAccordion Id="acd-default" Title="Expanded by default" DefaultIsExpanded>
+        <p id="default-content">Open on the first render.</p>
+    </BitAccordion>
+    <BitAccordion Id="acd-keys" Title="Keyboard">
+        <p id="keys-content">Opened by Enter and Space.</p>
+    </BitAccordion>
+</E2ESection>
+
+<E2ESection Id="expander" Title="Expander icon">
+    <BitAccordion Id="acd-exp-default" Title="Default chevron">Default chevron.</BitAccordion>
+    <BitAccordion Id="acd-exp-name" Title="ExpanderIconName" ExpanderIconName="ChevronDown">ExpanderIconName.</BitAccordion>
+    <BitAccordion Id="acd-exp-start" Title="ExpanderIconPlacement Start" IconName="Settings" ExpanderIconPlacement="BitPlacement.Start">Start.</BitAccordion>
+    <BitAccordion Id="acd-exp-hide" Title="HideExpanderIcon" HideExpanderIcon>Hidden expander.</BitAccordion>
+    <BitAccordion Id="acd-exp-norot" Title="NoExpanderRotation" ExpanderIconName="ChevronDown" NoExpanderRotation>Still expander.</BitAccordion>
+    <BitAccordion Id="acd-exp-swap" Title="ExpandedExpanderIconName" ExpanderIconName="Add" ExpandedExpanderIconName="Remove">Swapped expander.</BitAccordion>
+</E2ESection>
+
+<E2ESection Id="actions" Title="Actions and Body">
+    <BitAccordion Id="acd-actions" Title="Project settings" Description="@($"Renamed {_renameCount} times")">
+        <Actions>
+            <button id="action-rename" type="button" @onclick="() => _renameCount++">Rename</button>
+        </Actions>
+        <Body>
+            <p id="actions-body">The body of the accordion.</p>
+        </Body>
+    </BitAccordion>
+    <span id="rename-count">@_renameCount</span>
+</E2ESection>
+
+<E2ESection Id="binding" Title="Two-way and controlled binding">
+    <BitAccordion Id="acd-bound" Title="Bound" Disabled="_boundDisabled" @bind-IsExpanded="_bound">
+        <p>Bound content.</p>
+    </BitAccordion>
+    <span id="bound-value">@_bound</span>
+    <button id="btn-bound-toggle" type="button" @onclick="() => _bound = !_bound">Toggle from the page</button>
+    <button id="btn-bound-disable" type="button" @onclick="() => _boundDisabled = !_boundDisabled">Disable</button>
+
+    <BitAccordion Id="acd-ctl-1" Title="Controlled one" IsExpanded="_ctl == 1" OnClick="() => _ctl = _ctl == 1 ? 0 : 1">One.</BitAccordion>
+    <BitAccordion Id="acd-ctl-2" Title="Controlled two" IsExpanded="_ctl == 2" OnClick="() => _ctl = _ctl == 2 ? 0 : 2">Two.</BitAccordion>
+    <BitAccordion Id="acd-ctl-3" Title="Controlled three" IsExpanded="_ctl == 3" OnClick="() => _ctl = _ctl == 3 ? 0 : 3">Three.</BitAccordion>
+    <span id="ctl-value">@_ctl</span>
+
+    <BitAccordion Id="acd-fixed" Title="One-way, never moved" IsExpanded="false" OnClick="() => _fixedClicks++" OnChange="(bool v) => _fixedChanges++">Fixed.</BitAccordion>
+    <span id="fixed-clicks">@_fixedClicks</span>
+    <span id="fixed-changes">@_fixedChanges</span>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitAccordion Id="acd-events"
+                  Title="Unsaved changes"
+                  DefaultIsExpanded
+                  OnClick="HandleEventsClick"
+                  OnChange="(bool v) => { _changeCount++; _lastChange = v.ToString(); }"
+                  OnExpand="() => _expandCount++"
+                  OnCollapse="() => _collapseCount++"
+                  OnToggling="HandleEventsToggling">
+        <p>Events content.</p>
+    </BitAccordion>
+    <button id="btn-lock" type="button" @onclick="() => _lock = !_lock">Lock</button>
+    <span id="ev-lock">@_lock</span>
+    <span id="ev-click">@_clickCount</span>
+    <span id="ev-click-button">@_lastClickButton</span>
+    <span id="ev-change">@_changeCount</span>
+    <span id="ev-last-change">@_lastChange</span>
+    <span id="ev-expand">@_expandCount</span>
+    <span id="ev-collapse">@_collapseCount</span>
+    <span id="ev-toggling">@_togglingCount</span>
+    <span id="ev-refused">@_refusedCount</span>
+    <span id="ev-last-expanding">@_lastExpanding</span>
+    <span id="ev-last-reason">@_lastReason</span>
+
+    <BitAccordion Id="acd-async" Title="Awaited OnToggling" OnToggling="HandleAsyncToggling" OnChange="(bool v) => _asyncChanges++">
+        <p id="async-content">Opened once released.</p>
+    </BitAccordion>
+    <button id="btn-release" type="button" @onclick="Release">Release</button>
+    <span id="async-toggling">@_asyncToggling</span>
+    <span id="async-changes">@_asyncChanges</span>
+</E2ESection>
+
+<E2ESection Id="methods" Title="Expand, Collapse, Toggle, FocusAsync">
+    <button id="btn-expand" type="button" @onclick="() => _methodsRef.Expand()">Expand</button>
+    <button id="btn-collapse" type="button" @onclick="() => _methodsRef.Collapse()">Collapse</button>
+    <button id="btn-toggle" type="button" @onclick="() => _methodsRef.Toggle()">Toggle</button>
+    <button id="btn-expand-focus" type="button" @onclick="ExpandAndFocus">Expand and focus</button>
+    <BitAccordion @ref="_methodsRef"
+                  Id="acd-methods"
+                  Title="Driven by methods"
+                  OnChange="(bool v) => { _methodsChanges++; _methodsLast = v.ToString(); }"
+                  OnExpand="() => _methodsExpands++"
+                  OnCollapse="() => _methodsCollapses++"
+                  OnToggling="(BitAccordionToggleArgs a) => _methodsReason = a.Reason.ToString()">
+        <p>Methods content.</p>
+        <button id="btn-inner-collapse" type="button" @onclick="() => _methodsRef.Collapse()">Collapse from inside</button>
+    </BitAccordion>
+    <span id="methods-changes">@_methodsChanges</span>
+    <span id="methods-last">@_methodsLast</span>
+    <span id="methods-expands">@_methodsExpands</span>
+    <span id="methods-collapses">@_methodsCollapses</span>
+    <span id="methods-reason">@_methodsReason</span>
+
+    <button id="btn-dis-expand" type="button" @onclick="() => _disabledMethodsRef.Expand()">Expand the disabled one</button>
+    <BitAccordion @ref="_disabledMethodsRef" Id="acd-methods-disabled" Title="Disabled, still driven by methods" Disabled>
+        <p>Disabled methods content.</p>
+    </BitAccordion>
+</E2ESection>
+
+<E2ESection Id="content" Title="LazyContent, UnmountOnCollapse, loading in OnToggling, Busy">
+    <BitAccordion Id="acd-lazy" Title="LazyContent" LazyContent>
+        <input id="lazy-input" />
+    </BitAccordion>
+    <BitAccordion Id="acd-unmount" Title="UnmountOnCollapse" UnmountOnCollapse>
+        <input id="unmount-input" />
+    </BitAccordion>
+    <BitAccordion Id="acd-load" Title="Loaded on expand" LazyContent OnToggling="LoadOrders">
+        @foreach (var order in _orders)
+        {
+            <div class="e2e-order">@order</div>
+        }
+    </BitAccordion>
+    <BitAccordion Id="acd-busy" Title="Busy" Busy="_busy" OnClick="() => _busyClicks++" OnChange="(bool v) => _busyChanges++">
+        <p>Busy content.</p>
+    </BitAccordion>
+    <button id="btn-busy" type="button" @onclick="() => _busy = !_busy">Busy</button>
+    <span id="busy-clicks">@_busyClicks</span>
+    <span id="busy-changes">@_busyChanges</span>
+</E2ESection>
+
+<E2ESection Id="maxheight" Title="MaxHeight and TransitionDuration">
+    <BitAccordion Id="acd-maxh" Title="MaxHeight 4rem" MaxHeight="4rem">
+        @for (var i = 1; i <= 12; i++)
+        {
+            <p>Line @i of a content taller than its MaxHeight.</p>
+        }
+    </BitAccordion>
+    <BitAccordion Id="acd-slow" Title="Slow (1000ms)" TransitionDuration="1000">
+        @for (var i = 1; i <= 5; i++)
+        {
+            <p>Slow line @i.</p>
+        }
+    </BitAccordion>
+    <BitAccordion Id="acd-instant" Title="Instant (0)" TransitionDuration="0">
+        @for (var i = 1; i <= 5; i++)
+        {
+            <p>Instant line @i.</p>
+        }
+    </BitAccordion>
+    <BitAccordion Id="acd-theme-dur" Title="Theme duration">
+        <p>The theme's long duration.</p>
+    </BitAccordion>
+    <BitAccordion Id="acd-force" Title="ForceAnimation" ForceAnimation>
+        <p>Animated under reduced motion as well.</p>
+    </BitAccordion>
+</E2ESection>
+
+<E2ESection Id="find" Title="HiddenUntilFound and ExpandOnPrint">
+    @* target="_top" hands the jump to the browser: Blazor scrolls a same-page fragment link it intercepts with
+       scrollIntoView, which is not a fragment navigation and so reveals no hidden="until-found" content. *@
+    <a id="link-find" href="e2e/accordion#find-target" target="_top">Jump to the tangerine</a>
+    <BitAccordion Id="acd-find" Title="Which fruits ship overnight?" HiddenUntilFound OnToggling="(BitAccordionToggleArgs a) => _findReason = a.Reason.ToString()">
+        <p>Citrus like the <span id="find-target">tangerine</span> ships overnight.</p>
+    </BitAccordion>
+    <span id="find-reason">@_findReason</span>
+    <BitAccordion Id="acd-find-refuse" Title="Refuses a reveal" HiddenUntilFound OnToggling="RefuseReveal">
+        <p>The <span id="find-refused-target">pomelo</span> stays hidden.</p>
+    </BitAccordion>
+    <span id="find-refused">@_findRefused</span>
+    <BitAccordion Id="acd-find-disabled" Title="Disabled, not searchable" HiddenUntilFound Disabled>
+        <p>Not offered to find-in-page.</p>
+    </BitAccordion>
+    <BitAccordion Id="acd-print" Title="ExpandOnPrint" ExpandOnPrint MaxHeight="2rem">
+        @for (var i = 1; i <= 6; i++)
+        {
+            <p>Printed line @i.</p>
+        }
+    </BitAccordion>
+    <BitAccordion Id="acd-noprint" Title="Printed as a bare header">
+        <p>Returns are free within thirty days.</p>
+    </BitAccordion>
+</E2ESection>
+
+<E2ESection Id="templates" Title="TitleTemplate, ExpanderTemplate, HeaderTemplate">
+    <BitAccordion Id="acd-title-tpl" IconName="Settings" Description="TitleTemplate">
+        <TitleTemplate><span id="title-tpl">Advanced settings</span></TitleTemplate>
+        <Body>Title template body.</Body>
+    </BitAccordion>
+    <BitAccordion Id="acd-exp-tpl" Title="ExpanderTemplate">
+        <ExpanderTemplate Context="isExpanded"><span class="e2e-exp-tpl">@(isExpanded ? "Less" : "More")</span></ExpanderTemplate>
+        <Body>Expander template body.</Body>
+    </BitAccordion>
+    <BitAccordion Id="acd-hdr-tpl">
+        <HeaderTemplate Context="isExpanded"><span id="hdr-tpl-state">@(isExpanded ? "Open" : "Closed")</span></HeaderTemplate>
+        <Body>Header template body.</Body>
+    </BitAccordion>
+</E2ESection>
+
+<E2ESection Id="readonly" Title="ReadOnly and Disabled">
+    <BitAccordion Id="acd-ro" Title="Read-only" ReadOnly DefaultIsExpanded OnClick="() => _roClicks++" OnChange="(bool v) => _roChanges++">
+        <p>Read-only content.</p>
+    </BitAccordion>
+    <span id="ro-clicks">@_roClicks</span>
+    <span id="ro-changes">@_roChanges</span>
+    <BitAccordion Id="acd-disabled" Title="Disabled" Disabled DefaultIsExpanded OnClick="() => _disabledClicks++">
+        <button id="btn-disabled-inner" type="button" @onclick="() => _disabledInner++">Still live</button>
+    </BitAccordion>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="disabled-inner">@_disabledInner</span>
+    <BitAccordion Id="acd-disabled-closed" Title="Disabled and closed" Disabled OnClick="() => _disabledClosedClicks++">
+        <p>Never opened by the header.</p>
+    </BitAccordion>
+    <span id="disabled-closed-clicks">@_disabledClosedClicks</span>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitAccordion Id="acd-lvl2" Title="Top-level section" Description="aria-level 2" HeadingLevel="2">
+        <a id="a11y-link" href="e2e/accordion#a11y">A link Tab only reaches while open.</a>
+    </BitAccordion>
+    <button id="a11y-after" type="button">After the section</button>
+    <BitAccordion Id="acd-icon-only" HeaderAriaLabel="Notifications">
+        <HeaderTemplate><span aria-hidden="true">*</span></HeaderTemplate>
+        <Body>Icon-only header.</Body>
+    </BitAccordion>
+    <BitAccordion Id="acd-group" AriaLabel="Frequently asked" Title="Named group">Named group.</BitAccordion>
+    <BitAccordion Id="acd-outer" Title="Outer" NoContentRegion DefaultIsExpanded>
+        <BitAccordion Id="acd-inner" Title="Inner">
+            <BitAccordion Id="acd-inner-inner" Title="Inner inner">Deepest.</BitAccordion>
+        </BitAccordion>
+    </BitAccordion>
+    <BitAccordion Id="acd-clamp" Title="Clamped" HeadingLevel="9">Clamped to 6.</BitAccordion>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="@_params">
+        <BitAccordion Id="acd-par-1" Title="Takes the cascade">Cascade one.</BitAccordion>
+        <BitAccordion Id="acd-par-own" Title="Sets its own" ExpanderIconPlacement="BitPlacement.End" Size="BitSize.Small">Own values.</BitAccordion>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Background, Border, NoBorder">
+    <div style="padding: 8px; background: rgb(128, 128, 128);">
+        <BitAccordion Id="acd-bg-unset" Title="Background unset">Unset.</BitAccordion>
+        <BitAccordion Id="acd-bg-primary" Title="Background Primary" Background="BitColorKind.Primary">Primary.</BitAccordion>
+        <BitAccordion Id="acd-bg-secondary" Title="Background Secondary" Background="BitColorKind.Secondary">Secondary.</BitAccordion>
+        <BitAccordion Id="acd-bg-tertiary" Title="Background Tertiary" Background="BitColorKind.Tertiary">Tertiary.</BitAccordion>
+        <BitAccordion Id="acd-bg-transparent" Title="Background Transparent" Background="BitColorKind.Transparent">Transparent.</BitAccordion>
+    </div>
+    <BitAccordion Id="acd-br-primary" Title="Border Primary" Border="BitColorKind.Primary">Primary.</BitAccordion>
+    <BitAccordion Id="acd-br-secondary" Title="Border Secondary" Border="BitColorKind.Secondary">Secondary.</BitAccordion>
+    <BitAccordion Id="acd-br-tertiary" Title="Border Tertiary" Border="BitColorKind.Tertiary">Tertiary.</BitAccordion>
+    <BitAccordion Id="acd-br-transparent" Title="Border Transparent" Border="BitColorKind.Transparent">Transparent.</BitAccordion>
+    <BitAccordion Id="acd-noborder" Title="NoBorder" NoBorder>No border.</BitAccordion>
+</E2ESection>
+
+<E2ESection Id="icons" Title="External icons">
+    <BitAccordion Id="acd-ext" Title="Css icons" Icon="@BitIconInfo.Css("e2e-ext e2e-gear")" ExpanderIcon="@BitIconInfo.Css("e2e-ext e2e-plus")" ExpandedExpanderIcon="@BitIconInfo.Css("e2e-ext e2e-minus")">External.</BitAccordion>
+    <BitAccordion Id="acd-ext-bi" Title="Bootstrap icons" Icon="@BitIconInfo.Bi("gear")" ExpanderIcon="@BitIconInfo.Fa("solid chevron-down")">Bootstrap.</BitAccordion>
+    <BitAccordion Id="acd-ext-wins" Title="Icon over IconName" Icon="@BitIconInfo.Css("e2e-wins")" IconName="Settings">Icon wins.</BitAccordion>
+</E2ESection>
+
+<E2ESection Id="sizes" Title="Size">
+    <BitAccordion Id="acd-sm" Title="Small" Description="d" IconName="Settings" Size="BitSize.Small">Small.</BitAccordion>
+    <BitAccordion Id="acd-md" Title="Medium" Description="d" IconName="Settings" Size="BitSize.Medium">Medium.</BitAccordion>
+    <BitAccordion Id="acd-lg" Title="Large" Description="d" IconName="Settings" Size="BitSize.Large">Large.</BitAccordion>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style, Class, Styles, Classes, CSS variables">
+    <BitAccordion Id="acd-style" Title="Style" Style="margin-top: 7px;">Style.</BitAccordion>
+    <BitAccordion Id="acd-class" Title="Class" Class="e2e-acd-class">Class.</BitAccordion>
+    <BitAccordion Id="acd-styles"
+                  Title="Styles"
+                  Description="Styled parts"
+                  Styles="@(new() { Title = "color: rgb(255, 99, 71);",
+                                    ExpanderIcon = "color: rgb(255, 99, 71);",
+                                    ExpandedIcon = "color: rgb(46, 139, 87);",
+                                    Expanded = "border-color: rgb(46, 139, 87);",
+                                    Description = "font-style: italic;",
+                                    Content = "font-weight: 700;" })">
+        <p>Styles content.</p>
+    </BitAccordion>
+    <BitAccordion Id="acd-classes"
+                  Title="Classes"
+                  Classes="@(new() { Title = "e2e-acd-title", Content = "e2e-acd-content", Header = "e2e-acd-header", Root = "e2e-acd-root", Expanded = "e2e-acd-expanded" })">
+        <p>Classes content.</p>
+    </BitAccordion>
+    <BitAccordion Id="acd-var-inst"
+                  Title="Variables on the instance"
+                  Style="--bit-Accordion-radius: 0px; --bit-Accordion-border-width: 2px; --bit-Accordion-border-color: rgb(46, 139, 87); --bit-Accordion-header-expanded-background: rgb(46, 139, 87); --bit-Accordion-header-expanded-color: rgb(255, 255, 255);">
+        <p>Instance variables.</p>
+    </BitAccordion>
+    <div id="var-ancestor" style="--bit-Accordion-title-color: rgb(255, 99, 71); --bit-Accordion-background: rgb(250, 240, 230); --bit-Accordion-header-padding: 21px;">
+        <BitAccordion Id="acd-var-anc" Title="Variables on an ancestor">Ancestor variables.</BitAccordion>
+        <BitAccordion Id="acd-var-wins" Title="Explicit Background and Size win" Background="BitColorKind.Tertiary" Size="BitSize.Large">Explicit wins.</BitAccordion>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitAccordion Id="acd-rtl" Dir="BitDir.Rtl" Title="تنظیمات" IconName="Settings" Description="آکاردئون">
+        <p>لورم ایپسوم</p>
+    </BitAccordion>
+    <div dir="rtl">
+        <BitAccordion Id="acd-rtl-inh" Title="Inherited" IconName="Settings">Inherited.</BitAccordion>
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Visibility, HtmlAttributes, re-render, unmount">
+    <BitAccordion Id="acd-vis-hidden" Title="Hidden" Visibility="BitVisibility.Hidden">Hidden.</BitAccordion>
+    <BitAccordion Id="acd-vis-collapsed" Title="Collapsed" Visibility="BitVisibility.Collapsed">Collapsed.</BitAccordion>
+    <span id="attrs-label">Attrs label</span>
+    <BitAccordion Id="acd-attrs" Title="Attributes" data-e2e="custom" HtmlAttributes="@_attrs">Attributes.</BitAccordion>
+    <BitAccordion Id="acd-rr" Title="@_rrTitle" Size="_rrSize" IsExpanded="_rrExpanded" Disabled="_rrDisabled">Re-rendered.</BitAccordion>
+    <button id="btn-rr" type="button" @onclick="Rerender">Change parameters</button>
+    @if (_showUnmount)
+    {
+        <BitAccordion Id="acd-um" Title="Unmounted" HiddenUntilFound TransitionDuration="400">
+            <input id="um-input" />
+        </BitAccordion>
+    }
+    <button id="btn-unmount" type="button" @onclick="() => _showUnmount = !_showUnmount">Unmount</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _renameCount;
+
+    private bool _bound;
+    private bool _boundDisabled;
+    private int _ctl;
+    private int _fixedClicks;
+    private int _fixedChanges;
+
+    private bool _lock;
+    private int _clickCount;
+    private string _lastClickButton = "";
+    private int _changeCount;
+    private string _lastChange = "";
+    private int _expandCount;
+    private int _collapseCount;
+    private int _togglingCount;
+    private int _refusedCount;
+    private string _lastExpanding = "";
+    private string _lastReason = "";
+
+    private TaskCompletionSource? _gate;
+    private int _asyncToggling;
+    private int _asyncChanges;
+
+    private BitAccordion _methodsRef = default!;
+    private BitAccordion _disabledMethodsRef = default!;
+    private int _methodsChanges;
+    private string _methodsLast = "";
+    private int _methodsExpands;
+    private int _methodsCollapses;
+    private string _methodsReason = "";
+
+    private List<string> _orders = [];
+    private bool _busy;
+    private int _busyClicks;
+    private int _busyChanges;
+
+    private string _findReason = "";
+    private int _findRefused;
+
+    private int _roClicks;
+    private int _roChanges;
+    private int _disabledClicks;
+    private int _disabledInner;
+    private int _disabledClosedClicks;
+
+    private readonly BitAccordionParams[] _params =
+    [
+        new()
+        {
+            ExpanderIconName = "Add",
+            ExpandedExpanderIconName = "Remove",
+            ExpanderIconPlacement = BitPlacement.Start,
+            Size = BitSize.Large,
+            Background = BitColorKind.Tertiary,
+            HeadingLevel = 5,
+        }
+    ];
+
+    private readonly Dictionary<string, object> _attrs = new() { ["aria-labelledby"] = "attrs-label", ["data-extra"] = "from-dictionary" };
+
+    private string _rrTitle = "Before";
+    private BitSize _rrSize = BitSize.Small;
+    private bool _rrExpanded;
+    private bool _rrDisabled;
+    private bool _showUnmount = true;
+
+    private void HandleEventsClick(MouseEventArgs e)
+    {
+        _clickCount++;
+        _lastClickButton = e.Button.ToString();
+    }
+
+    private void HandleEventsToggling(BitAccordionToggleArgs args)
+    {
+        _togglingCount++;
+        _lastExpanding = args.IsExpanding.ToString();
+        _lastReason = args.Reason.ToString();
+
+        if (_lock && args.IsExpanding is false)
+        {
+            args.Cancel = true;
+            _refusedCount++;
+        }
+    }
+
+    private async Task HandleAsyncToggling(BitAccordionToggleArgs args)
+    {
+        _asyncToggling++;
+        _gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        await _gate.Task;
+    }
+
+    private void Release() => _gate?.TrySetResult();
+
+    private async Task ExpandAndFocus()
+    {
+        await _methodsRef.Expand();
+        await _methodsRef.FocusAsync();
+    }
+
+    private async Task LoadOrders(BitAccordionToggleArgs args)
+    {
+        if (args.IsExpanding is false || _orders.Count > 0) return;
+
+        await Task.Delay(500);
+
+        _orders = ["Order #1001", "Order #1002", "Order #1003"];
+    }
+
+    private void RefuseReveal(BitAccordionToggleArgs args)
+    {
+        if (args.Reason is BitAccordionToggleReason.Reveal)
+        {
+            args.Cancel = true;
+            _findRefused++;
+        }
+    }
+
+    private void Rerender()
+    {
+        _rrTitle = "After";
+        _rrSize = BitSize.Large;
+        _rrExpanded = true;
+        _rrDisabled = true;
+    }
+}

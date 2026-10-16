@@ -3183,6 +3183,109 @@ public class BitDialogTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDialogShouldRenderTheUnmatchedHtmlAttributesOnTheRoot()
+    {
+        // The splat only reaches the dialog through the render tree: HtmlAttributes is a plain parameter on
+        // BitComponentBase rather than a CaptureUnmatchedValues one, so bUnit's AddUnmatched cannot feed it.
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, []);
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitDialog>(0);
+                builder.AddAttribute(1, nameof(BitDialog.IsOpen), true);
+                builder.AddAttribute(2, "data-test", "dialog");
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-dlg");
+
+        Assert.AreEqual("dialog", root.GetAttribute("data-test"));
+        // The attributes the dialog writes for itself come after the splat, so an open dialog is never left hidden
+        // by one the page passed.
+        Assert.IsFalse(root.HasAttribute("inert"));
+        Assert.IsNull(root.GetAttribute("aria-hidden"));
+    }
+
+    [TestMethod]
+    public void BitDialogClassAndStyleShouldLandOnTheRoot()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Style, "color:red");
+        });
+
+        var root = component.Find(".bit-dlg");
+
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "color:red");
+    }
+
+    [TestMethod]
+    [DataRow(BitVisibility.Visible, null)]
+    [DataRow(BitVisibility.Hidden, "visibility:hidden")]
+    [DataRow(BitVisibility.Collapsed, "display:none")]
+    public void BitDialogShouldRespectVisibility(BitVisibility visibility, string? expectedStyle)
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = component.Find(".bit-dlg").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle is null)
+        {
+            Assert.IsFalse(style.Contains("visibility:hidden"));
+            Assert.IsFalse(style.Contains("display:none"));
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod]
+    public async Task BitDialogShouldReleaseEverythingItRegisteredWhenItIsDisposedWhileOpen()
+    {
+        var component = RenderComponent<BitDialog>(parameters =>
+        {
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IsDraggable, true);
+        });
+
+        var containerId = component.Find(".bit-dlg-ctn").GetAttribute("id");
+
+        await Context.DisposeComponentsAsync();
+
+        // The Escape listener, the focus trap and the drag handlers are taken back, and the remembered element is
+        // released rather than focused: the dialog is going away, not closing.
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeSurfaceEscape"]);
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"]);
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.DragDrop.remove"]);
+        Assert.AreEqual(containerId, Context.JSInterop.Invocations["BitBlazorUI.Utils.forgetFocus"][^1].Arguments[0]);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocus"]);
+    }
+
+    [TestMethod]
+    public async Task BitDialogDisposedWhileItsShowingIsPendingShouldReleaseTheAwaiter()
+    {
+        var component = RenderComponent<BitDialog>();
+
+        var showing = component.Instance.Show();
+
+        component.WaitForState(() => component.FindAll(".bit-dlg").Count == 1);
+
+        await Context.DisposeComponentsAsync();
+
+        Assert.IsNull(await showing.WaitAsync(TimeSpan.FromSeconds(5)));
+    }
+
+    [TestMethod]
     public void BitDialogShouldCarryTheConsumerIdOnItsRoot()
     {
         var component = RenderComponent<BitDialog>(parameters =>

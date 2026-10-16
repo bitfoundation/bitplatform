@@ -1,6 +1,6 @@
 ﻿namespace BitBlazorUI {
     export class MenuButtons {
-        private static _handlers = new Map<string, { id: string, element: HTMLElement, handler: (e: KeyboardEvent) => void }[]>();
+        private static _handlers = new Map<string, MenuButtonListener[]>();
 
         // Only the rows of THIS menu, and never the rows of a submenu that is still sitting inside it
         // unopened: a closed submenu is hidden rather than taken out of the page, and focusing a hidden
@@ -13,7 +13,7 @@
         public static setup(id: string, calloutId: string) {
             MenuButtons.dispose(id);
 
-            const entries: { id: string, element: HTMLElement, handler: (e: KeyboardEvent) => void }[] = [];
+            const entries: MenuButtonListener[] = [];
 
             const root = document.getElementById(id);
             if (root) {
@@ -23,7 +23,7 @@
                     }
                 };
                 root.addEventListener('keydown', handler);
-                entries.push({ id: id, element: root, handler });
+                entries.push({ id: id, element: root, type: 'keydown', handler: handler as EventListener });
             }
 
             MenuButtons._handlers.set(id, entries);
@@ -45,7 +45,7 @@
             for (let i = entries.length - 1; i >= 0; i--) {
                 if (entries[i].id !== calloutId) continue;
 
-                entries[i].element.removeEventListener('keydown', entries[i].handler);
+                entries[i].element.removeEventListener(entries[i].type, entries[i].handler);
                 entries.splice(i, 1);
             }
         }
@@ -54,7 +54,7 @@
             const entries = MenuButtons._handlers.get(id);
             if (!entries) return;
 
-            entries.forEach(e => e.element.removeEventListener('keydown', e.handler));
+            entries.forEach(e => e.element.removeEventListener(e.type, e.handler));
             MenuButtons._handlers.delete(id);
         }
 
@@ -94,14 +94,68 @@
                 }
             };
 
+            // A submit or reset item belongs to the form the menu button sits in, but its menu is moved to the
+            // body while it is open, out of that form - and a button with no form owner does nothing on a
+            // click. So what the browser would have done had the item stayed in place is done here, for the
+            // form around the menu button itself: only for an item no form owns (a FormId or a form attribute
+            // still reaches its form natively, wherever the item is), only for one that is not unavailable
+            // (an aria-disabled item kept focusable runs none of its actions), and only once the click has
+            // been dispatched and its default not prevented, which is when the browser runs the submission.
+            // A click handled in the same task (WebAssembly) can close the menu - moving the item back into the
+            // form - before the browser activates it, and then the browser submits it after all; so it is done
+            // here only when the form has seen nothing of the kind since the click.
+            const clickHandler = (e: MouseEvent) => {
+                const item = (e.target as HTMLElement)?.closest?.('button.bit-mnb-itm') as HTMLButtonElement | null;
+                if (!item || item.closest('.bit-mnb-cal') !== callout) return;
+                if (item.type !== 'submit' && item.type !== 'reset') return;
+                if (item.form || item.disabled || item.getAttribute('aria-disabled') === 'true') return;
+
+                const form = document.getElementById(id)?.closest('form');
+                if (!form) return;
+
+                const isReset = item.type === 'reset';
+                const eventName = isReset ? 'reset' : 'submit';
+
+                let handled = false;
+                const onNative = () => { handled = true; };
+                form.addEventListener(eventName, onNative, true);
+
+                setTimeout(() => {
+                    form.removeEventListener(eventName, onNative, true);
+
+                    if (handled || e.defaultPrevented || !form.isConnected) return;
+
+                    if (isReset) {
+                        form.reset();
+                    } else if (typeof form.requestSubmit === 'function') {
+                        // requestSubmit rather than submit: only the former runs the constraint validation
+                        // and raises the submit event, which is the one an EditForm listens to.
+                        form.requestSubmit();
+                    }
+                });
+            };
+
             callout.addEventListener('keydown', handler);
+            callout.addEventListener('click', clickHandler);
+
+            const added: MenuButtonListener[] = [
+                { id: calloutId, element: callout, type: 'keydown', handler: handler as EventListener },
+                { id: calloutId, element: callout, type: 'click', handler: clickHandler as EventListener }
+            ];
 
             const entries = MenuButtons._handlers.get(id);
             if (entries) {
-                entries.push({ id: calloutId, element: callout, handler });
+                entries.push(...added);
             } else {
-                MenuButtons._handlers.set(id, [{ id: calloutId, element: callout, handler }]);
+                MenuButtons._handlers.set(id, added);
             }
         }
+    }
+
+    interface MenuButtonListener {
+        id: string;
+        element: HTMLElement;
+        type: string;
+        handler: EventListener;
     }
 }

@@ -124,6 +124,16 @@ public class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
     public BitBasicListClassStyles? Styles { get; set; }
 
     /// <summary>
+    /// Keeps the footer in view at the end of the list while its rows scroll past it.
+    /// </summary>
+    public bool? StickyFooter { get; set; }
+
+    /// <summary>
+    /// Keeps the header in view at the start of the list while its rows scroll past it.
+    /// </summary>
+    public bool? StickyHeader { get; set; }
+
+    /// <summary>
     /// Enables virtualization in rendering the list.
     /// </summary>
     public bool? Virtualize { get; set; }
@@ -236,6 +246,16 @@ public class BitBasicListParams : BitComponentBaseParams, IBitComponentParams
         if (Role.HasValue())
         {
             bitBasicList.TakeFromCascade(nameof(Role), Role, static b => b.Role, static (b, v) => b.Role = v);
+        }
+
+        if (StickyFooter.HasValue)
+        {
+            bitBasicList.TakeFromCascade(nameof(StickyFooter), StickyFooter.Value, static b => b.StickyFooter, static (b, v) => b.StickyFooter = v);
+        }
+
+        if (StickyHeader.HasValue)
+        {
+            bitBasicList.TakeFromCascade(nameof(StickyHeader), StickyHeader.Value, static b => b.StickyHeader, static (b, v) => b.StickyHeader = v);
         }
 
         if (Styles is not null)

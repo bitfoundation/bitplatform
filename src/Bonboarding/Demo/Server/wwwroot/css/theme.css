@@ -1,0 +1,309 @@
+﻿/* Bit.Bonboarding Demo - design tokens.
+
+   The demo carries no dependency other than Bit.Bonboarding itself, so the design system it is built
+   on is written out here rather than pulled from a component library. It is Microsoft's Fluent 2,
+   transcribed exactly as the Bit.Bmotion and Bit.Brouter demos transcribe it: the brand ramp, the
+   neutral ramps, the type ramp, the corner radii, the elevation shadows and the motion curves all
+   carry Fluent's own names and Fluent's own values.
+
+   Two layers, in the order a token should be reached for:
+
+     1. Ramps      --bo-brand-10..160, --bo-grey-*.  Raw colour. Outside this file they are only
+                   read by the tour skin at the foot of app.css, which has to pick a light or a
+                   dark value per tour rather than per page.
+     2. Semantic   --bo-clr-*, --bo-fnt-*, --bo-crn-*, --bo-shdw-*, --bo-dur-*, --bo-crv-*.
+                   What a token is *for*. This is the layer to write CSS against.
+
+   The brand ramp is Fluent's own Microsoft-blue ramp shifted so that shade 80 lands exactly on
+   bit's #1276C6: the two are within a just-noticeable difference of each other to begin with, so
+   the site stays on brand and on Fluent at the same time.
+
+   The theme is selected by the data-theme attribute on <html>, which the bootstrap script in
+   App.razor sets before first paint (see js/demo.js). The bare :root selector carries the light
+   palette so a document with no attribute at all - a browser with JS disabled - still renders a
+   complete theme rather than unstyled markup. */
+
+/* ── 1. Ramps ──────────────────────────────────────────────────────────────── */
+
+:root {
+    /* Brand. Fluent's blue ramp, anchored on bit's accent at shade 80. */
+    --bo-brand-10: #0A1C2A;
+    --bo-brand-20: #0D293E;
+    --bo-brand-30: #103551;
+    --bo-brand-40: #124265;
+    --bo-brand-50: #144F7D;
+    --bo-brand-60: #145D94;
+    --bo-brand-70: #1567AC;
+    --bo-brand-80: #1276C6;
+    --bo-brand-90: #2B90E7;
+    --bo-brand-100: #4BA7FD;
+    --bo-brand-110: #67B4FD;
+    --bo-brand-120: #7CC0FF;
+    --bo-brand-130: #9CCEFF;
+    --bo-brand-140: #BADEFF;
+    --bo-brand-150: #D6EBFF;
+    --bo-brand-160: #EDF5FE;
+
+    /* Neutrals. Fluent's grey ramp, named by lightness the way Fluent names it. */
+    --bo-grey-8: #141414;
+    --bo-grey-10: #1A1A1A;
+    --bo-grey-12: #1F1F1F;
+    --bo-grey-14: #242424;
+    --bo-grey-16: #292929;
+    --bo-grey-20: #333333;
+    --bo-grey-24: #3D3D3D;
+    --bo-grey-26: #424242;
+    --bo-grey-30: #4D4D4D;
+    --bo-grey-38: #616161;
+    --bo-grey-44: #707070;
+    --bo-grey-60: #999999;
+    --bo-grey-68: #ADADAD;
+    --bo-grey-82: #D1D1D1;
+    --bo-grey-84: #D6D6D6;
+    --bo-grey-88: #E0E0E0;
+    --bo-grey-92: #EBEBEB;
+    --bo-grey-94: #F0F0F0;
+    --bo-grey-96: #F5F5F5;
+    --bo-grey-98: #FAFAFA;
+    --bo-grey-100: #FFFFFF;
+
+    /* Fluent's shared red, for the one thing on this site that can go wrong on purpose: a tour
+       that is asked to fail when its target is missing. */
+    --bo-red-10: #3F1011;
+    --bo-red-20: #6E0811;
+    --bo-red-80: #D13438;
+    --bo-red-90: #BC2F32;
+    --bo-red-140: #EEACB2;
+    --bo-red-150: #FDF3F4;
+    --bo-red-dark-fg: #E37D80;
+    --bo-red-light-fg: #B10E1C;
+}
+
+/* ── 2. Semantic - light ───────────────────────────────────────────────────── */
+
+:root,
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    /* Brand. Backgrounds take shade 80 and darken on interaction, exactly as Fluent does; text
+       and links take shade 70, which is the shade that clears 4.5:1 on both of the surfaces this
+       site paints - the white card and the grey canvas behind it. */
+    --bo-clr-brand-bg: var(--bo-brand-80);
+    --bo-clr-brand-bg-hover: var(--bo-brand-70);
+    --bo-clr-brand-bg-pressed: var(--bo-brand-60);
+    --bo-clr-brand-bg-subtle: var(--bo-brand-160);
+    --bo-clr-brand-fg: var(--bo-brand-70);
+    --bo-clr-brand-fg-hover: var(--bo-brand-60);
+    --bo-clr-brand-fg-pressed: var(--bo-brand-50);
+    --bo-clr-brand-fg-on-bg: var(--bo-grey-100);
+    --bo-clr-brand-stroke: var(--bo-brand-80);
+
+    /* Neutral backgrounds. Background1 is the raised surface - a card, the header, the nav panel;
+       the canvas the whole page is painted on is Background3, one step down from it. */
+    --bo-clr-bg-1: var(--bo-grey-100);
+    --bo-clr-bg-1-hover: var(--bo-grey-96);
+    --bo-clr-bg-1-pressed: var(--bo-grey-88);
+    --bo-clr-bg-2: var(--bo-grey-98);
+    --bo-clr-bg-3: var(--bo-grey-96);
+    --bo-clr-bg-3-hover: var(--bo-grey-92);
+    --bo-clr-bg-4: var(--bo-grey-94);
+    --bo-clr-bg-5: var(--bo-grey-92);
+    --bo-clr-bg-disabled: var(--bo-grey-94);
+    --bo-clr-bg-overlay: rgba(0, 0, 0, 0.4);
+
+    /* Neutral foregrounds. */
+    --bo-clr-fg-1: var(--bo-grey-14);
+    --bo-clr-fg-2: var(--bo-grey-26);
+    --bo-clr-fg-3: var(--bo-grey-38);
+    --bo-clr-fg-4: var(--bo-grey-44);
+    --bo-clr-fg-disabled: var(--bo-grey-68);
+
+    /* Neutral strokes. Stroke2 draws the hairlines that separate the site's surfaces; Stroke1
+       draws the edge of a control; StrokeAccessible is the one that clears 3:1 against both
+       surfaces, so it is what a control's own border becomes on hover. */
+    --bo-clr-stroke-1: var(--bo-grey-82);
+    --bo-clr-stroke-2: var(--bo-grey-88);
+    --bo-clr-stroke-accessible: var(--bo-grey-38);
+    --bo-clr-stroke-focus: var(--bo-grey-14);
+
+    /* Status. */
+    --bo-clr-danger-bg: var(--bo-red-150);
+    --bo-clr-danger-fg: var(--bo-red-light-fg);
+    --bo-clr-danger-stroke: var(--bo-red-140);
+
+    /* Fluent's elevation set. The alpha pairs are Fluent's own: a tight ambient shadow under a
+       wider directional one, so a raised surface reads as raised at any size. */
+    --bo-shdw-2: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.14), 0 0 0.125rem rgba(0, 0, 0, 0.12);
+    --bo-shdw-4: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.14), 0 0 0.125rem rgba(0, 0, 0, 0.12);
+    --bo-shdw-8: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.14), 0 0 0.125rem rgba(0, 0, 0, 0.12);
+    --bo-shdw-16: 0 0.5rem 1rem rgba(0, 0, 0, 0.14), 0 0 0.125rem rgba(0, 0, 0, 0.12);
+    --bo-shdw-64: 0 2rem 4rem rgba(0, 0, 0, 0.24), 0 0 0.5rem rgba(0, 0, 0, 0.2);
+
+    /* The tint a brand-coloured surface is washed with. color-mix keeps it tied to the brand
+       rather than freezing one theme's hex value. */
+    --bo-clr-brand-wash: color-mix(in srgb, var(--bo-brand-80) 10%, transparent);
+
+    /* The chevron a closed <select> draws, in the colour of a secondary label. A data URI cannot
+       read a custom property, so each theme carries its own copy. */
+    --bo-select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23616161' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9.5 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* ── 2. Semantic - dark ────────────────────────────────────────────────────── */
+
+/* Fluent's dark theme is a neutral grey theme rather than a tinted one, and it inverts the
+   surface relationship rather than the ramp: the canvas is the darkest surface and a card sits
+   above it, one step lighter. Everything below mirrors the light block role for role. */
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --bo-clr-brand-bg: var(--bo-brand-70);
+    --bo-clr-brand-bg-hover: var(--bo-brand-80);
+    --bo-clr-brand-bg-pressed: var(--bo-brand-60);
+    --bo-clr-brand-bg-subtle: var(--bo-brand-20);
+    --bo-clr-brand-fg: var(--bo-brand-100);
+    --bo-clr-brand-fg-hover: var(--bo-brand-110);
+    --bo-clr-brand-fg-pressed: var(--bo-brand-120);
+    --bo-clr-brand-fg-on-bg: var(--bo-grey-100);
+    --bo-clr-brand-stroke: var(--bo-brand-100);
+
+    --bo-clr-bg-1: var(--bo-grey-12);
+    --bo-clr-bg-1-hover: var(--bo-grey-16);
+    --bo-clr-bg-1-pressed: var(--bo-grey-20);
+    --bo-clr-bg-2: var(--bo-grey-10);
+    --bo-clr-bg-3: var(--bo-grey-8);
+    --bo-clr-bg-3-hover: var(--bo-grey-12);
+    --bo-clr-bg-4: var(--bo-grey-16);
+    --bo-clr-bg-5: var(--bo-grey-20);
+    --bo-clr-bg-disabled: var(--bo-grey-16);
+    --bo-clr-bg-overlay: rgba(0, 0, 0, 0.65);
+
+    --bo-clr-fg-1: var(--bo-grey-100);
+    --bo-clr-fg-2: var(--bo-grey-84);
+    --bo-clr-fg-3: var(--bo-grey-68);
+    --bo-clr-fg-4: var(--bo-grey-60);
+    --bo-clr-fg-disabled: var(--bo-grey-38);
+
+    --bo-clr-stroke-1: var(--bo-grey-30);
+    --bo-clr-stroke-2: var(--bo-grey-20);
+    --bo-clr-stroke-accessible: var(--bo-grey-68);
+    --bo-clr-stroke-focus: var(--bo-grey-100);
+
+    --bo-clr-danger-bg: var(--bo-red-10);
+    --bo-clr-danger-fg: var(--bo-red-dark-fg);
+    --bo-clr-danger-stroke: var(--bo-red-20);
+
+    /* Fluent deepens the alphas so an elevated surface still reads against a near-black canvas,
+       where a light-theme shadow would vanish. */
+    --bo-shdw-2: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.28), 0 0 0.125rem rgba(0, 0, 0, 0.24);
+    --bo-shdw-4: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.28), 0 0 0.125rem rgba(0, 0, 0, 0.24);
+    --bo-shdw-8: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.28), 0 0 0.125rem rgba(0, 0, 0, 0.24);
+    --bo-shdw-16: 0 0.5rem 1rem rgba(0, 0, 0, 0.28), 0 0 0.125rem rgba(0, 0, 0, 0.24);
+    --bo-shdw-64: 0 2rem 4rem rgba(0, 0, 0, 0.4), 0 0 0.5rem rgba(0, 0, 0, 0.28);
+
+    --bo-clr-brand-wash: color-mix(in srgb, var(--bo-brand-100) 14%, transparent);
+
+    --bo-select-chevron: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ADADAD' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9.5 6 6 6-6'/%3E%3C/svg%3E");
+}
+
+/* ── 2. Semantic - shape, type, motion and layout ──────────────────────────── */
+
+/* The parts of Fluent that do not change with the palette. */
+
+:root {
+    /* Corner radius. Fluent 2's scale: controls take Medium, surfaces take Large, and anything
+       that floats over the page takes XLarge. */
+    --bo-crn-small: 0.125rem;
+    --bo-crn-medium: 0.25rem;
+    --bo-crn-large: 0.375rem;
+    --bo-crn-xlarge: 0.5rem;
+    --bo-crn-circular: 62.4375rem;
+
+    /* Stroke width. */
+    --bo-strk-thin: 0.0625rem;
+    --bo-strk-thick: 0.125rem;
+    --bo-strk-thicker: 0.1875rem;
+
+    /* Spacing. Fluent's ramp, and the only source of a margin or a padding in this site. */
+    --bo-sp-xxs: 0.125rem;
+    --bo-sp-xs: 0.25rem;
+    --bo-sp-snudge: 0.375rem;
+    --bo-sp-s: 0.5rem;
+    --bo-sp-mnudge: 0.625rem;
+    --bo-sp-m: 0.75rem;
+    --bo-sp-l: 1rem;
+    --bo-sp-xl: 1.25rem;
+    --bo-sp-xxl: 1.5rem;
+    --bo-sp-xxxl: 2rem;
+    --bo-sp-4xl: 2.5rem;
+    --bo-sp-5xl: 3rem;
+    --bo-sp-6xl: 4rem;
+    --bo-sp-7xl: 5rem;
+
+    /* Type. Segoe UI Variable is Fluent 2's typeface and ships with Windows 11; the rest of the
+       stack is the platform's own UI face, so the site is never the reason a font is downloaded. */
+    --bo-fnt-family-base: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", system-ui, sans-serif;
+    --bo-fnt-family-display: "Segoe UI Variable Display", "Segoe UI Variable", "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", system-ui, sans-serif;
+    --bo-fnt-family-mono: ui-monospace, "Cascadia Code", "Cascadia Mono", SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    /* Fluent's type ramp. The sizes are the ramp as published; the leading on the body sizes is
+       opened up from Fluent's own because this site is read as prose rather than scanned as an
+       application surface. */
+    --bo-fnt-size-200: 0.75rem;    /* Caption1   12 */
+    --bo-fnt-size-300: 0.875rem;   /* Body1      14 */
+    --bo-fnt-size-400: 1rem;       /* Body2      16 */
+    --bo-fnt-size-500: 1.25rem;    /* Subtitle1  20 */
+    --bo-fnt-size-600: 1.5rem;     /* Title3     24 */
+    --bo-fnt-size-700: 1.75rem;    /* Title2     28 */
+    --bo-fnt-size-800: 2rem;       /* Title1     32 */
+    --bo-fnt-size-900: 2.5rem;     /* LargeTitle 40 */
+    --bo-fnt-size-1000: 4.25rem;   /* Display    68 */
+
+    --bo-fnt-line-200: 1rem;
+    --bo-fnt-line-300: 1.25rem;
+    --bo-fnt-line-400: 1.375rem;
+    --bo-fnt-line-500: 1.75rem;
+    --bo-fnt-line-600: 2rem;
+    --bo-fnt-line-700: 2.25rem;
+    --bo-fnt-line-800: 2.5rem;
+    --bo-fnt-line-900: 3.25rem;
+
+    /* Prose leading, used wherever a run of text is longer than a label. */
+    --bo-fnt-line-prose: 1.625;
+
+    --bo-fnt-weight-regular: 400;
+    --bo-fnt-weight-medium: 500;
+    --bo-fnt-weight-semibold: 600;
+
+    /* Motion. Fluent's duration ramp and its curve set - a decelerating curve for anything
+       entering, an accelerating one for anything leaving, and easyEase for a state change that
+       does neither. */
+    --bo-dur-faster: 100ms;
+    --bo-dur-fast: 150ms;
+    --bo-dur-normal: 200ms;
+
+    --bo-crv-decelerate-mid: cubic-bezier(0, 0, 0, 1);
+    --bo-crv-easy-ease: cubic-bezier(0.33, 0, 0.67, 1);
+
+    /* Layout. The decisions a design system leaves to the product: how wide the reading column
+       runs, how far prose may stretch before it gets hard to follow, and how much room the nav
+       panel takes. */
+    --bo-layout-max: 90rem;        /* 1440px - the outer rail-to-rail width */
+    --bo-layout-content: 60rem;    /* 960px  - the article column; the fake product UI needs room */
+    --bo-layout-measure: 72ch;
+    --bo-layout-header: 3.5rem;    /* 56px - every sticky offset below is derived from this */
+    --bo-layout-nav: 16.5rem;      /* 264px */
+    /* Breathing room between the sticky header and whatever has been scrolled to. WCAG 2.2's
+       "focus not obscured" is why this is a token rather than a number. */
+    --bo-layout-header-gap: 1.5rem;
+}
+
+/* Chrome transitions only. A tour's own motion is the library's business and it honours reduced
+   motion itself (see ReducedMotion in the README). */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --bo-dur-faster: 0.01ms;
+        --bo-dur-fast: 0.01ms;
+        --bo-dur-normal: 0.01ms;
+    }
+}

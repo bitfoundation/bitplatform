@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitDataGrid{TItem}"/> component.
@@ -251,7 +253,7 @@ public class BitDataGridParams : BitComponentBaseParams, IBitComponentParams
     /// <param name="bitDataGrid">
     /// The <see cref="BitDataGrid{TItem}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TItem>(BitDataGrid<TItem> bitDataGrid)
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitDataGrid<TItem> bitDataGrid)
     {
         if (bitDataGrid is null) return;
 

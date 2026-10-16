@@ -1,0 +1,359 @@
+﻿@page "/e2e/toggle-button"
+
+<PageTitle>BitToggleButton E2E</PageTitle>
+
+<h1>BitToggleButton</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitToggleButton Id="tgb-basic">Microphone</BitToggleButton>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    <BitToggleButton Id="variant-default">Default</BitToggleButton>
+    <BitToggleButton Id="variant-Fill" Variant="BitVariant.Fill">Fill</BitToggleButton>
+    <BitToggleButton Id="variant-Outline" Variant="BitVariant.Outline">Outline</BitToggleButton>
+    <BitToggleButton Id="variant-Text" Variant="BitVariant.Text">Text</BitToggleButton>
+    <br />
+    <BitToggleButton Id="variant-checked-Fill" Variant="BitVariant.Fill" DefaultIsChecked="true">Fill</BitToggleButton>
+    <BitToggleButton Id="variant-checked-Outline" Variant="BitVariant.Outline" DefaultIsChecked="true">Outline</BitToggleButton>
+    <BitToggleButton Id="variant-checked-Text" Variant="BitVariant.Text" DefaultIsChecked="true">Text</BitToggleButton>
+    <br />
+    <BitToggleButton Id="variant-dis-Fill" Variant="BitVariant.Fill" Disabled>Fill</BitToggleButton>
+    <BitToggleButton Id="variant-dis-Outline" Variant="BitVariant.Outline" Disabled>Outline</BitToggleButton>
+    <BitToggleButton Id="variant-dis-Text" Variant="BitVariant.Text" Disabled>Text</BitToggleButton>
+    <BitToggleButton Id="variant-dis-checked" Variant="BitVariant.Fill" Disabled DefaultIsChecked="true">Checked</BitToggleButton>
+</E2ESection>
+
+<E2ESection Id="texts" Title="Texts &amp; Titles">
+    <BitToggleButton Id="txt-text" Text="Microphone" />
+    <BitToggleButton Id="txt-onoff" OnText="Muted" OffText="Unmuted" />
+    <BitToggleButton Id="txt-titles" IconOnly IconName="@BitIconName.Microphone" AriaLabel="Microphone" Title="Microphone" OnTitle="Unmute" OffTitle="Mute" />
+    <BitToggleButton Id="txt-title" Title="Plain title" Text="Title" />
+</E2ESection>
+
+<E2ESection Id="icons" Title="Icons">
+    <BitToggleButton Id="ico-both" Text="Microphone" IconName="@BitIconName.Microphone" />
+    <BitToggleButton Id="ico-onoff" OnText="Muted" OnIconName="@BitIconName.MicOff" OffText="Unmuted" OffIconName="@BitIconName.Microphone" />
+    <BitToggleButton Id="ico-start" IconPlacement="BitPlacement.Start" Text="Start" IconName="@BitIconName.Microphone" />
+    <BitToggleButton Id="ico-end" IconPlacement="BitPlacement.End" Text="End" IconName="@BitIconName.Microphone" />
+    <BitToggleButton Id="ico-only-text" IconOnly IconName="@BitIconName.Microphone" Text="Microphone" />
+    <BitToggleButton Id="ico-only-aria" IconOnly AriaLabel="Mute" IconName="@BitIconName.Microphone" />
+    <BitToggleButton Id="ico-ext" Icon="@BitIconInfo.Css("fa-solid fa-house")" OnIcon="@BitIconInfo.Bi("house-fill")" Text="Home" />
+</E2ESection>
+
+<E2ESection Id="binding" Title="Binding">
+    <BitToggleButton Id="bind-default" DefaultIsChecked="true" OnText="On" OffText="Off" />
+    <BitToggleButton Id="bind-twoway" @bind-IsChecked="_twoWay" OnText="Checked" OffText="Unchecked" />
+    <input id="bind-checkbox" type="checkbox" @bind="_twoWay" aria-label="two-way" />
+    <span id="bind-value">@_twoWay</span>
+    <BitToggleButton Id="bind-onchange" OnChange="v => _onChangeValue = v.ToString()" Text="OnChange" />
+    <span id="bind-onchange-value">@_onChangeValue</span>
+    <BitToggleButton Id="bind-programmatic" @ref="_programmatic" OnText="Muted" OffText="Unmuted" OnChange="() => _programmaticChanges++" />
+    <button id="btn-toggle-async" type="button" @onclick="() => _programmatic.ToggleAsync()">ToggleAsync</button>
+    <button id="btn-focus-async" type="button" @onclick="async () => await _programmatic.FocusAsync()">FocusAsync</button>
+    <span id="programmatic-changes">@_programmaticChanges</span>
+</E2ESection>
+
+<E2ESection Id="appearance" Title="Checked appearance">
+    <BitToggleButton Id="app-color" OnColor="BitColor.Success" OffColor="BitColor.Error" OnText="On" OffText="Off" />
+    <BitToggleButton Id="app-variant" OnVariant="BitVariant.Fill" OffVariant="BitVariant.Outline" OnText="On" OffText="Off" />
+    <BitToggleButton Id="app-fallback" Color="BitColor.Info" OnColor="BitColor.Warning" Variant="BitVariant.Text" Text="Fallback" />
+</E2ESection>
+
+<E2ESection Id="checkmark" Title="CheckMark">
+    <BitToggleButton Id="chm-checked" ShowCheckMark Variant="BitVariant.Outline" DefaultIsChecked="true" Text="Bold heading" />
+    <BitToggleButton Id="chm-unchecked" ShowCheckMark Variant="BitVariant.Outline" Text="Bold heading" />
+    <BitToggleButton Id="chm-fixed" ShowCheckMark FixedCheckMark Variant="BitVariant.Outline" Text="Bold heading" />
+    <BitToggleButton Id="chm-custom" ShowCheckMark CheckMarkIconName="@BitIconName.FavoriteStarFill" DefaultIsChecked="true" Text="Favorite" />
+    <BitToggleButton Id="chm-end" ShowCheckMark IconPlacement="BitPlacement.End" IconName="@BitIconName.Bold" DefaultIsChecked="true" Text="End" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitToggleButton Id="tpl-child"><span class="tpl-child-content">Child content</span></BitToggleButton>
+    <BitToggleButton Id="tpl-onoff" AriaLabel="Subscribe to this channel">
+        <OnTemplate><b class="tpl-on">Subscribed</b></OnTemplate>
+        <OffTemplate><i class="tpl-off">Subscribe</i></OffTemplate>
+    </BitToggleButton>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitToggleButton Id="evt-order" OnClick="LogClick" OnChanging="LogChanging" OnChange="LogChange"
+                     @bind-IsChecked="_orderChecked" Text="Order" />
+    <span id="evt-log">@string.Join(",", _log)</span>
+    <BitToggleButton Id="evt-cancel" OnChanging="Changing" OnText="Published" OffText="Draft" />
+    <input id="evt-allow" type="checkbox" @bind="_allowChange" aria-label="allow" />
+    <span id="evt-cancelled">@_cancelled</span>
+    <div id="evt-parent" @onclick="() => _parentClicks++">
+        <BitToggleButton Id="evt-bubble" Text="Bubbles up" />
+        <BitToggleButton Id="evt-stop" StopPropagation Text="Stops here" />
+    </div>
+    <span id="evt-parent-clicks">@_parentClicks</span>
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading">
+    <BitToggleButton Id="ld-toggle" IsLoading="_isLoading" OnText="Muted" OffText="Unmuted" LoadingLabel="Saving..." OnClick="() => _loadingClicks++" />
+    <button id="btn-toggle-loading" type="button" @onclick="() => _isLoading = !_isLoading">Toggle loading</button>
+    <span id="ld-clicks">@_loadingClicks</span>
+    <BitToggleButton Id="ld-reclickable" IsLoading Reclickable OnClick="() => _reclicks++" Text="Reclickable" />
+    <span id="ld-reclicks">@_reclicks</span>
+    <br />
+    <BitToggleButton Id="ld-auto" AutoLoading OnChange="AutoChange" @bind-IsLoading="_autoLoading" OnText="Muted" OffText="Unmuted" />
+    <button id="btn-release-auto" type="button" @onclick="() => _autoTcs.TrySetResult()">Release</button>
+    <span id="ld-auto-loading">@_autoLoading</span>
+    <BitToggleButton Id="ld-delay" AutoLoading LoadingDelay="500" OnChange="DelayChange" Text="Delayed" />
+    <button id="btn-release-delay" type="button" @onclick="() => _delayTcs.TrySetResult()">Release delay</button>
+    <br />
+    @foreach (var placement in new[] { BitPlacement.End, BitPlacement.Start, BitPlacement.Top, BitPlacement.Bottom })
+    {
+        <BitToggleButton Id="@($"ld-placement-{placement}")" IsLoading LoadingLabel="Saving..." LoadingLabelPlacement="placement" Text="@placement.ToString()" />
+    }
+    <BitToggleButton Id="ld-icon-only" IsLoading IconOnly Text="Save" IconName="@BitIconName.Save" LoadingLabel="Saving..." />
+    <BitToggleButton Id="ld-template" IsLoading Text="Muted">
+        <LoadingTemplate><div class="tpl-loading">Working on it...</div></LoadingTemplate>
+    </BitToggleButton>
+</E2ESection>
+
+<E2ESection Id="full-width" Title="FullWidth &amp; NoWrap">
+    <div id="fw-container" style="width: 360px;">
+        <BitToggleButton Id="fw-btn" FullWidth OnText="Muted" OffText="Unmuted" />
+    </div>
+    <div style="width: 160px;">
+        <BitToggleButton Id="fw-wrap" FullWidth OffText="Sync every folder on this device" OnText="Syncing every folder" />
+        <BitToggleButton Id="fw-nowrap" FullWidth NoWrap Title="Sync every folder on this device" OffText="Sync every folder on this device" OnText="Syncing every folder" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="fixed-color" Title="FixedColor">
+    <BitToggleButton Id="fxc-notfixed" Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" Text="Not fixed" />
+    <BitToggleButton Id="fxc-fixed" FixedColor Variant="BitVariant.Outline" Color="BitColor.TertiaryBackground" Text="Fixed" />
+    <BitToggleButton Id="fxc-fixed-text" FixedColor Variant="BitVariant.Text" Color="BitColor.TertiaryBackground" Text="Fixed text" />
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitToggleButton Id="a11y-auto-stable" Text="Microphone" />
+    <BitToggleButton Id="a11y-auto-changing" OnText="Muted" OffText="Unmuted" />
+    <BitToggleButton Id="a11y-auto-pinned" AriaLabel="Mute" OnText="Muted" OffText="Unmuted" />
+    <BitToggleButton Id="a11y-pressed" AriaMode="BitToggleButtonAriaMode.Pressed" OnText="Muted" OffText="Unmuted" />
+    <BitToggleButton Id="a11y-switch" AriaMode="BitToggleButtonAriaMode.Switch" AriaLabel="Airplane mode" Text="Airplane mode" />
+    <BitToggleButton Id="a11y-none" AriaMode="BitToggleButtonAriaMode.None" OnText="Pause" OffText="Play" />
+    <BitToggleButton Id="a11y-expanded" AriaMode="BitToggleButtonAriaMode.Expanded" AriaControls="a11y-details" AriaLabel="Show details" Text="Details" />
+    <div id="a11y-details">Details</div>
+    <BitToggleButton Id="a11y-onoff-label" IconOnly OnAriaLabel="Unmute" OnIconName="@BitIconName.MicOff" OffAriaLabel="Mute" OffIconName="@BitIconName.Microphone" />
+    <span id="a11y-wifi-label">Wi-Fi</span>
+    <BitToggleButton Id="a11y-labelledby" AriaLabelledBy="a11y-wifi-label" AriaMode="BitToggleButtonAriaMode.Switch" Text="On" />
+    <BitToggleButton Id="a11y-role" role="checkbox" Variant="BitVariant.Text" AriaLabel="Show the status bar" ShowCheckMark FixedCheckMark Text="Status bar" />
+    <span id="a11y-extra">Extra</span>
+    <BitToggleButton Id="a11y-desc" AriaDescription="Turns the microphone off" aria-describedby="a11y-extra" Text="Described" />
+    <BitToggleButton Id="a11y-hidden" AriaHidden Text="Hidden" LoadingLabel="never announced" />
+    <BitToggleButton Id="a11y-tabindex" TabIndex="-1" Text="Not tabbable" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <input id="dis-before" aria-label="before" />
+    <BitToggleButton Id="dis-focusable" Disabled Title="Connect a microphone to enable this" Text="Disabled" OnChange="() => _disabledChanges++"
+                     OnClick="() => _disabledChanges++" @onmousedown="() => _disabledPageEvents++" @onkeydown="() => _disabledPageEvents++" />
+    <BitToggleButton Id="dis-native" Disabled AllowDisabledFocus="false" Text="Not focusable" OnChange="() => _disabledChanges++" />
+    <input id="dis-after" aria-label="after" />
+    <span id="dis-changes">@_disabledChanges</span>
+    <span id="dis-page-events">@_disabledPageEvents</span>
+    <br />
+    <BitToggleButton Id="dis-toggle" Disabled="_toggleDisabled" Text="Toggled" OnChange="() => _toggleChanges++" @onmousedown="() => _togglePageEvents++" />
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _toggleDisabled = !_toggleDisabled">Toggle disabled</button>
+    <span id="dis-toggle-changes">@_toggleChanges</span>
+    <span id="dis-toggle-page-events">@_togglePageEvents</span>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="@_toolbarParams">
+        <BitToggleButton Id="params-toolbar" Text="Bold" IconName="@BitIconName.Bold" />
+        <BitToggleButton Id="params-own" Text="Align left" IconName="@BitIconName.AlignLeft" Variant="BitVariant.Text" />
+    </BitParams>
+    <BitParams Parameters="@_checkedParams">
+        <BitToggleButton Id="params-checked" OnText="Muted" OffText="Unmuted" AriaLabel="Mute" />
+    </BitParams>
+    <BitToggleButton Id="params-outside" Text="Outside" IconName="@BitIconName.Bold" />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var color in Enum.GetValues<BitColor>())
+    {
+        <BitToggleButton Id="@($"color-{color}")" Color="color" Text="@color.ToString()" />
+        <BitToggleButton Id="@($"color-checked-{color}")" Color="color" DefaultIsChecked="true" Text="@color.ToString()" />
+        <BitToggleButton Id="@($"color-dis-{color}")" Color="color" Disabled Text="@color.ToString()" />
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitToggleButton Id="size-default" Text="Default" IconName="@BitIconName.Emoji2" />
+    @foreach (var size in Enum.GetValues<BitSize>())
+    {
+        <BitToggleButton Id="@($"size-{size}")" Size="size" Text="@size.ToString()" IconName="@BitIconName.Emoji2" />
+        <BitToggleButton Id="@($"size-icon-{size}")" Size="size" IconOnly AriaLabel="Emoji" IconName="@BitIconName.Emoji2" />
+        <BitToggleButton Id="@($"size-loading-{size}")" Size="size" IsLoading LoadingLabel="Loading" Text="@size.ToString()" />
+    }
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style &amp; Class">
+    <BitToggleButton Id="sc-style" Style="background-color: rgb(1, 2, 3);" Text="Styled" />
+    <BitToggleButton Id="sc-class" Class="e2e-custom-class" Text="Classed" />
+    <BitToggleButton Id="sc-styles" ShowCheckMark DefaultIsChecked="true" IconName="@BitIconName.Emoji" Text="Styles"
+                     Styles="@(new() { Root = "outline: 3px dotted rgb(9, 9, 9);", Checked = "border-color: rgb(0, 0, 255);", Icon = "color: rgb(255, 0, 0);", Text = "color: rgb(0, 128, 0);", CheckMark = "color: rgb(128, 0, 128);" })" />
+    <BitToggleButton Id="sc-styles-loading" IsLoading LoadingLabel="Wait..." Text="Loading"
+                     Styles="@(new() { HiddenContent = "letter-spacing: 3px;", LoadingContainer = "padding-top: 5px;", Spinner = "border-top-color: rgb(218, 165, 32);", LoadingLabel = "color: rgb(255, 99, 71);" })" />
+    <BitToggleButton Id="sc-classes" ShowCheckMark DefaultIsChecked="true" IconName="@BitIconName.Emoji" Text="Classes"
+                     Classes="@(new() { Root = "c-root", Checked = "c-checked", Icon = "c-icon", Text = "c-text", CheckMark = "c-checkmark" })" />
+    <BitToggleButton Id="sc-classes-loading" IsLoading LoadingLabel="Wait..." Text="Loading"
+                     Classes="@(new() { HiddenContent = "c-hidden", LoadingContainer = "c-ldg", Spinner = "c-spinner", LoadingLabel = "c-label" })" />
+    <BitToggleButton Id="sc-attrs" data-e2e="custom-attribute" Text="Attributes" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="vars-ancestor" style="--bit-ToggleButton-background: rgb(10, 20, 30); --bit-ToggleButton-color: rgb(250, 240, 230); --bit-ToggleButton-checked-background: rgb(0, 100, 0); --bit-ToggleButton-checked-color: rgb(255, 255, 0); --bit-ToggleButton-radius: 0px; --bit-ToggleButton-min-height: 50px; --bit-ToggleButton-font-size: 19px; --bit-ToggleButton-border-width: 3px; --bit-ToggleButton-padding: 3px 25px; --bit-ToggleButton-gap: 14px; --bit-ToggleButton-icon-size: 24px; --bit-ToggleButton-font-weight: 700; --bit-ToggleButton-min-width: 211px; --bit-ToggleButton-hover-background: rgb(200, 100, 0); --bit-ToggleButton-disabled-background: rgb(77, 77, 77); --bit-ToggleButton-checked-disabled-opacity: 0.25; --bit-ToggleButton-spinner-size: 30px;">
+        <BitToggleButton Id="vars-default" IconName="@BitIconName.Emoji" Text="Restyled" />
+        <BitToggleButton Id="vars-checked" DefaultIsChecked="true" Text="Checked" />
+        <BitToggleButton Id="vars-color" Color="BitColor.Error" Text="Explicit color" />
+        <BitToggleButton Id="vars-size" Size="BitSize.Small" Text="Explicit size" />
+        <BitToggleButton Id="vars-disabled" Disabled Text="Disabled" />
+        <BitToggleButton Id="vars-disabled-checked" Disabled DefaultIsChecked="true" Text="Disabled checked" />
+        <BitToggleButton Id="vars-spinner" IsLoading Text="Loading" />
+    </div>
+    <div style="--bit-ToggleButton-outline-border-color: rgb(200, 0, 0); --bit-ToggleButton-text-color: rgb(0, 0, 200);">
+        <BitToggleButton Id="vars-twin-fill" Text="Fill" />
+        <BitToggleButton Id="vars-twin-outline" Variant="BitVariant.Outline" Text="Outline" />
+        <BitToggleButton Id="vars-twin-text" Variant="BitVariant.Text" Text="Text" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitToggleButton Id="rtl-ltr" IconName="@BitIconName.Microphone" Text="Microphone" />
+    <BitToggleButton Id="rtl-explicit" Dir="BitDir.Rtl" IconName="@BitIconName.Microphone" Text="میکروفون" />
+    <BitToggleButton Id="rtl-explicit-end" Dir="BitDir.Rtl" IconPlacement="BitPlacement.End" IconName="@BitIconName.Microphone" Text="میکروفون" />
+    <div dir="rtl">
+        <BitToggleButton Id="rtl-inherited" IconName="@BitIconName.Microphone" Text="میکروفون" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility">
+    <BitToggleButton Id="vis-btn" Visibility="_visibility" Text="Visibility" />
+    <button id="btn-vis-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-vis-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-vis-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+</E2ESection>
+
+<E2ESection Id="rerender" Title="Re-render">
+    <BitToggleButton Id="rerender-btn" Color="_rerenderColor" Variant="_rerenderVariant" Size="_rerenderSize" Text="@_rerenderText" IconName="@_rerenderIcon" />
+    <button id="btn-rerender" type="button" @onclick="ChangeRerender">Change parameters</button>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitToggleButton Id="mounted-btn" AutoLoading LoadingDelay="300" OnChange="MountedChange" Text="Mounted" />
+    }
+    <button id="btn-unmount" type="button" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+    <span id="mounted-done">@_mountedDone</span>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <BitToggleButton Id="motion-default" Text="Default" />
+    <BitToggleButton Id="motion-forced" ForceAnimation Text="ForceAnimation" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _twoWay;
+    private string _onChangeValue = "none";
+    private BitToggleButton _programmatic = default!;
+    private int _programmaticChanges;
+
+    private readonly List<string> _log = [];
+    private bool _orderChecked;
+    private bool _allowChange;
+    private int _cancelled;
+    private int _parentClicks;
+
+    private bool _isLoading;
+    private int _loadingClicks;
+    private int _reclicks;
+    private bool _autoLoading;
+    private TaskCompletionSource _autoTcs = new();
+    private TaskCompletionSource _delayTcs = new();
+
+    private int _disabledChanges;
+    private int _disabledPageEvents;
+    private bool _toggleDisabled = true;
+    private int _toggleChanges;
+    private int _togglePageEvents;
+
+    private readonly BitToggleButtonParams[] _toolbarParams =
+    [
+        new()
+        {
+            IconOnly = true,
+            Variant = BitVariant.Outline
+        }
+    ];
+
+    private readonly BitToggleButtonParams[] _checkedParams =
+    [
+        new()
+        {
+            DefaultIsChecked = true,
+            Variant = BitVariant.Outline
+        }
+    ];
+
+    private BitVisibility _visibility;
+
+    private BitColor? _rerenderColor;
+    private BitVariant? _rerenderVariant;
+    private BitSize? _rerenderSize;
+    private string _rerenderText = "Before";
+    private string? _rerenderIcon;
+
+    private bool _mounted = true;
+    private int _mountedDone;
+
+    private void LogClick() => _log.Add($"click:{_orderChecked}");
+
+    private void LogChanging(BitToggleButtonChangeArgs args) => _log.Add($"changing:{args.Value}:{_orderChecked}");
+
+    private void LogChange(bool value) => _log.Add($"change:{value}:{_orderChecked}");
+
+    private void Changing(BitToggleButtonChangeArgs args)
+    {
+        if (_allowChange) return;
+
+        args.Cancel = true;
+        _cancelled++;
+    }
+
+    private async Task AutoChange()
+    {
+        _autoTcs = new();
+        await _autoTcs.Task;
+    }
+
+    private async Task DelayChange()
+    {
+        _delayTcs = new();
+        await _delayTcs.Task;
+    }
+
+    private async Task MountedChange()
+    {
+        await Task.Delay(800);
+        _mountedDone++;
+        StateHasChanged();
+    }
+
+    private void ChangeRerender()
+    {
+        _rerenderColor = BitColor.Error;
+        _rerenderVariant = BitVariant.Outline;
+        _rerenderSize = BitSize.Large;
+        _rerenderText = "After";
+        _rerenderIcon = BitIconName.Emoji;
+    }
+}

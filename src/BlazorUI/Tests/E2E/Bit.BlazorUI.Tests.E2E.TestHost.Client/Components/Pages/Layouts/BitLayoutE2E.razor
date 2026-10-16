@@ -1,0 +1,345 @@
+﻿@page "/e2e/layout"
+
+<PageTitle>BitLayout E2E</PageTitle>
+
+@* Every layout sits in an 800px host and its sections hold boxes of a known size, so where a section lands is a
+   number. *@
+<style>
+    .lyt-host { width: 800px; position: relative; }
+    .lyt-bar { height: 30px; }
+    .lyt-nav { width: 120px; height: 60px; }
+    .lyt-aside { width: 100px; height: 60px; }
+    .lyt-main { height: 100px; }
+    .lyt-tall { height: 1000px; }
+    .lyt-scroll { width: 800px; height: 300px; overflow: auto; border: 1px solid #999; }
+    .lyt-fixed-height { width: 800px; height: 300px; }
+    .lyt-root-class { outline: 2px solid rgb(1, 1, 1); }
+    .lyt-header-class { letter-spacing: 1px; }
+    .lyt-main-class { letter-spacing: 2px; }
+    .lyt-nav-class { letter-spacing: 3px; }
+    .lyt-content-class { letter-spacing: 4px; }
+    .lyt-aside-class { letter-spacing: 5px; }
+    .lyt-footer-class { letter-spacing: 6px; }
+    .lyt-skip-class { letter-spacing: 7px; }
+</style>
+
+@* The one layout outside every section: its header, main and footer are the banner, main and contentinfo landmarks. *@
+<div class="lyt-host">
+    <BitLayout Id="landmarks">
+        <Header><div class="lyt-bar">Header</div></Header>
+        <Main><div class="lyt-main" id="landmarks-main-content">Main</div></Main>
+        <Footer><div class="lyt-bar">Footer</div></Footer>
+    </BitLayout>
+</div>
+
+<E2ESection Id="sec-basic" Title="Only the sections with content are rendered">
+    <div class="lyt-host">
+        <BitLayout Id="main-only">
+            <Main><div class="lyt-main">Only main</div></Main>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-panels" Title="NavPanel, Aside, their widths and ReverseNavPanel">
+    <button id="btn-reverse" @onclick="() => _reverse = !_reverse">Toggle ReverseNavPanel</button>
+    <span id="reverse-state">@_reverse</span>
+    <div class="lyt-host">
+        <BitLayout Id="panels" NavPanelWidth="120" AsideWidth="100" ReverseNavPanel="_reverse">
+            <Header><div class="lyt-bar">Header</div></Header>
+            <NavPanel><div class="lyt-nav" id="panels-nav-content">Nav</div></NavPanel>
+            <Main><div class="lyt-main">Main</div></Main>
+            <Aside><div class="lyt-aside">Aside</div></Aside>
+            <Footer><div class="lyt-bar">Footer</div></Footer>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-hiding" Title="HideHeader, HideNavPanel, HideAside, HideFooter">
+    <button id="btn-hide-header" @onclick="() => _hideHeader = !_hideHeader">Hide header</button>
+    <button id="btn-hide-nav" @onclick="() => _hideNav = !_hideNav">Hide nav</button>
+    <button id="btn-hide-aside" @onclick="() => _hideAside = !_hideAside">Hide aside</button>
+    <button id="btn-hide-footer" @onclick="() => _hideFooter = !_hideFooter">Hide footer</button>
+    <span id="hide-state">@($"h={_hideHeader};n={_hideNav};a={_hideAside};f={_hideFooter}")</span>
+    <div class="lyt-host">
+        <BitLayout Id="hiding" NavPanelWidth="120" AsideWidth="100" HideHeader="_hideHeader" HideNavPanel="_hideNav" HideAside="_hideAside" HideFooter="_hideFooter">
+            <Header><div class="lyt-bar">Header</div></Header>
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main><div class="lyt-main">Main</div></Main>
+            <Aside><div class="lyt-aside">Aside</div></Aside>
+            <Footer><div class="lyt-bar">Footer</div></Footer>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-sizing" Title="HeaderHeight, FooterHeight, Gap, Padding">
+    <div class="lyt-host">
+        <BitLayout Id="sizing" HeaderHeight="64" FooterHeight="40" Gap="1rem" Padding="12px" NavPanelWidth="120" AsideWidth="100">
+            <Header><div class="lyt-bar">Header</div></Header>
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main><div class="lyt-main" id="sizing-main-content">Main</div></Main>
+            <Aside><div class="lyt-aside">Aside</div></Aside>
+            <Footer><div class="lyt-bar">Footer</div></Footer>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-bordered" Title="Bordered">
+    <div class="lyt-host">
+        <BitLayout Id="bordered" Bordered NavPanelWidth="120" AsideWidth="100">
+            <Header><div class="lyt-bar">Header</div></Header>
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main><div class="lyt-main">Main</div></Main>
+            <Aside><div class="lyt-aside">Aside</div></Aside>
+            <Footer><div class="lyt-bar">Footer</div></Footer>
+        </BitLayout>
+    </div>
+    <div class="lyt-host">
+        <BitLayout Id="bordered-reverse" Bordered ReverseNavPanel NavPanelWidth="120" AsideWidth="100">
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main><div class="lyt-main">Main</div></Main>
+            <Aside><div class="lyt-aside">Aside</div></Aside>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-full-height-panels" Title="FullHeightPanels">
+    <button id="btn-fhp" @onclick="() => _fullHeightPanels = !_fullHeightPanels">Toggle FullHeightPanels</button>
+    <span id="fhp-state">@_fullHeightPanels</span>
+    <div class="lyt-host">
+        <BitLayout Id="fhp" Bordered Gap="10px" NavPanelWidth="150" AsideWidth="110" FullHeightPanels="_fullHeightPanels">
+            <Header><div class="lyt-bar">Header</div></Header>
+            <NavPanel><div style="height: 40px">Nav</div></NavPanel>
+            <Main><div class="lyt-main">Main</div></Main>
+            <Aside><div style="height: 40px">Aside</div></Aside>
+            <Footer><div class="lyt-bar">Footer</div></Footer>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-sticky" Title="StickyHeader, StickyFooter, StickyNavPanel, StickyAside, ZIndex">
+    <button id="btn-sticky-header" @onclick="() => _stickyHeader = !_stickyHeader">Sticky header</button>
+    <button id="btn-sticky-footer" @onclick="() => _stickyFooter = !_stickyFooter">Sticky footer</button>
+    <button id="btn-sticky-nav" @onclick="() => _stickyNav = !_stickyNav">Sticky nav</button>
+    <button id="btn-sticky-aside" @onclick="() => _stickyAside = !_stickyAside">Sticky aside</button>
+    <span id="sticky-state">@($"h={_stickyHeader};f={_stickyFooter};n={_stickyNav};a={_stickyAside}")</span>
+    <div class="lyt-scroll" id="sticky-box">
+        <BitLayout Id="sticky" HeaderHeight="40" FooterHeight="40" NavPanelWidth="120" AsideWidth="100" ZIndex="5"
+                   StickyHeader="_stickyHeader" StickyFooter="_stickyFooter" StickyNavPanel="_stickyNav" StickyAside="_stickyAside">
+            <Header>Header</Header>
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main><div class="lyt-tall">Main</div></Main>
+            <Aside><div class="lyt-aside">Aside</div></Aside>
+            <Footer>Footer</Footer>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-full-height" Title="FullHeight">
+    <button id="btn-full-height" @onclick="() => _fullHeight = !_fullHeight">Toggle FullHeight</button>
+    <span id="full-height-state">@_fullHeight</span>
+    <div class="lyt-host">
+        <BitLayout Id="full-height" FullHeight="_fullHeight">
+            <Header><div class="lyt-bar">Header</div></Header>
+            <Main><div class="lyt-bar">A short page</div></Main>
+            <Footer><div class="lyt-bar">Footer</div></Footer>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-scrollable-main" Title="ScrollableMain">
+    <button id="btn-scrollable" @onclick="() => _scrollableMain = !_scrollableMain">Toggle ScrollableMain</button>
+    <span id="scrollable-state">@_scrollableMain</span>
+    <div class="lyt-fixed-height" id="scrollable-host">
+        <BitLayout Id="scrollable" Bordered NavPanelWidth="120" ScrollableMain="_scrollableMain">
+            <Header><div class="lyt-bar">Header</div></Header>
+            <NavPanel><div class="lyt-nav" style="height: 800px">Nav</div></NavPanel>
+            <Main><div class="lyt-tall">Main</div></Main>
+            <Footer><div class="lyt-bar">Footer</div></Footer>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-responsive" Title="Hide parameters driven by BitMediaQuery">
+    <BitMediaQuery ScreenQuery="BitScreenQuery.LtMd" @bind-IsMatched="_isLtMd" />
+    <BitMediaQuery ScreenQuery="BitScreenQuery.LtSm" @bind-IsMatched="_isLtSm" />
+    <span id="responsive-state">@($"ltMd={_isLtMd};ltSm={_isLtSm}")</span>
+    <div class="lyt-host">
+        <BitLayout Id="responsive" NavPanelWidth="120" AsideWidth="100" HideAside="_isLtMd" HideNavPanel="_isLtSm">
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main><div class="lyt-main">Main</div></Main>
+            <Aside><div class="lyt-aside">Aside</div></Aside>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-nested" Title="Nested">
+    <div class="lyt-host">
+        <BitLayout Id="outer" NavPanelWidth="120">
+            <NavPanel><div class="lyt-nav">Outer nav</div></NavPanel>
+            <Main>
+                <BitLayout Id="inner" Nested NavPanelWidth="100" Padding="8px" AriaLabel="Workspace">
+                    <Header><div class="lyt-bar">Inner header</div></Header>
+                    <NavPanel><div style="width: 100px">Inner nav</div></NavPanel>
+                    <Main><div class="lyt-main">Nested main</div></Main>
+                </BitLayout>
+                <BitLayout Id="inner-unnamed" Nested>
+                    <Main><div class="lyt-bar">Unnamed nested main</div></Main>
+                </BitLayout>
+            </Main>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-a11y" Title="SkipLink, SkipLinkText, NavPanelAriaLabel, AsideAriaLabel">
+    <button id="btn-before-skip">before</button>
+    <div class="lyt-host">
+        <BitLayout Id="skip" SkipLink NavPanelWidth="120" AsideWidth="100" NavPanelAriaLabel="Sections" AsideAriaLabel="On this page"
+                   Classes="@(new() { SkipLink = "lyt-skip-class" })" Styles="@(new() { SkipLink = "font-style: italic" })">
+            <Header><button id="skip-header-button">menu</button></Header>
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main><div class="lyt-tall">Main <button id="skip-main-button">in main</button></div></Main>
+            <Aside><div class="lyt-aside">Aside</div></Aside>
+        </BitLayout>
+    </div>
+    <div class="lyt-host">
+        <BitLayout Id="skip-text" SkipLink SkipLinkText="Skip to the content">
+            <Main><div class="lyt-bar">Main</div></Main>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_layoutParams">
+        <div class="lyt-host">
+            <BitLayout Id="casc">
+                <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+                <Main><div class="lyt-main" id="casc-main-content">Main</div></Main>
+            </BitLayout>
+        </div>
+        <div class="lyt-host">
+            <BitLayout Id="casc-own" Bordered="false" Gap="0">
+                <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+                <Main><div class="lyt-main">Main</div></Main>
+            </BitLayout>
+        </div>
+    </BitParams>
+    <div class="lyt-host">
+        <BitLayout Id="casc-out">
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main><div class="lyt-main">Main</div></Main>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-style-class" Title="Style, Class, Styles, Classes, Visibility">
+    <div class="lyt-host">
+        <BitLayout Id="styled" NavPanelWidth="120" AsideWidth="100" SkipLink
+                   Class="lyt-root-class" Style="border-radius: 8px"
+                   Styles="@(new() { Root = "padding: 2px", Header = "padding: 3px", Main = "min-height: 150px", NavPanel = "padding: 4px", MainContent = "padding: 5px", Aside = "padding: 6px", Footer = "padding: 7px", SkipLink = "margin: 1px" })"
+                   Classes="@(new() { Root = "lyt-extra-root", Header = "lyt-header-class", Main = "lyt-main-class", NavPanel = "lyt-nav-class", MainContent = "lyt-content-class", Aside = "lyt-aside-class", Footer = "lyt-footer-class", SkipLink = "lyt-skip-class" })">
+            <Header>Header</Header>
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main>Main</Main>
+            <Aside><div class="lyt-aside">Aside</div></Aside>
+            <Footer>Footer</Footer>
+        </BitLayout>
+    </div>
+    <div class="lyt-host"><BitLayout Id="vis" Visibility="_visibility"><Main>visibility</Main></BitLayout></div>
+    <button id="btn-hidden-vis" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed-vis" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <div class="lyt-host">
+        <BitLayout Id="disabled" Disabled="_disabled" HtmlAttributes="@_disabledAttributes">
+            <Main><button id="disabled-inner" @onclick="() => _innerClicks++">inner</button></Main>
+        </BitLayout>
+    </div>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="root-clicks">@_rootClicks</span>
+    <span id="inner-clicks">@_innerClicks</span>
+</E2ESection>
+
+<E2ESection Id="sec-css-vars" Title="The --bit-Layout-* variables">
+    <div class="lyt-host" style="--bit-Layout-background: rgb(1, 2, 3); --bit-Layout-color: rgb(4, 5, 6); --bit-Layout-header-background: rgb(7, 8, 9); --bit-Layout-header-color: rgb(10, 11, 12); --bit-Layout-footer-background: rgb(13, 14, 15); --bit-Layout-footer-color: rgb(16, 17, 18); --bit-Layout-nav-panel-background: rgb(19, 20, 21); --bit-Layout-nav-panel-color: rgb(22, 23, 24); --bit-Layout-aside-background: rgb(25, 26, 27); --bit-Layout-aside-color: rgb(28, 29, 30); --bit-Layout-main-background: rgb(31, 32, 33); --bit-Layout-main-color: rgb(34, 35, 36); --bit-Layout-header-shadow: rgb(255, 0, 0) 0px 2px 4px 0px; --bit-Layout-footer-shadow: rgb(0, 0, 255) 0px -2px 4px 0px; --bit-Layout-border-color: rgb(0, 255, 0); --bit-Layout-border-width: 3px; --bit-Layout-header-height: 48px; --bit-Layout-footer-height: 36px; --bit-Layout-gap: 9px; --bit-Layout-padding: 11px; --bit-Layout-z-index: 20">
+        <BitLayout Id="vars" Bordered StickyHeader NavPanelWidth="120" AsideWidth="100">
+            <Header>Header</Header>
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main><div class="lyt-main" id="vars-main-content">Main</div></Main>
+            <Aside><div class="lyt-aside">Aside</div></Aside>
+            <Footer>Footer</Footer>
+        </BitLayout>
+        <BitLayout Id="vars-params" HeaderHeight="60" Gap="2px" Padding="3px" ZIndex="1" StickyHeader NavPanelWidth="120">
+            <Header>Header</Header>
+            <NavPanel><div class="lyt-nav">Nav</div></NavPanel>
+            <Main><div class="lyt-main">Main</div></Main>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-rtl" Title="RTL">
+    <div class="lyt-host">
+        <BitLayout Id="rtl" Bordered Dir="BitDir.Rtl" NavPanelWidth="120" AsideWidth="100">
+            <NavPanel><div class="lyt-nav">ناوبری</div></NavPanel>
+            <Main><div class="lyt-main">اصلی</div></Main>
+            <Aside><div class="lyt-aside">کناری</div></Aside>
+        </BitLayout>
+    </div>
+    <div class="lyt-host" dir="rtl">
+        <BitLayout Id="rtl-inherited" NavPanelWidth="120">
+            <NavPanel><div class="lyt-nav">ناوبری</div></NavPanel>
+            <Main><div class="lyt-main">اصلی</div></Main>
+        </BitLayout>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <div class="lyt-host">
+            <BitLayout Id="mount-layout" SkipLink StickyHeader>
+                <Header>Header</Header>
+                <Main>mounted</Main>
+            </BitLayout>
+        </div>
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+    <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _reverse;
+    private bool _hideHeader;
+    private bool _hideNav;
+    private bool _hideAside;
+    private bool _hideFooter;
+    private bool _fullHeightPanels = true;
+    private bool _stickyHeader;
+    private bool _stickyFooter;
+    private bool _stickyNav;
+    private bool _stickyAside;
+    private bool _fullHeight;
+    private bool _scrollableMain = true;
+    private bool _isLtMd;
+    private bool _isLtSm;
+    private bool _disabled = true;
+    private int _rootClicks;
+    private int _innerClicks;
+    private bool _mounted = true;
+    private BitVisibility _visibility = BitVisibility.Visible;
+
+    private Dictionary<string, object> _disabledAttributes = default!;
+
+    private readonly BitLayoutParams[] _layoutParams =
+    [
+        new() { Bordered = true, Gap = "1rem", Padding = "8px", NavPanelWidth = 120, NavPanelAriaLabel = "Section" }
+    ];
+
+    protected override void OnInitialized()
+    {
+        _disabledAttributes = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _rootClicks++)
+        };
+    }
+}

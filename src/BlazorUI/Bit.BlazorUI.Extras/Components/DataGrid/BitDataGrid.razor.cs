@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.JSInterop;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Bit.BlazorUI;
 
@@ -14,7 +15,7 @@ namespace Bit.BlazorUI;
 /// </summary>
 /// <typeparam name="TItem">The row item type.</typeparam>
 [CascadingTypeParameter(nameof(TItem))]
-public partial class BitDataGrid<TItem> : BitComponentBase
+public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase
 {
     [Inject] private IJSRuntime JS { get; set; } = default!;
 
@@ -1966,16 +1967,24 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
         // Cell mode commits when the focus leaves the open cell - to another cell, another control or the
         // page - which only a DOM listener can see: the focusout's relatedTarget is not in Blazor's event args.
+        // Each of these JS bridges is claimed before its call is awaited and released again however the call fails:
+        // the OnAfterRenderAsync of a render that lands while the call is in flight would otherwise attach a second
+        // one, whose listeners then answer every event twice (a touch drop moving two rows) and outlive the grid's
+        // disposal. A failure of the interop itself (IsInteropFailure) is swallowed so a later render retries it;
+        // anything else is rethrown.
         if (Editable && IsCellEditMode && !_cellEditBlurAttached)
         {
+            _cellEditBlurAttached = true;
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
                 _cellEditBlurHandle = await JS.InvokeAsync<IJSObjectReference>("BitBlazorUI.DataGrid.initCellEditBlur", RootElement, _gridSelfRef);
-                _cellEditBlurAttached = true;
             }
-            catch (JSException) { }
-            catch (JSDisconnectedException) { }
+            catch (Exception ex)
+            {
+                _cellEditBlurAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         if (_focusAfterRender is { } focusTargets)
@@ -2018,68 +2027,89 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         // disables reordering simply makes the callbacks no-ops.
         if ((RowReorderable || Reorderable) && !_pointerReorderAttached)
         {
+            _pointerReorderAttached = true;
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
                 _pointerReorderHandle = await JS.InvokeAsync<IJSObjectReference>(
                     "BitBlazorUI.DataGrid.initPointerReorder", RootElement, _gridSelfRef);
-                // Only marked attached on success, so a failed init (transient JS error) is retried on
-                // a later render instead of permanently disabling touch reorder.
-                _pointerReorderAttached = true;
             }
-            catch (JSException) { }
-            catch (JSDisconnectedException) { }
+            // Released on failure, so a failed init (transient JS error, a timed-out call) is retried on a later render
+            // instead of permanently disabling touch reorder.
+            catch (Exception ex)
+            {
+                _pointerReorderAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         // Column virtualization needs the viewport's horizontal scroll offset and width, which Blazor
         // event args don't expose; a JS observer reports them (rAF-throttled, with hysteresis).
         if (VirtualizeColumns && !_hScrollAttached)
         {
+            _hScrollAttached = true;
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
                 _hScrollHandle = await JS.InvokeAsync<IJSObjectReference>(
                     "BitBlazorUI.DataGrid.initHorizontalScroll", _infiniteViewport, _gridSelfRef, HScrollReportThresholdPx);
-                // Only marked attached on success so a failed init retries on a later render.
-                _hScrollAttached = true;
             }
-            catch (JSException) { }
-            catch (JSDisconnectedException) { }
+            // Released on failure so a failed init retries on a later render.
+            catch (Exception ex)
+            {
+                _hScrollAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         // The keys pressed in a surface rendered in a cell's or a header's template reach their handlers too, which the
         // script tells apart for them (see KeyInNestedSurface).
         if (!_nestedSurfaceKeysWatched)
         {
+            _nestedSurfaceKeysWatched = true;
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
                 await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.watchNestedSurfaceKeys", RootElement, _gridSelfRef);
-                // Only marked watched on success so a failed call retries on a later render.
-                _nestedSurfaceKeysWatched = true;
             }
-            catch (JSException) { }
-            catch (JSDisconnectedException) { }
+            // Released on failure so a failed call retries on a later render.
+            catch (Exception ex)
+            {
+                _nestedSurfaceKeysWatched = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         if (!_stickyBandsAttached)
         {
+            _stickyBandsAttached = true;
             try
             {
                 _stickyBandsHandle = await JS.InvokeAsync<IJSObjectReference>("BitBlazorUI.DataGrid.observeStickyBands", _infiniteViewport);
-                // Only marked attached on success so a failed init retries on a later render.
-                _stickyBandsAttached = true;
             }
-            catch (JSException) { }
-            catch (JSDisconnectedException) { }
+            // Released on failure so a failed init retries on a later render.
+            catch (Exception ex)
+            {
+                _stickyBandsAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
 
         if (IsInfiniteMode && !_infiniteObserverAttached)
         {
             _infiniteObserverAttached = true;
             _infiniteSelfRef ??= DotNetObjectReference.Create(this);
-            _infiniteHandle = await JS.InvokeAsync<IJSObjectReference>(
-                "BitBlazorUI.DataGrid.initInfiniteScroll", _infiniteViewport, _infiniteSelfRef, 200);
+            try
+            {
+                _infiniteHandle = await JS.InvokeAsync<IJSObjectReference>(
+                    "BitBlazorUI.DataGrid.initInfiniteScroll", _infiniteViewport, _infiniteSelfRef, 200);
+            }
+            // Released on failure so a failed init retries on a later render.
+            catch (Exception ex)
+            {
+                _infiniteObserverAttached = false;
+                if (IsInteropFailure(ex) is false) throw;
+            }
         }
         else if (!IsInfiniteMode && _infiniteObserverAttached)
         {
@@ -2104,6 +2134,12 @@ public partial class BitDataGrid<TItem> : BitComponentBase
             _infiniteSelfRef = null;
         }
     }
+
+    // Whether an interop call failed in a way a later render may simply retry: a script error, the circuit going away,
+    // the call timing out or being cancelled with the renderer's teardown, or the JS runtime of a WebAssembly host
+    // disposed before the component.
+    private static bool IsInteropFailure(Exception ex)
+        => ex is JSException or JSDisconnectedException or OperationCanceledException or ObjectDisposedException;
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {
@@ -2539,7 +2575,12 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     /// Applies the grid-wide quick-search term, resetting to the first page. Passing <c>null</c> or an
     /// empty string clears the search. Raises <see cref="SearchTextChanged"/>.
     /// </summary>
-    public async Task SearchAsync(string? text)
+    public Task SearchAsync(string? text) => SearchAsync(text, typed: false);
+
+    // typed: the term comes from the search box, whose text stays exactly what was typed - and is never written back
+    // from here, after the awaits below: a keystroke typed while they run has put a newer text in the box, which an
+    // older one written back would overwrite under the caret.
+    private async Task SearchAsync(string? text, bool typed)
     {
         var normalized = string.IsNullOrWhiteSpace(text) ? null : text;
 
@@ -2551,7 +2592,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
         // The box always shows the term that is actually applied - including when a programmatic
         // search (or the clear button) supersedes what the user had typed into it.
-        _searchBoxText = normalized;
+        if (typed is false) _searchBoxText = normalized;
         if (_search == normalized) return;
 
         _search = normalized;
@@ -2597,16 +2638,13 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     }
 
     /// <summary>
-    /// Applies a term the user typed, then puts back exactly what they typed. <see cref="SearchAsync"/>
-    /// syncs the box to the <i>normalized</i> term so a programmatic search is reflected there, which
-    /// for a typed term would silently rewrite the input under the caret (a run of spaces normalizes to
-    /// "no search" and would be wiped from the box while the user is still typing).
+    /// Applies a term the user typed and leaves the box showing exactly what they typed. <see cref="SearchAsync(string?)"/>
+    /// syncs the box to the <i>normalized</i> term so a programmatic search is reflected there, which for a typed term
+    /// would silently rewrite the input under the caret (a run of spaces normalizes to "no search" and would be wiped
+    /// from the box while the user is still typing); and nothing is put back once the search has run, which would
+    /// write this keystroke's text over the ones typed while it ran.
     /// </summary>
-    private async Task ApplyTypedSearchAsync(string? text)
-    {
-        await SearchAsync(text);
-        _searchBoxText = text ?? string.Empty;
-    }
+    private Task ApplyTypedSearchAsync(string? text) => SearchAsync(text, typed: true);
 
     // The raw filter-editor text equivalent of a descriptor value, used to backfill _filterRaw when a
     // filter is applied programmatically or restored from a snapshot. Invariant formatting matches how
@@ -3453,6 +3491,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     // ---------------------------------------------------------- Resizing
     internal async Task StartResizeAsync(BitDataGridColumn<TItem> column, double clientX)
     {
+        var press = ++_resizePress;
         // Everything the drag reads is gathered before it starts: setting _resizingColumn renders the
         // overlay that feeds OnResizeMove, which must not see a start width or direction still pending.
         var rtl = await IsRtlAsync(JS);
@@ -3460,6 +3499,9 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         // parse, and even a px-declared one may be constrained by min/max at render time. Falls back to
         // parsing the declared width when JS is unavailable (prerendering, disconnected circuit).
         var startWidth = column.ResizedWidth ?? await MeasureColumnWidthAsync(column);
+        // The handle was released while those were read - a click, a double-click to fit the column - so there is
+        // no drag to follow: the overlay would only cover the page and resize the column after the button is up.
+        if (press != _resizePress) return;
         _resizeRtl = rtl;
         _resizeStartX = clientX;
         _resizeStartWidth = startWidth;
@@ -3477,6 +3519,32 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         catch (JSException) { }
         catch (JSDisconnectedException) { }
         return ParseInitialWidth(column);
+    }
+
+    // Bumped by every press and every release of a resize handle, so a drag whose start is still being read knows
+    // the handle has been let go in the meantime.
+    private int _resizePress;
+
+    /// <summary>The release of a resize handle's press, before the overlay that follows a drag has been rendered: a drag
+    /// still being started is called off, and one the overlay is already on its way to the browser for is ended - the
+    /// overlay would otherwise stay over the page with no button down, resizing the column as the pointer moves.</summary>
+    internal void ReleaseResizeHandle()
+    {
+        _resizePress++;
+        if (_resizingColumn is not null) EndResize();
+    }
+
+    /// <summary>The second press of a double click on a resize handle fits the column to its content. It is read off the
+    /// press (its click count) rather than the dblclick event: every press starts a drag whose overlay covers the page,
+    /// and where that overlay is rendered before the button comes back up - in WebAssembly, or over a fast link - the
+    /// release lands on it rather than on the handle, and the dblclick with it. The drag the press started is called off,
+    /// since there is nothing to follow.</summary>
+    internal async Task OnResizerMouseDownAsync(BitDataGridColumn<TItem> column, MouseEventArgs e)
+    {
+        if (e.Detail < 2 || e.Button != 0) return;
+
+        ReleaseResizeHandle();
+        await AutoFitAsync(column);
     }
 
     internal void OnResizeMove(double clientX)
@@ -3951,6 +4019,12 @@ public partial class BitDataGrid<TItem> : BitComponentBase
     internal void SetFocusedCell(TItem item, int colIndex)
     {
         if (IsCellFocused(item, colIndex)) return;
+        // While keyboard moves are still on their way to the DOM, the focus reaching a cell one of them went to and the
+        // next one has already moved past is that move arriving late, not the user going elsewhere: it must not take
+        // the focus back. Anywhere else, the user moved the focus, and the keys come from there again.
+        if (_focusMoving && _focusMoveTargets.Contains((GetKey(item), colIndex))) return;
+        _focusMoving = false;
+        _focusMoveTargets.Clear();
         _focusedRow = item;
         _focusedCol = colIndex;
         _focusVersion++;
@@ -3959,6 +4033,42 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     internal bool ShouldFocusCell(TItem item, int colIndex) => _focusPending && IsCellFocused(item, colIndex);
     internal void ClearFocusPending() => _focusPending = false;
+
+    // Whether a move of the focus the keyboard asked for has not reached the DOM yet: the browser delivers the keys
+    // pressed in the meantime (a held arrow, a quick typist, a slow connection) to the cell the focus is leaving, so
+    // they are applied from the cell the move goes to instead (see HandleCellKeyDownAsync).
+    private bool _focusMoving;
+
+    // The cells the keyboard moves still on their way to the DOM went to.
+    private readonly HashSet<(object Key, int Col)> _focusMoveTargets = new();
+
+    internal int FocusVersion => _focusVersion;
+
+    /// <summary>Called by the cell a keyboard move went to once its DOM focus call has returned: from then on the keys
+    /// the browser delivers come from that cell itself. A move made since is still on its way.</summary>
+    internal void SettleFocusMove(int version)
+    {
+        if (version != _focusVersion) return;
+        _focusMoving = false;
+        _focusMoveTargets.Clear();
+    }
+
+    // Records a keyboard move of the focus to the cell now held as the focused one.
+    private void StartFocusMove()
+    {
+        _focusVersion++;
+        _focusPending = true;
+        _focusMoving = true;
+        _focusMoveTargets.Add((GetKey(_focusedRow!), _focusedCol));
+    }
+
+    // The cell a key applies to: the one it was pressed on, unless a keyboard move has not reached the DOM yet.
+    private bool TryGetMovingFocus(out TItem item, out int colIndex)
+    {
+        item = _focusedRow!;
+        colIndex = _focusedCol;
+        return _focusMoving && _focusedRow is not null;
+    }
 
     /// <summary>Requests that the currently focused cell regain DOM focus on the next render
     /// (e.g. after leaving inline edit mode via the keyboard).</summary>
@@ -3971,6 +4081,12 @@ public partial class BitDataGrid<TItem> : BitComponentBase
 
     internal async Task HandleCellKeyDownAsync(TItem item, int colIndex, KeyboardEventArgs e)
     {
+        if (TryGetMovingFocus(out var movedItem, out var movedCol))
+        {
+            item = movedItem;
+            colIndex = movedCol;
+        }
+
         var rows = NavigableRows;
         if (rows.Count == 0) return;
         var colCount = VisibleColumns.Count;
@@ -4017,9 +4133,21 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         // A disabled grid can still be read cell by cell - and copied - but nothing it shows can be changed from it.
         if (Disabled && e.Key is "Enter" or "F2" or "Delete") return;
 
-        int row = rowIdx, col = colIndex;
         // Only the horizontal arrows depend on the direction, so only they pay for reading it.
+        var versionBeforeRead = _focusVersion;
         var rtl = await IsRtlArrowAsync(JS, e.Key);
+
+        // A key pressed after this one can be handled while the direction is read; when it moved the focus, this one
+        // goes on from there.
+        if (_focusVersion != versionBeforeRead && TryGetMovingFocus(out movedItem, out movedCol))
+        {
+            item = movedItem;
+            colIndex = movedCol;
+            rows = NavigableRows;
+            rowIdx = Math.Max(0, IndexOfRow(rows, item));
+        }
+
+        int row = rowIdx, col = colIndex;
 
         // A treegrid opens and closes its nodes from the cell that holds their toggle, as the APG treegrid does: the
         // forward arrow expands a collapsed node, the backward one collapses an expanded node or else moves up to the
@@ -4041,8 +4169,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
                     if (TreeLevel(rows[parent]) != level - 1) continue;
                     _focusedRow = rows[parent];
                     _focusedCol = 0;
-                    _focusVersion++;
-                    _focusPending = true;
+                    StartFocusMove();
                     StateHasChanged();
                     break;
                 }
@@ -4109,8 +4236,7 @@ public partial class BitDataGrid<TItem> : BitComponentBase
         col = SnapToVirtualizedColumn(col, colDir);
         _focusedRow = rows[row];
         _focusedCol = col;
-        _focusVersion++;
-        _focusPending = true;
+        StartFocusMove();
         StateHasChanged();
     }
 

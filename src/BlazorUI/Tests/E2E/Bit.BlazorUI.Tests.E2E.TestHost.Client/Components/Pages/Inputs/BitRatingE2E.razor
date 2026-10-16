@@ -1,0 +1,442 @@
+﻿@page "/e2e/rating"
+
+<PageTitle>BitRating E2E</PageTitle>
+
+<h1>BitRating</h1>
+
+<E2ESection Id="basic" Title="Basic (uncontrolled)">
+    <BitRating Id="rtg-basic" OnChange="v => { _basicChanges++; _basicLast = v; }" />
+    <span id="basic-change-count">@_basicChanges</span>
+    <span id="basic-last">@_basicLast</span>
+</E2ESection>
+
+<E2ESection Id="default-value" Title="DefaultValue">
+    <BitRating Id="rtg-default" DefaultValue="3" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitRating Id="rtg-disabled" Disabled="_disabled" DefaultValue="2"
+               OnChange="v => _disabledValue = v"
+               @onclick="() => _disabledPageClicks++" />
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-page-clicks">@_disabledPageClicks</span>
+    <span id="disabled-value">@_disabledValue</span>
+</E2ESection>
+
+<E2ESection Id="readonly" Title="ReadOnly">
+    <BitRating Id="rtg-readonly" ReadOnly="_readOnly" DefaultValue="3.5" OnChange="v => _readOnlyValue = v" />
+    <button id="btn-toggle-readonly" @onclick="() => _readOnly = !_readOnly">Toggle read-only</button>
+    <span id="readonly-value">@_readOnlyValue</span>
+</E2ESection>
+
+<E2ESection Id="label" Title="Label, Required, Description, ItemTitles">
+    <BitRating Id="rtg-label" Required
+               Label="How would you rate your stay?"
+               Description="Hover a star to see what it means."
+               ItemTitles="@(["Terrible", "Bad", "Normal", "Good"])"
+               @bind-Value="_labelValue" />
+    <span id="label-value">@_labelValue</span>
+</E2ESection>
+
+<E2ESection Id="label-placement" Title="LabelPlacement">
+    <BitRating Id="rtg-lp-top" Label="Top" DefaultValue="2" />
+    <BitRating Id="rtg-lp-bottom" Label="Bottom" LabelPlacement="BitPlacement.Bottom" DefaultValue="2" />
+    <BitRating Id="rtg-lp-start" Label="Start" LabelPlacement="BitPlacement.Start" DefaultValue="2" />
+    <BitRating Id="rtg-lp-end" Label="End" LabelPlacement="BitPlacement.End" DefaultValue="2" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="LabelTemplate & DescriptionTemplate">
+    <BitRating Id="rtg-templates" LabelPlacement="BitPlacement.Bottom" @bind-Value="_templateLabelValue">
+        <LabelTemplate>
+            <b id="tpl-label">@_words[(int)_templateLabelValue]</b>
+        </LabelTemplate>
+        <DescriptionTemplate>
+            Averaged over <b id="tpl-description">1,034</b> stays.
+        </DescriptionTemplate>
+    </BitRating>
+</E2ESection>
+
+<E2ESection Id="max" Title="Max">
+    <BitRating Id="rtg-max-1" Max="1" ReadOnly DefaultValue="1" />
+    <BitRating Id="rtg-max-0" Max="0" />
+    <BitRating Id="rtg-max-3" Max="3" DefaultValue="2" />
+    <div id="max-100-box" style="width: 200px;">
+        <BitRating Id="rtg-max-100" Max="100" DefaultValue="37" />
+    </div>
+    <BitRating Id="rtg-max-runtime" Max="_runtimeMax" @bind-Value="_runtimeMaxValue" />
+    <button id="btn-max-3" @onclick="() => _runtimeMax = 3">Max 3</button>
+    <span id="max-runtime-value">@_runtimeMaxValue</span>
+</E2ESection>
+
+<E2ESection Id="vertical" Title="Vertical">
+    <BitRating Id="rtg-vertical" Vertical @bind-Value="_verticalValue" />
+    <span id="vertical-value">@_verticalValue</span>
+    <BitRating Id="rtg-vertical-half" Vertical Precision="0.5" Size="BitSize.Large" @bind-Value="_verticalHalfValue" />
+    <span id="vertical-half-value">@_verticalHalfValue</span>
+</E2ESection>
+
+<E2ESection Id="precision" Title="Precision">
+    <BitRating Id="rtg-half" Precision="0.5" @bind-Value="_halfValue" />
+    <span id="half-value">@_halfValue</span>
+    <BitRating Id="rtg-quarter" Precision="0.25" @bind-Value="_quarterValue" />
+    <span id="quarter-value">@_quarterValue</span>
+    <BitRating Id="rtg-tenth" Precision="0.1" Size="BitSize.Large" @bind-Value="_tenthValue" />
+    <span id="tenth-value">@_tenthValue</span>
+    <BitRating Id="rtg-third" Precision="0.3" @bind-Value="_thirdValue" />
+    <span id="third-value">@_thirdValue</span>
+</E2ESection>
+
+<E2ESection Id="clearing" Title="AllowZeroStars & AllowClear">
+    <BitRating Id="rtg-no-zero" @bind-Value="_noZeroValue" />
+    <span id="no-zero-value">@_noZeroValue</span>
+    <BitRating Id="rtg-no-zero-half" Precision="0.5" @bind-Value="_noZeroHalfValue" />
+    <span id="no-zero-half-value">@_noZeroHalfValue</span>
+    <BitRating Id="rtg-allow-zero" AllowZeroStars @bind-Value="_allowZeroValue" />
+    <span id="allow-zero-value">@_allowZeroValue</span>
+    <BitRating Id="rtg-allow-clear" AllowClear @bind-Value="_allowClearValue" OnHoverChange="v => _allowClearHover = v" />
+    <span id="allow-clear-value">@_allowClearValue</span>
+    <span id="allow-clear-hover">@(_allowClearHover?.ToString() ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="highlight" Title="HighlightSelectedOnly">
+    <BitRating Id="rtg-cumulative" @bind-Value="_highlightValue" />
+    <BitRating Id="rtg-highlight" HighlightSelectedOnly @bind-Value="_highlightValue" />
+    <span id="highlight-value">@_highlightValue</span>
+    <button id="btn-highlight-fraction" @onclick="() => _highlightValue = 3.5">3.5</button>
+</E2ESection>
+
+<E2ESection Id="hover" Title="Hover preview">
+    <BitRating Id="rtg-hover" @bind-Value="_hoverBound" OnHoverChange="v => { _hoverPreview = v; _hoverEvents++; }" />
+    <span id="hover-preview">@(_hoverPreview?.ToString() ?? "null")</span>
+    <span id="hover-events">@_hoverEvents</span>
+    <BitRating Id="rtg-no-preview" NoHoverPreview @bind-Value="_noPreviewValue" OnHoverChange="v => _noPreviewHover = v" />
+    <span id="no-preview-hover">@(_noPreviewHover?.ToString() ?? "null")</span>
+    <div style="height: 40px;" id="hover-away">away</div>
+</E2ESection>
+
+<E2ESection Id="icons" Title="Icons">
+    <BitRating Id="rtg-heart" DefaultValue="3" SelectedIconName="@BitIconName.HeartFill" UnselectedIconName="@BitIconName.Heart" />
+    <BitRating Id="rtg-per-item" @bind-Value="_perItemValue"
+               GetSelectedIcon="i => BitIconInfo.Bit(i > 2 ? BitIconName.LikeSolid : BitIconName.DislikeSolid)"
+               GetUnselectedIcon="i => i == 5 ? null : BitIconInfo.Bit(i > 2 ? BitIconName.Like : BitIconName.Dislike)" />
+    <BitRating Id="rtg-external" DefaultValue="3.5" SelectedIcon="@BitIconInfo.Css("ext-star-fill")" UnselectedIcon="@BitIconInfo.Fa("regular star")" SelectedIconName="@BitIconName.HeartFill" />
+    <BitRating Id="rtg-bi" DefaultValue="2" SelectedIcon="@BitIconInfo.Bi("heart-fill")" UnselectedIcon="@("plain-string-icon")" />
+</E2ESection>
+
+<E2ESection Id="item-template" Title="ItemTemplate">
+    <BitRating Id="rtg-template" Max="10" @bind-Value="_itemTemplateValue">
+        <ItemTemplate Context="item">
+            <span class="tpl-item"
+                  data-index="@item.Index"
+                  data-max="@item.Max"
+                  data-pct="@item.Percentage"
+                  data-full="@(item.IsFull ? "yes" : "no")"
+                  data-selected="@(item.IsSelected ? "yes" : "no")"
+                  data-current="@(item.IsCurrent ? "yes" : "no")"
+                  data-display="@item.DisplayValue"
+                  data-value="@item.Value">@item.Index</span>
+        </ItemTemplate>
+    </BitRating>
+    <span id="item-template-value">@_itemTemplateValue</span>
+</E2ESection>
+
+<E2ESection Id="binding" Title="Binding">
+    <BitRating Id="rtg-one-way" AllowZeroStars Value="_oneWay" />
+    <button id="btn-one-way-5" @onclick="() => _oneWay = 5">Star all</button>
+    <span id="one-way-value">@_oneWay</span>
+    <BitRating Id="rtg-two-way" @bind-Value="_twoWay" />
+    <button id="btn-two-way-half" @onclick="() => _twoWay = 2.5">2.5</button>
+    <button id="btn-two-way-over" @onclick="() => _twoWay = 9">9</button>
+    <span id="two-way-value">@_twoWay</span>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitRating Id="rtg-on-change" DefaultValue="2" OnChange="v => { _onChangeCount++; _onChangeValue = v; }" />
+    <span id="on-change-count">@_onChangeCount</span>
+    <span id="on-change-value">@_onChangeValue</span>
+    <BitRating Id="rtg-on-changing" @bind-Value="_onChangingValue" OnChanging="HandleOnChanging" />
+    <span id="on-changing-value">@_onChangingValue</span>
+    <span id="on-changing-args">@_onChangingArgs</span>
+    <span id="on-changing-rejected">@_onChangingRejected</span>
+    <button id="before-focus">before</button>
+    <BitRating Id="rtg-focus" DefaultValue="3" OnFocusIn="e => { _focusIn++; _focusType = e.Type; }" OnFocusOut="e => { _focusOut++; _focusType = e.Type; }" />
+    <button id="after-focus">after</button>
+    <span id="focus-in">@_focusIn</span>
+    <span id="focus-out">@_focusOut</span>
+    <span id="focus-type">@_focusType</span>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation" style="--bit-Rating-invalid-color: rgb(4, 5, 6);">
+    <EditForm Model="_model" OnValidSubmit="@(() => _formResult = "valid")" OnInvalidSubmit="@(() => _formResult = "invalid")">
+        <DataAnnotationsValidator />
+        <BitRating Id="rtg-form" Required AllowZeroStars Name="rate"
+                   Label="Your rate"
+                   aria-describedby="rtg-form-msg"
+                   InputHtmlAttributes="@(new() { ["data-hidden"] = "carrier" })"
+                   @bind-Value="_model.Value" />
+        <div id="rtg-form-msg"><ValidationMessage For="@(() => _model.Value)" /></div>
+        <button id="rtg-form-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-result">@_formResult</span>
+    <span id="form-value">@_model.Value</span>
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="Accessibility">
+    <BitRating Id="rtg-a11y" AllowClear Precision="0.5"
+               AriaLabel="Rate this product"
+               AriaLabelFormat="Select {0} of {1} stars"
+               ValueTextFormat="{0} out of {1} stars"
+               @bind-Value="_a11yValue" />
+    <span id="a11y-value">@_a11yValue</span>
+    <BitRating Id="rtg-get-aria" ReadOnly DefaultValue="4.2" GetAriaLabel="@((v, m) => $"Rated {v} out of {m} by 1,034 people")" />
+    <BitRating Id="rtg-get-aria-interactive" DefaultValue="2" GetAriaLabel="@((v, m) => $"Group {v}/{m}")" />
+    <div id="rtg-external-label">Overall satisfaction</div>
+    <BitRating Id="rtg-labelledby" AriaLabelledBy="rtg-external-label" Label="Visible label" DefaultValue="4" />
+    <BitRating Id="rtg-labelledby-readonly" AriaLabelledBy="rtg-external-label" ReadOnly DefaultValue="2.5" />
+    <BitRating Id="rtg-keys" Precision="0.5" TabIndex="3" @bind-Value="_keysValue" />
+    <span id="keys-value">@_keysValue</span>
+    <BitRating Id="rtg-keys-tenth" Precision="0.1" @bind-Value="_keysTenthValue" />
+    <span id="keys-tenth-value">@_keysTenthValue</span>
+    <BitRating @ref="_focusRef" Id="rtg-focus-api" DefaultValue="4" />
+    <button id="btn-focus-api" @onclick="FocusRating">FocusAsync</button>
+</E2ESection>
+
+<E2ESection Id="modal" Title="Escape inside a modal">
+    <button id="btn-open-modal" @onclick="() => _modalOpen = true">Open modal</button>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div style="padding: 24px;">
+            <BitRating Id="rtg-modal" AllowClear @bind-Value="_modalValue" />
+        </div>
+    </BitModal>
+    <span id="modal-open">@_modalOpen</span>
+    <span id="modal-value">@_modalValue</span>
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility">
+    <div style="display:flex;align-items:center">[ <BitRating Id="rtg-visible" Visibility="BitVisibility.Visible" /> ]</div>
+    <div style="display:flex;align-items:center">[ <BitRating Id="rtg-hidden" Visibility="BitVisibility.Hidden" /> ]</div>
+    <div style="display:flex;align-items:center">[ <BitRating Id="rtg-collapsed" Visibility="BitVisibility.Collapsed" /> ]</div>
+</E2ESection>
+
+<E2ESection Id="score" Title="Score-based styling">
+    <BitRating Id="rtg-score" Color="ScoreColor()" @bind-Value="_scoreValue" />
+    <span id="score-value">@_scoreValue</span>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_ratingParams">
+        <BitRating Id="rtg-cascade-1" Label="Comfort" DefaultValue="4" />
+        <BitRating Id="rtg-cascade-own" Label="Rate it yourself" ReadOnly="false" Color="BitColor.Success" @bind-Value="_cascadeValue" />
+    </BitParams>
+    <BitRating Id="rtg-cascade-outside" DefaultValue="4" />
+    <span id="cascade-value">@_cascadeValue</span>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <BitRating Id="rtg-color-none" DefaultValue="3.5" />
+    @foreach (var (color, slug) in _colors)
+    {
+        <BitRating Id="@($"rtg-color-{slug}")" Color="color" DefaultValue="3.5" />
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitRating Id="rtg-size-sm" Size="BitSize.Small" DefaultValue="3" Label="Small" Description="Small description" />
+    <BitRating Id="rtg-size-md" Size="BitSize.Medium" DefaultValue="3" Label="Medium" Description="Medium description" />
+    <BitRating Id="rtg-size-lg" Size="BitSize.Large" DefaultValue="3" Label="Large" Description="Large description" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <BitRating Id="rtg-style" DefaultValue="3" Style="margin-inline: 13px; box-shadow: tomato 0 0 4px;" />
+    <BitRating Id="rtg-class" DefaultValue="3" Class="custom-class" />
+    <BitRating Id="rtg-styles" DefaultValue="3.5" Label="Styles" Description="Styles description"
+               Styles="@(new() { Root = "padding: 5px;", LabelContainer = "padding: 2px;", Label = "letter-spacing: 3px;", Description = "font-style: italic;", Container = "gap: 7px;", Button = "padding: 6px;", IconContainer = "opacity: 0.9;", SelectedIcon = "color: blueviolet;", UnselectedIcon = "color: plum;" })" />
+    <BitRating Id="rtg-classes" DefaultValue="3.5" Label="Classes" Description="Classes description"
+               Classes="@(new() { Root = "c-root", LabelContainer = "c-lbc", Label = "c-lbl", Description = "c-dsc", Container = "c-cnt", Button = "c-btn", IconContainer = "c-ict", SelectedIcon = "c-sel", UnselectedIcon = "c-uns" })" />
+    <BitRating Id="rtg-current" Precision="0.5" DefaultValue="3.5" />
+    <BitRating Id="rtg-attrs" DefaultValue="2" data-test="attr-value" title="root title" aria-describedby="rtg-external-label" Description="Own description" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="css-vars-ancestor" style="--bit-Rating-color: rgb(218, 165, 32); --bit-Rating-unselected-color: rgb(216, 201, 163); --bit-Rating-size: 32px; --bit-Rating-gap: 8px; --bit-Rating-label-color: rgb(220, 20, 60); --bit-Rating-label-font-size: 19px; --bit-Rating-label-font-weight: 700; --bit-Rating-label-gap: 11px; --bit-Rating-description-color: rgb(0, 128, 0); --bit-Rating-description-font-size: 9px; --bit-Rating-padding: 3px; --bit-Rating-target-size: 40px; --bit-Rating-radius: 6px;">
+        <BitRating Id="rtg-vars" DefaultValue="3.5" Label="Vars" Description="Vars description" />
+        <BitRating Id="rtg-vars-explicit" DefaultValue="3.5" Color="BitColor.Error" Size="BitSize.Small" />
+    </div>
+    <button id="before-vars-hover">before</button>
+    <div style="--bit-Rating-disabled-color: rgb(1, 2, 3); --bit-Rating-hover-color: rgb(7, 8, 9); --bit-Rating-focus-color: rgb(10, 20, 30); --bit-Rating-active-color: rgb(40, 50, 60); --bit-Rating-hover-scale: 1.5; --bit-Rating-active-scale: 0.5;">
+        <BitRating Id="rtg-vars-disabled" Disabled DefaultValue="3" />
+        <BitRating Id="rtg-vars-hover" DefaultValue="1" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitRating Id="rtg-rtl" Dir="BitDir.Rtl" @bind-Value="_rtlValue" />
+    <span id="rtl-value">@_rtlValue</span>
+    <BitRating Id="rtg-rtl-half" Dir="BitDir.Rtl" Precision="0.5" @bind-Value="_rtlHalfValue" />
+    <span id="rtl-half-value">@_rtlHalfValue</span>
+    <div dir="rtl">
+        <BitRating Id="rtg-rtl-inherited" @bind-Value="_rtlInheritedValue" />
+    </div>
+    <span id="rtl-inherited-value">@_rtlInheritedValue</span>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitRating Id="rtg-runtime" Color="_runtimeColor" Size="_runtimeSize" Vertical="_runtimeVertical" Label="@_runtimeLabel" DefaultValue="2" />
+    <button id="btn-runtime-color" @onclick="() => _runtimeColor = BitColor.Error">Error</button>
+    <button id="btn-runtime-size" @onclick="() => _runtimeSize = BitSize.Large">Large</button>
+    <button id="btn-runtime-vertical" @onclick="() => _runtimeVertical = !_runtimeVertical">Vertical</button>
+    <button id="btn-runtime-label" @onclick="@(() => _runtimeLabel = "Changed label")">Label</button>
+    @if (_mounted)
+    {
+        <BitRating Id="rtg-unmount" DefaultValue="2" OnFocusIn="() => { }" />
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Motion">
+    <BitRating Id="rtg-motion" DefaultValue="2" />
+    <BitRating Id="rtg-motion-forced" ForceAnimation DefaultValue="2" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly string[] _words = ["Not rated", "Terrible", "Bad", "Normal", "Good", "Wonderful"];
+
+    private static readonly (BitColor Color, string Slug)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+
+    private readonly BitRatingParams[] _ratingParams =
+    [
+        new()
+        {
+            ReadOnly = true,
+            Precision = 0.5,
+            Size = BitSize.Small,
+            Color = BitColor.Warning,
+            SelectedIconName = BitIconName.HeartFill,
+            UnselectedIconName = BitIconName.Heart,
+            LabelPlacement = BitPlacement.Start,
+        }
+    ];
+
+    private int _basicChanges;
+    private double _basicLast;
+
+    private bool _disabled = true;
+    private int _disabledPageClicks;
+    private double _disabledValue;
+
+    private bool _readOnly = true;
+    private double _readOnlyValue;
+
+    private double _labelValue;
+    private double _templateLabelValue = 2;
+
+    private int _runtimeMax = 6;
+    private double _runtimeMaxValue = 5;
+
+    private double _verticalValue = 2;
+    private double _verticalHalfValue = 2.5;
+
+    private double _halfValue = 1;
+    private double _quarterValue = 1;
+    private double _tenthValue = 1;
+    private double _thirdValue = 1;
+
+    private double _noZeroValue;
+    private double _noZeroHalfValue;
+    private double _allowZeroValue;
+    private double _allowClearValue = 3;
+    private double? _allowClearHover;
+
+    private double _highlightValue = 3;
+
+    private double _hoverBound = 2;
+    private double? _hoverPreview;
+    private int _hoverEvents;
+    private double _noPreviewValue = 2;
+    private double? _noPreviewHover;
+
+    private double _perItemValue = 3;
+    private double _itemTemplateValue = 4;
+
+    private double _oneWay;
+    private double _twoWay = 3;
+
+    private int _onChangeCount;
+    private double _onChangeValue;
+    private double _onChangingValue = 3;
+    private string _onChangingArgs = "";
+    private bool _onChangingRejected;
+    private int _focusIn;
+    private int _focusOut;
+    private string _focusType = "";
+
+    private readonly RatingModel _model = new();
+    private string _formResult = "none";
+
+    private double _a11yValue = 2;
+    private double _keysValue = 2;
+    private double _keysTenthValue = 1;
+    private BitRating? _focusRef;
+
+    private bool _modalOpen;
+    private double _modalValue = 2;
+
+    private double _scoreValue = 1;
+    private double _cascadeValue = 3;
+
+    private double _rtlValue = 2;
+    private double _rtlHalfValue = 3.5;
+    private double _rtlInheritedValue = 2;
+
+    private BitColor? _runtimeColor;
+    private BitSize? _runtimeSize;
+    private bool _runtimeVertical;
+    private string _runtimeLabel = "Runtime label";
+    private bool _mounted = true;
+
+    private BitColor ScoreColor() => _scoreValue switch
+    {
+        <= 2 => BitColor.Error,
+        <= 3 => BitColor.Warning,
+        _ => BitColor.Success
+    };
+
+    private void HandleOnChanging(BitRatingChangeArgs args)
+    {
+        _onChangingArgs = $"{args.OldValue}->{args.Value}";
+        _onChangingRejected = args.Value < args.OldValue;
+        args.Cancel = _onChangingRejected;
+    }
+
+    private async Task FocusRating()
+    {
+        if (_focusRef is not null) await _focusRef.FocusAsync();
+    }
+
+    public class RatingModel
+    {
+        [Range(1, 5, ErrorMessage = "Pick a rating.")]
+        public double Value { get; set; }
+    }
+}

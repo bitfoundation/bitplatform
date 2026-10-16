@@ -1,0 +1,78 @@
+﻿@page "/regression/splitter-behaviour"
+
+<PageTitle>BitSplitter Behaviour</PageTitle>
+
+@* The gutter of a splitter is moved by the pointer and by the keyboard in the browser, and only the position it ends
+   up at is reported back. Each splitter is 610px across with a 10px gutter, so the panels share 600px and a first
+   panel of 200px stands at a third of the splitter; the first one may only be 100px to 400px wide. The same
+   splitter is laid out right to left twice - by its own Dir and by a box around it - where the first panel sits on
+   the right and the gutter moves the other way round, and once in a column. *@
+<div id="test-controls" style="padding: 20px; background: #f0f0f0; margin-bottom: 20px;">
+    <h3>BitSplitter Behaviour</h3>
+    <p>Status: <span id="status">@_status</span></p>
+</div>
+
+@foreach (var probe in _probes)
+{
+    var state = _states[probe];
+
+    <div data-probe="@probe" dir="@(probe == "inherited" ? "rtl" : null)" style="margin-bottom: 24px;">
+        <button class="before" type="button">Before @probe</button>
+        <div style="@(probe == "vertical" ? "width: 300px; height: 610px;" : "width: 610px; height: 120px;")">
+            <BitSplitter @bind-Percent="state.Percent"
+                         Dir="@(probe == "own" ? BitDir.Rtl : null)"
+                         Vertical="@(probe == "vertical")"
+                         GutterSize="10"
+                         FirstPanelSize="200"
+                         FirstPanelMinSize="100"
+                         FirstPanelMaxSize="400"
+                         AriaLabel="@($"Resize {probe}")"
+                         OnResizeStart="() => state.Starts++"
+                         OnResize="p => state.Moves++"
+                         OnResizeEnd="p => { state.Ends++; state.LastEnd = p; }"
+                         OnResizeCancel="p => { state.Cancels++; state.LastCancel = p; }">
+                <FirstPanel><div class="first-content" style="padding: 4px;">First @probe</div></FirstPanel>
+                <SecondPanel><div class="second-content" style="padding: 4px;">Second @probe</div></SecondPanel>
+            </BitSplitter>
+        </div>
+        <p class="report" style="font-family: monospace;">
+            percent: <span class="percent">@Format(state.Percent)</span>
+            starts: <span class="starts">@state.Starts</span>
+            moves: <span class="moves">@(state.Moves > 0 ? "some" : "none")</span>
+            ends: <span class="ends">@state.Ends</span>
+            last-end: <span class="last-end">@Format(state.LastEnd)</span>
+            cancels: <span class="cancels">@state.Cancels</span>
+            last-cancel: <span class="last-cancel">@Format(state.LastCancel)</span>
+        </p>
+    </div>
+}
+
+@code {
+    private sealed class ProbeState
+    {
+        public double? Percent { get; set; }
+        public int Starts { get; set; }
+        public int Moves { get; set; }
+        public int Ends { get; set; }
+        public double? LastEnd { get; set; }
+        public int Cancels { get; set; }
+        public double? LastCancel { get; set; }
+    }
+
+    private static readonly string[] _probes = ["ltr", "own", "inherited", "vertical"];
+
+    private readonly Dictionary<string, ProbeState> _states = _probes.ToDictionary(p => p, _ => new ProbeState());
+
+    // "Loading" is what the prerendered HTML shows; only the first interactive render moves it on.
+    private string _status = "Loading";
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _status = "Ready";
+        StateHasChanged();
+    }
+
+    private static string Format(double? value) => value is null ? "none" : value.Value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
+}

@@ -1,0 +1,2021 @@
+﻿/* Bit.Bonboarding Demo - base, site chrome and page styles.
+
+   The docs shell (the skip link, the header, the navigation panel, the reading column with its
+   breadcrumb and pager, the footer and the landing page), the pieces a demo page is built from
+   (section cards, Fluent's buttons, fields, tables, badges and message bars), the fake product UI the
+   tours point at, and - at the very end - the tour card itself, restyled to Fluent 2 through nothing
+   but the library's own custom properties.
+
+   Everything here is written by hand against the Fluent 2 tokens in theme.css rather than built
+   from a component library, because the demo carries no dependency other than Bit.Bonboarding
+   itself: the library has to look right next to an application that uses no CSS framework, and
+   the demo proves it.
+
+   One rule holds the file together: no raw values. A colour, a radius, a duration or a step of
+   spacing comes from a token, so the whole site re-themes from one file and nothing can drift. */
+
+/* ── Base ──────────────────────────────────────────────────────────────────── */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+* {
+    -webkit-text-size-adjust: none;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+}
+
+html {
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    scroll-behavior: smooth;
+    /* Anything the browser scrolls to - a fragment link, a control receiving focus - has to land
+       below the sticky header rather than under it. WCAG 2.2 "Focus Not Obscured (Minimum)". */
+    scroll-padding-top: calc(var(--bo-layout-header) + var(--bo-layout-header-gap));
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+body {
+    width: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: var(--bo-fnt-family-base);
+    font-size: var(--bo-fnt-size-400);
+    line-height: var(--bo-fnt-line-prose);
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-3);
+}
+
+code, kbd, pre, samp {
+    font-family: var(--bo-fnt-family-mono);
+}
+
+h1, h2, h3, h4, h5, h6, p, pre, ul {
+    margin: 0;
+}
+
+/* The site's element rules stop at the tour card. The card is the library's surface, styled through
+   its own variables (see the foot of this file) and in a theme of its own choosing, so a heading
+   colour or a link colour from the page around it would be the wrong one as often as the right one.
+   :where keeps every one of these at zero specificity, so any class rule still beats them. */
+:where(h1, h2, h3, h4):where(:not(.bit-bonboarding-root *)) {
+    font-family: var(--bo-fnt-family-display);
+    font-weight: var(--bo-fnt-weight-semibold);
+    /* Fluent 2 sets its display sizes tight and slightly negative-tracked; the ramp only reads as
+       a ramp if the headings keep that treatment while the prose below them does not. */
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+    color: var(--bo-clr-fg-1);
+}
+
+:where(a):where(:not(.bit-bonboarding-root *)) {
+    color: var(--bo-clr-brand-fg);
+    text-underline-offset: 0.125em;
+}
+
+:where(a):where(:not(.bit-bonboarding-root *)):hover {
+    color: var(--bo-clr-brand-fg-hover);
+}
+
+:where(a):where(:not(.bit-bonboarding-root *)):active {
+    color: var(--bo-clr-brand-fg-pressed);
+}
+
+:where(strong):where(:not(.bit-bonboarding-root *)) {
+    font-weight: var(--bo-fnt-weight-semibold);
+    color: var(--bo-clr-fg-1);
+}
+
+img, svg {
+    max-width: 100%;
+}
+
+/* Icons. One set, stroked at Fluent's regular weight and drawn in the colour of whatever it sits
+   inside, so an icon never has to be re-coloured for a theme, a hover state or a surface. The
+   geometry is authored in Shared/Icons.cs and rendered by Shared/Icon.razor; every rule that sizes
+   an icon below sets only its width and height and leaves the paint here. */
+svg.icon {
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+html, body, .nav-panel, pre, .log, .table-wrap, .playground {
+    scrollbar-width: thin;
+    scrollbar-color: var(--bo-clr-stroke-1) transparent;
+}
+
+h1:focus, h2:focus {
+    outline: none;
+}
+
+/* Fluent 2's focus indicator: a solid two-pixel stroke in the theme's highest-contrast neutral,
+   held one step off the control so it never sits on top of the control's own border. Scoped to the
+   site's own chrome and pages, so it never lands on the tour card, which draws its own. */
+.skip-link:focus-visible,
+.app-shell :is(a, button):focus-visible {
+    outline: var(--bo-strk-thick) solid var(--bo-clr-stroke-focus);
+    outline-offset: var(--bo-strk-thick);
+}
+
+/* ── Skip link ─────────────────────────────────────────────────────────────── */
+
+/* The nav panel puts a dozen links between the top of the document and the first word of the page.
+   This is the way past them for anyone driving the site from the keyboard. */
+.skip-link {
+    position: fixed;
+    z-index: 2000;
+    top: var(--bo-sp-s);
+    inset-inline-start: var(--bo-sp-s);
+    padding: var(--bo-sp-s) var(--bo-sp-l);
+    font-size: var(--bo-fnt-size-300);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-300);
+    text-decoration: none;
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-1);
+    border-radius: var(--bo-crn-medium);
+    box-shadow: var(--bo-shdw-16);
+    transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+    transform: translateY(0);
+}
+
+/* ── Shell ─────────────────────────────────────────────────────────────────── */
+
+.app-shell {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-flow: column nowrap;
+}
+
+.layout-row {
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+    min-height: 0;
+}
+
+.site-content {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-flow: column nowrap;
+    background-color: var(--bo-clr-bg-3);
+}
+
+.site-content > main {
+    flex: 1 0 auto;
+}
+
+/* min-width:0 is what lets a wide table or a long code line scroll inside the column instead of
+   stretching it. */
+.page-container {
+    width: 100%;
+    min-width: 0;
+    max-width: calc(var(--bo-layout-content) + 2 * var(--bo-sp-xxxl));
+    margin: 0 auto;
+    padding: var(--bo-sp-4xl) var(--bo-sp-xxxl) var(--bo-sp-6xl);
+}
+
+@media (max-width: 63.9375rem) {
+    .page-container {
+        padding: var(--bo-sp-xxxl) var(--bo-sp-xxl) var(--bo-sp-5xl);
+    }
+}
+
+@media (max-width: 47.9375rem) {
+    .page-container {
+        padding: var(--bo-sp-xxl) var(--bo-sp-l) var(--bo-sp-4xl);
+    }
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+
+/* Fluent's acrylic, near enough: the header is a translucent pane over whatever is scrolling
+   underneath it, and it grows a shadow the moment there is something underneath it to lift away
+   from (js/demo.js sets data-scrolled). */
+.app-header {
+    top: 0;
+    z-index: 1000;
+    width: 100%;
+    position: sticky;
+    backdrop-filter: blur(1.25rem) saturate(1.6);
+    -webkit-backdrop-filter: blur(1.25rem) saturate(1.6);
+    background-color: color-mix(in srgb, var(--bo-clr-bg-1) 85%, transparent);
+    border-bottom: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    transition: box-shadow var(--bo-dur-normal) var(--bo-crv-easy-ease);
+}
+
+.app-header[data-scrolled="true"] {
+    box-shadow: var(--bo-shdw-4);
+}
+
+/* A browser without backdrop-filter would show the page scrolling through the bar. Paint it. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .app-header {
+        background-color: var(--bo-clr-bg-1);
+    }
+}
+
+.app-header-inner {
+    gap: var(--bo-sp-s);
+    display: flex;
+    flex-wrap: nowrap;
+    margin-inline: auto;
+    align-items: center;
+    justify-content: space-between;
+    height: var(--bo-layout-header);
+    max-width: var(--bo-layout-max);
+    padding-inline: var(--bo-sp-xl);
+}
+
+.header-start,
+.header-end {
+    gap: var(--bo-sp-xs);
+    display: flex;
+    flex: 0 1 auto;
+    min-width: 0;
+    align-items: center;
+}
+
+.header-end {
+    flex-shrink: 0;
+}
+
+/* The mark and the library's name, as one link. The mark alone is shared with every bit site; the
+   name says which one this is. */
+.header-brand {
+    gap: var(--bo-sp-mnudge);
+    display: flex;
+    flex: none;
+    align-items: center;
+    text-decoration: none;
+    padding: var(--bo-sp-xs) var(--bo-sp-s);
+    margin-inline-end: var(--bo-sp-m);
+    border-radius: var(--bo-crn-medium);
+}
+
+.header-brand .logo {
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.header-brand .wordmark {
+    flex: none;
+    font-family: var(--bo-fnt-family-display);
+    font-size: var(--bo-fnt-size-500);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-500);
+    letter-spacing: -0.02em;
+    color: var(--bo-clr-fg-1);
+}
+
+.header-brand:hover .wordmark {
+    color: var(--bo-clr-brand-fg);
+}
+
+.header-version {
+    flex: none;
+    font-size: var(--bo-fnt-size-200);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-200);
+    padding: var(--bo-sp-xxs) var(--bo-sp-snudge);
+    color: var(--bo-clr-brand-fg);
+    background-color: var(--bo-clr-brand-wash);
+    border-radius: var(--bo-crn-circular);
+}
+
+@media (max-width: 35.9375rem) {
+    .header-version {
+        display: none;
+    }
+}
+
+.header-links {
+    gap: var(--bo-sp-xxs);
+    display: flex;
+    align-items: center;
+    margin-inline-start: var(--bo-sp-s);
+}
+
+/* Fluent's tab treatment: the label carries the state, and a rounded indicator under the selected
+   one says where you are without a second colour or a box. */
+.header-links .link {
+    position: relative;
+    display: flex;
+    white-space: nowrap;
+    align-items: center;
+    text-decoration: none;
+    font-size: var(--bo-fnt-size-300);
+    font-weight: var(--bo-fnt-weight-medium);
+    line-height: var(--bo-fnt-line-300);
+    padding: var(--bo-sp-s) var(--bo-sp-m);
+    color: var(--bo-clr-fg-2);
+    border-radius: var(--bo-crn-medium);
+    transition: color var(--bo-dur-faster) var(--bo-crv-easy-ease),
+                background-color var(--bo-dur-faster) var(--bo-crv-easy-ease);
+}
+
+.header-links .link:hover {
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-1-hover);
+}
+
+.header-links .link:active {
+    background-color: var(--bo-clr-bg-1-pressed);
+}
+
+.header-links .link.active {
+    color: var(--bo-clr-fg-1);
+    font-weight: var(--bo-fnt-weight-semibold);
+}
+
+.header-links .link.active::after {
+    content: '';
+    left: var(--bo-sp-m);
+    right: var(--bo-sp-m);
+    bottom: calc(var(--bo-sp-s) * -1);
+    height: var(--bo-strk-thicker);
+    position: absolute;
+    background-color: var(--bo-clr-brand-stroke);
+    border-radius: var(--bo-crn-circular);
+}
+
+@media (max-width: 47.9375rem) {
+    .header-links {
+        display: none;
+    }
+}
+
+/* Fluent's subtle icon button: no border and no fill until it is pointed at. */
+.icon-btn {
+    padding: 0;
+    flex: none;
+    width: 2rem;
+    height: 2rem;
+    cursor: pointer;
+    display: flex;
+    border: none;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: var(--bo-clr-fg-2);
+    border-radius: var(--bo-crn-medium);
+    transition: background-color var(--bo-dur-faster) var(--bo-crv-easy-ease),
+                color var(--bo-dur-faster) var(--bo-crv-easy-ease);
+}
+
+.icon-btn:hover {
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-1-hover);
+}
+
+.icon-btn:active {
+    background-color: var(--bo-clr-bg-1-pressed);
+}
+
+.icon-btn svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.github-mark {
+    flex: none;
+    width: 1.25rem;
+    height: 1.25rem;
+    background-color: currentColor;
+    -webkit-mask: url('../images/github-mark.svg') center / contain no-repeat;
+    mask: url('../images/github-mark.svg') center / contain no-repeat;
+}
+
+/* The two theme buttons are exact complements, so exactly one of the pair is visible in every
+   possible state - including a document with no data-theme attribute at all. */
+:root[data-theme='dark'] .light-theme {
+    display: none;
+}
+
+:root:not([data-theme='dark']) .dark-theme {
+    display: none;
+}
+
+:root[data-theme='dark'] .logo,
+:root[data-theme='dark'] .footer .bit-logo {
+    background-image: url('../images/bit-logo-dark.svg');
+}
+
+:root:not([data-theme='dark']) .logo,
+:root:not([data-theme='dark']) .footer .bit-logo {
+    background-image: url('../images/bit-logo-light.svg');
+}
+
+/* The nav drawer's handle. It only exists at the widths where the panel is a drawer. */
+.menu-btn {
+    display: none;
+    margin-inline-end: var(--bo-sp-xs);
+}
+
+@media (max-width: 63.9375rem) {
+    .menu-btn {
+        display: flex;
+    }
+}
+
+@media (max-width: 29.9375rem) {
+    .app-header-inner {
+        padding-inline: var(--bo-sp-s);
+    }
+}
+
+/* ── Nav panel ─────────────────────────────────────────────────────────────── */
+
+.nav-panel {
+    top: var(--bo-layout-header);
+    z-index: 900;
+    flex: 0 0 var(--bo-layout-nav);
+    align-self: flex-start;
+    position: sticky;
+    overflow: hidden auto;
+    overscroll-behavior: contain;
+    padding: var(--bo-sp-l) var(--bo-sp-m) var(--bo-sp-xxxl);
+    background-color: var(--bo-clr-bg-1);
+    height: calc(100vh - var(--bo-layout-header));
+    border-inline-end: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+.nav-group {
+    margin-top: var(--bo-sp-l);
+}
+
+.nav-group-title {
+    gap: var(--bo-sp-s);
+    display: flex;
+    align-items: center;
+    font-size: var(--bo-fnt-size-200);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-200);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bo-clr-fg-3);
+    padding: var(--bo-sp-s) var(--bo-sp-m) var(--bo-sp-xs);
+}
+
+.nav-group-title svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.nav-panel-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nav-panel-list a {
+    gap: var(--bo-sp-s);
+    display: flex;
+    position: relative;
+    align-items: center;
+    text-decoration: none;
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-300);
+    padding: var(--bo-sp-snudge) var(--bo-sp-m);
+    margin-bottom: var(--bo-strk-thick);
+    color: var(--bo-clr-fg-2);
+    border-radius: var(--bo-crn-medium);
+    transition: background-color var(--bo-dur-faster) var(--bo-crv-easy-ease),
+                color var(--bo-dur-faster) var(--bo-crv-easy-ease);
+}
+
+.nav-panel-list a svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+.nav-panel-list a:hover {
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-1-hover);
+}
+
+.nav-panel-list a:active {
+    background-color: var(--bo-clr-bg-1-pressed);
+}
+
+/* Fluent's selected nav item: a tinted row with a short rounded indicator at the inline start,
+   inset from the row's own edges so it reads as a marker rather than as a border. */
+.nav-panel-list a.active {
+    font-weight: var(--bo-fnt-weight-semibold);
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-1-hover);
+}
+
+.nav-panel-list a.active::before {
+    content: '';
+    top: 20%;
+    bottom: 20%;
+    position: absolute;
+    width: var(--bo-strk-thicker);
+    inset-inline-start: 0;
+    border-radius: var(--bo-crn-circular);
+    background-color: var(--bo-clr-brand-stroke);
+}
+
+/* Below the panel's breakpoint it becomes a drawer over the page, opened from the header's menu
+   button. */
+.nav-panel-overlay {
+    display: none;
+}
+
+@media (max-width: 63.9375rem) {
+    /* visibility, not just the off-screen transform: a translated drawer is still focusable, so
+       without it the closed panel's links stay in the tab order of the page they are covering.
+       It opens below the header rather than over it, so the button that opened it is still on
+       screen and is also the button that closes it. */
+    .nav-panel {
+        left: 0;
+        z-index: 1200;
+        position: fixed;
+        top: var(--bo-layout-header);
+        height: calc(100dvh - var(--bo-layout-header));
+        width: min(20rem, 85vw);
+        flex-basis: 0;
+        visibility: hidden;
+        padding-top: var(--bo-sp-xxl);
+        transform: translateX(-100%);
+        box-shadow: var(--bo-shdw-64);
+        transition: transform var(--bo-dur-normal) var(--bo-crv-decelerate-mid),
+                    visibility var(--bo-dur-normal);
+    }
+
+    .nav-panel.open {
+        visibility: visible;
+        transform: translateX(0);
+    }
+
+    .nav-panel-overlay {
+        inset: var(--bo-layout-header) 0 0 0;
+        z-index: 1100;
+        display: block;
+        border: none;
+        padding: 0;
+        position: fixed;
+        background-color: var(--bo-clr-bg-overlay);
+    }
+}
+
+/* ── Breadcrumb ────────────────────────────────────────────────────────────── */
+
+.doc-breadcrumb {
+    gap: var(--bo-sp-xs);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: var(--bo-sp-m);
+    font-size: var(--bo-fnt-size-200);
+    line-height: var(--bo-fnt-line-300);
+    color: var(--bo-clr-fg-3);
+}
+
+.doc-breadcrumb a {
+    text-decoration: none;
+    color: var(--bo-clr-fg-3);
+    padding: var(--bo-sp-xxs) var(--bo-sp-xs);
+    border-radius: var(--bo-crn-small);
+}
+
+.doc-breadcrumb a:hover {
+    color: var(--bo-clr-brand-fg);
+    text-decoration: underline;
+}
+
+.doc-breadcrumb svg {
+    width: 0.75rem;
+    height: 0.75rem;
+    color: var(--bo-clr-fg-4);
+}
+
+.doc-breadcrumb span {
+    padding: var(--bo-sp-xxs) var(--bo-sp-xs);
+}
+
+.doc-breadcrumb .current {
+    color: var(--bo-clr-fg-2);
+}
+
+/* ── Pager ─────────────────────────────────────────────────────────────────── */
+
+.doc-pager {
+    gap: var(--bo-sp-l);
+    display: grid;
+    margin-top: var(--bo-sp-4xl);
+    padding-top: var(--bo-sp-xxl);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    border-top: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+.doc-pager a {
+    gap: var(--bo-sp-xxs);
+    display: flex;
+    flex-flow: column nowrap;
+    text-decoration: none;
+    padding: var(--bo-sp-m) var(--bo-sp-l);
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-radius: var(--bo-crn-medium);
+    transition: border-color var(--bo-dur-faster) var(--bo-crv-easy-ease),
+                box-shadow var(--bo-dur-faster) var(--bo-crv-easy-ease);
+}
+
+.doc-pager a:hover {
+    border-color: var(--bo-clr-brand-stroke);
+    box-shadow: var(--bo-shdw-4);
+}
+
+.doc-pager a.next {
+    grid-column: 2;
+    text-align: end;
+}
+
+.doc-pager .pager-dir {
+    gap: var(--bo-sp-xs);
+    display: flex;
+    align-items: center;
+    font-size: var(--bo-fnt-size-200);
+    line-height: var(--bo-fnt-line-200);
+    color: var(--bo-clr-fg-3);
+}
+
+.doc-pager a.next .pager-dir {
+    justify-content: flex-end;
+}
+
+.doc-pager .pager-dir svg {
+    width: 0.75rem;
+    height: 0.75rem;
+}
+
+.doc-pager .pager-title {
+    font-size: var(--bo-fnt-size-400);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-400);
+    color: var(--bo-clr-brand-fg);
+}
+
+@media (max-width: 35.9375rem) {
+    .doc-pager {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .doc-pager a.next {
+        grid-column: 1;
+    }
+}
+
+/* ── Footer ────────────────────────────────────────────────────────────────── */
+
+.footer {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    flex-flow: column nowrap;
+    background-color: var(--bo-clr-bg-1);
+    border-top: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+.footer section {
+    width: 100%;
+    max-width: var(--bo-layout-max);
+    padding: var(--bo-sp-6xl) var(--bo-sp-xxxl);
+}
+
+.footer section:first-child {
+    display: grid;
+    gap: var(--bo-sp-4xl);
+    align-items: start;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 2fr);
+}
+
+.footer section:last-child {
+    gap: var(--bo-sp-xxl);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--bo-sp-xxl) var(--bo-sp-xxxl);
+    border-top: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+.footer a {
+    text-decoration: none;
+}
+
+.footer .blurb {
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-prose);
+    max-width: var(--bo-layout-measure);
+    color: var(--bo-clr-fg-3);
+}
+
+.footer .bit-logo {
+    width: 2rem;
+    height: 1.6875rem;
+    margin-bottom: var(--bo-sp-l);
+    background-size: contain;
+    background-position: left center;
+    background-repeat: no-repeat;
+}
+
+.footer .link-columns {
+    gap: var(--bo-sp-xxl);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
+}
+
+.footer .link-column {
+    display: flex;
+    gap: var(--bo-sp-xs);
+    flex-flow: column nowrap;
+    align-items: flex-start;
+}
+
+.footer .link-column h6 {
+    font-size: var(--bo-fnt-size-300);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-300);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: var(--bo-sp-xs);
+    color: var(--bo-clr-fg-3);
+}
+
+.footer .link-column a {
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-500);
+    color: var(--bo-clr-fg-2);
+}
+
+.footer .link-column a:hover {
+    color: var(--bo-clr-brand-fg);
+    text-decoration: underline;
+}
+
+.footer .go-to-top {
+    gap: var(--bo-sp-s);
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+    margin-top: var(--bo-sp-s);
+    font-family: inherit;
+    font-size: var(--bo-fnt-size-300);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-300);
+    padding: var(--bo-sp-s) var(--bo-sp-m);
+    color: var(--bo-clr-fg-2);
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-1);
+    border-radius: var(--bo-crn-medium);
+    transition: background-color var(--bo-dur-faster) var(--bo-crv-easy-ease),
+                border-color var(--bo-dur-faster) var(--bo-crv-easy-ease);
+}
+
+.footer .go-to-top:hover {
+    color: var(--bo-clr-fg-1);
+    border-color: var(--bo-clr-stroke-accessible);
+    background-color: var(--bo-clr-bg-1-hover);
+}
+
+.footer .go-to-top svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.footer .address-info {
+    display: flex;
+    gap: var(--bo-sp-xxs);
+    flex-flow: column nowrap;
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-500);
+    color: var(--bo-clr-fg-3);
+}
+
+.footer .address-info .address,
+.footer .address-info .tel,
+.footer .address-info .country {
+    padding-inline-start: var(--bo-sp-xl);
+    background-repeat: no-repeat;
+    background-position-y: 0.3125rem;
+}
+
+.footer .address-info .address,
+.footer .address-info .tel {
+    color: var(--bo-clr-fg-2);
+}
+
+.footer .address-info .address:hover,
+.footer .address-info .tel:hover {
+    color: var(--bo-clr-brand-fg);
+    text-decoration: underline;
+}
+
+.footer .address-info .address {
+    background-image: url('../images/footer/location-icon.svg');
+}
+
+.footer .address-info .tel {
+    background-image: url('../images/footer/tel-icon.svg');
+}
+
+.footer .social-link-group {
+    gap: var(--bo-sp-m);
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.footer .social-link {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: var(--bo-crn-circular);
+    background-color: var(--bo-clr-fg-4);
+    background-size: 1.125rem;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: background-color var(--bo-dur-faster) var(--bo-crv-easy-ease),
+                transform var(--bo-dur-faster) var(--bo-crv-decelerate-mid);
+}
+
+.footer .social-link:hover {
+    transform: translateY(-0.125rem);
+}
+
+.footer .twitter-link { background-image: url('../images/footer/twitter-icon.svg'); }
+.footer .twitter-link:hover { background-color: #1DA1F2; }
+.footer .github-link { background-image: url('../images/footer/github-icon.svg'); }
+.footer .github-link:hover { background-color: #24292F; }
+.footer .youtube-link { background-image: url('../images/footer/youtube-icon.svg'); }
+.footer .youtube-link:hover { background-color: #FF0000; }
+.footer .linkedin-link { background-image: url('../images/footer/linkedin-icon.svg'); }
+.footer .linkedin-link:hover { background-color: #0077B5; }
+
+.footer .copy-right-txt {
+    line-height: var(--bo-fnt-line-300);
+    margin-top: var(--bo-sp-m);
+    font-size: var(--bo-fnt-size-200);
+    text-align: end;
+    color: var(--bo-clr-fg-3);
+}
+
+@media (max-width: 63.9375rem) {
+    .footer section,
+    .footer section:last-child {
+        padding-inline: var(--bo-sp-xxl);
+    }
+}
+
+@media (max-width: 47.9375rem) {
+    .footer section {
+        padding-block: var(--bo-sp-4xl);
+    }
+
+    .footer section:first-child {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .footer section:last-child {
+        align-items: flex-start;
+        flex-flow: column nowrap;
+        justify-content: flex-start;
+    }
+
+    .footer .social-link-group {
+        justify-content: flex-start;
+    }
+
+    .footer .copy-right-txt {
+        text-align: start;
+    }
+}
+
+/* ── Page title, lead and sections ─────────────────────────────────────────── */
+
+/* Every page opens the same way: a title, then a paragraph of prose - not another frame. */
+.page-container > h1 {
+    font-size: var(--bo-fnt-size-900);
+    line-height: var(--bo-fnt-line-900);
+    letter-spacing: -0.03em;
+    margin-bottom: var(--bo-sp-l);
+    overflow-wrap: anywhere;
+}
+
+/* The lead is set one step up the ramp from the body of the page, so a reader who only reads the
+   first paragraph still gets the whole answer to "what is this page for". */
+.page-intro {
+    font-size: var(--bo-fnt-size-500);
+    line-height: var(--bo-fnt-line-prose);
+    margin-bottom: var(--bo-sp-4xl);
+    max-width: var(--bo-layout-measure);
+    color: var(--bo-clr-fg-3);
+}
+
+@media (max-width: 47.9375rem) {
+    .page-container > h1 {
+        font-size: var(--bo-fnt-size-800);
+        line-height: var(--bo-fnt-line-800);
+    }
+
+    .page-intro {
+        font-size: var(--bo-fnt-size-400);
+    }
+}
+
+/* A hairline-bordered surface carrying Fluent's lightest elevation. On a documentation page the
+   same card repeats several times, so anything heavier reads as noise long before it reads as
+   depth - but a flat card on a flat canvas leaves the page with no layers at all. */
+.demo-section {
+    padding: var(--bo-sp-xxxl);
+    margin-bottom: var(--bo-sp-xxl);
+    scroll-margin-top: calc(var(--bo-layout-header) + var(--bo-layout-header-gap));
+    color: var(--bo-clr-fg-2);
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-radius: var(--bo-crn-large);
+    box-shadow: var(--bo-shdw-2);
+}
+
+.demo-section:last-of-type {
+    margin-bottom: 0;
+}
+
+/* One rhythm for everything a section holds - prose, a toolbar, the fake product, a code box, a
+   table - so no page has to space its own pieces. */
+.demo-section > * + * {
+    margin-top: var(--bo-sp-l);
+}
+
+/* The heading sits over a hairline, so the eye can find the boundary between sections while
+   scrolling a long page instead of relying on whitespace alone. */
+.demo-section > h2 {
+    font-size: var(--bo-fnt-size-600);
+    line-height: var(--bo-fnt-line-600);
+    letter-spacing: -0.02em;
+    padding-bottom: var(--bo-sp-m);
+    overflow-wrap: anywhere;
+    border-bottom: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+.demo-section h3 {
+    font-size: var(--bo-fnt-size-500);
+    line-height: var(--bo-fnt-line-500);
+}
+
+.demo-section p {
+    font-size: var(--bo-fnt-size-400);
+    line-height: var(--bo-fnt-line-prose);
+    max-width: var(--bo-layout-measure);
+}
+
+.demo-section ul {
+    padding-inline-start: var(--bo-sp-xxl);
+}
+
+.demo-section li + li {
+    margin-top: var(--bo-sp-xs);
+}
+
+.demo-section li a {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 47.9375rem) {
+    .demo-section {
+        padding: var(--bo-sp-xl);
+    }
+}
+
+/* Inline code, wherever a page sets one in prose. */
+:where(:not(pre) > code):where(:not(.bit-bonboarding-root *)) {
+    font-size: 0.875em;
+    padding: 0.0625rem 0.25rem;
+    overflow-wrap: anywhere;
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-3);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-radius: var(--bo-crn-small);
+}
+
+/* A code box: the recessed surface, one step down from the card it sits in. */
+:where(pre):where(:not(.bit-bonboarding-root *)) {
+    overflow: auto;
+    font-size: var(--bo-fnt-size-300);
+    line-height: 1.6;
+    padding: var(--bo-sp-l) var(--bo-sp-xl);
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-3);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-radius: var(--bo-crn-medium);
+}
+
+.muted {
+    color: var(--bo-clr-fg-3);
+}
+
+/* ── Layout helpers ────────────────────────────────────────────────────────── */
+
+/* A run of controls: the buttons that drive a sample, and what they report back. */
+.demo-actions {
+    gap: var(--bo-sp-s);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+/* The settings a tour is started with, gathered on one recessed strip above the thing they drive. */
+.controls {
+    gap: var(--bo-sp-l);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    padding: var(--bo-sp-l);
+    background-color: var(--bo-clr-bg-2);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-radius: var(--bo-crn-large);
+}
+
+.grid {
+    gap: var(--bo-sp-l);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(15rem, 1fr));
+}
+
+.card {
+    padding: var(--bo-sp-xl);
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-radius: var(--bo-crn-large);
+    box-shadow: var(--bo-shdw-2);
+}
+
+.card > * + * {
+    margin-top: var(--bo-sp-s);
+}
+
+.card h3 {
+    font-size: var(--bo-fnt-size-400);
+    line-height: var(--bo-fnt-line-400);
+}
+
+.card p {
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-prose);
+}
+
+/* ── Buttons ───────────────────────────────────────────────────────────────── */
+
+/* Fluent's secondary button: the neutral surface with a hairline, at Fluent's medium control
+   height. .btn-primary is the brand-filled one; a page has at most one per row, because two
+   buttons in the brand colour side by side say neither is the main one. */
+.btn {
+    gap: var(--bo-sp-s);
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    padding: var(--bo-sp-snudge) var(--bo-sp-m);
+    font-family: inherit;
+    font-size: var(--bo-fnt-size-300);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-300);
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-1);
+    border-radius: var(--bo-crn-medium);
+    transition: background-color var(--bo-dur-faster) var(--bo-crv-easy-ease),
+                border-color var(--bo-dur-faster) var(--bo-crv-easy-ease),
+                color var(--bo-dur-faster) var(--bo-crv-easy-ease);
+}
+
+.btn:hover {
+    color: var(--bo-clr-fg-1);
+    border-color: var(--bo-clr-stroke-accessible);
+    background-color: var(--bo-clr-bg-1-hover);
+}
+
+.btn:active {
+    background-color: var(--bo-clr-bg-1-pressed);
+}
+
+.btn-primary {
+    color: var(--bo-clr-brand-fg-on-bg);
+    background-color: var(--bo-clr-brand-bg);
+    border-color: transparent;
+}
+
+.btn-primary:hover {
+    color: var(--bo-clr-brand-fg-on-bg);
+    border-color: transparent;
+    background-color: var(--bo-clr-brand-bg-hover);
+}
+
+.btn-primary:active {
+    background-color: var(--bo-clr-brand-bg-pressed);
+}
+
+.btn:disabled {
+    cursor: default;
+    color: var(--bo-clr-fg-disabled);
+    background-color: var(--bo-clr-bg-disabled);
+    border-color: var(--bo-clr-stroke-2);
+}
+
+.btn svg {
+    width: 1.125rem;
+    height: 1.125rem;
+}
+
+/* Fluent's large size, for the landing page: 44px tall, the minimum a finger can reliably hit. */
+.btn-lg {
+    min-height: 2.75rem;
+    padding: var(--bo-sp-m) var(--bo-sp-xxl);
+    font-size: var(--bo-fnt-size-400);
+    line-height: var(--bo-fnt-line-400);
+}
+
+.btn-lg svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+/* ── Fields ────────────────────────────────────────────────────────────────── */
+
+.field {
+    flex: 0 1 11rem;
+    min-width: 9rem;
+}
+
+:where(label):where(:not(.bit-bonboarding-root *)) {
+    display: block;
+    margin-bottom: var(--bo-sp-xs);
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-300);
+    color: var(--bo-clr-fg-1);
+}
+
+/* Fluent's input: a hairline box whose bottom edge is drawn in the accessible neutral, so the
+   field reads as a field even at rest, and which takes a brand-coloured underline on focus. */
+:where(input[type="text"], input[type="number"], select):where(:not(.bit-bonboarding-root *)) {
+    width: 100%;
+    min-width: 0;
+    height: 2rem;
+    outline: none;
+    padding: 0 var(--bo-sp-mnudge);
+    font-family: inherit;
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-300);
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-1);
+    border-bottom-color: var(--bo-clr-stroke-accessible);
+    border-radius: var(--bo-crn-medium);
+    transition: border-color var(--bo-dur-faster) var(--bo-crv-easy-ease);
+}
+
+:where(input):where(:not(.bit-bonboarding-root *))::placeholder {
+    color: var(--bo-clr-fg-3);
+}
+
+:where(input[type="text"], input[type="number"], select):where(:not(.bit-bonboarding-root *)):hover {
+    border-color: var(--bo-clr-stroke-accessible);
+}
+
+:where(input[type="text"], input[type="number"], select):where(:not(.bit-bonboarding-root *)):focus {
+    border-color: var(--bo-clr-stroke-1);
+    border-bottom-color: var(--bo-clr-brand-stroke);
+    box-shadow: inset 0 calc(var(--bo-strk-thin) * -1) 0 var(--bo-clr-brand-stroke);
+}
+
+/* Fluent's dropdown: the same box as the input, with its own chevron instead of the platform's. */
+:where(select):where(:not(.bit-bonboarding-root *)) {
+    cursor: pointer;
+    appearance: none;
+    padding-inline-end: var(--bo-sp-xxxl);
+    background-image: var(--bo-select-chevron);
+    background-repeat: no-repeat;
+    background-size: 1rem;
+    background-position: right var(--bo-sp-s) center;
+}
+
+:where(select):where(:not(.bit-bonboarding-root *)):dir(rtl) {
+    background-position: left var(--bo-sp-s) center;
+}
+
+/* A field sitting in a row of buttons gets their width rather than the column's. */
+.demo-actions input[type="text"] {
+    width: auto;
+    flex: 0 1 16rem;
+}
+
+/* ── Tables ────────────────────────────────────────────────────────────────── */
+
+.table-wrap {
+    overflow-x: auto;
+}
+
+:where(table):where(:not(.bit-bonboarding-root *)) {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-300);
+}
+
+:where(th, td):where(:not(.bit-bonboarding-root *)) {
+    text-align: start;
+    vertical-align: top;
+    padding: var(--bo-sp-s) var(--bo-sp-m);
+    border-bottom: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+:where(th):where(:not(.bit-bonboarding-root *)) {
+    font-weight: var(--bo-fnt-weight-semibold);
+    color: var(--bo-clr-fg-1);
+}
+
+:where(td):where(:not(.bit-bonboarding-root *)) {
+    color: var(--bo-clr-fg-2);
+}
+
+/* The name a row describes is one word: it scrolls with its table rather than breaking in the
+   middle of an identifier. */
+td:first-child code {
+    white-space: nowrap;
+    overflow-wrap: normal;
+}
+
+:where(tbody tr:hover td):where(:not(.bit-bonboarding-root *)) {
+    background-color: var(--bo-clr-bg-1-hover);
+}
+
+/* A two-column table of facts, with the names down the side rather than across the top. */
+table.facts th {
+    width: 10rem;
+    color: var(--bo-clr-fg-3);
+    font-weight: var(--bo-fnt-weight-regular);
+}
+
+/* ── Badges and message bars ───────────────────────────────────────────────── */
+
+/* Fluent's tinted badge. */
+.pill {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--bo-sp-xxs) var(--bo-sp-s);
+    font-size: var(--bo-fnt-size-200);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-200);
+    color: var(--bo-clr-brand-fg);
+    background-color: var(--bo-clr-brand-wash);
+    border-radius: var(--bo-crn-circular);
+}
+
+/* Fluent's message bar: a tinted strip with the icon that says what kind of message it is. */
+.note {
+    gap: var(--bo-sp-s);
+    display: flex;
+    align-items: flex-start;
+    padding: var(--bo-sp-m) var(--bo-sp-l);
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-300);
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-brand-bg-subtle);
+    border: var(--bo-strk-thin) solid color-mix(in srgb, var(--bo-clr-brand-stroke) 30%, transparent);
+    border-radius: var(--bo-crn-medium);
+}
+
+.note svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--bo-clr-brand-fg);
+}
+
+.note-danger {
+    background-color: var(--bo-clr-danger-bg);
+    border-color: var(--bo-clr-danger-stroke);
+}
+
+.note-danger svg {
+    color: var(--bo-clr-danger-fg);
+}
+
+/* ── The fake product the tours point at ───────────────────────────────────── */
+
+/* A small application window: a toolbar, a sidebar and a dashboard. It is a container so it can
+   rearrange itself for the room it actually has - the reading column, the landing page's hero and
+   a phone are three very different widths. */
+.app-window {
+    container-type: inline-size;
+    overflow: hidden;
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-1);
+    border-radius: var(--bo-crn-xlarge);
+    box-shadow: var(--bo-shdw-8);
+}
+
+.app-toolbar {
+    gap: var(--bo-sp-s);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: var(--bo-sp-s) var(--bo-sp-m);
+    background-color: var(--bo-clr-bg-2);
+    border-bottom: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+.app-toolbar input[type="text"] {
+    width: auto;
+    flex: 0 1 13rem;
+}
+
+.app-toolbar .spacer {
+    margin-inline-start: auto;
+}
+
+.app-body {
+    display: grid;
+    min-height: 16rem;
+    grid-template-columns: 11rem minmax(0, 1fr);
+}
+
+.app-side {
+    gap: var(--bo-strk-thick);
+    display: flex;
+    flex-direction: column;
+    padding: var(--bo-sp-s);
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-300);
+    border-inline-end: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+.app-side span {
+    position: relative;
+    padding: var(--bo-sp-snudge) var(--bo-sp-m);
+    color: var(--bo-clr-fg-2);
+    border-radius: var(--bo-crn-medium);
+}
+
+/* The same selected-item treatment as the site's own nav panel. */
+.app-side span.sel {
+    font-weight: var(--bo-fnt-weight-semibold);
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-1-hover);
+}
+
+.app-side span.sel::before {
+    content: '';
+    top: 20%;
+    bottom: 20%;
+    position: absolute;
+    width: var(--bo-strk-thicker);
+    inset-inline-start: 0;
+    border-radius: var(--bo-crn-circular);
+    background-color: var(--bo-clr-brand-stroke);
+}
+
+.app-main {
+    gap: var(--bo-sp-m);
+    display: flex;
+    flex-direction: column;
+    padding: var(--bo-sp-l);
+    background-color: var(--bo-clr-bg-3);
+}
+
+.app-metrics {
+    gap: var(--bo-sp-m);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+}
+
+.tile {
+    padding: var(--bo-sp-m) var(--bo-sp-l);
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-radius: var(--bo-crn-large);
+    box-shadow: var(--bo-shdw-2);
+}
+
+.tile-title {
+    font-size: var(--bo-fnt-size-200);
+    line-height: var(--bo-fnt-line-200);
+    color: var(--bo-clr-fg-3);
+}
+
+.tile-value {
+    margin-top: var(--bo-sp-xs);
+    font-family: var(--bo-fnt-family-display);
+    font-size: var(--bo-fnt-size-600);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-600);
+    letter-spacing: -0.02em;
+    color: var(--bo-clr-fg-1);
+}
+
+@container (max-width: 34rem) {
+    .app-body {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .app-side {
+        flex-flow: row wrap;
+        border-inline-end: none;
+        border-bottom: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    }
+
+    .app-side span.sel::before {
+        top: auto;
+        left: var(--bo-sp-m);
+        right: var(--bo-sp-m);
+        bottom: 0;
+        width: auto;
+        height: var(--bo-strk-thicker);
+    }
+}
+
+/* The placement playground: a scrolling canvas with targets pinned near its edges. The dot grid is
+   there so it reads as a surface to place things on rather than as an empty box. */
+.playground {
+    position: relative;
+    height: 22rem;
+    overflow: auto;
+    background-color: var(--bo-clr-bg-2);
+    background-image: radial-gradient(var(--bo-clr-stroke-1) var(--bo-strk-thin), transparent var(--bo-strk-thin));
+    background-size: var(--bo-sp-l) var(--bo-sp-l);
+    border: var(--bo-strk-thin) dashed var(--bo-clr-stroke-1);
+    border-radius: var(--bo-crn-large);
+}
+
+.playground-inner {
+    position: relative;
+    width: 100%;
+    height: 40rem;
+}
+
+.dot-target {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    width: 5.5rem;
+    height: 2.5rem;
+    font-size: var(--bo-fnt-size-200);
+    font-weight: var(--bo-fnt-weight-semibold);
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-1);
+    border-radius: var(--bo-crn-medium);
+    box-shadow: var(--bo-shdw-4);
+}
+
+/* The live event stream on the events page. */
+.log {
+    max-height: 20rem;
+    overflow: auto;
+    font-family: var(--bo-fnt-family-mono);
+    font-size: var(--bo-fnt-size-200);
+    line-height: var(--bo-fnt-line-300);
+    background-color: var(--bo-clr-bg-3);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-radius: var(--bo-crn-medium);
+}
+
+.log-row {
+    gap: var(--bo-sp-m);
+    display: flex;
+    padding: var(--bo-sp-xs) var(--bo-sp-m);
+    color: var(--bo-clr-fg-2);
+    border-bottom: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+.log-row:last-child {
+    border-bottom: none;
+}
+
+.log-time {
+    color: var(--bo-clr-fg-3);
+}
+
+.log-kind {
+    min-width: 9rem;
+    font-weight: var(--bo-fnt-weight-semibold);
+    color: var(--bo-clr-brand-fg);
+}
+
+/* ── Landing page ──────────────────────────────────────────────────────────── */
+
+/* The landing page is not a document, so it does not get the docs' reading column: it owns the
+   full width and lays out its own sections, which alternate surfaces and are separated by the same
+   hairline the rest of the chrome uses. SiteShell renders it without the nav panel. */
+
+.site-content.home {
+    background-color: var(--bo-clr-bg-1);
+}
+
+.homepage-section {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.homepage-section.alt-section {
+    background-color: var(--bo-clr-bg-3);
+    border-top: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-bottom: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+.homepage-section-content {
+    width: 100%;
+    margin: 0 auto;
+    max-width: var(--bo-layout-max);
+    padding: var(--bo-sp-7xl) var(--bo-sp-xxxl);
+}
+
+.section-eyebrow {
+    display: block;
+    font-size: var(--bo-fnt-size-200);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-200);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: var(--bo-sp-m);
+    color: var(--bo-clr-brand-fg);
+}
+
+.homepage-section h2 {
+    font-size: var(--bo-fnt-size-800);
+    line-height: var(--bo-fnt-line-800);
+    margin-bottom: var(--bo-sp-m);
+}
+
+.section-lead {
+    font-size: var(--bo-fnt-size-400);
+    line-height: var(--bo-fnt-line-prose);
+    margin-bottom: var(--bo-sp-4xl);
+    max-width: var(--bo-layout-measure);
+    color: var(--bo-clr-fg-3);
+}
+
+/* What the library is on one side; the product it is touring on the other. */
+.hero-section {
+    position: relative;
+    overflow: hidden;
+}
+
+/* A single wash of the brand behind the headline. It is the one decorative thing on the page, and
+   it is there so the hero does not read as the first card of a stack of cards. */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: -20rem;
+    inset-inline-start: 50%;
+    width: 75rem;
+    height: 45rem;
+    pointer-events: none;
+    transform: translateX(-70%);
+    background: radial-gradient(closest-side, var(--bo-clr-brand-wash), transparent);
+}
+
+.hero-section .homepage-section-content {
+    gap: var(--bo-sp-6xl);
+    display: grid;
+    position: relative;
+    align-items: center;
+    padding-top: var(--bo-sp-6xl);
+    padding-bottom: var(--bo-sp-6xl);
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+}
+
+.hero-eyebrow {
+    gap: var(--bo-sp-s);
+    display: inline-flex;
+    align-items: center;
+    margin-bottom: var(--bo-sp-xl);
+    font-size: var(--bo-fnt-size-200);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-200);
+    padding: var(--bo-sp-xs) var(--bo-sp-m);
+    text-decoration: none;
+    color: var(--bo-clr-brand-fg);
+    background-color: var(--bo-clr-brand-wash);
+    border-radius: var(--bo-crn-circular);
+}
+
+.hero-eyebrow svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+.hero-copy h1 {
+    line-height: 1.08;
+    margin-bottom: var(--bo-sp-xl);
+    letter-spacing: -0.03em;
+    font-size: clamp(2.5rem, 4.5vw, 3.75rem);
+}
+
+/* The part of the headline that says what is different takes the brand colour; the rest of the
+   line stays in the text colour, so the headline is still a headline rather than an object. */
+.hero-copy h1 .accent {
+    color: var(--bo-clr-brand-fg);
+}
+
+.hero-lead {
+    font-size: var(--bo-fnt-size-500);
+    line-height: var(--bo-fnt-line-prose);
+    margin-bottom: var(--bo-sp-xxl);
+    max-width: 34rem;
+    color: var(--bo-clr-fg-3);
+}
+
+.hero-actions {
+    gap: var(--bo-sp-m);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    margin-bottom: var(--bo-sp-xxl);
+}
+
+/* The install line, as a thing to copy rather than a thing to read. */
+.install-line {
+    display: flex;
+    max-width: 26rem;
+    align-items: center;
+    padding: var(--bo-sp-s) var(--bo-sp-l);
+    background-color: var(--bo-clr-bg-3);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-radius: var(--bo-crn-medium);
+}
+
+.install-line code {
+    overflow: auto hidden;
+    white-space: nowrap;
+    padding: 0;
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-300);
+    background: none;
+    border: none;
+}
+
+.install-line .prompt {
+    user-select: none;
+    color: var(--bo-clr-fg-4);
+}
+
+/* Two code boxes side by side: the same tour as markup and as data. */
+.code-pair {
+    gap: var(--bo-sp-xxl);
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.code-pair h3 {
+    font-size: var(--bo-fnt-size-500);
+    line-height: var(--bo-fnt-line-500);
+    margin-bottom: var(--bo-sp-xs);
+}
+
+.code-pair p {
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-prose);
+    margin-bottom: var(--bo-sp-m);
+    color: var(--bo-clr-fg-3);
+}
+
+.code-pair pre {
+    background-color: var(--bo-clr-bg-1);
+}
+
+/* What is in the box: one card per capability, each a link into the page that proves it. */
+.feature-grid {
+    gap: var(--bo-sp-l);
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(19rem, 1fr));
+}
+
+.feature-card {
+    display: block;
+    padding: var(--bo-sp-xxl);
+    text-decoration: none;
+    background-color: var(--bo-clr-bg-1);
+    border: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+    border-radius: var(--bo-crn-large);
+    transition: border-color var(--bo-dur-faster) var(--bo-crv-easy-ease),
+                box-shadow var(--bo-dur-faster) var(--bo-crv-easy-ease);
+}
+
+a.feature-card:hover {
+    border-color: var(--bo-clr-brand-stroke);
+    box-shadow: var(--bo-shdw-8);
+}
+
+.feature-card-icon {
+    display: flex;
+    width: 2.5rem;
+    height: 2.5rem;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: var(--bo-sp-m);
+    color: var(--bo-clr-brand-fg);
+    background-color: var(--bo-clr-brand-wash);
+    border-radius: var(--bo-crn-medium);
+}
+
+.feature-card-icon svg {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.feature-card h3 {
+    font-size: var(--bo-fnt-size-500);
+    line-height: var(--bo-fnt-line-500);
+    margin-bottom: var(--bo-sp-s);
+}
+
+.feature-card p {
+    font-size: var(--bo-fnt-size-300);
+    line-height: var(--bo-fnt-line-prose);
+    color: var(--bo-clr-fg-3);
+}
+
+/* The full index of the docs, grouped the way the nav panel groups it - because the landing page
+   has no nav panel, and a reader who arrives at the root should be able to reach any page without
+   first having to find their way into the docs. */
+.demo-index {
+    gap: var(--bo-sp-4xl);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.demo-index-group h3 {
+    gap: var(--bo-sp-s);
+    display: flex;
+    align-items: center;
+    font-family: var(--bo-fnt-family-base);
+    font-size: var(--bo-fnt-size-200);
+    line-height: var(--bo-fnt-line-200);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding-bottom: var(--bo-sp-s);
+    margin-bottom: var(--bo-sp-s);
+    color: var(--bo-clr-fg-3);
+    border-bottom: var(--bo-strk-thin) solid var(--bo-clr-stroke-2);
+}
+
+.demo-index-group h3 svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: var(--bo-clr-brand-fg);
+}
+
+.demo-index-link {
+    display: block;
+    text-decoration: none;
+    padding: var(--bo-sp-s);
+    margin-inline-start: calc(var(--bo-sp-s) * -1);
+    border-radius: var(--bo-crn-medium);
+    transition: background-color var(--bo-dur-faster) var(--bo-crv-easy-ease);
+}
+
+.demo-index-link:hover {
+    background-color: var(--bo-clr-bg-1-hover);
+}
+
+.demo-index-link .title {
+    display: block;
+    font-size: var(--bo-fnt-size-300);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: var(--bo-fnt-line-300);
+    color: var(--bo-clr-brand-fg);
+}
+
+.demo-index-link .desc {
+    display: block;
+    font-size: var(--bo-fnt-size-200);
+    line-height: var(--bo-fnt-line-300);
+    color: var(--bo-clr-fg-3);
+}
+
+@media (max-width: 63.9375rem) {
+    .homepage-section-content {
+        padding: var(--bo-sp-6xl) var(--bo-sp-xxl);
+    }
+
+    .hero-section .homepage-section-content {
+        gap: var(--bo-sp-4xl);
+        padding-top: var(--bo-sp-4xl);
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .code-pair {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 47.9375rem) {
+    .homepage-section-content {
+        padding: var(--bo-sp-4xl) var(--bo-sp-l);
+    }
+
+    .homepage-section h2 {
+        font-size: var(--bo-fnt-size-700);
+        line-height: var(--bo-fnt-line-700);
+    }
+
+    .hero-actions .btn {
+        flex: 1 1 12rem;
+    }
+}
+
+/* ── Not-found and error pages ─────────────────────────────────────────────── */
+
+.error-page {
+    display: flex;
+    text-align: center;
+    align-items: center;
+    flex-flow: column nowrap;
+    padding: var(--bo-sp-7xl) 0 var(--bo-sp-6xl);
+}
+
+.error-page .error-code {
+    font-family: var(--bo-fnt-family-display);
+    font-size: var(--bo-fnt-size-1000);
+    font-weight: var(--bo-fnt-weight-semibold);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--bo-clr-brand-fg);
+}
+
+.error-page h1 {
+    font-size: var(--bo-fnt-size-800);
+    line-height: var(--bo-fnt-line-800);
+    margin: var(--bo-sp-l) 0 var(--bo-sp-m);
+}
+
+.error-page p {
+    max-width: 34rem;
+    font-size: var(--bo-fnt-size-400);
+    line-height: var(--bo-fnt-line-prose);
+    margin-bottom: var(--bo-sp-xxl);
+    color: var(--bo-clr-fg-3);
+}
+
+.error-page .hero-actions {
+    justify-content: center;
+    margin-bottom: 0;
+}
+
+/* ── Blazor error UI ───────────────────────────────────────────────────────── */
+
+#blazor-error-ui {
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    display: none;
+    position: fixed;
+    z-index: 1500;
+    font-size: var(--bo-fnt-size-300);
+    padding: var(--bo-sp-m) var(--bo-sp-4xl) var(--bo-sp-m) var(--bo-sp-xl);
+    color: var(--bo-clr-fg-1);
+    background-color: var(--bo-clr-bg-5);
+    border-top: var(--bo-strk-thin) solid var(--bo-clr-stroke-1);
+    box-shadow: var(--bo-shdw-16);
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: var(--bo-sp-m);
+    top: var(--bo-sp-s);
+}
+
+.blazor-error-boundary {
+    padding: var(--bo-sp-l);
+    color: var(--bo-clr-danger-fg);
+    background-color: var(--bo-clr-danger-bg);
+    border: var(--bo-strk-thin) solid var(--bo-clr-danger-stroke);
+    border-radius: var(--bo-crn-medium);
+}
+
+.blazor-error-boundary::after {
+    content: "An error has occurred.";
+}
+
+/* ── The tour card, in Fluent 2 ────────────────────────────────────────────── */
+
+/* Not a single selector of the library's is overridden here: the default card is restyled purely
+   through the --bit-bonboarding-* custom properties it publishes, which is exactly what the theming
+   page tells an application to do. The values come from the ramps rather than from the semantic
+   layer above because a tour picks its own light or dark palette (its Theme option) independently
+   of the page around it, so each of the two has to be spelled out in full.
+
+   The card is Fluent's flyout: Background1, shadow16 to lift it off the overlay, and the XLarge
+   radius every floating surface on this site takes. Its buttons are Fluent's medium buttons, its
+   type is Body1 under a Subtitle2 title. The arrow, the overlay opacity and the duration are
+   written inline by the engine and stay its decision. */
+
+.bit-bonboarding-root {
+    --bit-bonboarding-surface: var(--bo-grey-100);
+    --bit-bonboarding-surface-subtle: var(--bo-grey-96);
+    --bit-bonboarding-text: var(--bo-grey-14);
+    --bit-bonboarding-text-muted: var(--bo-grey-26);
+    --bit-bonboarding-border: var(--bo-grey-88);
+    --bit-bonboarding-border-strong: var(--bo-grey-82);
+
+    --bit-bonboarding-accent: var(--bo-brand-80);
+    --bit-bonboarding-accent-hover: var(--bo-brand-70);
+    --bit-bonboarding-accent-active: var(--bo-brand-60);
+    --bit-bonboarding-accent-text: var(--bo-grey-100);
+    --bit-bonboarding-accent-soft: var(--bo-brand-140);
+
+    --bit-bonboarding-danger: var(--bo-red-80);
+    --bit-bonboarding-danger-hover: var(--bo-red-90);
+
+    --bit-bonboarding-spotlight-ring: rgba(255, 255, 255, 0.9);
+    --bit-bonboarding-spotlight-glow: color-mix(in srgb, var(--bo-brand-80) 40%, transparent);
+
+    --bit-bonboarding-radius: var(--bo-crn-xlarge);
+    --bit-bonboarding-radius-sm: var(--bo-crn-medium);
+    --bit-bonboarding-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.14), 0 0 0.125rem rgba(0, 0, 0, 0.12);
+    /* Fluent's focus stroke: neutral, not brand, so it still shows on a brand-filled button. */
+    --bit-bonboarding-focus-ring: 0 0 0 var(--bo-strk-thin) var(--bo-grey-100), 0 0 0 0.1875rem var(--bo-grey-14);
+
+    --bit-bonboarding-font: var(--bo-fnt-family-base);
+    --bit-bonboarding-font-size: var(--bo-fnt-size-300);
+    --bit-bonboarding-font-size-sm: var(--bo-fnt-size-300);
+    --bit-bonboarding-title-size: var(--bo-fnt-size-400);
+    --bit-bonboarding-title-weight: var(--bo-fnt-weight-semibold);
+    --bit-bonboarding-line-height: 1.4286;
+
+    --bit-bonboarding-ease: var(--bo-crv-decelerate-mid);
+}
+
+.bit-bonboarding-root[data-bonboarding-theme="dark"] {
+    --bit-bonboarding-surface: var(--bo-grey-16);
+    --bit-bonboarding-surface-subtle: var(--bo-grey-24);
+    --bit-bonboarding-text: var(--bo-grey-100);
+    --bit-bonboarding-text-muted: var(--bo-grey-84);
+    --bit-bonboarding-border: var(--bo-grey-24);
+    --bit-bonboarding-border-strong: var(--bo-grey-38);
+
+    --bit-bonboarding-accent: var(--bo-brand-70);
+    --bit-bonboarding-accent-hover: var(--bo-brand-80);
+    --bit-bonboarding-accent-active: var(--bo-brand-60);
+    --bit-bonboarding-accent-text: var(--bo-grey-100);
+    --bit-bonboarding-accent-soft: var(--bo-brand-40);
+
+    --bit-bonboarding-danger: var(--bo-red-80);
+    --bit-bonboarding-danger-hover: var(--bo-red-dark-fg);
+
+    --bit-bonboarding-spotlight-ring: rgba(255, 255, 255, 0.42);
+    --bit-bonboarding-spotlight-glow: color-mix(in srgb, var(--bo-brand-100) 32%, transparent);
+
+    --bit-bonboarding-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.28), 0 0 0.125rem rgba(0, 0, 0, 0.24);
+    --bit-bonboarding-focus-ring: 0 0 0 var(--bo-strk-thin) var(--bo-grey-16), 0 0 0 0.1875rem var(--bo-grey-100);
+}
+
+/* A deliberately different identity, for the theming page's skin picker. It is applied with the
+   tour's PopoverClass, which lands on the card rather than on the root, so these win over the
+   Fluent values above without a single extra selector. */
+.brand-popover {
+    --bit-bonboarding-surface: #101828;
+    --bit-bonboarding-surface-subtle: #1D2939;
+    --bit-bonboarding-text: #F9FAFB;
+    --bit-bonboarding-text-muted: #CBD5E1;
+    --bit-bonboarding-border: #1F2A3D;
+    --bit-bonboarding-border-strong: #344054;
+    --bit-bonboarding-accent: #F59E0B;
+    --bit-bonboarding-accent-hover: #FBBF24;
+    --bit-bonboarding-accent-active: #D97706;
+    --bit-bonboarding-accent-text: #1F1300;
+    --bit-bonboarding-accent-soft: rgba(245, 158, 11, 0.35);
+    --bit-bonboarding-radius: 6px;
+}

@@ -243,10 +243,15 @@ public partial class BitFullCalendar : BitComponentBase
     [Parameter] public EventCallback<BitFullCalendarMode> OnModeChange { get; set; }
 
     /// <summary>
-    /// Raised when the calendar refuses a user-driven change: a drop or resize that would overlap
-    /// another event while <see cref="BitFullCalendarSettings.AllowEventOverlap"/> is <c>false</c>,
-    /// one that would land outside the <see cref="MinDate"/>/<see cref="MaxDate"/> window, or one
-    /// targeting an event marked <see cref="BitFullCalendarEvent.IsReadOnly"/>.
+    /// Raised when the calendar refuses a user-driven change, whatever it came from - a drop, a resize, their
+    /// keyboard equivalents or a save of the built-in add/edit dialog: one that would overlap another event while
+    /// <see cref="BitFullCalendarSettings.AllowEventOverlap"/> is <c>false</c>, run into an event marked
+    /// <see cref="BitFullCalendarEvent.IsBlocking"/>, land outside the <see cref="MinDate"/>/<see cref="MaxDate"/>
+    /// window or outside the business hours while <see cref="BitFullCalendarSettings.RestrictToBusinessHours"/> is
+    /// <c>true</c>, or change what is read-only (the calendar, its edit permissions, or an event marked
+    /// <see cref="BitFullCalendarEvent.IsReadOnly"/>). A drag or a resize also shows the reason as a notice in the
+    /// calendar, a dialog's save next to its actions. A change <see cref="OnChanging"/> cancels is not reported here,
+    /// since the app refused it itself.
     /// </summary>
     [Parameter] public EventCallback<BitFullCalendarChangeRefusal> OnRefused { get; set; }
 
@@ -509,7 +514,7 @@ public partial class BitFullCalendar : BitComponentBase
             // was switched), and a name-only check would skip the required SetCulture when only the
             // calendar changed - leaving the calendar rendering against the previous calendar system.
             if (!string.Equals(resolved.Name, State.Culture.Name, StringComparison.Ordinal)
-                || resolved.Calendar.GetType() != State.Culture.Calendar.GetType())
+                || resolved.DateTimeFormat.Calendar.GetType() != State.Culture.DateTimeFormat.Calendar.GetType())
                 State.SetCulture(resolved);
 
             // The keyboard and pointer handlers map a physical direction onto earlier/later through the state,
@@ -1007,9 +1012,9 @@ public partial class BitFullCalendar : BitComponentBase
         return args.Cancel is false;
     }
 
-    private void ReportRefusal(BitFullCalendarChangeRefusal refusal)
+    private void ReportRefusal(BitFullCalendarChangeRefusal refusal, bool showNotice)
     {
-        var message = refusal switch
+        var message = showNotice is false ? null : refusal switch
         {
             BitFullCalendarChangeRefusal.Overlap => Texts.EventOverlapMessage,
             BitFullCalendarChangeRefusal.OutOfRange => Texts.OutOfRangeMessage,

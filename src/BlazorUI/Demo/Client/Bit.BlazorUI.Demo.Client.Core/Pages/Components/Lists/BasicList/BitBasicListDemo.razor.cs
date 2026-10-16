@@ -16,7 +16,7 @@ public partial class BitBasicListDemo
             Name = "AutoLoadThreshold",
             Type = "int",
             DefaultValue = "0",
-            Description = "How many pixels before the end of the loaded items the next page starts loading in AutoLoad mode.",
+            Description = "How many pixels before the end of the loaded items the next page starts loading in AutoLoad mode, measured to the visible end of whichever box scrolls the list: the list itself, a pane around it or the page.",
         },
         new()
         {
@@ -215,6 +215,20 @@ public partial class BitBasicListDemo
             Description = "Custom CSS styles for different parts of the list.",
             LinkType = LinkType.Link,
             Href = "#class-styles",
+        },
+        new()
+        {
+            Name = "StickyFooter",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the footer in view at the end of the list while its rows scroll past it (at the inline end of a horizontal list). It pins the wrapper the FooterTemplate is rendered into, which has no background of its own: paint one in the template or through Styles.Footer.",
+        },
+        new()
+        {
+            Name = "StickyHeader",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the header in view at the start of the list while its rows scroll past it (at the inline start of a horizontal list). It pins the wrapper the HeaderTemplate is rendered into, which has no background of its own: paint one in the template or through Styles.Header.",
         },
         new()
         {

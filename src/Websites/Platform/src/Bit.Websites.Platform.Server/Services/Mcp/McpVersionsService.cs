@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 
 namespace Bit.Websites.Platform.Server.Services.Mcp;
@@ -150,13 +151,19 @@ public partial class McpVersionsService : BackgroundService
 
         if (await EnsureWorktree(clonePath, worktreePath, tag, cancellationToken) is false) return;
 
+        AllowANewerSdk(worktreePath);
+
         var project = await codebaseMemory.Index(worktreePath, cancellationToken);
 
         if (project is null) return;
 
+        // A library added after this release has no project in its worktree. That release simply does not
+        // serve that library's tools - it must not stop the release from being served at all, which is what
+        // a site that cannot be built would do below.
         var released = McpDocumentationSite.Projects
-            .Select(documentation => new McpDocumentationSite(documentation.UpstreamName, name,
-                                                              Path.Combine(worktreePath, documentation.ProjectPath.Replace('/', Path.DirectorySeparatorChar)),
+            .Select(documentation => (documentation.UpstreamName, ProjectFilePath: Path.Combine(worktreePath, documentation.ProjectPath.Replace('/', Path.DirectorySeparatorChar))))
+            .Where(documentation => File.Exists(documentation.ProjectFilePath))
+            .Select(documentation => new McpDocumentationSite(documentation.UpstreamName, name, documentation.ProjectFilePath,
                                                               loggerFactory.CreateLogger<McpDocumentationSite>()))
             .ToArray();
 
@@ -206,6 +213,21 @@ public partial class McpVersionsService : BackgroundService
         }
 
         return await Git(clonePath, cancellationToken, "worktree", "add", "--detach", "--force", worktreePath, tag) is not null;
+    }
+
+    private static void AllowANewerSdk(string worktreePath)
+    {
+        var globalJsonPath = Path.Combine(worktreePath, "src", "global.json");
+
+        if (File.Exists(globalJsonPath) is false) return;
+
+        var globalJson = JsonNode.Parse(File.ReadAllText(globalJsonPath))?.AsObject();
+
+        if (globalJson?["sdk"] is not JsonObject sdk) return;
+
+        sdk["rollForward"] = "feature";
+
+        File.WriteAllText(globalJsonPath, globalJson.ToJsonString());
     }
 
     /// <summary>Restarts the sites that died, and drops a version off the endpoint while its sites are down.</summary>

@@ -73,6 +73,9 @@ public sealed class BitMarkdownRenderer
         return DocumentUrl + url;
     }
 
+    // The sequence numbers of these two helpers are offsets from a literal each call site passes, so every one of them
+    // is still fixed to the source position it is written at, which is all ASP0006 is there to ensure.
+#pragma warning disable ASP0006
     /// <summary>
     /// Writes the <see cref="BitMarkdownTexts.NewTab"/> notice a link opening in a new tab ends with:
     /// text a screen reader reads as part of the link's name, which takes no room on the page and is
@@ -111,6 +114,7 @@ public sealed class BitMarkdownRenderer
             builder.AddAttribute(sequence + 1, "style", ScreenReaderOnlyStyle);
         }
     }
+#pragma warning restore ASP0006
 
     // What the .bit-mdv-sr-only rule of BitMarkdownViewer.scss compiles to - the visually-hidden mixin of
     // functions.scss and the user-select after it - written out for a page without the stylesheet.

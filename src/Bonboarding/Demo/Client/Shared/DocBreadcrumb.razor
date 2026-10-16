@@ -1,0 +1,34 @@
+﻿@* Where in the docs the current page sits. What it adds is the name of the group, which is the one
+   thing the page's own title cannot tell the reader. The group is not itself a destination, so it
+   is printed rather than linked.
+
+   On a page that belongs to an entry without being it - workspace/settings, the second half of the
+   multi-page tour - the entry is linked, because it is where the reader came from. *@
+
+@if (Current is not null)
+{
+    <nav class="doc-breadcrumb" aria-label="Breadcrumb">
+        <a href="@NavItem.All[0].Url">Docs</a>
+        <Icon Path="@Icons.ChevronRight" />
+        <span>@Current.Category</span>
+        <Icon Path="@Icons.ChevronRight" />
+        @if (IsExact)
+        {
+            <span class="current" aria-current="page">@Current.Title</span>
+        }
+        else
+        {
+            <a href="@Current.Url">@Current.Title</a>
+        }
+    </nav>
+}
+
+@code {
+    /// <summary>The entry the route belongs to, or null on a route that is not a docs page.</summary>
+    [Parameter] public NavItem? Current { get; set; }
+
+    /// <summary>The route being shown, relative to the app base and without its leading slash.</summary>
+    [Parameter] public string Href { get; set; } = "";
+
+    private bool IsExact => string.Equals(Current?.Href, Href, StringComparison.OrdinalIgnoreCase);
+}

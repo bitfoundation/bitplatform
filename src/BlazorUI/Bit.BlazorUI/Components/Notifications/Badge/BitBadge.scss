@@ -516,6 +516,12 @@ $bdg-private-properties:
 .bit-bdg > .bit-bdg-stl > .bit-bdg-ctn {
     inset: auto;
     position: relative;
+}
+
+// A badge in the flow takes the pointer back (for its title, its text), which the overlay layer let through. The
+// wrapper is read through :where() so this weighs no more than .bit-bdg-ctn it follows: a disabled button or link
+// badge (.bit-bdg-clk:disabled, [aria-disabled]) still outweighs it and stays out of the pointer here too.
+.bit-bdg-ctn:where(.bit-bdg-stl > *) {
     pointer-events: auto;
 }
 

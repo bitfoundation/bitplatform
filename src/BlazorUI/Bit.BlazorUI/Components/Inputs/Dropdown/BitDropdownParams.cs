@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitDropdown{TItem, TValue}"/> component.
@@ -15,7 +17,7 @@
 /// </remarks>
 /// <typeparam name="TItem">The type of the items of the dropdowns these parameters are provided for.</typeparam>
 /// <typeparam name="TValue">The type of the value of the dropdowns these parameters are provided for.</typeparam>
-public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComponentParams where TItem : class, new()
+public class BitDropdownParams<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue> : BitInputBaseParams<TValue>, IBitComponentParams where TItem : class, new()
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitDropdown{TItem, TValue}"/> cascading parameters within <see cref="BitParams"/>.
@@ -665,7 +667,7 @@ public class BitDropdownParams<TItem, TValue> : BitComponentBaseParams, IBitComp
     {
         if (bitDropdown is null) return;
 
-        UpdateBaseParameters(bitDropdown);
+        UpdateInputBaseParameters(bitDropdown);
 
         if (AriaDescription.HasValue())
         {

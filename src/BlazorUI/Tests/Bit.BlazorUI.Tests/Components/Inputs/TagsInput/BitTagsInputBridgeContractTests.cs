@@ -27,6 +27,10 @@ public sealed class BitTagsInputBridgeContractTests
     private static readonly Regex InvokedFunction =
         new(@"""BitBlazorUI\.TagsInput\.(?<name>\w+)""", RegexOptions.Compiled);
 
+    // dotnetObj.invokeMethodAsync<boolean>('CommitSeparatedText', text)
+    private static readonly Regex InvokedCallback =
+        new(@"invokeMethodAsync(?:<\w+>)?\(\s*'(?<name>\w+)'", RegexOptions.Compiled);
+
     // input.dataset.noAddOnTab / root.dataset.bitTgiTagsSetup
     private static readonly Regex ReadDataset =
         new(@"\.dataset\.(?<name>\w+)", RegexOptions.Compiled);
@@ -77,6 +81,30 @@ public sealed class BitTagsInputBridgeContractTests
             Assert.IsTrue(exported.Contains(name),
                 $"The component invokes BitBlazorUI.TagsInput.{name}, which the script does not export. " +
                 "The call is made inside a catch, so this fails silently at runtime instead of throwing.");
+        }
+    }
+
+    [TestMethod]
+    public void BitTagsInputEveryCallbackTheScriptInvokesIsJSInvokableOnTheComponent()
+    {
+        var callbacks = InvokedCallback.Matches(ReadTypeScript())
+                                       .Select(m => m.Groups["name"].Value)
+                                       .Distinct()
+                                       .ToList();
+
+        Assert.IsTrue(callbacks.Count > 0, "No invokeMethodAsync call was found; the script no longer calls the component back.");
+
+        var invokable = typeof(BitTagsInput).GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance)
+                                            .Select(m => (Method: m, Attribute: System.Reflection.CustomAttributeExtensions.GetCustomAttribute<Microsoft.JSInterop.JSInvokableAttribute>(m)))
+                                            .Where(m => m.Attribute is not null)
+                                            .Select(m => m.Attribute!.Identifier ?? m.Method.Name)
+                                            .ToHashSet(StringComparer.Ordinal);
+
+        foreach (var name in callbacks)
+        {
+            Assert.IsTrue(invokable.Contains(name),
+                $"The script calls the component back with '{name}', which no [JSInvokable] of BitTagsInput answers to. " +
+                "The call is caught on the script side, so a typed separator would silently commit nothing.");
         }
     }
 

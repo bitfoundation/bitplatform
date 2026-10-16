@@ -1,4 +1,5 @@
-﻿using Bunit;
+﻿using System.Globalization;
+using Bunit;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Layouts.Spacer;
@@ -99,6 +100,40 @@ public class BitSpacerTests : BunitTestContext
         StringAssert.Contains(style, $"margin-block-start:{height}px");
         Assert.IsFalse(style.Contains("margin-inline-start"));
         Assert.IsFalse(style.Contains("flex-grow"));
+    }
+
+    [TestMethod]
+    public void BitSpacerShouldWriteANegativeLengthTheBrowserCanRead()
+    {
+        // Not every culture writes a negative number with the hyphen CSS expects: several of them use the
+        // real minus sign, which would make the whole declaration unreadable to the browser.
+        var culture = (CultureInfo)CultureInfo.InvariantCulture.Clone();
+        culture.NumberFormat.NegativeSign = "−";
+
+        var originalCulture = CultureInfo.CurrentCulture;
+        var originalDefault = CultureInfo.DefaultThreadCurrentCulture;
+
+        try
+        {
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.DefaultThreadCurrentCulture = culture;
+
+            var component = RenderComponent<BitSpacer>(parameters =>
+            {
+                parameters.Add(p => p.Width, -8);
+                parameters.Add(p => p.Height, -4);
+            });
+
+            var style = component.Find(".bit-spc").GetAttribute("style")!;
+
+            StringAssert.Contains(style, "margin-inline-start:-8px");
+            StringAssert.Contains(style, "margin-block-start:-4px");
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.DefaultThreadCurrentCulture = originalDefault;
+        }
     }
 
     [TestMethod]

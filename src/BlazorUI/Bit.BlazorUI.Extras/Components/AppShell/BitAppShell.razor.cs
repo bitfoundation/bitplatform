@@ -624,7 +624,8 @@ public partial class BitAppShell : BitComponentBase
     /// </summary>
     /// <remarks>
     /// It is a read of the element at the moment it is asked for, so it needs none of the scroll
-    /// callbacks to have been given a handler.
+    /// callbacks to have been given a handler. It answers null while the container is not rendered, and
+    /// when the browser could not be asked (a dropped circuit, a failed or missing script).
     /// </remarks>
     public async Task<BitScrollOffset?> GetScrollOffset()
     {
@@ -634,7 +635,9 @@ public partial class BitAppShell : BitComponentBase
         {
             return await _js.BitScrollablePaneGetOffset(_containerRef.Value);
         }
+        catch (JSException) { return null; } // the script failed or is not there: the offset is not known
         catch (JSDisconnectedException) { return null; }
+        catch (TaskCanceledException) { return null; }
         catch (ObjectDisposedException) { return null; }
     }
 
@@ -1094,16 +1097,20 @@ public partial class BitAppShell : BitComponentBase
         return index < 0 ? url : url[..index];
     }
 
-    // Every call out to the browser goes through here, so that the two failures none of them can do
-    // anything about - a circuit that dropped, and a runtime already torn down - are never surfaced as an
-    // unhandled exception of an application that did nothing wrong.
+    // Every call out to the browser goes through here, so that the failures none of them can do anything
+    // about - a circuit that dropped, a runtime already torn down, a call that timed out, and a script that
+    // failed or is not there (an element gone with its page, the bundle briefly missing while it is rebuilt) -
+    // are never surfaced as an unhandled exception of an application that did nothing wrong. Each of these
+    // calls only drives the scroll and keyboard behaviour of the shell, which is not worth the circuit.
     private async Task InvokeJs(Func<ValueTask> action)
     {
         try
         {
             await action();
         }
+        catch (JSException) { }
         catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
         catch (ObjectDisposedException) { }
     }
 

@@ -1,0 +1,397 @@
+﻿@page "/e2e/file-input"
+@using System.Globalization
+
+<PageTitle>BitFileInput E2E</PageTitle>
+
+<h1>BitFileInput</h1>
+
+<div style="width: 520px;">
+
+<E2ESection Id="basic" Title="Basic">
+    <BitFileInput Id="fin-basic" Label="Browse or drop a file" Title="Pick one file from your device" @bind-Value="_basic" OnFilesChange="f => { _basicChanges++; _basicFiles = Names(f); }" />
+    <span id="basic-value">@(_basic ?? "null")</span>
+    <span id="basic-changes">@_basicChanges</span>
+    <span id="basic-files">@_basicFiles</span>
+    <button id="btn-basic-clear" @onclick="() => _basic = null">clear value</button>
+    <BitFileInput Id="fin-disabled" Label="Disabled file input" Disabled="_disabled" OnFilesChange="f => _disabledFiles = Names(f)"
+                  @onclick="() => _disabledClicks++" />
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="disabled-files">@_disabledFiles</span>
+    <BitFileInput Id="fin-readonly" Label="Read-only file input" ReadOnly ShowRemoveButton OnFilesChange="f => _readOnlyFiles = Names(f)" />
+    <span id="readonly-files">@_readOnlyFiles</span>
+</E2ESection>
+
+<E2ESection Id="drop-paste" Title="AllowDrop & AllowPaste">
+    <BitFileInput Id="fin-drop" Label="Browse, drop or paste a file" Multiple AllowDrop="_allowDrop" AllowPaste="_allowPaste" OnFilesChange="f => _dropFiles = Names(f)"
+                  Styles="@(new() { Dragging = "outline: 3px solid rgb(1, 2, 3);" })" Classes="@(new() { Dragging = "custom-dragging" })" />
+    <span id="drop-files">@_dropFiles</span>
+    <button id="btn-toggle-drop" @onclick="() => _allowDrop = !_allowDrop">Toggle drop</button>
+    <button id="btn-toggle-paste" @onclick="() => _allowPaste = !_allowPaste">Toggle paste</button>
+    <BitFileInput Id="fin-drop-single" Label="Single" OnFilesChange="f => _dropSingleFiles = Names(f)" />
+    <span id="drop-single-files">@_dropSingleFiles</span>
+</E2ESection>
+
+<E2ESection Id="description" Title="Description">
+    <BitFileInput Id="fin-description" Label="Browse or drop a document" Accept=".pdf,.docx" MaxSize="1024 * 1024 * 5" Description="PDF or DOCX, up to 5 MB." />
+    <BitFileInput Id="fin-description-template" Label="Browse or drop an image" Accept="image/*">
+        <DescriptionTemplate><span class="dsc-tpl">Images <b>only</b></span></DescriptionTemplate>
+    </BitFileInput>
+</E2ESection>
+
+<E2ESection Id="multiple" Title="Multiple & Directory">
+    <BitFileInput Id="fin-multiple" Label="Browse or drop files" Multiple OnFilesChange="f => _multipleFiles = Names(f)" />
+    <span id="multiple-files">@_multipleFiles</span>
+    <BitFileInput Id="fin-directory" Label="Browse or drop a folder" Directory OnFilesChange="f => _directoryFiles = string.Join('|', f.Select(x => x.RelativePath))" />
+    <span id="directory-files">@_directoryFiles</span>
+</E2ESection>
+
+<E2ESection Id="removable" Title="Removable">
+    <BitFileInput Id="fin-removable" Label="Browse or drop files" Multiple ShowRemoveButton @bind-Value="_removable" />
+    <span id="removable-value">@(_removable ?? "null")</span>
+    <BitFileInput Id="fin-remove-icon" Label="Custom remove" ShowRemoveButton RemoveButtonIconName="Cancel" RemoveButtonTitle="Discard" />
+    <BitFileInput Id="fin-remove-external" Label="External remove icon" ShowRemoveButton RemoveButtonIcon="@BitIconInfo.Fa("solid trash")" />
+</E2ESection>
+
+<E2ESection Id="append" Title="Append, AutoReset & duplicates">
+    <BitFileInput Id="fin-append" Label="Browse or drop files" Multiple Append ShowRemoveButton AllowDuplicates="false"
+                  DuplicateErrorMessage="This file has already been picked." @bind-Value="_append" />
+    <span id="append-value">@(_append ?? "null")</span>
+    <BitFileInput Id="fin-replace" Label="Replace" Multiple @bind-Value="_replace" />
+    <span id="replace-value">@(_replace ?? "null")</span>
+    <BitFileInput Id="fin-autoreset" Label="Browse or drop a file" AutoReset @bind-Value="_autoReset" />
+    <span id="autoreset-value">@(_autoReset ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="limits" Title="Size & count limits">
+    <BitFileInput Id="fin-size" Label="Browse or drop files" Multiple MaxSize="2000" MinSize="10"
+                  MaxSizeErrorMessage="The file is too big!" MinSizeErrorMessage="The file is too small!" @bind-Value="_size" />
+    <span id="size-value">@(_size ?? "null")</span>
+    <BitFileInput Id="fin-count" Label="Browse or drop files" Multiple Append ShowRemoveButton MaxCount="3" MaxTotalSize="3000"
+                  MaxCountErrorMessage="Three at most." MaxTotalSizeErrorMessage="Too much in total." @bind-Value="_count" />
+    <span id="count-value">@(_count ?? "null")</span>
+    <BitFileInput Id="fin-default-messages" Label="Default messages" Multiple MaxSize="2000" MinSize="10" MaxCount="1" AllowedExtensions="@([".txt"])" />
+</E2ESection>
+
+<E2ESection Id="accept" Title="Accept, AllowedExtensions & Capture">
+    <BitFileInput Id="fin-accept" Label="Browse images" Accept="image/*" />
+    <BitFileInput Id="fin-allowed" Label="Browse or drop a file" Multiple AllowedExtensions="@([".pdf", "docx", "image/*"])"
+                  NotAllowedExtensionErrorMessage="Only PDF, DOCX or images." @bind-Value="_allowed" />
+    <span id="allowed-value">@(_allowed ?? "null")</span>
+    <BitFileInput Id="fin-capture" Label="Take a photo" Accept="image/*" Capture="environment" />
+</E2ESection>
+
+<E2ESection Id="custom-validation" Title="Custom validation">
+    <BitFileInput Id="fin-validator" Label="Browse or drop files" Multiple FileValidator="ValidateEmptyFile" @bind-Value="_validated" />
+    <span id="validator-value">@(_validated ?? "null")</span>
+    <BitFileInput Id="fin-dimensions" Label="Browse or drop images" Multiple Accept="image/*" ReadImageDimensions
+                  FileValidator="ValidateImageDimensions" OnFilesChange="@(f => _dimensions = string.Join('|', f.Select(x => $"{x.Name}:{x.Width}x{x.Height}")))" />
+    <span id="dimensions">@_dimensions</span>
+</E2ESection>
+
+<E2ESection Id="preview" Title="Preview & file icons">
+    <BitFileInput Id="fin-preview" Label="Browse or drop files" Multiple ShowPreview />
+    <BitFileInput Id="fin-icon-selector" Label="Browse or drop files" Multiple ShowPreview FileIconSelector="SelectFileIcon" />
+</E2ESection>
+
+<E2ESection Id="localization" Title="Localization">
+    <BitFileInput Id="fin-localized" Label="Pick files" Multiple ShowRemoveButton MaxSize="1000" RemoveButtonTitle="Delete it"
+                  MaxSizeErrorMessage="Too large." FileListAriaLabel="Chosen documents"
+                  FileSizeFormatter="@(size => $"{size.ToString("N0", CultureInfo.InvariantCulture)} bytes")"
+                  AnnouncementProvider="@(files => $"Picked {files.Count}, {files.Count(f => f.IsValid is false)} bad")" />
+</E2ESection>
+
+<E2ESection Id="hide-list" Title="HideFileList">
+    <BitFileInput Id="fin-hidden-list" Label="Browse or drop files" Multiple HideFileList OnFilesChange="f => _hiddenList = Names(f)" />
+    <span id="hidden-list">@_hiddenList</span>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitFileInput Id="fin-events" Label="Select or drag and drop files" Multiple ShowRemoveButton MaxSize="1000"
+                  OnFilesChange="f => { _changeCount++; _changeArgs = Names(f); }"
+                  OnInvalid="@(f => { _invalidCount++; _invalidArgs = string.Join('|', f.Select(x => $"{x.Name}:{x.Message}")); })"
+                  OnRemove="f => { _removeCount++; _removeArgs = f.Name; }"
+                  OnChange="@(v => _onChangeValue = v ?? "null")" />
+    <span id="change-count">@_changeCount</span>
+    <span id="change-args">@_changeArgs</span>
+    <span id="invalid-count">@_invalidCount</span>
+    <span id="invalid-args">@_invalidArgs</span>
+    <span id="remove-count">@_removeCount</span>
+    <span id="remove-args">@_removeArgs</span>
+    <span id="onchange-value">@_onChangeValue</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitFileInput @ref="_templated" Id="fin-templates" Multiple Append>
+        <LabelTemplate>
+            <button id="custom-browse" type="button" @onclick="BrowseTemplated">Choose pictures</button>
+        </LabelTemplate>
+        <FileViewTemplate Context="file">
+            <div class="file-card" data-name="@file.Name" data-index="@file.Index" data-valid="@(file.IsValid ? "yes" : "no")">
+                <span class="file-card-name">@file.Name</span>
+                <span class="file-card-size">@file.Size</span>
+                <span class="file-card-type">@file.ContentType</span>
+                <span class="file-card-ext">@file.Extension</span>
+                <button class="file-card-remove" type="button" @onclick="() => _templated!.RemoveFile(file)">x</button>
+            </div>
+        </FileViewTemplate>
+    </BitFileInput>
+</E2ESection>
+
+<E2ESection Id="api" Title="Public API">
+    <BitFileInput @ref="_api" Id="fin-api" HideLabel Multiple OnFilesChange="_ => StateHasChanged()" />
+    <button id="api-browse" @onclick="() => _api!.Browse()">Browse</button>
+    <button id="api-reset" @onclick="() => _api!.Reset()">Reset</button>
+    <button id="api-read" @onclick="ReadContent">ReadContent</button>
+    <button id="api-stream" @onclick="ReadStream">OpenReadStream</button>
+    <button id="api-remove-first" @onclick="RemoveFirst">RemoveFile(first)</button>
+    <button id="api-remove-all" @onclick="() => _api!.RemoveFile()">RemoveFile()</button>
+    <button id="api-focus" @onclick="() => _api!.FocusAsync()">Focus</button>
+    <span id="api-files">@(_api is null ? "" : Names(_api.Files))</span>
+    <span id="api-input-id">@_api?.InputId</span>
+    <span id="api-content">@_apiContent</span>
+    <span id="api-stream-length">@_apiStreamLength</span>
+    <BitFileInput @ref="_apiFocus" Id="fin-api-focus" Label="Focus me" />
+    <button id="api-focus-labelled" @onclick="() => _apiFocus!.FocusAsync()">Focus labelled</button>
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="Accessibility">
+    <BitFileInput Id="fin-a11y" Label="Browse or drop files" AriaLabel="Select documents to attach" Multiple ShowRemoveButton MaxSize="1000"
+                  Description="Up to 1 KB each." />
+    <BitFileInput Id="fin-list-focus" Label="List takes focus" Multiple />
+    <button id="after-a11y">after</button>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    @foreach (var (variant, slug) in _variants)
+    {
+        <BitFileInput Id="@($"fin-var-{slug}")" Variant="variant" Label="@slug" />
+        <BitFileInput Id="@($"fin-var-{slug}-dis")" Variant="variant" Label="@slug" Disabled />
+    }
+    <BitFileInput Id="fin-var-default" Label="Default" />
+</E2ESection>
+
+<E2ESection Id="drop-zone" Title="Drop zone">
+    <BitFileInput Id="fin-dropzone" ShowDropZone Multiple ShowPreview ShowRemoveButton Label="Drag files here or click to browse" Description="Any file type." />
+    <BitFileInput Id="fin-dropzone-folder" ShowDropZone Directory DropZoneIconName="FabricFolder" Label="Drag a folder here" />
+    <BitFileInput Id="fin-dropzone-external" ShowDropZone DropZoneIcon="@BitIconInfo.Bi("cloud-arrow-up")" Label="External icon" />
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_fileParams">
+        <BitFileInput Id="fin-cascade-1" />
+        <BitFileInput Id="fin-cascade-own" Label="Its own label" MaxSize="100000" MaxSizeErrorMessage="Own message." />
+    </BitParams>
+    <BitFileInput Id="fin-cascade-outside" Label="Outside" />
+</E2ESection>
+
+<E2ESection Id="form" Title="Validation" style="--bit-FileInput-invalid-color: rgb(4, 5, 6);">
+    <EditForm Model="_model" OnValidSubmit="@(() => _formResult = "valid")" OnInvalidSubmit="@(() => _formResult = "invalid")">
+        <DataAnnotationsValidator />
+        <BitFileInput Id="fin-form" Required ShowRemoveButton Label="Attach your resume" Name="resume" AllowedExtensions="@([".pdf", ".docx"])"
+                      InputHtmlAttributes="@(new() { ["data-input"] = "resume" })" @bind-Value="_model.Resume" />
+        <div id="fin-form-msg"><ValidationMessage For="@(() => _model.Resume)" /></div>
+        <button id="fin-form-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-result">@_formResult</span>
+    <span id="form-value">@(_model.Resume ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <BitFileInput Id="fin-color-none" Label="None" />
+    @foreach (var (color, slug) in _colors)
+    {
+        <BitFileInput Id="@($"fin-color-{slug}")" Color="color" Label="@slug" />
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitFileInput Id="fin-size-sm" Size="BitSize.Small" Label="Small" />
+    <BitFileInput Id="fin-size-md" Size="BitSize.Medium" Label="Medium" />
+    <BitFileInput Id="fin-size-lg" Size="BitSize.Large" Label="Large" />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <BitFileInput Id="fin-style" Label="Style" Style="margin-inline: 13px;" Class="custom-class" data-test="attr-value" />
+    <BitFileInput Id="fin-styles" Label="Styles" Description="Styles description" ShowDropZone Multiple ShowPreview ShowRemoveButton MaxSize="1000"
+                  Styles="@(new() { Root = "padding: 5px;", Label = "letter-spacing: 3px;", DropZoneIcon = "color: rgb(1, 1, 1);", Description = "color: rgb(2, 2, 2);", FileList = "padding-top: 4px;", FileItem = "padding-bottom: 3px;", Preview = "opacity: 0.9;", FileIcon = "opacity: 0.8;", FileName = "color: rgb(3, 3, 3);", FilePath = "color: rgb(4, 4, 4);", FileSize = "color: rgb(5, 5, 5);", ErrorMessage = "color: rgb(6, 6, 6);", RemoveButton = "opacity: 0.7;", RemoveIcon = "color: rgb(7, 7, 7);" })" />
+    <BitFileInput Id="fin-classes" Label="Classes" Description="Classes description" ShowDropZone Multiple ShowPreview ShowRemoveButton MaxSize="1000"
+                  Classes="@(new() { Root = "c-root", Label = "c-lbl", DropZoneIcon = "c-dzi", Description = "c-dsc", FileList = "c-fl", FileItem = "c-itm", Preview = "c-prv", FileIcon = "c-fio", FileName = "c-fn", FilePath = "c-fp", FileSize = "c-fs", ErrorMessage = "c-msg", RemoveButton = "c-rbt", RemoveIcon = "c-rmi" })" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div style="--bit-FileInput-max-width: 300px; --bit-FileInput-color: rgb(218, 165, 32); --bit-FileInput-text-color: rgb(1, 2, 3); --bit-FileInput-label-height: 50px; --bit-FileInput-label-padding: 7px; --bit-FileInput-label-font-size: 19px; --bit-FileInput-label-font-weight: 700; --bit-FileInput-label-radius: 9px; --bit-FileInput-description-color: rgb(4, 5, 6); --bit-FileInput-description-font-size: 11px; --bit-FileInput-item-background: rgb(7, 8, 9); --bit-FileInput-item-border-color: rgb(10, 11, 12); --bit-FileInput-item-radius: 6px; --bit-FileInput-item-padding: 9px; --bit-FileInput-item-gap: 13px; --bit-FileInput-item-font-size: 15px; --bit-FileInput-file-name-color: rgb(13, 14, 15); --bit-FileInput-file-size-color: rgb(16, 17, 18); --bit-FileInput-error-color: rgb(19, 20, 21); --bit-FileInput-invalid-background: rgb(22, 23, 24); --bit-FileInput-preview-size: 30px; --bit-FileInput-preview-radius: 3px; --bit-FileInput-file-icon-color: rgb(25, 26, 27); --bit-FileInput-file-list-max-height: 80px; --bit-FileInput-remove-button-color: rgb(28, 29, 30); --bit-FileInput-drop-background: rgb(31, 32, 33);">
+        <BitFileInput Id="fin-vars" Label="Vars" Description="Vars description" Multiple ShowPreview ShowRemoveButton MaxSize="1000" />
+        <BitFileInput Id="fin-vars-explicit" Label="Explicit" Color="BitColor.Error" Size="BitSize.Small" />
+    </div>
+    <div style="--bit-FileInput-drop-zone-height: 120px; --bit-FileInput-drop-zone-padding: 12px; --bit-FileInput-drop-zone-radius: 10px; --bit-FileInput-drop-zone-border-width: 4px; --bit-FileInput-drop-zone-border-style: dotted; --bit-FileInput-drop-zone-icon-size: 40px; --bit-FileInput-disabled-background: rgb(40, 41, 42); --bit-FileInput-disabled-color: rgb(43, 44, 45); --bit-FileInput-hover-color: rgb(46, 47, 48);">
+        <BitFileInput Id="fin-vars-dropzone" Label="Drop zone vars" ShowDropZone />
+        <BitFileInput Id="fin-vars-disabled" Label="Disabled vars" Disabled />
+        <BitFileInput Id="fin-vars-hover" Label="Hover vars" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitFileInput Id="fin-rtl" Dir="BitDir.Rtl" Label="انتخاب فایل" Multiple ShowRemoveButton ShowPreview />
+    <div dir="rtl">
+        <BitFileInput Id="fin-rtl-inherited" Label="Inherited" ShowRemoveButton />
+    </div>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitFileInput Id="fin-runtime" Label="@_runtimeLabel" Color="_runtimeColor" Size="_runtimeSize" ShowDropZone="_runtimeDropZone" Multiple="_runtimeMultiple" />
+    <button id="btn-runtime-color" @onclick="() => _runtimeColor = BitColor.Error">Error</button>
+    <button id="btn-runtime-size" @onclick="() => _runtimeSize = BitSize.Large">Large</button>
+    <button id="btn-runtime-dropzone" @onclick="() => _runtimeDropZone = true">DropZone</button>
+    <button id="btn-runtime-multiple" @onclick="() => _runtimeMultiple = true">Multiple</button>
+    <button id="btn-runtime-label" @onclick="@(() => _runtimeLabel = "Changed label")">Label</button>
+    @if (_mounted)
+    {
+        <BitFileInput Id="fin-unmount" Label="Unmount me" Multiple ShowPreview />
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Motion">
+    <BitFileInput Id="fin-motion" Label="Motion" />
+    <BitFileInput Id="fin-motion-forced" Label="Forced" ForceAnimation />
+</E2ESection>
+
+</div>
+
+<E2EStatus />
+
+@code {
+    private static readonly (BitColor Color, string Slug)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+
+    private static readonly (BitVariant Variant, string Slug)[] _variants =
+    [
+        (BitVariant.Fill, "fil"),
+        (BitVariant.Outline, "otl"),
+        (BitVariant.Text, "txt"),
+    ];
+
+    private readonly BitFileInputParams[] _fileParams =
+    [
+        new()
+        {
+            Label = "Cascaded label",
+            Multiple = true,
+            MaxSize = 1000,
+            MaxSizeErrorMessage = "Cascaded message.",
+            ShowRemoveButton = true,
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+        }
+    ];
+
+    private string? _basic;
+    private int _basicChanges;
+    private string _basicFiles = "";
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private string _disabledFiles = "";
+    private string _readOnlyFiles = "";
+    private bool _allowDrop = true;
+    private bool _allowPaste = true;
+    private string _dropFiles = "";
+    private string _dropSingleFiles = "";
+    private string _multipleFiles = "";
+    private string _directoryFiles = "";
+    private string? _removable;
+    private string? _append;
+    private string? _replace;
+    private string? _autoReset;
+    private string? _size;
+    private string? _count;
+    private string? _allowed;
+    private string? _validated;
+    private string _dimensions = "";
+    private string _hiddenList = "";
+    private int _changeCount;
+    private string _changeArgs = "";
+    private int _invalidCount;
+    private string _invalidArgs = "";
+    private int _removeCount;
+    private string _removeArgs = "";
+    private string _onChangeValue = "";
+    private BitFileInput? _templated;
+    private BitFileInput? _api;
+    private BitFileInput? _apiFocus;
+    private string _apiContent = "";
+    private string _apiStreamLength = "";
+    private readonly FormModel _model = new();
+    private string _formResult = "none";
+    private string _runtimeLabel = "Runtime label";
+    private BitColor? _runtimeColor;
+    private BitSize? _runtimeSize;
+    private bool _runtimeDropZone;
+    private bool _runtimeMultiple;
+    private bool _mounted = true;
+
+    private static string Names(IEnumerable<BitFileInputInfo> files) => string.Join("|", files.Select(f => f.Name));
+
+    private static string? ValidateEmptyFile(BitFileInputInfo file) => file.Size == 0 ? "The file is empty." : null;
+
+    private static string? ValidateImageDimensions(BitFileInputInfo file) => file.Width > 100 ? $"Too wide: {file.Width}px." : null;
+
+    private static BitIconInfo? SelectFileIcon(BitFileInputInfo file) => file.Extension switch
+    {
+        ".pdf" => BitIconInfo.Bit(BitIconName.PDF),
+        ".txt" => BitIconInfo.Css("custom-text-icon"),
+        _ => null
+    };
+
+    private async Task BrowseTemplated()
+    {
+        if (_templated is not null) await _templated.Browse();
+    }
+
+    private async Task ReadContent()
+    {
+        if (_api is null || _api.Files.Count == 0) return;
+        var file = _api.Files[0];
+        await _api.ReadContentAsync(file);
+        _apiContent = file.Content is null ? "null" : $"{file.Content.Length}:{System.Text.Encoding.UTF8.GetString(file.Content)}";
+    }
+
+    private async Task ReadStream()
+    {
+        if (_api is null || _api.Files.Count == 0) return;
+        await using var stream = await _api.OpenReadStreamAsync(_api.Files[^1]);
+        using var memory = new MemoryStream();
+        await stream.CopyToAsync(memory);
+        _apiStreamLength = memory.Length.ToString(CultureInfo.InvariantCulture);
+    }
+
+    private async Task RemoveFirst()
+    {
+        if (_api is null || _api.Files.Count == 0) return;
+        await _api.RemoveFile(_api.Files[0]);
+    }
+
+    public class FormModel
+    {
+        [Required(ErrorMessage = "Attach your resume.")]
+        public string? Resume { get; set; }
+    }
+}
