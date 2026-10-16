@@ -1,0 +1,177 @@
+﻿@page "/serialization"
+@using System.Numerics
+@inject FileDownloads Downloads
+
+<PageTitle>Serialization - bit Bink</PageTitle>
+
+<h1>Serialization</h1>
+<p class="page-intro">
+    Drawings are vector documents, not pictures. Draw on the left, then save, reload and export on the right.
+    The compact format stores a handwriting point in a few bytes; the readable format is the same data as plain
+    JSON for diffing and inspection.
+</p>
+
+<div class="split">
+    <div class="panel">
+        <div class="toolbar">
+            <span class="field">Draw something, then save it.</span>
+            <div class="toolbar-spacer"></div>
+            <button type="button" class="btn" disabled="@(_canvas is not { History.CanUndo: true })" @onclick="() => _canvas?.Undo()">Undo</button>
+            <button type="button" class="btn danger" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="() => _canvas?.Clear()">Clear</button>
+        </div>
+        <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()" Height="340px" Brush="_brush" AriaLabel="Source drawing"
+                   DocumentChanged="() => StateHasChanged()"
+                   Ready="() => StateHasChanged()" />
+        <CanvasStatus Canvas="_canvas" />
+    </div>
+
+    <div class="panel">
+        <div class="toolbar">
+            <button type="button" class="btn primary" @onclick="Save">Save</button>
+            <button type="button" class="btn" disabled="@(_saved is null)" @onclick="Load">Load into the canvas</button>
+            <button type="button" class="btn" disabled="@(_saved is null)" @onclick="DownloadAsync">Download</button>
+            <label class="btn">
+                Open file
+                <InputFile OnChange="OpenAsync" accept=".json,.bink,application/json" style="display:none" />
+            </label>
+            <div class="toolbar-spacer"></div>
+            <label class="field">
+                <input type="checkbox" checked="@_readable" @onchange="OnReadableChanged" />
+                Readable JSON
+            </label>
+        </div>
+
+        @if (_stats is not null)
+        {
+            <table>
+                <thead>
+                    <tr><th>Measure</th><th>Value</th></tr>
+                </thead>
+                <tbody>
+                    <tr><td>Elements</td><td>@_stats.Elements</td></tr>
+                    <tr><td>Stroke points</td><td>@_stats.Points</td></tr>
+                    <tr><td>Compact document</td><td>@FormatBytes(_stats.CompactBytes)</td></tr>
+                    <tr><td>Readable document</td><td>@FormatBytes(_stats.ReadableBytes)</td></tr>
+                    <tr><td>Bytes per point (compact)</td><td>@(_stats.Points == 0 ? "-" : (_stats.CompactBytes / (double)_stats.Points).ToString("0.0"))</td></tr>
+                    <tr><td>SVG export</td><td>@FormatBytes(_stats.SvgBytes)</td></tr>
+                    <tr><td>PNG export (1x)</td><td>@FormatBytes(_stats.PngBytes)</td></tr>
+                    <tr><td>Round trip identical</td><td>@(_stats.RoundTripStable ? "yes" : "no")</td></tr>
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p style="padding:1rem;color:var(--text-muted)">Save the drawing to see how it is stored.</p>
+        }
+    </div>
+</div>
+
+@if (_error is not null)
+{
+    <p role="alert" style="color:var(--danger)">@_error</p>
+}
+
+@if (_saved is not null)
+{
+    <h2>Stored document</h2>
+    <p class="page-intro">
+        This is the text that was saved, and you can edit it. Change a number and load it to see the edit take
+        effect, or break the JSON to see the loader refuse it with a reason instead of loading half a drawing.
+    </p>
+    <textarea class="output" aria-label="Stored document" spellcheck="false" rows="14"
+              style="width:100%;font-family:ui-monospace,monospace;font-size:0.8rem"
+              value="@_saved" @onchange="e => _saved = e.Value?.ToString()"></textarea>
+}
+
+<div class="note">
+    The format carries a schema version. A document written by a newer version is refused with an explanation
+    rather than being partially read, and elements of unknown types are preserved untouched through a load and
+    save, so an old build never silently destroys work made by a new one.
+</div>
+
+@code {
+    private sealed record Stats(int Elements, long Points, int CompactBytes, int ReadableBytes, int SvgBytes, int PngBytes, bool RoundTripStable);
+
+    private BinkCanvas? _canvas;
+    private readonly BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#111827") };
+    private BinkDocument? _snapshot;
+    private string? _saved;
+    private string? _error;
+    private bool _readable;
+    private Stats? _stats;
+
+    private void OnReadableChanged(ChangeEventArgs e)
+    {
+        _readable = e.Value is true;
+        // Re-show what was saved in the other format. The drawing may have changed since; that is not saved yet.
+        if (_snapshot is not null) Show(_snapshot);
+    }
+
+    private void Save()
+    {
+        if (_canvas is null) return;
+        _error = null;
+        _snapshot = _canvas.CurrentDocument.Clone();
+        Show(_snapshot);
+    }
+
+    private void Show(BinkDocument document)
+    {
+        string compact = BinkSerializer.Serialize(document);
+        string readable = BinkSerializer.Serialize(document, BinkSerializerOptions.Readable);
+        _saved = _readable ? readable : compact;
+
+        // A round trip must be byte-for-byte stable, otherwise saving twice would create spurious changes.
+        string again = BinkSerializer.Serialize(BinkSerializer.Deserialize(compact));
+
+        _stats = new Stats(
+            document.ElementCount,
+            document.TotalPointCount,
+            System.Text.Encoding.UTF8.GetByteCount(compact),
+            System.Text.Encoding.UTF8.GetByteCount(readable),
+            System.Text.Encoding.UTF8.GetByteCount(BinkSvgExporter.Export(document)),
+            BinkPngExporter.Export(document).Length,
+            string.Equals(compact, again, StringComparison.Ordinal));
+    }
+
+    private void Load()
+    {
+        if (_canvas is null || _saved is null) return;
+        if (BinkSerializer.TryDeserialize(_saved, out BinkDocument? document, out string? error) && document is not null)
+        {
+            _error = null;
+            _canvas.LoadDocument(document);
+            _snapshot = document.Clone();
+        }
+        else
+        {
+            // The text stays as it is, so the mistake can be found and fixed.
+            _error = "Could not load: " + error;
+        }
+    }
+
+    private async Task DownloadAsync()
+    {
+        if (_saved is null) return;
+        await Downloads.SaveAsync("drawing.bink.json", System.Text.Encoding.UTF8.GetBytes(_saved), "application/json");
+    }
+
+    private async Task OpenAsync(InputFileChangeEventArgs args)
+    {
+        const long maxBytes = 20 * 1024 * 1024;
+        try
+        {
+            using var reader = new StreamReader(args.File.OpenReadStream(maxBytes));
+            _saved = await reader.ReadToEndAsync();
+            _error = null;
+            Load();
+        }
+        catch (IOException ex)
+        {
+            _error = "That file could not be read: " + ex.Message;
+        }
+    }
+
+    private static string FormatBytes(long bytes)
+        => bytes < 1024 ? $"{bytes} B" : $"{bytes / 1024.0:0.#} KB";
+}

@@ -87,7 +87,7 @@ higher-numbered lines exist there.
 **TypeScript is held at 5.9.3 in the libraries.** 7.x is the Go rewrite
 (`microsoft/typescript-go`), not an incremental release. `Boilerplate.Client.Core` is the canary and
 is already on 7.0.2 — if a bump is wanted, move one library project, build it, and only then the
-rest. Do not move all eleven at once.
+rest. Do not move all twelve at once.
 
 **Vitest is held at `^3`** in `src/Bmotion/Tests/bit-bmotion-js` and `src/Bswup/Tests/bit-bswup-js`.
 

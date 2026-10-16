@@ -38,6 +38,7 @@ bit new MyApp
 ## UI
 
 - [***bit BlazorUI***](https://blazorui.bitplatform.dev) (`Bit.BlazorUI`): 90+ high-performance, accessible components with Dark and Light themes and RTL support, split across `Bit.BlazorUI`, `Bit.BlazorUI.Extras` (DataGrid, Chart, PdfViewer, RichTextEditor, Map, FullCalendar, CountryPicker, TimeZonePicker, and more), `Bit.BlazorUI.Icons` and `Bit.BlazorUI.Assets`.
+- [***Bink***](src/Bink/README.md) (`Bit.Bink`): A Blazor-native drawing and ink library, with pressure- and tilt-aware strokes, brushes, erasers, shapes, annotations, selection, layers, undo/redo, real-time collaboration and SVG/PNG export. The document model and the drawing engine run in C#; the browser only captures input and paints.
 - [***Bmotion***](src/Bmotion/README.md) (`Bit.Bmotion`): A Blazor-native animation library inspired by Motion (Framer Motion), with springs, gestures, keyframes, variants, drag, layout (FLIP) and exit animations. The animation math runs in C#, so there's no JavaScript to wire up.
 
 ## App infrastructure

@@ -50,6 +50,20 @@
     <Project Path="Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
     <Project Path="Bmotion/Tests/Bit.Bmotion.Tests.Mcp/Bit.Bmotion.Tests.Mcp.csproj" />
   </Folder>
+  <Folder Name="/Bink/">
+    <File Path="Bink/README.md" />
+    <Project Path="Bink/Bit.Bink/Bit.Bink.csproj" />
+  </Folder>
+  <Folder Name="/Bink/Bit.Bink.Demo/">
+    <Project Path="Bink/Bit.Bink.Demo/Client/Bit.Bink.Demo.Client.csproj" />
+    <Project Path="Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bink/Tests/">
+    <Project Path="Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
+    <Project Path="Bink/Tests/Bit.Bink.Tests.Mcp/Bit.Bink.Tests.Mcp.csproj" />
+    <Project Path="Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj" />
+    <Project Path="Bink/Tests/Bit.Bink.Benchmarks/Bit.Bink.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>

@@ -1,0 +1,71 @@
+﻿@using System.Globalization
+@using System.Numerics
+@implements IDisposable
+
+@* Draws the other participants' cursors and the stroke they are drawing right now. It sits over the canvas as
+   plain SVG and only this component re-renders when presence changes, not the page or the canvas. *@
+
+<svg aria-hidden="true" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible">
+    @if (Session is not null && Canvas is not null)
+    {
+        BinkViewport viewport = Canvas.CurrentViewport;
+        @foreach (BinkPresenceState presence in Session.Participants)
+        {
+            string color = presence.Color ?? "#6b7280";
+            if (presence.LiveStroke is { Count: > 1 } live)
+            {
+                <polyline points="@Points(live, viewport)" fill="none" stroke="@(presence.LiveStrokeColor ?? color)"
+                          stroke-width="@Number(presence.LiveStrokeWidth * viewport.Zoom)" stroke-linecap="round"
+                          stroke-linejoin="round" opacity="0.6" />
+            }
+            if (presence.Cursor is { } cursor)
+            {
+                Vector2 at = viewport.ToView(cursor);
+                <g transform="translate(@Number(at.X) @Number(at.Y))">
+                    <path d="M0 0 L0 15 L4 11 L7 18 L10 17 L7 10 L12 10 Z" fill="@color" stroke="white" stroke-width="1" />
+                    <rect x="12" y="16" rx="4" width="@Number(8 + (presence.Name?.Length ?? 0) * 7)" height="18" fill="@color" />
+                    <text x="16" y="29" fill="white" font-size="12" font-family="system-ui, sans-serif">@presence.Name</text>
+                </g>
+            }
+        }
+    }
+</svg>
+
+@code {
+    private BinkCollaborationSession? _subscribed;
+
+    /// <summary>The session whose remote participants are shown.</summary>
+    [Parameter] public BinkCollaborationSession? Session { get; set; }
+
+    /// <summary>The canvas the overlay covers, for its viewport.</summary>
+    [Parameter] public BinkCanvas? Canvas { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_subscribed, Session)) return;
+        Unsubscribe();
+        _subscribed = Session;
+        if (_subscribed is null) return;
+        _subscribed.PresenceChanged += OnPresenceChanged;
+        _subscribed.ParticipantLeft += OnParticipantLeft;
+    }
+
+    private void OnPresenceChanged(BinkPresenceState presence) => _ = InvokeAsync(StateHasChanged);
+
+    private void OnParticipantLeft(string participantId) => _ = InvokeAsync(StateHasChanged);
+
+    private static string Points(IReadOnlyList<Vector2> points, BinkViewport viewport)
+        => string.Join(' ', points.Select(p => viewport.ToView(p)).Select(v => Number(v.X) + "," + Number(v.Y)));
+
+    private static string Number(float value) => value.ToString("0.#", CultureInfo.InvariantCulture);
+
+    private void Unsubscribe()
+    {
+        if (_subscribed is null) return;
+        _subscribed.PresenceChanged -= OnPresenceChanged;
+        _subscribed.ParticipantLeft -= OnParticipantLeft;
+        _subscribed = null;
+    }
+
+    public void Dispose() => Unsubscribe();
+}

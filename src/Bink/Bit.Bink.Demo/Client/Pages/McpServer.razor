@@ -1,0 +1,103 @@
+﻿@page "/mcp-server"
+
+@* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
+   purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
+
+<PageTitle>MCP server - bit Bink</PageTitle>
+
+<h1>MCP server</h1>
+
+<p class="page-intro">
+    This site hosts a Model Context Protocol server at <code>/mcp</code>, so an AI agent writing drawing code
+    with Bit.Bink reads the library itself - its compiled API documentation, its guide, its brush registry, its
+    serializer and these demo pages - instead of guessing at an API it half remembers. Every tool is read-only.
+</p>
+
+<div class="panel">
+    <h2>Connect a client</h2>
+
+    <p>
+        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else. The same tools
+        are also served, version by version, through the bit platform's own server at
+        <code>https://bitplatform.dev/mcp</code>, next to the other bit libraries.
+    </p>
+
+    <pre class="output"><code>@ClientConfig</code></pre>
+</div>
+
+<div class="panel">
+    <h2>Tools</h2>
+
+    <table>
+        <thead>
+            <tr><th>Tool</th><th>What it answers</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>SearchBink</code></td>
+                <td>Everything at once - the guide, every public member, the brushes, the setup guides, the stylesheet and the demo sources - each hit with the exact follow-up call.</td>
+            </tr>
+            <tr>
+                <td><code>GetBinkSetupGuide</code></td>
+                <td>The complete wiring for one render mode: server, wasm, auto, standalone-wasm or hybrid.</td>
+            </tr>
+            <tr>
+                <td><code>GetBinkGuideSection</code></td>
+                <td>One section of the reference guide, or the index of sections.</td>
+            </tr>
+            <tr>
+                <td><code>GetBinkApi</code></td>
+                <td>One public type with every parameter, property and method, its real default and its documentation - or the index of types.</td>
+            </tr>
+            <tr>
+                <td><code>GetBinkBrushes</code></td>
+                <td>The built-in brushes with their real defaults, their geometry and the JSON a stroke stores them as.</td>
+            </tr>
+            <tr>
+                <td><code>InspectBinkDocument</code></td>
+                <td>What the library's own serializer and exporters make of a saved document - or a sample document, to see the format.</td>
+            </tr>
+            <tr>
+                <td><code>GetBinkSourceFile</code></td>
+                <td>One demo or library file verbatim - every page here is a working drawing surface - or the index of files.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>
+        The guide, the API, the brushes, a sample document and the sources are also exposed as <code>bink://</code>
+        resources, and three prompts - <code>add-bink-to-app</code>, <code>implement-bink-feature</code> and
+        <code>debug-bink-canvas</code> - walk an agent through the common jobs in the right order.
+    </p>
+</div>
+
+<div class="panel">
+    <h2>The same tools over plain HTTP</h2>
+
+    <p>
+        Every tool is also a <code>GET</code> under <code>/api/mcp/...</code>: open one in a browser tab to read
+        exactly what an agent is handed.
+    </p>
+
+    <ul>
+        <li><a href="/api/mcp/SearchBink?query=signature%20pad%20export%20png" target="_blank" rel="noopener">/api/mcp/SearchBink?query=signature pad export png</a></li>
+        <li><a href="/api/mcp/GetBinkApi?typeName=BinkCanvas" target="_blank" rel="noopener">/api/mcp/GetBinkApi?typeName=BinkCanvas</a></li>
+        <li><a href="/api/mcp/GetBinkBrushes?kind=pen" target="_blank" rel="noopener">/api/mcp/GetBinkBrushes?kind=pen</a></li>
+        <li><a href="/api/mcp/InspectBinkDocument" target="_blank" rel="noopener">/api/mcp/InspectBinkDocument</a></li>
+        <li><a href="/api/mcp/GetBinkSourceFile?path=Demo/Client/Pages/Signature.razor" target="_blank" rel="noopener">/api/mcp/GetBinkSourceFile?path=Demo/Client/Pages/Signature.razor</a></li>
+    </ul>
+</div>
+
+@code {
+    private const string ClientConfig = """
+        // .mcp.json (Claude Code, VS Code, and anything else reading this shape)
+        {
+          "mcpServers": {
+            "bink": {
+              "type": "http",
+              "url": "https://bink.bitplatform.dev/mcp"
+            }
+          }
+        }
+        """;
+}

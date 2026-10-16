@@ -23,6 +23,7 @@ public static class Urls
     public const string Butil = "https://butil.bitplatform.dev/";
     public const string Brouter = "https://brouter.bitplatform.dev/";
     public const string Bmotion = "https://bmotion.bitplatform.dev/";
+    public const string Bink = "https://bink.bitplatform.dev/";
 
     public const string PlatformPwa = "https://bitplatform.dev/";
     public const string PlatformPageSpeed = "https://pagespeed.web.dev/analysis/https-bitplatform-dev/qa9agr7isx?form_factor=mobile";
