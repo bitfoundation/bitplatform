@@ -97,7 +97,7 @@ jobs:
   test_boilerplate_postgres:
     name: create project with bit new with postgresql and test it
     if: ${{ inputs.boilerplate_postgres }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
     - name: Checkout source code
@@ -129,11 +129,7 @@ jobs:
     - name: Run tests (Blazor Server)
       id: test-postgresql-blazorserver
       working-directory: TestPostgreSQL/src/Tests
-      run: |
-        dotnet tool install -g dotnet-gcdump > /dev/null
-        mkdir -p TestResults
-        (dumped=0; while true; do echo "resources $(date -u +%H:%M:%S): $(free -m | awk '/Mem:/ {print "used " $3 " of " $2 " MB, available " $7}; /Swap:/ {print "swap used " $3}' | tr '\n' ' ') threads $(ps -eLf | wc -l) processes $(ps -e | wc -l)"; ps -eo rss,nlwp,comm --sort=-rss | head -6 | tail -5 | awk '{printf "  %s MB %s threads %s\n", int($1/1024), $2, $3}'; pid=$(ps -eo pid,rss,comm --sort=-rss | awk '$3=="dotnet" && $2>5000000 {print $1; exit}'); if [ -n "$pid" ] && [ $dumped = 0 ]; then dumped=1; echo "gcdump of $pid: $(ps -o args= -p $pid | cut -c1-200)"; DOTNET_ROLL_FORWARD=Major ~/.dotnet/tools/dotnet-gcdump collect -p $pid -o TestResults/testhost.gcdump; kill -9 $pid; fi; sleep 20; done) &
-        dotnet test
+      run: dotnet test
 
     - name: Upload Blazor Server test results on failure
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
