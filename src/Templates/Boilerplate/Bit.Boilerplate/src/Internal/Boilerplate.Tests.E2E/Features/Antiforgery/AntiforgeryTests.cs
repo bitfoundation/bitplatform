@@ -67,7 +67,7 @@ public partial class AntiforgeryTests
                 await ExpectRefused(response, "with an antiforgery token issued to an anonymous visitor");
 
             // ---- The token Server.Web rendered for this user (the profile form of the settings page) ----
-            var own = await GetFormToken("en-US/settings", cookies: accessTokenCookie);
+            var own = await GetFormToken("en-US/settings/profile", cookies: accessTokenCookie);
             using (var response = await PostEmptyRecording(cookies: $"{accessTokenCookie}; {own.Cookie}", token: own.Token))
                 await ExpectPastTheFilter(response, "with the antiforgery token issued to this user");
         }

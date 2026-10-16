@@ -1,6 +1,9 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using AngleSharp.Dom;
 using Bunit;
 
@@ -72,35 +75,31 @@ public class BitChoiceGroupTests : BunitTestContext
     ]
     public void BitChoiceGroupShouldRespectInputClick(bool isEnabled)
     {
+        string? changed = null;
         var choiceGroupItems = GetChoiceGroupItems();
-        //var value = choiceGroupItems[1].Value;
 
         var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
         {
-            //parameters.Bind(p => p.Value, value, v => value = v);
             parameters.Add(p => p.Items, choiceGroupItems);
             parameters.Add(p => p.Disabled, isEnabled is false);
+            parameters.Add(p => p.OnChange, (string? value) => changed = value);
         });
 
         var itemContainers = component.FindAll(".bit-chg-icn");
-        var index = 0;
-        foreach (var itemContainer in itemContainers)
-        {
-            var item = choiceGroupItems[index++];
-            if (isEnabled is false || item.IsDisabled)
-            {                
-                Assert.IsTrue(itemContainer.ClassList.Contains("bit-chg-ids"));
-            }
-            else
-            {
-                Assert.IsFalse(itemContainer.ClassList.Contains("bit-chg-ids"));
 
-                //var input = itemContainer.GetElementsByTagName("input").First();
-                //input.Click();
-                // TODO: bypassed - BUnit 2-way bound parameters issue
-                //Assert.IsTrue(itemContainer.ClassList.Contains($"bit-chg-ich"));
-            }
+        for (var index = 0; index < itemContainers.Count; index++)
+        {
+            Assert.AreEqual(isEnabled is false || choiceGroupItems[index].IsDisabled, itemContainers[index].ClassList.Contains("bit-chg-ids"));
+            Assert.IsFalse(itemContainers[index].ClassList.Contains("bit-chg-ich"));
         }
+
+        component.FindAll(".bit-chg-icn input")[1].Change(true);
+
+        // A change picks the item on an enabled group and does nothing on a disabled one.
+        Assert.AreEqual(isEnabled ? "v-male" : null, changed);
+        Assert.AreEqual(isEnabled ? "v-male" : null, component.Instance.Value);
+        Assert.AreEqual(isEnabled, component.FindAll(".bit-chg-icn")[1].ClassList.Contains("bit-chg-ich"));
+        Assert.AreEqual(isEnabled, choiceGroupItems[1].IsSelected);
     }
 
     [TestMethod]
@@ -113,21 +112,23 @@ public class BitChoiceGroupTests : BunitTestContext
             parameters.Add(p => p.Items, choiceGroupItems);
         });
 
-        var bitChoiceGroupImages = component.FindAll(".bit-chg img");
+        var images = component.FindAll(".bit-chg img");
 
-        foreach ((IElement item, int index) element in bitChoiceGroupImages.Select((item, index) => (item, index)))
+        Assert.AreEqual(choiceGroupItems.Count, images.Count);
+
+        for (var index = 0; index < images.Count; index++)
         {
-            Assert.AreEqual(element.item.GetAttribute("src"), choiceGroupItems[element.index].ImageSrc);
-            Assert.AreEqual(element.item.GetAttribute("alt"), choiceGroupItems[element.index].ImageAlt);
-
-            var bitChoiceGroup = component.Find(".bit-chg-icn");
-            var bitChoiceGroupInput = bitChoiceGroup.GetElementsByTagName("input").First();
-
-            bitChoiceGroupInput.Click();
-
-            // TODO: bypassed - BUnit 2-way bound parameters issue
-            // Assert.AreEqual(element.item.GetAttribute("src"), choiceGroupItems[element.index].SelectedImageName);
+            Assert.AreEqual(choiceGroupItems[index].ImageSrc, images[index].GetAttribute("src"));
+            Assert.AreEqual(choiceGroupItems[index].ImageAlt, images[index].GetAttribute("alt"));
         }
+
+        // The image of the picked item swaps to its selected one, and the rest keep theirs.
+        component.FindAll(".bit-chg-icn input")[0].Change(true);
+
+        images = component.FindAll(".bit-chg img");
+
+        Assert.AreEqual(choiceGroupItems[0].SelectedImageSrc, images[0].GetAttribute("src"));
+        Assert.AreEqual(choiceGroupItems[1].ImageSrc, images[1].GetAttribute("src"));
     }
 
     [TestMethod,
@@ -422,5 +423,290 @@ public class BitChoiceGroupTests : BunitTestContext
         });
 
         Assert.IsFalse(component.Find(".bit-chg").HasAttribute("aria-required"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldNameItsInputsFromTheNameParameter()
+    {
+        var generated = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+        });
+
+        // The radios of a group share one name, which is what makes them a group to the browser.
+        var names = generated.FindAll(".bit-chg-icn input").Select(i => i.GetAttribute("name")).Distinct().ToList();
+
+        Assert.AreEqual(1, names.Count);
+        Assert.IsFalse(string.IsNullOrWhiteSpace(names[0]));
+
+        var named = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Name, "gender");
+        });
+
+        Assert.IsTrue(named.FindAll(".bit-chg-icn input").All(i => i.GetAttribute("name") == "gender"));
+    }
+
+    [TestMethod,
+      DataRow(BitSize.Small, "bit-chg-sm"),
+      DataRow(BitSize.Medium, "bit-chg-md"),
+      DataRow(BitSize.Large, "bit-chg-lg")
+    ]
+    public void BitChoiceGroupShouldRespectSize(BitSize size, string expectedClass)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Size, size);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod,
+      DataRow(BitColor.Primary, "bit-chg-pri"),
+      DataRow(BitColor.Error, "bit-chg-err"),
+      DataRow(BitColor.TertiaryBorder, "bit-chg-tbr")
+    ]
+    public void BitChoiceGroupShouldRespectColor(BitColor color, string expectedClass)
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Color, color);
+        });
+
+        Assert.IsTrue(component.Find(".bit-chg").ClassList.Contains(expectedClass));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldApplyTheLayoutClasses()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-hor"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-inl"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-ncr"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-wcr"));
+        Assert.AreEqual(4, component.FindAll(".bit-chg-rad").Count);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Horizontal, true);
+            parameters.Add(p => p.Inline, true);
+            parameters.Add(p => p.NoCircle, true);
+        });
+
+        root = component.Find(".bit-chg");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-hor"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-inl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-chg-ncr"));
+        Assert.IsFalse(root.ClassList.Contains("bit-chg-wcr"));
+        // NoCircle takes the radio circle out of every item.
+        Assert.AreEqual(0, component.FindAll(".bit-chg-rad").Count);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldUseTheIdOfAnItemForItsInput()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", Id = "custom-a" },
+            new() { Text = "B", Value = "B" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var inputs = component.FindAll(".bit-chg-icn input");
+        var labels = component.FindAll(".bit-chg-icn label");
+
+        Assert.AreEqual("custom-a", inputs[0].Id);
+        Assert.AreEqual("custom-a", labels[0].GetAttribute("for"));
+        Assert.AreNotEqual("custom-a", inputs[1].Id);
+        Assert.AreEqual(inputs[1].Id, labels[1].GetAttribute("for"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupItemIconShouldWinOverItsIconName()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "A", Value = "A", IconName = "Group", Icon = BitIconInfo.Fa("solid star") },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var icon = component.Find(".bit-chg-icw .bit-chg-ico");
+
+        Assert.IsTrue(icon.ClassList.Contains("fa-solid"));
+        Assert.IsTrue(icon.ClassList.Contains("fa-star"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--Group"));
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+        Assert.IsTrue(component.Find(".bit-chg-icn").ClassList.Contains("bit-chg-ihi"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderTheTemplateOfAnItemInPlaceOfItsContent()
+    {
+        var items = new List<BitChoiceGroupItem<string>>
+        {
+            new() { Text = "Templated", Value = "A", Template = item => builder => builder.AddMarkupContent(0, $"<b class=\"own\">{item.Text}!</b>") },
+            new() { Text = "Plain", Value = "B" },
+        };
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+        });
+
+        var labels = component.FindAll(".bit-chg-itl");
+
+        // The template is the whole of the label: no circle and no text of the built-in rendering beside it.
+        Assert.AreEqual("Templated!", labels[0].QuerySelector(".own")!.TextContent);
+        Assert.IsNull(labels[0].QuerySelector(".bit-chg-rad"));
+        Assert.IsNull(labels[0].QuerySelector(".bit-chg-itx"));
+
+        Assert.IsNotNull(labels[1].QuerySelector(".bit-chg-rad"));
+        Assert.AreEqual("Plain", labels[1].QuerySelector(".bit-chg-itx")!.TextContent);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderTheItemLabelTemplateBesideTheCircle()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.ItemLabelTemplate, (BitChoiceGroupItem<string> item) => builder => builder.AddMarkupContent(0, $"<i class=\"own\">{item.Text}</i>"));
+        });
+
+        var label = component.Find(".bit-chg-itl");
+
+        // The label template replaces the text, the image and the icon, but keeps the radio circle.
+        Assert.AreEqual("Female", label.QuerySelector(".own")!.TextContent);
+        Assert.IsNotNull(label.QuerySelector(".bit-chg-rad"));
+        Assert.IsNull(label.QuerySelector(".bit-chg-itx"));
+        Assert.IsNull(label.QuerySelector("img"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldSplatTheInputHtmlAttributesOntoEveryInput()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { ["data-test"] = "radio" });
+        });
+
+        Assert.IsTrue(component.FindAll(".bit-chg-icn input").All(i => i.GetAttribute("data-test") == "radio"));
+    }
+
+    /// <summary>
+    /// A disabled group runs none of the page's activation handlers: the ones splatted onto it for a click are left
+    /// off its root while it is disabled, and put back once it is enabled; a hover handler stays either way.
+    /// </summary>
+    [TestMethod,
+      DataRow(true),
+      DataRow(false)
+    ]
+    public void BitChoiceGroupShouldDropTheSplattedActivationHandlersWhileDisabled(bool disabled)
+    {
+        var clicks = 0;
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(0);
+            builder.AddAttribute(1, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Items), GetChoiceGroupItems());
+            builder.AddAttribute(2, nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Disabled), disabled);
+            builder.AddAttribute(3, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+            builder.AddAttribute(4, "onmouseover", EventCallback.Factory.Create<MouseEventArgs>(this, () => { }));
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.AreEqual(disabled is false, root.HasAttribute("blazor:onclick"));
+        Assert.IsTrue(root.HasAttribute("blazor:onmouseover"));
+
+        if (disabled) return;
+
+        root.Click();
+
+        Assert.AreEqual(1, clicks);
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldRenderTheBaseParameters()
+    {
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.Id, "the-id");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["data-test"] = "root" });
+        });
+
+        var root = component.Find(".bit-chg");
+
+        Assert.AreEqual("the-id", root.Id);
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("root", root.GetAttribute("data-test"));
+        Assert.AreEqual("radiogroup", root.GetAttribute("role"));
+    }
+
+    [TestMethod]
+    public void BitChoiceGroupShouldReportAChangeThroughValueChangedAndOnChange()
+    {
+        string? bound = null;
+        string? changed = null;
+
+        var component = RenderComponent<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(parameters =>
+        {
+            parameters.Add(p => p.Items, GetChoiceGroupItems());
+            parameters.Add(p => p.OnChange, (string? value) => changed = value);
+            parameters.Bind(p => p.Value, bound, v => bound = v);
+        });
+
+        component.FindAll(".bit-chg-icn input")[1].Change(true);
+
+        Assert.AreEqual("v-male", bound);
+        Assert.AreEqual("v-male", changed);
+        Assert.IsTrue(component.FindAll(".bit-chg-icn input")[1].HasAttribute("checked"));
+    }
+
+    /// <summary>
+    /// The auto focus and the option reorder run from the after-render pass, which a prerender never reaches, so the
+    /// markup alone has to carry the group a visitor sees before the page is interactive.
+    /// </summary>
+    [TestMethod]
+    public async Task BitChoiceGroupShouldPrerenderWithoutJavaScript()
+    {
+        var html = await Prerenderer.RenderAsync<BitChoiceGroup<BitChoiceGroupItem<string>, string>>(new Dictionary<string, object?>
+        {
+            [nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Items)] = GetChoiceGroupItems(),
+            [nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Label)] = "Gender",
+            [nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.AutoFocus)] = true,
+            [nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.DefaultValue)] = "v-male",
+        });
+
+        StringAssert.Contains(html, "role=\"radiogroup\"");
+        StringAssert.Contains(html, "Gender");
+        StringAssert.Contains(html, "type=\"radio\"");
+        StringAssert.Contains(html, "checked");
+        StringAssert.Contains(html, "bit-chg-ich");
     }
 }

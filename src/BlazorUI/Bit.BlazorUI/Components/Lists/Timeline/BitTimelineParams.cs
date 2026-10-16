@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitTimeline{TItem}"/> component.
@@ -111,7 +113,7 @@ public class BitTimelineParams : BitComponentBaseParams, IBitComponentParams
     /// <param name="bitTimeline">
     /// The <see cref="BitTimeline{TItem}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TItem>(BitTimeline<TItem> bitTimeline) where TItem : class
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitTimeline<TItem> bitTimeline) where TItem : class
     {
         if (bitTimeline is null) return;
 

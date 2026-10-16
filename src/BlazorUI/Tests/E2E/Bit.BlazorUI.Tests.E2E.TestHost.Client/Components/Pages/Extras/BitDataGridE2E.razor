@@ -1,0 +1,467 @@
+﻿@page "/e2e/data-grid"
+
+@* The core of BitDataGrid: columns, sorting, templates and aggregates, the empty and loading states, the styling
+   switches, the row and cell styling hooks, the cell events, the base behaviours (Id/Class/Style/Styles/Classes,
+   Visibility, HtmlAttributes, the css variables, the BitParams cascade), right-to-left, Disabled and the lifecycle.
+   The other features each have a page of their own under /e2e/data-grid/<aspect>. *@
+
+<PageTitle>BitDataGrid E2E</PageTitle>
+
+<h1>BitDataGrid</h1>
+
+<E2ESection Id="basic" Title="Columns and sorting">
+    <BitDataGrid Id="grid-basic" Items="@_basic" AriaLabel="Products" OnSortChange="OnBasicSortChange">
+        <BitDataGridColumn Property="p => p.Id" Title="ID" Width="70px" Align="BitTextAlign.End" />
+        <BitDataGridColumn Property="p => p.Name" Width="140px" />
+        <BitDataGridColumn Property="p => p.Category" />
+        <BitDataGridColumn Field="Supplier" />
+        <BitDataGridColumn Property="p => p.Stock" Format="000" Comparer="_inStockFirst" />
+        <BitDataGridColumn Property="p => p.ReleaseDate" Format="yyyy-MM-dd" />
+        <BitDataGridColumn Property="p => p.Rating" AllowUnsorted="false" />
+        <BitDataGridColumn Property="p => p.Price" SortDescendingFirst="true" />
+        <BitDataGridColumn ColumnId="Value" Title="Value" SortBy="@(p => p.Price * p.Stock)">
+            <Template Context="p"><span class="value-cell">@(p.Price * p.Stock)</span></Template>
+        </BitDataGridColumn>
+        <BitDataGridColumn Property="p => p.Discontinued" Sortable="false" Align="BitTextAlign.Center" />
+    </BitDataGrid>
+    <p>Sort changes: <span id="basic-sort-count">@_basicSortCount</span> | <span id="basic-sort-log">@_basicSortLog</span></p>
+</E2ESection>
+
+<E2ESection Id="multi-sort-off" Title="MultiSort off and Sortable off">
+    <BitDataGrid Id="grid-multisort-off" Items="@_basic" MultiSort="false" AriaLabel="Single sort">
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Category" />
+    </BitDataGrid>
+    <BitDataGrid Id="grid-unsortable" Items="@_basic" Sortable="false" AriaLabel="Not sortable">
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Category" Sortable="true" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="aria" Title="Accessible names">
+    <h3 id="aria-heading">Inventory heading</h3>
+    <p id="aria-description">Use the arrow keys to move between cells.</p>
+    <BitDataGrid Id="grid-labelledby" Items="@_basic.Take(3).ToList()" AriaLabelledBy="aria-heading" AriaDescribedBy="aria-description">
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+    <BitDataGrid Id="grid-default-label" Items="@_basic.Take(3).ToList()">
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="aggregates" Title="Templates, footer and aggregates">
+    <BitDataGrid Id="grid-aggregates" Items="@_basic" ShowFooter="true" Height="220px">
+        <BitDataGridColumn Property="p => p.Id" Title="ID" Aggregate="BitDataGridAggregateType.Count" />
+        <BitDataGridColumn Property="p => p.Name">
+            <HeaderTemplate><span class="hdr-tpl">Product name</span></HeaderTemplate>
+        </BitDataGridColumn>
+        <BitDataGridColumn Property="p => p.Stock" Aggregate="BitDataGridAggregateType.Sum" />
+        <BitDataGridColumn Property="p => p.Price" Aggregate="BitDataGridAggregateType.Average" AggregateFormat="0" />
+        <BitDataGridColumn ColumnId="MaxPrice" Property="p => p.Price" Title="Max price" Aggregate="BitDataGridAggregateType.Max" />
+        <BitDataGridColumn Property="p => p.ReleaseDate" Format="yyyy-MM-dd" Aggregate="BitDataGridAggregateType.Min" />
+        <BitDataGridColumn Property="p => p.Supplier" AggregateBy="rows => rows.Select(r => r.Supplier).Distinct().Count()">
+            <FooterTemplate Context="agg"><span class="ftr-tpl">Suppliers: @agg.FormattedValue (@agg.Type)</span></FooterTemplate>
+        </BitDataGridColumn>
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="empty" Title="Empty states">
+    <BitDataGrid Id="grid-empty" Items="@_emptyItems" AriaLabel="Empty">
+        <Columns>
+            <BitDataGridColumn Property="p => p.Id" />
+            <BitDataGridColumn Property="p => p.Name" />
+        </Columns>
+    </BitDataGrid>
+    <BitDataGrid Id="grid-empty-template" Items="@(_emptyHasData ? _basic : _emptyItems)" AriaLabel="Empty template">
+        <EmptyTemplate>
+            <div class="custom-empty">
+                <span>Nothing here yet</span>
+                <button id="btn-empty-load" type="button" @onclick="() => _emptyHasData = true">Load sample data</button>
+            </div>
+        </EmptyTemplate>
+        <Columns>
+            <BitDataGridColumn Property="p => p.Id" />
+            <BitDataGridColumn Property="p => p.Name" />
+        </Columns>
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading states">
+    <button id="btn-loading" type="button" @onclick="() => _loading = !_loading">Toggle loading</button>
+    <span id="loading-state">@(_loading ? "loading" : "idle")</span>
+    <BitDataGrid Id="grid-loading" Items="@_basic" Loading="_loading" AriaLabel="Loading">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+    <BitDataGrid Id="grid-loading-template" Items="@_basic" Loading="_loading" AriaLabel="Loading template">
+        <LoadingTemplate><span class="custom-loading">Fetching the latest products</span></LoadingTemplate>
+        <Columns>
+            <BitDataGridColumn Property="p => p.Id" />
+            <BitDataGridColumn Property="p => p.Name" />
+        </Columns>
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="styling" Title="Bordered, striped and hoverable">
+    <button id="btn-bordered" type="button" @onclick="() => _bordered = !_bordered">Bordered</button>
+    <button id="btn-striped" type="button" @onclick="() => _striped = !_striped">Striped</button>
+    <button id="btn-hoverable" type="button" @onclick="() => _hoverable = !_hoverable">Hoverable</button>
+    <span id="styling-state">@($"bordered={_bordered};striped={_striped};hoverable={_hoverable}")</span>
+    @* Known colors for the striping and the hover, so a test can read them back as computed styles. *@
+    <div style="--bit-DataGrid-stripe-background: rgb(0, 0, 255); --bit-DataGrid-hover-background: rgb(255, 0, 0); --bit-DataGrid-background: rgb(255, 255, 255); --bit-DataGrid-border-color: rgb(0, 128, 0);">
+        <BitDataGrid Id="grid-styling" Items="@_basic" Bordered="_bordered" Striped="_striped" Hoverable="_hoverable">
+            <BitDataGridColumn Property="p => p.Id" />
+            <BitDataGridColumn Property="p => p.Name" />
+            <BitDataGridColumn Property="p => p.Category" />
+        </BitDataGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sticky" Title="Sticky header and footer">
+    <BitDataGrid Id="grid-sticky" Items="@_many" Height="240px" ShowFooter="true">
+        <BitDataGridColumn Property="p => p.Id" Aggregate="BitDataGridAggregateType.Count" />
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="header-off" Title="ShowHeader off">
+    <BitDataGrid Id="grid-header-off" Items="@_basic.Take(3).ToList()" ShowHeader="false">
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="row-numbers" Title="Row numbers">
+    <BitDataGrid Id="grid-row-numbers" Items="@_basic" ShowRowNumbers="true" Pageable="true" PageSize="4">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="row-styling" Title="Row and cell styling, tooltips">
+    <BitDataGrid Id="grid-row-styling" Items="@_basic" ShowCellTooltips="true"
+                 RowClass="@(p => p.Stock == 0 ? "out-of-stock" : null)"
+                 RowStyle="@(p => p.Price > 500 ? "font-weight: 700" : null)">
+        <BitDataGridColumn Property="p => p.Id" HeaderClass="hdr-x" CellClass="cell-x" />
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Category" ShowTooltip="false" />
+        <BitDataGridColumn Property="p => p.Stock"
+                           CellClassSelector="@(p => p.Stock < 10 ? "low-stock" : null)"
+                           CellStyleSelector="@(p => p.Stock < 10 ? "color: rgb(200, 100, 0)" : null)" />
+        <BitDataGridColumn ColumnId="Tpl" Title="Tpl">
+            <Template Context="p">@p.Name!</Template>
+        </BitDataGridColumn>
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="wrap" Title="Text wrapping and row height">
+    <button id="btn-wrap" type="button" @onclick="() => _wrap = !_wrap">Wrap</button>
+    <span id="wrap-state">@(_wrap ? "on" : "off")</span>
+    <BitDataGrid Id="grid-wrap" Items="@_long" WrapCellText="_wrap" RowHeight="40">
+        <BitDataGridColumn Property="p => p.Id" Width="60px" />
+        <BitDataGridColumn Property="p => p.Name" Width="120px" />
+        <BitDataGridColumn Property="p => p.Supplier" Width="120px" WrapText="false" />
+    </BitDataGrid>
+    <BitDataGrid Id="grid-row-height" Items="@_basic.Take(3).ToList()" RowHeightSelector="@(p => p.Id == 1 ? 80f : 44f)">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="cell-events" Title="Row and cell events">
+    <BitDataGrid TItem="Product" Id="grid-cell-events" Items="@_basic.Take(4).ToList()"
+                 OnRowClick="p => { _rowClicks++; _rowClickArg = p.Name; }"
+                 OnRowDoubleClick="p => { _rowDoubleClicks++; _rowDoubleClickArg = p.Name; }"
+                 OnCellClick="a => { _cellClicks++; _cellClickArg = CellArgs(a); }"
+                 OnCellDoubleClick="a => { _cellDoubleClicks++; _cellDoubleClickArg = CellArgs(a); }"
+                 OnCellContextMenu="a => { _cellContextMenus++; _cellContextMenuArg = CellArgs(a); }">
+        <BitDataGridColumn Property="p => p.Id" Title="ID" />
+        <BitDataGridColumn Property="p => p.Name" Title="Product" />
+        <BitDataGridColumn Property="p => p.Stock" />
+    </BitDataGrid>
+    <p>
+        row-click <span id="row-click-count">@_rowClicks</span> <span id="row-click-arg">@_rowClickArg</span> |
+        row-dblclick <span id="row-dblclick-count">@_rowDoubleClicks</span> <span id="row-dblclick-arg">@_rowDoubleClickArg</span> |
+        cell-click <span id="cell-click-count">@_cellClicks</span> <span id="cell-click-arg">@_cellClickArg</span> |
+        cell-dblclick <span id="cell-dblclick-count">@_cellDoubleClicks</span> <span id="cell-dblclick-arg">@_cellDoubleClickArg</span> |
+        cell-contextmenu <span id="cell-contextmenu-count">@_cellContextMenus</span> <span id="cell-contextmenu-arg">@_cellContextMenuArg</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Id, Class, Style, Styles, Classes and HtmlAttributes">
+    <BitDataGrid Id="grid-styled" Items="@_basic" Class="custom-root" Style="margin-top: 7px;"
+                 data-e2e="styled-root"
+                 Pageable="true" PageSize="3" ShowFooter="true" Filterable="true" ShowToolbar="true"
+                 SelectionMode="BitSelectionMode.Multiple" KeyField="p => p.Id" SelectedItems="@_styledSelection"
+                 Classes="@(new() { Root = "c-root", Toolbar = "c-toolbar", Viewport = "c-viewport", HeaderRow = "c-header-row", HeaderCell = "c-header-cell", FilterRow = "c-filter-row", Row = "c-row", SelectedRow = "c-selected-row", Cell = "c-cell", FooterRow = "c-footer-row", Pager = "c-pager" })"
+                 Styles="@(new() { Root = "padding-top: 3px;", Toolbar = "padding-left: 11px;", Viewport = "outline: 2px solid rgb(1, 2, 3);", HeaderRow = "letter-spacing: 2px;", HeaderCell = "text-transform: uppercase;", FilterRow = "opacity: 0.9;", Row = "font-style: italic;", SelectedRow = "text-decoration: underline;", Cell = "padding-left: 13px;", FooterRow = "font-variant: small-caps;", Pager = "justify-content: center;" })">
+        <ToolbarTemplate><span class="custom-toolbar">My toolbar</span></ToolbarTemplate>
+        <ChildContent>
+            <BitDataGridColumn Property="p => p.Id" Filterable="false" Aggregate="BitDataGridAggregateType.Count" />
+            <BitDataGridColumn Property="p => p.Name" />
+        </ChildContent>
+    </BitDataGrid>
+    <BitDataGrid Items="@_emptyItems" Classes="@(new() { Empty = "c-empty" })" Styles="@(new() { Empty = "color: rgb(9, 8, 7);" })" Id="grid-styled-empty">
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+    <BitDataGrid Items="@_basic" Loading="true" Classes="@(new() { Loading = "c-loading" })" Styles="@(new() { Loading = "color: rgb(7, 8, 9);" })" Id="grid-styled-loading">
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility">
+    <button id="btn-vis-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-vis-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-vis-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <span id="visibility-state">@_visibility</span>
+    <BitDataGrid Id="grid-visibility" Items="@_basic.Take(2).ToList()" Visibility="_visibility">
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="Public css variables on an ancestor">
+    <div style="--bit-DataGrid-header-background: rgb(10, 20, 30); --bit-DataGrid-header-color: rgb(250, 240, 230); --bit-DataGrid-font-size: 19px; --bit-DataGrid-cell-padding: 3px 9px; --bit-DataGrid-border-radius: 0px; --bit-DataGrid-color: rgb(40, 50, 60); --bit-DataGrid-selected-background: rgba(0, 200, 0, 0.5); --bit-DataGrid-header-font-weight: 300; --bit-DataGrid-line-height: 2; --bit-DataGrid-footer-background: rgb(70, 80, 90); --bit-DataGrid-accent-color: rgb(255, 0, 255); --bit-DataGrid-font-family: monospace;">
+        <BitDataGrid Id="grid-css-vars" Items="@_basic.Take(4).ToList()" KeyField="p => p.Id" ShowFooter="true" Striped="false"
+                     SelectionMode="BitSelectionMode.Multiple" SelectedItems="@_basic.Take(1).ToList()">
+            <BitDataGridColumn Property="p => p.Id" Aggregate="BitDataGridAggregateType.Count" />
+            <BitDataGridColumn Property="p => p.Name" />
+        </BitDataGrid>
+    </div>
+    <BitDataGrid Id="grid-css-vars-style" Items="@_basic.Take(2).ToList()" Style="--bit-DataGrid-header-background: rgb(1, 99, 2);">
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="align" Title="Every BitTextAlign of a column">
+    @foreach (var dir in new[] { BitDir.Ltr, BitDir.Rtl })
+    {
+        <BitDataGrid Id="@($"grid-align-{dir.ToString().ToLowerInvariant()}")" Items="@_basic.Take(1).ToList()" Dir="dir" Bordered="false">
+            @foreach (var align in Enum.GetValues<BitTextAlign>())
+            {
+                <BitDataGridColumn ColumnId="@align.ToString()" Title="@align.ToString()" Width="110px" Align="align">
+                    <Template Context="p"><span class="align-probe">x</span></Template>
+                </BitDataGridColumn>
+            }
+        </BitDataGrid>
+    }
+</E2ESection>
+
+<E2ESection Id="parts" Title="Styles and Classes of the group, detail and chooser parts">
+    <button id="btn-parts-group" type="button" @onclick="() => _partsGrid.GroupByAsync(nameof(Product.Category))">Group</button>
+    <button id="btn-parts-detail" type="button" @onclick="() => _partsGrid.ExpandDetailAsync(_partsItems[0])">Expand a detail</button>
+    <BitDataGrid @ref="_partsGrid" TItem="Product" Id="grid-parts" Items="@_partsItems" KeyField="p => p.Id"
+                 Groupable="true" ShowColumnChooser="true"
+                 Classes="@(new() { GroupRow = "c-group-row", DetailRow = "c-detail-row", ColumnChooser = "c-chooser" })"
+                 Styles="@(new() { GroupRow = "color: rgb(5, 6, 7);", DetailRow = "color: rgb(8, 9, 10);", ColumnChooser = "color: rgb(11, 12, 13);" })">
+        <DetailTemplate Context="p"><span class="parts-detail">Detail of @p.Name</span></DetailTemplate>
+        <Columns>
+            <BitDataGridColumn Property="p => p.Name" Groupable="false" />
+            <BitDataGridColumn Property="p => p.Category" />
+        </Columns>
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="css-vars-states" Title="The css variables of the states">
+    <button id="btn-vars-group" type="button" @onclick="() => _varsGrid.GroupByAsync(nameof(Product.Category))">Group</button>
+    <button id="btn-vars-group2" type="button" @onclick="() => _varsGrid.GroupByAsync(nameof(Product.Supplier))">Group again</button>
+    <button id="btn-vars-detail" type="button" @onclick="() => _varsGrid.ExpandDetailAsync(_varsItems[0])">Expand a detail</button>
+    <button id="btn-vars-edit" type="button" @onclick="() => _varsGrid.BeginEdit(_varsItems[1])">Edit a row</button>
+    <div style="--bit-DataGrid-selected-color: rgb(0, 90, 0); --bit-DataGrid-editing-background: rgba(200, 0, 0, 0.5); --bit-DataGrid-focus-color: rgb(0, 0, 200); --bit-DataGrid-group-background: rgb(220, 210, 200); --bit-DataGrid-group-indent: 40px; --bit-DataGrid-detail-background: rgb(190, 180, 170); --bit-DataGrid-placeholder-color: rgb(160, 0, 160); --bit-DataGrid-tree-indent: 50px; --bit-DataGrid-disabled-color: rgb(123, 124, 125);">
+        <BitDataGrid @ref="_varsGrid" TItem="Product" Id="grid-vars-states" Items="@_varsItems" KeyField="p => p.Id"
+                     SelectionMode="BitSelectionMode.Single" SelectedItems="@_varsItems.Take(1).ToList()"
+                     Editable="true" Filterable="true" Groupable="true">
+            <DetailTemplate Context="p"><span>Detail of @p.Name</span></DetailTemplate>
+            <Columns>
+                <BitDataGridColumn Property="p => p.Name" Groupable="false" />
+                <BitDataGridColumn Property="p => p.Category" />
+                <BitDataGridColumn Property="p => p.Supplier" />
+            </Columns>
+        </BitDataGrid>
+        <BitDataGrid TItem="TreeNode" Id="grid-vars-tree" Items="@_treeNodes" KeyField="n => n.Name" ChildrenSelector="n => n.Children" TreeInitiallyExpanded="true">
+            <BitDataGridColumn Property="n => n.Name" />
+        </BitDataGrid>
+        <BitDataGrid TItem="Product" Id="grid-vars-disabled" Items="@_basic.Take(2).ToList()" Disabled="true">
+            <BitDataGridColumn Property="p => p.Name" />
+        </BitDataGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <BitParams Parameters="@_params">
+        <BitDataGrid Id="grid-params-a" Items="@_basic" AriaLabel="Cascaded defaults">
+            <BitDataGridColumn Property="p => p.Id" />
+            <BitDataGridColumn Property="p => p.Name" />
+        </BitDataGrid>
+        <BitDataGrid Id="grid-params-b" Items="@_basic" AriaLabel="Own striped" Striped="true" PageSize="2">
+            <BitDataGridColumn Property="p => p.Id" />
+            <BitDataGridColumn Property="p => p.Name" />
+        </BitDataGrid>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="Right to left">
+    <BitDataGrid Id="grid-rtl" Items="@_basic" Dir="BitDir.Rtl" CellNavigation="true" Resizable="true">
+        <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" Frozen="true" />
+        <BitDataGridColumn Property="p => p.Name" Width="160px" />
+        <BitDataGridColumn Property="p => p.Category" Width="160px" />
+    </BitDataGrid>
+    <div dir="rtl">
+        <BitDataGrid Id="grid-rtl-inherited" Items="@_basic.Take(3).ToList()" CellNavigation="true">
+            <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" />
+            <BitDataGridColumn Property="p => p.Name" Width="160px" />
+        </BitDataGrid>
+    </div>
+    <CascadingValue TValue="BitDir?" Value="BitDir.Rtl">
+        <BitDataGrid Id="grid-rtl-cascaded" Items="@_basic.Take(3).ToList()">
+            <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" />
+            <BitDataGridColumn Property="p => p.Name" Width="160px" />
+        </BitDataGrid>
+    </CascadingValue>
+    <BitDataGrid Id="grid-dir-auto" Items="@_basic.Take(3).ToList()" Dir="BitDir.Auto" TabIndex="0">
+        <BitDataGridColumn Property="p => p.Name" Width="160px" />
+    </BitDataGrid>
+    <BitDataGrid Id="grid-ltr" Items="@_basic.Take(3).ToList()" Dir="BitDir.Ltr">
+        <BitDataGridColumn Property="p => p.Id" Title="ID" Width="80px" />
+        <BitDataGridColumn Property="p => p.Name" Width="160px" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="btn-disable" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-state">@(_disabled ? "disabled" : "enabled")</span>
+    <BitDataGrid TItem="Product" Id="grid-disabled" Items="@_basic" Disabled="_disabled" KeyField="p => p.Id"
+                 SelectionMode="BitSelectionMode.Multiple" CellNavigation="true" ClipboardCopy="true"
+                 Filterable="true" Resizable="true" Groupable="true" Pageable="true" PageSize="4"
+                 OnRowClick="p => _disabledRowClicks++"
+                 @onclick="() => _disabledPageClicks++">
+        <BitDataGridColumn Property="p => p.Id" Filterable="false" />
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Category" />
+    </BitDataGrid>
+    <p>row clicks <span id="disabled-row-clicks">@_disabledRowClicks</span> | page clicks <span id="disabled-page-clicks">@_disabledPageClicks</span></p>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Re-render and unmount">
+    <button id="btn-add-item" type="button" @onclick="AddLifecycleItem">Add an item</button>
+    <button id="btn-rename-column" type="button" @onclick="RenameLifecycleColumn">Rename column</button>
+    <button id="btn-unmount" type="button" @onclick="() => _showLifecycle = false">Unmount</button>
+    <span id="lifecycle-state">@(_showLifecycle ? "mounted" : "unmounted")</span>
+    @if (_showLifecycle)
+    {
+        <BitDataGrid Id="grid-lifecycle" Items="@_lifecycleItems" Filterable="true" Resizable="true" Reorderable="true" CellNavigation="true">
+            <BitDataGridColumn Property="p => p.Id" />
+            <BitDataGridColumn Property="p => p.Name" Title="@_lifecycleTitle" />
+        </BitDataGrid>
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public enum Category { Electronics, Books, Clothing, Home, Toys }
+
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public Category Category { get; set; }
+        public decimal Price { get; set; }
+        public int Stock { get; set; }
+        public double Rating { get; set; }
+        public bool Discontinued { get; set; }
+        public DateTime ReleaseDate { get; set; }
+        public string Supplier { get; set; } = "";
+    }
+
+    private static List<Product> Products() =>
+    [
+        new() { Id = 1, Name = "Laptop", Category = Category.Electronics, Price = 1200, Stock = 5, Rating = 4.5, ReleaseDate = new(2023, 5, 1), Supplier = "Acme" },
+        new() { Id = 2, Name = "Novel", Category = Category.Books, Price = 15, Stock = 120, Rating = 4.0, ReleaseDate = new(2022, 1, 15), Supplier = "Globex" },
+        new() { Id = 3, Name = "Jacket", Category = Category.Clothing, Price = 90, Stock = 0, Rating = 3.5, Discontinued = true, ReleaseDate = new(2021, 11, 20), Supplier = "Initech" },
+        new() { Id = 4, Name = "Lamp", Category = Category.Home, Price = 45, Stock = 30, Rating = 4.2, ReleaseDate = new(2023, 2, 10), Supplier = "Acme" },
+        new() { Id = 5, Name = "Drone", Category = Category.Toys, Price = 299, Stock = 8, Rating = 4.8, ReleaseDate = new(2024, 3, 5), Supplier = "Globex" },
+        new() { Id = 6, Name = "Camera", Category = Category.Electronics, Price = 650, Stock = 12, Rating = 4.6, ReleaseDate = new(2023, 8, 22), Supplier = "Initech" },
+        new() { Id = 7, Name = "Cookbook", Category = Category.Books, Price = 25, Stock = 60, Rating = 3.9, Discontinued = true, ReleaseDate = new(2020, 6, 30), Supplier = "Acme" },
+        new() { Id = 8, Name = "Sneaker", Category = Category.Clothing, Price = 110, Stock = 45, Rating = 4.1, ReleaseDate = new(2024, 1, 12), Supplier = "Umbrella" },
+        new() { Id = 9, Name = "Mug", Category = Category.Home, Price = 10, Stock = 200, Rating = 3.2, ReleaseDate = new(2022, 9, 9), Supplier = "Umbrella" },
+        new() { Id = 10, Name = "Puzzle", Category = Category.Toys, Price = 20, Stock = 70, Rating = 4.4, ReleaseDate = new(2021, 4, 18), Supplier = "Globex" },
+    ];
+
+    private readonly List<Product> _basic = Products();
+    private readonly List<Product> _emptyItems = [];
+    private readonly List<Product> _many = Enumerable.Range(1, 40).Select(i => new Product { Id = i, Name = $"Item {i:00}" }).ToList();
+    private readonly List<Product> _long =
+    [
+        new() { Id = 1, Name = "A very long product name that cannot fit in one line of this column", Supplier = "A very long supplier name that cannot fit either" },
+        new() { Id = 2, Name = "Short", Supplier = "Short" },
+    ];
+    private List<Product> _lifecycleItems = Products().Take(3).ToList();
+    private readonly IReadOnlyList<Product> _styledSelection;
+
+    // Stock ascending puts the rows in stock first and the sold-out ones last.
+    private readonly IComparer<object?> _inStockFirst = Comparer<object?>.Create((a, b) =>
+    {
+        var x = (int)a!;
+        var y = (int)b!;
+        var outX = x == 0;
+        var outY = y == 0;
+        return outX != outY ? (outX ? 1 : -1) : x.CompareTo(y);
+    });
+
+    private readonly BitDataGridParams[] _params =
+    [
+        new() { Striped = false, ShowRowNumbers = true, Pageable = true, PageSize = 5, PageSizeOptions = [5, 10], Filterable = true }
+    ];
+
+    public class TreeNode
+    {
+        public string Name { get; set; } = "";
+        public List<TreeNode> Children { get; set; } = [];
+    }
+
+    private readonly List<TreeNode> _treeNodes = [new() { Name = "root", Children = [new() { Name = "child", Children = [new() { Name = "grandchild" }] }] }];
+    private readonly List<Product> _varsItems = Products().Take(4).ToList();
+    private readonly List<Product> _partsItems = Products().Take(4).ToList();
+    private BitDataGrid<Product> _partsGrid = default!;
+    private BitDataGrid<Product> _varsGrid = default!;
+
+    private int _basicSortCount;
+    private string _basicSortLog = "";
+
+    private bool _emptyHasData;
+    private bool _loading;
+    private bool _bordered = true;
+    private bool _striped = true;
+    private bool _hoverable = true;
+    private bool _wrap;
+    private BitVisibility _visibility;
+    private bool _disabled = true;
+    private int _disabledRowClicks;
+    private int _disabledPageClicks;
+    private bool _showLifecycle = true;
+    private string _lifecycleTitle = "Name";
+
+    private int _rowClicks, _rowDoubleClicks, _cellClicks, _cellDoubleClicks, _cellContextMenus;
+    private string? _rowClickArg, _rowDoubleClickArg, _cellClickArg, _cellDoubleClickArg, _cellContextMenuArg;
+
+    public BitDataGridE2E()
+    {
+        _styledSelection = [_basic[0]];
+    }
+
+    private void OnBasicSortChange(IReadOnlyList<BitDataGridSortDescriptor> sorts)
+    {
+        _basicSortCount++;
+        _basicSortLog = string.Join(",", sorts.Select(s => $"{s.ColumnId}:{s.Direction}:{s.Priority}"));
+    }
+
+    private static string CellArgs(BitDataGridCellEventArgs<Product> a)
+        => $"{a.Item.Name}|{a.ColumnId}|{a.ColumnTitle}|{a.Value}|button={a.Mouse.Button}|title={a.Column.Title}";
+
+    // A new list rather than a mutation of the bound one: the grid reloads when the Items reference changes.
+    private void AddLifecycleItem()
+    {
+        _lifecycleItems = [.. _lifecycleItems, new() { Id = _lifecycleItems.Count + 1, Name = $"Added {_lifecycleItems.Count + 1}" }];
+    }
+
+    private void RenameLifecycleColumn() => _lifecycleTitle = "Renamed";
+}

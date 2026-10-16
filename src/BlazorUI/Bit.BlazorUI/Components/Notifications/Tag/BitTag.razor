@@ -95,6 +95,11 @@
                   ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown)
                   : default;
 
+    @* The handler acts on Delete and Backspace too late to prevent their default - and Backspace is the Back of the
+       browser in WebKit - so the controls say in their markup that the tag acts on them, and BitTag.ts prevents the
+       default of those two keys pressed on them, exactly while the handler dismisses the tag on them. *@
+    var dismissKeyClaim = _DismissesOnKey ? "true" : null;
+
     RenderFragment content =
         @<text>
             @if (selectedIcon is not null)
@@ -186,6 +191,7 @@
            @onclick:preventDefault="@(Disabled)"
            @onclick:stopPropagation="stopClick"
            @onkeydown="onKeyDown"
+           data-bit-tag-dsm="@dismissKeyClaim"
            style="@Styles?.Content"
            class="bit-tag-cnt bit-tag-int @Classes?.Content"
            href="@(Disabled ? null : Href)"
@@ -217,6 +223,7 @@
                 @onclick="HandleOnClick"
                 @onclick:stopPropagation="stopClick"
                 @onkeydown="onKeyDown"
+                data-bit-tag-dsm="@dismissKeyClaim"
                 style="@Styles?.Content"
                 class="bit-tag-cnt bit-tag-int @Classes?.Content"
                 type="button"
@@ -242,6 +249,7 @@
                 @onclick="HandleOnDismissClick"
                 @onclick:stopPropagation="true"
                 @onkeydown="onKeyDown"
+                data-bit-tag-dsm="@dismissKeyClaim"
                 style="@Styles?.DismissButton"
                 class="bit-tag-cls @Classes?.DismissButton"
                 type="button"

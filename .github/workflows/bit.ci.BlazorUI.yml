@@ -56,3 +56,7 @@ jobs:
 
     - name: Test
       run: cd src/BlazorUI/Tests/Bit.BlazorUI.Tests && dotnet test --no-build --verbosity normal -p:BuildAllTfms=true
+
+    # The MCP server suite boots the demo server as a child process and talks to it over HTTP (about a minute).
+    - name: Test MCP server
+      run: dotnet run --project src/BlazorUI/Tests/Bit.BlazorUI.Tests.Mcp

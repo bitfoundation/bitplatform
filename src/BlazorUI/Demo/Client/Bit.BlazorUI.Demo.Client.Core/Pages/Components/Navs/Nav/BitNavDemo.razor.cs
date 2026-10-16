@@ -24,6 +24,13 @@ public partial class BitNavDemo
         },
         new()
         {
+            Name = "AutoReorderOptions",
+            Type = "bool",
+            DefaultValue = "false",
+            Description = "Keeps the order of the options (what the arrow keys, Home, End and type-ahead walk), at every level of the tree, in sync with their markup order when options are added, removed or reordered after the first render. Opt-in, since it reads the DOM order back after each change.",
+        },
+        new()
+        {
             Name = "ChevronDownIcon",
             Type = "BitIconInfo?",
             DefaultValue = "null",
@@ -762,6 +769,8 @@ public partial class BitNavDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link of the nav item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -981,6 +990,8 @@ public partial class BitNavDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link of the nav option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -1420,6 +1431,7 @@ public partial class BitNavDemo
         DemoSharedEnums.BitNavRenderType(),
         DemoSharedEnums.BitNavAriaCurrent(),
         DemoSharedEnums.BitNavItemTemplateRenderMode(),
+        DemoSharedEnums.BitLinkRels(),
         DemoSharedEnums.BitSize(),
     ];
 }

@@ -37,10 +37,16 @@
             @* The arrow, Home, End, Enter, Space and Delete keys of the tabs pattern are all handled
                on the tablist, so a single handler covers every item that bubbles its keydown here.
                Their default action is suppressed by UpdatePreventedKeys, on a listener of the browser's
-               own, since Blazor's preventDefault directive cannot be decided per key. *@
+               own, since Blazor's preventDefault directive cannot be decided per key.
+               tabindex="-1" keeps the tablist itself out of the tab order: a header that scrolls (the
+               Slide overflow) is a scroll container, which Firefox gives a tab stop of its own ahead of
+               the selected tab, and the tabs pattern promises one stop for the whole header. The click
+               focus the same tabindex would give the tablist's own padding is turned away by the script
+               half (setupKeys), so the focus never rests on the header without a tab. *@
             <div @ref="_headerRef"
                  @onkeydown="HandleOnKeyDown"
                  id="@_HeaderId"
+                 tabindex="-1"
                  role="tablist"
                  aria-label="@AriaLabel"
                  aria-labelledby="@AriaLabelledBy"
@@ -67,6 +73,7 @@
                         aria-label="@(OverflowAriaLabel ?? "More")"
                         aria-controls="@_MenuId"
                         aria-expanded="@(_isMenuOpen ? "true" : "false")"
+                        data-bit-esc="@EscapeClaim"
                         @onclick="ToggleMenu"
                         @onkeydown="HandleMoreKeyDown"
                         class="bit-pvti bit-pvt-mor @(_IsSelectedOverflowed ? "bit-pvt-mor-sel" : null) @Classes?.OverflowButton">
@@ -118,7 +125,10 @@
 
                 @* The menu takes the focus on itself and points at the item it is on with an
                    aria-activedescendant, which the WAI-ARIA menu pattern offers as the alternative to
-                   moving the real focus from one of its items to the next. *@
+                   moving the real focus from one of its items to the next.
+                   data-bit-esc claims the Escape HandleMenuKeyDown (and HandleMoreKeyDown on the button
+                   above) closes the open menu with (see Utils.claimEscape), so a dialog around the pivot
+                   waits for the next press rather than closing on the same one. *@
                 <div @ref="_menuRef"
                      style="display:@(_isMenuOpen ? "block" : "none");@Styles?.OverflowCallout"
                      id="@_MenuId"
@@ -126,6 +136,7 @@
                      tabindex="-1"
                      aria-label="@(OverflowAriaLabel ?? "More")"
                      aria-activedescendant="@_ActiveMenuItemId"
+                     data-bit-esc="@EscapeClaim"
                      @onkeydown="HandleMenuKeyDown"
                      class="bit-pvt-mnc @Classes?.OverflowCallout">
                     @for (var i = 0; i < _overflowItems.Count; i++)

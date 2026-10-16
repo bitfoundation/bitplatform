@@ -1,0 +1,26 @@
+﻿@page "/e2e/footer/window"
+
+<PageTitle>BitFooter on the window E2E</PageTitle>
+
+@* A Fixed footer over the whole page, driven by the scroll of the window itself: it has no scrolling ancestor, so
+   the script listens to the window, and ScrollPadding pads the document element. *@
+<p>Revealed: <span id="revealed">@_revealed</span>, overlapping: <span id="overlapping">@_overlapping</span></p>
+
+@for (var i = 1; i <= 60; i++)
+{
+    <div style="height: 50px; border-bottom: 1px solid #eee">Row @i</div>
+}
+
+<E2EStatus />
+
+<div style="height: 70px"></div>
+
+<BitFooter Id="window-footer" Fixed Reveal ElevateOnScroll ScrollPadding Height="56"
+           OnRevealChanged="v => _revealed = v" OnOverlapChanged="v => _overlapping = v">
+    <span>Window footer</span>
+</BitFooter>
+
+@code {
+    private bool _revealed = true;
+    private bool _overlapping;
+}

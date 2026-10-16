@@ -76,7 +76,9 @@ public class BitParamsContractTests
     public void NoValueAParamsTypeSuppliesShouldHaveAnAsyncSetupHook()
     {
         // A params object is applied from the synchronous OnParametersSet, where TakeFromCascade runs the [CallOnSet]
-        // hook of what it writes but has no way to await a [CallOnSetAsync] one.
+        // hook of what it writes but has no way to await a [CallOnSetAsync] one - nor a [CallOnSet] one that returns
+        // a Task or a ValueTask, which the generated code awaits like a [CallOnSetAsync] one and a params object
+        // would drop.
         var hooked = new List<string>();
 
         foreach (var (component, cascade) in Readers())
@@ -89,9 +91,19 @@ public class BitParamsContractTests
                                        .OrderByDescending(p => Depth(p.DeclaringType))
                                        .FirstOrDefault();
 
-                if (target?.GetCustomAttributesData().Any(a => a.AttributeType.FullName == "Bit.BlazorUI.CallOnSetAsyncAttribute") is true)
+                if (target is null) continue;
+
+                var attributes = target.GetCustomAttributesData();
+
+                if (attributes.Any(a => a.AttributeType.FullName == "Bit.BlazorUI.CallOnSetAsyncAttribute"))
                 {
                     hooked.Add($"{component.Name}.{source.Name}");
+                }
+                else if (attributes.FirstOrDefault(a => a.AttributeType.FullName == "Bit.BlazorUI.CallOnSetAttribute")
+                                   ?.ConstructorArguments.FirstOrDefault().Value is string hook
+                         && ReturnsAwaitable(target.DeclaringType!, hook))
+                {
+                    hooked.Add($"{component.Name}.{source.Name} ([CallOnSet] naming the awaitable {hook})");
                 }
             }
         }
@@ -100,6 +112,19 @@ public class BitParamsContractTests
     }
 
 
+
+    private static bool ReturnsAwaitable(Type declaringType, string hook)
+    {
+        var method = declaringType.GetMethod(hook, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, Type.EmptyTypes);
+        var returnType = method?.ReturnType;
+
+        if (returnType is null) return false;
+
+        var definition = returnType.IsGenericType ? returnType.GetGenericTypeDefinition() : returnType;
+
+        return definition == typeof(System.Threading.Tasks.Task) || definition == typeof(System.Threading.Tasks.Task<>)
+            || definition == typeof(System.Threading.Tasks.ValueTask) || definition == typeof(System.Threading.Tasks.ValueTask<>);
+    }
 
     private static IEnumerable<Type> ParamsTypes()
     {

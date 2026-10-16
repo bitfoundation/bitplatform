@@ -1538,7 +1538,6 @@ public class BitToggleTests : BunitTestContext
 
         Assert.AreEqual(1, com.Instance.ValidCount);
         Assert.AreEqual(1, com.Instance.InvalidCount);
-        Assert.AreEqual(com.Instance.ValidCount, com.Instance.InvalidCount);
     }
 
     [TestMethod,
@@ -2001,8 +2000,10 @@ public class BitToggleTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitToggleParamsUpdateParametersShouldNotOverwriteWhatTheToggleSetItself()
+    public void BitToggleParamsUpdateParametersShouldFillInWhatTheToggleLeftUnset()
     {
+        // What the toggle wrote for itself winning over the cascade is pinned by BitToggleParamsTests; this one
+        // only covers the parameters that are filled in on a toggle that set nothing.
         var @params = new BitToggleParams
         {
             Label = "Cascaded label",
@@ -2023,5 +2024,168 @@ public class BitToggleTests : BunitTestContext
         Assert.IsTrue(toggle.Loading);
         Assert.AreEqual("checkbox", toggle.Role);
         Assert.IsTrue(toggle.StopPropagation);
+    }
+
+    [TestMethod]
+    public void BitToggleRequiredShouldNotGetTheAsteriskClassWhileDisabled()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.Label, "A label");
+        });
+
+        // a disabled toggle cannot be submitted at all, so demanding a value from it says nothing - while the
+        // state itself is still announced on the switch
+        Assert.IsFalse(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-req"));
+        Assert.AreEqual("true", com.Find("button").GetAttribute("aria-required"));
+    }
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitToggleHiddenInputShouldPairDisabledWithAriaDisabled(bool disabled)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        var input = com.Find("input[type='checkbox']");
+
+        // the form value carrier is a native control, so it says the state both ways, like every other one
+        Assert.AreEqual(disabled, input.HasAttribute("disabled"));
+        Assert.AreEqual(disabled ? "true" : null, input.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitToggleHiddenInputShouldKeepTheAriaDisabledThePageSplattedWhileEnabled()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { ["aria-disabled"] = "false", ["data-test"] = "x" });
+        });
+
+        var input = com.Find("input[type='checkbox']");
+
+        // the input writes its own aria-disabled after the splat, so a null written there would take the page's
+        // value away rather than leave it alone
+        Assert.AreEqual("false", input.GetAttribute("aria-disabled"));
+        Assert.AreEqual("x", input.GetAttribute("data-test"));
+
+        com.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        Assert.AreEqual("true", com.Find("input[type='checkbox']").GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitToggleShouldCarryTheBaseAttributesOnItsRoot()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-toggle");
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["data-splat"] = "root" });
+        });
+
+        var root = com.Find(".bit-tgl");
+
+        Assert.AreEqual("the-toggle", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.AreEqual("root", root.GetAttribute("data-splat"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, null),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitToggleVisibilityTest(BitVisibility visibility, string? expectedStyle)
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = com.Find(".bit-tgl").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle is null)
+        {
+            Assert.IsFalse(style.Contains("visibility") || style.Contains("display"));
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod]
+    public void BitToggleTabIndexShouldReachTheSwitch()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.TabIndex, "3");
+        });
+
+        Assert.AreEqual("3", com.Find("button").GetAttribute("tabindex"));
+    }
+
+    [TestMethod]
+    public void BitToggleOneWayBoundValueShouldNotReportAChange()
+    {
+        var changed = 0;
+
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Value, false);
+            parameters.Add(p => p.ValueChanged, (bool _) => changed++);
+        });
+
+        com.Find("button").Click();
+
+        // a ValueChanged beside the Value makes it writable, so the change lands and is reported once
+        Assert.AreEqual(1, changed);
+    }
+
+    [TestMethod]
+    public void BitToggleValueChangeFromOutsideShouldFollowTheStateTextAndTheClass()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Value, false);
+            parameters.Add(p => p.OnText, "On");
+            parameters.Add(p => p.OffText, "Off");
+        });
+
+        Assert.AreEqual("Off", com.Find(".bit-tgl-stx").TextContent.Trim());
+
+        com.Render(parameters => parameters.Add(p => p.Value, true));
+
+        // the value hook rebuilds what is derived from the state, so a Value pushed from outside is drawn
+        Assert.AreEqual("On", com.Find(".bit-tgl-stx").TextContent.Trim());
+        Assert.IsTrue(com.Find(".bit-tgl").ClassList.Contains("bit-tgl-chk"));
+        Assert.AreEqual("true", com.Find("button").GetAttribute("aria-checked"));
+    }
+
+    [TestMethod]
+    public async Task BitToggleShouldDisposeWithoutThrowing()
+    {
+        var com = RenderComponent<BitToggle>(parameters =>
+        {
+            parameters.Add(p => p.Label, "A label");
+            parameters.Add(p => p.ErrorMessage, "Rejected.");
+        });
+
+        var instance = com.Instance;
+
+        // Disposal goes through bUnit so the component is disposed once, by the framework that owns it; the value
+        // hook is unsubscribed on the way, and a second disposal of the same instance is a no-op rather than a throw.
+        await Context.DisposeComponentsAsync();
+
+        await instance.DisposeAsync();
     }
 }

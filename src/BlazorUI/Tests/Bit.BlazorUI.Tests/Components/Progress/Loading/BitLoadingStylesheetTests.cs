@@ -19,14 +19,6 @@ public class BitLoadingStylesheetTests
 
 
     [TestMethod]
-    public void BitLoadingParamsShouldHaveCorrectParamName()
-    {
-        IBitComponentParams @params = new BitLoadingParams();
-
-        Assert.AreEqual($"{nameof(BitParams)}.BitLoading", @params.Name);
-    }
-
-    [TestMethod]
     public void BitLoadingShouldNeverDeclareAPublicVariable()
     {
         // A declaration would stop a value set on :root or on an ancestor from inheriting down to the loader.

@@ -6,7 +6,7 @@
     // The cell list and the column count are what the roving tabindex walks.
     _cells = cells;
     var columns = State.VisibleWeekDayCount;
-    var miniCal = State.Culture.Calendar;
+    var miniCal = State.Culture.DateTimeFormat.Calendar;
     var miniDtf = State.Culture.DateTimeFormat;
     int miniYear = miniCal.GetYear(_displayMonth);
     int miniMonth = miniCal.GetMonth(_displayMonth);

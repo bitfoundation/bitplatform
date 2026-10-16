@@ -90,7 +90,7 @@ $pvt-private-properties:
     // variable while an unset one leaves the variable in charge.
     role-main, role-hover, role-focus, role-text, role-dis, role-dis-text, fs, ih, is, mh,
     // What the component writes into an inline style, which wins over this on the element it is written on.
-    hal;
+    hal, hai;
 
 .bit-pvt {
     display: flex;
@@ -130,6 +130,8 @@ $pvt-private-properties:
     display: flex;
     white-space: nowrap;
     justify-content: var(--bit-pvt-hal);
+    // Baseline and Stretch, which the Alignment publishes for the axis across the tabs instead.
+    align-items: var(--bit-pvt-hai, normal);
 }
 
 .bit-pvt-hwr {

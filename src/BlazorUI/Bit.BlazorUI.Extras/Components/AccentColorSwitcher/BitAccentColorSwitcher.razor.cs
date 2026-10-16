@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.BlazorUI;
 
@@ -58,6 +59,19 @@ public partial class BitAccentColorSwitcher : BitComponentBase
 
 
     /// <summary>
+    /// Gets or sets the cascading parameters for the accent color switcher component.
+    /// </summary>
+    /// <remarks>
+    /// This property receives its value from an ancestor component via Blazor's cascading parameter mechanism.
+    /// <br />
+    /// The intended use is to allow shared configuration or settings (the app-wide <see cref="Config"/>, the look of
+    /// the parts) to be applied to the accent color switchers of an application through the <see cref="BitParams"/>
+    /// component.
+    /// </remarks>
+    [CascadingParameter(Name = BitAccentColorSwitcherParams.ParamName)]
+    public BitAccentColorSwitcherParams? CascadingParameters { get; set; }
+
+    /// <summary>
     /// Custom CSS classes for different parts of the switcher.
     /// </summary>
     [Parameter, ResetClassBuilder]
@@ -71,8 +85,9 @@ public partial class BitAccentColorSwitcher : BitComponentBase
     /// is persisted and no first-paint machinery runs. The configuration is app-wide state on the
     /// shared BitAccentColorService - the first initialized instance (or an explicit
     /// BitAccentColorService.InitializeAsync call) fixes it - so state it once: register it in DI,
-    /// or define one shared BitAccentColorConfig instance and hand the same one to every switcher
-    /// and to the host page's BitAccentColorHead. With a CSS strategy the built-in active ring comes,
+    /// or define one shared BitAccentColorConfig instance and hand the same one to every switcher (a
+    /// BitAccentColorSwitcherParams in a BitParams around the layout does it in one place) and to the
+    /// host page's BitAccentColorHead. With a CSS strategy the built-in active ring comes,
     /// until this instance is interactive, from the marker CSS that BitAccentColorHead emits for its
     /// own accents - keyed on the bit-accent root attribute the inline head script sets pre-paint, so
     /// prerendered and cached markup rings the visitor's swatch immediately instead of ringing the
@@ -105,8 +120,13 @@ public partial class BitAccentColorSwitcher : BitComponentBase
         StyleBuilder.Register(() => Styles?.Root);
     }
 
+    [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitAccentColorSwitcherParams))]
     protected override void OnParametersSet()
     {
+        // First, so that the configuration below is resolved from the Config the switcher ends up with - its own or
+        // the one a BitParams around it hands every switcher - rather than from the one its markup happened to set.
+        CascadingParameters?.UpdateParameters(this);
+
         _config = Config ?? _serviceProvider.GetService<BitAccentColorConfig>();
 
         base.OnParametersSet();

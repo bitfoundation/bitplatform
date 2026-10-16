@@ -1832,6 +1832,26 @@ public class BitSwiperTests : BunitTestContext
         Context.JSInterop.VerifyInvoke("BitBlazorUI.Swiper.dispose");
     }
 
+    [TestMethod]
+    public async Task BitSwiperShouldReleaseTheBrowserSideWhenTheRendererDisposesIt()
+    {
+        var component = RenderComponent<BitSwiperTest>();
+
+        var id = component.Instance.Swiper.UniqueId.ToString();
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swiper.dispose"));
+
+        // Disposed through the renderer rather than by calling DisposeAsync on the instance, so this goes down the
+        // same path a swiper removed from the render tree does: the script releases the reference along with the
+        // swiper it was set up under.
+        await Context.DisposeComponentsAsync();
+
+        var disposes = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Swiper.dispose").ToArray();
+
+        Assert.AreEqual(1, disposes.Length);
+        Assert.AreEqual(id, disposes[0].Arguments[0]);
+    }
+
     #endregion
 
 

@@ -11,6 +11,7 @@ public partial class BitButton : BitComponentBase
 {
     private int _clickId;
     private string? _rel;
+    private bool _autoFocus;
     private bool _dragging;
     private bool _showLoading;
     private bool _draggableEnabled;
@@ -519,6 +520,15 @@ public partial class BitButton : BitComponentBase
         await base.OnAfterRenderAsync(firstRender);
 
         if (IsDisposed) return;
+
+        // The autofocus attribute is written on the button, but a browser honors it only while the document is
+        // still loading: an interactive render replaces the prerendered markup that took the focus, and a
+        // WebAssembly page or a button rendered later never gets that far. So the first render gives the focus
+        // itself, by the very rule the attribute is written by.
+        if (firstRender && _autoFocus)
+        {
+            await RootElement.FocusSafelyAsync();
+        }
 
         // Dragging only means anything for a button that is positioned, so the two parameters are read
         // together. The result is compared against what the script was last told, rather than re-sent on

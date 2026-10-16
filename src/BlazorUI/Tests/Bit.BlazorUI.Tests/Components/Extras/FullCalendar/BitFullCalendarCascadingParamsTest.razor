@@ -1,27 +1,31 @@
-﻿@* Covers BitFullCalendarParams: the cascaded values fill in the parameters the calendar did not set itself, and
-   never overwrite the ones it did. *@
+﻿@* Covers BitFullCalendarParams: the cascaded values fill in the parameters the calendar did not set itself, never
+   overwrite the ones it did, and go back to the calendar's own defaults once withdrawn. *@
 
-<BitParams Parameters="@(new BitFullCalendarParams[]
-                         {
-                             new()
-                             {
-                                 Class = "cascaded",
-                                 Views = [BitFullCalendarView.Week, BitFullCalendarView.Month],
-                                 HideFilters = true,
-                                 Texts = CascadedTexts,
-                                 Settings = SharedSettings,
-                                 Classes = new() { Header = "cascaded-header", Event = "cascaded-event" },
-                                 Styles = new() { Body = "outline: 1px solid red" }
-                             }
-                         })">
+<BitParams Parameters="@(WithParams ? Cascade : [])">
     <BitFullCalendar Id="first-calendar" Events="Events" />
     <BitFullCalendar Id="second-calendar" Events="Events" HideFilters="false" Views="null" />
 </BitParams>
 
 @code {
+    [Parameter] public bool WithParams { get; set; } = true;
+
     public static readonly BitFullCalendarTexts CascadedTexts = new() { TodayButton = "Now" };
 
     public static readonly BitFullCalendarSettings SharedSettings = new() { Use24HourFormat = false };
+
+    private static readonly IBitComponentParams[] Cascade =
+    [
+        new BitFullCalendarParams
+        {
+            Class = "cascaded",
+            Views = [BitFullCalendarView.Week, BitFullCalendarView.Month],
+            HideFilters = true,
+            Texts = CascadedTexts,
+            Settings = SharedSettings,
+            Classes = new() { Header = "cascaded-header", Event = "cascaded-event" },
+            Styles = new() { Body = "outline: 1px solid red" }
+        }
+    ];
 
     private static readonly List<BitFullCalendarEvent> Events =
     [

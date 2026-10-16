@@ -1,0 +1,576 @@
+﻿@page "/e2e/modal"
+
+<PageTitle>BitModal E2E</PageTitle>
+
+<h1>BitModal</h1>
+
+@* Every section opens a Modal of its own from a button of the page. A Modal covers the page while it is open,
+   so whatever a test drives while it is open sits inside that Modal's own content. *@
+
+<E2ESection Id="basic" Title="Basic: bound IsOpen, events, focus, scroll lock, exit animation">
+    <button id="btn-basic-open" @onclick="() => _basicOpen = true">Open basic</button>
+    <span id="basic-open">@_basicOpen</span>
+    <span id="basic-log">@string.Join(",", _basicLog)</span>
+    <span id="basic-changed">@_basicChanged</span>
+
+    <BitModal Id="basic-modal"
+              @bind-IsOpen="_basicOpen"
+              @bind-IsOpen:after="() => _basicChanged++"
+              OnOpen="() => _basicLog.Add(nameof(BitModal.OnOpen))"
+              OnDismiss="() => _basicLog.Add(nameof(BitModal.OnDismiss))"
+              OnOverlayClick="() => _basicLog.Add(nameof(BitModal.OnOverlayClick))"
+              OnEscapeKeyDown="e => _basicLog.Add(nameof(BitModal.OnEscapeKeyDown) + ':' + e.Key)">
+        <div id="basic-content" style="padding: 24px;">
+            <h3 id="basic-heading">@_basicHeading</h3>
+            <input id="basic-input" />
+            <button id="basic-page-close" @onclick="() => _basicOpen = false">Page closes it</button>
+            <button id="basic-rename" @onclick="@(() => _basicHeading = "Renamed")">Rename</button>
+        </div>
+    </BitModal>
+
+    <button id="btn-noborder-open" @onclick="() => _noBorderOpen = true">NoBorder</button>
+    <BitModal Id="noborder-modal" @bind-IsOpen="_noBorderOpen" NoBorder>
+        <div style="padding: 24px;">Without the top border.</div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="sizing" Title="Sizing: Width, Height, MaxWidth, MaxHeight, FullWidth, FullHeight, FullSize">
+    <button id="btn-maxwidth-open" @onclick="() => _maxWidthOpen = true">MaxWidth</button>
+    <button id="btn-fixed-open" @onclick="() => _fixedOpen = true">Width and Height</button>
+    <button id="btn-maxheight-open" @onclick="() => _maxHeightOpen = true">MaxHeight</button>
+    <button id="btn-fullwidth-open" @onclick="() => _fullWidthOpen = true">FullWidth</button>
+    <button id="btn-fullheight-open" @onclick="() => _fullHeightOpen = true">FullHeight</button>
+    <button id="btn-fullsize-open" @onclick="() => _fullSizeOpen = true">FullSize</button>
+
+    <BitModal Id="maxwidth-modal" @bind-IsOpen="_maxWidthOpen" MaxWidth="32rem">
+        <div style="padding: 24px;">@LongText @LongText</div>
+    </BitModal>
+    <BitModal Id="fixed-modal" @bind-IsOpen="_fixedOpen" Width="24rem" Height="18rem">
+        <div style="padding: 24px;">Fixed size.</div>
+    </BitModal>
+    <BitModal Id="maxheight-modal" @bind-IsOpen="_maxHeightOpen" MaxWidth="30rem" MaxHeight="16rem">
+        <div style="padding: 24px; height: 900px;">@LongText</div>
+    </BitModal>
+    <BitModal Id="fullwidth-modal" @bind-IsOpen="_fullWidthOpen" FullWidth>
+        <div style="padding: 24px;">Full width.</div>
+    </BitModal>
+    <BitModal Id="fullheight-modal" @bind-IsOpen="_fullHeightOpen" FullHeight>
+        <div style="padding: 24px;">Full height.</div>
+    </BitModal>
+    <BitModal Id="fullsize-modal" @bind-IsOpen="_fullSizeOpen" FullSize>
+        <div style="padding: 24px;">Full size.</div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="chrome" Title="Header and footer: HeaderText, Header, ShowCloseButton, FooterText, Footer, Body">
+    <button id="btn-headertext-open" @onclick="() => _headerTextOpen = true">HeaderText</button>
+    <button id="btn-headertpl-open" @onclick="() => _headerTplOpen = true">Header</button>
+    <button id="btn-footer-open" @onclick="() => _footerOpen = true">Footer</button>
+    <button id="btn-footertext-open" @onclick="() => _footerTextOpen = true">FooterText</button>
+    <button id="btn-body-open" @onclick="() => _bodyOpen = true">Body</button>
+    <span id="headertext-open">@_headerTextOpen</span>
+    <span id="footer-open">@_footerOpen</span>
+
+    <BitModal Id="headertext-modal" @bind-IsOpen="_headerTextOpen" MaxWidth="32rem" ShowCloseButton HeaderText="Release notes">
+        <p id="headertext-body">Version 4.2.0 is out.</p>
+    </BitModal>
+
+    <BitModal Id="headertpl-modal" @bind-IsOpen="_headerTplOpen" MaxWidth="32rem" ShowCloseButton TitleAriaId="headertpl-title">
+        <Header>
+            <span id="headertpl-title">Templated header</span>
+        </Header>
+        <Body>
+            <p>Body next to a templated header.</p>
+        </Body>
+    </BitModal>
+
+    <BitModal Id="footer-modal" @bind-IsOpen="_footerOpen" MaxWidth="32rem" ShowCloseButton HeaderText="Unsaved changes">
+        <Body>
+            <p id="footer-body">Leave without saving?</p>
+        </Body>
+        <Footer>
+            <button id="footer-leave" @onclick="() => _footerOpen = false">Leave</button>
+        </Footer>
+    </BitModal>
+
+    <BitModal Id="footertext-modal" @bind-IsOpen="_footerTextOpen" FooterText="This is a footer text">
+        <p>Body and a footer text, no header.</p>
+    </BitModal>
+
+    <BitModal Id="body-modal" @bind-IsOpen="_bodyOpen">
+        <Body>
+            <p id="body-only">A Body alone builds the chrome.</p>
+        </Body>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="dismissal" Title="Dismissal: Blocking, NoDismissOnEscape, CanClose">
+    <button id="btn-blocking-open" @onclick="() => _blockingOpen = true">Blocking</button>
+    <button id="btn-noescape-open" @onclick="() => _noEscapeOpen = true">Blocking and NoDismissOnEscape</button>
+    <button id="btn-canclose-open" @onclick="() => { _allowClose = false; _canCloseOpen = true; }">CanClose</button>
+    <span id="blocking-open">@_blockingOpen</span>
+    <span id="noescape-open">@_noEscapeOpen</span>
+    <span id="canclose-open">@_canCloseOpen</span>
+    <span id="dismissal-log">@string.Join(",", _dismissalLog)</span>
+
+    <BitModal Id="blocking-modal" @bind-IsOpen="_blockingOpen" Blocking
+              OnOverlayClick="() => _dismissalLog.Add(nameof(BitModal.OnOverlayClick))"
+              OnDismiss="() => _dismissalLog.Add(nameof(BitModal.OnDismiss))">
+        <div style="padding: 24px;"><button id="blocking-inner">Inside</button></div>
+    </BitModal>
+
+    <BitModal Id="noescape-modal" @bind-IsOpen="_noEscapeOpen" Blocking NoDismissOnEscape
+              OnEscapeKeyDown="() => _dismissalLog.Add(nameof(BitModal.OnEscapeKeyDown))">
+        <div style="padding: 24px;"><button id="noescape-close" @onclick="() => _noEscapeOpen = false">Close</button></div>
+    </BitModal>
+
+    <BitModal Id="canclose-modal" @bind-IsOpen="_canCloseOpen" CanClose="CanCloseAsync" ShowCloseButton HeaderText="Edit profile"
+              OnDismiss="() => _dismissalLog.Add(nameof(BitModal.OnDismiss))">
+        <button id="canclose-allow" @onclick="() => _allowClose = true">Allow closing</button>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="focus" Title="Focus management: NoAutoFocus, NoFocusTrap, NoRestoreFocus, data-autofocus">
+    <button id="btn-focus-open" @onclick="() => _focusOpen = true">Default</button>
+    <button id="btn-autofocus-open" @onclick="() => _autoFocusOpen = true">data-autofocus</button>
+    <button id="btn-nofocus-open" @onclick="() => _noFocusOpen = true">NoAutoFocus, NoFocusTrap, NoRestoreFocus</button>
+    <button id="btn-emptyfocus-open" @onclick="() => _emptyFocusOpen = true">Nothing focusable</button>
+    <span id="focus-open">@_focusOpen</span>
+    <span id="nofocus-open">@_noFocusOpen</span>
+
+    <BitModal Id="focus-modal" @bind-IsOpen="_focusOpen">
+        <div style="padding: 24px;">
+            <input id="focus-first" />
+            <input id="focus-second" />
+            <button id="focus-last">Last</button>
+        </div>
+    </BitModal>
+
+    <BitModal Id="autofocus-modal" @bind-IsOpen="_autoFocusOpen">
+        <div style="padding: 24px;">
+            <button id="autofocus-first">First</button>
+            <input id="autofocus-target" data-autofocus />
+        </div>
+    </BitModal>
+
+    <BitModal Id="nofocus-modal" @bind-IsOpen="_noFocusOpen" NoAutoFocus NoFocusTrap NoRestoreFocus Position="BitPosition.BottomRight">
+        <div style="padding: 24px;">
+            <input id="nofocus-input" />
+            <button id="nofocus-close" @onclick="() => _noFocusOpen = false">Close</button>
+        </div>
+    </BitModal>
+
+    <BitModal Id="emptyfocus-modal" @bind-IsOpen="_emptyFocusOpen">
+        <div style="padding: 24px;">Nothing in here can take the focus.</div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="scroll" Title="Scroll: lock, NoScrollLock, AutoToggleScroll, ScrollerSelector, gesture forwarding">
+    <button id="btn-noscroll-open" @onclick="() => _noScrollOpen = true">NoScrollLock</button>
+    <button id="btn-autotoggle-open" @onclick="() => _autoToggleOpen = true">AutoToggleScroll</button>
+    <button id="btn-scrollsel-open" @onclick="() => _scrollSelOpen = true">ScrollerSelector</button>
+    <button id="btn-forward-open" @onclick="() => _forwardOpen = true">NoScrollLock and ScrollerSelector</button>
+    <button id="btn-scrollel-open" @onclick="() => _scrollElOpen = true">ScrollerElement</button>
+    <span id="scrollel-open">@_scrollElOpen</span>
+    <div @ref="_scrollElRef" id="mdl-scrollel-box" style="height: 120px; overflow: auto; border: 1px solid #888;">
+        <div style="height: 900px;">Tall content of the scroller element.</div>
+    </div>
+    <BitModal Id="scrollel-modal" @bind-IsOpen="_scrollElOpen" ScrollerElement="_scrollElRef">
+        <div style="padding: 24px;">The element given by reference is held.</div>
+    </BitModal>
+    <span id="noscroll-open">@_noScrollOpen</span>
+    <span id="autotoggle-open">@_autoToggleOpen</span>
+    <span id="scrollsel-open">@_scrollSelOpen</span>
+
+    <div id="mdl-scroll-box" style="height: 120px; overflow: auto; border: 1px solid #888;">
+        <div style="height: 900px;">Tall content of the scroller.</div>
+    </div>
+    <div id="mdl-forward-box" style="height: 120px; overflow: auto; border: 1px solid #888;">
+        <div style="height: 900px;">Tall content of the forwarded scroller.</div>
+    </div>
+
+    <BitModal Id="noscroll-modal" @bind-IsOpen="_noScrollOpen" NoScrollLock>
+        <div style="padding: 24px;">The page keeps scrolling.</div>
+    </BitModal>
+    <BitModal Id="autotoggle-modal" @bind-IsOpen="_autoToggleOpen" AutoToggleScroll>
+        <div style="padding: 24px;">The overflow of the page is toggled.</div>
+    </BitModal>
+    <BitModal Id="scrollsel-modal" @bind-IsOpen="_scrollSelOpen" ScrollerSelector="#mdl-scroll-box">
+        <div style="padding: 24px;">The box is held instead of the page.</div>
+    </BitModal>
+    <BitModal Id="forward-modal" @bind-IsOpen="_forwardOpen" NoScrollLock ScrollerSelector="#mdl-forward-box" Position="BitPosition.TopLeft">
+        <div style="padding: 24px;">The wheel over the overlay scrolls the box.</div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="overlay" Title="Overlay: ModeFull, Modeless, AriaModal">
+    <button id="btn-modefull-open" @onclick="() => _modeFullOpen = true">ModeFull</button>
+    <button id="btn-modeless-open" @onclick="() => _modelessOpen = true">Modeless</button>
+    <button id="btn-ariamodal-open" @onclick="() => _ariaModalOpen = true">AriaModal false</button>
+    <button id="behind-button" @onclick="() => _behindClicks++">Behind</button>
+    <span id="behind-clicks">@_behindClicks</span>
+    <span id="modeless-open">@_modelessOpen</span>
+
+    <BitModal Id="modefull-modal" @bind-IsOpen="_modeFullOpen" ModeFull>
+        <div style="padding: 24px;">A dimmed page behind.</div>
+    </BitModal>
+    <BitModal Id="modeless-modal" @bind-IsOpen="_modelessOpen" Modeless Position="BitPosition.BottomLeft" MaxWidth="20rem">
+        <div style="padding: 24px;"><button id="modeless-inner">Inside</button></div>
+    </BitModal>
+    <BitModal Id="ariamodal-modal" @bind-IsOpen="_ariaModalOpen" AriaModal="false">
+        <div style="padding: 24px;"><button id="ariamodal-inner">Inside</button></div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="position" Title="Position and AbsolutePosition">
+    <select id="position-select" @bind="_positionName">
+        <option value="">none</option>
+        @foreach (var name in Enum.GetNames<BitPosition>())
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    <button id="btn-position-open" @onclick="() => _positionOpen = true">Open positioned</button>
+    <button id="btn-abs-open" @onclick="() => _absOpen = true">AbsolutePosition</button>
+    <span id="abs-open">@_absOpen</span>
+
+    <BitModal Id="position-modal" @bind-IsOpen="_positionOpen" Width="240px"
+              Position="@(string.IsNullOrEmpty(_positionName) ? null : Enum.Parse<BitPosition>(_positionName))">
+        <div style="padding: 24px;">@(_positionName.Length > 0 ? _positionName : "none")</div>
+    </BitModal>
+
+    <div id="mdl-abs-box" style="position: relative; height: 260px; border: 1px solid #888;">
+        <BitModal Id="abs-modal" @bind-IsOpen="_absOpen" AbsolutePosition ShowCloseButton HeaderText="AbsolutePosition" MaxWidth="16rem">
+            Covers the box only.
+        </BitModal>
+    </div>
+</E2ESection>
+
+<E2ESection Id="drag" Title="Draggable and DragElementSelector">
+    <button id="btn-drag-open" @onclick="() => _dragOpen = true">Draggable</button>
+    <button id="btn-handle-open" @onclick="() => _handleOpen = true">DragElementSelector</button>
+    <span id="drag-open">@_dragOpen</span>
+
+    <BitModal Id="drag-modal" @bind-IsOpen="_dragOpen" Draggable ShowCloseButton HeaderText="Drag me" MaxWidth="26rem">
+        <p id="drag-body">The whole surface is the handle.</p>
+        <input id="drag-input" />
+    </BitModal>
+
+    <BitModal Id="handle-modal" @bind-IsOpen="_handleOpen" Draggable DragElementSelector="#mdl-drag-handle" MaxWidth="26rem">
+        <div id="mdl-drag-handle" style="padding: 12px; background: #eee;">Drag me by this bar</div>
+        <div id="handle-body" style="padding: 24px;">Not a handle.</div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility: TitleAriaId, SubtitleAriaId, IsAlert, AriaLabel">
+    <button id="btn-labelled-open" @onclick="() => _labelledOpen = true">TitleAriaId and SubtitleAriaId</button>
+    <button id="btn-alert-open" @onclick="() => _alertOpen = true">IsAlert</button>
+    <button id="btn-notalert-open" @onclick="() => _notAlertOpen = true">Blocking, IsAlert false</button>
+    <button id="btn-arialabel-open" @onclick="() => _ariaLabelOpen = true">AriaLabel over HeaderText</button>
+
+    <BitModal Id="labelled-modal" @bind-IsOpen="_labelledOpen" TitleAriaId="mdl-title" SubtitleAriaId="mdl-subtitle">
+        <div style="padding: 24px;">
+            <h3 id="mdl-title">Named by my own heading</h3>
+            <p id="mdl-subtitle">Described by my own paragraph.</p>
+        </div>
+    </BitModal>
+    <BitModal Id="alert-modal" @bind-IsOpen="_alertOpen" IsAlert Blocking AriaLabel="Delete the project">
+        <div style="padding: 24px;"><button id="alert-close" @onclick="() => _alertOpen = false">Keep it</button></div>
+    </BitModal>
+    <BitModal Id="notalert-modal" @bind-IsOpen="_notAlertOpen" IsAlert="false" Blocking>
+        <div style="padding: 24px;">Blocking but announced as a plain dialog.</div>
+    </BitModal>
+    <BitModal Id="arialabel-modal" @bind-IsOpen="_ariaLabelOpen" HeaderText="Visible title" AriaLabel="Spoken name">
+        <p>An AriaLabel wins over the header.</p>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="keep-mounted" Title="KeepMounted">
+    <button id="btn-kept-open" @onclick="() => _keptOpen = true">KeepMounted</button>
+    <button id="btn-unkept-open" @onclick="() => _unkeptOpen = true">Default</button>
+    <span id="kept-open">@_keptOpen</span>
+
+    <BitModal Id="kept-modal" @bind-IsOpen="_keptOpen" KeepMounted>
+        <div style="padding: 24px;">
+            <input id="kept-input" />
+            <button id="kept-close" @onclick="() => _keptOpen = false">Close</button>
+        </div>
+    </BitModal>
+    <BitModal Id="unkept-modal" @bind-IsOpen="_unkeptOpen">
+        <div style="padding: 24px;">
+            <input id="unkept-input" />
+            <button id="unkept-close" @onclick="() => _unkeptOpen = false">Close</button>
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="programmatic" Title="Programmatic control: Open, Close, Toggle">
+    <button id="btn-prog-open" @onclick="() => _progRef.Open()">Open()</button>
+    <button id="btn-prog-close" @onclick="() => _progRef.Close()">Close()</button>
+    <button id="btn-prog-toggle" @onclick="() => _progRef.Toggle()">Toggle()</button>
+    <span id="prog-dismiss">@_progDismiss</span>
+
+    <BitModal @ref="_progRef" Id="prog-modal" Modeless Position="BitPosition.BottomRight" OnDismiss="() => _progDismiss++">
+        <div style="padding: 24px;">Driven by methods.</div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="nested" Title="Nested modals">
+    <button id="btn-outer-open" @onclick="() => _outerOpen = true">Open outer</button>
+    <span id="outer-open">@_outerOpen</span>
+    <span id="inner-open">@_innerOpen</span>
+    <span id="nested-log">@string.Join(",", _nestedLog)</span>
+
+    <BitModal Id="outer-modal" @bind-IsOpen="_outerOpen" MaxWidth="30rem" OnEscapeKeyDown="@(() => _nestedLog.Add("outer"))">
+        <div style="padding: 24px;">
+            <input id="nested-claim" data-bit-esc="claim" placeholder="claims Escape" />
+            <button id="btn-inner-open" @onclick="() => _innerOpen = true">Delete</button>
+
+            <BitModal Id="inner-modal" @bind-IsOpen="_innerOpen" IsAlert Blocking AriaLabel="Confirm the deletion"
+                      OnEscapeKeyDown="@(() => _nestedLog.Add("inner"))">
+                <div style="padding: 24px;">
+                    <button id="inner-first">Yes</button>
+                    <button id="inner-last">No</button>
+                </div>
+            </BitModal>
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters: BitParams">
+    <BitParams Parameters="_modalParams">
+        <button id="btn-casc-open" @onclick="() => _cascOpen = true">Cascaded</button>
+        <button id="btn-cascown-open" @onclick="() => _cascOwnOpen = true">Own position</button>
+
+        <BitModal Id="casc-modal" @bind-IsOpen="_cascOpen" HeaderText="Cascaded">
+            <p>Takes the cascade. @LongText</p>
+        </BitModal>
+        <BitModal Id="cascown-modal" @bind-IsOpen="_cascOwnOpen" HeaderText="Own position" Position="BitPosition.BottomCenter">
+            <p>Keeps its own position.</p>
+        </BitModal>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="icons" Title="External icons">
+    <button id="btn-iconname-open" @onclick="() => _iconNameOpen = true">CloseIconName</button>
+    <button id="btn-iconfa-open" @onclick="() => _iconFaOpen = true">CloseIcon</button>
+
+    <BitModal Id="iconname-modal" @bind-IsOpen="_iconNameOpen" ShowCloseButton HeaderText="Icon name" CloseIconName="@BitIconName.ChromeClose"
+              CloseButtonTitle="Dismiss">
+        <p>Built-in glyph.</p>
+    </BitModal>
+    <BitModal Id="iconfa-modal" @bind-IsOpen="_iconFaOpen" ShowCloseButton HeaderText="External icon" CloseIcon="@BitIconInfo.Fa("solid xmark")"
+              CloseIconName="@BitIconName.ChromeClose">
+        <p>External glyph.</p>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes and CSS variables">
+    <button id="btn-styled-open" @onclick="() => _styledOpen = true">Styles</button>
+    <button id="btn-classed-open" @onclick="() => _classedOpen = true">Classes</button>
+    <button id="btn-vars-open" @onclick="() => _varsOpen = true">CSS variables</button>
+
+    <BitModal Id="styled-modal" @bind-IsOpen="_styledOpen" Style="--e2e-root: 1; letter-spacing: 1px;" Class="my-root"
+              ShowCloseButton HeaderText="Styled" FooterText="Footer" Styles="_styles">
+        <p>Body</p>
+    </BitModal>
+    <BitModal Id="classed-modal" @bind-IsOpen="_classedOpen" ShowCloseButton HeaderText="Classed" FooterText="Footer" Classes="_classes">
+        <p>Body</p>
+    </BitModal>
+    <BitModal Id="vars-modal" @bind-IsOpen="_varsOpen" ShowCloseButton HeaderText="CSS variables" FooterText="Restyled." ModeFull
+              Style="--bit-Modal-background: rgb(30, 27, 75); --bit-Modal-color: rgb(224, 231, 255); --bit-Modal-border-color: rgb(165, 180, 252); --bit-Modal-border-width: 6px; --bit-Modal-radius: 13px; --bit-Modal-padding: 21px; --bit-Modal-offset: 32px; --bit-Modal-max-width: 300px; --bit-Modal-max-height: 200px; --bit-Modal-overlay-background: rgba(30, 27, 75, 0.6); --bit-Modal-overlay-backdrop-filter: blur(4px); --bit-Modal-header-font-size: 27px; --bit-Modal-header-font-weight: 300; --bit-Modal-shadow: none; --bit-Modal-z-index: 4321;">
+        <p>@LongText @LongText @LongText</p>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <button id="btn-rtl-open" @onclick="() => _rtlOpen = true">Rtl TopStart</button>
+    <button id="btn-rtlleft-open" @onclick="() => _rtlLeftOpen = true">Rtl TopLeft</button>
+    <button id="btn-rtlinherit-open" @onclick="() => _rtlInheritOpen = true">Inherited TopStart</button>
+
+    <BitModal Id="rtl-modal" @bind-IsOpen="_rtlOpen" Dir="BitDir.Rtl" MaxWidth="20rem" Position="BitPosition.TopStart" HeaderText="لورم ایپسوم"
+              ShowCloseButton CloseButtonTitle="بستن">
+        <p>متن آزمایشی</p>
+    </BitModal>
+    <BitModal Id="rtlleft-modal" @bind-IsOpen="_rtlLeftOpen" Dir="BitDir.Rtl" MaxWidth="20rem" Position="BitPosition.TopLeft" HeaderText="TopLeft">
+        <p>همیشه سمت چپ</p>
+    </BitModal>
+    <div dir="rtl">
+        <BitModal Id="rtlinherit-modal" @bind-IsOpen="_rtlInheritOpen" MaxWidth="20rem" Position="BitPosition.TopStart" HeaderText="Inherited">
+            <p>Inherited direction.</p>
+        </BitModal>
+    </div>
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters: Id, HtmlAttributes, AriaLabel, TabIndex, Visibility, Disabled">
+    <select id="visibility-select" @bind="_visibilityName">
+        @foreach (var name in Enum.GetNames<BitVisibility>())
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    <button id="btn-base-open" @onclick="() => _baseOpen = true">Base</button>
+    <button id="btn-disabled-open" @onclick="() => _disabledOpen = true">Disabled</button>
+    <span id="base-open">@_baseOpen</span>
+    <span id="disabled-open">@_disabledOpen</span>
+    <span id="disabled-log">@string.Join(",", _disabledLog)</span>
+
+    <BitModal Id="base-modal" @bind-IsOpen="_baseOpen" AriaLabel="Named by AriaLabel" TabIndex="0" HtmlAttributes="_baseAttributes"
+              Visibility="Enum.Parse<BitVisibility>(_visibilityName)">
+        <div style="padding: 24px;"><button id="base-close" @onclick="() => _baseOpen = false">Close</button></div>
+    </BitModal>
+
+    <BitModal Id="disabled-modal" @bind-IsOpen="_disabledOpen" Disabled ShowCloseButton HeaderText="Disabled"
+              OnOverlayClick="() => _disabledLog.Add(nameof(BitModal.OnOverlayClick))"
+              OnEscapeKeyDown="() => _disabledLog.Add(nameof(BitModal.OnEscapeKeyDown))"
+              OnDismiss="() => _disabledLog.Add(nameof(BitModal.OnDismiss))">
+        <button id="disabled-page-close" @onclick="() => _disabledOpen = false">Close from the page</button>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle: unmounted while open">
+    <button id="btn-unmount-open" @onclick="() => { _showUnmount = true; _unmountOpen = true; }">Open, then unmount from inside</button>
+    <span id="unmount-shown">@_showUnmount</span>
+    @if (_showUnmount)
+    {
+        <BitModal Id="unmount-modal" @bind-IsOpen="_unmountOpen">
+            <div style="padding: 24px;"><button id="unmount-now" @onclick="() => _showUnmount = false">Unmount</button></div>
+        </BitModal>
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string LongText = "Every story starts with a blank canvas, a quiet space waiting to be filled with ideas, emotions, and dreams. These placeholder words symbolize the beginning, a moment of possibility where creativity has yet to take shape.";
+
+    private bool _basicOpen;
+    private int _basicChanged;
+    private string _basicHeading = "Hello";
+    private readonly List<string> _basicLog = [];
+    private bool _noBorderOpen;
+
+    private bool _maxWidthOpen;
+    private bool _fixedOpen;
+    private bool _maxHeightOpen;
+    private bool _fullWidthOpen;
+    private bool _fullHeightOpen;
+    private bool _fullSizeOpen;
+
+    private bool _headerTextOpen;
+    private bool _headerTplOpen;
+    private bool _footerOpen;
+    private bool _footerTextOpen;
+    private bool _bodyOpen;
+
+    private bool _blockingOpen;
+    private bool _noEscapeOpen;
+    private bool _canCloseOpen;
+    private bool _allowClose;
+    private readonly List<string> _dismissalLog = [];
+
+    private bool _focusOpen;
+    private bool _autoFocusOpen;
+    private bool _noFocusOpen;
+    private bool _emptyFocusOpen;
+
+    private bool _noScrollOpen;
+    private bool _autoToggleOpen;
+    private bool _scrollSelOpen;
+    private bool _forwardOpen;
+    private bool _scrollElOpen;
+    private ElementReference _scrollElRef;
+
+    private bool _modeFullOpen;
+    private bool _modelessOpen;
+    private bool _ariaModalOpen;
+    private int _behindClicks;
+
+    private string _positionName = string.Empty;
+    private bool _positionOpen;
+    private bool _absOpen;
+
+    private bool _dragOpen;
+    private bool _handleOpen;
+
+    private bool _labelledOpen;
+    private bool _alertOpen;
+    private bool _notAlertOpen;
+    private bool _ariaLabelOpen;
+
+    private bool _keptOpen;
+    private bool _unkeptOpen;
+
+    private BitModal _progRef = default!;
+    private int _progDismiss;
+
+    private bool _outerOpen;
+    private bool _innerOpen;
+    private readonly List<string> _nestedLog = [];
+
+    private bool _cascOpen;
+    private bool _cascOwnOpen;
+    private readonly BitModalParams[] _modalParams =
+    [
+        new()
+        {
+            Position = BitPosition.TopCenter,
+            ShowCloseButton = true,
+            ModeFull = true,
+            MaxWidth = "20rem",
+            Classes = new() { Content = "cascaded-content" },
+        }
+    ];
+
+    private bool _iconNameOpen;
+    private bool _iconFaOpen;
+
+    private bool _styledOpen;
+    private bool _classedOpen;
+    private bool _varsOpen;
+    private readonly BitModalClassStyles _styles = new()
+    {
+        Root = "--e2e-part: root;",
+        Overlay = "--e2e-part: overlay;",
+        Content = "--e2e-part: content;",
+        HeaderContainer = "--e2e-part: header-container;",
+        Header = "--e2e-part: header;",
+        CloseButton = "--e2e-part: close-button;",
+        CloseIcon = "--e2e-part: close-icon;",
+        Body = "--e2e-part: body;",
+        Footer = "--e2e-part: footer;",
+    };
+    private readonly BitModalClassStyles _classes = new()
+    {
+        Root = "part-root",
+        Overlay = "part-overlay",
+        Content = "part-content",
+        HeaderContainer = "part-header-container",
+        Header = "part-header",
+        CloseButton = "part-close-button",
+        CloseIcon = "part-close-icon",
+        Body = "part-body",
+        Footer = "part-footer",
+    };
+
+    private bool _rtlOpen;
+    private bool _rtlLeftOpen;
+    private bool _rtlInheritOpen;
+
+    private string _visibilityName = nameof(BitVisibility.Visible);
+    private bool _baseOpen;
+    private bool _disabledOpen;
+    private readonly List<string> _disabledLog = [];
+    private readonly Dictionary<string, object> _baseAttributes = new() { ["data-e2e"] = "modal-root" };
+
+    private bool _showUnmount;
+    private bool _unmountOpen;
+
+    private async Task<bool> CanCloseAsync()
+    {
+        await Task.Yield();
+        _dismissalLog.Add("CanClose:" + _allowClose);
+        StateHasChanged();
+        return _allowClose;
+    }
+}

@@ -182,8 +182,8 @@
 
             @{
                 var today = GetToday();
-                var todayYear = _culture.Calendar.GetYear(today);
-                var todayMonth = _culture.Calendar.GetMonth(today);
+                var todayYear = _culture.DateTimeFormat.Calendar.GetYear(today);
+                var todayMonth = _culture.DateTimeFormat.Calendar.GetMonth(today);
                 var showTimePicker = ShowTimePickerInternal && ((_showTimePickerAsOverlayInternal && _isTimePickerOverlayOnTop) || _showTimePickerAsOverlayInternal is false);
             }
 
@@ -527,7 +527,7 @@
 
                                         if (month > monthsInYear) continue;
 
-                                        var monthName = _culture.DateTimeFormat.GetMonthName(month);
+                                        var monthName = GetMonthName(_currentYear, month);
                                         var disabled = Disabled || IsMonthDisabled(month);
                                         @* In the MonthPicker mode a month is selected by the value; beside the day
                                            picker the month grid navigates, and the month on display is its selection. *@
@@ -552,7 +552,7 @@
                                             }
                                             else
                                             {
-                                                @_culture.DateTimeFormat.GetAbbreviatedMonthName(month)
+                                                @GetAbbreviatedMonthName(_currentYear, month)
                                             }
                                         </button>
                                     }
@@ -791,8 +791,7 @@
                                    style="@Styles?.TimePickerIncreaseMinuteIcon"
                                    class="bit-dtp-cic @increaseMinuteIconCss @Classes?.TimePickerIncreaseMinuteIcon" />
                             </button>
-                            <input @ref="_inputTimeMinuteRef"
-                                   @bind="@_minuteView"
+                            <input @bind="@_minuteView"
                                    @bind:event="oninput"
                                    @onchange="() => HandleOnTimeInputChange(TimeUnit.Minute)"
                                    @onfocus="HandleOnTimeMinuteFocus"
@@ -845,8 +844,7 @@
                                        style="@Styles?.TimePickerIncreaseSecondIcon"
                                        class="bit-dtp-cic @increaseSecondIconCss @Classes?.TimePickerIncreaseSecondIcon" />
                                 </button>
-                                <input @ref="_inputTimeSecondRef"
-                                       @bind="@_secondView"
+                                <input @bind="@_secondView"
                                        @bind:event="oninput"
                                        @onchange="() => HandleOnTimeInputChange(TimeUnit.Second)"
                                        @onfocus="HandleOnTimeSecondFocus"

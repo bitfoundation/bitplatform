@@ -404,7 +404,7 @@
                     @if (ShowClearButton)
                     {
                         var clearDisabled = IsInteractive is false || HasValueToClear is false;
-                        <button @onclick="HandleOnClearClick"
+                        <button @onclick="HandleOnCalloutClearClick"
                                 type="button"
                                 style="@Styles?.ClearButton"
                                 class="bit-tpc-abn @Classes?.ClearButton"

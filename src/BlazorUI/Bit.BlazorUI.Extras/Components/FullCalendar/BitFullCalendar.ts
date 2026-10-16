@@ -505,7 +505,11 @@
                 }
             }
 
-            if ((e.key === ' ' || e.key === 'Spacebar') && target.tagName !== 'BUTTON' && target.getAttribute('role') === 'button') {
+            // An event or a slot drawn as a role="button" element is activated by its .NET keydown handler, so the
+            // browser's own reading of the key is withdrawn: Space would scroll the page, and Enter would go on to a
+            // keypress whose implicit click lands on whatever the handler focused - where the handler runs inside
+            // the keydown (WebAssembly), the first button of the dialog it just opened, which closes it again.
+            if ((e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') && target.tagName !== 'BUTTON' && target.getAttribute('role') === 'button') {
                 e.preventDefault();
                 return;
             }
@@ -597,12 +601,14 @@
          * Focus management for the calendar's modal dialogs. Stores the element that was focused
          * before the dialog opened, moves focus into the dialog, and keeps Tab/Shift+Tab navigation
          * contained within it. Pair every setupDialog call with teardownDialog so focus is restored
-         * to the previously focused element when the dialog closes.
+         * to the previously focused element when the dialog closes. Both are called with the same key rather than
+         * the element: the teardown runs as the dialog is disposed, once its element has already left the DOM, where
+         * an element reference no longer resolves - keyed by the element, the focus was never given back.
          */
-        private static dialogFocusState = new WeakMap<HTMLElement, { previous: Element | null; root: HTMLElement | null; handler: (e: KeyboardEvent) => void }>();
+        private static dialogFocusState = new Map<string, { container: HTMLElement; previous: Element | null; root: HTMLElement | null; handler: (e: KeyboardEvent) => void }>();
 
-        public static setupDialog(container: HTMLElement): void {
-            if (!container || FullCalendar.dialogFocusState.has(container)) return;
+        public static setupDialog(container: HTMLElement, key: string): void {
+            if (!container || !key || FullCalendar.dialogFocusState.has(key)) return;
 
             const previous = document.activeElement;
 
@@ -629,18 +635,18 @@
             };
 
             container.addEventListener('keydown', handler);
-            FullCalendar.dialogFocusState.set(container, { previous, root: container.closest<HTMLElement>('.bit-bfc'), handler });
+            FullCalendar.dialogFocusState.set(key, { container, previous, root: container.closest<HTMLElement>('.bit-bfc'), handler });
 
             (Utils.firstFocusable(container) ?? container).focus();
         }
 
-        public static teardownDialog(container: HTMLElement): void {
-            if (!container) return;
-            const state = FullCalendar.dialogFocusState.get(container);
+        public static teardownDialog(key: string): void {
+            if (!key) return;
+            const state = FullCalendar.dialogFocusState.get(key);
             if (!state) return;
 
-            container.removeEventListener('keydown', state.handler);
-            FullCalendar.dialogFocusState.delete(container);
+            state.container.removeEventListener('keydown', state.handler);
+            FullCalendar.dialogFocusState.delete(key);
 
             const previous = state.previous as HTMLElement | null;
             if (previous && typeof previous.focus === 'function' && document.contains(previous)) {

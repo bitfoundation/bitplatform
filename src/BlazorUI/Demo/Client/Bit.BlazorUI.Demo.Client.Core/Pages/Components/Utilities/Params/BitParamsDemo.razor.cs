@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Params;
+﻿using Bit.BlazorUI.Demo.Client.Core.Components;
+
+namespace Bit.BlazorUI.Demo.Client.Core.Pages.Components.Utilities.Params;
 
 public partial class BitParamsDemo
 {
@@ -74,6 +76,8 @@ public partial class BitParamsDemo
                     Type = "BitDir?",
                     DefaultValue = "null",
                     Description = "Gets or sets the text directionality for the component's content.",
+                    LinkType = LinkType.Link,
+                    Href = "#component-dir",
                 },
                 new()
                 {
@@ -123,6 +127,8 @@ public partial class BitParamsDemo
                     Type = "BitVisibility?",
                     DefaultValue = "null",
                     Description = "Gets or sets the visibility state (visible, hidden, or collapsed) of the component.",
+                    LinkType = LinkType.Link,
+                    Href = "#component-visibility",
                 }
             ]
         },
@@ -151,6 +157,13 @@ public partial class BitParamsDemo
         },
     ];
 
+    // BitParams inherits no BitComponentBase, so the page shows no table of its own of the two enums
+    // BitComponentBaseParams is typed with; it adds the very ones every other page shows.
+    private readonly List<ComponentSubEnum> componentSubEnums =
+    [
+        DemoPage.ComponentVisibilityEnum(),
+        DemoPage.ComponentDirEnum(),
+    ];
 
 
     private readonly List<IBitComponentParams> basicParams =

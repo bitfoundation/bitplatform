@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Bunit;
@@ -4230,134 +4232,169 @@ public class BitSliderTests : BunitTestContext
     }
 
     #endregion
+    #region Disabled contract, focus and base parameters
 
-    #region Cascading parameters
-
-    [TestMethod]
-    public void BitSliderParamsShouldHaveTheCorrectParamName()
+    [TestMethod,
+        DataRow(false, true),
+        DataRow(false, false),
+        DataRow(true, true),
+        DataRow(true, false)
+    ]
+    public void BitSliderShouldPairTheDisabledAttributesOfItsInputs(bool ranged, bool disabled)
     {
-        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitSlider)}", BitSliderParams.ParamName);
-    }
-
-    [TestMethod]
-    public void BitSliderParamsShouldImplementIBitComponentParams()
-    {
-        var sliderParams = new BitSliderParams();
-
-        Assert.IsInstanceOfType<IBitComponentParams>(sliderParams);
-        Assert.AreEqual(BitSliderParams.ParamName, sliderParams.Name);
-    }
-
-    [TestMethod]
-    public void BitSliderShouldApplyCascadingParametersFromBitParams()
-    {
-        var com = RenderSliderWithParams(new BitSliderParams
+        // A native control rendered disabled writes disabled and aria-disabled both, so :disabled and
+        // [aria-disabled="true"] each find it - every thumb of a range alike - and the root says so once.
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            Min = 0,
-            Max = 100,
-            Step = 5,
-            Color = BitColor.Success,
-            Size = BitSize.Large,
-            ShowMarks = true,
-            MarkStep = 25,
-            ReadOnly = true
+            parameters.Add(p => p.IsRanged, ranged);
+            parameters.Add(p => p.Disabled, disabled);
         });
 
-        var root = com.Find(".bit-sld");
+        Assert.AreEqual(disabled, com.Find(".bit-sld").ClassList.Contains("bit-dis"));
 
-        Assert.IsTrue(root.ClassList.Contains("bit-sld-suc"));
-        Assert.IsTrue(root.ClassList.Contains("bit-sld-lg"));
-        Assert.IsTrue(root.ClassList.Contains("bit-sld-rdl"));
+        var inputs = com.FindAll(".bit-sld-inp");
+
+        Assert.AreEqual(ranged ? 2 : 1, inputs.Count);
+
+        foreach (var input in inputs)
+        {
+            Assert.AreEqual(disabled, input.HasAttribute("disabled"));
+            Assert.AreEqual(disabled ? "true" : null, input.GetAttribute("aria-disabled"));
+        }
+    }
+
+    [TestMethod]
+    public void BitSliderShouldKeepThePagesAriaDisabledOnTheInputWhileEnabled()
+    {
+        // The input writes its own aria-disabled after the splat of the InputHtmlAttributes, so the value the page
+        // wrote there is carried over rather than overwritten with the parameter's null.
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { { "aria-disabled", "true" } });
+        });
 
         var input = com.Find(".bit-sld-inp");
 
-        Assert.AreEqual("100", input.GetAttribute("aria-valuemax"));
-        Assert.AreEqual("5", input.GetAttribute("step"));
-        Assert.AreEqual("true", input.GetAttribute("aria-readonly"));
+        Assert.IsFalse(input.HasAttribute("disabled"));
+        Assert.AreEqual("true", input.GetAttribute("aria-disabled"));
+    }
 
-        // Marks every 25 of a 0..100 scale, so five of them - which also proves the mark caches are built
-        // after the cascade has been applied rather than before it.
-        Assert.AreEqual(5, com.FindAll(".bit-sld-mrk").Count);
+    [TestMethod,
+        DataRow(true, 0),
+        DataRow(false, 1)
+    ]
+    public void BitSliderShouldDropTheSplattedActivationHandlersWhileDisabled(bool disabled, int expected)
+    {
+        // A screen reader activates what it announces by dispatching a click, which pointer-events: none does not
+        // stop, so a disabled slider drops the page's handlers of the activating events (see
+        // BitComponentBase.DisabledAwareHtmlAttributes) rather than running them for a state it announces as unavailable.
+        var clicks = 0;
+
+        var com = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitSlider>(0);
+            builder.AddAttribute(1, nameof(BitSlider.Disabled), disabled);
+            builder.AddAttribute(2, "onclick", EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++));
+            builder.CloseComponent();
+        });
+
+        try
+        {
+            com.Find(".bit-sld").Click();
+        }
+        catch (MissingEventHandlerException) { }
+
+        Assert.AreEqual(expected, clicks);
     }
 
     [TestMethod]
-    public void BitSliderOwnParametersShouldOverrideTheCascadedOnes()
+    public async Task BitSliderFocusAsyncShouldLandOnTheLowerThumb()
     {
-        var com = RenderComponent<BitParams>(parameters =>
+        // FocusAsync is pointed at the input that carries the value of a plain slider, and at the lower one of a
+        // ranged slider, which is the first of its two tab stops - and FocusUpperAsync at the other one.
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
-            {
-                new BitSliderParams { Max = 100, Color = BitColor.Success, Size = BitSize.Large, ReadOnly = true }
-            });
-            parameters.AddChildContent<BitSlider>(slider =>
-            {
-                slider.Add(p => p.Max, 4D);
-                slider.Add(p => p.Color, BitColor.Error);
-                slider.Add(p => p.ReadOnly, false);
-            });
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+        });
+
+        Assert.AreEqual(com.Instance.SliderInputElement.Id, com.Instance.InputElement.Id);
+
+        await com.InvokeAsync(() => com.Instance.FocusAsync().AsTask());
+
+        var focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.AreEqual(1, focuses.Count);
+        Assert.AreEqual(com.Instance.SliderInputElement.Id, ((ElementReference)focuses[0].Arguments[0]!).Id);
+
+        await com.InvokeAsync(() => com.Instance.FocusUpperAsync().AsTask());
+
+        focuses = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        Assert.AreEqual(2, focuses.Count);
+        Assert.AreEqual(com.Instance.UpperSliderInputElement.Id, ((ElementReference)focuses[1].Arguments[0]!).Id);
+    }
+
+    [TestMethod]
+    public void BitSliderShouldRenderTheBaseParametersOnItsRoot()
+    {
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.Id, "slider-id");
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { { "data-test", "slider" } });
         });
 
         var root = com.Find(".bit-sld");
 
-        Assert.IsTrue(root.ClassList.Contains("bit-sld-err"));
-        Assert.IsFalse(root.ClassList.Contains("bit-sld-suc"));
-        Assert.IsFalse(root.ClassList.Contains("bit-sld-rdl"));
-
-        // Size was left unset on the slider itself, so it still comes from the cascade.
-        Assert.IsTrue(root.ClassList.Contains("bit-sld-lg"));
-        Assert.AreEqual("4", com.Find(".bit-sld-inp").GetAttribute("aria-valuemax"));
+        Assert.AreEqual("slider-id", root.Id);
+        Assert.AreEqual("slider", root.GetAttribute("data-test"));
     }
 
     [TestMethod]
-    public void BitSliderShouldTakeIsRangedFromTheCascadeBeforeItsDefaultsArePicked()
+    public void BitSliderShouldAnnounceTheOrientationOfBothThumbsOfAVerticalRange()
     {
-        // The defaults of an unbound slider are picked once, in OnInitialized, and which ones those are
-        // depends on IsRanged - so the cascade has to have been applied by then.
-        var com = RenderComponent<BitParams>(parameters =>
+        var com = RenderComponent<BitSlider>(parameters =>
         {
-            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
-            {
-                new BitSliderParams { IsRanged = true, Max = 10 }
-            });
-            parameters.AddChildContent<BitSlider>(slider =>
-            {
-                slider.Add(p => p.DefaultLowerValue, 3D);
-                slider.Add(p => p.DefaultUpperValue, 7D);
-            });
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.IsVertical, true);
         });
 
-        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-sld-rgd"));
-        Assert.AreEqual("3", com.Find(".bit-sld-inp-lwr").GetAttribute("value"));
-        Assert.AreEqual("7", com.Find(".bit-sld-inp-upr").GetAttribute("value"));
-    }
-
-    [TestMethod]
-    public void BitSliderShouldTakeTheComponentBaseParametersFromTheCascade()
-    {
-        var com = RenderSliderWithParams(new BitSliderParams { Class = "cascaded", Dir = BitDir.Rtl });
-
-        var root = com.Find(".bit-sld");
-
-        Assert.IsTrue(root.ClassList.Contains("cascaded"));
-        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
-    }
-
-    [TestMethod]
-    public void BitSliderShouldTakeRequiredFromTheCascade()
-    {
-        var com = RenderSliderWithParams(new BitSliderParams { Required = true });
-
-        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-sld-req"));
-        Assert.AreEqual("true", com.Find(".bit-sld-inp").GetAttribute("aria-required"));
-    }
-
-    private IRenderedComponent<BitParams> RenderSliderWithParams(BitSliderParams sliderParams)
-    {
-        return RenderComponent<BitParams>(parameters =>
+        foreach (var input in com.FindAll(".bit-sld-inp"))
         {
-            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { sliderParams });
-            parameters.AddChildContent<BitSlider>(slider => slider.Add(p => p.Label, "Cascaded"));
+            Assert.AreEqual("vertical", input.GetAttribute("aria-orientation"));
+        }
+
+        Assert.IsTrue(com.Find(".bit-sld").ClassList.Contains("bit-sld-rgd-vrt"));
+    }
+
+    [TestMethod]
+    public void BitSliderReadOnlyRangeShouldRefuseAChangeOfEitherThumb()
+    {
+        var changed = 0;
+        var com = RenderComponent<BitSlider>(parameters =>
+        {
+            parameters.Add(p => p.IsRanged, true);
+            parameters.Add(p => p.ReadOnly, true);
+            parameters.Add(p => p.DefaultLowerValue, 2D);
+            parameters.Add(p => p.DefaultUpperValue, 6D);
+            parameters.Add(p => p.OnRangeChange, (BitSliderRangeValue _) => changed++);
         });
+
+        com.Find(".bit-sld-inp-lwr").Input("4");
+        com.Find(".bit-sld-inp-upr").Input("8");
+
+        Assert.AreEqual(0, changed);
+        Assert.AreEqual(2, com.Instance.LowerValue);
+        Assert.AreEqual(6, com.Instance.UpperValue);
+
+        // Both inputs are pinned at their own value, and still announce that they are read-only.
+        foreach (var input in com.FindAll(".bit-sld-inp"))
+        {
+            Assert.AreEqual(input.GetAttribute("value"), input.GetAttribute("min"));
+            Assert.AreEqual(input.GetAttribute("value"), input.GetAttribute("max"));
+            Assert.AreEqual("true", input.GetAttribute("aria-readonly"));
+        }
     }
 
     #endregion

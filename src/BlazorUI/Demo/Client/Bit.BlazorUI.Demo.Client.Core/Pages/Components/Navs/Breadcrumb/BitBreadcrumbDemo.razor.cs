@@ -481,6 +481,8 @@ public partial class BitBreadcrumbDemo
                    Name = "Rel",
                    Type = "BitLinkRels?",
                    Description = "The rel attribute of the link of the breadcrumb item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -596,6 +598,8 @@ public partial class BitBreadcrumbDemo
                    Name = "Rel",
                    Type = "BitLinkRels?",
                    Description = "The rel attribute of the link of the breadcrumb option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -977,6 +981,7 @@ public partial class BitBreadcrumbDemo
     private readonly List<ComponentSubEnum> componentSubEnums =
     [
         DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitLinkRels(),
         DemoSharedEnums.BitPlacement(),
         DemoSharedEnums.BitSize()
     ];

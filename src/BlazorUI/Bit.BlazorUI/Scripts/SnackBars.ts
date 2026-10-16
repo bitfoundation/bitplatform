@@ -159,6 +159,7 @@
             if (!itemId) return;
 
             const startX = e.clientX;
+            const startY = e.clientY;
             let dragging = false;
 
             const onMove = (move: PointerEvent) => {
@@ -168,17 +169,44 @@
                 // and a vertical scroll that starts on a notification is still a scroll.
                 if (!dragging && Math.abs(dx) < 6) return;
 
+                if (!dragging) {
+                    // The press that started the swipe also started a text selection, which the drag would carry on
+                    // across the item - and a later swipe started on that selection would be taken for the browser's
+                    // own drag and drop. The item takes no selection while it follows the pointer, and what this
+                    // gesture selected inside it is let go (see clearSelectionIn); a selection elsewhere is left alone.
+                    item.style.userSelect = 'none';
+                    item.style.setProperty('-webkit-user-select', 'none');
+                }
+
                 dragging = true;
+
+                SnackBars.clearSelectionIn(item);
 
                 item.style.transition = 'none';
                 item.style.transform = `translateX(${dx}px)`;
                 item.style.opacity = `${Math.max(0, 1 - Math.abs(dx) / (swipe.threshold * 3))}`;
             };
 
-            const onUp = (up: PointerEvent) => {
+            // A press on text that is already selected - by an earlier drag, a double click, the keyboard - turns a drag
+            // into the browser's own drag and drop of that text, which takes the pointer away (pointercancel) and sends
+            // the item back; so does a press on an image or a link of the content. A drag along the swipe is the
+            // swipe's, so the browser's is refused there; one that goes up or down rather than sideways is left to the
+            // browser, so a text can still be dragged out of a notification.
+            const onDragStart = (drag: DragEvent) => {
+                if (Math.abs(drag.clientX - startX) < Math.abs(drag.clientY - startY)) return;
+
+                drag.preventDefault();
+            };
+
+            const stop = () => {
                 document.removeEventListener('pointermove', onMove);
                 document.removeEventListener('pointerup', onUp);
                 document.removeEventListener('pointercancel', onCancel);
+                document.removeEventListener('dragstart', onDragStart, true);
+            };
+
+            const onUp = (up: PointerEvent) => {
+                stop();
 
                 if (!dragging) return;
 
@@ -208,9 +236,7 @@
             };
 
             const onCancel = () => {
-                document.removeEventListener('pointermove', onMove);
-                document.removeEventListener('pointerup', onUp);
-                document.removeEventListener('pointercancel', onCancel);
+                stop();
 
                 if (dragging) SnackBars.resetSwipe(item);
             };
@@ -220,12 +246,25 @@
             document.addEventListener('pointermove', onMove);
             document.addEventListener('pointerup', onUp);
             document.addEventListener('pointercancel', onCancel);
+            document.addEventListener('dragstart', onDragStart, true);
         }
 
         private static resetSwipe(item: HTMLElement) {
             item.style.transition = '';
             item.style.transform = '';
             item.style.opacity = '';
+            item.style.userSelect = '';
+            item.style.removeProperty('-webkit-user-select');
+        }
+
+        // Lets go of a selection that reaches into the item - the one the press of a swipe started - and of no other.
+        private static clearSelectionIn(item: HTMLElement) {
+            const selection = window.getSelection();
+            if (!selection || selection.isCollapsed || selection.rangeCount === 0) return;
+
+            if (!selection.getRangeAt(0).intersectsNode(item)) return;
+
+            selection.removeAllRanges();
         }
 
         private static init() {

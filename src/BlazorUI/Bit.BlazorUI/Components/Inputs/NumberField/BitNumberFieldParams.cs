@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 
 namespace Bit.BlazorUI;
 
@@ -6,9 +7,12 @@ namespace Bit.BlazorUI;
 /// The parameters for the <see cref="BitNumberField{TValue}"/> component.
 /// </summary>
 /// <remarks>
-/// Only the parameters declared by the number field itself (and the ones of <see cref="BitComponentBase"/>)
-/// are carried. What belongs to one field alone - its <c>Label</c>, its value, its templates and its event
-/// callbacks - stays on the markup of that field.
+/// Only the parameters declared by the number field itself, the ones of <see cref="BitComponentBase"/> and the two
+/// of <see cref="BitInputBase{TValue}"/> that describe a whole area of a form - <see cref="ReadOnly"/> and
+/// <see cref="Required"/>, the ones <see cref="BitInputBaseParams{TValue}"/> carries for the other inputs - are
+/// carried. What belongs to one field alone - its <c>Label</c>, its value, its templates and its event callbacks -
+/// stays on the markup of that field. The field is generic over its value type while one params object reaches a
+/// field of any of them, so the two are declared here rather than inherited from that class.
 /// </remarks>
 public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
 {
@@ -272,6 +276,20 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     public string? Placeholder { get; set; }
 
     /// <summary>
+    /// Makes the input read-only.
+    /// <br />
+    /// <see cref="BitInputBase{TValue}.ReadOnly"/>.
+    /// </summary>
+    public bool? ReadOnly { get; set; }
+
+    /// <summary>
+    /// Makes the input required.
+    /// <br />
+    /// <see cref="BitInputBase{TValue}.Required"/>.
+    /// </summary>
+    public bool? Required { get; set; }
+
+    /// <summary>
     /// How many decimal places the value should be rounded to.
     /// </summary>
     public int? Precision { get; set; }
@@ -334,7 +352,7 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
     /// <param name="bitNumberField">
     /// The <see cref="BitNumberField{TValue}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TValue>(BitNumberField<TValue> bitNumberField)
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.All)] TValue>(BitNumberField<TValue> bitNumberField)
     {
         if (bitNumberField is null) return;
 
@@ -569,6 +587,16 @@ public class BitNumberFieldParams : BitComponentBaseParams, IBitComponentParams
         if (Prefix.HasValue())
         {
             bitNumberField.TakeFromCascade(nameof(Prefix), Prefix, static n => n.Prefix, static (n, v) => n.Prefix = v);
+        }
+
+        if (ReadOnly.HasValue)
+        {
+            bitNumberField.TakeFromCascade(nameof(ReadOnly), ReadOnly.Value, static n => n.ReadOnly, static (n, v) => n.ReadOnly = v);
+        }
+
+        if (Required.HasValue)
+        {
+            bitNumberField.TakeFromCascade(nameof(Required), Required.Value, static n => n.Required, static (n, v) => n.Required = v);
         }
 
         if (ShowClearButton.HasValue)

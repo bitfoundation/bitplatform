@@ -94,11 +94,18 @@
             // Both the pointer and the keys move the element by a delta, and both read where it is now the
             // same way: left/top mean the offset parent's box for an absolutely positioned element, and the
             // viewport for a fixed one - which is what its own rect is measured against, scrolling included.
+            // An anchor that centres the element (BitButton's TopCenter, Center, ...) shifts it by a translate of its
+            // own on top of left/top, so that shift is folded into the position the move writes, and move() drops the
+            // transform with the anchor's edges: left in place, it would carry the element half its size away from
+            // where the pointer or the key put it - on the very first move - and past the edge the move is clamped to.
+            // The fixed element's rect already includes the shift; offsetLeft/offsetTop do not.
             function moveBy(deltaX: number, deltaY: number) {
                 const parent = element.offsetParent as HTMLElement | null;
 
                 if (parent) {
-                    move(element.offsetLeft + deltaX, element.offsetTop + deltaY, parent.clientWidth, parent.clientHeight);
+                    const shift = translation();
+
+                    move(element.offsetLeft + shift.x + deltaX, element.offsetTop + shift.y + deltaY, parent.clientWidth, parent.clientHeight);
                 } else {
                     const rect = element.getBoundingClientRect();
 
@@ -116,6 +123,18 @@
 
                 element.style.right = 'unset';
                 element.style.bottom = 'unset';
+                element.style.transform = 'none';
+            }
+
+            // The translation part of the element's computed transform, in pixels (a translate(-50%) included).
+            function translation() {
+                const transform = getComputedStyle(element).transform;
+
+                if (!transform || transform === 'none') return { x: 0, y: 0 };
+
+                const matrix = new DOMMatrixReadOnly(transform);
+
+                return { x: matrix.m41, y: matrix.m42 };
             }
 
             // A box smaller than the element it holds has a negative maximum, which would otherwise clamp to
@@ -149,6 +168,7 @@
             element.style.top = '';
             element.style.right = '';
             element.style.bottom = '';
+            element.style.transform = '';
         }
 
         public static disable(id: string) {

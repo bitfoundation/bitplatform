@@ -1803,4 +1803,129 @@ public class BitPullToRefreshTests : BunitTestContext
 
         Assert.AreEqual("Main", root.GetAttribute("aria-label"));
     }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldPassTheScrollerElementToJs()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.update");
+
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.ScrollerElement, new ElementReference("first-scroller"));
+        });
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.setup"].Single();
+        Assert.IsInstanceOfType<ElementReference>(setup.Arguments[3]);
+        Assert.AreEqual("first-scroller", ((ElementReference)setup.Arguments[3]!).Id);
+
+        // A new element is a new scroller for the script to watch, and the same one again is not.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollerElement, new ElementReference("second-scroller"));
+        });
+
+        var update = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.update"].Single();
+        Assert.AreEqual("second-scroller", ((ElementReference)update.Arguments[1]!).Id);
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollerElement, new ElementReference("second-scroller"));
+        });
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.update"].Count);
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldRespectTheBaseParameters()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.Id, "feed-refresh");
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Style, "padding: 1rem;");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        var root = component.Find(".bit-ptr");
+
+        Assert.AreEqual("feed-refresh", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "padding: 1rem;");
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, ""),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitPullToRefreshShouldRespectVisibility(BitVisibility visibility, string expected)
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = component.Find(".bit-ptr").GetAttribute("style") ?? string.Empty;
+
+        if (expected.Length == 0)
+        {
+            Assert.IsFalse(style.Contains("visibility:hidden"));
+            Assert.IsFalse(style.Contains("display:none"));
+        }
+        else
+        {
+            StringAssert.Contains(style, expected);
+        }
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldWriteTheRootStyleAfterTheColor()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.Styles, new BitPullToRefreshClassStyles { Root = "--bit-ptr-color:hotpink" });
+        });
+
+        // In an inline style the last declaration of a custom property is the one that takes, so a color written
+        // on Styles.Root still wins over the one the Color parameter publishes.
+        var style = component.Find(".bit-ptr").GetAttribute("style")!;
+
+        Assert.IsTrue(style.IndexOf("var(--bit-clr-err)") < style.IndexOf("hotpink"), style);
+    }
+
+    [TestMethod]
+    public void BitPullToRefreshShouldNotHandTheScriptAScrollerElementThatIsNotCapturedYet()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.setup");
+        Context.JSInterop.SetupVoid("BitBlazorUI.PullToRefresh.update");
+
+        // What a page hands over on its first render, before the @ref of the scroller has been captured.
+        var component = RenderComponent<BitPullToRefresh>(parameters =>
+        {
+            parameters.Add(p => p.ScrollerElement, default(ElementReference));
+        });
+
+        var setup = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.setup"].Single();
+        Assert.IsNull(setup.Arguments[3]);
+
+        // The render that hands the captured reference over moves the gesture onto it.
+        var captured = new ElementReference("captured-scroller");
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.ScrollerElement, captured);
+        });
+
+        var update = Context.JSInterop.Invocations["BitBlazorUI.PullToRefresh.update"].Single();
+        Assert.AreEqual(captured, update.Arguments[1]);
+    }
 }

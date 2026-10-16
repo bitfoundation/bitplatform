@@ -135,7 +135,7 @@
 
     @if (_ShowSentinel)
     {
-        <div @ref="_sentinelElement" class="bit-bsl-snt" aria-hidden="true"></div>
+        <div @ref="_sentinelElement" style="@_SentinelStyle" class="bit-bsl-snt" aria-hidden="true"></div>
     }
 
     @if (LoadMore && _loadMoreFinished is false)

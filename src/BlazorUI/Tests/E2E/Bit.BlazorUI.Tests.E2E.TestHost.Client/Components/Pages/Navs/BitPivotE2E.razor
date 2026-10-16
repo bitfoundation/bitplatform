@@ -1,0 +1,654 @@
+﻿@page "/e2e/pivot"
+
+<PageTitle>BitPivot E2E</PageTitle>
+
+<h1>BitPivot</h1>
+
+@* Every feature of BitPivot, one section each. Each pivot has its own Id; the page writes the selected key and every
+   event it hears out as text. The overflow sections sit in boxes narrower than their tabs, and the "fluid" ones in
+   boxes as wide as the viewport, which the tests narrow and widen. *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitPivot Id="pv-basic">
+        <BitPivotItem HeaderText="File"><div id="basic-panel-1">Pivot #1: File</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared with me"><div id="basic-panel-2">Pivot #2: Shared</div></BitPivotItem>
+        <BitPivotItem HeaderText="Recent"><div id="basic-panel-3">Pivot #3: Recent</div></BitPivotItem>
+    </BitPivot>
+</E2ESection>
+
+<E2ESection Id="icon-count" Title="IconName, ItemCount, Stacked">
+    <BitPivot Id="pv-icons">
+        <BitPivotItem HeaderText="Files" IconName="@BitIconName.FabricFolder"><div>Files</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared with me" ItemCount="32"><div>Shared</div></BitPivotItem>
+        <BitPivotItem HeaderText="Recent" IconName="@BitIconName.Recent" ItemCount="12"><div>Recent</div></BitPivotItem>
+    </BitPivot>
+    <BitPivot Id="pv-stacked" Stacked>
+        <BitPivotItem HeaderText="Home" IconName="@BitIconName.Home"><div>Home</div></BitPivotItem>
+        <BitPivotItem HeaderText="Files" IconName="@BitIconName.FabricFolder" ItemCount="8"><div>Files</div></BitPivotItem>
+    </BitPivot>
+</E2ESection>
+
+<E2ESection Id="header-type" Title="HeaderType">
+    @foreach (var type in new[] { BitPivotHeaderType.Link, BitPivotHeaderType.Tab, BitPivotHeaderType.Outline })
+    {
+        <BitPivot Id="@($"pv-type-{type}")" HeaderType="type">
+            <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+            <BitPivotItem HeaderText="Recent"><div>Recent</div></BitPivotItem>
+        </BitPivot>
+    }
+    <BitPivot Id="pv-type-default">
+        <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+    </BitPivot>
+</E2ESection>
+
+<E2ESection Id="alignment" Title="Alignment, FullWidth, Gap">
+    @foreach (var alignment in new[] { BitAlignment.Start, BitAlignment.Center, BitAlignment.End, BitAlignment.SpaceBetween, BitAlignment.Baseline, BitAlignment.Stretch })
+    {
+        <div style="width:600px">
+            <BitPivot Id="@($"pv-align-{alignment}")" Alignment="alignment">
+                <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div>Recent</div></BitPivotItem>
+            </BitPivot>
+        </div>
+    }
+    <div style="width:600px">
+        <BitPivot Id="pv-full-width" FullWidth Gap="4px" HeaderType="BitPivotHeaderType.Tab">
+            <BitPivotItem HeaderText="Overview"><div>Overview</div></BitPivotItem>
+            <BitPivotItem HeaderText="Activity"><div>Activity</div></BitPivotItem>
+            <BitPivotItem HeaderText="Settings"><div>Settings</div></BitPivotItem>
+        </BitPivot>
+    </div>
+    <div style="width:600px">
+        <BitPivot Id="pv-gap" Gap="2rem">
+            <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+        </BitPivot>
+    </div>
+</E2ESection>
+
+<E2ESection Id="placement" Title="Placement">
+    @foreach (var placement in new[] { BitPlacement.Top, BitPlacement.Bottom, BitPlacement.Start, BitPlacement.End })
+    {
+        <div style="width:600px">
+            <BitPivot Id="@($"pv-place-{placement}")" Placement="placement">
+                <BitPivotItem HeaderText="File"><div class="place-panel">Panel File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared"><div class="place-panel">Panel Shared</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div class="place-panel">Panel Recent</div></BitPivotItem>
+            </BitPivot>
+        </div>
+    }
+    <div style="width:600px">
+        <BitPivot Id="pv-nested-outer" Placement="BitPlacement.Start" HeaderType="BitPivotHeaderType.Tab">
+            <BitPivotItem HeaderText="Account">
+                <BitPivot Id="pv-nested-inner">
+                    <BitPivotItem HeaderText="Profile"><div>Account / Profile</div></BitPivotItem>
+                    <BitPivotItem HeaderText="Security"><div>Account / Security</div></BitPivotItem>
+                </BitPivot>
+            </BitPivotItem>
+            <BitPivotItem HeaderText="Billing"><div>Billing</div></BitPivotItem>
+        </BitPivot>
+    </div>
+</E2ESection>
+
+<E2ESection Id="overflow-menu" Title="OverflowBehavior Menu">
+    <div style="width:330px">
+        <BitPivot Id="pv-menu" OverflowBehavior="BitPivotOverflowBehavior.Menu" @bind-SelectedKey="_menuKey" OverflowAriaLabel="More tabs">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem Key="@tab" HeaderText="@tab"><div class="menu-panel">Content of @tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+    <span id="menu-key">@_menuKey</span>
+    <div id="fluid-menu-box">
+        <BitPivot Id="pv-menu-fluid" OverflowBehavior="BitPivotOverflowBehavior.Menu">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem Key="@tab" HeaderText="@tab"><div>Content of @tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+    <div style="display:flex;height:200px">
+        <BitPivot Id="pv-menu-vertical" Placement="BitPlacement.Start" OverflowBehavior="BitPivotOverflowBehavior.Menu">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem Key="@tab" HeaderText="@tab"><div>Content of @tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+</E2ESection>
+
+<E2ESection Id="overflow-slide" Title="OverflowBehavior Slide, AutoHideSlideButtons">
+    <div style="width:330px">
+        <BitPivot Id="pv-slide" OverflowBehavior="BitPivotOverflowBehavior.Slide" PreviousAriaLabel="Earlier tabs" NextAriaLabel="Later tabs">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem Key="@tab" HeaderText="@tab"><div>Content of @tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+    <div id="fluid-slide-box">
+        <BitPivot Id="pv-slide-auto" AutoHideSlideButtons OverflowBehavior="BitPivotOverflowBehavior.Slide">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem Key="@tab" HeaderText="@tab"><div>Content of @tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+    <div style="display:flex;height:200px">
+        <BitPivot Id="pv-slide-vertical" Placement="BitPlacement.Start" OverflowBehavior="BitPivotOverflowBehavior.Slide">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem Key="@tab" HeaderText="@tab"><div>Content of @tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+</E2ESection>
+
+<E2ESection Id="overflow-other" Title="OverflowBehavior Scroll, Wrap, None">
+    <div id="box-scroll" style="width:330px">
+        <BitPivot Id="pv-scroll" OverflowBehavior="BitPivotOverflowBehavior.Scroll">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem Key="@tab" HeaderText="@tab"><div>Content of @tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+    <div id="box-wrap" style="width:330px">
+        <BitPivot Id="pv-wrap" OverflowBehavior="BitPivotOverflowBehavior.Wrap">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem Key="@tab" HeaderText="@tab"><div>Content of @tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+    <div id="box-none" style="width:330px">
+        <BitPivot Id="pv-none" OverflowBehavior="BitPivotOverflowBehavior.None">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem Key="@tab" HeaderText="@tab"><div>Content of @tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+</E2ESection>
+
+<E2ESection Id="header-content" Title="HeaderStart, HeaderEnd">
+    <BitPivot Id="pv-header-content">
+        <HeaderStart>
+            <span id="header-start-content">Start</span>
+        </HeaderStart>
+        <HeaderEnd>
+            <button id="header-end-button" type="button">Refresh</button>
+        </HeaderEnd>
+        <ChildContent>
+            <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+        </ChildContent>
+    </BitPivot>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Header and Body templates">
+    <BitPivot Id="pv-templates">
+        <BitPivotItem>
+            <Header><span class="custom-header" style="color: rgb(255, 0, 0)">Header #1</span></Header>
+            <Body><div id="template-body-1">Body #1</div></Body>
+        </BitPivotItem>
+        <BitPivotItem IconName="@BitIconName.Inbox" ItemCount="99">
+            <Header><span class="custom-header">Header #2</span><input id="header-input" aria-label="Header input" style="width:60px" /></Header>
+            <Body><div id="template-body-2">Body #2</div></Body>
+        </BitPivotItem>
+    </BitPivot>
+</E2ESection>
+
+<E2ESection Id="binding" Title="SelectedKey, DefaultSelectedKey, SelectItemByKey, SelectedItem, Items">
+    <BitPivot @ref="_bindingPivot" Id="pv-binding" @bind-SelectedKey="_selectedKey">
+        <BitPivotItem Key="1" HeaderText="Samples"><div>Samples</div></BitPivotItem>
+        <BitPivotItem Key="2" HeaderText="Files"><div>Files</div></BitPivotItem>
+        <BitPivotItem Key="3" HeaderText="Recent"><div>Recent</div></BitPivotItem>
+        <BitPivotItem Key="4" HeaderText="Last"><div>Last</div></BitPivotItem>
+        <BitPivotItem Key="5" HeaderText="Off" Disabled><div>Off</div></BitPivotItem>
+    </BitPivot>
+    <span id="selected-key">@_selectedKey</span>
+    <button id="btn-key-3" type="button" @onclick="@(() => _selectedKey = "3")">Key 3</button>
+    <button id="btn-key-disabled" type="button" @onclick="@(() => _selectedKey = "5")">Key 5 (disabled)</button>
+    <button id="btn-select-by-key" type="button" @onclick="@(() => _bindingPivot!.SelectItemByKey("4"))">SelectItemByKey(4)</button>
+    <button id="btn-read-ref" type="button" @onclick="ReadRef">Read the reference</button>
+    <span id="ref-state">@_refState</span>
+    <BitPivot Id="pv-default-key" DefaultSelectedKey="B">
+        <BitPivotItem Key="A" HeaderText="A"><div>A</div></BitPivotItem>
+        <BitPivotItem Key="B" HeaderText="B"><div id="default-key-panel">B (starts here)</div></BitPivotItem>
+        <BitPivotItem Key="C" HeaderText="C"><div>C</div></BitPivotItem>
+    </BitPivot>
+    <BitPivot Id="pv-one-way" SelectedKey="@_oneWayKey">
+        <BitPivotItem Key="X" HeaderText="X"><div>X</div></BitPivotItem>
+        <BitPivotItem Key="Y" HeaderText="Y"><div>Y</div></BitPivotItem>
+    </BitPivot>
+    <button id="btn-one-way-y" type="button" @onclick="@(() => _oneWayKey = "Y")">One-way Y</button>
+    <BitPivot Id="pv-is-selected">
+        <BitPivotItem Key="P" HeaderText="P"><div>P</div></BitPivotItem>
+        <BitPivotItem Key="Q" HeaderText="Q" IsSelected><div>Q</div></BitPivotItem>
+    </BitPivot>
+</E2ESection>
+
+<E2ESection Id="events" Title="OnChange, OnItemClick, item OnClick, Title, OnChanging">
+    <BitPivot Id="pv-events" OnChange="@(item => { _changed = item.HeaderText; _changeCount++; })" OnItemClick="@(item => { _clicked = item.HeaderText; _clickCount++; })">
+        <BitPivotItem HeaderText="Foo" Title="The first tab"><div>Foo</div></BitPivotItem>
+        <BitPivotItem HeaderText="Bar" Title="The second tab"><div>Bar</div></BitPivotItem>
+        <BitPivotItem HeaderText="Biz" OnClick="@(() => _bizClicks++)"><div>Biz</div></BitPivotItem>
+    </BitPivot>
+    <p>Changed: <span id="changed">@_changed</span> (<span id="change-count">@_changeCount</span>), clicked: <span id="clicked">@_clicked</span> (<span id="click-count">@_clickCount</span>), Biz clicks: <span id="biz-clicks">@_bizClicks</span></p>
+    <label><input id="lock-history" type="checkbox" @bind="_lockHistory" /> Lock history</label>
+    <BitPivot Id="pv-changing" OnChanging="HandleChanging">
+        <BitPivotItem HeaderText="Draft"><div>Draft</div></BitPivotItem>
+        <BitPivotItem HeaderText="Preview"><div>Preview</div></BitPivotItem>
+        <BitPivotItem HeaderText="History"><div>History</div></BitPivotItem>
+    </BitPivot>
+    <span id="refused">@_refused</span>
+</E2ESection>
+
+<E2ESection Id="panels" Title="KeepMounted, MountAll, HeaderOnly">
+    <BitPivot Id="pv-panels-default">
+        <BitPivotItem HeaderText="First"><input class="panel-input" aria-label="First" /></BitPivotItem>
+        <BitPivotItem HeaderText="Second"><input class="panel-input" aria-label="Second" /></BitPivotItem>
+        <BitPivotItem HeaderText="Third"><input class="panel-input" aria-label="Third" /></BitPivotItem>
+    </BitPivot>
+    <BitPivot Id="pv-keep-mounted" KeepMounted>
+        <BitPivotItem HeaderText="First"><input class="panel-input" aria-label="First" /></BitPivotItem>
+        <BitPivotItem HeaderText="Second"><input class="panel-input" aria-label="Second" /></BitPivotItem>
+        <BitPivotItem HeaderText="Third"><input class="panel-input" aria-label="Third" /></BitPivotItem>
+    </BitPivot>
+    <BitPivot Id="pv-mount-all" MountAll>
+        <BitPivotItem HeaderText="First"><input class="panel-input" aria-label="First" /></BitPivotItem>
+        <BitPivotItem HeaderText="Second"><input class="panel-input" aria-label="Second" /></BitPivotItem>
+        <BitPivotItem HeaderText="Third"><input class="panel-input" aria-label="Third" /></BitPivotItem>
+    </BitPivot>
+    <BitPivot Id="pv-header-only" HeaderOnly @bind-SelectedKey="_detachedKey">
+        <BitPivotItem HeaderText="Foo" Key="Foo" />
+        <BitPivotItem HeaderText="Bar" Key="Bar" />
+    </BitPivot>
+    <div id="detached-content">Hello, I am @_detachedKey.</div>
+</E2ESection>
+
+<E2ESection Id="dismiss-add" Title="Dismissible, Addable">
+    <BitPivot Id="pv-editable" Addable Dismissible
+              @bind-SelectedKey="_editableKey"
+              OnAdd="AddTab"
+              OnItemDismiss="@(item => { _editableTabs.Remove(item.Key!); _dismissed = item.Key; })">
+        <BitPivotItem Key="Home" HeaderText="Home" Dismissible="false"><div>Home stays</div></BitPivotItem>
+        @foreach (var tab in _editableTabs)
+        {
+            <BitPivotItem @key="tab" Key="@tab" HeaderText="@tab"><div class="editable-panel">Content of @tab</div></BitPivotItem>
+        }
+    </BitPivot>
+    <p>Selected: <span id="editable-key">@_editableKey</span>, dismissed: <span id="dismissed">@_dismissed</span>, tabs: <span id="editable-tabs">@string.Join(",", _editableTabs)</span></p>
+    <BitPivot Id="pv-editable-custom" Addable Dismissible AddTitle="New tab" AddAriaLabel="Open a new tab" AddIconName="@BitIconName.CirclePlus"
+              DismissTitle="Close" DismissAriaLabelFormat="Close the {0} tab" DismissIconName="@BitIconName.ChromeClose"
+              OnAdd="() => _customAdds++" OnItemDismiss="@(item => _customDismissed = item.HeaderText)">
+        <BitPivotItem HeaderText="One" OnDismiss="() => _ownDismisses++"><div>One</div></BitPivotItem>
+        <BitPivotItem HeaderText="Two"><div>Two</div></BitPivotItem>
+    </BitPivot>
+    <p>Adds: <span id="custom-adds">@_customAdds</span>, dismissed: <span id="custom-dismissed">@_customDismissed</span>, own dismisses: <span id="own-dismisses">@_ownDismisses</span></p>
+</E2ESection>
+
+<E2ESection Id="reorderable" Title="Reorderable, OnItemReorder">
+    <BitPivot Id="pv-reorder" Reorderable OnItemReorder="HandleReorder">
+        @foreach (var tab in _reorderTabs)
+        {
+            <BitPivotItem @key="tab" Key="@tab" HeaderText="@tab"><div>Content of @tab</div></BitPivotItem>
+        }
+        <BitPivotItem Key="Pinned" HeaderText="Pinned" Reorderable="false" IconName="@BitIconName.Pinned"><div>Pinned</div></BitPivotItem>
+    </BitPivot>
+    <p>Order: <span id="reorder-order">@string.Join(",", _reorderTabs)</span>, last: <span id="reorder-last">@_lastReorder</span></p>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard, AriaLabel, AriaLabelledBy, SelectOnFocus, Loop, Navigable">
+    <button id="before-keyboard" type="button">Before</button>
+    <BitPivot Id="pv-keyboard" AriaLabel="Documents">
+        <BitPivotItem HeaderText="File"><div>File panel</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared"><div>Shared panel</div></BitPivotItem>
+        <BitPivotItem HeaderText="Locked" Disabled><div>Locked panel</div></BitPivotItem>
+        <BitPivotItem HeaderText="Hidden" Visibility="BitVisibility.Collapsed"><div>Hidden panel</div></BitPivotItem>
+        <BitPivotItem HeaderText="Recent"><div>Recent panel</div></BitPivotItem>
+    </BitPivot>
+    <button id="after-keyboard" type="button">After</button>
+    <div id="settings-label">Account settings</div>
+    <BitPivot Id="pv-select-on-focus" AriaLabelledBy="settings-label" SelectOnFocus>
+        <BitPivotItem HeaderText="Profile"><div>Profile panel</div></BitPivotItem>
+        <BitPivotItem HeaderText="Security"><div>Security panel</div></BitPivotItem>
+        <BitPivotItem HeaderText="Billing"><div>Billing panel</div></BitPivotItem>
+    </BitPivot>
+    <BitPivot Id="pv-no-loop" Loop="false">
+        <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+        <BitPivotItem HeaderText="Recent"><div>Recent</div></BitPivotItem>
+    </BitPivot>
+    <BitPivot Id="pv-not-navigable" Navigable="false">
+        <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+        <BitPivotItem HeaderText="Recent"><div>Recent</div></BitPivotItem>
+    </BitPivot>
+    <div style="display:flex;height:180px">
+        <BitPivot Id="pv-vertical-keys" Placement="BitPlacement.Start">
+            <BitPivotItem HeaderText="Up"><div>Up</div></BitPivotItem>
+            <BitPivotItem HeaderText="Middle"><div>Middle</div></BitPivotItem>
+            <BitPivotItem HeaderText="Down"><div>Down</div></BitPivotItem>
+        </BitPivot>
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitPivot Id="pv-disabled" Disabled="_disabled" @ondblclick="() => _rootActivations++">
+        <BitPivotItem HeaderText="File" @ondblclick="() => _tabActivations++" @onpointerdown="() => _tabActivations++" @onmouseover="() => _tabHovers++"><div>File</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+        <BitPivotItem HeaderText="Recent"><div>Recent</div></BitPivotItem>
+    </BitPivot>
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <p>Root activations: <span id="root-activations">@_rootActivations</span>, tab activations: <span id="tab-activations">@_tabActivations</span>, tab hovers: <span id="tab-hovers">@_tabHovers</span></p>
+    <BitPivot Id="pv-disabled-item">
+        <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared" Disabled><div>Shared</div></BitPivotItem>
+        <BitPivotItem HeaderText="Recent"><div>Recent</div></BitPivotItem>
+    </BitPivot>
+    <BitPivot Id="pv-disabled-tab" HeaderType="BitPivotHeaderType.Tab" Disabled>
+        <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+    </BitPivot>
+</E2ESection>
+
+<E2ESection Id="params" Title="BitParams cascade">
+    <div style="width:600px">
+        <BitParams Parameters="_pivotParams">
+            <BitPivot Id="pv-params">
+                <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+                <BitPivotItem HeaderText="Recent"><div>Recent</div></BitPivotItem>
+            </BitPivot>
+            <BitPivot Id="pv-params-own" HeaderType="BitPivotHeaderType.Link">
+                <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+                <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+            </BitPivot>
+        </BitParams>
+    </div>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var color in _colors)
+    {
+        <BitPivot Id="@($"pv-color-{color}")" Color="color">
+            <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+        </BitPivot>
+        <BitPivot Id="@($"pv-color-tab-{color}")" Color="color" HeaderType="BitPivotHeaderType.Tab">
+            <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+        </BitPivot>
+    }
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External icons">
+    <BitPivot Id="pv-ext">
+        <BitPivotItem HeaderText="Home" Icon="@("fa-solid fa-house")"><div>Home</div></BitPivotItem>
+        <BitPivotItem HeaderText="Heart" Icon="@BitIconInfo.Css("fa-solid fa-heart")"><div>Heart</div></BitPivotItem>
+        <BitPivotItem HeaderText="Rocket" Icon="@BitIconInfo.Fa("solid rocket")"><div>Rocket</div></BitPivotItem>
+        <BitPivotItem HeaderText="Gear" Icon="@BitIconInfo.Bi("gear-fill")" IconName="@BitIconName.Settings"><div>Gear</div></BitPivotItem>
+    </BitPivot>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    @foreach (var size in new BitSize?[] { null, BitSize.Small, BitSize.Medium, BitSize.Large })
+    {
+        <BitPivot Id="@($"pv-size-{(size?.ToString() ?? "none")}")" Size="size">
+            <BitPivotItem HeaderText="File" IconName="@BitIconName.FabricFolder"><div>File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared" ItemCount="32"><div>Shared</div></BitPivotItem>
+        </BitPivot>
+    }
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes, item styles, Visibility, HtmlAttributes">
+    <BitPivot Id="pv-style" Style="border: 1px solid rgb(255, 99, 71); margin-left: 9px;">
+        <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+    </BitPivot>
+    <BitPivot Id="pv-class" Class="custom-class" data-test="pivot-attr">
+        <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+    </BitPivot>
+    <div style="width:420px">
+        <BitPivot Id="pv-styles" OverflowBehavior="BitPivotOverflowBehavior.Menu" Dismissible Addable
+                  Styles="@(new() { Root = "padding-top: 2px;", Header = "padding-bottom: 3px;", HeaderContainer = "padding-left: 4px;",
+                                    OverflowButton = "color: rgb(1, 2, 3);", OverflowCallout = "border: 2px solid rgb(4, 5, 6);",
+                                    OverflowItem = "color: rgb(7, 8, 9);", Body = "padding-top: 5px;", HeaderItem = "color: rgb(10, 11, 12);",
+                                    SelectedItem = "background-color: rgb(13, 14, 15);", HeaderItemContent = "padding-right: 1px;",
+                                    HeaderIconContainer = "color: rgb(16, 17, 18);", HeaderIcon = "color: rgb(19, 20, 21);",
+                                    HeaderText = "color: rgb(22, 23, 24);", HeaderItemCount = "color: rgb(25, 26, 27);",
+                                    HeaderStart = "color: rgb(28, 29, 30);", HeaderEnd = "color: rgb(31, 32, 33);",
+                                    DismissButton = "color: rgb(34, 35, 36);", DismissIcon = "color: rgb(37, 38, 39);",
+                                    AddButton = "color: rgb(40, 41, 42);", AddIcon = "color: rgb(43, 44, 45);" })"
+                  Classes="@(new() { Root = "c-root", Header = "c-header", HeaderContainer = "c-header-container",
+                                     OverflowButton = "c-overflow-button", OverflowCallout = "c-overflow-callout",
+                                     OverflowItem = "c-overflow-item", Body = "c-body", HeaderItem = "c-header-item",
+                                     SelectedItem = "c-selected", HeaderItemContent = "c-item-content",
+                                     HeaderIconContainer = "c-icon-container", HeaderIcon = "c-icon", HeaderText = "c-text",
+                                     HeaderItemCount = "c-count", HeaderStart = "c-start", HeaderEnd = "c-end",
+                                     DismissButton = "c-dismiss", DismissIcon = "c-dismiss-icon", AddButton = "c-add", AddIcon = "c-add-icon" })">
+            <HeaderStart><span>S</span></HeaderStart>
+            <HeaderEnd><span>E</span></HeaderEnd>
+            <ChildContent>
+                <BitPivotItem HeaderText="Styled" IconName="@BitIconName.Home" ItemCount="3" BodyClass="own-body" BodyStyle="margin-left: 6px;"><div>Styled</div></BitPivotItem>
+                @foreach (var tab in _tabs)
+                {
+                    <BitPivotItem HeaderText="@tab"><div>@tab</div></BitPivotItem>
+                }
+            </ChildContent>
+        </BitPivot>
+    </div>
+    <div style="width:330px">
+        <BitPivot Id="pv-styles-slide" OverflowBehavior="BitPivotOverflowBehavior.Slide"
+                  Styles="@(new() { SlideButton = "color: rgb(46, 47, 48);" })" Classes="@(new() { SlideButton = "c-slide" })">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem HeaderText="@tab"><div>@tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+    <BitPivot Id="pv-visibility">
+        <BitPivotItem HeaderText="One"><div>One</div></BitPivotItem>
+        <BitPivotItem HeaderText="Two" Visibility="_itemVisibility"><div>Two</div></BitPivotItem>
+        <BitPivotItem HeaderText="Three"><div>Three</div></BitPivotItem>
+    </BitPivot>
+    <button id="btn-item-hidden" type="button" @onclick="() => _itemVisibility = BitVisibility.Hidden">Item hidden</button>
+    <button id="btn-item-collapsed" type="button" @onclick="() => _itemVisibility = BitVisibility.Collapsed">Item collapsed</button>
+    <button id="btn-item-visible" type="button" @onclick="() => _itemVisibility = BitVisibility.Visible">Item visible</button>
+    <BitPivot Id="pv-root-visibility" Visibility="_rootVisibility">
+        <BitPivotItem HeaderText="One"><div>One</div></BitPivotItem>
+    </BitPivot>
+    <button id="btn-root-collapsed" type="button" @onclick="() => _rootVisibility = BitVisibility.Collapsed">Root collapsed</button>
+    <button id="btn-root-visible" type="button" @onclick="() => _rootVisibility = BitVisibility.Visible">Root visible</button>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div style="width:600px; --bit-Pivot-color: rgb(46, 139, 87); --bit-Pivot-item-color: rgb(10, 20, 30); --bit-Pivot-item-height: 50px; --bit-Pivot-font-size: 18px; --bit-Pivot-gap: 13px; --bit-Pivot-body-padding: 7px; --bit-Pivot-indicator-thickness: 5px; --bit-Pivot-item-selected-font-weight: 800; --bit-Pivot-callout-background: rgb(200, 210, 220);">
+        <BitPivot Id="pv-css-vars">
+            <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+        </BitPivot>
+        <BitPivot Id="pv-css-vars-params" Color="BitColor.Error" Gap="3px" Size="BitSize.Small">
+            <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+            <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+        </BitPivot>
+        <div style="width:300px">
+            <BitPivot Id="pv-css-vars-menu" OverflowBehavior="BitPivotOverflowBehavior.Menu">
+                @foreach (var tab in _tabs)
+                {
+                    <BitPivotItem HeaderText="@tab"><div>@tab</div></BitPivotItem>
+                }
+            </BitPivot>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div style="width:600px">
+        <BitPivot Id="pv-rtl" Dir="BitDir.Rtl">
+            <BitPivotItem HeaderText="اسناد"><div>1</div></BitPivotItem>
+            <BitPivotItem HeaderText="آخرین ها"><div>2</div></BitPivotItem>
+            <BitPivotItem HeaderText="شخصی"><div>3</div></BitPivotItem>
+        </BitPivot>
+    </div>
+    <div style="width:600px">
+        <BitPivot Id="pv-rtl-start" Dir="BitDir.Rtl" Placement="BitPlacement.Start">
+            <BitPivotItem HeaderText="اسناد"><div class="rtl-panel">1</div></BitPivotItem>
+            <BitPivotItem HeaderText="شخصی"><div class="rtl-panel">2</div></BitPivotItem>
+        </BitPivot>
+    </div>
+    <div dir="rtl" style="width:600px">
+        <BitPivot Id="pv-rtl-inherited">
+            <BitPivotItem HeaderText="One"><div>1</div></BitPivotItem>
+            <BitPivotItem HeaderText="Two"><div>2</div></BitPivotItem>
+            <BitPivotItem HeaderText="Three"><div>3</div></BitPivotItem>
+        </BitPivot>
+    </div>
+    <div style="width:330px">
+        <BitPivot Id="pv-rtl-slide" Dir="BitDir.Rtl" OverflowBehavior="BitPivotOverflowBehavior.Slide">
+            @foreach (var tab in _tabs)
+            {
+                <BitPivotItem HeaderText="@tab"><div>@tab</div></BitPivotItem>
+            }
+        </BitPivot>
+    </div>
+</E2ESection>
+
+<E2ESection Id="escape-dialog" Title="Escape on the overflow menu inside a dialog">
+    <button id="btn-open-dialog" type="button" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <span id="dialog-state">@(_dialogOpen ? "open" : "closed")</span>
+    <BitDialog @bind-IsOpen="_dialogOpen" AutoFocus="false" Title="Dialog" MaxWidth="360px">
+        <Body>
+            <div style="width:280px">
+                <BitPivot Id="pv-in-dialog" OverflowBehavior="BitPivotOverflowBehavior.Menu">
+                    @foreach (var tab in _tabs)
+                    {
+                        <BitPivotItem HeaderText="@tab"><div>@tab</div></BitPivotItem>
+                    }
+                </BitPivot>
+            </div>
+        </Body>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Reduced motion, ForceAnimation">
+    <BitPivot Id="pv-motion">
+        <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+    </BitPivot>
+    <BitPivot Id="pv-force-animation" ForceAnimation>
+        <BitPivotItem HeaderText="File"><div>File</div></BitPivotItem>
+        <BitPivotItem HeaderText="Shared"><div>Shared</div></BitPivotItem>
+    </BitPivot>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Unmount">
+    <button id="btn-toggle-mounted" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    <span id="mounted-state">@_mounted</span>
+    @if (_mounted)
+    {
+        <div style="width:330px">
+            <BitPivot Id="pv-unmount" OverflowBehavior="BitPivotOverflowBehavior.Menu" Reorderable OnItemReorder="_ => { }">
+                @foreach (var tab in _tabs)
+                {
+                    <BitPivotItem HeaderText="@tab"><div>@tab</div></BitPivotItem>
+                }
+            </BitPivot>
+        </div>
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private static readonly string[] _tabs = ["Alpha", "Bravo", "Charlie", "Delta", "Echo", "Foxtrot", "Golf", "Hotel"];
+
+    private readonly BitPivotParams[] _pivotParams =
+    [
+        new() { HeaderType = BitPivotHeaderType.Tab, FullWidth = true }
+    ];
+
+    private string? _menuKey = "Alpha";
+
+    private BitPivot? _bindingPivot;
+    private string? _selectedKey = "1";
+    private string? _refState;
+    private string? _oneWayKey = "X";
+
+    private string? _changed;
+    private int _changeCount;
+    private string? _clicked;
+    private int _clickCount;
+    private int _bizClicks;
+    private bool _lockHistory;
+    private string? _refused;
+
+    private string? _detachedKey = "Foo";
+
+    private readonly List<string> _editableTabs = ["Tab 1", "Tab 2", "Tab 3"];
+    private string? _editableKey = "Home";
+    private string? _dismissed;
+    private int _tabNumber = 3;
+    private int _customAdds;
+    private string? _customDismissed;
+    private int _ownDismisses;
+
+    private readonly List<string> _reorderTabs = ["Tab A", "Tab B", "Tab C", "Tab D"];
+    private string? _lastReorder;
+
+    private bool _disabled = true;
+    private int _rootActivations;
+    private int _tabActivations;
+    private int _tabHovers;
+
+    private BitVisibility _itemVisibility = BitVisibility.Visible;
+    private BitVisibility _rootVisibility = BitVisibility.Visible;
+
+    private bool _dialogOpen;
+    private bool _mounted = true;
+
+    private void ReadRef()
+    {
+        _refState = $"{_bindingPivot!.SelectedItem?.HeaderText}|{_bindingPivot.Items.Count}|{string.Join(",", _bindingPivot.Items.Select(i => i.Key))}";
+    }
+
+    private void HandleChanging(BitPivotChangeArgs args)
+    {
+        if (_lockHistory && args.Item.HeaderText == "History")
+        {
+            args.Cancel = true;
+            _refused = args.Item.HeaderText;
+        }
+    }
+
+    private void AddTab()
+    {
+        var tab = $"Tab {++_tabNumber}";
+        _editableTabs.Add(tab);
+        _editableKey = tab;
+    }
+
+    private void HandleReorder(BitPivotReorderEventArgs args)
+    {
+        _lastReorder = $"{args.Item.Key}:{args.OldIndex}->{args.NewIndex}";
+
+        if (args.NewIndex >= _reorderTabs.Count) return;
+
+        var key = args.Item.Key!;
+        _reorderTabs.Remove(key);
+        _reorderTabs.Insert(args.NewIndex, key);
+    }
+}

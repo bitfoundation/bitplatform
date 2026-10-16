@@ -341,14 +341,21 @@
         // Returns the standalone SVG markup instead of downloading it, so the caller can embed,
         // upload or store the picture itself.
         public static toSvgString(element: HTMLElement, background: string | null) {
-            return BitChart.serialize(element, background);
+            return BitChart.toStream(BitChart.serialize(element, background));
         }
 
         // Returns the rasterized chart as a data URL (the same picture exportPng downloads).
         public static async toDataUrl(element: HTMLElement, mimeType: string, scale: number, background: string | null) {
             const canvas = await BitChart.rasterize(element, scale, background);
-            if (!canvas) return null;
-            return canvas.toDataURL(mimeType || 'image/png');
+            return BitChart.toStream(canvas ? canvas.toDataURL(mimeType || 'image/png') : null);
+        }
+
+        // The markup and the data URL of a sizeable chart are far larger than the 32 KB one message of a
+        // Blazor Server circuit holds, and a result past it tears the circuit down, so they reach .NET as
+        // the UTF-8 bytes of the text, which it reads as a stream (an IJSStreamReference) in chunks.
+        // Nothing to read - a chart not rendered yet - is an empty array.
+        private static toStream(text: string | null | undefined) {
+            return new TextEncoder().encode(text ?? '');
         }
 
         public static downloadText(fileName: string, content: string, mimeType: string) {

@@ -1963,6 +1963,79 @@ public class BitSplitterTests : BunitTestContext
 
 
 
+    [TestMethod]
+    public void BitSplitterShouldReportThePositionToTwoDecimals()
+    {
+        // The style attribute carries four decimals; what a screen reader is read is rounded further.
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Percent, 100d / 3d);
+        });
+
+        var gutter = component.Find(".bit-spl-gtr");
+
+        Assert.AreEqual("33.33", gutter.GetAttribute("aria-valuenow"));
+        Assert.AreEqual("33.33%", gutter.GetAttribute("aria-valuetext"));
+    }
+
+    [DataTestMethod,
+     DataRow(false, false, false),
+     DataRow(true, false, true),
+     DataRow(false, true, true),
+     DataRow(true, true, true)]
+    public void BitSplitterShouldTellTheJavaScriptSideWhetherTheGutterMayBeMoved(bool disabled, bool readOnly, bool expected)
+    {
+        RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.ReadOnly, readOnly);
+        });
+
+        Assert.AreEqual(expected, ReadOption(SetupOptions(), "Disabled"));
+    }
+
+    [TestMethod]
+    public async Task BitSplitterFocusAsyncShouldFocusTheGutter()
+    {
+        var component = RenderComponent<BitSplitter>();
+
+        await component.InvokeAsync(async () => await component.Instance.FocusAsync());
+        await component.InvokeAsync(async () => await component.Instance.FocusAsync(true));
+
+        // The gutter is the control a splitter is driven by, so it is what takes the focus.
+        Assert.AreEqual(2, Context.JSInterop.Invocations.Count(i => i.Identifier.Contains("focus", StringComparison.OrdinalIgnoreCase)));
+    }
+
+    [TestMethod]
+    public async Task BitSplitterShouldSurviveBeingDisposedTwice()
+    {
+        Context.JSInterop.Setup<string>("BitBlazorUI.Splitter.setup", _ => true).SetResult("spl-1");
+
+        var component = RenderComponent<BitSplitter>();
+
+        await component.Instance.DisposeAsync();
+        await component.Instance.DisposeAsync();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Splitter.dispose"));
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldRenderTheBaseParametersOnItsRoot()
+    {
+        var component = RenderComponent<BitSplitter>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-splitter");
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Style, "margin:1px");
+        });
+
+        var root = component.Find(".bit-spl");
+
+        Assert.AreEqual("the-splitter", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+    }
+
     // Everything the drag engine is driven with reaches it as one object, so what a test asks about is the
     // option by name rather than a position in an argument list that says nothing about what it holds.
     private object SetupOptions()

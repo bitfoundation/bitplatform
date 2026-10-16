@@ -414,8 +414,15 @@ $sld-private-properties:
 // past the other still crosses. Which side each input keeps is therefore decided by where its thumb actually
 // stands - the near/far classes - and not by which end of the range it is named for: a crossed pair that kept
 // its named sides would have each input clipped away from its own thumb, leaving neither one grabbable.
+//
+// The cut is declared on the inputs themselves, which is where the component writes --bit-sld-inp-mid: a custom
+// property resolves the var() it reads where it is declared, so one declared on the root would read the root's
+// reset of the midpoint and cut every input at its own middle, wherever the thumbs stand.
 .bit-sld-rgd {
-    --bit-sld-inp-cut: calc(var(--bit-sld-thumb) / 2 + var(--bit-sld-inp-mid, 0.5) * (100% - var(--bit-sld-thumb)));
+    .bit-sld-inp-near,
+    .bit-sld-inp-far {
+        --bit-sld-inp-cut: calc(var(--bit-sld-thumb) / 2 + var(--bit-sld-inp-mid, 0.5) * (100% - var(--bit-sld-thumb)));
+    }
 
     .bit-sld-inp-near {
         clip-path: inset(0 calc(100% - var(--bit-sld-inp-cut)) 0 0);

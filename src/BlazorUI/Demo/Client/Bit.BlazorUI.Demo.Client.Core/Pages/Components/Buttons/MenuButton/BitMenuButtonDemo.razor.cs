@@ -48,7 +48,7 @@ public partial class BitMenuButtonDemo
             Name = "ButtonType",
             Type = "BitButtonType?",
             DefaultValue = "null",
-            Description = "The value of the type attribute of the menu button.",
+            Description = "The value of the type attribute of the items, and of the main half of a split menu button when it is set. Left unset, the items are submit buttons inside an EditForm and plain buttons elsewhere; a submit or reset item acts on the form the menu button sits in, although its open menu is moved out of it to the body.",
             LinkType = LinkType.Link,
             Href = "#button-type-enum"
         },
@@ -1006,6 +1006,8 @@ public partial class BitMenuButtonDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link of the item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -1177,6 +1179,8 @@ public partial class BitMenuButtonDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link of the option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -1668,6 +1672,7 @@ public partial class BitMenuButtonDemo
         DemoSharedEnums.BitButtonType(),
         DemoSharedEnums.BitColor(),
         DemoSharedEnums.BitDropDirection(),
+        DemoSharedEnums.BitLinkRels(),
         DemoSharedEnums.BitSize(),
         DemoSharedEnums.BitVariant(),
     ];

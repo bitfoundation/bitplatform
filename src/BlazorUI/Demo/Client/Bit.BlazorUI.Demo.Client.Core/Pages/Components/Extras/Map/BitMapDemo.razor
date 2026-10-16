@@ -24,7 +24,9 @@
             <br />
             <code>BitMap&lt;TMapProvider&gt;</code> is generic: the type argument picks the backend and <code>Provider</code>
             configures it. The provider is compared by reference - assign a new instance to apply changed options.
-            Imperative methods need a <code>@@ref</code> and throw until <code>OnReady</code> has fired.
+            Imperative methods need a <code>@@ref</code> and do nothing until <code>OnReady</code> has fired (the ones
+            returning a value return null or false), so a click that beats the map's load is not an error; only
+            <code>GetView</code>, with no viewport to read yet, throws.
             <br />
             <code>AdditionalOptions</code> on a provider is passed straight to the library's map constructor (Leaflet,
             MapLibre and Mapbox), for anything this component does not model.

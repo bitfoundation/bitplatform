@@ -336,7 +336,7 @@ jobs:
 
   build_blazor_hybrid_iOS:
     name: build blazor hybrid (iOS)
-    runs-on: macOS-26
+    runs-on: xcode-27
     permissions:
       contents: read
       id-token: write
@@ -357,7 +357,7 @@ jobs:
 
       - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
         with:
-          xcode-version: '26.6'
+          xcode-version: '27.0'
 
       - name: Install the bit CLI
         shell: pwsh

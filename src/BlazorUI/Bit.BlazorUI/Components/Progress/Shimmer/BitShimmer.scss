@@ -156,7 +156,9 @@ $smr-private-properties: hgt, gap, llw, rad, shp, dly, lnh, crs, bg-clr, wrp-bg;
 }
 
 // An inline shimmer sits in the flow of a line of text, so it cannot take the full width of its container
-// the way a block one does; without a width of its own it falls back to the minimum width of a control.
+// the way a block one does; without a width of its own it falls back to eight spacing units (64px at the default
+// density). Not the theme's minimum control width: that is a floor for a labeled button, which Fluent leaves at
+// `auto` - a width an empty inline-block resolves to nothing, so the placeholder would draw nothing at all.
 .bit-smr-inl {
     display: inline-block;
     vertical-align: middle;
@@ -173,7 +175,7 @@ $smr-private-properties: hgt, gap, llw, rad, shp, dly, lnh, crs, bg-clr, wrp-bg;
 }
 
 .bit-smr-lin.bit-smr-inl {
-    width: $siz-ctrl-min-width;
+    width: spacing(8);
 }
 
 // A stack of lines laid out inline is still a stack: inline-block would take the flex container away from it

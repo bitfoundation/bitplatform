@@ -401,8 +401,9 @@ public static partial class BitMarkdownEditorCommands
     private static BitMarkdownEditorEditResult Indent(string text, int start, int end, string indentUnit)
     {
         // Inside a table there is no indenting to do, and Tab is how the cells are walked
-        // through - which is what the key does in every editor that knows about tables.
-        if (start == end && ReadTable(text, start) is not null) return TableMoveCell(text, start, end, forward: true);
+        // through - which is what the key does in every editor that knows about tables. The
+        // walk selects the cell it lands on, so a selection inside one cell walks on as well.
+        if (IsInsideOneCell(text, start, end) && ReadTable(text, start) is not null) return TableMoveCell(text, start, end, forward: true);
 
         // A caret inside a list item or a quote indents the whole line: Tab is how a nested
         // list is reached from the keyboard, and pushing spaces into the middle of the text
@@ -424,7 +425,7 @@ public static partial class BitMarkdownEditorCommands
 
     private static BitMarkdownEditorEditResult Outdent(string text, int start, int end, string indentUnit)
     {
-        if (start == end && ReadTable(text, start) is not null) return TableMoveCell(text, start, end, forward: false);
+        if (IsInsideOneCell(text, start, end) && ReadTable(text, start) is not null) return TableMoveCell(text, start, end, forward: false);
 
         return TransformBlock(text, start, end, lines =>
         {

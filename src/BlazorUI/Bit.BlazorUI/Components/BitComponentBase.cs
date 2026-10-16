@@ -503,18 +503,6 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     protected virtual void RegisterCssClasses() { }
 
     /// <summary>
-    /// Called when the visibility state changes.
-    /// </summary>
-    /// <remarks>
-    /// Override this method in a derived class to respond to changes in visibility.
-    /// This method is invoked whenever the visibility state is updated.
-    /// </remarks>
-    /// <param name="visibility">
-    /// The new visibility state that triggered the change event.
-    /// </param>
-    protected virtual void OnVisibilityChanged(BitVisibility visibility) { }
-
-    /// <summary>
     /// Splices two style parts into the single declaration list a style attribute holds.
     /// </summary>
     /// <remarks>
@@ -669,11 +657,45 @@ public abstract partial class BitComponentBase : ComponentBase, IAsyncDisposable
     /// along the inline axis: false for every other key, without asking, since only those two act on the direction
     /// and <see cref="IsRtlAsync"/> costs a round trip when the direction is not known.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A key handler acts on the answer, and moving the focus is most of what it does with it. While the round trip is
+    /// out the user can take the focus elsewhere - a Tab pressed right after the arrow, a click - which the browser
+    /// does at once, and the handler would then steal the focus back to the item the arrow was going to: Left at the
+    /// first item of a toolbar followed by Tab would land back on the toolbar. So the script answers a horizontal
+    /// arrow it has seen overtaken that way (a Tab or a pointer press since it, with the focus no longer where it was
+    /// pressed) with a refusal instead of a direction, and this throws an <see cref="OperationCanceledException"/>
+    /// for it: the handler stops where it awaited, and Blazor drops an event handler that ends canceled without
+    /// reporting it, the way it drops any other cancellation. A handler that has more to do after the key than act on
+    /// it - raise a consumer's callback - catches it around the part the key drives.
+    /// </para>
+    /// <para>
+    /// A direction <see cref="ExplicitRtl"/> knows takes no round trip and so is never overtaken; the key is acted on
+    /// as it arrives.
+    /// </para>
+    /// </remarks>
     internal async ValueTask<bool> IsRtlArrowAsync(IJSRuntime js, string? key, ElementReference? element = null)
     {
         if (key is not ("ArrowLeft" or "ArrowRight")) return false;
 
-        return await IsRtlAsync(js, element);
+        if (ExplicitRtl is { } rtl) return rtl;
+
+        var target = element ?? RootElement;
+        if (target.Id is null) return false;
+
+        try
+        {
+            return await js.BitUtilsIsRtlArrow(target);
+        }
+        catch (JSException ex) when (ex.Message.Contains(UtilsJsRuntimeExtensions.ArrowKeyOvertaken, StringComparison.Ordinal))
+        {
+            throw new OperationCanceledException("The arrow key was overtaken by the focus moving elsewhere before its direction was known.");
+        }
+        catch (JSException) { }
+        catch (JSDisconnectedException) { }
+        catch (TaskCanceledException) { }
+
+        return false;
     }
 
     /// <summary>

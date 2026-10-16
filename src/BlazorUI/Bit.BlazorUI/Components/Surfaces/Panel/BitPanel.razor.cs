@@ -52,6 +52,10 @@ public partial class BitPanel : BitComponentBase
     // What the escape guard answered for the Escape Blazor is about to hand the key handler (see
     // _OnEscapeVerdict), taken by the handler as it starts.
     private readonly BitEscapeVerdict _escapeVerdict = new();
+    // Done once the callbacks of the latest change of state (OnToggle with OnOpen or OnDismiss) have been called.
+    // The end of the transition that change started waits for it: the open and close sequences make round trips
+    // of their own before they call them, and a short transition can end in the browser while they are under way.
+    private Task _stateChangeNotified = Task.CompletedTask;
 
 
 
@@ -428,6 +432,10 @@ public partial class BitPanel : BitComponentBase
     /// panel changed state on, which is the start of the movement rather than the end of it. This is the one
     /// to wait for where the panel has to have arrived: measuring it, scrolling something into view inside
     /// it, or starting the work its arrival was the cue for.
+    /// <br />
+    /// It always comes after those three: a transition that ends in the browser while the panel is still
+    /// opening or closing on the .NET side - a short one, or a slow connection - is reported once their
+    /// calls are done.
     /// </remarks>
     [Parameter] public EventCallback<bool> OnTransitionEnd { get; set; }
 
@@ -597,6 +605,10 @@ public partial class BitPanel : BitComponentBase
     [JSInvokable("OnTransitionEnd")]
     public async Task _OnTransitionEnd()
     {
+        if (IsDisposing) return;
+
+        await _stateChangeNotified;
+
         if (IsDisposing) return;
 
         // The content of a closed panel is only taken out of the page once the panel has finished sliding
@@ -769,6 +781,21 @@ public partial class BitPanel : BitComponentBase
 
         _internalIsOpen = IsOpen;
 
+        var notified = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _stateChangeNotified = notified.Task;
+
+        try
+        {
+            await OnStateChangedAsync();
+        }
+        finally
+        {
+            notified.TrySetResult();
+        }
+    }
+
+    private async Task OnStateChangedAsync()
+    {
         // Every way the panel can be opened or closed - the overlay, the Escape key, a swipe, the Open, Close
         // and Toggle methods, and the IsOpen parameter being set from the outside - ends up here, on the
         // render that has already put the new state in the page. So the keyboard, the page scrolling and the
@@ -1107,6 +1134,17 @@ public partial class BitPanel : BitComponentBase
     {
         if (NoSwipe || IsDisposed) return;
 
+        // A pass of the parameters that overlapped this one - a second change arriving while the first was still
+        // waiting on the browser - may have registered the gesture in the meantime. Swipes.setup adds a
+        // registration rather than replacing one, so that one is taken back first: left in place, every drag
+        // would be reported twice, and once its reference was released, through a reference that no longer exists.
+        if (_swipesKey is not null)
+        {
+            await DisposeSwipes();
+
+            if (NoSwipe || IsDisposed) return;
+        }
+
         _swipesKey = GetSwipesKey();
 
         var position = EffectivePosition;
@@ -1138,6 +1176,11 @@ public partial class BitPanel : BitComponentBase
 
         _swipesKey = null;
 
+        // Taken off the field before the round trip, so a registration an overlapping pass makes while this one
+        // waits keeps the reference it was handed rather than having it released from under it here.
+        var dotnetObj = _swipesDotnetObj;
+        _swipesDotnetObj = null;
+
         try
         {
             await _js.BitSwipesDispose(_containerId);
@@ -1146,8 +1189,7 @@ public partial class BitPanel : BitComponentBase
 
         // Swipes.setup can bail out before it registers anything, leaving nothing for Swipes.dispose to
         // release, so the reference is also released here (disposing it is idempotent).
-        _swipesDotnetObj?.Dispose();
-        _swipesDotnetObj = null;
+        dotnetObj?.Dispose();
     }
 
     private async Task SetupTransitionEnd()

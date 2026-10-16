@@ -20,6 +20,11 @@ internal static class DropdownsJsRuntimeExtensions
         return jsRuntime.InvokeVoid("BitBlazorUI.Dropdowns.focusSearchBox", calloutId, caret);
     }
 
+    internal static ValueTask<bool> BitDropdownsReclaimFocus(this IJSRuntime jsRuntime, string calloutId, ElementReference target)
+    {
+        return jsRuntime.Invoke<bool>("BitBlazorUI.Dropdowns.reclaimFocus", calloutId, target);
+    }
+
     internal static ValueTask BitDropdownsFocusItem(this IJSRuntime jsRuntime, string calloutId, BitDropdownFocusMode mode, string? character, bool virtualize, int selectedIndex, int itemSize, bool noWrap)
     {
         // Mapped by hand rather than by name: these are the exact strings Dropdowns.ts branches on, so

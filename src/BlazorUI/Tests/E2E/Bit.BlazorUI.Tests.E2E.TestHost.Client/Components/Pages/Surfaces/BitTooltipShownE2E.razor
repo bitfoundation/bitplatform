@@ -1,0 +1,150 @@
+﻿@page "/e2e/tooltip/shown"
+
+<PageTitle>BitTooltip shown E2E</PageTitle>
+
+@* Tooltips that start shown (DefaultIsShown), laid out far enough apart that none of them reaches another, so a test
+   measures each surface against its anchor with bounding boxes. *@
+<style>
+    .e2e-ttp-grid { display: grid; grid-template-columns: repeat(4, 280px); row-gap: 110px; padding: 90px 0 90px 140px; justify-items: center; }
+    .e2e-ttp-anchor { display: inline-block; width: 90px; height: 30px; background: rgb(230, 230, 230); text-align: center; line-height: 30px; }
+    .e2e-ttp-class-tooltip { letter-spacing: 2px; }
+    .e2e-ttp-class-arrow { outline: 1px solid rgb(4, 5, 6); }
+    .e2e-ttp-class-wrapper { word-spacing: 3px; }
+</style>
+
+<E2ESection Id="placements" Title="Placement and Alignment">
+    <div class="e2e-ttp-grid">
+        @foreach (var (name, placement) in _placements)
+        {
+            <BitTooltip Id="@($"tp-{name}")" DefaultIsShown Placement="placement" Text="@($"Placed {name}")">
+                <span id="@($"tp-{name}-anchor")" class="e2e-ttp-anchor">@name</span>
+            </BitTooltip>
+        }
+        @foreach (var (name, alignment) in _alignments)
+        {
+            <BitTooltip Id="@($"ta-{name}")" DefaultIsShown Placement="BitPlacement.Top" Alignment="alignment" Text="@($"Aligned {name} on top")">
+                <span id="@($"ta-{name}-anchor")" class="e2e-ttp-anchor">@name</span>
+            </BitTooltip>
+        }
+        @foreach (var (name, alignment) in _sideAlignments)
+        {
+            <BitTooltip Id="@($"ts-{name}")" DefaultIsShown Placement="BitPlacement.Right" Alignment="alignment" Text="@($"Beside, {name}")">
+                <span id="@($"ts-{name}-anchor")" class="e2e-ttp-anchor" style="height: 60px;">@name</span>
+            </BitTooltip>
+        }
+        <BitTooltip Id="tp-rtl-start" Dir="BitDir.Rtl" DefaultIsShown Placement="BitPlacement.Start" Text="آغاز">
+            <span id="tp-rtl-start-anchor" class="e2e-ttp-anchor">RTL start</span>
+        </BitTooltip>
+        <div dir="rtl">
+            <BitTooltip Id="tp-rtl-inh" DefaultIsShown Placement="BitPlacement.End" Text="Inherited end">
+                <span id="tp-rtl-inh-anchor" class="e2e-ttp-anchor">RTL end</span>
+            </BitTooltip>
+        </div>
+        <BitTooltip Id="tp-rtl-align" Dir="BitDir.Rtl" DefaultIsShown Placement="BitPlacement.Top" Alignment="BitPlacement.Start" Text="Aligned to the start, which is the right">
+            <span id="tp-rtl-align-anchor" class="e2e-ttp-anchor">RTL align</span>
+        </BitTooltip>
+    </div>
+</E2ESection>
+
+<E2ESection Id="arrow" Title="HideArrow, ArrowSize, Offset, MaxWidth, FullWidth">
+    <div class="e2e-ttp-grid">
+        <BitTooltip Id="tw-default" DefaultIsShown Text="Default"><span id="tw-default-anchor" class="e2e-ttp-anchor">Default</span></BitTooltip>
+        <BitTooltip Id="tw-noarrow" DefaultIsShown HideArrow Text="No arrow"><span class="e2e-ttp-anchor">No arrow</span></BitTooltip>
+        <BitTooltip Id="tw-arrow" DefaultIsShown ArrowSize="18" Text="A bigger arrow"><span id="tw-arrow-anchor" class="e2e-ttp-anchor">Arrow</span></BitTooltip>
+        <BitTooltip Id="tw-offset" DefaultIsShown Offset="24" Text="Held further off"><span id="tw-offset-anchor" class="e2e-ttp-anchor">Offset</span></BitTooltip>
+        <BitTooltip Id="tw-max" DefaultIsShown Placement="BitPlacement.Bottom" MaxWidth="10rem" Text="A long text that wraps at ten rem rather than running across the page."><span class="e2e-ttp-anchor">MaxWidth</span></BitTooltip>
+        <BitTooltip Id="tw-nomax" DefaultIsShown Placement="BitPlacement.Bottom" MaxWidth="none" Text="A long text that never wraps however long it gets."><span class="e2e-ttp-anchor">No cap</span></BitTooltip>
+    </div>
+    <div style="width: 400px; margin-bottom: 16px;">
+        <BitTooltip Id="tw-full" FullWidth Text="The field keeps its width"><input id="tw-full-input" style="width: 100%; box-sizing: border-box;" /></BitTooltip>
+        <BitTooltip Id="tw-shrunk" Text="The field is shrunk"><input id="tw-shrunk-input" style="width: 100%; box-sizing: border-box;" /></BitTooltip>
+    </div>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Color and Size">
+    <div class="e2e-ttp-grid">
+        @foreach (var (color, suffix) in _colors)
+        {
+            <BitTooltip Id="@($"tc-{suffix}")" DefaultIsShown Color="color" Placement="BitPlacement.Bottom" Text="@color.ToString()"><span class="e2e-ttp-anchor">@suffix</span></BitTooltip>
+        }
+        <BitTooltip Id="tc-unset" DefaultIsShown Placement="BitPlacement.Bottom" Text="Unset"><span class="e2e-ttp-anchor">unset</span></BitTooltip>
+        <BitTooltip Id="tz-sm" DefaultIsShown Size="BitSize.Small" Placement="BitPlacement.Bottom" Text="Small"><span class="e2e-ttp-anchor">sm</span></BitTooltip>
+        <BitTooltip Id="tz-md" DefaultIsShown Size="BitSize.Medium" Placement="BitPlacement.Bottom" Text="Medium"><span class="e2e-ttp-anchor">md</span></BitTooltip>
+        <BitTooltip Id="tz-lg" DefaultIsShown Size="BitSize.Large" Placement="BitPlacement.Bottom" Text="Large"><span class="e2e-ttp-anchor">lg</span></BitTooltip>
+        <BitTooltip Id="tz-unset" DefaultIsShown Placement="BitPlacement.Bottom" Text="Unset"><span class="e2e-ttp-anchor">size unset</span></BitTooltip>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style, Class, Styles, Classes, NoAnimation, ZIndex, CSS variables">
+    <div class="e2e-ttp-grid">
+        <BitTooltip Id="tst-style" DefaultIsShown Style="margin-top: 3px;" Text="Style"><span class="e2e-ttp-anchor">Style</span></BitTooltip>
+        <BitTooltip Id="tst-styles" DefaultIsShown Text="Styles"
+                    Styles="@(new() { Root = "padding: 1px;", TooltipWrapper = "word-spacing: 5px;", Tooltip = "box-shadow: rgb(0, 255, 255) 0px 0px 8px 0px;", Arrow = "outline: 1px solid rgb(7, 8, 9);" })">
+            <span class="e2e-ttp-anchor">Styles</span>
+        </BitTooltip>
+        <BitTooltip Id="tst-classes" DefaultIsShown Text="Classes"
+                    Classes="@(new() { Root = "e2e-ttp-class-root", TooltipWrapper = "e2e-ttp-class-wrapper", Tooltip = "e2e-ttp-class-tooltip", Arrow = "e2e-ttp-class-arrow" })">
+            <span class="e2e-ttp-anchor">Classes</span>
+        </BitTooltip>
+        <BitTooltip Id="tst-zindex" DefaultIsShown ZIndex="5000" NoAnimation Text="ZIndex and NoAnimation"><span class="e2e-ttp-anchor">ZIndex</span></BitTooltip>
+        <div style="--bit-Tooltip-background: rgb(30, 41, 59); --bit-Tooltip-color: rgb(248, 250, 252); --bit-Tooltip-padding: 14px; --bit-Tooltip-font-size: 17px; --bit-Tooltip-radius: 0px; --bit-Tooltip-max-width: 120px; --bit-Tooltip-offset: 20px; --bit-Tooltip-font-weight: 700; --bit-Tooltip-text-align: center;">
+            <BitTooltip Id="tst-var" DefaultIsShown Text="Restyled by an ancestor's variables"><span id="tst-var-anchor" class="e2e-ttp-anchor">Variables</span></BitTooltip>
+        </div>
+        <div style="--bit-Tooltip-background: rgb(30, 41, 59);">
+            <BitTooltip Id="tst-var-wins" DefaultIsShown Color="BitColor.Error" Size="BitSize.Large" Text="Color wins"><span class="e2e-ttp-anchor">Color wins</span></BitTooltip>
+        </div>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly (string Name, BitPlacement Placement)[] _placements =
+    [
+        ("top", BitPlacement.Top),
+        ("bottom", BitPlacement.Bottom),
+        ("left", BitPlacement.Left),
+        ("right", BitPlacement.Right),
+        ("start", BitPlacement.Start),
+        ("end", BitPlacement.End),
+        ("center", BitPlacement.Center),
+    ];
+
+    private readonly (string Name, BitPlacement Alignment)[] _alignments =
+    [
+        ("start", BitPlacement.Start),
+        ("end", BitPlacement.End),
+        ("left", BitPlacement.Left),
+        ("right", BitPlacement.Right),
+        ("center", BitPlacement.Center),
+    ];
+
+    private readonly (string Name, BitPlacement Alignment)[] _sideAlignments =
+    [
+        ("top", BitPlacement.Top),
+        ("bottom", BitPlacement.Bottom),
+        ("start", BitPlacement.Start),
+        ("middle", BitPlacement.Center),
+    ];
+
+    private readonly (BitColor Color, string Suffix)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+}

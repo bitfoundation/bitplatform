@@ -727,17 +727,23 @@ public partial class BitTag : BitComponentBase
     /// <remarks>
     /// The handler is only ever attached to elements inside a tag that has something to dismiss, and it
     /// leaves every other key - including the Enter and the Space a button is activated with - alone.
+    /// The default of the two keys it acts on is prevented in the browser (see <see cref="_DismissesOnKey"/>).
     /// </remarks>
     private async Task HandleOnKeyDown(KeyboardEventArgs e)
     {
-        if (Disabled) return;
-
-        if (OnDismiss.HasDelegate is false) return;
+        if (_DismissesOnKey is false) return;
 
         if (e.Key is not ("Delete" or "Backspace")) return;
 
         await OnDismiss.InvokeAsync(new MouseEventArgs());
     }
+
+    /// <summary>
+    /// Whether a Delete or a Backspace pressed on a control of the tag dismisses it: what the key handler decides on,
+    /// and what the controls render as <c>data-bit-tag-dsm</c>, which BitTag.ts reads to prevent the default of those
+    /// keys - the Back navigation Backspace still is in WebKit - exactly when the tag acts on them.
+    /// </summary>
+    private bool _DismissesOnKey => OnDismiss.HasDelegate && Disabled is false;
 
     internal void OnSetHrefAndRel()
     {

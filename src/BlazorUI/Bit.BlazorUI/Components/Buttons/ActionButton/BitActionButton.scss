@@ -179,7 +179,9 @@ $acb-private-properties: clr-ico, clr-hover, clr-active, clr-focus, clr-dis-text
     padding: var(--bit-acb-pad-y, var(--bit-ActionButton-padding, #{$siz-ctrl-pad-y-md}));
 }
 
-.bit-acb-lod {
+// A loading button that refuses the second click stops answering the pointer for as long as it loads; a Reclickable
+// one is left out of it (bit-acb-lnc is the loading state without Reclickable), since it is still there to be clicked.
+.bit-acb-lnc {
     cursor: default;
     pointer-events: none;
 }

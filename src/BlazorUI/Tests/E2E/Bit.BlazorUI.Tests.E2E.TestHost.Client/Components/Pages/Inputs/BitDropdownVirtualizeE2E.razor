@@ -1,0 +1,259 @@
+﻿@page "/e2e/dropdown/virtualize"
+
+@* Virtualization and loading in BitDropdown: a long local Items list rendered a window at a time (ItemSize,
+   OverscanCount), opening on a selection thousands of rows down, a virtualized search, an ItemsProvider with its
+   requests, search, positions in the whole set, debounce, InitialSelectedItems, VirtualizePlaceholder and
+   RefreshItemsAsync, and IsLoading with LoadingText / LoadingTemplate and a real fetch. *@
+
+<PageTitle>BitDropdown virtualize E2E</PageTitle>
+
+<h1>BitDropdown virtualize</h1>
+
+<E2ESection Id="virtualize-items" Title="Virtualize over Items">
+    <BitDropdown Id="dd-virt"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Thousand items"
+                 Virtualize
+                 Items="_thousand"
+                 @bind-Value="_virtValue" />
+    <p>Value: <span id="virt-value">@_virtValue</span></p>
+    <BitDropdown Id="dd-virt-selected"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Opens on item 2500 of 5000"
+                 Virtualize
+                 Items="_fiveThousand"
+                 DefaultValue="@("i2500")" />
+    <BitDropdown Id="dd-virt-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Virtualized multi"
+                 Virtualize
+                 MultiSelect
+                 ItemSize="35"
+                 OverscanCount="1"
+                 Items="_thousandMulti"
+                 @bind-Values="_virtMultiValues" />
+    <p>Values: <span id="virt-multi-values">@string.Join(',', _virtMultiValues ?? [])</span></p>
+    <BitDropdown Id="dd-virt-search"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Virtualized search"
+                 Virtualize
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 Items="_thousandSearch"
+                 DefaultValue="@string.Empty" />
+</E2ESection>
+
+<E2ESection Id="provider" Title="ItemsProvider">
+    <BitDropdown @ref="_providerRef"
+                 Id="dd-provider"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Provided"
+                 Virtualize
+                 ItemsProviderDebounceTime="0"
+                 ItemsProvider="r => Provide(r, _log)"
+                 @bind-Value="_providerValue" />
+    <p>
+        Value: <span id="provider-value">@_providerValue</span> |
+        Calls: <span id="provider-calls">@_log.Calls</span> |
+        Start: <span id="provider-start">@_log.Start</span> |
+        Count: <span id="provider-count">@_log.Count</span> |
+        Search: <span id="provider-search">@(_log.Search ?? "(null)")</span>
+    </p>
+    <button id="btn-rename" @onclick="Rename">Rename the source</button>
+    <button id="btn-refresh" @onclick="Refresh">RefreshItemsAsync()</button>
+
+    <BitDropdown Id="dd-provider-search"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Provided search"
+                 Virtualize
+                 ShowSearchBox
+                 AutoFocusSearchBox
+                 Immediate
+                 ItemsProviderDebounceTime="0"
+                 ItemsProvider="r => Provide(r, _searchLog)"
+                 DefaultValue="@string.Empty" />
+    <p>
+        Search calls: <span id="search-calls">@_searchLog.Calls</span> |
+        Search: <span id="search-search">@(_searchLog.Search ?? "(null)")</span>
+    </p>
+
+    <BitDropdown Id="dd-provider-multi"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Provided multi"
+                 Virtualize
+                 MultiSelect
+                 ShowSelectAll
+                 ItemsProviderDebounceTime="400"
+                 ItemsProvider="r => Provide(r, _multiLog)"
+                 InitialSelectedItems="_initialMulti"
+                 OnValuesChange="(IEnumerable<string?> v) => _providerMultiValues = string.Join(',', v)" />
+    <p>
+        Values: <span id="provider-multi-values">@_providerMultiValues</span> |
+        Calls: <span id="multi-calls">@_multiLog.Calls</span>
+    </p>
+
+    <BitDropdown Id="dd-provider-initial"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Provided with an initial item"
+                 Virtualize
+                 ItemsProviderDebounceTime="0"
+                 ItemsProvider="r => Provide(r, _initialLog)"
+                 InitialSelectedItems="_initialSingle"
+                 OnChange="(string? v) => _providerInitialValue = v" />
+    <p>Changed: <span id="provider-initial-value">@_providerInitialValue</span></p>
+
+    <BitDropdown Id="dd-provider-slow"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Slow provider"
+                 Virtualize
+                 ItemsProviderDebounceTime="0"
+                 ItemsProvider="ProvideSlowly"
+                 DefaultValue="@string.Empty">
+        <VirtualizePlaceholder>
+            <div class="virt-placeholder" style="height: 36px">Loading row @context.Index...</div>
+        </VirtualizePlaceholder>
+    </BitDropdown>
+</E2ESection>
+
+<E2ESection Id="loading" Title="IsLoading">
+    <BitDropdown Id="dd-loading"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="Loading"
+                 IsLoading
+                 MultiSelect
+                 ShowSelectAll
+                 Items="_loadingItems"
+                 DefaultValues="@([])" />
+    <BitDropdown Id="dd-loading-text"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="LoadingText"
+                 IsLoading
+                 LoadingText="Fetching the products..."
+                 Items="_loadingItems2"
+                 DefaultValue="@string.Empty" />
+    <BitDropdown Id="dd-loading-tpl"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="LoadingTemplate"
+                 IsLoading
+                 Items="_loadingItems3"
+                 DefaultValue="@string.Empty">
+        <LoadingTemplate><span id="loading-tpl-content">Just a moment</span></LoadingTemplate>
+    </BitDropdown>
+    <button id="btn-load" @onclick="LoadDelayed">Load the items</button>
+    <BitDropdown Id="dd-loading-real"
+                 TItem="BitDropdownItem<string>" TValue="string"
+                 Label="A real fetch"
+                 IsLoading="_isLoading"
+                 Items="_delayedItems"
+                 DefaultValue="@string.Empty" />
+    <p>Fetch: <span id="fetch-state">@_fetchState</span></p>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static List<BitDropdownItem<string>> Range(int count) =>
+        Enumerable.Range(1, count).Select(i => new BitDropdownItem<string> { Text = $"Item {i:0000}", Value = $"i{i}" }).ToList();
+
+    private readonly List<BitDropdownItem<string>> _thousand = Range(1000);
+    private readonly List<BitDropdownItem<string>> _fiveThousand = Range(5000);
+    private readonly List<BitDropdownItem<string>> _thousandMulti = Range(1000);
+    private readonly List<BitDropdownItem<string>> _thousandSearch = Range(1000);
+
+    private string? _virtValue;
+    private IEnumerable<string?>? _virtMultiValues = [];
+
+    private sealed class ProviderLog
+    {
+        public int Calls;
+        public int Start;
+        public int Count;
+        public string? Search;
+    }
+
+    private string _prefix = "Product";
+    private BitDropdown<BitDropdownItem<string>, string> _providerRef = default!;
+    private readonly ProviderLog _log = new();
+    private readonly ProviderLog _searchLog = new();
+    private readonly ProviderLog _multiLog = new();
+    private readonly ProviderLog _initialLog = new();
+    private string? _providerValue;
+    private string? _providerMultiValues;
+    private string? _providerInitialValue;
+
+    private readonly List<BitDropdownItem<string>> _initialMulti =
+    [
+        new() { Text = "Product 0700", Value = "p700" },
+        new() { Text = "Product 0900", Value = "p900" },
+    ];
+
+    private readonly List<BitDropdownItem<string>> _initialSingle = [new() { Text = "Product 0500", Value = "p500" }];
+
+    // An in-memory "server": 1000 products, filtered by the search at the source, handed over a window at a time as fresh
+    // instances the way a fetch would hand them over.
+    private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> Provide(
+        BitDropdownItemsProviderRequest<BitDropdownItem<string>> request, ProviderLog log)
+    {
+        log.Calls++;
+        log.Start = request.StartIndex;
+        log.Count = request.Count;
+        log.Search = request.Search;
+
+        var all = Enumerable.Range(1, 1000).Select(i => (Text: $"{_prefix} {i:0000}", Value: $"p{i}"));
+        var filtered = string.IsNullOrEmpty(request.Search)
+            ? all.ToList()
+            : all.Where(i => i.Text.Contains(request.Search, StringComparison.OrdinalIgnoreCase)).ToList();
+
+        var window = filtered.Skip(request.StartIndex)
+                             .Take(request.Count == 0 ? 50 : request.Count)
+                             .Select(i => new BitDropdownItem<string> { Text = i.Text, Value = i.Value })
+                             .ToList();
+
+        await InvokeAsync(StateHasChanged);
+
+        return BitDropdownItemsProviderResult.From(window, filtered.Count);
+    }
+
+    private async ValueTask<BitDropdownItemsProviderResult<BitDropdownItem<string>>> ProvideSlowly(
+        BitDropdownItemsProviderRequest<BitDropdownItem<string>> request)
+    {
+        // The first window comes at once, every later one slowly, so the rows scrolled to wait under their placeholders.
+        if (request.StartIndex > 0)
+        {
+            await Task.Delay(1500);
+        }
+
+        var window = Enumerable.Range(request.StartIndex + 1, request.Count == 0 ? 50 : request.Count)
+                               .Where(i => i <= 1000)
+                               .Select(i => new BitDropdownItem<string> { Text = $"Slow {i:0000}", Value = $"s{i}" })
+                               .ToList();
+
+        return BitDropdownItemsProviderResult.From(window, 1000);
+    }
+
+    private void Rename() => _prefix = "Renamed";
+
+    private async Task Refresh() => await _providerRef.RefreshItemsAsync();
+
+    private readonly List<BitDropdownItem<string>> _loadingItems = Range(5);
+    private readonly List<BitDropdownItem<string>> _loadingItems2 = Range(5);
+    private readonly List<BitDropdownItem<string>> _loadingItems3 = Range(5);
+
+    private bool _isLoading;
+    private string _fetchState = "idle";
+    private List<BitDropdownItem<string>> _delayedItems = [];
+
+    private async Task LoadDelayed()
+    {
+        _isLoading = true;
+        _fetchState = "loading";
+        StateHasChanged();
+
+        await Task.Delay(1500);
+
+        _delayedItems = Range(3);
+        _isLoading = false;
+        _fetchState = "loaded";
+    }
+}

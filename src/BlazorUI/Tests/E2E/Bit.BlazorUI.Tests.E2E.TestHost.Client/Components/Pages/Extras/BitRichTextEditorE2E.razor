@@ -1,0 +1,427 @@
+﻿@page "/e2e/rich-text-editor"
+
+<PageTitle>BitRichTextEditor E2E</PageTitle>
+
+<h1>BitRichTextEditor</h1>
+
+<E2ESection Id="basic" Title="Two-way Value, placeholder and OnChange">
+    <button id="btn-set-value" @onclick="SetValue">Set value</button>
+    <button id="btn-set-unsafe" @onclick="SetUnsafeValue">Set unsafe value</button>
+    <button id="btn-clear-value" @onclick="() => _value = null">Clear value</button>
+    <BitRichTextEditor Id="rte-basic" @bind-Value="_value" OnChange="v => { _changeCount++; _lastChange = v; }" Placeholder="Write something..." />
+    <div>Value: <pre id="value">@_value</pre></div>
+    <div>OnChange: <span id="change-count">@_changeCount</span> <pre id="last-change">@_lastChange</pre></div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Height, MaxHeight, Resizable, SpellCheck">
+    <BitRichTextEditor Id="rte-size" Placeholder="Sized" Height="8rem" MaxHeight="14rem" SpellCheck="false" Resizable />
+</E2ESection>
+
+<E2ESection Id="toolbar-groups" Title="Toolbar groups">
+    <select id="toolbar-select" @bind="_toolbarName">
+        @foreach (var name in Enum.GetNames<BitRichTextEditorToolbar>())
+        {
+            <option value="@name">@name</option>
+        }
+    </select>
+    <span id="toolbar-name">@_toolbarName</span>
+    <BitRichTextEditor Id="rte-groups" Toolbar="SelectedToolbar" Height="4rem" />
+</E2ESection>
+
+<E2ESection Id="extended" Title="Every toolbar group">
+    <BitRichTextEditor Id="rte-ext" @bind-Value="_extValue" Toolbar="BitRichTextEditorToolbar.AllExtended" DebounceMs="0" Height="12rem" />
+    <pre id="ext-value">@_extValue</pre>
+</E2ESection>
+
+<E2ESection Id="custom-toolbar" Title="Custom toolbar">
+    <BitRichTextEditor Id="rte-custom" @bind-Value="_customValue" ToolbarConfig="_customConfig" Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.History" DebounceMs="0" Height="6rem" />
+    <pre id="custom-value">@_customValue</pre>
+</E2ESection>
+
+<E2ESection Id="readonly" Title="Read-only">
+    <BitRichTextEditor Id="rte-readonly" Value="@ReadOnlyHtml" ReadOnly Height="auto" />
+    <BitRichTextEditor Id="rte-readonly-toolbar" Value="@ReadOnlyHtml" ReadOnly Height="auto" Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Find" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-value">@_disabled</span>
+    <BitRichTextEditor Id="rte-disabled" Value="@DisabledHtml" Disabled="_disabled" Height="auto" Label="Disabled editor"
+                       Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Lists | BitRichTextEditorToolbar.Help"
+                       @onclick="() => _disabledClicks++" @onkeydown="() => _disabledKeys++" @onmouseover="() => _disabledHovers++" />
+    <div>Clicks: <span id="disabled-clicks">@_disabledClicks</span> Keys: <span id="disabled-keys">@_disabledKeys</span> Hovers: <span id="disabled-hovers">@_disabledHovers</span></div>
+</E2ESection>
+
+<E2ESection Id="links" Title="Links">
+    <BitRichTextEditor Id="rte-links" @bind-Value="_linkValue" DebounceMs="0" Height="6rem"
+                       Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link"
+                       OnError="e => { _errors++; _lastError = e.Code; }" />
+    <pre id="link-value">@_linkValue</pre>
+    <div>Errors: <span id="link-errors">@_errors</span> <span id="link-error">@_lastError</span></div>
+    <BitRichTextEditor Id="rte-autolink-off" @bind-Value="_autoLinkValue" AutoLink="false" DebounceMs="0" Height="4rem" Toolbar="BitRichTextEditorToolbar.Inline" />
+    <pre id="autolink-value">@_autoLinkValue</pre>
+</E2ESection>
+
+<E2ESection Id="images" Title="Images">
+    <BitRichTextEditor Id="rte-images" @bind-Value="_imageValue" DebounceMs="0" Height="10rem"
+                       Toolbar="BitRichTextEditorToolbar.Image | BitRichTextEditorToolbar.Inline"
+                       OnImageUpload="UploadImageAsync"
+                       MaxImageSize="2000"
+                       OnError="e => _imageError = e.Code" />
+    <pre id="image-value">@_imageValue</pre>
+    <div>Uploads: <span id="uploads">@_uploads</span> <span id="last-upload">@_lastUpload</span> Error: <span id="image-error">@_imageError</span></div>
+    <BitRichTextEditor Id="rte-images-inline" @bind-Value="_inlineImageValue" DebounceMs="0" Height="6rem" Toolbar="BitRichTextEditorToolbar.Image" />
+    <pre id="inline-image-value">@_inlineImageValue</pre>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Colors and fonts">
+    <BitRichTextEditor Id="rte-colors" @bind-Value="_colorValue" DebounceMs="0" Height="6rem"
+                       Toolbar="BitRichTextEditorToolbar.Color | BitRichTextEditorToolbar.Font"
+                       ColorPalette="_palette" FontFamilies="_fonts" FontSizes="_sizes" />
+    <pre id="color-value">@_colorValue</pre>
+</E2ESection>
+
+<E2ESection Id="tables" Title="Tables">
+    <BitRichTextEditor Id="rte-tables" @bind-Value="_tableValue" DebounceMs="0" Height="10rem" Toolbar="BitRichTextEditorToolbar.Table | BitRichTextEditorToolbar.Inline" />
+    <pre id="table-value">@_tableValue</pre>
+</E2ESection>
+
+<E2ESection Id="media" Title="Media and rules">
+    <BitRichTextEditor Id="rte-media" @bind-Value="_mediaValue" DebounceMs="0" Height="10rem"
+                       Toolbar="BitRichTextEditorToolbar.Media | BitRichTextEditorToolbar.Rule | BitRichTextEditorToolbar.BlockFormat"
+                       OnError="e => _mediaError = e.Code" />
+    <pre id="media-value">@_mediaValue</pre>
+    <div>Error: <span id="media-error">@_mediaError</span></div>
+</E2ESection>
+
+<E2ESection Id="find" Title="Find and replace">
+    <BitRichTextEditor Id="rte-find" @bind-Value="_findValue" DebounceMs="0" Height="8rem" Toolbar="BitRichTextEditorToolbar.Find | BitRichTextEditorToolbar.Inline" />
+    <pre id="find-value">@_findValue</pre>
+</E2ESection>
+
+<E2ESection Id="sanitize" Title="Sanitization and paste">
+    <BitRichTextEditor Id="rte-policy" @bind-Value="_policyValue" DebounceMs="0" Height="6rem"
+                       Toolbar="BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Source"
+                       SanitizationPolicy="_policy" />
+    <pre id="policy-value">@_policyValue</pre>
+    <BitRichTextEditor Id="rte-plain" @bind-Value="_plainValue" PasteAsPlainText DebounceMs="0" Height="5rem" />
+    <pre id="plain-value">@_plainValue</pre>
+    <BitRichTextEditor Id="rte-rich-paste" @bind-Value="_richPasteValue" DebounceMs="0" Height="5rem" />
+    <pre id="rich-paste-value">@_richPasteValue</pre>
+</E2ESection>
+
+<E2ESection Id="typing" Title="Typing aids">
+    <BitRichTextEditor Id="rte-typing" @bind-Value="_typingValue" SmartTypography DebounceMs="0" Height="10rem" />
+    <pre id="typing-value">@_typingValue</pre>
+</E2ESection>
+
+<E2ESection Id="shortcuts" Title="Keyboard shortcuts">
+    <BitRichTextEditor Id="rte-shortcuts" @bind-Value="_shortcutValue" DebounceMs="0" Height="6rem"
+                       Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link | BitRichTextEditorToolbar.Help | BitRichTextEditorToolbar.BlockFormat"
+                       KeyboardShortcuts="_shortcuts" />
+    <pre id="shortcut-value">@_shortcutValue</pre>
+</E2ESection>
+
+<E2ESection Id="quick" Title="Selection toolbar">
+    <BitRichTextEditor Id="rte-quick" @bind-Value="_quickValue" ShowQuickToolbar ShowToolbar="false" DebounceMs="0" Height="6rem" />
+    <pre id="quick-value">@_quickValue</pre>
+</E2ESection>
+
+<E2ESection Id="mentions" Title="Mentions">
+    <BitRichTextEditor Id="rte-mentions" @bind-Value="_mentionValue" DebounceMs="0" Height="6rem"
+                       Toolbar="BitRichTextEditorToolbar.Inline"
+                       OnMentionSearch="SearchMentionsAsync"
+                       OnMentionSelected="m => _lastMention = m.Id + ':' + m.Display" />
+    <pre id="mention-value">@_mentionValue</pre>
+    <div>Mention: <span id="last-mention">@_lastMention</span></div>
+</E2ESection>
+
+<E2ESection Id="form" Title="Forms and validation">
+    <EditForm id="rte-form" EditContext="_editContext" OnValidSubmit="() => _validSubmits++" novalidate>
+        <DataAnnotationsValidator />
+        <BitRichTextEditor Id="rte-form-editor"
+                           @bind-Value="_formModel.Body"
+                           Label="Description"
+                           Required
+                           Description="Plain words work best."
+                           ShowCount
+                           MaxLength="40"
+                           DebounceMs="0"
+                           Height="6rem" />
+        <ValidationMessage For="() => _formModel.Body" />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <div>Valid submits: <span id="valid-submits">@_validSubmits</span></div>
+    <button id="btn-set-error" @onclick="SetCommentError">Set error</button>
+    <button id="btn-toggle-invalid" @onclick="() => _invalid = !_invalid">Toggle invalid</button>
+    <BitRichTextEditor Id="rte-error" @bind-Value="_commentValue" ErrorMessage="@_commentError" Invalid="_invalid" Label="Comment" Height="4rem" Toolbar="BitRichTextEditorToolbar.Inline" />
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitRichTextEditor Id="rte-events" @bind-Value="_eventsValue" DebounceMs="0" Height="5rem"
+                       OnFocus="() => _focusCount++" OnBlur="() => _blurCount++"
+                       OnSelectionChange="HandleSelectionChange" />
+    <div>Focus: <span id="focus-count">@_focusCount</span> Blur: <span id="blur-count">@_blurCount</span></div>
+    <div>Selection: <span id="selection-state">@_selectionState</span></div>
+    <button id="after-events">After events</button>
+</E2ESection>
+
+<E2ESection Id="localization" Title="Localization">
+    <BitRichTextEditor Id="rte-localized" Height="5rem" Toolbar="BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Find" Localizer="_localizer" />
+</E2ESection>
+
+<E2ESection Id="api" Title="Imperative API">
+    <button id="btn-api-focus" @onclick="() => _apiRef!.FocusAsync()">Focus</button>
+    <button id="btn-api-get-html" @onclick="GetHtmlAsync">GetHtml</button>
+    <button id="btn-api-get-text" @onclick="GetTextAsync">GetText</button>
+    <button id="btn-api-get-selected" @onclick="GetSelectedAsync">GetSelectedText</button>
+    <button id="btn-api-bold" @onclick='() => _apiRef!.ExecuteCommandAsync("bold")'>Bold</button>
+    <button id="btn-api-insert-text" @onclick='() => _apiRef!.InsertTextAsync(" <text>")'>InsertText</button>
+    <button id="btn-api-insert-html" @onclick='() => _apiRef!.InsertHtmlAsync("<em>emph</em><script>window.__rteInjected = 1</script>")'>InsertHtml</button>
+    <button id="btn-api-set-html" @onclick='() => _apiRef!.SetHtmlAsync("<h2>Set by API</h2><p>two words</p>")'>SetHtml</button>
+    <button id="btn-api-clear" @onclick="() => _apiRef!.ClearAsync()">Clear</button>
+    <button id="btn-api-undo" @onclick="() => _apiRef!.UndoAsync()">Undo</button>
+    <button id="btn-api-redo" @onclick="() => _apiRef!.RedoAsync()">Redo</button>
+    <button id="btn-api-select-all" @onclick="() => _apiRef!.SelectAllAsync()">SelectAll</button>
+    <button id="btn-api-counts" @onclick="ReadCounts">Counts</button>
+    <BitRichTextEditor @ref="_apiRef" Id="rte-api" @bind-Value="_apiValue" DebounceMs="0" Height="6rem" />
+    <pre id="api-result">@_apiResult</pre>
+    <pre id="api-value">@_apiValue</pre>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="_editorParams">
+        <BitRichTextEditor Id="rte-cascaded" />
+        <BitRichTextEditor Id="rte-cascaded-own" Placeholder="My own placeholder" ShowToolbar="true" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitRichTextEditor Id="rte-style" Style="border-color: rgb(165, 42, 42); margin-top: 7px;" Class="custom-class" Height="4rem" />
+    <BitRichTextEditor Id="rte-styles"
+                       Label="Styled"
+                       Description="Styled description"
+                       ShowCount
+                       Toolbar="BitRichTextEditorToolbar.Inline"
+                       Classes="@(new() { Root = "c-root", Label = "c-label", Toolbar = "c-toolbar", Group = "c-group", Button = "c-button", Editor = "c-editor", Footer = "c-footer", Description = "c-description", Count = "c-count" })"
+                       Styles="@(new() { Root = "outline: 3px solid rgb(1, 1, 1);", Label = "color: rgb(2, 2, 2);", Toolbar = "background: rgb(3, 3, 3);", Group = "padding-top: 3px;", Button = "color: rgb(4, 4, 4);", Editor = "color: rgb(5, 5, 5);", Footer = "background: rgb(6, 6, 6);", Description = "color: rgb(7, 7, 7);", Count = "color: rgb(8, 8, 8);" })"
+                       Height="4rem" />
+    <div id="rte-vars-host" style="@CssVariablesStyle">
+        <BitRichTextEditor Id="rte-vars" Value="@CssVarsHtml" Description="Help" ShowCount />
+    </div>
+    <BitRichTextEditor Id="rte-vars-default" Value="@CssVarsHtml" Description="Help" ShowCount />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitRichTextEditor Id="rte-rtl" Dir="BitDir.Rtl" @bind-Value="_rtlValue" DebounceMs="0" Height="5rem"
+                       Toolbar="BitRichTextEditorToolbar.All | BitRichTextEditorToolbar.Direction" Placeholder="متنی بنویسید..." />
+    <pre id="rtl-value">@_rtlValue</pre>
+    <div dir="rtl">
+        <BitRichTextEditor Id="rte-rtl-inherited" Height="4rem" Toolbar="BitRichTextEditorToolbar.Inline" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Inside a dialog">
+    <button id="btn-open-dialog" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <span id="dialog-open">@_dialogOpen</span>
+    <BitDialog @bind-IsOpen="_dialogOpen" Title="Editor dialog">
+        <Body>
+            <BitRichTextEditor Id="rte-dialog" Value="@DialogHtml" Height="4rem" Toolbar="BitRichTextEditorToolbar.Inline | BitRichTextEditorToolbar.Link" />
+        </Body>
+    </BitDialog>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="Unmount">
+    <button id="btn-toggle-mount" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+    <span id="mounted">@_mounted</span>
+    @if (_mounted)
+    {
+        <BitRichTextEditor Id="rte-unmount" Value="@UnmountHtml" Toolbar="BitRichTextEditorToolbar.FullScreen | BitRichTextEditorToolbar.Inline" Height="4rem" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string ReadOnlyHtml = "<p>Read-only <strong>content</strong> with find me twice: find me.</p>";
+    private const string DisabledHtml = "<p>Disabled content</p>";
+    private const string DialogHtml = "<p>text in a dialog</p>";
+    private const string UnmountHtml = "<p>unmount me</p>";
+    private const string CssVarsHtml = "<p>A <a href=\"https://bitplatform.dev\">link</a> and <code>code</code>.</p><blockquote><p>quote</p></blockquote><table><tbody><tr><td>cell</td></tr></tbody></table>";
+
+    private const string CssVariablesStyle = "--bit-RichTextEditor-color: rgb(11, 12, 13); --bit-RichTextEditor-background: rgb(250, 240, 230); --bit-RichTextEditor-border-color: rgb(1, 2, 3); --bit-RichTextEditor-border-width: 4px; --bit-RichTextEditor-border-radius: 13px; --bit-RichTextEditor-divider-color: rgb(4, 5, 6); --bit-RichTextEditor-height: 150px; --bit-RichTextEditor-padding: 17px; --bit-RichTextEditor-font-family: Georgia, serif; --bit-RichTextEditor-font-size: 19px; --bit-RichTextEditor-line-height: 2; --bit-RichTextEditor-link-color: rgb(20, 30, 40); --bit-RichTextEditor-code-background: rgb(50, 60, 70); --bit-RichTextEditor-quote-border-color: rgb(80, 90, 100); --bit-RichTextEditor-table-border-color: rgb(110, 120, 130); --bit-RichTextEditor-toolbar-background: rgb(140, 150, 160); --bit-RichTextEditor-button-size: 41px; --bit-RichTextEditor-button-color: rgb(170, 180, 190); --bit-RichTextEditor-button-radius: 9px; --bit-RichTextEditor-description-color: rgb(21, 22, 23); --bit-RichTextEditor-footer-color: rgb(24, 25, 26); --bit-RichTextEditor-footer-background: rgb(27, 28, 29);";
+
+    private string? _value = "<p>Initial <strong>bound</strong> value</p>";
+    private int _changeCount;
+    private string? _lastChange;
+    private string _toolbarName = nameof(BitRichTextEditorToolbar.All);
+    private BitRichTextEditorToolbar SelectedToolbar => Enum.Parse<BitRichTextEditorToolbar>(_toolbarName);
+    private string? _extValue = "<p>alpha beta gamma</p>";
+    private string? _customValue = "<p>custom</p>";
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _disabledKeys;
+    private int _disabledHovers;
+    private string? _linkValue = "<p>visit the site now</p>";
+    private int _errors;
+    private string? _lastError;
+    private string? _autoLinkValue = "<p></p>";
+    private string? _imageValue = "<p>images</p>";
+    private int _uploads;
+    private string? _lastUpload;
+    private string? _imageError;
+    private string? _inlineImageValue = "<p>inline</p>";
+    private string? _colorValue = "<p>paint me</p>";
+    private string? _tableValue = "<p>table here</p>";
+    private string? _mediaValue = "<p>media</p>";
+    private string? _mediaError;
+    private string? _findValue = "<p>The cat sat. The Cat ran. A category.</p>";
+    private string? _policyValue = "<p>policy</p>";
+    private string? _plainValue = "<p></p>";
+    private string? _richPasteValue = "<p></p>";
+    private string? _typingValue = "<p></p>";
+    private string? _shortcutValue = "<p>shortcut text</p>";
+    private string? _quickValue = "<p>quick toolbar text</p>";
+    private string? _mentionValue = "<p></p>";
+    private string? _lastMention;
+    private int _validSubmits;
+    private string? _commentValue = "<p>comment</p>";
+    private string? _commentError;
+    private bool _invalid;
+    private string? _eventsValue = "<p>events <strong>bold</strong> text</p>";
+    private int _focusCount;
+    private int _blurCount;
+    private string? _selectionState;
+    private BitRichTextEditor? _apiRef;
+    private string? _apiValue = "<p>hello world</p>";
+    private string? _apiResult;
+    private string? _rtlValue = "<p>سلام</p>";
+    private bool _dialogOpen;
+    private bool _mounted = true;
+
+    private readonly IReadOnlyList<BitRichTextEditorColor> _palette =
+    [
+        new("#ff0000", "Red"),
+        new("#00aa00", "Green"),
+        new("#0000ff", "Blue"),
+    ];
+
+    private readonly IReadOnlyList<string> _fonts = ["Georgia", "Courier New"];
+    private readonly IReadOnlyList<string> _sizes = ["12px", "20px"];
+
+    private readonly BitRichTextEditorSanitizationPolicy _policy = new()
+    {
+        AllowedTags = new HashSet<string> { "p", "br", "strong", "em", "a" },
+        AllowedAttributes = new Dictionary<string, ISet<string>> { ["a"] = new HashSet<string> { "href" } },
+        AllowedUriSchemes = new HashSet<string> { "https" },
+        AllowDataImageUris = false,
+    };
+
+    private readonly IReadOnlyDictionary<string, string> _shortcuts = new Dictionary<string, string>
+    {
+        ["ctrl+shift+1"] = "h1",
+        ["ctrl+shift+q"] = "blockquote",
+        ["ctrl+b"] = "italic",
+    };
+
+    private BitRichTextEditorToolbarConfig _customConfig = default!;
+
+    private sealed class GermanLocalizer : IBitRichTextEditorLocalizer
+    {
+        private static readonly Dictionary<string, string> Strings = new()
+        {
+            ["toolbar"] = "Formatierung",
+            ["editor"] = "Texteditor",
+            ["bold-label"] = "Fett",
+            ["bold"] = "Fett (Strg+B)",
+            ["italic-label"] = "Kursiv",
+            ["find-replace-label"] = "Suchen und ersetzen",
+            ["block-normal"] = "Standard",
+            ["help-hint"] = "Alt+0 zeigt die Tastenkürzel.",
+        };
+
+        public string? this[string key] => Strings.TryGetValue(key, out var value) ? value : null;
+    }
+
+    private readonly IBitRichTextEditorLocalizer _localizer = new GermanLocalizer();
+
+    private readonly BitRichTextEditorParams[] _editorParams =
+    [
+        new()
+        {
+            Placeholder = "Cascaded placeholder",
+            Height = "9rem",
+            ShowToolbar = false,
+            Classes = new() { Editor = "cascaded-editor" },
+        }
+    ];
+
+    private sealed class FormModel
+    {
+        [Required, MinLength(20, ErrorMessage = "Write at least 20 characters.")]
+        public string? Body { get; set; }
+    }
+
+    private readonly FormModel _formModel = new();
+    private EditContext _editContext = default!;
+
+    protected override void OnInitialized()
+    {
+        _editContext = new EditContext(_formModel);
+
+        _customConfig = new()
+        {
+            Order = ["stamp", BitRichTextEditorToolbarConfig.GroupIds.Inline, BitRichTextEditorToolbarConfig.GroupIds.History],
+            CustomItems =
+            [
+                new()
+                {
+                    Id = "stamp",
+                    Label = "Stamp",
+                    AriaLabel = "Insert stamp",
+                    IsActive = s => s.Bold,
+                    OnActivate = editor => editor.InsertTextAsync("[STAMP]"),
+                },
+            ],
+        };
+    }
+
+    private void SetCommentError() => _commentError = "The server rejected it.";
+
+    private void SetValue() => _value = "<h2>Set from the page</h2><p>new <em>content</em></p>";
+
+    private void SetUnsafeValue() => _value = "<p onclick=\"window.__rteInjected = 1\">safe <img src=\"/samples/mdv-sample.png\" onerror=\"window.__rteInjected = 1\"></p><script>window.__rteInjected = 1</script><a href=\"javascript:alert(1)\">bad link</a>";
+
+    private async Task<string?> UploadImageAsync(BitRichTextEditorImageUpload upload)
+    {
+        _uploads++;
+        _lastUpload = $"{upload.FileName}|{upload.ContentType}|{upload.Content.Length}";
+        await Task.Yield();
+        return "/samples/mdv-sample.png";
+    }
+
+    private Task<IReadOnlyList<BitRichTextEditorMention>> SearchMentionsAsync(string query)
+    {
+        IReadOnlyList<BitRichTextEditorMention> people =
+        [
+            new("u1", "Ada Lovelace", "Mathematician"),
+            new("u2", "Alan Turing", "Computer scientist"),
+            new("u3", "Grace Hopper"),
+        ];
+
+        return Task.FromResult<IReadOnlyList<BitRichTextEditorMention>>(people.Where(p => p.Display.Contains(query, StringComparison.OrdinalIgnoreCase)).ToList());
+    }
+
+    private void HandleSelectionChange(BitRichTextEditorSelectionState state)
+    {
+        _selectionState = $"bold:{state.Bold}|italic:{state.Italic}|block:{state.Block}|sel:{state.HasSelection}";
+    }
+
+    private async Task GetHtmlAsync() => _apiResult = "html:" + await _apiRef!.GetHtmlAsync();
+
+    private async Task GetTextAsync() => _apiResult = "text:" + await _apiRef!.GetTextAsync();
+
+    private async Task GetSelectedAsync() => _apiResult = "selected:" + await _apiRef!.GetSelectedTextAsync();
+
+    private void ReadCounts() => _apiResult = $"counts:{_apiRef!.CharacterCount}:{_apiRef.WordCount}:{_apiRef.IsEmpty}";
+}

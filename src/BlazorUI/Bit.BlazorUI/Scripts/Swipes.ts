@@ -28,6 +28,8 @@
             let startX = -1;
             let startY = -1;
             let originalTransform: string;
+            // The transform the drag itself last left on the element, told apart from one written over it since.
+            let dragTransform: string;
             let orientation = BitSwipeOrientation.None;
             // Which way Start and End face. A direction the component was given is taken as it is; one it was
             // not given (or left to its content to decide) is the one the element is laid out in - inherited from the page or from whatever box
@@ -60,6 +62,7 @@
 
                 element.style.transitionDuration = '0s';
                 originalTransform = element.style.transform;
+                dragTransform = originalTransform;
 
                 await dotnetObj.invokeMethodAsync('OnStart', startX, startY);
             };
@@ -139,6 +142,8 @@
                     }
                 }
 
+                dragTransform = element.style.transform;
+
                 await dotnetObj.invokeMethodAsync('OnMove', diffX, diffY);
 
                 // A surface that scrolls its own content is dragged away only from the end of that content:
@@ -212,8 +217,13 @@
                     // The transform the drag wrote onto the element is taken off again however the gesture
                     // ended, the dismissal included: an inline transform left behind outlives the gesture and
                     // overrides whatever the stylesheet has to say about where the surface sits, so the next
-                    // time it is shown it would come back offset by however far the last drag got.
-                    element.style.transform = originalTransform;
+                    // time it is shown it would come back offset by however far the last drag got. Only the drag's
+                    // own is taken off, though: a dismissal that has written a transform of its own over it (a
+                    // responsive callout sliding off the screen) keeps it, since putting back the one the drag
+                    // started from would leave the closed surface invisible but in place, over the page it covers.
+                    if (element.style.transform === dragTransform) {
+                        element.style.transform = originalTransform;
+                    }
 
                     await dotnetObj.invokeMethodAsync('OnEnd', diffX, diffY);
                     diffX = diffY = 0;

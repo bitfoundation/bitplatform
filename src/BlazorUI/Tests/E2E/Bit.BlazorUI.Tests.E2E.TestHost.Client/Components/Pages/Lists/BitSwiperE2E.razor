@@ -1,0 +1,294 @@
+﻿@page "/e2e/swiper"
+
+<PageTitle>BitSwiper E2E</PageTitle>
+
+@* Every swiper is 400px wide with items that say which they are, and the page writes out what the swiper reports
+   (OnChange, OnReachStart, OnReachEnd and its public state), so a test reads where it stands both ways. *@
+<style>
+    .swp-host { width: 400px; }
+    .swp-item { width: 100px; height: 80px; display: flex; align-items: center; justify-content: center; background: #ddd; box-sizing: border-box; border: 1px solid #fff; }
+    .swp-fill { height: 80px; display: flex; align-items: center; justify-content: center; background: #ddd; box-sizing: border-box; border: 1px solid #fff; }
+    .swp-root-class { outline: 2px solid rgb(1, 1, 1); }
+    .swp-cnt-class { letter-spacing: 1px; }
+    .swp-item-class { letter-spacing: 2px; }
+    .swp-cur-class { letter-spacing: 3px; }
+    .swp-btns-class { letter-spacing: 4px; }
+    .swp-btn-icons-class { letter-spacing: 5px; }
+    .swp-next-class { word-spacing: 6px; }
+    .swp-next-icon-class { word-spacing: 7px; }
+    .swp-prev-class { word-spacing: 8px; }
+    .swp-prev-icon-class { word-spacing: 9px; }
+    .swp-dcn-class { letter-spacing: 10px; }
+    .swp-dots-class { outline: 1px solid rgb(2, 2, 2); }
+    .swp-cud-class { outline-color: rgb(3, 3, 3); }
+    .swp-ppb-class { letter-spacing: 11px; }
+    .swp-ppb-icon-class { letter-spacing: 12px; }
+</style>
+
+<E2ESection Id="sec-basic" Title="Basic: buttons, keyboard, OnChange, OnReachStart, OnReachEnd">
+    <span id="basic-log">@string.Join(",", _basicLog)</span>
+    <div class="swp-host">
+        <BitSwiper Id="basic" AriaLabel="Basic swiper" AnimationDuration="0.1" OnChange="@(i => _basicLog.Add($"c{i}"))"
+                   OnReachEnd="@(() => _basicLog.Add("end"))" OnReachStart="@(() => _basicLog.Add("start"))">
+            @Items(12)
+        </BitSwiper>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-navigation" Title="ScrollItemsCount, Rewind, HideNextPrev">
+    <div class="swp-host"><BitSwiper Id="step" ScrollItemsCount="2" Rewind AnimationDuration="0.1">@Items(8)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="no-buttons" HideNextPrev>@Items(8)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="fits">@Items(3)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-multiple" Title="VisibleItemsCount, Gap, Peek and the per breakpoint counts">
+    <div class="swp-host"><BitSwiper Id="multiple" VisibleItemsCount="3" Gap="10px" AnimationDuration="0.1">@Fills(9)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="peek" VisibleItemsCount="2" Peek="40px">@Fills(6)</BitSwiper></div>
+    @foreach (var width in new[] { 500, 700, 1000, 1300, 2000, 2600 })
+    {
+        <div style="width: @(width)px"><BitSwiper Id="@($"responsive-{width}")" VisibleItemsCountXs="1" VisibleItemsCountSm="2" VisibleItemsCountMd="3" VisibleItemsCountLg="4" VisibleItemsCountXl="5" VisibleItemsCountXxl="6">@Fills(12)</BitSwiper></div>
+    }
+    <div style="width: 700px"><BitSwiper Id="responsive-base" VisibleItemsCount="3" VisibleItemsCountMd="5">@Fills(12)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-snap" Title="SnapAlign">
+    @foreach (var align in Enum.GetValues<BitScrollSnapAlign>())
+    {
+        <div class="swp-host"><BitSwiper Id="@($"snap-{align}")" SnapAlign="align" AnimationDuration="0.1">@Items(12)</BitSwiper></div>
+    }
+</E2ESection>
+
+<E2ESection Id="sec-vertical" Title="Vertical">
+    <div class="swp-host"><BitSwiper Id="vertical" Vertical Style="height: 200px" AnimationDuration="0.1">@Items(8)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="vertical-default" Vertical>@Items(4)</BitSwiper></div>
+    <div class="swp-host" style="--bit-Swiper-vertical-height: 150px"><BitSwiper Id="vertical-var" Vertical>@Items(4)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-dots" Title="ShowDots, DotTemplate, DotAriaLabel, DotsAriaLabel">
+    <div class="swp-host"><BitSwiper Id="dots" ShowDots VisibleItemsCount="4" AnimationDuration="0.1" DotAriaLabel="Page" DotsAriaLabel="Pick a page">@Fills(16)</BitSwiper></div>
+    <div class="swp-host">
+        <BitSwiper Id="dot-template" ShowDots VisibleItemsCount="4" AnimationDuration="0.1">
+            <DotTemplate Context="index"><span class="swp-dot-text">@(index + 1)</span></DotTemplate>
+            <ChildContent>@Fills(8)</ChildContent>
+        </BitSwiper>
+    </div>
+    <div class="swp-host"><BitSwiper Id="dots-fit" ShowDots VisibleItemsCount="4">@Fills(2)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-autoplay" Title="AutoPlay and its options">
+    <button id="btn-read-autoplay" @onclick="ReadAutoPlay">Read the autoplay state</button>
+    <span id="autoplay-state">@_autoPlayState</span>
+    <div class="swp-host"><BitSwiper @ref="_autoPlay" Id="autoplay" AutoPlay AutoPlayInterval="400" ShowPlayPause AnimationDuration="0.1">@Items(12)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper @ref="_noPause" Id="no-pause" AutoPlay AutoPlayInterval="400" PauseOnHover="false" PauseOnFocus="false" AnimationDuration="0.1">@Items(12)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper @ref="_stopOnInteraction" Id="stop-on-interaction" AutoPlay AutoPlayInterval="400" StopOnInteraction AnimationDuration="0.1">@Items(12)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper @ref="_reverse" Id="reverse" AutoPlay AutoPlayReverse AutoPlayInterval="400" DefaultItem="6" AnimationDuration="0.1">@Items(10)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper @ref="_stopOnLast" Id="stop-on-last" AutoPlay StopOnLastSlide AutoPlayInterval="300" VisibleItemsCount="2" AnimationDuration="0.1">@Fills(4)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper @ref="_rewinding" Id="rewinding" AutoPlay AutoPlayInterval="300" VisibleItemsCount="2" AnimationDuration="0.1">@Fills(3)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper @ref="_forced" Id="forced" AutoPlay ForceAnimation AutoPlayInterval="400" ShowPlayPause AnimationDuration="0.1">@Items(12)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-interaction" Title="Wheel, NoDrag, DragThreshold, ShowScrollbar, NoKeyboard, AnimationDuration, Disabled">
+    <div class="swp-host"><BitSwiper Id="wheel" Wheel NoDrag AnimationDuration="0.1">@Items(12)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="drag" AnimationDuration="0.1">@Items(12)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="threshold" DragThreshold="60" AnimationDuration="0.1">@Items(12)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="scrollbar" ShowScrollbar HideNextPrev AnimationDuration="0">@Items(12)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="no-keyboard" NoKeyboard AnimationDuration="0.1">@Items(12)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="slow" AnimationDuration="1.5">@Items(12)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="instant" AnimationDuration="0">@Items(12)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="disabled" Disabled="_disabled" ShowDots ShowPlayPause AutoPlay AutoPlayInterval="100000" VisibleItemsCount="2" HtmlAttributes="@_disabledAttributes" AnimationDuration="0.1">@Fills(6)</BitSwiper></div>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="root-clicks">@_rootClicks</span>
+    <div class="swp-host">
+        <BitSwiper Id="with-input" AnimationDuration="0.1">
+            <BitSwiperItem><div class="swp-item"><input id="swp-input" value="text" style="width: 80px" /></div></BitSwiperItem>
+            @Items(6)
+        </BitSwiper>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-api" Title="DefaultItem and the public API">
+    <div class="swp-host"><BitSwiper @ref="_api" Id="api" DefaultItem="5" HideNextPrev VisibleItemsCount="4" SnapAlign="BitScrollSnapAlign.Start" AnimationDuration="0.1" OnChange="i => _apiChange = i">@Fills(16)</BitSwiper></div>
+    <span id="api-change">@_apiChange</span>
+    <button id="api-next" @onclick="() => _api!.GoNext()">GoNext</button>
+    <button id="api-prev" @onclick="() => _api!.GoPrev()">GoPrev</button>
+    <button id="api-goto" @onclick="() => _api!.GoTo(10)">GoTo 10</button>
+    <button id="api-goto-page" @onclick="() => _api!.GoToPage(2)">GoToPage 2</button>
+    <button id="api-start" @onclick="() => _api!.GoToStart()">GoToStart</button>
+    <button id="api-end" @onclick="() => _api!.GoToEnd()">GoToEnd</button>
+    <button id="api-refresh" @onclick="() => _api!.Refresh()">Refresh</button>
+    <button id="api-read" @onclick="ReadApi">Read</button>
+    <span id="api-state">@_apiState</span>
+    <button id="api-pause" @onclick="() => _apiPlay!.Pause()">Pause</button>
+    <button id="api-resume" @onclick="() => _apiPlay!.Resume()">Resume</button>
+    <button id="api-toggle" @onclick="() => _apiPlay!.TogglePlay()">TogglePlay</button>
+    <button id="api-read-play" @onclick="ReadApiPlay">Read play</button>
+    <span id="api-play-state">@_apiPlayState</span>
+    <div class="swp-host"><BitSwiper @ref="_apiPlay" Id="api-play" AutoPlay AutoPlayInterval="100000">@Items(6)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-load-more" Title="Loading more items OnReachEnd">
+    <span id="loaded-count">@_loadedCount</span>
+    <div class="swp-host"><BitSwiper Id="load-more" VisibleItemsCount="4" AnimationDuration="0.1" OnReachEnd="() => _loadedCount += 4">@Fills(_loadedCount)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-a11y" Title="Accessibility">
+    <div class="swp-host">
+        <BitSwiper Id="a11y" ItemAriaLabelFormat="Item {0} of {1}" NextAriaLabel="Forwards" PrevAriaLabel="Backwards" AnimationDuration="0.1"
+                   AutoPlay ShowPlayPause AutoPlayInterval="100000" PlayButtonAriaLabel="Play it" PauseButtonAriaLabel="Pause it">
+            @Items(3)
+            <BitSwiperItem AriaLabel="The named item"><div class="swp-item">Named</div></BitSwiperItem>
+            @Items(3)
+        </BitSwiper>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_swiperParams">
+        <div class="swp-host"><BitSwiper Id="casc">@Fills(8)</BitSwiper></div>
+        <div class="swp-host"><BitSwiper Id="casc-own" ShowDots="false">@Fills(8)</BitSwiper></div>
+    </BitParams>
+    <div class="swp-host"><BitSwiper Id="casc-out">@Fills(8)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-color" Title="Color, Accent, Size">
+    @foreach (var color in Enum.GetValues<BitColor>())
+    {
+        <div class="swp-host"><BitSwiper Id="@($"color-{color}")" Color="color" ShowDots VisibleItemsCount="2">@Fills(4)</BitSwiper></div>
+    }
+    @foreach (var accent in Enum.GetValues<BitColorKind>())
+    {
+        <div class="swp-host"><BitSwiper Id="@($"accent-{accent}")" Accent="accent" ShowDots VisibleItemsCount="2">@Fills(4)</BitSwiper></div>
+    }
+    <div class="swp-host"><BitSwiper Id="size-sm" Size="BitSize.Small" ShowDots VisibleItemsCount="2">@Fills(4)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="size-md" Size="BitSize.Medium" ShowDots VisibleItemsCount="2">@Fills(4)</BitSwiper></div>
+    <div class="swp-host"><BitSwiper Id="size-lg" Size="BitSize.Large" ShowDots VisibleItemsCount="2">@Fills(4)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-icons" Title="External icons and icon names">
+    <div class="swp-host">
+        <BitSwiper Id="icons" Rewind AutoPlay ShowPlayPause AutoPlayInterval="100000" DefaultItem="3"
+                   NextIcon="@BitIconInfo.Css("swp-ext-next")" PrevIcon="@BitIconInfo.Css("swp-ext-prev")"
+                   PauseIcon="@BitIconInfo.Css("swp-ext-pause")" PlayIcon="@BitIconInfo.Css("swp-ext-play")">@Items(8)</BitSwiper>
+    </div>
+    <div class="swp-host">
+        <BitSwiper Id="icon-names" Rewind AutoPlay ShowPlayPause AutoPlayInterval="100000" DefaultItem="3"
+                   NextIconName="Forward" PrevIconName="Back" PauseIconName="CirclePause" PlayIconName="PlaySolid">@Items(8)</BitSwiper>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-style" Title="Style, Class, Styles, Classes">
+    <div class="swp-host">
+        <BitSwiper Id="styled" Rewind ShowDots AutoPlay ShowPlayPause AutoPlayInterval="100000" VisibleItemsCount="2" DefaultItem="2" Class="swp-root-class" Style="padding: 1px"
+                   Styles="@(new() { Root = "margin-top: 1px", Container = "margin-top: 2px", Item = "padding-top: 3px", CurrentItem = "padding-bottom: 4px", Buttons = "padding-left: 5px", ButtonIcons = "padding-left: 6px", NextButton = "padding-right: 7px", NextButtonIcon = "padding-right: 8px", PrevButton = "padding-right: 9px", PrevButtonIcon = "padding-right: 10px", DotsContainer = "padding-top: 11px", Dots = "margin-top: 12px", CurrentDot = "margin-bottom: 13px", PlayPauseButton = "margin-left: 14px", PlayPauseButtonIcon = "margin-left: 15px" })"
+                   Classes="@(new() { Root = "swp-extra-root", Container = "swp-cnt-class", Item = "swp-item-class", CurrentItem = "swp-cur-class", Buttons = "swp-btns-class", ButtonIcons = "swp-btn-icons-class", NextButton = "swp-next-class", NextButtonIcon = "swp-next-icon-class", PrevButton = "swp-prev-class", PrevButtonIcon = "swp-prev-icon-class", DotsContainer = "swp-dcn-class", Dots = "swp-dots-class", CurrentDot = "swp-cud-class", PlayPauseButton = "swp-ppb-class", PlayPauseButtonIcon = "swp-ppb-icon-class" })">
+            @Fills(6)
+        </BitSwiper>
+    </div>
+    <div class="swp-host"><BitSwiper Id="styled-buttons" AnimationDuration="0.1" Styles="@(new() { Buttons = "color: rgb(1, 2, 3)" })">@Items(5)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-css-vars" Title="The --bit-Swiper-* variables">
+    <div class="swp-host" style="--bit-Swiper-gap: 10px; --bit-Swiper-peek: 30px; --bit-Swiper-focus-color: rgb(9, 9, 9); --bit-Swiper-button-color: rgb(1, 2, 3); --bit-Swiper-button-hover-color: rgb(4, 5, 6); --bit-Swiper-button-background: rgb(7, 8, 9); --bit-Swiper-button-hover-background: rgb(10, 11, 12); --bit-Swiper-button-opacity: 0.4; --bit-Swiper-button-width: 50px; --bit-Swiper-button-size: 33px; --bit-Swiper-dot-size: 12px; --bit-Swiper-dot-current-width: 40px; --bit-Swiper-dot-radius: 2px; --bit-Swiper-dot-gap: 7px; --bit-Swiper-dot-color: rgb(13, 14, 15); --bit-Swiper-dot-hover-color: rgb(16, 17, 18); --bit-Swiper-dot-current-color: rgb(19, 20, 21); --bit-Swiper-dot-current-hover-color: rgb(22, 23, 24); --bit-Swiper-dots-margin: 9px">
+        <BitSwiper Id="vars" ShowDots Rewind VisibleItemsCount="2" DefaultItem="2" AnimationDuration="0.1">@Fills(6)</BitSwiper>
+        <BitSwiper Id="vars-color" ShowDots VisibleItemsCount="2" Color="BitColor.Error">@Fills(4)</BitSwiper>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sec-rtl" Title="RTL">
+    <div class="swp-host"><BitSwiper Id="rtl" Dir="BitDir.Rtl" AnimationDuration="0.1">@Items(8)</BitSwiper></div>
+    <div class="swp-host" dir="rtl"><BitSwiper Id="rtl-inherited" AnimationDuration="0.1">@Items(8)</BitSwiper></div>
+</E2ESection>
+
+<E2ESection Id="sec-lifecycle" Title="Lifecycle">
+    <button id="btn-add-item" @onclick="() => _dynamicCount++">Add an item</button>
+    <button id="btn-remove-item" @onclick="() => _dynamicCount--">Remove an item</button>
+    <div class="swp-host"><BitSwiper Id="dynamic" ShowDots VisibleItemsCount="2">@Fills(_dynamicCount)</BitSwiper></div>
+    @if (_mounted)
+    {
+        <div class="swp-host"><BitSwiper Id="mount-swiper" AutoPlay AutoPlayInterval="400" AnimationDuration="0.1">@Items(8)</BitSwiper></div>
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+    <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private readonly List<string> _basicLog = [];
+    private bool _disabled = true;
+    private bool _mounted = true;
+    private int _dynamicCount = 2;
+    private int _loadedCount = 4;
+    private int _rootClicks;
+    private int _apiChange = -1;
+    private string _autoPlayState = "";
+    private string _apiState = "";
+    private string _apiPlayState = "";
+
+    private BitSwiper? _autoPlay;
+    private BitSwiper? _noPause;
+    private BitSwiper? _stopOnInteraction;
+    private BitSwiper? _reverse;
+    private BitSwiper? _stopOnLast;
+    private BitSwiper? _rewinding;
+    private BitSwiper? _forced;
+    private BitSwiper? _api;
+    private BitSwiper? _apiPlay;
+
+    private Dictionary<string, object> _disabledAttributes = default!;
+
+    private readonly BitSwiperParams[] _swiperParams = [new() { ShowDots = true, VisibleItemsCount = 2, HideNextPrev = true, Size = BitSize.Large }];
+
+    protected override void OnInitialized()
+    {
+        _disabledAttributes = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _rootClicks++)
+        };
+    }
+
+    // Items of their own width (100px), for a swiper that does not size them.
+    private static RenderFragment Items(int count) => Render(count, "swp-item");
+
+    // Items sized by the swiper (VisibleItemsCount).
+    private static RenderFragment Fills(int count) => Render(count, "swp-fill");
+
+    private static RenderFragment Render(int count, string cls) => builder =>
+    {
+        for (var i = 1; i <= count; i++)
+        {
+            var index = i;
+            builder.OpenComponent<BitSwiperItem>(0);
+            builder.SetKey(index);
+            builder.AddComponentParameter(1, "ChildContent", (RenderFragment)(b =>
+            {
+                b.OpenElement(0, "div");
+                b.AddAttribute(1, "class", cls);
+                b.AddContent(2, $"I{index}");
+                b.CloseElement();
+            }));
+            builder.CloseComponent();
+        }
+    };
+
+    private static string State(BitSwiper? swiper)
+    {
+        return swiper is null ? "" : $"index={swiper.CurrentIndex};playing={swiper.IsPlaying};paused={swiper.IsPaused}";
+    }
+
+    private void ReadAutoPlay()
+    {
+        _autoPlayState = $"autoplay[{State(_autoPlay)}] no-pause[{State(_noPause)}] stop[{State(_stopOnInteraction)}] reverse[{State(_reverse)}] last[{State(_stopOnLast)}] rewinding[{State(_rewinding)}] forced[{State(_forced)}]";
+    }
+
+    private void ReadApi()
+    {
+        _apiState = $"index={_api!.CurrentIndex};page={_api.CurrentPage};pages={_api.PagesCount};items={_api.ItemsCount};start={_api.IsAtStart};end={_api.IsAtEnd}";
+    }
+
+    private void ReadApiPlay()
+    {
+        _apiPlayState = $"playing={_apiPlay!.IsPlaying};paused={_apiPlay.IsPaused}";
+    }
+}

@@ -49,7 +49,9 @@
             if (initial) {
                 textArea.value = initial;
                 editor.resetBaseline();
-                editor.notifyChangeNow();
+                // Only a restored draft is news to .NET: the value it handed over is its own, and reporting it back
+                // would raise OnChange and validate a form's field before anything was edited.
+                if (restored) editor.notifyChangeNow();
             }
 
             // Told apart from an ordinary change, so an app can say "draft restored" and
@@ -213,7 +215,7 @@
         private _selectionTimer: ReturnType<typeof setTimeout> | null = null;
         private _canUndo = false;
         private _canRedo = false;
-        private _commandInFlight = false;
+        private _commandQueue: Promise<void> = Promise.resolve();
         private _lastSelection: { start: number, end: number };
         private _syncingScroll = false;
         private _uploadSeq = 0;
@@ -682,11 +684,20 @@
 
         // Reads selection + value, asks C# to transform it, then writes the result back.
         // Retries against the freshest value if typing landed while awaiting .NET, so a
-        // toolbar click during rapid typing is never silently dropped.
-        public async runCommand(command: string) {
-            if (!this.dotnetObj || this.textArea.readOnly || this._commandInFlight) return;
+        // toolbar click during rapid typing is never silently dropped. A command asked for
+        // while another one is still awaiting .NET (a shortcut pressed twice, a held key)
+        // runs after it, against the text the first one left, rather than being thrown away:
+        // its key press has already been taken from the textarea.
+        public runCommand(command: string): Promise<void> {
+            const run = this._commandQueue.then(() => this.applyCommand(command));
+            this._commandQueue = run;
+            return run;
+        }
 
-            this._commandInFlight = true;
+        // Never rejects, so one failed command cannot stall the ones queued behind it.
+        private async applyCommand(command: string) {
+            if (!this.dotnetObj || this.textArea.readOnly) return;
+
             try {
                 for (let attempt = 0; attempt < 3; attempt++) {
                     // When a toolbar button takes focus, the textarea's live selection can be
@@ -722,8 +733,6 @@
                 }
             } catch {
                 // The circuit (or the component) is gone; there is nothing to write back.
-            } finally {
-                this._commandInFlight = false;
             }
         }
 

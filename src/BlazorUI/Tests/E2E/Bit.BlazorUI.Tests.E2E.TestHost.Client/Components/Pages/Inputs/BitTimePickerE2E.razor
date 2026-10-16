@@ -1,0 +1,885 @@
+﻿@page "/e2e/time-picker"
+@using System.Globalization
+
+<PageTitle>BitTimePicker E2E</PageTitle>
+
+<h1>BitTimePicker</h1>
+
+@* ---------------------------------------------------------------- Basic *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitTimePicker Id="tp-basic" Label="Basic TimePicker" Culture="_en" @bind-Value="_basic" />
+    <span id="basic-value">@Show(_basic)</span>
+</E2ESection>
+
+<E2ESection Id="placeholder" Title="Placeholder">
+    <BitTimePicker Label="Placeholder" Placeholder="Select a time..." Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="required" Title="Required">
+    <BitTimePicker Label="Required" Required Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="readonly" Title="ReadOnly">
+    <BitTimePicker Label="ReadOnly" ReadOnly Culture="_en" ShowNowButton ShowClearButton Now="new(13, 47, 0)" @bind-Value="_readOnly" />
+    <span id="readonly-value">@Show(_readOnly)</span>
+</E2ESection>
+
+<E2ESection Id="one-way" Title="One-way Value">
+    <BitTimePicker Label="One-way" Culture="_en" Value="new(10, 24, 0)" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <BitTimePicker Label="Disabled" Disabled="_disabled" Culture="_en" @bind-Value="_disabledValue"
+                   @onclick="() => _disabledClicks++" @onkeydown="() => _disabledKeys++" />
+    <span id="disabled-value">@Show(_disabledValue)</span>
+    <span id="disabled-click-count">@_disabledClicks</span>
+    <span id="disabled-key-count">@_disabledKeys</span>
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="disabled-standalone" Title="Disabled standalone">
+    <BitTimePicker Label="Disabled standalone" Disabled Standalone ShowNowButton ShowClearButton TimeFormat="BitTimeFormat.TwelveHours"
+                   Culture="_en" DefaultValue="new(10, 24, 0)" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Time format *@
+
+<E2ESection Id="format-24" Title="24 hours">
+    <BitTimePicker Label="24 hours" TimeFormat="BitTimeFormat.TwentyFourHours" Culture="_en" @bind-Value="_format24" />
+    <span id="format-24-value">@Show(_format24)</span>
+</E2ESection>
+
+<E2ESection Id="format-12" Title="12 hours">
+    <BitTimePicker Label="12 hours" TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_format12" />
+    <span id="format-12-value">@Show(_format12)</span>
+</E2ESection>
+
+<E2ESection Id="format-seconds" Title="With seconds">
+    <BitTimePicker Label="With seconds" ShowSeconds Culture="_en" @bind-Value="_formatSeconds" />
+    <span id="format-seconds-value">@Show(_formatSeconds)</span>
+</E2ESection>
+
+<E2ESection Id="format-12-seconds" Title="With seconds (AM/PM)">
+    <BitTimePicker Label="With seconds (AM/PM)" ShowSeconds TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_format12Seconds" />
+    <span id="format-12-seconds-value">@Show(_format12Seconds)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Text input *@
+
+<E2ESection Id="text-input" Title="Text input">
+    <BitTimePicker Label="Start time" AllowTextInput Culture="_en" @bind-Value="_text" />
+    <span id="text-input-value">@Show(_text)</span>
+</E2ESection>
+
+<E2ESection Id="text-input-12s" Title="Text input (with seconds, AM/PM)">
+    <BitTimePicker Label="Start time (with seconds)" AllowTextInput ShowSeconds TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_text12s" />
+    <span id="text-input-12s-value">@Show(_text12s)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Icons *@
+
+<E2ESection Id="icon" Title="IconName">
+    <BitTimePicker IconName="@BitIconName.HourGlass" Placeholder="Select a time..." Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="icon-start" Title="IconPlacement Start">
+    <BitTimePicker IconName="@BitIconName.HourGlass" IconPlacement="BitPlacement.Start" Placeholder="Select a time..." Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="icon-custom" Title="Custom spin and close icons">
+    <BitTimePicker Label="Custom spin & close icons"
+                   ShowCloseButton
+                   ShowSeconds
+                   Culture="_en"
+                   IncreaseHourIconName="@BitIconName.CaretSolidUp"
+                   DecreaseHourIconName="@BitIconName.CaretSolidDown"
+                   IncreaseMinuteIconName="@BitIconName.CaretSolidUp"
+                   DecreaseMinuteIconName="@BitIconName.CaretSolidDown"
+                   IncreaseSecondIconName="@BitIconName.CaretUpSolid8"
+                   DecreaseSecondIconName="@BitIconName.CaretDownSolid8"
+                   CloseButtonIconName="@BitIconName.ChromeClose" />
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External icons">
+    <div id="ext-css"><BitTimePicker Icon="@BitIconInfo.Css("fa-solid fa-hourglass-half")" IconPlacement="BitPlacement.Start" Culture="_en" /></div>
+    <div id="ext-fa"><BitTimePicker Icon="@BitIconInfo.Fa("solid stopwatch")" Culture="_en" /></div>
+    <div id="ext-bi"><BitTimePicker Icon="@BitIconInfo.Bi("stopwatch-fill")" Culture="_en" /></div>
+    <div id="ext-string"><BitTimePicker Icon="@("bi bi-clock-fill")" Culture="_en" /></div>
+    <div id="ext-spin">
+        <BitTimePicker Standalone ShowSeconds Culture="_en"
+                       IncreaseHourIcon="@BitIconInfo.Css("ext-ih")" DecreaseHourIcon="@BitIconInfo.Css("ext-dh")"
+                       IncreaseMinuteIcon="@BitIconInfo.Css("ext-im")" DecreaseMinuteIcon="@BitIconInfo.Css("ext-dm")"
+                       IncreaseSecondIcon="@BitIconInfo.Css("ext-is")" DecreaseSecondIcon="@BitIconInfo.Css("ext-ds")" />
+    </div>
+    <div id="ext-buttons">
+        <BitTimePicker ShowCloseButton ShowInputClearButton DefaultValue="new(9, 0, 0)" Culture="_en"
+                       CloseButtonIcon="@BitIconInfo.Css("ext-close")" ClearButtonIcon="@BitIconInfo.Css("ext-clear")" ClearButtonIconName="Delete" />
+    </div>
+    <div id="ext-clear-name">
+        <BitTimePicker ShowInputClearButton DefaultValue="new(9, 0, 0)" Culture="_en" ClearButtonIconName="@BitIconName.Delete" />
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Formatting & culture *@
+
+<E2ESection Id="value-format" Title="ValueFormat">
+    <BitTimePicker Label="ValueFormat (hh-mm.ss)" ValueFormat="hh-mm.ss" Culture="_en" AllowTextInput @bind-Value="_valueFormat" />
+    <span id="value-format-value">@Show(_valueFormat)</span>
+</E2ESection>
+
+<E2ESection Id="culture-fa" Title="Culture fa-IR">
+    <BitTimePicker Label="فارسی" TimeFormat="BitTimeFormat.TwelveHours" Culture="_fa" Standalone @bind-Value="_faValue" />
+    <span id="culture-fa-value">@Show(_faValue)</span>
+    <span id="fa-am">@_fa_culture_am</span>
+    <span id="fa-pm">@_fa_culture_pm</span>
+</E2ESection>
+
+<E2ESection Id="culture-ja" Title="Culture ja-JP 12 hours">
+    <BitTimePicker Label="日本語" TimeFormat="BitTimeFormat.TwelveHours" Culture="_ja" DefaultValue="new(14, 30, 0)" />
+    <span id="ja-am">@_ja.DateTimeFormat.AMDesignator</span>
+    <span id="ja-pm">@_ja.DateTimeFormat.PMDesignator</span>
+    <span id="ja-expected">@(DateTime.Today.Add(new TimeSpan(14, 30, 0)).ToString("hh:mm tt", _ja))</span>
+</E2ESection>
+
+<E2ESection Id="culture-de" Title="Culture de-DE">
+    <BitTimePicker Label="Deutsch" Culture="_de" DefaultValue="new(14, 30, 0)" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Binding *@
+
+<E2ESection Id="binding" Title="Binding">
+    <BitTimePicker Label="@@bind-Value" Culture="_en" @bind-Value="_bound" />
+    <span id="binding-value">@Show(_bound)</span>
+    <button id="btn-set-bound" type="button" @onclick="() => _bound = new TimeSpan(7, 45, 0)">Set 07:45</button>
+    <button id="btn-set-bound-overflow" type="button" @onclick="() => _bound = new TimeSpan(1, 2, 3, 0)">Set 1.02:03</button>
+    <button id="btn-set-bound-negative" type="button" @onclick="() => _bound = TimeSpan.FromHours(-1)">Set -01:00</button>
+    <button id="btn-clear-bound" type="button" @onclick="() => _bound = null">Clear</button>
+</E2ESection>
+
+<E2ESection Id="default-value" Title="DefaultValue">
+    <BitTimePicker Label="DefaultValue (08:15)" DefaultValue="new(8, 15, 0)" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="starting-value" Title="StartingValue">
+    <BitTimePicker Label="StartingValue (09:30)" StartingValue="new(9, 30, 0)" Culture="_en" @bind-Value="_starting" />
+    <span id="starting-value-value">@Show(_starting)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Standalone *@
+
+<E2ESection Id="standalone" Title="Standalone">
+    <BitTimePicker Label="Standalone picker" Standalone Culture="_en" Name="standalone-time" @bind-Value="_standalone" />
+    <span id="standalone-value">@Show(_standalone)</span>
+</E2ESection>
+
+<E2ESection Id="standalone-12" Title="Standalone 12 hours">
+    <BitTimePicker Label="Picker (AM/PM)" Standalone TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_standalone12" />
+    <span id="standalone-12-value">@Show(_standalone12)</span>
+</E2ESection>
+
+<E2ESection Id="standalone-readonly" Title="Standalone ReadOnly">
+    <BitTimePicker Label="ReadOnly" Standalone ReadOnly TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_standaloneReadOnly" />
+    <span id="standalone-readonly-value">@Show(_standaloneReadOnly)</span>
+</E2ESection>
+
+<E2ESection Id="standalone-nolabel" Title="Standalone without label">
+    <BitTimePicker Standalone Culture="_en" CalloutAriaLabel="Pick a time" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Selectable range *@
+
+<E2ESection Id="range-working" Title="Working hours">
+    <BitTimePicker Label="Working hours (09:00 to 17:00)" MinTime="new(9, 0, 0)" MaxTime="new(17, 0, 0)" Culture="_en" @bind-Value="_rangeWorking" />
+    <span id="range-working-value">@Show(_rangeWorking)</span>
+</E2ESection>
+
+<E2ESection Id="range-bounds-minutes" Title="Bounds inside an hour">
+    <BitTimePicker Label="09:20 to 17:40" Standalone MinTime="new(9, 20, 0)" MaxTime="new(17, 40, 0)" Culture="_en" @bind-Value="_rangeMinutes" />
+    <span id="range-bounds-minutes-value">@Show(_rangeMinutes)</span>
+</E2ESection>
+
+<E2ESection Id="range-allowed" Title="Allowed hours and minutes">
+    <BitTimePicker Label="Even hours, on the quarter" Standalone AllowedHours="@(h => h % 2 == 0)" AllowedMinutes="@(m => m % 15 == 0)" Culture="_en" @bind-Value="_rangeAllowed" />
+    <span id="range-allowed-value">@Show(_rangeAllowed)</span>
+</E2ESection>
+
+<E2ESection Id="range-seconds" Title="Allowed seconds">
+    <BitTimePicker Label="Seconds on the ten" Standalone ShowSeconds AllowedSeconds="@(s => s % 10 == 0)" Culture="_en" @bind-Value="_rangeSeconds" />
+    <span id="range-seconds-value">@Show(_rangeSeconds)</span>
+</E2ESection>
+
+<E2ESection Id="range-past" Title="DisablePast">
+    <BitTimePicker Label="Later today only" Standalone DisablePast ShowNowButton Now="new(13, 47, 0)" Culture="_en" @bind-Value="_rangePast" />
+    <span id="range-past-value">@Show(_rangePast)</span>
+</E2ESection>
+
+<E2ESection Id="range-future" Title="DisableFuture">
+    <BitTimePicker Label="Earlier today only" Standalone DisableFuture ShowNowButton Now="new(13, 47, 0)" Culture="_en" @bind-Value="_rangeFuture" />
+    <span id="range-future-value">@Show(_rangeFuture)</span>
+</E2ESection>
+
+<E2ESection Id="range-tz" Title="TimeZone">
+    <BitTimePicker Label="Later today in UTC" Standalone DisablePast ShowNowButton TimeZone="TimeZoneInfo.Utc" Culture="_en" @bind-Value="_rangeTz" />
+    <span id="range-tz-value">@Show(_rangeTz)</span>
+</E2ESection>
+
+<E2ESection Id="range-text" Title="Typed time against the range">
+    <BitTimePicker Label="Typed" AllowTextInput MinTime="new(9, 0, 0)" MaxTime="new(17, 0, 0)" AllowedMinutes="@(m => m % 15 == 0)" Culture="_en" @bind-Value="_rangeText" />
+    <span id="range-text-value">@Show(_rangeText)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Steps *@
+
+<E2ESection Id="steps-hour" Title="HourStep = 2">
+    <BitTimePicker Label="HourStep = 2" Standalone HourStep="2" Culture="_en" @bind-Value="_stepsHour" />
+    <span id="steps-hour-value">@Show(_stepsHour)</span>
+</E2ESection>
+
+<E2ESection Id="steps-minute" Title="MinuteStep = 15">
+    <BitTimePicker Label="MinuteStep = 15" Standalone MinuteStep="15" Culture="_en" @bind-Value="_stepsMinute" />
+    <span id="steps-minute-value">@Show(_stepsMinute)</span>
+</E2ESection>
+
+<E2ESection Id="steps-second" Title="SecondStep = 30">
+    <BitTimePicker Label="SecondStep = 30" Standalone ShowSeconds SecondStep="30" Culture="_en" @bind-Value="_stepsSecond" />
+    <span id="steps-second-value">@Show(_stepsSecond)</span>
+</E2ESection>
+
+<E2ESection Id="steps-anchor" Title="Step grid anchored at MinTime">
+    <BitTimePicker Label="From 09:07 by 15" Standalone MinTime="new(9, 7, 0)" MinuteStep="15" Culture="_en" @bind-Value="_stepsAnchor" />
+    <span id="steps-anchor-value">@Show(_stepsAnchor)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Action buttons *@
+
+<E2ESection Id="actions" Title="Now and Clear (AutoClose)">
+    <BitTimePicker Label="Now & Clear buttons (AutoClose)" ShowNowButton ShowClearButton AutoClose Now="new(13, 47, 0)" Culture="_en"
+                   @bind-Value="_actions" OnClear="() => _actionsClears++" />
+    <span id="actions-value">@Show(_actions)</span>
+    <span id="actions-clear-count">@_actionsClears</span>
+</E2ESection>
+
+<E2ESection Id="actions-open" Title="Now without AutoClose">
+    <BitTimePicker Label="Now (stays open)" ShowNowButton ShowSeconds Now="new(8, 5, 33)" Culture="_en" @bind-Value="_actionsOpen" />
+    <span id="actions-open-value">@Show(_actionsOpen)</span>
+</E2ESection>
+
+<E2ESection Id="actions-field-clear" Title="Clear button in the field">
+    <BitTimePicker Label="Clear button in the field" ShowInputClearButton ShowCloseButton CloseButtonTitle="Dismiss the picker" ClearButtonTitle="Remove the time"
+                   Culture="_en" @bind-Value="_fieldClear" OnClear="() => _fieldClears++" />
+    <span id="actions-field-clear-value">@Show(_fieldClear)</span>
+    <span id="actions-field-clear-count">@_fieldClears</span>
+</E2ESection>
+
+<E2ESection Id="actions-texts" Title="Custom button texts">
+    <BitTimePicker Label="Custom button texts" Standalone ShowNowButton ShowClearButton NowButtonText="Current time" ClearButtonText="Reset"
+                   Now="new(6, 7, 0)" Culture="_en" @bind-Value="_actionsTexts" />
+    <span id="actions-texts-value">@Show(_actionsTexts)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Validation & helper text *@
+
+<E2ESection Id="helper" Title="Description">
+    <BitTimePicker Label="Meeting time" Description="When the meeting starts, in your local time." AriaDescription="Screen reader help." Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="error" Title="ErrorMessage">
+    <BitTimePicker Label="Handover time" ErrorMessage="That slot was taken while you were choosing." DefaultValue="new(9, 0, 0)" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="invalid" Title="Invalid">
+    <BitTimePicker Label="Invalid" Invalid Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="form" Title="EditForm validation">
+    <EditForm Model="_formModel" OnValidSubmit="() => _formStatus = Saved()" OnInvalidSubmit="() => _formStatus = Rejected()">
+        <DataAnnotationsValidator />
+        <BitTimePicker @bind-Value="_formModel.Time"
+                       AllowTextInput
+                       Label="Time required"
+                       DisplayName="Booking time"
+                       MinTime="new(8, 0, 0)"
+                       MaxTime="new(18, 0, 0)"
+                       AllowedMinutes="@(m => m % 15 == 0)"
+                       Culture="_en"
+                       InvalidErrorMessage="Invalid Time!"
+                       OutOfRangeErrorMessage="The time must be between 08:00 and 18:00!"
+                       DisallowedTimeErrorMessage="Only quarter hours can be booked!" />
+        <div id="form-message"><ValidationMessage For="@(() => _formModel.Time)" /></div>
+        <button id="form-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-status">@_formStatus</span>
+    <span id="form-value">@Show(_formModel.Time)</span>
+</E2ESection>
+
+<E2ESection Id="form-default-messages" Title="EditForm default messages">
+    <EditForm Model="_formModel2">
+        <DataAnnotationsValidator />
+        <BitTimePicker @bind-Value="_formModel2.Time" AllowTextInput DisplayName="Arrival" MinTime="new(8, 0, 0)" MaxTime="new(18, 0, 0)"
+                       AllowedHours="@(h => h != 12)" Culture="_en" />
+        <div id="form2-message"><ValidationMessage For="@(() => _formModel2.Time)" /></div>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="form-standalone" Title="Standalone in an EditForm">
+    <EditForm Model="_formModel3" OnValidSubmit="() => _form3Status = Saved()" OnInvalidSubmit="() => _form3Status = Rejected()">
+        <DataAnnotationsValidator />
+        <BitTimePicker @bind-Value="_formModel3.Time" Standalone Label="Standalone required" Culture="_en" />
+        <div id="form3-message"><ValidationMessage For="@(() => _formModel3.Time)" /></div>
+        <button id="form3-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form3-status">@_form3Status</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Appearance *@
+
+<E2ESection Id="prefix-suffix" Title="Prefix & suffix">
+    <BitTimePicker Label="Prefix & suffix" Prefix="Starts at" Suffix="UTC" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="underlined" Title="Underlined">
+    <BitTimePicker Label="Underlined" Underlined Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="no-border" Title="No border">
+    <BitTimePicker Label="No border" HasBorder="false" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="drop-all" Title="DropDirection All">
+    <BitTimePicker Label="DropDirection (All)" DropDirection="BitDropDirection.All" Culture="_en" />
+</E2ESection>
+
+<E2ESection Id="responsive" Title="Responsive">
+    <BitTimePicker Label="Responsive" Responsive ShowCloseButton TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_responsive"
+                   OnClose="() => _responsiveCloses++" />
+    <span id="responsive-value">@Show(_responsive)</span>
+    <span id="responsive-close-count">@_responsiveCloses</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Keyboard & accessibility *@
+
+<E2ESection Id="keyboard" Title="Keyboard">
+    <BitTimePicker Label="Keyboard" ShowSeconds Culture="_en" @bind-Value="_keyboard" />
+    <span id="keyboard-value">@Show(_keyboard)</span>
+</E2ESection>
+
+<E2ESection Id="keyboard-12" Title="Keyboard 12 hours">
+    <BitTimePicker Label="Keyboard 12 hours" TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_keyboard12" />
+    <span id="keyboard-12-value">@Show(_keyboard12)</span>
+</E2ESection>
+
+<E2ESection Id="keyboard-text" Title="Keyboard on an editable field">
+    <BitTimePicker Label="Editable" AllowTextInput Culture="_en" OnOpen="() => _keyboardTextOpens++" OnClose="() => _keyboardTextCloses++" />
+    <span id="keyboard-text-opens">@_keyboardTextOpens</span>
+    <span id="keyboard-text-closes">@_keyboardTextCloses</span>
+    <button id="keyboard-text-after" type="button">After</button>
+</E2ESection>
+
+<E2ESection Id="autoadvance" Title="AutoAdvance">
+    <div id="autoadvance-host" @onfocusin="() => _autoAdvanceFocus++">
+        <BitTimePicker Label="AutoAdvance" Standalone AutoAdvance ShowSeconds Culture="_en" @bind-Value="_autoAdvance" />
+    </div>
+    <span id="autoadvance-value">@Show(_autoAdvance)</span>
+    <span id="autoadvance-focus">@_autoAdvanceFocus</span>
+</E2ESection>
+
+<E2ESection Id="no-autoadvance" Title="Without AutoAdvance">
+    <div id="no-autoadvance-host" @onfocusin="() => _noAutoAdvanceFocus++">
+        <BitTimePicker Label="No AutoAdvance" Standalone Culture="_en" @bind-Value="_noAutoAdvance" />
+    </div>
+    <span id="no-autoadvance-value">@Show(_noAutoAdvance)</span>
+    <span id="no-autoadvance-focus">@_noAutoAdvanceFocus</span>
+</E2ESection>
+
+<E2ESection Id="wheel" Title="Mouse wheel">
+    <BitTimePicker Label="Wheel" Standalone Culture="_en" @bind-Value="_wheel" />
+    <span id="wheel-value">@Show(_wheel)</span>
+</E2ESection>
+
+<E2ESection Id="wheel-off" Title="NoMouseWheel">
+    <BitTimePicker Label="No wheel" Standalone NoMouseWheel Culture="_en" @bind-Value="_wheelOff" />
+    <span id="wheel-off-value">@Show(_wheelOff)</span>
+</E2ESection>
+
+<E2ESection Id="wheel-invert" Title="InvertMouseWheel">
+    <BitTimePicker Label="Inverted wheel" Standalone InvertMouseWheel Culture="_en" @bind-Value="_wheelInvert" />
+    <span id="wheel-invert-value">@Show(_wheelInvert)</span>
+</E2ESection>
+
+<E2ESection Id="aria" Title="Aria labels and titles">
+    <BitTimePicker Label="Try it with the keyboard"
+                   ShowSeconds
+                   AriaLabel="Meeting time field"
+                   TimeFormat="BitTimeFormat.TwelveHours"
+                   Culture="_en"
+                   CalloutAriaLabel="Pick a meeting time"
+                   HourInputAriaLabel="Meeting hour"
+                   MinuteInputAriaLabel="Meeting minute"
+                   SecondInputAriaLabel="Meeting second"
+                   IncreaseHourTitle="One hour later"
+                   DecreaseHourTitle="One hour earlier"
+                   IncreaseMinuteTitle="One minute later"
+                   DecreaseMinuteTitle="One minute earlier"
+                   IncreaseSecondTitle="One second later"
+                   DecreaseSecondTitle="One second earlier"
+                   AriaDescription="Type the first letter of the AM or PM designator."
+                   @bind-Value="_aria" />
+</E2ESection>
+
+@* ---------------------------------------------------------------- Events *@
+
+<E2ESection Id="events" Title="Events">
+    <BitTimePicker Label="Watch the log"
+                   ShowClearButton
+                   Culture="_en"
+                   @bind-Value="_events"
+                   OnOpen="() => _opens++"
+                   OnClose="() => _closes++"
+                   OnClick="() => _clicks++"
+                   OnClear="() => _clears++"
+                   OnFocus="() => _focuses++"
+                   OnFocusIn="() => _focusIns++"
+                   OnFocusOut="() => _focusOuts++"
+                   OnSelectTime="t => { _selects++; _lastSelect = t; }"
+                   OnChange="t => { _changes++; _lastChange = t; }" />
+    <span id="events-value">@Show(_events)</span>
+    <span id="ev-open">@_opens</span>
+    <span id="ev-close">@_closes</span>
+    <span id="ev-click">@_clicks</span>
+    <span id="ev-clear">@_clears</span>
+    <span id="ev-focus">@_focuses</span>
+    <span id="ev-focusin">@_focusIns</span>
+    <span id="ev-focusout">@_focusOuts</span>
+    <span id="ev-select">@_selects</span>
+    <span id="ev-select-arg">@Show(_lastSelect)</span>
+    <span id="ev-change">@_changes</span>
+    <span id="ev-change-arg">@Show(_lastChange)</span>
+    <button id="events-outside" type="button">Outside</button>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Programmatic control *@
+
+<E2ESection Id="programmatic" Title="Programmatic control">
+    <BitTimePicker @ref="_programmatic" Label="Controlled callout" Culture="_en" @bind-IsOpen="_isOpen"
+                   OnOpen="() => _progOpens++" OnClose="() => _progCloses++" />
+    <span id="is-open">@_isOpen</span>
+    <span id="prog-opens">@_progOpens</span>
+    <span id="prog-closes">@_progCloses</span>
+    <button id="btn-open" type="button" @onclick="() => _programmatic!.OpenCallout()">OpenCallout()</button>
+    <button id="btn-dismiss" type="button" @onclick="() => _programmatic!.DismissCallout()">DismissCallout()</button>
+    <button id="btn-set-open" type="button" @onclick="() => _isOpen = true">IsOpen = true</button>
+    <button id="btn-set-closed" type="button" @onclick="() => _isOpen = false">IsOpen = false</button>
+    <button id="btn-focus" type="button" @onclick="() => _programmatic!.FocusAsync()">FocusAsync()</button>
+    <span id="input-id">@_programmatic?.InputId</span>
+    <button id="btn-read-input-id" type="button" @onclick="StateHasChanged">Read InputId</button>
+</E2ESection>
+
+<E2ESection Id="programmatic-standalone" Title="FocusAsync on a standalone picker">
+    <BitTimePicker @ref="_programmaticStandalone" Standalone Culture="_en" />
+    <button id="btn-focus-standalone" type="button" @onclick="() => _programmaticStandalone!.FocusAsync()">FocusAsync()</button>
+    <button id="btn-open-standalone" type="button" @onclick="() => _programmaticStandalone!.OpenCallout()">OpenCallout()</button>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Templates *@
+
+<E2ESection Id="templates-label" Title="LabelTemplate">
+    <BitTimePicker Culture="_en">
+        <LabelTemplate><span id="custom-label">Custom label</span></LabelTemplate>
+    </BitTimePicker>
+</E2ESection>
+
+<E2ESection Id="templates-icon" Title="IconTemplate">
+    <BitTimePicker Label="Custom icon" Culture="_en">
+        <IconTemplate><span id="custom-icon">ICON</span></IconTemplate>
+    </BitTimePicker>
+</E2ESection>
+
+<E2ESection Id="templates-callout" Title="Callout header & footer">
+    <BitTimePicker Label="Callout header & footer" Culture="_en" @bind-Value="_template">
+        <CalloutHeaderTemplate>
+            <div id="callout-header">Pick a meeting time</div>
+        </CalloutHeaderTemplate>
+        <CalloutFooterTemplate>
+            <div id="callout-footer">
+                <button id="preset-0900" type="button" @onclick="() => _template = new TimeSpan(9, 0, 0)">09:00</button>
+                <button id="preset-1330" type="button" @onclick="() => _template = new TimeSpan(13, 30, 0)">13:30</button>
+            </div>
+        </CalloutFooterTemplate>
+    </BitTimePicker>
+    <span id="templates-callout-value">@Show(_template)</span>
+</E2ESection>
+
+<E2ESection Id="templates-text" Title="Description, prefix, suffix and error templates">
+    <BitTimePicker Culture="_en" Label="Templates">
+        <DescriptionTemplate><b id="custom-description">Custom description</b></DescriptionTemplate>
+        <PrefixTemplate><span id="custom-prefix">PRE</span></PrefixTemplate>
+        <SuffixTemplate><span id="custom-suffix">SUF</span></SuffixTemplate>
+        <ErrorMessageTemplate><i id="custom-error">Custom error</i></ErrorMessageTemplate>
+    </BitTimePicker>
+</E2ESection>
+
+@* ---------------------------------------------------------------- CSS variables *@
+
+<E2ESection Id="css-vars" Title="CSS variables on an ancestor">
+    <div style="--bit-TimePicker-color: rgb(0, 128, 128);
+                --bit-TimePicker-radius: 20px;
+                --bit-TimePicker-height: 50px;
+                --bit-TimePicker-border-color: rgb(0, 128, 128);
+                --bit-TimePicker-icon-color: rgb(1, 2, 3);
+                --bit-TimePicker-label-color: rgb(4, 5, 6);
+                --bit-TimePicker-callout-radius: 24px;
+                --bit-TimePicker-cell-size: 50px;
+                --bit-TimePicker-callout-background: rgb(7, 8, 9);">
+        <div id="css-vars-default">
+            <BitTimePicker Label="Teal" TimeFormat="BitTimeFormat.TwelveHours" ShowNowButton DefaultValue="new(9, 45, 0)" Culture="_en" />
+        </div>
+        <div id="css-vars-explicit">
+            <BitTimePicker Label="Explicit" Color="BitColor.Error" Size="BitSize.Small" TimeFormat="BitTimeFormat.TwelveHours" DefaultValue="new(9, 45, 0)" Culture="_en" />
+        </div>
+    </div>
+    <div id="css-vars-style">
+        <BitTimePicker Label="Style" Standalone TimeFormat="BitTimeFormat.TwelveHours" DefaultValue="new(9, 45, 0)" Culture="_en"
+                       Style="--bit-TimePicker-cell-size: 44px; --bit-TimePicker-color: rgb(10, 20, 30);" />
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Cascading parameters *@
+
+<E2ESection Id="cascade" Title="Cascading parameters">
+    <BitParams Parameters="_cascade">
+        <div id="cascade-1"><BitTimePicker Label="From the cascade" @bind-Value="_cascade1" /></div>
+        <div id="cascade-2"><BitTimePicker Label="Also from the cascade" /></div>
+        <div id="cascade-3"><BitTimePicker Label="Own MinuteStep" MinuteStep="1" TimeFormat="BitTimeFormat.TwentyFourHours" @bind-Value="_cascade3" /></div>
+    </BitParams>
+    <span id="cascade-1-value">@Show(_cascade1)</span>
+    <span id="cascade-3-value">@Show(_cascade3)</span>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Color *@
+
+<E2ESection Id="colors" Title="Color">
+    @foreach (var color in _colors)
+    {
+        <div id="color-@color.ToString().ToLowerInvariant()">
+            <BitTimePicker Label="@color.ToString()" Color="color" Standalone ShowNowButton TimeFormat="BitTimeFormat.TwelveHours"
+                           DefaultValue="new(10, 30, 0)" Culture="_en" />
+        </div>
+    }
+    <div id="color-none">
+        <BitTimePicker Label="Unset" Standalone ShowNowButton TimeFormat="BitTimeFormat.TwelveHours" DefaultValue="new(10, 30, 0)" Culture="_en" />
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Size *@
+
+<E2ESection Id="sizes" Title="Size">
+    <div id="size-small"><BitTimePicker Label="Small" Size="BitSize.Small" TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" /></div>
+    <div id="size-medium"><BitTimePicker Label="Medium" Size="BitSize.Medium" TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" /></div>
+    <div id="size-large"><BitTimePicker Label="Large" Size="BitSize.Large" TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" /></div>
+    <div id="size-small-standalone"><BitTimePicker Size="BitSize.Small" Standalone Culture="_en" /></div>
+    <div id="size-large-standalone"><BitTimePicker Size="BitSize.Large" Standalone Culture="_en" /></div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Style & Class *@
+
+<E2ESection Id="style-class" Title="Style & Class">
+    <div id="sc-style"><BitTimePicker Style="margin: 7px; box-shadow: rgb(30, 144, 255) 0px 0px 16px 0px;" Culture="_en" /></div>
+    <div id="sc-class"><BitTimePicker Class="custom-class" Culture="_en" /></div>
+    <div id="sc-styles">
+        <BitTimePicker Label="Styles" Prefix="P" Suffix="S" Description="D" ShowNowButton ShowClearButton ShowCloseButton ShowSeconds TimeFormat="BitTimeFormat.TwelveHours" Culture="_en"
+                       @bind-Value="_stylesValue"
+                       Styles="@(new() { Root = "margin-inline: 11px;",
+                                         Focused = "outline: 3px solid rgb(255, 0, 0);",
+                                         Label = "color: rgb(1, 1, 1);",
+                                         InputWrapper = "padding-top: 3px;",
+                                         InputContainer = "background: rgb(2, 2, 2);",
+                                         Input = "padding: 9px;",
+                                         Icon = "color: rgb(3, 3, 3);",
+                                         PrefixContainer = "background: rgb(4, 4, 4);",
+                                         Prefix = "color: rgb(5, 5, 5);",
+                                         SuffixContainer = "background: rgb(6, 6, 6);",
+                                         Suffix = "color: rgb(7, 7, 7);",
+                                         DescriptionContainer = "padding-top: 5px;",
+                                         Description = "color: rgb(8, 8, 8);",
+                                         Callout = "min-width: 333px;",
+                                         CalloutContainer = "padding-top: 6px;",
+                                         TimeInputContainer = "gap: 13px;",
+                                         HourInputContainer = "padding-top: 1px;",
+                                         IncreaseHourButton = "color: rgb(9, 9, 9);",
+                                         IncreaseHourIcon = "color: rgb(10, 10, 10);",
+                                         HourInput = "color: rgb(11, 11, 11);",
+                                         DecreaseHourButton = "color: rgb(12, 12, 12);",
+                                         DecreaseHourIcon = "color: rgb(13, 13, 13);",
+                                         HourMinuteSeparator = "color: rgb(14, 14, 14);",
+                                         MinuteInputContainer = "padding-top: 2px;",
+                                         IncreaseMinuteButton = "color: rgb(15, 15, 15);",
+                                         IncreaseMinuteIcon = "color: rgb(16, 16, 16);",
+                                         MinuteInput = "color: rgb(17, 17, 17);",
+                                         DecreaseMinuteButton = "color: rgb(18, 18, 18);",
+                                         DecreaseMinuteIcon = "color: rgb(19, 19, 19);",
+                                         MinuteSecondSeparator = "color: rgb(20, 20, 20);",
+                                         SecondInputContainer = "padding-top: 3px;",
+                                         IncreaseSecondButton = "color: rgb(21, 21, 21);",
+                                         IncreaseSecondIcon = "color: rgb(22, 22, 22);",
+                                         SecondInput = "color: rgb(23, 23, 23);",
+                                         DecreaseSecondButton = "color: rgb(24, 24, 24);",
+                                         DecreaseSecondIcon = "color: rgb(25, 25, 25);",
+                                         AmPmContainer = "padding-top: 4px;",
+                                         AmButton = "color: rgb(26, 26, 26);",
+                                         PmButton = "color: rgb(27, 27, 27);",
+                                         Actions = "padding-top: 7px;",
+                                         NowButton = "color: rgb(28, 28, 28);",
+                                         ClearButton = "color: rgb(29, 29, 29);",
+                                         CloseButton = "color: rgb(30, 30, 30);",
+                                         CloseButtonIcon = "color: rgb(31, 31, 31);",
+                                         Overlay = "background-color: rgba(0, 0, 0, 0.1);" })" />
+    </div>
+    <div id="sc-classes">
+        <BitTimePicker Label="Classes" Prefix="P" Suffix="S" Description="D" ErrorMessage="E" ShowNowButton ShowClearButton ShowCloseButton ShowSeconds ShowInputClearButton
+                       TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" @bind-Value="_classesValue"
+                       Classes="@(new() { Root = "c-root", Focused = "c-focused", Label = "c-label", InputWrapper = "c-input-wrapper",
+                                          InputContainer = "c-input-container", Input = "c-input", Icon = "c-icon",
+                                          PrefixContainer = "c-prefix-container", Prefix = "c-prefix", SuffixContainer = "c-suffix-container", Suffix = "c-suffix",
+                                          InputClearButton = "c-input-clear", InputClearButtonIcon = "c-input-clear-icon",
+                                          ErrorMessageContainer = "c-error-container", ErrorMessage = "c-error",
+                                          DescriptionContainer = "c-description-container", Description = "c-description",
+                                          Overlay = "c-overlay", Callout = "c-callout", CalloutContainer = "c-callout-container",
+                                          TimeInputContainer = "c-time-inputs", HourInputContainer = "c-hour-container", IncreaseHourButton = "c-inc-hour",
+                                          IncreaseHourIcon = "c-inc-hour-icon", HourInput = "c-hour", DecreaseHourButton = "c-dec-hour", DecreaseHourIcon = "c-dec-hour-icon",
+                                          HourMinuteSeparator = "c-hm-sep", MinuteInputContainer = "c-minute-container", IncreaseMinuteButton = "c-inc-minute",
+                                          IncreaseMinuteIcon = "c-inc-minute-icon", MinuteInput = "c-minute", DecreaseMinuteButton = "c-dec-minute",
+                                          DecreaseMinuteIcon = "c-dec-minute-icon", MinuteSecondSeparator = "c-ms-sep", SecondInputContainer = "c-second-container",
+                                          IncreaseSecondButton = "c-inc-second", IncreaseSecondIcon = "c-inc-second-icon", SecondInput = "c-second",
+                                          DecreaseSecondButton = "c-dec-second", DecreaseSecondIcon = "c-dec-second-icon", AmPmContainer = "c-ampm",
+                                          AmButton = "c-am", PmButton = "c-pm", Actions = "c-actions", NowButton = "c-now", ClearButton = "c-clear",
+                                          CloseButton = "c-close", CloseButtonIcon = "c-close-icon" })" />
+    </div>
+    <div id="sc-header-footer">
+        <BitTimePicker Culture="_en" Standalone Styles="@(new() { CalloutHeader = "color: rgb(40, 40, 40);", CalloutFooter = "color: rgb(41, 41, 41);" })"
+                       Classes="@(new() { CalloutHeader = "c-header", CalloutFooter = "c-footer" })">
+            <CalloutHeaderTemplate>Header</CalloutHeaderTemplate>
+            <CalloutFooterTemplate>Footer</CalloutFooterTemplate>
+        </BitTimePicker>
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- RTL *@
+
+<E2ESection Id="rtl" Title="RTL">
+    <div id="rtl-standalone">
+        <BitTimePicker Dir="BitDir.Rtl" Standalone Label="زمان" TimeFormat="BitTimeFormat.TwelveHours" DefaultValue="new(10, 24, 0)" Culture="_en" />
+    </div>
+    <div id="rtl-field">
+        <BitTimePicker Dir="BitDir.Rtl" ShowCloseButton Label="زمان" Culture="_en" />
+    </div>
+    <div id="ltr-field">
+        <BitTimePicker ShowCloseButton Label="LTR" Culture="_en" />
+    </div>
+    <div id="rtl-inherited" dir="rtl">
+        <BitTimePicker Label="Inherited" ShowCloseButton Culture="_en" />
+    </div>
+</E2ESection>
+
+@* ---------------------------------------------------------------- Base behaviours *@
+
+<E2ESection Id="visibility" Title="Visibility">
+    <BitTimePicker Label="Visibility" Visibility="_visibility" Culture="_en" />
+    <span id="visibility-after">After</span>
+    <button id="btn-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+</E2ESection>
+
+<E2ESection Id="attributes" Title="Id, AriaLabel, HtmlAttributes, InputHtmlAttributes, Name, TabIndex">
+    <BitTimePicker Id="tp-attrs"
+                   AriaLabel="Arrival time"
+                   Name="arrival"
+                   TabIndex="3"
+                   Culture="_en"
+                   HtmlAttributes="@(new Dictionary<string, object> { ["data-root"] = "root-value", ["title"] = "Root title" })"
+                   InputHtmlAttributes="@(new Dictionary<string, object> { ["data-input"] = "input-value", ["aria-disabled"] = "false" })"
+                   CalloutHtmlAttributes="@(new Dictionary<string, object> { ["data-callout"] = "callout-value" })" />
+</E2ESection>
+
+<E2ESection Id="continuous" Title="Press and hold">
+    <BitTimePicker Label="Hold" Standalone ContinuousSpinDelay="300" ContinuousSpinInterval="60" Culture="_en" @bind-Value="_continuous" />
+    <span id="continuous-value">@Show(_continuous)</span>
+    <button id="continuous-sync" type="button" @onclick="() => _syncs++">Sync</button>
+    <span id="continuous-syncs">@_syncs</span>
+</E2ESection>
+
+<E2ESection Id="continuous-bounded" Title="Press and hold against a bound">
+    <BitTimePicker Label="Hold bounded" Standalone MinTime="new(10, 0, 0)" MaxTime="new(10, 5, 0)" ContinuousSpinDelay="200" ContinuousSpinInterval="40" Culture="_en" @bind-Value="_continuousBounded" />
+    <span id="continuous-bounded-value">@Show(_continuousBounded)</span>
+</E2ESection>
+
+<E2ESection Id="paste" Title="Paste">
+    <BitTimePicker Label="Paste" Standalone ShowSeconds Culture="_en" @bind-Value="_paste" />
+    <span id="paste-value">@Show(_paste)</span>
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Inside a modal">
+    <button id="btn-open-modal" type="button" @onclick="() => _modalOpen = true">Open modal</button>
+    <span id="modal-open">@_modalOpen</span>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div id="modal-content" style="padding: 16px;">
+            <BitTimePicker Label="In a modal" Culture="_en" OnClose="() => _modalPickerCloses++" />
+            <span id="modal-picker-closes">@_modalPickerCloses</span>
+        </div>
+    </BitModal>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitTimePicker Label="@_lifecycleLabel" TimeFormat="_lifecycleFormat" ShowSeconds="_lifecycleSeconds" Culture="_en" @bind-Value="_lifecycle" />
+    }
+    <span id="lifecycle-value">@Show(_lifecycle)</span>
+    <button id="btn-toggle-mounted" type="button" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    <button id="btn-relabel" type="button" @onclick="@(() => _lifecycleLabel = "Relabelled")">Relabel</button>
+    <button id="btn-twelve" type="button" @onclick="() => _lifecycleFormat = BitTimeFormat.TwelveHours">12 hours</button>
+    <button id="btn-seconds" type="button" @onclick="() => _lifecycleSeconds = !_lifecycleSeconds">Toggle seconds</button>
+</E2ESection>
+
+<E2ESection Id="reduced-motion" Title="Reduced motion">
+    <BitTimePicker Label="Animated" Culture="_en" />
+    <div id="force-animation"><BitTimePicker Label="ForceAnimation" ForceAnimation Culture="_en" /></div>
+</E2ESection>
+
+<E2ESection Id="form-novalidate" Title="NoValidate">
+    <EditForm Model="_formModel4">
+        <BitTimePicker @bind-Value="_formModel4.Time" AllowTextInput NoValidate Culture="_en" />
+        <div id="form4-message"><ValidationMessage For="@(() => _formModel4.Time)" /></div>
+    </EditForm>
+    <span id="form4-value">@Show(_formModel4.Time)</span>
+</E2ESection>
+
+<E2EStatus Status="@_formStatus" />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+    private static readonly CultureInfo _fa = CultureInfo.GetCultureInfo("fa-IR");
+    private static readonly CultureInfo _ja = CultureInfo.GetCultureInfo("ja-JP");
+    private static readonly CultureInfo _de = CultureInfo.GetCultureInfo("de-DE");
+    private static readonly string _fa_culture_am = _fa.DateTimeFormat.AMDesignator;
+    private static readonly string _fa_culture_pm = _fa.DateTimeFormat.PMDesignator;
+
+    private static readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground, BitColor.TertiaryForeground,
+        BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly List<IBitComponentParams> _cascade =
+    [
+        new BitTimePickerParams
+        {
+            TimeFormat = BitTimeFormat.TwelveHours,
+            MinuteStep = 15,
+            ShowNowButton = true,
+            Culture = CultureInfo.GetCultureInfo("en-US"),
+            NowButtonText = "Cascaded now",
+            Placeholder = "Cascaded placeholder",
+            Color = BitColor.Success
+        }
+    ];
+
+    private TimeSpan? _basic;
+    private TimeSpan? _readOnly = new(10, 24, 0);
+    private bool _disabled = true;
+    private TimeSpan? _disabledValue = new(10, 24, 0);
+    private int _disabledClicks;
+    private int _disabledKeys;
+    private TimeSpan? _format24;
+    private TimeSpan? _format12;
+    private TimeSpan? _formatSeconds;
+    private TimeSpan? _format12Seconds;
+    private TimeSpan? _text;
+    private TimeSpan? _text12s;
+    private TimeSpan? _valueFormat = new(14, 5, 9);
+    private TimeSpan? _faValue = new(14, 30, 0);
+    private TimeSpan? _bound;
+    private TimeSpan? _starting;
+    private TimeSpan? _standalone;
+    private TimeSpan? _standalone12;
+    private TimeSpan? _standaloneReadOnly = new(10, 24, 0);
+    private TimeSpan? _rangeWorking;
+    private TimeSpan? _rangeMinutes;
+    private TimeSpan? _rangeAllowed;
+    private TimeSpan? _rangeSeconds;
+    private TimeSpan? _rangePast;
+    private TimeSpan? _rangeFuture;
+    private TimeSpan? _rangeTz;
+    private TimeSpan? _rangeText;
+    private TimeSpan? _stepsHour;
+    private TimeSpan? _stepsMinute;
+    private TimeSpan? _stepsSecond;
+    private TimeSpan? _stepsAnchor;
+    private TimeSpan? _actions;
+    private int _actionsClears;
+    private TimeSpan? _actionsOpen;
+    private TimeSpan? _fieldClear = new(14, 30, 0);
+    private int _fieldClears;
+    private TimeSpan? _actionsTexts;
+    private TimeSpan? _responsive;
+    private int _responsiveCloses;
+    private TimeSpan? _keyboard;
+    private TimeSpan? _keyboard12;
+    private int _keyboardTextOpens;
+    private int _keyboardTextCloses;
+    private TimeSpan? _autoAdvance;
+    private int _autoAdvanceFocus;
+    private TimeSpan? _noAutoAdvance;
+    private int _noAutoAdvanceFocus;
+    private TimeSpan? _wheel = new(10, 30, 0);
+    private TimeSpan? _wheelOff = new(10, 30, 0);
+    private TimeSpan? _wheelInvert = new(10, 30, 0);
+    private TimeSpan? _aria;
+    private TimeSpan? _events;
+    private int _opens, _closes, _clicks, _clears, _focuses, _focusIns, _focusOuts, _selects, _changes;
+    private TimeSpan? _lastSelect, _lastChange;
+    private BitTimePicker? _programmatic;
+    private BitTimePicker? _programmaticStandalone;
+    private bool _isOpen;
+    private int _progOpens, _progCloses;
+    private TimeSpan? _template;
+    private TimeSpan? _cascade1;
+    private TimeSpan? _cascade3;
+    private TimeSpan? _stylesValue;
+    private TimeSpan? _classesValue = new(9, 0, 0);
+    private BitVisibility _visibility;
+    private TimeSpan? _continuous = new(10, 0, 0);
+    private int _syncs;
+    private TimeSpan? _continuousBounded = new(10, 0, 0);
+    private TimeSpan? _paste;
+    private bool _modalOpen;
+    private int _modalPickerCloses;
+    private bool _mounted = true;
+    private string _lifecycleLabel = "Lifecycle";
+    private BitTimeFormat _lifecycleFormat = BitTimeFormat.TwentyFourHours;
+    private bool _lifecycleSeconds;
+    private TimeSpan? _lifecycle = new(15, 20, 10);
+
+    private readonly FormModel _formModel = new();
+    private readonly FormModel _formModel2 = new();
+    private readonly FormModel _formModel3 = new();
+    private readonly FormModel _formModel4 = new();
+    private string? _formStatus;
+    private string? _form3Status;
+    private int _submits;
+
+    private string Saved() => $"Saved {++_submits}";
+
+    private string Rejected() => $"Rejected {++_submits}";
+
+    private static string Show(TimeSpan? value) => value?.ToString(@"hh\:mm\:ss") ?? "null";
+
+    private sealed class FormModel
+    {
+        [Required(ErrorMessage = "The time is required.")]
+        public TimeSpan? Time { get; set; }
+    }
+}

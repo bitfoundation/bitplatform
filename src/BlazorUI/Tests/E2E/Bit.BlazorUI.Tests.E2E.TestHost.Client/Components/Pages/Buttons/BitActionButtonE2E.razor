@@ -1,0 +1,376 @@
+﻿@page "/e2e/action-button"
+
+<PageTitle>BitActionButton E2E</PageTitle>
+
+<h1>BitActionButton</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitActionButton Id="acb-basic" IconName="@BitIconName.AddFriend" OnClick="BasicClick">Create account</BitActionButton>
+    <BitActionButton Id="acb-text-only">Text only</BitActionButton>
+    <BitActionButton Id="acb-icon-only" IconOnly IconName="@BitIconName.Phone" AriaLabel="Call" />
+    <BitActionButton Id="acb-icon-only-text" IconOnly IconName="@BitIconName.Mail">Mail</BitActionButton>
+    <BitActionButton Id="acb-icon-url" IconUrl="@IconDataUrl">Image icon</BitActionButton>
+    <BitActionButton Id="acb-body" IconName="@BitIconName.Mail"><Body><b class="body-bold">Body</b> content</Body></BitActionButton>
+    <span id="basic-clicks">@_basicClicks</span>
+    <span id="basic-detail">@_basicDetail</span>
+</E2ESection>
+
+<E2ESection Id="icon-placement" Title="IconPlacement">
+    <BitActionButton Id="acb-start" IconPlacement="BitPlacement.Start" IconName="@BitIconName.AddFriend">Start</BitActionButton>
+    <BitActionButton Id="acb-end" IconPlacement="BitPlacement.End" IconName="@BitIconName.Forward">End</BitActionButton>
+    <BitActionButton Id="acb-ext-string" Icon="@("fa-solid fa-house")">House</BitActionButton>
+    <BitActionButton Id="acb-ext-css" Icon="@BitIconInfo.Css("fa-solid fa-heart")">Heart</BitActionButton>
+    <BitActionButton Id="acb-ext-fa" Icon="@BitIconInfo.Fa("solid rocket")">Rocket</BitActionButton>
+    <BitActionButton Id="acb-ext-bi" Icon="@BitIconInfo.Bi("gear-fill")">Gear</BitActionButton>
+</E2ESection>
+
+<E2ESection Id="href" Title="Href">
+    <BitActionButton Id="acb-href-blank" IconName="@BitIconName.Globe" Href="/" Target="_blank">New tab</BitActionButton>
+    <BitActionButton Id="acb-href-nofollow" Href="https://example.com" Target="_blank" Rel="BitLinkRels.NoFollow">nofollow</BitActionButton>
+    <BitActionButton Id="acb-href-noreferrer" Href="https://example.com" Target="_blank" Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer">noreferrer</BitActionButton>
+    <BitActionButton Id="acb-href-same-tab" Href="https://example.com">same tab</BitActionButton>
+    <BitActionButton Id="acb-href-handwritten" Href="https://example.com" Target="_blank" HtmlAttributes="@(new() { ["rel"] = "external" })">hand-written</BitActionButton>
+    <BitActionButton Id="acb-href-hash" Href="#href" Rel="BitLinkRels.NoFollow">hash only</BitActionButton>
+    <BitActionButton Id="acb-href-nav" Href="e2e/action-button#href" OnClick="() => _hrefClicks++">Navigate</BitActionButton>
+    <BitActionButton Id="acb-href-download" Href="@IconDataUrl" Download="icon.svg" IconName="@BitIconName.Download">Download</BitActionButton>
+    <BitActionButton Id="acb-href-disabled" Href="https://example.com" Disabled AllowDisabledFocus>Disabled link</BitActionButton>
+    <BitActionButton Id="acb-href-loading" Href="https://example.com" IsLoading>Loading link</BitActionButton>
+    <span id="href-clicks">@_hrefClicks</span>
+</E2ESection>
+
+<E2ESection Id="form" Title="ButtonType">
+    <EditForm Model="_formModel" OnValidSubmit="() => _validSubmits++" OnInvalidSubmit="() => _invalidSubmits++" novalidate>
+        <DataAnnotationsValidator />
+        <BitTextField Id="form-required" Label="Required" Required Immediate @bind-Value="_formModel.RequiredText" />
+        <ValidationMessage For="() => _formModel.RequiredText" />
+        <BitActionButton Id="form-default" IconName="@BitIconName.Send">Default type</BitActionButton>
+        <BitActionButton Id="form-submit" ButtonType="BitButtonType.Submit" IconName="@BitIconName.SendMirrored">Submit</BitActionButton>
+        <BitActionButton Id="form-reset" ButtonType="BitButtonType.Reset" IconName="@BitIconName.Reset" OnClick="() => _formModel = new()">Reset</BitActionButton>
+        <BitActionButton Id="form-button" ButtonType="BitButtonType.Button" IconName="@BitIconName.ButtonControl" OnClick="() => _formButtonClicks++">Button</BitActionButton>
+        <BitActionButton Id="form-loading" ButtonType="BitButtonType.Submit" IsLoading>Loading submit</BitActionButton>
+    </EditForm>
+    <span id="form-valid">@_validSubmits</span>
+    <span id="form-invalid">@_invalidSubmits</span>
+    <span id="form-button-clicks">@_formButtonClicks</span>
+    <span id="form-model">@_formModel.RequiredText</span>
+    <BitActionButton Id="acb-outside">Outside a form</BitActionButton>
+    <EditForm id="acb-ext-form" Model="_extModel" OnValidSubmit="() => _extSubmits++" novalidate>
+        <DataAnnotationsValidator />
+        <BitTextField Id="ext-required" Label="Required" Required Immediate @bind-Value="_extModel.RequiredText" />
+    </EditForm>
+    <BitActionButton Id="ext-submit" FormId="acb-ext-form" ButtonType="BitButtonType.Submit" IconName="@BitIconName.Send">External submit</BitActionButton>
+    <span id="ext-submits">@_extSubmits</span>
+</E2ESection>
+
+<E2ESection Id="full-width" Title="FullWidth &amp; NoWrap">
+    <div id="fw-container" style="width: 360px;">
+        <BitActionButton Id="acb-fw" FullWidth IconName="@BitIconName.Settings">Settings</BitActionButton>
+        <BitActionButton Id="acb-fw-end" FullWidth IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">Profile</BitActionButton>
+        <BitActionButton Id="acb-not-fw" IconName="@BitIconName.Settings">Not full width</BitActionButton>
+    </div>
+    <div style="width: 160px;">
+        <BitActionButton Id="acb-nowrap" FullWidth NoWrap IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">
+            A very long label that cannot possibly fit on one line here
+        </BitActionButton>
+        <BitActionButton Id="acb-wrap" FullWidth IconPlacement="BitPlacement.End" IconName="@BitIconName.ChevronRight">
+            A very long label that cannot possibly fit on one line here
+        </BitActionButton>
+    </div>
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading">
+    <BitActionButton Id="acb-loading" IsLoading="_isLoading" IconName="@BitIconName.Save" OnClick="() => _loadingClicks++">Save changes</BitActionButton>
+    <BitActionButton Id="acb-loading-label" IsLoading="_isLoading" LoadingLabel="Saving..." IconName="@BitIconName.Save">Save</BitActionButton>
+    <BitActionButton Id="acb-loading-icon-only" IsLoading="_isLoading" LoadingLabel="Saving..." IconOnly AriaLabel="Save" IconName="@BitIconName.Save" />
+    <BitActionButton Id="btn-toggle-loading" OnClick="() => _isLoading = !_isLoading">Toggle loading</BitActionButton>
+    <span id="loading-clicks">@_loadingClicks</span>
+    <br />
+    <BitActionButton Id="acb-auto" AutoLoading OnClick="AutoClick" IconName="@BitIconName.Save">AutoLoading</BitActionButton>
+    <BitActionButton Id="btn-release-auto" OnClick="() => _autoTcs.TrySetResult()">Release</BitActionButton>
+    <BitActionButton Id="btn-cancel-auto" OnClick="() => _autoTcs.TrySetCanceled()">Cancel</BitActionButton>
+    <span id="auto-clicks">@_autoClicks</span>
+    <br />
+    <BitActionButton Id="acb-reclickable" AutoLoading Reclickable OnClick="ReclickableClick" IconName="@BitIconName.RepeatAll">Reclickable</BitActionButton>
+    <BitActionButton Id="btn-release-reclick" OnClick="() => _reclickTcs.TrySetResult()">Release</BitActionButton>
+    <span id="reclick-clicks">@_reclickClicks</span>
+    <br />
+    <BitActionButton Id="acb-delay" AutoLoading LoadingDelay="500" OnClick="DelayClick" IconName="@BitIconName.Save">LoadingDelay</BitActionButton>
+    <BitActionButton Id="btn-release-delay" OnClick="() => _delayTcs.TrySetResult()">Release</BitActionButton>
+    <BitActionButton Id="acb-delay-fast" AutoLoading LoadingDelay="1500" OnClick="FastClick" IconName="@BitIconName.Save">Fast</BitActionButton>
+    <span id="delay-fast-done">@_fastDone</span>
+    <br />
+    <BitActionButton Id="acb-bound" AutoLoading @bind-IsLoading="_boundLoading" OnClick="BoundClick">Bound</BitActionButton>
+    <BitActionButton Id="btn-release-bound" OnClick="() => _boundTcs.TrySetResult()">Release</BitActionButton>
+    <span id="bound-loading">@_boundLoading</span>
+    <br />
+    <BitActionButton Id="acb-template" IsLoading="_templateLoading" IconName="@BitIconName.Download">
+        <Body>Download</Body>
+        <LoadingTemplate><span class="tpl-loading">Downloading...</span></LoadingTemplate>
+    </BitActionButton>
+    <BitActionButton Id="btn-toggle-template" OnClick="() => _templateLoading = !_templateLoading">Toggle template loading</BitActionButton>
+</E2ESection>
+
+<E2ESection Id="underlined" Title="Underlined">
+    <BitActionButton Id="acb-underlined" Underlined IconName="@BitIconName.Link">Underlined</BitActionButton>
+    <BitActionButton Id="acb-not-underlined" IconName="@BitIconName.Link">Not underlined</BitActionButton>
+    <BitActionButton Id="acb-underlined-loading" Underlined IsLoading LoadingLabel="Loading...">Underlined</BitActionButton>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitActionButton Id="evt-click" OnClick="() => _eventClicks++" IconName="@BitIconName.TouchPointer">Click me</BitActionButton>
+    <span id="evt-clicks">@_eventClicks</span>
+    <div id="evt-parent" @onclick="() => _parentClicks++">
+        <BitActionButton Id="evt-bubble" OnClick="() => _childClicks++" IconName="@BitIconName.Edit">Bubbles</BitActionButton>
+        <BitActionButton Id="evt-stop" StopPropagation OnClick="() => _childClicks++" IconName="@BitIconName.Edit">Stops</BitActionButton>
+    </div>
+    <span id="evt-child-clicks">@_childClicks</span>
+    <span id="evt-parent-clicks">@_parentClicks</span>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitActionButton Id="a11y-title" Title="Save your changes" IconName="@BitIconName.Save">Hover me</BitActionButton>
+    <BitActionButton Id="a11y-aria-label" AriaLabel="Delete the item" IconName="@BitIconName.Delete">X</BitActionButton>
+    <span id="a11y-extra">Author description</span>
+    <BitActionButton Id="a11y-desc" AriaDescription="PDF, 2 megabytes" aria-describedby="a11y-extra" IconName="@BitIconName.Download">Download</BitActionButton>
+    <BitActionButton Id="a11y-hidden" AriaHidden>Hidden</BitActionButton>
+    <BitActionButton Id="a11y-tabindex" TabIndex="-1">Not tabbable</BitActionButton>
+    <BitActionButton Id="btn-focus" OnClick="async () => await _focusTarget.FocusAsync()">Focus the next one</BitActionButton>
+    <BitActionButton Id="a11y-focus-target" @ref="_focusTarget" IconName="@BitIconName.Flag" Color="BitColor.Success">Focus lands here</BitActionButton>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <input id="dis-before" aria-label="before" />
+    <BitActionButton Id="dis-native" Disabled IconName="@BitIconName.Blocked" OnClick="() => _disabledClicks++"
+                     @onmousedown="() => _disabledPageEvents++">Disabled</BitActionButton>
+    <BitActionButton Id="dis-focusable" Disabled AllowDisabledFocus IconName="@BitIconName.Blocked" OnClick="() => _disabledClicks++"
+                     @onmousedown="() => _disabledPageEvents++" @onkeydown="() => _disabledPageEvents++">Disabled, focusable</BitActionButton>
+    <input id="dis-after" aria-label="after" />
+    <span id="dis-clicks">@_disabledClicks</span>
+    <span id="dis-page-events">@_disabledPageEvents</span>
+    <br />
+    <BitActionButton Id="dis-toggle" Disabled="_toggleDisabled" IconName="@BitIconName.AddFriend" OnClick="() => _toggleClicks++"
+                     @onmousedown="() => _togglePageEvents++">Toggled</BitActionButton>
+    <BitActionButton Id="btn-toggle-disabled" OnClick="() => _toggleDisabled = !_toggleDisabled">Toggle disabled</BitActionButton>
+    <span id="dis-toggle-clicks">@_toggleClicks</span>
+    <span id="dis-toggle-page-events">@_togglePageEvents</span>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="@_params">
+        <BitActionButton Id="params-inherit" IconName="@BitIconName.Documentation" Href="/">Docs</BitActionButton>
+        <BitActionButton Id="params-own" Underlined="false" Color="BitColor.Error" IconName="@BitIconName.Info" Href="/">Own values</BitActionButton>
+    </BitParams>
+    <BitActionButton Id="params-outside" IconName="@BitIconName.Documentation" Href="/">Outside</BitActionButton>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <BitActionButton Id="color-default" IconName="@BitIconName.ColorSolid">Default</BitActionButton>
+    @foreach (var color in Enum.GetValues<BitColor>())
+    {
+        <BitActionButton Id="@($"color-{color}")" Color="color" IconName="@BitIconName.ColorSolid">@color</BitActionButton>
+        <BitActionButton Id="@($"color-dis-{color}")" Color="color" Disabled IconName="@BitIconName.ColorSolid">@color</BitActionButton>
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitActionButton Id="size-default" IconName="@BitIconName.Emoji2">Default</BitActionButton>
+    @foreach (var size in Enum.GetValues<BitSize>())
+    {
+        <BitActionButton Id="@($"size-{size}")" Size="size" IconName="@BitIconName.Emoji2">@size</BitActionButton>
+        <BitActionButton Id="@($"size-icon-{size}")" Size="size" IconOnly AriaLabel="Emoji" IconName="@BitIconName.Emoji2" />
+    }
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style &amp; Class">
+    <BitActionButton Id="sc-style" Style="background-color: rgb(1, 2, 3);">Styled</BitActionButton>
+    <BitActionButton Id="sc-class" Class="e2e-custom-class">Classed</BitActionButton>
+    <BitActionButton Id="sc-styles" IconName="@BitIconName.Emoji"
+                     Styles="@(new() { Root = "outline: 3px dotted rgb(9, 9, 9);", Icon = "color: rgb(255, 0, 0);", Content = "color: rgb(0, 128, 0);" })">
+        Styles
+    </BitActionButton>
+    <BitActionButton Id="sc-styles-loading" IsLoading LoadingLabel="Wait..."
+                     Styles="@(new() { Spinner = "border-top-color: rgb(218, 165, 32);", LoadingLabel = "color: rgb(255, 99, 71);" })">
+        Loading
+    </BitActionButton>
+    <BitActionButton Id="sc-classes" IconName="@BitIconName.Emoji"
+                     Classes="@(new() { Root = "c-root", Icon = "c-icon", Content = "c-content" })">
+        Classes
+    </BitActionButton>
+    <BitActionButton Id="sc-classes-loading" IsLoading LoadingLabel="Wait..."
+                     Classes="@(new() { Spinner = "c-spinner", LoadingLabel = "c-label" })">
+        Loading
+    </BitActionButton>
+    <BitActionButton Id="sc-attrs" data-e2e="custom-attribute">Attributes</BitActionButton>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="vars-ancestor" style="--bit-ActionButton-color: rgb(10, 20, 30); --bit-ActionButton-icon-color: rgb(200, 0, 0); --bit-ActionButton-background: rgb(240, 240, 200); --bit-ActionButton-radius: 7px; --bit-ActionButton-min-height: 50px; --bit-ActionButton-padding: 4px 20px; --bit-ActionButton-gap: 15px; --bit-ActionButton-font-size: 19px; --bit-ActionButton-icon-size: 26px; --bit-ActionButton-hover-color: rgb(0, 128, 0); --bit-ActionButton-hover-background: rgb(255, 255, 0); --bit-ActionButton-disabled-color: rgb(120, 120, 120);">
+        <BitActionButton Id="vars-default" IconName="@BitIconName.Emoji">Restyled</BitActionButton>
+        <BitActionButton Id="vars-color" Color="BitColor.Error" IconName="@BitIconName.Emoji">Explicit color</BitActionButton>
+        <BitActionButton Id="vars-size" Size="BitSize.Small" IconName="@BitIconName.Emoji">Explicit size</BitActionButton>
+        <BitActionButton Id="vars-disabled" Disabled IconName="@BitIconName.Emoji">Disabled</BitActionButton>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitActionButton Id="rtl-ltr" IconName="@BitIconName.AddFriend">Left to right</BitActionButton>
+    <BitActionButton Id="rtl-explicit" Dir="BitDir.Rtl" IconName="@BitIconName.AddFriend">ایجاد حساب</BitActionButton>
+    <BitActionButton Id="rtl-explicit-end" Dir="BitDir.Rtl" IconPlacement="BitPlacement.End" IconName="@BitIconName.AddFriend">ایجاد حساب</BitActionButton>
+    <div dir="rtl">
+        <BitActionButton Id="rtl-inherited" IconName="@BitIconName.AddFriend">ایجاد حساب</BitActionButton>
+    </div>
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility">
+    <BitActionButton Id="vis-btn" Visibility="_visibility">Visibility</BitActionButton>
+    <BitActionButton Id="btn-vis-visible" OnClick="() => _visibility = BitVisibility.Visible">Visible</BitActionButton>
+    <BitActionButton Id="btn-vis-hidden" OnClick="() => _visibility = BitVisibility.Hidden">Hidden</BitActionButton>
+    <BitActionButton Id="btn-vis-collapsed" OnClick="() => _visibility = BitVisibility.Collapsed">Collapsed</BitActionButton>
+</E2ESection>
+
+<E2ESection Id="rerender" Title="Re-render">
+    <BitActionButton Id="rerender-btn" Color="_rerenderColor" Size="_rerenderSize" IconName="@_rerenderIcon"
+                     Underlined="_rerenderUnderlined" IconPlacement="_rerenderPlacement">@_rerenderText</BitActionButton>
+    <BitActionButton Id="btn-rerender" OnClick="ChangeRerender">Change parameters</BitActionButton>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitActionButton Id="mounted-btn" AutoLoading LoadingDelay="300" OnClick="MountedClick">Mounted</BitActionButton>
+    }
+    <BitActionButton Id="btn-unmount" OnClick="() => _mounted = !_mounted">Toggle mount</BitActionButton>
+    <span id="mounted-done">@_mountedDone</span>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <BitActionButton Id="motion-default" IconName="@BitIconName.Emoji">Default</BitActionButton>
+    <BitActionButton Id="motion-forced" ForceAnimation IconName="@BitIconName.Emoji">ForceAnimation</BitActionButton>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string IconDataUrl = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><rect width='10' height='10' fill='red'/></svg>";
+
+    private int _basicClicks;
+    private string _basicDetail = "none";
+
+    private int _hrefClicks;
+
+    private ActionFormModel _formModel = new();
+    private int _validSubmits;
+    private int _invalidSubmits;
+    private int _formButtonClicks;
+    private readonly ActionFormModel _extModel = new();
+    private int _extSubmits;
+
+    private bool _isLoading;
+    private int _loadingClicks;
+    private int _autoClicks;
+    private TaskCompletionSource _autoTcs = new();
+    private int _reclickClicks;
+    private TaskCompletionSource _reclickTcs = new();
+    private TaskCompletionSource _delayTcs = new();
+    private int _fastDone;
+    private bool _boundLoading;
+    private TaskCompletionSource _boundTcs = new();
+    private bool _templateLoading;
+
+    private int _eventClicks;
+    private int _childClicks;
+    private int _parentClicks;
+
+    private BitActionButton _focusTarget = default!;
+
+    private int _disabledClicks;
+    private int _disabledPageEvents;
+    private bool _toggleDisabled = true;
+    private int _toggleClicks;
+    private int _togglePageEvents;
+
+    private readonly BitActionButtonParams[] _params =
+    [
+        new()
+        {
+            Underlined = true,
+            IconPlacement = BitPlacement.End,
+            Target = "_blank",
+            Color = BitColor.Tertiary,
+            Size = BitSize.Large,
+        }
+    ];
+
+    private BitVisibility _visibility;
+
+    private BitColor? _rerenderColor;
+    private BitSize? _rerenderSize;
+    private string? _rerenderIcon;
+    private bool _rerenderUnderlined;
+    private BitPlacement? _rerenderPlacement;
+    private string _rerenderText = "Before";
+
+    private bool _mounted = true;
+    private int _mountedDone;
+
+    private void BasicClick(MouseEventArgs e)
+    {
+        _basicClicks++;
+        _basicDetail = $"{e.Type}:{e.Button}:{e.Detail}";
+    }
+
+    private async Task AutoClick()
+    {
+        _autoClicks++;
+        _autoTcs = new();
+        await _autoTcs.Task;
+    }
+
+    private Task ReclickableClick()
+    {
+        if (_reclickClicks == 0 || _reclickTcs.Task.IsCompleted) _reclickTcs = new();
+        _reclickClicks++;
+        return _reclickTcs.Task;
+    }
+
+    private async Task DelayClick()
+    {
+        _delayTcs = new();
+        await _delayTcs.Task;
+    }
+
+    private async Task FastClick()
+    {
+        await Task.Delay(150);
+        _fastDone++;
+    }
+
+    private async Task BoundClick()
+    {
+        _boundTcs = new();
+        await _boundTcs.Task;
+    }
+
+    private async Task MountedClick()
+    {
+        await Task.Delay(800);
+        _mountedDone++;
+        StateHasChanged();
+    }
+
+    private void ChangeRerender()
+    {
+        _rerenderColor = BitColor.Error;
+        _rerenderSize = BitSize.Large;
+        _rerenderIcon = BitIconName.Emoji;
+        _rerenderUnderlined = true;
+        _rerenderPlacement = BitPlacement.End;
+        _rerenderText = "After";
+    }
+
+    private sealed class ActionFormModel
+    {
+        [Required]
+        public string? RequiredText { get; set; }
+    }
+}

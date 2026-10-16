@@ -13,18 +13,47 @@ public abstract class BitPdfFunction
     /// <summary>Evaluates the function for the given inputs.</summary>
     public abstract double[] Eval(double[] input);
 
+    // A real function nests a few levels at most (a stitching function of stitching
+    // functions); these bound a hostile chain, a cycle (a stitching function listing
+    // itself in /Functions) and a shared sub-function fanned out at every level -
+    // see BitPdfResolveScope.
+    private const int MaxNesting = 16;
+    private const int MaxNodes = 1024;
+
     /// <summary>Builds a function from a dictionary/stream object, or <c>null</c> if unsupported.</summary>
     public static BitPdfFunction? Create(object? obj, IBitPdfXRef xref)
+        => Create(obj, xref, new BitPdfResolveScope(MaxNesting, MaxNodes));
+
+    /// <summary>
+    /// Builds a function within <paramref name="scope"/>, the resolution it is nested in;
+    /// <c>null</c> (as for an unsupported function) when the scope refuses it.
+    /// </summary>
+    internal static BitPdfFunction? Create(object? obj, IBitPdfXRef xref, BitPdfResolveScope scope)
     {
         obj = xref.FetchIfRef(obj);
+        if (obj is null || !scope.TryEnter(obj))
+        {
+            return null;
+        }
+        try
+        {
+            return CreateCore(obj, xref, scope);
+        }
+        finally
+        {
+            scope.Exit(obj);
+        }
+    }
 
+    private static BitPdfFunction? CreateCore(object obj, IBitPdfXRef xref, BitPdfResolveScope scope)
+    {
         // An array of functions evaluates each and concatenates the outputs.
         if (obj is List<object?> array)
         {
             var parts = new List<BitPdfFunction>();
             foreach (var item in array)
             {
-                var fn = Create(item, xref);
+                var fn = Create(item, xref, scope);
                 if (fn is not null)
                 {
                     parts.Add(fn);
@@ -44,7 +73,7 @@ public abstract class BitPdfFunction
         {
             0 when obj is BitPdfBaseStream stream => BitPdfSampledFunction.Build(stream, xref),
             2 => BitPdfExponentialFunction.Build(dict, xref),
-            3 => BitPdfStitchingFunction.Build(dict, xref),
+            3 => BitPdfStitchingFunction.Build(dict, xref, scope),
             4 when obj is BitPdfBaseStream calc => BitPdfPostScriptFunction.Build(calc),
             _ => null,
         };

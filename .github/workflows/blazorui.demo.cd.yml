@@ -299,7 +299,7 @@ jobs:
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
     if: inputs.ios
-    runs-on: macOS-26
+    runs-on: xcode-27
     permissions:
       contents: read
       actions: read
@@ -320,7 +320,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
       with:
-        xcode-version: '26.6'
+        xcode-version: '27.0'
 
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:

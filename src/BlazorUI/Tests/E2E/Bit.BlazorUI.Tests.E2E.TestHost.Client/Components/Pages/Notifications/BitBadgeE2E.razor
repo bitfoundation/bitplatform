@@ -1,0 +1,321 @@
+﻿@page "/e2e/badge"
+
+<PageTitle>BitBadge E2E</PageTitle>
+
+@* Every anchor a badge overlays is a plain box of a fixed size, so a test can measure where the badge lands
+   around it without a glyph's metrics in the way. *@
+<style>
+    .bdg-anchor { display: block; width: 80px; height: 40px; background: #ddd; }
+    .bdg-grid { display: flex; flex-wrap: wrap; gap: 48px; padding: 24px; }
+    .bdg-ext-icon::before { content: "*"; }
+</style>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitBadge Id="basic-badge" Content="_count">
+        <span class="bdg-anchor" id="basic-anchor"></span>
+    </BitBadge>
+    <button id="btn-inc" @onclick="() => _count++">Add one</button>
+    <button id="btn-dec" @onclick="() => _count--">Remove one</button>
+    <span id="count">@_count</span>
+</E2ESection>
+
+<E2ESection Id="variant" Title="Variant">
+    <BitBadge Id="var-fill" Content="84" Variant="BitVariant.Fill"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="var-outline" Content="84" Variant="BitVariant.Outline"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="var-text" Content="84" Variant="BitVariant.Text"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="var-default" Content="84"><span class="bdg-anchor"></span></BitBadge>
+</E2ESection>
+
+<E2ESection Id="variant-disabled" Title="Variant disabled">
+    <BitBadge Id="dis-fill" Content="84" Variant="BitVariant.Fill" Disabled><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="dis-outline" Content="84" Variant="BitVariant.Outline" Disabled><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="dis-text" Content="84" Variant="BitVariant.Text" Disabled><span class="bdg-anchor"></span></BitBadge>
+</E2ESection>
+
+<E2ESection Id="shape" Title="Shape">
+    <BitBadge Id="shape-default" Content="@("New")"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="shape-pill" Content="@("New")" Shape="BitShape.Pill"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="shape-rounded" Content="@("New")" Shape="BitShape.Rounded"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="shape-square" Content="@("New")" Shape="BitShape.Square"><span class="bdg-anchor"></span></BitBadge>
+</E2ESection>
+
+<E2ESection Id="content" Title="Content">
+    <BitBadge Id="content-string" Content="@("Text")"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="content-icon" IconName="@BitIconName.Ringer"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="content-icon-text" Content="@("Sent")" IconName="@BitIconName.CheckMark"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="content-reversed" Content="@("Sent")" IconName="@BitIconName.CheckMark" Reversed><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="content-template" Content="5">
+        <ContentTemplate><b id="tpl-bold">99</b><span>%</span></ContentTemplate>
+        <ChildContent><span class="bdg-anchor"></span></ChildContent>
+    </BitBadge>
+    <BitBadge Id="content-object" Content="_guidLike"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="content-decimal" Content="2.5m"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="content-nothing"><span class="bdg-anchor" id="nothing-anchor"></span></BitBadge>
+</E2ESection>
+
+<E2ESection Id="max" Title="Max, ShowZero and Hidden">
+    <BitBadge Id="max-under" Max="63" Content="60"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="max-over" Max="63" Content="100"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="max-long" Max="99" Content="12345L"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="max-equal" Max="9" Content="9"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="zero-shown" Content="_zeroCount"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="zero-hidden" Content="_zeroCount" ShowZero="false"><span class="bdg-anchor" id="zero-hidden-anchor"></span></BitBadge>
+    <BitBadge Id="zero-icon" Content="_zeroCount" ShowZero="false" IconName="@BitIconName.Ringer"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="hidden" Content="5" Hidden="_hidden"><span class="bdg-anchor" id="hidden-anchor"></span></BitBadge>
+    <button id="btn-zero-dec" @onclick="() => _zeroCount--">Remove one</button>
+    <button id="btn-zero-inc" @onclick="() => _zeroCount++">Add one</button>
+    <button id="btn-toggle-hidden" @onclick="() => _hidden = !_hidden">Toggle hidden</button>
+    <span id="zero-count">@_zeroCount</span>
+</E2ESection>
+
+<E2ESection Id="dot" Title="Dot">
+    <BitBadge Id="dot-badge" Dot Content="7" Description="New mail"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="dot-on-button" Dot Description="Updates available"><button id="dot-child-btn" @onclick="() => _dotChildClicks++">Updates</button></BitBadge>
+    <span id="dot-child-clicks">@_dotChildClicks</span>
+</E2ESection>
+
+<E2ESection Id="position" Title="Position">
+    <div class="bdg-grid">
+        @foreach (var position in _positions)
+        {
+            <BitBadge Id="@($"pos-{position}")" Content="6" Position="position"><span class="bdg-anchor"></span></BitBadge>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="position-rtl" Title="Position in RTL">
+    <div class="bdg-grid">
+        @foreach (var position in _positions)
+        {
+            <BitBadge Id="@($"rtl-pos-{position}")" Dir="BitDir.Rtl" Content="6" Position="position"><span class="bdg-anchor"></span></BitBadge>
+        }
+    </div>
+</E2ESection>
+
+<E2ESection Id="position-inherited-rtl" Title="Position under an ancestor dir=rtl">
+    <div dir="rtl" class="bdg-grid">
+        <BitBadge Id="inh-ten" Content="6" Position="BitPosition.TopEnd"><span class="bdg-anchor"></span></BitBadge>
+        <BitBadge Id="inh-tst" Content="6" Position="BitPosition.TopStart"><span class="bdg-anchor"></span></BitBadge>
+        <BitBadge Id="inh-trg" Content="6" Position="BitPosition.TopRight"><span class="bdg-anchor"></span></BitBadge>
+        <BitBadge Id="inh-rvs" Content="@("Sent")" IconName="@BitIconName.CheckMark"><span class="bdg-anchor"></span></BitBadge>
+    </div>
+</E2ESection>
+
+<E2ESection Id="position-runtime" Title="Position changed at runtime">
+    <div class="bdg-grid">
+        <BitBadge Id="pos-runtime" Content="6" Position="_runtimePosition"><span class="bdg-anchor"></span></BitBadge>
+    </div>
+    <button id="btn-pos-bottom-left" @onclick="() => _runtimePosition = BitPosition.BottomLeft">Bottom left</button>
+</E2ESection>
+
+<E2ESection Id="overlap" Title="Overlap and Offset">
+    <div class="bdg-grid">
+        <BitBadge Id="ovl-none" Content="8"><span class="bdg-anchor"></span></BitBadge>
+        <BitBadge Id="ovl-on" Content="8" Overlap><span class="bdg-anchor"></span></BitBadge>
+        <BitBadge Id="ofs" Content="8" OffsetX="-8px" OffsetY="8px"><span class="bdg-anchor"></span></BitBadge>
+    </div>
+</E2ESection>
+
+<E2ESection Id="bordered" Title="Bordered and Pulse">
+    <BitBadge Id="plain" Dot Description="Online"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="bordered-badge" Dot Bordered Description="Online"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="pulse-badge" Dot Pulse Description="Syncing"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="pulse-forced" Dot Pulse ForceAnimation Description="Syncing"><span class="bdg-anchor"></span></BitBadge>
+</E2ESection>
+
+<E2ESection Id="standalone" Title="Standalone and Inline">
+    <BitBadge Id="sa-draft" Content="@("Draft")" />
+    <BitBadge Id="sa-capped" Content="12345" Max="999" />
+    <BitBadge Id="sa-title" Content="1234" Max="999" Title="1,234 downloads this week" />
+    <BitBadge Id="sa-dot" Dot Description="Degraded" />
+    <div>
+        <BitBadge Id="inl-end" Inline Content="24"><span class="bdg-anchor" id="inl-end-child"></span></BitBadge>
+        <BitBadge Id="inl-start" Inline Dot Position="BitPosition.CenterStart" Description="Operational"><span class="bdg-anchor" id="inl-start-child"></span></BitBadge>
+        <BitBadge Id="inl-rtl" Inline Content="24" Dir="BitDir.Rtl"><span class="bdg-anchor" id="inl-rtl-child"></span></BitBadge>
+        <BitBadge Id="inl-rtl-left" Inline Content="24" Dir="BitDir.Rtl" Position="BitPosition.CenterLeft"><span class="bdg-anchor" id="inl-rtl-left-child"></span></BitBadge>
+    </div>
+</E2ESection>
+
+<E2ESection Id="click" Title="OnClick and Href">
+    <div id="click-parent" @onclick="() => _parentClicks++">
+        <BitBadge Id="click-badge" Content="_clicks" OnClick="HandleClick"><span class="bdg-anchor" id="click-anchor"></span></BitBadge>
+        <BitBadge Id="click-disabled" Content="_clicks" OnClick="HandleClick" Disabled="_clickDisabled"><span class="bdg-anchor"></span></BitBadge>
+        <BitBadge Id="click-plain" Content="3"><span class="bdg-anchor"></span></BitBadge>
+        <BitBadge Id="click-tabindex" Content="1" OnClick="HandleClick" TabIndex="-1" />
+        <BitBadge Id="click-disabled-standalone" Content="@("Off")" OnClick="HandleClick" Disabled />
+    </div>
+    <BitBadge Id="href-badge" Content="@("Docs")" Href="/e2e/badge#href-target" />
+    <BitBadge Id="href-blank" Content="@("Docs")" Href="https://example.invalid/docs" Target="_blank" />
+    <BitBadge Id="href-rel" Content="@("Source")" Href="https://example.invalid/src" Target="_blank" Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" />
+    <BitBadge Id="href-nofollow" Content="@("Ext")" Href="https://example.invalid/ext" Target="_blank" Rel="BitLinkRels.NoFollow" />
+    <BitBadge Id="href-disabled" Content="@("Docs")" Href="#href-target" Target="_blank" Disabled />
+    <BitBadge Id="href-disabled-overlay" Content="@("Docs")" Href="#href-target" Disabled><span class="bdg-anchor"></span></BitBadge>
+    <span id="href-target">target</span>
+    <span id="clicks">@_clicks</span>
+    <span id="parent-clicks">@_parentClicks</span>
+    <span id="last-click-button">@_lastButton</span>
+    <button id="btn-toggle-click-disabled" @onclick="() => _clickDisabled = !_clickDisabled">Toggle disabled</button>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitBadge Id="a11y-live" Content="_unread" Description="@($"{_unread} unread messages")" Live><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="a11y-live-count" Content="_unread" Live ShowZero="false"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="a11y-dot" Dot Description="Online"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="a11y-link" Dot Href="#a11y" AriaLabel="Alerts" Description="3 unread"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="a11y-decorative" Content="_unread" Decorative><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="a11y-label-dot" Dot AriaLabel="Recording"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="a11y-label-role" Content="4" AriaLabel="4 new" HtmlAttributes="@(new() { ["role"] = "img" })"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="a11y-label-count" Content="4" AriaLabel="Messages"><span class="bdg-anchor"></span></BitBadge>
+    <button id="btn-receive" @onclick="() => _unread++">Receive</button>
+    <button id="btn-read-all" @onclick="() => _unread = 0">Read all</button>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <span id="cv-colors" style="--bit-Badge-background: rgb(102, 51, 153); --bit-Badge-color: rgb(255, 255, 255); --bit-Badge-border-color: rgb(0, 128, 0);">
+        <BitBadge Id="cv-custom" Content="@("Custom")" />
+        <BitBadge Id="cv-explicit" Content="@("Error")" Color="BitColor.Error" />
+        <BitBadge Id="cv-disabled" Content="@("Off")" Disabled />
+    </span>
+    <span style="--bit-Badge-height: 32px; --bit-Badge-padding: 0px 16px; --bit-Badge-radius: 8px; --bit-Badge-font-weight: 400; --bit-Badge-font-size: 18px;">
+        <BitBadge Id="cv-size" Content="@("Tall")" />
+        <BitBadge Id="cv-size-explicit" Content="@("Small")" Size="BitSize.Small" Shape="BitShape.Square" />
+    </span>
+    <span style="--bit-Badge-dot-size: 12px; --bit-Badge-pulse-color: rgb(220, 20, 60); --bit-Badge-ring-color: rgb(255, 165, 0); --bit-Badge-ring-width: 3px;">
+        <BitBadge Id="cv-dot" Dot Pulse Bordered Description="Recording"><span class="bdg-anchor"></span></BitBadge>
+    </span>
+    <span style="--bit-Badge-outline-border-color: rgb(255, 0, 0);">
+        <BitBadge Id="cv-twin-outline" Content="1" Variant="BitVariant.Outline" />
+        <BitBadge Id="cv-twin-fill" Content="1" Variant="BitVariant.Fill" />
+    </span>
+    <span style="--bit-Badge-inset: 0px; --bit-Badge-z-index: 7; --bit-Badge-gap: 10px;">
+        <BitBadge Id="cv-inset" Content="4" IconName="@BitIconName.Ringer"><span class="bdg-anchor"></span></BitBadge>
+    </span>
+    <span style="--bit-Badge-border-width: 3px; --bit-Badge-overlap-inset: 20px;">
+        <BitBadge Id="cv-border" Content="1" Overlap Variant="BitVariant.Outline"><span class="bdg-anchor"></span></BitBadge>
+    </span>
+    <span style="--bit-Badge-inline-gap: 20px;">
+        <BitBadge Id="cv-inline-gap" Inline Content="4"><span class="bdg-anchor" id="cv-inline-gap-child"></span></BitBadge>
+    </span>
+    <span style="--bit-Badge-hover-background: rgb(0, 0, 255); --bit-Badge-active-background: rgb(0, 255, 0); --bit-Badge-focus-color: rgb(255, 0, 255);">
+        <BitBadge Id="cv-hover" Content="1" OnClick="HandleClick" />
+    </span>
+</E2ESection>
+
+<E2ESection Id="cascade" Title="Cascading parameters">
+    <BitParams Parameters="@_badgeParams">
+        <BitBadge Id="cas-1" Content="4"><span class="bdg-anchor"></span></BitBadge>
+        <BitBadge Id="cas-2" Content="120"><span class="bdg-anchor"></span></BitBadge>
+        <BitBadge Id="cas-3" Content="7" Variant="BitVariant.Fill"><span class="bdg-anchor"></span></BitBadge>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var color in _colors)
+    {
+        <BitBadge Id="@($"clr-{color}")" Content="84" Color="color" />
+        <BitBadge Id="@($"clr-otl-{color}")" Content="84" Color="color" Variant="BitVariant.Outline" />
+        <BitBadge Id="@($"clr-txt-{color}")" Content="84" Color="color" Variant="BitVariant.Text" />
+    }
+    <BitBadge Id="clr-runtime" Content="84" Color="_runtimeColor" />
+    <button id="btn-color-error" @onclick="() => _runtimeColor = BitColor.Error">Error</button>
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External Icons">
+    <BitBadge Id="ext-css" Content="4" Icon="@BitIconInfo.Css("bdg-ext-icon custom-set")" />
+    <BitBadge Id="ext-fa" Content="5" Icon="@BitIconInfo.Fa("solid bell")" />
+    <BitBadge Id="ext-bi" Icon="@BitIconInfo.Bi("gear-fill")" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    @foreach (var size in _sizes)
+    {
+        <BitBadge Id="@($"size-{size}")" Content="84" Size="size"><span class="bdg-anchor"></span></BitBadge>
+        <BitBadge Id="@($"size-dot-{size}")" Dot Size="size" Description="New"><span class="bdg-anchor"></span></BitBadge>
+    }
+    <BitBadge Id="size-one-digit" Content="1" Size="BitSize.Large"><span class="bdg-anchor"></span></BitBadge>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitBadge Id="sc-style" Content="84" Style="outline: 1px dashed rgb(30, 144, 255); margin-left: 12px;"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="sc-class" Content="84" Class="custom-class"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="sc-styles" Content="84" IconName="@BitIconName.Info" Description="desc" Live
+              Styles="@(new() { Root = "margin-left: 13px;", BadgeWrapper = "opacity: 0.9;", Badge = "border-radius: 0px;", Icon = "color: rgb(255, 99, 71);", Content = "letter-spacing: 2px;", Description = "font-size: 3px;", LiveRegion = "font-size: 4px;" })">
+        <span class="bdg-anchor"></span>
+    </BitBadge>
+    <BitBadge Id="sc-classes" Content="84" IconName="@BitIconName.Info" Description="desc" Live
+              Classes="@(new() { Root = "custom-root", BadgeWrapper = "custom-wrapper", Badge = "custom-badge", Icon = "custom-icon", Content = "custom-content", Description = "custom-description", LiveRegion = "custom-live" })">
+        <span class="bdg-anchor"></span>
+    </BitBadge>
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters">
+    <BitBadge Id="vis-hidden" Content="1" Visibility="BitVisibility.Hidden"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="vis-collapsed" Content="1" Visibility="BitVisibility.Collapsed"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="html-attrs" Content="1" HtmlAttributes="@(new() { ["data-test"] = "badge-attr", ["title"] = "root title" })"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Id="dir-rtl" Content="1" Dir="BitDir.Rtl"><span class="bdg-anchor"></span></BitBadge>
+    <BitBadge Content="1" Class="no-id-badge"><span class="bdg-anchor"></span></BitBadge>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="Unmount">
+    @if (_showUnmount)
+    {
+        <div id="unmount-host">
+            <BitBadge Content="_count" Live Description="live"><span class="bdg-anchor"></span></BitBadge>
+            <BitBadge Content="_count" OnClick="HandleClick" Pulse><span class="bdg-anchor"></span></BitBadge>
+            <BitBadge Dot Href="#unmount" AriaLabel="Link" />
+        </div>
+    }
+    <button id="btn-unmount" @onclick="() => _showUnmount = !_showUnmount">Toggle</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _count = 5;
+    private int _zeroCount = 1;
+    private bool _hidden;
+    private int _dotChildClicks;
+    private int _clicks;
+    private int _parentClicks;
+    private long _lastButton = -1;
+    private bool _clickDisabled = true;
+    private int _unread = 1;
+    private bool _showUnmount = true;
+    private BitPosition _runtimePosition = BitPosition.TopRight;
+    private BitColor? _runtimeColor;
+
+    private readonly ObjectContent _guidLike = new("obj-value");
+
+    private readonly BitPosition[] _positions =
+    [
+        BitPosition.TopLeft, BitPosition.TopCenter, BitPosition.TopRight, BitPosition.TopStart, BitPosition.TopEnd,
+        BitPosition.CenterLeft, BitPosition.Center, BitPosition.CenterRight, BitPosition.CenterStart, BitPosition.CenterEnd,
+        BitPosition.BottomLeft, BitPosition.BottomCenter, BitPosition.BottomRight, BitPosition.BottomStart, BitPosition.BottomEnd
+    ];
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly BitSize[] _sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
+
+    private readonly BitBadgeParams[] _badgeParams =
+    [
+        new() { Max = 99, Bordered = true, Shape = BitShape.Rounded, Variant = BitVariant.Outline }
+    ];
+
+    private void HandleClick(MouseEventArgs e)
+    {
+        _clicks++;
+        _lastButton = e.Button;
+    }
+
+    private sealed record ObjectContent(string Value)
+    {
+        public override string ToString() => Value;
+    }
+}

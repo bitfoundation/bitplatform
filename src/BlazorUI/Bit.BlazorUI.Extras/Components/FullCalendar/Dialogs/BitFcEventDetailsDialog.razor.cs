@@ -91,7 +91,7 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
         // DisposeAsync restores focus to the element that was focused before it opened.
         if (firstRender)
         {
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _dialogTitleId);
             await EscapeWatch.WatchAsync(_dialogRef);
         }
     }
@@ -309,6 +309,6 @@ public partial class BitFcEventDetailsDialog : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         await EscapeWatch.DisposeAsync();
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogTitleId);
     }
 }

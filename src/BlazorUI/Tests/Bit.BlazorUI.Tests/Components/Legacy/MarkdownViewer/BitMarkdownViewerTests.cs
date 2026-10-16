@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Bit.BlazorUI.Tests;
 using Bunit;
 using Microsoft.AspNetCore.Components;
@@ -248,6 +249,79 @@ public class BitMarkdownViewerTests : BunitTestContext
             Assert.AreEqual(jsProcessedHtml, middlewareInput);
             Assert.Contains(csharpProcessedHtml, component.Markup);
         });
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldRenderNothingWithoutMarkdown()
+    {
+        SetupMarkdownInterop("", "");
+
+        var component = RenderComponent<BitMarkdownViewerLegacy>();
+
+        var root = component.Find(".bit-mdv");
+
+        // The native viewer of the Extras shares the root class, so the legacy stylesheet is keyed to a class of its own.
+        Assert.IsTrue(root.ClassList.Contains("bit-mdv-lgc"));
+        Assert.AreEqual(string.Empty, root.InnerHtml.Trim());
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Legacy.MarkdownViewer.parseAsync");
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownViewerShouldPrerenderAnEmptyRootWhenAskedNotToPrerender()
+    {
+        // NoPrerender leaves the parsing to the interactive render, so the server sends the root alone: no script is
+        // asked for, and nothing throws.
+        var html = await Prerenderer.RenderAsync<BitMarkdownViewerLegacy>(new Dictionary<string, object?>
+        {
+            [nameof(BitMarkdownViewerLegacy.Markdown)] = "# Title",
+            [nameof(BitMarkdownViewerLegacy.NoPrerender)] = true,
+        });
+
+        StringAssert.Contains(html, "bit-mdv-lgc");
+        Assert.IsFalse(html.Contains("Title"));
+    }
+
+    [TestMethod]
+    public void BitMarkdownViewerShouldSplatTheHtmlAttributesOnTheRoot()
+    {
+        SetupMarkdownInterop("hello", "<p>hello</p>");
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitMarkdownViewerLegacy>(0);
+            builder.AddAttribute(1, nameof(BitMarkdownViewerLegacy.Markdown), "hello");
+            builder.AddAttribute(2, nameof(BitMarkdownViewerLegacy.Id), "viewer");
+            builder.AddAttribute(3, nameof(BitMarkdownViewerLegacy.Class), "custom-class");
+            builder.AddAttribute(4, nameof(BitMarkdownViewerLegacy.Style), "padding:1px");
+            builder.AddAttribute(5, nameof(BitMarkdownViewerLegacy.Dir), BitDir.Rtl);
+            builder.AddAttribute(6, "data-test", "root");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-mdv");
+
+        Assert.AreEqual("viewer", root.Id);
+        Assert.AreEqual("root", root.GetAttribute("data-test"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "padding:1px");
+    }
+
+    [TestMethod]
+    public async Task BitMarkdownViewerShouldDisposeWithoutError()
+    {
+        SetupMarkdownInterop("hello", "<p>hello</p>");
+
+        var component = RenderComponent<BitMarkdownViewerLegacy>(parameters =>
+        {
+            parameters.Add(p => p.Markdown, "hello");
+        });
+
+        component.WaitForAssertion(() => Assert.Contains("<p>hello</p>", component.Markup));
+
+        await component.Instance.DisposeAsync();
+        // The cancellation source is disposed with the component, so a second disposal must not reach it again.
+        await component.Instance.DisposeAsync();
     }
 }
 

@@ -41,11 +41,14 @@
     var tagHintId = tagHint is null ? null : _hintId;
     var fixedTagHintId = fixedTagHint is null ? null : (sameTagHint ? _hintId : _fixedHintId);
 
-    // The element references are what the arrow key navigation moves the focus with; the array is
-    // rebuilt whenever the number of drawn tags changes so that a stale reference is never focused.
+    // The element references are what the arrow key navigation moves the focus with; the array follows
+    // the number of drawn tags, so a reference past the end is never focused. It is resized rather than
+    // replaced: the chips are matched by position, and Blazor captures an @ref only when it creates the
+    // element, so a chip it keeps across the change would otherwise be left with an empty reference and the
+    // focus that a removal hands to a neighbour would be dropped on the body.
     if (_tagRefs.Length != displayedTagCount)
     {
-        _tagRefs = new ElementReference[displayedTagCount];
+        Array.Resize(ref _tagRefs, displayedTagCount);
     }
 
     // An edit that was open on a tag the parent has since taken away - or that the fold has since closed

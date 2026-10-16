@@ -5,7 +5,7 @@ namespace Bit.BlazorUI;
 /// <summary>
 /// The parameters for <see cref="BitCircularTimePicker"/> component.
 /// </summary>
-public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponentParams
+public class BitCircularTimePickerParams : BitInputBaseParams<TimeSpan?>, IBitComponentParams
 {
     /// <summary>
     /// Represents the parameter name used to identify the <see cref="BitCircularTimePicker"/> cascading parameters within <see cref="BitParams"/>.
@@ -201,6 +201,12 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
     /// </summary>
     public bool? Landscape { get; set; }
 
+    /// <inheritdoc cref="BitCircularTimePicker.Label"/>
+    public string? Label { get; set; }
+
+    /// <inheritdoc cref="BitCircularTimePicker.LabelTemplate"/>
+    public RenderFragment? LabelTemplate { get; set; }
+
     /// <summary>
     /// The latest time that can be selected.
     /// </summary>
@@ -335,7 +341,7 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
     {
         if (bitCircularTimePicker is null) return;
 
-        UpdateBaseParameters(bitCircularTimePicker);
+        UpdateInputBaseParameters(bitCircularTimePicker);
 
         // Whether any of the parameters the dial starts out on is filled in, which the first pass reads.
         var viewSourceChanged = false;
@@ -507,6 +513,16 @@ public class BitCircularTimePickerParams : BitComponentBaseParams, IBitComponent
         if (Landscape.HasValue)
         {
             bitCircularTimePicker.TakeFromCascade(nameof(Landscape), Landscape.Value, static c => c.Landscape, static (c, v) => c.Landscape = v);
+        }
+
+        if (Label.HasValue())
+        {
+            bitCircularTimePicker.TakeFromCascade(nameof(Label), Label, static c => c.Label, static (c, v) => c.Label = v);
+        }
+
+        if (LabelTemplate is not null)
+        {
+            bitCircularTimePicker.TakeFromCascade(nameof(LabelTemplate), LabelTemplate, static c => c.LabelTemplate, static (c, v) => c.LabelTemplate = v);
         }
 
         if (MaxTime.HasValue)

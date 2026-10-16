@@ -84,12 +84,22 @@
             if (!el.bitPreventKeysHandler) {
                 el.bitPreventKeysHandler = (e: KeyboardEvent) => {
                     // A key pressed with a modifier is a different gesture (Ctrl+Home jumps to the
-                    // start of a text, Alt+ArrowDown is a browser shortcut), so only the bare key
-                    // the component actually handles is suppressed.
-                    if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+                    // start of a text, Shift+ArrowDown extends a selection), so a bare key in the list
+                    // suppresses only the bare key. A modified key the component acts on as well (the
+                    // Alt+ArrowUp that closes a combobox's list, whose default scrolls the page) is
+                    // listed with its modifiers, in the order Control, Alt, Shift, Meta:
+                    // "Alt+ArrowUp".
+                    const modifiers = (e.ctrlKey ? 'Control+' : '') + (e.altKey ? 'Alt+' : '')
+                                    + (e.shiftKey ? 'Shift+' : '') + (e.metaKey ? 'Meta+' : '');
 
+                    // "Character" stands for every key that types one character (Shift allowed, Space
+                    // excepted): a control that applies what is typed itself - a letter on a combobox
+                    // that opens its list and puts the letter in the list's search box - keeps the
+                    // browser from typing it a second time into the box the focus has moved to by then.
                     const ks: string[] = el.bitPreventKeys ?? [];
-                    if (ks.indexOf(e.key) === -1) return;
+                    const character = ks.indexOf('Character') !== -1 && e.key.length === 1 && e.key !== ' '
+                                   && !e.ctrlKey && !e.altKey && !e.metaKey && !Utils.isComposingKey(e);
+                    if (!character && ks.indexOf(modifiers + e.key) === -1) return;
 
                     const target: string | undefined = el.bitPreventKeysTarget;
                     if (target) {
@@ -123,15 +133,54 @@
         // that opens below the fold is shown without the page jumping under a reader who could already see
         // it. The smooth scroll is a courtesy rather than a requirement, so it is dropped for a reader who
         // has asked for less motion.
+        // A panel that has just been opened is still as small as it was when this runs - its transition starts
+        // with the render that opened it - so a header already in view is all there is to bring into view yet,
+        // and the panel would then grow off the screen. So the element is brought into view now (a panel opened
+        // off screen shows its header at once) and again once the transitions of its own box have played out,
+        // at its full size. The wait is not handed back to .NET, whose render would otherwise wait on it; a
+        // reader who scrolls, presses a key or touches the page meanwhile has taken over, and is left alone.
         public static scrollIntoView(element: HTMLElement) {
             if (!element) return;
 
-            try {
-                const reduced = typeof window.matchMedia === 'function'
-                    && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            Extras.scrollNearest(element);
 
+            const events = ['wheel', 'touchstart', 'pointerdown', 'keydown'];
+            let interrupted = false;
+            const interrupt = () => { interrupted = true; };
+            events.forEach(e => window.addEventListener(e, interrupt, { capture: true, passive: true }));
+
+            Extras.transitionsSettled(element, 3000)
+                .then(() => {
+                    events.forEach(e => window.removeEventListener(e, interrupt, { capture: true }));
+
+                    if (interrupted || !element.isConnected) return;
+
+                    Extras.scrollNearest(element);
+                });
+        }
+
+        // Resolves once the transitions of the element's own box - on the element and on its direct children, which
+        // is where an opening panel grows - have played out. A transition is finite, unlike a spinner's animation
+        // deeper in the content, and the timeout bounds the wait all the same.
+        private static async transitionsSettled(element: HTMLElement, timeout: number) {
+            if (typeof element.getAnimations !== 'function') return;
+
+            const transitions = [element, ...Array.from(element.children)]
+                .flatMap(e => e.getAnimations())
+                .filter(a => typeof CSSTransition !== 'undefined' && a instanceof CSSTransition);
+
+            if (transitions.length === 0) return;
+
+            await Promise.race([
+                Promise.all(transitions.map(a => a.finished.catch(() => { }))),
+                new Promise(resolve => setTimeout(resolve, timeout)),
+            ]);
+        }
+
+        private static scrollNearest(element: HTMLElement) {
+            try {
                 element.scrollIntoView({
-                    behavior: reduced ? 'auto' : 'smooth',
+                    behavior: Extras.animates(element) ? 'smooth' : 'auto',
                     block: 'nearest',
                     inline: 'nearest'
                 });

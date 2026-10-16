@@ -1,0 +1,673 @@
+﻿@page "/e2e/markdown-viewer"
+
+<PageTitle>BitMarkdownViewer E2E</PageTitle>
+
+<h1>BitMarkdownViewer</h1>
+
+<E2ESection Id="basic" Title="Basic (CommonMark core)">
+    <BitMarkdownViewer Id="mdv-basic" Markdown="@BasicMarkdown" />
+    <BitMarkdownViewer Id="mdv-hard-break" Markdown="@HardBreakMarkdown" />
+</E2ESection>
+
+<E2ESection Id="github" Title="GitHub pipeline">
+    <BitMarkdownViewer Id="mdv-github" Markdown="@GitHubMarkdown" Pipeline="BitMarkdownPipelines.GitHub" />
+    <BitMarkdownViewer Id="mdv-github-basic" Markdown="@GitHubMarkdown" />
+</E2ESection>
+
+<E2ESection Id="custom-pipeline" Title="Custom pipeline">
+    <BitMarkdownViewer Id="mdv-custom" Markdown="@CustomMarkdown" Pipeline="_customPipeline" />
+    <BitMarkdownViewer Id="mdv-emoji-override" Markdown="@(":rocket: and :bitlogo:")" Pipeline="_emojiOverridePipeline" />
+</E2ESection>
+
+<E2ESection Id="typography" Title="Typography">
+    <BitMarkdownViewer Id="mdv-typography" Markdown="@TypographyMarkdown" Pipeline="_typographyPipeline" />
+</E2ESection>
+
+<E2ESection Id="line-breaks" Title="Line breaks">
+    <BitMarkdownViewer Id="mdv-soft" Markdown="@LineBreaksMarkdown" />
+    <BitMarkdownViewer Id="mdv-hard" Markdown="@LineBreaksMarkdown" Pipeline="_softBreakPipeline" />
+</E2ESection>
+
+<E2ESection Id="front-matter" Title="Front matter">
+    <BitMarkdownViewer Id="mdv-front-default" Markdown="@FrontMatterMarkdown" />
+    <BitMarkdownViewer Id="mdv-front" Markdown="@FrontMatterMarkdown" Pipeline="_frontMatterPipeline" OnParsed="HandleFrontMatterParsed" />
+    <BitMarkdownViewer Id="mdv-front-toml" Markdown="@TomlFrontMatterMarkdown" Pipeline="_frontMatterPipeline" OnParsed="HandleTomlParsed" />
+    <div>Front matter: <span id="front-matter-text">@_frontMatterText</span></div>
+    <div>TOML: <span id="front-matter-toml">@_tomlText</span></div>
+</E2ESection>
+
+<E2ESection Id="containers" Title="Containers">
+    <BitMarkdownViewer Id="mdv-containers" Markdown="@ContainersMarkdown" Pipeline="_containersPipeline" />
+</E2ESection>
+
+<E2ESection Id="documentation" Title="Definition lists, abbreviations and figures">
+    <BitMarkdownViewer Id="mdv-docs" Markdown="@DocumentationMarkdown" Pipeline="_documentationPipeline" />
+</E2ESection>
+
+<E2ESection Id="math" Title="Mathematics">
+    <BitMarkdownViewer Id="mdv-math" Markdown="@MathMarkdown" Pipeline="_mathPipeline" />
+</E2ESection>
+
+<E2ESection Id="untrusted" Title="Untrusted content">
+    <div>
+        <button id="btn-img-same" @onclick="() => _imageRendering = BitMarkdownViewerImageRendering.SameOrigin">SameOrigin</button>
+        <button id="btn-img-none" @onclick="() => _imageRendering = BitMarkdownViewerImageRendering.None">None</button>
+        <button id="btn-img-all" @onclick="() => _imageRendering = BitMarkdownViewerImageRendering.All">All</button>
+        <span id="image-rendering">@_imageRendering</span>
+    </div>
+    <BitMarkdownViewer Id="mdv-untrusted" Markdown="@UntrustedMarkdown" Pipeline="BitMarkdownPipelines.GitHub" ImageRendering="_imageRendering" />
+    <BitMarkdownViewer Id="mdv-bidi-kept" Markdown="@BidiMarkdown" />
+    <BitMarkdownViewer Id="mdv-bidi-stripped" Markdown="@BidiMarkdown" StripBidiControlCharacters="true" />
+    <BitMarkdownViewer Id="mdv-max-length" Markdown="@("0123456789**bold**")" MaxLength="12" />
+    <BitMarkdownViewer Id="mdv-max-length-surrogate" Markdown="@("ab😀cd")" MaxLength="3" />
+    <BitMarkdownViewer Id="mdv-depth" Markdown="@DeepMarkdown" MaxNestingDepth="3" />
+    <BitMarkdownViewer Id="mdv-depth-default" Markdown="@DeepMarkdown" />
+</E2ESection>
+
+<E2ESection Id="toc" Title="Headings and table of contents">
+    <nav id="toc-nav">
+        @foreach (var entry in _tocEntries)
+        {
+            <a class="toc-item" data-level="@entry.Level" href="#@entry.Id">@entry.Text</a>
+        }
+    </nav>
+    <div id="toc-excerpt">@_tocExcerpt</div>
+    <div id="toc-scroll-host" style="--bit-MarkdownViewer-scroll-margin: 40px;">
+        <BitMarkdownViewer Id="mdv-toc" Markdown="@TocMarkdown" Pipeline="_tocPipeline" OnParsed="HandleTocParsed" />
+    </div>
+    <BitMarkdownViewer Id="mdv-auto-ids" Markdown="@("# Hello World\n\n## Hello World")" Pipeline="_autoIdsPipeline" />
+    <div style="height: 1500px;"></div>
+</E2ESection>
+
+<E2ESection Id="links" Title="Links and URLs">
+    <BitMarkdownViewer Id="mdv-links-default" Markdown="@LinksMarkdown" />
+    <BitMarkdownViewer Id="mdv-links-policy" Markdown="@LinksMarkdown" Pipeline="_linkPolicyPipeline" />
+    <BitMarkdownViewer Id="mdv-base-url" Markdown="@BaseUrlMarkdown" Pipeline="_baseUrlPipeline" />
+    <BitMarkdownViewer Id="mdv-rewriter" Markdown="@RewriterMarkdown" Pipeline="_rewriterPipeline" />
+</E2ESection>
+
+<E2ESection Id="inline" Title="Inline">
+    <p id="inline-host">Formatting a value in place: <BitMarkdownViewer Id="mdv-inline" Inline Markdown="@("the **fastest** path\n\nis `Span<T>`")" /> - end.</p>
+    <BitMarkdownViewer Id="mdv-inline-list" Inline Markdown="@("- one\n- two")" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitMarkdownViewer Id="mdv-templates" Markdown="@TemplatesMarkdown" Pipeline="BitMarkdownPipelines.GitHub" ImageRendering="BitMarkdownViewerImageRendering.All">
+        <CodeBlockTemplate>
+            <div class="tpl-code" data-lang="@(context.Info ?? "text")">
+                <button class="tpl-copy" @onclick="() => _copiedCode = context.Content">Copy</button>
+                <pre>@context.Content</pre>
+            </div>
+        </CodeBlockTemplate>
+        <ImageTemplate>
+            <figure class="tpl-image" data-url="@context.Url">@context.Alt</figure>
+        </ImageTemplate>
+        <LinkTemplate>
+            <a class="tpl-link" href="@context.Url" data-title="@context.Title">[@BitMarkdownInlineHelpers.PlainText(context.Children)]</a>
+        </LinkTemplate>
+    </BitMarkdownViewer>
+    <div>Copied: <span id="copied-code">@_copiedCode</span></div>
+    <BitMarkdownViewer Id="mdv-templates-blocked" Markdown="@("![blocked alt](https://images.e2e-cross-origin.test/b.png)")">
+        <ImageTemplate>
+            <figure class="tpl-image" data-url="@context.Url">@context.Alt</figure>
+        </ImageTemplate>
+    </BitMarkdownViewer>
+</E2ESection>
+
+<E2ESection Id="tasks" Title="Interactive task lists">
+    <button id="btn-tasks-disable" @onclick="() => _tasksDisabled = !_tasksDisabled">Toggle disabled</button>
+    <span id="tasks-disabled">@_tasksDisabled</span>
+    <BitMarkdownViewer Id="mdv-tasks"
+                       Markdown="@_taskMarkdown"
+                       Pipeline="BitMarkdownPipelines.GitHub"
+                       Disabled="_tasksDisabled"
+                       OnTaskChanged="HandleTaskChanged" />
+    <div>Count: <span id="task-count">@_taskCount</span></div>
+    <div>Last: <span id="task-last">@_taskLast</span></div>
+    <pre id="task-markdown">@_taskMarkdown</pre>
+    <BitMarkdownViewer Id="mdv-tasks-readonly" Markdown="@("- [x] done\n- [ ] open")" Pipeline="BitMarkdownPipelines.GitHub" />
+    <BitMarkdownViewer Id="mdv-tasks-empty" Markdown="@("- [ ] \n- [ ] named")" Pipeline="BitMarkdownPipelines.GitHub" OnTaskChanged="HandleEmptyTaskChanged" />
+</E2ESection>
+
+<E2ESection Id="localization" Title="Localization">
+    <BitMarkdownViewer Id="mdv-localized" Markdown="@LocalizedMarkdown" Pipeline="_localizedPipeline" />
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="Accessibility">
+    <h3>Comment by Sam</h3>
+    <BitMarkdownViewer Id="mdv-a11y"
+                       Markdown="@CommentMarkdown"
+                       Pipeline="BitMarkdownPipelines.Advanced"
+                       HeadingLevelOffset="3"
+                       HeadingIdPrefix="comment-42-"
+                       AriaLabel="Comment by Sam" />
+    <BitMarkdownViewer Id="mdv-offset-clamp" Markdown="@("#### Deep\n\n###### Deepest")" HeadingLevelOffset="4" />
+    <BitMarkdownViewer Id="mdv-wide-code" Markdown="@WideCodeMarkdown" />
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="_viewerParams">
+        <BitMarkdownViewer Id="mdv-cascaded" Markdown="@CascadingMarkdown" />
+        <BitMarkdownViewer Id="mdv-cascaded-own" Markdown="@CascadingMarkdown" Pipeline="BitMarkdownPipelines.Basic" HeadingLevelOffset="0" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class and CSS variables">
+    <BitMarkdownViewer Id="mdv-style" Style="border-inline-start: 4px solid rgb(255, 0, 0); padding-inline-start: 16px;" Markdown="@("A **styled** viewer.")" />
+    <BitMarkdownViewer Id="mdv-class" Class="custom-mdv" Markdown="@("### A classy viewer")" />
+    <div id="css-vars-host" style="@CssVariablesStyle">
+        <BitMarkdownViewer Id="mdv-css-vars" Markdown="@CssVariablesMarkdown" Pipeline="_cssVarsPipeline" />
+    </div>
+    <BitMarkdownViewer Id="mdv-css-defaults" Markdown="@CssVariablesMarkdown" Pipeline="_cssVarsPipeline" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitMarkdownViewer Id="mdv-rtl" Dir="BitDir.Rtl" Markdown="@RtlMarkdown" Pipeline="BitMarkdownPipelines.Advanced" />
+    <div dir="rtl">
+        <BitMarkdownViewer Id="mdv-rtl-inherited" Markdown="@RtlMarkdown" Pipeline="BitMarkdownPipelines.Advanced" />
+    </div>
+    <BitMarkdownViewer Id="mdv-ltr" Markdown="@RtlMarkdown" Pipeline="BitMarkdownPipelines.Advanced" />
+    <BitMarkdownViewer Id="mdv-auto" Dir="BitDir.Auto" Markdown="@MixedDirectionMarkdown" />
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters">
+    <button id="btn-visibility" @onclick="CycleVisibility">Cycle visibility</button>
+    <span id="visibility">@_visibility</span>
+    <BitMarkdownViewer Id="mdv-visibility" Visibility="_visibility" Markdown="@("Visible text")" />
+    <BitMarkdownViewer Id="mdv-attrs" TabIndex="0" HtmlAttributes="_htmlAttributes" Markdown="@("With attributes")" />
+    <BitMarkdownViewer Markdown="@("No id given")" Class="mdv-no-id" />
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime changes">
+    <button id="btn-set-markdown" @onclick="SetRuntimeMarkdown">Set markdown</button>
+    <button id="btn-same-markdown" @onclick="() => _runtimeMarkdown = new string(_runtimeMarkdown.ToCharArray())">Same markdown</button>
+    <button id="btn-rerender" @onclick="() => _rerenders++">Re-render</button>
+    <button id="btn-set-pipeline" @onclick="() => _runtimePipeline = BitMarkdownPipelines.GitHub">GitHub pipeline</button>
+    <button id="btn-set-offset" @onclick="() => _runtimeOffset = 2">Offset 2</button>
+    <button id="btn-read-document" @onclick="ReadDocument">Read Document</button>
+    <span id="rerenders">@_rerenders</span>
+    <BitMarkdownViewer @ref="_runtimeViewer" Id="mdv-runtime" Markdown="@_runtimeMarkdown" Pipeline="_runtimePipeline" HeadingLevelOffset="_runtimeOffset" OnParsed="HandleRuntimeParsed" />
+    <div>Parsed: <span id="parse-count">@_parseCount</span></div>
+    <div>Document: <span id="document-info">@_documentInfo</span></div>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="Unmount">
+    <button id="btn-toggle-mount" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+    <span id="mounted">@_mounted</span>
+    @if (_mounted)
+    {
+        <BitMarkdownViewer Id="mdv-unmount" Markdown="@("[x](#install) and footnote[^1]\n\n[^1]: note")" Pipeline="BitMarkdownPipelines.GitHub" OnTaskChanged="HandleTaskChanged" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string BasicMarkdown = @"# Heading one
+## Heading two
+### Heading three
+#### Heading four
+##### Heading five
+###### Heading six
+
+Rendered in **strong** and *emphasis* with `inline code` - see the [bit platform][bit] site or [an inline link](https://example.com/inline ""Inline title"").
+
+- First bullet
+- Second bullet
+    1. Nested one
+    2. Nested two
+
+3. three
+4. four
+
+> Character references decode: &copy; 2026 &mdash; but `&copy;` stays literal in code.
+
+```csharp extra-info
+var html = ""no innerHTML"";
+```
+
+    indented code
+
+Line one
+line two\
+line three
+
+***
+
+Raw <b>HTML</b> and <script>window.__mdvInjected = true;</script> are text.
+
+![Sample image](/samples/mdv-sample.png ""Sample title"")
+
+[a javascript link](javascript:alert(1)) and [a data link](data:text/html,<b>x</b>)
+
+[bit]: https://bitplatform.dev ""bit platform""
+";
+
+    private const string HardBreakMarkdown = "Two spaces  \nbreak here";
+
+    private const string GitHubMarkdown = @"Supports ~~strikethrough~~ and bare links like https://bitplatform.dev and www.example.com and mail@example.com,
+plus footnotes[^1] cited twice[^1] and another[^2].
+
+- [x] Parse Markdown in pure C#
+- [ ] Use any JavaScript
+
+| Left | Center | Right | None |
+|:-----|:------:|------:|------|
+| l1   |   c1   |    r1 | n1   |
+| l2   |   c2   |    r2 | n2   |
+| l3   |   c3   |    r3 | n3   |
+
+> [!NOTE]
+> Note body.
+
+> [!TIP]
+> Tip body.
+
+> [!IMPORTANT]
+> Important body.
+
+> [!WARNING]
+> Warning body.
+
+> [!CAUTION]
+> Caution body.
+
+[^1]: The first footnote.
+[^2]: The second footnote.
+";
+
+    private const string CustomMarkdown = @"# Custom pipeline :sparkles:
+
+Autolinks were left out, so https://bitplatform.dev stays plain text.
+
+| A | B |
+|---|---|
+| 1 | 2 |
+
+- [x] ~~Old~~ approach replaced
+- [ ] Anything left?
+";
+
+    private const string TypographyMarkdown = @"Water is H~2~O, the area is πr^2^, this ++adds streaming++ and ~~drops~~ and ==read this==.
+
+""Typography matters,"" she said -- and it's hard... The 2024--2026 range; an aside --- like this.
+
+Code keeps every character: `--- ""not curled"" ...`
+";
+
+    private const string LineBreaksMarkdown = "Roses are red\nViolets are blue";
+
+    private const string FrontMatterMarkdown = @"---
+title: Release notes
+date: 2026-09-09
+---
+
+# Release notes
+
+Body text.
+";
+
+    private const string TomlFrontMatterMarkdown = @"+++
+title = ""Toml notes""
++++
+
+Toml body.
+";
+
+    private const string ContainersMarkdown = @":::tip Start here
+Tip body.
+:::
+
+:::warning Read this first
+Warning body with **bold**.
+
+:::note
+Nested note.
+:::
+
+:::
+
+:::details How the fence is read
+Details body.
+:::
+
+:::glossary
+Unstyled body.
+:::
+";
+
+    private const string DocumentationMarkdown = @"*[AST]: Abstract Syntax Tree
+
+Pipeline
+: The immutable set of flavors.
+: Build it once.
+
+AST
+: The tree the parser produces from the AST source.
+
+![The sample logo](/samples/mdv-sample.png ""A captioned figure"")
+";
+
+    private const string MathMarkdown = @"Euler, $e^{i\pi} + 1 = 0$, in *one* line.
+
+$$
+\int_0^1 x^2 \, dx
+$$
+
+Prices are left alone: $5 and $10.
+";
+
+    private const string UntrustedMarkdown = @"Same origin: ![same origin](/samples/mdv-sample.png)
+
+Cross origin: ![cross origin](https://images.e2e-cross-origin.test/remote.png)
+
+[a javascript link](javascript:alert(1)) and [vbscript](vbscript:msgbox) and Raw <img src=x onerror=alert(1)> and <script>window.__mdvInjected = true;</script>.
+";
+
+    private const string BidiMarkdown = "abc‮def‬ghi";
+
+    private const string DeepMarkdown = "> > > > > > deep quote";
+
+    private const string TocMarkdown = @"## Installation {#install}
+
+Intro.
+
+### .NET CLI
+
+Run it.
+
+## Release notes
+
+### Added
+
+See [Installation](#install) first and [elsewhere](#not-a-heading).
+";
+
+    private const string LinksMarkdown = @"An [external link](https://example.com/page) and [an internal one](/e2e/other) and [a fragment](#frag).
+";
+
+    private const string BaseUrlMarkdown = @"![relative image](mdv-sample.png) and [relative link](docs/readme.md) and [absolute](https://example.com/x) and [root](/root.md) and [fragment](#f)
+";
+
+    private const string RewriterMarkdown = @"[to rewrite](https://old.example.com/a) and [to drop](https://drop.example.com/b) and [unsafe](https://unsafe.example.com/c) and ![img](https://old.example.com/i.png)
+";
+
+    private const string TemplatesMarkdown = @"Code:
+
+```csharp
+var x = 1;
+```
+
+```
+plain
+```
+
+A [templated link](https://bitplatform.dev ""Link title"") and an image ![templated alt](https://images.e2e-cross-origin.test/t.png).
+";
+
+    private const string LocalizedMarkdown = @"> [!WARNING]
+> Body.
+
+> [!NOTE]
+> Body.
+
+> [!TIP]
+> Body.
+
+> [!IMPORTANT]
+> Body.
+
+> [!CAUTION]
+> Body.
+
+Fußnote[^1] and [externe Link](https://bitplatform.dev).
+
+| Spalte | Wert |
+|:-------|-----:|
+| eins   |    1 |
+
+- [ ]
+
+[^1]: Rücklink.
+";
+
+    private const string CommentMarkdown = @"# Looks good to me
+
+One nit, under [Naming](#naming):
+
+## Naming
+
+Text.
+
+```csharp
+var viewer = 1;
+```
+";
+
+    private const string WideCodeMarkdown = "```\n" + "0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 0123456789 END\n```\n";
+
+    private const string CascadingMarkdown = @"# Release
+
+- [x] ~~Old~~ parser replaced
+
+![blocked](/samples/mdv-sample.png)
+";
+
+    private const string CssVariablesStyle = "--bit-MarkdownViewer-color: rgb(1, 2, 3); --bit-MarkdownViewer-font-family: Georgia, serif; --bit-MarkdownViewer-font-size: 20px; --bit-MarkdownViewer-line-height: 2; --bit-MarkdownViewer-block-spacing: 30px; --bit-MarkdownViewer-heading-color: rgb(168, 85, 247); --bit-MarkdownViewer-heading-font-family: Courier New, monospace; --bit-MarkdownViewer-heading-font-weight: 900; --bit-MarkdownViewer-heading-border-color: rgb(0, 128, 0); --bit-MarkdownViewer-link-color: rgb(10, 20, 30); --bit-MarkdownViewer-link-hover-color: rgb(200, 10, 10); --bit-MarkdownViewer-link-decoration: none; --bit-MarkdownViewer-code-font-family: Consolas, monospace; --bit-MarkdownViewer-code-color: rgb(4, 5, 6); --bit-MarkdownViewer-code-background: rgb(240, 230, 220); --bit-MarkdownViewer-code-radius: 7px; --bit-MarkdownViewer-code-block-color: rgb(7, 8, 9); --bit-MarkdownViewer-code-block-background: rgb(220, 230, 240); --bit-MarkdownViewer-code-block-padding: 21px; --bit-MarkdownViewer-code-block-radius: 9px; --bit-MarkdownViewer-blockquote-color: rgb(11, 12, 13); --bit-MarkdownViewer-blockquote-border-color: rgb(14, 15, 16); --bit-MarkdownViewer-table-border-color: rgb(17, 18, 19); --bit-MarkdownViewer-table-header-background: rgb(20, 21, 22); --bit-MarkdownViewer-table-stripe-background: rgb(23, 24, 25); --bit-MarkdownViewer-table-cell-padding: 11px; --bit-MarkdownViewer-rule-color: rgb(26, 27, 28); --bit-MarkdownViewer-rule-thickness: 6px; --bit-MarkdownViewer-mark-color: rgb(29, 30, 31); --bit-MarkdownViewer-mark-background: rgb(32, 33, 34); --bit-MarkdownViewer-container-background: rgb(35, 36, 37); --bit-MarkdownViewer-note-color: rgb(40, 0, 0); --bit-MarkdownViewer-tip-color: rgb(0, 40, 0); --bit-MarkdownViewer-important-color: rgb(0, 0, 40); --bit-MarkdownViewer-warning-color: rgb(40, 40, 0); --bit-MarkdownViewer-caution-color: rgb(0, 40, 40);";
+
+    private const string CssVariablesMarkdown = @"## Restyled
+
+A paragraph with `tinted code`, a [link](/e2e/x) and ==marked==.
+
+```
+block code
+```
+
+> A quote.
+
+| Column | Value |
+|--------|------:|
+| one    |     1 |
+| two    |     2 |
+| three  |     3 |
+
+***
+
+:::glossary
+Container.
+:::
+
+> [!NOTE]
+> n
+
+> [!TIP]
+> t
+
+> [!IMPORTANT]
+> i
+
+> [!WARNING]
+> w
+
+> [!CAUTION]
+> c
+";
+
+    private const string RtlMarkdown = @"# نمایشگر
+
+متن **درشت**.
+
+> نقل قول
+
+- مورد اول
+- مورد دوم
+
+| ستون | مقدار |
+|:-----|------:|
+| یک   |     ۱ |
+";
+
+    private const string MixedDirectionMarkdown = @"## A comment thread
+
+Each paragraph takes the direction of its own text.
+
+این پاراگراف فارسی است.
+
+- English item
+- مورد فارسی
+";
+
+    private readonly BitMarkdownPipeline _customPipeline = new BitMarkdownPipelineBuilder()
+        .UsePipeTables()
+        .UseStrikethrough()
+        .UseTaskLists()
+        .UseEmojis()
+        .Build();
+
+    private readonly BitMarkdownPipeline _emojiOverridePipeline = new BitMarkdownPipelineBuilder()
+        .UseEmojis(new Dictionary<string, string> { ["bitlogo"] = "[BIT]", ["rocket"] = "[ROCKET]" })
+        .Build();
+
+    private readonly BitMarkdownPipeline _typographyPipeline = new BitMarkdownPipelineBuilder().UseEmphasisExtras().UseSmartyPants().Build();
+    private readonly BitMarkdownPipeline _softBreakPipeline = new BitMarkdownPipelineBuilder().UseSoftLineAsHardLine().Build();
+    private readonly BitMarkdownPipeline _frontMatterPipeline = new BitMarkdownPipelineBuilder().UseFrontMatter().Build();
+    private readonly BitMarkdownPipeline _containersPipeline = new BitMarkdownPipelineBuilder().UseContainers().Build();
+    private readonly BitMarkdownPipeline _documentationPipeline = new BitMarkdownPipelineBuilder().UseDefinitionLists().UseAbbreviations().UseFigures().Build();
+    private readonly BitMarkdownPipeline _mathPipeline = new BitMarkdownPipelineBuilder().UseMathematics().Build();
+    private readonly BitMarkdownPipeline _tocPipeline = new BitMarkdownPipelineBuilder().UseAutoIdentifiers(anchorLinks: true).Build();
+    private readonly BitMarkdownPipeline _autoIdsPipeline = new BitMarkdownPipelineBuilder().UseAutoIdentifiers().Build();
+    private readonly BitMarkdownPipeline _cssVarsPipeline = new BitMarkdownPipelineBuilder().UseGitHubFlavored().UseEmphasisExtras().UseContainers().Build();
+
+    private readonly BitMarkdownPipeline _linkPolicyPipeline = new BitMarkdownPipelineBuilder()
+        .UseLinkOptions(externalTarget: BitMarkdownLinkTarget.Self,
+                        externalRel: "noopener noreferrer nofollow ugc",
+                        internalTarget: BitMarkdownLinkTarget.Top,
+                        internalRel: "bookmark")
+        .Build();
+
+    private readonly BitMarkdownPipeline _baseUrlPipeline = new BitMarkdownPipelineBuilder().UseBaseUrl("/samples/").Build();
+
+    private readonly BitMarkdownPipeline _rewriterPipeline = new BitMarkdownPipelineBuilder()
+        .UseUrlRewriter(ctx => ctx.Url.Contains("drop.example.com") ? null
+                             : ctx.Url.Contains("unsafe.example.com") ? "javascript:alert(1)"
+                             : ctx.Url.Replace("old.example.com", ctx.IsImage ? "img.example.com" : "new.example.com"))
+        .Build();
+
+    private readonly BitMarkdownPipeline _localizedPipeline = new BitMarkdownPipelineBuilder()
+        .UseGitHubFlavored()
+        .UseTexts(new BitMarkdownTexts
+        {
+            AlertNote = "Hinweis",
+            AlertTip = "Tipp",
+            AlertImportant = "Wichtig",
+            AlertWarning = "Warnung",
+            AlertCaution = "Vorsicht",
+            Footnotes = "Fußnoten",
+            FootnoteBackReference = "Zurück zur Referenz {0}",
+            NewTab = "(öffnet in neuem Tab)",
+            Table = "Tabelle",
+            Task = "Aufgabe {0}",
+        })
+        .Build();
+
+    private readonly BitMarkdownViewerParams[] _viewerParams =
+    [
+        new()
+        {
+            Pipeline = BitMarkdownPipelines.GitHub,
+            HeadingLevelOffset = 2,
+            ImageRendering = BitMarkdownViewerImageRendering.None,
+            Class = "cascaded-class",
+        }
+    ];
+
+    private readonly Dictionary<string, object> _htmlAttributes = new() { ["data-test"] = "mdv-data", ["title"] = "Viewer title" };
+
+    private string _frontMatterText = string.Empty;
+    private string _tomlText = string.Empty;
+    private BitMarkdownViewerImageRendering _imageRendering = BitMarkdownViewerImageRendering.SameOrigin;
+    private record TocEntry(int Level, string Id, string Text);
+    private List<TocEntry> _tocEntries = [];
+    private string _tocExcerpt = string.Empty;
+    private string _copiedCode = string.Empty;
+    private bool _tasksDisabled;
+    private int _taskCount;
+    private string _taskLast = string.Empty;
+    private string _taskMarkdown = @"## Checklist
+
+- [x] Write the parser
+- [ ] Write the docs
+- [ ] Polish
+    - [ ] Icons
+
+```
+- [ ] not a task
+```
+
+- [ ] After code
+";
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private string _runtimeMarkdown = "# Original";
+    private BitMarkdownPipeline? _runtimePipeline;
+    private int _runtimeOffset;
+    private int _rerenders;
+    private int _parseCount;
+    private string _documentInfo = string.Empty;
+    private BitMarkdownViewer? _runtimeViewer;
+    private bool _mounted = true;
+
+    private void HandleFrontMatterParsed(BitMarkdownDocumentNode document)
+    {
+        var frontMatter = BitMarkdownFrontMatterNode.Find(document);
+        _frontMatterText = frontMatter is null ? "(none)" : $"{frontMatter.Fence}|{frontMatter.IsToml}|{frontMatter.Text.ReplaceLineEndings(" | ")}";
+    }
+
+    private void HandleTomlParsed(BitMarkdownDocumentNode document)
+    {
+        var frontMatter = BitMarkdownFrontMatterNode.Find(document);
+        _tomlText = frontMatter is null ? "(none)" : $"{frontMatter.Fence}|{frontMatter.IsToml}|{frontMatter.Text.ReplaceLineEndings(" | ")}";
+    }
+
+    private void HandleTocParsed(BitMarkdownDocumentNode document)
+    {
+        _tocEntries = BitMarkdownAstHelper.Descendants(document)
+                                          .OfType<BitMarkdownHeadingNode>()
+                                          .Where(h => string.IsNullOrEmpty(h.Id) is false)
+                                          .Select(h => new TocEntry(h.Level, h.Id!, BitMarkdownInlineHelpers.PlainText(h.Inlines)))
+                                          .ToList();
+
+        _tocExcerpt = BitMarkdownAstHelper.ToPlainText(document).ReplaceLineEndings(" ");
+    }
+
+    private void HandleTaskChanged(BitMarkdownViewerTaskChangedEventArgs args)
+    {
+        _taskMarkdown = args.Markdown;
+        _taskCount++;
+        _taskLast = $"{args.Index}:{args.Checked}";
+    }
+
+    private void HandleEmptyTaskChanged(BitMarkdownViewerTaskChangedEventArgs args)
+    {
+    }
+
+    private void SetRuntimeMarkdown() => _runtimeMarkdown = "## Changed\n\nNew **content**";
+
+    private void HandleRuntimeParsed(BitMarkdownDocumentNode document) => _parseCount++;
+
+    private void ReadDocument()
+    {
+        var document = _runtimeViewer!.Document;
+        var headings = BitMarkdownAstHelper.Descendants(document).OfType<BitMarkdownHeadingNode>().Select(h => $"h{h.Level}");
+        _documentInfo = $"{document.Children.Count}:{string.Join(",", headings)}";
+    }
+
+    private void CycleVisibility()
+    {
+        _visibility = _visibility switch
+        {
+            BitVisibility.Visible => BitVisibility.Hidden,
+            BitVisibility.Hidden => BitVisibility.Collapsed,
+            _ => BitVisibility.Visible
+        };
+    }
+}

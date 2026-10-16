@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using Microsoft.Extensions.Options;
 
 namespace Bit.Websites.Platform.Server.Services.Mcp;
@@ -150,6 +151,8 @@ public partial class McpVersionsService : BackgroundService
 
         if (await EnsureWorktree(clonePath, worktreePath, tag, cancellationToken) is false) return;
 
+        AllowANewerSdk(worktreePath);
+
         var project = await codebaseMemory.Index(worktreePath, cancellationToken);
 
         if (project is null) return;
@@ -209,6 +212,21 @@ public partial class McpVersionsService : BackgroundService
         }
 
         return await Git(clonePath, cancellationToken, "worktree", "add", "--detach", "--force", worktreePath, tag) is not null;
+    }
+
+    private static void AllowANewerSdk(string worktreePath)
+    {
+        var globalJsonPath = Path.Combine(worktreePath, "src", "global.json");
+
+        if (File.Exists(globalJsonPath) is false) return;
+
+        var globalJson = JsonNode.Parse(File.ReadAllText(globalJsonPath))?.AsObject();
+
+        if (globalJson?["sdk"] is not JsonObject sdk) return;
+
+        sdk["rollForward"] = "feature";
+
+        File.WriteAllText(globalJsonPath, globalJson.ToJsonString());
     }
 
     /// <summary>Restarts the sites that died, and drops a version off the endpoint while its sites are down.</summary>

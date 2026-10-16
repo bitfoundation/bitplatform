@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Components.Web;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.BlazorUI;
 
@@ -7,7 +8,7 @@ namespace Bit.BlazorUI;
 /// <c>OnCellContextMenu</c>). Mirrors react-data-grid's <c>CellMouseArgs</c>.
 /// </summary>
 /// <typeparam name="TItem">The row item type.</typeparam>
-public sealed class BitDataGridCellEventArgs<TItem>
+public sealed class BitDataGridCellEventArgs<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>
 {
     public required TItem Item { get; init; }
 

@@ -1,0 +1,302 @@
+﻿@page "/e2e/link"
+@page "/e2e/link/current"
+@implements IDisposable
+@inject NavigationManager Navigation
+
+<PageTitle>BitLink E2E</PageTitle>
+
+<HeadContent>
+    <link rel="stylesheet" href="samples/icon-sets.css" />
+</HeadContent>
+
+<h1>BitLink</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <div id="sentence" style="font-size: 18px; font-weight: 300;">Read the <BitLink Id="lnk-sentence" Href="/e2e/link#basic">bit platform source</BitLink> on GitHub.</div>
+    <BitLink Id="lnk-basic" Href="/e2e/link">Basic link</BitLink>
+    <BitLink Id="lnk-disabled" Href="/e2e/link/current" Disabled
+             HtmlAttributes="@(new Dictionary<string, object> { ["onpointerdown"] = EventCallback.Factory.Create<PointerEventArgs>(this, () => _splatClicks++), ["ondblclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _splatClicks++), ["onmouseover"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _splatHovers++) })"
+             OnClick="() => _disabledClicks++">Disabled link</BitLink>
+    <BitLink Id="lnk-enabled-splat"
+             HtmlAttributes="@(new Dictionary<string, object> { ["onpointerdown"] = EventCallback.Factory.Create<PointerEventArgs>(this, () => _enabledSplatClicks++) })">Enabled splat</BitLink>
+    <span id="splat-clicks">@_splatClicks</span>
+    <span id="splat-hovers">@_splatHovers</span>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="enabled-splat-clicks">@_enabledSplatClicks</span>
+</E2ESection>
+
+<E2ESection Id="underline" Title="Underline">
+    <BitLink Id="lnk-underline-default" Href="/e2e/link">Underlined on hover (default)</BitLink>
+    <BitLink Id="lnk-underlined" Href="/e2e/link" Underlined>Always underlined</BitLink>
+    <BitLink Id="lnk-no-underline" Href="/e2e/link" NoUnderline>Never underlined</BitLink>
+    <BitLink Id="lnk-both-underline" Href="/e2e/link" Underlined NoUnderline>Both set</BitLink>
+</E2ESection>
+
+<E2ESection Id="icon" Title="Icon">
+    <BitLink Id="lnk-icon-start" IconName="@BitIconName.Link" Href="/e2e/link">Leading icon</BitLink>
+    <BitLink Id="lnk-icon-end" IconName="@BitIconName.ChevronRight" IconPlacement="BitPlacement.End" Href="/e2e/link">Trailing icon</BitLink>
+    <BitLink Id="lnk-icon-fa" Icon="@BitIconInfo.Fa("brands github")" Href="/e2e/link">FontAwesome</BitLink>
+    <BitLink Id="lnk-icon-fa-end" Icon="@BitIconInfo.Fa("solid arrow-up-right-from-square")" IconPlacement="BitPlacement.End" Href="/e2e/link">FontAwesome, trailing</BitLink>
+    <BitLink Id="lnk-icon-bi" Icon="@BitIconInfo.Bi("github")" Href="/e2e/link">Bootstrap</BitLink>
+    <BitLink Id="lnk-icon-css" Icon="@BitIconInfo.Css("e2e-css-icon e2e-star")" Href="/e2e/link">Css</BitLink>
+    <BitLink Id="lnk-icon-both" Icon="@BitIconInfo.Bi("github")" IconName="@BitIconName.Link" Href="/e2e/link">Icon wins over IconName</BitLink>
+</E2ESection>
+
+<E2ESection Id="new-tab" Title="New tab">
+    <BitLink Id="lnk-blank" Target="@BitLinkTarget.Blank" Href="/e2e/link/current">Opens in a new tab</BitLink>
+    <BitLink Id="lnk-blank-hint" Target="@BitLinkTarget.Blank" NewTabHint="(در زبانه جدید باز می‌شود)" Href="/e2e/link">Translated hint</BitLink>
+    <BitLink Id="lnk-blank-nohint" Target="@BitLinkTarget.Blank" NoNewTabHint IconName="@BitIconName.OpenInNewWindow" IconPlacement="BitPlacement.End" Href="/e2e/link">Page says it (opens in a new tab)</BitLink>
+    <BitLink Id="lnk-blank-aria" Target="@BitLinkTarget.Blank" AriaLabel="Docs" Href="/e2e/link">Labelled</BitLink>
+    <BitLink Id="lnk-blank-labelledby" Target="@BitLinkTarget.Blank" Href="/e2e/link"
+             HtmlAttributes="@(new Dictionary<string, object> { ["aria-labelledby"] = "external-link-name" })">Ignored</BitLink>
+    <span id="external-link-name">External name</span>
+    <BitLink Id="lnk-self" Target="@BitLinkTarget.Self" Href="/e2e/link">Self</BitLink>
+    <BitLink Id="lnk-blank-disabled" Target="@BitLinkTarget.Blank" Href="/e2e/link" Disabled>Disabled new tab</BitLink>
+    <BitLink Id="lnk-splat-target" Href="/e2e/link" HtmlAttributes="@(new Dictionary<string, object> { ["target"] = "_blank", ["rel"] = "external" })">Splatted target</BitLink>
+</E2ESection>
+
+<E2ESection Id="download" Title="Download">
+    <BitLink Id="lnk-download" Href="samples/link-download.svg" Download="">Download the logo</BitLink>
+    <BitLink Id="lnk-download-named" IconName="@BitIconName.Download" Href="samples/link-download.svg" Download="bit-platform-logo.svg">Download with a name</BitLink>
+    <BitLink Id="lnk-download-disabled" Href="samples/link-download.svg" Download="x.svg" Disabled>Disabled download</BitLink>
+</E2ESection>
+
+<E2ESection Id="rel" Title="Rel">
+    <BitLink Id="lnk-rel" Rel="BitLinkRels.NoFollow | BitLinkRels.NoReferrer" Href="/e2e/link">nofollow noreferrer</BitLink>
+    <BitLink Id="lnk-rel-sponsored" Rel="BitLinkRels.Sponsored | BitLinkRels.Ugc | BitLinkRels.PrivacyPolicy" Href="/e2e/link">sponsored ugc</BitLink>
+    <BitLink Id="lnk-rel-opener" Rel="BitLinkRels.Opener" Target="@BitLinkTarget.Blank" Href="/e2e/link">opener</BitLink>
+    <BitLink Id="lnk-rel-blank" Rel="BitLinkRels.Author" Target="@BitLinkTarget.Blank" Href="/e2e/link">author, blank</BitLink>
+    <BitLink Id="lnk-rel-disabled" Rel="BitLinkRels.Sponsored" Href="/e2e/link" Disabled>Disabled keeps rel</BitLink>
+    <BitLink Id="lnk-rel-hash" Rel="BitLinkRels.NoFollow" Href="#rel">In-page ignores rel</BitLink>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitLink Id="lnk-button" OnClick="HandleButtonClick">A button link</BitLink>
+    <span id="button-clicks">@_buttonClicks</span>
+    <span id="button-args">@_buttonArgs</span>
+    <BitLink Id="lnk-anchor-click" OnClick="() => _anchorClicks++" Target="@BitLinkTarget.Blank" Href="/e2e/link/current">An anchor with OnClick</BitLink>
+    <span id="anchor-clicks">@_anchorClicks</span>
+    <div id="container" @onclick="() => _containerClicks++" style="padding: 8px; border: 1px dashed gray;">
+        <BitLink Id="lnk-stop" StopPropagation OnClick="() => _innerClicks++">StopPropagation</BitLink>
+        <BitLink Id="lnk-bubble" OnClick="() => _bubbleClicks++">Bubbles</BitLink>
+    </div>
+    <span id="container-clicks">@_containerClicks</span>
+    <span id="inner-clicks">@_innerClicks</span>
+    <span id="bubble-clicks">@_bubbleClicks</span>
+    <BitLink Id="lnk-prevent" PreventDefault OnClick="() => _guardClicks++" Href="/e2e/link/current">Ask before leaving</BitLink>
+    <span id="guard-clicks">@_guardClicks</span>
+    <BitLink Id="lnk-navigate" Href="/e2e/link/current">Navigates</BitLink>
+</E2ESection>
+
+<E2ESection Id="in-page" Title="In-page links">
+    <BitLink Id="lnk-hash" Href="#article-end" OnClick="() => _hashClicks++">Go to the end of the article</BitLink>
+    <span id="hash-clicks">@_hashClicks</span>
+    <div style="height: 1500px; border: 1px dotted gray;">
+        <p id="article-start">The start.</p>
+    </div>
+    <p id="article-end">The end of the article.</p>
+    <p id="section 1">A section with a space in its id.</p>
+    <button id="article-button">A focusable target</button>
+    <BitLink Id="lnk-hash-encoded" Href="#section%201">Encoded fragment</BitLink>
+    <BitLink Id="lnk-hash-button" Href="#article-button">To a button</BitLink>
+    <BitLink Id="lnk-hash-empty" Href="#">Just a hash</BitLink>
+    <BitLink Id="lnk-hash-start" Href="#article-start">Back to the start</BitLink>
+</E2ESection>
+
+<E2ESection Id="current" Title="Current link">
+    <nav aria-label="E2E pages" id="current-nav">
+        <BitLink Id="lnk-match-prefix" Match="BitNavMatch.Prefix" Href="/e2e">E2E</BitLink>
+        <BitLink Id="lnk-match-exact" Match="BitNavMatch.Exact" Href="/e2e/link">Link</BitLink>
+        <BitLink Id="lnk-match-current" Match="BitNavMatch.Exact" Href="/e2e/link/current">Current</BitLink>
+        <BitLink Id="lnk-match-other" Match="BitNavMatch.Exact" Href="/e2e/other">Other</BitLink>
+        <BitLink Id="lnk-match-prefix-partial" Match="BitNavMatch.Prefix" Href="/e2e/lin">Partial segment</BitLink>
+        <BitLink Id="lnk-match-regex" Match="BitNavMatch.Regex" Href="^/e2e/link/cur.*$">Regex</BitLink>
+        <BitLink Id="lnk-match-wildcard" Match="BitNavMatch.Wildcard" Href="/e2e/*/current">Wildcard</BitLink>
+        <BitLink Id="lnk-match-location" Match="BitNavMatch.Prefix" AriaCurrent="BitNavAriaCurrent.Location" Href="/e2e/link">Location kind</BitLink>
+    </nav>
+    <button id="btn-go-current" @onclick="@(() => Navigation.NavigateTo("/e2e/link/current"))">Go to /current</button>
+    <button id="btn-go-link" @onclick="@(() => Navigation.NavigateTo("/e2e/link"))">Go to /link</button>
+    <span id="location">@(new Uri(Navigation.Uri).AbsolutePath)</span>
+    <ol aria-label="Checkout" id="steps">
+        @for (var i = 0; i < _steps.Length; i++)
+        {
+            var step = i;
+            <li>
+                <BitLink Id="@($"lnk-step-{step}")" AriaCurrent="@(_currentStep == step ? BitNavAriaCurrent.Step : null)" OnClick="() => _currentStep = step">@_steps[step]</BitLink>
+            </li>
+        }
+    </ol>
+    <BitLink Id="lnk-current-page" AriaCurrent="BitNavAriaCurrent.Page" Href="/e2e/link">Page</BitLink>
+    <BitLink Id="lnk-current-date" AriaCurrent="BitNavAriaCurrent.Date" Href="/e2e/link">Date</BitLink>
+    <BitLink Id="lnk-current-time" AriaCurrent="BitNavAriaCurrent.Time" Href="/e2e/link">Time</BitLink>
+    <BitLink Id="lnk-current-true" AriaCurrent="BitNavAriaCurrent.True" Href="/e2e/link">True</BitLink>
+    <BitLink Id="lnk-current-splat" Href="/e2e/link" HtmlAttributes="@(new Dictionary<string, object> { ["aria-current"] = "location" })">Splatted</BitLink>
+    <BitLink Id="lnk-current-nounderline" AriaCurrent="BitNavAriaCurrent.Page" NoUnderline Href="/e2e/link">Current, no underline</BitLink>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitLink Id="lnk-title" Title="github.com/bitfoundation/bitplatform" Href="/e2e/link">Hover for the full address</BitLink>
+    <BitLink Id="lnk-description" IconName="@BitIconName.Download" AriaDescription="SVG, 12 kilobytes" Href="samples/link-download.svg" Download="">Download the brand guidelines</BitLink>
+    <BitLink Id="lnk-description-splat" AriaDescription="More" Href="/e2e/link" HtmlAttributes="@(new Dictionary<string, object> { ["aria-describedby"] = "external-description" })">Two descriptions</BitLink>
+    <span id="external-description">Outside</span>
+    <button id="before-disabled">before</button>
+    <BitLink Id="lnk-a11y-disabled" Disabled Href="/e2e/link">Disabled (skipped by Tab)</BitLink>
+    <BitLink Id="lnk-a11y-disabled-focus" Disabled AllowDisabledFocus Href="/e2e/link" OnClick="() => _disabledFocusClicks++">Disabled (still focusable)</BitLink>
+    <BitLink Id="lnk-button-disabled" Disabled OnClick="() => _disabledFocusClicks++">Disabled button link</BitLink>
+    <BitLink Id="lnk-button-disabled-focus" Disabled AllowDisabledFocus OnClick="() => _disabledFocusClicks++">Disabled focusable button link</BitLink>
+    <span id="disabled-focus-clicks">@_disabledFocusClicks</span>
+    <BitLink Id="lnk-focus-trigger" OnClick="() => _focusTarget.FocusAsync()">Focus the link below</BitLink>
+    <BitLink @ref="_focusTarget" Id="lnk-focus-target" Href="/e2e/link">The focus lands here</BitLink>
+    <button id="btn-show-autofocus" @onclick="() => _showAutoFocus = true">Show autofocus link</button>
+    @if (_showAutoFocus)
+    {
+        <BitLink Id="lnk-autofocus" AutoFocus Href="/e2e/link">Autofocused</BitLink>
+        <BitLink Id="lnk-autofocus-disabled" AutoFocus Disabled Href="/e2e/link">Disabled autofocus is ignored</BitLink>
+    }
+    <BitLink Id="lnk-tabindex" TabIndex="-1" Href="/e2e/link">Tab index -1</BitLink>
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="css-container" style="--bit-Link-color: rgb(10, 20, 30); --bit-Link-hover-color: rgb(40, 50, 60); --bit-Link-active-color: rgb(70, 80, 90); --bit-Link-font-family: monospace; --bit-Link-font-size: 19px; --bit-Link-font-weight: 600; --bit-Link-underline-color: rgb(200, 0, 0); --bit-Link-underline-thickness: 3px; --bit-Link-underline-offset: 5px; --bit-Link-icon-gap: 9px; --bit-Link-radius: 7px; --bit-Link-focus-color: rgb(0, 150, 0);">
+        <button id="before-css">before</button>
+        <BitLink Id="lnk-css" Underlined IconName="@BitIconName.ChevronRight" IconPlacement="BitPlacement.End" Href="/e2e/link">Restyled</BitLink>
+        <BitLink Id="lnk-css-button">Button link</BitLink>
+        <BitLink Id="lnk-css-start-icon" IconName="@BitIconName.Link" Href="/e2e/link">Leading gap</BitLink>
+        <BitLink Id="lnk-css-params" Color="BitColor.Error" Size="BitSize.Small" Href="/e2e/link">Parameters win</BitLink>
+        <BitLink Id="lnk-css-nocolor" NoColor Href="/e2e/link">NoColor wins</BitLink>
+        <BitLink Id="lnk-css-disabled" Disabled Href="/e2e/link" Style="--bit-Link-disabled-color: rgb(1, 2, 3);">Disabled color</BitLink>
+        <BitLink Id="lnk-css-disabled-default" Disabled Href="/e2e/link">Disabled keeps its color</BitLink>
+    </div>
+    <div style="--bit-Link-color: rgb(100, 100, 100); --bit-Link-current-color: rgb(5, 6, 7); --bit-Link-current-font-weight: 800;">
+        <BitLink Id="lnk-css-current" AriaCurrent="BitNavAriaCurrent.Page" Href="/e2e/link">Current</BitLink>
+        <BitLink Id="lnk-css-not-current" Href="/e2e/link">Not current</BitLink>
+    </div>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_linkParams">
+        <BitLink Id="lnk-params-1" Href="/e2e/link/current">One</BitLink>
+        <BitLink Id="lnk-params-2" Href="/e2e/link/current">Two</BitLink>
+        <BitLink Id="lnk-params-3" Underlined="false" Href="/e2e/link/current">Own Underlined</BitLink>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="colors" Title="Color">
+    <div id="color-container" style="color: rgb(1, 2, 3);">
+        @foreach (var color in _colors)
+        {
+            <BitLink Id="@($"lnk-color-{color}")" Color="color" Href="/e2e/link">@color</BitLink>
+            <BitLink Id="@($"lnk-color-dis-{color}")" Color="color" Disabled Href="/e2e/link">@color</BitLink>
+        }
+        <BitLink Id="lnk-color-none" Href="/e2e/link">Unset</BitLink>
+        <BitLink Id="lnk-nocolor" NoColor Href="/e2e/link"><span id="nocolor-text">A card-like link</span></BitLink>
+    </div>
+</E2ESection>
+
+<E2ESection Id="sizes" Title="Size">
+    <div style="font-size: 23px;">
+        <BitLink Id="lnk-size-none" IconName="@BitIconName.Link" Href="/e2e/link">Unset</BitLink>
+        <BitLink Id="lnk-size-Small" Size="BitSize.Small" IconName="@BitIconName.Link" Href="/e2e/link">Small</BitLink>
+        <BitLink Id="lnk-size-Medium" Size="BitSize.Medium" IconName="@BitIconName.Link" Href="/e2e/link">Medium</BitLink>
+        <BitLink Id="lnk-size-Large" Size="BitSize.Large" IconName="@BitIconName.Link" Href="/e2e/link">Large</BitLink>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitLink Id="lnk-style" Style="color: rgb(218, 165, 32); font-weight: 700" Href="/e2e/link">Link with style</BitLink>
+    <BitLink Id="lnk-class" Class="e2e-link-class" Href="/e2e/link">Link with class</BitLink>
+    <BitLink Id="lnk-attrs" Href="/e2e/link" AriaLabel="Aria name" HtmlAttributes="@(new Dictionary<string, object> { ["data-e2e"] = "splatted", ["title"] = "Splatted title" })">Attributes</BitLink>
+    <BitLink Id="lnk-hidden" Visibility="BitVisibility.Hidden" Href="/e2e/link">Hidden</BitLink>
+    <BitLink Id="lnk-collapsed" Visibility="BitVisibility.Collapsed" Href="/e2e/link">Collapsed</BitLink>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitLink Id="lnk-rtl" Dir="BitDir.Rtl" Href="/e2e/link">پیوند راست به چپ</BitLink>
+    <BitLink Id="lnk-rtl-icon" Dir="BitDir.Rtl" IconName="@BitIconName.Link" Href="/e2e/link">پیوند با آیکن</BitLink>
+    <div dir="rtl">
+        <BitLink Id="lnk-rtl-inherited" IconName="@BitIconName.Link" Href="/e2e/link">پیوند</BitLink>
+    </div>
+    <BitLink Id="lnk-ltr-icon" IconName="@BitIconName.Link" Href="/e2e/link">Left to right</BitLink>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitLink Id="lnk-runtime" Href="@_runtimeHref" Disabled="_runtimeDisabled" Color="_runtimeColor" Target="@_runtimeTarget" OnClick="() => _runtimeClicks++">@_runtimeText</BitLink>
+    <span id="runtime-clicks">@_runtimeClicks</span>
+    <button id="btn-clear-href" @onclick="() => _runtimeHref = null">Clear href</button>
+    <button id="btn-set-href" @onclick="@(() => _runtimeHref = "/e2e/link")">Set href</button>
+    <button id="btn-toggle-disabled" @onclick="() => _runtimeDisabled = !_runtimeDisabled">Toggle disabled</button>
+    <button id="btn-set-color" @onclick="() => _runtimeColor = BitColor.Success">Success color</button>
+    <button id="btn-set-target" @onclick="() => _runtimeTarget = BitLinkTarget.Blank">Blank target</button>
+    <button id="btn-set-text" @onclick="@(() => _runtimeText = "Changed")">Change text</button>
+    <button id="btn-toggle-mounted" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitLink Id="lnk-mounted" Match="BitNavMatch.Exact" Href="/e2e/link/current">Mounted</BitLink>
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _splatClicks;
+    private int _splatHovers;
+    private int _disabledClicks;
+    private int _enabledSplatClicks;
+    private int _buttonClicks;
+    private string? _buttonArgs;
+    private int _anchorClicks;
+    private int _containerClicks;
+    private int _innerClicks;
+    private int _bubbleClicks;
+    private int _guardClicks;
+    private int _hashClicks;
+    private int _disabledFocusClicks;
+    private int _currentStep;
+    private bool _showAutoFocus;
+    private BitLink _focusTarget = default!;
+
+    private string? _runtimeHref = "/e2e/link";
+    private bool _runtimeDisabled;
+    private BitColor? _runtimeColor;
+    private string? _runtimeTarget;
+    private string _runtimeText = "Runtime";
+    private int _runtimeClicks;
+    private bool _mounted = true;
+
+    private readonly string[] _steps = ["Cart", "Shipping", "Payment"];
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly BitLinkParams[] _linkParams =
+    [
+        new()
+        {
+            Underlined = true,
+            Target = BitLinkTarget.Blank,
+            NewTabHint = "(nueva pestaña)",
+        }
+    ];
+
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += OnLocationChanged;
+    }
+
+    // The page stays the same instance across its two routes, so it re-renders the location it shows on its own.
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e) => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Navigation.LocationChanged -= OnLocationChanged;
+
+    private void HandleButtonClick(MouseEventArgs e)
+    {
+        _buttonClicks++;
+        _buttonArgs = $"detail={e.Detail};button={e.Button};type={e.Type}";
+    }
+}

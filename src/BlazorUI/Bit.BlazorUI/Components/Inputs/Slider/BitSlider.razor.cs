@@ -741,6 +741,19 @@ public partial class BitSlider : BitInputBase<double>
         base.OnAfterRender(firstRender);
     }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        // The autofocus attribute is only honoured while the browser is parsing the document, which is never
+        // when the markup arrives from an interactive render - so the attribute alone covers the statically
+        // rendered page and nothing else. The focus is moved here for the rest.
+        if (firstRender && AutoFocus && Disabled is false)
+        {
+            await _lowerInputRef.FocusSafelyAsync();
+        }
+    }
+
     /// <summary>
     /// The field a ranged slider reports to is the pair it selects, not the single value it never moves.
     /// </summary>

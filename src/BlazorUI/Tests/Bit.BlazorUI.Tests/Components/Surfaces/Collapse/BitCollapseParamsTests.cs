@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Threading;
+using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -9,13 +11,31 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Collapse;
 
 /// <summary>
-/// Covers the BitParams cascade of the Collapse: what a BitCollapseParams fills in, what it leaves alone because
-/// the collapse wrote it for itself, and that what the collapse derives from its parameters (its classes, its
-/// styles, its rendering and its timing) follows the cascaded values.
+/// Covers the BitParams cascade of the Collapse: that every parameter which is not about one section has a
+/// counterpart on BitCollapseParams, what a BitCollapseParams fills in, what it leaves alone because the collapse
+/// wrote it for itself, and that what the collapse derives from its parameters (its classes, its styles, its
+/// rendering and its timing) follows the cascaded values.
 /// </summary>
 [TestClass]
 public class BitCollapseParamsTests : BunitTestContext
 {
+    // What a section is about rather than how every section behaves - its content, its state, the element that
+    // names it and what it answers - is written per collapse, so it has no place on the params object.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitCollapse.CascadingParameters),
+        nameof(BitCollapse.Body),
+        nameof(BitCollapse.ChildContent),
+        nameof(BitCollapse.DefaultExpanded),
+        nameof(BitCollapse.Expanded),
+        nameof(BitCollapse.LabelledBy),
+        nameof(BitCollapse.OnChange),
+        nameof(BitCollapse.OnCollapsed),
+        nameof(BitCollapse.OnCollapsing),
+        nameof(BitCollapse.OnExpanded),
+        nameof(BitCollapse.OnExpanding),
+    ];
+
     private IRenderedComponent<BitParams> RenderWithParams(BitCollapseParams collapseParams, Action<RenderTreeBuilder>? extraAttributes = null)
     {
         return RenderComponent<BitParams>(parameters =>
@@ -161,10 +181,83 @@ public class BitCollapseParamsTests : BunitTestContext
 
         collapse.Render(parameters => parameters.Add(p => p.Expanded, false));
 
-        Thread.Sleep(100);
-
+        // NoAnimation ends the close at once, so the unmount only waits for the render that follows it.
         component.WaitForAssertion(() => Assert.IsFalse(component.Find(".bit-col-wrp").InnerHtml.Contains("Hello")),
                                    TimeSpan.FromSeconds(2));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldStopClippingThroughTheCascadeOnceItHasOpened()
+    {
+        var component = RenderWithParams(new BitCollapseParams
+        {
+            NoClip = true,
+            NoAnimation = true,
+        }, builder => builder.AddAttribute(1, nameof(BitCollapse.Expanded), true));
+
+        Assert.IsTrue(component.Find(".bit-col").ClassList.Contains("bit-col-ncl"));
+    }
+
+    [TestMethod]
+    public void BitCollapseShouldApplyTheCascadedStateClassesAndStyles()
+    {
+        var cascaded = new BitCollapseParams
+        {
+            Classes = new() { Expanded = "cascaded-expanded", Collapsed = "cascaded-collapsed" },
+            Styles = new() { Expanded = "width:3px", Collapsed = "width:5px" },
+        };
+
+        var component = RenderWithParams(cascaded, builder => builder.AddAttribute(1, nameof(BitCollapse.Expanded), false));
+
+        var root = component.Find(".bit-col");
+
+        Assert.IsTrue(root.ClassList.Contains("cascaded-collapsed"));
+        Assert.IsFalse(root.ClassList.Contains("cascaded-expanded"));
+        StringAssert.Contains(root.GetAttribute("style"), "width:5px");
+        Assert.IsFalse(root.GetAttribute("style")!.Contains("width:3px"));
+
+        component.FindComponent<BitCollapse>().Render(parameters => parameters.Add(p => p.Expanded, true));
+
+        root = component.Find(".bit-col");
+
+        Assert.IsTrue(root.ClassList.Contains("cascaded-expanded"));
+        Assert.IsFalse(root.ClassList.Contains("cascaded-collapsed"));
+        StringAssert.Contains(root.GetAttribute("style"), "width:3px");
+    }
+
+    [TestMethod]
+    public async Task BitCollapseShouldNotToggleWhenTheCascadeDisablesIt()
+    {
+        // Uncontrolled, so that only the disabling stands between the call and the state.
+        var component = RenderWithParams(new BitCollapseParams { Disabled = true }, builder => builder.AddAttribute(1, nameof(BitCollapse.DefaultExpanded), (bool?)true));
+
+        var collapse = component.FindComponent<BitCollapse>();
+
+        Assert.IsTrue(component.Find(".bit-col").ClassList.Contains("bit-dis"));
+        // A disabled section is out of the tab order, open or not.
+        Assert.AreEqual("-1", component.Find(".bit-col-con").GetAttribute("tabindex"));
+
+        await collapse.InvokeAsync(() => collapse.Instance.ToggleAsync());
+
+        Assert.IsTrue(collapse.Instance.Expanded);
+    }
+
+    [TestMethod]
+    public void BitCollapseParamsShouldCarryEveryParameterThatIsNotPerCollapse()
+    {
+        var baseParameters = typeof(BitComponentBase).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var parameters = typeof(BitCollapse).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                            .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                            .Select(p => p.Name)
+                                            .Where(n => baseParameters.Contains(n) is false
+                                                     && _notCascaded.Contains(n) is false
+                                                     && n.EndsWith("Changed", StringComparison.Ordinal) is false);
+
+        foreach (var name in parameters)
+        {
+            Assert.IsNotNull(typeof(BitCollapseParams).GetProperty(name), $"BitCollapseParams has no {name}.");
+        }
     }
 
     [TestMethod]

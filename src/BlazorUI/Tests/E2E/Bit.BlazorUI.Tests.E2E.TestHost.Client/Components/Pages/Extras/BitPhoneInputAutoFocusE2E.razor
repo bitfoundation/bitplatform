@@ -1,0 +1,14 @@
+﻿@page "/e2e/phone-input/autofocus"
+
+<PageTitle>BitPhoneInput AutoFocus E2E</PageTitle>
+
+<h1>BitPhoneInput AutoFocus</h1>
+
+@* AutoFocus takes the focus on the first render, which would disturb every focus test of the main page, so it is
+   hosted on a page of its own. *@
+<E2ESection Id="autofocus" Title="AutoFocus">
+    <button id="btn-before">Before</button>
+    <BitPhoneInput Id="phi-autofocus" AutoFocus DefaultCountry="BitCountries.UnitedStates" Placeholder="Enter your number" />
+</E2ESection>
+
+<E2EStatus />

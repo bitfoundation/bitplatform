@@ -10,9 +10,54 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Modal;
 
+/// <summary>
+/// Covers the BitParams cascade of the Modal (BitModalParams, the app-wide defaults a BitParams ancestor gives every
+/// Modal under it): what it fills in, what it leaves alone because the Modal wrote it for itself, and that a showing
+/// through the service and a container's own parameters both beat it. The service-side parameters object a Modal is
+/// shown with (BitModalParameters) is a different thing, covered by BitModalParametersTests.
+/// </summary>
 [TestClass]
 public class BitModalParamsTests : BunitTestContext
 {
+    [TestMethod]
+    public void BitModalParamsShouldHaveCorrectParamName()
+    {
+        var @params = new BitModalParams();
+
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitModal)}", BitModalParams.ParamName);
+        Assert.AreEqual("BitParams.BitModal", BitModalParams.ParamName);
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitModalParams.ParamName, @params.Name);
+    }
+
+    [TestMethod]
+    public void BitModalShouldNotBeAffectedByAnEmptyParamsObject()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { new BitModalParams() });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitModal>(0);
+                builder.AddComponentParameter(1, nameof(BitModal.IsOpen), true);
+                builder.AddComponentParameter(2, nameof(BitModal.ChildContent), (RenderFragment)(b => b.AddContent(0, "Content")));
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-mdl");
+        var content = component.Find(".bit-mdl-ctn");
+
+        CollectionAssert.AreEquivalent(new[] { "bit-mdl", "bit-mdl-bdr" }, root.ClassList.ToArray());
+        Assert.IsTrue(string.IsNullOrEmpty(root.GetAttribute("style")));
+        Assert.AreEqual("bit-mdl-ctn", content.ClassName);
+        Assert.AreEqual("dialog", content.GetAttribute("role"));
+        Assert.AreEqual("true", content.GetAttribute("aria-modal"));
+        Assert.AreEqual(1, component.FindAll(".bit-mdl-ovl").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-mdl-cls").Count);
+        Assert.AreEqual("Content", content.TextContent.Trim());
+    }
+
     [TestMethod]
     public void BitModalShouldRespectCascadingParams()
     {

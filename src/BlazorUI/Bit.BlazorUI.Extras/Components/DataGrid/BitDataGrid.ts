@@ -245,8 +245,13 @@
         // see the cell key guard - and an input event tells .NET about them as if they had been typed into it.
         public static focusEditor(root: HTMLElement, columnId: string, typed?: boolean) {
             if (!root) return;
-            const text = typedText.get(root)?.text;
+            const gathered = typedText.get(root);
+            const text = gathered?.text;
             typedText.delete(root);
+            // An editor opened another way (Enter, F2, a double-click) also takes what was typed into its cell while it
+            // was opening: the cell key guard gathered those keys and cancelled them, so they would otherwise be lost.
+            // Typed over the selected value, as they would have been had the editor already held the focus.
+            if (!typed && gathered && Date.now() - gathered.at < typedTextLifetime) typed = true;
             const cells = Array.from(root.querySelectorAll<HTMLElement>('[data-bit-dtg-edit]'))
                 .filter(c => c.closest('.bit-dtg') === root);
             const cell = (columnId ? cells.find(c => c.dataset.bitDtgEdit === columnId) : undefined) ?? cells[0];
@@ -373,35 +378,30 @@
         }
 
         // Measures the widest rendered content of one column (its header included) so .NET can
-        // auto-fit the column to it. Cells clip their overflow, so scrollWidth - not the box width -
-        // is what reports the untruncated content; the horizontal padding is added back because
-        // scrollWidth excludes it on a flex container.
+        // auto-fit the column to it. Each cell is laid out at its content's own width for a moment
+        // (width: max-content), which is what a cell's box says once nothing stretches it: neither the
+        // column's track nor the label of a header, which grows to fill its cell. Its scrollWidth could
+        // not tell that: it is never less than the cell's current width, so a fitted column could only
+        // grow - by its padding on every fit - and never shrink to content narrower than itself.
         public static measureColumnContentWidth(root: HTMLElement, ariaColIndex: number): number {
             if (!root) return 0;
-            const cells = root.querySelectorAll(`[aria-colindex="${ariaColIndex}"]`);
-            let widest = 0;
-            cells.forEach(node => {
+            const cells: HTMLElement[] = [];
+            root.querySelectorAll(`[aria-colindex="${ariaColIndex}"]`).forEach(node => {
                 const cell = node as HTMLElement;
                 // A spanning cell's content belongs to several columns, so it would over-size this one.
                 if (cell.style.gridColumn) return;
-                // The filter row's editors stretch to the column (.bit-dtg-filter-wrap is width:100%),
-                // so measuring that cell would report the column's current width back as its content:
-                // a fitted column could then never shrink, and a narrow one would snap to the width of
-                // the operator dropdown. Auto-fit is about the header and the data, so skip it.
+                // The filter row's editors stretch to the column (.bit-dtg-filter-wrap is width:100%), so their
+                // own width is the column's current one: auto-fit is about the header and the data.
                 if (cell.closest('.bit-dtg-filter-row')) return;
-                const styles = getComputedStyle(cell);
-                const padding = parseFloat(styles.paddingLeft || '0') + parseFloat(styles.paddingRight || '0');
-                // The header holds the sort/group/resize affordances next to its label, so measure its
-                // children's extent rather than the label alone. Both measurements exclude the cell's
-                // own padding, which the widest calculation below adds back exactly once.
-                let content = cell.scrollWidth;
-                for (let i = 0; i < cell.children.length; i++) {
-                    const child = cell.children[i] as HTMLElement;
-                    if (child.classList.contains('bit-dtg-resizer')) continue;
-                    content = Math.max(content, child.scrollWidth);
-                }
-                widest = Math.max(widest, content + padding);
+                cells.push(cell);
             });
+            // Every cell is switched to its content's width before any is measured, and all are put back after the
+            // last: a measurement between two writes would lay the whole grid out again once per cell.
+            const widths = cells.map(cell => cell.style.width);
+            cells.forEach(cell => cell.style.width = 'max-content');
+            let widest = 0;
+            cells.forEach(cell => widest = Math.max(widest, cell.getBoundingClientRect().width));
+            cells.forEach((cell, i) => cell.style.width = widths[i]);
             // A couple of pixels of slack keeps the fitted column from re-clipping on sub-pixel rounding.
             return widest > 0 ? Math.ceil(widest) + 2 : 0;
         }

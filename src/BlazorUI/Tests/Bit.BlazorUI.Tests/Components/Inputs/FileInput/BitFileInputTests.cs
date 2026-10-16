@@ -364,17 +364,6 @@ public class BitFileInputTests : BunitTestContext
         Assert.StartsWith("FileInput-", id2);
     }
 
-    [TestMethod]
-    public void BitFileInputShouldHaveCorrectRootElementClass()
-    {
-        var component = RenderComponent<BitFileInput>();
-
-        var container = component.Find(".bit-fin");
-        
-        Assert.IsNotNull(container);
-        Assert.IsTrue(container.ClassList.Contains("bit-fin"));
-    }
-
     [TestMethod,
         DataRow(BitDir.Ltr),
         DataRow(BitDir.Rtl),
@@ -925,22 +914,6 @@ public class BitFileInputTests : BunitTestContext
         Assert.AreEqual(0, fileList[0].ChildElementCount);
     }
 
-    [TestMethod,
-        DataRow(true),
-        DataRow(false)
-    ]
-    public void BitFileInputShouldHandleMultipleParameter(bool multiple)
-    {
-        var component = RenderComponent<BitFileInput>(parameters =>
-        {
-            parameters.Add(p => p.Multiple, multiple);
-        });
-
-        var fileInput = component.Find(".bit-fin-fi");
-        
-        Assert.AreEqual(multiple, fileInput.HasAttribute("multiple"));
-    }
-
     [TestMethod]
     public void BitFileInputShouldHaveCorrectFileInputType()
     {
@@ -1481,24 +1454,6 @@ public class BitFileInputTests : BunitTestContext
         var component = RenderComponent<BitFileInput>();
 
         await Assert.ThrowsExactlyAsync<ArgumentNullException>(() => component.Instance.OpenReadStreamAsync(null!));
-    }
-
-    [TestMethod]
-    public void BitFileInputParamsShouldHaveCorrectParamName()
-    {
-        var paramName = BitFileInputParams.ParamName;
-        var expectedName = $"{nameof(BitParams)}.{nameof(BitFileInput)}";
-
-        Assert.AreEqual(expectedName, paramName);
-    }
-
-    [TestMethod]
-    public void BitFileInputParamsShouldImplementIBitComponentParams()
-    {
-        var @params = new BitFileInputParams();
-
-        Assert.IsInstanceOfType<IBitComponentParams>(@params);
-        Assert.AreEqual(BitFileInputParams.ParamName, @params.Name);
     }
 
     [TestMethod]
@@ -2317,6 +2272,458 @@ public class BitFileInputTests : BunitTestContext
         Assert.IsFalse(editContext.GetValidationMessages().Any());
         Assert.IsFalse(component.Find(".bit-fin").ClassList.Contains("bit-inv"));
         Assert.IsNull(component.Find(".bit-fin-lbl").GetAttribute("aria-invalid"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldSplatTheHtmlAttributesOnItsRootAndDropTheActivationHandlersWhileDisabled()
+    {
+        var clicks = 0;
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object>
+            {
+                ["onclick"] = EventCallback.Factory.Create<Microsoft.AspNetCore.Components.Web.MouseEventArgs>(this, () => clicks++),
+                ["data-kept"] = "yes",
+            });
+        });
+
+        var root = component.Find(".bit-fin");
+        Assert.AreEqual("yes", root.GetAttribute("data-kept"));
+
+        root.Click();
+        Assert.AreEqual(1, clicks);
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        root = component.Find(".bit-fin");
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.AreEqual("yes", root.GetAttribute("data-kept"));
+
+        // The browse button, the native input and the carrier all say they are unavailable.
+        Assert.AreEqual("true", component.Find(".bit-fin-lbl").GetAttribute("aria-disabled"));
+        Assert.AreEqual("true", component.Find(".bit-fin-fi").GetAttribute("aria-disabled"));
+        var carrier = component.Find("input.bit-input-hidden");
+        Assert.IsTrue(carrier.HasAttribute("disabled"));
+        Assert.AreEqual("true", carrier.GetAttribute("aria-disabled"));
+
+        // A click reaching the root - one a screen reader dispatches, one bubbling up from inside - runs no
+        // handler of the page while the component is disabled.
+        try
+        {
+            root.Click();
+        }
+        catch (MissingEventHandlerException) { }
+
+        Assert.AreEqual(1, clicks);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldHandTheSelectionSettingsToTheScript()
+    {
+        SetupFiles([new() { Name = "a.png", Size = 10, FileId = "1" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Append, true);
+            parameters.Add(p => p.ShowPreview, true);
+            parameters.Add(p => p.ReadImageDimensions, true);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var args = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.FileInput.setup").Arguments;
+
+        Assert.AreEqual(true, args[2]);
+        Assert.AreEqual(true, args[3]);
+        Assert.AreEqual(true, args[4]);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldHandTheDropSettingsToTheScript()
+    {
+        RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.AllowDrop, false);
+            parameters.Add(p => p.AllowPaste, false);
+            parameters.Add(p => p.Directory, true);
+            parameters.Add(p => p.Classes, new BitFileInputClassStyles { Dragging = "c-drag" });
+            parameters.Add(p => p.Styles, new BitFileInputClassStyles { Dragging = "--s: drag;" });
+        });
+
+        var args = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.FileInput.setupDragDrop").Arguments;
+
+        // the class and style of the drag state are the script's to apply, so they travel with the setup.
+        Assert.AreEqual("bit-fin-drg c-drag", args[2]);
+        Assert.AreEqual("--s: drag;", args[3]);
+        Assert.AreEqual(false, args[4]);
+        Assert.AreEqual(false, args[5]);
+        Assert.AreEqual(true, args[6]);
+    }
+
+    [TestMethod,
+        DataRow(true, 2),
+        DataRow(false, 1)
+    ]
+    public void BitFileInputAppendShouldKeepTheEarlierSelection(bool append, int expectedCount)
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.Append, append);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        SetupFiles([new() { Name = "b.txt", Size = 10, FileId = "2" }]);
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.HasCount(expectedCount, component.Instance.Files);
+        Assert.AreEqual("b.txt", component.Instance.Files[^1].Name);
+        Assert.AreEqual(append ? "a.txt,b.txt" : "b.txt", component.Instance.Value);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRejectTheFileTypesTheAllowedExtensionsLeaveOut()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" },
+                    new() { Name = "b.pdf", Size = 10, FileId = "2" },
+                    new() { Name = "c.png", Size = 10, FileId = "3", ContentType = "image/png" },
+                    new() { Name = "d.PNG", Size = 10, FileId = "4" },
+                    new() { Name = "noext", Size = 10, FileId = "5" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.AllowedExtensions, new[] { "txt", "image/*", ".PNG" });
+            parameters.Add(p => p.NotAllowedExtensionErrorMessage, "not allowed");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var files = component.Instance.Files;
+
+        Assert.IsTrue(files[0].IsValid);
+        Assert.IsFalse(files[1].IsValid);
+        Assert.AreEqual("not allowed", files[1].Message);
+        // a wildcard MIME type matches the type the browser reported, and an extension matches regardless of case.
+        Assert.IsTrue(files[2].IsValid);
+        Assert.IsTrue(files[3].IsValid);
+        // a file without an extension can never match an extension entry.
+        Assert.IsFalse(files[4].IsValid);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRejectAnOversizedFileWithTheMaxSizeMessage()
+    {
+        SetupFiles([new() { Name = "big.txt", Size = 100, FileId = "1" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.MaxSize, 50);
+            parameters.Add(p => p.MaxSizeErrorMessage, "too big");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.IsFalse(component.Instance.Files[0].IsValid);
+        Assert.AreEqual("too big", component.Instance.Files[0].Message);
+        Assert.AreEqual("too big", component.Find(".bit-fin-msg").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldTurnAThrowingFileValidatorIntoThatFilesMessage()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" },
+                    new() { Name = "b.txt", Size = 10, FileId = "2" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.FileValidator, file => file.Name == "a.txt" ? throw new InvalidOperationException("boom") : (string?)null);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var files = component.Instance.Files;
+
+        // a throwing validator invalidates its own file instead of aborting the whole selection.
+        Assert.IsFalse(files[0].IsValid);
+        Assert.AreEqual("boom", files[0].Message);
+        Assert.IsTrue(files[1].IsValid);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRenderTheSizeThroughTheFileSizeFormatter()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 2048, FileId = "1" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.FileSizeFormatter, size => $"{size} bytes");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.AreEqual("2048 bytes", component.Find(".bit-fin-fs").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldAnnounceThroughTheAnnouncementProvider()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.AnnouncementProvider, files => $"{files.Count} attached");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        Assert.AreEqual("1 attached​", component.Find(".bit-fin-lvr").TextContent);
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRenderTheFileViewTemplateInsideAListItem()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.FileViewTemplate, file => builder => builder.AddMarkupContent(0, $"<b class=\"my-file\">{file.Name}</b>"));
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var item = component.Find(".bit-fin-fl > [role=listitem]");
+
+        Assert.AreEqual("a.txt", item.QuerySelector(".my-file")!.TextContent);
+        Assert.IsEmpty(component.FindAll(".bit-fin-itm"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRenderADecorativePreviewThumbnail()
+    {
+        SetupFiles([new() { Name = "a.png", Size = 10, FileId = "1", ContentType = "image/png", PreviewUrl = "blob:a" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowPreview, true);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var preview = component.Find(".bit-fin-prv");
+
+        Assert.AreEqual("blob:a", preview.GetAttribute("src"));
+        Assert.AreEqual(string.Empty, preview.GetAttribute("alt"));
+        Assert.AreEqual("false", preview.GetAttribute("draggable"));
+        Assert.IsEmpty(component.FindAll(".bit-fin-fio"));
+    }
+
+    [TestMethod]
+    public void BitFileInputShouldRenderTheRemoveButtonTitle()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.ShowRemoveButton, true);
+            parameters.Add(p => p.RemoveButtonTitle, "Drop");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var button = component.Find(".bit-fin-rbt");
+
+        Assert.AreEqual("Drop", button.GetAttribute("title"));
+        Assert.AreEqual("Drop a.txt", button.GetAttribute("aria-label"));
+        Assert.AreEqual("button", button.GetAttribute("type"));
+    }
+
+    [TestMethod]
+    public async Task BitFileInputRemoveButtonShouldRemoveItsFileAndReportIt()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" },
+                    new() { Name = "b.txt", Size = 10, FileId = "2" }]);
+
+        var removed = new List<string>();
+        var filesChanges = 0;
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.ShowRemoveButton, true);
+            parameters.Add(p => p.OnRemove, file => removed.Add(file.Name));
+            parameters.Add(p => p.OnFilesChange, () => filesChanges++);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        await component.FindAll(".bit-fin-rbt")[1].ClickAsync(new());
+
+        CollectionAssert.AreEqual(new[] { "b.txt" }, removed);
+        Assert.AreEqual(2, filesChanges);
+        Assert.AreEqual("a.txt", component.Instance.Value);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileInput.removeFile"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputReadContentShouldReadTheValidFilesOnly()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" },
+                    new() { Name = "big.txt", Size = 100, FileId = "2" }]);
+        Context.JSInterop.Setup<byte[]>("BitBlazorUI.FileInput.readContent", _ => true).SetResult([1, 2, 3]);
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.MaxSize, 50);
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        var instance = component.Instance;
+
+        await component.InvokeAsync(() => instance.ReadContentAsync());
+
+        CollectionAssert.AreEqual(new byte[] { 1, 2, 3 }, instance.Files[0].Content);
+        // the rejected file is not read, whether by the read of them all or by one of its own.
+        Assert.IsNull(instance.Files[1].Content);
+
+        await component.InvokeAsync(() => instance.ReadContentAsync(instance.Files[1]));
+
+        Assert.IsNull(instance.Files[1].Content);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileInput.readContent"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputReadContentShouldReadNothingWhileDisabled()
+    {
+        SetupFiles([new() { Name = "a.txt", Size = 10, FileId = "1" }]);
+        Context.JSInterop.Setup<byte[]>("BitBlazorUI.FileInput.readContent", _ => true).SetResult([1]);
+
+        var component = RenderComponent<BitFileInput>();
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        await component.InvokeAsync(() => component.Instance.ReadContentAsync());
+
+        Assert.IsNull(component.Instance.Files[0].Content);
+        Assert.IsEmpty(Context.JSInterop.Invocations["BitBlazorUI.FileInput.readContent"]);
+    }
+
+    [TestMethod]
+    public async Task BitFileInputFocusShouldLandOnTheBrowseButtonWhileThereIsOne()
+    {
+        var component = RenderComponent<BitFileInput>();
+
+        await component.InvokeAsync(async () => await component.Instance.FocusAsync());
+
+        Context.JSInterop.VerifyFocusAsyncInvoke();
+
+        // a hidden button is nothing to focus.
+        var hidden = RenderComponent<BitFileInput>(parameters => parameters.Add(p => p.HideLabel, true));
+
+        var focusCalls = Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
+
+        await hidden.InvokeAsync(async () => await hidden.Instance.FocusAsync());
+
+        Assert.AreEqual(focusCalls, Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+    }
+
+    [TestMethod]
+    public async Task BitFileInputDisposeShouldReleaseTheScriptSide()
+    {
+        var component = RenderComponent<BitFileInput>();
+
+        await component.Instance.DisposeAsync();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.FileInput.clear"].Count);
+    }
+
+    [TestMethod]
+    public void BitFileInputClassesAndStylesShouldReachEveryPart()
+    {
+        SetupFiles([new() { Name = "a.png", Size = 10, FileId = "1", ContentType = "image/png", PreviewUrl = "blob:a" },
+                    new() { Name = "big.txt", Size = 100, FileId = "2", RelativePath = "docs/x/big.txt" }]);
+
+        var classes = new BitFileInputClassStyles
+        {
+            Root = "c-root",
+            Label = "c-label",
+            DropZoneIcon = "c-dzi",
+            Description = "c-description",
+            FileList = "c-list",
+            FileItem = "c-item",
+            Preview = "c-preview",
+            FileIcon = "c-file-icon",
+            FileName = "c-name",
+            FilePath = "c-path",
+            FileSize = "c-size",
+            ErrorMessage = "c-error",
+            RemoveButton = "c-remove",
+            RemoveIcon = "c-remove-icon",
+        };
+
+        var styles = new BitFileInputClassStyles
+        {
+            Root = "--s: root;",
+            Label = "--s: label;",
+            DropZoneIcon = "--s: dzi;",
+            Description = "--s: description;",
+            FileList = "--s: list;",
+            FileItem = "--s: item;",
+            Preview = "--s: preview;",
+            FileIcon = "--s: file-icon;",
+            FileName = "--s: name;",
+            FilePath = "--s: path;",
+            FileSize = "--s: size;",
+            ErrorMessage = "--s: error;",
+            RemoveButton = "--s: remove;",
+            RemoveIcon = "--s: remove-icon;",
+        };
+
+        var component = RenderComponent<BitFileInput>(parameters =>
+        {
+            parameters.Add(p => p.Classes, classes);
+            parameters.Add(p => p.Styles, styles);
+            parameters.Add(p => p.Multiple, true);
+            parameters.Add(p => p.Directory, true);
+            parameters.Add(p => p.ShowDropZone, true);
+            parameters.Add(p => p.ShowPreview, true);
+            parameters.Add(p => p.ShowRemoveButton, true);
+            parameters.Add(p => p.MaxSize, 50);
+            parameters.Add(p => p.Description, "A hint");
+        });
+
+        component.Find(".bit-fin-fi").Change(string.Empty);
+
+        void AssertPart(string selector, string cssClass, string style)
+        {
+            var element = component.Find(selector);
+
+            Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}.");
+            StringAssert.Contains(element.GetAttribute("style") ?? string.Empty, style, $"{selector} lacks {style}.");
+        }
+
+        AssertPart(".bit-fin", "c-root", "--s: root;");
+        AssertPart(".bit-fin-lbl", "c-label", "--s: label;");
+        AssertPart(".bit-fin-dzi", "c-dzi", "--s: dzi;");
+        AssertPart(".bit-fin-dsc", "c-description", "--s: description;");
+        AssertPart(".bit-fin-fl", "c-list", "--s: list;");
+        AssertPart(".bit-fin-itm", "c-item", "--s: item;");
+        AssertPart(".bit-fin-prv", "c-preview", "--s: preview;");
+        AssertPart(".bit-fin-fio", "c-file-icon", "--s: file-icon;");
+        AssertPart(".bit-fin-fn", "c-name", "--s: name;");
+        AssertPart(".bit-fin-fp", "c-path", "--s: path;");
+        AssertPart(".bit-fin-fs", "c-size", "--s: size;");
+        AssertPart(".bit-fin-msg", "c-error", "--s: error;");
+        AssertPart(".bit-fin-rbt", "c-remove", "--s: remove;");
+        AssertPart(".bit-fin-rbt i", "c-remove-icon", "--s: remove-icon;");
     }
 
     private void SetupFiles(BitFileInputInfo[] files)

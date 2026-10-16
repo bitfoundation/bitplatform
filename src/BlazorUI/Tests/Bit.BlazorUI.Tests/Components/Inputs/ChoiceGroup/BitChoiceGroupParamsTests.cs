@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -49,6 +51,47 @@ public class BitChoiceGroupParamsTests : BunitTestContext
 
         Assert.IsInstanceOfType<IBitComponentParams>(@params);
         Assert.AreEqual(BitChoiceGroupParams.ParamName, @params.Name);
+    }
+
+    // What a group is about rather than how it looks - its items, how it reads them, its item templates and the
+    // callbacks it answers with - is written per group, so it has no place on the params object.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.CascadingParameters),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.ChildContent),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Comparer),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.ItemLabelTemplate),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.ItemPrefixTemplate),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.ItemSuffixTemplate),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.ItemTemplate),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Items),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.NameSelectors),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.OnBlur),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.OnClick),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.OnFocus),
+        nameof(BitChoiceGroup<BitChoiceGroupItem<string>, string>.Options),
+    ];
+
+    [TestMethod]
+    public void BitChoiceGroupParamsShouldCarryEveryParameterThatIsNotPerGroup()
+    {
+        // What the input base declares (the value, its binding and validation) is per instance, and so is every
+        // callback, the ones the source generator writes beside a two-way bound parameter included.
+        var baseParameters = typeof(BitChoiceGroup<BitChoiceGroupItem<string>, string>).BaseType!.GetProperties().Select(p => p.Name)
+                                 .Concat(typeof(BitChoiceGroup<BitChoiceGroupItem<string>, string>).GetProperties()
+                                                       .Where(p => p.PropertyType == typeof(EventCallback) ||
+                                                                   (p.PropertyType.IsGenericType && p.PropertyType.GetGenericTypeDefinition() == typeof(EventCallback<>)))
+                                                       .Select(p => p.Name))
+                                 .ToHashSet();
+
+        var missing = typeof(BitChoiceGroup<BitChoiceGroupItem<string>, string>).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                                                                .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                                                                .Select(p => p.Name)
+                                                                                .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
+                                                                                .Where(n => typeof(BitChoiceGroupParams).GetProperty(n) is null)
+                                                                                .ToArray();
+
+        Assert.AreEqual(0, missing.Length, $"{nameof(BitChoiceGroupParams)} is missing: {string.Join(", ", missing)}");
     }
 
     [TestMethod]

@@ -599,6 +599,96 @@ public class BitBasicListTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitBasicListAutoLoadThresholdShouldBeDrawnIntoTheSentinel()
+    {
+        var component = RenderLoadMoreList(5, GetTestData(12));
+        component.Render(p => p.Add(x => x.AutoLoad, true));
+
+        // No threshold: the zero sized marker alone.
+        Assert.IsFalse(component.Find(".bit-bsl-snt").HasAttribute("style"));
+
+        // A strip of the threshold's length laid back over the end of the items, so it takes no room and is clipped by
+        // whichever box scrolls the list (the list itself included), which a rootMargin of the observer never was.
+        component.Render(p => p.Add(x => x.AutoLoadThreshold, 150));
+        Assert.AreEqual("height:150px;margin-block-start:-150px", component.Find(".bit-bsl-snt").GetAttribute("style"));
+
+        // Along the inline axis in a horizontal list.
+        component.Render(p => p.Add(x => x.Horizontal, true));
+        Assert.AreEqual("width:150px;margin-inline-start:-150px", component.Find(".bit-bsl-snt").GetAttribute("style"));
+
+        // A negative threshold is no threshold.
+        component.Render(p => p.Add(x => x.AutoLoadThreshold, -20));
+        Assert.IsFalse(component.Find(".bit-bsl-snt").HasAttribute("style"));
+    }
+
+    [TestMethod]
+    public void BitBasicListAutoLoadShouldRegisterTheObserverOnceWithoutARootMargin()
+    {
+        var component = RenderLoadMoreList(5, GetTestData(12));
+        component.Render(p =>
+        {
+            p.Add(x => x.AutoLoad, true);
+            p.Add(x => x.AutoLoadThreshold, 100);
+        });
+
+        var registrations = Context.JSInterop.Invocations["BitBlazorUI.Observers.registerIntersection"];
+        Assert.HasCount(1, registrations);
+        Assert.HasCount(3, registrations[0].Arguments);
+
+        // The threshold lives in the sentinel's geometry, which the observer follows by itself.
+        component.Render(p => p.Add(x => x.AutoLoadThreshold, 300));
+
+        Assert.HasCount(1, Context.JSInterop.Invocations["BitBlazorUI.Observers.registerIntersection"]);
+        Assert.AreEqual(0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Observers.unregisterIntersection"));
+    }
+
+    [TestMethod,
+        DataRow(false, false),
+        DataRow(true, false),
+        DataRow(false, true),
+        DataRow(true, true)]
+    public void BitBasicListStickyHeaderAndStickyFooterShouldRenderTheirClasses(bool stickyHeader, bool stickyFooter)
+    {
+        var component = RenderList(p =>
+        {
+            p.Add(x => x.StickyHeader, stickyHeader);
+            p.Add(x => x.StickyFooter, stickyFooter);
+            p.Add(x => x.HeaderTemplate, (RenderFragment)(b => b.AddContent(0, "Header")));
+            p.Add(x => x.FooterTemplate, (RenderFragment)(b => b.AddContent(0, "Footer")));
+        });
+
+        var root = component.Find(".bit-bsl");
+
+        Assert.AreEqual(stickyHeader, root.ClassList.Contains("bit-bsl-shd"));
+        Assert.AreEqual(stickyFooter, root.ClassList.Contains("bit-bsl-sft"));
+
+        // The wrappers are what sticks, so they stay direct children of the scrolling root.
+        Assert.IsNotNull(component.Find(".bit-bsl > .bit-bsl-hdr"));
+        Assert.IsNotNull(component.Find(".bit-bsl > .bit-bsl-ftr"));
+    }
+
+    [TestMethod]
+    public void BitBasicListStickyHeaderAndStickyFooterShouldComeFromTheCascade()
+    {
+        var component = RenderComponent<BitParams>(p =>
+        {
+            p.Add(x => x.Parameters, [new BitBasicListParams { StickyHeader = true, StickyFooter = true }]);
+            p.Add(x => x.ChildContent, (RenderFragment)(b =>
+            {
+                b.OpenComponent<BitBasicList<Person>>(0);
+                b.AddAttribute(1, nameof(BitBasicList<Person>.Items), GetTestData(3));
+                b.AddAttribute(2, nameof(BitBasicList<Person>.StickyFooter), false);
+                b.CloseComponent();
+            }));
+        });
+
+        var root = component.Find(".bit-bsl");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-bsl-shd"));
+        Assert.IsFalse(root.ClassList.Contains("bit-bsl-sft"), "a value written on the list wins over the cascade");
+    }
+
+    [TestMethod]
     public void BitBasicListShouldNotRenderTheSentinelOnceEverythingIsLoaded()
     {
         var component = RenderComponent<BitBasicList<Person>>(p =>
@@ -1383,6 +1473,8 @@ public class BitBasicListTests : BunitTestContext
             LoadMoreText = "More",
             OverscanCount = 9,
             Role = "feed",
+            StickyFooter = true,
+            StickyHeader = true,
             Styles = styles,
             Virtualize = true,
             AriaLabel = "People",
@@ -1412,6 +1504,8 @@ public class BitBasicListTests : BunitTestContext
         Assert.AreEqual("More", list.LoadMoreText);
         Assert.AreEqual(9, list.OverscanCount);
         Assert.AreEqual("feed", list.Role);
+        Assert.IsTrue(list.StickyFooter);
+        Assert.IsTrue(list.StickyHeader);
         Assert.AreSame(styles, list.Styles);
         Assert.IsTrue(list.Virtualize);
         Assert.AreEqual("People", list.AriaLabel);

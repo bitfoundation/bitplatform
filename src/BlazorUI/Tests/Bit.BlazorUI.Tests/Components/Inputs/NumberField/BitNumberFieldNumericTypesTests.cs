@@ -14,12 +14,6 @@ namespace Bit.BlazorUI.Tests.Components.Inputs.NumberField;
 [TestClass]
 public class BitNumberFieldNumericTypesTests : BunitTestContext
 {
-    [TestInitialize]
-    public void SetupJsInteropMode()
-    {
-        Context.JSInterop.Mode = JSRuntimeMode.Loose;
-    }
-
     private void Spin<TValue>(IRenderedComponent<BitNumberField<TValue>> component, bool up)
     {
         component.Find("input").KeyDown(new KeyboardEventArgs { Key = up ? "ArrowUp" : "ArrowDown" });

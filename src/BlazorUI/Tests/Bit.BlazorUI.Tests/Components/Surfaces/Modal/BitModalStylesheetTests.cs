@@ -184,6 +184,18 @@ public class BitModalStylesheetTests
         return Regex.Match(rules, $@"\n{selector} \{{.*?\n\}}", RegexOptions.Singleline).Value;
     }
 
+    [TestMethod]
+    public void BitModalDragHandleShouldStartNoTextSelection()
+    {
+        // The class the drag-drop script puts on the handle of a draggable Modal or Dialog: a press on it is a move,
+        // never a selection - nor, in Firefox, a drag of text an earlier selection reached.
+        var handle = SourceFiles.GetScssBlock(ReadStylesheet(), "\n.bit-mdl-nta {");
+
+        StringAssert.Contains(handle, "touch-action: none;");
+        StringAssert.Contains(handle, "-webkit-user-select: none;");
+        StringAssert.Contains(handle, "\n    user-select: none;");
+    }
+
     private static string GetHeader(string stylesheet) => stylesheet[..stylesheet.IndexOf("\n.bit-mdl {")];
 
     private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Modal", "BitModal.scss");

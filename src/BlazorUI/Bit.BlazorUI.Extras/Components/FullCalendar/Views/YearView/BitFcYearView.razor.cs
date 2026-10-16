@@ -38,7 +38,7 @@ public partial class BitFcYearView
         // A month they put entirely out of reach clamps into a neighbouring one, and that is where the
         // navigation stops.
         var target = State.ClampToAllowedRange(month);
-        var calendar = State.Culture.Calendar;
+        var calendar = State.Culture.DateTimeFormat.Calendar;
         if (calendar.GetYear(target) != calendar.GetYear(month) || calendar.GetMonth(target) != calendar.GetMonth(month))
             return;
 
@@ -63,7 +63,7 @@ public partial class BitFcYearView
         if (index < 0)
             return;
 
-        var calendar = State.Culture.Calendar;
+        var calendar = State.Culture.DateTimeFormat.Calendar;
         // Left and right step to the previous and the next busy day in reading order, up and down to the first one a
         // week away, PageUp and PageDown to the first one of the neighbouring month, Home and End to the year's ends.
         DateTime? target = e.Key switch

@@ -1,0 +1,381 @@
+﻿@page "/e2e/date-range-picker"
+@using System.Globalization
+
+@* The core of BitDateRangePicker: picking a range by pointer and keyboard with its preview, the callout opened and
+   closed every way, the presets, Apply and Cancel, the bounds (MinDate/MaxDate, DisablePast/DisableFuture,
+   MinRange/MaxRange), the day rules and ExcludeDisabledDates, highlighted days, the calendar layout and several
+   months, Standalone, ReadOnly, the templates, validation, the programmatic API, the accessible names, the base
+   parameters and the lifecycle. Every picker is pinned to en-US and to a "today" of Wednesday, June 12, 2024. *@
+
+<PageTitle>BitDateRangePicker E2E</PageTitle>
+
+<h1>BitDateRangePicker</h1>
+
+<E2ESection Id="basic" Title="Basic: bind, pick a range, open and close, events">
+    <button id="before-basic" type="button">Before</button>
+    <BitDateRangePicker Id="drp-basic"
+                        Label="Stay"
+                        Placeholder="Pick a range"
+                        Culture="_en"
+                        Today="_today"
+                        @bind-Value="_basicValue"
+                        OnSelectDate="v => { _selectCount++; _lastSelect = Fmt(v); }"
+                        OnChange="v => { _changeCount++; _lastChange = Fmt(v); }"
+                        OnMonthChange="v => { _monthCount++; _lastMonth = v.ToString(DayFormat, CultureInfo.InvariantCulture); }"
+                        OnClick="() => _clickCount++"
+                        OnFocus="() => _focusCount++"
+                        OnFocusIn="() => _focusInCount++"
+                        OnFocusOut="() => _focusOutCount++"
+                        OnOpen="() => _openCount++"
+                        OnClose="() => _closeCount++" />
+    <button id="after-basic" type="button">After</button>
+    <div>Value: <span id="basic-value">@Fmt(_basicValue)</span></div>
+    <div>
+        select <span id="basic-select-count">@_selectCount</span> (<span id="basic-last-select">@_lastSelect</span>),
+        change <span id="basic-change-count">@_changeCount</span> (<span id="basic-last-change">@_lastChange</span>),
+        month <span id="basic-month-count">@_monthCount</span> (<span id="basic-last-month">@_lastMonth</span>),
+        click <span id="basic-click-count">@_clickCount</span>,
+        focus <span id="basic-focus-count">@_focusCount</span>,
+        focusin <span id="basic-focusin-count">@_focusInCount</span>,
+        focusout <span id="basic-focusout-count">@_focusOutCount</span>,
+        open <span id="basic-open-count">@_openCount</span>,
+        close <span id="basic-close-count">@_closeCount</span>
+    </div>
+    <button id="btn-basic-set" type="button" @onclick="() => _basicValue = Range(Local(2024, 7, 1), Local(2024, 7, 4, 23, 59))">Set July 1 - 4</button>
+    <button id="btn-basic-null" type="button" @onclick="() => _basicValue = null">Set null</button>
+</E2ESection>
+
+<E2ESection Id="default-value" Title="DefaultValue and OnChange (uncontrolled)">
+    <BitDateRangePicker Id="drp-default"
+                        DefaultValue="Range(Local(2024, 6, 3), Local(2024, 6, 5, 23, 59))"
+                        Culture="_en"
+                        Today="_today"
+                        OnChange="v => _defaultChanged = Fmt(v)" />
+    <div>Changed: <span id="default-changed">@_defaultChanged</span></div>
+</E2ESection>
+
+<E2ESection Id="clear-autoclose" Title="ShowClearButton, AutoClose and the month highlights">
+    <BitDateRangePicker Id="drp-clear"
+                        ShowClearButton
+                        ClearButtonTitle="Clear the dates"
+                        Culture="_en"
+                        Today="_today"
+                        @bind-Value="_clearValue"
+                        OnClear="() => _clearCount++" />
+    <div>Value: <span id="clear-value">@Fmt(_clearValue)</span>, cleared <span id="clear-count">@_clearCount</span></div>
+    <BitDateRangePicker Id="drp-noautoclose" AutoClose="false" Culture="_en" Today="_today" @bind-Value="_noAutoCloseValue" />
+    <div>Value: <span id="noautoclose-value">@Fmt(_noAutoCloseValue)</span></div>
+    <BitDateRangePicker Id="drp-months-hl" HighlightCurrentMonth HighlightSelectedMonth Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-toggle-title" ShowMonthPickerAsOverlay MonthPickerToggleTitle="Pick another month than {0}" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="presets" Title="Presets">
+    <BitDateRangePicker Id="drp-presets"
+                        Presets="_presets"
+                        PresetsAriaLabel="Quick ranges"
+                        MinDate="Local(2024, 1, 1)"
+                        Culture="_en"
+                        Today="_today"
+                        @bind-Value="_presetsValue"
+                        OnPresetSelect="p => { _presetCount++; _lastPreset = p.Text; }" />
+    <div>Value: <span id="presets-value">@Fmt(_presetsValue)</span>, preset <span id="presets-last">@_lastPreset</span> (<span id="presets-count">@_presetCount</span>)</div>
+    <BitDateRangePicker Id="drp-presets-sa" Standalone Presets="_presets" Culture="_en" Today="_today" @bind-Value="_presetsSaValue" />
+    <div>Value: <span id="presets-sa-value">@Fmt(_presetsSaValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="apply" Title="AutoApply off: Apply and Cancel">
+    <BitDateRangePicker Id="drp-apply"
+                        AutoApply="false"
+                        ShowClearButton
+                        Presets="_presets"
+                        ApplyButtonText="Book"
+                        CancelButtonText="Never mind"
+                        Culture="_en"
+                        Today="_today"
+                        @bind-Value="_applyValue"
+                        OnApply="@(v => _applyOutcome = $"Applied {Fmt(v)}")"
+                        OnCancel="() => _applyOutcome = Cancelled" />
+    <div>Value: <span id="apply-value">@Fmt(_applyValue)</span>, outcome <span id="apply-outcome">@_applyOutcome</span></div>
+</E2ESection>
+
+<E2ESection Id="minmax" Title="MinDate, MaxDate, DisablePast and DisableFuture">
+    <BitDateRangePicker Id="drp-minmax" MinDate="Local(2024, 6, 7)" MaxDate="Local(2024, 6, 17)" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-past" DisablePast Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-future" DisableFuture Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="ranges" Title="MinRange and MaxRange">
+    <BitDateRangePicker Id="drp-minrange" MinRange="TimeSpan.FromDays(3)" Culture="_en" Today="_today" @bind-Value="_minRangeValue" />
+    <div>Value: <span id="minrange-value">@Fmt(_minRangeValue)</span></div>
+    <BitDateRangePicker Id="drp-minmaxrange" MinRange="TimeSpan.FromDays(2)" MaxRange="TimeSpan.FromDays(7)" Culture="_en" Today="_today" @bind-Value="_minMaxRangeValue" />
+    <div>Value: <span id="minmaxrange-value">@Fmt(_minMaxRangeValue)</span></div>
+    <BitDateRangePicker Id="drp-maxrange-time" MaxRange="new TimeSpan(2, 4, 30, 0)" ShowTimePicker Culture="_en" Today="_today" @bind-Value="_maxRangeTimeValue" />
+    <div>Value: <span id="maxrange-time-value">@Fmt(_maxRangeTimeValue)</span></div>
+    <BitDateRangePicker Id="drp-maxrange-short" MaxRange="TimeSpan.FromHours(6)" ShowTimePicker Culture="_en" Today="_today" @bind-Value="_maxRangeShortValue" />
+    <div>Value: <span id="maxrange-short-value">@Fmt(_maxRangeShortValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="disabled-dates" Title="DisabledDaysOfWeek, DisabledDates, IsDateDisabled and ExcludeDisabledDates">
+    <BitDateRangePicker Id="drp-weekend" DisabledDaysOfWeek="_weekend" Culture="_en" Today="_today" @bind-Value="_weekendValue" />
+    <div>Value: <span id="weekend-value">@Fmt(_weekendValue)</span></div>
+    <BitDateRangePicker Id="drp-dates" DisabledDates="_disabledDates" Culture="_en" Today="_today" @bind-Value="_datesValue" />
+    <div>Value: <span id="dates-value">@Fmt(_datesValue)</span></div>
+    <BitDateRangePicker Id="drp-isdisabled" IsDateDisabled="@(d => d.Date < _today.Date)" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-exclude" DisabledDates="_disabledDates" ExcludeDisabledDates Culture="_en" Today="_today" @bind-Value="_excludeValue" />
+    <div>Value: <span id="exclude-value">@Fmt(_excludeValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="highlighted" Title="HighlightedDates, GetDayClass and HighlightToday">
+    <BitDateRangePicker Id="drp-hl" HighlightedDates="_highlightedDates" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-dayclass" GetDayClass="@(d => d.DayOfWeek == DayOfWeek.Friday ? "e2e-friday" : null)" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-notoday" HighlightToday="false" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="layout" Title="Calendar layout">
+    <BitDateRangePicker Id="drp-monday" FirstDayOfWeek="DayOfWeek.Monday" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-weeks" ShowWeekNumbers FirstDayOfWeek="DayOfWeek.Monday" WeekNumberRule="CalendarWeekRule.FirstFourDayWeek" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-noout" ShowOutsideDays="false" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-fixed" FixedWeeks Culture="_en" Today="_february" />
+    <BitDateRangePicker Id="drp-notfixed" Culture="_en" Today="_february" />
+    <BitDateRangePicker Id="drp-overlay" ShowMonthPickerAsOverlay Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-nomonth" IsMonthPickerVisible="false" Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-close" ShowGoToToday="false" ShowCloseButton Culture="_en" Today="_today" OnClose="() => _closeButtonCloses++" />
+    <div>closed <span id="close-count">@_closeButtonCloses</span></div>
+</E2ESection>
+
+<E2ESection Id="months" Title="MonthCount and PagedNavigation">
+    <BitDateRangePicker Id="drp-two" MonthCount="2" Culture="_en" Today="_today" @bind-Value="_twoValue" />
+    <div>Value: <span id="two-value">@Fmt(_twoValue)</span></div>
+    <BitDateRangePicker Id="drp-three" MonthCount="3" ShowWeekNumbers Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-paged" MonthCount="2" PagedNavigation Culture="_en" Today="_today" />
+    <BitDateRangePicker Id="drp-two-sa" MonthCount="2" Standalone Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="standalone" Title="Standalone">
+    <BitDateRangePicker Id="drp-sa" Label="Standalone" Standalone Culture="_en" Today="_today" @bind-Value="_standaloneValue" />
+    <div>Value: <span id="sa-value">@Fmt(_standaloneValue)</span></div>
+    <BitDateRangePicker Id="drp-sa-dis" Label="Standalone disabled" Standalone Disabled Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="readonly" Title="ReadOnly">
+    <BitDateRangePicker Id="drp-ro" ReadOnly AllowTextInput ShowClearButton Presets="_presets" Culture="_en" Today="_today" @bind-Value="_readOnlyValue" />
+    <div>Value: <span id="ro-value">@Fmt(_readOnlyValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitDateRangePicker Id="drp-tpl" Culture="_en" Today="_today">
+        <LabelTemplate><span id="tpl-label">Custom label</span></LabelTemplate>
+        <IconTemplate><span id="tpl-icon">@("#")</span></IconTemplate>
+        <DayCellTemplate><span class="e2e-day-cell" data-day="@context.Day">d@(context.Day)</span></DayCellTemplate>
+        <MonthCellTemplate><span class="e2e-month-cell">m@(context.Month)</span></MonthCellTemplate>
+        <YearCellTemplate><span class="e2e-year-cell">y@(context)</span></YearCellTemplate>
+        <CalloutHeaderTemplate><div id="tpl-header">Pick a range</div></CalloutHeaderTemplate>
+        <CalloutFooterTemplate><div id="tpl-footer">Dates are local</div></CalloutFooterTemplate>
+    </BitDateRangePicker>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation in an EditForm">
+    <EditForm Model="_model" OnValidSubmit="() => _submitResult = Fmt(_model.Range)" OnInvalidSubmit="() => _submitResult = Invalid">
+        <DataAnnotationsValidator />
+        <BitDateRangePicker Id="drp-valid" Culture="_en" Today="_today" @bind-Value="_model.Range" />
+        <div id="valid-message"><ValidationMessage For="() => _model.Range" /></div>
+        <button id="valid-submit" type="submit">Submit</button>
+    </EditForm>
+    <div>Submit: <span id="valid-result">@_submitResult</span></div>
+</E2ESection>
+
+<E2ESection Id="programmatic" Title="IsOpen, OpenCallout and CloseCallout">
+    <BitDateRangePicker @ref="_programmaticPicker"
+                        Id="drp-prog"
+                        Culture="_en"
+                        Today="_today"
+                        @bind-IsOpen="_isOpen"
+                        OnOpen="() => _progOpens++"
+                        OnClose="() => _progCloses++" />
+    <div>IsOpen <span id="prog-isopen">@_isOpen</span>, opens <span id="prog-opens">@_progOpens</span>, closes <span id="prog-closes">@_progCloses</span></div>
+    <button id="btn-open-method" type="button" @onclick="() => _programmaticPicker!.OpenCallout()">OpenCallout()</button>
+    <button id="btn-close-method" type="button" @onclick="() => _programmaticPicker!.CloseCallout()">CloseCallout()</button>
+    <button id="btn-open-param" type="button" @onclick="() => _isOpen = true">IsOpen = true</button>
+
+    <BitDateRangePicker Id="drp-oneway" Culture="_en" Today="_today" IsOpen="_oneWayOpen" @bind-Value="_oneWayValue" />
+    <div>Value: <span id="oneway-value">@Fmt(_oneWayValue)</span></div>
+    <button id="btn-oneway-open" type="button" @onclick="() => _oneWayOpen = true">Open one-way</button>
+    <button id="btn-oneway-close" type="button" @onclick="() => _oneWayOpen = false">Close one-way</button>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessible names and titles">
+    <BitDateRangePicker Id="drp-a11y"
+                        AriaLabel="Stay dates"
+                        ShowWeekNumbers
+                        ShowCloseButton
+                        ShowClearButton
+                        Culture="_en"
+                        Today="_today"
+                        Value="_a11yValue"
+                        CalloutAriaLabel="Stay calendar"
+                        ClearButtonTitle="Clear the stay"
+                        CloseButtonTitle="Done"
+                        SelectedDateAriaAtomic="Stay selected: {0}"
+                        GoToPrevMonthTitle="Earlier month"
+                        GoToNextMonthTitle="Later month"
+                        GoToTodayTitle="Back to today"
+                        GoToPrevYearTitle="Year {0} back"
+                        GoToNextYearTitle="Year {0} ahead"
+                        GoToPrevYearRangeTitle="Years {0} to {1} back"
+                        GoToNextYearRangeTitle="Years {0} to {1} ahead"
+                        YearPickerToggleTitle="{0}, pick a year"
+                        YearRangePickerToggleTitle="{0} to {1}, pick a month"
+                        WeekNumbersHeaderTitle="Wk"
+                        WeekNumberTitle="Wk {0}" />
+</E2ESection>
+
+<E2ESection Id="base" Title="Base parameters">
+    <BitDateRangePicker Id="drp-base"
+                        Class="e2e-root-class"
+                        Style="margin-top: 7px;"
+                        AriaLabel="Base range"
+                        Name="base-range"
+                        TabIndex="0"
+                        Visibility="_visibility"
+                        Culture="_en"
+                        Today="_today"
+                        HtmlAttributes="_rootAttributes"
+                        InputHtmlAttributes="_inputAttributes"
+                        CalloutHtmlAttributes="_calloutAttributes" />
+    <button id="btn-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled and Required">
+    <BitDateRangePicker Id="drp-disabled"
+                        Label="Disabled"
+                        Disabled
+                        Culture="_en"
+                        Today="_today"
+                        HtmlAttributes="_disabledRootAttributes"
+                        OnClick="() => _disabledOnClick++" />
+    <div>root clicks <span id="disabled-root-clicks">@_disabledRootClicks</span>, OnClick <span id="disabled-onclick">@_disabledOnClick</span></div>
+    <BitDateRangePicker Id="drp-toggle-dis"
+                        Label="Toggled"
+                        Disabled="_toggleDisabled"
+                        Culture="_en"
+                        Today="_today"
+                        @onclick="() => _toggleRootClicks++" />
+    <div>root clicks <span id="toggle-root-clicks">@_toggleRootClicks</span></div>
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _toggleDisabled = !_toggleDisabled">Toggle disabled</button>
+    <BitDateRangePicker Id="drp-required" Label="Required" Required Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle: re-render, mount, unmount">
+    <button id="btn-toggle-weeks" type="button" @onclick="() => _lifeWeeks = !_lifeWeeks">Toggle week numbers</button>
+    <button id="btn-unmount" type="button" @onclick="() => _lifeMounted = !_lifeMounted">Toggle mounted</button>
+    <button id="btn-mount-autofocus" type="button" @onclick="() => _autoFocusMounted = true">Mount AutoFocus</button>
+    <button id="btn-mount-open" type="button" @onclick="() => _initOpenMounted = true">Mount open</button>
+    @if (_lifeMounted)
+    {
+        <BitDateRangePicker Id="drp-life" ShowWeekNumbers="_lifeWeeks" Culture="_en" Today="_today" />
+    }
+    @if (_autoFocusMounted)
+    {
+        <BitDateRangePicker Id="drp-autofocus" AutoFocus Culture="_en" Today="_today" />
+    }
+    @if (_initOpenMounted)
+    {
+        <BitDateRangePicker Id="drp-initopen" Culture="_en" Today="_today" @bind-IsOpen="_initOpen" OnOpen="() => _initOpens++" />
+        <div>IsOpen <span id="initopen-isopen">@_initOpen</span>, opens <span id="initopen-opens">@_initOpens</span></div>
+    }
+    <div>mounted <span id="life-mounted">@_lifeMounted</span></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string DayFormat = "yyyy-MM-dd";
+    private const string Invalid = "invalid";
+    private const string Cancelled = "Cancelled";
+
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+
+    private static DateTimeOffset Local(int year, int month, int day, int hour = 0, int minute = 0)
+    {
+        var dateTime = new DateTime(year, month, day, hour, minute, 0);
+        return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    }
+
+    private static BitDateRangePickerValue Range(DateTimeOffset? start, DateTimeOffset? end) => new() { StartDate = start, EndDate = end };
+
+    private static string Fmt(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "-";
+
+    private static string Fmt(BitDateRangePickerValue? value) => value is null ? "null" : $"{Fmt(value.StartDate)} / {Fmt(value.EndDate)}";
+
+    private readonly DateTimeOffset _today = Local(2024, 6, 12, 10, 30);
+    private readonly DateTimeOffset _february = Local(2024, 2, 14);
+    private readonly DayOfWeek[] _weekend = [DayOfWeek.Saturday, DayOfWeek.Sunday];
+    private readonly DateTimeOffset[] _disabledDates = [Local(2024, 6, 14), Local(2024, 6, 18)];
+    private readonly DateTimeOffset[] _highlightedDates = [Local(2024, 6, 5)];
+
+    private readonly BitDateRangePickerPreset[] _presets =
+    [
+        new() { Text = "Today", Value = Range(Local(2024, 6, 12), Local(2024, 6, 12, 23, 59)) },
+        new() { Text = "Next 7 days", ValueProvider = () => Range(Local(2024, 6, 12), Local(2024, 6, 18, 23, 59)), Title = "From today on", Class = "e2e-preset-class", Style = "font-style: italic" },
+        new() { Text = "Unavailable", Value = Range(Local(2024, 6, 1), Local(2024, 6, 2)), IsDisabled = true },
+        new() { Text = "Last year", Value = Range(Local(2023, 1, 1), Local(2023, 1, 5)) },
+    ];
+
+    private BitDateRangePickerValue? _basicValue;
+    private int _selectCount, _changeCount, _monthCount, _clickCount, _focusCount, _focusInCount, _focusOutCount, _openCount, _closeCount;
+    private string _lastSelect = "-", _lastChange = "-", _lastMonth = "-";
+    private string _defaultChanged = "-";
+
+    private BitDateRangePickerValue? _clearValue = Range(Local(2024, 6, 10), Local(2024, 6, 14, 23, 59));
+    private int _clearCount;
+    private BitDateRangePickerValue? _noAutoCloseValue;
+    private BitDateRangePickerValue? _presetsValue, _presetsSaValue;
+    private string _lastPreset = "-";
+    private int _presetCount;
+
+    private BitDateRangePickerValue? _applyValue;
+    private string _applyOutcome = "-";
+
+    private BitDateRangePickerValue? _minRangeValue, _minMaxRangeValue, _maxRangeTimeValue, _maxRangeShortValue;
+    private BitDateRangePickerValue? _weekendValue, _datesValue, _excludeValue;
+    private int _closeButtonCloses;
+    private BitDateRangePickerValue? _twoValue;
+    private BitDateRangePickerValue? _standaloneValue;
+    private BitDateRangePickerValue? _readOnlyValue = Range(Local(2024, 6, 10), Local(2024, 6, 14, 23, 59));
+    private readonly BitDateRangePickerValue _a11yValue = Range(Local(2024, 6, 10), Local(2024, 6, 14, 23, 59));
+
+    private readonly RangeModel _model = new();
+    private string _submitResult = "-";
+
+    private BitDateRangePicker? _programmaticPicker;
+    private bool _isOpen;
+    private int _progOpens, _progCloses;
+    private bool _oneWayOpen;
+    private BitDateRangePickerValue? _oneWayValue;
+
+    private BitVisibility _visibility;
+    private readonly Dictionary<string, object> _rootAttributes = new() { ["data-e2e"] = "root-attr", ["title"] = "Root title" };
+    private readonly Dictionary<string, object> _inputAttributes = new() { ["data-e2e-input"] = "input-attr" };
+    private readonly Dictionary<string, object> _calloutAttributes = new() { ["data-e2e-callout"] = "callout-attr" };
+
+    private int _disabledRootClicks, _disabledOnClick, _toggleRootClicks;
+    private Dictionary<string, object> _disabledRootAttributes = [];
+    private bool _toggleDisabled = true;
+
+    private bool _lifeMounted = true, _lifeWeeks, _autoFocusMounted, _initOpenMounted, _initOpen = true;
+    private int _initOpens;
+
+    protected override void OnInitialized()
+    {
+        // The page's own handler on the root, splatted through HtmlAttributes: a disabled picker must drop it.
+        _disabledRootAttributes = new() { ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledRootClicks++) };
+    }
+
+    public class RangeModel
+    {
+        [Required]
+        public BitDateRangePickerValue? Range { get; set; }
+    }
+}

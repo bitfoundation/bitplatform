@@ -226,7 +226,7 @@ public partial class BitRichTextEditor : BitComponentBase
     /// <summary>
     /// The two-way bound HTML content of the editor.
     /// </summary>
-    [Parameter, TwoWayBound, CallOnSet(nameof(OnValueSet))]
+    [Parameter, TwoWayBound, CallOnSetAsync(nameof(OnValueSet))]
     public string? Value { get; set; }
 
 
@@ -735,7 +735,7 @@ public partial class BitRichTextEditor : BitComponentBase
             {
                 // Detect whether the sanitization policy specifically changed so a tightened
                 // allowlist can be re-applied to the already-loaded content, not just future input.
-                var policySnapshot = System.Text.Json.JsonSerializer.Serialize(options.Policy);
+                var policySnapshot = System.Text.Json.JsonSerializer.Serialize(options.Policy, BitExtrasJsonContext.Default.BitRichTextEditorPolicyPayload);
                 var policyChanged = policySnapshot != _lastPolicySnapshot;
 
                 _lastSetupSnapshot = snapshot;
@@ -773,7 +773,7 @@ public partial class BitRichTextEditor : BitComponentBase
     // Serializes the setup payload so OnParametersSetAsync can detect whether any bridge-backed
     // setting changed and avoid redundant BitRichTextEditorUpdateOptions interop calls.
     private static string SerializeSetupOptions(BitRichTextEditorSetupOptions options)
-        => System.Text.Json.JsonSerializer.Serialize(options);
+        => System.Text.Json.JsonSerializer.Serialize(options, BitExtrasJsonContext.Default.BitRichTextEditorSetupOptions);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -786,7 +786,7 @@ public partial class BitRichTextEditor : BitComponentBase
             var setupOptions = BuildSetupOptions();
             await _js.BitRichTextEditorSetup(_editorRef, _dotnetObj, setupOptions);
             _lastSetupSnapshot = SerializeSetupOptions(setupOptions);
-            _lastPolicySnapshot = System.Text.Json.JsonSerializer.Serialize(setupOptions.Policy);
+            _lastPolicySnapshot = System.Text.Json.JsonSerializer.Serialize(setupOptions.Policy, BitExtrasJsonContext.Default.BitRichTextEditorPolicyPayload);
 
             // Sanitize the initial Value through the bridge so the first content load can't bypass
             // sanitization. The bridge enforces a secure default allowlist when no SanitizationPolicy
@@ -852,28 +852,38 @@ public partial class BitRichTextEditor : BitComponentBase
         if ((Value ?? "") == _currentHtml) return; // originated from the editor
 
         var html = Value ?? "";
-        // Sanitize any non-empty HTML through the bridge regardless of SanitizationPolicy: the
-        // bridge applies its secure default allowlist when no custom policy is set and the custom
-        // policy when one is, so an updated Value can never bypass sanitization.
-        if (string.IsNullOrEmpty(html) is false)
+        // The generated SetParametersAsync awaits this hook, so an interop call that fails mid-way - the circuit gone,
+        // the call timed out, the runtime disposed - ends it here rather than failing the parameter pass and with it
+        // the parent's render.
+        try
         {
-            html = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
-        }
-        _currentHtml = html;
+            // Sanitize any non-empty HTML through the bridge regardless of SanitizationPolicy: the
+            // bridge applies its secure default allowlist when no custom policy is set and the custom
+            // policy when one is, so an updated Value can never bypass sanitization.
+            if (string.IsNullOrEmpty(html) is false)
+            {
+                html = await _js.BitRichTextEditorSanitizeHtml(_editorRef, html);
+            }
+            _currentHtml = html;
 
-        // While source view is open the WYSIWYG surface is detached from the live value, so don't
-        // push into the editor element. Instead reflect the external change into the raw-HTML
-        // textarea (and the cached _currentHtml above) so leaving source view starts from the
-        // latest parent Value rather than the stale content captured when source view was entered.
-        if (_inSourceView)
-        {
-            _sourceText = html;
-            StateHasChanged();
+            // While source view is open the WYSIWYG surface is detached from the live value, so don't
+            // push into the editor element. Instead reflect the external change into the raw-HTML
+            // textarea (and the cached _currentHtml above) so leaving source view starts from the
+            // latest parent Value rather than the stale content captured when source view was entered.
+            if (_inSourceView)
+            {
+                _sourceText = html;
+                StateHasChanged();
+            }
+            else
+            {
+                await _js.BitRichTextEditorSetHtml(_editorRef, html);
+            }
         }
-        else
-        {
-            await _js.BitRichTextEditorSetHtml(_editorRef, html);
-        }
+        catch (JSDisconnectedException) { return; } // circuit gone; nothing to sync the value into
+        catch (JSException) { return; } // interop unavailable; nothing unsanitized is pushed, the editor keeps its content
+        catch (OperationCanceledException) { return; } // timed out, or the renderer is being torn down; as above
+        catch (ObjectDisposedException) { return; } // the JS runtime of a WebAssembly host went first; as above
 
         // Keep the bound model in sync with the sanitized/rendered content: if the policy
         // stripped anything, write the cleaned HTML back so @bind-Value never holds the

@@ -57,6 +57,8 @@ public partial class BitColorPicker : BitInputBase<string?>
     // optional, and Blazor removes the element when it goes, which takes the listeners with it.
     private bool _pointerRegistered;
     private BitColorFormat? _formatEmitted;
+    private BitColorFormat? _formatParam;
+    private bool _formatParamRead;
     private string? _contrastParam;
     private BitInternalColor? _contrastColor;
     private readonly BitInternalColor _color = new();
@@ -551,6 +553,14 @@ public partial class BitColorPicker : BitInputBase<string?>
 
     protected override async Task OnParametersSetAsync()
     {
+        // Only a Format the app switched asks for the value to be rewritten. With none set, the notation is read off
+        // the value itself, so a color pushed in from outside in another notation moves it too - and rewriting that
+        // value would hand the consumer back a string it never wrote ("tomato" as rgb(), "#0f8" as #00FF88).
+        var formatSwitched = _formatParamRead && Format != _formatParam;
+
+        _formatParam = Format;
+        _formatParamRead = true;
+
         // A Format switched at runtime rewrites the value that is already bound, rather than leaving it in
         // the old notation until the user happens to touch the picker again.
         if (_formatEmitted != _format)
@@ -561,7 +571,7 @@ public partial class BitColorPicker : BitInputBase<string?>
 
             // A bound value that holds no color has nothing to rewrite: the white the picker shows in its place is
             // not a color anyone picked, and writing it back would satisfy a required picker on its own.
-            if (emitted is not null && (ValueHasBeenSet is false || Value.HasValue()))
+            if (emitted is not null && formatSwitched && (ValueHasBeenSet is false || Value.HasValue()))
             {
                 await ChangeAsync(notifyChange: false);
             }

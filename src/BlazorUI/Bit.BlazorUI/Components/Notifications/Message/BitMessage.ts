@@ -22,6 +22,22 @@
             }
         }
 
+        // Settles once the page has been painted with what it holds now: a frame, and the task after it, so a render the
+        // caller makes next lands in a frame of its own. A delayed announcement waits for it before it fills its live
+        // region, which a screen reader only hears change once the empty region has reached the accessibility tree -
+        // and on WebAssembly two renders in a row land in the same task. A hidden page paints no frames, so it settles
+        // after a short while there instead of holding the text back until the page is shown again.
+        public static afterPaint(): Promise<void> {
+            return new Promise<void>(resolve => {
+                const timeout = setTimeout(resolve, 100);
+
+                requestAnimationFrame(() => setTimeout(() => {
+                    clearTimeout(timeout);
+                    resolve();
+                }, 0));
+            });
+        }
+
         public static dispose(id: string) {
             const observer = Message._observers[id];
             if (!observer) return;

@@ -1,6 +1,6 @@
 ﻿@using Bit.BlazorUI
 
-<BitNav TItem="BitNavOption" Mode="BitNavMode.Manual">
+<BitNav TItem="BitNavOption" Mode="BitNavMode.Manual" AutoReorderOptions="@AutoReorderOptions">
     <BitNavOption Text="First" IsExpanded="true">
         <BitNavOption Text="Child1" />
         @if (ShowMiddle)
@@ -18,4 +18,6 @@
 
 @code {
     [Parameter] public bool ShowMiddle { get; set; }
+
+    [Parameter] public bool AutoReorderOptions { get; set; }
 }

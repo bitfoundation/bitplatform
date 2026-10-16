@@ -1,0 +1,73 @@
+﻿@page "/e2e/accent-color-switcher/persist"
+@page "/e2e/accent-color-switcher/stored-css"
+@page "/e2e/accent-color-switcher/static-css"
+@page "/e2e/accent-color-switcher/seed"
+@implements IDisposable
+@inject NavigationManager Navigation
+@inject BitAccentColorService AccentColorService
+
+<PageTitle>BitAccentColorSwitcher persistence E2E</PageTitle>
+
+@* The head half of the accent feature, as a host page would carry it: the inline script that re-resolves the accent
+   from the stores before anything is painted, and the palette CSS the strategy needs. It is prerendered into <head>,
+   so it runs while the document is still being parsed. The persist route uses the None strategy, for which it emits
+   nothing at all. *@
+<HeadContent>
+    <BitAccentColorHead Config="_config" Nonce="e2e-nonce" />
+</HeadContent>
+
+<h1>BitAccentColorSwitcher - @_mode</h1>
+
+<p>Active accent: <span id="active-accent">@AccentColorService.ActiveAccent</span></p>
+
+<div id="probe-surface" style="background-color: var(--bit-clr-bg-pri); padding: 4px;">
+    <BitButton Id="probe-button">Probe</BitButton>
+</div>
+
+<E2ESection Id="persist" Title="Persisted across a reload">
+    <BitAccentColorSwitcher Id="acs-persist" Config="_config" OnChange="c => _lastColor = c" />
+    <div>OnChange color: <span id="persist-last-color">@_lastColor</span></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private string _mode = "persist";
+    private string? _lastColor;
+    private BitAccentColorConfig _config = default!;
+
+    protected override void OnInitialized()
+    {
+        // The restore after a reload raises no event of the page's own, so the page re-renders on the service's.
+        AccentColorService.AccentChanged += HandleAccentChanged;
+
+        var path = new Uri(Navigation.Uri).AbsolutePath;
+
+        _mode = path.EndsWith("/stored-css", StringComparison.Ordinal) ? "stored-css"
+              : path.EndsWith("/static-css", StringComparison.Ordinal) ? "static-css"
+              : path.EndsWith("/seed", StringComparison.Ordinal) ? "seed"
+              : "persist";
+
+        _config = _mode switch
+        {
+            "stored-css" => new() { Persistence = BitAccentColorPersistence.LocalStorage, FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StoredCss },
+            "static-css" => new() { Persistence = BitAccentColorPersistence.LocalStorage, FirstPaintStrategy = BitAccentColorFirstPaintStrategy.StaticCss },
+            "seed" => new(),
+            _ => new() { Persistence = BitAccentColorPersistence.All },
+        };
+
+        // What a host hands the service from the accent cookie it read while prerendering, so the prerendered markup
+        // already marks the visitor's swatch.
+        if (_mode == "seed")
+        {
+            AccentColorService.SeedFromPrerender(BitAccentColorPresets.Green);
+        }
+    }
+
+    private void HandleAccentChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        AccentColorService.AccentChanged -= HandleAccentChanged;
+    }
+}

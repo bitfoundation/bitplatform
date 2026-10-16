@@ -1,6 +1,8 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
 
-public partial class _BitChoiceGroupItem<TItem, TValue> : ComponentBase where TItem : class, new ()
+namespace Bit.BlazorUI;
+
+public partial class _BitChoiceGroupItem<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue> : ComponentBase where TItem : class, new ()
 {
     private ElementReference _inputElement;
 

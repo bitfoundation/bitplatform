@@ -262,6 +262,26 @@ public class BitTextShimmerParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitTextShimmerShouldTakeTheCascadedBaseParameters()
+    {
+        var component = RenderWithParams(new BitTextShimmerParams
+        {
+            Dir = BitDir.Rtl,
+            Disabled = true,
+            Visibility = BitVisibility.Hidden,
+            Style = "margin:1px",
+        });
+
+        var root = component.Find(".bit-tsh");
+
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden");
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+    }
+
+    [TestMethod]
     public void BitTextShimmerShouldDropTheCascadedValuesWithTheCascade()
     {
         var component = RenderWithParams(new BitTextShimmerParams

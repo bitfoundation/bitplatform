@@ -74,6 +74,11 @@ public sealed class BitExternalThemeLoader
                 nameof(href));
         }
 
+        // A root-relative path ("/css/dark.css") is the common same-origin case, and it can carry no scheme. It is
+        // let through before the absolute parse below, which on a Unix-like runtime - browser-wasm among them -
+        // reads it as an absolute file:// path and would reject every one of them in a WebAssembly app.
+        if (trimmed.StartsWith('/')) return;
+
         if (Uri.TryCreate(href, UriKind.Absolute, out var absolute))
         {
             // Reject every absolute-URL scheme other than http(s). That covers javascript:, data:,

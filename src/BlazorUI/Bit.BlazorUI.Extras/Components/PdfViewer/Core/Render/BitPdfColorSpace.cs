@@ -27,11 +27,51 @@ public abstract class BitPdfColorSpace
         return comps;
     }
 
+    // A real color space nests a few levels at most (a Pattern over an Indexed over a
+    // Separation over an ICC space, each perhaps named in the resources); these bound a
+    // hostile chain and a cycle (an Indexed space over itself) - see BitPdfResolveScope.
+    private const int MaxNesting = 16;
+    private const int MaxNodes = 256;
+
     /// <summary>Builds a color space from a PDF color-space object.</summary>
     public static BitPdfColorSpace Create(object? obj, IBitPdfXRef xref, BitPdfDict? resources)
+        => Create(obj, xref, resources, new BitPdfResolveScope(MaxNesting, MaxNodes));
+
+    /// <summary>
+    /// Builds a color space within <paramref name="scope"/>, the resolution it is nested in.
+    /// A space the scope refuses (a cycle, or a chain too deep) is DeviceGray, the same
+    /// default as any space this engine does not recognize.
+    /// </summary>
+    internal static BitPdfColorSpace Create(object? obj, IBitPdfXRef xref, BitPdfDict? resources, BitPdfResolveScope scope)
+        => TryCreate(obj, xref, resources, scope) ?? Gray;
+
+    /// <summary>As <see cref="Create(object?, IBitPdfXRef, BitPdfDict?, BitPdfResolveScope)"/>, but <c>null</c> when the scope refuses the space.</summary>
+    private static BitPdfColorSpace? TryCreate(object? obj, IBitPdfXRef xref, BitPdfDict? resources, BitPdfResolveScope scope)
     {
         obj = xref.FetchIfRef(obj);
 
+        // Only a name (looked up in the resources) or an array (over a base or alternate
+        // space) can recurse; anything else is not a color space.
+        if (obj is not (BitPdfName or List<object?>))
+        {
+            return Gray;
+        }
+        if (!scope.TryEnter(obj))
+        {
+            return null;
+        }
+        try
+        {
+            return CreateCore(obj, xref, resources, scope);
+        }
+        finally
+        {
+            scope.Exit(obj);
+        }
+    }
+
+    private static BitPdfColorSpace CreateCore(object obj, IBitPdfXRef xref, BitPdfDict? resources, BitPdfResolveScope scope)
+    {
         if (obj is BitPdfName name)
         {
             switch (name.Value)
@@ -39,21 +79,21 @@ public abstract class BitPdfColorSpace
                 case "DeviceGray":
                 case "G":
                 case "CalGray":
-                    return ResolveDefault(resources, "DefaultGray", xref) ?? Gray;
+                    return ResolveDefault(resources, "DefaultGray", xref, scope) ?? Gray;
                 case "DeviceRGB":
                 case "RGB":
                 case "CalRGB":
-                    return ResolveDefault(resources, "DefaultRGB", xref) ?? Rgb;
+                    return ResolveDefault(resources, "DefaultRGB", xref, scope) ?? Rgb;
                 case "DeviceCMYK":
                 case "CMYK":
-                    return ResolveDefault(resources, "DefaultCMYK", xref) ?? Cmyk;
+                    return ResolveDefault(resources, "DefaultCMYK", xref, scope) ?? Cmyk;
                 case "Pattern":
                     return Rgb;
             }
             // A named space defined in the resource dictionary.
             if (resources?.Get("ColorSpace") is BitPdfDict csDict && csDict.Has(name.Value))
             {
-                return Create(csDict.Get(name.Value), xref, resources);
+                return Create(csDict.Get(name.Value), xref, resources, scope);
             }
             return Gray;
         }
@@ -64,7 +104,9 @@ public abstract class BitPdfColorSpace
             switch (kind)
             {
                 case "ICCBased":
-                    if (xref.FetchIfRef(arr[1]) is BitPdfBaseStream icc && icc.Dict is not null)
+                    // A one-element [/ICCBased] (a damaged file) names no stream; it degrades to RGB
+                    // like every other malformed space here rather than throwing out of Create.
+                    if (arr.Count > 1 && xref.FetchIfRef(arr[1]) is BitPdfBaseStream icc && icc.Dict is not null)
                     {
                         int n = icc.Dict.Get("N") is double dn ? (int)dn : 3;
                         return n switch { 1 => Gray, 4 => Cmyk, _ => Rgb };
@@ -78,12 +120,12 @@ public abstract class BitPdfColorSpace
                     return Gray;
                 case "Indexed":
                 case "I":
-                    return BitPdfIndexedColorSpace.Build(arr, xref, resources);
+                    return BitPdfIndexedColorSpace.Build(arr, xref, resources, scope);
                 case "Separation":
                 case "DeviceN":
-                    return BitPdfSeparationColorSpace.Build(arr, xref, resources);
+                    return BitPdfSeparationColorSpace.Build(arr, xref, resources, scope);
                 case "Pattern":
-                    return arr.Count > 1 ? Create(arr[1], xref, resources) : Rgb;
+                    return arr.Count > 1 ? TryCreate(arr[1], xref, resources, scope) ?? Rgb : Rgb;
             }
         }
 
@@ -96,8 +138,13 @@ public abstract class BitPdfColorSpace
 
     // Device names in a resource may be redirected to a calibrated default via
     // the resource's ColorSpace dict (/DefaultRGB etc.). Resolve that, but guard
-    // against a default that just names the same device space (infinite loop).
-    private static BitPdfColorSpace? ResolveDefault(BitPdfDict? resources, string key, IBitPdfXRef xref)
+    // against a default that just names the same device space (infinite loop). A
+    // default that leads back here some longer way (/DefaultRGB /CalRGB, or an
+    // Indexed space over DeviceGray as /DefaultGray) is refused as a whole, and the
+    // device space itself is used: the scope refuses the inner device space, and
+    // keeping what was built around that refusal (an Indexed palette over the gray
+    // that stood in for it) would read every gray value as a palette index instead.
+    private static BitPdfColorSpace? ResolveDefault(BitPdfDict? resources, string key, IBitPdfXRef xref, BitPdfResolveScope scope)
     {
         if (resources?.Get("ColorSpace") is not BitPdfDict csDict || !csDict.Has(key))
         {
@@ -108,7 +155,9 @@ public abstract class BitPdfColorSpace
         {
             return null;
         }
-        return Create(csDict.Get(key), xref, resources);
+        int refusals = scope.Refusals;
+        var space = TryCreate(csDict.Get(key), xref, resources, scope);
+        return scope.Refusals == refusals ? space : null;
     }
 
     /// <summary>

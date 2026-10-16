@@ -342,6 +342,67 @@ public class BitSplitterParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitSplitterParamsShouldApplyEveryPropertyItCarries()
+    {
+        // The other direction of the coverage test above: a property added to the params object but forgotten in
+        // UpdateParameters is accepted by the cascade and then never reaches the splitter.
+        var splitterParams = new BitSplitterParams();
+        var splitter = new BitSplitter();
+
+        var properties = typeof(BitSplitterParams).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                                                  .Where(p => p.CanWrite)
+                                                  .ToArray();
+
+        foreach (var property in properties)
+        {
+            var target = typeof(BitSplitter).GetProperty(property.Name)!;
+
+            property.SetValue(splitterParams, SampleValue(property.PropertyType, target.GetValue(splitter)));
+        }
+
+        splitterParams.UpdateParameters(splitter);
+
+        foreach (var property in properties)
+        {
+            var target = typeof(BitSplitter).GetProperty(property.Name)!;
+
+            // DefaultPercent outranks FirstPanelSize, which outranks SecondPanelSize, and a fresh splitter sizes none
+            // of its panels itself, so all three are taken from the cascade.
+            Assert.AreEqual(property.GetValue(splitterParams), target.GetValue(splitter), $"{property.Name} is not applied.");
+        }
+
+        // A value unlike the component's default, so the assertion above cannot pass by coincidence.
+        static object SampleValue(System.Type type, object? current)
+        {
+            var underlying = System.Nullable.GetUnderlyingType(type) ?? type;
+
+            if (underlying == typeof(bool)) return current is true ? false : true;
+            if (underlying == typeof(int)) return current is 7 ? 8 : 7;
+            if (underlying == typeof(double)) return 7d;
+            if (underlying == typeof(string)) return "sample";
+            if (underlying == typeof(BitIconInfo)) return BitIconInfo.Css("sample");
+            if (underlying == typeof(BitSplitterClassStyles)) return new BitSplitterClassStyles();
+            if (underlying == typeof(RenderFragment)) return (RenderFragment)(b => b.AddContent(0, "sample"));
+
+            throw new System.NotSupportedException($"Add a sample value for {type}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitSplitterShouldNotBeAffectedByAnEmptyParamsObject()
+    {
+        var component = RenderWithParams(new BitSplitterParams());
+
+        var root = component.Find(".bit-spl");
+
+        Assert.AreEqual("bit-spl", root.ClassName);
+        Assert.IsTrue(string.IsNullOrEmpty(root.GetAttribute("style")));
+        Assert.AreEqual("0", component.Find(".bit-spl-gtr").GetAttribute("tabindex"));
+        Assert.AreEqual(1, component.FindAll(".bit-spl-gti").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-spl-cbt").Count);
+    }
+
+    [TestMethod]
     public void BitSplitterShouldIgnoreParamsOfAnotherComponent()
     {
         var component = RenderComponent<BitParams>(parameters =>

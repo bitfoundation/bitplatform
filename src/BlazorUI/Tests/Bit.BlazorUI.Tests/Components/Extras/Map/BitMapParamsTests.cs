@@ -1,11 +1,199 @@
-﻿using Bunit;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using Bunit;
+using Microsoft.AspNetCore.Components;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Extras.Map;
 
+/// <summary>
+/// Covers the BitParams cascade of the map: what a BitMapParams carries (the behaviour, the look and the texts of
+/// every map, never the data or the state of one), that every property it carries reaches a map that did not set it
+/// whatever its provider type, that the map's own markup wins, and that the defaults come back once the params object
+/// is withdrawn.
+/// </summary>
 [TestClass]
 public class BitMapParamsTests : BunitTestContext
 {
+    // The provider, the camera, the markers, the clustering, the content templates of the markers and the callbacks
+    // describe one map rather than a default for many, so they have no place on the params object.
+    private static readonly string[] _notCascaded =
+    [
+        nameof(BitMap<BitLeafletMapProvider>.CascadingParameters),
+        nameof(BitMap<BitLeafletMapProvider>.Center),
+        nameof(BitMap<BitLeafletMapProvider>.ChildContent),
+        nameof(BitMap<BitLeafletMapProvider>.Clustering),
+        nameof(BitMap<BitLeafletMapProvider>.MarkerListTemplate),
+        nameof(BitMap<BitLeafletMapProvider>.MarkerPopupTemplate),
+        nameof(BitMap<BitLeafletMapProvider>.Markers),
+        nameof(BitMap<BitLeafletMapProvider>.Provider),
+        nameof(BitMap<BitLeafletMapProvider>.Zoom),
+    ];
+
+    private static bool IsEventCallback(Type type)
+        => type == typeof(EventCallback) || (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(EventCallback<>));
+
+    [TestMethod]
+    public void BitMapParamsShouldHaveCorrectParamName()
+    {
+        Assert.AreEqual($"{nameof(BitParams)}.{nameof(BitMap<BitLeafletMapProvider>)}", BitMapParams.ParamName);
+        // One name for every provider type, since every map reads the same object.
+        Assert.AreEqual("BitParams.BitMap", BitMapParams.ParamName);
+    }
+
+    [TestMethod]
+    public void BitMapParamsShouldImplementIBitComponentParams()
+    {
+        var @params = new BitMapParams();
+
+        Assert.IsInstanceOfType<IBitComponentParams>(@params);
+        Assert.AreEqual(BitMapParams.ParamName, @params.Name);
+        Assert.IsFalse(typeof(BitMapParams).IsGenericType, "one params type serves every provider type");
+    }
+
+    [TestMethod]
+    public void BitMapParamsShouldCarryEveryParameterThatIsNotPerMap()
+    {
+        var baseParameters = typeof(BitComponentBase).GetProperties().Select(p => p.Name).ToHashSet();
+
+        var parameters = typeof(BitMap<BitLeafletMapProvider>).GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                                                                .Where(p => p.GetCustomAttribute<ParameterAttribute>() is not null)
+                                                                .Where(p => IsEventCallback(p.PropertyType) is false)
+                                                                .Select(p => p.Name)
+                                                                .Where(n => baseParameters.Contains(n) is false && _notCascaded.Contains(n) is false)
+                                                                .ToArray();
+
+        Assert.IsTrue(parameters.Length > 0);
+
+        foreach (var name in parameters)
+        {
+            Assert.IsNotNull(typeof(BitMapParams).GetProperty(name), $"BitMapParams has no {name}.");
+        }
+    }
+
+    [TestMethod]
+    public void BitMapParamsShouldCarryNothingTheMapDoesNotHave()
+    {
+        var own = typeof(BitMapParams).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                                      .Where(p => p.Name != nameof(IBitComponentParams.Name));
+
+        foreach (var property in own)
+        {
+            var parameter = typeof(BitMap<BitLeafletMapProvider>).GetProperty(property.Name);
+
+            Assert.IsNotNull(parameter, $"BitMap has no {property.Name}.");
+            Assert.IsNotNull(parameter.GetCustomAttribute<ParameterAttribute>(), $"{property.Name} is not a parameter of BitMap.");
+            Assert.IsFalse(_notCascaded.Contains(property.Name), $"{property.Name} is per map and must not be cascaded.");
+        }
+    }
+
+    [TestMethod]
+    public void BitMapShouldTakeEveryPropertyOfTheParamsObject()
+    {
+        var cascaded = new BitMapParams
+        {
+            AnnounceViewChanges = true,
+            AutoResize = false,
+            Classes = new() { Root = "cascaded-root" },
+            CooperativeGestures = true,
+            CooperativeGesturesTouchHint = "Two fingers",
+            CooperativeGesturesWheelHint = "Ctrl + wheel",
+            ErrorLabel = "Broken",
+            ErrorTemplate = _ => b => b.AddContent(0, "Broken"),
+            EscapeToExit = false,
+            KeyboardInstructions = "Cascaded keys",
+            LazyLoad = true,
+            LazyLoadRootMargin = "50px",
+            LoadingLabel = "Wait",
+            LoadingTemplate = b => b.AddContent(0, "Wait"),
+            MarkerListActionHeader = "Go",
+            MarkerListCaption = "Pins",
+            MarkerListLatitudeHeader = "Lat",
+            MarkerListLongitudeHeader = "Lng",
+            MarkerListMode = BitMapMarkerListMode.Visible,
+            MarkerListNameHeader = "Pin",
+            MarkerListZoom = 7,
+            PopupAutoPan = false,
+            PopupCloseLabel = "Dismiss",
+            PopupLabel = "Pin details",
+            ReplayStateOnProviderSwap = true,
+            RespectReducedMotion = false,
+            RoleDescription = "cascaded map",
+            ShowLoading = false,
+            Styles = new() { Root = "color: red" },
+            UnsupportedLabel = "No WebGL",
+            UnsupportedTemplate = b => b.AddContent(0, "No WebGL"),
+            ViewAnnouncementFormatter = v => $"zoom {v.Zoom}",
+            ViewAnnouncementThrottle = TimeSpan.FromSeconds(5),
+        };
+
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { cascaded });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitMap<BitLeafletMapProvider>>(0);
+                builder.CloseComponent();
+            });
+        });
+        var map = component.FindComponent<BitMap<BitLeafletMapProvider>>().Instance;
+
+        // Read off the params object itself, so a property added to it later is checked here without being named.
+        var properties = typeof(BitMapParams).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly)
+                                             .Where(p => p.Name != nameof(IBitComponentParams.Name))
+                                             .ToArray();
+
+        Assert.IsTrue(properties.Length > 0);
+
+        foreach (var property in properties)
+        {
+            var supplied = property.GetValue(cascaded);
+            Assert.IsNotNull(supplied, $"The test leaves {property.Name} unset, so it cannot tell whether the map takes it.");
+
+            var taken = typeof(BitMap<BitLeafletMapProvider>).GetProperty(property.Name)!.GetValue(map);
+
+            if (property.PropertyType.IsValueType || supplied is string)
+            {
+                Assert.AreEqual(supplied, taken, $"{property.Name} was not taken from the cascade.");
+            }
+            else
+            {
+                Assert.AreSame(supplied, taken, $"{property.Name} was not taken from the cascade as the very object supplied.");
+            }
+        }
+    }
+
+    [TestMethod]
+    public void BitMapShouldApplyCascadedBaseParameters()
+    {
+        var component = RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams>
+            {
+                new BitMapParams { AriaLabel = "Office", Class = "cascaded", Dir = BitDir.Rtl, Disabled = true, Id = "cascaded-id", TabIndex = "-1" }
+            });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitMap<BitLeafletMapProvider>>(0);
+                builder.CloseComponent();
+            });
+        });
+
+        var root = component.Find(".bit-map");
+        var canvas = component.Find(".bit-map-canvas");
+
+        Assert.AreEqual("cascaded-id", root.Id);
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        // The name and the tab stop go on the canvas, which is the map's one landmark; a disabled map is inert.
+        Assert.AreEqual("Office", canvas.GetAttribute("aria-label"));
+        Assert.AreEqual("-1", canvas.GetAttribute("tabindex"));
+        Assert.IsTrue(canvas.HasAttribute("inert"));
+    }
+
     [TestMethod]
     public void BitMapShouldTakeTheCascadedParamsItDoesNotSetItself()
     {

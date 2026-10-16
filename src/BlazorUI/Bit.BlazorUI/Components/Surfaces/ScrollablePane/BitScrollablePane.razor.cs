@@ -14,7 +14,7 @@ namespace Bit.BlazorUI;
 /// that still have content beyond them, snap positions to come to rest on, a drag and a wheel that scroll
 /// a strip sideways, a position reported back as it changes, a callback as each edge is reached, and a
 /// scrolling API - <see cref="ScrollToEnd"/>, <see cref="ScrollToStart"/>, <see cref="ScrollTo"/>,
-/// <see cref="ScrollBy"/>, <see cref="ScrollToElement"/> - that a page drives it with.
+/// <see cref="ScrollBy"/>, <see cref="ScrollToElement(string, double, bool?, BitScrollAlignment)"/> - that a page drives it with.
 /// <br />
 /// Nothing on the browser side is set up for a pane that asked for none of it: a pane that only sizes a box
 /// and styles its scrollbars is a single div with a style attribute, and the scroll listener, the observers
@@ -708,7 +708,7 @@ public partial class BitScrollablePane : BitComponentBase
     /// <remarks>
     /// This is the CSS <c>scroll-padding</c> property. It is what keeps a sticky header inside the pane from
     /// covering the thing that was just scrolled to - by a fragment navigation, or by the browser bringing a
-    /// focused field into view. <see cref="ScrollToElement"/> reads it as well, so the moves this component
+    /// focused field into view. <see cref="ScrollToElement(string, double, bool?, BitScrollAlignment)"/> reads it as well, so the moves this component
     /// makes leave the same room the browser's own do; the other scrolling methods take an absolute
     /// position or a distance and are left alone by it.
     /// </remarks>

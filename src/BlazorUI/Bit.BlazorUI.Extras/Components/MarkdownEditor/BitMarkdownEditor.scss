@@ -296,13 +296,6 @@ $mde-button-active-background: var(--bit-MarkdownEditor-button-active-background
     letter-spacing: $tg-ctrl-letter-spacing;
 }
 
-.bit-mde-guard {
-    width: 0;
-    height: 0;
-    position: absolute;
-    outline: none;
-}
-
 // Read by assistive tech only: what changed that nothing on screen announces (the display mode).
 .bit-mde-ann {
     @include visually-hidden;

@@ -224,8 +224,7 @@ public class BitProgressTests : BunitTestContext
             parameters.Add(p => p.LabelTemplate, labelTemplate);
         });
 
-        var labelChildNodes = component?.Find(".bit-prb-lbl")?.ChildNodes;
-        labelChildNodes?.MarkupMatches(labelTemplate);
+        component.Find(".bit-prb-lbl").ChildNodes.MarkupMatches(labelTemplate);
     }
 
     [TestMethod,
@@ -238,8 +237,7 @@ public class BitProgressTests : BunitTestContext
             parameters.Add(p => p.DescriptionTemplate, descriptionTemplate);
         });
 
-        var descriptionChildNodes = component?.Find(".bit-prb")?.LastChild?.ChildNodes;
-        descriptionChildNodes?.MarkupMatches(descriptionTemplate);
+        component.Find(".bit-prb-des").ChildNodes.MarkupMatches(descriptionTemplate);
     }
 
     [TestMethod]

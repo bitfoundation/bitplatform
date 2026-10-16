@@ -95,6 +95,52 @@ public class BitInfiniteScrollingParamsTests : BunitTestContext
         }
     }
 
+    // Every property of the params object is one the list takes from the cascade, so a property added to one and not
+    // wired to the other - or wired to the wrong parameter - fails here rather than going silently unapplied.
+    [TestMethod]
+    public void BitInfiniteScrollingParamsShouldApplyEveryOneOfItsProperties()
+    {
+        var defaults = new BitInfiniteScrolling<int>();
+        var listParams = new BitInfiniteScrollingParams();
+        var supplied = new Dictionary<string, object>();
+
+        foreach (var property in typeof(BitInfiniteScrollingParams).GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly).Where(p => p.CanWrite))
+        {
+            var parameter = typeof(BitInfiniteScrolling<int>).GetProperty(property.Name);
+
+            Assert.IsNotNull(parameter, $"{property.Name} is not a property of BitInfiniteScrolling.");
+            Assert.IsTrue(parameter.IsDefined(typeof(ParameterAttribute), true), $"{property.Name} is not a parameter of BitInfiniteScrolling.");
+
+            // Each value differs from the list's default, so a property left unapplied cannot pass for an applied one.
+            var value = SampleValue(property.PropertyType, parameter.GetValue(defaults));
+
+            property.SetValue(listParams, value);
+            supplied.Add(property.Name, value);
+        }
+
+        var list = RenderWithParams(listParams).FindComponent<BitInfiniteScrolling<int>>().Instance;
+
+        foreach (var (name, value) in supplied)
+        {
+            Assert.AreEqual(value, typeof(BitInfiniteScrolling<int>).GetProperty(name)!.GetValue(list), $"{name} is not applied by the cascade.");
+        }
+    }
+
+    private static object SampleValue(Type type, object? defaultValue)
+    {
+        var valueType = Nullable.GetUnderlyingType(type) ?? type;
+
+        if (valueType == typeof(bool)) return defaultValue is true ? false : true;
+        if (valueType == typeof(int)) return (defaultValue as int? ?? 0) + 3;
+        if (valueType == typeof(decimal)) return 0.5m;
+        if (valueType == typeof(string)) return "sample";
+        if (valueType == typeof(RenderFragment)) return (RenderFragment)(_ => { });
+        if (valueType == typeof(RenderFragment<Exception>)) return (RenderFragment<Exception>)(_ => _ => { });
+        if (valueType == typeof(BitInfiniteScrollingClassStyles)) return new BitInfiniteScrollingClassStyles();
+
+        throw new NotSupportedException($"No sample value for {type}.");
+    }
+
     [TestMethod]
     public void BitInfiniteScrollingShouldTakeTheCascadedValues()
     {
