@@ -25,6 +25,15 @@
     <Project Path="Besql/Demo/Bit.Besql.Demo.Client/Bit.Besql.Demo.Client.csproj" />
     <Project Path="Besql/Demo/Bit.Besql.Demo/Bit.Besql.Demo.csproj" />
   </Folder>
+  <Folder Name="/Bmage/">
+    <File Path="Bmage/README.md" />
+    <Project Path="Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj" />
+    <Project Path="Bmage/Bit.Bmage.Demo/Client/Bit.Bmage.Demo.Client.csproj" />
+    <Project Path="Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj" />
+    <Project Path="Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj" />
+    <Project Path="Bmage/Bit.Bmage/Bit.Bmage.csproj" />
+    <Project Path="Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
+  </Folder>
   <Folder Name="/Bmotion/">
     <File Path="Bmotion/README.md" />
     <Project Path="Bmotion/Bit.Bmotion.Demo/Client/Bit.Bmotion.Demo.Client.csproj" />

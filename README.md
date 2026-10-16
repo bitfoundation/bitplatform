@@ -39,6 +39,7 @@ bit new MyApp
 
 - [***bit BlazorUI***](https://blazorui.bitplatform.dev) (`Bit.BlazorUI`): 90+ high-performance, accessible components with Dark and Light themes and RTL support, split across `Bit.BlazorUI`, `Bit.BlazorUI.Extras` (DataGrid, Chart, PdfViewer, RichTextEditor, Map, FullCalendar, CountryPicker, TimeZonePicker, and more), `Bit.BlazorUI.Icons` and `Bit.BlazorUI.Assets`.
 - [***Bmotion***](src/Bmotion/README.md) (`Bit.Bmotion`): A Blazor-native animation library inspired by Motion (Framer Motion), with springs, gestures, keyframes, variants, drag, layout (FLIP) and exit animations. The animation math runs in C#, so there's no JavaScript to wire up.
+- [***Bmage***](src/Bmage/README.md) (`Bit.Bmage`): Browser-side image processing for Blazor. Load, crop, resize, adjust, annotate and export images on the user's device from strongly typed C#, with a full image editor component (`Bit.Bmage.Editor`) and a browser-independent engine (`Bit.Bmage.Core`).
 
 ## App infrastructure
 

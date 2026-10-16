@@ -157,9 +157,12 @@ public partial class McpVersionsService : BackgroundService
 
         if (project is null) return;
 
+        // A library shipped after a release has no documentation site in that release's worktree. That release
+        // is still served, just without the library's tools, rather than failing the build of a missing project.
         var released = McpDocumentationSite.Projects
-            .Select(documentation => new McpDocumentationSite(documentation.UpstreamName, name,
-                                                              Path.Combine(worktreePath, documentation.ProjectPath.Replace('/', Path.DirectorySeparatorChar)),
+            .Select(documentation => (documentation.UpstreamName, ProjectFilePath: Path.Combine(worktreePath, documentation.ProjectPath.Replace('/', Path.DirectorySeparatorChar))))
+            .Where(documentation => File.Exists(documentation.ProjectFilePath))
+            .Select(documentation => new McpDocumentationSite(documentation.UpstreamName, name, documentation.ProjectFilePath,
                                                               loggerFactory.CreateLogger<McpDocumentationSite>()))
             .ToArray();
 

@@ -1,0 +1,1006 @@
+﻿@page "/mcp-server"
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+@* The MCP server's own documentation page. Everything interactive on it calls the demo's real
+   /api/mcp endpoints - the same methods the MCP server exposes as tools - so what a reader tries
+   here is exactly what an agent gets, and the page cannot document a tool that does not work.
+
+   The tool, prompt and resource tables are fetched rather than written out, for the same reason:
+   they come from GetMcpCatalog, which reflects over the attributes that declare them. *@
+
+<PageTitle>MCP server - Bit.Bmage</PageTitle>
+
+<h1>MCP server</h1>
+
+<p class="page-intro">
+    This site ships a <strong>Model Context Protocol</strong> server, so an AI agent writes Bmage
+    code from what the library <em>actually</em> is rather than from what it remembers. Half of its
+    tools answer from this build's own text - the guides, the XML documentation compiled into the
+    three packages, the source of every page you have been reading. The other half answer by
+    <strong>running the real engine on the server</strong>: how many bytes a pipeline really
+    produces, whether a size budget is reachable, what the optimiser does, and whether the export
+    still carries the GPS position.
+</p>
+
+<div class="demo-section">
+    <h2>Why an image library needs one</h2>
+    <p>
+        Almost every way of getting image code wrong compiles. There is no warning for a capability
+        probe that runs during prerendering, for a 48 MB buffer nobody disposes, or for an avatar
+        exported with the user's home address in it. Three of the questions this server answers
+        directly:
+    </p>
+
+    <div class="grid mcp-why">
+        @foreach (var problem in Problems)
+        {
+            <div class="card">
+                <p class="card-title">@problem.Symptom</p>
+                <p>@problem.Cause</p>
+                <code>@problem.Tool</code>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Connect your agent</h2>
+    <p>
+        The server speaks MCP over HTTP. Point any MCP client at this site's endpoint, at the deployed
+        <code>https://bmage.bitplatform.dev/mcp</code>, or at <code>https://bitplatform.dev/mcp</code>,
+        which serves the tools of every bit platform product - Bmage among them - from one address.
+        The same methods are also plain <code>GET</code> endpoints under <code>/api/mcp/...</code>,
+        which is what the panels further down this page call.
+    </p>
+
+    <div class="field" role="group" aria-labelledby="mcp-endpoint-label">
+        <span class="field-label" id="mcp-endpoint-label">Endpoint</span>
+        <div class="chip-row">
+            @foreach (var endpoint in Endpoints)
+            {
+                <button type="button" class="chip" aria-pressed="@(_endpoint == endpoint.Name ? "true" : "false")"
+                        @onclick="() => _endpoint = endpoint.Name">
+                    @endpoint.Name
+                </button>
+            }
+        </div>
+        <span class="field-hint">@CurrentEndpoint.Note</span>
+    </div>
+
+    @* A tablist is one stop in the tab order: tab moves past the whole group, and the arrow keys move
+       between the tabs inside it. The roles come with the behaviour they promise: every tab names the
+       panel it controls, and only the selected one is tabbable. aria-selected is written out as a word
+       rather than bound to the bool, because a false bool renders as no attribute at all. *@
+    <div class="chip-row mcp-tabs" role="tablist" aria-label="MCP client">
+        @foreach (var client in Clients)
+        {
+            var isSelected = _client == client.Name;
+
+            <button type="button" role="tab" class="chip"
+                    id="@TabId(client.Name)"
+                    aria-selected="@(isSelected ? "true" : "false")"
+                    aria-controls="@PanelId(client.Name)"
+                    tabindex="@(isSelected ? 0 : -1)"
+                    @ref="_tabs[client.Name]"
+                    @onclick="() => _client = client.Name"
+                    @onkeydown="OnTabKeyDown">
+                @client.Name
+            </button>
+        }
+    </div>
+
+    @* Every panel is rendered and the unselected ones hidden: aria-controls has to point at an element
+       that exists, on the tabs that are not the current one too. *@
+    @foreach (var client in Clients)
+    {
+        <div role="tabpanel" id="@PanelId(client.Name)" aria-labelledby="@TabId(client.Name)"
+             hidden="@(_client != client.Name)">
+            <p class="small muted">@client.Note</p>
+            <CodeSnippet Code="@client.Config(CurrentEndpoint.Key, CurrentEndpoint.Url)" Language="@client.Language" Expanded="true" />
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>The pipeline lab</h2>
+    <p>
+        <code>RunBmagePipeline</code> runs a pipeline on the real engine against a generated test
+        image - a photo with sensor grain, a flat-colour screenshot or a transparent graphic - and
+        reports the output size, the bytes for every format and quality, whether a byte budget can be
+        met, the operations the optimiser really runs, and the timings with and without it. The
+        pipeline is the C# you would write; every <code>ImagePipeline</code> method is accepted.
+    </p>
+
+    <div class="split">
+        <div>
+            <div class="field">
+                <label class="field-label" for="mcp-pipeline">Pipeline</label>
+                <textarea id="mcp-pipeline" class="mcp-input mcp-pipeline" rows="3" spellcheck="false"
+                          value="@_pipeline" @onchange="e => _pipeline = e.Value?.ToString() ?? string.Empty"
+                          disabled="@(_running || IsHydrating)"></textarea>
+            </div>
+
+            <div class="chip-row mcp-presets">
+                @foreach (var preset in Presets)
+                {
+                    <button type="button" class="chip" disabled="@(_running || IsHydrating)" @onclick="() => RunPresetAsync(preset)">
+                        @preset.Name
+                    </button>
+                }
+            </div>
+
+            @if (_runError is not null)
+            {
+                <div class="alert alert-error" role="alert">@_runError</div>
+            }
+            else if (_run?.Error is { } error)
+            {
+                @* The server read the pipeline and could not run it, and said why - a better message than
+                   anything this page could compose about it. *@
+                <div class="alert alert-error" role="alert">@error</div>
+            }
+            else if (_run is not null)
+            {
+                <div class="stat-grid mcp-run-stats">
+                    <div class="stat">
+                        <span class="stat-label">Output</span>
+                        <span class="stat-value">@_run.OutputWidth &times; @_run.OutputHeight</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Run</span>
+                        <span class="stat-value">@_run.ExecuteMilliseconds.ToString("0.#") ms</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Unoptimised</span>
+                        <span class="stat-value">@(_run.UnoptimizedMilliseconds is { } ms ? $"{ms:0.#} ms" : "same")</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Smallest file</span>
+                        <span class="stat-value">@SmallestFile</span>
+                    </div>
+                </div>
+
+                <div class="table-scroll" tabindex="0" role="region" aria-label="Encoded sizes">
+                    <table class="data">
+                        <thead>
+                            <tr>
+                                <th scope="col">Format</th>
+                                <th scope="col" class="num">Quality</th>
+                                <th scope="col" class="num">Bytes</th>
+                                <th scope="col" class="num">Bits/px</th>
+                                <th scope="col" class="num">Encode</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var encoding in _run.Encodings ?? [])
+                            {
+                                <tr>
+                                    <th scope="row">@encoding.Format.ToUpperInvariant()</th>
+                                    @if (encoding.Bytes is null)
+                                    {
+                                        <td colspan="4" class="small muted">@encoding.Note</td>
+                                    }
+                                    else
+                                    {
+                                        <td class="num">@(encoding.Quality?.ToString("0.##") ?? "lossless")</td>
+                                        <td class="num">@Display.Bytes(encoding.Bytes.Value)</td>
+                                        <td class="num">@encoding.BitsPerPixel?.ToString("0.##")</td>
+                                        <td class="num">@encoding.EncodeMilliseconds?.ToString("0.#") ms</td>
+                                    }
+                                </tr>
+                            }
+                            @foreach (var budget in _run.Budgets ?? [])
+                            {
+                                <tr>
+                                    <th scope="row">@budget.Format.ToUpperInvariant() &le; @Display.Bytes(budget.MaxFileSize)</th>
+                                    @if (budget.Met)
+                                    {
+                                        <td class="num">@(budget.Quality?.ToString("0.##") ?? "lossless")</td>
+                                        <td class="num text-good">@Display.Bytes(budget.Bytes ?? 0)</td>
+                                        <td colspan="2" class="small muted">@budget.Width &times; @budget.Height</td>
+                                    }
+                                    else
+                                    {
+                                        <td colspan="4" class="small text-bad">@budget.Error</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <p class="card-title">What the optimiser runs</p>
+                <pre class="code mcp-operations">@string.Join("\n", (_run.OptimizedOperations ?? []).Select((op, i) => $"{i + 1}. {op}"))</pre>
+                <ul class="mcp-notes">
+                    @foreach (var note in _run.OptimizerNotes ?? [])
+                    {
+                        <li>@note</li>
+                    }
+                </ul>
+
+                <p class="small mcp-reading">@_run.Reading</p>
+
+                @foreach (var warning in _run.Warnings ?? [])
+                {
+                    <p class="small text-bad">@warning</p>
+                }
+            }
+        </div>
+
+        <div class="card">
+            <p class="card-title">
+                Run settings
+                @if (_running)
+                {
+                    <span class="working" role="status">Running on the server&hellip;</span>
+                }
+            </p>
+
+            <div class="field" role="group" aria-labelledby="mcp-source-label">
+                <span class="field-label" id="mcp-source-label">Test image</span>
+                <div class="chip-row">
+                    @foreach (var source in Sources)
+                    {
+                        <button type="button" class="chip" aria-pressed="@(_source == source ? "true" : "false")"
+                                disabled="@_running" @onclick="() => _source = source">@source</button>
+                    }
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="mcp-size">Source size <span class="field-value">@_width &times; @_height</span></label>
+                <select id="mcp-size" class="bmg-select" disabled="@_running" @onchange="OnSizeChanged">
+                    @foreach (var size in Sizes)
+                    {
+                        <option value="@size" selected="@($"{_width}x{_height}" == size)">@size.Replace("x", " × ")</option>
+                    }
+                </select>
+            </div>
+
+            <div class="field" role="group" aria-labelledby="mcp-formats-label">
+                <span class="field-label" id="mcp-formats-label">Formats</span>
+                <div class="chip-row">
+                    @foreach (var format in Formats)
+                    {
+                        <button type="button" class="chip" aria-pressed="@(_formats.Contains(format) ? "true" : "false")"
+                                disabled="@_running" @onclick="() => ToggleFormat(format)">@format</button>
+                    }
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="mcp-qualities">Qualities</label>
+                <input id="mcp-qualities" type="text" value="@_qualities" disabled="@_running"
+                       @onchange="e => _qualities = e.Value?.ToString() ?? string.Empty" />
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="mcp-budget">Size budget <span class="field-value">@(_budgetKb > 0 ? $"{_budgetKb} KB" : "none")</span></label>
+                <input id="mcp-budget" type="range" min="0" max="500" step="10" value="@_budgetKb" disabled="@_running"
+                       @oninput="OnBudgetChanged" />
+            </div>
+
+            <button type="button" class="btn btn-accent btn-block" disabled="@(_running || IsHydrating)" @onclick="RunAsync">
+                @(_running ? "Running..." : "Run it on the engine")
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>What leaves with the file</h2>
+    <p>
+        <code>CompareBmageMetadataPolicies</code> writes a phone photo - GPS position, serial number,
+        owner, camera, lens, ISO, date and copyright - through the real encoder under each
+        <code>MetadataPolicy</code>, then decodes every file again and reports what is really in it.
+        A privacy decision then rests on the exported bytes, not on what a policy's name suggests.
+    </p>
+
+    <div class="btn-row toolbar-row">
+        @foreach (var format in MetadataFormats)
+        {
+            <button type="button" class="chip" aria-pressed="@(_metadataFormat == format ? "true" : "false")"
+                    disabled="@_comparing" @onclick="() => _metadataFormat = format">@format</button>
+        }
+        <button type="button" class="btn btn-accent" disabled="@(_comparing || IsHydrating)" @onclick="CompareAsync">
+            @(_comparing ? "Encoding..." : "Export it three ways")
+        </button>
+    </div>
+
+    @if (_compareError is not null)
+    {
+        <div class="alert alert-error" role="alert">@_compareError</div>
+    }
+    else if (_comparison?.Error is { } comparisonError)
+    {
+        <div class="alert alert-error" role="alert">@comparisonError</div>
+    }
+    else if (_comparison is { Policies: { Length: > 0 } policies })
+    {
+        <div class="table-scroll" tabindex="0" role="region" aria-label="Metadata kept per policy">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">Field</th>
+                        @foreach (var policy in policies)
+                        {
+                            <th scope="col">@policy.Policy</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var field in _comparison.Original ?? [])
+                    {
+                        var label = LabelOf(field);
+
+                        <tr>
+                            <th scope="row">@label</th>
+                            @foreach (var policy in policies)
+                            {
+                                var kept = (policy.Kept ?? []).Any(entry => LabelOf(entry) == label);
+                                <td>@Badge(kept, label is "Location" or "Serial number" or "Owner")</td>
+                            }
+                        </tr>
+                    }
+                    <tr>
+                        <th scope="row">File size</th>
+                        @foreach (var policy in policies)
+                        {
+                            <td>@Display.Bytes(policy.Bytes)</td>
+                        }
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <p class="small mcp-reading">@_comparison.Reading</p>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Review your code</h2>
+    <p>
+        <code>ReviewBmageCode</code> is the pass that closes the loop after an agent writes code. Its
+        rules look for the mistakes that compile cleanly - a capability probe in
+        <code>OnInitializedAsync</code>, <code>@@inject ImageProcessor</code> in a browser app, a
+        buffer never disposed, <code>MetadataPolicy.Preserve</code>, WebP with no fallback. The sample
+        below has several on purpose.
+    </p>
+
+    <div class="field">
+        <label class="field-label" for="mcp-review">Code</label>
+        <textarea id="mcp-review" class="mcp-input mcp-code" rows="12" spellcheck="false"
+                  value="@_review" @onchange="e => _review = e.Value?.ToString() ?? string.Empty"
+                  disabled="@(_reviewing || IsHydrating)"></textarea>
+    </div>
+
+    <div class="btn-row">
+        <button type="button" class="btn btn-accent" disabled="@(_reviewing || IsHydrating)" @onclick="ReviewAsync">
+            @(_reviewing ? "Reviewing..." : "Review it")
+        </button>
+    </div>
+
+    @if (_reviewError is not null)
+    {
+        <div class="alert alert-error mcp-results" role="alert">@_reviewError</div>
+    }
+    else if (_findings is not null)
+    {
+        @if (_findings.Findings is null or { Length: 0 })
+        {
+            <p class="small mcp-results">Nothing to report - all @(_findings.RulesApplied?.Length ?? 0) rules passed.</p>
+        }
+        else
+        {
+            <ul class="mcp-findings mcp-results">
+                @foreach (var finding in _findings.Findings)
+                {
+                    <li class="mcp-finding @finding.Severity?.ToLowerInvariant()">
+                        <span class="mcp-finding-head">
+                            <span class="badge @SeverityBadge(finding.Severity)">@finding.Severity</span>
+                            <code>@finding.Rule</code>
+                            @if (finding.Line is { } line)
+                            {
+                                <span class="small muted">line @line</span>
+                            }
+                        </span>
+                        <span class="mcp-finding-message">@finding.Message</span>
+                        <span class="mcp-finding-fix">@finding.Fix</span>
+                    </li>
+                }
+            </ul>
+        }
+    }
+</div>
+
+<div class="demo-section">
+    <h2>One search across everything</h2>
+    <p>
+        An agent rarely knows which corpus holds the answer. <code>SearchBmage</code> covers every
+        guide section, every public member of the three packages, the setup guides, the recipes, the
+        review rules and the demo's sources at once - and every hit carries the exact follow-up call
+        that returns it in full.
+    </p>
+
+    <div class="mcp-search">
+        <input type="search" class="mcp-input" value="@_query" disabled="@(_searching || IsHydrating)"
+               @onchange="e => _query = e.Value?.ToString() ?? string.Empty"
+               placeholder="avatar under 100 KB" aria-label="Search Bmage" />
+        <button type="button" class="btn btn-accent" disabled="@(_searching || IsHydrating)" @onclick="SearchAsync">
+            <Icon Path="@Icons.Search" />
+            @(_searching ? "Searching..." : "Search")
+        </button>
+    </div>
+
+    @if (_searchError is not null)
+    {
+        <div class="alert alert-error" role="alert">@_searchError</div>
+    }
+    else if (_hits is { Length: > 0 })
+    {
+        <ul class="mcp-hits">
+            @foreach (var hit in _hits)
+            {
+                <li>
+                    <span class="badge badge-neutral">@hit.Kind</span>
+                    <span class="mcp-hit-title">@hit.Title</span>
+                    <code>@hit.Tool</code>
+                </li>
+            }
+        </ul>
+    }
+    else if (_hits is not null)
+    {
+        <p class="small muted">Nothing matched that.</p>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Tools</h2>
+
+    @if (_catalog is null)
+    {
+        <p class="working" role="status">Loading the catalog&hellip;</p>
+    }
+    else
+    {
+        <p>
+            @_catalog.Tools.Length of them, listed straight from the attributes that declare them - so
+            this table cannot fall out of step with the server, and neither can this count.
+        </p>
+
+        <div class="table-scroll" tabindex="0" role="region" aria-label="MCP tools">
+            <table class="ref mcp-tools">
+                <thead>
+                    <tr><th scope="col">Tool</th><th scope="col">Parameters</th><th scope="col">What it answers</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var tool in _catalog.Tools)
+                    {
+                        <tr>
+                            <th scope="row"><code>@tool.Name</code></th>
+                            <td class="mcp-params">
+                                @if (tool.Parameters is null or { Length: 0 })
+                                {
+                                    <span class="muted">none</span>
+                                }
+                                else
+                                {
+                                    @foreach (var parameter in tool.Parameters)
+                                    {
+                                        <code>@parameter</code>
+                                    }
+                                }
+                            </td>
+                            <td>@Shorten(tool.Description)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Prompts</h2>
+    <p>
+        Prompts are the workflows: the order to call the tools in for a whole task. They exist because
+        the failure mode of an agent holding a shelf of tools is not ignorance - it is calling them in
+        an order that skips the check which would have caught the bug.
+    </p>
+
+    @if (_catalog is not null)
+    {
+        <div class="grid">
+            @foreach (var prompt in _catalog.Prompts)
+            {
+                <div class="card">
+                    <p class="card-title"><code>@prompt.Name</code></p>
+                    <p>@prompt.Description</p>
+                    @if (prompt.Parameters is { Length: > 0 })
+                    {
+                        <p class="small muted">@string.Join(" · ", prompt.Parameters)</p>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Resources</h2>
+    <p>
+        The same knowledge as URIs, for clients that attach documentation to a conversation up front
+        or let a person browse and pin it. They read the same catalogs the tools do, so neither can go
+        stale relative to the other.
+    </p>
+
+    @if (_catalog is not null)
+    {
+        <ul class="mcp-resources">
+            @foreach (var resource in _catalog.Resources)
+            {
+                <li><code>@resource.Name</code> <span class="small muted">@resource.Description</span></li>
+            }
+        </ul>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>How it stays true</h2>
+    <p>
+        Documentation that is written down separately drifts, and an agent cannot tell a stale answer
+        from a fresh one. So nothing here is written down twice:
+    </p>
+
+    <ul>
+        <li>
+            <strong>The API reference is reflected</strong> out of the three shipped assemblies and
+            paired with the XML documentation compiled into them, with each type's namespace and
+            package - Bmage spreads its types over a dozen namespaces, and a wrong <code>using</code> is
+            the commonest way generated code fails to compile.
+        </li>
+        <li>
+            <strong>The guides, the demo pages and their sources are embedded</strong> into the server
+            assembly, so the tools keep working from a published deployment and hand out the same text
+            this site renders.
+        </li>
+        <li>
+            <strong>Sizes are measured, not estimated.</strong> The pipeline is built by reflection over
+            <code>ImagePipeline</code>'s own builder methods and run by the same engine a browser runs,
+            with the managed codecs a headless host has; the budget search is the library's own.
+        </li>
+        <li>
+            <strong>Privacy is read back, not asserted.</strong> The metadata comparison decodes the file
+            the encoder wrote, so it reports what is in the bytes.
+        </li>
+    </ul>
+
+    <CodeSnippet Code="@ArchitectureCode" Language="C#" />
+</div>
+
+@code {
+    private sealed record Problem(string Symptom, string Cause, string Tool);
+
+    private sealed record McpEndpoint(string Name, string Key, string Url, string Note);
+
+    // The config is written against the endpoint the reader picked; "This site" resolves against the
+    // address the page is served from, so on localhost, a tunnel or a deployment the snippet points
+    // at the server being looked at.
+    private sealed record McpClient(string Name, string Note, string Language, Func<string, string, string> Config);
+
+    private sealed record Preset(string Name, string Pipeline, string Source, string[] Formats, int BudgetKb);
+
+    // The response shapes of the endpoints this page calls. They mirror the server's DTOs rather than
+    // sharing them: the client project does not reference the host, and these are the fields the page
+    // renders - not the whole contract. Arrays are nullable throughout: what comes back is JSON, and a
+    // body missing a field deserialises to null rather than to an empty array.
+    private sealed record Run(int OutputWidth, int OutputHeight, double ExecuteMilliseconds, double? UnoptimizedMilliseconds,
+        EncodingRow[]? Encodings, BudgetRow[]? Budgets, string[]? OptimizedOperations, string[]? OptimizerNotes,
+        string? Reading, string[]? Warnings, string? Error);
+
+    private sealed record EncodingRow(string Format, double? Quality, long? Bytes, double? BitsPerPixel, double? EncodeMilliseconds, string? Note);
+
+    private sealed record BudgetRow(string Format, long MaxFileSize, bool Met, long? Bytes, double? Quality, int? Width, int? Height, string? Error);
+
+    private sealed record Comparison(string[]? Original, PolicyRow[]? Policies, string? Reading, string? Error);
+
+    private sealed record PolicyRow(string Policy, long Bytes, string[]? Kept, bool LeaksLocation);
+
+    private sealed record Review(bool Passed, Finding[]? Findings, string[]? RulesApplied);
+
+    private sealed record Finding(string? Severity, string Rule, int? Line, string Message, string Fix);
+
+    private sealed record Hit(string Kind, string Title, string? Context, string Tool, string Snippet);
+
+    private sealed record Catalog(CatalogMember[] Tools, CatalogMember[] Prompts, CatalogMember[] Resources);
+
+    private sealed record CatalogMember(string Name, string Description, string[]? Parameters);
+
+    private static readonly Problem[] Problems =
+    [
+        new("How big will this really be?",
+            "Quality 0.8 is a habit, not a measurement. The bytes depend on the content, the dimensions and the format - and whether a 100 KB budget is reachable at all is something only an encode can say.",
+            "RunBmagePipeline"),
+        new("It worked in development, it fails at prerender",
+            "A capability probe in OnInitializedAsync, @inject ImageProcessor in a browser app, a registration in only one of a Web App's two containers. All of them compile.",
+            "ReviewBmageCode"),
+        new("Is the location still in the file?",
+            "MetadataPolicy.Preserve keeps the GPS position the phone recorded. Remove is the default, StripSensitive keeps the camera data - the exported bytes are what decide it.",
+            "CompareBmageMetadataPolicies"),
+    ];
+
+    private const string ThisSite = "This site";
+
+    private McpEndpoint[] Endpoints =>
+    [
+        new(ThisSite, "bmage", Nav.ToAbsoluteUri("mcp").ToString(), "The server you are reading this page on."),
+        new("bmage.bitplatform.dev", "bmage", "https://bmage.bitplatform.dev/mcp", "The deployed Bmage documentation site, always the latest release."),
+        new("bitplatform.dev", "bitplatform", "https://bitplatform.dev/mcp", "One endpoint for every bit platform product - Bmage, BlazorUI, Brouter, Butil, Bmotion, Bswup - with the bit platform's own source search alongside."),
+    ];
+
+    private McpEndpoint CurrentEndpoint => Array.Find(Endpoints, endpoint => endpoint.Name == _endpoint) ?? Endpoints[0];
+
+    private static readonly McpClient[] Clients =
+    [
+        new("Claude Code", "One command, from anywhere in your project.", "Shell",
+            (key, url) => $"claude mcp add --transport http {key} {url}"),
+        new("Claude Desktop", "Add it to claude_desktop_config.json, then restart the app.", "JSON",
+            (key, url) => $$"""
+            {
+              "mcpServers": {
+                "{{key}}": {
+                  "type": "http",
+                  "url": "{{url}}"
+                }
+              }
+            }
+            """),
+        new("VS Code", "Add it to .vscode/mcp.json in the workspace, and it is offered to Copilot in agent mode.", "JSON",
+            (key, url) => $$"""
+            {
+              "servers": {
+                "{{key}}": {
+                  "type": "http",
+                  "url": "{{url}}"
+                }
+              }
+            }
+            """),
+        new("Cursor", "Add it to .cursor/mcp.json for this project, or to ~/.cursor/mcp.json for all of them.", "JSON",
+            (key, url) => $$"""
+            {
+              "mcpServers": {
+                "{{key}}": {
+                  "url": "{{url}}"
+                }
+              }
+            }
+            """),
+    ];
+
+    private static readonly Preset[] Presets =
+    [
+        new("Upload cap", "ImagePipeline.Create()\n    .AutoOrient()\n    .MaxSize(1920, 1920)\n    .Sharpen(0.3f)", "photo", ["jpeg", "png"], 0),
+        new("Avatar under 40 KB", "ImagePipeline.Create()\n    .SmartCrop(AspectRatio.Square)\n    .Resize(512, 512, ResizeMode.Stretch)\n    .Sharpen(0.25f)", "photo", ["jpeg", "webp"], 40),
+        new("Adjust, then shrink", "ImagePipeline.Create()\n    .Brightness(0.05f)\n    .Contrast(0.1f)\n    .Vibrance(0.2f)\n    .MaxSize(1280, 1280)", "photo", ["jpeg"], 0),
+        new("Screenshot", "ImagePipeline.Create()\n    .MaxSize(1600, 1600)", "screenshot", ["jpeg", "png"], 0),
+        new("Logo with alpha", "ImagePipeline.Create()\n    .Resize(256, 256, ResizeMode.Contain)", "graphic", ["png", "jpeg"], 0),
+    ];
+
+    private static readonly string[] Sources = ["photo", "screenshot", "graphic"];
+
+    private static readonly string[] Sizes = ["1200x800", "2400x1600", "4000x3000"];
+
+    private static readonly string[] Formats = ["jpeg", "png", "bmp", "webp"];
+
+    private static readonly string[] MetadataFormats = ["jpeg", "png"];
+
+    private const string ArchitectureCode = """
+        // Server/Services/BmagePipelineLab.cs - the whole trick, in a few lines.
+        //
+        // The pipeline is parsed into the real ImagePipeline by calling its own builder methods
+        // through reflection, so every method and parameter the library has is accepted as written.
+        var pipeline = BmagePipelineSpec.Parse(spec).Pipeline;
+
+        using var input = CreateSource("photo", 2400, 1600);   // drawn with ImageCanvas, plus grain
+
+        var optimized = pipeline.Optimize(input.Size);           // what ExecuteAsync really runs
+        using var output = await pipeline.ExecuteAsync(input);
+
+        var processor = new ImageProcessor();                    // the managed codecs a server has
+        var jpeg = await processor.EncodeAsync(output, new ImageExportOptions
+        {
+            Format = ImageFormat.Jpeg,
+            Quality = 0.8,
+            MaxFileSize = budget,                                // the library's own search
+        });
+        """;
+
+    private const string DefaultReview = """
+        @inject ImageProcessor Processor
+        @inject IImageCapabilityProvider Capabilities
+        @inject ImageExporter Exporter
+
+        @code {
+            private ImageCapabilities? _caps;
+
+            protected override async Task OnInitializedAsync()
+            {
+                _caps = await Capabilities.GetAsync();
+            }
+
+            private async Task<EncodedImage> SaveAsync(ImageBuffer photo)
+            {
+                var thumb = await ImagePipeline.Create()
+                    .Sharpen(0.3f)
+                    .MaxSize(400, 400)
+                    .ExecuteAsync(photo);
+
+                return await Exporter.EncodeAsync(thumb, new ImageExportOptions
+                {
+                    Format = ImageFormat.WebP,
+                    Metadata = MetadataPolicy.Preserve,
+                });
+            }
+        }
+        """;
+
+    /// <summary>What every panel says when a call to the demo's own API comes back with nothing.</summary>
+    private const string Unreachable = "The demo's own API did not answer. Is the server still running?";
+
+    /// <summary>The longest request line a panel will build; Kestrel refuses 8,192 bytes.</summary>
+    private const int MaxUrlLength = 6_000;
+
+    private string _endpoint = ThisSite;
+    private string _client = "Claude Code";
+    private readonly Dictionary<string, ElementReference> _tabs = [];
+
+    private string _pipeline = Presets[0].Pipeline;
+    private string _source = "photo";
+    private int _width = 2400;
+    private int _height = 1600;
+    private readonly HashSet<string> _formats = ["jpeg", "png"];
+    private string _qualities = "0.7, 0.8, 0.9";
+    private int _budgetKb;
+    private bool _running;
+    private string? _runError;
+    private Run? _run;
+
+    private string _metadataFormat = "jpeg";
+    private bool _comparing;
+    private string? _compareError;
+    private Comparison? _comparison;
+
+    private string _review = DefaultReview;
+    private bool _reviewing;
+    private string? _reviewError;
+    private Review? _findings;
+
+    private string _query = "avatar under 100 KB";
+    private bool _searching;
+    private string? _searchError;
+    private Hit[]? _hits;
+
+    private Catalog? _catalog;
+
+    // The prerendered page is on screen before the runtime that would answer its buttons has loaded.
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    private string SmallestFile => _run?.Encodings?.Where(encoding => encoding.Bytes is not null).MinBy(encoding => encoding.Bytes) is { } smallest
+        ? $"{smallest.Format.ToUpperInvariant()} {Display.Bytes(smallest.Bytes!.Value)}"
+        : "—";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Every call on this page goes to the app's own API, which prerendering has no way to reach and
+        // no reason to: the catalog is chrome, not content.
+        if (firstRender is false || IsHydrating) return;
+
+        _catalog = await GetAsync<Catalog>("api/mcp/GetMcpCatalog");
+
+        StateHasChanged();
+    }
+
+    private static string TabId(string client) => $"mcp-tab-{Slug(client)}";
+
+    private static string PanelId(string client) => $"mcp-panel-{Slug(client)}";
+
+    private static string Slug(string client) => client.ToLowerInvariant().Replace(' ', '-');
+
+    /// <summary>
+    /// Arrow keys move between the tabs, wrapping at both ends - the tablist pattern. The focus moves
+    /// with the selection, so the focus ring never sits on a tab that is no longer the current one.
+    /// </summary>
+    private async Task OnTabKeyDown(KeyboardEventArgs e)
+    {
+        var step = e.Key switch
+        {
+            "ArrowRight" or "ArrowDown" => 1,
+            "ArrowLeft" or "ArrowUp" => -1,
+            _ => 0
+        };
+
+        if (step == 0) return;
+
+        var index = Array.FindIndex(Clients, client => client.Name == _client);
+        var next = Clients[((index + step) % Clients.Length + Clients.Length) % Clients.Length];
+
+        _client = next.Name;
+
+        if (_tabs.TryGetValue(next.Name, out var tab)) await tab.FocusAsync();
+    }
+
+    private void OnSizeChanged(ChangeEventArgs e)
+    {
+        var parts = (e.Value?.ToString() ?? string.Empty).Split('x');
+
+        if (parts.Length == 2 && int.TryParse(parts[0], out var width) && int.TryParse(parts[1], out var height))
+        {
+            _width = width;
+            _height = height;
+        }
+    }
+
+    private void OnBudgetChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value)) _budgetKb = value;
+    }
+
+    private void ToggleFormat(string format)
+    {
+        if (_formats.Remove(format) is false) _formats.Add(format);
+    }
+
+    private async Task RunPresetAsync(Preset preset)
+    {
+        _pipeline = preset.Pipeline;
+        _source = preset.Source;
+        _formats.Clear();
+        _formats.UnionWith(preset.Formats);
+        _budgetKb = preset.BudgetKb;
+
+        await RunAsync();
+    }
+
+    // The handlers below each reset their own flag in a finally: the flag disables the panel's
+    // controls while a call is out, so losing it would leave the panel disabled with no way back but a
+    // reload. Each also clears its own error first and sets it on a null answer, so a panel never shows
+    // a stale result under a fresh question.
+
+    private async Task RunAsync()
+    {
+        _running = true;
+        _runError = null;
+
+        try
+        {
+            var formats = string.Join(",", Formats.Where(_formats.Contains));
+            var url = $"api/mcp/RunBmagePipeline?pipeline={Uri.EscapeDataString(_pipeline)}&source={_source}" +
+                      $"&width={_width}&height={_height}&formats={Uri.EscapeDataString(formats)}&qualities={Uri.EscapeDataString(_qualities)}" +
+                      (_budgetKb > 0 ? $"&maxFileSize={_budgetKb * 1024L}" : string.Empty);
+
+            if (url.Length > MaxUrlLength)
+            {
+                _runError = "That pipeline is longer than this page can put in a URL. The MCP tool itself takes far more.";
+                return;
+            }
+
+            _run = await GetAsync<Run>(url);
+            _runError = _run is null ? Unreachable : null;
+        }
+        finally
+        {
+            _running = false;
+        }
+    }
+
+    private async Task CompareAsync()
+    {
+        _comparing = true;
+        _compareError = null;
+
+        try
+        {
+            _comparison = await GetAsync<Comparison>($"api/mcp/CompareBmageMetadataPolicies?format={_metadataFormat}");
+            _compareError = _comparison is null ? Unreachable : null;
+        }
+        finally
+        {
+            _comparing = false;
+        }
+    }
+
+    private async Task ReviewAsync()
+    {
+        _reviewError = null;
+
+        var url = $"api/mcp/ReviewBmageCode?code={Uri.EscapeDataString(_review)}";
+
+        // The tool reviews far more, but this page hands the code over in the query string, and a request
+        // line that long is refused by the server before the tool sees it. Saying so beats a 414.
+        if (url.Length > MaxUrlLength)
+        {
+            _reviewError = $"That is {_review.Length} characters, which is more than this page can put in a URL. " +
+                           "Paste one component rather than a whole file - the MCP tool itself takes far more.";
+            _findings = null;
+
+            return;
+        }
+
+        _reviewing = true;
+
+        try
+        {
+            _findings = await GetAsync<Review>(url);
+            _reviewError = _findings is null ? Unreachable : null;
+        }
+        finally
+        {
+            _reviewing = false;
+        }
+    }
+
+    private async Task SearchAsync()
+    {
+        _searching = true;
+        _searchError = null;
+
+        try
+        {
+            _hits = await GetAsync<Hit[]>($"api/mcp/SearchBmage?query={Uri.EscapeDataString(_query)}&limit=8");
+            _searchError = _hits is null ? Unreachable : null;
+        }
+        finally
+        {
+            _searching = false;
+        }
+    }
+
+    /// <summary>
+    /// Calls one of the demo's own MCP endpoints, answering null when it cannot be reached or did not
+    /// come back in the expected shape. Every caller turns that into its own panel saying so: leaving
+    /// the last answer on screen would read as the answer to the question just asked.
+    /// </summary>
+    private async Task<T?> GetAsync<T>(string url)
+    {
+        try
+        {
+            return await Http.GetFromJsonAsync<T>(url);
+        }
+        catch
+        {
+            return default;
+        }
+    }
+
+    /// <summary>"Location: 53.2, 5.8" is reported as "Location".</summary>
+    private static string LabelOf(string field)
+    {
+        var colon = field.IndexOf(": ", StringComparison.Ordinal);
+
+        return colon > 0 ? field[..colon] : field;
+    }
+
+    /// <summary>Kept or removed; a sensitive field that was kept is the one that matters, so it reads as a failure.</summary>
+    private static MarkupString Badge(bool kept, bool sensitive) => kept
+        ? new(sensitive ? "<span class=\"badge badge-no\">kept</span>" : "<span class=\"badge badge-neutral\">kept</span>")
+        : new(sensitive ? "<span class=\"badge badge-yes\">removed</span>" : "<span class=\"badge badge-neutral\">removed</span>");
+
+    private static string SeverityBadge(string? severity) => severity switch
+    {
+        "Error" => "badge-no",
+        "Warning" => "badge-warning",
+        _ => "badge-neutral"
+    };
+
+    private static string Shorten(string description)
+    {
+        // The tool descriptions are written for an agent deciding whether to call the tool, so they are
+        // long by design. The table wants the first sentence.
+        var stop = description.IndexOf(". ", StringComparison.Ordinal);
+
+        return stop > 0 ? description[..(stop + 1)] : description;
+    }
+}

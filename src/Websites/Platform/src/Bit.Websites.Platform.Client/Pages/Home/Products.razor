@@ -165,5 +165,24 @@
                 </div>
             </text>
         },
+        new()
+        {
+            Title = "Images, processed on the device",
+            Subtitle = "bit Bmage · Blazor-native image processing",
+            LinkUrl = Urls.Bmage,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bmage loads, crops, resizes, adjusts, annotates and exports images in the browser from strongly typed C#,
+                    with a full image editor component, EXIF privacy by default, and no server round trips.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>ImagePipeline.Create()
+    .AutoOrient()
+    .Cover(512, 512)
+    .Sharpen(0.3f)</CodeBox>
+                </div>
+            </text>
+        },
     ];
 }

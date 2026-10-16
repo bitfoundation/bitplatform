@@ -7,6 +7,7 @@ on:
       - 'main'
     paths:
       - 'src/BlazorUI/**'
+      - 'src/Bmage/**'
       - 'src/Bmotion/**'
       - 'src/Brouter/**'
       - 'src/Bswup/**'
@@ -150,6 +151,21 @@ jobs:
       run: dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bmotion
       run: dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output . --configuration Release
+
+    - name: dotnet build Bmage.Core
+      run: dotnet build src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bmage.Core
+      run: dotnet pack src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj --output . --configuration Release
+
+    - name: dotnet build Bmage
+      run: dotnet build src/Bmage/Bit.Bmage/Bit.Bmage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bmage
+      run: dotnet pack src/Bmage/Bit.Bmage/Bit.Bmage.csproj --output . --configuration Release
+
+    - name: dotnet build Bmage.Editor
+      run: dotnet build src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bmage.Editor
+      run: dotnet pack src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj --output . --configuration Release
 
     - name: dotnet build CodeAnalyzers
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

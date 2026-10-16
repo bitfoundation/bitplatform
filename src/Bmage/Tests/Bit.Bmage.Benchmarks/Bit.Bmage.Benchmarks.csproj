@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net10.0 matches
+             global.json's pinned SDK, and the relative cost of the operations it measures does not depend
+             on the framework version, so multi-targeting would only slow the build. -->
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <!-- Not a unit-test project: it's a BenchmarkDotNet console harness run manually
+             (dotnet run -c Release), so it deliberately does NOT set IsTestProject. -->
+        <IsTestProject>false</IsTestProject>
+        <Optimize>true</Optimize>
+        <ServerGarbageCollection>false</ServerGarbageCollection>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <!-- Bit.Bmage.Core grants InternalsVisibleTo to this assembly by its strong-name public key. -->
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.15.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Bmage.Core\Bit.Bmage.Core.csproj" />
+    </ItemGroup>
+
+</Project>

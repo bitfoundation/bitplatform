@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+        <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner. EnableMSTestRunner
+             builds that test host into the assembly itself, and it only generates the entry point for
+             an executable project - as a library the runner never runs. -->
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Playwright itself, without a per-framework integration package: the suite manages the
+             browser, a context per test and the demo host from its own Infrastructure/ classes. -->
+        <PackageReference Include="Microsoft.Playwright" Version="1.63.0" />
+        <PackageReference Include="MSTest" Version="4.5.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Only for the upload every test uses: a deterministic gradient PNG built with the library's
+             own managed encoder, so the bytes a test drops on a page are the same on every machine. -->
+        <ProjectReference Include="..\..\Bit.Bmage.Core\Bit.Bmage.Core.csproj" />
+    </ItemGroup>
+
+    <!-- Deliberately no ProjectReference to the demo: it is a separate process the suite boots (or an
+         already-running deployment, BMAGE_E2E_HOST_URL), and a reference would pull a Blazor
+         WebAssembly build into this project's own. Infrastructure/DemoBuild builds it before the first
+         test instead. -->
+
+</Project>

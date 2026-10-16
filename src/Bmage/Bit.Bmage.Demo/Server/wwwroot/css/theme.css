@@ -1,0 +1,388 @@
+﻿/* Bit.Bmage Demo - design tokens.
+
+   The demo carries no dependency other than Bit.Bmage itself, so the design system it is built on
+   is written out here rather than pulled from a component library. It is Microsoft's Fluent 2,
+   transcribed - the same transcription the Bmotion demo uses, so the bit platform's library sites
+   read as one family: the neutral ramps, the type ramp, the corner radii, the elevation shadows and
+   the motion curves all carry Fluent's own names and Fluent's own values.
+
+   Three layers, in the order a token should be reached for:
+
+     1. Ramps      --bmd-brand-10..160, --bmd-grey-*.  Raw colour. Never used outside this file.
+     2. Semantic   --bmd-clr-*, --bmd-fnt-*, --bmd-crn-*, --bmd-shdw-*, --bmd-dur-*, --bmd-crv-*.
+                   What a token is *for*. This is the layer to write CSS against.
+     3. Bridges    the --bmg-* custom properties of the Bit.Bmage.Editor stylesheet, set in
+                   editor-theme.css from the semantic layer, so the editor component and the page
+                   around it are painted from one palette.
+
+   The prefix is --bmd- (Bmage demo) rather than the library's own --bmg-: the site's tokens and
+   the component's tokens are different things, and keeping their names apart is what lets the
+   bridge in editor-theme.css map one onto the other without either shadowing the other.
+
+   The brand ramp is a violet, so a reader moving between bit's library sites can tell which one
+   they are on at a glance; the shade every text and link uses clears 4.5:1 on both of the surfaces
+   this site paints, in both themes.
+
+   The theme is selected by the data-theme attribute on <html>, which the bootstrap script in
+   App.razor sets before first paint (see js/demo.js). The bare :root selector carries the light
+   palette so a document with no attribute at all - the pre-hydration prerender, or a browser with
+   JS disabled - still renders a complete theme rather than unstyled markup. */
+
+/* ── 1. Ramps ──────────────────────────────────────────────────────────────── */
+
+:root {
+    /* Brand. A violet ramp in Fluent's sixteen steps, anchored at shade 80. Shade 70 is the text
+       shade on the light surfaces (8.2:1 on white), shade 110 on the dark ones (5.7:1 on the
+       dark card). */
+    --bmd-brand-10: #140E26;
+    --bmd-brand-20: #1E1538;
+    --bmd-brand-30: #2A1C4F;
+    --bmd-brand-40: #352266;
+    --bmd-brand-50: #41297E;
+    --bmd-brand-60: #4C2F96;
+    --bmd-brand-70: #5935AE;
+    --bmd-brand-80: #6941C6;
+    --bmd-brand-90: #7C58D3;
+    --bmd-brand-100: #9172E0;
+    --bmd-brand-110: #A08AE6;
+    --bmd-brand-120: #AE9DEB;
+    --bmd-brand-130: #C0B2F0;
+    --bmd-brand-140: #D3C8F5;
+    --bmd-brand-150: #E5DEFA;
+    --bmd-brand-160: #F4F1FD;
+
+    /* Neutrals. Fluent's grey ramp, named by lightness the way Fluent names it. */
+    --bmd-grey-0: #000000;
+    --bmd-grey-8: #141414;
+    --bmd-grey-10: #1A1A1A;
+    --bmd-grey-12: #1F1F1F;
+    --bmd-grey-14: #242424;
+    --bmd-grey-16: #292929;
+    --bmd-grey-20: #333333;
+    --bmd-grey-24: #3D3D3D;
+    --bmd-grey-26: #424242;
+    --bmd-grey-30: #4D4D4D;
+    --bmd-grey-38: #616161;
+    --bmd-grey-44: #707070;
+    --bmd-grey-50: #808080;
+    --bmd-grey-60: #999999;
+    --bmd-grey-68: #ADADAD;
+    --bmd-grey-78: #C7C7C7;
+    --bmd-grey-82: #D1D1D1;
+    --bmd-grey-84: #D6D6D6;
+    --bmd-grey-88: #E0E0E0;
+    --bmd-grey-90: #E6E6E6;
+    --bmd-grey-92: #EBEBEB;
+    --bmd-grey-94: #F0F0F0;
+    --bmd-grey-96: #F5F5F5;
+    --bmd-grey-98: #FAFAFA;
+    --bmd-grey-100: #FFFFFF;
+
+    /* The hues outside the brand: bit's accent orange, which the hero uses as the far end of a
+       gradient from the violet, and the two status colours a processing result is reported in -
+       bytes saved, or an error. */
+    --bmd-peach-light: #FFC7AC;
+    --bmd-peach: #FD7F36;
+    --bmd-peach-dark: #C25520;
+    --bmd-green-light: #3CC77E;
+    --bmd-green-dark: #107C41;
+    --bmd-red-light: #F87C7C;
+    --bmd-red-dark: #B42318;
+}
+
+/* ── 2. Semantic - light ───────────────────────────────────────────────────── */
+
+:root,
+:root[data-theme="light"] {
+    color-scheme: light;
+
+    /* Brand. Backgrounds take shade 80 and darken on interaction, exactly as Fluent does; text
+       and links take shade 70, which is the shade that clears 4.5:1 on both of the surfaces this
+       site paints - the white card and the grey canvas behind it. */
+    --bmd-clr-brand-bg: var(--bmd-brand-80);
+    --bmd-clr-brand-bg-hover: var(--bmd-brand-70);
+    --bmd-clr-brand-bg-pressed: var(--bmd-brand-60);
+    --bmd-clr-brand-bg-subtle: var(--bmd-brand-160);
+    --bmd-clr-brand-fg: var(--bmd-brand-70);
+    --bmd-clr-brand-fg-hover: var(--bmd-brand-60);
+    --bmd-clr-brand-fg-pressed: var(--bmd-brand-50);
+    --bmd-clr-brand-fg-on-bg: var(--bmd-grey-100);
+    --bmd-clr-brand-stroke: var(--bmd-brand-80);
+
+    /* The dual-role accent, which Fluent itself does not have: one shade that works both as a
+       fill and as text, in both themes - a pressed chip, a progress bar, a selected option. The
+       chrome uses the split pair above instead, which is what Fluent itself does. */
+    --bmd-clr-brand-accent: var(--bmd-brand-80);
+    --bmd-clr-brand-accent-hover: var(--bmd-brand-70);
+    --bmd-clr-brand-accent-pressed: var(--bmd-brand-60);
+    --bmd-clr-brand-accent-contrast: var(--bmd-grey-100);
+
+    /* Status. Success and danger are text colours as much as fills - a "42% smaller" in a table -
+       so each is the shade that reads on the card. */
+    --bmd-clr-success: var(--bmd-green-dark);
+    --bmd-clr-danger: var(--bmd-red-dark);
+
+    /* The stage an image is shown on: a mid neutral, so neither a white product shot nor a black
+       night sky disappears into it. The editor's canvas area uses the same. */
+    --bmd-clr-stage: var(--bmd-grey-44);
+
+    /* Neutral backgrounds. Background1 is the raised surface - a card, the header, the nav panel;
+       the canvas the whole page is painted on is Background3, one step down from it. */
+    --bmd-clr-bg-1: var(--bmd-grey-100);
+    --bmd-clr-bg-1-hover: var(--bmd-grey-96);
+    --bmd-clr-bg-1-pressed: var(--bmd-grey-88);
+    --bmd-clr-bg-2: var(--bmd-grey-98);
+    --bmd-clr-bg-3: var(--bmd-grey-96);
+    --bmd-clr-bg-3-hover: var(--bmd-grey-92);
+    --bmd-clr-bg-4: var(--bmd-grey-94);
+    --bmd-clr-bg-5: var(--bmd-grey-92);
+    --bmd-clr-bg-disabled: var(--bmd-grey-94);
+    --bmd-clr-bg-inverted: var(--bmd-grey-14);
+    --bmd-clr-bg-overlay: rgba(0, 0, 0, 0.4);
+
+    /* Neutral foregrounds. */
+    --bmd-clr-fg-1: var(--bmd-grey-14);
+    --bmd-clr-fg-2: var(--bmd-grey-26);
+    --bmd-clr-fg-3: var(--bmd-grey-38);
+    --bmd-clr-fg-4: var(--bmd-grey-44);
+    --bmd-clr-fg-disabled: var(--bmd-grey-68);
+    --bmd-clr-fg-inverted: var(--bmd-grey-100);
+
+    /* Neutral strokes. Stroke2 draws the hairlines that separate the site's surfaces; Stroke1
+       draws the edge of a control; StrokeAccessible is the one that clears 3:1 against both
+       surfaces, so it is what a control's own border becomes on hover. */
+    --bmd-clr-stroke-1: var(--bmd-grey-82);
+    --bmd-clr-stroke-2: var(--bmd-grey-88);
+    --bmd-clr-stroke-3: var(--bmd-grey-94);
+    --bmd-clr-stroke-accessible: var(--bmd-grey-38);
+    --bmd-clr-stroke-focus: var(--bmd-grey-14);
+
+    /* Fluent's elevation set. The alpha pairs are Fluent's own: a tight ambient shadow under a
+       wider directional one, so a raised surface reads as raised at any size. */
+    --bmd-shdw-2: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.14), 0 0 0.125rem rgba(0, 0, 0, 0.12);
+    --bmd-shdw-4: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.14), 0 0 0.125rem rgba(0, 0, 0, 0.12);
+    --bmd-shdw-8: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.14), 0 0 0.125rem rgba(0, 0, 0, 0.12);
+    --bmd-shdw-16: 0 0.5rem 1rem rgba(0, 0, 0, 0.14), 0 0 0.125rem rgba(0, 0, 0, 0.12);
+    --bmd-shdw-28: 0 0.875rem 1.75rem rgba(0, 0, 0, 0.24), 0 0 0.5rem rgba(0, 0, 0, 0.2);
+    --bmd-shdw-64: 0 2rem 4rem rgba(0, 0, 0, 0.24), 0 0 0.5rem rgba(0, 0, 0, 0.2);
+
+    /* The tint a brand-coloured surface is washed with. color-mix keeps it tied to the accent
+       rather than freezing one theme's hex value. */
+    --bmd-clr-brand-wash: color-mix(in srgb, var(--bmd-brand-80) 10%, transparent);
+
+    /* Syntax highlighting for the code boxes. The token set is the demo's own (see
+       Shared/SyntaxHighlighter.cs); only the colours are themed, and they are tuned against
+       --bmd-clr-bg-3, which is the surface a <pre> is painted on. */
+    --bmd-tok-com: #3E7A34;
+    --bmd-tok-tag: #1F5FA8;
+    --bmd-tok-attr: #1A6FA8;
+    --bmd-tok-str: #A63A20;
+    --bmd-tok-key: #1F5FA8;
+    --bmd-tok-type: #197066;
+    --bmd-tok-num: #4F6E1E;
+    --bmd-tok-raz: #8A3D9C;
+}
+
+/* ── 2. Semantic - dark ────────────────────────────────────────────────────── */
+
+/* Fluent's dark theme is a neutral grey theme rather than a tinted one, and it inverts the
+   surface relationship rather than the ramp: the canvas is the darkest surface and a card sits
+   above it, one step lighter. Everything below mirrors the light block role for role. */
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --bmd-clr-brand-bg: var(--bmd-brand-70);
+    --bmd-clr-brand-bg-hover: var(--bmd-brand-80);
+    --bmd-clr-brand-bg-pressed: var(--bmd-brand-60);
+    --bmd-clr-brand-bg-subtle: var(--bmd-brand-20);
+    --bmd-clr-brand-fg: var(--bmd-brand-110);
+    --bmd-clr-brand-fg-hover: var(--bmd-brand-120);
+    --bmd-clr-brand-fg-pressed: var(--bmd-brand-130);
+    --bmd-clr-brand-fg-on-bg: var(--bmd-grey-100);
+    --bmd-clr-brand-stroke: var(--bmd-brand-110);
+
+    /* The dual-role accent flips to the light end of the ramp here, and takes near-black as its
+       contrast colour: on a dark canvas the shade that reads as text is the light one. */
+    --bmd-clr-brand-accent: var(--bmd-brand-110);
+    --bmd-clr-brand-accent-hover: var(--bmd-brand-120);
+    --bmd-clr-brand-accent-pressed: var(--bmd-brand-130);
+    --bmd-clr-brand-accent-contrast: var(--bmd-grey-14);
+
+    --bmd-clr-success: var(--bmd-green-light);
+    --bmd-clr-danger: var(--bmd-red-light);
+
+    --bmd-clr-stage: var(--bmd-grey-16);
+
+    --bmd-clr-bg-1: var(--bmd-grey-12);
+    --bmd-clr-bg-1-hover: var(--bmd-grey-16);
+    --bmd-clr-bg-1-pressed: var(--bmd-grey-20);
+    --bmd-clr-bg-2: var(--bmd-grey-10);
+    --bmd-clr-bg-3: var(--bmd-grey-8);
+    --bmd-clr-bg-3-hover: var(--bmd-grey-12);
+    --bmd-clr-bg-4: var(--bmd-grey-16);
+    --bmd-clr-bg-5: var(--bmd-grey-20);
+    --bmd-clr-bg-disabled: var(--bmd-grey-16);
+    --bmd-clr-bg-inverted: var(--bmd-grey-96);
+    --bmd-clr-bg-overlay: rgba(0, 0, 0, 0.65);
+
+    --bmd-clr-fg-1: var(--bmd-grey-100);
+    --bmd-clr-fg-2: var(--bmd-grey-84);
+    --bmd-clr-fg-3: var(--bmd-grey-68);
+    --bmd-clr-fg-4: var(--bmd-grey-60);
+    --bmd-clr-fg-disabled: var(--bmd-grey-38);
+    --bmd-clr-fg-inverted: var(--bmd-grey-14);
+
+    --bmd-clr-stroke-1: var(--bmd-grey-30);
+    --bmd-clr-stroke-2: var(--bmd-grey-20);
+    --bmd-clr-stroke-3: var(--bmd-grey-16);
+    --bmd-clr-stroke-accessible: var(--bmd-grey-68);
+    --bmd-clr-stroke-focus: var(--bmd-grey-100);
+
+    /* Fluent deepens the alphas so an elevated surface still reads against a near-black canvas,
+       where a light-theme shadow would vanish. */
+    --bmd-shdw-2: 0 0.0625rem 0.125rem rgba(0, 0, 0, 0.28), 0 0 0.125rem rgba(0, 0, 0, 0.24);
+    --bmd-shdw-4: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.28), 0 0 0.125rem rgba(0, 0, 0, 0.24);
+    --bmd-shdw-8: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.28), 0 0 0.125rem rgba(0, 0, 0, 0.24);
+    --bmd-shdw-16: 0 0.5rem 1rem rgba(0, 0, 0, 0.28), 0 0 0.125rem rgba(0, 0, 0, 0.24);
+    --bmd-shdw-28: 0 0.875rem 1.75rem rgba(0, 0, 0, 0.4), 0 0 0.5rem rgba(0, 0, 0, 0.28);
+    --bmd-shdw-64: 0 2rem 4rem rgba(0, 0, 0, 0.4), 0 0 0.5rem rgba(0, 0, 0, 0.28);
+
+    --bmd-clr-brand-wash: color-mix(in srgb, var(--bmd-brand-110) 16%, transparent);
+
+    --bmd-tok-com: #6A9955;
+    --bmd-tok-tag: #569CD6;
+    --bmd-tok-attr: #9CDCFE;
+    --bmd-tok-str: #CE9178;
+    --bmd-tok-key: #569CD6;
+    --bmd-tok-type: #4EC9B0;
+    --bmd-tok-num: #B5CEA8;
+    --bmd-tok-raz: #C586C0;
+}
+
+/* ── 2. Semantic - shape, type, motion and layout ──────────────────────────── */
+
+/* The parts of Fluent that do not change with the palette. */
+
+:root {
+    /* Corner radius. Fluent 2's scale - the step up from Fluent 1's near-square 2px is the most
+       visible single thing about the newer system, so it is taken as written. */
+    --bmd-crn-none: 0;
+    --bmd-crn-small: 0.125rem;
+    --bmd-crn-medium: 0.25rem;
+    --bmd-crn-large: 0.375rem;
+    --bmd-crn-xlarge: 0.5rem;
+    --bmd-crn-circular: 62.4375rem;
+
+    /* Stroke width. */
+    --bmd-strk-thin: 0.0625rem;
+    --bmd-strk-thick: 0.125rem;
+    --bmd-strk-thicker: 0.1875rem;
+
+    /* Spacing. Fluent's ramp, and the only source of a margin or a padding in this site. */
+    --bmd-sp-none: 0;
+    --bmd-sp-xxs: 0.125rem;
+    --bmd-sp-xs: 0.25rem;
+    --bmd-sp-snudge: 0.375rem;
+    --bmd-sp-s: 0.5rem;
+    --bmd-sp-mnudge: 0.625rem;
+    --bmd-sp-m: 0.75rem;
+    --bmd-sp-l: 1rem;
+    --bmd-sp-xl: 1.25rem;
+    --bmd-sp-xxl: 1.5rem;
+    --bmd-sp-xxxl: 2rem;
+    --bmd-sp-4xl: 2.5rem;
+    --bmd-sp-5xl: 3rem;
+    --bmd-sp-6xl: 4rem;
+    --bmd-sp-7xl: 5rem;
+
+    /* Type. Segoe UI Variable is Fluent 2's typeface and ships with Windows 11; the rest of the
+       stack is the platform's own UI face, so the site is never the reason a font is downloaded. */
+    --bmd-fnt-family-base: "Segoe UI Variable Text", "Segoe UI Variable", "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", system-ui, sans-serif;
+    --bmd-fnt-family-display: "Segoe UI Variable Display", "Segoe UI Variable", "Segoe UI", "Segoe UI Web (West European)", -apple-system, BlinkMacSystemFont, Roboto, "Helvetica Neue", system-ui, sans-serif;
+    --bmd-fnt-family-mono: ui-monospace, "Cascadia Code", "Cascadia Mono", SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    /* Fluent's type ramp. The sizes are the ramp as published; the leading on the two body sizes
+       is opened up from Fluent's own because this site is read as prose rather than scanned as an
+       application surface, and 22px on 16px is tight for a paragraph. */
+    --bmd-fnt-size-100: 0.625rem;   /* Caption2   10 */
+    --bmd-fnt-size-200: 0.75rem;    /* Caption1   12 */
+    --bmd-fnt-size-300: 0.875rem;   /* Body1      14 */
+    --bmd-fnt-size-400: 1rem;       /* Body2      16 */
+    --bmd-fnt-size-500: 1.25rem;    /* Subtitle1  20 */
+    --bmd-fnt-size-600: 1.5rem;     /* Title3     24 */
+    --bmd-fnt-size-700: 1.75rem;    /* Title2     28 */
+    --bmd-fnt-size-800: 2rem;       /* Title1     32 */
+    --bmd-fnt-size-900: 2.5rem;     /* LargeTitle 40 */
+    --bmd-fnt-size-1000: 4.25rem;   /* Display    68 */
+
+    --bmd-fnt-line-100: 0.875rem;
+    --bmd-fnt-line-200: 1rem;
+    --bmd-fnt-line-300: 1.25rem;
+    --bmd-fnt-line-400: 1.375rem;
+    --bmd-fnt-line-500: 1.75rem;
+    --bmd-fnt-line-600: 2rem;
+    --bmd-fnt-line-700: 2.25rem;
+    --bmd-fnt-line-800: 2.5rem;
+    --bmd-fnt-line-900: 3.25rem;
+    --bmd-fnt-line-1000: 5.75rem;
+
+    /* Prose leading, used wherever a run of text is longer than a label. */
+    --bmd-fnt-line-prose: 1.625;
+
+    --bmd-fnt-weight-regular: 400;
+    --bmd-fnt-weight-medium: 500;
+    --bmd-fnt-weight-semibold: 600;
+    --bmd-fnt-weight-bold: 700;
+
+    /* Motion. Fluent's duration ramp and its curve set - a decelerating curve for anything
+       entering, an accelerating one for anything leaving, and easyEase for a state change that
+       does neither. */
+    --bmd-dur-ultra-fast: 50ms;
+    --bmd-dur-faster: 100ms;
+    --bmd-dur-fast: 150ms;
+    --bmd-dur-normal: 200ms;
+    --bmd-dur-gentle: 250ms;
+    --bmd-dur-slow: 300ms;
+    --bmd-dur-slower: 400ms;
+    --bmd-dur-ultra-slow: 500ms;
+
+    --bmd-crv-accelerate-max: cubic-bezier(0.9, 0.1, 1, 0.2);
+    --bmd-crv-accelerate-mid: cubic-bezier(1, 0, 1, 1);
+    --bmd-crv-accelerate-min: cubic-bezier(0.8, 0, 0.78, 1);
+    --bmd-crv-decelerate-max: cubic-bezier(0.1, 0.9, 0.2, 1);
+    --bmd-crv-decelerate-mid: cubic-bezier(0, 0, 0, 1);
+    --bmd-crv-decelerate-min: cubic-bezier(0.33, 0, 0.1, 1);
+    --bmd-crv-easy-ease: cubic-bezier(0.33, 0, 0.67, 1);
+    --bmd-crv-linear: cubic-bezier(0, 0, 1, 1);
+
+    /* Layout. The decisions a design system leaves to the product: how wide the reading column
+       runs, how far prose may stretch before it gets hard to follow, and how much room the two
+       sticky columns take. */
+    --bmd-layout-max: 90rem;        /* 1440px - the outer rail-to-rail width */
+    --bmd-layout-content: 53rem;    /* 848px  - the article column */
+    --bmd-layout-measure: 72ch;
+    --bmd-layout-header: 3.5rem;    /* 56px - every sticky offset below is derived from this */
+    --bmd-layout-nav: 16.5rem;      /* 264px */
+    --bmd-layout-rail: 15rem;       /* 240px */
+    /* Breathing room between the sticky header and whatever has been scrolled to. WCAG 2.2's
+       "focus not obscured" is why this is a token rather than a number: the header, the
+       scroll-padding on <html> and the rail's own jump all have to agree on it. */
+    --bmd-layout-header-gap: 1.5rem;
+}
+
+/* Every transition on the site is chrome, so a reader who has asked for less motion gets none of
+   it. The durations are collapsed rather than the transitions deleted, so nothing that waits on a
+   transitionend is left waiting. */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --bmd-dur-ultra-fast: 0.01ms;
+        --bmd-dur-faster: 0.01ms;
+        --bmd-dur-fast: 0.01ms;
+        --bmd-dur-normal: 0.01ms;
+        --bmd-dur-gentle: 0.01ms;
+        --bmd-dur-slow: 0.01ms;
+        --bmd-dur-slower: 0.01ms;
+        --bmd-dur-ultra-slow: 0.01ms;
+    }
+}

@@ -1,0 +1,121 @@
+name: bit platform CI - Bmage
+
+# The build/unit stage gates the browser stage below, so a broken build fails once instead of burning a second
+# runner. See src/Bmage/Tests/Bit.Bmage.Tests.E2E/README.md for what the E2E suite covers and how to run it locally.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+    - 'src/Bmage/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  # Stage 1 - build, engine tests and MCP server tests. The E2E stage depends on this one, so its `if:` is the single
+  # switch that skips the whole pipeline on Release/Prerelease/Version PRs.
+  build-Bmage:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: build Bit.Bmage
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 9.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 8.0.x
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: dotnet workload restore
+      run:  cd src/Bmage && dotnet workload restore
+
+    - name: InstallNodejsDependencies
+      continue-on-error: true # Error MSB4057, not all csproj files have InstallNodejsDependencies target.
+      run: dotnet build src/Bmage/Bit.Bmage.slnx -t:InstallNodejsDependencies -m:1 -f net10.0
+
+    - name: dotnet build
+      run: dotnet build src/Bmage/Bit.Bmage.slnx
+
+    # Run from inside src so src/global.json's "test" runner setting applies
+    # (from the repo root the SDK falls back to the unsupported VSTest path).
+    - name: dotnet test (engine tests, every target framework)
+      run: cd src/Bmage/Tests/Bit.Bmage.Tests && dotnet test --no-build
+
+    - name: dotnet test (MCP server)
+      run: cd src/Bmage/Tests/Bit.Bmage.Tests.Mcp && dotnet test --no-build
+
+  # Stage 2 - the demo website driven in Chromium: the bit-bmage.js bridge, the browser's own codecs, canvas
+  # rendering, editor input and every demo page.
+  e2e:
+    needs: build-Bmage
+    name: Bmage E2E (Chromium)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: Build the demo website
+      run: dotnet build src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release
+
+    - name: Build the E2E suite
+      run: dotnet build src/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests
+      env:
+        BMAGE_E2E_CONFIGURATION: Release
+        BMAGE_E2E_SKIP_BUILD: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Bmage/Tests/Bit.Bmage.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --report-trx --report-trx-filename bmage-e2e.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bmage-e2e
+        path: '**/bmage-e2e.trx'
+        if-no-files-found: ignore
