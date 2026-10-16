@@ -100,6 +100,10 @@ public sealed class BmotionSplitText : ComponentBase
     /// <summary>Fires once when the last unit's animation completes.</summary>
     [Parameter] public EventCallback OnComplete { get; set; }
 
+    // The surrounding <BmotionConfig>'s default transition is the basis of every unit's staggered
+    // one when no Transition is set, as it would be for a <Bmotion> of its own.
+    [CascadingParameter] private BmotionConfigContext? ConfigCtx { get; set; }
+
     // ── Cached split ───────────────────────────────────────────────────────────
     private string? _splitText;
     private BmSplitBy _splitBy;
@@ -149,6 +153,10 @@ public sealed class BmotionSplitText : ComponentBase
         // numbering depends only on the split shape - which is itself determined by Text and By.
         // Any change to either rebuilds this subtree anyway, so the numbering stays stable for
         // every render that Blazor actually diffs.
+        // OnComplete rides on the unit that finishes last: the one with the longest stagger delay,
+        // which is the last unit only when the cascade runs first-to-last.
+        int lastToFinish = LastToFinish(stagger);
+
         int unitIndex = 0;
         int seq = 5;
         foreach (var chunk in _chunks)
@@ -180,7 +188,7 @@ public sealed class BmotionSplitText : ComponentBase
             foreach (var unit in chunk.Units)
             {
                 int index = unitIndex++;
-                bool last = index == _unitCount - 1;
+                bool last = index == lastToFinish;
                 string unitText = unit;
 
                 builder.OpenComponent<Bmotion>(seq++);
@@ -223,6 +231,20 @@ public sealed class BmotionSplitText : ComponentBase
 
     private static readonly BmStagger _defaultStagger = new(0.03);
 
+    /// <summary>The index of the unit that finishes last: the one with the longest stagger delay.</summary>
+    private int LastToFinish(BmStagger stagger)
+    {
+        int latest = Math.Max(_unitCount - 1, 0);
+        double latestDelay = double.NegativeInfinity;
+        for (int i = 0; i < _unitCount; i++)
+        {
+            double delay = stagger.DelayFor(i, _unitCount);
+            // >= : of several units finishing together, the last in reading order reports.
+            if (delay >= latestDelay) { latestDelay = delay; latest = i; }
+        }
+        return latest;
+    }
+
     /// <summary>
     /// The transition for the unit at <paramref name="index"/>: the configured transition with the
     /// stagger offset added to its delay. Copies rather than mutating, so one shared
@@ -231,7 +253,7 @@ public sealed class BmotionSplitText : ComponentBase
     private BmTransition StaggeredTransition(BmStagger stagger, int index)
     {
         double offset = stagger.DelayFor(index, _unitCount);
-        var basis = Transition;
+        var basis = Transition ?? ConfigCtx?.DefaultTransition;
         if (basis is null) return offset > 0 ? new BmTween { Delay = offset } : new BmTween();
         return offset > 0 ? basis.WithDelay(basis.Delay + offset) : basis;
     }

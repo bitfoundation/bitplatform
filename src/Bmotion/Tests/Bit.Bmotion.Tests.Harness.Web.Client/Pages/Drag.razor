@@ -1,0 +1,131 @@
+﻿@page "/drag"
+
+@* Drag: free and axis-locked movement, pixel and element constraints, elasticity, momentum with a snap target,
+   snap-to-origin, handles, external drag controls, WhileDrag and direction lock. Each element sits in a track of
+   its own, so the tests can measure it against known geometry. *@
+
+<HarnessHeader Title="Drag" Ready="Ready" OnLog="BindLog" />
+
+<div class="track">
+    <Bmotion Drag="true" DragMomentum="false"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:free")'
+             OnDragStart='() => Log("free:start")'
+             OnDrag='() => Log("free:move")'
+             OnDragEnd='() => Log("free:end")'>
+        <div id="free" class="small"></div>
+    </Bmotion>
+</div>
+
+<div class="track">
+    <Bmotion Drag="BmDrag.X" DragMomentum="false"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:axis-x")'
+             OnDragEnd='() => Log("axis-x:end")'>
+        <div id="axis-x" class="small"></div>
+    </Bmotion>
+</div>
+
+<div class="track">
+    <Bmotion Drag="BmDrag.X" DragMomentum="false"
+             DragConstraints="BmDragConstraints.Horizontal(-50, 50)"
+             DragElastic="0"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:pixels")'
+             OnDragEnd='() => Log("pixels:end")'>
+        <div id="pixels" class="small" style="margin-left: 100px"></div>
+    </Bmotion>
+</div>
+
+<div class="track">
+    <Bmotion Drag="BmDrag.X" DragMomentum="false"
+             DragConstraints="BmDragConstraints.Horizontal(0, 50)"
+             DragElastic="0.5"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:elastic")'
+             OnDragEnd='() => Log("elastic:end")'>
+        <div id="elastic" class="small"></div>
+    </Bmotion>
+</div>
+
+<div class="track" id="parent-track">
+    <Bmotion Drag="true" DragMomentum="false"
+             DragConstraints="BmDragConstraints.Parent()"
+             DragElastic="0"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:parent")'
+             OnDragEnd='() => Log("parent:end")'>
+        <div id="parent" class="small"></div>
+    </Bmotion>
+</div>
+
+<div class="track">
+    <Bmotion Drag="true" DragSnapToOrigin="true"
+             DragTransition="Bm.Spring(stiffness: 600, damping: 40)"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:snap")'
+             OnDragEnd='() => Log("snap:end")'>
+        <div id="snap" class="small"></div>
+    </Bmotion>
+</div>
+
+<div class="track">
+    <Bmotion Drag="BmDrag.X" DragMomentum="false" DragHandle=".grip"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:handle")'
+             OnDragStart='() => Log("handle:start")'>
+        <div id="handle" style="width: 80px; height: 40px; background: #bbb"><span class="grip"></span></div>
+    </Bmotion>
+</div>
+
+<div class="track" id="controls-track" @onpointerdown="StartControlledDragAsync">
+    <Bmotion Drag="BmDrag.X" DragMomentum="false" DragControls="_controls" DragListener="false"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:controls")'
+             OnDragStart='() => Log("controls:start")'
+             OnDragEnd='() => Log("controls:end")'>
+        <div id="controls" class="small" style="margin-left: 300px"></div>
+    </Bmotion>
+</div>
+
+<div class="track">
+    <Bmotion Drag="true" DragMomentum="false"
+             WhileDrag="Bm.To(scale: 1.5)"
+             Transition="Bm.Tween(0.05)"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:whiledrag")'
+             OnDragEnd='() => Log("whiledrag:end")'>
+        <div id="whiledrag" class="small"></div>
+    </Bmotion>
+</div>
+
+<div class="track">
+    <Bmotion Drag="true" DragMomentum="false" DragDirectionLock="true"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:lock")'
+             OnDirectionLock='axis => Log($"lock:{axis}")'
+             OnDragEnd='() => Log("lock:end")'>
+        <div id="lock" class="small"></div>
+    </Bmotion>
+</div>
+
+<div class="track">
+    <Bmotion Drag="BmDrag.X"
+             DragConstraints="BmDragConstraints.Horizontal(0, 300)"
+             DragTransition="Bm.Inertia(modifyTarget: Bm.SnapTo(100))"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:momentum")'
+             OnDragEnd='() => Log("momentum:end")'>
+        <div id="momentum" class="small"></div>
+    </Bmotion>
+</div>
+
+@code {
+    private readonly BmDragControls _controls = new();
+
+    private async Task StartControlledDragAsync(PointerEventArgs e)
+    {
+        Log("controls:track-down");
+        await _controls.StartAsync(e);
+    }
+}

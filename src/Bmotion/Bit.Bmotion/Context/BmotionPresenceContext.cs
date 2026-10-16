@@ -8,7 +8,18 @@ internal class BmotionPresenceContext
     private readonly List<Bmotion> _children = new();
 
     /// <summary>True while the children are playing their exit animation.</summary>
-    public bool IsExiting { get; internal set; }
+    public bool IsExiting
+    {
+        get => _isExiting;
+        internal set
+        {
+            // Every exit starts counting from zero: a completion recorded during an earlier exit
+            // that was cancelled (the content re-entered) must not stand in for this one.
+            if (value && !_isExiting) _completedChildren.Clear();
+            _isExiting = value;
+        }
+    }
+    private bool _isExiting;
 
     /// <summary>
     /// When true, exiting children pop out of the layout flow (position: absolute at their
@@ -37,7 +48,9 @@ internal class BmotionPresenceContext
 
     internal void NotifyExitComplete(Bmotion child)
     {
-        // Ignore unregistered children and guard against double-counting.
+        // An exit that finishes after it was cancelled (the content re-entered mid-exit) completes
+        // nothing; ignore unregistered children and guard against double-counting.
+        if (!IsExiting) return;
         if (!_children.Contains(child)) return;
         if (!_completedChildren.Add(child)) return;
 
