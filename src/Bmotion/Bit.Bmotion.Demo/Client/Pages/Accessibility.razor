@@ -150,10 +150,11 @@
     <h2>Knowing what the runtime can do</h2>
     <p>
         Rather than guessing which render mode you are in, inject <strong>BmotionCapabilities</strong>.
-        On Blazor Server there is no synchronous interop, so the per-frame loop cannot run: drag,
-        inertia, colour interpolation, keyframe arrays and motion values collapse to instant state
-        changes, while compositor-eligible animations still play normally. Detect it and offer a
-        different affordance instead of shipping a control that silently does not move.
+        On Blazor Server there is no synchronous interop, so the per-frame loop cannot run: inertia,
+        colour interpolation, keyframe arrays and motion values collapse to instant state changes,
+        while compositor-eligible animations still play normally. Drag still works, but follows the
+        pointer a round trip behind - immediate pointer response needs WebAssembly. Detect it and
+        offer a different affordance instead of shipping a control that does not feel the way you meant.
     </p>
 
     <div class="demo-row">
@@ -346,7 +347,9 @@
         }
         else
         {
-            <p>Dragging needs Blazor WebAssembly - use the buttons instead.</p>
+            @* Drag works here too, a round trip behind the pointer; offer a more immediate control alongside it. *@
+            <Bmotion Drag="true"><div class="box" /></Bmotion>
+            <p>Dragging responds instantly only on Blazor WebAssembly - the buttons move it too.</p>
         }
         """;
 

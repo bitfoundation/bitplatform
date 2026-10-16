@@ -994,7 +994,7 @@ internal sealed class BmotionElementAnimationState
     {
         var config = transition?.Properties is { } perKey && perKey.TryGetValue(key, out var own) ? own : transition;
         if (config?.IsInfiniteRepeat == true) return value;
-        bool mirrorsBack = config is { RepeatType: BmRepeatType.Mirror } && config.Repeat % 2 == 1;
+        bool mirrorsBack = config is { RepeatType: BmRepeatType.Mirror or BmRepeatType.Reverse } && config.Repeat % 2 == 1;
         return value switch
         {
             double[] { Length: > 0 } numbers when double.IsFinite(mirrorsBack ? numbers[0] : numbers[^1]) => mirrorsBack ? numbers[0] : numbers[^1],

@@ -279,7 +279,7 @@ export function unwatchReducedMotion(dotnetRef: DotNet.DotNetObject): void {
 // Element registration
 //
 
-const _eventCleanup = new Map<string, Array<() => void>>(); // elementId  Array<() => void>
+const _eventCleanup = new Map<string, Array<(unregistering: boolean) => void>>(); // elementId  Array<cleanup>
 
 export function registerElement(elementId: string): boolean {
     const el = document.getElementById(elementId);
@@ -327,7 +327,7 @@ export function resolveOrRegisterByRef(element: Element): string {
 export function unregisterElement(elementId: string): void {
     const el = document.getElementById(elementId);
     if (el) el.removeAttribute('data-bmid');
-    _runCleanup(elementId);
+    _runCleanup(elementId, true);
     // Release scroll-scrub listeners before cancelling, so a fallback timeline can't keep firing
     // against an animation that is about to go away.
     _releaseScrubsForElement(elementId);
@@ -339,9 +339,9 @@ export function unregisterElement(elementId: string): void {
     _flips.delete(elementId);
 }
 
-function _runCleanup(elementId: string): void {
+function _runCleanup(elementId: string, unregistering = false): void {
     const fns = _eventCleanup.get(elementId);
-    if (fns) { fns.forEach(fn => fn()); _eventCleanup.delete(elementId); }
+    if (fns) { fns.forEach(fn => fn(unregistering)); _eventCleanup.delete(elementId); }
 }
 
 //
@@ -361,7 +361,7 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
     const el = document.getElementById(elementId);
     if (!el) return;
     _runCleanup(elementId);
-    const cleanups: Array<() => void> = [];
+    const cleanups: Array<(unregistering: boolean) => void> = [];
     _eventCleanup.set(elementId, cleanups);
 
     // gesturePropagation:false stops this element's bubbling pointer gestures from also reaching
@@ -459,7 +459,7 @@ export function attachEventListeners(elementId: string, events: any, dotnetRef: 
 }
 
 function _attachPan(
-    el: HTMLElement, dotnetRef: DotNet.DotNetObject, cleanups: Array<() => void>, skipCapture: boolean,
+    el: HTMLElement, dotnetRef: DotNet.DotNetObject, cleanups: Array<(unregistering: boolean) => void>, skipCapture: boolean,
     stopIfIsolated: (e: PointerEvent) => void): void {
     const PAN_THRESHOLD = 3; // pixels before pan is detected
     let down = false;        // whether a pointer is currently pressed on this element
@@ -519,7 +519,7 @@ function _attachPan(
 }
 
 function _attachDrag(
-    elementId: string, el: HTMLElement, opts: any, dotnetRef: DotNet.DotNetObject, cleanups: Array<() => void>): void {
+    elementId: string, el: HTMLElement, opts: any, dotnetRef: DotNet.DotNetObject, cleanups: Array<(unregistering: boolean) => void>): void {
     // Velocity is sampled per pointer-move as px/ms and scaled to "px per frame" (~16ms) so the
     // C# inertia driver receives a frame-relative figure consistent with its release-velocity math.
     const FRAME_MS = 16;
@@ -700,10 +700,12 @@ function _attachDrag(
     el.addEventListener('pointerup',     onUp);
     el.addEventListener('pointercancel', onUp);
     _dragStarters.set(elementId, begin);
-    cleanups.push(() => {
+    cleanups.push(unregistering => {
         // Listeners are re-attached whenever the gesture configuration changes, which can happen
         // mid-drag: end that drag first, or C# would be left dragging (and WhileDrag applied) forever.
-        onUp();
+        // On unregistration the component is going away, so there is no drag end to report.
+        if (unregistering) dragging = false;
+        else onUp();
         el.removeEventListener('pointerdown',   onDown);
         el.removeEventListener('pointermove',   onMove);
         el.removeEventListener('pointerup',     onUp);

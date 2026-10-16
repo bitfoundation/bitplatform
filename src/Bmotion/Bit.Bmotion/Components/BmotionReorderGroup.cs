@@ -172,11 +172,15 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
     // up - and the release waits for it.
     private Task _measuring = Task.CompletedTask;
     private bool _measured;
+    // Bumped by every measurement pass, so an older pass still awaiting a round trip can tell that
+    // a newer drag session has replaced it and must not touch that session's state.
+    private int _dragSession;
 
     private Task HandleDragStartAsync(Entry entry) => _measuring = MeasureDragSessionAsync(entry);
 
     private async Task MeasureDragSessionAsync(Entry entry)
     {
+        int session = ++_dragSession;
         _measured = false;
         _dragged = entry;
         _visualOrder = _entries.ToList();
@@ -189,6 +193,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
         foreach (var e in _entries)
         {
             var rect = await Interop.GetBoundingRectAsync(e.Id);
+            if (session != _dragSession) return;
             if (rect is null || e.Ref is null) { _dragged = null; return; }
             var xy = e.Ref.GetCurrentXY();
             _origStart[e.Key] = (Horizontal ? rect.Left - xy.X : rect.Top - xy.Y);
