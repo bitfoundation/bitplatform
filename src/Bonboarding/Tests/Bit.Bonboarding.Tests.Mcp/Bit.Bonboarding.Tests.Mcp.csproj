@@ -22,7 +22,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.Bonboarding.Demo\Server\Bit.Bonboarding.Demo.Server.csproj" />
+        <ProjectReference Include="..\..\Demo\Server\Bit.Bonboarding.Demo.Server.csproj" />
     </ItemGroup>
 
 </Project>

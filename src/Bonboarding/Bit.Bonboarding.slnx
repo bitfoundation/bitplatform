@@ -6,9 +6,9 @@
     <File Path="../global.json" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Bit.Bonboarding.Demo/">
-    <Project Path="Bit.Bonboarding.Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
-    <Project Path="Bit.Bonboarding.Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />

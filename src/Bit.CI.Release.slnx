@@ -34,8 +34,8 @@
   </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
-    <Project Path="Bonboarding/Bit.Bonboarding.Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
-    <Project Path="Bonboarding/Bit.Bonboarding.Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
+    <Project Path="Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
+    <Project Path="Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
     <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />
     <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
   </Folder>

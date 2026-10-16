@@ -33,7 +33,7 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools
 
     - name: Publish
-      run: dotnet publish src/Bonboarding/Bit.Bonboarding.Demo/Server/Bit.Bonboarding.Demo.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
+      run: dotnet publish src/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
 
     # Server-owned; C:\inetpub keeps its own copies.
     - name: Strip server-owned files from bundle

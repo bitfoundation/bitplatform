@@ -54,9 +54,9 @@
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />
   </Folder>
-  <Folder Name="/Bonboarding/Bit.Bonboarding.Demo/">
-    <Project Path="Bonboarding/Bit.Bonboarding.Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
-    <Project Path="Bonboarding/Bit.Bonboarding.Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
+  <Folder Name="/Bonboarding/Demo/">
+    <Project Path="Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
+    <Project Path="Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Bonboarding/Tests/">
     <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />

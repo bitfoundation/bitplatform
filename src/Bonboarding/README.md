@@ -77,7 +77,7 @@ The full walkthrough is in [getting started](#getting-started) and [installation
 ## The demo
 
 ```bash
-dotnet run --project src/Bonboarding/Bit.Bonboarding.Demo/Server
+dotnet run --project src/Bonboarding/Demo/Server
 ```
 
 The demo covers placement and spotlights, dynamic and missing targets, conditional and branching
@@ -141,7 +141,7 @@ agent through the common jobs in the right order. Every tool is also a plain `GE
 
 ```
 Bit.Bonboarding                 The library
-Bit.Bonboarding.Demo            Demo application (Blazor Web App: Server + Client) and the MCP server
+Demo                            Demo application (Blazor Web App: Server + Client) and the MCP server
 Tests/Bit.Bonboarding.Tests     Engine, layout and component tests
 Tests/Bit.Bonboarding.Tests.Mcp The MCP server, exercised over the protocol
 ```
