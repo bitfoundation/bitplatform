@@ -184,5 +184,27 @@
                 </div>
             </text>
         },
+        new()
+        {
+            Title = "State that stays in sync",
+            Subtitle = "bit Blex · reactive state management for Blazor and .NET MAUI",
+            LinkUrl = Urls.Blex,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Blex turns plain C# fields and methods into observable stores with a source generator: computed state,
+                    effects, middleware, persistence, undo/redo and Redux DevTools time-travel, with no reducer boilerplate.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>[BlexStore(Name = "counter")]
+public partial class CounterStore
+{
+    [BlexState] private int _count;
+    [BlexComputed] private bool ComputeIsEven() => Count % 2 == 0;
+    [BlexAction] private void OnIncrement() => Count++;
+}</CodeBox>
+                </div>
+            </text>
+        },
     ];
 }

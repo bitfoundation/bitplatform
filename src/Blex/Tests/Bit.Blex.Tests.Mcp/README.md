@@ -1,7 +1,7 @@
 ﻿# Bit.Blex.Tests.Mcp
 
 Tests for the **MCP server** the Blex demo hosts at `/mcp`
-(`Bit.Blex.Demo/Server/Controllers/McpController.cs` and the services behind it).
+(`Demo/Server/Controllers/McpController.cs` and the services behind it).
 
 ```bash
 cd src/Blex/Tests/Bit.Blex.Tests.Mcp

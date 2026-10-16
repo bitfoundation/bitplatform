@@ -46,9 +46,9 @@
     <Project Path="Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj" />
     <Project Path="Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj" />
   </Folder>
-  <Folder Name="/Blex/Bit.Blex.Demo/">
-    <Project Path="Blex/Bit.Blex.Demo/Client/Bit.Blex.Demo.Client.csproj" />
-    <Project Path="Blex/Bit.Blex.Demo/Server/Bit.Blex.Demo.Server.csproj" />
+  <Folder Name="/Blex/Demo/">
+    <Project Path="Blex/Demo/Client/Bit.Blex.Demo.Client.csproj" />
+    <Project Path="Blex/Demo/Server/Bit.Blex.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Blex/Samples/">
     <Project Path="Blex/Samples/Bit.Blex.Samples.Wasm/Bit.Blex.Samples.Wasm.csproj" />

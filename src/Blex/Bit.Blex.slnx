@@ -7,8 +7,8 @@
     <File Path="README.md" />
   </Folder>
   <Folder Name="/Demo/">
-    <Project Path="Bit.Blex.Demo/Client/Bit.Blex.Demo.Client.csproj" />
-    <Project Path="Bit.Blex.Demo/Server/Bit.Blex.Demo.Server.csproj" />
+    <Project Path="Demo/Client/Bit.Blex.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.Blex.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Samples/">
     <Project Path="Samples/Bit.Blex.Samples.Wasm/Bit.Blex.Samples.Wasm.csproj" />

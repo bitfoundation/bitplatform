@@ -4,8 +4,8 @@ Lightweight, source-generator-powered **reactive state management for Blazor and
 
 Blex fills a real gap in the Blazor ecosystem. Fluxor is the de-facto Redux library but is widely criticized for boilerplate (separate Action / Reducer / Effect / Feature classes per operation) and for having no first-class DevTools time-travel. Blex keeps the good parts of the Flux model - a single observable state tree, named actions, middleware - while a Roslyn source generator removes the ceremony and a tiny JS bridge wires you straight into the Redux DevTools browser extension.
 
-Blex's documentation website lives in [`Bit.Blex.Demo`](Bit.Blex.Demo/) - run the
-[Server](Bit.Blex.Demo/Server/) project (`dotnet run`) for the full site: every feature explained
+Blex's documentation website lives in [`Demo`](Demo/) - run the
+[Server](Demo/Server/) project (`dotnet run`) for the full site: every feature explained
 with a live, runnable example on the same page. It is a Blazor WebAssembly app with prerendering,
 and it is itself a Blex app, so the **Inspector** dock at the bottom of every page shows the real
 action feed, state tree, undo stack and `OnError` sink.
@@ -826,7 +826,7 @@ If the startup initializer cannot resolve its services (typically a lifetime mis
 | `Bit.Blex.Blazor` | Blazor integration: `BlexComponentBase`, `<BlexProvider>`, browser-storage persistence, Redux DevTools bridge (TypeScript in `Scripts/`, compiled into `wwwroot/` on build). |
 | `Bit.Blex.Maui` | .NET MAUI integration: `UseBitBlex()` startup initializer, `Preferences`-backed persistence, XAML-bindable stores. |
 | `Bit.Blex.Testing` | Test harness and assertions (`BlexTestHarness`, `BlexActionLog`). |
-| `Bit.Blex.Demo` | Documentation website (`Client` + prerendering `Server` host): every feature explained with a live, runnable demo. |
+| `Demo` | Documentation website (`Client` + prerendering `Server` host): every feature explained with a live, runnable demo. |
 | `Samples/Bit.Blex.Samples.Wasm` | Minimal Blazor WebAssembly sample (Counter, Todos, Weather). |
 | `Tests/Bit.Blex.Tests` | MSTest tests for the runtime, the Blazor/MAUI integrations and the generated code, on every target framework. |
 | `Tests/Bit.Blex.Tests.Generators` | Generator-driver tests: all `BLEX` diagnostics + emission snapshots. |
@@ -845,7 +845,7 @@ cd src/Blex/Tests/Bit.Blex.Tests && dotnet test
 cd src/Blex/Tests/Bit.Blex.Tests.Generators && dotnet test
 cd src/Blex/Tests/Bit.Blex.Tests.Mcp && dotnet test
 cd src/Blex/Tests/Bit.Blex.Tests.E2E && dotnet test              # needs Playwright Chromium, see its README
-dotnet run --project src/Blex/Bit.Blex.Demo/Server               # documentation site
+dotnet run --project src/Blex/Demo/Server                        # documentation site
 dotnet run --project src/Blex/Samples/Bit.Blex.Samples.Wasm      # minimal sample app
 dotnet run -c Release --project src/Blex/Tests/Bit.Blex.Benchmarks
 ```

@@ -27,8 +27,8 @@
   </Folder>
   <Folder Name="/Blex/">
     <File Path="Blex/README.md" />
-    <Project Path="Blex/Bit.Blex.Demo/Client/Bit.Blex.Demo.Client.csproj" />
-    <Project Path="Blex/Bit.Blex.Demo/Server/Bit.Blex.Demo.Server.csproj" />
+    <Project Path="Blex/Demo/Client/Bit.Blex.Demo.Client.csproj" />
+    <Project Path="Blex/Demo/Server/Bit.Blex.Demo.Server.csproj" />
     <Project Path="Blex/Bit.Blex/Bit.Blex.csproj" />
     <Project Path="Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj" />
     <Project Path="Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj" />
