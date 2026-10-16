@@ -1,0 +1,367 @@
+﻿@page "/entities"
+@inherits BlexComponentBase
+@inject ContactsStore Contacts
+
+<DocPage Href="entities" Title="Entity adapter"
+         Lead="Normalized, immutable collections with generated CRUD - the same idea as Redux Toolkit's createEntityAdapter.">
+
+    <h2>Why normalize</h2>
+    <p>
+        Keeping a collection as a flat <code>List&lt;T&gt;</code> means every update is a scan, every
+        lookup by id is a scan, and every mutation risks being done in place - which
+        <a href="stores#change-detection">silently defeats change detection</a>.
+        <code>BlexEntityState&lt;TEntity, TKey&gt;</code> stores an ordered id list plus an id-keyed map,
+        and every operation returns a <em>new</em> instance, so notifications, time-travel and
+        persistence all behave.
+    </p>
+
+    <CodeBlock Code="@Shape" Title="The shape" />
+
+    <h2>Declaring one</h2>
+    <p>
+        The adapter holds the id selector, so it is not serializable - keep it as a
+        <code>static readonly</code> field. The <code>[BlexState]</code> field holds the state itself.
+    </p>
+
+    <CodeBlock Code="@Declare" />
+
+    <h2>Sorting</h2>
+    <p>
+        Pass an <code>IComparer&lt;TEntity&gt;</code> and the adapter re-sorts <code>Ids</code> after
+        every operation, so iteration order is always correct without sorting in the view. Without
+        one, insertion order is preserved.
+    </p>
+    <CodeBlock Code="@Sorted" />
+
+    <DemoCard Title="Normalized contacts"
+              Description="Every button below is one adapter call inside one action. The list is kept sorted by name automatically."
+              Source="@StoreSource">
+        <div class="row">
+            <input type="text" placeholder="Name" value="@_name" @oninput="OnNameInput" style="min-width:150px" />
+            <select value="@_team" @onchange="OnTeamChange">
+                <option value="Research">Research</option>
+                <option value="Compilers">Compilers</option>
+                <option value="Languages">Languages</option>
+                <option value="Runtime">Runtime</option>
+            </select>
+            <button class="btn btn-primary" @onclick="Add" disabled="@string.IsNullOrWhiteSpace(_name)">AddOne</button>
+        </div>
+
+        <div class="row">
+            <span class="small muted">Filter:</span>
+            @foreach (var team in Contacts.Teams)
+            {
+                var current = team;
+                <button class="btn btn-sm @(Contacts.TeamFilter == current ? "btn-primary" : null)"
+                        @onclick="() => Contacts.SetTeamFilter(current)">
+                    @current
+                </button>
+            }
+        </div>
+
+        <div class="readout" style="margin-top:0.8rem">
+            <div class="readout__item">
+                <span class="readout__label">Count</span>
+                <span class="readout__value readout__value--accent">@Contacts.Total</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Starred</span>
+                <span class="readout__value">@Contacts.Starred</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Ids (ordered)</span>
+                <span class="readout__value" style="font-size:0.85rem">[@string.Join(", ", Contacts.Contacts.Ids)]</span>
+            </div>
+        </div>
+
+        <ul class="list" style="margin-top:0.8rem">
+            @foreach (var contact in Contacts.Visible)
+            {
+                var id = contact.Id;
+                <li>
+                    <button class="star @(contact.Starred ? "star--on" : null)"
+                            title="UpdateOne" @onclick="() => Contacts.ToggleStar(id)">
+                        @(contact.Starred ? "★" : "☆")
+                    </button>
+                    <span class="list__name">@contact.Name</span>
+                    <span class="list__meta">@contact.Team · id @contact.Id</span>
+                    <button class="btn btn-sm btn-danger" title="RemoveOne" @onclick="() => Contacts.Remove(id)">Remove</button>
+                </li>
+            }
+        </ul>
+        @if (Contacts.Visible.Count == 0)
+        {
+            <p class="small muted">Nothing matches this filter.</p>
+        }
+
+        <div class="row" style="margin-top:0.6rem">
+            <button class="btn btn-sm" @onclick="Contacts.StarAll">Map - star everyone</button>
+            <button class="btn btn-sm" @onclick="Contacts.RemoveUnstarred">RemoveMany - drop unstarred</button>
+            <button class="btn btn-sm btn-danger" @onclick="Contacts.RemoveAll">RemoveAll</button>
+            <button class="btn btn-sm btn-ghost" @onclick="Contacts.Reseed">SetAll - reseed</button>
+        </div>
+
+        <div class="row" style="margin-top:0.6rem">
+            <button class="btn btn-sm" title="SetOne with an id that exists" @onclick="() => LateSave(1)">
+                SetOne - late save for id 1
+            </button>
+            <button class="btn btn-sm" title="SetOne with an id that does not exist" @onclick="() => LateSave(99)">
+                SetOne - late save for id 99
+            </button>
+            <button class="btn btn-sm btn-ghost" @onclick="ReseedIdentical">SetAll - identical payload</button>
+        </div>
+        <p class="small muted" style="margin-top:0.4rem">@_setNote</p>
+    </DemoCard>
+
+    <h2>BlexEntityState members</h2>
+    <ApiTable Rows="@StateRows" />
+
+    <h2>BlexEntityAdapter operations</h2>
+    <p>
+        Every operation takes the current state and returns the next one. Assign the result back to
+        the <code>[BlexState]</code> property - that assignment is what makes the change visible.
+    </p>
+    <ApiTable Rows="@AdapterRows" />
+
+    <CodeBlock Code="@Usage" Title="Typical actions" />
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Operations are no-ops when they cannot apply">
+        <p style="margin-bottom:0">
+            <code>AddOne</code> ignores an entity whose id already exists, <code>UpdateOne</code> and
+            <code>RemoveOne</code> ignore a missing id, and <code>UpdateMany</code> skips ids that are
+            not present. Each of those returns the <em>same</em> state instance, so no notification
+            fires and no action is recorded for a change that did not happen.
+        </p>
+    </Callout>
+
+    <h3>Set vs Upsert</h3>
+    <p>
+        <code>UpsertOne</code> inserts an unknown id; <code>SetOne</code> refuses to. That is the
+        difference between "save this, wherever it came from" and "apply this update to a row I
+        already have". Reach for <code>SetOne</code>/<code>SetMany</code> when a late response must
+        not resurrect a record that was deleted while it was in flight - a stale <code>PUT</code>
+        reply arriving after the user removed the row leaves the list alone instead of putting the
+        row back.
+    </p>
+    <CodeBlock Code="@SetVsUpsert" Title="A late response must not resurrect a deleted row" Compact="true" />
+
+    <h3>Writing the same value twice costs nothing</h3>
+    <p>
+        Every write operation compares before it commits. Re-applying a value that is already there -
+        <code>SetAll</code> with an unchanged server response, <code>UpsertMany</code> where only one
+        of fifty rows actually moved - returns the same state instance, so nothing notifies, nothing
+        persists, and no undo step appears for a mutation that did not happen. Polling a list
+        endpoint on a timer is therefore free while the data is unchanged.
+    </p>
+    <CodeBlock Code="@NoOpIdentity" Title="Idempotent reseeding" Compact="true" />
+
+    <h3>Changing an entity's id</h3>
+    <p>
+        <code>UpdateOne</code> handles an update function that changes the id: the entity moves to
+        the new key and keeps its position in the order. If the new id already belongs to another
+        entity, that one is overwritten and the old slot is dropped, so an id never appears twice in
+        the ordered list.
+    </p>
+
+    <h2>Serialization</h2>
+    <p>
+        <code>BlexEntityState</code> round-trips through JSON as <code>{ "ids": [...], "entities":
+        { ... } }</code>, so a normalized collection persists and time-travels like any other state.
+        <code>Count</code> and <code>All</code> are marked <code>[JsonIgnore]</code> - they are
+        derived from <code>Ids</code>.
+    </p>
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="TKey must survive being a JSON dictionary key">
+        <p style="margin-bottom:0">
+            <code>Entities</code> serializes as a JSON object, whose keys are strings.
+            <code>int</code>, <code>string</code> and <code>Guid</code> all work. A composite or
+            custom key type needs a converter that round-trips it as a dictionary key.
+        </p>
+    </Callout>
+
+    <h2>Deriving views</h2>
+    <p>
+        Pair the adapter with <a href="computed"><code>[BlexComputed]</code></a> to project filtered or
+        aggregated views. They are memoized, so a filtered list is rebuilt once per change rather
+        than once per render.
+    </p>
+    <CodeBlock Code="@Computed" />
+
+</DocPage>
+
+@code {
+    private string _name = "";
+    private string _team = "Research";
+
+    protected override void OnInitialized() => Subscribe(Contacts);
+
+    private void OnNameInput(ChangeEventArgs e) => _name = e.Value?.ToString() ?? "";
+
+    private void OnTeamChange(ChangeEventArgs e) => _team = e.Value?.ToString() ?? "Research";
+
+    private void Add()
+    {
+        Contacts.Add(_name, _team);
+        _name = "";
+    }
+
+    private string _setNote = "";
+
+    private void LateSave(int id)
+    {
+        var before = Contacts.Contacts;
+        Contacts.LateSaveResponse(id);
+
+        _setNote = ReferenceEquals(before, Contacts.Contacts)
+            ? $"id {id} is not in the collection - SetOne returned the same state instance, so nothing was notified or recorded."
+            : $"id {id} was present, so it was replaced in place.";
+    }
+
+    private void ReseedIdentical()
+    {
+        var before = Contacts.Contacts;
+        Contacts.ReseedIdentical();
+
+        _setNote = ReferenceEquals(before, Contacts.Contacts)
+            ? "Identical payload - SetAll returned the same state instance. No notification, no action recorded, no undo step."
+            : "The payload differed, so a new state was committed.";
+    }
+
+    private static readonly IReadOnlyList<ApiTable.Row> StateRows =
+    [
+        new("IReadOnlyList&lt;TKey&gt; Ids", "The ids in display order - insertion order, or the sort comparer's order."),
+        new("IReadOnlyDictionary&lt;TKey, TEntity&gt; Entities", "The id-to-entity map. O(1) lookup."),
+        new("IEnumerable&lt;TEntity&gt; All", "The entities in id order. <code>[JsonIgnore]</code>."),
+        new("int Count", "Number of stored entities. <code>[JsonIgnore]</code>."),
+        new("bool Contains(TKey)", "Whether an entity with that id exists."),
+        new("TEntity? Find(TKey)", "The entity for an id, or <code>default</code>."),
+        new("TEntity this[TKey]", "The entity with that id, throwing <code>KeyNotFoundException</code> when there is none - for the lookups where absence is a bug, not a case."),
+        new("bool TryGet(TKey, out TEntity)", "Looks an entity up and reports whether it was there. Use it over <code>Find</code> for struct entities, where <code>default</code> is a legitimate value - and to avoid hashing the key twice with <code>Contains</code> + <code>Find</code>."),
+        new("static BlexEntityState&lt;TEntity, TKey&gt; Empty", "A shared, read-only empty state."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> AdapterRows =
+    [
+        new("GetInitialState()", "The empty state for this entity type."),
+        new("GetInitialState(IEnumerable&lt;TEntity&gt;)", "An initial state seeded with the given entities."),
+        new("AddOne(state, entity)", "Appends an entity. No-op if the id already exists."),
+        new("AddMany(state, entities)", "Appends many, skipping ids that already exist."),
+        new("UpsertOne(state, entity)", "Adds, or replaces the entity with that id."),
+        new("UpsertMany(state, entities)", "Adds or replaces many."),
+        new("UpdateOne(state, id, Func&lt;TEntity, TEntity&gt;)", "Applies a transform to one entity. No-op if the id is absent. Handles an id change."),
+        new("UpdateMany(state, ids, Func&lt;TEntity, TEntity&gt;)", "Applies a transform to each listed id, ignoring missing ones."),
+        new("Map(state, Func&lt;TEntity, TEntity&gt;)", "Applies a transform to every entity."),
+        new("SetOne(state, entity)", "Replaces the entity with that id. No-op if the id is absent - unlike <code>UpsertOne</code>, it never inserts."),
+        new("SetMany(state, entities)", "Replaces each entity whose id is already present, ignoring the rest."),
+        new("RemoveOne(state, id)", "Removes one entity. No-op if absent."),
+        new("RemoveMany(state, ids)", "Removes the listed entities."),
+        new("RemoveAll(state)", "Removes everything."),
+        new("SetAll(state, entities)", "Replaces the whole collection."),
+        new("SelectId(entity)", "The id, as this adapter derives it. Use it instead of repeating the key expression at each call site, where a second copy can silently diverge."),
+        new("IComparer&lt;TEntity&gt;? SortComparer", "The comparer keeping <code>Ids</code> ordered, or <code>null</code> for insertion order."),
+    ];
+
+    private const string Shape = """
+        public sealed class BlexEntityState<TEntity, TKey> where TKey : notnull
+        {
+            public IReadOnlyList<TKey> Ids { get; }                       // order
+            public IReadOnlyDictionary<TKey, TEntity> Entities { get; }   // lookup
+        }
+        """;
+
+    private const string Declare = """
+        [BlexStore(Name = "contacts")]
+        public partial class ContactsStore
+        {
+            // Holds the id selector, so it is static and never serialized.
+            private static readonly BlexEntityAdapter<Contact, int> Adapter = new(c => c.Id);
+
+            [BlexState] private BlexEntityState<Contact, int> _contacts = Adapter.GetInitialState();
+
+            [BlexAction] private void OnAdd(Contact c)    => Contacts = Adapter.AddOne(Contacts, c);
+            [BlexAction] private void OnRemove(int id)    => Contacts = Adapter.RemoveOne(Contacts, id);
+        }
+        """;
+
+    private const string Sorted = """
+        private static readonly BlexEntityAdapter<Contact, int> Adapter =
+            new(c => c.Id, Comparer<Contact>.Create((a, b) => string.CompareOrdinal(a.Name, b.Name)));
+        """;
+
+    private const string StoreSource = """
+        [BlexStore(Name = "contacts")]
+        public partial class ContactsStore
+        {
+            private static readonly BlexEntityAdapter<Contact, int> Adapter =
+                new(c => c.Id, Comparer<Contact>.Create((a, b) => string.CompareOrdinal(a.Name, b.Name)));
+
+            [BlexState] private BlexEntityState<Contact, int> _contacts = Adapter.GetInitialState([...]);
+            [BlexState] private string _teamFilter = "All";
+
+            [BlexComputed] private int ComputeTotal()   => Contacts.Count;
+            [BlexComputed] private int ComputeStarred() => Contacts.All.Count(c => c.Starred);
+
+            [BlexComputed]
+            private IReadOnlyList<Contact> ComputeVisible()
+                => TeamFilter == "All"
+                    ? [.. Contacts.All]
+                    : [.. Contacts.All.Where(c => c.Team == TeamFilter)];
+
+            [BlexAction] private void OnAdd(string name, string team)
+                => Contacts = Adapter.AddOne(Contacts, new Contact(_nextId++, name, team, false));
+
+            [BlexAction] private void OnToggleStar(int id)
+                => Contacts = Adapter.UpdateOne(Contacts, id, c => c with { Starred = !c.Starred });
+
+            [BlexAction] private void OnStarAll()
+                => Contacts = Adapter.Map(Contacts, c => c with { Starred = true });
+
+            [BlexAction] private void OnRemoveUnstarred()
+                => Contacts = Adapter.RemoveMany(Contacts,
+                       [.. Contacts.All.Where(c => !c.Starred).Select(c => c.Id)]);
+        }
+        """;
+
+    private const string Usage = """
+        [BlexAction] private void OnUpsert(Todo todo) => Todos = Adapter.UpsertOne(Todos, todo);
+        [BlexAction] private void OnToggle(int id)    => Todos = Adapter.UpdateOne(Todos, id, t => t with { Done = !t.Done });
+        [BlexAction] private void OnRemove(int id)    => Todos = Adapter.RemoveOne(Todos, id);
+        [BlexAction] private void OnLoaded(Todo[] t)  => Todos = Adapter.SetAll(Todos, t);
+        """;
+
+    private const string SetVsUpsert = """
+        // The row may have been deleted while the save was in flight. UpsertOne would put it back.
+        [BlexEffect]
+        private async Task OnSave(Todo todo)
+        {
+            var saved = await _api.PutAsync(todo);
+            Todos = Adapter.SetOne(Todos, saved);      // applies only if the id is still there
+        }
+
+        // Same rule for a batch: ids the user removed in the meantime are ignored.
+        [BlexAction] private void OnPatched(Todo[] changed) => Todos = Adapter.SetMany(Todos, changed);
+        """;
+
+    private const string NoOpIdentity = """
+        [BlexEffect(Mode = BlexEffectConcurrency.Drop)]
+        private async Task OnPoll()
+        {
+            var fresh = await _api.GetTodosAsync();
+
+            // Identical payload -> same instance back -> no notification, no persist, no undo step.
+            Todos = Adapter.SetAll(Todos, fresh);
+        }
+        """;
+
+    private const string Computed = """
+        [BlexComputed] private int ComputeRemaining() => Todos.All.Count(t => !t.Done);
+
+        [BlexComputed]
+        private IReadOnlyList<Todo> ComputeVisible() => Filter switch
+        {
+            Filter.Active => [.. Todos.All.Where(t => !t.Done)],
+            Filter.Done   => [.. Todos.All.Where(t => t.Done)],
+            _             => [.. Todos.All],
+        };
+        """;
+}

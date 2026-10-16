@@ -58,7 +58,7 @@ assembly. These are floors for the oldest supported SDK:
 | `Microsoft.CodeAnalysis.Analyzers` | 3.3.3 | `Bit.BlazorUI.SourceGenerators`, `Bit.SourceGenerators` |
 | `Microsoft.CodeAnalysis.CSharp.Workspaces` | 4.3.1 | `Bit.BlazorUI.SourceGenerators`, `Bit.SourceGenerators` |
 | `Microsoft.CodeAnalysis.Workspaces.Common` | 4.3.1 | `Bit.CodeAnalyzers` |
-| `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.Brouter.Generators` + its test project (must match) |
+| `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.Brouter.Generators`, `Bit.Blex.Generators` + their test projects, and `Bit.Blex.Demo.Server` (runs the Blex generator for its MCP server) (must match) |
 | `Microsoft.CodeAnalysis.CSharp` | 4.14.0 | `Bit.CodeAnalyzers` |
 | `Microsoft.Build.Utilities.Core` | 17.7.2 | `Bit.Butil.Build` |
 

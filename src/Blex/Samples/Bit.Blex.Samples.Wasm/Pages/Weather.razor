@@ -1,0 +1,64 @@
+﻿@page "/weather"
+@inherits BlexComponentBase
+@inject WeatherStore Store
+
+<PageTitle>Weather</PageTitle>
+
+<h1>Weather &mdash; cancellable effects</h1>
+
+<p>
+    <code>[BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]</code> gives this store's <code>Load</code>
+    "take latest" (switchMap) semantics: starting a new load cancels the one in flight. Because the
+    effect method takes a trailing <code>CancellationToken</code>, the generator also emits a
+    <code>CancelLoad()</code> method. <code>LoadIsLoading</code> and <code>LoadError</code> are
+    generated too &mdash; failures are captured instead of thrown, and cancellations are never
+    treated as errors. Mash the buttons and watch the DevTools timeline stay clean.
+</p>
+
+<div class="card p-3 mb-3" style="max-width: 36rem;">
+    <div class="btn-group mb-3" role="group">
+        <button class="btn btn-primary" @onclick="() => Store.Load(false)">Load forecasts</button>
+        <button class="btn btn-outline-warning" @onclick="() => Store.Load(true)">Load (simulate failure)</button>
+        <button class="btn btn-outline-danger" @onclick="Store.CancelLoad" disabled="@(!Store.LoadIsLoading)">Cancel</button>
+        <button class="btn btn-outline-secondary" @onclick="Store.Clear" disabled="@(Store.Forecasts is null)">Clear</button>
+    </div>
+
+    @if (Store.LoadIsLoading)
+    {
+        <p role="status"><em>Loading forecasts&hellip; (click Cancel, or Load again to supersede this run)</em></p>
+    }
+    else if (Store.LoadError is { } error)
+    {
+        <div class="alert alert-danger" role="alert">
+            <strong>Load failed:</strong> @error.Message
+        </div>
+    }
+    else if (Store.Forecasts is { } forecasts)
+    {
+        <table class="table">
+            <thead>
+                <tr><th>Date</th><th>Temp. (C)</th><th>Temp. (F)</th><th>Summary</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var forecast in forecasts)
+                {
+                    <tr>
+                        <td>@forecast.Date.ToShortDateString()</td>
+                        <td>@forecast.TemperatureC</td>
+                        <td>@forecast.TemperatureF</td>
+                        <td>@forecast.Summary</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <span class="text-muted">@Store.Count forecasts loaded at @Store.LoadedAt?.ToString("HH:mm:ss")</span>
+    }
+    else
+    {
+        <p class="text-muted">No data yet &mdash; press <strong>Load forecasts</strong>.</p>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized() => Subscribe(Store);
+}

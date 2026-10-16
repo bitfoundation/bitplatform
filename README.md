@@ -46,6 +46,7 @@ bit new MyApp
 
 - [***Brouter***](src/Brouter/README.md) (`Bit.Brouter`): A modern, declarative, nestable router for Blazor with async guards, data loaders, named routes, query string binding and global navigation hooks. It's the default router in bit Boilerplate.
 - [***Butil***](src/Butil/README.md) (`Bit.Butil`): The browser platform in C#. The DOM, storage, media, sensors, crypto, workers and more, exposed as injectable, strongly-typed services, so you don't have to drop back to JavaScript.
+- [***Blex***](src/Blex/README.md) (`Bit.Blex`): Reactive state management for Blazor and .NET MAUI. A source generator turns plain `[BlexState]` fields and `[BlexAction]` methods into observable stores, with computed state, effects, middleware, persistence, undo/redo and Redux DevTools time-travel built in.
 - [***Besql***](src/Besql/README.md) (`Bit.Besql`): EF Core and SQLite in the browser, for offline-capable web apps that save data locally and sync later.
 - [***Bswup***](src/Bswup/README.md) (`Bit.Bswup`): Turns your Blazor app into a PWA with service-worker update progress, and works with prerendering for an experience like GitHub's or Reddit's.
 

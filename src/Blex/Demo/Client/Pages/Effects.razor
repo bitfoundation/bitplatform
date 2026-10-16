@@ -1,0 +1,498 @@
+﻿@page "/effects"
+@inherits BlexComponentBase
+@inject EffectLabStore Lab
+@inject SearchStore Search
+
+<DocPage Href="effects" Title="Effects"
+         Lead="Async work with a loading flag, an error slot, a cancellation method and a concurrency policy - all generated.">
+
+    <h2>The convention</h2>
+    <p>
+        Mark an async method named <code>OnXxx</code> returning <code>Task</code> or
+        <code>ValueTask</code> with <code>[BlexEffect]</code>. You get a public <code>Xxx(...)</code>
+        wrapper plus reactive lifecycle properties. The body is still recorded as one named,
+        time-travelable action.
+    </p>
+
+    <CodeBlock Code="@Basic" />
+
+    <ApiTable Title="Generated for [BlexEffect] OnLoadUser(int id, CancellationToken ct)" Rows="@GeneratedRows" />
+
+    <p>
+        The wrapper never throws: an exception from the body is captured into <code>XxxError</code>
+        instead of propagating. That is deliberate - an effect is usually fired from an event handler
+        where nothing would catch it.
+    </p>
+
+    <h2>Loading is reference-counted</h2>
+    <p>
+        <code>XxxIsLoading</code> stays <code>true</code> until the <em>last</em> in-flight run
+        finishes, so overlapping invocations do not flip it off early. It is set through
+        <code>SetEffectState</code>, which notifies the UI but never records a time-travel action -
+        a spinner turning on is not something you want to rewind to.
+    </p>
+
+    <h2>Cancellation</h2>
+    <p>
+        Give the effect a <strong>trailing</strong> <code>CancellationToken</code> parameter and the
+        generator supplies the token itself - it does not appear on the public wrapper - and emits a
+        <code>CancelXxx()</code> method.
+    </p>
+
+    <CodeBlock Code="@Cancel" />
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Whose cancellation was it?">
+        <p style="margin-bottom:0">
+            Cancellation through the effect's <em>own</em> token - from <code>CancelXxx()</code> or
+            from being superseded in <code>Latest</code> mode - is a normal outcome and never
+            populates <code>Error</code>. A <em>foreign</em> <code>OperationCanceledException</code>,
+            such as an <code>HttpClient</code> timeout, or any cancellation in an effect that has no
+            token parameter, is a real failure and is recorded in <code>Error</code>.
+        </p>
+    </Callout>
+
+    <Callout Kind="Callout.CalloutKind.Tip" Title="Disposing a store cancels its effects">
+        <p style="margin-bottom:0">
+            A store is <code>IDisposable</code>, and its container disposes it - a Blazor Server
+            circuit ending, a test scope closing. That cancels every in-flight effect and stops any
+            pending debounce timer, so a request started moments before teardown does not carry on
+            resuming against a dead renderer. It counts as the effect's own cancellation, so it
+            populates no <code>Error</code>; the store itself stays usable, because disposal ordering
+            must not be able to strand a final persistence flush.
+        </p>
+    </Callout>
+
+    <h2>Concurrency</h2>
+    <p>
+        <code>[BlexEffect(Concurrency = …)]</code> decides what happens when a run starts while another
+        is still going, mirroring the RxJS flattening operators NgRx effects are built on.
+    </p>
+
+    <div class="table-scroll">
+        <table>
+            <thead><tr><th>Mode</th><th>RxJS</th><th>Semantics</th><th>Use it for</th></tr></thead>
+            <tbody>
+                <tr><td><code>Parallel</code> <span class="pill">default</span></td><td><code>mergeMap</code></td><td>Every run proceeds concurrently.</td><td>Independent fetches.</td></tr>
+                <tr><td><code>Latest</code></td><td><code>switchMap</code></td><td>A new run cancels the previous one.</td><td>Type-ahead search.</td></tr>
+                <tr><td><code>Drop</code></td><td><code>exhaustMap</code></td><td>New runs are ignored while one is in flight.</td><td>Double-click-proof submits.</td></tr>
+                <tr><td><code>Queue</code></td><td><code>concatMap</code></td><td>Runs execute one at a time, in arrival order.</td><td>Ordered writes.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <DemoCard Title="The four modes, side by side"
+              Description="Each button starts the same 1.2 s job. Click one several times quickly and read the timeline."
+              Source="@LabSource">
+        <div class="row">
+            <button class="btn btn-primary" @onclick="RunParallel">
+                Parallel @if (Lab.RunParallelIsLoading) { <span class="pill pill--busy">running</span> }
+            </button>
+            <button class="btn btn-primary" @onclick="RunLatest">
+                Latest @if (Lab.RunLatestIsLoading) { <span class="pill pill--busy">running</span> }
+            </button>
+            <button class="btn btn-primary" @onclick="RunDrop">
+                Drop @if (Lab.RunDropIsLoading) { <span class="pill pill--busy">running</span> }
+            </button>
+            <button class="btn btn-primary" @onclick="RunQueue">
+                Queue @if (Lab.RunQueueIsLoading) { <span class="pill pill--busy">running</span> }
+            </button>
+        </div>
+        <div class="row">
+            <button class="btn btn-sm" @onclick="Lab.CancelRunParallel" disabled="@(!Lab.RunParallelIsLoading)">CancelRunParallel()</button>
+            <button class="btn btn-sm" @onclick="Lab.CancelRunLatest" disabled="@(!Lab.RunLatestIsLoading)">CancelRunLatest()</button>
+            <button class="btn btn-sm btn-ghost" @onclick="Lab.Clear">Clear timeline</button>
+        </div>
+
+        @if (Lab.Events.Count == 0)
+        {
+            <p class="small muted" style="margin-top:0.8rem;margin-bottom:0">
+                Timeline is empty. Try clicking <strong>Latest</strong> three times in a row, then
+                <strong>Queue</strong> three times, and compare.
+            </p>
+        }
+        else
+        {
+            <ul class="timeline">
+                @foreach (var e in Lab.Events)
+                {
+                    <li>
+                        <span class="timeline__at">@e.At ms</span>
+                        <span class="timeline__mode timeline__mode--@e.Mode">@e.Mode</span>
+                        <span>run @e.Run</span>
+                        <span class="timeline__phase--@e.Phase">@e.Phase</span>
+                    </li>
+                }
+            </ul>
+        }
+    </DemoCard>
+
+    <h3>What you should see</h3>
+    <ul>
+        <li><strong>Parallel</strong> - three clicks give three <code>started</code> lines immediately and three <code>finished</code> lines ~1.2 s later.</li>
+        <li><strong>Latest</strong> - each click <code>cancelled</code>s the previous run; only the last one finishes.</li>
+        <li><strong>Drop</strong> - the second and third clicks produce <code>dropped</code>; the first run finishes undisturbed.</li>
+        <li><strong>Queue</strong> - the runs start ~1.2 s apart, strictly in the order you clicked.</li>
+    </ul>
+
+    <h2>A realistic type-ahead</h2>
+    <p>
+        <code>Latest</code> plus a token is the whole recipe for search-as-you-type: an obsolete
+        request cannot land after a newer one and overwrite the results.
+    </p>
+
+    <DemoCard Title="Search with Latest concurrency"
+              Description="Type quickly: each keystroke supersedes the previous request. Flip the failure switch to see the generated error slot fill in."
+              Source="@SearchSource">
+        <div class="row">
+            <input type="search" placeholder="Try &quot;blazor&quot; or &quot;gen&quot;…"
+                   value="@_queryBox" @oninput="OnQueryInput" style="flex:1;min-width:220px" />
+            <button class="btn btn-sm" @onclick="Search.CancelSearch" disabled="@(!Search.SearchIsLoading)">Cancel</button>
+            <button class="btn btn-sm btn-ghost" @onclick="ClearSearch">Clear</button>
+        </div>
+        <div class="row">
+            <label class="check">
+                <input type="checkbox" checked="@Search.SimulateFailure"
+                       @onchange="e => Search.SetSimulateFailure((bool)(e.Value ?? false))" />
+                Simulate a failing service
+            </label>
+            @if (Search.SearchIsLoading)
+            {
+                <span class="pill pill--busy">SearchIsLoading = true</span>
+            }
+            else
+            {
+                <span class="pill pill--off">SearchIsLoading = false</span>
+            }
+            @if (Search.SearchError is not null)
+            {
+                <span class="pill pill--err">SearchError set</span>
+            }
+        </div>
+
+        @if (Search.SearchError is not null)
+        {
+            <div class="callout callout--gotcha" style="margin-top:0.8rem">
+                <div class="callout__icon">⚠</div>
+                <div class="callout__body">
+                    <p class="callout__title">SearchError</p>
+                    <p style="margin-bottom:0">@Search.SearchError.Message</p>
+                </div>
+            </div>
+        }
+        else if (Search.HasResults)
+        {
+            <ul class="list">
+                @foreach (var result in Search.Results)
+                {
+                    <li><span class="list__name">@result</span></li>
+                }
+            </ul>
+        }
+        else if (!Search.SearchIsLoading && !string.IsNullOrWhiteSpace(Search.Query))
+        {
+            <p class="small muted" style="margin-top:0.8rem;margin-bottom:0">No matches for “@Search.Query”.</p>
+        }
+    </DemoCard>
+
+    <h2>Debouncing</h2>
+    <p>
+        <code>Latest</code> stops a stale response from landing, but it still sends a request per
+        keystroke. <code>DebounceMilliseconds</code> waits for a quiet period first, so only the
+        invocation the user actually paused on runs at all. The two compose, and together they are
+        the complete type-ahead recipe: debounce decides <em>whether</em> to ask, <code>Latest</code>
+        decides <em>which answer</em> is allowed to land.
+    </p>
+    <CodeBlock Code="@Debounce" Title="The whole recipe" Compact="true" />
+
+    <p>
+        The wait happens before anything observable, which is what makes it worth generating rather
+        than hand-rolling. A superseded invocation never flips <code>XxxIsLoading</code>, never
+        clears <code>XxxError</code>, is never offered to middleware and records no action - so a
+        spinner bound to <code>IsLoading</code> does not blink once per keystroke, and DevTools does
+        not fill up with searches that never happened.
+    </p>
+
+    <DemoCard Title="Keystrokes in, requests out"
+              Description="Type a word at normal speed. The keystroke counter climbs per character; the request counter climbs once, when you pause."
+              Source="@DebouncedSource">
+        <div class="row">
+            <input type="search" placeholder="Type &quot;blazor&quot; quickly…"
+                   value="@_debouncedBox" @oninput="OnDebouncedInput" style="flex:1;min-width:220px" />
+            <button class="btn btn-sm btn-ghost" @onclick="ClearDebounced">Clear</button>
+        </div>
+
+        <div class="readout" style="margin-top:0.8rem">
+            <div class="readout__item">
+                <span class="readout__label">Keystrokes</span>
+                <span class="readout__value">@Search.Keystrokes</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Requests started</span>
+                <span class="readout__value readout__value--accent">@Search.RequestsStarted</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">TypeAheadIsLoading</span>
+                <span class="readout__value">@(Search.TypeAheadIsLoading ? "true" : "false")</span>
+            </div>
+        </div>
+
+        @if (Search.TypeAheadError is not null)
+        {
+            <p class="small muted" style="margin-top:0.8rem;margin-bottom:0">@Search.TypeAheadError.Message</p>
+        }
+        else if (Search.HasResults)
+        {
+            <ul class="list" style="margin-top:0.8rem">
+                @foreach (var result in Search.Results)
+                {
+                    <li><span class="list__name">@result</span></li>
+                }
+            </ul>
+        }
+    </DemoCard>
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="The gate is per effect, not per argument">
+        <p style="margin-bottom:0">
+            Every invocation of the same effect shares one gate, whatever its arguments. That is
+            what you want for a search box; if you need one gate per key (say, per row in a grid),
+            debounce at the call site instead.
+        </p>
+    </Callout>
+
+    <h2>Rules</h2>
+    <ul>
+        <li>
+            The return type must be non-generic <code>Task</code> or <code>ValueTask</code>
+            (<code>BLEX007</code>). An effect owns the loading and error lifecycle, so there is
+            nowhere to put a return value - write results into <code>[BlexState]</code> fields.
+        </li>
+        <li>
+            <code>Latest</code> without a <code>CancellationToken</code> parameter is warning
+            <code>BLEX009</code>: supersession still marks the run stale, but the superseded body
+            keeps executing because nothing can observe the cancellation.
+        </li>
+        <li>Effects cannot be <code>static</code> (<code>BLEX008</code>) or generic (<code>BLEX014</code>), and cannot take by-ref parameters (<code>BLEX013</code>).</li>
+    </ul>
+
+    <Callout Kind="Callout.CalloutKind.Warning" Title="A Queue effect must never invoke itself">
+        <p style="margin-bottom:0">
+            <code>Queue</code> makes each run wait for its predecessor. If a queued effect invokes
+            itself - directly, or through a subscriber its body triggers - the nested call waits on a
+            gate that only the outer call can open, and both deadlock.
+        </p>
+    </Callout>
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Latest cancels on invocation, not on approval">
+        <p style="margin-bottom:0">
+            In <code>Latest</code> mode the previous run is cancelled the moment a new invocation
+            starts - even if middleware later vetoes that new action. A veto stops the mutation; it
+            does not resurrect the run it superseded.
+        </p>
+    </Callout>
+
+    <h2>The generated wrapper</h2>
+    <p>Roughly what the generator emits for a <code>Latest</code> effect with a token:</p>
+    <CodeBlock Code="@GeneratedEffect" Title="Generated (simplified)" />
+
+</DocPage>
+
+@code {
+    private string _queryBox = "";
+
+    protected override void OnInitialized() => Subscribe(Lab, Search);
+
+    private async Task RunParallel() => await Lab.RunParallel();
+
+    private async Task RunLatest() => await Lab.RunLatest();
+
+    private async Task RunDrop()
+    {
+        // The wrapper silently returns when a run is already in flight; note it for the timeline.
+        if (Lab.RunDropIsLoading)
+            Lab.NoteDropped();
+        await Lab.RunDrop();
+    }
+
+    private async Task RunQueue() => await Lab.RunQueue();
+
+    private async Task OnQueryInput(ChangeEventArgs e)
+    {
+        _queryBox = e.Value?.ToString() ?? "";
+        await Search.Search(_queryBox);
+    }
+
+    private void ClearSearch()
+    {
+        _queryBox = "";
+        Search.Clear();
+    }
+
+    private string _debouncedBox = "";
+
+    private async Task OnDebouncedInput(ChangeEventArgs e)
+    {
+        _debouncedBox = e.Value?.ToString() ?? "";
+
+        // Counted per keystroke; the effect below is invoked per keystroke too, but its gate means
+        // only the one the user paused on ever reaches the body.
+        Search.CountKeystroke();
+        await Search.TypeAhead(_debouncedBox);
+    }
+
+    private void ClearDebounced()
+    {
+        _debouncedBox = "";
+        Search.Clear();
+    }
+
+    private static readonly IReadOnlyList<ApiTable.Row> GeneratedRows =
+    [
+        new("Task LoadUser(int id)", "The public wrapper. Note that the <code>CancellationToken</code> parameter is <em>not</em> on it - the generator supplies the token."),
+        new("bool LoadUserIsLoading", "True while any run is in flight. Reference-counted across overlapping runs."),
+        new("Exception? LoadUserError", "The exception from the last run, or <code>null</code>. Cleared at the start of each run."),
+        new("void CancelLoadUser()", "Cancels the in-flight run (the most recently started one when runs overlap). Emitted only when the effect takes a <code>CancellationToken</code>."),
+    ];
+
+    private const string Basic = """
+        [BlexEffect]
+        private async Task OnLoadUser(int id)
+        {
+            User = await _api.GetUserAsync(id);
+        }
+
+        // Generated:
+        //   Task       LoadUser(int id)
+        //   bool       LoadUserIsLoading
+        //   Exception? LoadUserError
+        """;
+
+    private const string Cancel = """
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]
+        private async Task OnSearch(string query, CancellationToken ct)
+        {
+            Results = await _api.SearchAsync(query, ct);
+        }
+
+        // Generated:
+        //   Task       Search(string query)   <- no token on the public signature
+        //   void       CancelSearch()
+        //   bool       SearchIsLoading
+        //   Exception? SearchError
+        """;
+
+    private const string LabSource = """
+        [BlexEffect]                                             // mergeMap
+        private async Task OnRunParallel(CancellationToken ct) => await Task.Delay(1200, ct);
+
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]     // switchMap
+        private async Task OnRunLatest(CancellationToken ct) => await Task.Delay(1200, ct);
+
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Drop)]       // exhaustMap
+        private async Task OnRunDrop() => await Task.Delay(1200);
+
+        [BlexEffect(Concurrency = BlexEffectConcurrency.Queue)]      // concatMap
+        private async Task OnRunQueue() => await Task.Delay(1200);
+        """;
+
+    private const string SearchSource = """
+        [BlexStore(Name = "search")]
+        public partial class SearchStore
+        {
+            [BlexState] private string _query = "";
+            [BlexState] private IReadOnlyList<string> _results = [];
+
+            [BlexComputed] private bool ComputeHasResults() => Results.Count > 0;
+
+            [BlexEffect(Concurrency = BlexEffectConcurrency.Latest)]
+            private async Task OnSearch(string query, CancellationToken ct)
+            {
+                Query = query;
+                await Task.Delay(700, ct);          // the "network"
+                Results = [.. Catalog.Where(c => c.Contains(query, StringComparison.OrdinalIgnoreCase))];
+            }
+        }
+        """;
+
+    private const string Debounce = """
+        [BlexEffect(DebounceMilliseconds = 300, Concurrency = BlexEffectConcurrency.Latest)]
+        private async Task OnTypeAhead(string query, CancellationToken ct)
+        {
+            Query = query;
+            Results = await _api.SearchAsync(query, ct);
+        }
+        """;
+
+    private const string DebouncedSource = """
+        [BlexStore(Name = "search")]
+        public partial class SearchStore
+        {
+            [BlexState] private int _keystrokes;
+            [BlexState] private int _requestsStarted;
+
+            [BlexAction] private void OnCountKeystroke() => Keystrokes++;
+
+            [BlexEffect(DebounceMilliseconds = 300, Concurrency = BlexEffectConcurrency.Latest)]
+            private async Task OnTypeAhead(string query, CancellationToken ct)
+            {
+                // Reached only by the invocation that survived the gate.
+                RequestsStarted++;
+                Query = query;
+                await Task.Delay(700, ct);          // the "network"
+                Results = [.. Catalog.Where(c => c.Contains(query, StringComparison.OrdinalIgnoreCase))];
+            }
+        }
+
+        @* The component invokes it on every keystroke -- the gate does the filtering. *@
+        private async Task OnInput(ChangeEventArgs e)
+        {
+            Search.CountKeystroke();
+            await Search.TypeAhead(e.Value?.ToString() ?? "");
+        }
+        """;
+
+    private const string GeneratedEffect = """
+        private int __SearchPending;
+        public bool SearchIsLoading => __SearchPending > 0;
+
+        private Exception? __SearchError;
+        public Exception? SearchError => __SearchError;
+
+        private CancellationTokenSource? __SearchCts;
+        public void CancelSearch() => __SearchCts?.Cancel();
+
+        private int __SearchVersion;
+
+        public async Task Search(string query)
+        {
+            var version = ++__SearchVersion;    // stale runs must not clobber newer error state
+            __SearchCts?.Cancel();              // Latest: supersede the previous run
+            var cts = new CancellationTokenSource();
+            __SearchCts = cts;
+            var ct = cts.Token;
+
+            try
+            {
+                BeginEffect(ref __SearchPending);
+                SetEffectState(ref __SearchError, null);
+                await DispatchAsync("Search", () => OnSearch(query, ct),
+                                    IsObserved ? [new BlexActionArg("query", query)] : null);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
+            {
+                // Our own cancellation: a normal outcome, not an error.
+            }
+            catch (Exception ex)
+            {
+                if (version == __SearchVersion)
+                    SetEffectState(ref __SearchError, ex);
+            }
+            finally
+            {
+                if (ReferenceEquals(__SearchCts, cts))
+                    __SearchCts = null;
+                cts.Dispose();
+                EndEffect(ref __SearchPending);
+            }
+        }
+        """;
+}

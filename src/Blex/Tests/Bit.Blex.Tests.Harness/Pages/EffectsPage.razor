@@ -1,0 +1,18 @@
+﻿@page "/effects"
+@inherits BlexComponentBase
+@inject EffectStore Lab
+
+<section id="page-effects">
+    <h1>Effects</h1>
+
+    <button id="load-slow" @onclick="@(() => Lab.Load(4000))">load slowly</button>
+    <button id="load-fast" @onclick="@(() => Lab.Load(50))">load quickly</button>
+    <button id="cancel" @onclick="Lab.CancelLoad">cancel</button>
+
+    <p id="loading" data-loading="@(Lab.LoadIsLoading ? "true" : "false")">@(Lab.LoadIsLoading ? "loading" : "idle")</p>
+    <p id="result" data-result="@Lab.Result">@Lab.Result</p>
+</section>
+
+@code {
+    protected override void OnInitialized() => Subscribe(Lab);
+}

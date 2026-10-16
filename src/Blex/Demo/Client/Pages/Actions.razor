@@ -1,0 +1,332 @@
+﻿@page "/actions"
+@inherits BlexComponentBase
+@inject CounterStore Counter
+
+<DocPage Href="actions" Title="Actions"
+         Lead="An action is a named, batched, recorded unit of change. Everything that mutates state becomes one - even a direct property assignment.">
+
+    <h2>The convention</h2>
+    <p>
+        Mark a method named <code>OnXxx</code> with <code>[BlexAction]</code>. The generator emits a
+        public <code>Xxx(...)</code> wrapper that runs your method inside a dispatch: all the
+        mutations it makes are folded into one notification and one time-travel entry.
+    </p>
+
+    <CodeBlock Code="@Basic" />
+    <CodeBlock Code="@BasicGenerated" Title="Generated" />
+
+    <h2>Naming</h2>
+    <p>
+        The wrapper name comes from the method name with the <code>On</code> prefix stripped, or from
+        <code>[BlexAction(Name = "…")]</code>. The <code>Name</code> is used in two different ways
+        depending on whether it is a valid C# identifier:
+    </p>
+
+    <div class="table-scroll">
+        <table>
+            <thead><tr><th>Declaration</th><th>Method you call</th><th>Label in DevTools / history</th></tr></thead>
+            <tbody>
+                <tr><td><code>[BlexAction] void OnIncrement()</code></td><td><code>Increment()</code></td><td><code>Increment</code></td></tr>
+                <tr><td><code>[BlexAction(Name = "Bump")] void OnIncrement()</code></td><td><code>Bump()</code></td><td><code>Bump</code></td></tr>
+                <tr><td><code>[BlexAction(Name = "Apply preset")] void OnApplyPreset()</code></td><td><code>ApplyPreset()</code></td><td><code>Apply preset</code></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        In other words: a name containing spaces (or anything else illegal in an identifier, or a C#
+        keyword) is treated purely as a display label, and the method name still comes from the
+        <code>On</code> prefix. A method that neither starts with <code>On</code> nor supplies a
+        usable name is <code>BLEX002</code>.
+    </p>
+
+    <h2>Arguments become the payload</h2>
+    <p>
+        Action parameters are captured as name/value pairs and travel with the action to middleware,
+        subscribers, the test harness and the DevTools monitor. Nothing to declare.
+    </p>
+
+    <CodeBlock Code="@Args" />
+
+    <p>
+        Capture is skipped entirely when nothing is observing - the generated wrapper checks
+        <code>IsObserved</code> first, so an app with no middleware, no DevTools and no subscribers
+        pays nothing for the payload.
+    </p>
+
+    <p>Parameter rules:</p>
+    <ul>
+        <li>Default values and <code>params</code> are preserved on the wrapper.</li>
+        <li><code>ref</code>, <code>out</code> and <code>in</code> parameters are rejected - the wrapper has to capture them by value (<code>BLEX013</code>).</li>
+        <li>Generic action methods are rejected; the wrapper cannot carry type parameters (<code>BLEX014</code>).</li>
+    </ul>
+
+    <h2>Batching</h2>
+    <p>
+        This is the point of actions. Assigning three fields directly produces three actions and
+        three renders; doing it inside one action produces one of each.
+    </p>
+
+    <DemoCard Title="Three ways to set the same two fields"
+              Description="Watch the notification counter - and the Inspector's action feed - after each button."
+              Source="@BatchSource">
+        <div class="readout">
+            <div class="readout__item">
+                <span class="readout__label">Count</span>
+                <span class="readout__value readout__value--accent">@Counter.Count</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Step</span>
+                <span class="readout__value">@Counter.Step</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Notifications from last click</span>
+                <span class="readout__value">@_lastBatchNotifications</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Actions from last click</span>
+                <span class="readout__value">@_lastBatchActions</span>
+            </div>
+        </div>
+        <div class="row" style="margin-top:0.9rem">
+            <button class="btn btn-danger" @onclick="DirectAssignment">Two direct assignments</button>
+            <button class="btn btn-primary" @onclick="ViaAction">One [BlexAction] method</button>
+            <button class="btn btn-primary" @onclick="ViaBatch">One Batch(…) call</button>
+            <button class="btn btn-ghost" @onclick="Counter.ResetState">ResetState()</button>
+        </div>
+        <p class="small muted" style="margin-top:0.7rem;margin-bottom:0">
+            The first button dispatches <code>Set Count</code> and <code>Set Step</code> separately.
+            The other two dispatch exactly one action and render once.
+        </p>
+    </DemoCard>
+
+    <h2>Direct assignment: the "Set X" action</h2>
+    <p>
+        Generated properties have public setters, and assigning one from outside any action is still
+        a first-class action named <code>Set X</code>, carrying the assigned value as its payload. It
+        is vetoable by middleware, recorded for undo/redo and visible in DevTools - so nothing can
+        change state behind the pipeline's back.
+    </p>
+    <CodeBlock Code="@SetX" />
+
+    <h2>Batch: ad-hoc grouping</h2>
+    <p>
+        When the grouping is a caller's concern rather than the store's, <code>Batch</code> wraps any
+        set of mutations into one named action - Pinia's <code>$patch</code> or MobX's
+        <code>runInAction</code>.
+    </p>
+    <CodeBlock Code="@BatchApi" />
+
+    <h2>ResetState</h2>
+    <p>
+        Every store snapshots itself the first time it is registered with the manager.
+        <code>ResetState()</code> restores that snapshot as a normal <code>ResetState</code> action:
+        vetoable, observable, persisted and undoable. It is a no-op on a store that was never
+        registered, and equally a no-op on a store that is <em>already</em> holding its initial state -
+        resetting an untouched form notifies nobody, writes nothing and adds no undo step, the same
+        rule every other mutation in Blex follows.
+    </p>
+    <CodeBlock Code="@Reset" />
+
+    <p>
+        <code>BlexManager.ResetAll()</code> does the same across every registered store - the usual
+        sign-out move. Each store resets as its own action, so middleware can exempt individual
+        stores and DevTools shows one entry per store rather than one opaque global wipe.
+    </p>
+    <CodeBlock Code="@ResetAll" Title="Application-wide reset" Compact="true" />
+
+    <h2>Async actions</h2>
+    <p>
+        An <code>[BlexAction]</code> may return <code>Task</code> or <code>ValueTask</code>. State changes
+        made before and after an <code>await</code> update the UI as they happen, but the whole
+        operation is recorded as a single action.
+    </p>
+    <CodeBlock Code="@AsyncAction" />
+
+    <p>
+        If what you are writing is a side-effect with a loading and error lifecycle, reach for
+        <a href="effects"><code>[BlexEffect]</code></a> instead - it generates all of that for you.
+    </p>
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="A store is owned by its in-flight async action">
+        <p style="margin-bottom:0">
+            Dispatch is single-threaded, matching Blazor's rendering model. While an async action is
+            awaiting, its store's record depth stays raised - so a mutation made from
+            <em>elsewhere</em> during that window is attributed to the in-flight action instead of
+            being recorded as its own. Treat a store as owned by its running async action until it
+            completes.
+        </p>
+    </Callout>
+
+    <Callout Kind="Callout.CalloutKind.Warning" Title="Never async void">
+        <p style="margin-bottom:0">
+            An <code>async void</code> action cannot be awaited or recorded correctly, so it is a
+            hard error (<code>BLEX010</code>). Return <code>Task</code> or <code>ValueTask</code>.
+            Similarly, an action that returns a <em>value</em> gets warning <code>BLEX011</code>,
+            because the generated wrapper discards it - put the result in a <code>[BlexState]</code>
+            field instead.
+        </p>
+    </Callout>
+
+    <h2>What a dispatch actually does</h2>
+    <ol>
+        <li>Runs every middleware's <code>BeforeAction</code>. If one calls <code>Cancel()</code>, the action stops here - nothing mutates.</li>
+        <li>Raises the record and notify depth, then runs your method body. Nested actions fold into the outermost one.</li>
+        <li>On completion, invalidates computed values and raises <code>StateChanged</code> once.</li>
+        <li>Records the action: middleware <code>OnAction</code> hooks run, then DevTools receives it, then subscribers.</li>
+    </ol>
+    <p>
+        The global state snapshot attached to an action is captured <em>lazily</em>, on first access.
+        Observers that never read it - persistence, for instance - never pay to serialize the whole
+        tree. When nothing at all is observing, the recording step is skipped outright.
+    </p>
+
+</DocPage>
+
+@code {
+    private int _notifications;
+    private int _actions;
+    private int _lastBatchNotifications;
+    private int _lastBatchActions;
+
+    [Inject] private BlexManager Manager { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        Subscribe(Counter);
+        Counter.StateChanged += CountNotification;
+
+        // OwnsSubscription hands the token to the base class, which disposes it with the component.
+        OwnsSubscription(Manager.SubscribeTo<CounterStore>(_ => _actions++));
+    }
+
+    private void CountNotification() => _notifications++;
+
+    private void Measure(Action act)
+    {
+        _notifications = 0;
+        _actions = 0;
+        act();
+        _lastBatchNotifications = _notifications;
+        _lastBatchActions = _actions;
+    }
+
+    private void DirectAssignment() => Measure(() =>
+    {
+        Counter.Count = 10;
+        Counter.Step = 5;
+    });
+
+    private void ViaAction() => Measure(() => Counter.ApplyPreset(20, 2));
+
+    private void ViaBatch() => Measure(() => Counter.Batch("Apply preset (batched)", () =>
+    {
+        Counter.Count = 30;
+        Counter.Step = 3;
+    }));
+
+    // BlexComponentBase owns IDisposable; this is its hook for extra cleanup.
+    protected override void Dispose(bool disposing)
+        => Counter.StateChanged -= CountNotification;
+
+    private const string Basic = """
+        [BlexAction]
+        private void OnIncrement() => Count += Step;
+
+        [BlexAction]
+        private void OnReset()
+        {
+            Count = 0;   // both assignments are folded into
+            Step = 1;    // a single "Reset" action and one render
+        }
+        """;
+
+    private const string BasicGenerated = """
+        public void Increment()
+            => Dispatch("Increment", () => OnIncrement());
+
+        public void Reset()
+            => Dispatch("Reset", () => OnReset());
+        """;
+
+    private const string Args = """
+        [BlexAction]
+        private void OnSetStep(int step) => Step = step;
+
+        [BlexAction]
+        private void OnAddItem(string name, int quantity = 1) => /* ... */;
+
+        // store.SetStep(5) is recorded as:
+        //   ActionName   "SetStep"
+        //   Args         [ { Name = "step", Value = 5 } ]
+        //   DevTools     { "step": 5 }
+        """;
+
+    private const string BatchSource = """
+        // 1. Two direct assignments -> two "Set X" actions, two renders.
+        Counter.Count = 10;
+        Counter.Step = 5;
+
+        // 2. One [BlexAction] method -> one action, one render.
+        [BlexAction]
+        private void OnApplyPreset(int count, int step)
+        {
+            Count = count;
+            Step = step;
+        }
+
+        // 3. Batch from the caller -> one action, one render.
+        Counter.Batch("Apply preset", () =>
+        {
+            Counter.Count = 30;
+            Counter.Step = 3;
+        });
+        """;
+
+    private const string SetX = """
+        store.Count = 5;
+
+        // Recorded as:
+        //   ActionName   "Set Count"
+        //   Args         [ { Name = "Count", Value = 5 } ]
+        """;
+
+    private const string BatchApi = """
+        // One notification, one history entry, one middleware pass.
+        store.Batch("Apply preset", () =>
+        {
+            store.Count = 10;
+            store.Step = 5;
+        });
+        """;
+
+    private const string Reset = """
+        store.ResetState();   // back to the state captured at first registration
+        """;
+
+    private const string ResetAll = """
+        @inject BlexManager Manager
+
+        // Sign-out: every store back to its registered state, each as its own action.
+        private void SignOut()
+        {
+            _auth.Clear();
+            Manager.ResetAll();
+        }
+
+        // Keep one store out of it with a filter veto:
+        builder.Services.AddBitBlexServices(options => options.UseFilter(
+            ctx => !(ctx.Store.Name == "theme" && ctx.ActionName == "ResetState")));
+        """;
+
+    private const string AsyncAction = """
+        [BlexAction]
+        private async Task OnSaveDraft(string text)
+        {
+            IsSaving = true;              // renders immediately
+            await _api.SaveAsync(text);
+            IsSaving = false;             // renders again
+            SavedAt = DateTimeOffset.Now;
+        }
+        // Recorded once, as "SaveDraft".
+        """;
+}

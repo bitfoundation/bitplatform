@@ -446,7 +446,7 @@ dnx Bit.Cli --prerelease -- translate
 - **Model Context Protocol**: A standardized way to connect AI assistants (like GitHub Copilot) to external data sources and tools
 
 **Configured Servers**:
-- **bitplatform**: The bit platform documentation server. It exposes the bit BlazorUI tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, ...), the Butil/Bswup/Bmotion/Bink/Bonboarding/Brouter tools, the `AskGitHubRepository` tool for the third-party libraries this project builds on, the tools that read the source code of the bitfoundation/bitplatform repository itself rather than this project (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`, ...), and the Microsoft Docs tools - all answering from the shipped assemblies, documentation and source rather than from the model's memory
+- **bitplatform**: The bit platform documentation server. It exposes the bit BlazorUI tools (`SearchBitBlazorUI`, `GetBitBlazorUIComponent`, `GetBitBlazorUIComponentExamples`, ...), the Butil/Bswup/Bmotion/Bink/Bonboarding/Blex/Brouter tools, the `AskGitHubRepository` tool for the third-party libraries this project builds on, the tools that read the source code of the bitfoundation/bitplatform repository itself rather than this project (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`, ...), and the Microsoft Docs tools - all answering from the shipped assemblies, documentation and source rather than from the model's memory
 - **aspire**: The .NET Aspire CLI's own MCP server, for inspecting the running application's resources, logs and traces
 - **playwright**: Browser automation, so the agent can drive and verify the running app
 

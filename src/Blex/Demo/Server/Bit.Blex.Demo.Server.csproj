@@ -1,0 +1,74 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+        <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+        <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
+        <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
+        <!-- InspectBlexStore compiles the submitted store and runs the generator over it. The version the
+             generator itself is built against, so the two can never disagree about the API between them. -->
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Client\Bit.Blex.Demo.Client.csproj" />
+        <!-- The rest of the public surface GetBlexApi reflects over; the client already brings Bit.Blex and Bit.Blex.Blazor. -->
+        <ProjectReference Include="..\..\Bit.Blex.Maui\Bit.Blex.Maui.csproj" />
+        <ProjectReference Include="..\..\Bit.Blex.Testing\Bit.Blex.Testing.csproj" />
+        <!-- A plain assembly reference, not an analyzer: InspectBlexStore runs the generator on demand,
+             and GetBlexDiagnostics reads its descriptors. -->
+        <ProjectReference Include="..\..\Bit.Blex.Generators\Bit.Blex.Generators.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The MCP tests reach the internal helpers the tools are built from. -->
+        <InternalsVisibleTo Include="Bit.Blex.Tests.Mcp" />
+    </ItemGroup>
+
+    <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep working
+         from a published deployment, where none of these files exist next to the app. LogicalName is set
+         explicitly because the resource name IS the path an MCP client asks for. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\README.md" LogicalName="BlexDocs/README.md" />
+
+        <!-- What this site can teach about state management, and nothing else of it: the stores, the services
+             and middleware, the registration and the components that show subscriptions. Site chrome - the
+             layout, the code highlighter, the page shell, the site map - answers no question about Blex. The
+             documentation pages among the components are dropped again at runtime by BlexSourceCatalog: their
+             prose is served rendered, by the docs tool. -->
+        <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\*.csproj"
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Layout\**;..\Client\Components\CodeHighlighter.cs;..\Client\Components\CodeBlock.razor;..\Client\Components\Callout.razor;..\Client\Components\ApiTable.razor;..\Client\Components\DocPage.razor;..\Client\Components\DemoCard.razor;..\Client\DocsNav.cs;..\Client\DiagnosticsCatalog.cs;..\Client\Services\ThemeService.cs;..\Client\Pages\NotFoundPage.razor;..\Client\Pages\ErrorPage.razor">
+            <LogicalName>BlexSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <EmbeddedResource Include="Program.cs" LogicalName="BlexSource/Demo/Server/Program.cs" />
+
+        <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**' matched. -->
+        <EmbeddedResource Include="Components\**\*.razor">
+            <LogicalName>BlexSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <!-- The minimal standalone WebAssembly sample, whole - it is the smallest complete Blex app there is. -->
+        <EmbeddedResource Include="..\..\Samples\Bit.Blex.Samples.Wasm\**\*.razor;..\..\Samples\Bit.Blex.Samples.Wasm\**\*.cs;..\..\Samples\Bit.Blex.Samples.Wasm\*.csproj"
+                          Exclude="..\..\Samples\Bit.Blex.Samples.Wasm\bin\**;..\..\Samples\Bit.Blex.Samples.Wasm\obj\**">
+            <LogicalName>BlexSource/Sample/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <!-- Named outright: %(RecursiveDir) only captures what a '**' matched, so the folder would be dropped. -->
+        <EmbeddedResource Include="..\..\Samples\Bit.Blex.Samples.Wasm\wwwroot\index.html" LogicalName="BlexSource/Sample/wwwroot/index.html" />
+    </ItemGroup>
+
+</Project>
