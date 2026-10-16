@@ -3,7 +3,7 @@
 Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`, `Bit.BlazorUI.Extras`,
 `Bit.BlazorUI.Assets`), newest version first, each with what to change in your code.
 
-## 10.7.0 (first shipped in 10.7.0-pre-01)
+## 10.7.0 (first shipped in 10.7.0-pre-02)
 
 ### `BitFullCalendarChangeNotifier` passes on whether to show the refusal notice ([#13827](https://github.com/bitfoundation/bitplatform/issues/13827))
 
