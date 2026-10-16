@@ -42,7 +42,7 @@ jobs:
   # Turns the inputs into the job matrix, so a run can be narrowed to one engine or one render mode.
   plan:
     name: plan the E2E matrix
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     outputs:
       browsers: ${{ steps.matrix.outputs.browsers }}
       modes: ${{ steps.matrix.outputs.modes }}
@@ -58,7 +58,7 @@ jobs:
   e2e-BlazorUI:
     needs: plan
     name: E2E ${{ matrix.browser }} / ${{ matrix.mode }}
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 180
 
     strategy:
@@ -80,7 +80,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -92,19 +92,19 @@ jobs:
     # The host builds the libraries it references (and their scripts and styles through npm) and the WebAssembly
     # client that holds the pages; the test project only needs Playwright and MSTest.
     - name: Build the E2E test host
-      run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost -f net10.0
+      run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost -f net11.0
 
     - name: Build the E2E tests
-      run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E -f net10.0
+      run: dotnet build $E2E_DIR/Bit.BlazorUI.Tests.E2E -f net11.0
 
     - name: Install the Playwright browser
-      run: pwsh $E2E_DIR/Bit.BlazorUI.Tests.E2E/bin/Debug/net10.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
+      run: pwsh $E2E_DIR/Bit.BlazorUI.Tests.E2E/bin/Debug/net11.0/playwright.ps1 install --with-deps ${{ matrix.browser }}
 
     # Started once for the whole run (the tests attach to a host already answering at E2E_HOST_URL), with its output
     # kept for the artifacts below.
     - name: Start the E2E test host
       run: |
-        nohup dotnet run --project $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost --no-build --framework net10.0 --urls $E2E_HOST_URL > host.log 2>&1 &
+        nohup dotnet run --project $E2E_DIR/Bit.BlazorUI.Tests.E2E.TestHost --no-build --framework net11.0 --urls $E2E_HOST_URL > host.log 2>&1 &
         for i in $(seq 1 120); do
           if curl -s -o /dev/null -w "%{http_code}" $E2E_HOST_URL/ | grep -q 200; then echo "host is up"; exit 0; fi
           sleep 1
@@ -119,7 +119,7 @@ jobs:
         cd $E2E_DIR/Bit.BlazorUI.Tests.E2E
         args=(--report-trx --results-directory "$GITHUB_WORKSPACE/e2e-results")
         if [ -n "$FILTER" ]; then args+=(--filter "$FILTER"); fi
-        dotnet exec bin/Debug/net10.0/Bit.BlazorUI.Tests.E2E.dll "${args[@]}"
+        dotnet exec bin/Debug/net11.0/Bit.BlazorUI.Tests.E2E.dll "${args[@]}"
 
     - name: Upload the test results
       if: always()

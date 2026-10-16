@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <!-- Matches the test host it drives: Debug builds the latest TFM only, CI passes
-             -p:BuildAllTfms=true to cover net9.0 and net8.0 as well. -->
-        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
+             -p:BuildAllTfms=true to cover net10.0, net9.0 and net8.0 as well. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net11.0</TargetFrameworks>
         <IsPackable>false</IsPackable>
         <LangVersion>14.0</LangVersion>
         <Nullable>enable</Nullable>
@@ -15,7 +15,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.11.0" />
         <!-- The plain Playwright package rather than Microsoft.Playwright.MSTest: that one is built against
              MSTest 2, whose attributes MSTest 4 can no longer load, so not a single test was discovered.
              E2ETestBase owns the browser and the page instead of inheriting them from PageTest. -->

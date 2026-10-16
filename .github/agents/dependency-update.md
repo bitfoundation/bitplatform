@@ -80,7 +80,7 @@ consumes a test project, so every band takes the newest patch of its own band. L
 
 **Version ranges stay.** `[8.0.0,9.0.0)` is a compatibility contract, not a pin.
 
-**`Bit.*` self-references track the in-development version**, currently `10.7.0-pre-01`. Never read
+**`Bit.*` self-references track the in-development version**, currently `11.0.0-pre-10`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -104,13 +104,14 @@ gh api "repos/<owner>/<repo>/git/trees/<sha>?recursive=1" --jq '[.tree[]|select(
 A non-zero count on a JavaScript action that vendors `node_modules` means it will not stage. This is
 worth checking for *any* action bump, not just this one — it is invisible in the release notes.
 
-**MAUI is held at 10.0.100** (`Microsoft.Maui.Controls` and `Components.WebView.Maui`, in the
-Boilerplate, the BlazorUI demo and the Butil sample). 10.0.101 bundles an `Svg.Skia` that calls a
-SkiaSharp overload missing from the SkiaSharp next to it, so the resizetizer fails with `MAUIR0001` /
-`MissingMethodException: SKImageFilter.CreateMatrixConvolution` on any SVG icon with a `<filter>`
-([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). Move only once that issue is
-closed and `dotnet build -f net10.0-ios` passes on the Boilerplate. `WebView.WindowsForms` has no
-resizetizer and is not held.
+**MAUI's resizetizer breaks on SVG filters.** From 10.0.101 and 11.0.0-rc.2 on, MAUI bundles an `Svg.Skia` that
+calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it resizes that has a `<filter>` fails
+the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
+([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). develop holds MAUI at 10.0.100 for it. On
+this branch MAUI can't stay behind: a MAUI built for an older preview doesn't compile against the newer
+preview's Android workload (CS1705 on `Java.Interop`). So MAUI follows the SDK here, and the app icons of the
+Boilerplate and the BlazorUI demo carry no drop shadow (their `<filter>`) until that issue is fixed; the Todo CD
+strips it from the icon it takes from the `TODO_ICON` variable.
 
 **`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
 (through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
@@ -120,10 +121,19 @@ the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinni
 `Xamarin.GooglePlayServices.Auth.Api.Phone` is held at 118.3.1 for the same reason: 118.3.1.1 pulls
 `GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0.
 
-**Linux runners are held at `ubuntu-24.04`**, in the GitHub workflows and the Azure DevOps `vmImage`.
-`ubuntu-26.04` defaults to JDK 25 (`(default)` in the image readme's Java table), and .NET for Android
-10 accepts up to 21 (`LatestSupportedJavaVersion` 21.0.99), so every Android build there fails. .NET 11
-raises the limit to 25.0.99; move the runners together with the .NET 11 move.
+**EF Core in the Boilerplate follows its PostgreSQL provider.** A preview of
+`Npgsql.EntityFrameworkCore.PostgreSQL` asks for one exact EF Core version, and a provider built for another
+one fails at runtime ("Method not found"). So the Boilerplate's EF Core stays on the version the newest Npgsql
+names, together with every package that requires it (`Microsoft.EntityFrameworkCore.*`,
+`Microsoft.AspNetCore.Identity.EntityFrameworkCore`, `Microsoft.AspNetCore.DataProtection.EntityFrameworkCore`,
+`Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore`) and its `dnx dotnet-ef` calls, while the
+rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was missed.
+
+**Linux runners are on `ubuntu-26.04`**, in the GitHub workflows and the Azure DevOps `vmImage`. It
+defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
+RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). develop stays on
+`ubuntu-24.04`, since .NET for Android 10 accepts up to 21, so a runner pin that comes over from develop moves
+to `ubuntu-26.04` here.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.

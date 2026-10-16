@@ -359,10 +359,10 @@ dotnet test --logger "console;verbosity=detailed"
 ### Playwright-Specific Commands:
 ```powershell
 # Install Playwright browsers (first time only)
-pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install
+pwsh src/Tests/bin/Debug/net11.0/playwright.ps1 install
 
 # Update Playwright browsers
-pwsh src/Tests/bin/Debug/net10.0/playwright.ps1 install --force
+pwsh src/Tests/bin/Debug/net11.0/playwright.ps1 install --force
 ```
 
 ---

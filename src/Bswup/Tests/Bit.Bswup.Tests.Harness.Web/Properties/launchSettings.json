@@ -4,7 +4,6 @@
       "commandName": "Project",
       "commandLineArgs": "--BswupHarness:Mode=wasm",
       "launchBrowser": true,
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "http://localhost:5390",
       "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
     },
@@ -12,7 +11,6 @@
       "commandName": "Project",
       "commandLineArgs": "--BswupHarness:Mode=wasm-noprerender",
       "launchBrowser": true,
-      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
       "applicationUrl": "http://localhost:5390",
       "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
     },

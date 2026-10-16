@@ -1199,7 +1199,7 @@ public class BitFullCalendarTests : BunitTestContext
     {
         // DateTimeFormat.Calendar is the documented way of switching the calendar of a culture: the name stays, and so
         // does CultureInfo.Calendar (the culture's default), so only the calendar the format reads tells the two apart.
-        var hijri = CultureInfo.GetCultureInfo("ar-SA");
+        var hijri = TestCultures.ArSaUmAlQura;
         var gregorian = (CultureInfo)hijri.Clone();
         gregorian.DateTimeFormat.Calendar = new GregorianCalendar();
         var anchor = new DateTime(2026, 3, 18);

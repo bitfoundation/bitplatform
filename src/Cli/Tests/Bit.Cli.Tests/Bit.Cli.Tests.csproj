@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsPackable>false</IsPackable>
@@ -14,7 +14,7 @@
     <ItemGroup>
         <PackageReference Include="MSTest" Version="4.5.1" />
         <PackageReference Include="Spectre.Console.Testing" Version="0.57.2" />
-        <PackageReference Include="OpenTelemetry.Exporter.InMemory" Version="1.19.1" />
+        <PackageReference Include="OpenTelemetry.Exporter.InMemory" Version="1.20.0" />
     </ItemGroup>
 
     <ItemGroup>
