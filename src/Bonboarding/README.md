@@ -740,8 +740,10 @@ exception.
 
 ### Running more than one tour
 
-Starting a tour cancels any other running one by default. To run several at once - a tour plus a
-persistent hint, say - opt out:
+Starting a tour cancels any other running one by default, including one that is still starting, so
+two starts that race each other (a double click, or a layout's `StartOnceAsync` alongside a page's
+`AutoStart`) leave exactly one session behind. To run several at once - a tour plus a persistent
+hint, say - opt out:
 
 ```csharp
 await BonboardingService.StartAsync(hint, new BonboardingStartOptions { StopOthers = false });
@@ -1987,9 +1989,10 @@ obstacle.
 
 The popover is a `role="dialog"` with `tabindex="-1"`, so it can receive focus.
 
-- `aria-labelledby` points at the step title when there is one; otherwise `aria-label` falls back to
-  `Labels.DialogLabel`, so the dialog is never unnamed.
-- `aria-describedby` points at the description when there is one.
+- `aria-labelledby` points at the step title when the default chrome renders one; otherwise the
+  title (then the tour title, then `Labels.DialogLabel`) is passed as `aria-label`, so the dialog is
+  never unnamed - not even behind a `Template`, a `ChildContent` or a step `Header` of your own.
+- `aria-describedby` points at the description when the default chrome renders one.
 - `aria-modal` is `true` only when `Interaction` is `Blocked`. In `TargetOnly` and `Free` the rest of
   the page really is available, and claiming otherwise would hide content a screen reader user can
   legitimately reach.
@@ -1998,12 +2001,16 @@ The popover is a `role="dialog"` with `tabindex="-1"`, so it can receive focus.
 
 - The element focused before the tour started is remembered and restored when it ends.
   `RestoreFocus = false` opts out.
-- Focus moves into the popover when a step is shown, once per step, after the content has rendered.
+- Focus moves into the popover when a step is shown, once per step, after the content has rendered
+  and the popover has been placed (it is hidden until its first measurement, and a hidden element
+  cannot take focus).
   It prefers an element marked `data-bonboarding-autofocus`, then the first focusable control, then the dialog
   itself. `AutoFocus = false` opts out.
-- Focus is trapped inside the popover while `TrapFocus` is on (the default). On a `TargetOnly` step
-  the trap also includes the highlighted element, so the user can Tab to the control the step is
-  asking them to use.
+- Focus is trapped inside the popover while `TrapFocus` is on (the default), and the setting is
+  honoured per step. On a `TargetOnly` step the trap also includes the highlighted element, so the
+  user can Tab to the control the step is asking them to use. On a `Free` step the trap only
+  applies while focus is already inside the popover: the rest of the page stays tabbable, which
+  is what `Free` promises.
 
 #### Keyboard
 

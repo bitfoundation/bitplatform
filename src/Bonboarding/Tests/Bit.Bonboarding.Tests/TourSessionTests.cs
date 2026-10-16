@@ -1,4 +1,5 @@
 ﻿using Bit.Bonboarding.Tests.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bit.Bonboarding.Tests;
 
@@ -838,7 +839,121 @@ public class TourSessionTests
         Assert.AreEqual(2, harness.Interop.AttachedSessions.Count);
     }
 
+    [TestMethod]
+    public async Task A_Tour_Started_By_An_Ending_Hook_Does_Not_Deadlock_The_Service()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a");
+
+        var followUp = new BonboardingTourDefinition { Id = "follow-up", Steps = [Step("a", "#a")] };
+        IBonboardingTourSession? followUpSession = null;
+
+        // The hook runs while the service is in the middle of starting the tour that cancelled
+        // this one; it must still be able to start a tour of its own.
+        var first = new BonboardingTourDefinition
+        {
+            Id = "first",
+            Steps = [Step("a", "#a")],
+            OnEnded = async _ => followUpSession = await harness.Service.StartAsync(followUp, new BonboardingStartOptions { StopOthers = false }),
+        };
+
+        await harness.Service.StartAsync(first);
+
+        var startSecond = harness.Service.StartAsync(new BonboardingTourDefinition { Id = "second", Steps = [Step("a", "#a")] });
+        var finished = await Task.WhenAny(startSecond, Task.Delay(TimeSpan.FromSeconds(5)));
+
+        Assert.AreSame(startSecond, finished, "StartAsync hung on its own gate.");
+
+        var second = await startSecond;
+        Assert.IsTrue(second.IsActive);
+        Assert.IsNotNull(followUpSession);
+        Assert.IsTrue(followUpSession.IsActive);
+        Assert.AreEqual(2, harness.Service.Sessions.Count);
+    }
+
+    [TestMethod]
+    public async Task Overlapping_Starts_Leave_Only_The_Last_Session_Live()
+    {
+        var store = new GatedStore();
+        await using var harness = new BonboardingHarness(configureServices: services => services.AddSingleton<IBonboardingStore>(store));
+        harness.WithElements("#a");
+
+        var tour = Tour(Step("a", "#a"));
+
+        // The first start is stuck reading saved progress, so its session is Idle: the window a
+        // double click on a "take the tour" button lands in. The second start finds it there and
+        // queues up to cancel it before starting its own session.
+        var first = harness.Service.StartAsync(tour);
+        var second = harness.Service.StartAsync(tour);
+        Assert.AreEqual(1, store.PendingReads);
+        Assert.IsFalse(second.IsCompleted);
+
+        store.Open();
+        var sessions = await Task.WhenAll(first, second);
+
+        Assert.AreEqual(BonboardingTourStatus.Cancelled, sessions[0].Status);
+        Assert.IsTrue(sessions[1].IsActive);
+        Assert.AreSame(sessions[1], harness.Service.Active);
+        Assert.ContainsSingle(harness.Service.Sessions);
+        Assert.ContainsSingle(harness.Interop.AttachedSessions);
+
+        // Ending the survivor must not resurrect anything.
+        await sessions[1].CompleteAsync();
+
+        Assert.IsNull(harness.Service.Active);
+        Assert.IsEmpty(harness.Interop.AttachedSessions);
+        Assert.IsTrue((await harness.Store.GetAsync(tour.Id))!.Completed);
+    }
+
+    [TestMethod]
+    public async Task StopAllAsync_Cancels_A_Session_That_Is_Still_Starting()
+    {
+        var store = new GatedStore();
+        await using var harness = new BonboardingHarness(configureServices: services => services.AddSingleton<IBonboardingStore>(store));
+        harness.WithElements("#a");
+
+        var starting = harness.Service.StartAsync(Tour(Step("a", "#a")));
+        Assert.AreEqual(1, store.PendingReads);
+
+        // Completed would write a completed record for a tour the user never went through; a
+        // session that was only starting when the stop arrived can only be cancelled. The stop
+        // queues behind the start, so the store is released before either is awaited.
+        var stopping = harness.Service.StopAllAsync(BonboardingTourEndReason.Completed);
+        Assert.IsFalse(stopping.IsCompleted);
+
+        store.Open();
+        await stopping;
+        var session = await starting;
+
+        Assert.AreEqual(BonboardingTourStatus.Cancelled, session.Status);
+        Assert.IsEmpty(harness.Service.Sessions);
+        Assert.IsEmpty(harness.Interop.AttachedSessions);
+        Assert.IsFalse((await harness.Store.GetAsync("test-tour"))?.Completed ?? false);
+    }
+
     // ---- Focus --------------------------------------------------------------
+
+    [TestMethod]
+    public async Task Each_Step_Tells_The_Browser_Layer_Whether_To_Trap_Focus()
+    {
+        await using var harness = new BonboardingHarness();
+        harness.WithElements("#a", "#b", "#c");
+
+        var free = Step("b", "#b");
+        free.TrapFocus = false;
+
+        var tour = Tour(Step("a", "#a"), free, Step("c", "#c"));
+        tour.TrapFocus = true;
+
+        var session = await harness.Service.StartAsync(tour);
+        Assert.IsTrue(harness.Interop.LastActivation!.TrapFocus);
+
+        await session.NextAsync();
+        Assert.IsFalse(harness.Interop.LastActivation!.TrapFocus);
+
+        await session.NextAsync();
+        Assert.IsTrue(harness.Interop.LastActivation!.TrapFocus);
+    }
 
     [TestMethod]
     public async Task Focus_Is_Captured_On_The_First_Step_And_Restored_At_The_End()

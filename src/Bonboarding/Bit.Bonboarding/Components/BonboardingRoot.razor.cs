@@ -218,8 +218,11 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
             await _session.SetPopoverElementAsync(null);
         }
 
-        // Move focus once per step, after the content for that step has actually rendered.
-        if (_step is not null && !_session.IsWaiting && _focusedStepId != _step.Id)
+        // Move focus once per step, after the content for that step has actually rendered and the
+        // popover has been placed. Until the first measurement lands the stylesheet keeps the popover
+        // hidden, and a hidden element cannot take focus, so focusing it then would be a silent no-op
+        // that is never retried.
+        if (_step is not null && !_session.IsWaiting && IsPlaced && _focusedStepId != _step.Id)
         {
             _focusedStepId = _step.Id;
             await _session.FocusPopoverAsync();
@@ -363,16 +366,38 @@ public sealed partial class BonboardingRoot : ComponentBase, IAsyncDisposable
             ";height:", BonboardingCss.Px(Math.Max(0, hole.Height))),
     };
 
+    /// <summary>
+    /// True while the popover shows the built-in chrome. A waiting card, a step or tour
+    /// <c>Template</c> and the host's <c>ChildContent</c> all replace it wholesale.
+    /// </summary>
+    private bool RendersDefaultChrome
+        => _session is { IsWaiting: false } && _step is { Template: null } && _session.Tour.Template is null && ChildContent is null;
+
+    /// <summary>
+    /// True only when the element <see cref="_titleId"/> names is actually in the markup: the
+    /// default chrome renders it, unless a step <c>Header</c> fragment takes the header's place.
+    /// An <c>aria-labelledby</c> that points at nothing leaves the dialog unnamed, so a title that
+    /// a template renders in its own way is passed as <c>aria-label</c> instead.
+    /// </summary>
+    private bool RendersTitleElement
+        => RendersDefaultChrome && _step is { Header: null } && !string.IsNullOrEmpty(_renderContext?.Title);
+
+    private bool RendersDescriptionElement
+        => RendersDefaultChrome && _step is { Body: null } && !string.IsNullOrEmpty(_renderContext?.Description);
+
     private string? AriaLabel
-        => string.IsNullOrEmpty(_renderContext?.Title)
-            ? string.IsNullOrEmpty(_session?.Tour.Title) ? _options?.Labels.DialogLabel : _session.Tour.Title
-            : null;
+    {
+        get
+        {
+            if (RendersTitleElement) return null;
+            if (!string.IsNullOrEmpty(_renderContext?.Title)) return _renderContext.Title;
+            return string.IsNullOrEmpty(_session?.Tour.Title) ? _options?.Labels.DialogLabel : _session.Tour.Title;
+        }
+    }
 
-    private string? AriaLabelledBy
-        => string.IsNullOrEmpty(_renderContext?.Title) ? null : _titleId;
+    private string? AriaLabelledBy => RendersTitleElement ? _titleId : null;
 
-    private string? AriaDescribedBy
-        => string.IsNullOrEmpty(_renderContext?.Description) ? null : _descriptionId;
+    private string? AriaDescribedBy => RendersDescriptionElement ? _descriptionId : null;
 
     public ValueTask DisposeAsync()
     {

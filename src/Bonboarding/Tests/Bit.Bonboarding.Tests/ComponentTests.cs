@@ -460,6 +460,45 @@ public class ComponentTests : BunitContext
     }
 
     [TestMethod]
+    public async Task A_Template_Still_Leaves_The_Dialog_Named_After_The_Step()
+    {
+        await BonboardingService.StartAsync(Tour(Step("a", "Create a project")));
+
+        RenderFragment<BonboardingStepRenderContext> template = context => builder =>
+            builder.AddMarkupContent(0, "<p class=\"custom\">No heading here</p>");
+
+        var cut = Render<BonboardingRoot>(parameters => parameters.Add(p => p.ChildContent, template));
+        var dialog = cut.Find("[role='dialog']");
+
+        // The template rendered no element with the title's id, so pointing aria-labelledby at it
+        // would leave the dialog unnamed. The title travels as aria-label instead.
+        Assert.AreEqual("Create a project", dialog.GetAttribute("aria-label"));
+        Assert.IsTrue(string.IsNullOrEmpty(dialog.GetAttribute("aria-labelledby")));
+        Assert.IsTrue(string.IsNullOrEmpty(dialog.GetAttribute("aria-describedby")));
+    }
+
+    [TestMethod]
+    public async Task A_Step_Header_Fragment_Moves_The_Title_To_Aria_Label()
+    {
+        var step = Step("a", "Create a project");
+        step.Header = _ => builder => builder.AddMarkupContent(0, "<div class=\"own-header\">Mine</div>");
+
+        await BonboardingService.StartAsync(Tour(step));
+
+        var cut = Render<BonboardingRoot>();
+        var dialog = cut.Find("[role='dialog']");
+
+        Assert.IsNotNull(cut.Find(".own-header"));
+        Assert.AreEqual("Create a project", dialog.GetAttribute("aria-label"));
+        Assert.IsTrue(string.IsNullOrEmpty(dialog.GetAttribute("aria-labelledby")));
+
+        // The default body is still rendered, so the description reference is still valid.
+        var describedBy = dialog.GetAttribute("aria-describedby");
+        Assert.IsFalse(string.IsNullOrEmpty(describedBy));
+        Assert.Contains("Description of a.", cut.Find($"#{describedBy}").TextContent);
+    }
+
+    [TestMethod]
     public async Task Unstyled_Drops_The_Built_In_Popover_Class()
     {
         await BonboardingService.StartAsync(Tour(Step("a")));
@@ -634,6 +673,41 @@ public class ComponentTests : BunitContext
         Assert.IsNotNull(_interop.Popover);
         Assert.IsTrue(_interop.TrapFocus);
         Assert.IsTrue(_interop.FocusPopoverCount > 0);
+    }
+
+    [TestMethod]
+    public async Task Focus_Moves_Into_The_Popover_Only_Once_It_Has_Been_Placed()
+    {
+        var session = await BonboardingService.StartAsync(Tour(Step("a"), Step("b", selector: "#b")));
+
+        var cut = Render<BonboardingRoot>();
+        var focusedOnFirstStep = _interop.FocusPopoverCount;
+        Assert.AreEqual(1, focusedOnFirstStep);
+
+        // Hold the browser's reply so the next step renders before it has been measured, as it
+        // does in a real browser: the popover is hidden until then, and a hidden element cannot
+        // take focus.
+        var measured = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _interop.DuringActivation = _ => measured.Task;
+
+        var next = session.NextAsync();
+
+        cut.WaitForAssertion(() =>
+        {
+            var popover = cut.Find(".bit-bonboarding-popover");
+            Assert.AreEqual("false", popover.GetAttribute("data-bonboarding-placed"));
+            Assert.AreEqual("b", cut.Find(".bit-bonboarding-title").TextContent);
+        });
+        Assert.AreEqual(focusedOnFirstStep, _interop.FocusPopoverCount, "Focused a popover that was still hidden.");
+
+        measured.SetResult();
+        await next;
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("true", cut.Find(".bit-bonboarding-popover").GetAttribute("data-bonboarding-placed"));
+            Assert.AreEqual(focusedOnFirstStep + 1, _interop.FocusPopoverCount);
+        });
     }
 
     [TestMethod]

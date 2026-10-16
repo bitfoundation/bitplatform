@@ -29,7 +29,6 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     private readonly object _sync = new();
     private readonly Dictionary<string, BonboardingTourDefinition> _registered = new(StringComparer.Ordinal);
     private readonly List<BonboardingTourSession> _sessions = [];
-    private readonly SemaphoreSlim _startGate = new(1, 1);
 
     private bool _disposed;
 
@@ -115,44 +114,38 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
             }
         }
 
-        BonboardingTourSession session;
+        // Starting does not register the tour: a definition built on the fly (one per user, say)
+        // would otherwise stay in RegisteredTours for the lifetime of the scope. Register it
+        // explicitly to make it startable by id.
+        var session = new BonboardingTourSession(
+            tour, _options, _interop, _store, _localizer, _navigation, _services,
+            _loggerFactory.CreateLogger<BonboardingTourSession>(), PublishAsync);
 
-        // The gate only covers the bookkeeping. Starting runs application hooks, and a hook that
-        // starts another tour would otherwise wait on a gate its own caller is holding.
-        await _startGate.WaitAsync(cancellationToken);
-        try
+        // The bookkeeping is one atomic step: the sessions to retire are chosen and the new one
+        // takes their place before anything is awaited, so two starts racing each other (a double
+        // click, or a layout's StartOnceAsync alongside a page's AutoStart) cannot both survive.
+        // A session that is still starting counts as well: it is Idle until the browser and the
+        // store have answered, and that is exactly the window such a race falls into.
+        BonboardingTourSession[] superseded;
+        lock (_sync)
         {
-            if (startOptions.StopOthers)
-            {
-                await StopRunningSessionsAsync(BonboardingTourEndReason.Cancelled);
-            }
-
-            // Restarting a tour that is already running should not leave the old session attached.
-            BonboardingTourSession? existing;
-            lock (_sync) existing = _sessions.FirstOrDefault(s => s.Tour.Id == tour.Id && s.IsLive);
-
-            if (existing is not null)
-            {
-                await existing.CancelAsync(CancellationToken.None);
-            }
-
-            // Starting does not register the tour: a definition built on the fly (one per user, say)
-            // would otherwise stay in RegisteredTours for the lifetime of the scope. Register it
-            // explicitly to make it startable by id.
-            session = new BonboardingTourSession(
-                tour, _options, _interop, _store, _localizer, _navigation, _services,
-                _loggerFactory.CreateLogger<BonboardingTourSession>(), PublishAsync);
+            superseded = _sessions
+                .Where(s => !s.IsFinished && (startOptions.StopOthers || s.Tour.Id == tour.Id))
+                .ToArray();
 
             session.Changed += OnSessionChanged;
-            lock (_sync) _sessions.Add(session);
+            _sessions.Add(session);
             Active = session;
-        }
-        finally
-        {
-            _startGate.Release();
         }
 
         RaiseSessionsChanged();
+
+        // Ending a session runs application code (observers, OnEnded), and that code may start
+        // another tour. It runs outside every lock this service holds so that it can.
+        foreach (var old in superseded)
+        {
+            await old.CancelAsync(CancellationToken.None);
+        }
 
         await session.StartAsync(startOptions, cancellationToken);
         return session;
@@ -222,13 +215,15 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
 
     private async Task StopRunningSessionsAsync(BonboardingTourEndReason reason)
     {
-        // Paused sessions are still running as far as the application is concerned.
-        BonboardingTourSession[] live;
-        lock (_sync) live = _sessions.Where(s => s.IsLive).ToArray();
+        // Paused sessions are still running as far as the application is concerned. A session that
+        // is still starting is stopped too, but only ever as cancelled: it has shown nothing, so it
+        // has nothing to complete, skip or dismiss.
+        BonboardingTourSession[] unfinished;
+        lock (_sync) unfinished = _sessions.Where(s => !s.IsFinished).ToArray();
 
-        foreach (var session in live)
+        foreach (var session in unfinished)
         {
-            switch (reason)
+            switch (session.IsLive ? reason : BonboardingTourEndReason.Cancelled)
             {
                 case BonboardingTourEndReason.Completed:
                     await session.CompleteAsync(CancellationToken.None);
@@ -417,6 +412,5 @@ internal sealed class BonboardingService : IBonboardingService, IDisposable, IAs
     private void Cleanup()
     {
         Active = null;
-        _startGate.Dispose();
     }
 }

@@ -116,6 +116,37 @@ internal sealed class TokenRecordingStore : IBonboardingStore
         => _inner.ClearAsync(cancellationToken);
 }
 
+/// <summary>
+/// An in-memory store whose reads wait until the test lets them through, which holds a starting
+/// session in its Idle state for as long as a test needs to race something against it.
+/// </summary>
+internal sealed class GatedStore : IBonboardingStore
+{
+    private readonly BonboardingInMemoryStore _inner = new();
+    private readonly TaskCompletionSource _gate = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    public int PendingReads { get; private set; }
+
+    public void Open() => _gate.TrySetResult();
+
+    public async ValueTask<BonboardingRecord?> GetAsync(string tourId, CancellationToken cancellationToken = default)
+    {
+        PendingReads++;
+        await _gate.Task.WaitAsync(cancellationToken);
+        PendingReads--;
+        return await _inner.GetAsync(tourId, cancellationToken);
+    }
+
+    public ValueTask SetAsync(BonboardingRecord record, CancellationToken cancellationToken = default)
+        => _inner.SetAsync(record, cancellationToken);
+
+    public ValueTask RemoveAsync(string tourId, CancellationToken cancellationToken = default)
+        => _inner.RemoveAsync(tourId, cancellationToken);
+
+    public ValueTask ClearAsync(CancellationToken cancellationToken = default)
+        => _inner.ClearAsync(cancellationToken);
+}
+
 /// <summary>Collects every event the service publishes, for assertions on analytics behaviour.</summary>
 internal sealed class RecordingObserver : IBonboardingObserver
 {

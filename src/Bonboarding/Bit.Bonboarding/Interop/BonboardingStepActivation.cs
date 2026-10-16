@@ -35,5 +35,11 @@ public sealed record BonboardingStepActivation
 
     public bool KeyboardNavigation { get; init; }
 
+    /// <summary>
+    /// Keep <c>Tab</c> inside the popover (plus the target on a <c>target</c> step) while the tour
+    /// owns the keyboard. Sent with every step, since a step may override the tour's setting.
+    /// </summary>
+    public bool TrapFocus { get; init; }
+
     public BonboardingAdvanceTriggerDescriptor? AdvanceOn { get; init; }
 }

@@ -721,6 +721,7 @@ internal sealed class BonboardingTourSession : IBonboardingTourSession, IBonboar
             },
             CloseOnEscape = options.CloseOnEscape,
             KeyboardNavigation = options.KeyboardNavigation,
+            TrapFocus = options.TrapFocus,
             AdvanceOn = step.AdvanceOn is { } trigger
                 ? new BonboardingAdvanceTriggerDescriptor
                 {

@@ -47,6 +47,8 @@ interface StepActivation {
     interaction: 'blocked' | 'target' | 'free';
     closeOnEscape: boolean;
     keyboardNavigation: boolean;
+    // Per step: a step may switch the trap off that its tour switched on, and the other way round.
+    trapFocus: boolean;
     advanceOn?: AdvanceTriggerDescriptor | null;
 }
 
@@ -198,6 +200,7 @@ export async function activateStep(spec: StepActivation): Promise<StepGeometry> 
 
     clearStep(session);
     session.spec = spec;
+    session.trapFocus = !!spec.trapFocus;
 
     const elements = resolveAll(spec);
 
@@ -262,7 +265,11 @@ export function setPopover(sessionId: string, element: HTMLElement | null, trapF
     if (!session) return;
 
     session.popover = element || null;
-    session.trapFocus = !!trapFocus;
+
+    // The popover is registered once per tour, so the value sent here is only right for the step
+    // that was current at the time. Each activation brings its own; this one is kept for the gap
+    // before the first activation lands.
+    if (!session.spec) session.trapFocus = !!trapFocus;
 
     if (session.resizeObserver && session.popover) {
         session.resizeObserver.observe(session.popover);
@@ -717,15 +724,16 @@ function attachKeyboard(session: Session, spec: StepActivation) {
     const listener = (event: KeyboardEvent) => {
         if (session.disposed) return;
 
-        if (event.key === 'Tab' && session.trapFocus && session.popover) {
-            trapTab(session, spec, event);
+        // The page beyond the tour belongs to the application. While it is usable (free or
+        // target-only interaction) and focus is out there, Tab, Escape and the arrow keys are left
+        // for the application's own forms, menus, dialogs and widgets. The trap in particular must
+        // not pull a user who is tabbing through a form on a free step into the popover.
+        if (!ownsKeyboard(session, spec, event.target)) return;
+
+        if (event.key === 'Tab') {
+            if (session.trapFocus && session.popover) trapTab(session, spec, event);
             return;
         }
-
-        // The page beyond the tour belongs to the application. While it is usable (free or
-        // target-only interaction) and focus is out there, Escape and the arrow keys are left for
-        // the application's own menus, dialogs and widgets.
-        if (!ownsKeyboard(session, spec, event.target)) return;
 
         if (event.key === 'Escape' && spec.closeOnEscape) {
             event.preventDefault();
@@ -751,7 +759,8 @@ function attachKeyboard(session: Session, spec: StepActivation) {
 
 /**
  * True when a key press is the tour's to handle: the page is blocked, so nothing else can be
- * focused, or focus is inside the popover, or nothing in particular has focus.
+ * focused, or focus is inside the popover (or inside the target of a target-only step, which the
+ * focus trap spans as well), or nothing in particular has focus.
  */
 function ownsKeyboard(session: Session, spec: StepActivation, target: EventTarget | null): boolean {
     if (spec.interaction === 'blocked') return true;
@@ -759,7 +768,9 @@ function ownsKeyboard(session: Session, spec: StepActivation, target: EventTarge
     const node = target as Node | null;
     if (!node || node === document.body || node === document.documentElement || node === document) return true;
 
-    return !!session.popover && session.popover.contains(node);
+    if (!!session.popover && session.popover.contains(node)) return true;
+
+    return spec.interaction === 'target' && session.targets.some((element) => element.contains(node));
 }
 
 function isTextEntry(target: EventTarget | null): boolean {

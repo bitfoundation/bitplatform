@@ -38,7 +38,9 @@ public interface IBonboardingInterop : IAsyncDisposable
 
     /// <summary>
     /// Tells the browser layer which element is the popover, so it can be measured and, when
-    /// requested, act as a focus trap.
+    /// requested, act as a focus trap. <paramref name="trapFocus"/> covers the gap before the first
+    /// step is activated; from then on every <see cref="BonboardingStepActivation.TrapFocus"/>
+    /// carries the setting of its own step.
     /// </summary>
     ValueTask SetPopoverAsync(string sessionId, ElementReference? popover, bool trapFocus, CancellationToken cancellationToken = default);
 
