@@ -1,0 +1,26 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="CLAUDE.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.BevTools.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.BevTools.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/docs/">
+    <File Path="docs/architecture.md" />
+    <File Path="docs/capabilities.md" />
+    <File Path="docs/performance.md" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.BevTools.Benchmarks/Bit.BevTools.Benchmarks.csproj" />
+    <Project Path="Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
+  </Folder>
+  <Project Path="Bit.BevTools/Bit.BevTools.csproj" />
+  <Project Path="Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj" />
+  <Project Path="Bit.BevTools.Server/Bit.BevTools.Server.csproj" />
+</Solution>

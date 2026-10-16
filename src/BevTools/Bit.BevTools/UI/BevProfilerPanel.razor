@@ -1,0 +1,255 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-split">
+    <div class="bev-left" style="flex-basis:62%">
+        <div class="bev-toolbar">
+            <input type="text" aria-label="Filter profiler" placeholder='Filter: name, "renders>20", "sort:max|total|renders|avg|last|instances"' value="@Query" @oninput="OnQuery" />
+            <label title="Aggregate all instances of a type into one row: the only way to see what 500 rows of a list cost together"><input type="checkbox" aria-label="Group by type" checked="@_byType" @onchange='e => { _byType = e.Value is true; OnParametersSet(); }' /> by type</label>
+            <label><input type="checkbox" checked="@_includeDisposed" @onchange='e => { _includeDisposed = e.Value is true; OnParametersSet(); }' /> disposed</label>
+            <button type="button" aria-label="Reset profiler baseline" title="Start a new profiling window: counts and times restart from zero for every component (raw totals are kept). Reset, perform one interaction, read what rendered." @onclick="ResetBaseline">⟲ Reset</button>
+            @if (_baselineAt is { } baseline)
+            {
+                <label title="Show only what happened since the last reset (@BevFmt.Time(baseline))"><input type="checkbox" aria-label="Since baseline" checked="@_sinceBaseline" @onchange='e => { _sinceBaseline = e.Value is true; OnParametersSet(); }' /> since reset @BevFmt.Ago(baseline)</label>
+            }
+            <span class="bev-muted bev-nowrap">@_rows.Count @(_byType ? "types" : "components") · @Session.RenderTracker.BatchCount batches</span>
+        </div>
+        <div class="bev-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th class="bev-sortable" @onclick='() => Sort("name")'>@(_byType ? "Type" : "Component")</th>
+                        @if (_byType)
+                        {
+                            <th class="bev-num bev-sortable" @onclick='() => Sort("instances")'>Instances</th>
+                        }
+                        <th class="bev-num bev-sortable" @onclick='() => Sort("renders")'>Renders</th>
+                        <th class="bev-num bev-sortable" @onclick='() => Sort("total")'>Total</th>
+                        <th class="bev-num bev-sortable" @onclick='() => Sort("avg")'>Avg</th>
+                        <th class="bev-num bev-sortable" @onclick='() => Sort("max")'>Max</th>
+                        @if (!_byType)
+                        {
+                            <th class="bev-num bev-sortable" @onclick='() => Sort("last")'>Last</th>
+                        }
+                        <th>@(_byType ? "Causes" : "Last cause")</th>
+                        <th style="width:120px"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <Virtualize Items="_rows" ItemSize="23" Context="r" SpacerElement="tr">
+                        <tr class="bev-row @(!_byType && Ui.SelectedComponentId == r.InstanceId ? "bev-selected" : "")" @onclick="() => Open(r)">
+                            <td class="bev-mono bev-truncate" style="max-width:220px" title="@r.TypeName">@r.DisplayName @(r.IsDisposed ? "†" : "")</td>
+                            @if (_byType)
+                            {
+                                <td class="bev-num">@r.Instances</td>
+                            }
+                            <td class="bev-num">@r.RenderCount</td>
+                            <td class="bev-num">@BevFmt.Ms(r.TotalRenderMs)</td>
+                            <td class="bev-num">@BevFmt.Ms(r.AverageRenderMs)</td>
+                            <td class="bev-num @(r.MaxRenderMs >= Session.Options.Diagnostics.SlowRenderMs ? "bev-err" : "")">@BevFmt.Ms(r.MaxRenderMs)</td>
+                            @if (!_byType)
+                            {
+                                <td class="bev-num">@BevFmt.Ms(r.LastRenderMs)</td>
+                            }
+                            <td class="bev-truncate bev-muted" style="max-width:260px" title="@r.LastCause">@r.LastCause</td>
+                            <td><span class="bev-bar" style="width:@(Math.Max(1, 110 * r.TotalRenderMs / Math.Max(0.001, _maxTotal)))px"></span></td>
+                        </tr>
+                    </Virtualize>
+                </tbody>
+            </table>
+            @if (_rows.Count == 0)
+            {
+                <div class="bev-empty">@(_sinceBaseline ? "Nothing rendered since the baseline was reset." : "No renders captured yet.")</div>
+            }
+        </div>
+    </div>
+    <div class="bev-right">
+        <div class="bev-section">
+            <div class="bev-section-title">Recent render batches <span class="bev-muted" style="font-weight:normal">(one batch = one DOM diff; click to open)</span></div>
+            <div class="bev-section-body">
+                <table>
+                    <thead><tr><th>Time</th><th>Batch</th><th class="bev-num">Components</th><th class="bev-num">Build</th><th>Diff</th><th>Trigger</th></tr></thead>
+                    <tbody>
+                        @foreach (var b in _batches)
+                        {
+                            <tr class="bev-row @(b.Severity == BevToolsSeverity.Warning ? "bev-sev-warning" : "")" @onclick="() => Host.SelectEvent(b.Id)">
+                                <td class="bev-mono">@BevFmt.Time(b.Timestamp)</td>
+                                <td>@b.Title</td>
+                                <td class="bev-num">@(b.TryGetData("count", out var batchCount) ? batchCount : "…")</td>
+                                <td class="bev-num">@BevFmt.Ms(b.DurationMs)</td>
+                                <td class="bev-muted bev-truncate" style="max-width:200px">@DiffSummary(b.Detail)</td>
+                                <td class="bev-truncate" style="max-width:200px">@(b.ParentEventId is { } p ? Session.Timeline.Find(p)?.Title : "")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="bev-section">
+            <div class="bev-section-title">Lifecycle cost per type <span class="bev-muted" style="font-weight:normal">(SetParametersAsync incl. OnInitialized/OnParametersSet; .NET 10 metrics)</span></div>
+            <div class="bev-section-body">
+                @if (_typeMetrics.Length == 0)
+                {
+                    <div class="bev-muted">@(ActivityObserver.LifecycleMetricsObserved ? "Nothing measured yet." : "Not observed on this host. Requires .NET 10 components metrics (IMeterFactory registered).")</div>
+                }
+                else
+                {
+                    <table>
+                        <thead><tr><th>Type</th><th class="bev-num">Param updates</th><th class="bev-num">Total</th><th class="bev-num">Max</th><th class="bev-num">Events</th><th class="bev-num">Event time</th></tr></thead>
+                        <tbody>
+                            @foreach (var m in _typeMetrics)
+                            {
+                                <tr><td class="bev-mono">@m.TypeName</td><td class="bev-num">@m.ParameterUpdates</td><td class="bev-num">@BevFmt.Ms(m.ParameterUpdateMs)</td><td class="bev-num">@BevFmt.Ms(m.MaxParameterUpdateMs)</td><td class="bev-num">@m.EventHandlers</td><td class="bev-num">@BevFmt.Ms(m.EventHandlerMs)</td></tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>One row: an instance, or (grouped) every instance of a type. <see cref="InstanceId"/> is null for a group.</summary>
+    private sealed record Row(long? InstanceId, string DisplayName, string TypeName, int Instances, int RenderCount, double TotalRenderMs, double AverageRenderMs, double MaxRenderMs, double LastRenderMs, string? LastCause, bool IsDisposed);
+
+    private string? Query => Ui.GetQuery("profiler");
+
+    private List<Row> _rows = [];
+    private BevToolsEvent[] _batches = [];
+    private BevLifecycleTypeMetrics[] _typeMetrics = [];
+    private double _maxTotal;
+    private DateTimeOffset? _baselineAt;
+
+    /// <summary>Shows only the diffing part of a batch detail, and nothing at all when the diff was never measured.</summary>
+    private static string DiffSummary(string? detail)
+    {
+        if (detail is null)
+        {
+            return "–";
+        }
+
+        var index = detail.IndexOf("ms building", StringComparison.Ordinal);
+        if (index < 0 || !detail.Contains("diffing", StringComparison.Ordinal))
+        {
+            return "–";
+        }
+
+        return detail[(index + "ms building, ".Length)..];
+    }
+
+    private bool _includeDisposed;
+    private bool _byType;
+    private bool _sinceBaseline;
+    private string _sort = "total";
+
+    protected override void OnParametersSet()
+    {
+        _baselineAt = Session.Components.BaselineAt;
+        if (_baselineAt is null)
+        {
+            _sinceBaseline = false;
+        }
+
+        var filter = BevQueryFilter.Parse(Query);
+        var sort = filter.Token("sort") ?? _sort;
+        var minRenders = filter.IntToken("renders>") ?? 0;
+        var since = _sinceBaseline;
+        var components = Session.Components.All
+            .Where(c => !c.IsBevTools && !c.IsHidden && (_includeDisposed || !c.IsDisposed))
+            .Where(c => filter.MatchesText(c.DisplayName, c.TypeName))
+            .Select(c => (Record: c, Renders: since ? c.RendersSinceBaseline : c.RenderCount, Ms: since ? c.RenderMsSinceBaseline : c.TotalRenderMs, Max: since ? c.MaxRenderMsSinceBaseline : c.MaxRenderMs))
+            .Where(c => c.Renders > 0 && c.Renders > minRenders);
+
+        IEnumerable<Row> rows;
+        if (_byType)
+        {
+            rows = components
+                .GroupBy(c => c.Record.TypeName)
+                .Select(g =>
+                {
+                    var renders = g.Sum(c => c.Renders);
+                    var total = g.Sum(c => c.Ms);
+                    // Which rule explained the renders of this type, most common first: "412 parent · 9 event". Read from
+                    // per-instance counters, so the breakdown adds up to the Renders column and no sample is copied.
+                    var causes = Causes
+                        .Select(cause => (Cause: cause, Count: g.Sum(c => c.Record.RendersByCause(cause, since))))
+                        .Where(x => x.Count > 0)
+                        .OrderByDescending(x => x.Count)
+                        .Select(x => x.Count + " " + CauseLabel(x.Cause));
+                    return new Row(null, g.First().Record.DisplayName, g.Key, g.Count(), renders, total, renders == 0 ? 0 : total / renders, g.Max(c => c.Max), 0, string.Join(" · ", causes), g.All(c => c.Record.IsDisposed));
+                });
+        }
+        else
+        {
+            rows = components.Select(c => new Row(c.Record.InstanceId, c.Record.DisplayName, c.Record.TypeName, 1, c.Renders, c.Ms, c.Ms / c.Renders, c.Max, c.Record.LastRenderMs, c.Record.LastRender?.CauseDetail, c.Record.IsDisposed));
+        }
+
+        rows = sort switch
+        {
+            "name" => rows.OrderBy(r => r.DisplayName),
+            "instances" => rows.OrderByDescending(r => r.Instances),
+            "renders" => rows.OrderByDescending(r => r.RenderCount),
+            "avg" => rows.OrderByDescending(r => r.AverageRenderMs),
+            "max" => rows.OrderByDescending(r => r.MaxRenderMs),
+            "last" => rows.OrderByDescending(r => r.LastRenderMs),
+            _ => rows.OrderByDescending(r => r.TotalRenderMs),
+        };
+        _rows = rows.ToList();
+        _maxTotal = _rows.Count == 0 ? 0 : _rows.Max(r => r.TotalRenderMs);
+        _batches = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.RenderBatch).Reverse().Take(25).ToArray();
+        _typeMetrics = Session.TypeMetrics.Values.OrderByDescending(m => m.ParameterUpdateMs + m.EventHandlerMs).Take(30).ToArray();
+    }
+
+    private static readonly BevRenderCause[] Causes = Enum.GetValues<BevRenderCause>();
+
+    private static string CauseLabel(BevRenderCause cause) => cause switch
+    {
+        BevRenderCause.ParentRender => "parent",
+        BevRenderCause.UiEvent => "event",
+        BevRenderCause.StateHasChanged => "StateHasChanged",
+        BevRenderCause.Navigation => "navigation",
+        BevRenderCause.Initial => "initial",
+        _ => "unknown",
+    };
+
+    private void Open(Row row)
+    {
+        if (row.InstanceId is { } id)
+        {
+            Host.SelectComponent(id);
+        }
+        else
+        {
+            // A type row: switch to instances filtered to that type, so the developer can pick the offender.
+            _byType = false;
+            Ui.SetQuery("profiler", row.DisplayName);
+            OnParametersSet();
+        }
+    }
+
+    private void ResetBaseline()
+    {
+        Session.Components.MarkBaseline();
+        _sinceBaseline = true;
+        OnParametersSet();
+    }
+
+    private void OnQuery(ChangeEventArgs e)
+    {
+        Ui.SetQuery("profiler", e.Value?.ToString());
+        OnParametersSet();
+    }
+
+    private void Sort(string key)
+    {
+        _sort = key;
+        var filter = BevQueryFilter.Parse(Query);
+        if (filter.Tokens.ContainsKey("sort"))
+        {
+            Ui.SetQuery("profiler", string.Join(' ', (Query ?? "").Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(p => !p.StartsWith("sort:", StringComparison.OrdinalIgnoreCase))));
+        }
+
+        OnParametersSet();
+    }
+}

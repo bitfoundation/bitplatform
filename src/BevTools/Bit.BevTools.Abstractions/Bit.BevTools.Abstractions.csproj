@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <RootNamespace>Bit.BevTools</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsTrimmable>true</IsTrimmable>
+        <PackageDescription>The public integration contract of bit BevTools: timeline events, state providers, diagnostic rules, commands, panels and capability descriptors. Has no Blazor dependency, so a library can expose itself to BevTools without referencing it.</PackageDescription>
+        <PackageTags>$(PackageTags);Blazor;devtools;diagnostics</PackageTags>
+    </PropertyGroup>
+
+</Project>

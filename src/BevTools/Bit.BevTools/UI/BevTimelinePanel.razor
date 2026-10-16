@@ -1,0 +1,293 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-split">
+    <div class="bev-left" style="flex-basis:58%">
+        <div class="bev-toolbar">
+            <input type="text" placeholder='Filter: text, kind:render, component:12, severity:error, id:45' value="@Query" @oninput="OnQuery" />
+            <button type="button" @onclick="() => Session.Timeline.Clear()" title="Clear timeline">Clear</button>
+            <label><input type="checkbox" checked="@_showLanes" @onchange='e => { _showLanes = e.Value is true; OnParametersSet(); }' /> lanes</label>
+            <span class="bev-muted bev-nowrap">@_events.Count / @_all.Length</span>
+        </div>
+        <div class="bev-chips" style="padding:3px 6px; border-bottom:1px solid var(--bev-border)">
+            @foreach (var kind in Kinds)
+            {
+                var k = kind;
+                <button type="button" class="bev-chip @(Ui.HiddenTimelineKinds.Contains(k) ? "bev-off" : "bev-on")" @onclick="() => ToggleKind(k)">@BevFmt.KindLabel(k)</button>
+            }
+        </div>
+        @if (_showLanes)
+        {
+            <div class="bev-lanes" title="Last @WindowSeconds seconds; click a bar to select">
+                <svg viewBox="0 0 1000 96" preserveAspectRatio="none">
+                    @for (var i = 0; i < Lanes.Length; i++)
+                    {
+                        var y = i * 16;
+                        @((MarkupString)$"<text x=\"2\" y=\"{y + 11}\" font-size=\"9\" fill=\"var(--bev-fg2)\" font-family=\"var(--bev-sans)\">{Lanes[i].Label}</text>")
+                        <line x1="0" x2="1000" y1="@(y + 15.5)" y2="@(y + 15.5)" stroke="var(--bev-border)" stroke-width="0.5" />
+                    }
+                    @foreach (var bar in _bars)
+                    {
+                        <rect x="@bar.X.ToString(System.Globalization.CultureInfo.InvariantCulture)" y="@(bar.Lane * 16 + 3)" width="@bar.W.ToString(System.Globalization.CultureInfo.InvariantCulture)" height="10" fill="@bar.Color" opacity="@(bar.Selected ? "1" : "0.8")" stroke="@(bar.Selected ? "var(--bev-fg)" : "none")" @onclick="() => Select(bar.Id)"><title>@bar.Title</title></rect>
+                    }
+                </svg>
+            </div>
+        }
+        <div class="bev-scroll">
+            @if (_events.Count == 0)
+            {
+                <div class="bev-empty">No events match.</div>
+            }
+            else
+            {
+                <Virtualize Items="_events" ItemSize="22" Context="e" OverscanCount="30">
+                    <div class="bev-ev-row @(Ui.SelectedEventId == e.Id ? "bev-selected" : "") @BevFmt.SevClass(e.Severity)" @onclick="() => Select(e.Id)" title="@e.Detail">
+                        <span class="bev-time">@BevFmt.Time(e.Timestamp)</span>
+                        <span class="@BevFmt.KindClass(e.Kind)">@BevFmt.KindLabel(e.Kind)</span>
+                        <span class="bev-ev-title">@e.Title @if (e.ComponentName is not null && e.Kind != BevToolsEventKind.Render) { <span class="bev-muted">· @e.ComponentName</span> }</span>
+                        <span class="bev-ev-dur">@(e.DurationMs is null ? "" : BevFmt.Ms(e.DurationMs))</span>
+                    </div>
+                </Virtualize>
+            }
+        </div>
+    </div>
+    <div class="bev-right">
+        @if (_selected is { } s)
+        {
+            <div class="bev-section">
+                <div class="bev-section-title"><span class="@BevFmt.KindClass(s.Kind)">@BevFmt.KindLabel(s.Kind)</span> @s.Title</div>
+                <div class="bev-section-body">
+                    <dl class="bev-kv">
+                        <dt>Time</dt><dd>@BevFmt.Time(s.Timestamp) <span class="bev-muted">@BevFmt.Rel(s.Timestamp, Session.StartedAt) since session start</span></dd>
+                        <dt>Duration</dt><dd>@(s.DurationMs is null ? "n/a" : BevFmt.Ms(s.DurationMs))</dd>
+                        <dt>Category</dt><dd class="bev-mono">@s.Category</dd>
+                        <dt>Severity</dt><dd>@s.Severity</dd>
+                        @if (s.Detail is not null)
+                        {
+                            <dt>Detail</dt><dd>@s.Detail</dd>
+                        }
+                        @if (s.ComponentInstanceId is { } cid)
+                        {
+                            <dt>Component</dt><dd><button type="button" class="bev-link" @onclick="() => Host.SelectComponent(cid)">@s.ComponentName #@cid</button></dd>
+                        }
+                        @if (s.Data is { Count: > 0 })
+                        {
+                            <dt>Data</dt><dd><BevValueTree Root="s.Data" Name="data" Inspector="Session.Inspector" ChildrenOnly="true" /></dd>
+                        }
+                    </dl>
+                    @if (s.Data?.TryGetValue("errorId", out var errorId) == true && errorId is long eid)
+                    {
+                        <button type="button" @onclick="() => Host.SelectError(eid)">Open error ↗</button>
+                    }
+                    @if (s.Data?.TryGetValue("requestId", out var requestId) == true && requestId is long rid)
+                    {
+                        <button type="button" @onclick="() => Host.SelectHttp(rid)">Open request ↗</button>
+                    }
+                </div>
+            </div>
+            <div class="bev-section">
+                <div class="bev-section-title">Caused by</div>
+                <div class="bev-section-body">
+                    @if (_ancestors.Count == 0)
+                    {
+                        <div class="bev-muted">No known trigger (not inside a UI event, navigation or parent render).</div>
+                    }
+                    @foreach (var a in _ancestors)
+                    {
+                        <div><button type="button" class="bev-link" @onclick="() => Select(a.Id)"><span class="@BevFmt.KindClass(a.Kind)">@BevFmt.KindLabel(a.Kind)</span> @a.Title</button> <span class="bev-muted">@BevFmt.Time(a.Timestamp)</span></div>
+                    }
+                </div>
+            </div>
+            <div class="bev-section">
+                <div class="bev-section-title">Caused (@_children.Count)</div>
+                <div class="bev-section-body">
+                    @if (_children.Count == 0)
+                    {
+                        <div class="bev-muted">Nothing attributed to this event.</div>
+                    }
+                    @foreach (var c in _children.Take(200))
+                    {
+                        <div><button type="button" class="bev-link" @onclick="() => Select(c.Id)"><span class="@BevFmt.KindClass(c.Kind)">@BevFmt.KindLabel(c.Kind)</span> @c.Title</button> <span class="bev-muted">@(c.DurationMs is null ? "" : BevFmt.Ms(c.DurationMs))</span></div>
+                    }
+                </div>
+            </div>
+            <div class="bev-section">
+                <div class="bev-section-title">Just before</div>
+                <div class="bev-section-body">
+                    @foreach (var b in _before)
+                    {
+                        <div><button type="button" class="bev-link" @onclick="() => Select(b.Id)"><span class="@BevFmt.KindClass(b.Kind)">@BevFmt.KindLabel(b.Kind)</span> @b.Title</button> <span class="bev-muted">@BevFmt.Time(b.Timestamp)</span></div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="bev-empty">Select an event to see what caused it and what it caused.</div>
+        }
+    </div>
+</div>
+
+@code {
+    private sealed record Bar(long Id, int Lane, double X, double W, string Color, string Title, bool Selected);
+
+    private static readonly BevToolsEventKind[] Kinds = Enum.GetValues<BevToolsEventKind>();
+
+    private static readonly (string Label, BevToolsEventKind[] Kinds, string Color)[] Lanes =
+    [
+        ("event", [BevToolsEventKind.UiEvent, BevToolsEventKind.Navigation], "var(--bev-event)"),
+        ("render", [BevToolsEventKind.Render, BevToolsEventKind.RenderBatch], "var(--bev-render)"),
+        ("state", [BevToolsEventKind.StateChange], "var(--bev-state)"),
+        ("http", [BevToolsEventKind.Http], "var(--bev-http)"),
+        ("js", [BevToolsEventKind.JsInterop], "var(--bev-js)"),
+        ("error", [BevToolsEventKind.Error, BevToolsEventKind.Diagnostic, BevToolsEventKind.Circuit, BevToolsEventKind.Browser, BevToolsEventKind.Lifecycle, BevToolsEventKind.Custom], "var(--bev-error)"),
+    ];
+
+    private const double WindowSeconds = 10;
+
+    private string? Query => Ui.GetQuery("timeline");
+
+    private BevToolsEvent[] _all = [];
+    private List<BevToolsEvent> _events = [];
+    private List<Bar> _bars = [];
+    private BevToolsEvent? _selected;
+    private List<BevToolsEvent> _ancestors = [];
+    private List<BevToolsEvent> _children = [];
+    private List<BevToolsEvent> _before = [];
+    private bool _showLanes = true;
+
+    protected override void OnParametersSet()
+    {
+        _all = Session.Timeline.Snapshot();
+        var filter = BevQueryFilter.Parse(Query);
+        var kindToken = filter.Token("kind");
+        var componentToken = filter.LongToken("component");
+        var severityToken = filter.Token("severity");
+        var idToken = filter.LongToken("id");
+        var list = new List<BevToolsEvent>(_all.Length);
+        for (var i = _all.Length - 1; i >= 0; i--)
+        {
+            var e = _all[i];
+            if (Ui.HiddenTimelineKinds.Contains(e.Kind))
+            {
+                continue;
+            }
+
+            if (kindToken is not null && !e.Kind.ToString().StartsWith(kindToken, StringComparison.OrdinalIgnoreCase) && !BevFmt.KindLabel(e.Kind).StartsWith(kindToken, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (componentToken is not null && e.ComponentInstanceId != componentToken)
+            {
+                continue;
+            }
+
+            if (severityToken is not null && !e.Severity.ToString().StartsWith(severityToken, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            if (idToken is not null && e.Id != idToken)
+            {
+                continue;
+            }
+
+            if (!filter.MatchesText(e.Title, e.Detail, e.ComponentName, e.Category))
+            {
+                continue;
+            }
+
+            list.Add(e);
+        }
+
+        _events = list;
+        if (idToken is not null && list.Count == 1)
+        {
+            Ui.SelectedEventId = list[0].Id;
+        }
+
+        _selected = Ui.SelectedEventId is { } id ? Session.Timeline.Find(id) : null;
+        if (_selected is not null)
+        {
+            _ancestors = [];
+            var current = _selected;
+            var hops = 0;
+            while (current.ParentEventId is { } pid && hops++ < 20 && Session.Timeline.Find(pid) is { } parent)
+            {
+                _ancestors.Add(parent);
+                current = parent;
+            }
+
+            var selectedId = _selected.Id;
+            _children = _all.Where(e => e.ParentEventId == selectedId).ToList();
+            var index = Array.FindIndex(_all, e => e.Id == selectedId);
+            _before = index < 0 ? [] : _all.Skip(Math.Max(0, index - 8)).Take(Math.Min(8, index)).Reverse().ToList();
+        }
+
+        if (_showLanes)
+        {
+            BuildBars();
+        }
+    }
+
+    private void BuildBars()
+    {
+        var now = System.Diagnostics.Stopwatch.GetTimestamp();
+        var freq = (double)System.Diagnostics.Stopwatch.Frequency;
+        var windowTicks = WindowSeconds * freq;
+        var bars = new List<Bar>();
+        for (var i = _all.Length - 1; i >= 0; i--)
+        {
+            var e = _all[i];
+            var age = now - e.StartTicks;
+            if (age > windowTicks)
+            {
+                break;
+            }
+
+            if (Ui.HiddenTimelineKinds.Contains(e.Kind) || e.Kind == BevToolsEventKind.RenderBatch)
+            {
+                continue;
+            }
+
+            var lane = Array.FindIndex(Lanes, l => l.Kinds.Contains(e.Kind));
+            if (lane < 0)
+            {
+                continue;
+            }
+
+            var x = 1000 * (1 - age / windowTicks);
+            var w = Math.Max(2, 1000 * ((e.DurationMs ?? 0) / 1000 * freq) / windowTicks);
+            bars.Add(new Bar(e.Id, lane, Math.Round(x, 1), Math.Round(Math.Min(w, 1000 - x), 1), e.Severity == BevToolsSeverity.Error ? "var(--bev-err)" : Lanes[lane].Color, e.Title, e.Id == Ui.SelectedEventId));
+            if (bars.Count > 600)
+            {
+                break;
+            }
+        }
+
+        _bars = bars;
+    }
+
+    private void OnQuery(ChangeEventArgs e)
+    {
+        Ui.SetQuery("timeline", e.Value?.ToString());
+        OnParametersSet();
+    }
+
+    private void ToggleKind(BevToolsEventKind kind)
+    {
+        if (!Ui.HiddenTimelineKinds.Remove(kind))
+        {
+            Ui.HiddenTimelineKinds.Add(kind);
+        }
+
+        Ui.Touch();
+    }
+
+    private void Select(long id)
+    {
+        Ui.SelectedEventId = id;
+        Ui.Touch();
+    }
+}

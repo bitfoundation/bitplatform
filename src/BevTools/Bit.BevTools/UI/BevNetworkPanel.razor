@@ -1,0 +1,118 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-split">
+    <div class="bev-left" style="flex-basis:58%">
+        <div class="bev-toolbar">
+            <input type="text" placeholder='Filter: url text, method:GET, status:failed|pending|2xx|4xx|5xx' value="@Query" @oninput="OnQuery" />
+            <button type="button" @onclick="() => Session.Http.Clear()">Clear</button>
+            <span class="bev-muted bev-nowrap">@_rows.Count / @_all.Length · @Session.Http.FailedCount failed</span>
+        </div>
+        <div class="bev-scroll">
+            @if (_rows.Count == 0)
+            {
+                <div class="bev-empty">No HTTP requests captured. Requests made through IHttpClientFactory clients are tracked automatically; hand-built HttpClient instances need <code>BevToolsHttpMessageHandler</code>.</div>
+            }
+            else
+            {
+                <table>
+                    <thead><tr><th>Time</th><th>Method</th><th>URL</th><th class="bev-num">Status</th><th class="bev-num">Duration</th><th class="bev-num">Size</th><th>Trigger</th></tr></thead>
+                    <tbody>
+                        <Virtualize Items="_rows" ItemSize="23" Context="r" SpacerElement="tr">
+                            <tr class="bev-row @(Ui.SelectedHttpId == r.Id ? "bev-selected" : "") @(r.IsFailed ? "bev-sev-error" : "")" @onclick="() => { Ui.SelectedHttpId = r.Id; Ui.Touch(); }">
+                                <td class="bev-mono">@BevFmt.Time(r.StartedAt)</td>
+                                <td class="bev-mono">@r.Method</td>
+                                <td class="bev-mono bev-truncate" style="max-width:320px" title="@r.Url">@BevToolsHttpMessageHandler.StripOrigin(r.Url)</td>
+                                <td class="bev-num @(r.IsFailed ? "bev-err" : "")">@(r.Error is not null ? "ERR" : r.StatusCode?.ToString() ?? "…")</td>
+                                <td class="bev-num">@(r.IsPending ? "pending" : BevFmt.Ms(r.DurationMs))</td>
+                                <td class="bev-num">@BevFmt.Bytes(r.ResponseBytes)</td>
+                                <td class="bev-truncate bev-muted" style="max-width:180px" title="@r.TriggerDescription">@(r.TriggerDescription ?? "–")</td>
+                            </tr>
+                        </Virtualize>
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+    <div class="bev-right">
+        @if (_selected is { } s)
+        {
+            <div class="bev-section">
+                <div class="bev-section-title bev-mono">@s.Method @BevToolsHttpMessageHandler.StripOrigin(s.Url)</div>
+                <div class="bev-section-body">
+                    <dl class="bev-kv">
+                        <dt>URL</dt><dd class="bev-mono">@s.Url</dd>
+                        <dt>Status</dt><dd>@(s.Error ?? (s.StatusCode is null ? "pending" : s.StatusCode + " " + s.ReasonPhrase))</dd>
+                        <dt>Started</dt><dd>@BevFmt.Time(s.StartedAt)</dd>
+                        <dt>Duration</dt><dd>@BevFmt.Ms(s.DurationMs)</dd>
+                        <dt>Request size</dt><dd>@BevFmt.Bytes(s.RequestBytes)</dd>
+                        <dt>Response size</dt><dd>@BevFmt.Bytes(s.ResponseBytes) @(s.ContentType is null ? "" : "· " + s.ContentType)</dd>
+                        <dt>Trigger</dt><dd>@if (s.TriggerEventId is { } t) { <button type="button" class="bev-link" @onclick="() => Host.SelectEvent(t)">@s.TriggerDescription ↗</button> } else { <span class="bev-muted">not inside a UI event (lifecycle method, timer or background work)</span> }</dd>
+                        <dt>Timeline</dt><dd><button type="button" class="bev-link" @onclick="() => Host.SelectEvent(s.TimelineEventId)">open event ↗</button></dd>
+                    </dl>
+                    <div class="bev-muted" style="margin-top:4px">Bodies are never captured. Sensitive headers and query values are redacted.</div>
+                </div>
+            </div>
+            @if (s.RequestHeaders is { Count: > 0 })
+            {
+                <div class="bev-section">
+                    <div class="bev-section-title">Request headers (@s.RequestHeaders.Count)</div>
+                    <div class="bev-section-body"><table><tbody>@foreach (var h in s.RequestHeaders) { <tr><td class="bev-mono">@h.Key</td><td class="bev-mono">@h.Value</td></tr> }</tbody></table></div>
+                </div>
+            }
+            @if (s.ResponseHeaders is { Count: > 0 })
+            {
+                <div class="bev-section">
+                    <div class="bev-section-title">Response headers (@s.ResponseHeaders.Count)</div>
+                    <div class="bev-section-body"><table><tbody>@foreach (var h in s.ResponseHeaders) { <tr><td class="bev-mono">@h.Key</td><td class="bev-mono">@h.Value</td></tr> }</tbody></table></div>
+                </div>
+            }
+            @if (_duplicates > 1)
+            {
+                <div class="bev-section"><div class="bev-section-body"><span class="bev-chip bev-warn">This exact request appears @_duplicates times in the buffer.</span></div></div>
+            }
+        }
+        else
+        {
+            <div class="bev-empty">Select a request.</div>
+        }
+    </div>
+</div>
+
+@code {
+    private string? Query => Ui.GetQuery("network");
+
+    private BevHttpRecord[] _all = [];
+    private List<BevHttpRecord> _rows = [];
+    private BevHttpRecord? _selected;
+    private int _duplicates;
+
+    protected override void OnParametersSet()
+    {
+        _all = Session.Http.Snapshot();
+        var filter = BevQueryFilter.Parse(Query);
+        var status = filter.Token("status");
+        var method = filter.Token("method");
+        _rows = _all.Reverse().Where(r =>
+            filter.MatchesText(r.Url, r.Method, r.TriggerDescription, r.Error)
+            && (method is null || r.Method.Equals(method, StringComparison.OrdinalIgnoreCase))
+            && (status is null || status.ToLowerInvariant() switch
+            {
+                "failed" => r.IsFailed,
+                "pending" => r.IsPending,
+                "2xx" => r.StatusCode is >= 200 and < 300,
+                "3xx" => r.StatusCode is >= 300 and < 400,
+                "4xx" => r.StatusCode is >= 400 and < 500,
+                "5xx" => r.StatusCode is >= 500,
+                var code => r.StatusCode?.ToString() == code,
+            })).ToList();
+        _selected = Ui.SelectedHttpId is { } id ? Session.Http.Find(id) : null;
+        _duplicates = _selected is null ? 0 : _all.Count(r => r.Signature == _selected.Signature);
+    }
+
+    private void OnQuery(ChangeEventArgs e)
+    {
+        Ui.SetQuery("network", e.Value?.ToString());
+        OnParametersSet();
+    }
+}

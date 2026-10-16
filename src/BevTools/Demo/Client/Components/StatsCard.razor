@@ -1,0 +1,17 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+
+<div class="card @(Settings?.Dense == true ? "dense" : "")" style="border-top: 3px solid @(Settings?.Accent ?? "#0969da")">
+    <h3>@Title</h3>
+    <div class="big">@Value</div>
+    <div class="muted">@Trend · settings v@(Settings?.Version ?? 0)</div>
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+
+    [Parameter] public string Value { get; set; } = "";
+
+    [Parameter] public string? Trend { get; set; }
+
+    [CascadingParameter] public DashboardSettings? Settings { get; set; }
+}

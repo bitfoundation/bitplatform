@@ -25,6 +25,15 @@
     <Project Path="Besql/Demo/Bit.Besql.Demo.Client/Bit.Besql.Demo.Client.csproj" />
     <Project Path="Besql/Demo/Bit.Besql.Demo/Bit.Besql.Demo.csproj" />
   </Folder>
+  <Folder Name="/BevTools/">
+    <File Path="BevTools/README.md" />
+    <Project Path="BevTools/Bit.BevTools/Bit.BevTools.csproj" />
+    <Project Path="BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj" />
+    <Project Path="BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj" />
+    <Project Path="BevTools/Demo/Client/Bit.BevTools.Demo.Client.csproj" />
+    <Project Path="BevTools/Demo/Server/Bit.BevTools.Demo.Server.csproj" />
+    <Project Path="BevTools/Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
+  </Folder>
   <Folder Name="/Bmotion/">
     <File Path="Bmotion/README.md" />
     <Project Path="Bmotion/Bit.Bmotion.Demo/Client/Bit.Bmotion.Demo.Client.csproj" />

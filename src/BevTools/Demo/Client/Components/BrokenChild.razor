@@ -1,0 +1,7 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+
+<div>This child never renders.</div>
+
+@code {
+    protected override void OnInitialized() => throw new InvalidOperationException("Lifecycle failure: BrokenChild.OnInitialized threw.");
+}

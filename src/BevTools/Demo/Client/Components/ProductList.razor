@@ -1,0 +1,93 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@implements IDisposable
+@inject FilterState Filter
+@inject ProductApi Api
+@inject CartState Cart
+
+<div class="card">
+    <h3>Products <span class="muted">(@_visible.Count of @_all.Count) · rendered @_renders times · @(SearchOnType ? "searching the API on every keystroke" : "filtering locally")</span></h3>
+    @if (_error is not null)
+    {
+        <div class="error">@_error</div>
+    }
+    <table>
+        <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Rating</th><th></th></tr></thead>
+        <tbody>
+            @foreach (var p in _visible)
+            {
+                <ProductRow Product="p" Highlight="@(p.Id % 7 == 0)" OnAdd="Cart.Add" />
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    private List<Product> _all = [];
+    private List<Product> _visible = [];
+    private int _renders;
+    private string? _error;
+
+    [Parameter] public bool SearchOnType { get; set; }
+
+    protected override void OnInitialized()
+    {
+        // Intentional problem #2: subscribing to a chatty state container and re-rendering everything on each notification.
+        Filter.Changed += OnFilterChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        _renders++;
+        if (firstRender && RendererInfo.IsInteractive)
+        {
+            try
+            {
+                _all = await Api.GetProductsAsync();
+                Apply();
+            }
+            catch (Exception ex)
+            {
+                _error = ex.Message;
+            }
+
+            StateHasChanged();
+        }
+    }
+
+    private void OnFilterChanged()
+    {
+        if (SearchOnType)
+        {
+            // Intentional problem #3: an HTTP request per keystroke, no debounce, no cancellation.
+            _ = InvokeAsync(async () =>
+            {
+                try
+                {
+                    _all = await Api.SearchAsync(Filter.Query);
+                    Apply();
+                    StateHasChanged();
+                }
+                catch (Exception ex)
+                {
+                    _error = ex.Message;
+                    StateHasChanged();
+                }
+            });
+            return;
+        }
+
+        Apply();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private void Apply()
+    {
+        _visible = _all
+            .Where(p => Filter.Category == "All" || p.Category == Filter.Category)
+            .Where(p => p.Price <= Filter.MaxPrice)
+            .Where(p => string.IsNullOrEmpty(Filter.Query) || p.Name.Contains(Filter.Query, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    public void Dispose() => Filter.Changed -= OnFilterChanged;
+}

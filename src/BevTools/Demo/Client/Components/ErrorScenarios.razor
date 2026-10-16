@@ -1,0 +1,56 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@inject ProductApi Api
+
+@* A component of its own so the Errors page can wrap it in an ErrorBoundary: event handler exceptions are routed to
+   the boundary above the component that owns the handler, so a boundary inside the page could not catch them. *@
+
+<div class="row">
+    <button @onclick="ThrowInHandler">Throw in event handler</button>
+    <button @onclick="ThrowAsync">Throw after await</button>
+    <button @onclick="() => _renderBomb = true">Throw during render (inside ErrorBoundary)</button>
+    <button @onclick="() => _initBomb = true">Child throws in OnInitialized (inside ErrorBoundary)</button>
+    <button @onclick="Http404">HTTP 404</button>
+    <button @onclick="() => { _renderBomb = false; _initBomb = false; _boundary?.Recover(); }">Reset</button>
+</div>
+
+<ErrorBoundary @ref="_boundary">
+    <ChildContent>
+        <div class="card">
+            <h3>Protected area</h3>
+            @if (_renderBomb)
+            {
+                <div>@ThrowingValue</div>
+            }
+            @if (_initBomb)
+            {
+                <BrokenChild />
+            }
+            <div class="muted">Nothing exploded (yet).</div>
+        </div>
+    </ChildContent>
+    <ErrorContent Context="ex">
+        <div class="card error">ErrorBoundary caught: @ex.GetType().Name — @ex.Message</div>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    private ErrorBoundary? _boundary;
+    private bool _renderBomb;
+    private bool _initBomb;
+
+    private string ThrowingValue => throw new InvalidOperationException("Render-time failure: computed property threw while building the render tree.");
+
+    private void ThrowInHandler() => throw new InvalidOperationException("Handler failure: simulated exception in an @onclick handler.");
+
+    private async Task ThrowAsync()
+    {
+        await Task.Delay(150);
+        throw new TimeoutException("Async failure: the continuation after an await threw.");
+    }
+
+    private async Task Http404()
+    {
+        var response = await Api.GetMissingAsync();
+        response.EnsureSuccessStatusCode();
+    }
+}

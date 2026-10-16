@@ -1,0 +1,324 @@
+﻿@namespace Bit.BevTools
+@using System.Reflection
+
+<div class="bev-toolbar">
+    <strong class="bev-mono">@Record.DisplayName</strong>
+    <span class="bev-chip">#@Record.InstanceId</span>
+    @if (Record.IsDisposed)
+    {
+        <span class="bev-chip bev-warn">disposed @BevFmt.Ago(Record.DisposedAt)</span>
+    }
+    @if (Record.Parent is { } parent)
+    {
+        <span class="bev-muted">in</span> <button type="button" class="bev-link" @onclick="() => Host.SelectComponent(parent.InstanceId)">@parent.DisplayName</button>
+    }
+    <span style="margin-left:auto"></span>
+    <button type="button" @onclick='() => Host.ShowPanel("timeline", "component:" + Record.InstanceId)'>Events ↗</button>
+    <button type="button" @onclick='() => Host.ShowPanel("profiler", Record.DisplayName)'>Profiler ↗</button>
+</div>
+<div class="bev-scroll">
+    <BevInspectorSection Title="Type & source">
+        <dl class="bev-kv">
+            <dt>Type</dt><dd class="bev-mono">@Record.TypeName</dd>
+            <dt>Assembly</dt><dd class="bev-mono">@Record.Type.Assembly.GetName().Name</dd>
+            <dt>Source</dt><dd class="bev-mono">@BevFmt.ComponentFile(Record.Type) <span class="bev-muted">(inferred from type name)</span></dd>
+            <dt>Base</dt><dd class="bev-mono">@_baseName</dd>
+            <dt>Renderer id</dt><dd>@(Record.ComponentId?.ToString() ?? "unresolved")</dd>
+            <dt>Created</dt><dd>@BevFmt.Time(Record.CreatedAt) (@BevFmt.Ago(Record.CreatedAt))</dd>
+            @if (!Record.IsInstrumented)
+            {
+                <dt>Note</dt><dd class="bev-muted">@Record.InstrumentationNote</dd>
+            }
+        </dl>
+    </BevInspectorSection>
+    <BevInspectorSection Title="@($"Parameters ({_parameters.Count})")">
+        @if (_parameters.Count == 0)
+        {
+            <div class="bev-muted">No [Parameter] properties.</div>
+        }
+        @foreach (var p in _parameters)
+        {
+            <BevValueTree Root="p.Value" Name="@p.Name" Inspector="Session.Inspector" Member="p.MemberInfo" />
+        }
+    </BevInspectorSection>
+    <BevInspectorSection Title="@($"Cascading values ({_cascading.Count})")">
+        @if (_cascading.Count == 0)
+        {
+            <div class="bev-muted">No [CascadingParameter] properties.</div>
+        }
+        @foreach (var p in _cascading)
+        {
+            <BevValueTree Root="p.Value" Name="@p.Name" Inspector="Session.Inspector" Member="p.MemberInfo" />
+        }
+    </BevInspectorSection>
+    <BevInspectorSection Title="@($"State ({_state.Count} fields)")">
+        @if (Record.LastRender is { } lastRender)
+        {
+            var changedState = lastRender.ChangedState ?? [];
+            var changedParameters = lastRender.ChangedParameters ?? [];
+            if (changedState.Count > 0 || changedParameters.Count > 0)
+            {
+                <div class="bev-chip bev-warn" style="margin-bottom:4px">changed before last render:</div>
+                <ul class="bev-mono bev-changes">
+                    @foreach (var c in changedState)
+                    {
+                        <li title="component field">@c</li>
+                    }
+                    @foreach (var c in changedParameters)
+                    {
+                        <li title="parameter"><span class="bev-chip">param</span> @c</li>
+                    }
+                </ul>
+            }
+            else if (lastRender.IsWastedRender)
+            {
+                <div class="bev-chip bev-warn" style="margin-bottom:4px" title="@WastedRenderTooltip">forced re-render: no field and no observable parameter changed</div>
+            }
+            else if (Record.RenderCount > 1)
+            {
+                <div class="bev-muted" style="margin-bottom:4px">@(lastRender.ParametersCompared ? "No field or parameter changed before the last render." : "No field changed before the last render (or capture started after it).")</div>
+            }
+        }
+        @if (_state.Count == 0)
+        {
+            <div class="bev-muted">No inspectable fields.</div>
+        }
+        @foreach (var f in _state)
+        {
+            <BevValueTree Root="f.Value" Name="@f.Name" Inspector="Session.Inspector" Member="f.MemberInfo" />
+        }
+    </BevInspectorSection>
+    <BevInspectorSection Title="@($"Injected services ({_services.Count})")">
+        @if (_services.Count == 0)
+        {
+            <div class="bev-muted">No [Inject] properties.</div>
+        }
+        else
+        {
+            <table>
+                <thead><tr><th>Property</th><th>Service</th><th>Lifetime</th><th>Implementation</th></tr></thead>
+                <tbody>
+                    @foreach (var s in _services)
+                    {
+                        <tr class="bev-row" @onclick='() => Host.ShowPanel("services", s.ServiceName)'>
+                            <td class="bev-mono">@s.Name</td>
+                            <td class="bev-mono">@s.ServiceName</td>
+                            <td>@if (s.Lifetime is not null) { <span class="bev-chip bev-@s.Lifetime">@s.Lifetime</span> } else { <span class="bev-muted">unknown</span> }</td>
+                            <td class="bev-mono bev-muted">@s.Implementation</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </BevInspectorSection>
+    <BevInspectorSection Title="@($"Rendering ({Record.RenderCount} renders, {BevFmt.Ms(Record.TotalRenderMs)})")">
+        <dl class="bev-kv">
+            <dt>Renders</dt><dd>@Record.RenderCount</dd>
+            <dt>Total / avg / max</dt><dd>@BevFmt.Ms(Record.TotalRenderMs) / @BevFmt.Ms(Record.RenderCount == 0 ? 0 : Record.TotalRenderMs / Record.RenderCount) / @BevFmt.Ms(Record.MaxRenderMs)</dd>
+            <dt>Last render</dt><dd>@(Record.LastRenderAt is { } at ? BevFmt.Time(at) + " (" + BevFmt.Ago(at) + ")" : "never")</dd>
+            @if (_typeMetrics is not null)
+            {
+                <dt>SetParametersAsync</dt><dd>@_typeMetrics.ParameterUpdates calls, @BevFmt.Ms(_typeMetrics.ParameterUpdateMs) total, max @BevFmt.Ms(_typeMetrics.MaxParameterUpdateMs) <span class="bev-muted">(per type, from framework metrics)</span></dd>
+            }
+            @if (Record.BaselineAt is { } baseline)
+            {
+                <dt>Since baseline</dt><dd>@Record.RendersSinceBaseline renders, @BevFmt.Ms(Record.RenderMsSinceBaseline), max @BevFmt.Ms(Record.MaxRenderMsSinceBaseline) <span class="bev-muted">(baseline set @BevFmt.Ago(baseline))</span></dd>
+            }
+            @if (_comparedRenders > 0)
+            {
+                <dt>Forced re-renders</dt>
+                <dd title="@WastedRenderTooltip">
+                    @if (_forcedRenders > 0)
+                    {
+                        <span class="bev-chip bev-warn">@_forcedRenders</span>
+                        <span> of @_comparedRenders compared renders were forced by the parent with parameters identical to the previous render. Override <code>ShouldRender</code>, or stop the parent recreating equivalent values.</span>
+                    }
+                    else
+                    {
+                        <span class="bev-chip bev-ok">0</span>
+                        <span> of @_comparedRenders compared renders re-applied identical parameters.</span>
+                    }
+                </dd>
+            }
+        </dl>
+        @if (_causes.Count > 0)
+        {
+            <div style="margin:4px 0"><strong>Why did it render?</strong></div>
+            <table>
+                <thead><tr><th>Cause</th><th class="bev-num">Count</th><th>Details</th></tr></thead>
+                <tbody>
+                    @foreach (var c in _causes)
+                    {
+                        <tr><td>@c.Cause</td><td class="bev-num">@c.Count</td><td class="bev-muted">@c.Detail</td></tr>
+                    }
+                </tbody>
+            </table>
+        }
+        <div style="margin:4px 0"><strong>Recent renders</strong> <span class="bev-muted">@(Session.Options.RecordRenderEvents ? "(newest first, select a time to open in timeline)" : "(newest first; timeline render events are disabled)")</span></div>
+        <table>
+            <thead><tr><th>Time</th><th class="bev-num">Duration</th><th>Cause</th><th class="bev-num">Batch</th></tr></thead>
+            <tbody>
+                @foreach (var r in _renders)
+                {
+                    <tr class="@(r.Failed ? "bev-sev-error" : "")">
+                        <td class="bev-mono">
+                            @if (r.EventId > 0)
+                            {
+                                <button type="button" class="bev-link bev-mono" @onclick="() => Host.SelectEvent(r.EventId)">@BevFmt.Time(r.At)</button>
+                            }
+                            else
+                            {
+                                @BevFmt.Time(r.At)
+                            }
+                        </td>
+                        <td class="bev-num">@BevFmt.Ms(r.DurationMs)</td>
+                        <td class="bev-truncate" style="max-width:320px" title="@r.CauseDetail">
+                            @if (r.IsWastedRender)
+                            {
+                                <span class="bev-chip bev-warn" title="@WastedRenderTooltip">forced</span>
+                            }
+                            else if (r.ChangedParameters is { Count: > 0 } changedParams)
+                            {
+                                <span class="bev-chip bev-ok" title="@string.Join("\n", changedParams)">@changedParams.Count param@(changedParams.Count == 1 ? "" : "s")</span>
+                            }
+                            @r.CauseDetail
+                        </td>
+                        <td class="bev-num">#@r.BatchId</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </BevInspectorSection>
+    <BevInspectorSection Title="@($"Children ({_children.Count})")" Collapsed="true">
+        @if (_children.Count == 0)
+        {
+            <div class="bev-muted">No child components.</div>
+        }
+        @foreach (var child in _children)
+        {
+            <div><button type="button" class="bev-link bev-mono" @onclick="() => Host.SelectComponent(child.InstanceId)">@child.DisplayName</button> <span class="bev-muted">@child.RenderCount renders · @BevFmt.Ms(child.TotalRenderMs)</span></div>
+        }
+    </BevInspectorSection>
+    <BevInspectorSection Title="@($"Errors ({_errors.Count})")" Collapsed="@(_errors.Count == 0)">
+        @if (_errors.Count == 0)
+        {
+            <div class="bev-muted">No errors recorded for this instance.</div>
+        }
+        @foreach (var e in _errors)
+        {
+            <div><button type="button" class="bev-link" @onclick="() => Host.SelectError(e.Id)">@BevFmt.Time(e.At) @e.ExceptionType: @e.Message</button> @(e.Count > 1 ? $"×{e.Count}" : "")</div>
+        }
+    </BevInspectorSection>
+</div>
+
+@code {
+    private sealed record MemberValue(string Name, object? Value, MemberInfo MemberInfo);
+
+    private sealed record ServiceRow(string Name, string ServiceName, string? Lifetime, string? Implementation);
+
+    private sealed record CauseRow(string Cause, int Count, string Detail);
+
+    [CascadingParameter] public BevToolsPanel Host { get; set; } = default!;
+
+    [Parameter, EditorRequired] public BevComponentRecord Record { get; set; } = default!;
+
+    private BevToolsSession Session => Host.Session;
+
+    private List<MemberValue> _parameters = [];
+    private List<MemberValue> _cascading = [];
+    private List<MemberValue> _state = [];
+    private List<ServiceRow> _services = [];
+    private List<CauseRow> _causes = [];
+    private List<BevComponentRecord> _children = [];
+    private List<BevErrorRecord> _errors = [];
+    private BevRenderSample[] _renders = [];
+    private BevLifecycleTypeMetrics? _typeMetrics;
+    private string _baseName = "";
+    private int _comparedRenders;
+    private int _forcedRenders;
+
+    private static readonly BevRenderCause[] Causes = Enum.GetValues<BevRenderCause>();
+
+    private const string WastedRenderTooltip = "The parent re-rendered and re-applied this component's parameters, but every observable parameter value "
+        + "(display value plus two levels of members and up to 25 collection items) was identical to the previous render. Delegates compare by target "
+        + "method, so a recreated lambda with the same body counts as unchanged. Render fragments compare by instance, and one that reads component state "
+        + "as it runs never counts as unchanged, so new child content is never called forced. Blazor only skips such renders for primitive-typed "
+        + "parameters; ShouldRender can skip the rest.";
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, (PropertyInfo[] Parameters, PropertyInfo[] Cascading, PropertyInfo[] Injected)> PropertyCache = new();
+
+    protected override void OnParametersSet()
+    {
+        var component = Record.Component;
+        _baseName = Record.Type.BaseType is { } b ? TypeNames.Short(b) : "–";
+        var (parameters, cascading, injected) = PropertyCache.GetOrAdd(Record.Type, static t =>
+        {
+            var all = t.GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy);
+            return (
+                all.Where(p => p.IsDefined(typeof(ParameterAttribute), true)).OrderBy(p => p.Name).ToArray(),
+                all.Where(p => p.IsDefined(typeof(CascadingParameterAttribute), true) || p.IsDefined(typeof(SupplyParameterFromQueryAttribute), true) || p.IsDefined(typeof(SupplyParameterFromFormAttribute), true)).OrderBy(p => p.Name).ToArray(),
+                all.Where(p => p.IsDefined(typeof(InjectAttribute), true)).OrderBy(p => p.Name).ToArray());
+        });
+
+        _parameters = parameters.Select(p => new MemberValue(p.Name, SafeGet(p, component), p)).ToList();
+        _cascading = cascading.Select(p => new MemberValue(p.Name, SafeGet(p, component), p)).ToList();
+        _state = ComponentStateReader.Fields(Record.Type).Select(f => new MemberValue(f.Name, SafeGet(f.Field, component), f.Field)).ToList();
+        var graph = Host.Graph;
+        _services = injected.Select(p =>
+        {
+            var service = graph?.Services.LastOrDefault(s => s.ServiceType == p.PropertyType && !s.IsKeyed);
+            var value = SafeGet(p, component);
+            var impl = value is BevTrackingJSRuntime tracking ? TypeNames.Short(tracking.Inner.GetType()) + " (tracked by BevTools)" : value is null ? null : TypeNames.Short(value.GetType());
+            return new ServiceRow(p.Name, TypeNames.Short(p.PropertyType), service is null ? null : BevFmt.Lifetime(service.Lifetime), impl ?? service?.ImplementationName);
+        }).ToList();
+
+        var renders = Record.Renders;
+        _renders = renders.Reverse().Take(50).ToArray();
+        // Counts come from session-long counters, like the render total above them; the retained samples only supply
+        // example details. Counting the samples would cap every figure at MaxRendersPerComponent.
+        _comparedRenders = Record.RendersWithComparedParameters;
+        _forcedRenders = Record.ParentRendersWithUnchangedParameters;
+        _causes = Causes
+            .Select(cause => new CauseRow(cause.ToString(), Record.RendersByCause(cause), string.Join(" · ", renders.Where(r => r.Cause == cause).Select(r => r.CauseDetail).Where(d => d is not null).Distinct().Take(3))))
+            .Where(c => c.Count > 0)
+            .OrderByDescending(c => c.Count)
+            .ToList();
+        _children = Session.Components.All.Where(c => !c.IsDisposed && !c.IsHidden && c.Parent is not null && NearestVisibleAncestor(c) == Record).OrderBy(c => c.ComponentId).ToList();
+        _errors = Session.Errors.Snapshot().Where(e => e.ComponentInstanceId == Record.InstanceId).Reverse().ToList();
+        Session.TypeMetrics.TryGetValue(Record.DisplayName, out _typeMetrics);
+    }
+
+    private static BevComponentRecord? NearestVisibleAncestor(BevComponentRecord record)
+    {
+        var parent = record.Parent;
+        while (parent is not null && parent.IsHidden)
+        {
+            parent = parent.Parent;
+        }
+
+        return parent;
+    }
+
+    private static object? SafeGet(PropertyInfo property, object? target)
+    {
+        try
+        {
+            return property.GetValue(target);
+        }
+        catch (Exception ex)
+        {
+            return "«threw " + (ex is TargetInvocationException { InnerException: { } i } ? i.GetType().Name : ex.GetType().Name) + "»";
+        }
+    }
+
+    private static object? SafeGet(FieldInfo field, object? target)
+    {
+        try
+        {
+            return field.GetValue(target);
+        }
+        catch (Exception ex)
+        {
+            return "«threw " + ex.GetType().Name + "»";
+        }
+    }
+}

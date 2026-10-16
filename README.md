@@ -51,6 +51,7 @@ bit new MyApp
 
 - [***bit CLI***](src/Cli/README.md) (`Bit.Cli`): Creates bitplatform projects (`bit new`), sets up cloned ones (`bit setup`), cleans build outputs, renames or removes projects, translates `.resx` files with an LLM, and decodes stack traces minified by Bit.Minifier.
 - [***Minifier***](src/Minifier/README.md) (`Bit.Minifier`): Shrinks the .NET assemblies a Blazor WebAssembly app downloads by stripping non-public names and compiler-only attributes after trimming. Install it and publish in Release; there's nothing else to set up.
+- [***BevTools***](src/BevTools/README.md) (`Bit.BevTools`): In-app developer tools for Blazor. A live component tree, a render profiler that explains why each component rendered, an activity timeline, state diffs, network, JS interop, errors, DI and circuit diagnostics, with no changes to your app's code.
 - [***BlazorES2019***](src/BlazorES2019/README.md) (`Bit.BlazorES2019`): An ES2019 build of the Blazor scripts, so apps also run on older browsers and WebViews (for example Safari before 16.4).
 - [***Code Analyzers***](src/CodeAnalyzers/README.md) (`Bit.CodeAnalyzers`) and [***Source Generators***](src/SourceGenerators/README.md) (`Bit.SourceGenerators`): Analyzers that enforce our best practices, and source generators that improve code quality and performance.
 

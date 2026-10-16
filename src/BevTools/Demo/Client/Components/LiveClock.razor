@@ -1,0 +1,27 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@implements IDisposable
+
+<div class="big clock">@_now.ToString("HH:mm:ss.f")</div>
+<div class="muted">ticks every 500 ms (StateHasChanged from a timer)</div>
+
+@code {
+    private DateTime _now = DateTime.Now;
+    private Timer? _timer;
+
+    [Parameter] public EventCallback OnTick { get; set; }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender && RendererInfo.IsInteractive)
+        {
+            _timer = new Timer(_ => InvokeAsync(async () =>
+            {
+                _now = DateTime.Now;
+                StateHasChanged();
+                await OnTick.InvokeAsync();
+            }), null, 500, 500);
+        }
+    }
+
+    public void Dispose() => _timer?.Dispose();
+}

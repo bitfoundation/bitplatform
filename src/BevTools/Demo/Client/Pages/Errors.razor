@@ -1,0 +1,34 @@
+﻿@page "/errors"
+
+<PageTitle>Errors</PageTitle>
+
+<h1>Errors</h1>
+<p class="muted">Each button produces a different kind of failure. BevTools → Errors shows type, message, stack, the component and what happened right before.</p>
+
+@if (RendererInfo.Name == "Server")
+{
+    <p class="muted">On the <strong>Server</strong> renderer an unhandled exception would terminate the circuit, and this BevTools session with it, so here the scenarios run inside a page-level <code>ErrorBoundary</code>: <em>Throw in event handler</em>, <em>Throw after await</em> and <em>HTTP 404</em> are caught by it instead. On WebAssembly they stay unhandled.</p>
+    <ErrorBoundary @ref="_pageBoundary">
+        <ChildContent>
+            <ErrorScenarios />
+        </ChildContent>
+        <ErrorContent Context="ex">
+            <div class="card error">
+                <div>The page-level ErrorBoundary caught: @ex.GetType().Name — @ex.Message</div>
+                <div class="row"><button @onclick="() => _pageBoundary?.Recover()">Recover</button></div>
+            </div>
+        </ErrorContent>
+    </ErrorBoundary>
+}
+else
+{
+    @if (RendererInfo.IsInteractive)
+    {
+        <p class="muted">On <strong>@RendererInfo.Name</strong> <em>Throw in event handler</em>, <em>Throw after await</em> and <em>HTTP 404</em> are genuinely unhandled: Blazor shows its error bar at the bottom of the page and the app keeps running.</p>
+    }
+    <ErrorScenarios />
+}
+
+@code {
+    private ErrorBoundary? _pageBoundary;
+}

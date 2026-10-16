@@ -1,0 +1,20 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+
+<tr class="product-row @(Highlight ? "highlight" : "")">
+    <td>@Product.Name</td>
+    <td>@Product.Category</td>
+    <td>@Product.Price.ToString("C")</td>
+    <td class="@(Product.Stock == 0 ? "error" : "")">@(Product.Stock == 0 ? "sold out" : Product.Stock.ToString())</td>
+    <td>@Product.Rating ★</td>
+    <td><button @onclick="() => OnAdd.InvokeAsync(Product)" disabled="@(Product.Stock == 0)">Add</button></td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired] public Product Product { get; set; } = default!;
+
+    [Parameter] public bool Highlight { get; set; }
+
+    [Parameter] public EventCallback<Product> OnAdd { get; set; }
+
+    // Intentional: no ShouldRender override, so every parent render re-renders all rows even when nothing changed.
+}

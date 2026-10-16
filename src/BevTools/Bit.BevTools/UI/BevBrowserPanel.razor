@@ -1,0 +1,85 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-scroll" style="flex:1">
+    @{ var b = Session.Browser; }
+    @if (!b.BridgeAttached)
+    {
+        <div class="bev-empty">Browser bridge not attached@(b.BridgeError is null ? "" : ": " + b.BridgeError). Enable <code>EnableBrowserBridge</code> and make sure <code>_content/Bit.BevTools/bit-bevtools.js</code> is served.</div>
+    }
+    else
+    {
+        <div class="bev-stat-grid">
+            <div class="bev-stat"><div class="bev-stat-value">@(b.Online switch { true => "online", false => "offline", _ => "?" })</div><div class="bev-stat-label">connectivity</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@(b.Visibility ?? "?")</div><div class="bev-stat-label">page visibility</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@(b.ReconnectState ?? "–")</div><div class="bev-stat-label">reconnect state · @b.ReconnectCount reconnects</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@(b.JsHeapUsedMb is { } h ? BevFmt.Num(h) + " MB" : "n/a")</div><div class="bev-stat-label">JS heap used @(b.JsHeapLimitMb is { } l ? "of " + BevFmt.Num(l) + " MB" : "(Chromium only)")</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@(b.NavigationLoadMs is { } n ? BevFmt.Ms(n) : "n/a")</div><div class="bev-stat-label">page load (DOMContentLoaded @(b.DomContentLoadedMs is { } d ? BevFmt.Ms(d) : "n/a"))</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@(b.ResourceCount?.ToString() ?? "n/a")</div><div class="bev-stat-label">resources loaded</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@b.JsErrorCount</div><div class="bev-stat-label">JS errors</div></div>
+            <div class="bev-stat"><div class="bev-stat-value">@b.JsToDotNetCalls</div><div class="bev-stat-label">JS → .NET calls</div></div>
+        </div>
+        <div class="bev-section">
+            <div class="bev-section-title">Storage <button type="button" style="margin-left:auto;font-weight:normal" @onclick="ReadStorageAsync">@(b.StorageReadAt is null ? "Read localStorage / sessionStorage" : "Refresh (" + BevFmt.Ago(b.StorageReadAt) + ")")</button></div>
+            <div class="bev-section-body">
+                @if (b.StorageReading)
+                {
+                    <div class="bev-muted">Reading…</div>
+                }
+                @if (b.StorageError is { } storageError)
+                {
+                    <div class="bev-empty">Reading browser storage failed: <span class="bev-mono">@storageError</span></div>
+                }
+                @if (b.LocalStorage is null)
+                {
+                    <div class="bev-muted">Storage is read only on request. Values are redacted in the browser when the key looks sensitive or the value looks like a token, so BevTools never receives them; other previews are truncated to 120 characters.</div>
+                }
+                else
+                {
+                    <strong>localStorage (@b.LocalStorage.Count)</strong>
+                    @StorageTable(b.LocalStorage)
+                    <strong>sessionStorage (@(b.SessionStorage?.Count ?? 0))</strong>
+                    @StorageTable(b.SessionStorage ?? [])
+                }
+            </div>
+        </div>
+        <div class="bev-section">
+            <div class="bev-section-title">Environment</div>
+            <div class="bev-section-body">
+                <dl class="bev-kv">
+                    <dt>User agent</dt><dd class="bev-mono">@b.UserAgent</dd>
+                    <dt>Renderer</dt><dd>@Session.Platform @(Session.RenderModeName is null ? "" : "· " + Session.RenderModeName)</dd>
+                </dl>
+                <div class="bev-muted">Everything else (network waterfall, DOM, WebSocket frames) stays in the browser's own DevTools; this panel only adds Blazor-relevant context.</div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private async Task ReadStorageAsync()
+    {
+        Session.Browser.StorageReading = true;
+        StateHasChanged();
+        await Host.LoadStorageAsync();
+        StateHasChanged();
+    }
+
+    private RenderFragment StorageTable(IReadOnlyList<BevStorageEntry> entries) => __builder =>
+    {
+        if (entries.Count == 0)
+        {
+            <div class="bev-muted">empty</div>
+            return;
+        }
+        <table>
+            <thead><tr><th>Key</th><th class="bev-num">Size</th><th>Preview</th></tr></thead>
+            <tbody>
+                @foreach (var e in entries)
+                {
+                    <tr><td class="bev-mono">@e.Key</td><td class="bev-num">@e.Size</td><td class="bev-mono bev-truncate" style="max-width:480px">@(e.Redacted ? BevRedactor.RedactedValue : e.Preview)</td></tr>
+                }
+            </tbody>
+        </table>
+    };
+}

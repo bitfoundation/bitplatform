@@ -133,6 +133,21 @@ jobs:
     - name: dotnet pack Besql
       run: dotnet pack src/Besql/Bit.Besql/Bit.Besql.csproj --output . --configuration Release
 
+    - name: dotnet build BevTools.Abstractions
+      run: dotnet build src/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BevTools.Abstractions
+      run: dotnet pack src/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj --output . --configuration Release
+
+    - name: dotnet build BevTools
+      run: dotnet build src/BevTools/Bit.BevTools/Bit.BevTools.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BevTools
+      run: dotnet pack src/BevTools/Bit.BevTools/Bit.BevTools.csproj --output . --configuration Release
+
+    - name: dotnet build BevTools.Server
+      run: dotnet build src/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BevTools.Server
+      run: dotnet pack src/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj --output . --configuration Release
+
     - name: dotnet build Bmotion
       run: dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bmotion

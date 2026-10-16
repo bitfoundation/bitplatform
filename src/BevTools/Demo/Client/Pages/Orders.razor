@@ -1,0 +1,92 @@
+﻿@page "/orders"
+@inject ProductApi Api
+
+<PageTitle>Orders</PageTitle>
+
+<h1>Orders</h1>
+<p class="muted">Network problems to diagnose: a slow endpoint, a flaky endpoint that fails two thirds of the time, a burst of identical requests and a 404.</p>
+
+<div class="row">
+    <button class="primary" @onclick="() => Load()">Load orders (slow, 1.2–2.6 s)</button>
+    <button @onclick="() => Load(4000)">Load orders (very slow, 4 s)</button>
+    <button @onclick="Flaky">Call flaky endpoint</button>
+    <button @onclick="Burst">Fire 8 identical requests</button>
+    <button @onclick="Missing">Request a missing URL (404)</button>
+    <button @onclick="() => _log.Clear()">Clear log</button>
+</div>
+
+@if (_loading)
+{
+    <p class="muted">loading…</p>
+}
+
+@if (_orders is not null)
+{
+    <table>
+        <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Status</th><th>Placed</th></tr></thead>
+        <tbody>
+            @foreach (var o in _orders)
+            {
+                <tr><td>@o.Id</td><td>@o.Customer</td><td>@o.Total.ToString("C")</td><td>@o.Status</td><td>@o.PlacedAt.ToLocalTime().ToString("g")</td></tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="log">
+    @foreach (var line in _log)
+    {
+        <div>@line</div>
+    }
+</div>
+
+@code {
+    private List<Order>? _orders;
+    private bool _loading;
+    private readonly List<string> _log = [];
+
+    private async Task Load(int delay = 0)
+    {
+        _loading = true;
+        try
+        {
+            _orders = await Api.GetOrdersAsync(delay);
+            Log($"loaded {_orders.Count} orders");
+        }
+        catch (Exception ex)
+        {
+            Log("failed: " + ex.Message);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task Flaky()
+    {
+        try
+        {
+            Log("flaky: " + await Api.GetFlakyAsync());
+        }
+        catch (HttpRequestException ex)
+        {
+            Log("flaky failed: " + ex.StatusCode);
+        }
+    }
+
+    private async Task Burst()
+    {
+        var tasks = Enumerable.Range(0, 8).Select(_ => Api.GetProductsAsync());
+        await Task.WhenAll(tasks);
+        Log("burst done (8 identical GET /api/products)");
+    }
+
+    private async Task Missing()
+    {
+        var response = await Api.GetMissingAsync();
+        Log($"missing → {(int)response.StatusCode}");
+    }
+
+    private void Log(string line) => _log.Insert(0, DateTime.Now.ToString("HH:mm:ss") + " " + line);
+}

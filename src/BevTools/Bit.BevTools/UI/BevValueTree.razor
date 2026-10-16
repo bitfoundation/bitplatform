@@ -1,0 +1,97 @@
+﻿@namespace Bit.BevTools
+
+<div class="bev-vt">
+    @Render((Node, 0))
+</div>
+
+@code {
+    [Parameter, EditorRequired] public object? Root { get; set; }
+
+    [Parameter] public string Name { get; set; } = "value";
+
+    [Parameter, EditorRequired] public BevObjectInspector Inspector { get; set; } = default!;
+
+    /// <summary>When set, the root node itself is hidden and only its children are shown.</summary>
+    [Parameter] public bool ChildrenOnly { get; set; }
+
+    [Parameter] public System.Reflection.MemberInfo? Member { get; set; }
+
+    private readonly HashSet<string> _expanded = new(StringComparer.Ordinal);
+    private readonly Dictionary<string, IReadOnlyList<BevInspectedNode>> _children = new(StringComparer.Ordinal);
+    private object? _lastRoot;
+
+    private BevInspectedNode Node => Inspector.Describe(Name, Root, "", Member);
+
+    protected override void OnParametersSet()
+    {
+        // Resolving a child path walks the object graph from the root again, evaluating a property getter per step.
+        // The panel re-renders several times a second, so without a per-pass cache an expanded tree would call
+        // application getters continuously - work the application never asked for, on values it may compute lazily.
+        _children.Clear();
+
+        if (!ReferenceEquals(_lastRoot, Root))
+        {
+            _lastRoot = Root;
+            _expanded.Clear();
+            if (ChildrenOnly)
+            {
+                _expanded.Add("");
+            }
+        }
+    }
+
+    private RenderFragment<(BevInspectedNode Node, int Depth)> Render => ctx => __builder =>
+    {
+        var (node, depth) = ctx;
+        var open = _expanded.Contains(node.Path);
+        // The root is the only node with an empty path; its children render at the root's depth, so depth alone
+        // cannot tell them apart.
+        var hiddenRoot = ChildrenOnly && node.Path.Length == 0;
+        if (!hiddenRoot)
+        {
+            <div class="bev-vt-row" style="padding-left:@(depth * 14)px" title="@node.TypeName">
+                @if (node.IsExpandable)
+                {
+                    <span class="bev-caret" @onclick="() => Toggle(node.Path)">@(open ? "▾" : "▸")</span>
+                }
+                else
+                {
+                    <span class="bev-caret"></span>
+                }
+                <span class="bev-vt-name">@node.Name:</span>
+                <span class="bev-vt-value bev-k-@node.Kind.ToString().ToLowerInvariant()">@node.Display</span>
+                @if (node.TypeName is not null && node.Kind is BevNodeKind.Object or BevNodeKind.Collection or BevNodeKind.Dictionary)
+                {
+                    <span class="bev-vt-type">@node.TypeName</span>
+                }
+            </div>
+        }
+        if (open && node.IsExpandable)
+        {
+            foreach (var child in ChildrenOf(node.Path))
+            {
+                @Render((child, hiddenRoot ? depth : depth + 1))
+            }
+        }
+    };
+
+    private IReadOnlyList<BevInspectedNode> ChildrenOf(string path)
+    {
+        if (!_children.TryGetValue(path, out var children))
+        {
+            children = Inspector.Children(Root, path);
+            _children[path] = children;
+        }
+
+        return children;
+    }
+
+    private void Toggle(string path)
+    {
+        _children.Clear();
+        if (!_expanded.Remove(path))
+        {
+            _expanded.Add(path);
+        }
+    }
+}
