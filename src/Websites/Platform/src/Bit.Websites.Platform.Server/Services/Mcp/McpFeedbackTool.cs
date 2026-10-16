@@ -38,7 +38,7 @@ public partial class McpFeedbackTool
         Title = "Send feedback to the bit platform team",
         Description = """
             Sends a defect report, or any other feedback, about the bit platform straight to the team that maintains
-            it: the BlazorUI, Bmotion, Bonboarding, Blex, Butil, Bswup and Brouter libraries, the bit Boilerplate project template, and
+            it: the BlazorUI, Bmotion, Bink, Bonboarding, Blex, Butil, Bswup and Brouter libraries, the bit Boilerplate project template, and
             this endpoint itself. It reaches people in a chat rather than an issue tracker, so call it only once the
             user has agreed that the report should be sent - never to take a note, and never to ask whether something
             is a bug. Write the report so that it stands on its own without the conversation it came out of: what you

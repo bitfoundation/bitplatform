@@ -7,6 +7,7 @@ on:
       - 'main'
     paths:
       - 'src/BlazorUI/**'
+      - 'src/Bink/**'
       - 'src/Blex/**'
       - 'src/Bmotion/**'
       - 'src/Bonboarding/**'
@@ -152,6 +153,11 @@ jobs:
       run: dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bmotion
       run: dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output . --configuration Release
+
+    - name: dotnet build Bink
+      run: dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bink
+      run: dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output . --configuration Release
 
     - name: dotnet build Blex
       run: dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

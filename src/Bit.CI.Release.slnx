@@ -44,6 +44,13 @@
     <Project Path="Bmotion/Bit.Bmotion/Bit.Bmotion.csproj" />
     <Project Path="Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
   </Folder>
+  <Folder Name="/Bink/">
+    <File Path="Bink/README.md" />
+    <Project Path="Bink/Bit.Bink.Demo/Client/Bit.Bink.Demo.Client.csproj" />
+    <Project Path="Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj" />
+    <Project Path="Bink/Bit.Bink/Bit.Bink.csproj" />
+    <Project Path="Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
+  </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />

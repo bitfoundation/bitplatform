@@ -276,6 +276,10 @@ _book
 /src/Bmotion/Bit.Bmotion/Scripts/**/*.js
 /src/Bmotion/Bit.Bmotion/wwwroot/**/*.js
 
+/src/Bink/Bit.Bink/Scripts/**/*.js
+/src/Bink/Bit.Bink/wwwroot/**/*.js
+/src/Bink/Bit.Bink/wwwroot/**/*.css
+
 /src/Blex/Bit.Blex.Blazor/Scripts/**/*.js
 /src/Blex/Bit.Blex.Blazor/wwwroot/**/*.js
 

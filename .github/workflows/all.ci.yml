@@ -51,6 +51,10 @@ on:
         description: Bmotion solution
         type: boolean
         default: true
+      bink:
+        description: Bink solution
+        type: boolean
+        default: true
       blex:
         description: Blex solution
         type: boolean
@@ -575,6 +579,11 @@ jobs:
         dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Bink
+      run: |
+        dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output ./packages --configuration Release
+
     - name: Build and pack Blex
       run: |
         dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -662,6 +671,11 @@ jobs:
     name: bmotion
     if: ${{ inputs.bmotion }}
     uses: ./.github/workflows/bit.ci.Bmotion.yml
+
+  bink:
+    name: bink
+    if: ${{ inputs.bink }}
+    uses: ./.github/workflows/bit.ci.Bink.yml
 
   blex:
     name: blex

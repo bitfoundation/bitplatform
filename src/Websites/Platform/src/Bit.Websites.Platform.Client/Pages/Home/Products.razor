@@ -167,6 +167,23 @@
         },
         new()
         {
+            Title = "Ink that feels like paper",
+            Subtitle = "bit Bink · Blazor-native drawing and ink",
+            LinkUrl = Urls.Bink,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bink is a Blazor-native drawing and ink library with pressure- and tilt-aware strokes, brushes, erasers,
+                    shapes, annotations, selection, layers, undo/redo, real-time collaboration and SVG/PNG export, all in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BinkCanvas @@ref="canvas" Width="400px" Height="180px"
+            AriaLabel="Signature" /></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Onboarding that guides",
             Subtitle = "bit Bonboarding · Blazor-native product tours",
             LinkUrl = Urls.Bonboarding,
