@@ -20,6 +20,22 @@ public class ScrollTimelineTests
             b.CloseElement();
         };
 
+    // A page-scroll-driven bar inside a host that can unmount it.
+    private static IRenderedComponent<ToggleHost> RenderInHost(BmotionTestContext ctx)
+        => ctx.Render<ToggleHost>(ps => ps.Add(p => p.ChildContent, (RenderFragment)(b =>
+        {
+            b.OpenComponent<Bmotion>(0);
+            b.AddComponentParameter(1, nameof(Bmotion.Id), "bar");
+            b.AddComponentParameter(2, nameof(Bmotion.Timeline), BmScrollTimeline.Page());
+            b.AddComponentParameter(3, nameof(Bmotion.Animate), (BmTarget?)Bm.To(scaleX: new double[] { 0, 1 }));
+            b.AddComponentParameter(4, nameof(Bmotion.ChildContent), Div());
+            b.CloseComponent();
+        })));
+
+    // The renderer disposes the removed component inline while applying the diff.
+    private static void Unmount(IRenderedComponent<ToggleHost> host)
+        => host.Render(ps => ps.Add(p => p.Show, false));
+
     // ── The spec ──────────────────────────────────────────────────────────────
 
     [TestMethod]
@@ -148,13 +164,12 @@ public class ScrollTimelineTests
     {
         using var ctx = new BmotionTestContext();
         ctx.Interop.ScrollTimelineResult = null; // could not start at all
-        var cut = ctx.Render<Bmotion>(ps => ps
-            .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.Page())
-            .Add(p => p.Animate, Bm.To(scaleX: new double[] { 0, 1 }))
-            .Add(p => p.ChildContent, Div()));
+        var host = RenderInHost(ctx);
 
-        cut.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        // Unmount it through a render diff, the way an app's @if removes it.
+        Unmount(host);
+
+        Assert.IsTrue(ctx.Interop.WasCalled("unregisterElement"), "the component must actually have been disposed");
         // Nothing was attached, so nothing should be cancelled either.
         Assert.AreEqual(0, ctx.Interop.CountOf("cancelScrollTimelineAnimation"));
     }
@@ -228,14 +243,14 @@ public class ScrollTimelineTests
     public void Disposing_ReleasesTheTimeline()
     {
         using var ctx = new BmotionTestContext();
-        var cut = ctx.Render<Bmotion>(ps => ps
-            .Add(p => p.Id, "bar")
-            .Add(p => p.Timeline, BmScrollTimeline.Page())
-            .Add(p => p.Animate, Bm.To(scaleX: new double[] { 0, 1 }))
-            .Add(p => p.ChildContent, Div()));
+        var host = RenderInHost(ctx);
 
-        cut.Instance.DisposeAsync().AsTask().GetAwaiter().GetResult();
+        // Unmount it through a render diff, the way an app's @if removes it.
+        Unmount(host);
 
-        Assert.AreEqual(1, ctx.Interop.CountOf("cancelScrollTimelineAnimation"));
+        var cancel = ctx.Interop.ArgsOf("cancelScrollTimelineAnimation").Single();
+        var play = ctx.Interop.ArgsOf("playScrollTimelineAnimation").Single();
+        Assert.AreEqual("bar", cancel[0]);
+        Assert.AreEqual(play[1], cancel[1], "the cancel must name the token of the timeline that was attached");
     }
 }

@@ -39,15 +39,44 @@ public class DxTests
             .Add(p => p.Id, "box")
             .Add(p => p.ChildContent, Div));
 
-        var before = ctx.Interop.CountOf("playWaapiAnimation") + ctx.Interop.CountOf("supportsLinearEasing");
+        var callsBefore = ctx.Interop.Calls.Count;
 
         using var cts = new CancellationTokenSource();
         cts.Cancel();
+        // A color target would run on the rAF path and an opacity one would offload; use both so
+        // neither path can slip through unnoticed.
         await cut.InvokeAsync(() =>
-            cut.Instance.AnimateAsync(Bm.To(opacity: 0.5), Bm.Tween(0.5), cts.Token).AsTask());
+            cut.Instance.AnimateAsync(Bm.To(opacity: 0.5, backgroundColor: "#ff0000"), Bm.Tween(0.5), cts.Token).AsTask());
 
-        var after = ctx.Interop.CountOf("playWaapiAnimation") + ctx.Interop.CountOf("supportsLinearEasing");
-        Assert.AreEqual(before, after, "a pre-cancelled token must not start the animation");
+        Assert.AreEqual(callsBefore, ctx.Interop.Calls.Count, "a pre-cancelled token must not reach the bridge at all");
+        var el = ctx.Engine.GetDiagnostics().Single(d => d.Id == "box");
+        Assert.IsFalse(el.HasActiveAnimations, "a pre-cancelled token must not start a driver");
+        Assert.IsFalse(el.NumericValues.ContainsKey("opacity"));
+        Assert.IsFalse(el.StringValues.ContainsKey("backgroundColor"));
+    }
+
+    [TestMethod]
+    public async Task AnimateAsync_CancelledMidFlight_StopsOnlyItsOwnProperties()
+    {
+        using var ctx = new BmotionTestContext();
+        var cut = ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.ChildContent, Div));
+
+        // Two independent rAF animations on the same element (colors never offload).
+        await cut.InvokeAsync(() => cut.Instance.AnimateAsync(Bm.To(color: "#00ff00"), Bm.Tween(1)).AsTask());
+        using var cts = new CancellationTokenSource();
+        var cancellable = cut.InvokeAsync(() =>
+            cut.Instance.AnimateAsync(Bm.To(backgroundColor: "#ff0000"), Bm.Tween(1), cts.Token).AsTask());
+        await cancellable;
+        CollectionAssert.AreEquivalent(new[] { "color", "backgroundColor" },
+            ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").ActiveProperties.ToArray());
+
+        cts.Cancel();
+
+        // The cancellation stops just the properties that call animated, not the whole element.
+        CollectionAssert.AreEquivalent(new[] { "color" },
+            ctx.Engine.GetDiagnostics().Single(d => d.Id == "box").ActiveProperties.ToArray());
     }
 
     [TestMethod]
@@ -61,7 +90,12 @@ public class DxTests
         await cut.InvokeAsync(() =>
             cut.Instance.AnimateAsync(Bm.To(opacity: 0.5), Bm.Tween(0.5), CancellationToken.None).AsTask());
 
-        // An offload-eligible opacity tween probes the compositor path.
-        Assert.IsTrue(ctx.Interop.WasCalled("supportsLinearEasing") || ctx.Interop.WasCalled("playWaapiAnimation"));
+        // An offload-eligible opacity tween is handed to the compositor: exactly one animation for
+        // this element, heading for the requested value over the requested duration.
+        var play = ctx.Interop.ArgsOf("playWaapiAnimation").Single();
+        Assert.AreEqual("box", play[0]);
+        var keyframes = (Dictionary<string, object>[])play[2]!;
+        Assert.AreEqual("0.5", keyframes[^1]["opacity"]);
+        Assert.AreEqual(500.0, (double)((Dictionary<string, object?>)play[3]!)["duration"]!, 1e-9);
     }
 }

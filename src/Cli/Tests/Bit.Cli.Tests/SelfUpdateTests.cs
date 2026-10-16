@@ -10,8 +10,8 @@ public class SelfUpdateTests
     [TestMethod]
     [DataRow("10.7.0", "10.6.2", 1)]
     [DataRow("10.10.0", "10.9.3", 1)]
-    [DataRow("10.7.0", "10.7.0-pre-01", 1)]
-    [DataRow("10.7.0-pre-02", "10.7.0-pre-01", 1)]
+    [DataRow("10.7.0", "10.7.0-pre-02", 1)]
+    [DataRow("10.7.0-pre-02", "10.7.0-pre-02", 1)]
     [DataRow("10.6.2", "10.6.2", 0)]
     [DataRow("10.6", "10.6.0", 0)]
     public void Versions_Should_CompareTheWayNuGetDoes(string left, string right, int expected)
@@ -45,7 +45,7 @@ public class SelfUpdateTests
         Assert.AreEqual("10.7.0", await Official(host).LatestVersionAsync(CancellationToken.None));
         CollectionAssert.AreEqual(new[] { "package", "search", "Bit.Cli", "--exact-match", "--format", "json" }, host.Runner.Calls.Single().Arguments.ToArray());
 
-        Assert.AreEqual("10.8.0-pre-01", await Official(host, "10.7.0-pre-01").LatestVersionAsync(CancellationToken.None));
+        Assert.AreEqual("10.8.0-pre-01", await Official(host, "10.7.0-pre-02").LatestVersionAsync(CancellationToken.None));
         CollectionAssert.Contains(host.Runner.Calls.Last().Arguments.ToList(), "--prerelease");
     }
 

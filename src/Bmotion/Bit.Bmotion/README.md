@@ -54,9 +54,10 @@ and `BmotionAnimateService` for the complete API surface.
   Web Animations API off the main thread; everything else runs on the C# rAF engine over
   synchronous interop.
 - ⚠️ **Blazor Server** - the compositor path works (it needs only async interop), so
-  enter/exit/hover/tap/variant animations on transform + opacity play normally. Features that
-  require the per-frame loop - inertia, color/dimension interpolation, keyframe arrays, drag,
-  motion values - degrade to instant state changes.
+  enter/exit/hover/tap/variant animations on transform + opacity play normally, and drag follows
+  the pointer a round trip behind (one position, and one `OnDrag`, per frame). Features that require the per-frame
+  loop - inertia (a throw lands where it would have come to rest), color/dimension interpolation,
+  keyframe arrays off the compositor - degrade to instant state changes.
 - ✅ **Prerendering / static SSR** - by default elements render their `Initial` state and animate
   once interactive. Set `o.Prerender = BmPrerenderMode.Final` to serve them at rest (visible,
   indexable), or `BmPrerenderMode.Animate` to play the enter animation in pure CSS straight from the
@@ -66,7 +67,7 @@ and `BmotionAnimateService` for the complete API surface.
   takes each prerendered element over at rest instead of replaying its enter animation.
 
 Inject **`BmotionCapabilities`** to detect the current mode instead of guessing:
-`Caps.SupportsFrameLoop` is `false` on Server (drag/inertia/interpolation degrade to instant),
+`Caps.SupportsFrameLoop` is `false` on Server (inertia/interpolation degrade to instant),
 `Caps.SupportsCompositor` is always `true`, and `Caps.IsPrerendering` is `true` while the page is
 being prerendered (when the other flags describe the server, not the runtime that takes over). On
 Server, the first animation that collapses to an instant change also logs a one-time warning so the

@@ -142,6 +142,10 @@ jobs:
       run: dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bink
       run: dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output . --configuration Release
+    - name: dotnet build Bonboarding
+      run: dotnet build src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bonboarding
+      run: dotnet pack src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj --output . --configuration Release
 
     - name: dotnet build CodeAnalyzers
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

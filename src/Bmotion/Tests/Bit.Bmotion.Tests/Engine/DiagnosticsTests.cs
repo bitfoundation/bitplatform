@@ -10,9 +10,9 @@ public class DiagnosticsTests
         => new(new FakeBmotionInterop { IsInProcess = inProcess });
 
     [TestMethod]
-    public void GetDiagnostics_ReportsRegisteredElementsAndSeededValues()
+    public async Task GetDiagnostics_ReportsRegisteredElementsAndSeededValues()
     {
-        var engine = NewEngine();
+        await using var engine = NewEngine();
         engine.RegisterElement("el", new Dictionary<string, object?> { ["x"] = 10.0, ["opacity"] = 0.5 });
 
         var diag = engine.GetDiagnostics();
@@ -30,7 +30,7 @@ public class DiagnosticsTests
     {
         // In-process/WASM engine: color properties never offload to the compositor, so a rAF
         // driver stays active on the engine and the diagnostics report it mid-animation.
-        var engine = NewEngine(inProcess: true);
+        await using var engine = NewEngine(inProcess: true);
         engine.RegisterElement("el", null);
 
         await engine.AnimateToAsync("el",
@@ -44,18 +44,47 @@ public class DiagnosticsTests
     }
 
     [TestMethod]
-    public void GetDiagnostics_ReturnsSnapshotCopies_NotLiveDictionaries()
+    public async Task GetDiagnostics_ReturnsSnapshotCopies_NotLiveDictionaries()
     {
-        var engine = NewEngine();
-        engine.RegisterElement("el", new Dictionary<string, object?> { ["x"] = 1.0 });
+        await using var engine = NewEngine();
+        engine.RegisterElement("el", new Dictionary<string, object?>
+        {
+            ["x"] = 1.0,
+            ["opacity"] = 0.25,
+            ["backgroundColor"] = "#000000",
+        });
 
-        var first = engine.GetDiagnostics()[0];
-        // A later registration must not mutate an earlier snapshot: it captured its own copy.
-        engine.RegisterElement("el2", null);
-        Assert.AreEqual(1, first.Transforms.Count, "earlier snapshot must be unaffected by later registrations");
+        var first = engine.GetDiagnostics().Single();
+
+        // Mutate the SAME element's live state after the snapshot was taken: changed values and a
+        // brand-new key in each store. A snapshot aliasing the live dictionaries would see all of it.
+        engine.SetInstant("el", new Dictionary<string, object?>
+        {
+            ["x"] = 99.0,
+            ["rotate"] = 45.0,
+            ["opacity"] = 0.75,
+            ["pathLength"] = 0.5,
+            ["backgroundColor"] = "#ffffff",
+            ["width"] = "10px",
+        });
+
+        Assert.AreEqual(1.0, first.Transforms["x"]);
+        Assert.IsFalse(first.Transforms.ContainsKey("rotate"));
+        Assert.AreEqual(0.25, first.NumericValues["opacity"]);
+        Assert.IsFalse(first.NumericValues.ContainsKey("pathLength"));
+        Assert.AreEqual("#000000", first.StringValues["backgroundColor"]);
+        Assert.IsFalse(first.StringValues.ContainsKey("width"));
+
+        // And the live state really did change, so the assertions above are not vacuous.
+        var second = engine.GetDiagnostics().Single();
+        Assert.AreEqual(99.0, second.Transforms["x"]);
+        Assert.AreEqual("#ffffff", second.StringValues["backgroundColor"]);
     }
 
     [TestMethod]
-    public void GetDiagnostics_Empty_WhenNothingRegistered()
-        => Assert.AreEqual(0, NewEngine().GetDiagnostics().Count);
+    public async Task GetDiagnostics_Empty_WhenNothingRegistered()
+    {
+        await using var engine = NewEngine();
+        Assert.AreEqual(0, engine.GetDiagnostics().Count);
+    }
 }

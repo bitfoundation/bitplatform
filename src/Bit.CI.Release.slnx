@@ -39,6 +39,13 @@
     <Project Path="Bink/Bit.Bink/Bit.Bink.csproj" />
     <Project Path="Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
   </Folder>
+  <Folder Name="/Bonboarding/">
+    <File Path="Bonboarding/README.md" />
+    <Project Path="Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
+    <Project Path="Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
+    <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />
+    <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
+  </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>

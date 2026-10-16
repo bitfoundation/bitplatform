@@ -1,0 +1,8 @@
+﻿@namespace Bit.Bonboarding
+
+@* Declarative tour container. Renders no markup of its own: it collects the BonboardingStep
+   children below it into a BonboardingTourDefinition and registers that with the onboarding service. *@
+
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>

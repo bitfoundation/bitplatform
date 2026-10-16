@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { viewFraction } from '../../Bit.Bmotion/wwwroot/bit-bmotion.js';
+import { viewFraction } from '../../Bit.Bmotion/Scripts/bit-bmotion.ts';
 
 // viewFraction backs the scroll-scrub fallback for BmScrollTimeline.View() on browsers without a
 // native ViewTimeline. It maps a subject's journey across the scrollport onto 0→1: 0 the moment its

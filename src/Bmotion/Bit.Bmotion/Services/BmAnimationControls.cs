@@ -26,6 +26,11 @@ public sealed class BmAnimationControls
     // SetSpeed could observe _released == 0, lose the CPU, and then touch elements a concurrent
     // Stop/Complete/natural settlement has already released (and newer animations now own).
     private readonly object _sync = new();
+    // The rate each element played at before SetSpeed first changed it. The rate lives on the
+    // elements themselves, so it has to be put back when these controls let go of them - otherwise
+    // a <Bmotion> owning one of them would find every later animation of its own frozen or re-timed.
+    // Put back to what it was, not to realtime: an element someone else had paused stays paused.
+    private Dictionary<string, double>? _ratesBefore;
 
     internal BmAnimationControls(
         IReadOnlyList<string> elementIds, BmotionAnimationEngine engine, Task completion, Action release,
@@ -46,7 +51,10 @@ public sealed class BmAnimationControls
         lock (_sync)
         {
             if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0)
+            {
+                RestoreRate();
                 _release();
+            }
         }
     }
 
@@ -66,6 +74,12 @@ public sealed class BmAnimationControls
         lock (_sync)
         {
             if (System.Threading.Volatile.Read(ref _released) != 0) return;
+            if (_ratesBefore is null)
+            {
+                _ratesBefore = new Dictionary<string, double>(StringComparer.Ordinal);
+                foreach (var id in _elementIds)
+                    _ratesBefore.TryAdd(id, _engine.GetPlaybackRate(id));
+            }
             foreach (var id in _elementIds)
                 _engine.SetPlaybackRate(id, speed);
             // Segments that haven't started yet are governed by the timeline playhead, so the same
@@ -90,6 +104,7 @@ public sealed class BmAnimationControls
             {
                 foreach (var id in _elementIds)
                     _engine.Stop(id, null);
+                RestoreRate();
             }
             finally
             {
@@ -112,6 +127,7 @@ public sealed class BmAnimationControls
             {
                 foreach (var id in _elementIds)
                     _engine.Complete(id);
+                RestoreRate();
             }
             finally
             {
@@ -129,4 +145,12 @@ public sealed class BmAnimationControls
     // Invoked by the owning service once the completion task settles, so a natural finish also
     // releases the refcount (idempotent with Stop/Complete).
     internal void OnCompletionSettled() => ReleaseOnce();
+
+    private void RestoreRate()
+    {
+        if (_ratesBefore is not { } rates) return;
+        _ratesBefore = null;
+        foreach (var (id, rate) in rates)
+            _engine.SetPlaybackRate(id, rate);
+    }
 }

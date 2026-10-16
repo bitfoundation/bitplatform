@@ -1,0 +1,106 @@
+﻿@page "/mcp-server"
+
+@* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
+   purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
+
+<PageTitle>MCP server</PageTitle>
+
+<h1>MCP server</h1>
+
+<p class="page-intro">
+    This site hosts a Model Context Protocol server at <code>/mcp</code>, so an AI agent building tours
+    with Bit.Bonboarding reads the library itself - its compiled API documentation, its guide, its
+    stylesheet and these demo pages - instead of guessing at an API it half remembers. Every tool is
+    read-only.
+</p>
+
+<section class="demo-section">
+    <h2>Connect a client</h2>
+
+    <p>
+        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else. The
+        same tools are also served, version by version, through the bit platform's own server at
+        <code>https://bitplatform.dev/mcp</code>, next to the other bit libraries.
+    </p>
+
+    <pre><code>@ClientConfig</code></pre>
+</section>
+
+<section class="demo-section">
+    <h2>Tools</h2>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Tool</th><th>What it answers</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>SearchBonboarding</code></td>
+                    <td>Everything at once - the guide, every public member, the theme variables and the demo sources - each hit with the exact follow-up call.</td>
+                </tr>
+                <tr>
+                    <td><code>GetBonboardingSetupGuide</code></td>
+                    <td>The complete wiring for one render mode: server, wasm, auto or standalone-wasm.</td>
+                </tr>
+                <tr>
+                    <td><code>GetBonboardingGuideSection</code></td>
+                    <td>One section of the reference guide, or the index of sections.</td>
+                </tr>
+                <tr>
+                    <td><code>GetBonboardingApi</code></td>
+                    <td>One public type with every parameter, property and method, its real default and its documentation - or the index of types.</td>
+                </tr>
+                <tr>
+                    <td><code>GetBonboardingThemeVariables</code></td>
+                    <td>Every <code>--bit-bonboarding-*</code> variable with its light and dark value.</td>
+                </tr>
+                <tr>
+                    <td><code>InspectBonboardingPlacement</code></td>
+                    <td>Where the library's own placement engine puts a popover for a given target, popover and viewport, and why.</td>
+                </tr>
+                <tr>
+                    <td><code>GetBonboardingSourceFile</code></td>
+                    <td>One demo file verbatim - every page here is a working tour - or the index of files.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <p>
+        The guide, the API, the theme and the sources are also exposed as <code>bonboarding://</code> resources,
+        and three prompts - <code>add-bonboarding-to-app</code>, <code>implement-bonboarding-tour</code> and
+        <code>debug-bonboarding-tour</code> - walk an agent through the common jobs in the right order.
+    </p>
+</section>
+
+<section class="demo-section">
+    <h2>The same tools over plain HTTP</h2>
+
+    <p>
+        Every tool is also a <code>GET</code> under <code>/api/mcp/...</code>: open one in a browser tab to read
+        exactly what an agent is handed.
+    </p>
+
+    <ul>
+        <li><a href="/api/mcp/SearchBonboarding?query=advance%20when%20the%20user%20clicks" target="_blank" rel="noopener">/api/mcp/SearchBonboarding?query=advance when the user clicks</a></li>
+        <li><a href="/api/mcp/GetBonboardingApi?typeName=BonboardingStep" target="_blank" rel="noopener">/api/mcp/GetBonboardingApi?typeName=BonboardingStep</a></li>
+        <li><a href="/api/mcp/GetBonboardingThemeVariables" target="_blank" rel="noopener">/api/mcp/GetBonboardingThemeVariables</a></li>
+        <li><a href="/api/mcp/InspectBonboardingPlacement?targetX=1200&amp;targetY=20&amp;targetWidth=60&amp;targetHeight=30&amp;placement=Right" target="_blank" rel="noopener">/api/mcp/InspectBonboardingPlacement?targetX=1200&amp;targetY=20&amp;targetWidth=60&amp;targetHeight=30&amp;placement=Right</a></li>
+        <li><a href="/api/mcp/GetBonboardingSourceFile?path=Demo/Client/Pages/Flows.razor" target="_blank" rel="noopener">/api/mcp/GetBonboardingSourceFile?path=Demo/Client/Pages/Flows.razor</a></li>
+    </ul>
+</section>
+
+@code {
+    private const string ClientConfig = """
+        // .mcp.json (Claude Code, VS Code, and anything else reading this shape)
+        {
+          "mcpServers": {
+            "bonboarding": {
+              "type": "http",
+              "url": "https://bonboarding.bitplatform.dev/mcp"
+            }
+          }
+        }
+        """;
+}

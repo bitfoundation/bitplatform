@@ -55,6 +55,10 @@ on:
         description: Bink solution
         type: boolean
         default: true
+      bonboarding:
+        description: Bonboarding solution
+        type: boolean
+        default: true
       besql:
         description: Besql solution
         type: boolean
@@ -576,6 +580,11 @@ jobs:
         dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Bonboarding
+      run: |
+        dotnet build src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj --output ./packages --configuration Release
+
     - name: Build and pack CodeAnalyzers
       run: |
         dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -638,6 +647,11 @@ jobs:
     name: bink
     if: ${{ inputs.bink }}
     uses: ./.github/workflows/bit.ci.Bink.yml
+
+  bonboarding:
+    name: bonboarding
+    if: ${{ inputs.bonboarding }}
+    uses: ./.github/workflows/bit.ci.Bonboarding.yml
 
   besql:
     name: besql

@@ -216,11 +216,11 @@ public class BitFullCalendarHelpersTests
     public void CulturalAnchorsShouldFollowTheCalendarOfTheDateTimeFormatRatherThanTheCulturesDefault()
     {
         // DateTimeFormat.Calendar is the documented way of switching the calendar of a culture; CultureInfo.Calendar
-        // stays the culture's default (Um Al Qura for ar-SA), so anchoring on it would lay a culture switched to the
-        // Gregorian calendar out as Hijri.
-        var culture = (CultureInfo)CultureInfo.GetCultureInfo("ar-SA").Clone();
+        // stays the culture's default (Persian for fa-IR), so anchoring on it would lay a culture switched to the
+        // Gregorian calendar out as Persian.
+        var culture = (CultureInfo)CultureInfo.GetCultureInfo("fa-IR").Clone();
         culture.DateTimeFormat.Calendar = new GregorianCalendar();
-        Assert.IsInstanceOfType<UmAlQuraCalendar>(culture.Calendar);
+        Assert.IsInstanceOfType<PersianCalendar>(culture.Calendar);
         var date = new DateTime(2024, 7, 4);
 
         Assert.AreEqual(new DateTime(2024, 7, 1), BitFullCalendarHelpers.StartOfCulturalMonth(date, culture));
