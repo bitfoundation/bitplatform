@@ -136,7 +136,9 @@ RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in
 to `ubuntu-26.04` here. The two BlazorUI workflows (`bit.ci.BlazorUI.yml`, `bit.ci.BlazorUI.e2e.yml`) stay on
 `ubuntu-24.04`: their calendar tests take `ar-SA` for a culture whose default calendar is Umm al-Qura, which is
 the system ICU's data, and the ICU of `ubuntu-26.04` defaults it to Gregorian. Move them once those tests set the
-calendar themselves.
+calendar themselves. All CI's PostgreSQL template job stays on `ubuntu-24.04` too: on `ubuntu-26.04` its runner
+"received a shutdown signal" in the middle of the tests, twice, while the same code passes on `ubuntu-24.04`. Try it
+again on a newer image.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
