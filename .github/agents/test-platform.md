@@ -168,8 +168,10 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    - A job whose runner "received a shutdown signal" in the middle of a step ran the runner out of memory, and its log
      says nothing more. To see what grew, have the step print `free -m` and the top processes by RSS every 30 seconds
      from a background loop, and take a `dotnet-gcdump` of a `dotnet` process past a few GB, then kill it so the
-     failed-step upload still runs: a heap far smaller than the process means native memory, not .NET objects. One
-     lucky pass of the job alone on a runner proves nothing; compare a step's duration with an earlier run's instead.
+     failed-step upload still runs. `dotnet-gcdump` stops at ten million objects, so a heap that looks small next to
+     the process is a cut-off count, not native memory. The Boilerplate's test process is known to keep finished test
+     servers alive; look for the open issue before calling such growth new. One lucky pass of the job alone on a
+     runner proves nothing; compare a step's duration with an earlier run's instead.
    - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left. Never the `redis`
      container, which the demos use, nor another project's containers.
 
@@ -183,6 +185,11 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    ask before pushing to anyone else's. A CI run on the pushed branch is the final proof:
    `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed job
    (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix.
+
+   A fix in a bit library - any `Bit.*` project other than the Boilerplate template, its tests, demos and samples
+   included - also gets an issue and a PR of its own, cut from develop when the fix applies there and from bit11
+   otherwise, so its owners review it; the commit on the run's branch only proves that it works. Fixes to the
+   Boilerplate and to the websites need nothing beyond the run's branch.
 
 This machine has four cores and serves the demos too, so a local build or test run never overlaps step 3.
 
