@@ -59,6 +59,12 @@ jobs:
     uses: ./.github/workflows/bmotion.demo.cd.yml
     secrets: inherit
 
+  bonboarding_demo:
+    name: bonboarding demo
+    if: inputs.server
+    uses: ./.github/workflows/bonboarding.demo.cd.yml
+    secrets: inherit
+
   brouter_demo:
     name: brouter demo
     if: inputs.server

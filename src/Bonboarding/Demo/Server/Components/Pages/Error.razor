@@ -1,0 +1,38 @@
+﻿@page "/Error"
+@using System.Diagnostics
+
+<PageTitle>Error - Bit.Bonboarding</PageTitle>
+
+<div class="error-page">
+    <span class="error-code" aria-hidden="true">500</span>
+
+    <h1>An error occurred while processing your request</h1>
+
+    @if (ShowRequestId)
+    {
+        <p>Request ID: <code>@RequestId</code></p>
+    }
+
+    <p>
+        Swapping to the <strong>Development</strong> environment will display more detailed information
+        about the error that occurred. It should never be enabled for a deployed application: it can show
+        sensitive information from exceptions to end users. For local debugging, set the
+        <strong>ASPNETCORE_ENVIRONMENT</strong> environment variable to <strong>Development</strong> and
+        restart the app.
+    </p>
+
+    <div class="hero-actions">
+        <a class="btn btn-primary btn-lg" href="/">Back to home</a>
+    </div>
+</div>
+
+@code{
+    [CascadingParameter]
+    private HttpContext? HttpContext { get; set; }
+
+    private string? RequestId { get; set; }
+    private bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+
+    protected override void OnInitialized() =>
+        RequestId = Activity.Current?.Id ?? HttpContext?.TraceIdentifier;
+}

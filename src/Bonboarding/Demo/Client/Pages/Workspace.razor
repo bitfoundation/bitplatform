@@ -1,0 +1,58 @@
+﻿@page "/workspace"
+@inject IBonboardingService BonboardingService
+@inject NavigationManager Navigation
+
+<PageTitle>Multi-page tour</PageTitle>
+
+<h1>Multi-page tour</h1>
+
+<p class="page-intro">
+    Steps can declare the route they belong to. The engine navigates there, waits for the page to
+    render, and only then shows the step. If you wander off mid-tour it holds its place instead of
+    dragging you back, and picks up where it left off when you return.
+</p>
+
+<section class="demo-section">
+    <h2>A tour across two pages</h2>
+
+    <div class="demo-actions">
+        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the multi-page tour</button>
+        <a class="btn" href="workspace/settings">Go to settings manually</a>
+    </div>
+
+    <div class="note">
+        <Icon Path="@Icons.Info" />
+        <span>
+            While the tour is on a settings step, try navigating back here with the nav panel. The tour
+            waits, and resumes the moment you return.
+        </span>
+    </div>
+
+    <AppWindow OnSettingsClick="GoToSettings" />
+</section>
+
+<section class="demo-section">
+    <h2>Giving a step a route</h2>
+
+    <pre><code>@Example</code></pre>
+</section>
+
+@code {
+    private void GoToSettings() => Navigation.NavigateTo("workspace/settings");
+
+    private Task StartAsync() => BonboardingService.StartAsync(WorkspaceTour.Create());
+
+    private const string Example = """
+        new BonboardingStepDefinition
+        {
+            Id = "api-keys",
+            Route = "workspace/settings",        // navigate here first, then show the step
+            Target = BonboardingStepTarget.Anchor("api-keys"),
+            Title = "Your API keys",
+        }
+
+        // A trailing * makes the route a constraint rather than a destination:
+        // the step waits until the user is somewhere under /workspace, without navigating.
+        new BonboardingStepDefinition { Route = "workspace/*", ... }
+        """;
+}
