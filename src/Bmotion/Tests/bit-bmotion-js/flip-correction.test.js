@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { flipChildCorrection, correctedRadius } from '../../Bit.Bmotion/wwwroot/bit-bmotion.js';
+import { flipChildCorrection, correctedRadius } from '../../Bit.Bmotion/Scripts/bit-bmotion.ts';
 
 const rect = (left, top, width, height) => ({
     left, top, width, height, right: left + width, bottom: top + height, x: left, y: top,

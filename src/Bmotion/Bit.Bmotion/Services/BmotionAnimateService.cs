@@ -82,7 +82,7 @@ public sealed class BmotionAnimateService
         if (!cancellationToken.CanBeCanceled) return controls;
         if (cancellationToken.IsCancellationRequested) { controls.Stop(); return controls; }
         var registration = cancellationToken.Register(controls.Stop);
-        controls.WhenCompleteAsync().ContinueWith(_ => registration.Dispose(), TaskScheduler.Default);
+        controls.WhenCompleteAsync().OnCallerContext(_ => registration.Dispose());
         return controls;
     }
 
@@ -213,7 +213,7 @@ public sealed class BmotionAnimateService
         // One refcount per (segment, element) occurrence, released exactly once by the controls.
         var allIds = starts.SelectMany(s => s.ids).ToArray();
         foreach (var id in allIds)
-            _engine.RegisterElement(id);
+            _engine.RegisterElement(id, null, programmatic: true);
 
         // Segment starts are scheduled rather than expressed as driver delays: a delayed driver
         // would immediately supersede an earlier segment animating the same property (drivers for
@@ -307,9 +307,7 @@ public sealed class BmotionAnimateService
         var controls = new BmAnimationControls(allIds, _engine, completion, Release,
             setTimelineRate: scheduler is null ? null : rate => scheduler.Rate = rate);
 
-        _ = completion.ContinueWith(
-            _ => controls.OnCompletionSettled(),
-            TaskScheduler.Default);
+        _ = completion.OnCallerContext(_ => controls.OnCompletionSettled());
 
         return WithCancellation(controls, cancellationToken);
     }
@@ -342,7 +340,7 @@ public sealed class BmotionAnimateService
         // down once the last animation settles - a single completing call can't unregister an
         // element out from under another still-running animation.
         foreach (var id in elementIds)
-            _engine.RegisterElement(id);
+            _engine.RegisterElement(id, null, programmatic: true);
 
         // Start all animations concurrently; collect their completion tasks. If task creation
         // throws synchronously (e.g. a driver rejects the keyframes), release every element we
@@ -377,9 +375,7 @@ public sealed class BmotionAnimateService
 
         var controls = new BmAnimationControls(elementIds, _engine, completion, Release);
 
-        _ = completion.ContinueWith(
-            _ => controls.OnCompletionSettled(),
-            TaskScheduler.Default);
+        _ = completion.OnCallerContext(_ => controls.OnCompletionSettled());
 
         return controls;
     }

@@ -106,9 +106,13 @@ public class LayoutProjectionTests
             .Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
 
-        // Every measurement must use the same space, or the two would not be comparable.
-        foreach (var call in ctx.Interop.Calls.Where(c => c.Method == "getBoundingRect"))
-            Assert.IsTrue(((BmotionMeasureOptions)call.Args[1]!).TrackScroll);
+        // Every measurement must use the same space, or the two would not be comparable. Both the
+        // pre-render snapshot and the post-render measurement must have happened for that to mean
+        // anything.
+        var measurements = ctx.Interop.ArgsOf("getBoundingRect");
+        Assert.IsTrue(measurements.Count >= 2, $"expected a snapshot and a re-measure, got {measurements.Count}");
+        foreach (var args in measurements)
+            Assert.IsTrue(((BmotionMeasureOptions)args[1]!).TrackScroll);
     }
 
     [TestMethod]
@@ -123,8 +127,10 @@ public class LayoutProjectionTests
             .Add(p => p.ChildContent, Div));
         cut.Render(ps => ps.Add(p => p.Custom, "changed"));
 
-        foreach (var call in ctx.Interop.Calls.Where(c => c.Method == "getBoundingRect"))
-            Assert.IsTrue(((BmotionMeasureOptions)call.Args[1]!).FixedRoot);
+        var measurements = ctx.Interop.ArgsOf("getBoundingRect");
+        Assert.IsTrue(measurements.Count >= 2, $"expected a snapshot and a re-measure, got {measurements.Count}");
+        foreach (var args in measurements)
+            Assert.IsTrue(((BmotionMeasureOptions)args[1]!).FixedRoot);
     }
 
     // ── LayoutDependency ──────────────────────────────────────────────────────
