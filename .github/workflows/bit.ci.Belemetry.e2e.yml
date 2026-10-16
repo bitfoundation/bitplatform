@@ -117,6 +117,10 @@ jobs:
     - name: Build the hybrid harness host
       run: dotnet build src/Belemetry/Tests/Bit.Belemetry.Tests.Harness.Hybrid/Bit.Belemetry.Tests.Harness.Hybrid.csproj -c Release
 
+    # The hybrid app exports to the receiver of the static SSR web host, which the suite starts from this build output.
+    - name: Build the web harness host
+      run: dotnet build src/Belemetry/Tests/Bit.Belemetry.Tests.Harness.Web/Bit.Belemetry.Tests.Harness.Web.csproj -c Release -f net10.0
+
     - name: Build the E2E suite
       run: dotnet build src/Belemetry/Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj -c Release
 
