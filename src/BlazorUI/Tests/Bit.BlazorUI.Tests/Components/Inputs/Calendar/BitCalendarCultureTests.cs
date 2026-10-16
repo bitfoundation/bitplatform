@@ -197,12 +197,12 @@ public class BitCalendarCultureTests : BunitTestContext
     [TestMethod]
     public void BitCalendarShouldShowTheUmAlQuraMonthOfAnArSaCulture()
     {
-        var culture = CultureInfo.GetCultureInfo("ar-SA");
+        var culture = TestCultures.ArSaUmAlQura;
 
         // 15 March 2025 is the 15th of Ramadan 1446 in the Umm al-Qura calendar, whose Ramadan 1446 has 29 days.
         var component = Render(culture, Utc(2025, 3, 15));
 
-        Assert.IsInstanceOfType<UmAlQuraCalendar>(culture.Calendar);
+        Assert.IsInstanceOfType<UmAlQuraCalendar>(culture.DateTimeFormat.Calendar);
         Assert.AreEqual($"{culture.DateTimeFormat.GetMonthName(9)} 1446", GetMonthTitle(component));
         Assert.HasCount(29, GetInMonthDays(component));
         Assert.AreEqual("1446", component.Find(".bit-cal-mwp .bit-cal-ptb").TextContent.Trim());
@@ -211,7 +211,7 @@ public class BitCalendarCultureTests : BunitTestContext
     [TestMethod]
     public void BitCalendarShouldStartTheWeekOnTheFirstDayOfAnArSaCulture()
     {
-        var culture = CultureInfo.GetCultureInfo("ar-SA");
+        var culture = TestCultures.ArSaUmAlQura;
         var firstDayOfWeek = culture.DateTimeFormat.FirstDayOfWeek;
 
         var component = Render(culture, Utc(2025, 3, 15));
@@ -229,7 +229,7 @@ public class BitCalendarCultureTests : BunitTestContext
     {
         DateTimeOffset? value = null;
 
-        var component = Render(CultureInfo.GetCultureInfo("ar-SA"), Utc(2025, 3, 15), p => p.Bind(x => x.Value, value, v => value = v));
+        var component = Render(TestCultures.ArSaUmAlQura, Utc(2025, 3, 15), p => p.Bind(x => x.Value, value, v => value = v));
 
         GetDayButton(component, day).Click();
 
@@ -239,7 +239,7 @@ public class BitCalendarCultureTests : BunitTestContext
     [TestMethod]
     public void BitCalendarShouldNavigateAcrossTheHijriNewYearOfAnArSaCulture()
     {
-        var culture = CultureInfo.GetCultureInfo("ar-SA");
+        var culture = TestCultures.ArSaUmAlQura;
         var umAlQura = new UmAlQuraCalendar();
 
         var component = Render(culture, Utc(1446, 12, 10, umAlQura));
