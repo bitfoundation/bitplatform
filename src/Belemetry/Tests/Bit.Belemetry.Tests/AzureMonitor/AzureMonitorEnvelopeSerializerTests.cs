@@ -233,6 +233,29 @@ public class AzureMonitorEnvelopeSerializerTests
     }
 
     [TestMethod]
+    public void PageVisitTime_IsTheJsSdkEvent()
+    {
+        var log = Records.Log("Home page", "browser.page_visit_time");
+        log.Attributes.Set("url.full", "https://shop.test/").Set("url.path", "/").Set("page.title", "Home page").Set("page.visit.duration", 1234.5).Set("extra", "y");
+
+        var e = Single(log);
+        AssertEnvelope(e, "Event");
+        var data = BaseData(e);
+        Assert.AreEqual("PageVisitTime", data.GetProperty("name").GetString());
+        Assert.AreEqual(1234.5, data.GetProperty("measurements").GetProperty("PageVisitTime").GetDouble());
+        Assert.AreEqual("Home page", Prop(e, "PageName"));
+        Assert.AreEqual("https://shop.test/", Prop(e, "PageUrl"));
+        Assert.AreEqual("y", Prop(e, "extra"));
+        Assert.IsNull(Prop(e, "page.visit.duration"), "The consumed attributes are not repeated as properties.");
+        Assert.IsNull(Prop(e, "url.path"));
+
+        var untitled = Records.Log(null, "browser.page_visit_time");
+        untitled.Attributes.Set("url.path", "/p");
+        Assert.AreEqual("/p", Prop(Single(untitled), "PageName"));
+        Assert.AreEqual(0, BaseData(Single(untitled)).GetProperty("measurements").GetProperty("PageVisitTime").GetDouble());
+    }
+
+    [TestMethod]
     public void OtherLogs_AreMessages()
     {
         var levels = new[]
@@ -290,12 +313,14 @@ public class AzureMonitorEnvelopeSerializerTests
     public void ResourceTags_Variants()
     {
         var browser = new BelemetryResource(new BelemetryAttributes()
-            .Set("service.name", "web").Set("telemetry.sdk.language", "webjs").Set("telemetry.sdk.version", "1.0.0").Set("user_agent.original", "Mozilla/5.0"));
+            .Set("service.name", "web").Set("telemetry.sdk.language", "webjs").Set("telemetry.sdk.version", "1.0.0").Set("user_agent.original", "Mozilla/5.0").Set("browser.language", "de-DE"));
         var tags = Tags(Serialize(new BelemetryBatch(browser, logs: [Records.Log()]), maskIp: false).Single());
         Assert.AreEqual("web", tags.GetProperty("ai.cloud.role").GetString());
         Assert.AreEqual("Browser", tags.GetProperty("ai.device.type").GetString());
         Assert.AreEqual("bitblmjs:1.0.0", tags.GetProperty("ai.internal.sdkVersion").GetString());
         Assert.AreEqual("Mozilla/5.0", tags.GetProperty("ai.user.agent").GetString());
+        Assert.AreEqual("de-DE", tags.GetProperty("ai.device.locale").GetString());
+        Assert.IsFalse(Tags(Serialize(new BelemetryBatch(Records.Resource(), logs: [Records.Log()])).Single()).TryGetProperty("ai.device.locale", out _), "Only a browser resource knows a locale.");
         Assert.IsFalse(tags.TryGetProperty("ai.location.ip", out _));
         Assert.AreEqual(string.Empty, tags.GetProperty("ai.cloud.roleInstance").GetString());
         Assert.IsFalse(tags.TryGetProperty("ai.application.ver", out _));

@@ -56,7 +56,9 @@ internal sealed class BelemetryInstrumentAggregator
                 break;
         }
 
-        Bounds = Type == BelemetryMetricType.Histogram ? (AdvisedBounds(instrument) ?? options.HistogramBoundaries) : [];
+        Bounds = Type == BelemetryMetricType.Histogram
+            ? AdvisedBounds(instrument) ?? (options.HistogramBoundaries is { Length: > 0 } configured ? configured : BelemetryMetricsOptions.DefaultHistogramBoundaries)
+            : [];
     }
 
     public Instrument Instrument { get; }

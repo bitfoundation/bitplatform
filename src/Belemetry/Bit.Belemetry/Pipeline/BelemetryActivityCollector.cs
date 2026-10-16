@@ -12,12 +12,17 @@ internal sealed class BelemetryActivityCollector : IDisposable
     private readonly BelemetryPipeline _pipeline;
     private readonly ActivityListener _listener;
     private readonly double _ratio;
+    private readonly string[] _ignoredNames;
+    private readonly string[] _ignoredRequestPaths;
 
     public BelemetryActivityCollector(BelemetrySettings settings, BelemetryPipeline pipeline)
     {
         _settings = settings;
         _pipeline = pipeline;
         _ratio = settings.Options.Traces.SamplingRatio;
+        // Copied once: the options lists could be edited while a listener callback reads them.
+        _ignoredNames = [.. settings.Options.Traces.IgnoredActivityNames];
+        _ignoredRequestPaths = settings.IsServer ? [.. settings.Options.Server.IgnoredRequestPaths] : [];
 
         _listener = new ActivityListener
         {
@@ -35,6 +40,9 @@ internal sealed class BelemetryActivityCollector : IDisposable
         // The exporter's own HTTP calls: create nothing, not even a propagation-only activity, so no traceparent
         // header leaks to the telemetry backend.
         if (BelemetrySuppression.IsActive) return ActivitySamplingResult.None;
+
+        // Ignored by name: not even created, so its children take its parent, and nothing is allocated for it.
+        if (_ignoredNames.Length > 0 && BelemetrySettings.Matches(options.Name, _ignoredNames)) return ActivitySamplingResult.None;
 
         // Without consent for traces the activity is still created so W3C context keeps flowing to downstream
         // services (their own sampling and consent apply there), but nothing is recorded here.
@@ -56,6 +64,7 @@ internal sealed class BelemetryActivityCollector : IDisposable
     private ActivitySamplingResult SampleUsingParentId(ref ActivityCreationOptions<string> options)
     {
         if (BelemetrySuppression.IsActive) return ActivitySamplingResult.None;
+        if (_ignoredNames.Length > 0 && BelemetrySettings.Matches(options.Name, _ignoredNames)) return ActivitySamplingResult.None;
         if (_pipeline.CanRecord(BelemetryFeatures.Traces) is false) return ActivitySamplingResult.PropagationData;
 
         // A non-W3C (hierarchical) parent id carries no sampling flag, so fall back to the ratio.
@@ -65,6 +74,7 @@ internal sealed class BelemetryActivityCollector : IDisposable
     private void OnStopped(Activity activity)
     {
         if (activity.Recorded is false || activity.IdFormat != ActivityIdFormat.W3C) return;
+        if (_ignoredRequestPaths.Length > 0 && IsIgnoredRequest(activity)) return;
 
         try
         {
@@ -74,6 +84,25 @@ internal sealed class BelemetryActivityCollector : IDisposable
         {
             // Never let telemetry break the instrumented code path.
         }
+    }
+
+    /// <summary>
+    /// Whether a request span is on one of <see cref="BelemetryServerOptions.IgnoredRequestPaths"/>. Only the path is
+    /// known at the end, so unlike an ignored name the activity is created and dropped here, before conversion.
+    /// </summary>
+    private bool IsIgnoredRequest(Activity activity)
+    {
+        if (activity.OperationName != BelemetryAspNetCoreRequests.ActivityName) return false;
+
+        var path = activity.GetTagItem(BelemetrySemanticConventions.UrlPath) as string ?? activity.GetTagItem(BelemetrySemanticConventions.HttpRoute) as string;
+        if (path is null) return false;
+
+        foreach (var prefix in _ignoredRequestPaths)
+        {
+            if (path.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)) return true;
+        }
+
+        return false;
     }
 
     internal static BelemetrySpan Convert(Activity activity, BelemetryTracingOptions options)

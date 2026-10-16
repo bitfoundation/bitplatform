@@ -12,8 +12,9 @@ on the OpenTelemetry NuGet packages: it is built on the BCL's own `ActivityListe
 `ILoggerProvider`, with hand-written OTLP and Application Insights encoders and a single dependency-free script. It
 exports to:
 
-- **OTLP/HTTP** (protobuf or JSON): the OpenTelemetry Collector, the .NET Aspire dashboard, Grafana (Tempo, Loki,
-  Mimir), Jaeger, Honeycomb, Datadog, New Relic, Elastic, SigNoz, Uptrace, and anything else that speaks OTLP.
+- **OTLP** (HTTP with protobuf or JSON, or gRPC): the OpenTelemetry Collector, the .NET Aspire dashboard, Grafana
+  (Tempo, Loki, Mimir), Jaeger, Honeycomb, Datadog, New Relic, Elastic, SigNoz, Uptrace, and anything else that
+  speaks OTLP.
 - **Azure Monitor / Application Insights**, natively (`/v2.1/track`): page views, requests, dependencies, exceptions,
   events and metrics land in their usual tables, with Live Metrics on top.
 - **Console**, **in-memory**, or your own `IBelemetryExporter`.
@@ -22,8 +23,8 @@ And it is **GDPR-ready**: nothing is sent before the user consents (by default),
 interactions, performance, dependencies, sessions, user tracking, logs, traces, metrics, offline persistence, custom
 events - can be granted and revoked independently, at runtime.
 
-The documentation website lives in [`Bit.Belemetry.Demo`](Bit.Belemetry.Demo/) - run the
-[Server](Bit.Belemetry.Demo/Server/) project (`dotnet run`). It exports to itself, so its **Live telemetry** page shows
+The documentation website lives in [`Demo`](Demo/) - run the
+[Server](Demo/Server/) project (`dotnet run`). It exports to itself, so its **Live telemetry** page shows
 your own clicks, page views, web vitals and errors arriving as you use the site. The same server hosts an **MCP
 server** at `/mcp` for AI agents: setup per host, the exact API, a configuration generator and reviewer, and the
 semantic-convention and Azure-mapping references.
@@ -33,6 +34,7 @@ semantic-convention and Azure-mapping references.
 ## Contents
 
 - [Install](#install)
+- [Configuration from appsettings](#configuration-from-appsettings)
 - [Set up per host](#set-up-per-host)
 - [Exporters](#exporters)
 - [Consent and GDPR](#consent-and-gdpr)
@@ -81,6 +83,47 @@ and every configure callback passed across calls runs, in order, on the same `Be
 Add `@using Bit.Belemetry` to `_Imports.razor` in every project whose components use it. Without it,
 `<BelemetryScript />` compiles as an unknown HTML element (only a warning), and telemetry silently never starts.
 
+What the core cannot see on its own ships as separate packages, so an app only takes the dependencies it uses:
+`Bit.Belemetry.EntityFrameworkCore` (a span per database command) and `Bit.Belemetry.Hangfire` (a span per job
+execution, parented to the enqueue). See [Entity Framework Core and Hangfire](#entity-framework-core-and-hangfire).
+
+---
+
+## Configuration from appsettings
+
+Every option can come from configuration instead of code. Bind the section the way a trimmed or AOT app binds any
+options - the configuration binder's source generator (`<EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>`
+in the app's project) handles `BelemetryOptions` without reflection, and Belemetry itself takes no dependency on the
+binder:
+
+```csharp
+builder.Services.AddBitBelemetryServices(options =>
+{
+    builder.Configuration.GetSection("Belemetry").Bind(options);
+    options.AddExporter(new MyExporter());   // what only code can add: custom exporters, processors, token providers
+});
+```
+
+```json
+{
+  "Belemetry": {
+    "ServiceName": "MyApp",
+    "Environment": "Production",
+    "Consent": { "Default": "Errors" },
+    "Browser": { "TrackPageVisitTime": true },
+    "Traces": { "Sources": [ "MyApp.*" ], "IgnoredActivityNames": [ "Microsoft.AspNetCore.Components.HandleEvent" ] },
+    "Server": { "CollectDotnetTelemetry": true, "IgnoredRequestPaths": [ "/health", "/alive" ] },
+    "OtlpExporters": [ { "Endpoint": "https://otel.example.com", "Protocol": "HttpProtobuf", "Headers": { "x-api-key": "..." } } ],
+    "AzureMonitorExporters": [ { "ConnectionString": "InstrumentationKey=...", "MinimumLogLevel": "Warning" } ]
+  }
+}
+```
+
+Two binder rules worth knowing: a bound list **adds** to the option's defaults (`Privacy.RedactQueryParameters` keeps
+its built-in names and gains yours), and a bound array replaces nothing either, which is why `Metrics.HistogramBoundaries`
+is empty by default and means "the OpenTelemetry defaults" until you set it. Enums and flags bind by name
+(`"Features": "Errors, Logs, Traces"`), and `TimeSpan`s by `hh:mm:ss`.
+
 ---
 
 ## Set up per host
@@ -114,6 +157,17 @@ And connect .NET once the app is interactive, in `Routes.razor` (or the main lay
 With the WebAssembly or Auto render modes, the .NET pipeline (logs, traces, metrics) runs **in the browser** and its
 export is flushed with `keepalive` when the page unloads. On the server, Belemetry only serves the script unless you
 turn on the [server pipeline](#the-server-pipeline).
+
+What that costs the download, measured on a trimmed Release publish of `Samples/Wasm` (brotli, as served):
+
+| Part | Size |
+| --- | --- |
+| `Bit.Belemetry.wasm` (the .NET pipeline, both encoders, the bridge) | 107 KB |
+| `bit-belemetry.js` (the browser script) | 16 KB |
+| `System.Diagnostics.DiagnosticSource.wasm`, when the app did not already ship it | 29 KB |
+
+`System.Text.Json` and `System.Net.Http` are already part of every Blazor WebAssembly app. The package is
+`IsTrimmable` and `IsAotCompatible`; the E2E suite's publish gate fails on any trim or AOT warning raised inside it.
 
 In the browser, metrics need `System.Diagnostics.Metrics`, which the WebAssembly SDK turns off by default
 (`MetricsSupport=false`) to save size. The Bit.Belemetry package turns it back on for you: its build props set
@@ -170,8 +224,9 @@ builder.Services.AddBitBelemetryServices(options =>
 ```
 
 In Hybrid the browser script **relays** its records to .NET over JS interop (no CORS, no credentials in the page),
-and the .NET pipeline exports everything, persisting it on the device while offline. Flush before the app is
-suspended:
+and the .NET pipeline exports everything, persisting it on the device while offline. MAUI, WPF and Windows Forms
+share the same `BlazorWebView` core, so the setup is the same in all three; the repository's `Samples/Maui` and
+`Samples/WinForms` show it. Flush before the app is suspended (or, in a desktop app, before its window closes):
 
 ```csharp
 // App.xaml.cs, with the app's IServiceProvider injected into its constructor as _services
@@ -206,14 +261,31 @@ Any number of exporters can be combined. The browser script exports with the sam
 options.AddOtlpExporter(o =>
 {
     o.Endpoint = new Uri("http://localhost:4318");              // /v1/traces, /v1/logs, /v1/metrics are appended
-    o.Protocol = BelemetryOtlpProtocol.HttpProtobuf;            // or HttpJson
+    o.Protocol = BelemetryOtlpProtocol.HttpProtobuf;            // or HttpJson, or Grpc (see below)
     o.Headers["x-honeycomb-team"] = "...";                       // vendor API keys
     o.Compression = BelemetryCompression.Gzip;
     o.BrowserEndpoint = new Uri("https://otel.example.com");    // public, CORS-enabled route for the browser (may be relative: "/otlp")
     o.Signals = BelemetrySignals.All;                           // honored by the browser too (it sends traces and logs)
+    o.MinimumLogLevel = LogLevel.Warning;                       // this exporter gets warnings and up; others get everything
     // o.TracesEndpoint / LogsEndpoint / MetricsEndpoint: full per-signal URLs, used verbatim
 });
 ```
+
+**gRPC.** `BelemetryOtlpProtocol.Grpc` speaks OTLP/gRPC over HTTP/2 without a gRPC library: a unary call is an HTTP/2
+POST with the 5-byte message prefix, and the status comes back in the trailers. It is what the OpenTelemetry SDKs
+default to and what the .NET Aspire AppHost's `WithOtlpExporter()` hands a resource (`OTEL_EXPORTER_OTLP_PROTOCOL=grpc`
+and the dashboard's gRPC endpoint; the default port is 4317). `Compression` becomes the gRPC message compression
+(`grpc-encoding: gzip`). A browser cannot speak gRPC, so a gRPC exporter reaches the page only through an OTLP/HTTP
+`BrowserEndpoint`; in a WebAssembly app the .NET pipeline cannot either, so there the whole exporter becomes OTLP/HTTP
+to that endpoint (which must be absolute), and one without is skipped with a startup warning. On Android and iOS the
+gRPC calls go through a `SocketsHttpHandler` of their own, since the platforms' native handlers cannot do HTTP/2
+without TLS.
+
+**One level per backend.** `MinimumLogLevel` is the per-exporter counterpart of a logging provider's level: with it,
+Application Insights can receive warnings and errors only while an OTLP backend receives everything, from one
+pipeline. It applies to the plain log records of the .NET pipeline (its own and the browser's relayed ones); events -
+page views, interactions, web vitals, custom events, exceptions - are not logs to a log level and always pass, as do
+spans and metrics.
 
 The browser posts to the collector from the page origin, so the receiver must allow it. For the OpenTelemetry
 Collector:
@@ -242,6 +314,7 @@ options.AddAzureMonitorExporter("InstrumentationKey=...;IngestionEndpoint=https:
     o.Compression = BelemetryCompression.Gzip;   // also from the browser (the endpoint's CORS allows Content-Encoding)
     o.Signals = BelemetrySignals.All;    // honored by the browser too
     o.EnableLiveMetrics = true;          // Live Metrics stream (not in the browser)
+    o.MinimumLogLevel = LogLevel.Warning;    // Application Insights gets warnings and up (spans and metrics unaffected)
     o.AccessTokenProvider = async ct =>  // Entra ID auth, for resources with local auth disabled
         (await credential.GetTokenAsync(new(["https://monitor.azure.com//.default"]), ct)).Token;
 });
@@ -387,16 +460,33 @@ types in `Bit.Belemetry.*` namespaces; `Logs.ExcludedCategories` drops more by p
 
 ### Traces
 
-Activities of the sources in `Traces.Sources` (default `System.Net.Http` and `Microsoft.AspNetCore.Components*`; a
-trailing `*` matches a prefix) are recorded. Sampling is parent-based with `Traces.SamplingRatio` for new traces,
-compatible with the OpenTelemetry `TraceIdRatioBased` sampler.
+Activities of the sources in `Traces.Sources` (default `System.Net.Http`, `Microsoft.AspNetCore.Components*` and
+`Bit.Belemetry.*` - the instrumentation packages; a trailing `*` matches a prefix) are recorded. Sampling is
+parent-based with `Traces.SamplingRatio` for new traces, compatible with the OpenTelemetry `TraceIdRatioBased`
+sampler. Names in `Traces.IgnoredActivityNames` are never created at all - their children attach to the parent - which
+is the cheapest way to drop a chatty source, such as Blazor's per-event spans.
 
 ```csharp
 options.Traces.Sources.Add("MyApp*");
 options.Traces.SamplingRatio = 0.25;
+options.Traces.IgnoredActivityNames.Add("Microsoft.AspNetCore.Components.HandleEvent");
 
 static readonly ActivitySource Source = new("MyApp.Checkout");
 using var activity = Source.StartActivity("PlaceOrder");
+```
+
+Sampling at the end of a span (keep every failure and every slow span, a fraction of the rest) is a
+[processor](#processors). `BelemetrySampler` makes the same deterministic, trace-wide decision the ratio sampler
+makes, so the kept fraction is whole traces, not scattered spans:
+
+```csharp
+public sealed class TailSampler : IBelemetryProcessor
+{
+    public bool OnSpan(BelemetrySpan span) =>
+        span.Status == BelemetryStatusCode.Error
+        || span.Duration > TimeSpan.FromSeconds(1)
+        || BelemetrySampler.ShouldSample(span.TraceId, 0.05);
+}
 ```
 
 ### Metrics
@@ -409,7 +499,7 @@ instrument (2000; overflow goes to an `otel.metric.overflow` point).
 
 ```csharp
 options.Metrics.Meters.Add("MyApp");
-options.Metrics.HistogramBoundaries = [0, 10, 50, 100, 500, 1000];
+options.Metrics.HistogramBoundaries = [0, 10, 50, 100, 500, 1000];   // empty (the default) means BelemetryMetricsOptions.DefaultHistogramBoundaries
 ```
 
 Metrics depend on the `System.Diagnostics.Metrics` feature switch (`MetricsSupport`). The WebAssembly SDK turns it off
@@ -419,6 +509,46 @@ remove `BelemetryFeatures.Metrics` from `options.Features`, which silences the w
 `Bit.Belemetry.csproj` instead of the package skips the package's build props: import
 `buildTransitive/Bit.Belemetry.props` from it, as this repository's samples do.
 
+### Entity Framework Core and Hangfire
+
+Neither EF Core nor Hangfire starts activities of its own, and the OpenTelemetry instrumentations for them only run
+inside the OpenTelemetry SDK. Belemetry ships the two bridges as packages of their own, so an app without a database
+or a job server takes neither dependency; their spans land on `Bit.Belemetry.*` sources, which the core collects by
+default, and any other `ActivityListener` can record them too.
+
+```bash
+dotnet add package Bit.Belemetry.EntityFrameworkCore
+dotnet add package Bit.Belemetry.Hangfire
+```
+
+```csharp
+services.AddDbContext<AppDbContext>(options => options
+    .UseSqlServer(connectionString)
+    .UseBitBelemetry(o =>
+    {
+        o.CaptureQueryText = false;                                    // db.query.text, off by default
+        o.Filter = (command, data) => data.Context is not JobDbContext;   // skip a job store's own commands
+    }));
+
+services.AddHangfire(configuration => configuration
+    .UseSqlServerStorage(connectionString)
+    .UseBitBelemetry(o =>
+    {
+        o.PropagateTraceContext = true;                        // the enqueue's trace is the execution's parent
+        o.Filter = job => job.Type != typeof(HeartbeatJob);    // skip the noisy ones
+    }));
+```
+
+- **EF Core:** a client span per command, named after the database, with `db.system.name`, `db.namespace`,
+  `server.address`, `server.port`, `efcore.command.source` (`SaveChanges`, `LinqQuery`, `Migrations`, ...) and, on a
+  failure, `error.type` and an error status. Application Insights shows them as database dependencies. The span covers
+  the execution, not the reading of the result set, as the OpenTelemetry instrumentation's does.
+- **Hangfire:** a consumer span `JOB {Type}.{Method}` per execution with `job.id`, `job.type`, `job.method`,
+  `job.queue` and `job.created_at`, parented to the trace that enqueued the job (the W3C trace context travels in the
+  job's parameters, so the enqueue and the execution may run in different processes), and marked as an error with
+  `error.type` when the job throws. Application Insights shows them as requests. Reading the context back costs one
+  storage round trip per execution, like any job parameter.
+
 ---
 
 ## Browser instrumentation
@@ -427,6 +557,7 @@ remove `BelemetryFeatures.Metrics` from `options.Features`, which silences the w
 | --- | --- | --- |
 | `Enabled` | `true` | the script at all |
 | `TrackHashChanges` | `false` | fragment-only changes count as page views |
+| `TrackPageVisitTime` | `false` | how long each page was visited, as a `browser.page_visit_time` event (Application Insights: `PageVisitTime`) |
 | `InteractionEvents` | `click` | DOM events recorded as interactions |
 | `CaptureInteractionText` | `false` | record the clicked element's text (may contain personal data) |
 | `WebVitals` / `DocumentLoad` | `true` | LCP, INP, CLS, FCP, TTFB / the load span with navigation timing |
@@ -517,10 +648,24 @@ OpenTelemetry setup - and Belemetry only serves the browser script. Turn it on t
 ```csharp
 options.Server.CollectDotnetTelemetry = true;
 options.Server.Features = BelemetryFeatures.Errors | BelemetryFeatures.Logs | BelemetryFeatures.Traces | BelemetryFeatures.Metrics;
+options.Server.IgnoredRequestPaths.AddRange(["/health", "/alive", "/_framework", "/_content", "/_blazor"]);   // no request spans for probes and Blazor's own traffic
 ```
+
+`IgnoredRequestPaths` matches `url.path` on .NET 10 and only `http.route` on .NET 8 and 9, where a request that
+matched no endpoint (a static file) cannot be matched at all; and since the span is dropped when it ends, a child it
+had - the database check behind `/health` - is still exported, with a parent that never arrives.
 
 The server pipeline serves every user at once, so it is governed by `Server.Features` (operator telemetry), not by
 any one user's consent. User consent keeps governing the browser script and the `IBelemetry` calls of each circuit.
+A host without Blazor at all - an API, a worker - works the same way: it has no JS runtime, so `IBelemetry` goes
+straight to the server pipeline.
+
+A server also describes where it runs, the way the OpenTelemetry resource detectors do, from environment variables
+and `/proc` alone (no metadata-service call): `host.name`, `process.pid`, `process.executable.name`, `process.owner`,
+`container.id` (Linux), and on Azure App Service, Functions or Container Apps `cloud.provider`, `cloud.platform`,
+`cloud.region`, `cloud.resource_id`, `host.id` and `azure.*`. Its `service.instance.id` is the platform's instance
+name (`WEBSITE_INSTANCE_ID`, `CONTAINER_APP_REPLICA_NAME`) or the machine name, so Application Insights keeps counting
+the same instance across restarts - a device or a browser tab keeps a random id, which identifies nobody.
 
 ASP.NET Core's request activity (`Microsoft.AspNetCore.Hosting.HttpRequestIn`) carries no HTTP tags of its own on
 .NET 8 and 9. Belemetry fills them in without a middleware or a reference to ASP.NET Core, from the tags ASP.NET Core
@@ -555,9 +700,13 @@ always wins, as in the OpenTelemetry SDKs (headers merge per key):
 | `OTEL_SERVICE_NAME` | `service.name` |
 | `OTEL_RESOURCE_ATTRIBUTES` | extra resource attributes (`k=v,k2=v2`) |
 | `OTEL_EXPORTER_OTLP_ENDPOINT` | adds an OTLP exporter when none is configured, and fills unset endpoints |
+| `OTEL_EXPORTER_OTLP_TRACES_ENDPOINT`, `_LOGS_ENDPOINT`, `_METRICS_ENDPOINT` | per-signal endpoints (any of them adds the exporter too); with gRPC, a base address the service method is appended to |
 | `OTEL_EXPORTER_OTLP_HEADERS` | OTLP headers (`k=v,k2=v2`) |
-| `OTEL_EXPORTER_OTLP_PROTOCOL` | `http/protobuf` or `http/json`, for exporters whose `Protocol` is not set in code |
+| `OTEL_EXPORTER_OTLP_PROTOCOL` | `http/protobuf`, `http/json` or `grpc`, for exporters whose `Protocol` is not set in code; anything else is reported at startup and ignored |
+| `OTEL_EXPORTER_OTLP_COMPRESSION` | `gzip` or `none`, for exporters whose `Compression` is not set in code |
+| `OTEL_EXPORTER_OTLP_TIMEOUT` | the request timeout in milliseconds, for exporters whose `Timeout` is not set in code |
 | `APPLICATIONINSIGHTS_CONNECTION_STRING` | adds an Azure Monitor exporter when none is configured |
+| `WEBSITE_*`, `REGION_NAME`, `CONTAINER_APP_*` | the Azure App Service / Functions / Container Apps resource attributes and instance id of a server (see [the server pipeline](#the-server-pipeline)) |
 
 ---
 
@@ -565,18 +714,22 @@ always wins, as in the OpenTelemetry SDKs (headers merge per key):
 
 Resource: `service.name`, `service.version`, `service.namespace`, `service.instance.id`,
 `deployment.environment.name`, `telemetry.sdk.name = bit-belemetry`, `telemetry.sdk.language` (`dotnet` / `webjs`),
-`telemetry.sdk.version`, plus `os.*`, `host.arch`, `process.runtime.*` (.NET) or `browser.*`, `user_agent.original`
-(browser).
+`telemetry.sdk.version`, plus `os.*`, `host.arch`, `process.runtime.*`, `process.pid` (.NET), `host.name`,
+`process.executable.name`, `process.owner`, `container.id`, `cloud.*` (servers only) or `browser.*`,
+`user_agent.original` (browser).
 
 | Record | Shape |
 | --- | --- |
 | Page view | log record, event `browser.page_view`: `url.full`, `url.path`, `page.title`, `page.referrer`, `browser.navigation.type` |
+| Page visit time | log record, event `browser.page_visit_time` (with `Browser.TrackPageVisitTime`): `url.full`, `url.path`, `page.title`, `page.visit.duration` (ms) |
 | Interaction | log record, event `browser.user_interaction`: `event.type`, `target.element`, `target.id`, `target.name`, `target.xpath` |
 | Web vital | log record, event `browser.web_vital`: `web_vital.name`, `web_vital.value`, `web_vital.delta`, `web_vital.rating`, `web_vital.id` |
 | Document load | internal span `documentLoad` with navigation-timing events |
 | fetch/XHR | client span: `http.request.method`, `url.full`, `server.address`, `server.port`, `http.response.status_code`, `error.type` |
 | JS error / exception | log record, severity ERROR, event `exception`: `exception.type`, `exception.message`, `exception.stacktrace` |
 | `ILogger` | log record with the category as scope, `log.event.id`, `log.event.name`, the structured values |
+| EF Core command | client span named after the database: `db.system.name`, `db.namespace`, `server.address`, `server.port`, `efcore.command.source`, `db.query.text` (opt-in), `error.type` |
+| Hangfire execution | consumer span `JOB {Type}.{Method}`: `job.id`, `job.type`, `job.method`, `job.queue`, `job.created_at`, `error.type` |
 | Every record | `session.id`; `enduser.pseudo.id` and `user.id` with `UserTracking` |
 
 ---
@@ -590,13 +743,14 @@ Resource: `service.name`, `service.version`, `service.namespace`, `service.insta
 | Log with an exception | `exceptions` |
 | `browser.page_view` | `pageViews` |
 | `browser.web_vital` | `customMetrics` (`LCP`, `INP`, `CLS`, `FCP`, `TTFB`) |
+| `browser.page_visit_time` | `customEvents` as `PageVisitTime` with the `PageVisitTime` measurement and `PageName`/`PageUrl` properties - the Application Insights JS SDK's shape |
 | Other events | `customEvents` |
 | Other logs | `traces` |
 | Metrics | `customMetrics` (deltas; histograms with count, min, max) |
 
 Tags: `ai.cloud.role` (`[service.namespace]/service.name`, or `service.name` alone - as the Azure Monitor
 OpenTelemetry exporter writes it), `ai.cloud.roleInstance`, `ai.application.ver` (`service.version`), `ai.user.agent`
-(browser), `ai.device.type` (`Browser`, `PC` or `Phone`), `ai.operation.id` (trace id), `ai.operation.parentId`,
+and `ai.device.locale` (browser), `ai.device.type` (`Browser`, `PC` or `Phone`), `ai.operation.id` (trace id), `ai.operation.parentId`,
 `ai.operation.name` (requests: `{method} {route}` or the span name; page views: the page name), `ai.session.id`,
 `ai.user.id` (pseudo id), `ai.user.authUserId` (user id), `ai.location.ip` (`0.0.0.0` with `MaskIp`),
 `ai.internal.sdkVersion`.
@@ -644,6 +798,11 @@ console.log(BitBelemetry.getContext());   // { consent, decided, sessionId, pseu
 - **CORS errors in the browser console:** the receiver does not allow the page origin - configure CORS on the
   collector, use `BrowserEndpoint`, or switch to the Relay transport.
 - **No .NET telemetry on the server:** that is the default; see [the server pipeline](#the-server-pipeline).
+- **Nothing reaches the Aspire dashboard:** the AppHost hands its resources a gRPC endpoint. That works with
+  `OTEL_EXPORTER_OTLP_PROTOCOL=grpc` (which it sets) and `BelemetryOtlpProtocol.Grpc`; an exporter with its protocol
+  fixed to HTTP in code posts HTTP to the gRPC port and fails quietly. Either let the environment decide the protocol,
+  or give the AppHost `WithOtlpExporter(OtlpProtocol.HttpProtobuf)`. Belemetry reports an unknown protocol value at
+  startup, as a warning in the `Bit.Belemetry` category.
 - **Logs and traces from WebAssembly, but no metrics:** `System.Diagnostics.Metrics` is off in the app, and Belemetry
   logs a warning at startup saying so. The package turns it on by default, so look for
   `<MetricsSupport>false</MetricsSupport>` in the client project, or a project reference to Bit.Belemetry instead of

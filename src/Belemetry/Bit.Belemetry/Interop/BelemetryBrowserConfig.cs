@@ -60,6 +60,7 @@ internal sealed class BelemetryBrowserConfig
     internal sealed class PageViewsConfig
     {
         public bool TrackHashChanges { get; set; }
+        public bool TrackVisitTime { get; set; }
     }
 
     internal sealed class InteractionsConfig

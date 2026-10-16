@@ -16,8 +16,15 @@ public sealed class BelemetryMetricsOptions
     /// <summary>The aggregation temporality sent over OTLP. Defaults to cumulative (Azure Monitor always gets deltas).</summary>
     public BelemetryMetricTemporality Temporality { get; set; } = BelemetryMetricTemporality.Cumulative;
 
-    /// <summary>The default histogram bucket boundaries (the OpenTelemetry defaults), used unless an instrument advises its own.</summary>
-    public double[] HistogramBoundaries { get; set; } = [0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000];
+    /// <summary>The OpenTelemetry default histogram bucket boundaries, used while <see cref="HistogramBoundaries"/> is empty.</summary>
+    public static readonly double[] DefaultHistogramBoundaries = [0, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 2500, 5000, 7500, 10000];
+
+    /// <summary>
+    /// The histogram bucket boundaries, used unless an instrument advises its own. Empty, the default, means
+    /// <see cref="DefaultHistogramBoundaries"/> - empty rather than those values themselves because a configuration
+    /// binder appends to an array it binds, and boundaries must replace the defaults, never grow them.
+    /// </summary>
+    public double[] HistogramBoundaries { get; set; } = [];
 
     /// <summary>
     /// The maximum number of attribute sets per instrument (the OpenTelemetry default is 2000). Measurements with new

@@ -11,11 +11,20 @@
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SignAssembly>true</SignAssembly>
         <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+        <!-- The options-binding tests bind BelemetryOptions the way a trimmed or AOT app does: through the
+             configuration binder's source generator, which runs in the app that calls Bind, never in the library. -->
+        <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="MSTest" Version="4.5.1" />
         <PackageReference Include="bunit" Version="2.11.3" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Extensions.Configuration.Binder" Version="8.0.2" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.21" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Extensions.Configuration.Json" Version="9.0.21" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.13" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.Configuration.Json" Version="10.0.13" />
         <!-- The OTLP protobuf conformance tests decode Belemetry's hand-written bytes with types generated from the
              vendored official opentelemetry-proto files (v1.11.1). Messages only: the service stubs are not needed. -->
         <PackageReference Include="Google.Protobuf" Version="3.35.0" />

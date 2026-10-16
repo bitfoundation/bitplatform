@@ -3,13 +3,20 @@ using System.Diagnostics;
 
 namespace Bit.Belemetry;
 
-/// <summary>The trace-id-ratio sampling decision, as the OpenTelemetry <c>TraceIdRatioBased</c> sampler makes it.</summary>
-internal static class BelemetrySampler
+/// <summary>
+/// The trace-id-ratio sampling decision, as the OpenTelemetry <c>TraceIdRatioBased</c> sampler makes it. Belemetry
+/// applies it to new traces with <see cref="BelemetryTracingOptions.SamplingRatio"/>; it is public so a processor
+/// that samples at the end of a span (keep every failure, a fraction of the rest) can make the same deterministic,
+/// trace-wide decision instead of a random one.
+/// </summary>
+public static class BelemetrySampler
 {
     /// <summary>
     /// Whether a trace is sampled at <paramref name="ratio"/>. Deterministic in the trace id, so every service in a
     /// trace that samples at the same ratio makes the same decision.
     /// </summary>
+    /// <param name="traceId">The trace id.</param>
+    /// <param name="ratio">The fraction of traces kept, 0 to 1.</param>
     public static bool ShouldSample(ActivityTraceId traceId, double ratio)
     {
         if (ratio >= 1) return true;
@@ -20,12 +27,14 @@ internal static class BelemetrySampler
         return ShouldSample(bytes, ratio);
     }
 
-    /// <summary>Same as <see cref="ShouldSample(ActivityTraceId, double)"/> for a hex trace id.</summary>
+    /// <summary>Same as <see cref="ShouldSample(ActivityTraceId, double)"/> for a hex trace id, such as <see cref="BelemetrySpan.TraceId"/>.</summary>
+    /// <param name="traceIdHex">The 32-character hex trace id; anything else is kept.</param>
+    /// <param name="ratio">The fraction of traces kept, 0 to 1.</param>
     public static bool ShouldSample(string traceIdHex, double ratio)
     {
         if (ratio >= 1) return true;
         if (ratio <= 0) return false;
-        if (traceIdHex.Length != 32) return true;
+        if (traceIdHex is null || traceIdHex.Length != 32) return true;
 
         Span<byte> bytes = stackalloc byte[16];
         return BelemetryHex.TryDecode(traceIdHex, bytes) is false || ShouldSample(bytes, ratio);

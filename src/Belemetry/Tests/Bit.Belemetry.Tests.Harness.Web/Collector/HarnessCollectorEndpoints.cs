@@ -17,6 +17,9 @@ public static class HarnessCollectorEndpoints
     /// <c>traceparent</c> the fetch instrumentation added, and <c>GET /test-api/server-telemetry</c>, which writes a
     /// server-side log and span for the server pipeline to pick up.
     /// </summary>
+    /// <summary>The CORS policy of the echo endpoint: any origin, with the W3C trace-context headers allowed.</summary>
+    public const string CrossOriginPolicy = "harness-cross-origin";
+
     public static IEndpointRouteBuilder MapHarnessCollector(this IEndpointRouteBuilder endpoints)
     {
         var collector = endpoints.MapGroup(HarnessCollectorFilter.CollectorPath);
@@ -57,7 +60,7 @@ public static class HarnessCollectorEndpoints
             };
             store.AddEcho(echo);
             return Results.Json(new { headers = echo.Headers });
-        });
+        }).RequireCors(CrossOriginPolicy);
 
         endpoints.MapGet("/test-api/server-telemetry", ([FromQuery] string? marker, ILoggerFactory loggers) =>
         {

@@ -31,7 +31,10 @@
         <code>url.full</code>, <code>url.path</code>, <code>page.title</code>, <code>page.referrer</code> and
         <code>browser.navigation.type</code> (<code>initial</code>, <code>push</code>, <code>replace</code>,
         <code>pop</code>, <code>hash</code> or <code>manual</code>). Fragment-only changes count only with
-        <code>TrackHashChanges</code>.
+        <code>TrackHashChanges</code>. With <code>TrackPageVisitTime</code> the time spent on each page is recorded
+        too, as a <code>browser.page_visit_time</code> event carrying <code>page.visit.duration</code> (milliseconds)
+        when the next page view starts or the page is hidden - what Application Insights shows as the
+        <code>PageVisitTime</code> event.
     </p>
     <p>
         For views the URL does not show - a dialog, a wizard step, a tab - call <code>IBelemetry.TrackPageView</code>.

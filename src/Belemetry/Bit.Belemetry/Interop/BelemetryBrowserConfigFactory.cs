@@ -33,10 +33,12 @@ internal static class BelemetryBrowserConfigFactory
                 HonorGlobalPrivacyControl = options.Consent.HonorGlobalPrivacyControl,
                 PendingLimit = options.Consent.PendingLimit,
             },
-            PageViews = new() { TrackHashChanges = browser.TrackHashChanges },
+            PageViews = new() { TrackHashChanges = browser.TrackHashChanges, TrackVisitTime = browser.TrackPageVisitTime },
             Interactions = new()
             {
-                Events = [.. browser.InteractionEvents],
+                // Distinct: a configuration binder appends to the list's defaults, and a DOM event listed twice would
+                // be listened to twice - two records per click.
+                Events = [.. browser.InteractionEvents.Distinct(StringComparer.OrdinalIgnoreCase)],
                 CaptureText = browser.CaptureInteractionText,
                 MaxTextLength = browser.MaxInteractionTextLength,
             },
@@ -55,7 +57,7 @@ internal static class BelemetryBrowserConfigFactory
                 IgnoreUrls = [.. browser.IgnoreUrls],
             },
             Errors = new() { IgnoreMessages = [.. browser.IgnoreErrorMessages] },
-            Logs = new() { CaptureConsole = browser.CaptureConsole, ConsoleLevels = [.. browser.ConsoleLevels] },
+            Logs = new() { CaptureConsole = browser.CaptureConsole, ConsoleLevels = [.. browser.ConsoleLevels.Distinct(StringComparer.OrdinalIgnoreCase)] },
             Privacy = new()
             {
                 RedactQueryParameters = [.. options.Privacy.RedactQueryParameters],
@@ -105,6 +107,9 @@ internal static class BelemetryBrowserConfigFactory
 
             foreach (var otlp in settings.OtlpExporters.Where(o => o.IncludeInBrowser && (o.Signals & browserSignals) != 0))
             {
+                // A page cannot speak gRPC: such an exporter reaches the browser only through an OTLP/HTTP BrowserEndpoint.
+                if (otlp.Protocol == BelemetryOtlpProtocol.Grpc && otlp.BrowserEndpoint is null) continue;
+
                 var root = otlp.BrowserEndpoint ?? otlp.Endpoint;
                 config.Exporters.Add(new()
                 {
@@ -158,9 +163,9 @@ internal static class BelemetryBrowserConfigFactory
 
         foreach (var otlp in settings.OtlpExporters)
         {
-            Add(BelemetryOtlpExporter.Resolve(otlp.TracesEndpoint, otlp.Endpoint, "v1/traces"));
-            Add(BelemetryOtlpExporter.Resolve(otlp.LogsEndpoint, otlp.Endpoint, "v1/logs"));
-            Add(BelemetryOtlpExporter.Resolve(otlp.MetricsEndpoint, otlp.Endpoint, "v1/metrics"));
+            Add(BelemetryOtlpExporter.Resolve(otlp.TracesEndpoint, otlp.Endpoint, otlp.Protocol, BelemetrySignals.Traces));
+            Add(BelemetryOtlpExporter.Resolve(otlp.LogsEndpoint, otlp.Endpoint, otlp.Protocol, BelemetrySignals.Logs));
+            Add(BelemetryOtlpExporter.Resolve(otlp.MetricsEndpoint, otlp.Endpoint, otlp.Protocol, BelemetrySignals.Metrics));
             Add(otlp.BrowserEndpoint?.ToString());
         }
 

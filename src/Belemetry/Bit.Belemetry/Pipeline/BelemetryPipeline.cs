@@ -171,7 +171,10 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
         foreach (var batch in BuildBatches(entries, metrics))
         {
             // The browser sends these with keepalive, so they carry the exporter's headers.
-            foreach (var exporter in Exporters.HttpExporters) requests.AddRange(exporter.CreateRequests(batch).Select(r => r.WithHeaders(exporter.Headers)));
+            foreach (var exporter in Exporters.HttpExporters)
+            {
+                requests.AddRange(exporter.CreateRequests(BelemetryExporterSet.WithMinimumSeverity(batch, exporter.MinimumSeverity)).Select(r => r.WithHeaders(exporter.Headers)));
+            }
         }
 
         return requests;
@@ -306,6 +309,10 @@ internal sealed class BelemetryPipeline : IAsyncDisposable
                                 "Set <MetricsSupport>true</MetricsSupport> in the project file, or remove BelemetryFeatures.Metrics from BelemetryOptions.Features to silence this warning.",
                           LogLevel.Warning);
         }
+
+        // Misconfigurations the settings found while resolving the options (an exporter the host cannot use, ...):
+        // settings have no logger of their own, and like the metrics warning above these deserve a Warning.
+        foreach (var warning in Settings.StartupWarnings) LogDiagnostic(null, warning, LogLevel.Warning);
 
         var options = Settings.Options;
         var flushInterval = options.Batch.FlushInterval > TimeSpan.Zero ? options.Batch.FlushInterval : TimeSpan.FromSeconds(5);

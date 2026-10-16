@@ -231,6 +231,32 @@ public abstract partial class WebModeTests : HarnessTest
     }
 
     [TestMethod]
+    public async Task A_cross_origin_fetch_carries_traceparent_when_its_origin_is_listed_and_the_api_allows_the_header()
+    {
+        await OpenAsync("/?consent=all");
+        var session = await SessionIdAsync();
+
+        // The host under its other name is another origin to the browser: a real cross-origin API call, answered
+        // with a CORS policy that allows the traceparent header, as any API behind another origin must.
+        await Page.Locator("#js-fetch-cross-origin").ClickAsync();
+        var result = Page.Locator("#fetch-cross-origin-result");
+        await Expect(result).ToHaveAttributeAsync("data-done", "true");
+        Assert.IsNull(await result.GetAttributeAsync("data-error"), $"The cross-origin request failed: {await result.GetAttributeAsync("data-error")}");
+        await Expect(result).ToHaveAttributeAsync("data-status", "200");
+
+        var traceparent = await result.GetAttributeAsync("data-traceparent");
+        var match = TraceparentPattern().Match(traceparent ?? string.Empty);
+        Assert.IsTrue(match.Success, $"The cross-origin request carried no valid traceparent header: '{traceparent}'.");
+
+        var span = await Collector.WaitForAsync(t => t.Spans.FirstOrDefault(s => s.Attributes.GetValueOrDefault("url.full")?.Contains("from=harness-cross-origin") is true),
+            "the cross-origin fetch client span", session);
+        Assert.AreEqual(3, span.Kind, "The fetch span is not a CLIENT span.");
+        Assert.AreEqual("200", span.Attributes.GetValueOrDefault("http.response.status_code"));
+        Assert.AreEqual(span.TraceId, match.Groups["trace"].Value);
+        Assert.AreEqual(span.SpanId, match.Groups["span"].Value);
+    }
+
+    [TestMethod]
     public async Task Web_vitals_are_reported_when_the_page_is_hidden()
     {
         await OpenAsync("/?consent=all");

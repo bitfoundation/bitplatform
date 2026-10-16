@@ -77,6 +77,12 @@
                     <td>PageViews</td>
                 </tr>
                 <tr>
+                    <td>Page visit time</td>
+                    <td>Log record, <code>eventName = "browser.page_visit_time"</code>, only with <code>TrackPageVisitTime</code>: emitted for the previous page when the next page view starts, and for the current page when it is hidden. Attributes: <code>url.full</code>, <code>url.path</code>, <code>page.title</code>, <code>page.visit.duration</code> (ms)</td>
+                    <td><code>bit.belemetry.page_views</code></td>
+                    <td>PageViews</td>
+                </tr>
+                <tr>
                     <td>Click</td>
                     <td>Log record, <code>eventName = "browser.user_interaction"</code>. Attributes: <code>event.type</code>, <code>target.element</code>, <code>target.id</code>, <code>target.name</code> (<code>data-bit-belemetry-name</code>, <code>aria-label</code>, then <code>name</code>), <code>target.text</code> (only with <code>captureText</code>), <code>target.xpath</code>. Elements under <code>[data-bit-belemetry-ignore]</code> are skipped</td>
                     <td><code>bit.belemetry.interactions</code></td>
@@ -195,7 +201,7 @@
                 <tr><td><code>service.name</code></td><td><code>ServiceName</code>, else <code>OTEL_SERVICE_NAME</code>, else the entry assembly name</td><td>both</td></tr>
                 <tr><td><code>service.version</code></td><td><code>ServiceVersion</code>, else the entry assembly's informational version</td><td>both</td></tr>
                 <tr><td><code>service.namespace</code></td><td><code>ServiceNamespace</code></td><td>both</td></tr>
-                <tr><td><code>service.instance.id</code></td><td><code>ServiceInstanceId</code>, else a random id per process; always a random id per page load in the browser</td><td>both</td></tr>
+                <tr><td><code>service.instance.id</code></td><td><code>ServiceInstanceId</code>; else, on a server, the platform's instance name (<code>WEBSITE_INSTANCE_ID</code>, <code>CONTAINER_APP_REPLICA_NAME</code>) or the machine name; else a random id per process, and always a random id per page load in the browser</td><td>both</td></tr>
                 <tr><td><code>deployment.environment.name</code></td><td><code>Environment</code></td><td>both</td></tr>
                 <tr><td><code>telemetry.sdk.name</code></td><td><code>bit-belemetry</code></td><td>both</td></tr>
                 <tr><td><code>telemetry.sdk.language</code></td><td><code>dotnet</code> / <code>webjs</code></td><td>both</td></tr>
@@ -203,7 +209,9 @@
                 <tr><td><code>process.runtime.name</code>, <code>.version</code>, <code>.description</code></td><td><code>.NET</code>, the runtime version and framework description</td><td>.NET</td></tr>
                 <tr><td><code>os.type</code>, <code>os.description</code>, <code>host.arch</code></td><td>The operating system and process architecture</td><td>.NET</td></tr>
                 <tr><td><code>process.pid</code></td><td>The process id (not in WebAssembly)</td><td>.NET</td></tr>
-                <tr><td><code>host.name</code></td><td>The machine name (server only)</td><td>.NET</td></tr>
+                <tr><td><code>host.name</code>, <code>process.executable.name</code>, <code>process.owner</code></td><td>The machine name, the executable and the account the process runs as (server only - a device's are its owner's)</td><td>.NET</td></tr>
+                <tr><td><code>container.id</code></td><td>From <code>/proc/self/mountinfo</code> or <code>/proc/self/cgroup</code> (server only, Linux)</td><td>.NET</td></tr>
+                <tr><td><code>cloud.provider</code>, <code>cloud.platform</code>, <code>cloud.region</code>, <code>cloud.resource_id</code>, <code>host.id</code>, <code>azure.*</code></td><td>Azure App Service, Functions or Container Apps, from their environment variables (server only, with <code>UseEnvironmentVariables</code>)</td><td>.NET</td></tr>
                 <tr><td><code>browser.language</code>, <code>browser.mobile</code>, <code>browser.platform</code>, <code>browser.brands</code></td><td>From <code>navigator</code> and User-Agent Client Hints, where available</td><td>browser</td></tr>
                 <tr><td><code>user_agent.original</code></td><td>The user agent string (with <code>Privacy.CollectUserAgent</code>)</td><td>browser</td></tr>
             </tbody>

@@ -1,8 +1,18 @@
 ﻿namespace Bit.Belemetry;
 
-/// <summary>Exports over OTLP/HTTP, as protobuf or JSON.</summary>
+/// <summary>Exports over OTLP: HTTP with protobuf or JSON payloads, or gRPC.</summary>
 internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options, BelemetryMetricTemporality temporality, string name) : IBelemetryHttpExporter
 {
+    /// <summary>The content type of a gRPC request; the sender frames and sends it over HTTP/2.</summary>
+    internal const string GrpcContentType = "application/grpc";
+
+    private const string TracesPath = "v1/traces";
+    private const string LogsPath = "v1/logs";
+    private const string MetricsPath = "v1/metrics";
+    private const string TracesMethod = "opentelemetry.proto.collector.trace.v1.TraceService/Export";
+    private const string LogsMethod = "opentelemetry.proto.collector.logs.v1.LogsService/Export";
+    private const string MetricsMethod = "opentelemetry.proto.collector.metrics.v1.MetricsService/Export";
+
     public string Name { get; } = name;
 
     public TimeSpan Timeout => options.Timeout;
@@ -11,26 +21,29 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
 
     public IReadOnlyDictionary<string, string> Headers => options.Headers;
 
+    public BelemetrySeverity? MinimumSeverity { get; } = BelemetryLogger.ToMinimumSeverity(options.MinimumLogLevel);
+
     public IEnumerable<BelemetryHttpRequest> CreateRequests(BelemetryBatch batch)
     {
-        var json = options.Protocol == BelemetryOtlpProtocol.HttpJson;
-        var contentType = json ? "application/json" : "application/x-protobuf";
+        var protocol = options.Protocol;
+        var json = protocol == BelemetryOtlpProtocol.HttpJson;
+        var contentType = protocol == BelemetryOtlpProtocol.Grpc ? GrpcContentType : json ? "application/json" : "application/x-protobuf";
 
         if (batch.Spans.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Traces))
         {
-            yield return Create(Resolve(options.TracesEndpoint, "v1/traces"), contentType,
+            yield return Create(Resolve(options.TracesEndpoint, options.Endpoint, protocol, BelemetrySignals.Traces), contentType,
                 json ? OtlpJsonSerializer.SerializeTraces(batch) : OtlpProtobufSerializer.SerializeTraces(batch));
         }
 
         if (batch.Logs.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Logs))
         {
-            yield return Create(Resolve(options.LogsEndpoint, "v1/logs"), contentType,
+            yield return Create(Resolve(options.LogsEndpoint, options.Endpoint, protocol, BelemetrySignals.Logs), contentType,
                 json ? OtlpJsonSerializer.SerializeLogs(batch) : OtlpProtobufSerializer.SerializeLogs(batch));
         }
 
         if (batch.Metrics.Count > 0 && options.Signals.HasFlag(BelemetrySignals.Metrics))
         {
-            yield return Create(Resolve(options.MetricsEndpoint, "v1/metrics"), contentType,
+            yield return Create(Resolve(options.MetricsEndpoint, options.Endpoint, protocol, BelemetrySignals.Metrics), contentType,
                 json ? OtlpJsonSerializer.SerializeMetrics(batch, temporality) : OtlpProtobufSerializer.SerializeMetrics(batch, temporality));
         }
     }
@@ -56,17 +69,28 @@ internal sealed class BelemetryOtlpExporter(BelemetryOtlpExporterOptions options
         };
     }
 
-    private string Resolve(Uri? signalEndpoint, string path) => Resolve(signalEndpoint, options.Endpoint, path);
-
     /// <summary>
-    /// The per-signal URL: a signal-specific endpoint is used as-is; otherwise the signal path is appended to the
-    /// base endpoint, as <c>OTEL_EXPORTER_OTLP_ENDPOINT</c> is defined to behave.
+    /// The URL of one signal. Over HTTP a signal-specific endpoint is used as-is and otherwise the signal path is
+    /// appended to the base endpoint, as <c>OTEL_EXPORTER_OTLP_ENDPOINT</c> is defined to behave. Over gRPC both are
+    /// base addresses that the service method is appended to.
     /// </summary>
-    internal static string Resolve(Uri? signalEndpoint, Uri? baseEndpoint, string path)
+    internal static string Resolve(Uri? signalEndpoint, Uri? baseEndpoint, BelemetryOtlpProtocol protocol, BelemetrySignals signal)
     {
-        if (signalEndpoint is not null) return signalEndpoint.ToString();
+        var grpc = protocol == BelemetryOtlpProtocol.Grpc;
+        var path = signal switch
+        {
+            BelemetrySignals.Traces => grpc ? TracesMethod : TracesPath,
+            BelemetrySignals.Logs => grpc ? LogsMethod : LogsPath,
+            _ => grpc ? MetricsMethod : MetricsPath,
+        };
 
-        var root = (baseEndpoint ?? new Uri("http://localhost:4318")).ToString();
+        if (signalEndpoint is not null && grpc is false) return signalEndpoint.ToString();
+
+        var root = (signalEndpoint ?? baseEndpoint ?? DefaultEndpoint(protocol)).ToString();
         return root.EndsWith('/') ? root + path : root + "/" + path;
     }
+
+    /// <summary>The OTLP default ports: 4318 for HTTP, 4317 for gRPC.</summary>
+    internal static Uri DefaultEndpoint(BelemetryOtlpProtocol protocol) =>
+        protocol == BelemetryOtlpProtocol.Grpc ? new Uri("http://localhost:4317") : new Uri("http://localhost:4318");
 }

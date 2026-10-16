@@ -59,6 +59,12 @@ jobs:
     - name: dotnet test
       run: cd src/Belemetry/Tests/Bit.Belemetry.Tests && dotnet test --no-build
 
+    - name: dotnet test (Entity Framework Core instrumentation, net8.0/net9.0/net10.0)
+      run: cd src/Belemetry/Tests/Bit.Belemetry.Tests.EntityFrameworkCore && dotnet test --no-build
+
+    - name: dotnet test (Hangfire instrumentation, net8.0/net9.0/net10.0)
+      run: cd src/Belemetry/Tests/Bit.Belemetry.Tests.Hangfire && dotnet test --no-build
+
     - name: npm test (browser script)
       run: cd src/Belemetry/Tests/bit-belemetry-js && npm ci && npm test
 

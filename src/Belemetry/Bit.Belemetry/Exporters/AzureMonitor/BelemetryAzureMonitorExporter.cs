@@ -15,6 +15,7 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
         Name = name;
         ConnectionString = AzureMonitorConnectionString.Parse(options.ConnectionString!);
         _context = new AzureMonitorEnvelopeSerializer.Context(ConnectionString.InstrumentationKey, options.MaskIp);
+        MinimumSeverity = BelemetryLogger.ToMinimumSeverity(options.MinimumLogLevel);
     }
 
     public string Name { get; }
@@ -27,6 +28,8 @@ internal sealed class BelemetryAzureMonitorExporter : IBelemetryHttpExporter
 
     // Authentication is the connection string's key (in the body) or a token from PrepareAsync.
     public IReadOnlyDictionary<string, string> Headers { get; } = new Dictionary<string, string>();
+
+    public BelemetrySeverity? MinimumSeverity { get; }
 
     public IEnumerable<BelemetryHttpRequest> CreateRequests(BelemetryBatch batch)
     {

@@ -27,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.Belemetry.Demo\Server\Bit.Belemetry.Demo.Server.csproj" />
+        <ProjectReference Include="..\..\Demo\Server\Bit.Belemetry.Demo.Server.csproj" />
     </ItemGroup>
 
 </Project>

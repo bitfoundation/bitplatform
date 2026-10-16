@@ -45,4 +45,14 @@ public sealed class BelemetryAzureMonitorExporterOptions
 
     /// <summary>The signals sent to Application Insights. Defaults to all three.</summary>
     public BelemetrySignals Signals { get; set; } = BelemetrySignals.All;
+
+    /// <summary>
+    /// The least severe log level this exporter receives from the .NET pipeline (its own logs and the records the
+    /// browser relays); plain log records below it are left out of this exporter's batches only. Events - page views,
+    /// interactions, web vitals, custom events, exceptions - are not logs to a log level and always pass, as do spans
+    /// and metrics. <see langword="null"/> (the default) sends every collected record. Use it when Application Insights
+    /// should get warnings and errors only while an OTLP backend gets everything, as a per-provider logging level would
+    /// with two logging providers.
+    /// </summary>
+    public Microsoft.Extensions.Logging.LogLevel? MinimumLogLevel { get; set; }
 }

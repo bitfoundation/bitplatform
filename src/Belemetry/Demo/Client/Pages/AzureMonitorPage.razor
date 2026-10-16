@@ -83,6 +83,9 @@
         (408, 500, 502, 503, 504) and the items of a partial success (206) are retried, and kept by the
         <a href="/persistence">offline persistence</a> while the network is down. Metrics are always sent as deltas,
         which is what <code>customMetrics</code> expects, whatever <code>Metrics.Temporality</code> says.
+        <code>MinimumLogLevel</code> is the per-exporter counterpart of a logging provider's level: Application
+        Insights gets the plain log records at or above it while an OTLP backend gets everything, from one pipeline;
+        events (page views, custom events, web vitals, exceptions), spans and metrics always pass.
     </p>
     <CodeSnippet Code="@MoreCode" Language="C#" />
     <p>
@@ -147,6 +150,7 @@
             azure.Compression = BelemetryCompression.Gzip;
             azure.Timeout = TimeSpan.FromSeconds(15);
             azure.Signals = BelemetrySignals.Metrics;
+            azure.MinimumLogLevel = LogLevel.Warning;    // warnings and errors here; everything to the OTLP backend
             azure.IncludeInBrowser = false;
         });
         """;

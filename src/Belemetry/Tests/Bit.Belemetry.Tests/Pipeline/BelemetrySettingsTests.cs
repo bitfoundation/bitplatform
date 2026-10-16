@@ -8,7 +8,8 @@ public class BelemetrySettingsTests
     private static readonly string[] _envNames =
     [
         "OTEL_SERVICE_NAME", "OTEL_RESOURCE_ATTRIBUTES", "OTEL_EXPORTER_OTLP_ENDPOINT", "OTEL_EXPORTER_OTLP_HEADERS",
-        "OTEL_EXPORTER_OTLP_PROTOCOL", "APPLICATIONINSIGHTS_CONNECTION_STRING",
+        "OTEL_EXPORTER_OTLP_PROTOCOL", "OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", "OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "OTEL_EXPORTER_OTLP_METRICS_ENDPOINT",
+        "OTEL_EXPORTER_OTLP_TIMEOUT", "OTEL_EXPORTER_OTLP_COMPRESSION", "APPLICATIONINSIGHTS_CONNECTION_STRING",
     ];
 
     private const string ConnectionString = "InstrumentationKey=11111111-2222-3333-4444-555555555555;IngestionEndpoint=https://westeurope-5.in.applicationinsights.azure.com/";
@@ -59,7 +60,8 @@ public class BelemetrySettingsTests
         CollectionAssert.DoesNotContain(hybrid.TraceSources, "Microsoft.AspNetCore");
 
         var defaults = new BelemetrySettings(new BelemetryOptions(), new BelemetryHostDetection(false));
-        CollectionAssert.AreEqual(new[] { "System.Net.Http", "Microsoft.AspNetCore.Components*" }, defaults.TraceSources);
+        CollectionAssert.AreEqual(new[] { "System.Net.Http", "Microsoft.AspNetCore.Components*", "Bit.Belemetry.*" }, defaults.TraceSources);
+        Assert.IsTrue(BelemetrySettings.Matches("Bit.Belemetry.EntityFrameworkCore", defaults.TraceSources), "The instrumentation packages need no configuration.");
         CollectionAssert.AreEqual(new[] { "System.Net.Http", "Microsoft.AspNetCore.Components*", "System.Runtime" }, defaults.Meters);
     }
 
@@ -174,6 +176,73 @@ public class BelemetrySettingsTests
         Assert.HasCount(2, settings.AzureMonitorExporters);
         StringAssert.Contains(settings.AzureMonitorExporters[0].ConnectionString, "99999999");
         Assert.AreEqual(ConnectionString, settings.AzureMonitorExporters[1].ConnectionString);
+    }
+
+    [TestMethod]
+    public void EnvironmentVariables_PerSignalEndpointsTimeoutAndCompression()
+    {
+        // A per-signal endpoint alone turns the exporter on, as the base endpoint does.
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_LOGS_ENDPOINT", "http://logs.env:4318/custom/logs");
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT", "http://traces.env:4318/v1/traces");
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_TIMEOUT", "2500");
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_COMPRESSION", "gzip");
+
+        var settings = TestHost.CreateSettings(o => o.UseEnvironmentVariables = true);
+        var otlp = settings.OtlpExporters.Single();
+        Assert.AreEqual(new Uri("http://localhost:4318"), otlp.Endpoint, "The base endpoint keeps its default.");
+        Assert.AreEqual(new Uri("http://logs.env:4318/custom/logs"), otlp.LogsEndpoint);
+        Assert.AreEqual(new Uri("http://traces.env:4318/v1/traces"), otlp.TracesEndpoint);
+        Assert.IsNull(otlp.MetricsEndpoint);
+        Assert.AreEqual(TimeSpan.FromMilliseconds(2500), otlp.Timeout);
+        Assert.AreEqual(BelemetryCompression.Gzip, otlp.Compression);
+
+        var explicitSettings = TestHost.CreateSettings(o =>
+        {
+            o.UseEnvironmentVariables = true;
+            o.AddOtlpExporter(e =>
+            {
+                e.LogsEndpoint = new Uri("http://explicit/logs");
+                e.Timeout = TimeSpan.FromSeconds(1);
+                e.Compression = BelemetryCompression.None;
+            });
+        });
+        var explicitOtlp = explicitSettings.OtlpExporters.Single();
+        Assert.AreEqual(new Uri("http://explicit/logs"), explicitOtlp.LogsEndpoint);
+        Assert.AreEqual(TimeSpan.FromSeconds(1), explicitOtlp.Timeout);
+        Assert.AreEqual(BelemetryCompression.None, explicitOtlp.Compression, "A compression set in code, even the default, wins over the variable.");
+        Assert.AreEqual(new Uri("http://traces.env:4318/v1/traces"), explicitOtlp.TracesEndpoint, "Only an unset endpoint comes from the environment.");
+    }
+
+    [TestMethod]
+    public void EnvironmentVariables_GrpcProtocol()
+    {
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", "https://localhost:21031");
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_PROTOCOL", "grpc");
+
+        var settings = TestHost.CreateSettings(o => o.UseEnvironmentVariables = true);
+        var otlp = settings.OtlpExporters.Single();
+        Assert.AreEqual(BelemetryOtlpProtocol.Grpc, otlp.Protocol);
+        Assert.AreEqual(new Uri("https://localhost:21031"), otlp.Endpoint);
+        Assert.IsEmpty(settings.StartupWarnings);
+
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", null);
+        Assert.AreEqual(new Uri("http://localhost:4317"), TestHost.CreateSettings(o =>
+        {
+            o.UseEnvironmentVariables = true;
+            o.AddOtlpExporter();
+        }).OtlpExporters.Single().Endpoint, "gRPC defaults to the OTLP gRPC port.");
+        Assert.AreEqual(new Uri("http://localhost:4317"), TestHost.CreateSettings(o => o.AddOtlpExporter(e => e.Protocol = BelemetryOtlpProtocol.Grpc)).OtlpExporters.Single().Endpoint);
+    }
+
+    [TestMethod]
+    public void EnvironmentVariables_UnknownProtocolIsReportedAndIgnored()
+    {
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_ENDPOINT", "http://collector.env:4318");
+        Environment.SetEnvironmentVariable("OTEL_EXPORTER_OTLP_PROTOCOL", "http/thrift");
+
+        var settings = TestHost.CreateSettings(o => o.UseEnvironmentVariables = true);
+        Assert.AreEqual(BelemetryOtlpProtocol.HttpProtobuf, settings.OtlpExporters.Single().Protocol);
+        StringAssert.Contains(settings.StartupWarnings.Single(), "http/thrift");
     }
 
     [TestMethod]

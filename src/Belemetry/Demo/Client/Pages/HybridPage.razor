@@ -42,7 +42,8 @@
     <p>
         The same registration, on the service collection the BlazorWebView is given. A desktop app is not
         suspended, but it does exit: flush on the way out, bounded so a missing network cannot hold the
-        window open.
+        window open. The repository's <code>Samples/WinForms</code> is this setup in full, and the hybrid
+        browser suite runs the same WebView core through a Windows Forms host.
     </p>
     <CodeSnippet Code="@WpfCode" Language="C#" Expanded="true" />
     <CodeSnippet Code="@WinFormsCode" Language="C#" />

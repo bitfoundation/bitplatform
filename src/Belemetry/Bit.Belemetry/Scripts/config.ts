@@ -47,6 +47,8 @@ export interface ConsentConfig {
 
 export interface PageViewsConfig {
     trackHashChanges: boolean;
+    /** Whether the time spent on each page is recorded (`browser.page_visit_time`). */
+    trackVisitTime: boolean;
 }
 
 export interface InteractionsConfig {
@@ -147,7 +149,7 @@ export function createDefaults(): ResolvedConfig {
         exporters: [],
         features: Features.All,
         consent: { default: Features.None, persist: true, honorGlobalPrivacyControl: true, pendingLimit: 500 },
-        pageViews: { trackHashChanges: false },
+        pageViews: { trackHashChanges: false, trackVisitTime: false },
         interactions: { events: ['click'], captureText: false, maxTextLength: 64 },
         performance: { webVitals: true, documentLoad: true, resources: false, longTasks: false },
         dependencies: { fetch: true, xhr: true, propagateTraceContextTo: ['same-origin'], ignoreUrls: ['/_framework/', '/_blazor', '/_content/'] },

@@ -15,7 +15,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
 {
     internal const string ModulePath = "./_content/Bit.Belemetry/bit-belemetry.js";
 
-    private readonly IJSRuntime _js;
+    private readonly IJSRuntime? _js;
     private readonly BelemetrySettings _settings;
     private readonly BelemetryPipeline _pipeline;
     private readonly BelemetryConsentState _consent;
@@ -25,7 +25,16 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     private DotNetObjectReference<BelemetryJsCallbacks>? _callbacks;
     private bool _disposed;
 
-    public BelemetryJsBridge(IJSRuntime js, BelemetrySettings settings, BelemetryPipeline pipeline, BelemetryConsentState consent, BelemetryBrowserBridgeRegistry registry)
+    /// <param name="settings">The resolved settings.</param>
+    /// <param name="pipeline">The .NET pipeline relayed records go to.</param>
+    /// <param name="consent">The consent state the script's context is kept in step with.</param>
+    /// <param name="registry">Where singletons find the script of the one page of a WebAssembly or Hybrid process.</param>
+    /// <param name="js">
+    /// The JS runtime, when the host has one. A host without Blazor (an API, a worker) registers none, and the DI
+    /// container passes the default: there is no browser to bridge to, so the <see cref="IBelemetry"/> calls of such
+    /// a host go straight to the .NET pipeline.
+    /// </param>
+    public BelemetryJsBridge(BelemetrySettings settings, BelemetryPipeline pipeline, BelemetryConsentState consent, BelemetryBrowserBridgeRegistry registry, IJSRuntime? js = null)
     {
         _js = js;
         _settings = settings;
@@ -46,7 +55,7 @@ internal sealed class BelemetryJsBridge : IAsyncDisposable
     public async ValueTask<bool> StartAsync()
     {
         if (_module is not null) return true;
-        if (_disposed || _settings.Options.Enabled is false || _settings.Options.Browser.Enabled is false) return false;
+        if (_js is null || _disposed || _settings.Options.Enabled is false || _settings.Options.Browser.Enabled is false) return false;
 
         await _startLock.WaitAsync();
         try

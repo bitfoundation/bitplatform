@@ -576,6 +576,16 @@ jobs:
         dotnet build src/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Belemetry.EntityFrameworkCore
+      run: |
+        dotnet build src/Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Belemetry.Hangfire
+      run: |
+        dotnet build src/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj --output ./packages --configuration Release
+
     - name: Build and pack CodeAnalyzers
       run: |
         dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

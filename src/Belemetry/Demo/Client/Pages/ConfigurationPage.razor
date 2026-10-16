@@ -24,6 +24,25 @@
 </div>
 
 <div class="demo-section">
+    <h2>From appsettings</h2>
+    <p>
+        Every option can come from configuration instead. Bind the section the way a trimmed or AOT app binds any
+        options: the configuration binder's source generator (<code>EnableConfigurationBindingGenerator</code> in the
+        app's project) handles <code>BelemetryOptions</code> without reflection, and Belemetry takes no dependency on
+        the binder. What only code can add - custom exporters, processors, a token provider - goes on top.
+    </p>
+    <CodeSnippet Code="@BindCode" Language="C#" Expanded="true" />
+    <CodeSnippet Code="@AppsettingsCode" Language="JSON" />
+    <p>
+        Two binder rules worth knowing: a bound list adds to the option's defaults
+        (<code>Privacy.RedactQueryParameters</code> keeps its built-in names and gains yours), and a bound array
+        replaces nothing either, which is why <code>Metrics.HistogramBoundaries</code> is empty by default and means
+        the OpenTelemetry defaults until you set it. Enums and flags bind by name
+        (<code>"Features": "Errors, Logs, Traces"</code>), <code>TimeSpan</code>s by <code>hh:mm:ss</code>.
+    </p>
+</div>
+
+<div class="demo-section">
     <h2>Per-category log levels</h2>
     <p>
         <code>Logs.MinimumLevel</code> is the floor: nothing below it is collected, whatever a category says.
@@ -49,9 +68,12 @@
                 <tr><td><code>OTEL_SERVICE_NAME</code></td><td><code>service.name</code></td></tr>
                 <tr><td><code>OTEL_RESOURCE_ATTRIBUTES</code></td><td>Extra resource attributes (<code>k=v,k2=v2</code>)</td></tr>
                 <tr><td><code>OTEL_EXPORTER_OTLP_ENDPOINT</code></td><td>Adds an OTLP exporter when none is configured, and fills unset endpoints</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_TRACES_ENDPOINT</code>, <code>_LOGS_ENDPOINT</code>, <code>_METRICS_ENDPOINT</code></td><td>Per-signal endpoints; any of them adds the exporter too</td></tr>
                 <tr><td><code>OTEL_EXPORTER_OTLP_HEADERS</code></td><td>OTLP headers (<code>k=v,k2=v2</code>)</td></tr>
-                <tr><td><code>OTEL_EXPORTER_OTLP_PROTOCOL</code></td><td><code>http/protobuf</code> or <code>http/json</code>, unless <code>Protocol</code> is set in code</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_PROTOCOL</code></td><td><code>http/protobuf</code>, <code>http/json</code> or <code>grpc</code>, unless <code>Protocol</code> is set in code</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_COMPRESSION</code>, <code>OTEL_EXPORTER_OTLP_TIMEOUT</code></td><td><code>gzip</code>/<code>none</code> and the timeout in milliseconds, unless set in code</td></tr>
                 <tr><td><code>APPLICATIONINSIGHTS_CONNECTION_STRING</code></td><td>Adds an Azure Monitor exporter when none is configured</td></tr>
+                <tr><td><code>WEBSITE_*</code>, <code>REGION_NAME</code>, <code>CONTAINER_APP_*</code></td><td>The Azure App Service, Functions or Container Apps resource attributes and instance id of a server</td></tr>
             </tbody>
         </table>
     </div>
@@ -177,6 +199,30 @@
 </div>
 
 @code {
+    private const string BindCode = """
+        // Program.cs - the binder's source generator (EnableConfigurationBindingGenerator) makes this trim- and AOT-safe.
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            builder.Configuration.GetSection("Belemetry").Bind(options);
+            options.AddExporter(new MyExporter());   // what only code can add: custom exporters, processors, token providers
+        });
+        """;
+
+    private const string AppsettingsCode = """
+        {
+          "Belemetry": {
+            "ServiceName": "MyApp",
+            "Environment": "Production",
+            "Consent": { "Default": "Errors" },
+            "Browser": { "TrackPageVisitTime": true },
+            "Traces": { "Sources": [ "MyApp.*" ], "IgnoredActivityNames": [ "Microsoft.AspNetCore.Components.HandleEvent" ] },
+            "Server": { "CollectDotnetTelemetry": true, "IgnoredRequestPaths": [ "/health", "/alive" ] },
+            "OtlpExporters": [ { "Endpoint": "https://otel.example.com", "Protocol": "HttpProtobuf", "Headers": { "x-api-key": "..." } } ],
+            "AzureMonitorExporters": [ { "ConnectionString": "InstrumentationKey=...", "MinimumLogLevel": "Warning" } ]
+          }
+        }
+        """;
+
     private const string FullCode = """
         using Bit.Belemetry;
         using Microsoft.Extensions.Logging;

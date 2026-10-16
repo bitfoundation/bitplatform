@@ -186,6 +186,35 @@ internal static class AzureMonitorEnvelopeSerializer
                     return;
                 }
 
+            case BelemetrySemanticConventions.PageVisitTimeEvent:
+                {
+                    // The shape the Application Insights JS SDK's autoTrackPageVisitTime produces, so the same workbooks apply.
+                    var url = attributes.GetString(BelemetrySemanticConventions.UrlFull);
+                    var name = attributes.GetString(BelemetrySemanticConventions.PageTitle) is { Length: > 0 } title ? title
+                             : attributes.GetString(BelemetrySemanticConventions.UrlPath) ?? log.Body ?? "page";
+
+                    BeginEnvelope(w, "Event", log.TimeUnixNano);
+                    WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
+                    w.WriteStartObject("data");
+                    w.WriteString("baseType", "EventData");
+                    w.WriteStartObject("baseData");
+                    w.WriteNumber("ver", 2);
+                    w.WriteString("name", "PageVisitTime");
+                    w.WriteStartObject("properties");
+                    WritePropertyEntries(w, attributes, static key => key is BelemetrySemanticConventions.UrlFull or BelemetrySemanticConventions.UrlPath
+                                                                           or BelemetrySemanticConventions.PageTitle or BelemetrySemanticConventions.PageVisitDuration);
+                    w.WriteString("PageName", Truncate(name, MaxValueLength));
+                    if (url is not null) w.WriteString("PageUrl", Truncate(url, MaxValueLength));
+                    w.WriteEndObject();
+                    w.WriteStartObject("measurements");
+                    WriteDouble(w, "PageVisitTime", attributes.GetDouble(BelemetrySemanticConventions.PageVisitDuration) ?? 0);
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                    w.WriteEndObject();
+                    return;
+                }
+
             case { Length: > 0 } eventName:
                 BeginEnvelope(w, "Event", log.TimeUnixNano);
                 WriteTags(w, resource, log.TraceId, log.SpanId, null, attributes);
@@ -292,6 +321,7 @@ internal static class AzureMonitorEnvelopeSerializer
         if (resource.ApplicationVersion is not null) w.WriteString("ai.application.ver", resource.ApplicationVersion);
         if (resource.MaskIp) w.WriteString("ai.location.ip", "0.0.0.0");
         if (resource.UserAgent is not null) w.WriteString("ai.user.agent", Truncate(resource.UserAgent, 1024));
+        if (resource.Locale is not null) w.WriteString("ai.device.locale", Truncate(resource.Locale, 64));
         if (traceId is not null) w.WriteString("ai.operation.id", traceId);
         if (parentId is not null) w.WriteString("ai.operation.parentId", parentId);
         if (operationName is not null) w.WriteString("ai.operation.name", Truncate(operationName, 1024));
@@ -304,14 +334,19 @@ internal static class AzureMonitorEnvelopeSerializer
     private static void WriteProperties(Utf8JsonWriter w, BelemetryAttributes attributes, Func<string, bool>? exclude, string? extraMessage, string? category = null)
     {
         w.WriteStartObject("properties");
+        WritePropertyEntries(w, attributes, exclude);
+        if (string.IsNullOrEmpty(extraMessage) is false && attributes.Contains("message") is false) w.WriteString("message", Truncate(extraMessage, MaxValueLength));
+        if (string.IsNullOrEmpty(category) is false && attributes.Contains("CategoryName") is false) w.WriteString("CategoryName", Truncate(category, MaxValueLength));
+        w.WriteEndObject();
+    }
+
+    private static void WritePropertyEntries(Utf8JsonWriter w, BelemetryAttributes attributes, Func<string, bool>? exclude)
+    {
         foreach (var (key, value) in attributes)
         {
             if (_contextAttributes.Contains(key) || (exclude?.Invoke(key) ?? false)) continue;
             w.WriteString(Truncate(key, MaxKeyLength), Truncate(BelemetryAttributes.ToInvariantString(value), MaxValueLength));
         }
-        if (string.IsNullOrEmpty(extraMessage) is false && attributes.Contains("message") is false) w.WriteString("message", Truncate(extraMessage, MaxValueLength));
-        if (string.IsNullOrEmpty(category) is false && attributes.Contains("CategoryName") is false) w.WriteString("CategoryName", Truncate(category, MaxValueLength));
-        w.WriteEndObject();
     }
 
     internal static string FormatDuration(TimeSpan duration) => (duration < TimeSpan.Zero ? TimeSpan.Zero : duration).ToString("c", CultureInfo.InvariantCulture);
@@ -376,6 +411,7 @@ internal static class AzureMonitorEnvelopeSerializer
             DeviceType = browser ? "Browser" : os is "android" or "ios" ? "Phone" : "PC";
             SdkVersion = (browser ? "bitblmjs:" : "bitblm:") + (attributes.GetString(BelemetrySemanticConventions.TelemetrySdkVersion) ?? BelemetrySettings.SdkVersion);
             UserAgent = attributes.GetString("user_agent.original");
+            Locale = attributes.GetString(BelemetrySemanticConventions.BrowserLanguage);
         }
 
         public string InstrumentationKey { get; }
@@ -386,5 +422,6 @@ internal static class AzureMonitorEnvelopeSerializer
         public string DeviceType { get; }
         public string SdkVersion { get; }
         public string? UserAgent { get; }
+        public string? Locale { get; }
     }
 }

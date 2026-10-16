@@ -38,8 +38,24 @@ public static class BelemetrySemanticConventions
     public const string ProcessRuntimeDescription = "process.runtime.description";
     /// <summary><c>process.pid</c></summary>
     public const string ProcessPid = "process.pid";
+    /// <summary><c>process.executable.name</c></summary>
+    public const string ProcessExecutableName = "process.executable.name";
+    /// <summary><c>process.owner</c></summary>
+    public const string ProcessOwner = "process.owner";
     /// <summary><c>host.name</c></summary>
     public const string HostName = "host.name";
+    /// <summary><c>host.id</c></summary>
+    public const string HostId = "host.id";
+    /// <summary><c>container.id</c></summary>
+    public const string ContainerId = "container.id";
+    /// <summary><c>cloud.provider</c></summary>
+    public const string CloudProvider = "cloud.provider";
+    /// <summary><c>cloud.platform</c></summary>
+    public const string CloudPlatform = "cloud.platform";
+    /// <summary><c>cloud.region</c></summary>
+    public const string CloudRegion = "cloud.region";
+    /// <summary><c>cloud.resource_id</c></summary>
+    public const string CloudResourceId = "cloud.resource_id";
     /// <summary><c>device.model.identifier</c></summary>
     public const string DeviceModelIdentifier = "device.model.identifier";
 
@@ -86,6 +102,10 @@ public static class BelemetrySemanticConventions
 
     /// <summary><c>page.title</c></summary>
     public const string PageTitle = "page.title";
+    /// <summary><c>page.visit.duration</c> - how long a page was visited, in milliseconds.</summary>
+    public const string PageVisitDuration = "page.visit.duration";
+    /// <summary><c>browser.language</c></summary>
+    public const string BrowserLanguage = "browser.language";
     /// <summary><c>web_vital.name</c></summary>
     public const string WebVitalName = "web_vital.name";
     /// <summary><c>web_vital.value</c></summary>
@@ -102,6 +122,8 @@ public static class BelemetrySemanticConventions
 
     /// <summary>The event name of a page view log record.</summary>
     public const string PageViewEvent = "browser.page_view";
+    /// <summary>The event name of a page visit time log record (how long the page view before it lasted).</summary>
+    public const string PageVisitTimeEvent = "browser.page_visit_time";
     /// <summary>The event name of an interaction log record.</summary>
     public const string UserInteractionEvent = "browser.user_interaction";
     /// <summary>The event name of a web vital log record.</summary>

@@ -19,7 +19,14 @@
         One switch, in the server project's registration. It applies to every ASP.NET Core host Belemetry
         detects: Blazor Server, static SSR, and the server half of the Auto and WebAssembly render modes.
         WebAssembly and Hybrid do not need it - there, the .NET pipeline always runs in the browser or in the
-        app process.
+        app process. A host without Blazor at all - an API, a worker - works the same way: it has no JS runtime,
+        so its <code>IBelemetry</code> calls go straight to this pipeline.
+    </p>
+    <p>
+        <code>Server.IgnoredRequestPaths</code> keeps the request spans of health probes and Blazor's own traffic
+        out, by path prefix (<code>url.path</code> on .NET 10, only the route on .NET 8 and 9, so a static file
+        cannot be matched there), before the span is even converted. The span is dropped when it ends, so a child
+        it had - the database check behind <code>/health</code> - is still exported, with a parent that never arrives.
     </p>
     <CodeSnippet Code="@SetupCode" Language="C#" Expanded="true" />
 </div>
@@ -139,6 +146,21 @@
 </div>
 
 <div class="demo-section">
+    <h2>Where it runs</h2>
+    <p>
+        A server describes where it runs, the way the OpenTelemetry resource detectors do, from environment
+        variables and <code>/proc</code> alone - no metadata-service call, nothing at request time:
+        <code>host.name</code>, <code>process.pid</code>, <code>process.executable.name</code>,
+        <code>process.owner</code>, <code>container.id</code> (Linux), and on Azure App Service, Functions or
+        Container Apps <code>cloud.provider</code>, <code>cloud.platform</code>, <code>cloud.region</code>,
+        <code>cloud.resource_id</code>, <code>host.id</code> and <code>azure.*</code>. Its
+        <code>service.instance.id</code> is the platform's instance name (<code>WEBSITE_INSTANCE_ID</code>,
+        <code>CONTAINER_APP_REPLICA_NAME</code>) or the machine name, so Application Insights keeps counting the
+        same instance across restarts. A device or a browser tab keeps a random id, which identifies nobody.
+    </p>
+</div>
+
+<div class="demo-section">
     <h2>Living next to OpenTelemetry</h2>
     <p>
         If the server already exports with the OpenTelemetry SDK, leave <code>CollectDotnetTelemetry</code> off:
@@ -166,6 +188,9 @@
             // Operator telemetry: what the server collects for everyone, independent of any one user's consent.
             options.Server.Features = BelemetryFeatures.Errors | BelemetryFeatures.Logs
                                     | BelemetryFeatures.Traces | BelemetryFeatures.Metrics;   // the default
+
+            // No request spans for health probes and Blazor's own traffic.
+            options.Server.IgnoredRequestPaths.AddRange(["/health", "/alive", "/_framework", "/_content", "/_blazor"]);
         });
         """;
 

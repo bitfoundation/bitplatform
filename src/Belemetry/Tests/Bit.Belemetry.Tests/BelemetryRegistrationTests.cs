@@ -62,6 +62,30 @@ public class BelemetryRegistrationTests
     }
 
     [TestMethod]
+    public async Task AHostWithoutBlazor_HasNoJsRuntime_AndStillGetsIBelemetry()
+    {
+        // An API or a worker registers no IJSRuntime: the bridge has nothing to start and the calls go to the pipeline.
+        var memory = new BelemetryInMemoryExporter();
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddBitBelemetryServices(o =>
+        {
+            TestHost.ApplyTestDefaults(o);
+            o.Consent.Default = BelemetryFeatures.All;
+            o.AddExporter(memory);
+        });
+        await using var provider = services.BuildServiceProvider();
+        _ = provider.GetRequiredService<ILoggerFactory>();
+        await using var scope = provider.CreateAsyncScope();
+
+        var belemetry = scope.ServiceProvider.GetRequiredService<IBelemetry>();
+        belemetry.TrackEvent("worker.started");
+        await belemetry.FlushAsync();
+
+        Assert.AreEqual("worker.started", memory.Logs.Single().EventName);
+    }
+
+    [TestMethod]
     public async Task Consent_NeverGrantsMoreThanIsAvailable()
     {
         var services = new ServiceCollection();

@@ -191,11 +191,142 @@ public class BelemetryHttpSenderTests
     [TestMethod]
     public void OtlpResolve_AppendsSignalPaths()
     {
-        Assert.AreEqual("http://c.test:4318/v1/traces", BelemetryOtlpExporter.Resolve(null, new Uri("http://c.test:4318"), "v1/traces"));
-        Assert.AreEqual("http://c.test/otlp/v1/logs", BelemetryOtlpExporter.Resolve(null, new Uri("http://c.test/otlp"), "v1/logs"));
-        Assert.AreEqual("http://c.test/otlp/v1/logs", BelemetryOtlpExporter.Resolve(null, new Uri("http://c.test/otlp/"), "v1/logs"));
-        Assert.AreEqual("http://other.test/custom", BelemetryOtlpExporter.Resolve(new Uri("http://other.test/custom"), new Uri("http://c.test"), "v1/logs"));
-        Assert.AreEqual("http://localhost:4318/v1/metrics", BelemetryOtlpExporter.Resolve(null, null, "v1/metrics"));
+        const BelemetryOtlpProtocol http = BelemetryOtlpProtocol.HttpProtobuf;
+        Assert.AreEqual("http://c.test:4318/v1/traces", BelemetryOtlpExporter.Resolve(null, new Uri("http://c.test:4318"), http, BelemetrySignals.Traces));
+        Assert.AreEqual("http://c.test/otlp/v1/logs", BelemetryOtlpExporter.Resolve(null, new Uri("http://c.test/otlp"), http, BelemetrySignals.Logs));
+        Assert.AreEqual("http://c.test/otlp/v1/logs", BelemetryOtlpExporter.Resolve(null, new Uri("http://c.test/otlp/"), BelemetryOtlpProtocol.HttpJson, BelemetrySignals.Logs));
+        Assert.AreEqual("http://other.test/custom", BelemetryOtlpExporter.Resolve(new Uri("http://other.test/custom"), new Uri("http://c.test"), http, BelemetrySignals.Logs));
+        Assert.AreEqual("http://localhost:4318/v1/metrics", BelemetryOtlpExporter.Resolve(null, null, http, BelemetrySignals.Metrics));
+    }
+
+    [TestMethod]
+    public void OtlpResolve_Grpc_AppendsTheServiceMethods()
+    {
+        const BelemetryOtlpProtocol grpc = BelemetryOtlpProtocol.Grpc;
+        Assert.AreEqual("http://c.test:4317/opentelemetry.proto.collector.trace.v1.TraceService/Export", BelemetryOtlpExporter.Resolve(null, new Uri("http://c.test:4317"), grpc, BelemetrySignals.Traces));
+        Assert.AreEqual("https://c.test/opentelemetry.proto.collector.logs.v1.LogsService/Export", BelemetryOtlpExporter.Resolve(null, new Uri("https://c.test/"), grpc, BelemetrySignals.Logs));
+        Assert.AreEqual("http://localhost:4317/opentelemetry.proto.collector.metrics.v1.MetricsService/Export", BelemetryOtlpExporter.Resolve(null, null, grpc, BelemetrySignals.Metrics));
+        // OTEL_EXPORTER_OTLP_TRACES_ENDPOINT is a host for gRPC, not a full URL: the method is still appended.
+        Assert.AreEqual("http://traces.test:4317/opentelemetry.proto.collector.trace.v1.TraceService/Export", BelemetryOtlpExporter.Resolve(new Uri("http://traces.test:4317"), new Uri("http://c.test"), grpc, BelemetrySignals.Traces));
+    }
+
+    [TestMethod]
+    public async Task Grpc_FramesTheMessage_SendsHttp2_AndReadsTheStatusTrailer()
+    {
+        var handler = new FakeHttpMessageHandler().Enqueue(HttpStatusCode.OK, r => r.TrailingHeaders.Add("grpc-status", "0"));
+        using var sender = CreateSender(handler);
+        var exporter = Otlp(o =>
+        {
+            o.Protocol = BelemetryOtlpProtocol.Grpc;
+            o.Headers["x-api-key"] = "secret";
+        });
+        var request = LogsRequest(exporter);
+        Assert.AreEqual("application/grpc", request.ContentType);
+        Assert.AreEqual("http://collector.test:4318/opentelemetry.proto.collector.logs.v1.LogsService/Export", request.Url);
+
+        var outcome = await sender.SendAsync(exporter, request, retry: true, CancellationToken.None);
+
+        Assert.AreEqual(BelemetrySendOutcome.Delivered, outcome);
+        var sent = handler.Requests.Single();
+        Assert.AreEqual(HttpVersion.Version20, sent.Message.Version);
+        Assert.AreEqual(HttpVersionPolicy.RequestVersionExact, sent.Message.VersionPolicy);
+        Assert.AreEqual("trailers", sent.Message.Headers.GetValues("te").Single());
+        Assert.AreEqual("secret", sent.Message.Headers.GetValues("x-api-key").Single());
+        Assert.AreEqual("application/grpc", sent.Message.Content!.Headers.ContentType!.MediaType);
+        Assert.IsFalse(sent.Message.Headers.Contains("grpc-encoding"));
+
+        // Length-prefixed message: compressed flag, big-endian length, then the very protobuf the HTTP exporter sends.
+        Assert.AreEqual(0, sent.Body[0]);
+        Assert.AreEqual(request.Body.Length, (sent.Body[1] << 24) | (sent.Body[2] << 16) | (sent.Body[3] << 8) | sent.Body[4]);
+        CollectionAssert.AreEqual(request.Body, sent.Body[5..]);
+    }
+
+    [TestMethod]
+    public async Task Grpc_Gzip_CompressesTheMessageAndFlagsIt()
+    {
+        var handler = new FakeHttpMessageHandler().Enqueue(HttpStatusCode.OK, r => r.TrailingHeaders.Add("grpc-status", "0"));
+        using var sender = CreateSender(handler);
+        var exporter = Otlp(o =>
+        {
+            o.Protocol = BelemetryOtlpProtocol.Grpc;
+            o.Compression = BelemetryCompression.Gzip;
+        });
+        var request = LogsRequest(exporter);
+
+        await sender.SendAsync(exporter, request, retry: false, CancellationToken.None);
+
+        var sent = handler.Requests.Single();
+        Assert.AreEqual("gzip", sent.Message.Headers.GetValues("grpc-encoding").Single());
+        Assert.IsEmpty(sent.Message.Content!.Headers.ContentEncoding, "gRPC compresses the message, not the HTTP body.");
+        Assert.AreEqual(1, sent.Body[0]);
+        using var input = new GZipStream(new MemoryStream(sent.Body[5..]), CompressionMode.Decompress);
+        using var output = new MemoryStream();
+        input.CopyTo(output);
+        CollectionAssert.AreEqual(request.Body, output.ToArray());
+    }
+
+    [TestMethod]
+    [DataRow(14, true)] // UNAVAILABLE
+    [DataRow(8, true)] // RESOURCE_EXHAUSTED
+    [DataRow(4, true)] // DEADLINE_EXCEEDED
+    [DataRow(3, false)] // INVALID_ARGUMENT
+    [DataRow(16, false)] // UNAUTHENTICATED
+    public async Task Grpc_StatusDecidesBetweenRetryAndDrop(int grpcStatus, bool retryable)
+    {
+        var handler = new FakeHttpMessageHandler()
+            .Enqueue(HttpStatusCode.OK, r =>
+            {
+                r.TrailingHeaders.Add("grpc-status", grpcStatus.ToString());
+                r.TrailingHeaders.Add("grpc-message", "nope%20really");
+            })
+            .Enqueue(HttpStatusCode.OK, r => r.TrailingHeaders.Add("grpc-status", "0"));
+        using var sender = CreateSender(handler);
+        var exporter = Otlp(o => o.Protocol = BelemetryOtlpProtocol.Grpc);
+
+        var outcome = await sender.SendAsync(exporter, LogsRequest(exporter), retry: true, CancellationToken.None);
+
+        if (retryable)
+        {
+            Assert.AreEqual(BelemetrySendOutcome.Delivered, outcome);
+            Assert.HasCount(2, handler.Requests);
+        }
+        else
+        {
+            Assert.AreEqual(BelemetrySendOutcome.Rejected, outcome);
+            Assert.HasCount(1, handler.Requests);
+            Assert.IsTrue(_diagnostics.Any(d => d.Contains("nope really")), "The grpc-message is decoded into the diagnostic.");
+        }
+    }
+
+    [TestMethod]
+    public async Task Grpc_TrailersOnlyResponse_ReadsTheStatusFromTheHeaders()
+    {
+        var handler = new FakeHttpMessageHandler().Enqueue(HttpStatusCode.OK, r => r.Headers.Add("grpc-status", "0"));
+        using var sender = CreateSender(handler);
+        var exporter = Otlp(o => o.Protocol = BelemetryOtlpProtocol.Grpc);
+
+        Assert.AreEqual(BelemetrySendOutcome.Delivered, await sender.SendAsync(exporter, LogsRequest(exporter), retry: false, CancellationToken.None));
+    }
+
+    [TestMethod]
+    public async Task Grpc_MissingStatus_IsRetriedThenFails()
+    {
+        var handler = new FakeHttpMessageHandler { Fallback = HttpStatusCode.OK };
+        using var sender = CreateSender(handler);
+        var exporter = Otlp(o => o.Protocol = BelemetryOtlpProtocol.Grpc);
+
+        Assert.AreEqual(BelemetrySendOutcome.Failed, await sender.SendAsync(exporter, LogsRequest(exporter), retry: true, CancellationToken.None));
+        Assert.HasCount(3, handler.Requests);
+    }
+
+    [TestMethod]
+    public async Task Grpc_HttpErrors_FollowTheHttpRules()
+    {
+        var handler = new FakeHttpMessageHandler().Enqueue(HttpStatusCode.NotFound);
+        using var sender = CreateSender(handler);
+        var exporter = Otlp(o => o.Protocol = BelemetryOtlpProtocol.Grpc);
+
+        Assert.AreEqual(BelemetrySendOutcome.Rejected, await sender.SendAsync(exporter, LogsRequest(exporter), retry: true, CancellationToken.None));
     }
 
     [TestMethod]

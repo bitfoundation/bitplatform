@@ -9,7 +9,8 @@ It covers both sides of the app:
 It does this **without the OpenTelemetry NuGet packages**. It follows the OpenTelemetry data model and semantic
 conventions, and exports through:
 
-- OTLP/HTTP, as protobuf or JSON: OTel Collector, Aspire dashboard, Grafana, Jaeger, Honeycomb, ...
+- OTLP, over HTTP as protobuf or JSON, or over gRPC (hand-framed HTTP/2, .NET side only): OTel Collector, Aspire
+  dashboard, Grafana, Jaeger, Honeycomb, ...
 - The native Azure Monitor ingestion endpoint (`/v2.1/track`).
 - The console.
 - Any custom `IBelemetryExporter`.
@@ -31,9 +32,16 @@ Every feature is gated by runtime consent (GDPR), per feature.
 | `Bit.Belemetry/Exporters/` | OTLP (protobuf + JSON serializers), Azure Monitor (envelopes, live metrics), console, in-memory, HTTP sender + retry + persistence |
 | `Bit.Belemetry/Interop/` | The JS bridge (module import, config, relay, unload drain, context sync) |
 | `Bit.Belemetry/Components/` | `<BelemetryScript />` (static `<head>` tag) and `<BelemetryInitializer />` (interactive bridge) |
-| `Bit.Belemetry.Demo/` | Documentation site (Client) and its host (Server). The host also runs the MCP server at `/mcp` and an in-process OTLP receiver that the demo exports to |
-| `Samples/` | Minimal hosting samples: `Core` (shared pages), `Server`, `Wasm`, `Auto`, `Maui` |
-| `Tests/` | `Bit.Belemetry.Tests` (MSTest + bunit), `Tests.Hosting`, `Tests.E2E` (Playwright) with `Tests.Harness.*`, `Tests.Mcp`, `bit-belemetry-js` (vitest) |
+| `Bit.Belemetry.EntityFrameworkCore/` | Separate package: a `DbCommandInterceptor` that starts a client span per EF Core command on the `Bit.Belemetry.EntityFrameworkCore` source (`UseBitBelemetry()` on the context options). Depends on the core and `Microsoft.EntityFrameworkCore.Relational` only |
+| `Bit.Belemetry.Hangfire/` | Separate package: a client + server job filter that carries the W3C trace context in the job's parameters and starts a consumer span per execution on the `Bit.Belemetry.Hangfire` source (`UseBitBelemetry()` on the global configuration). Depends on the core and `Hangfire.Core` only |
+| `Demo/` | Documentation site (Client) and its host (Server). The host also runs the MCP server at `/mcp` and an in-process OTLP receiver that the demo exports to |
+| `Samples/` | Minimal hosting samples: `Core` (shared pages), `Server`, `Wasm`, `Auto`, `Maui`, `WinForms` |
+| `Tests/` | `Bit.Belemetry.Tests` (MSTest + bunit), `Tests.EntityFrameworkCore`, `Tests.Hangfire`, `Tests.Hosting`, `Tests.E2E` (Playwright) with `Tests.Harness.*`, `Tests.Mcp`, `bit-belemetry-js` (vitest) |
+
+The core stays small on purpose: anything that needs a dependency most Blazor apps do not have (a database provider,
+a job server, a cloud SDK) goes in a package of its own that starts plain `Activity` instances on a `Bit.Belemetry.*`
+source, which the core collects by default. gRPC, resource detection and the appsettings binding shape are in the
+core because every host may need them and they add no dependency.
 
 ## Coding style
 
@@ -47,6 +55,11 @@ Every feature is gated by runtime consent (GDPR), per feature.
   - The package is `IsTrimmable` and `IsAotCompatible`.
 - **No threads.** Browser WebAssembly is single-threaded, so the pipeline runs on async loops with timers only.
   `new Thread`, blocking waits and `.Result` are forbidden.
+- **`BelemetryOptions` stays bindable** by the configuration binder's source generator, which runs in the consuming
+  app (`Tests/Bit.Belemetry.Tests/BelemetryOptionsBindingTests.cs` binds every option): collections are get-only
+  `List<T>` or `Dictionary<,>`, nested options are get-only instances, an array default is empty (a binder appends
+  to an array, it never replaces it), and anything code-only (delegates, exporters, processors) is left out of the
+  JSON on purpose.
 - **The exporter must not instrument itself.** Every export runs inside `BelemetrySuppression.Begin()`, so the
   `System.Net.Http` activities it creates are not sampled. The JS fetch/XHR instrumentation ignores exporter URLs
   and any request that already carries a `traceparent` header (in WASM, .NET's HttpClient has already traced it).
@@ -127,7 +140,7 @@ idempotent: a second call only updates the consent defaults and the bridge.
   ],
   "features": 4095,                                      // instrumentations switched on by configuration
   "consent": { "default": 0, "persist": true, "honorGlobalPrivacyControl": true, "pendingLimit": 500 },
-  "pageViews": { "trackHashChanges": false },
+  "pageViews": { "trackHashChanges": false, "trackVisitTime": false },
   "interactions": { "events": ["click"], "captureText": false, "maxTextLength": 64 },
   "performance": { "webVitals": true, "documentLoad": true, "resources": false, "longTasks": false },
   "dependencies": { "fetch": true, "xhr": true, "propagateTraceContextTo": ["same-origin"], "ignoreUrls": ["/_framework/", "/_blazor", "/_content/"] },
@@ -150,6 +163,8 @@ Notes on the fields:
   both to post and to recognize its own export requests.
 - `signals` is the exporter's `BelemetrySignals` restricted to what the browser produces: traces 1, logs 2 (web vitals
   are log records). Absent or null means both. An exporter with neither is left out of the config.
+- `protocol` is never `grpc`: a page cannot speak it, so an OTLP exporter with `BelemetryOtlpProtocol.Grpc` is handed
+  to the browser only when it has a `BrowserEndpoint`, as `http/protobuf` to that endpoint, and left out otherwise.
 - `blockedAttributes` are exact, case-sensitive attribute keys removed from every record and span event, before the
   ids (`session.id`, ...) are added.
 - `retryIntervalMs` is `Persistence.RetryInterval` (non-positive falls back to 60000, floor 1000): how often the page
@@ -205,6 +220,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | Record | Shape |
 | --- | --- |
 | Page view | Log record, `eventName = "browser.page_view"`. Attributes: `url.full`, `url.path`, `page.title`, `page.referrer` (redacted), `browser.navigation.type` (`initial`/`push`/`replace`/`pop`/`hash`/`manual`) |
+| Page visit time | Log record, `eventName = "browser.page_visit_time"`, only with `pageViews.trackVisitTime`. Emitted for the previous page when the next page view starts, and for the current page when it is hidden; the next visit starts when the page is shown again, so hidden time is counted nowhere and nothing twice. Attributes: `url.full`, `url.path`, `page.title`, `page.visit.duration` (ms, integer) |
 | Click | Log record, `eventName = "browser.user_interaction"`. Attributes: `event.type`, `target.element`, `target.id`, `target.name` (`data-bit-belemetry-name`, `aria-label`, then `name`), `target.text` (only with `captureText`), `target.xpath`. Elements under `[data-bit-belemetry-ignore]` are skipped |
 | Web vital | Log record, `eventName = "browser.web_vital"`. Attributes: `web_vital.name` (`LCP`/`INP`/`CLS`/`FCP`/`TTFB`), `web_vital.value`, `web_vital.delta`, `web_vital.rating` (`good`/`needs-improvement`/`poor`), `web_vital.id`, `web_vital.navigation_type` |
 | Document load | Internal span `documentLoad`, with events `domInteractive`, `domContentLoadedEventEnd`, `loadEventEnd`, ... from `PerformanceNavigationTiming` |
@@ -229,6 +245,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | `ai.cloud.roleInstance` | `service.instance.id` |
   | `ai.application.ver` | `service.version` |
   | `ai.user.agent` | `user_agent.original` (browser resource) |
+  | `ai.device.locale` | `browser.language` (browser resource) |
   | `ai.operation.id` | traceId |
   | `ai.operation.parentId` | parent span id (span) or span id (log) |
   | `ai.operation.name` | Requests: the request name (`{http.request.method} {http.route}` when both are set, else the span name). Page views: the page name (`page.title`, else `url.path`, else `url.full`). Not set on other records |
@@ -248,6 +265,7 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
   | Log with `exception.*` | `Exception` | `exceptions:[{id:1,outerId:0,typeName,message,hasFullStack,stack}]`, `severityLevel` |
   | `eventName == "browser.page_view"` | `PageView` | `name`, `url`, `id` |
   | `eventName == "browser.web_vital"` | `Metric` | `metrics:[{name:"<web_vital.name>",kind:0,value,count:1}]` |
+  | `eventName == "browser.page_visit_time"` | `Event` | `name` = `PageVisitTime`, `measurements:{PageVisitTime:<ms>}`, properties `PageName` (`page.title`, else `url.path`) and `PageUrl` - the Application Insights JS SDK's `autoTrackPageVisitTime` shape |
   | Any other `eventName` | `Event` | `name` = eventName |
   | Any other log | `Message` | `message`, `severityLevel` (0 Verbose, 1 Information, 2 Warning, 3 Error, 4 Critical) |
   | Metric point | `Metric` | Gauge: last value. Sum: delta. Histogram: delta sum/count/min/max |
@@ -264,6 +282,8 @@ Attributes are a flat JSON object: string, number, boolean, or an array of one o
 | Project | Covers | Run |
 | --- | --- | --- |
 | `Tests/Bit.Belemetry.Tests` | Model, collectors, aggregation, processors, consent state machine, privacy scrubbing, sampling, both OTLP serializers (protobuf bytes decoded by `Google.Protobuf` types generated from the vendored official `.proto` files in `Tests/Bit.Belemetry.Tests/Protos`), Azure envelopes, the sender's retry and persistence, components (bunit) | `dotnet test` from that folder |
+| `Tests/Bit.Belemetry.Tests.EntityFrameworkCore` | The EF Core interceptor against SQLite in memory: span shape, parenting, failures, the filter, the no-listener path | `dotnet test` from that folder |
+| `Tests/Bit.Belemetry.Tests.Hangfire` | The Hangfire filter against a real `BackgroundJobServer` on in-memory storage: the execution span, its parent from the enqueue, failures, the filter | `dotnet test` from that folder |
 | `Tests/Bit.Belemetry.Tests.Hosting` | Every render mode prerenders `<BelemetryScript />` with the right config, the script is served, and a real export reaches an in-process OTLP receiver when the server pipeline is enabled | `dotnet test` from that folder |
 | `Tests/Bit.Belemetry.Tests.E2E` | Real browser: page views, clicks, errors, web vitals, fetch + `traceparent`, consent gating, purge on revoke, and unload flush, against the harness hosts and a capturing OTLP/Azure receiver | `dotnet test` from that folder (needs `playwright.ps1 install chromium`) |
 | `Tests/Bit.Belemetry.Tests.Mcp` | The demo's MCP server | `dotnet test` from that folder |

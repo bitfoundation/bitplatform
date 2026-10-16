@@ -60,6 +60,7 @@ finds its own records in a receiver shared with other tests.
 | Clicks with `data-bit-belemetry-name`; `[data-bit-belemetry-ignore]` skipped | - | yes | relayed |
 | A JS error becomes an `exception` record and an `Exception` envelope | - | yes | - |
 | `fetch` client span; same-origin request carries `traceparent` (seen by the server); exports not traced | - | yes | - |
+| A cross-origin `fetch` (the host under its other name, `localhost` vs `127.0.0.1`) carries `traceparent` because the origin is listed in `PropagateTraceContextTo` and the echo endpoint's CORS policy allows the header | - | yes | - |
 | Web vitals (TTFB, FCP, LCP, CLS) when the page is hidden; `Metric` envelopes | - | yes | - |
 | `PageView` envelope with the Azure tags | - | yes | relayed |
 | C# `IBelemetry.TrackEvent`: through the browser (Server), through the .NET pipeline (WebAssembly) | - | yes | yes |

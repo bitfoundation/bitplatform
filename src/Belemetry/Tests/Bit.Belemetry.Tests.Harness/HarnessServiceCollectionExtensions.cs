@@ -42,6 +42,10 @@ public static class HarnessServiceCollectionExtensions
             o.Traces.Sources.Add(HarnessTelemetry.Name);
             o.Metrics.Meters.Add(HarnessTelemetry.Name);
 
+            // The harness host under its other name (localhost vs 127.0.0.1) is a cross-origin API the page may call;
+            // same-origin stays the default and still applies.
+            o.Browser.PropagateTraceContextTo.Add(@"^https?://(localhost|127\.0\.0\.1)(:\d+)?/test-api/");
+
             // Each test reloads pages and grants and revokes consent on purpose; a request persisted by one test and
             // retried during the next would show up there.
             o.Persistence.Enabled = false;

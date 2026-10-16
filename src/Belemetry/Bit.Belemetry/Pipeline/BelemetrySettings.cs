@@ -14,10 +14,13 @@ internal sealed class BelemetrySettings
     public BelemetrySettings(IOptions<BelemetryOptions> options, BelemetryHostDetection detection)
         : this(options.Value, detection) { }
 
-    public BelemetrySettings(BelemetryOptions options, BelemetryHostDetection detection)
+    /// <param name="options">The options to resolve.</param>
+    /// <param name="detection">What the service collection told about the host.</param>
+    /// <param name="isBrowser">Overrides the browser detection; for the tests, which cannot run under the WebAssembly runtime.</param>
+    public BelemetrySettings(BelemetryOptions options, BelemetryHostDetection detection, bool? isBrowser = null)
     {
         Options = options;
-        IsBrowser = OperatingSystem.IsBrowser();
+        IsBrowser = isBrowser ?? OperatingSystem.IsBrowser();
 
         Host = options.Host is not BelemetryHostKind.Auto ? options.Host
              : IsBrowser ? BelemetryHostKind.WebAssembly
@@ -32,9 +35,21 @@ internal sealed class BelemetrySettings
                       ?? "unknown_service";
 
         ServiceVersion = options.ServiceVersion ?? GetEntryVersion();
-        ServiceInstanceId = options.ServiceInstanceId ?? Guid.NewGuid().ToString();
 
-        Resource = BuildResource(options, useEnv);
+        // OTEL_RESOURCE_ATTRIBUTES is read once: it is the lowest-precedence source of the resource (the OpenTelemetry
+        // SDK spec's order), and the one place an orchestrator such as the Aspire AppHost hands a process its instance id.
+        var environmentResource = useEnv ? ParseResourceAttributes(GetEnv("OTEL_RESOURCE_ATTRIBUTES")) : null;
+
+        // A server is one of a few long-lived instances and should keep its name across restarts (Application Insights
+        // counts instances by it): the orchestrator's id, the platform's, else the machine name - which two instances on
+        // one machine share, as they do with the Azure Monitor OpenTelemetry exporter; set ServiceInstanceId then. A
+        // device or a tab is one of many and gets a random id, which identifies nobody.
+        ServiceInstanceId = options.ServiceInstanceId
+                            ?? environmentResource?.GetString(BelemetrySemanticConventions.ServiceInstanceId)
+                            ?? (Host is BelemetryHostKind.Server ? (useEnv ? BelemetryResourceDetector.GetPlatformInstanceId() : null) ?? Environment.MachineName : null)
+                            ?? Guid.NewGuid().ToString();
+
+        Resource = BuildResource(options, useEnv, environmentResource);
 
         CollectDotnet = options.Enabled && (Host is not BelemetryHostKind.Server || options.Server.CollectDotnetTelemetry);
 
@@ -122,18 +137,27 @@ internal sealed class BelemetrySettings
         return false;
     }
 
-    private BelemetryResource BuildResource(BelemetryOptions options, bool useEnv)
+    private static BelemetryAttributes? ParseResourceAttributes(string? value)
+    {
+        if (value is null) return null;
+
+        var attributes = new BelemetryAttributes();
+        foreach (var pair in value.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+        {
+            var eq = pair.IndexOf('=', StringComparison.Ordinal);
+            if (eq > 0) attributes.Set(Uri.UnescapeDataString(pair[..eq].Trim()), Uri.UnescapeDataString(pair[(eq + 1)..].Trim()));
+        }
+        return attributes;
+    }
+
+    private BelemetryResource BuildResource(BelemetryOptions options, bool useEnv, BelemetryAttributes? environmentResource)
     {
         var attributes = new BelemetryAttributes();
 
         // OTEL_RESOURCE_ATTRIBUTES goes first so explicit options override it, as the OpenTelemetry SDK spec orders them.
-        if (useEnv && GetEnv("OTEL_RESOURCE_ATTRIBUTES") is { } envAttributes)
+        if (environmentResource is not null)
         {
-            foreach (var pair in envAttributes.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
-            {
-                var eq = pair.IndexOf('=', StringComparison.Ordinal);
-                if (eq > 0) attributes.Set(Uri.UnescapeDataString(pair[..eq].Trim()), Uri.UnescapeDataString(pair[(eq + 1)..].Trim()));
-            }
+            foreach (var (key, value) in environmentResource) attributes.Set(key, value);
         }
 
         attributes.Set(BelemetrySemanticConventions.ServiceName, ServiceName);
@@ -151,10 +175,13 @@ internal sealed class BelemetrySettings
         attributes.Set(BelemetrySemanticConventions.OsDescription, RuntimeInformation.OSDescription);
         attributes.Set(BelemetrySemanticConventions.HostArch, RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant());
 
-        if (IsBrowser is false)
+        if (Host is BelemetryHostKind.Server)
+        {
+            BelemetryResourceDetector.Detect(attributes, useEnv);
+        }
+        else if (IsBrowser is false)
         {
             attributes.Set(BelemetrySemanticConventions.ProcessPid, Environment.ProcessId);
-            if (Host is BelemetryHostKind.Server) attributes.Set(BelemetrySemanticConventions.HostName, Environment.MachineName);
         }
 
         foreach (var (key, value) in options.ResourceAttributes) attributes.Set(key, value);
@@ -162,12 +189,12 @@ internal sealed class BelemetrySettings
         return new BelemetryResource(attributes);
     }
 
-    private static List<BelemetryOtlpExporterOptions> ResolveOtlp(BelemetryOptions options, bool useEnv)
+    private List<BelemetryOtlpExporterOptions> ResolveOtlp(BelemetryOptions options, bool useEnv)
     {
         var list = options.OtlpExporters.ToList();
 
-        if (useEnv && list.Count == 0 && GetEnv("OTEL_EXPORTER_OTLP_ENDPOINT") is { } envEndpoint
-            && Uri.TryCreate(envEndpoint, UriKind.Absolute, out _))
+        if (useEnv && list.Count == 0
+            && (GetEnvUri("OTEL_EXPORTER_OTLP_ENDPOINT") ?? GetEnvUri("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT") ?? GetEnvUri("OTEL_EXPORTER_OTLP_LOGS_ENDPOINT") ?? GetEnvUri("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT")) is not null)
         {
             // The standard OTel variables alone are enough to turn the OTLP exporter on - this is how the Aspire
             // AppHost and most container platforms wire telemetry into an app without code changes.
@@ -178,11 +205,12 @@ internal sealed class BelemetrySettings
         {
             if (useEnv)
             {
-                if (exporter.Endpoint is null && GetEnv("OTEL_EXPORTER_OTLP_ENDPOINT") is { } endpoint
-                    && Uri.TryCreate(endpoint, UriKind.Absolute, out var uri))
-                {
-                    exporter.Endpoint = uri;
-                }
+                // Like every variable here, these only fill in what the code left unset: explicit configuration wins,
+                // as in the OpenTelemetry SDKs.
+                exporter.Endpoint ??= GetEnvUri("OTEL_EXPORTER_OTLP_ENDPOINT");
+                exporter.TracesEndpoint ??= GetEnvUri("OTEL_EXPORTER_OTLP_TRACES_ENDPOINT");
+                exporter.LogsEndpoint ??= GetEnvUri("OTEL_EXPORTER_OTLP_LOGS_ENDPOINT");
+                exporter.MetricsEndpoint ??= GetEnvUri("OTEL_EXPORTER_OTLP_METRICS_ENDPOINT");
 
                 if (GetEnv("OTEL_EXPORTER_OTLP_HEADERS") is { } headers)
                 {
@@ -193,20 +221,62 @@ internal sealed class BelemetrySettings
                     }
                 }
 
-                // Like every variable here, it only fills in what the code left unset: explicit configuration wins,
-                // as in the OpenTelemetry SDKs.
                 if (exporter.IsProtocolSet is false && GetEnv("OTEL_EXPORTER_OTLP_PROTOCOL") is { } protocol)
                 {
                     if (protocol.Equals("http/json", StringComparison.OrdinalIgnoreCase)) exporter.Protocol = BelemetryOtlpProtocol.HttpJson;
                     else if (protocol.Equals("http/protobuf", StringComparison.OrdinalIgnoreCase)) exporter.Protocol = BelemetryOtlpProtocol.HttpProtobuf;
+                    else if (protocol.Equals("grpc", StringComparison.OrdinalIgnoreCase)) exporter.Protocol = BelemetryOtlpProtocol.Grpc;
+                    else StartupWarnings.Add($"OTEL_EXPORTER_OTLP_PROTOCOL is '{protocol}', which Belemetry does not know (http/protobuf, http/json or grpc); the OTLP exporter uses {exporter.Protocol}.");
+                }
+
+                if (exporter.IsCompressionSet is false && GetEnv("OTEL_EXPORTER_OTLP_COMPRESSION") is { } compression)
+                {
+                    if (compression.Equals("gzip", StringComparison.OrdinalIgnoreCase)) exporter.Compression = BelemetryCompression.Gzip;
+                    else if (compression.Equals("none", StringComparison.OrdinalIgnoreCase)) exporter.Compression = BelemetryCompression.None;
+                }
+
+                if (exporter.IsTimeoutSet is false && GetEnv("OTEL_EXPORTER_OTLP_TIMEOUT") is { } timeout
+                    && int.TryParse(timeout, NumberStyles.Integer, CultureInfo.InvariantCulture, out var milliseconds) && milliseconds > 0)
+                {
+                    exporter.Timeout = TimeSpan.FromMilliseconds(milliseconds);
                 }
             }
 
-            exporter.Endpoint ??= new Uri("http://localhost:4318");
+            exporter.Endpoint ??= BelemetryOtlpExporter.DefaultEndpoint(exporter.Protocol);
+        }
+
+        if (IsBrowser)
+        {
+            // fetch cannot send HTTP/2 trailers, so a page has no way to speak gRPC; posting the frames to the gRPC port
+            // over HTTP/1.1 would only fail quietly at every flush. In WebAssembly the whole exporter - the .NET pipeline's
+            // half included - becomes OTLP/HTTP to the BrowserEndpoint, when it has an absolute one; a relative one is
+            // only resolvable by the script, and the .NET side would have nowhere to post.
+            foreach (var exporter in list)
+            {
+                if (exporter.Protocol != BelemetryOtlpProtocol.Grpc) continue;
+
+                if (exporter.BrowserEndpoint is { IsAbsoluteUri: true } browserEndpoint)
+                {
+                    exporter.Protocol = BelemetryOtlpProtocol.HttpProtobuf;
+                    exporter.Endpoint = browserEndpoint;
+                    exporter.TracesEndpoint = exporter.LogsEndpoint = exporter.MetricsEndpoint = null;
+                }
+            }
+
+            if (list.RemoveAll(e => e.Protocol == BelemetryOtlpProtocol.Grpc) > 0)
+            {
+                StartupWarnings.Add("An OTLP exporter uses the gRPC protocol, which the browser cannot speak; it is skipped in WebAssembly. Use OTLP/HTTP there, or give it an absolute OTLP/HTTP BrowserEndpoint.");
+            }
         }
 
         return list;
     }
+
+    /// <summary>What resolving the options found wrong; the pipeline logs them as warnings once it has a logger.</summary>
+    public List<string> StartupWarnings { get; } = [];
+
+    private static Uri? GetEnvUri(string name) =>
+        GetEnv(name) is { } value && Uri.TryCreate(value, UriKind.Absolute, out var uri) ? uri : null;
 
     private static List<BelemetryAzureMonitorExporterOptions> ResolveAzure(BelemetryOptions options, bool useEnv)
     {

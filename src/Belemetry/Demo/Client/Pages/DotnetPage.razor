@@ -73,10 +73,12 @@
     <h2>Traces</h2>
     <p>
         The activities of every source named in <code>Traces.Sources</code> are recorded as spans - by default
-        <code>System.Net.Http</code> and <code>Microsoft.AspNetCore.Components*</code> (and
-        <code>Microsoft.AspNetCore</code> for the server pipeline). A trailing <code>*</code> matches a prefix, so
-        <code>MyApp*</code> collects <code>MyApp.Checkout</code> and <code>MyApp.Search</code> alike. This demo adds
-        its own <code>Bit.Belemetry.Demo</code> source.
+        <code>System.Net.Http</code>, <code>Microsoft.AspNetCore.Components*</code> and <code>Bit.Belemetry.*</code>,
+        the instrumentation packages (and <code>Microsoft.AspNetCore</code> for the server pipeline). A trailing
+        <code>*</code> matches a prefix, so <code>MyApp*</code> collects <code>MyApp.Checkout</code> and
+        <code>MyApp.Search</code> alike. This demo adds its own <code>Bit.Belemetry.Demo</code> source. Names in
+        <code>Traces.IgnoredActivityNames</code> are never created at all - their children attach to the parent -
+        which is the cheapest way to drop a chatty source such as Blazor's per-event spans.
     </p>
     <p>
         Sampling is parent-based: a span whose parent was sampled is recorded, a new trace is recorded with
@@ -86,6 +88,13 @@
         downstream services, but nothing is recorded. <code>MaxEventsPerSpan</code> and <code>MaxLinksPerSpan</code>
         (128 each) cap what one span can carry.
     </p>
+    <p>
+        Sampling at the end of a span - keep every failure and every slow span, a fraction of the rest - is a
+        <a href="/processors">processor</a>. <code>BelemetrySampler</code> is public so the processor makes the same
+        deterministic, trace-wide decision the ratio sampler makes, and the kept fraction is whole traces rather than
+        scattered spans.
+    </p>
+    <CodeSnippet Code="@TailSamplingCode" Language="C#" />
     <div class="demo-row">
         <div class="demo-card stack">
             <div class="demo-actions">
@@ -111,8 +120,8 @@
         The instruments of every meter named in <code>Metrics.Meters</code> are aggregated in process - by default
         <code>System.Net.Http</code>, <code>Microsoft.AspNetCore.Components*</code> and <code>System.Runtime</code>,
         with the same trailing-<code>*</code> patterns. Counters and up-down counters become sums, histograms become
-        explicit-bucket histograms (<code>HistogramBoundaries</code>, the OpenTelemetry defaults, unless the
-        instrument advises its own on .NET 9+), and gauges keep their last value.
+        explicit-bucket histograms (<code>HistogramBoundaries</code>; empty by default, which means the OpenTelemetry
+        defaults, unless the instrument advises its own on .NET 9+), and gauges keep their last value.
     </p>
     <p>
         Metrics are collected and exported every <code>ExportInterval</code> (60 s; 10 s in this demo) with
@@ -147,6 +156,34 @@
         </div>
     </div>
     <CodeSnippet Code="@MetricsCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Entity Framework Core and Hangfire</h2>
+    <p>
+        Neither EF Core nor Hangfire starts activities of its own, and the OpenTelemetry instrumentations for them
+        only run inside the OpenTelemetry SDK. Belemetry ships the two bridges as packages of their own -
+        <code>Bit.Belemetry.EntityFrameworkCore</code> and <code>Bit.Belemetry.Hangfire</code> - so an app without a
+        database or a job server takes neither dependency. Their spans land on <code>Bit.Belemetry.*</code> sources,
+        which the core collects by default; any other <code>ActivityListener</code> can record them too.
+    </p>
+    <CodeSnippet Code="@EfCoreCode" Language="C#" Expanded="true" />
+    <p>
+        EF Core: a client span per command, named after the database, with <code>db.system.name</code>,
+        <code>db.namespace</code>, <code>server.address</code>, <code>server.port</code>,
+        <code>efcore.command.source</code> (<code>SaveChanges</code>, <code>LinqQuery</code>, <code>Migrations</code>,
+        ...) and, on a failure, <code>error.type</code> and an error status. <code>CaptureQueryText</code> adds
+        <code>db.query.text</code>; <code>Filter</code> skips commands, say a job store's. Application Insights shows
+        them as database dependencies.
+    </p>
+    <CodeSnippet Code="@HangfireCode" Language="C#" />
+    <p>
+        Hangfire: a consumer span <code>JOB {Type}.{Method}</code> per execution with <code>job.id</code>,
+        <code>job.type</code>, <code>job.method</code>, <code>job.queue</code> and <code>job.created_at</code>,
+        parented to the trace that enqueued the job - the W3C trace context travels in the job's parameters, so the
+        enqueue and the execution may run in different processes - and marked as an error with
+        <code>error.type</code> when the job throws. Application Insights shows them as requests.
+    </p>
 </div>
 
 <div class="demo-section">
@@ -334,6 +371,7 @@
         {
             options.Traces.Sources.Add("MyApp*");          // MyApp, MyApp.Checkout, MyApp.Search, ...
             options.Traces.SamplingRatio = 0.25;           // a quarter of new traces; children follow their parent
+            options.Traces.IgnoredActivityNames.Add("Microsoft.AspNetCore.Components.HandleEvent");   // never created
         });
 
         // Anywhere: plain System.Diagnostics, no reference to Belemetry.
@@ -362,6 +400,41 @@
         }
         """;
 
+    private const string TailSamplingCode = """
+        // Keep every failed or slow span and 5% of the rest - whole traces, because the decision is the trace id's.
+        public sealed class TailSampler : IBelemetryProcessor
+        {
+            public bool OnSpan(BelemetrySpan span) =>
+                span.Status == BelemetryStatusCode.Error
+                || span.Duration > TimeSpan.FromSeconds(1)
+                || BelemetrySampler.ShouldSample(span.TraceId, 0.05);
+        }
+
+        options.AddProcessor(new TailSampler());
+        """;
+
+    private const string EfCoreCode = """
+        // dotnet add package Bit.Belemetry.EntityFrameworkCore
+        services.AddDbContext<AppDbContext>(options => options
+            .UseSqlServer(connectionString)
+            .UseBitBelemetry(o =>
+            {
+                o.CaptureQueryText = false;                                       // db.query.text, off by default
+                o.Filter = (command, data) => data.Context is not JobDbContext;   // skip a job store's own commands
+            }));
+        """;
+
+    private const string HangfireCode = """
+        // dotnet add package Bit.Belemetry.Hangfire
+        services.AddHangfire(configuration => configuration
+            .UseSqlServerStorage(connectionString)
+            .UseBitBelemetry(o =>
+            {
+                o.PropagateTraceContext = true;                        // the enqueue's trace is the execution's parent
+                o.Filter = job => job.Type != typeof(HeartbeatJob);    // skip the noisy ones
+            }));
+        """;
+
     private const string MetricsCode = """
         // Program.cs
         builder.Services.AddBitBelemetryServices(options =>
@@ -369,7 +442,7 @@
             options.Metrics.Meters.Add("MyApp*");
             options.Metrics.ExportInterval = TimeSpan.FromSeconds(30);
             options.Metrics.Temporality = BelemetryMetricTemporality.Delta;      // for backends that want deltas
-            options.Metrics.HistogramBoundaries = [0, 10, 50, 100, 500, 1000];
+            options.Metrics.HistogramBoundaries = [0, 10, 50, 100, 500, 1000];   // empty = the OpenTelemetry defaults
             options.Metrics.CardinalityLimit = 500;
         });
 

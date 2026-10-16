@@ -33,10 +33,12 @@
   <Folder Name="/Belemetry/">
     <File Path="Belemetry/README.md" />
     <Project Path="Belemetry/Bit.Belemetry/Bit.Belemetry.csproj" />
+    <Project Path="Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj" />
+    <Project Path="Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj" />
   </Folder>
-  <Folder Name="/Belemetry/Bit.Belemetry.Demo/">
-    <Project Path="Belemetry/Bit.Belemetry.Demo/Client/Bit.Belemetry.Demo.Client.csproj" />
-    <Project Path="Belemetry/Bit.Belemetry.Demo/Server/Bit.Belemetry.Demo.Server.csproj" />
+  <Folder Name="/Belemetry/Demo/">
+    <Project Path="Belemetry/Demo/Client/Bit.Belemetry.Demo.Client.csproj" />
+    <Project Path="Belemetry/Demo/Server/Bit.Belemetry.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Belemetry/Samples/">
     <Project Path="Belemetry/Samples/Core/Bit.Belemetry.Samples.Core.csproj" />
@@ -55,8 +57,13 @@
     <Project Path="Belemetry/Samples/Wasm/Bit.Belemetry.Samples.Wasm/Bit.Belemetry.Samples.Wasm.csproj" />
     <Project Path="Belemetry/Samples/Wasm/Bit.Belemetry.Samples.Wasm.Client/Bit.Belemetry.Samples.Wasm.Client.csproj" />
   </Folder>
+  <Folder Name="/Belemetry/Samples/WinForms/">
+    <Project Path="Belemetry/Samples/WinForms/Bit.Belemetry.Samples.WinForms.csproj" />
+  </Folder>
   <Folder Name="/Belemetry/Tests/">
     <Project Path="Belemetry/Tests/Bit.Belemetry.Tests/Bit.Belemetry.Tests.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.EntityFrameworkCore/Bit.Belemetry.Tests.EntityFrameworkCore.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Hangfire/Bit.Belemetry.Tests.Hangfire.csproj" />
     <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Mcp/Bit.Belemetry.Tests.Mcp.csproj" />
     <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Hosting/Bit.Belemetry.Tests.Hosting.csproj" />
     <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj" />

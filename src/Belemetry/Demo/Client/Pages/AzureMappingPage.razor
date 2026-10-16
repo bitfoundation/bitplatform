@@ -51,6 +51,7 @@
                 <tr><td><code>ai.user.id</code></td><td><code>enduser.pseudo.id</code></td></tr>
                 <tr><td><code>ai.user.authUserId</code></td><td><code>user.id</code></td></tr>
                 <tr><td><code>ai.user.agent</code></td><td><code>user_agent.original</code> from the browser resource</td></tr>
+                <tr><td><code>ai.device.locale</code></td><td><code>browser.language</code> from the browser resource</td></tr>
                 <tr><td><code>ai.device.type</code></td><td><code>"Browser"</code> (JS), <code>"Phone"</code> (Android and iOS), <code>"PC"</code> otherwise</td></tr>
                 <tr><td><code>ai.location.ip</code></td><td><code>"0.0.0.0"</code> when <code>MaskIp</code> (the default), so no IP-based geolocation</td></tr>
                 <tr><td><code>ai.internal.sdkVersion</code></td><td><code>"bitblm:&lt;version&gt;"</code> (.NET) or <code>"bitblmjs:&lt;version&gt;"</code> (JS)</td></tr>
@@ -109,6 +110,12 @@
                     <td><code>Metric</code></td>
                     <td><code>customMetrics</code></td>
                     <td><code>metrics:[{name:"&lt;web_vital.name&gt;",kind:0,value,count:1}]</code> - <code>LCP</code>, <code>INP</code>, <code>CLS</code>, <code>FCP</code>, <code>TTFB</code></td>
+                </tr>
+                <tr>
+                    <td><code>eventName == "browser.page_visit_time"</code></td>
+                    <td><code>Event</code></td>
+                    <td><code>customEvents</code></td>
+                    <td><code>name</code> = <code>PageVisitTime</code>, <code>measurements:{PageVisitTime:&lt;ms&gt;}</code>, properties <code>PageName</code> and <code>PageUrl</code> - the Application Insights JS SDK's <code>autoTrackPageVisitTime</code> shape</td>
                 </tr>
                 <tr>
                     <td>Any other <code>eventName</code></td>

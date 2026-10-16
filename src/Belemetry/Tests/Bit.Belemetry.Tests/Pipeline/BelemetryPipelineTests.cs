@@ -375,7 +375,7 @@ public class BelemetryPipelineTests
         await using var host = TestHost.Create();
         using var scope = host.Services.CreateScope();
         var api = (IBelemetry)ActivatorUtilities.CreateInstance<BelemetryService>(scope.ServiceProvider, new BelemetryJsBridge(
-            new Bunit.BunitJSInterop().JSRuntime, host.Settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>()));
+            host.Settings, host.Pipeline, host.Consent, host.Services.GetRequiredService<BelemetryBrowserBridgeRegistry>(), new Bunit.BunitJSInterop().JSRuntime));
 
         api.TrackEvent("checkout", new Dictionary<string, object?> { ["amount"] = 9.5 });
         api.TrackPageView("Home", "https://app.test/home?x=1");

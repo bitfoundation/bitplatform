@@ -1,7 +1,7 @@
 ﻿import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { installErrors } from '../../Bit.Belemetry/Scripts/instrumentations/errors.ts';
 import { describeTarget, installInteractions, resolveTarget, xpath } from '../../Bit.Belemetry/Scripts/instrumentations/interactions.ts';
-import { installPageViews, resetPageViewState, trackPageView } from '../../Bit.Belemetry/Scripts/instrumentations/page-views.ts';
+import { installPageViews, resetPageViewState, trackPageView, trackPageVisitTime } from '../../Bit.Belemetry/Scripts/instrumentations/page-views.ts';
 import { ClsAccumulator, InpAccumulator, rate, THRESHOLDS } from '../../Bit.Belemetry/Scripts/instrumentations/web-vitals.ts';
 import { installConsole } from '../../Bit.Belemetry/Scripts/instrumentations/console.ts';
 import { fakeContext } from './helpers.js';
@@ -79,6 +79,52 @@ describe('page views', () => {
         uninstall();
         uninstall = null;
         expect(history.pushState).toBe(push);
+    });
+
+    it('records no visit time unless trackVisitTime', () => {
+        const ctx = fakeContext();
+        let t = 1000;
+        vi.spyOn(performance, 'now').mockImplementation(() => t);
+        trackPageView(ctx, 'push', { url: '/a' });
+        t += 5000;
+        trackPageView(ctx, 'push', { url: '/b' });
+        expect(ctx.records.map(r => r.eventName)).toEqual(['browser.page_view', 'browser.page_view']);
+        expect(trackPageVisitTime(ctx)).toBe(false);
+    });
+
+    it('records the previous page\'s visit time when the next page view starts', () => {
+        const ctx = fakeContext({ pageViews: { trackVisitTime: true } });
+        let t = 1000;
+        vi.spyOn(performance, 'now').mockImplementation(() => t);
+        document.title = 'A';
+        trackPageView(ctx, 'push', { url: '/a' });
+        t += 5000;
+        document.title = 'B';
+        trackPageView(ctx, 'push', { url: '/b' });
+        expect(ctx.records.map(r => r.eventName)).toEqual(['browser.page_view', 'browser.page_visit_time', 'browser.page_view']);
+        const visit = ctx.records[1];
+        expect(visit).toMatchObject({ body: 'A', feature: 2, severityNumber: 9, scope: 'bit.belemetry.page_views' });
+        expect(visit.attributes).toEqual({ 'url.full': location.origin + '/a', 'url.path': '/a', 'page.title': 'A', 'page.visit.duration': 5000 });
+        // The visit ends where the next page view starts: same timestamp.
+        expect(visit.time).toBe(ctx.records[2].time);
+    });
+
+    it('records the visit so far when the page is hidden, and starts a new one', () => {
+        const ctx = fakeContext({ pageViews: { trackVisitTime: true } });
+        let t = 1000;
+        vi.spyOn(performance, 'now').mockImplementation(() => t);
+        uninstall = installPageViews(ctx);
+        t += 2000;
+        const visibility = vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+        document.dispatchEvent(new Event('visibilitychange'));
+        // Two hours in the background are nobody's visit.
+        t += 7200000;
+        visibility.mockReturnValue('visible');
+        document.dispatchEvent(new Event('visibilitychange'));
+        t += 3000;
+        trackPageView(ctx, 'push', { url: '/next' });
+        const durations = ctx.records.filter(r => r.eventName === 'browser.page_visit_time').map(r => r.attributes['page.visit.duration']);
+        expect(durations).toEqual([2000, 3000]);
     });
 });
 

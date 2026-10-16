@@ -19,14 +19,21 @@ builder.Services.AddBelemetryHarness(
 
 builder.Services.AddSingleton<HarnessCollector>();
 
+// The echo endpoint doubles as a cross-origin API (the page calls it under the host's other name), so it has to
+// allow the traceparent header the way a real API behind another origin must.
+builder.Services.AddCors(options => options.AddPolicy(HarnessCollectorEndpoints.CrossOriginPolicy,
+    policy => policy.AllowAnyOrigin().WithMethods("GET").WithHeaders("traceparent", "tracestate")));
+
 var app = builder.Build();
 
 #if NET9_0_OR_GREATER
+app.UseCors();
 app.UseAntiforgery();
 app.MapStaticAssets();
 #else
 app.UseStaticFiles();
 app.UseRouting();
+app.UseCors();
 app.UseAntiforgery();
 #endif
 

@@ -23,4 +23,14 @@ public sealed class BelemetryServerOptions
     /// logs, traces and metrics.
     /// </summary>
     public BelemetryFeatures Features { get; set; } = BelemetryFeatures.Errors | BelemetryFeatures.Logs | BelemetryFeatures.Traces | BelemetryFeatures.Metrics;
+
+    /// <summary>
+    /// Path prefixes (case-insensitive) of requests whose <c>Microsoft.AspNetCore</c> server span is dropped, e.g.
+    /// <c>/health</c>, <c>/alive</c>, <c>/_framework</c>, <c>/_content</c> and <c>/_blazor</c> for health probes and
+    /// Blazor's own traffic. Matched against <c>url.path</c> (.NET 10) or, failing that, <c>http.route</c>, which on
+    /// .NET 8 and 9 is all a request span carries: there, a request that matched no endpoint (a static file) cannot be
+    /// matched either. The span is dropped when it ends, so a child it had (a database check behind <c>/health</c>) is
+    /// still exported, with a parent that never arrives. Empty by default.
+    /// </summary>
+    public List<string> IgnoredRequestPaths { get; } = [];
 }

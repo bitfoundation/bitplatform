@@ -1,5 +1,6 @@
 ﻿import { now } from '../clock';
 import { Features } from '../features';
+import { onHidden } from '../lifecycle';
 import { Severity, type Attributes } from '../model';
 import { createLog } from '../records';
 import { absoluteUrl, guard, type InstrumentationContext, type Uninstall } from './context';
@@ -16,21 +17,49 @@ export interface PageViewOptions {
 
 export const PAGE_VIEW_SCOPE = 'bit.belemetry.page_views';
 
+/** The event name of the time spent on a page, sent when the next page view starts or the page is hidden. */
+export const PAGE_VISIT_TIME_EVENT = 'browser.page_visit_time';
+
+/** The attribute carrying a page visit's length, in milliseconds. */
+export const PAGE_VISIT_DURATION = 'page.visit.duration';
+
 // pushState followed by Blazor's enhancedload (or a router that pushes twice) must count once.
 export const DEDUPE_MS = 100;
 
-const state = { key: '', url: '', time: -Infinity, initialSent: false };
+const state = { key: '', url: '', path: '', title: '', time: -Infinity, visitStart: -Infinity, initialSent: false };
 
 /** Resets the module state (tests only). */
 export function resetPageViewState(): void {
     state.key = '';
     state.url = '';
+    state.path = '';
+    state.title = '';
     state.time = -Infinity;
+    state.visitStart = -Infinity;
     state.initialSent = false;
 }
 
 function pageKey(url: string, trackHash: boolean): string {
     return trackHash ? url : url.split('#')[0];
+}
+
+/**
+ * Emits how long the current page was visited, from the page view (or the last time this ran) until `time`, and
+ * starts the next visit at `time` - which `installPageViews` moves forward again when a hidden page is shown, so a
+ * page hidden and shown again is two visits, with the hidden time in neither.
+ */
+export function trackPageVisitTime(ctx: InstrumentationContext, time = now()): boolean {
+    if (!ctx.config.pageViews.trackVisitTime || !state.url || state.visitStart === -Infinity) return false;
+    const duration = time - state.visitStart;
+    state.visitStart = time;
+    if (!(duration > 0)) return false;
+    const attributes: Attributes = {};
+    attributes['url.full'] = state.url;
+    attributes['url.path'] = state.path;
+    attributes['page.title'] = state.title;
+    attributes[PAGE_VISIT_DURATION] = Math.round(duration);
+    ctx.emit(createLog(PAGE_VIEW_SCOPE, Features.PageViews, Severity.Info, state.title || state.path, PAGE_VISIT_TIME_EVENT, attributes, time));
+    return true;
 }
 
 /** Emits a page view unless it duplicates the previous one. Returns whether it was emitted. */
@@ -39,10 +68,13 @@ export function trackPageView(ctx: InstrumentationContext, type: NavigationType,
     const key = pageKey(url, ctx.config.pageViews.trackHashChanges);
     const time = now();
     if (key === state.key && (options.onlyIfChanged || time - state.time < DEDUPE_MS)) return false;
+    // The previous page's visit ends where the next one starts.
+    trackPageVisitTime(ctx, time);
     const referrer = state.url || document.referrer;
     state.key = key;
     state.url = url;
     state.time = time;
+    state.visitStart = time;
     if (type === 'initial') state.initialSent = true;
 
     let path = url;
@@ -52,6 +84,8 @@ export function trackPageView(ctx: InstrumentationContext, type: NavigationType,
         // Keep the full URL.
     }
     const title = document.title || '';
+    state.path = path;
+    state.title = title;
     const attributes: Attributes = { ...(options.attributes || {}) };
     attributes['url.full'] = url;
     attributes['url.path'] = path;
@@ -108,6 +142,16 @@ export function installPageViews(ctx: InstrumentationContext): Uninstall {
     addEventListener('popstate', onPop);
     if (ctx.config.pageViews.trackHashChanges) addEventListener('hashchange', onHash);
 
+    // The last page's visit has no next page view to end it; the hide is the only chance, and it comes before the
+    // unload flush (first phase) so the record leaves with it. Time spent hidden is nobody's visit: the next one
+    // starts when the page is shown again.
+    const trackVisits = ctx.config.pageViews.trackVisitTime;
+    const offHidden = trackVisits ? onHidden(guard(() => trackPageVisitTime(ctx)), 'first') : null;
+    const onVisible = guard(() => {
+        if (document.visibilityState === 'visible' && state.url) state.visitStart = now();
+    });
+    if (trackVisits) document.addEventListener('visibilitychange', onVisible);
+
     let blazor: BlazorEvents | null = null;
     const hookBlazor = guard(() => {
         const candidate = (window as unknown as { Blazor?: BlazorEvents }).Blazor;
@@ -127,6 +171,8 @@ export function installPageViews(ctx: InstrumentationContext): Uninstall {
         removeEventListener('popstate', onPop);
         removeEventListener('hashchange', onHash);
         removeEventListener('load', hookBlazor);
+        if (offHidden) offHidden();
+        document.removeEventListener('visibilitychange', onVisible);
         const b = blazor as BlazorEvents | null;
         if (b && typeof b.removeEventListener === 'function') b.removeEventListener('enhancedload', onEnhancedLoad);
     };

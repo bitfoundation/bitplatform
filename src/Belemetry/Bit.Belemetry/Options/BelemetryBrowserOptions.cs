@@ -12,6 +12,13 @@ public sealed class BelemetryBrowserOptions
     /// <summary>Whether URL changes made only to the fragment (<c>#...</c>) count as page views. Defaults to <see langword="false"/>.</summary>
     public bool TrackHashChanges { get; set; }
 
+    /// <summary>
+    /// Whether the time spent on each page is recorded, as a <c>browser.page_visit_time</c> event carrying
+    /// <c>page.visit.duration</c> (milliseconds) when the next page view starts or the page is hidden (Application
+    /// Insights shows it as the <c>PageVisitTime</c> event). Defaults to <see langword="false"/>.
+    /// </summary>
+    public bool TrackPageVisitTime { get; set; }
+
     /// <summary>The DOM events recorded as interactions. Defaults to <c>click</c>.</summary>
     public List<string> InteractionEvents { get; } = ["click"];
 

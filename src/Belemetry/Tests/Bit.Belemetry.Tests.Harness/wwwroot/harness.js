@@ -13,12 +13,12 @@ const api = () => window.BitBelemetry;
     if (!isNaN(features)) api().setConsent(features);
 })();
 
-async function fetchEcho(output) {
+async function fetchEcho(output, url) {
     output.removeAttribute('data-done');
     try {
         // Same origin, relative to <base href="/">: the fetch instrumentation records a client span and adds a
         // traceparent header, which the endpoint echoes back.
-        const response = await fetch('test-api/echo?from=harness');
+        const response = await fetch(url || 'test-api/echo?from=harness');
         const body = await response.json();
         output.setAttribute('data-status', String(response.status));
         output.setAttribute('data-traceparent', (body.headers && body.headers.traceparent) || '');
@@ -28,6 +28,13 @@ async function fetchEcho(output) {
     output.setAttribute('data-done', 'true');
 }
 
+// The same host under its other name: localhost and 127.0.0.1 are different origins to the browser, so this is a
+// cross-origin request to an endpoint whose CORS policy allows the traceparent header.
+function crossOriginEchoUrl() {
+    const otherHost = location.hostname === '127.0.0.1' ? 'localhost' : '127.0.0.1';
+    return location.protocol + '//' + otherHost + (location.port ? ':' + location.port : '') + '/test-api/echo?from=harness-cross-origin';
+}
+
 document.addEventListener('click', e => {
     const element = e.target instanceof Element ? e.target.closest('[data-harness-action]') : null;
     if (!element) return;
@@ -35,6 +42,9 @@ document.addEventListener('click', e => {
     switch (element.getAttribute('data-harness-action')) {
         case 'fetch-echo':
             fetchEcho(document.getElementById('fetch-result'));
+            break;
+        case 'fetch-echo-cross-origin':
+            fetchEcho(document.getElementById('fetch-cross-origin-result'), crossOriginEchoUrl());
             break;
         case 'throw-error':
             // From a timer, so it is uncaught and reaches window.onerror like any real script error.

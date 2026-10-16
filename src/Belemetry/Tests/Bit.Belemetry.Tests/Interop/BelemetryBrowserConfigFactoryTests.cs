@@ -63,8 +63,9 @@ public class BelemetryBrowserConfigFactoryTests
         Assert.AreEqual(500, consent.GetProperty("pendingLimit").GetInt32());
 
         var pageViews = config.GetProperty("pageViews");
-        AssertKeys(pageViews, "trackHashChanges");
+        AssertKeys(pageViews, "trackHashChanges", "trackVisitTime");
         Assert.IsFalse(pageViews.GetProperty("trackHashChanges").GetBoolean());
+        Assert.IsFalse(pageViews.GetProperty("trackVisitTime").GetBoolean());
 
         var interactions = config.GetProperty("interactions");
         AssertKeys(interactions, "events", "captureText", "maxTextLength");
@@ -256,6 +257,72 @@ public class BelemetryBrowserConfigFactoryTests
         Assert.AreEqual(2, azure.GetProperty("signals").GetInt32());
 
         AssertKeys(exporters[3], "type");
+    }
+
+    [TestMethod]
+    public void BoundLists_AreDeduplicated_WhereADuplicateWouldChangeBehavior()
+    {
+        // A configuration binder appends to a list's defaults: "InteractionEvents": ["click", "submit"] yields click twice.
+        var config = Render(o =>
+        {
+            LibraryDefaults(o);
+            o.Browser.InteractionEvents.AddRange(["click", "Submit"]);
+            o.Browser.ConsoleLevels.AddRange(["error", "info"]);
+        });
+
+        CollectionAssert.AreEqual(new[] { "click", "Submit" }, Strings(config.GetProperty("interactions").GetProperty("events")));
+        CollectionAssert.AreEqual(new[] { "error", "warn", "info" }, Strings(config.GetProperty("logs").GetProperty("consoleLevels")));
+    }
+
+    [TestMethod]
+    public void GrpcExporter_ReachesTheBrowserOnlyThroughAnHttpBrowserEndpoint()
+    {
+        var config = Render(o =>
+        {
+            LibraryDefaults(o);
+            o.AddOtlpExporter("https://aspire.test:21031", e => e.Protocol = BelemetryOtlpProtocol.Grpc);
+            o.AddOtlpExporter("https://aspire.test:21031", e =>
+            {
+                e.Protocol = BelemetryOtlpProtocol.Grpc;
+                e.BrowserEndpoint = new Uri("https://aspire.test:21032");
+            });
+        });
+
+        var exporters = config.GetProperty("exporters").EnumerateArray().ToList();
+        Assert.HasCount(1, exporters, "A page cannot speak gRPC: without a BrowserEndpoint the exporter stays on the server.");
+
+        // In WebAssembly the .NET pipeline cannot speak gRPC either: the exporter becomes OTLP/HTTP to its absolute
+        // BrowserEndpoint, and one without is dropped with a warning.
+        var options = new BelemetryOptions();
+        TestHost.ApplyTestDefaults(options);
+        options.AddOtlpExporter("https://aspire.test:21031", e => e.Protocol = BelemetryOtlpProtocol.Grpc);
+        options.AddOtlpExporter("https://aspire.test:21031", e =>
+        {
+            e.Protocol = BelemetryOtlpProtocol.Grpc;
+            e.BrowserEndpoint = new Uri("https://aspire.test:21032");
+            e.TracesEndpoint = new Uri("https://aspire.test:21031");
+        });
+        options.AddOtlpExporter("https://aspire.test:21031", e =>
+        {
+            e.Protocol = BelemetryOtlpProtocol.Grpc;
+            e.BrowserEndpoint = new Uri("/otlp", UriKind.Relative);
+        });
+        var wasm = new BelemetrySettings(options, new BelemetryHostDetection(false), isBrowser: true);
+
+        var kept = wasm.OtlpExporters.Single();
+        Assert.AreEqual(BelemetryOtlpProtocol.HttpProtobuf, kept.Protocol);
+        Assert.AreEqual(new Uri("https://aspire.test:21032"), kept.Endpoint);
+        Assert.IsNull(kept.TracesEndpoint, "A per-signal gRPC address means nothing over HTTP to another host.");
+        Assert.HasCount(1, wasm.StartupWarnings);
+        StringAssert.Contains(wasm.StartupWarnings[0], "gRPC");
+        var wasmConfig = BelemetryBrowserConfigFactory.Create(wasm);
+        Assert.AreEqual("https://aspire.test:21032/", wasmConfig.Exporters.Single().Endpoint);
+        Assert.AreEqual("http/protobuf", wasmConfig.Exporters.Single().Protocol);
+        Assert.AreEqual("https://aspire.test:21032/", exporters[0].GetProperty("endpoint").GetString());
+        Assert.AreEqual("http/protobuf", exporters[0].GetProperty("protocol").GetString());
+
+        var ignored = Strings(config.GetProperty("dependencies").GetProperty("ignoreUrls"));
+        Assert.IsTrue(ignored.Any(u => u.Contains("TraceService/Export")), "The gRPC method URLs are export traffic too.");
     }
 
     [TestMethod]

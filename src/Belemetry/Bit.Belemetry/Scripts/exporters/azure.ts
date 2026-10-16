@@ -103,6 +103,8 @@ function baseTags(resource: Attributes, ctx: AzureContext): Record<string, strin
     if (version) tags['ai.application.ver'] = version;
     const userAgent = str(resource, 'user_agent.original');
     if (userAgent) tags['ai.user.agent'] = userAgent;
+    const language = str(resource, 'browser.language');
+    if (language) tags['ai.device.locale'] = language;
     tags['ai.device.type'] = 'Browser';
     if (ctx.maskIp) tags['ai.location.ip'] = '0.0.0.0';
     tags['ai.internal.sdkVersion'] = 'bitblmjs:' + ctx.sdkVersion;
@@ -210,6 +212,15 @@ export function logToEnvelope(log: LogRecord, resource: Attributes, ctx: AzureCo
         const value = a['web_vital.value'];
         const metric = { name: str(a, 'web_vital.name') || log.body, kind: 0, value: typeof value === 'number' ? value : Number(value) || 0, count: 1 };
         return envelope('Metric', log.time, ctx, tags, { ver: 2, metrics: [metric] }, properties(a, ['web_vital.name', 'web_vital.value']));
+    }
+    if (log.eventName === 'browser.page_visit_time') {
+        // The shape the Application Insights JS SDK's autoTrackPageVisitTime produces, so the same workbooks apply.
+        const url = str(a, 'url.full');
+        const props = properties(a, ['url.full', 'url.path', 'page.title', 'page.visit.duration']) || {};
+        props.PageName = str(a, 'page.title') || str(a, 'url.path') || log.body;
+        if (url) props.PageUrl = url;
+        const duration = Number(a['page.visit.duration']);
+        return envelope('Event', log.time, ctx, tags, { ver: 2, name: 'PageVisitTime', measurements: { PageVisitTime: isFinite(duration) ? duration : 0 } }, props);
     }
     if (log.eventName) {
         return envelope('Event', log.time, ctx, tags, { ver: 2, name: log.eventName }, properties(a, []));

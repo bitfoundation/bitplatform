@@ -5,10 +5,10 @@
 <h1>OTLP</h1>
 
 <p class="page-intro">
-    OTLP/HTTP is OpenTelemetry's own wire protocol, and the one exporter that reaches almost every backend: the
+    OTLP is OpenTelemetry's own wire protocol, and the one exporter that reaches almost every backend: the
     OpenTelemetry Collector, the .NET Aspire dashboard, Grafana, Jaeger, Honeycomb, Datadog, New Relic, Elastic and
-    more. Belemetry writes it by hand - protobuf and JSON, without the OpenTelemetry packages - from both the .NET
-    pipeline and the browser script, with one configuration.
+    more. Belemetry writes it by hand - HTTP with protobuf or JSON, and gRPC, without the OpenTelemetry packages -
+    from both the .NET pipeline and the browser script, with one configuration.
 </p>
 
 <div class="demo-section">
@@ -27,13 +27,23 @@
 </div>
 
 <div class="demo-section">
-    <h2>Protobuf or JSON</h2>
+    <h2>Protobuf, JSON or gRPC</h2>
     <p>
         <code>Protocol</code> picks the encoding. <code>HttpProtobuf</code> (the default,
         <code>application/x-protobuf</code>) is the most widely supported and the smallest on the wire.
         <code>HttpJson</code> (<code>application/json</code>) is the OTLP JSON mapping - ids as hex, 64-bit integers as
-        strings, enums as numbers - and is easier to inspect and to receive without generated code. gRPC is not
-        supported: it needs HTTP/2 trailers, which browsers cannot send.
+        strings, enums as numbers - and is easier to inspect and to receive without generated code.
+        <code>Grpc</code> is OTLP/gRPC over HTTP/2, spoken without a gRPC library: a unary call is an HTTP/2 POST with
+        the 5-byte message prefix, and the status comes back in the trailers. It is what the OpenTelemetry SDKs default
+        to and what the Aspire AppHost hands a resource (<code>OTEL_EXPORTER_OTLP_PROTOCOL=grpc</code>, port 4317);
+        <code>Compression</code> becomes the gRPC message compression (<code>grpc-encoding: gzip</code>).
+    </p>
+    <p>
+        A browser cannot speak gRPC - <code>fetch</code> has no HTTP/2 trailers - so a gRPC exporter reaches the page
+        only through an OTLP/HTTP <code>BrowserEndpoint</code>; in a WebAssembly app the .NET pipeline cannot either, so
+        there the whole exporter becomes OTLP/HTTP to that endpoint (which must be absolute), and one without is skipped
+        with a startup warning in the <code>Bit.Belemetry</code> log category. On Android and iOS gRPC goes through a
+        <code>SocketsHttpHandler</code> of its own, since the native handlers cannot do HTTP/2 without TLS.
     </p>
     <CodeSnippet Code="@ProtocolCode" Language="C#" />
 </div>
@@ -44,8 +54,9 @@
         <code>Endpoint</code> is the base URL; <code>/v1/traces</code>, <code>/v1/logs</code> and
         <code>/v1/metrics</code> are appended to it, exactly as <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> works.
         <code>TracesEndpoint</code>, <code>LogsEndpoint</code> and <code>MetricsEndpoint</code> are full URLs, used as
-        they are - for backends whose routes do not follow the convention. Without any endpoint, the exporter posts to
-        <code>http://localhost:4318</code>.
+        they are - for backends whose routes do not follow the convention (with gRPC they are base addresses the
+        service method is appended to, as the specification defines the variables). Without any endpoint, the
+        exporter posts to <code>http://localhost:4318</code> (<code>4317</code> for gRPC).
     </p>
     <p>
         <code>BrowserEndpoint</code> is the base URL the browser script uses instead of <code>Endpoint</code>: a public,
@@ -64,7 +75,10 @@
         through <code>CompressionStream</code>, except for the final batch sent while the page unloads, which cannot
         wait for it). <code>Timeout</code> bounds one export request (10 s, the OTLP default). Failed requests are
         retried with backoff, honoring <code>Retry-After</code>, and kept for later with the
-        <a href="/persistence">offline persistence</a>.
+        <a href="/persistence">offline persistence</a>. <code>MinimumLogLevel</code> is the per-exporter counterpart
+        of a logging provider's level: this exporter gets the plain log records at or above it while the others get
+        everything - one backend for errors, another for the full picture, from one pipeline. Events (page views,
+        interactions, web vitals, custom events, exceptions), spans and metrics are not logs to a log level and always pass.
     </p>
     <div class="callout warn">
         Headers the browser script uses are visible to anyone who opens the page. Never put a credential in an
@@ -83,9 +97,10 @@
         Outside the browser, with <code>options.UseEnvironmentVariables</code> (on by default), the standard OTLP
         variables are read - which is how the Aspire AppHost and most container platforms wire telemetry into an app
         without code changes. <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> alone adds an OTLP exporter when none is
-        configured, and fills <code>Endpoint</code> on those that have none. Headers from the variable are added
-        unless the code set the same name. A protocol of <code>http/protobuf</code> or <code>http/json</code> sets
-        <code>Protocol</code>; any other value (<code>grpc</code>) is ignored.
+        configured, and fills <code>Endpoint</code> on those that have none - as does any of the per-signal endpoint
+        variables. Headers from the variable are added unless the code set the same name. A protocol of
+        <code>http/protobuf</code>, <code>http/json</code> or <code>grpc</code> sets <code>Protocol</code>; any other
+        value is reported at startup and ignored.
     </p>
     <div class="doc-table-wrap">
         <table class="doc-table">
@@ -94,8 +109,11 @@
                 <tr><td><code>OTEL_SERVICE_NAME</code></td><td><code>service.name</code>, when <code>ServiceName</code> is not set</td></tr>
                 <tr><td><code>OTEL_RESOURCE_ATTRIBUTES</code></td><td>Extra resource attributes (<code>k=v,k2=v2</code>)</td></tr>
                 <tr><td><code>OTEL_EXPORTER_OTLP_ENDPOINT</code></td><td>Adds an OTLP exporter when none is configured, and fills unset endpoints</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_TRACES_ENDPOINT</code>, <code>_LOGS_ENDPOINT</code>, <code>_METRICS_ENDPOINT</code></td><td>Per-signal endpoints, when the code set none; any of them adds the exporter too</td></tr>
                 <tr><td><code>OTEL_EXPORTER_OTLP_HEADERS</code></td><td>Request headers (<code>k=v,k2=v2</code>)</td></tr>
-                <tr><td><code>OTEL_EXPORTER_OTLP_PROTOCOL</code></td><td><code>http/protobuf</code> or <code>http/json</code>, unless <code>Protocol</code> is set in code</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_PROTOCOL</code></td><td><code>http/protobuf</code>, <code>http/json</code> or <code>grpc</code>, unless <code>Protocol</code> is set in code</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_COMPRESSION</code></td><td><code>gzip</code> or <code>none</code>, unless <code>Compression</code> is set in code</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_TIMEOUT</code></td><td>The request timeout in milliseconds, unless <code>Timeout</code> is set in code</td></tr>
             </tbody>
         </table>
     </div>
@@ -114,9 +132,12 @@
     <CodeSnippet Code="@AspireShellCode" Language="Shell" />
     <CodeSnippet Code="@AspireCode" Language="C#" />
     <p>
-        Under an Aspire AppHost, the AppHost sets <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> for the projects it runs.
-        Belemetry speaks OTLP/HTTP only, so make sure that endpoint is the dashboard's HTTP one, or set
-        <code>Endpoint</code> explicitly.
+        Under an Aspire AppHost, <code>WithOtlpExporter()</code> sets <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> and
+        <code>OTEL_EXPORTER_OTLP_PROTOCOL=grpc</code> for the projects it runs, and Belemetry follows them: leave the
+        protocol unset in code and the .NET side speaks gRPC to the dashboard. An exporter whose protocol is fixed to
+        HTTP in code would post HTTP to the gRPC port and fail quietly - give the AppHost
+        <code>WithOtlpExporter(OtlpProtocol.HttpProtobuf)</code> in that case. The browser still needs the dashboard's
+        HTTP endpoint (as <code>BrowserEndpoint</code>) and its CORS origin.
     </p>
 </div>
 

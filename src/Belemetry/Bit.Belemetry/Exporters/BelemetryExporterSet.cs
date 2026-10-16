@@ -72,7 +72,7 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
     {
         foreach (var exporter in _httpExporters)
         {
-            foreach (var request in exporter.CreateRequests(batch))
+            foreach (var request in exporter.CreateRequests(WithMinimumSeverity(batch, exporter.MinimumSeverity)))
             {
                 var outcome = await _sender.SendAsync(exporter, request, retry: true, cancellationToken);
                 if (outcome == BelemetrySendOutcome.Failed && persistenceAllowed && Store is not null)
@@ -103,6 +103,35 @@ internal sealed class BelemetryExporterSet : IAsyncDisposable
                 _pipeline.LogDiagnostic(ex, $"The exporter '{exporter.Name}' failed.");
             }
         }
+    }
+
+    /// <summary>
+    /// The batch an exporter with a minimum log level gets: the same spans and metrics, and only the plain log records
+    /// at or above it. Events (page views, interactions, web vitals, custom events, exceptions) are log records on the
+    /// wire but not "logs" to the person setting a log level, so they always pass. The batch is shared by every
+    /// exporter, so it is copied rather than trimmed - and only when a record actually falls below the level, which
+    /// keeps the common case allocation-free.
+    /// </summary>
+    internal static BelemetryBatch WithMinimumSeverity(BelemetryBatch batch, BelemetrySeverity? minimum)
+    {
+        if (minimum is null || batch.Logs.Count == 0) return batch;
+
+        List<BelemetryLogRecord>? kept = null;
+        for (var i = 0; i < batch.Logs.Count; i++)
+        {
+            var log = batch.Logs[i];
+            if (log.EventName is not null || log.Severity >= minimum.Value)
+            {
+                kept?.Add(log);
+            }
+            else if (kept is null)
+            {
+                kept = new List<BelemetryLogRecord>(batch.Logs.Count - 1);
+                for (var j = 0; j < i; j++) kept.Add(batch.Logs[j]);
+            }
+        }
+
+        return kept is null ? batch : new BelemetryBatch(batch.Resource, batch.Spans, kept, batch.Metrics);
     }
 
     /// <summary>Sends what the store holds; delivered and rejected requests leave the store, failed ones stay for the next pass.</summary>

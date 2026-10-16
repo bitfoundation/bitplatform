@@ -48,6 +48,7 @@ describe('envelopes', () => {
             'ai.cloud.roleInstance': 'inst-1',
             'ai.application.ver': '2.0.0',
             'ai.user.agent': 'UA/1.0',
+            'ai.device.locale': 'en-US',
             'ai.device.type': 'Browser',
             'ai.location.ip': '0.0.0.0',
             'ai.internal.sdkVersion': 'bitblmjs:10.6.2',
@@ -56,6 +57,21 @@ describe('envelopes', () => {
             'ai.user.authUserId': 'alice',
         });
         expect(e.data).toEqual({ baseType: 'EventData', baseData: { ver: 2, name: 'checkout', properties: { cart: '3' } } });
+    });
+
+    it('maps page visit times to the PageVisitTime event of the Application Insights JS SDK', () => {
+        const e = logToEnvelope(log({
+            eventName: 'browser.page_visit_time', body: 'Home page',
+            attributes: { 'url.full': 'https://x.test/', 'url.path': '/', 'page.title': 'Home page', 'page.visit.duration': 1234, extra: 'y' },
+        }), resource, ctx);
+        expect(e.name).toBe('Microsoft.ApplicationInsights.Event');
+        expect(e.data).toEqual({
+            baseType: 'EventData',
+            baseData: { ver: 2, name: 'PageVisitTime', measurements: { PageVisitTime: 1234 }, properties: { extra: 'y', PageName: 'Home page', PageUrl: 'https://x.test/' } },
+        });
+        const untitled = logToEnvelope(log({ eventName: 'browser.page_visit_time', attributes: { 'url.full': 'https://x.test/p', 'url.path': '/p', 'page.title': '' } }), resource, ctx);
+        expect(untitled.data.baseData.properties.PageName).toBe('/p');
+        expect(untitled.data.baseData.measurements.PageVisitTime).toBe(0);
     });
 
     it('uses the bare service name without a namespace and omits the ip tag without maskIp', () => {

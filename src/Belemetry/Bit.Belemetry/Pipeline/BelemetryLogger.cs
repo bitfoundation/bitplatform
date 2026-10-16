@@ -117,6 +117,20 @@ internal sealed class BelemetryLogger : ILogger
         }
     }
 
+    /// <summary>
+    /// The severity threshold a <see cref="LogLevel"/> minimum stands for: the first severity number of the level's
+    /// OTLP range, so a <see cref="LogLevel.Warning"/> minimum keeps WARN (13) and everything above it.
+    /// </summary>
+    internal static BelemetrySeverity? ToMinimumSeverity(LogLevel? level)
+    {
+        return level switch
+        {
+            null or LogLevel.Trace => null,
+            LogLevel.None => BelemetrySeverity.Fatal + 4, // Above FATAL4 (24): nothing passes.
+            _ => ToSeverity(level.Value),
+        };
+    }
+
     internal static BelemetrySeverity ToSeverity(LogLevel level)
     {
         return level switch
