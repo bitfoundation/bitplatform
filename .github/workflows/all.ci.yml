@@ -129,7 +129,9 @@ jobs:
     - name: Run tests (Blazor Server)
       id: test-postgresql-blazorserver
       working-directory: TestPostgreSQL/src/Tests
-      run: dotnet test
+      run: |
+        (while true; do echo "resources $(date -u +%H:%M:%S): $(free -m | awk '/Mem:/ {print "used " $3 " of " $2 " MB, available " $7}; /Swap:/ {print "swap used " $3}' | tr '\n' ' ') threads $(ps -eLf | wc -l) processes $(ps -e | wc -l) postgres-conns $(docker exec $(docker ps -q --filter ancestor=pgvector/pgvector:pg18 | head -1) psql -U postgres -tAc 'select count(*) from pg_stat_activity' 2>/dev/null)"; ps -eo rss,nlwp,comm --sort=-rss | head -6 | tail -5 | awk '{printf "  %s MB %s threads %s\n", int($1/1024), $2, $3}'; sleep 30; done) &
+        dotnet test
 
     - name: Upload Blazor Server test results on failure
       uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
