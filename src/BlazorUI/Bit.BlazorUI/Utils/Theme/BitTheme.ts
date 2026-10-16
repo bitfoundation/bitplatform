@@ -1280,7 +1280,10 @@ namespace BitBlazorUI {
         }
     }
 
-    // Self-init from <html> attributes.
+    // bit-trim: markup bit-theme
+    // Self-init from <html> attributes - which an app may write in its own markup (ThemingPage) with no .NET API of the
+    // theming in use at all: kept wherever the code an app can run, or its static .html (an index.html), names one of
+    // them, which BitThemeSsr and the components that theme a region do as well.
     Theme.init({
         system: document.documentElement.hasAttribute(ATTR_THEME_SYSTEM),
         persist: document.documentElement.hasAttribute(ATTR_THEME_PERSIST),

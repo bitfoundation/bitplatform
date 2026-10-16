@@ -18,13 +18,39 @@
 
     <ItemGroup>
         <ScssFiles Include="**\*.scss" />
+        <BitAssetsScript Include="..\Bit.BlazorUI.Build\build-assets.mjs" />
+    </ItemGroup>
+
+    <!-- What the core package's publish-time trimming reads of this one when an app turns BitBlazorUITrimIcons on (see
+         Bit.BlazorUI's buildTransitive\Bit.BlazorUI.targets): the targets naming the glyphs, and the glyphs themselves. -->
+    <ItemGroup>
+        <None Include="buildTransitive\Bit.BlazorUI.Icons.targets" Pack="true" PackagePath="buildTransitive\;build\" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeBitBlazorUIAssetsInPackage</TargetsForTfmSpecificContentInPackage>
+        <!-- The first target framework, outside the condition that reads it: a semicolon is not allowed in one. -->
+        <_BitBlazorUIPackedTfm>$(TargetFrameworks.Split(';')[0])</_BitBlazorUIPackedTfm>
+    </PropertyGroup>
+
+    <Target Name="IncludeBitBlazorUIAssetsInPackage" Condition="'$(TargetFramework)' == '$(_BitBlazorUIPackedTfm)'">
+        <ItemGroup>
+            <_BitBlazorUIAssetPiece Include="$(BaseIntermediateOutputPath)bit-assets\**\*" />
+            <TfmSpecificPackageFile Include="@(_BitBlazorUIAssetPiece)" PackagePath="buildTransitive\bit-assets\%(RecursiveDir)%(Filename)%(Extension)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- No source map is written (build-assets.mjs deletes one an older build left beside a bundle), so none is content,
+         even while an older one is still on disk as the project is evaluated. -->
+    <ItemGroup>
+        <Content Remove="wwwroot\styles\*.map;wwwroot\scripts\*.map" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" DependsOnTargets="InstallNodejsDependencies;BuildCss" />
 
     <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <ItemGroup>
-            <Content Include="wwwroot\styles\*.css*" Exclude="@(Content);@(None)" />
+            <Content Include="wwwroot\styles\*.css" Exclude="@(Content);@(None)" />
         </ItemGroup>
     </Target>
 
@@ -41,8 +67,9 @@
         <Exec Condition=" '$(CI)' != 'true' " Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.icons.css">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.icons.scss:wwwroot/styles/bit.blazorui.icons.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <!-- The stylesheet, and beside it its glyph rules one by one, which the publish-time trimming keeps a subset of. -->
+    <Target Name="BuildCss" Inputs="@(ScssFiles);@(BitAssetsScript)" Outputs="wwwroot/styles/bit.blazorui.icons.css;$(BaseIntermediateOutputPath)bit-assets\styles.json">
+        <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; styles --package $(PackageId) --out $(BaseIntermediateOutputPath)bit-assets --icons Styles/bit.blazorui.icons.scss=styles/bit.blazorui.icons.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
     <ItemGroup>

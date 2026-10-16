@@ -826,6 +826,7 @@
     };
 }
 
+// bit-trim: owners BitAppShell
 (function () {
     // The scrolling the reader does before Blazor has started, on the shell rendered by the server. Only
     // the FIRST shell of a page can be scrolled at this point, since it is the one in the server's markup

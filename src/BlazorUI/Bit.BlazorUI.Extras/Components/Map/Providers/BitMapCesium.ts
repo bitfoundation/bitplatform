@@ -4,6 +4,9 @@
      * CesiumJS provider - 3D globe. Loads CesiumJS from the official CDN and drives a Viewer.
      * Markers and vector layers are added as Entities on the Viewer's main entity collection.
      */
+    // bit-trim: owners BitCesiumMapProvider
+    // Called through the JsObjectName of its provider, which BitMap puts together into the identifier it calls (see
+    // BitMapJsRuntimeExtensions), so no interop identifier names this script: the provider type an app passes keeps it.
     export class BitMapCesium {
         private static _maps: { [id: string]: {
             Cesium: any, viewer: any, dotnetObj: DotNetObject | null | undefined,

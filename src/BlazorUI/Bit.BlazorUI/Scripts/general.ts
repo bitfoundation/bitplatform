@@ -1,173 +1,41 @@
 ﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '10.7.0-pre-01';
 
+// bit-trim: always
+// The one script every bundle keeps: the version stamp above, and what nearly every other script builds on. What used
+// to be added to the page here as it loaded - the listeners of the open callouts, the claim of an Escape, the tooltips'
+// Escape, the composition and the arrow keys - is added by the script it belongs to (Callouts.ts, Utils.Escape.ts,
+// Utils.Tooltips.ts, Utils.Keys.ts), so an app trimmed down to the components it renders is given only the ones those
+// components need, in the order the bundle loads them in.
+
 interface DotNetObject {
     invokeMethod<T>(methodIdentifier: string, ...args: any[]): T;
     invokeMethodAsync<T>(methodIdentifier: string, ...args: any[]): Promise<T>;
     dispose(): void;
 }
 
-// Scroll events arrive faster than the page is laid out, and every reposition measures each open
-// callout, so the paths that follow a scroll instead of dismissing on it coalesce their work into
-// one run per animation frame.
-let repositionFrame: number | null = null;
-const repositionOnNextFrame = () => {
-    if (repositionFrame != null) return;
-
-    repositionFrame = requestAnimationFrame(() => {
-        repositionFrame = null;
-        BitBlazorUI.Callouts.reposition();
-    });
-};
-
-window.addEventListener('scroll', (e: Event) => {
-    const currentCallout = BitBlazorUI.Callouts.current;
-    if (window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH && currentCallout.responsiveMode) return;
-
-    const target = e.target as HTMLElement;
-    if (target?.id && target.id == currentCallout.scrollContainerId) return;
-
-    // A scroll that started inside one of the open callouts is the user reading it, not the page moving
-    // out from under it, so it must not dismiss it. The named scroll container above is the part a
-    // component measures and caps; anything else the content scrolls - a callout capped with a max height,
-    // a scrollable the consumer put in it - is covered here.
-    if (BitBlazorUI.Callouts.calloutContains(target)) return;
-
-    // A scroll of a container the components sit in that did not move them - a trigger in a sticky header of a
-    // scrolled container, which a focus() on it scrolls back to where the header sits in the flow - leaves the
-    // callouts pointing at what they were opened from, so there is nothing to dismiss them for.
-    if (BitBlazorUI.Callouts.anchorsStayed(e.target)) return;
-
-    // On touch devices (notably iOS) focusing an input shows the virtual keyboard, which fires a
-    // scroll event as the browser brings the field into view. That should not dismiss an open
-    // callout while an editable element tied to that callout is focused.
-    const active = document.activeElement;
-    if (BitBlazorUI.Utils.isTouchDevice() && BitBlazorUI.Utils.isEditableElementFocused() && active) {
-        // The editable lives inside the callout (e.g. a dropdown's search box): the scroll is
-        // internal, so keep the callout open and leave it where it is.
-        if (BitBlazorUI.Callouts.calloutContains(active)) return;
-
-        // The editable is the callout's anchor (e.g. the SearchBox input): the page itself was
-        // scrolled (commonly when the keyboard opens), moving the anchor. Keep the callout open
-        // and re-anchor it to the anchor's new position instead of dismissing it.
-        if (BitBlazorUI.Callouts.componentContains(active)) {
-            repositionOnNextFrame();
-            return;
-        }
-    }
-
-    // A callout that asked not to be dismissed by the page moving under it is re-anchored to its
-    // component instead, so that it follows what it points at rather than being left behind by it.
-    if (currentCallout.noScrollDismiss) {
-        repositionOnNextFrame();
-        return;
-    }
-
-    BitBlazorUI.Callouts.replaceCurrent();
-}, true);
-
-window.addEventListener('resize', () => {
-    // A resize caused by the virtual keyboard (touch devices, notably iOS) should not dismiss an
-    // open callout whose focused editable belongs to the callout or is its anchor component;
-    // reposition it instead. Any other resize dismisses the callout as before.
-    // The screen is not measured for it, the way the scroll handler above has never measured it either:
-    // a landscape phone, a tablet, an unfolded foldable and a convertible in its tablet posture all raise a
-    // keyboard on a viewport far wider than a portrait phone's, and a width test there dismissed the callout
-    // out from under the very keyboard the focus inside it had just asked for. The primary pointer is what
-    // tells them from a touch-screen laptop, whose resizes are the window's own and still dismiss.
-    const active = document.activeElement;
-    if (BitBlazorUI.Utils.hasOnScreenKeyboard()
-        && BitBlazorUI.Utils.isEditableElementFocused()
-        && active
-        && (BitBlazorUI.Callouts.calloutContains(active)
-            || BitBlazorUI.Callouts.componentContains(active))) {
-        BitBlazorUI.Callouts.reposition();
-        return;
-    }
-
-    // See the scroll handler above: a callout that opted out of being dismissed by the page moving
-    // under it follows its component instead.
-    if (BitBlazorUI.Callouts.current.noScrollDismiss) {
-        BitBlazorUI.Callouts.reposition();
-        return;
-    }
-
-    BitBlazorUI.Callouts.replaceCurrent();
-}, true);
-
-// The callouts that render no overlay of their own leave the page its own clicks, so nothing lies between
-// them and the page to hear that the user has gone elsewhere - the page itself tells them. The capture
-// phase is what a stopPropagation inside the page cannot take away, and the primary button is what a
-// dismissal is: a right-click is the contextmenu handler's below, and the middle one is the browser's.
-document.addEventListener('pointerdown', (e: PointerEvent) => {
-    if (e.button !== 0) return;
-
-    BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node);
-}, true);
-
-// An Escape a component acts on is claimed for it (see Utils.claimEscape) before anything else hears the key: on
-// the window in the capture phase, ahead of every listener of a surface the component sits in - a dialog, a modal,
-// a panel, an overlay, a tooltip - so none of them closes on the press the component has taken.
-window.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.claimEscape(e), true);
-
-// An Escape that dismisses the tooltips under the pointer (see Utils.dismissTooltipsOnEscape) is taken right after the
-// claim and ahead of every other listener of the library: added here, as the page loads, its place among the listeners
-// on the window does not depend on when the first tooltip, a menu or an overlay happened to register.
-window.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.dismissTooltipsOnEscape(e), true);
-
-// An Escape that cancels an IME composition never reaches .NET (see Utils.stopComposingEscape): on the document element
-// in the bubble phase, after every listener of the page's elements and right ahead of Blazor's delegation on the document.
-document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.stopComposingEscape(e));
-
-// A horizontal arrow whose direction a component reads in a round trip is dropped once the user has taken the focus
-// elsewhere (see Utils.isRtl), so the keys and the presses that do that are followed in the capture phase, ahead of
-// every listener of the page's elements and of Blazor's delegation. On the document element rather than the window,
-// so that the window's own keydown listeners above keep their place right at the start of the dispatch.
-document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);
-document.documentElement.addEventListener('pointerdown', (e: PointerEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);
-
-// A click on the overlay of a callout opened from inside another one, outside the callouts under it as well,
-// dismisses them all (see Callouts.dismissOnOverlayClick). On the window in the capture phase, ahead of Blazor's
-// own delegation, so that the overlay's handler does not dismiss the innermost callout a second time.
-window.addEventListener('click', (e: MouseEvent) => {
-    if (e.button !== 0) return;
-
-    if (BitBlazorUI.Callouts.dismissOnOverlayClick(e.target, e.clientX, e.clientY)) {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-    }
-}, true);
-
-// A right-click dismisses the same callouts, except where the page took the click for itself - a handler
-// that opens a context menu of its own calls preventDefault on it - since that is the page moving its own
-// menu to the new point rather than the user leaving it. Whether the click was taken is only known once
-// the event has been dispatched, which is what the deferral is for: the handlers that take it, Blazor's
-// among them, all run before the task queued here does.
-document.addEventListener('contextmenu', (e: MouseEvent) => {
-    setTimeout(() => {
-        if (e.defaultPrevented) return;
-
-        BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node);
-    });
-}, true);
-
-// Keep an open callout aligned with the visible area when the visual viewport changes
-// (iOS keyboard show/hide, pinch-zoom). window 'resize' doesn't fire for these on iOS, so
-// listen to visualViewport directly. Reposition is a no-op when no callout is open.
-if (window.visualViewport) {
-    // Track the viewport live while it changes, throttled on both edges: the keyboard animates the page
-    // scroll/visual-viewport over a few hundred ms, and a throttle that dropped the last frame would leave the
-    // callout anchored to a mid-scroll position of its component rather than to the final, settled geometry.
-    const onVisualViewportChange = BitBlazorUI.Utils.throttle(() => BitBlazorUI.Callouts.reposition(), 16, { trailing: true });
-    window.visualViewport.addEventListener('resize', onVisualViewportChange);
-    window.visualViewport.addEventListener('scroll', onVisualViewportChange);
-}
-
-BitBlazorUI.Events.init();
-
 namespace BitBlazorUI {
     export class BitController {
         id: string = Utils.uuidv4();
         controller = new AbortController();
         dotnetObj: DotNetObject | undefined;
+    }
+
+    export namespace Utils {
+        export function uuidv4(): string {
+            try {
+                const result = Utils.guidTemplate.replace(/[018]/g, (c) => {
+                    const n = +c;
+                    const random = crypto.getRandomValues(new Uint8Array(1));
+                    const result = (n ^ random[0] & 15 >> n / 4);
+                    return result.toString(16);
+                });
+                return result;
+            } catch (e) {
+                console.error("BitBlazorUI.Utils.uuidv4:", e);
+                return '';
+            }
+        }
+        // https://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid/#2117523
+        export const guidTemplate = '10000000-1000-4000-8000-100000000000';
     }
 }

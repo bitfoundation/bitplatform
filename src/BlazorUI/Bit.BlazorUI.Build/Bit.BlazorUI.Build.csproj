@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- The MSBuild task that ships inside the Bit.BlazorUI NuGet package (tasks/Bit.BlazorUI.Build.dll) and runs in an
+         app's publish: it works out which components, scripts and icons the app can use, and puts bit.blazorui.js,
+         bit.blazorui.css and the other packages' bundles back together from only those pieces (see
+         buildTransitive/Bit.BlazorUI.targets in Bit.BlazorUI, and build-assets.mjs beside this file for the pieces).
+
+         netstandard2.0 so the same dll loads in both MSBuild flavours (the dotnet CLI and Visual Studio's msbuild.exe).
+         Not signed and not packable on its own - it is a build-time helper of Bit.BlazorUI, so the shared
+         Bit.Build.props is deliberately not imported. -->
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <LangVersion>latest</LangVersion>
+        <Nullable>enable</Nullable>
+        <IsPackable>false</IsPackable>
+        <SignAssembly>False</SignAssembly>
+        <RootNamespace>Bit.BlazorUI.Build</RootNamespace>
+        <!-- MSBuild provides both references at run time, so the package's tasks/ folder holds this one assembly and
+             there is no copy of either whose version could disagree with the one MSBuild already loaded: the task
+             base class is MSBuild's own, and System.Reflection.Metadata is what MSBuild reads assemblies with itself
+             (the .NET SDK's shared framework carries it, and Visual Studio's msbuild.exe redirects every version of
+             it to the copy beside it). 1.6.0 is the oldest that has everything used here, so it binds everywhere. -->
+        <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <IsTrimmable>false</IsTrimmable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Build.Utilities.Core" Version="17.7.2" PrivateAssets="all" ExcludeAssets="runtime" />
+        <PackageReference Include="System.Reflection.Metadata" Version="1.6.0" PrivateAssets="all" ExcludeAssets="runtime" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="build-assets.mjs" />
+    </ItemGroup>
+
+</Project>

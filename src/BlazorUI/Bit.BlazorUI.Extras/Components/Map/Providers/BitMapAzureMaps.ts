@@ -4,6 +4,9 @@
      * Azure Maps Web SDK v3 provider. Loads atlas.min.js from the Microsoft CDN
      * and drives an <c>atlas.Map</c>.
      */
+    // bit-trim: owners BitAzureMapsMapProvider
+    // Called through the JsObjectName of its provider, which BitMap puts together into the identifier it calls (see
+    // BitMapJsRuntimeExtensions), so no interop identifier names this script: the provider type an app passes keeps it.
     export class BitMapAzureMaps {
         private static _maps: { [id: string]: {
             atlas: any, map: any, dotnetObj: DotNetObject | null | undefined,

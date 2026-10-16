@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
 
-    <!-- An app the way a consumer of the packages writes one, kept to two things the library's own projects cannot
+    <!-- An app the way a consumer of the packages writes one, kept to the things the library's own projects cannot
          check for it, since every one of them compiles with C# 14 and is never trimmed:
 
          - Building it compiles the markup and the C# below as C# 12, the language a net8.0 app compiles with. A public
@@ -8,6 +8,8 @@
            to - fails here with CS9202 on every build of the solution, rather than in an app after a release.
          - Publishing it (dotnet publish -c Release) trims the app, the packages with it, and turns every trim warning
            ILLink reports for them into an error: IsTrimmable promises an app that trimming leaves it working.
+         - The same publish trims the packages' scripts and stylesheets off what ILLink kept, as a WebAssembly app gets
+           it by default; Bit.BlazorUI.Tests.Trimming publishes it and runs the result in a browser.
 
          It references the projects rather than the packages, so it checks the code of the branch it is built from. -->
     <PropertyGroup>
@@ -44,5 +46,13 @@
         <ProjectReference Include="..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
     </ItemGroup>
+
+    <!-- The consumer-side targets NuGet imports from the packages, imported by hand since the projects are referenced;
+         they read the source tree's pieces and task build on their own. A publish of this app is therefore also the
+         trimming of the packages' scripts and stylesheets the way a WebAssembly app gets it by default: off ILLink's
+         answer. -->
+    <Import Project="..\..\Bit.BlazorUI\buildTransitive\Bit.BlazorUI.targets" />
+    <Import Project="..\..\Bit.BlazorUI.Extras\buildTransitive\Bit.BlazorUI.Extras.targets" />
+    <Import Project="..\..\Bit.BlazorUI.Icons\buildTransitive\Bit.BlazorUI.Icons.targets" />
 
 </Project>

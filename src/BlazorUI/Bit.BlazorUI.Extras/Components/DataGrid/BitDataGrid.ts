@@ -542,6 +542,7 @@
         }, { capture: true });
     }
 
+    // bit-trim: owners BitDataGrid
     installReorderKeyGuard();
 
     // A column's resize handle sits inside its header, which is draggable while the column can be reordered. Firefox

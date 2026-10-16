@@ -1,5 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// bit-trim: owners BitNav _BitNavItemContainer
+// The items of the nav are drawn by a component of their own, styled here with the nav.
+
 // Public CSS variables, read off the root with a fallback and never declared here, so they inherit: a value set
 // on :root re-skins every nav, one set on an ancestor every nav below it, and one on the Style of an instance
 // that nav and the navs nested in it:

@@ -5,9 +5,10 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Bit.BlazorUI.Tests.Utils;
 
 /// <summary>
-/// The scripts a package ships are compiled by tsc to the target of its tsconfig.json and then minified by esbuild in a
-/// Release build. esbuild left to its default target writes newer syntax (?? and ?.) back into the script, so the
-/// package would ship a script the engines the tsconfig target is there for cannot parse, which no Debug test would see.
+/// The scripts a package ships are compiled to the target of its tsconfig.json and then minified by esbuild in a Release
+/// build, both by Bit.BlazorUI.Build/build-assets.mjs. esbuild left to its default target writes newer syntax (?? and ?.)
+/// back into the script, so the package would ship a script the engines the tsconfig target is there for cannot parse,
+/// which no Debug test would see.
 /// </summary>
 [TestClass]
 public sealed partial class BitPackagedScriptTargetTests
@@ -15,26 +16,30 @@ public sealed partial class BitPackagedScriptTargetTests
     [TestMethod]
     [DataRow("Bit.BlazorUI")]
     [DataRow("Bit.BlazorUI.Extras")]
+    [DataRow("Bit.BlazorUI.Legacy")]
     public void EveryMinifiedScriptShouldBeHeldToTheTargetTsconfigCompilesTo(string project)
     {
         var tsconfig = SourceFiles.Read(project, "tsconfig.json");
-        var target = TsconfigTarget().Match(tsconfig);
-        Assert.IsTrue(target.Success, $"{project}/tsconfig.json names no compilerOptions.target.");
+        Assert.IsTrue(TsconfigTarget().IsMatch(tsconfig), $"{project}/tsconfig.json names no compilerOptions.target.");
 
+        // The package builds its scripts through the script, and minifies them there in a Release build - never through
+        // an esbuild of its own, which would be left to its default target.
         var csproj = SourceFiles.Read(project, $"{project}.csproj");
-        var esbuildCommands = EsbuildCommand().Matches(csproj).Select(m => m.Value).ToArray();
-        Assert.IsNotEmpty(esbuildCommands, $"{project}.csproj runs no esbuild; update this test if the minifier changed.");
+        Assert.IsFalse(csproj.Contains("node_modules/.bin/esbuild"), $"{project}.csproj runs esbuild itself rather than through build-assets.mjs.");
+        StringAssert.Contains(csproj, @"<BitAssetsScript Include=""..\Bit.BlazorUI.Build\build-assets.mjs"" />");
+        Assert.IsTrue(Regex.IsMatch(csproj, @"@\(BitAssetsScript->'%\(FullPath\)'\)&quot; scripts [^""]*\$\(_BitAssetsMinify\)"), $"{project}.csproj does not build its scripts through build-assets.mjs.");
+        StringAssert.Contains(csproj, "<_BitAssetsMinify Condition=\" '$(Configuration)' == 'Release' \">--minify</_BitAssetsMinify>");
 
-        var expected = $"--target={target.Groups["target"].Value.ToLowerInvariant()}";
-        foreach (var command in esbuildCommands)
-        {
-            Assert.Contains(expected, command, $"{project}.csproj minifies without {expected}, so the shipped script may hold syntax newer than {target.Groups["target"].Value}: {command}");
-        }
+        // And the script minifies to the target the compiler was given, read off the tsconfig.
+        var script = SourceFiles.Read("Bit.BlazorUI.Build", "build-assets.mjs");
+        StringAssert.Contains(script, "const minifyTarget = esbuildTarget(ts, compilerOptions.target);");
+        Assert.HasCount(1, EsbuildTransform().Matches(script), "build-assets.mjs was expected to minify in one place.");
+        StringAssert.Contains(EsbuildTransform().Match(script).Value, "target: minifyTarget");
     }
 
     [GeneratedRegex("\"target\"\\s*:\\s*\"(?<target>[^\"]+)\"")]
     private static partial Regex TsconfigTarget();
 
-    [GeneratedRegex("node_modules/\\.bin/esbuild[^\"]*")]
-    private static partial Regex EsbuildCommand();
+    [GeneratedRegex(@"esbuild\.transformSync\([^)]*\)")]
+    private static partial Regex EsbuildTransform();
 }
