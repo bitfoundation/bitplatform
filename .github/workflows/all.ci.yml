@@ -130,7 +130,9 @@ jobs:
       id: test-postgresql-blazorserver
       working-directory: TestPostgreSQL/src/Tests
       run: |
-        (while true; do echo "resources $(date -u +%H:%M:%S): $(free -m | awk '/Mem:/ {print "used " $3 " of " $2 " MB, available " $7}; /Swap:/ {print "swap used " $3}' | tr '\n' ' ') threads $(ps -eLf | wc -l) processes $(ps -e | wc -l) postgres-conns $(docker exec $(docker ps -q --filter ancestor=pgvector/pgvector:pg18 | head -1) psql -U postgres -tAc 'select count(*) from pg_stat_activity' 2>/dev/null)"; ps -eo rss,nlwp,comm --sort=-rss | head -6 | tail -5 | awk '{printf "  %s MB %s threads %s\n", int($1/1024), $2, $3}'; sleep 30; done) &
+        dotnet tool install -g dotnet-gcdump > /dev/null
+        mkdir -p TestResults
+        (dumped=0; while true; do echo "resources $(date -u +%H:%M:%S): $(free -m | awk '/Mem:/ {print "used " $3 " of " $2 " MB, available " $7}; /Swap:/ {print "swap used " $3}' | tr '\n' ' ') threads $(ps -eLf | wc -l) processes $(ps -e | wc -l)"; ps -eo rss,nlwp,comm --sort=-rss | head -6 | tail -5 | awk '{printf "  %s MB %s threads %s\n", int($1/1024), $2, $3}'; pid=$(ps -eo pid,rss,comm --sort=-rss | awk '$3=="dotnet" && $2>5000000 {print $1; exit}'); if [ -n "$pid" ] && [ $dumped = 0 ]; then dumped=1; echo "gcdump of $pid: $(ps -o args= -p $pid | cut -c1-200)"; DOTNET_ROLL_FORWARD=Major ~/.dotnet/tools/dotnet-gcdump collect -p $pid -o TestResults/testhost.gcdump; kill -9 $pid; fi; sleep 20; done) &
         dotnet test
 
     - name: Upload Blazor Server test results on failure
