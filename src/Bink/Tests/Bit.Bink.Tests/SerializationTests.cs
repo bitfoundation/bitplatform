@@ -429,4 +429,49 @@ public class SerializerTests
         Assert.IsTrue(stripped.Length < full.Length);
         Assert.Contains("srcOmitted", stripped, StringComparison.Ordinal);
     }
+
+    [TestMethod]
+    public void An_image_saved_without_its_payload_loads_as_a_placeholder_that_can_be_re_attached()
+    {
+        // The element used to be dropped on load because an empty source failed validation, so there was nothing
+        // left to re-attach the stored picture to.
+        var document = new BinkDocument();
+        byte[] png = TestData.CreatePng(4, 4, (_, _) => BinkColor.Black);
+        BinkImageSource source = BinkImageSource.FromBytes(png, "image/png", 4, 4);
+        var image = new BinkImageElement(source, new BinkRect(10, 20, 40, 40)) { Crop = new BinkRect(1, 1, 2, 2), Opacity = 0.5f, Description = "Logo" };
+        document.AddElement(image);
+
+        string stripped = BinkSerializer.Serialize(document, BinkSerializerOptions.Default with { IncludeEmbeddedImages = false });
+        BinkDocument loaded = BinkSerializer.Deserialize(stripped);
+
+        var placeholder = Assert.IsExactInstanceOfType<BinkImageElement>(Assert.ContainsSingle(loaded.AllElements));
+        Assert.AreEqual(image.Id, placeholder.Id);
+        Assert.IsTrue(placeholder.Source.IsOmitted);
+        Assert.AreEqual(4, placeholder.Source.Width);
+        Assert.AreEqual(image.Rect, placeholder.Rect);
+        Assert.AreEqual(image.Crop, placeholder.Crop);
+        Assert.AreEqual(image.Opacity, placeholder.Opacity);
+        Assert.AreEqual("Logo", placeholder.Description);
+
+        // Re-saving the placeholder keeps the marker, so a document saved twice does not lose it either.
+        Assert.Contains("srcOmitted", BinkSerializer.Serialize(loaded), StringComparison.Ordinal);
+
+        loaded.ReplaceElement(placeholder with { Source = source });
+        BinkDocument reattached = BinkSerializer.Deserialize(BinkSerializer.Serialize(loaded));
+        Assert.AreEqual(source.Uri, Assert.IsExactInstanceOfType<BinkImageElement>(Assert.ContainsSingle(reattached.AllElements)).Source.Uri);
+    }
+
+    [TestMethod]
+    public void A_placeholder_image_draws_nothing_and_exports_nothing()
+    {
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 50, Height = 50 });
+        document.AddElement(new BinkImageElement(BinkImageSource.Omitted, new BinkRect(0, 0, 50, 50)));
+
+        string svg = BinkSvgExporter.Export(document);
+        Assert.DoesNotContain("<image", svg, StringComparison.Ordinal);
+
+        var context = new BinkCanvasRenderContext();
+        BinkDocumentRenderer.Render(document, context, new BinkRenderOptions());
+        Assert.AreEqual(0, context.Strings.Count);
+    }
 }

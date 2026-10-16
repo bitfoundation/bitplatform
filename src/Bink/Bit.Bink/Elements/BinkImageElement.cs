@@ -58,5 +58,5 @@ public sealed record BinkImageElement : BinkElement
     protected override bool HitTestCore(Vector2 localPoint, float tolerance) => Rect.Inflate(tolerance).Contains(localPoint);
 
     /// <inheritdoc />
-    public override string GetAccessibleDescription() => Description ?? (Source.IsEmbedded ? "Embedded image" : "Image");
+    public override string GetAccessibleDescription() => Description ?? (Source.IsOmitted ? "Image without its picture" : Source.IsEmbedded ? "Embedded image" : "Image");
 }

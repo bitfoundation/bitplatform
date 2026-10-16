@@ -36,7 +36,10 @@ public sealed record BinkCollaborationMessage
     /// </summary>
     public long Sequence { get; init; }
 
-    /// <summary>The document the message applies to.</summary>
+    /// <summary>
+    /// The document the message applies to. A session ignores messages for other documents when
+    /// <see cref="BinkCollaborationOptions.IgnoreOtherDocuments"/> is set.
+    /// </summary>
     public Guid DocumentId { get; init; }
 
     /// <summary>

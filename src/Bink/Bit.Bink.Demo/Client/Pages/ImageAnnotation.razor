@@ -198,40 +198,34 @@
     {
         if (_canvas is null) return;
 
-        // Swapping the picture is several edits - remove the old one, add, centre, move to its layer, lock - but
-        // to the person using it it is one action, so it is one undo step.
-        BinkImageElement? placed;
+        // The browser decodes the picture before the history group opens. A group left open across that round
+        // trip would disable undo until the decode finished, and a stroke drawn meanwhile would be folded into
+        // the "Open image" step.
+        BinkImageSource ready = await _canvas.LoadImageAsync(source);
+
+        // Swapping the picture is several edits - remove the old one, add, centre, lock - but to the person using
+        // it it is one action, so it is one undo step.
+        BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, maxWidth: _document.Settings.Width - 40);
+        BinkRect page = _document.Settings.PageRect;
+        placed = placed with
+        {
+            Rect = placed.Rect.Offset(page.Center - placed.Rect.Center),
+            Description = "Annotated image: " + name,
+        };
         using (_canvas.History.BeginGroup("Open image"))
         {
             var existing = _document.Layers.SelectMany(l => l.Elements).OfType<BinkImageElement>().Select(e => e.Id).ToList();
             if (existing.Count > 0) _document.RemoveElements(existing);
 
+            // Unlock to place the picture, then lock the layer again so annotating cannot move it.
             _document.UpdateLayer(_imageLayer, p => p with { IsLocked = false });
-            placed = await _canvas.AddImageAsync(source, Vector2.Zero, maxWidth: _document.Settings.Width - 40);
-            if (placed is not null)
-            {
-                // Center it on the page, then lock the layer so annotating cannot move the picture.
-                BinkRect page = _document.Settings.PageRect;
-                Vector2 offset = page.Center - placed.Rect.Center;
-                _document.ReplaceElement(placed with
-                {
-                    Rect = placed.Rect.Offset(offset),
-                    Description = "Annotated image: " + name,
-                });
-                MoveToImageLayer(placed.Id);
-            }
+            _document.AddElement(placed, _imageLayer);
             _document.UpdateLayer(_imageLayer, p => p with { IsLocked = true });
         }
-        if (placed is null) return;
 
         _imageInfo = $"{name}: {placed.Source.Width} by {placed.Source.Height} pixels";
+        _canvas.Announce("Image added.");
         _canvas.Refresh();
-    }
-
-    private void MoveToImageLayer(Guid elementId)
-    {
-        if (_document.GetLayerOf(elementId)?.Id == _imageLayer) return;
-        _document.Apply(new BinkReorderElementOperation(elementId, _imageLayer, 0));
     }
 
     private static byte[] CreateSampleImage(int width, int height)

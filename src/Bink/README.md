@@ -908,7 +908,10 @@ BinkImageElement? image = await canvas.AddImageAsync(source, position: null, max
 ```
 
 `AddImageAsync` asks the browser for the natural size when it is unknown, scales the image to `maxWidth`, and
-centres it in the view when no position is given.
+centres it in the view when no position is given. To place an image inside a history group or batch, decode it
+first with `LoadImageAsync(source)`, which returns the source with its natural size without adding anything, and
+add the element synchronously inside the group: a group left open across the browser round trip disables undo
+until it closes.
 
 Directly, without a canvas:
 
@@ -951,8 +954,16 @@ if (!BinkImageSource.TryCreate(uri, width, height, allowSvg: false, out BinkImag
 ```
 
 Embedded images are stored in the document as data URIs, which keeps it self-contained. For large assets, keep the
-bytes elsewhere and reference them by URL, or save with `IncludeEmbeddedImages = false` and re-attach the payload
-on load.
+bytes elsewhere and reference them by URL, or save with `IncludeEmbeddedImages = false`. An image saved that way
+loads with `BinkImageSource.Omitted` as its source: it keeps its rectangle, crop, opacity and metadata but draws
+nothing, and the application re-attaches the payload by replacing the element.
+
+```csharp
+foreach (BinkImageElement image in document.AllElements.OfType<BinkImageElement>())
+{
+    if (image.Source.IsOmitted) document.ReplaceElement(image with { Source = LoadStoredImage(image.Id) });
+}
+```
 
 ### What Bink deliberately is not
 
@@ -1775,6 +1786,11 @@ with it. Use it to reset a session to one version, for example after restoring a
 
 Both sides must be editing the same document, including its layer ids. In practice a client joins by loading the
 snapshot, which gives it exactly that.
+
+Every message names the document its sender edits. When one transport carries several documents, for example a
+hub without per-document groups, set `IgnoreOtherDocuments` so a session drops the traffic of the others. That
+requires every participant to construct its document with the shared id (`new BinkDocument { Id = sharedId }`)
+before joining, because a snapshot replaces the content but not the id.
 
 ### Threading
 

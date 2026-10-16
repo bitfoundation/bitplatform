@@ -186,7 +186,7 @@ public sealed class BinkSvgRenderContext : IBinkRenderContext, IBinkRenderContex
     public void DrawImage(BinkImageSource image, BinkRect destination, BinkRect? sourceRect, float opacity)
     {
         ArgumentNullException.ThrowIfNull(image);
-        if (destination.IsEmpty || opacity <= 0) return;
+        if (destination.IsEmpty || opacity <= 0 || image.IsOmitted) return;
 
         // A crop is expressed as an oversized image behind a clip rectangle, which keeps the pixels untouched.
         if (sourceRect is { } crop && crop.Width > 0 && crop.Height > 0 && image.Width > 0 && image.Height > 0)

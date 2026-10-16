@@ -22,6 +22,15 @@ public sealed record BinkCollaborationOptions
 
     /// <summary>Whether the session sends a snapshot when another participant asks for one.</summary>
     public bool ServeSnapshots { get; init; } = true;
+
+    /// <summary>
+    /// Whether messages that name another document are ignored. Every message carries the id of the document its
+    /// sender edits, and a transport shared by several documents (one hub with no per-document group) delivers all
+    /// of them to every session; without this, another document's strokes would be applied to this one. Off by
+    /// default because a participant may join with a fresh document of its own id and take the content from a
+    /// snapshot. Turn it on when every participant constructs its document with the shared id before joining.
+    /// </summary>
+    public bool IgnoreOtherDocuments { get; init; }
 }
 
 /// <summary>
@@ -228,7 +237,15 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         }
         finally
         {
-            _flushGate.Release();
+            // A reconnect starts a flush nobody awaits, and the session can be disposed while that flush is still
+            // waiting on the transport. Releasing the gate after it was disposed would throw from that task.
+            try
+            {
+                _flushGate.Release();
+            }
+            catch (ObjectDisposedException)
+            {
+            }
         }
     }
 
@@ -359,6 +376,8 @@ public sealed class BinkCollaborationSession : IAsyncDisposable
         if (string.Equals(message.SenderId, ParticipantId, StringComparison.Ordinal)) return;
         // Addressed to someone else: a transport that broadcasts everything delivers it here too.
         if (message.RecipientId is { } recipient && !string.Equals(recipient, ParticipantId, StringComparison.Ordinal)) return;
+        // Traffic for another document, from a transport shared by several of them.
+        if (_options.IgnoreOtherDocuments && message.DocumentId != _document.Id) return;
 
         // A host that renders presence from the event rather than polling Participants would otherwise never
         // expire anyone, so expiry is also driven by traffic. The check is throttled to stay off the hot path.

@@ -398,7 +398,7 @@ public static class BinkSerializer
     {
         WriteCommon(writer, "image", image, options);
         WriteRect(writer, "rect", image.Rect, options.Decimals);
-        bool omit = image.Source.IsEmbedded && !options.IncludeEmbeddedImages;
+        bool omit = image.Source.IsOmitted || (image.Source.IsEmbedded && !options.IncludeEmbeddedImages);
         writer.WriteString("src", omit ? string.Empty : image.Source.Uri);
         if (omit) writer.WriteBoolean("srcOmitted", true);
         if (image.Source.Width > 0) writer.WriteNumber("naturalWidth", image.Source.Width);
@@ -882,8 +882,18 @@ public static class BinkSerializer
         BinkRect rect = ReadRect(element, "rect") ?? BinkRect.Empty;
         int naturalWidth = element.TryGetProperty("naturalWidth", out JsonElement nw) && nw.TryGetInt32(out int w) ? w : 0;
         int naturalHeight = element.TryGetProperty("naturalHeight", out JsonElement nh) && nh.TryGetInt32(out int h) ? h : 0;
-        if (!BinkImageSource.TryCreate(uri, naturalWidth, naturalHeight, options.AllowSvgImages, out BinkImageSource? source) || source is null) return null;
-        if (!options.AllowRemoteImages && !source.IsEmbedded) return null;
+        BinkImageSource? source;
+        if (uri.Length == 0 && ReadBool(element, "srcOmitted", false))
+        {
+            // The payload was stripped on save. The element is kept without pixels so the application can
+            // re-attach what it stored elsewhere; dropping it would lose the rect, crop and metadata with it.
+            source = BinkImageSource.Omitted.WithSize(naturalWidth, naturalHeight);
+        }
+        else
+        {
+            if (!BinkImageSource.TryCreate(uri, naturalWidth, naturalHeight, options.AllowSvgImages, out source) || source is null) return null;
+            if (!options.AllowRemoteImages && !source.IsEmbedded) return null;
+        }
         return new BinkImageElement(source, rect)
         {
             Crop = ReadRect(element, "crop"),

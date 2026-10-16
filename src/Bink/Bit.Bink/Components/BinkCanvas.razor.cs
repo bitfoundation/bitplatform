@@ -181,7 +181,11 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
 
     // ---- Events -----------------------------------------------------------------------------------------------
 
-    /// <summary>Raised when a stroke begins. Not raised for tools that do not draw strokes.</summary>
+    /// <summary>
+    /// Raised when a stroke begins. Raised only for drawing tools (<see cref="BinkDrawTool"/> and subclasses other
+    /// than the eraser), the same tools whose strokes <see cref="StrokeCompleted"/> reports; selecting, panning,
+    /// placing a shape or editing text does not raise it.
+    /// </summary>
     [Parameter]
     public EventCallback<BinkStrokeEventArgs> StrokeStarted { get; set; }
 
@@ -369,11 +373,15 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         BinkColor background = options.Background ?? _document.Settings.Background;
         if (!background.IsTransparent) context.Clear(background);
         context.SetTransform(Matrix3x2.CreateTranslation(-region.X, -region.Y) * Matrix3x2.CreateScale(scale));
+        // An empty selection filters nothing, exactly as BinkPngExporter treats it: the renderer takes any non-null
+        // filter as "draw only these", so passing an empty one produced a blank image for the same options that
+        // draw the whole document before the surface attaches.
+        IReadOnlyCollection<Guid>? filter = options.SelectedIds ?? (options.Region == BinkExportRegion.Selection ? _selection.Ids : null);
         BinkDocumentRenderer.Render(_document, context, new BinkRenderOptions
         {
             ClipBounds = region,
             IncludeHiddenLayers = options.IncludeHiddenLayers,
-            ElementFilter = options.Region == BinkExportRegion.Selection && options.SelectedIds is null ? _selection.Ids : options.SelectedIds,
+            ElementFilter = filter is { Count: > 0 } ? filter : null,
         });
 
         await EnsureImagesLoadedAsync(cancellationToken).ConfigureAwait(false);
@@ -425,6 +433,23 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         }
     }
 
+    /// <summary>
+    /// Decodes an image in the browser without adding it to the document, and returns the source with its natural
+    /// size filled in. Use it before a history group or batch that places the image: the decode is a browser
+    /// round trip, and a group left open across one disables undo until it closes.
+    /// </summary>
+    /// <param name="source">The image.</param>
+    /// <returns>The source with its natural size, or the source unchanged when the browser layer is not available.</returns>
+    public async Task<BinkImageSource> LoadImageAsync(BinkImageSource source)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        if (_interop is null || source.IsOmitted) return source;
+        // Loaded even when the size is already known: the canvas can only draw an image the browser has
+        // decoded, and loading it first means it appears with the element rather than a frame later.
+        BinkImageMetrics? metrics = await _interop.LoadImageAsync(source.Uri).ConfigureAwait(false);
+        return metrics is not null && (source.Width == 0 || source.Height == 0) ? source.WithSize(metrics.Width, metrics.Height) : source;
+    }
+
     /// <summary>Adds an image to the document, sized to its natural dimensions.</summary>
     /// <param name="source">The image.</param>
     /// <param name="position">Top-left position in document units, or null to center it in the view.</param>
@@ -434,14 +459,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         ArgumentNullException.ThrowIfNull(source);
         if (ReadOnly) return null;
 
-        BinkImageSource resolved = source;
-        if (_interop is not null)
-        {
-            // Loaded even when the size is already known: the canvas can only draw an image the browser has
-            // decoded, and loading it first means it appears with the element rather than a frame later.
-            BinkImageMetrics? metrics = await _interop.LoadImageAsync(source.Uri).ConfigureAwait(false);
-            if (metrics is not null && (source.Width == 0 || source.Height == 0)) resolved = source.WithSize(metrics.Width, metrics.Height);
-        }
+        BinkImageSource resolved = await LoadImageAsync(source).ConfigureAwait(false);
 
         Vector2 topLeft = position ?? _viewport.ToDocument(ViewSize / 2f);
         BinkImageElement element = BinkImageElement.AtNaturalSize(resolved, topLeft, maxWidth);
@@ -894,7 +912,10 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         switch (sample.Phase)
         {
             case BinkPointerPhase.Down:
-                if (_activeTool.OnPointerDown(_toolContext, sample))
+                // Every tool takes the gesture on pointer down; only a drawing tool starts a stroke. The eraser is
+                // a drawing tool too, but StrokeCompleted ignores eraser strokes, and a start without a completion
+                // would mislead a host that pairs the two.
+                if (_activeTool.OnPointerDown(_toolContext, sample) && _activeTool is BinkDrawTool and not BinkEraserTool)
                 {
                     BinkStrokeEventArgs started = new(null, sample.Kind);
                     RaiseAsync(() => StrokeStarted.InvokeAsync(started), StrokeStarted.HasDelegate);
@@ -1328,7 +1349,7 @@ public sealed partial class BinkCanvas : ComponentBase, IAsyncDisposable, IBinkI
         if (_interop is null) return;
         foreach (BinkElement element in _document.AllElements)
         {
-            if (element is BinkImageElement image) await _interop.LoadImageAsync(image.Source.Uri, cancellationToken).ConfigureAwait(false);
+            if (element is BinkImageElement { Source.IsOmitted: false } image) await _interop.LoadImageAsync(image.Source.Uri, cancellationToken).ConfigureAwait(false);
         }
     }
 

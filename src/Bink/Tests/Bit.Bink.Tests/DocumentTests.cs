@@ -127,6 +127,35 @@ public class DocumentTests
     }
 
     [TestMethod]
+    public void A_batch_inverse_undoes_its_operations_in_reverse_order()
+    {
+        // The inverses are collected in forward order and reversed once when the batch closes. Applied in forward
+        // order, the removal would run before the replacement and the replacement would then find nothing.
+        var document = new BinkDocument();
+        BinkDrawingOperation? inverse = null;
+        document.Changed += (_, e) => inverse = e.Inverse;
+        BinkStroke stroke = TestData.Stroke(new Vector2(0, 0), new Vector2(10, 10));
+
+        using (document.BeginBatch("Add and edit"))
+        {
+            document.AddElement(stroke);
+            document.ReplaceElement(stroke with { Description = "edited" });
+            document.SetMetadata("key", "value");
+        }
+
+        Assert.IsNotNull(inverse);
+        var batch = Assert.IsExactInstanceOfType<BinkBatchOperation>(inverse);
+        Assert.AreEqual(3, batch.Operations.Count);
+        Assert.IsInstanceOfType<BinkSetMetadataOperation>(batch.Operations[0]);
+        Assert.IsInstanceOfType<BinkReplaceElementOperation>(batch.Operations[1]);
+        Assert.IsInstanceOfType<BinkRemoveElementOperation>(batch.Operations[2]);
+
+        document.Apply(inverse);
+        Assert.AreEqual(0, document.ElementCount);
+        Assert.IsFalse(document.Metadata.ContainsKey("key"));
+    }
+
+    [TestMethod]
     public void A_failing_operation_inside_a_batch_leaves_the_document_unchanged()
     {
         var document = new BinkDocument();

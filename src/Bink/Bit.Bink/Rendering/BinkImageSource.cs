@@ -11,6 +11,14 @@ public sealed record BinkImageSource
     /// <summary>Maximum accepted length of an image URI in characters (about 24 MB of base64), a defense against oversized documents.</summary>
     public const int MaxUriLength = 32 * 1024 * 1024;
 
+    /// <summary>
+    /// A source whose payload was left out of the document, which is how an embedded image is saved with
+    /// <see cref="BinkSerializerOptions.IncludeEmbeddedImages"/> off. An element with this source keeps its place,
+    /// crop, opacity and metadata but draws nothing until the application re-attaches the payload by replacing the
+    /// element with one whose <see cref="BinkImageElement.Source"/> is the stored image.
+    /// </summary>
+    public static readonly BinkImageSource Omitted = new(string.Empty, 0, 0, null);
+
     private BinkImageSource(string uri, int width, int height, string? mediaType)
     {
         Uri = uri;
@@ -33,6 +41,9 @@ public sealed record BinkImageSource
 
     /// <summary>True for an embedded <c>data:</c> image.</summary>
     public bool IsEmbedded => Uri.StartsWith("data:", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>True when the payload was left out of the document; see <see cref="Omitted"/>.</summary>
+    public bool IsOmitted => Uri.Length == 0;
 
     /// <summary>Creates a source from encoded image bytes, embedding them as a data URI.</summary>
     /// <param name="bytes">Encoded image (PNG, JPEG, WebP, GIF, ...).</param>

@@ -33,7 +33,9 @@ public sealed record BinkSerializerOptions
 
     /// <summary>
     /// Whether embedded image data is written. When false, images are written as a reference without their
-    /// <c>data:</c> payload, which keeps documents small when the application stores images separately.
+    /// <c>data:</c> payload, which keeps documents small when the application stores images separately. Such an
+    /// image loads with <see cref="BinkImageSource.Omitted"/> as its source and draws nothing until the
+    /// application replaces the element with one that carries the stored image.
     /// </summary>
     public bool IncludeEmbeddedImages { get; init; } = true;
 

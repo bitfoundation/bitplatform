@@ -429,6 +429,23 @@ public class TextToolTests
     }
 
     [TestMethod]
+    public void Committing_text_that_is_too_long_is_announced_and_leaves_no_empty_box_behind()
+    {
+        // The element rejects the text with an ArgumentException, which escaped the commit: the typed text was lost
+        // without a word, and the empty box stayed in the document as an undo step.
+        using var context = new TestToolContext();
+        var tool = new BinkTextTool();
+        tool.OnPointerDown(context, new BinkInputSample { PointerId = 1, Phase = BinkPointerPhase.Down, X = 40, Y = 60, Buttons = 1 });
+
+        tool.CommitEdit(context, new string('x', BinkTextElement.MaxLength + 1));
+
+        Assert.AreEqual(0, context.Document.ElementCount);
+        Assert.IsFalse(context.History.CanUndo);
+        Assert.IsNull(tool.Editing);
+        Assert.Contains(a => a.StartsWith("The text could not be saved", StringComparison.Ordinal), context.Announcements);
+    }
+
+    [TestMethod]
     public void Committing_text_updates_the_element()
     {
         using var context = new TestToolContext();

@@ -728,9 +728,11 @@ class Surface {
         const rootContext = this.contexts[layer];
         if (!rootContext) return;
 
-        // Images drawn by this replay are protected from eviction until the next one: dropping an image the current
-        // drawing still references would make it silently disappear from the canvas.
-        if (layer === 'document' || layer === 'export') this.imagesUsedThisFrame = new Set();
+        // Images drawn by the document replay are protected from eviction until the next one: dropping an image the
+        // current drawing still references would make it silently disappear from the canvas. An export adds to
+        // that set rather than replacing it, or exporting a selection with few images would leave the on-screen
+        // frame's images unprotected until the next redraw.
+        if (layer === 'document') this.imagesUsedThisFrame = new Set();
 
         const commands = normalizeBuffer(buffer, count);
         if (!commands) return;

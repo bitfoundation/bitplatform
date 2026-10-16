@@ -143,8 +143,17 @@ public sealed class BinkTextTool : BinkToolBase
             context.InvalidateDocument(updated.Bounds.Union(element.Bounds));
             context.Announce("Text updated.");
         }
-        catch (InvalidOperationException ex)
+        catch (Exception ex) when (ex is InvalidOperationException or ArgumentException)
         {
+            // The element rejects text over its maximum length with an ArgumentException. A box placed for this
+            // edit that never got its text is removed, as on cancel: keeping it would leave an invisible element
+            // and an undo step that does nothing visible.
+            if (_createdElementId == element.Id && element.Text.Length == 0 && context.Document.ContainsElement(element.Id))
+            {
+                context.Document.RemoveElement(element.Id);
+                context.History.CancelGroup();
+                context.InvalidateDocument(element.Bounds);
+            }
             context.Announce("The text could not be saved: " + ex.Message);
         }
         finally

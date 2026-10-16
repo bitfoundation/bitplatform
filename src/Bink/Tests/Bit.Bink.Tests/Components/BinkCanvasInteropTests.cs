@@ -20,11 +20,12 @@ public class BinkCanvasInteropTests : BunitContext
     }
 
     /// <summary>Makes the module's attach succeed, so the component reaches its attached state.</summary>
-    private void SetupAttachedModule()
+    private BunitJSModuleInterop SetupAttachedModule()
     {
         BunitJSModuleInterop module = JSInterop.SetupModule(ModulePath);
         module.Mode = JSRuntimeMode.Loose;
         module.Setup<BinkAttachResult?>("attach", _ => true).SetResult(new BinkAttachResult { Width = 400, Height = 300, DevicePixelRatio = 1 });
+        return module;
     }
 
     private static double[] Samples(params BinkInputSample[] samples)
@@ -99,6 +100,44 @@ public class BinkCanvasInteropTests : BunitContext
         Assert.AreEqual(0, first.ElementCount);
         Assert.AreEqual(0, second.ElementCount);
         Assert.IsFalse(canvas.Instance.History.CanUndo);
+    }
+
+    [TestMethod]
+    public async Task Png_export_of_an_empty_selection_renders_the_whole_drawing_in_the_browser()
+    {
+        // The managed exporter treats an empty selection as "no filter", but the browser path handed the empty
+        // selection to the renderer as a filter, so the same options produced a blank image once attached.
+        BunitJSModuleInterop module = SetupAttachedModule();
+        module.Setup<byte[]>("renderToImage", _ => true).SetResult([0x89, (byte)'P', (byte)'N', (byte)'G']);
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>();
+        canvas.Instance.CurrentDocument.AddElement(new BinkStroke(BinkStrokePoints.FromPositions([new Vector2(10, 10), new Vector2(90, 60)]), new BinkPenBrush()));
+        // The first document draw only happens once the surface is attached, which is when the browser path is taken.
+        canvas.WaitForAssertion(() => Assert.Contains(i => i.Identifier == "execute", JSInterop.Invocations));
+
+        await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { Region = BinkExportRegion.Content }));
+        await canvas.InvokeAsync(() => canvas.Instance.ExportPngAsync(new BinkPngExportOptions { Region = BinkExportRegion.Selection }));
+
+        JSRuntimeInvocation[] renders = JSInterop.Invocations.Where(i => i.Identifier == "renderToImage").ToArray();
+        Assert.HasCount(2, renders);
+        // The command count is the fourth argument; a filtered-out stroke would leave only the clear behind.
+        Assert.AreEqual(renders[0].Arguments[4], renders[1].Arguments[4]);
+    }
+
+    [TestMethod]
+    public void Stroke_started_is_not_raised_for_tools_that_do_not_draw_strokes()
+    {
+        // Any tool that takes the gesture used to raise StrokeStarted with a null stroke, so a click with the select
+        // tool counted as a stroke that never completed.
+        int started = 0;
+        IRenderedComponent<BinkCanvas> canvas = Render<BinkCanvas>(p => p
+            .Add(c => c.Tool, new BinkSelectTool())
+            .Add(c => c.StrokeStarted, _ => started++));
+
+        Send(canvas, Mouse(BinkPointerPhase.Down, 10, 10, 0), Mouse(BinkPointerPhase.Up, 10, 10, 8));
+        canvas.InvokeAsync(() => canvas.Instance.SetTool(new BinkDrawTool()));
+        Send(canvas, Mouse(BinkPointerPhase.Down, 20, 20, 16));
+
+        canvas.WaitForAssertion(() => Assert.AreEqual(1, started));
     }
 
     [TestMethod]

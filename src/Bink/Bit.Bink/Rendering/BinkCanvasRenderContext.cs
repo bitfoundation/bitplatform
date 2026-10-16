@@ -185,7 +185,7 @@ public sealed class BinkCanvasRenderContext : IBinkRenderContext, IBinkRenderCon
     public void DrawImage(BinkImageSource image, BinkRect destination, BinkRect? sourceRect, float opacity)
     {
         ArgumentNullException.ThrowIfNull(image);
-        if (destination.IsEmpty || opacity <= 0) return;
+        if (destination.IsEmpty || opacity <= 0 || image.IsOmitted) return;
         Write(BinkCanvasCommand.DrawImage);
         Write(InternString(image.Uri));
         Write(destination.X);

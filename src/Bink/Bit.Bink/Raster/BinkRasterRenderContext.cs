@@ -146,7 +146,7 @@ public sealed class BinkRasterRenderContext : IBinkRenderContext, IBinkRenderCon
     public void DrawImage(BinkImageSource image, BinkRect destination, BinkRect? sourceRect, float opacity)
     {
         ArgumentNullException.ThrowIfNull(image);
-        if (destination.IsEmpty || opacity <= 0 || _state.Clip.IsEmpty) return;
+        if (destination.IsEmpty || opacity <= 0 || _state.Clip.IsEmpty || image.IsOmitted) return;
 
         BinkPngCodec.DecodedImage? decoded = GetImage(image);
         if (decoded is null)

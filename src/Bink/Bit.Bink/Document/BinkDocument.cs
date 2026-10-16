@@ -228,7 +228,9 @@ public sealed class BinkDocument
         if (_batchDepth > 0)
         {
             _batch!.Add(operation);
-            _batchInverses!.Insert(0, inverse);
+            // Inverses run in reverse order; they are appended here and reversed once when the batch closes,
+            // because inserting each at the front made a batch of n operations cost n squared.
+            _batchInverses!.Add(inverse);
             return inverse;
         }
         Revision++;
@@ -295,6 +297,7 @@ public sealed class BinkDocument
         _batch = null;
         _batchInverses = null;
         if (ops.Count == 0) return;
+        inverses.Reverse();
         Revision++;
         BinkDrawingOperation forward = ops.Count == 1 && _batchLabel is null ? ops[0] : new BinkBatchOperation(ops, _batchLabel);
         BinkDrawingOperation inverse = inverses.Count == 1 && _batchLabel is null ? inverses[0] : new BinkBatchOperation(inverses, _batchLabel);

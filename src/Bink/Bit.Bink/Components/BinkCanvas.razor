@@ -26,6 +26,7 @@
            dirty-value flag keeps showing the text typed into the previous one. *@
         <textarea @key="editor.ElementId"
                   class="bit-bink-text-editor"
+                  maxlength="@BinkTextElement.MaxLength"
                   style="@editor.Style"
                   aria-label="Edit text"
                   @ref="_textEditorElement">@editor.Text</textarea>

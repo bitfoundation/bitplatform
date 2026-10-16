@@ -674,4 +674,43 @@ public class CollaborationRegressionTests
         Assert.AreEqual("42", b.Metadata["case"]);
         Assert.IsFalse(b.Metadata.ContainsKey("stale"));
     }
+
+    [TestMethod]
+    public async Task A_session_can_ignore_the_traffic_of_other_documents_on_a_shared_transport()
+    {
+        // One hub carrying two documents delivered each document's strokes to the other's session, which applied
+        // them: every message names its document, but the id was never checked.
+        var hub = new TestHub();
+        var first = new BinkDocument();
+        var second = new BinkDocument();
+        var options = new BinkCollaborationOptions { IgnoreOtherDocuments = true };
+        await using var sa = new BinkCollaborationSession(first, hub.CreateClient(), "alex", options);
+        await using var sb = new BinkCollaborationSession(second, hub.CreateClient(), "sam", options);
+
+        first.AddElement(TestData.Stroke(new Vector2(0, 0), new Vector2(10, 10)));
+        await Task.Yield();
+
+        Assert.AreEqual(1, first.ElementCount);
+        Assert.AreEqual(0, second.ElementCount);
+    }
+
+    [TestMethod]
+    public async Task Disposing_a_session_during_a_flush_does_not_fault_the_flush()
+    {
+        // A reconnect starts a flush nobody awaits. Disposing the session while that flush waited on the transport
+        // disposed the gate under it, and releasing the gate then threw from the fire-and-forget task.
+        var hub = new TestHub();
+        var document = new BinkDocument();
+        TestTransport transport = hub.CreateClient();
+        var session = new BinkCollaborationSession(document, transport, "alex");
+
+        transport.SetConnected(false);
+        document.AddElement(TestData.Stroke(new Vector2(0, 0), new Vector2(10, 10)));
+        Assert.AreEqual(1, session.PendingCount);
+        transport.SetConnected(true);
+
+        Task flush = session.FlushAsync();
+        await session.DisposeAsync();
+        await flush;
+    }
 }
