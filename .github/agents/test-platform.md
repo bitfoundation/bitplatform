@@ -211,7 +211,10 @@ after uninstalling the app, which drops its data.
 **Windows.** `windows`. The apps are Velopack installs in `%LocalAppData%\<AppId>`: the Boilerplate's
 `AdminPanel.Client.Windows`, `SalesModule.Client.Windows` and `TodoSample.Client.Windows`. The nav-panel version
 button runs `ForceUpdate`: Velopack downloads the release from the app's feed and restarts into it. Every app starts
-WebView2 with `--remote-debugging-port=9222`, so the helper first closes any that is running.
+WebView2 with `--remote-debugging-port=9222`, so the helper first closes any that is running, and taps only once the
+WebView on that port is the app's own: an app that just updated restarts on its own and may hold the port. An app a
+release behind also updates itself when it starts, before it shows a page, which takes a few minutes; either way
+counts once its executable is at `APP_VERSION`.
 
 Then `versions -Sha <CD head sha> -CdRun <run>`. Anything still behind is a failed rollout: find the CD job that did not deliver -
 its log, the feed's `releases.win.json`, the Play upload - before testing anything.

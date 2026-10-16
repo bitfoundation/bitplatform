@@ -540,8 +540,24 @@ function Get-WebAppVersions {
 # Every Client.Windows app starts WebView2 with --remote-debugging-port=9222, so only one of them may run while one is
 # driven over CDP - a leftover instance would be the one answering. /T takes its WebView2 processes along.
 function Stop-WindowsApps {
-    foreach ($process in Get-Process | Where-Object { $_.ProcessName -like '*.Client.Windows' }) {
-        taskkill /PID $process.Id /T /F 2>&1 | Out-Null
+    $deadline = (Get-Date).AddSeconds(30)
+
+    do {
+        foreach ($process in Get-Process | Where-Object { $_.ProcessName -like '*.Client.Windows' }) {
+            taskkill /PID $process.Id /T /F 2>&1 | Out-Null
+        }
+
+        Start-Sleep -Seconds 1
+    }
+    while ((Get-NetTCPConnection -LocalPort 9222 -State Listen -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline)
+}
+
+function Get-CdpOwner([int] $port) {
+    $listener = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+
+    if ($listener) {
+        $webView = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
+        (Get-Process -Id $webView.ParentProcessId -ErrorAction SilentlyContinue).ProcessName
     }
 }
 
@@ -568,19 +584,26 @@ function Update-WindowsApps {
         Start-Process $app.Exe -WindowStyle Minimized
 
         # The version button runs ForceUpdate: Velopack downloads the release and restarts the app into it.
-        $page = Get-CdpPage 9222
-        $shown = Wait-AppVersion $page.webSocketDebuggerUrl
-
-        if (-not $shown) {
-            throw "$($app.Id) never showed its version in the nav panel."
-        }
-
-        Write-Host "  its nav panel shows $shown, tapping it."
-        Invoke-Cdp $page.webSocketDebuggerUrl 'Runtime.evaluate' @{ expression = "document.querySelector('.app-version').click()" } | Out-Null
-
+        $name = [IO.Path]::GetFileNameWithoutExtension($app.Exe)
         $deadline = (Get-Date).AddMinutes(10)
+        $tapped = $false
 
         while (-not (Test-Version (Get-ProductVersion $app.Exe)) -and (Get-Date) -lt $deadline) {
+            if (-not $tapped -and (Get-CdpOwner 9222) -eq $name) {
+                try {
+                    $page = Get-CdpPage 9222 5
+                    $shown = Wait-AppVersion $page.webSocketDebuggerUrl 5
+
+                    if ($shown) {
+                        Write-Host "  its nav panel shows $shown, tapping it."
+                        Invoke-Cdp $page.webSocketDebuggerUrl 'Runtime.evaluate' @{ expression = "document.querySelector('.app-version').click()" } | Out-Null
+                        $tapped = $true
+                    }
+                }
+                catch {
+                }
+            }
+
             Start-Sleep -Seconds 5
         }
 
