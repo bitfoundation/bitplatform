@@ -1,0 +1,155 @@
+﻿@page "/"
+@implements IDisposable
+@inject IBelemetry Belemetry
+@inject IBelemetryConsent Consent
+@inject ILogger<HomePage> Logger
+@inject NavigationManager Navigation
+
+<h1 id="page-home">home</h1>
+
+@* .NET-side actions: they need an interactive render mode. Every record they produce carries harness.marker, taken
+   from the ?marker= query string, so a test can pick its own records out of the receiver. *@
+<section class="harness-actions">
+    <button id="track-event" @onclick="TrackEvent">TrackEvent</button>
+    <button id="track-exception" @onclick="TrackException">TrackException</button>
+    <button id="track-pageview" @onclick="TrackPageView">TrackPageView</button>
+    <button id="log-info" @onclick="LogInformation">ILogger information</button>
+    <button id="log-error" @onclick="LogError">ILogger error</button>
+    <button id="start-activity" @onclick="StartActivity">Activity</button>
+    <button id="record-metric" @onclick="RecordMetric">Meter</button>
+    <button id="flush" @onclick="FlushAsync">FlushAsync</button>
+</section>
+
+<section class="harness-actions">
+    <button id="consent-all" @onclick="GrantAllAsync">consent: all</button>
+    <button id="consent-none" @onclick="RevokeAllAsync">consent: none</button>
+    <button id="consent-diagnostics" @onclick="GrantDiagnosticsAsync">consent: diagnostics</button>
+    <span id="consent-state" data-granted="@((int)Consent.Granted)" data-decided="@(Consent.IsDecided ? "true" : "false")" data-actions="@_actions">
+        granted @((int)Consent.Granted), decided @Consent.IsDecided, actions @_actions
+    </span>
+</section>
+
+@* Browser-side actions, wired by harness.js through event delegation, so they also work under static SSR. *@
+<section class="harness-actions">
+    <button id="js-fetch" data-harness-action="fetch-echo">fetch /test-api/echo</button>
+    <output id="fetch-result"></output>
+    <button id="js-fetch-cross-origin" data-harness-action="fetch-echo-cross-origin">fetch /test-api/echo cross-origin</button>
+    <output id="fetch-cross-origin-result"></output>
+    <button id="js-error" data-harness-action="throw-error">throw a JS error</button>
+    <button id="js-consent-all" data-harness-action="consent" data-features="4095">js consent: all</button>
+    <button id="js-consent-none" data-harness-action="consent" data-features="0">js consent: none</button>
+    <button id="js-flush" data-harness-action="flush">js flush</button>
+</section>
+
+<section class="harness-actions">
+    <button id="named-button" data-bit-belemetry-name="harness-named-button">named</button>
+    <div data-bit-belemetry-ignore>
+        <button id="ignored-button">ignored</button>
+    </div>
+</section>
+
+@code {
+    private string _marker = string.Empty;
+
+    // Counts the .NET actions that ran, so a test can wait for a click to have been handled on the .NET side.
+    private int _actions;
+
+    protected override void OnInitialized()
+    {
+        var query = new Uri(Navigation.Uri).Query.TrimStart('?');
+        foreach (var pair in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            var parts = pair.Split('=', 2);
+            if (parts[0] == "marker" && parts.Length == 2) _marker = Uri.UnescapeDataString(parts[1]);
+        }
+
+        Consent.Changed += OnConsentChanged;
+    }
+
+    private Dictionary<string, object?> Attributes(string action) => new()
+    {
+        [HarnessTelemetry.MarkerAttribute] = _marker,
+        ["harness.action"] = action,
+        ["harness.platform"] = HarnessRuntime.Platform,
+    };
+
+    private void TrackEvent()
+    {
+        Belemetry.TrackEvent("harness.event", Attributes("track-event"));
+        _actions++;
+    }
+
+    private void TrackException()
+    {
+        try
+        {
+            throw new InvalidOperationException($"Harness exception {_marker}");
+        }
+        catch (Exception ex)
+        {
+            Belemetry.TrackException(ex, Attributes("track-exception"));
+        }
+        _actions++;
+    }
+
+    private void TrackPageView()
+    {
+        Belemetry.TrackPageView("Harness virtual page", attributes: Attributes("track-pageview"));
+        _actions++;
+    }
+
+    private void LogInformation()
+    {
+        Logger.LogInformation("Harness log {harness.marker}", _marker);
+        _actions++;
+    }
+
+    private void LogError()
+    {
+        Logger.LogError(new InvalidOperationException($"Harness logged exception {_marker}"), "Harness error log {harness.marker}", _marker);
+        _actions++;
+    }
+
+    private void StartActivity()
+    {
+        using (var activity = HarnessTelemetry.ActivitySource.StartActivity("harness.activity"))
+        {
+            activity?.SetTag(HarnessTelemetry.MarkerAttribute, _marker);
+        }
+        _actions++;
+    }
+
+    private void RecordMetric()
+    {
+        HarnessTelemetry.Clicks.Add(1, new KeyValuePair<string, object?>(HarnessTelemetry.MarkerAttribute, _marker));
+        _actions++;
+    }
+
+    private async Task FlushAsync()
+    {
+        await Belemetry.FlushAsync();
+        _actions++;
+    }
+
+    private async Task GrantAllAsync()
+    {
+        await Consent.SetAsync(BelemetryFeatures.All);
+        _actions++;
+    }
+
+    private async Task RevokeAllAsync()
+    {
+        await Consent.SetAsync(BelemetryFeatures.None);
+        _actions++;
+    }
+
+    private async Task GrantDiagnosticsAsync()
+    {
+        await Consent.SetAsync(BelemetryFeatures.Diagnostics);
+        _actions++;
+    }
+
+    private void OnConsentChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Consent.Changed -= OnConsentChanged;
+}

@@ -1,0 +1,253 @@
+﻿@implements IAsyncDisposable
+@inject TelemetryFeedClient Feed
+
+@* Your own telemetry, read back from the demo server.
+
+   The browser script, and the .NET pipeline running in WebAssembly, export OTLP/JSON to this site's
+   own server (/otlp/v1/traces, /logs, /metrics). Its in-process receiver files every record under the
+   record's session.id and keeps the last few hundred per session in memory. This component asks the
+   script for the session id (BitBelemetry.getContext()) and polls GET /api/telemetry?sessionId=...
+   for what is new - so each reader sees only what they produced.
+
+   Records the server pipeline produced (request spans, logs) carry no session; they are shown when
+   they share a trace id with one of yours - the fetch span's traceparent made the server span its
+   child - and marked "correlated". *@
+
+<div class="feed @(Compact ? "feed-compact" : null)">
+    @if (Compact is false)
+    {
+        <div class="feed-toolbar">
+            <div class="feed-chips" role="group" aria-label="Show">
+                @foreach (var kind in _kinds)
+                {
+                    <button type="button" class="feed-chip @(_kind == kind ? "active" : null)"
+                            aria-pressed="@(_kind == kind ? "true" : "false")" @onclick="() => _kind = kind">
+                        @kind <span class="feed-chip-count">@Count(kind)</span>
+                    </button>
+                }
+            </div>
+            <div class="feed-actions">
+                <label class="feed-toggle" title="Server metrics and logs that belong to no session, shared by every reader">
+                    <input type="checkbox" checked="@_includeShared" @onchange="OnSharedChanged" />
+                    Include server telemetry
+                </label>
+                <button type="button" class="btn-bl-subtle" @onclick="() => _paused = !_paused">@(_paused ? "Resume" : "Pause")</button>
+                <button type="button" class="btn-bl-subtle" @onclick="Clear">Clear</button>
+            </div>
+        </div>
+    }
+
+    <div class="feed-status" role="status">
+        @if (_context is null)
+        {
+            <span>@(RendererInfo.IsInteractive ? "Waiting for the browser script..." : "The live feed starts once the page is interactive.")</span>
+        }
+        else
+        {
+            <span class="feed-dot @(_paused ? "paused" : null)" aria-hidden="true"></span>
+            <span>Session <code>@Short(_context.SessionId)</code></span>
+            @if (_context.Consent == 0)
+            {
+                <span class="feed-warn">Nothing is granted, so nothing is sent: answer the consent banner, or use the <a href="/consent">consent page</a>.</span>
+            }
+            else if (_context.Decided is false)
+            {
+                <span class="feed-warn">You have not decided yet - records are held in memory until you do.</span>
+            }
+        }
+        @if (_error is not null)
+        {
+            <span class="feed-warn">@_error</span>
+        }
+    </div>
+
+    @{
+        var visible = Visible().ToArray();
+    }
+
+    @if (visible.Length == 0)
+    {
+        <p class="feed-empty">@(Compact ? EmptyText : "Nothing yet. Click around the site - page views, clicks, web vitals and your .NET logs land here within a few seconds.")</p>
+    }
+    else
+    {
+        <ol class="feed-list" aria-label="Telemetry records, newest first">
+            @foreach (var record in visible)
+            {
+                var open = _selected == record.Id;
+                <li class="feed-row kind-@record.Kind.ToLowerInvariant() @(open ? "open" : null)">
+                    <button type="button" class="feed-row-head" aria-expanded="@(open ? "true" : "false")"
+                            @onclick="() => _selected = open ? null : record.Id">
+                        <span class="feed-time">@Time(record.Time)</span>
+                        <span class="feed-source src-@record.Source">@record.Source</span>
+                        <span class="feed-kind">@record.Kind</span>
+                        <span class="feed-name">@record.Name</span>
+                        <span class="feed-meta">@Meta(record)</span>
+                    </button>
+                    @if (open)
+                    {
+                        <div class="feed-detail">
+                            <dl class="feed-ids">
+                                @if (record.Scope is not null) { <dt>scope</dt><dd><code>@record.Scope</code></dd> }
+                                @if (record.TraceId is not null) { <dt>trace</dt><dd><code>@record.TraceId</code></dd> }
+                                @if (record.SpanId is not null) { <dt>span</dt><dd><code>@record.SpanId</code>@if (record.ParentSpanId is not null) { <text> &larr; </text><code>@record.ParentSpanId</code> }</dd> }
+                                @if (record.Body is not null && record.Body != record.Name) { <dt>body</dt><dd>@record.Body</dd> }
+                                @if (record.Events.Length > 0) { <dt>events</dt><dd>@string.Join(", ", record.Events)</dd> }
+                            </dl>
+                            @if (record.Attributes.Count > 0)
+                            {
+                                <table class="doc-table feed-attrs">
+                                    <thead><tr><th scope="col">Attribute</th><th scope="col">Value</th></tr></thead>
+                                    <tbody>
+                                        @foreach (var (key, value) in record.Attributes.OrderBy(a => a.Key, StringComparer.Ordinal))
+                                        {
+                                            <tr><td><code>@key</code></td><td>@value</td></tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            }
+                            @if (Compact is false && record.Resource.Count > 0)
+                            {
+                                <details class="feed-resource">
+                                    <summary>Resource (@record.Resource.Count attributes)</summary>
+                                    <table class="doc-table feed-attrs">
+                                        <tbody>
+                                            @foreach (var (key, value) in record.Resource.OrderBy(a => a.Key, StringComparer.Ordinal))
+                                            {
+                                                <tr><td><code>@key</code></td><td>@value</td></tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </details>
+                            }
+                        </div>
+                    }
+                </li>
+            }
+        </ol>
+    }
+</div>
+
+@code {
+    /// <summary>A short list without the toolbar, for embedding under a demo's buttons.</summary>
+    [Parameter] public bool Compact { get; set; }
+
+    /// <summary>The most records shown.</summary>
+    [Parameter] public int Max { get; set; } = 250;
+
+    /// <summary>Only records this accepts are shown - e.g. the browser page shows only browser records.</summary>
+    [Parameter] public Func<TelemetryRecord, bool>? Match { get; set; }
+
+    /// <summary>What a compact feed says while it has nothing to show.</summary>
+    [Parameter] public string EmptyText { get; set; } = "Nothing yet - press one of the buttons above.";
+
+    private static readonly string[] _kinds = ["All", "Span", "Log", "Event", "Error", "Metric"];
+
+    private readonly List<TelemetryRecord> _records = [];
+    private readonly CancellationTokenSource _cts = new();
+    private TelemetryFeedClient.BrowserContext? _context;
+    private long _lastId;
+    private long? _selected;
+    private string _kind = "All";
+    private bool _paused;
+    private bool _includeShared;
+    private bool _started;
+    private string? _error;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (_started || RendererInfo.IsInteractive is false) return;
+
+        _started = true;
+        _ = PollAsync(_cts.Token);
+    }
+
+    private async Task PollAsync(CancellationToken cancellationToken)
+    {
+        while (cancellationToken.IsCancellationRequested is false)
+        {
+            try
+            {
+                var context = await Feed.GetContextAsync();
+
+                if (context?.SessionId is not null && context.SessionId != _context?.SessionId)
+                {
+                    // A new session (the first answer, or a rotation after inactivity): start over.
+                    _records.Clear();
+                    _lastId = 0;
+                }
+
+                _context = context;
+
+                if (_context?.SessionId is { } sessionId && _paused is false)
+                {
+                    var feed = await Feed.GetAsync(sessionId, _lastId, _includeShared);
+
+                    if (feed is null)
+                    {
+                        _error = "The demo server did not answer.";
+                    }
+                    else
+                    {
+                        _error = null;
+                        _lastId = Math.Max(_lastId, feed.LastId);
+                        _records.InsertRange(0, feed.Records.OrderByDescending(r => r.Id));
+                        if (_records.Count > 500) _records.RemoveRange(500, _records.Count - 500);
+                    }
+                }
+
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(_context?.SessionId is null ? 500 : 2000, cancellationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                return;
+            }
+            catch
+            {
+                // A failed poll is retried on the next tick; the feed is a viewer, not the demo.
+                try { await Task.Delay(3000, cancellationToken); } catch (OperationCanceledException) { return; }
+            }
+        }
+    }
+
+    private IEnumerable<TelemetryRecord> Visible()
+        => _records.Where(r => Match?.Invoke(r) ?? true)
+                   .Where(r => _kind == "All" || r.Kind == _kind)
+                   .Take(Compact ? Math.Min(Max, 8) : Max);
+
+    private int Count(string kind) => _records.Count(r => (Match?.Invoke(r) ?? true) && (kind == "All" || r.Kind == kind));
+
+    private void OnSharedChanged(ChangeEventArgs e)
+    {
+        _includeShared = e.Value is true;
+        _records.Clear();
+        _lastId = 0;
+    }
+
+    private void Clear() => _records.Clear();
+
+    private static string Short(string? id) => id is null ? "-" : id.Length > 12 ? id[..12] + "..." : id;
+
+    private static string Time(double unixMs)
+        => DateTimeOffset.FromUnixTimeMilliseconds((long)unixMs).ToLocalTime().ToString("HH:mm:ss.fff", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static string Meta(TelemetryRecord record)
+    {
+        var parts = new List<string>(3);
+
+        if (record.DurationMs is { } duration) parts.Add($"{duration:0.#} ms");
+        if (record.Status is { } status) parts.Add(status);
+        if (record.Signal == "log" && record.Severity is { } severity) parts.Add(severity);
+        if (record.Value is { } value) parts.Add(value);
+        if (record.Correlated) parts.Add("correlated");
+
+        return string.Join(" · ", parts);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        await _cts.CancelAsync();
+        _cts.Dispose();
+    }
+}

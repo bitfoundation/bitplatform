@@ -157,9 +157,12 @@ public partial class McpVersionsService : BackgroundService
 
         if (project is null) return;
 
+        // A library added after a release has no project in that release's worktree; it is simply not served for it,
+        // rather than costing the whole version.
         var released = McpDocumentationSite.Projects
-            .Select(documentation => new McpDocumentationSite(documentation.UpstreamName, name,
-                                                              Path.Combine(worktreePath, documentation.ProjectPath.Replace('/', Path.DirectorySeparatorChar)),
+            .Select(documentation => (documentation.UpstreamName, ProjectFilePath: Path.Combine(worktreePath, documentation.ProjectPath.Replace('/', Path.DirectorySeparatorChar))))
+            .Where(documentation => File.Exists(documentation.ProjectFilePath))
+            .Select(documentation => new McpDocumentationSite(documentation.UpstreamName, name, documentation.ProjectFilePath,
                                                               loggerFactory.CreateLogger<McpDocumentationSite>()))
             .ToArray();
 

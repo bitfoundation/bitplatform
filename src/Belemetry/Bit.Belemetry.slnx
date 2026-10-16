@@ -1,0 +1,51 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="CLAUDE.md" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.Belemetry.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.Belemetry.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Samples/Core/Bit.Belemetry.Samples.Core.csproj" />
+    <Project Path="Samples/Maui/Bit.Belemetry.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Samples/Auto/">
+    <Project Path="Samples/Auto/Bit.Belemetry.Samples.Auto.Client/Bit.Belemetry.Samples.Auto.Client.csproj" />
+    <Project Path="Samples/Auto/Bit.Belemetry.Samples.Auto/Bit.Belemetry.Samples.Auto.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Server/">
+    <Project Path="Samples/Server/Bit.Belemetry.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/Wasm/">
+    <Project Path="Samples/Wasm/Bit.Belemetry.Samples.Wasm.Client/Bit.Belemetry.Samples.Wasm.Client.csproj" />
+    <Project Path="Samples/Wasm/Bit.Belemetry.Samples.Wasm/Bit.Belemetry.Samples.Wasm.csproj" />
+  </Folder>
+  <Folder Name="/Samples/WinForms/">
+    <Project Path="Samples/WinForms/Bit.Belemetry.Samples.WinForms.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Belemetry.Tests/Bit.Belemetry.Tests.csproj" />
+    <Project Path="Tests/Bit.Belemetry.Tests.EntityFrameworkCore/Bit.Belemetry.Tests.EntityFrameworkCore.csproj" />
+    <Project Path="Tests/Bit.Belemetry.Tests.Hangfire/Bit.Belemetry.Tests.Hangfire.csproj" />
+    <Project Path="Tests/Bit.Belemetry.Tests.Mcp/Bit.Belemetry.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.Belemetry.Tests.Hosting/Bit.Belemetry.Tests.Hosting.csproj" />
+    <Project Path="Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Harness/">
+    <Project Path="Tests/Bit.Belemetry.Tests.Harness/Bit.Belemetry.Tests.Harness.csproj" />
+    <Project Path="Tests/Bit.Belemetry.Tests.Harness.Web/Bit.Belemetry.Tests.Harness.Web.csproj" />
+    <Project Path="Tests/Bit.Belemetry.Tests.Harness.Web.Client/Bit.Belemetry.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Tests/Bit.Belemetry.Tests.Harness.Hybrid/Bit.Belemetry.Tests.Harness.Hybrid.csproj" />
+  </Folder>
+  <Project Path="Bit.Belemetry/Bit.Belemetry.csproj" />
+  <Project Path="Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj" />
+  <Project Path="Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj" />
+</Solution>

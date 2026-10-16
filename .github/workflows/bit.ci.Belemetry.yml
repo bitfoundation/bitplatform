@@ -1,0 +1,75 @@
+name: bit platform CI - Belemetry
+
+# Build plus the unit, browser-script, MCP and hosting tests. The browser E2E suites and the trimmed/AOT publish
+# gate are in bit.ci.Belemetry.e2e.yml and run on demand only.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+    - 'src/Belemetry/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-Belemetry:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: build Bit.Belemetry
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 9.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 8.0.x
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: dotnet workload restore
+      run:  cd src/Belemetry && dotnet workload restore
+
+    - name: dotnet build
+      run: dotnet build src/Belemetry/Bit.Belemetry.slnx
+
+    # The test steps run from inside src so src/global.json's "test" runner setting applies
+    # (from the repo root the SDK falls back to the unsupported VSTest path).
+    - name: dotnet test
+      run: cd src/Belemetry/Tests/Bit.Belemetry.Tests && dotnet test --no-build
+
+    - name: dotnet test (Entity Framework Core instrumentation, net8.0/net9.0/net10.0)
+      run: cd src/Belemetry/Tests/Bit.Belemetry.Tests.EntityFrameworkCore && dotnet test --no-build
+
+    - name: dotnet test (Hangfire instrumentation, net8.0/net9.0/net10.0)
+      run: cd src/Belemetry/Tests/Bit.Belemetry.Tests.Hangfire && dotnet test --no-build
+
+    - name: npm test (browser script)
+      run: cd src/Belemetry/Tests/bit-belemetry-js && npm ci && npm test
+
+    - name: dotnet test (MCP server and OTLP receiver)
+      run: cd src/Belemetry/Tests/Bit.Belemetry.Tests.Mcp && dotnet test --no-build
+
+    - name: dotnet test (hosting - every render mode over HTTP, net8.0/net9.0/net10.0)
+      run: cd src/Belemetry/Tests/Bit.Belemetry.Tests.Hosting && dotnet test --no-build

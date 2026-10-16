@@ -21,7 +21,8 @@ internal sealed partial class McpDocumentationSite : IDisposable
         ("bitBrouter", "src/Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj"),
         ("bitBswup", "src/Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj"),
         ("bitButil", "src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj"),
-        ("bitMotion", "src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj")
+        ("bitMotion", "src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj"),
+        ("bitBelemetry", "src/Belemetry/Demo/Server/Bit.Belemetry.Demo.Server.csproj")
     ];
 
     private static readonly TimeSpan buildTimeout = TimeSpan.FromMinutes(30);

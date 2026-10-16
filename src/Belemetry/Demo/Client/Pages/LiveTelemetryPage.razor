@@ -1,0 +1,304 @@
+﻿@page "/live"
+@using System.Text.Json
+@inject IBelemetry Belemetry
+@inject ILogger<LiveTelemetryPage> Logger
+@inject IJSRuntime JS
+
+<PageTitle>Live telemetry - bit Belemetry</PageTitle>
+
+<h1>Live telemetry</h1>
+
+<p class="page-intro">
+    This site is instrumented with Belemetry and exports to itself. Everything you do here - page views,
+    clicks, web vitals, errors, fetch spans, the WebAssembly app's logs, traces and metrics - is sent to the
+    demo server as OTLP/JSON, decoded, and handed back to you below. Only you see your records, and nothing
+    is sent until you have answered the consent banner.
+</p>
+
+<div class="demo-section">
+    <h2>Your records</h2>
+    <p>
+        Make something happen, and watch it arrive within a couple of seconds. Each row opens to show its
+        attributes, trace and span ids, and the resource it came with. The source column says who recorded
+        it: <strong>browser</strong> (the script), <strong>wasm</strong> (the .NET pipeline running in this
+        tab) or <strong>server</strong> (the demo server's own pipeline).
+    </p>
+
+    <div class="demo-actions">
+        <button type="button" class="btn-bl" data-bit-belemetry-name="live.track-event" @onclick="TrackEvent" disabled="@(RendererInfo.IsInteractive is false)">
+            Track an event
+        </button>
+        <button type="button" class="btn-bl-subtle" data-bit-belemetry-name="live.write-log" @onclick="WriteLog" disabled="@(RendererInfo.IsInteractive is false)">
+            Log with ILogger
+        </button>
+        <button type="button" class="btn-bl-subtle" data-bit-belemetry-name="live.throw-error" @onclick="ThrowErrorAsync" disabled="@(RendererInfo.IsInteractive is false)">
+            Throw a JS error
+        </button>
+        <button type="button" class="btn-bl-subtle" data-bit-belemetry-name="live.fetch-echo" @onclick="FetchEchoAsync" disabled="@(RendererInfo.IsInteractive is false)">
+            Fetch /api/demo/echo
+        </button>
+    </div>
+
+    @if (_status is not null)
+    {
+        <p class="demo-label" role="status">@_status</p>
+    }
+
+    <TelemetryFeedView />
+</div>
+
+<div class="demo-section">
+    <h2>What each button records</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Button</th><th scope="col">Call</th><th scope="col">What arrives</th><th scope="col">Feature</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Track an event</td>
+                    <td><code>IBelemetry.TrackEvent("demo.live.event", ...)</code></td>
+                    <td>A <strong>wasm</strong> log record with the event name and your attributes</td>
+                    <td><code>Events</code></td>
+                </tr>
+                <tr>
+                    <td>Log with ILogger</td>
+                    <td><code>Logger.LogInformation(...)</code></td>
+                    <td>A <strong>wasm</strong> log record: the category as its scope, the template's values as attributes, and the trace context</td>
+                    <td><code>Logs</code></td>
+                </tr>
+                <tr>
+                    <td>Throw a JS error</td>
+                    <td><code>blDemo.throwError(...)</code> - an uncaught <code>TypeError</code></td>
+                    <td>A <strong>browser</strong> <code>exception</code> event with <code>exception.type</code>, <code>exception.message</code> and <code>exception.stacktrace</code></td>
+                    <td><code>Errors</code></td>
+                </tr>
+                <tr>
+                    <td>Fetch /api/demo/echo</td>
+                    <td><code>blDemo.fetch("/api/demo/echo")</code> - a plain <code>fetch</code></td>
+                    <td>A <strong>browser</strong> client span <code>GET</code>, and - because the script added a <code>traceparent</code> - the <strong>server</strong>'s request span and log in the same trace, marked <em>correlated</em></td>
+                    <td><code>Dependencies</code></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>How this works</h2>
+    <ol>
+        <li>
+            <strong>Export.</strong> The browser script and the WebAssembly app's .NET pipeline both export
+            OTLP/HTTP with the JSON encoding to this site's own server - <code>/otlp/v1/traces</code>,
+            <code>/otlp/v1/logs</code> and <code>/otlp/v1/metrics</code>. JSON rather than protobuf so the
+            payloads are readable in your browser's network tab.
+        </li>
+        <li>
+            <strong>Receive.</strong> An in-process receiver decodes each request and files every record under
+            its <code>session.id</code>, keeping the last few hundred per session in memory. Nothing is ever
+            written to disk or a database, and a session idle for an hour is forgotten.
+        </li>
+        <li>
+            <strong>Attribute.</strong> Some records carry no session. Metric points never do (it would multiply
+            their cardinality by the number of visitors), so they are matched to you through the
+            <code>service.instance.id</code> of the WebAssembly app that sent them. The server's own request
+            spans and logs go into one shared bucket.
+        </li>
+        <li>
+            <strong>Read back.</strong> This page asks the script for your session id
+            (<code>BitBelemetry.getContext()</code>) and polls <code>GET /api/telemetry?sessionId=...</code> for
+            what is new. The server can only be asked for a session id your browser generated, so nobody sees
+            anyone else's clicks.
+        </li>
+        <li>
+            <strong>Correlate.</strong> A server span from the shared bucket is shown to you when it shares a
+            trace id with one of your records - your fetch span's <code>traceparent</code> made it that span's
+            child. <em>Include server telemetry</em> shows the rest of the shared bucket too.
+        </li>
+    </ol>
+    <div class="callout">
+        <p>
+            Nothing showing up? The feed says so when nothing is granted. Answer the banner, or choose per
+            feature on the <a href="/consent">consent page</a>. Before you decide, records are held in memory
+            in the page - and they arrive the moment you grant their feature.
+        </p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>The demo's configuration</h2>
+    <p>
+        This is the real setup of this site, copied from its source. Both projects call
+        <code>AddBitBelemetryServices(DemoTelemetry.ConfigureShared)</code>, and each adds its own exporter on top;
+        every configure callback runs, in order, on the same options.
+    </p>
+    <CodeSnippet Code="@SharedCode" Language="C#" Expanded="true" />
+    <p>
+        The WebAssembly client exports its .NET records to its own origin. The endpoint is absolute, because
+        a .NET exporter has no page to resolve a relative URL against:
+    </p>
+    <CodeSnippet Code="@ClientCode" Language="C#" Expanded="true" />
+    <p>
+        The server renders <code>&lt;BelemetryScript /&gt;</code>, so the browser script's exporter comes from
+        its registration: <code>BrowserEndpoint</code> is relative, so the script posts to whatever origin it
+        was served from. The server also turns on its own pipeline, which is where the correlated request spans
+        come from.
+    </p>
+    <CodeSnippet Code="@ServerCode" Language="C#" Expanded="true" />
+</div>
+
+@code {
+    private string? _status;
+    private int _events;
+
+    private void TrackEvent()
+    {
+        _events++;
+
+        try
+        {
+            Belemetry.TrackEvent("demo.live.event", new Dictionary<string, object?>
+            {
+                ["demo.page"] = "live",
+                ["demo.count"] = _events,
+            });
+            _status = $"Tracked demo.live.event #{_events}.";
+        }
+        catch (Exception ex)
+        {
+            // Telemetry never takes the page down.
+            _status = $"TrackEvent failed: {ex.Message}";
+        }
+    }
+
+    private void WriteLog()
+    {
+        Logger.LogInformation("Live telemetry page button pressed at {PressedAt:HH:mm:ss}", DateTimeOffset.Now);
+        _status = "Wrote an Information log through ILogger.";
+    }
+
+    private async Task ThrowErrorAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("blDemo.throwError", "A deliberate error from the Live telemetry page");
+            _status = "Threw a TypeError from a timer, so it reaches window.onerror uncaught.";
+        }
+        catch (Exception ex)
+        {
+            _status = $"Could not reach the page script: {ex.Message}";
+        }
+    }
+
+    private async Task FetchEchoAsync()
+    {
+        try
+        {
+            var result = await JS.InvokeAsync<JsonElement>("blDemo.fetch", "/api/demo/echo");
+            var status = result.GetProperty("status").GetInt32();
+            var ms = result.GetProperty("ms").GetDouble();
+            var traceparent = ReadTraceparent(result.GetProperty("body").GetString());
+
+            _status = traceparent is null
+                ? $"GET /api/demo/echo answered {status} in {ms:0} ms, without a traceparent."
+                : $"GET /api/demo/echo answered {status} in {ms:0} ms. The server received traceparent {traceparent}.";
+        }
+        catch (Exception ex)
+        {
+            _status = $"The fetch failed: {ex.Message}";
+        }
+    }
+
+    private static string? ReadTraceparent(string? body)
+    {
+        if (string.IsNullOrEmpty(body)) return null;
+
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            return document.RootElement.TryGetProperty("traceparent", out var value) && value.ValueKind == JsonValueKind.String
+                ? value.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+    }
+
+    // Copied from Client/Services/DemoTelemetry.cs (ConfigureShared). Keep the two in step.
+    private const string SharedCode = """
+        // Client/Services/DemoTelemetry.cs - called by both projects through AddDemoServices:
+        //     services.AddBitBelemetryServices(DemoTelemetry.ConfigureShared);
+        public static void ConfigureShared(BelemetryOptions options)
+        {
+            options.ServiceName = ServiceName;            // "belemetry-demo"
+            options.ServiceNamespace = ServiceNamespace;  // "bitplatform"
+
+            // Opt-in: nothing leaves the browser until the reader answers the consent banner. This is
+            // the library default, written out because the whole consent flow is part of the demo.
+            options.Consent.Default = BelemetryFeatures.None;
+
+            // Short intervals so a click shows up on the Live telemetry page within a couple of
+            // seconds. The defaults (5 s, 60 s for metrics) are the right ones for a real app.
+            options.Browser.FlushInterval = TimeSpan.FromSeconds(2);
+            options.Batch.FlushInterval = TimeSpan.FromSeconds(2);
+            options.Metrics.ExportInterval = TimeSpan.FromSeconds(10);
+
+            // Off by default; on here so the browser page can demonstrate them.
+            options.Browser.LongTasks = true;
+            options.Browser.CaptureConsole = true;
+
+            // The demo's own instrumentation (the ".NET instrumentation" page's buttons).
+            options.Traces.Sources.Add(DemoDiagnostics.Name);
+            options.Metrics.Meters.Add(DemoDiagnostics.Name);
+
+            foreach (var url in SelfUrls) options.Browser.IgnoreUrls.Add(url);   // "/otlp/", "/api/telemetry"
+
+            options.AddProcessor(new DemoNoiseFilter());
+        }
+        """;
+
+    // Copied from Client/Program.cs. Keep the two in step.
+    private const string ClientCode = """
+        // Client/Program.cs
+        var builder = WebAssemblyHostBuilder.CreateDefault(args);
+
+        builder.Services.AddDemoServices(builder.HostEnvironment.BaseAddress);
+
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.AddOtlpExporter(builder.HostEnvironment.BaseAddress + "otlp", otlp =>
+            {
+                otlp.Protocol = BelemetryOtlpProtocol.HttpJson;
+            });
+        });
+
+        await builder.Build().RunAsync();
+        """;
+
+    // Copied from Server/Program.cs. Keep the two in step.
+    private const string ServerCode = """
+        // Server/Program.cs
+        builder.Services.AddDemoServices();
+
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            // The server's own pipeline posts to its listening address over loopback; the browser
+            // script posts to the origin it was served from.
+            options.AddOtlpExporter(DemoEndpoints.SelfOtlpEndpoint(builder.Configuration), otlp =>
+            {
+                otlp.Protocol = BelemetryOtlpProtocol.HttpJson;
+                otlp.BrowserEndpoint = new Uri("/otlp", UriKind.Relative);
+            });
+
+            // Request spans, logs and metrics of the server, governed by Server.Features.
+            options.Server.CollectDotnetTelemetry = true;
+
+            if (builder.Configuration["ApplicationInsights:ConnectionString"] is { Length: > 0 } connectionString)
+            {
+                options.AddAzureMonitorExporter(connectionString);
+            }
+        });
+        """;
+}

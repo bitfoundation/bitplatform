@@ -1,0 +1,244 @@
+﻿@page "/server-pipeline"
+@using System.Text.Json
+@inject IJSRuntime JS
+
+<PageTitle>Server pipeline - bit Belemetry</PageTitle>
+
+<h1>Server pipeline</h1>
+
+<p class="page-intro">
+    On an ASP.NET Core host Belemetry's .NET pipeline is <strong>off by default</strong>: the server
+    serves the browser script and nothing more, because such hosts usually have an OpenTelemetry setup of
+    their own. <code>Server.CollectDotnetTelemetry</code> turns it on, and the server's logs, request spans
+    and metrics go to the same exporters as everything else - joined to the browser by trace context.
+</p>
+
+<div class="demo-section">
+    <h2>Turning it on</h2>
+    <p>
+        One switch, in the server project's registration. It applies to every ASP.NET Core host Belemetry
+        detects: Blazor Server, static SSR, and the server half of the Auto and WebAssembly render modes.
+        WebAssembly and Hybrid do not need it - there, the .NET pipeline always runs in the browser or in the
+        app process. A host without Blazor at all - an API, a worker - works the same way: it has no JS runtime,
+        so its <code>IBelemetry</code> calls go straight to this pipeline.
+    </p>
+    <p>
+        <code>Server.IgnoredRequestPaths</code> keeps the request spans of health probes and Blazor's own traffic
+        out, by path prefix (<code>url.path</code> on .NET 10, only the route on .NET 8 and 9, so a static file
+        cannot be matched there), before the span is even converted. The span is dropped when it ends, so a child
+        it had - the database check behind <code>/health</code> - is still exported, with a parent that never arrives.
+    </p>
+    <CodeSnippet Code="@SetupCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Operator features, not consent</h2>
+    <p>
+        Everything else in Belemetry is governed by one user's consent. The server pipeline cannot be: it is
+        process-wide, and serves every user at once - there is no single "user" whose choice a request span for
+        a shared endpoint, a Kestrel metric or a startup log belongs to. So it is governed by
+        <code>Server.Features</code>, a decision the operator makes, in the same way a server's access logs are.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Collected by</th><th scope="col">Governed by</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>The server pipeline (this page)</td><td><code>Server.Features</code> - default <code>Errors | Logs | Traces | Metrics</code></td></tr>
+                <tr><td>The browser script, on every page</td><td>The user's consent (<code>IBelemetryConsent</code>)</td></tr>
+                <tr><td><code>IBelemetry</code> calls in a Blazor Server circuit</td><td>The user's consent - they are routed through that user's browser</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Both are still intersected with <code>options.Features</code>, the configuration-wide switch. Keep the
+        server's records free of personal data the user has not agreed to: they reach your backend whatever
+        the banner says, which is why <code>Server.Features</code> leaves out <code>Sessions</code>,
+        <code>UserTracking</code> and the analytics features by default.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>What it records</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Signal</th><th scope="col">What</th><th scope="col">From</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Traces</td>
+                    <td>A server span per HTTP request, named <code>{method} {route}</code> and carrying <code>http.request.method</code>, <code>http.route</code>, <code>url.scheme</code> and <code>http.response.status_code</code> (plus <code>url.path</code> and <code>server.address</code> on .NET 10) - no middleware needed - plus every other source in <code>Traces.Sources</code> (outgoing <code>HttpClient</code> calls, your own <code>ActivitySource</code>s)</td>
+                    <td><code>Microsoft.AspNetCore</code> is added to the sources on the server</td>
+                </tr>
+                <tr>
+                    <td>Logs</td>
+                    <td>Every <code>ILogger</code> entry at or above <code>Logs.MinimumLevel</code>, with the active trace context</td>
+                    <td>The Belemetry <code>ILoggerProvider</code> (per-category levels under <code>Logging:Belemetry</code>)</td>
+                </tr>
+                <tr>
+                    <td>Metrics</td>
+                    <td>Request duration, active requests, connections, routing and exception counters, plus the runtime</td>
+                    <td><code>Microsoft.AspNetCore.Hosting</code>, <code>.Server.Kestrel</code>, <code>.Routing</code> and <code>.Diagnostics</code> are added to the meters</td>
+                </tr>
+                <tr>
+                    <td>Errors</td>
+                    <td>Logs at Error or Critical, or carrying an exception - unhandled request exceptions among them</td>
+                    <td>The same logger provider</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>One trace from click to server</h2>
+    <p>
+        When the browser script records a <code>fetch</code> or XHR, it adds a W3C <code>traceparent</code>
+        header for targets matched by <code>Browser.PropagateTraceContextTo</code> (same-origin by default).
+        ASP.NET Core reads that header and starts its request span as a <strong>child</strong> of the browser's
+        client span, so the two share a trace id and the backend draws them as one trace: how long the user
+        waited, and how much of that the server spent.
+    </p>
+    <p>
+        This site runs the server pipeline. Press the button: the page calls <code>/api/demo/echo</code> with a
+        plain <code>fetch</code>, the endpoint answers with the <code>traceparent</code> it received and the trace
+        id of its own request span, and the feed below shows the server's records that joined your trace.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false || _busy)" @onclick="CallEchoAsync">
+                    @(_busy ? "Calling..." : "Call /api/demo/echo")
+                </button>
+            </div>
+            @if (_result is not null)
+            {
+                <dl class="kv">
+                    <dt>Status</dt>
+                    <dd>@_result.Status (@_result.Ms ms)</dd>
+                    <dt>traceparent sent</dt>
+                    <dd><code>@(_traceparent ?? "(none - is Dependencies granted?)")</code></dd>
+                    <dt>Browser trace id</dt>
+                    <dd><code>@(BrowserTraceId ?? "-")</code></dd>
+                    <dt>Server trace id</dt>
+                    <dd><code>@(_serverTraceId ?? "-")</code></dd>
+                    <dt>Joined</dt>
+                    <dd>
+                        <span class="state-pill @(Joined ? "on" : null)">@(Joined ? "same trace" : "not joined")</span>
+                    </dd>
+                </dl>
+            }
+            <TelemetryFeedView Compact="true"
+                               Match="@(r => r.Source == "server" || r.Correlated)"
+                               EmptyText="Nothing yet - call the endpoint. The server's request span and its log arrive once your fetch span has been exported." />
+        </div>
+    </div>
+    <div class="callout">
+        <p>
+            The <code>traceparent</code> is only added while <code>Dependencies</code> is granted - without it the
+            script does not instrument <code>fetch</code> at all. The server records the request either way: it is
+            governed by <code>Server.Features</code>, but without the header it starts a trace of its own.
+        </p>
+    </div>
+    <CodeSnippet Code="@PropagationCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Where it runs</h2>
+    <p>
+        A server describes where it runs, the way the OpenTelemetry resource detectors do, from environment
+        variables and <code>/proc</code> alone - no metadata-service call, nothing at request time:
+        <code>host.name</code>, <code>process.pid</code>, <code>process.executable.name</code>,
+        <code>process.owner</code>, <code>container.id</code> (Linux), and on Azure App Service, Functions or
+        Container Apps <code>cloud.provider</code>, <code>cloud.platform</code>, <code>cloud.region</code>,
+        <code>cloud.resource_id</code>, <code>host.id</code> and <code>azure.*</code>. Its
+        <code>service.instance.id</code> is the platform's instance name (<code>WEBSITE_INSTANCE_ID</code>,
+        <code>CONTAINER_APP_REPLICA_NAME</code>) or the machine name, so Application Insights keeps counting the
+        same instance across restarts. A device or a browser tab keeps a random id, which identifies nobody.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Living next to OpenTelemetry</h2>
+    <p>
+        If the server already exports with the OpenTelemetry SDK, leave <code>CollectDotnetTelemetry</code> off:
+        Belemetry keeps serving the browser script, the browser still sends <code>traceparent</code>, and your
+        existing ASP.NET Core instrumentation picks it up - the browser spans and your server spans still join,
+        in whichever backend both export to.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="BelemetryServerOptions" />
+</div>
+
+@code {
+    private const string SetupCode = """
+        // Server/Program.cs
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.AddOtlpExporter("http://localhost:4318");
+
+            // Off by default: the server only serves the browser script.
+            options.Server.CollectDotnetTelemetry = true;
+
+            // Operator telemetry: what the server collects for everyone, independent of any one user's consent.
+            options.Server.Features = BelemetryFeatures.Errors | BelemetryFeatures.Logs
+                                    | BelemetryFeatures.Traces | BelemetryFeatures.Metrics;   // the default
+
+            // No request spans for health probes and Blazor's own traffic.
+            options.Server.IgnoredRequestPaths.AddRange(["/health", "/alive", "/_framework", "/_content", "/_blazor"]);
+        });
+        """;
+
+    private const string PropagationCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            // same-origin is the default. Cross-origin APIs must list the header in CORS (Access-Control-Allow-Headers).
+            options.Browser.PropagateTraceContextTo.Add(@"^https://api\.example\.com/");
+        });
+        """;
+
+    private sealed record FetchResult(int Status, string? Body, double Ms);
+
+    private bool _busy;
+    private FetchResult? _result;
+    private string? _traceparent;
+    private string? _serverTraceId;
+
+    // traceparent is "00-{trace id}-{parent span id}-{flags}".
+    private string? BrowserTraceId => _traceparent?.Split('-') is { Length: 4 } parts ? parts[1] : null;
+
+    private bool Joined => BrowserTraceId is not null && string.Equals(BrowserTraceId, _serverTraceId, StringComparison.OrdinalIgnoreCase);
+
+    private async Task CallEchoAsync()
+    {
+        _busy = true;
+
+        try
+        {
+            _result = await JS.InvokeAsync<FetchResult>("blDemo.fetch", "/api/demo/echo");
+            _traceparent = null;
+            _serverTraceId = null;
+
+            if (_result.Status == 200 && string.IsNullOrEmpty(_result.Body) is false)
+            {
+                using var body = JsonDocument.Parse(_result.Body);
+                if (body.RootElement.TryGetProperty("traceparent", out var tp) && tp.ValueKind is JsonValueKind.String) _traceparent = tp.GetString();
+                if (body.RootElement.TryGetProperty("serverTraceId", out var id) && id.ValueKind is JsonValueKind.String) _serverTraceId = id.GetString();
+            }
+        }
+        catch
+        {
+            // A demo button that fails shows nothing new; it must not take the page down.
+            _result = new FetchResult(0, null, 0);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

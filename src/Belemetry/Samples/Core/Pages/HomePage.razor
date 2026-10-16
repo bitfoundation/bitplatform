@@ -1,0 +1,139 @@
+﻿@page "/"
+@implements IAsyncDisposable
+@inject IBelemetry Belemetry
+@inject ILogger<HomePage> Logger
+@inject IJSRuntime JS
+@inject SampleSettings Settings
+
+<PageTitle>Belemetry samples</PageTitle>
+
+<h1>Belemetry samples</h1>
+
+<p>
+    Every button below produces one kind of record. Run an OTLP backend such as the Aspire dashboard on
+    <code>http://localhost:4318</code> to watch them arrive, or open the console in Development.
+</p>
+
+<section>
+    <h2>Manual telemetry (<code>IBelemetry</code>)</h2>
+    <button @onclick="TrackEvent">TrackEvent</button>
+    <button @onclick="TrackException">TrackException</button>
+    <button @onclick="TrackPageView">TrackPageView</button>
+    <button @onclick="FlushAsync">FlushAsync</button>
+</section>
+
+<section>
+    <h2>.NET instrumentation</h2>
+    <button @onclick="Log">ILogger log</button>
+    <button @onclick="StartSpanAsync">Activity span</button>
+    <button @onclick="RecordMeasurement">Meter measurement</button>
+</section>
+
+<section>
+    <h2>Browser instrumentation</h2>
+    <button @onclick="FetchAsync">fetch @Settings.FetchUrl</button>
+    <button @onclick="ThrowJsErrorAsync">Throw a JS error</button>
+
+    @* Clicks are recorded with the element's data-bit-belemetry-name (then aria-label, then name) - never its text,
+       unless CaptureInteractionText is on. *@
+    <button data-bit-belemetry-name="sample-checkout">Named click target</button>
+
+    <div data-bit-belemetry-ignore>
+        <button>Ignored click (inside data-bit-belemetry-ignore)</button>
+    </div>
+</section>
+
+@if (_status is not null)
+{
+    <p class="status">@_status</p>
+}
+
+@code {
+    private IJSObjectReference? _module;
+    private string? _status;
+
+    private void TrackEvent()
+    {
+        // Feature Events: a log record whose event name is "sample.button_clicked".
+        Belemetry.TrackEvent("sample.button_clicked", new Dictionary<string, object?> { ["sample.button"] = "track-event" });
+        _status = "TrackEvent sent.";
+    }
+
+    private void TrackException()
+    {
+        try
+        {
+            throw new InvalidOperationException("A handled sample exception.");
+        }
+        catch (Exception ex)
+        {
+            Belemetry.TrackException(ex, new Dictionary<string, object?> { ["sample.button"] = "track-exception" });
+        }
+        _status = "TrackException sent.";
+    }
+
+    private void TrackPageView()
+    {
+        // Navigation is tracked automatically; this is for virtual pages such as dialogs or wizard steps.
+        Belemetry.TrackPageView("Sample dialog", attributes: new Dictionary<string, object?> { ["sample.button"] = "track-page-view" });
+        _status = "TrackPageView sent.";
+    }
+
+    private async Task FlushAsync()
+    {
+        await Belemetry.FlushAsync();
+        _status = "Flushed.";
+    }
+
+    private void Log()
+    {
+        // Information and below need the Logs feature; Error and above, or an exception, need Errors.
+        Logger.LogInformation("The sample log button was clicked at {ClickedAt}", DateTimeOffset.UtcNow);
+        _status = "ILogger log written.";
+    }
+
+    private async Task StartSpanAsync()
+    {
+        using (var activity = SampleTelemetry.ActivitySource.StartActivity("sample.work"))
+        {
+            activity?.SetTag("sample.button", "activity-span");
+            await Task.Delay(50);
+        }
+        _status = "Activity span recorded.";
+    }
+
+    private void RecordMeasurement()
+    {
+        SampleTelemetry.ButtonClicks.Add(1, new KeyValuePair<string, object?>("sample.button", "meter"));
+        _status = "Meter measurement recorded (exported with the next metrics interval).";
+    }
+
+    private async Task FetchAsync()
+    {
+        var module = await GetModuleAsync();
+        var status = await module.InvokeAsync<int>("fetchUrl", Settings.FetchUrl);
+        _status = $"fetch {Settings.FetchUrl}: {status}.";
+    }
+
+    private async Task ThrowJsErrorAsync()
+    {
+        var module = await GetModuleAsync();
+        await module.InvokeVoidAsync("throwError", "A sample JS error.");
+        _status = "JS error thrown.";
+    }
+
+    private async ValueTask<IJSObjectReference> GetModuleAsync() =>
+        _module ??= await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Bit.Belemetry.Samples.Core/samples.js");
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_module is not null) await _module.DisposeAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone; so is the module.
+        }
+    }
+}

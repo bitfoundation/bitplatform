@@ -1,0 +1,32 @@
+﻿<Project>
+
+    <!--
+    Bit.Belemetry consumer-side build defaults. The package ships this one file as build\, buildMultiTargeting\ and
+    buildTransitive\Bit.Belemetry.props, so NuGet imports it for direct and transitive references alike, and ahead of
+    the consumer's project body: every value here is a default the project can still override.
+
+    A ProjectReference imports nothing from a package, so a project that references Bit.Belemetry.csproj directly
+    imports this file itself.
+    -->
+
+    <PropertyGroup>
+        <!-- The WebAssembly SDK turns System.Diagnostics.Metrics off by default (WasmFeatures.props), which leaves
+             every Meter inert: the .NET pipeline running in the browser would export logs and traces but no metrics,
+             with nothing to say why. Belemetry collects metrics by default, so it turns the switch back on unless the
+             project has decided. The SDK only applies its default to an empty property, and it is evaluated after
+             this file. To keep metrics off, set <MetricsSupport>false</MetricsSupport> in the project and remove
+             BelemetryFeatures.Metrics from BelemetryOptions.Features (Belemetry warns at startup otherwise). -->
+        <MetricsSupport Condition="'$(MetricsSupport)' == ''">true</MetricsSupport>
+    </PropertyGroup>
+
+    <!-- What the Razor SDK's own Bit.Belemetry.props would import: the static web assets (bit-belemetry.js) and their
+         endpoints. The package ships this file in its place (Bit.Belemetry.csproj turns the SDK's off, since both would
+         take the same package paths), so it imports them itself. The SDK generates them into the package's build\
+         folder, which ..\build\ reaches from each of the three folders. Imported from the source folder, by a project
+         of this repository, there is nothing there: its assets come through the ProjectReference instead. -->
+    <Import Project="$(MSBuildThisFileDirectory)..\build\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+            Condition="Exists('$(MSBuildThisFileDirectory)..\build\Microsoft.AspNetCore.StaticWebAssetEndpoints.props')" />
+    <Import Project="$(MSBuildThisFileDirectory)..\build\Microsoft.AspNetCore.StaticWebAssets.props"
+            Condition="Exists('$(MSBuildThisFileDirectory)..\build\Microsoft.AspNetCore.StaticWebAssets.props')" />
+
+</Project>

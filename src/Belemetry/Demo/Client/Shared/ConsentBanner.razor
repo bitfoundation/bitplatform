@@ -1,0 +1,59 @@
+﻿@implements IDisposable
+@inject IBelemetryConsent Consent
+
+@* The site's consent banner - the GDPR flow, live, on every page.
+
+   The demo is configured opt-in (Consent.Default = None), so until this is answered the browser script
+   holds every record in memory and sends nothing; the answer either releases what was held or drops it.
+   The decision is remembered in localStorage (bit-belemetry-consent), so the banner does not come back.
+
+   It only appears once the app is interactive and the script has reported the persisted choice:
+   rendering it during prerendering would flash it at every reader who already decided. *@
+
+@if (_ready && Consent.IsDecided is false)
+{
+    <section class="consent-banner" aria-label="Telemetry consent" data-bit-belemetry-name="consent.banner">
+        <div class="consent-banner-text">
+            <strong>This site measures itself - for you to watch.</strong>
+            <p>
+                bit Belemetry is demonstrating itself. With your consent, the page views, clicks, web
+                vitals, errors and .NET logs and traces you produce here are sent to this site's own server,
+                held in memory (never written anywhere) and shown only to you, on the
+                <a href="/live">Live telemetry</a> page. Choose per feature on the <a href="/consent">consent page</a>.
+            </p>
+        </div>
+        <div class="consent-banner-actions">
+            <button type="button" class="btn-bl" @onclick="() => SetAsync(BelemetryFeatures.All)">Accept all</button>
+            <button type="button" class="btn-bl-subtle" @onclick="() => SetAsync(BelemetryFeatures.Diagnostics)">Diagnostics only</button>
+            <button type="button" class="btn-bl-subtle" @onclick="() => SetAsync(BelemetryFeatures.None)">Reject</button>
+        </div>
+    </section>
+}
+
+@code {
+    private bool _ready;
+
+    protected override void OnInitialized() => Consent.Changed += OnConsentChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || RendererInfo.IsInteractive is false) return;
+
+        // Starts the script connection if <BelemetryInitializer /> has not yet, and adopts the choice the
+        // script restored from localStorage - so a returning reader never sees the banner.
+        try { await Consent.RefreshAsync(); } catch { /* telemetry never takes the page down */ }
+
+        _ready = true;
+        StateHasChanged();
+    }
+
+    private async Task SetAsync(BelemetryFeatures features)
+    {
+        try { await Consent.SetAsync(features); } catch { /* the banner closes either way below */ }
+        StateHasChanged();
+    }
+
+    private void OnConsentChanged(object? sender, EventArgs e) => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Consent.Changed -= OnConsentChanged;
+}

@@ -1,0 +1,539 @@
+﻿@page "/browser"
+@using System.Text.Json
+@inject IJSRuntime JS
+@inject IBelemetry Belemetry
+
+<PageTitle>Browser instrumentation - bit Belemetry</PageTitle>
+
+<h1>Browser instrumentation</h1>
+
+<p class="page-intro">
+    The browser half of Belemetry is one dependency-free ES module, <code>bit-belemetry.js</code>. It starts from
+    the configuration <code>&lt;BelemetryScript /&gt;</code> writes into the page, before Blazor boots, so it sees
+    the initial load, the web vitals and the earliest errors - on interactive and static SSR pages alike. Every
+    section below has a live trigger and, under it, the records it produced, read back from this site's own OTLP
+    receiver.
+</p>
+
+<div class="callout">
+    Nothing is recorded until you grant it. Each instrumentation belongs to one consent feature (named in its
+    section); if a feed below says nothing is granted, accept the banner or pick features on the
+    <a href="/consent">consent page</a>. Records of a feature you have not decided on yet are held in memory and
+    sent once you grant it.
+</div>
+
+<div class="demo-section">
+    <h2>Page views</h2>
+    <p>
+        Feature <code>PageViews</code>. The script records the initial load and every client-side navigation -
+        <code>history.pushState</code>, <code>replaceState</code>, <code>popstate</code> and Blazor's enhanced
+        navigation - as a log record with the event name <code>browser.page_view</code>, carrying
+        <code>url.full</code>, <code>url.path</code>, <code>page.title</code>, <code>page.referrer</code> and
+        <code>browser.navigation.type</code> (<code>initial</code>, <code>push</code>, <code>replace</code>,
+        <code>pop</code>, <code>hash</code> or <code>manual</code>). Fragment-only changes count only with
+        <code>TrackHashChanges</code>. With <code>TrackPageVisitTime</code> the time spent on each page is recorded
+        too, as a <code>browser.page_visit_time</code> event carrying <code>page.visit.duration</code> (milliseconds)
+        when the next page view starts or the page is hidden - what Application Insights shows as the
+        <code>PageVisitTime</code> event.
+    </p>
+    <p>
+        For views the URL does not show - a dialog, a wizard step, a tab - call <code>IBelemetry.TrackPageView</code>.
+        In this demo the .NET side runs in WebAssembly, so that record goes through the .NET pipeline and shows up
+        with the source <code>wasm</code>.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <a class="btn-bl-subtle" href="/dotnet">Go to the .NET page (then come back)</a>
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackVirtualPageView">
+                    TrackPageView("Checkout - payment step")
+                </button>
+            </div>
+            <TelemetryFeedView Compact="true" Match="@IsPageView"
+                               EmptyText="No page views yet - navigate away and back, or press the button." />
+        </div>
+    </div>
+    <CodeSnippet Code="@PageViewCode" Language="Razor" />
+</div>
+
+<div class="demo-section">
+    <h2>Interactions</h2>
+    <p>
+        Feature <code>Interactions</code>. A capture-phase listener records every <code>click</code> (or the events in
+        <code>InteractionEvents</code>) on a link, a button, a submit input or any element carrying
+        <code>data-bit-belemetry-name</code>, as a <code>browser.user_interaction</code> event with
+        <code>target.element</code>, <code>target.id</code>, <code>target.name</code> and <code>target.xpath</code>.
+        The name comes from <code>data-bit-belemetry-name</code>, then <code>aria-label</code>, then <code>name</code>.
+        The element's text is recorded only with <code>CaptureInteractionText</code>, because text can be personal
+        data, and input values are never read. Anything under <code>data-bit-belemetry-ignore</code> is skipped.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <span class="demo-label">Recorded</span>
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" data-bit-belemetry-name="demo.checkout.pay">Pay (data-bit-belemetry-name)</button>
+                <button type="button" class="btn-bl-subtle" aria-label="Add to wishlist">Wishlist (aria-label)</button>
+            </div>
+            <span class="demo-label">Not recorded</span>
+            <div class="demo-actions" data-bit-belemetry-ignore>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="() => _ignoredClicks++">
+                    Inside data-bit-belemetry-ignore (@_ignoredClicks)
+                </button>
+            </div>
+            <TelemetryFeedView Compact="true" Match="@IsInteraction"
+                               EmptyText="No interactions yet - press the buttons above. Every other button on this page is recorded too." />
+        </div>
+    </div>
+    <CodeSnippet Code="@InteractionCode" Language="Razor" />
+    <CodeSnippet Code="@InteractionOptionsCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Web vitals</h2>
+    <p>
+        Feature <code>Performance</code>. The five Core Web Vitals and their companions are measured from the
+        Performance Timeline and recorded as <code>browser.web_vital</code> events with <code>web_vital.name</code>,
+        <code>web_vital.value</code>, <code>web_vital.delta</code>, <code>web_vital.rating</code>
+        (<code>good</code>, <code>needs-improvement</code> or <code>poor</code>, on the official thresholds) and
+        <code>web_vital.id</code>:
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th scope="col">Vital</th><th scope="col">Measures</th><th scope="col">Reported</th></tr></thead>
+            <tbody>
+                <tr><td><code>TTFB</code></td><td>Time to first byte of the document</td><td>At start, once the response has begun</td></tr>
+                <tr><td><code>FCP</code></td><td>First contentful paint</td><td>When it happens</td></tr>
+                <tr><td><code>LCP</code></td><td>Largest contentful paint</td><td>At the first click or key press, or when the page is hidden</td></tr>
+                <tr><td><code>CLS</code></td><td>Cumulative layout shift (largest session window)</td><td>When the page is hidden</td></tr>
+                <tr><td><code>INP</code></td><td>Interaction to next paint</td><td>When the page is hidden</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        CLS and INP keep changing for as long as the page is open, so they are reported when it is hidden - switch to
+        another tab and back after pressing the button. A shift that follows your input within 500 ms does not count
+        (the spec's <code>hadRecentInput</code>), so the spacer this button inserts is excluded; the shift when it is
+        removed 1.5 s later is the one CLS records.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ShiftLayout">Cause a layout shift</button>
+            </div>
+            <div id="bl-shift-target">
+                <p>This paragraph moves down while a spacer is inserted above it, then jumps back.</p>
+            </div>
+            <TelemetryFeedView Compact="true" Match="@IsWebVital"
+                               EmptyText="No web vitals yet - TTFB and FCP arrive first; switch tabs and come back for CLS and INP." />
+        </div>
+    </div>
+    <CodeSnippet Code="@WebVitalsCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Document load, resources and long tasks</h2>
+    <p>
+        Also feature <code>Performance</code>. <code>DocumentLoad</code> (on by default) records the initial load as
+        an internal <code>documentLoad</code> span with the navigation-timing milestones as events
+        (<code>domInteractive</code>, <code>domContentLoadedEventEnd</code>, <code>loadEventEnd</code>, ...).
+        <code>ResourceTiming</code> (off by default) adds a <code>resourceFetch</code> span per script, stylesheet and
+        image with <code>url.full</code>, <code>http.response.body.size</code> and <code>network.protocol.name</code> -
+        a lot of records, so turn it on deliberately. <code>LongTasks</code> (off by default, on in this demo) records
+        every main-thread task over 50 ms as a <code>longtask</code> span.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="BlockMainThread">Block the main thread for 200 ms</button>
+            </div>
+            <TelemetryFeedView Compact="true" Match="@IsPerformanceSpan"
+                               EmptyText="No documentLoad or longtask spans yet - press the button, or reload the page." />
+        </div>
+    </div>
+    <CodeSnippet Code="@PerformanceCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>fetch and XHR with trace context</h2>
+    <p>
+        Feature <code>Dependencies</code>. Every <code>fetch</code> and <code>XMLHttpRequest</code> becomes a client
+        span named after its method, with <code>http.request.method</code>, <code>url.full</code>,
+        <code>server.address</code>, <code>server.port</code>, <code>http.response.status_code</code> and, for a
+        failure or a 4xx/5xx answer, <code>error.type</code> and an error status. For targets matched by
+        <code>PropagateTraceContextTo</code> (same-origin by default) the script adds a W3C <code>traceparent</code>
+        header, so the browser span and the server's request span join one trace.
+    </p>
+    <p>
+        The echo endpoint below answers with the <code>traceparent</code> it received: its trace id is the trace id
+        of the browser span in the feed. URLs in <code>IgnoreUrls</code> (the Blazor framework routes by default, plus
+        the exporters' own endpoints) are never recorded, and neither is a request that already carries a
+        <code>traceparent</code> - in WebAssembly that is .NET's <code>HttpClient</code>, which traces itself.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => CallAsync("fetch", "/api/demo/echo"))">fetch /api/demo/echo</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => CallAsync("xhr", "/api/demo/echo"))">XHR /api/demo/echo</button>
+                <button type="button" class="btn-bl btn-bl-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => CallAsync("fetch", "/api/demo/fail"))">fetch /api/demo/fail (500)</button>
+            </div>
+            @if (_call is not null)
+            {
+                <dl class="kv">
+                    <dt>Request</dt>
+                    <dd><code>@_call.Label</code></dd>
+                    <dt>Status</dt>
+                    <dd>@_call.Status in @_call.Ms ms</dd>
+                    <dt>traceparent the server saw</dt>
+                    <dd><code>@(_call.Traceparent ?? "(none)")</code></dd>
+                    @if (_call.TraceId is not null)
+                    {
+                        <dt>Trace id</dt>
+                        <dd><code>@_call.TraceId</code> - the same id as the browser span below</dd>
+                    }
+                </dl>
+            }
+            <TelemetryFeedView Compact="true" Match="@IsDependency"
+                               EmptyText="No dependency spans yet - press one of the buttons above." />
+        </div>
+    </div>
+    <CodeSnippet Code="@DependenciesCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Errors</h2>
+    <p>
+        Feature <code>Errors</code>. Uncaught errors (<code>window.onerror</code>) and unhandled promise rejections
+        become log records with severity ERROR, the event name <code>exception</code>, and
+        <code>exception.type</code>, <code>exception.message</code> and <code>exception.stacktrace</code> - scrubbed by
+        the <a href="/privacy">privacy rules</a> first. Messages matching <code>IgnoreErrorMessages</code> are dropped;
+        the default list has the harmless <code>ResizeObserver loop</code> warning every browser raises. Handled .NET
+        exceptions go through <code>IBelemetry.TrackException</code>.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl btn-bl-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ThrowError">Throw a TypeError</button>
+                <button type="button" class="btn-bl btn-bl-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="RejectPromise">Reject a promise</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ThrowIgnored">Throw "ResizeObserver loop ..." (ignored)</button>
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackHandledException">IBelemetry.TrackException</button>
+            </div>
+            <TelemetryFeedView Compact="true" Match="@IsError"
+                               EmptyText="No errors yet - press one of the buttons above." />
+        </div>
+    </div>
+    <CodeSnippet Code="@ErrorsCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Console capture</h2>
+    <p>
+        With <code>CaptureConsole</code> (off by default, on in this demo) the script wraps the console methods named
+        in <code>ConsoleLevels</code> (<code>error</code> and <code>warn</code> by default) and records each call as a
+        log record. <code>console.error</code> belongs to the <code>Errors</code> feature, the other levels to
+        <code>Logs</code>. The original method always runs first, so the developer tools look the same as before.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => ConsoleAsync("warn"))">console.warn</button>
+                <button type="button" class="btn-bl btn-bl-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => ConsoleAsync("error"))">console.error</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => ConsoleAsync("info"))">console.info (not in ConsoleLevels)</button>
+            </div>
+            <TelemetryFeedView Compact="true" Match="@IsConsole"
+                               EmptyText="No console records yet - press one of the buttons above." />
+        </div>
+    </div>
+    <CodeSnippet Code="@ConsoleCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Custom events</h2>
+    <p>
+        Feature <code>Events</code>. A custom event is a log record whose event name is the name you give it, with
+        your attributes. From C# call <code>IBelemetry.TrackEvent</code>; from JavaScript call
+        <code>BitBelemetry.trackEvent</code> on the global the module sets. Both carry <code>session.id</code> (and the
+        user ids with <code>UserTracking</code>), so a backend can join them with everything else the session did.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackCSharpEvent">IBelemetry.TrackEvent (C#)</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackJsEvent">BitBelemetry.trackEvent (JS)</button>
+            </div>
+            <TelemetryFeedView Compact="true" Match="@IsCustomEvent"
+                               EmptyText="No custom events yet - press one of the buttons above." />
+        </div>
+    </div>
+    <CodeSnippet Code="@EventsCode" Language="Razor" />
+    <CodeSnippet Code="@EventsJsCode" Language="JavaScript" />
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <p>Every option of the script lives on <code>options.Browser</code>:</p>
+    <ApiTable TypeName="BelemetryBrowserOptions" />
+    <p>Manual telemetry from C#:</p>
+    <ApiTable TypeName="IBelemetry" />
+</div>
+
+@code {
+    private int _ignoredClicks;
+    private int _events;
+    private CallResult? _call;
+
+    private sealed record JsFetchResult(int Status, string? Body, int Ms);
+
+    private sealed record CallResult(string Label, int Status, int Ms, string? Traceparent, string? TraceId);
+
+    private static bool IsPageView(TelemetryRecord r) => r.Name.StartsWith("browser.page_view", StringComparison.Ordinal);
+
+    private static bool IsInteraction(TelemetryRecord r) => r.Name.StartsWith("browser.user_interaction", StringComparison.Ordinal);
+
+    private static bool IsWebVital(TelemetryRecord r) => r.Name.StartsWith("browser.web_vital", StringComparison.Ordinal);
+
+    private static bool IsPerformanceSpan(TelemetryRecord r)
+        => r.Source == "browser" && r.Signal == "span" && r.Name is "documentLoad" or "longtask" or "resourceFetch";
+
+    // Correlated records are the server's request spans that joined a browser span's trace through traceparent.
+    private static bool IsDependency(TelemetryRecord r)
+        => (r.Source == "browser" && r.Scope == "bit.belemetry.http") || r.Correlated;
+
+    private static bool IsError(TelemetryRecord r) => r.Kind == "Error" && r.Scope != "bit.belemetry.console";
+
+    private static bool IsConsole(TelemetryRecord r) => r.Scope == "bit.belemetry.console";
+
+    private static bool IsCustomEvent(TelemetryRecord r) => r.Kind == "Event" && r.Name.StartsWith("demo.", StringComparison.Ordinal);
+
+    private void TrackVirtualPageView()
+    {
+        try
+        {
+            Belemetry.TrackPageView("Checkout - payment step", attributes: new Dictionary<string, object?> { ["checkout.step"] = 2 });
+        }
+        catch
+        {
+            // Telemetry must never take the page down.
+        }
+    }
+
+    private async Task ShiftLayout()
+    {
+        try { await JS.InvokeVoidAsync("blDemo.shift", "bl-shift-target"); } catch { }
+    }
+
+    private async Task BlockMainThread()
+    {
+        try { await JS.InvokeVoidAsync("blDemo.longTask", 200); } catch { }
+    }
+
+    private async Task CallAsync(string api, string url)
+    {
+        try
+        {
+            var result = await JS.InvokeAsync<JsFetchResult>($"blDemo.{api}", url);
+            var traceparent = ReadTraceparent(result.Body);
+
+            // traceparent is "00-<trace id>-<parent span id>-<flags>".
+            var parts = traceparent?.Split('-');
+            var traceId = parts is { Length: 4 } ? parts[1] : null;
+
+            _call = new($"{(api == "xhr" ? "XHR" : "fetch")} GET {url}", result.Status, result.Ms, traceparent, traceId);
+        }
+        catch
+        {
+            _call = null;
+        }
+    }
+
+    private static string? ReadTraceparent(string? body)
+    {
+        if (string.IsNullOrEmpty(body)) return null;
+
+        try
+        {
+            using var document = JsonDocument.Parse(body);
+            return document.RootElement.ValueKind == JsonValueKind.Object
+                && document.RootElement.TryGetProperty("traceparent", out var value)
+                && value.ValueKind == JsonValueKind.String
+                ? value.GetString()
+                : null;
+        }
+        catch (JsonException)
+        {
+            // The 500 answers with a problem document, not the echo.
+            return null;
+        }
+    }
+
+    private async Task ThrowError()
+    {
+        try { await JS.InvokeVoidAsync("blDemo.throwError", "Cannot read properties of undefined (reading 'total')"); } catch { }
+    }
+
+    private async Task RejectPromise()
+    {
+        try { await JS.InvokeVoidAsync("blDemo.rejectPromise", "The payment provider did not answer"); } catch { }
+    }
+
+    private async Task ThrowIgnored()
+    {
+        try { await JS.InvokeVoidAsync("blDemo.throwError", "ResizeObserver loop completed with undelivered notifications."); } catch { }
+    }
+
+    private void TrackHandledException()
+    {
+        try
+        {
+            throw new InvalidOperationException("The coupon has expired.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            try { Belemetry.TrackException(ex, new Dictionary<string, object?> { ["coupon.code"] = "SPRING" }); } catch { }
+        }
+    }
+
+    private async Task ConsoleAsync(string level)
+    {
+        try { await JS.InvokeVoidAsync("blDemo.console", level, $"A console.{level} from the browser instrumentation page"); } catch { }
+    }
+
+    private void TrackCSharpEvent()
+    {
+        try
+        {
+            _events++;
+            Belemetry.TrackEvent("demo.cart.checkout", new Dictionary<string, object?> { ["cart.items"] = _events, ["cart.total"] = 19.9 * _events });
+        }
+        catch { }
+    }
+
+    private async Task TrackJsEvent()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("BitBelemetry.trackEvent", "demo.video.played", new Dictionary<string, object?> { ["video.id"] = "intro", ["video.position_s"] = 12 });
+        }
+        catch { }
+    }
+
+    private const string PageViewCode = """
+        @inject IBelemetry Belemetry
+
+        @* Navigation is tracked automatically. TrackPageView is for views the URL does not show. *@
+        <button @onclick="OpenPayment">Continue to payment</button>
+
+        @code {
+            private void OpenPayment()
+            {
+                _step = 2;
+                Belemetry.TrackPageView("Checkout - payment step",
+                    attributes: new Dictionary<string, object?> { ["checkout.step"] = 2 });
+            }
+
+            private int _step = 1;
+        }
+        """;
+
+    private const string InteractionCode = """
+        @* A stable name survives redesigns and translations; the text would not. *@
+        <button data-bit-belemetry-name="checkout.pay">Pay</button>
+
+        @* Nothing in here is recorded, whatever it contains. *@
+        <section data-bit-belemetry-ignore>
+            <button>Show my card number</button>
+        </section>
+        """;
+
+    private const string InteractionOptionsCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Browser.InteractionEvents.Add("submit");     // click is in the list already
+            options.Browser.CaptureInteractionText = true;       // off by default: text may be personal data
+            options.Browser.MaxInteractionTextLength = 32;
+        });
+        """;
+
+    private const string WebVitalsCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Browser.WebVitals = true;      // the default: LCP, INP, CLS, FCP, TTFB
+        });
+
+        // In a component: web vitals, the document load, resources and long tasks are all
+        // the Performance feature, granted on top of whatever the user granted before.
+        await Consent.GrantAsync(BelemetryFeatures.Performance);    // @inject IBelemetryConsent Consent
+        """;
+
+    private const string PerformanceCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Browser.DocumentLoad = true;      // default: the documentLoad span
+            options.Browser.ResourceTiming = true;    // off by default: one span per fetched resource
+            options.Browser.LongTasks = true;         // off by default: main-thread tasks over 50 ms
+        });
+        """;
+
+    private const string DependenciesCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Browser.Fetch = true;   // the defaults
+            options.Browser.Xhr = true;
+
+            // Same-origin by default. A cross-origin API must allow the header:
+            // Access-Control-Allow-Headers: traceparent
+            options.Browser.PropagateTraceContextTo.Add(@"^https://api\.example\.com/");
+
+            // Regular expressions of URLs never recorded (the Blazor framework routes are in the list already).
+            options.Browser.IgnoreUrls.Add("/health");
+        });
+        """;
+
+    private const string ErrorsCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            // Regular expressions of messages never recorded.
+            options.Browser.IgnoreErrorMessages.Add("^Script error\\.?$");
+        });
+
+        // A handled .NET exception:
+        try
+        {
+            await coupons.ApplyAsync(code);
+        }
+        catch (CouponExpiredException ex)
+        {
+            Belemetry.TrackException(ex, new Dictionary<string, object?> { ["coupon.code"] = code });
+        }
+        """;
+
+    private const string ConsoleCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Browser.CaptureConsole = true;          // off by default
+            options.Browser.ConsoleLevels.Clear();
+            options.Browser.ConsoleLevels.AddRange(["error", "warn", "info"]);
+        });
+        """;
+
+    private const string EventsCode = """
+        @inject IBelemetry Belemetry
+
+        <button @onclick="Checkout">Checkout</button>
+
+        @code {
+            private void Checkout()
+            {
+                Belemetry.TrackEvent("checkout.completed", new Dictionary<string, object?>
+                {
+                    ["cart.items"] = 3,
+                    ["cart.total"] = 42.5,
+                });
+            }
+        }
+        """;
+
+    private const string EventsJsCode = """
+        // window.BitBelemetry is set by the module, also on pages without Blazor.
+        BitBelemetry.trackEvent('video.played', { 'video.id': 'intro', 'video.position_s': 12 });
+        """;
+}

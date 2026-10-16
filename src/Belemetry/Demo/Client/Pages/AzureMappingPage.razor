@@ -1,0 +1,257 @@
+﻿@page "/azure-mapping"
+
+<PageTitle>Azure mapping - bit Belemetry</PageTitle>
+
+<h1>Azure mapping</h1>
+
+<p class="page-intro">
+    The Azure Monitor exporter does not go through a collector: it turns each OpenTelemetry-shaped record into an
+    Application Insights envelope and posts it to the ingestion endpoint itself. This page is the mapping, record
+    by record - the same in the .NET encoder and in the browser script, so a page view from the browser and a
+    request span from the server land in the tables and on the Application Map node you expect.
+</p>
+
+<div class="demo-section">
+    <h2>Endpoint</h2>
+    <p>
+        Envelopes are posted to <code>{IngestionEndpoint}/v2.1/track</code>, with the ingestion endpoint read from the
+        connection string - <code>https://dc.services.visualstudio.com</code> when the connection string has none. The
+        body is a JSON array of envelopes with <code>Content-Type: application/json</code> (gzip-compressed with
+        <code>Compression = BelemetryCompression.Gzip</code>). With an <code>AccessTokenProvider</code>, every request also
+        carries <code>Authorization: Bearer</code> - and such an exporter is never handed to the browser script.
+    </p>
+    <CodeSnippet Code="@ExporterCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Envelope</h2>
+    <p>
+        Every record becomes one envelope (a metric becomes one per point). <code>name</code> is
+        <code>Microsoft.ApplicationInsights.&lt;Type&gt;</code>, <code>baseType</code> is <code>&lt;Type&gt;Data</code>,
+        and the type-specific fields live in <code>baseData</code>.
+    </p>
+    <CodeSnippet Code="@EnvelopeCode" Language="JSON" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Tags</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Tag</th><th scope="col">Value</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>ai.cloud.role</code></td><td><code>[service.namespace]/service.name</code>, or <code>service.name</code> alone without a namespace - the same naming as the Azure Monitor OpenTelemetry exporter, so both land on one Application Map node</td></tr>
+                <tr><td><code>ai.cloud.roleInstance</code></td><td><code>service.instance.id</code></td></tr>
+                <tr><td><code>ai.application.ver</code></td><td><code>service.version</code></td></tr>
+                <tr><td><code>ai.operation.id</code></td><td>The trace id</td></tr>
+                <tr><td><code>ai.operation.parentId</code></td><td>The parent span id (span) or the span id (log)</td></tr>
+                <tr><td><code>ai.operation.name</code></td><td>The page name (page view) or the request name (server span: <code>{method} {route}</code> when both are known, else the span name); not set on other records</td></tr>
+                <tr><td><code>ai.session.id</code></td><td><code>session.id</code></td></tr>
+                <tr><td><code>ai.user.id</code></td><td><code>enduser.pseudo.id</code></td></tr>
+                <tr><td><code>ai.user.authUserId</code></td><td><code>user.id</code></td></tr>
+                <tr><td><code>ai.user.agent</code></td><td><code>user_agent.original</code> from the browser resource</td></tr>
+                <tr><td><code>ai.device.locale</code></td><td><code>browser.language</code> from the browser resource</td></tr>
+                <tr><td><code>ai.device.type</code></td><td><code>"Browser"</code> (JS), <code>"Phone"</code> (Android and iOS), <code>"PC"</code> otherwise</td></tr>
+                <tr><td><code>ai.location.ip</code></td><td><code>"0.0.0.0"</code> when <code>MaskIp</code> (the default), so no IP-based geolocation</td></tr>
+                <tr><td><code>ai.internal.sdkVersion</code></td><td><code>"bitblm:&lt;version&gt;"</code> (.NET) or <code>"bitblmjs:&lt;version&gt;"</code> (JS)</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        <code>session.id</code>, <code>enduser.pseudo.id</code> and <code>user.id</code> are moved into the tags and not
+        repeated as properties; without <code>UserTracking</code> consent the user tags are simply absent.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Record types</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Source record</th><th scope="col">Envelope type</th><th scope="col">Table</th><th scope="col">Fields</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Span, kind SERVER or CONSUMER</td>
+                    <td><code>Request</code></td>
+                    <td><code>requests</code></td>
+                    <td>
+                        <code>id</code>, <code>name</code> (<code>{method} {http.route}</code> when the route is known),
+                        <code>duration</code> (<code>d.hh:mm:ss.fffffff</code>), <code>responseCode</code>, <code>success</code>
+                        (no error status and a status code below 500), <code>url</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Any other span</td>
+                    <td><code>RemoteDependency</code></td>
+                    <td><code>dependencies</code></td>
+                    <td>
+                        <code>id</code>, <code>name</code>, <code>resultCode</code>, <code>data</code> (the URL or the query text),
+                        <code>duration</code>, <code>success</code> (below 400), <code>type</code> (<code>Ajax</code> for browser HTTP,
+                        <code>HTTP</code> for .NET, the <code>db.system.name</code> for a database, <code>InProc</code> for internal
+                        spans), <code>target</code>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Log with <code>exception.*</code></td>
+                    <td><code>Exception</code></td>
+                    <td><code>exceptions</code></td>
+                    <td><code>exceptions:[{id:1,outerId:0,typeName,message,hasFullStack,stack}]</code>, <code>severityLevel</code></td>
+                </tr>
+                <tr>
+                    <td><code>eventName == "browser.page_view"</code></td>
+                    <td><code>PageView</code></td>
+                    <td><code>pageViews</code></td>
+                    <td><code>name</code> (<code>page.title</code>, else <code>url.path</code>), <code>url</code>, <code>id</code></td>
+                </tr>
+                <tr>
+                    <td><code>eventName == "browser.web_vital"</code></td>
+                    <td><code>Metric</code></td>
+                    <td><code>customMetrics</code></td>
+                    <td><code>metrics:[{name:"&lt;web_vital.name&gt;",kind:0,value,count:1}]</code> - <code>LCP</code>, <code>INP</code>, <code>CLS</code>, <code>FCP</code>, <code>TTFB</code></td>
+                </tr>
+                <tr>
+                    <td><code>eventName == "browser.page_visit_time"</code></td>
+                    <td><code>Event</code></td>
+                    <td><code>customEvents</code></td>
+                    <td><code>name</code> = <code>PageVisitTime</code>, <code>measurements:{PageVisitTime:&lt;ms&gt;}</code>, properties <code>PageName</code> and <code>PageUrl</code> - the Application Insights JS SDK's <code>autoTrackPageVisitTime</code> shape</td>
+                </tr>
+                <tr>
+                    <td>Any other <code>eventName</code></td>
+                    <td><code>Event</code></td>
+                    <td><code>customEvents</code></td>
+                    <td><code>name</code> = the event name</td>
+                </tr>
+                <tr>
+                    <td>Any other log</td>
+                    <td><code>Message</code></td>
+                    <td><code>traces</code></td>
+                    <td><code>message</code>, <code>severityLevel</code>; the logger category as the <code>CategoryName</code> property</td>
+                </tr>
+                <tr>
+                    <td>Metric point</td>
+                    <td><code>Metric</code></td>
+                    <td><code>customMetrics</code></td>
+                    <td>Gauge: the last value. Sum: the delta. Histogram: the delta sum, count, min and max. The meter name as <code>ns</code>; sums and histograms with nothing new since the last export are skipped</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Application Insights takes deltas, so metrics go to Azure Monitor as deltas whatever
+        <code>Metrics.Temporality</code> says - that setting applies to OTLP only.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Severity levels</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">OTLP severity number</th><th scope="col"><code>severityLevel</code></th></tr>
+            </thead>
+            <tbody>
+                <tr><td>1-8 (TRACE, DEBUG)</td><td>0 Verbose</td></tr>
+                <tr><td>9-12 (INFO)</td><td>1 Information</td></tr>
+                <tr><td>13-16 (WARN)</td><td>2 Warning</td></tr>
+                <tr><td>17-20 (ERROR)</td><td>3 Error</td></tr>
+                <tr><td>21-24 (FATAL)</td><td>4 Critical</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Properties</h2>
+    <p>
+        Every attribute not consumed by a field becomes a custom property, stringified - so a structured log value, a
+        <code>TrackEvent</code> attribute or a processor's enrichment is queryable as
+        <code>customDimensions["key"]</code>. Keys are truncated to 150 characters and values to 8192, the limits the
+        ingestion service enforces; messages and stack traces may be up to 32768.
+    </p>
+    <CodeSnippet Code="@KustoCode" Language="Shell" />
+</div>
+
+<div class="demo-section">
+    <h2>Retries</h2>
+    <p>
+        Status codes <code>408</code>, <code>429</code>, <code>439</code> (daily quota), <code>500</code>, <code>502</code>,
+        <code>503</code> and <code>504</code> are retried with backoff, honouring <code>Retry-After</code>, and kept for
+        <a href="/persistence">offline persistence</a> when the retries run out. Anything else is a permanent answer and
+        the batch is dropped.
+    </p>
+    <p>
+        A <code>206</code> is a partial success: the response lists, per item, the index in the array and its status
+        code. Only the items whose code is one of the retryable ones above are sent again - rebuilt into a new array -
+        and the rest, accepted or permanently rejected, are not.
+    </p>
+    <CodeSnippet Code="@PartialCode" Language="JSON" />
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="BelemetryAzureMonitorExporterOptions" />
+</div>
+
+@code {
+    private const string ExporterCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.AddAzureMonitorExporter(builder.Configuration["ApplicationInsights:ConnectionString"]!, azure =>
+            {
+                azure.MaskIp = true;                       // ai.location.ip = 0.0.0.0
+                azure.Compression = BelemetryCompression.Gzip;
+            });
+        });
+        """;
+
+    private const string EnvelopeCode = """
+        {
+          "ver": 1,
+          "name": "Microsoft.ApplicationInsights.PageView",
+          "time": "2026-10-15T09:30:12.3456789Z",
+          "sampleRate": 100,
+          "iKey": "00000000-0000-0000-0000-000000000000",
+          "tags": {
+            "ai.cloud.role": "[bitplatform]/belemetry-demo",
+            "ai.cloud.roleInstance": "6f1c...",
+            "ai.device.type": "Browser",
+            "ai.internal.sdkVersion": "bitblmjs:10.6.2",
+            "ai.location.ip": "0.0.0.0",
+            "ai.operation.id": "4bf92f3577b34da6a3ce929d0e0e4736",
+            "ai.operation.name": "Checkout",
+            "ai.session.id": "9c1e..."
+          },
+          "data": {
+            "baseType": "PageViewData",
+            "baseData": {
+              "ver": 2,
+              "id": "00f067aa0ba902b7",
+              "name": "Checkout",
+              "url": "https://myapp.example.com/checkout",
+              "duration": "00:00:00",
+              "properties": { "url.path": "/checkout", "browser.navigation.type": "push" }
+            }
+          }
+        }
+        """;
+
+    private const string KustoCode = """
+        customEvents
+        | where name == "checkout.completed"
+        | extend items = toint(customDimensions["cart.items"])
+        | summarize orders = count(), avgItems = avg(items) by bin(timestamp, 1h)
+        """;
+
+    private const string PartialCode = """
+        {
+          "itemsReceived": 3,
+          "itemsAccepted": 1,
+          "errors": [
+            { "index": 1, "statusCode": 429, "message": "Too many requests" },   // sent again
+            { "index": 2, "statusCode": 400, "message": "Invalid field" }        // dropped
+          ]
+        }
+        """;
+}

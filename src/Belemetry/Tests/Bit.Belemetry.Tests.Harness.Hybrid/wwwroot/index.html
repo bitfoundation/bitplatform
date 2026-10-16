@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Belemetry hybrid harness</title>
+    <base href="/" />
+    <link rel="icon" href="data:," />
+    <link rel="stylesheet" href="_content/Bit.Belemetry.Tests.Harness/harness.css" />
+    <!-- No <BelemetryScript />: a BlazorWebView has no server render, so <BelemetryInitializer /> imports and starts
+         the script once the app is interactive. harness.js only reaches window.BitBelemetry on a click, by then. -->
+    <script type="module" src="_content/Bit.Belemetry.Tests.Harness/harness.js"></script>
+</head>
+
+<body data-mode="hybrid">
+    <div id="app">Loading...</div>
+    <script src="_framework/blazor.webview.js"></script>
+</body>
+
+</html>

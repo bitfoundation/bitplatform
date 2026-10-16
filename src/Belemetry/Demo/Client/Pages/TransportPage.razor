@@ -1,0 +1,213 @@
+﻿@page "/transport"
+@inject IJSRuntime JS
+
+<PageTitle>Transport - bit Belemetry</PageTitle>
+
+<h1>Transport</h1>
+
+<p class="page-intro">
+    The browser script records page views, clicks, web vitals, errors and fetches - and then has to get them
+    somewhere. <code>options.Browser.Transport</code> decides how: <strong>Direct</strong>, where the page posts
+    to your endpoints itself, or <strong>Relay</strong>, where it hands its records to .NET over JS interop and
+    the .NET pipeline exports them. The choice is about where the network call happens - and therefore about
+    CORS and about who can see your exporter credentials.
+</p>
+
+<div class="demo-section">
+    <h2>Auto, Direct and Relay</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Value</th><th scope="col">What happens</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Auto</code> (default)</td>
+                    <td>
+                        <code>Relay</code> in Blazor Hybrid, <code>Direct</code> everywhere else. The host kind is
+                        detected (or set with <code>options.Host</code>): WebAssembly when running in the browser,
+                        Server when ASP.NET Core hosting is registered, Hybrid otherwise.
+                    </td>
+                </tr>
+                <tr>
+                    <td><code>Direct</code></td>
+                    <td>
+                        The script exports to the configured endpoints itself, with <code>fetch</code> (and
+                        <code>keepalive</code> when the page is hidden). Works on every page, static SSR included,
+                        and needs no .NET at all once the page is served.
+                    </td>
+                </tr>
+                <tr>
+                    <td><code>Relay</code></td>
+                    <td>
+                        The script hands its records to .NET over JS interop, and the .NET pipeline exports them with
+                        the same exporters, processors and persistence as its own records. Needs
+                        <code>&lt;BelemetryInitializer /&gt;</code>; on Blazor Server the records travel over the
+                        circuit.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <CodeSnippet Code="@SetupCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Direct: CORS and public endpoints</h2>
+    <p>
+        With Direct, the request to your collector comes from the page's origin, so the receiver must allow
+        that origin - a browser blocks a cross-origin <code>POST</code> with a <code>Content-Type</code> of
+        <code>application/x-protobuf</code> or <code>application/json</code> unless the preflight says yes. For
+        the OpenTelemetry Collector that is the <code>cors</code> block of its HTTP receiver; for the .NET Aspire
+        dashboard, <code>DASHBOARD__OTLP__CORS__ALLOWEDORIGINS</code>.
+    </p>
+    <CodeSnippet Code="@CorsCode" Language="YAML" />
+    <p>
+        The .NET side often reaches the collector over an internal address the browser cannot. Give the OTLP
+        exporter a <code>BrowserEndpoint</code> - a public, CORS-enabled route - and the script uses that instead of
+        <code>Endpoint</code>. It may be relative: this site uses <code>/otlp</code>, so the browser always posts
+        to the origin it was served from, behind any proxy.
+    </p>
+    <CodeSnippet Code="@BrowserEndpointCode" Language="C#" />
+    <div class="callout warn">
+        <p>
+            <strong>Everything the script exports with is in the page.</strong> The browser configuration is
+            written into the HTML by <code>&lt;BelemetryScript /&gt;</code>, so an exporter's <code>Headers</code> -
+            a vendor API key, say - are readable by anyone who opens it. For browser traffic, use a collector
+            that needs no credentials, set <code>IncludeInBrowser = false</code> on the exporter that carries
+            them, or switch to Relay. An Azure Monitor exporter with an <code>AccessTokenProvider</code> is never
+            handed to the script.
+        </p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Relay: no credentials in the page</h2>
+    <p>
+        With Relay, the page never talks to a collector. Each batch goes to the
+        <code>Belemetry.Relay</code> callback of <code>&lt;BelemetryInitializer /&gt;</code>, and from there into
+        the same pipeline that exports .NET's own logs and traces - so processors run on browser records too, and
+        custom exporters (an in-memory viewer, your own <code>IBelemetryExporter</code>) receive them. The user's
+        consent was already applied in the page, so a relayed record is not filtered a second time.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Host</th><th scope="col">Where the relayed records are exported from</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Blazor Hybrid (the Auto default)</td>
+                    <td>The app process. No CORS - the WebView's origin is not a web origin anyone can allow - and file persistence while offline.</td>
+                </tr>
+                <tr>
+                    <td>Blazor Server, or a Server-rendered page of an Auto app</td>
+                    <td>The server, over the circuit. No CORS and no credentials in the page; the server pipeline does not have to be on for relayed records to be exported.</td>
+                </tr>
+                <tr>
+                    <td>WebAssembly, or a WebAssembly-rendered page of an Auto app</td>
+                    <td>
+                        The .NET pipeline running <em>in the browser</em>. The export is still a request from the page,
+                        so CORS still applies and the configuration is still downloadable: Relay here buys processors
+                        and custom exporters, not secrecy.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="callout">
+        <p>
+            Relay depends on an interactive component. Until <code>&lt;BelemetryInitializer /&gt;</code> attaches,
+            the script keeps its records queued in memory; a static SSR page that never becomes interactive has
+            nothing to hand them to. If part of your app is static SSR, keep that traffic on Direct.
+        </p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>This site</h2>
+    <p>
+        The demo runs as a Blazor Web App with the WebAssembly render mode and leaves <code>Transport</code> on
+        <code>Auto</code>, which resolves to <strong>Direct</strong>: the script posts OTLP/JSON to
+        <code>/otlp</code> on this same origin, so there is no CORS to configure and no credential to hide. Send
+        an event and watch it arrive - it went from the page to the server's receiver with a plain
+        <code>fetch</code>.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="SendAsync">Send an event</button>
+            </div>
+            @if (_message is not null)
+            {
+                <p class="demo-label">@_message</p>
+            }
+            <TelemetryFeedView Compact="true"
+                               Match="@(r => r.Source == "browser" && r.Name == "demo.transport")"
+                               EmptyText="Nothing yet - send an event (it needs the Events feature granted)." />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="BelemetryBrowserTransport" />
+</div>
+
+@code {
+    private const string SetupCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.AddOtlpExporter("https://otel.example.com", otlp =>
+            {
+                otlp.Headers["x-api-key"] = builder.Configuration["Otel:ApiKey"]!;
+            });
+
+            // Auto: Relay in Hybrid, Direct everywhere else.
+            // Relay keeps the API key above on the server (Blazor Server) or in the app (Hybrid).
+            options.Browser.Transport = BelemetryBrowserTransport.Relay;
+        });
+        """;
+
+    private const string CorsCode = """
+        receivers:
+          otlp:
+            protocols:
+              http:
+                endpoint: 0.0.0.0:4318
+                cors:
+                  allowed_origins: ["https://myapp.example.com"]
+                  allowed_headers: ["*"]
+        """;
+
+    private const string BrowserEndpointCode = """
+        options.AddOtlpExporter(otlp =>
+        {
+            otlp.Endpoint = new Uri("http://otel-collector:4318");          // .NET, inside the network
+            otlp.BrowserEndpoint = new Uri("https://otel.example.com");      // the browser, public and CORS-enabled
+        });
+
+        // An exporter only the .NET side should use - its credentials never reach the page.
+        options.AddOtlpExporter("https://api.vendor.example", otlp =>
+        {
+            otlp.Headers["x-api-key"] = "...";
+            otlp.IncludeInBrowser = false;
+        });
+        """;
+
+    private string? _message;
+
+    private async Task SendAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("BitBelemetry.trackEvent", "demo.transport", new Dictionary<string, object?> { ["demo.page"] = "transport" });
+            await JS.InvokeVoidAsync("BitBelemetry.flush");
+            _message = "Sent. It shows below within a couple of seconds.";
+        }
+        catch (Exception ex)
+        {
+            _message = $"The browser script did not answer: {ex.Message}";
+        }
+    }
+}

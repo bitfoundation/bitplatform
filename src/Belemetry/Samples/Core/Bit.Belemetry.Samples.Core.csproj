@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <!-- The pages every hosting sample (Server, WebAssembly, Auto, MAUI) renders. Nothing in here knows which
+         host it runs in: each host's Program.cs owns its Belemetry setup, which is the part worth comparing. -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+        <ProjectReference Include="..\..\Bit.Belemetry\Bit.Belemetry.csproj" />
+    </ItemGroup>
+
+</Project>

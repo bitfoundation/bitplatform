@@ -1,0 +1,376 @@
+﻿@page "/persistence"
+@using System.Text.Json
+@implements IDisposable
+@inject IJSRuntime JS
+@inject IBelemetryConsent Consent
+
+<PageTitle>Offline persistence - bit Belemetry</PageTitle>
+
+<h1>Offline persistence</h1>
+
+<p class="page-intro">
+    A train goes into a tunnel, a laptop lid closes mid-export, a collector restarts. Without persistence
+    the telemetry of exactly those moments - often the interesting ones - is lost. With it, an export
+    request that fails with a network error or a retryable status is kept on the device and sent again
+    later: in <code>localStorage</code> in the browser, and in files in Blazor Hybrid and on servers.
+</p>
+
+<div class="demo-section">
+    <h2>What is kept, and when</h2>
+    <p>
+        Persistence works on whole export requests, already serialized, rather than on records: what is
+        stored is exactly the body that could not be delivered, so it is sent again unchanged. A request is
+        kept when it fails with a network error, or with one of the statuses a receiver uses to say
+        "later":
+    </p>
+    <div class="badge-list">
+        <span class="badge">408 Request Timeout</span>
+        <span class="badge">429 Too Many Requests</span>
+        <span class="badge">439 (Azure daily quota)</span>
+        <span class="badge">500</span>
+        <span class="badge">502</span>
+        <span class="badge">503</span>
+        <span class="badge">504</span>
+    </div>
+    <p>
+        Before a request is stored it is first retried in place a few times, with backoff that honours
+        <code>Retry-After</code>. Any other status - a 400 for a malformed body, a 401 for a wrong key - is
+        a permanent answer, and the request is dropped rather than replayed forever. An Azure Monitor
+        <code>206</code> partial success retries only the items the response lists as retryable.
+    </p>
+    <p>Persistence needs two things at once:</p>
+    <ul>
+        <li><code>options.Persistence.Enabled</code> - on by default - which is the operator's switch.</li>
+        <li>
+            The user's consent for the <code>Persistence</code> feature. Keeping data on someone's device is a
+            decision of its own under GDPR, so it is a feature bit of its own, and nothing is written before it
+            is granted.
+        </li>
+    </ul>
+    <CodeSnippet Code="@OptionsCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Where it is kept</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Host</th><th scope="col">Store</th><th scope="col">Size cap</th><th scope="col">Retried</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Browser (every render mode)</td>
+                    <td><code>localStorage</code> key <code>bit-belemetry-queue</code></td>
+                    <td><code>BrowserMaxBytes</code> (1 MB)</td>
+                    <td>Every <code>RetryInterval</code> (1 minute) while the page is open, when the script starts (the next page load), when the browser fires <code>online</code>, and when <code>Persistence</code> is granted</td>
+                </tr>
+                <tr>
+                    <td>WebAssembly .NET pipeline</td>
+                    <td>Handed to the script, which stores it in the same <code>localStorage</code> queue</td>
+                    <td><code>BrowserMaxBytes</code></td>
+                    <td>As above - the script owns the retry, and can also send with <code>keepalive</code> during unload</td>
+                </tr>
+                <tr>
+                    <td>Blazor Hybrid, and the server pipeline</td>
+                    <td>Files under <code>Directory</code> (default <code>{LocalApplicationData}/bit-belemetry/{service.name}</code>)</td>
+                    <td><code>MaxBytes</code> (20 MB)</td>
+                    <td>Every <code>RetryInterval</code> (1 minute)</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Past the size cap the <strong>oldest</strong> requests are evicted first, and a request older than
+        <code>MaxAge</code> (48 hours) is discarded unsent - telemetry from two days ago rarely answers a
+        question anyone is still asking, and a device should not fill up with it. Neither store keeps request
+        headers - an API key has no business sitting in <code>localStorage</code> or in a file - so they are
+        added again from the exporter's current configuration when a request is resent (a rotated key applies
+        to the backlog too). Credentials that expire, such as an Entra
+        ID token for Azure Monitor, are never stored on either side: the exporter adds a fresh one at send time.
+    </p>
+    <p>Each entry of the browser queue has this shape:</p>
+    <CodeSnippet Code="@QueueShapeCode" Language="JSON" />
+</div>
+
+<div class="demo-section">
+    <h2>Look at the queue</h2>
+    <p>
+        This panel reads <code>localStorage['bit-belemetry-queue']</code> directly. On a healthy connection it
+        is empty - nothing failed, so nothing was kept. To fill it, open your browser's developer tools, set the
+        <strong>Network</strong> panel to <em>Offline</em>, press <strong>Track an event</strong>, and read the
+        queue again. Then go back online: the script hears the <code>online</code> event, resends, and the
+        queue empties.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <dl class="kv">
+                <dt>Persistence consent</dt>
+                <dd><span class="state-pill @(_persistenceGranted is true ? "on" : null)">@(_persistenceGranted switch { true => "granted", false => "not granted", null => "unknown" })</span></dd>
+                <dt>bit-belemetry-queue</dt>
+                <dd>
+                    @if (_queueRead is false)
+                    {
+                        <span>not read yet</span>
+                    }
+                    else if (_queueEntries is null)
+                    {
+                        <span class="state-pill">empty</span>
+                    }
+                    else
+                    {
+                        <span class="state-pill on">@_queueEntries request(s), @FormatBytes(_queueBytes)</span>
+                    }
+                </dd>
+                @if (_queueExporters.Length > 0)
+                {
+                    <dt>Waiting for</dt>
+                    <dd>@string.Join(", ", _queueExporters)</dd>
+                }
+            </dl>
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ReadQueueAsync">Read the queue</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="TrackEventAsync">Track an event</button>
+                @if (_persistenceGranted is true)
+                {
+                    <button type="button" class="btn-bl btn-bl-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="RevokeAsync">Revoke Persistence</button>
+                }
+                else
+                {
+                    <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="GrantAsync">Grant Persistence</button>
+                }
+            </div>
+            @if (_message is not null)
+            {
+                <p class="demo-label">@_message</p>
+            }
+        </div>
+    </div>
+    <div class="callout">
+        <p>
+            <strong>Track an event</strong> needs the <code>Events</code> feature granted, and the queue only
+            fills with <code>Persistence</code> granted. Revoking <code>Persistence</code> clears the queue at once:
+            read it again after pressing <strong>Revoke Persistence</strong> while it holds something.
+        </p>
+    </div>
+    <CodeSnippet Code="@ReadQueueCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Revoking clears it</h2>
+    <p>
+        Withdrawing consent has to reach data already stored, not only data still to come. Revoking
+        <code>Persistence</code> - from the banner, from <code>IBelemetryConsent.RevokeAsync</code> or from
+        <code>BitBelemetry.setConsent</code> in the browser - removes the <code>bit-belemetry-queue</code> key in the
+        browser and deletes the stored files on the .NET side. Revoking any <em>other</em> feature purges that
+        feature's records still queued in memory, so nothing it collected leaves the device afterwards.
+    </p>
+    <CodeSnippet Code="@RevokeCode" Language="Razor" />
+</div>
+
+<div class="demo-section">
+    <h2>Hybrid apps</h2>
+    <p>
+        In MAUI, WPF and WinForms the browser script relays its records to .NET, and the .NET pipeline exports
+        everything - so the file store is the one that matters. A phone is suspended long before it loses its
+        files, so flush when the app goes to the background; what does not get through is stored and retried on
+        the next <code>RetryInterval</code> after the app resumes.
+    </p>
+    <CodeSnippet Code="@HybridCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="BelemetryPersistenceOptions" />
+</div>
+
+@code {
+    private const string OptionsCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Persistence.Enabled = true;                          // the default; consent still applies
+            options.Persistence.BrowserMaxBytes = 1024 * 1024;           // localStorage is small: 1 MB
+            options.Persistence.MaxBytes = 20 * 1024 * 1024;             // the file store (Hybrid, server): 20 MB
+            options.Persistence.MaxAge = TimeSpan.FromHours(48);         // discarded unsent after this
+            options.Persistence.RetryInterval = TimeSpan.FromMinutes(1); // how often stored requests are retried (both sides)
+            // options.Persistence.Directory = "...";                    // defaults to LocalApplicationData
+        });
+        """;
+
+    private const string QueueShapeCode = """
+        [
+          {
+            "id": "a3f1c2...",
+            "exporter": "otlp",
+            "url": "https://otel.example.com/v1/logs",
+            "contentType": "application/x-protobuf",
+            "body": "<base64>",
+            "time": 1760000000000
+          }
+        ]
+        """;
+
+    private const string ReadQueueCode = """
+        @inject IJSRuntime JS
+
+        @code {
+            private async Task ReadQueueAsync()
+            {
+                // The queue is a plain localStorage entry, so any page can look at it.
+                var json = await JS.InvokeAsync<string?>("localStorage.getItem", "bit-belemetry-queue");
+                using var queue = json is null ? null : JsonDocument.Parse(json);
+                var pending = queue?.RootElement.GetArrayLength() ?? 0;
+            }
+        }
+        """;
+
+    private const string RevokeCode = """
+        @inject IBelemetryConsent Consent
+
+        <button @onclick="() => Consent.RevokeAsync(BelemetryFeatures.Persistence)">
+            Do not keep telemetry on this device
+        </button>
+        """;
+
+    private const string HybridCode = """
+        // App.xaml.cs (MAUI), with the app's IServiceProvider injected into its constructor as _services
+        protected override async void OnSleep()
+        {
+            base.OnSleep();
+
+            try
+            {
+                // Async work does not survive suspension: hand the queues over while the app still runs.
+                // IBelemetry is scoped, so it is resolved from a scope of its own.
+                await using var scope = _services.CreateAsyncScope();
+                await scope.ServiceProvider.GetRequiredService<IBelemetry>().FlushAsync();
+            }
+            catch (Exception ex)
+            {
+                // async void: an exception here would crash the app on its way to the background.
+                System.Diagnostics.Debug.WriteLine($"Flushing telemetry failed: {ex}");
+            }
+        }
+        """;
+
+    private bool? _persistenceGranted;
+    private bool _queueRead;
+    private int? _queueEntries;
+    private long _queueBytes;
+    private string[] _queueExporters = [];
+    private string? _message;
+
+    // The reader usually decides on the banner while this page is open, so the state shown here follows every
+    // consent change, not only the ones made with this page's own buttons.
+    protected override void OnInitialized() => Consent.Changed += OnConsentChanged;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender is false || RendererInfo.IsInteractive is false) return;
+
+        await RefreshAsync();
+        StateHasChanged();
+    }
+
+    private void OnConsentChanged(object? sender, EventArgs e)
+    {
+        _persistenceGranted = Consent.IsGranted(BelemetryFeatures.Persistence);
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose() => Consent.Changed -= OnConsentChanged;
+
+    private async Task RefreshAsync()
+    {
+        try
+        {
+            await Consent.RefreshAsync();
+            _persistenceGranted = Consent.IsGranted(BelemetryFeatures.Persistence);
+        }
+        catch
+        {
+            // Consent that cannot be read is shown as unknown; the queue panel still works.
+            _persistenceGranted = null;
+        }
+    }
+
+    private async Task ReadQueueAsync()
+    {
+        await RefreshAsync();
+
+        try
+        {
+            var json = await JS.InvokeAsync<string?>("localStorage.getItem", "bit-belemetry-queue");
+            _queueRead = true;
+            _queueEntries = null;
+            _queueBytes = 0;
+            _queueExporters = [];
+
+            if (string.IsNullOrEmpty(json)) return;
+
+            using var queue = JsonDocument.Parse(json);
+            if (queue.RootElement.ValueKind is not JsonValueKind.Array || queue.RootElement.GetArrayLength() == 0) return;
+
+            _queueEntries = queue.RootElement.GetArrayLength();
+            _queueBytes = System.Text.Encoding.UTF8.GetByteCount(json);
+            _queueExporters = [.. queue.RootElement.EnumerateArray()
+                                                    .Select(e => e.TryGetProperty("exporter", out var x) ? x.GetString() : null)
+                                                    .OfType<string>()
+                                                    .Distinct()];
+            _message = null;
+        }
+        catch (Exception ex)
+        {
+            // Storage blocked by the browser (private mode, site data disabled) is a reading, not a crash.
+            _message = $"The queue could not be read: {ex.Message}";
+        }
+    }
+
+    private async Task TrackEventAsync()
+    {
+        try
+        {
+            await JS.InvokeVoidAsync("BitBelemetry.trackEvent", "demo.persistence", new Dictionary<string, object?> { ["demo.page"] = "persistence" });
+            // flush() resolves once the batch is handed to the transport - delivered, or stored if it failed.
+            await JS.InvokeVoidAsync("BitBelemetry.flush");
+            _message = "Event tracked and flushed. Read the queue to see whether it was kept.";
+        }
+        catch (Exception ex)
+        {
+            _message = $"The browser script did not answer: {ex.Message}";
+        }
+    }
+
+    private async Task GrantAsync()
+    {
+        try
+        {
+            await Consent.GrantAsync(BelemetryFeatures.Persistence);
+            _message = "Persistence granted: failed exports are now kept on this device.";
+        }
+        catch (Exception ex)
+        {
+            _message = $"Consent could not be changed: {ex.Message}";
+        }
+
+        await RefreshAsync();
+    }
+
+    private async Task RevokeAsync()
+    {
+        try
+        {
+            await Consent.RevokeAsync(BelemetryFeatures.Persistence);
+            _message = "Persistence revoked: the stored queue was cleared.";
+        }
+        catch (Exception ex)
+        {
+            _message = $"Consent could not be changed: {ex.Message}";
+        }
+
+        await RefreshAsync();
+        await ReadQueueAsync();
+    }
+
+    private static string FormatBytes(long bytes)
+        => bytes < 1024 ? $"{bytes} B" : $"{bytes / 1024.0:0.#} KB";
+}

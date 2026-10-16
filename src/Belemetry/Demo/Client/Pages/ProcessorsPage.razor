@@ -1,0 +1,199 @@
+﻿@page "/processors"
+@inject HttpClient Http
+
+<PageTitle>Processors - bit Belemetry</PageTitle>
+
+<h1>Processors</h1>
+
+<p class="page-intro">
+    A processor sees every record the .NET pipeline handles before it is queued, and can change it or drop it: add a
+    tenant id to every span, rename a noisy log, drop health checks and static files, strip an attribute only your
+    app knows is sensitive. It is one small interface with three optional methods.
+</p>
+
+<div class="demo-section">
+    <h2>IBelemetryProcessor</h2>
+    <p>
+        <code>OnSpan</code>, <code>OnLog</code> and <code>OnMetric</code> each receive the record - a
+        <code>BelemetrySpan</code>, <code>BelemetryLogRecord</code> or <code>BelemetryMetric</code>, every member of
+        which may be changed - and return <code>false</code> to drop it. All three have default implementations that
+        keep the record, so a processor implements only what it cares about. Add processors with
+        <code>options.AddProcessor</code>; they run in the order they were added, after the built-in privacy rules.
+    </p>
+    <CodeSnippet Code="@ReadmeCode" Language="C#" Expanded="true" />
+    <div class="callout warn">
+        Processors run synchronously, on the thread that produced the record - inside the code that logged, or
+        stopped the activity. They must be fast and must not block, await or call out over the network. A processor
+        that throws is skipped for that record; the record itself is kept.
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Which records they see</h2>
+    <p>Processors run on every record of the .NET pipeline:</p>
+    <ul>
+        <li><code>ILogger</code> entries, <code>Activity</code> spans and <code>Meter</code> metrics.</li>
+        <li><code>IBelemetry</code> calls on WebAssembly and Hybrid, where they go through the .NET pipeline.</li>
+        <li>
+            Browser records relayed to .NET with the <a href="/transport">Relay transport</a> (the default in Hybrid) -
+            so one processor can enrich page views, clicks and fetch spans as well.
+        </li>
+        <li>Everything the <a href="/server-pipeline">server pipeline</a> collects, when it is on.</li>
+    </ul>
+    <p>
+        With the Direct transport the browser script exports its own records, and .NET never sees them. Shape those
+        with the browser options instead - <code>IgnoreUrls</code>, <code>IgnoreErrorMessages</code>,
+        <code>data-bit-belemetry-ignore</code> and the <a href="/privacy">privacy rules</a>.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>A real one: DemoNoiseFilter</h2>
+    <p>
+        This site runs the processor below on both of its pipelines, the WebAssembly one and the server's. The live
+        feeds poll <code>/api/telemetry</code> every two seconds with <code>HttpClient</code>, and the .NET side
+        exports to <code>/otlp</code>; without it every reader would see a span for each of those, and the server would
+        record a request span for every static file and every piece of the WebAssembly payload. The browser script
+        does not need it: the same URLs are in its <code>IgnoreUrls</code>.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => GetAsync(EchoUrl, keep: true))">
+                    HttpClient GET /api/demo/echo (kept: @_kept)
+                </button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => GetAsync(FeedUrl, keep: false))">
+                    HttpClient GET /api/telemetry (dropped: @_dropped)
+                </button>
+            </div>
+            <TelemetryFeedView Compact="true" Match="@IsWasmHttpSpan"
+                               EmptyText="No .NET HTTP spans yet - press the first button; the second never shows up here." />
+        </div>
+    </div>
+    <CodeSnippet Code="@NoiseFilterCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Enrich, rewrite, drop</h2>
+    <p>
+        Enriching is setting attributes. Rewriting is assigning members: a span's <code>Name</code>, a log's
+        <code>Body</code> or <code>Severity</code>, a metric's points. Dropping is returning <code>false</code>. The
+        same processor can do all three, for any of the three signals.
+    </p>
+    <CodeSnippet Code="@ExamplesCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="IBelemetryProcessor" />
+</div>
+
+@code {
+    private const string EchoUrl = "api/demo/echo";
+    private const string FeedUrl = "api/telemetry?sessionId=processors-demo";
+
+    private int _kept;
+    private int _dropped;
+
+    private static bool IsWasmHttpSpan(TelemetryRecord r)
+        => r.Source == "wasm" && r.Signal == "span" && r.Scope == "System.Net.Http";
+
+    private async Task GetAsync(string url, bool keep)
+    {
+        if (keep) _kept++; else _dropped++;
+
+        try
+        {
+            using var response = await Http.GetAsync(url);
+        }
+        catch
+        {
+            // The answer does not matter, only the span HttpClient records for the call.
+        }
+    }
+
+    private const string ReadmeCode = """
+        public sealed class TenantProcessor(ITenantAccessor tenants) : IBelemetryProcessor
+        {
+            public bool OnSpan(BelemetrySpan span)
+            {
+                span.Attributes.Set("tenant.id", tenants.Current);
+                return span.Name != "GET /health";            // false drops it
+            }
+
+            public bool OnLog(BelemetryLogRecord log) => log.Body?.Contains("noise") is not true;
+
+            // OnMetric is not implemented: the default keeps every metric.
+        }
+
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.AddProcessor(new TenantProcessor(tenantAccessor));
+        });
+        """;
+
+    private const string NoiseFilterCode = """
+        public sealed class DemoNoiseFilter : IBelemetryProcessor
+        {
+            private static readonly string[] _noise =
+            [
+                .. DemoTelemetry.SelfUrls,          // "/otlp/", "/api/telemetry"
+                "/_framework/", "/_content/", "/_blazor", "/css/", "/js/", "/images/", "/favicon", "/icon-",
+                "/.well-known/", "/_vs/", "/browserLink",
+            ];
+
+            public bool OnSpan(BelemetrySpan span)
+            {
+                var url = span.Attributes.GetString(BelemetrySemanticConventions.UrlFull)
+                       ?? span.Attributes.GetString(BelemetrySemanticConventions.UrlPath);
+
+                if (url is null) return true;
+
+                foreach (var noise in _noise)
+                {
+                    if (url.Contains(noise, StringComparison.OrdinalIgnoreCase)) return false;
+                }
+
+                return true;
+            }
+        }
+
+        // Shared by the client and the server (Services/DemoTelemetry.cs):
+        options.AddProcessor(new DemoNoiseFilter());
+        """;
+
+    private const string ExamplesCode = """
+        public sealed class ShopProcessor : IBelemetryProcessor
+        {
+            public bool OnSpan(BelemetrySpan span)
+            {
+                // Enrich: the deployment ring every span ran in.
+                span.Attributes.Set("deployment.ring", "canary");
+
+                // Rewrite: one name per route instead of one per order id.
+                if (span.Name.StartsWith("GET /orders/", StringComparison.Ordinal)) span.Name = "GET /orders/{id}";
+
+                return true;
+            }
+
+            public bool OnLog(BelemetryLogRecord log)
+            {
+                // Rewrite: a known, harmless warning becomes information.
+                if (log.Scope.Name == "Microsoft.AspNetCore.Components.Routing" && log.Severity == BelemetrySeverity.Warn)
+                {
+                    log.Severity = BelemetrySeverity.Info;
+                    log.SeverityText = "Information";
+                }
+
+                // Drop: a custom event nobody reads any more.
+                return log.EventName != "legacy.heartbeat";
+            }
+
+            public bool OnMetric(BelemetryMetric metric)
+            {
+                // Drop: a runtime metric the dashboards do not use.
+                return metric.Name != "dotnet.gc.pause.time";
+            }
+        }
+        """;
+}
