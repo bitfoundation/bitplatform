@@ -158,4 +158,119 @@ public class BitPdfReaderTests : BunitTestContext
         Assert.IsTrue(canvas.ClassList.Contains("canvas-class"));
         Assert.IsTrue((canvas.GetAttribute("style") ?? string.Empty).Contains("height:100px"));
     }
+
+    [TestMethod]
+    public async Task BitPdfReaderShouldStartOnTheInitialPageAndStayInsideTheDocument()
+    {
+        SetupJSInterop(3);
+
+        var component = RenderComponent<BitPdfReaderLegacy>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
+            parameters.Add(p => p.InitialPageNumber, 2);
+        });
+
+        Assert.AreEqual(3, component.Instance.NumberOfPages);
+        Assert.AreEqual(2, component.Instance.CurrentPageNumber);
+
+        // A page before the first or after the last is ignored rather than asked of the script.
+        await component.Instance.Go(0);
+        await component.Instance.Go(4);
+
+        Assert.AreEqual(2, component.Instance.CurrentPageNumber);
+
+        var renders = Context.JSInterop.Invocations.Where(i => i.Identifier == "BitBlazorUI.Legacy.PdfReader.renderPage")
+                                                   .Select(i => (int)i.Arguments[1]!)
+                                                   .ToList();
+
+        CollectionAssert.AreEqual(new List<int> { 2 }, renders);
+    }
+
+    [TestMethod]
+    public async Task BitPdfReaderRefreshShouldRefreshTheCurrentPage()
+    {
+        SetupJSInterop(3);
+
+        var rendered = 0;
+
+        var component = RenderComponent<BitPdfReaderLegacy>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
+            parameters.Add(p => p.OnPdfPageRendered, () => rendered++);
+        });
+
+        await component.Instance.Next();
+        await component.Instance.Refresh();
+
+        var refresh = Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.PdfReader.refreshPage");
+        Assert.AreEqual(2, refresh.Arguments[1]);
+        // The first page rendered on setup, and the refreshed one.
+        Assert.AreEqual(2, rendered);
+    }
+
+    [TestMethod]
+    public async Task BitPdfReaderShouldPrerenderItsCanvasWithoutTheBrowser()
+    {
+        // pdf.js is only loaded once the page is interactive: the canvas it draws into is what a prerender sends.
+        var html = await Prerenderer.RenderAsync<BitPdfReaderLegacy>(new Dictionary<string, object?>
+        {
+            [nameof(BitPdfReaderLegacy.Config)] = new BitPdfReaderLegacyConfig { Id = PdfId },
+            [nameof(BitPdfReaderLegacy.CanvasClass)] = "canvas-class",
+            [nameof(BitPdfReaderLegacy.Horizontal)] = true,
+        });
+
+        StringAssert.Contains(html, "bit-pdr");
+        StringAssert.Contains(html, "bit-pdr-hor");
+        StringAssert.Contains(html, $"id=\"{PdfId}\"");
+        StringAssert.Contains(html, "canvas-class");
+        Assert.AreEqual(1, System.Text.RegularExpressions.Regex.Matches(html, "<canvas").Count);
+    }
+
+    [TestMethod]
+    public void BitPdfReaderShouldSplatTheHtmlAttributesOnTheRoot()
+    {
+        SetupJSInterop();
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitPdfReaderLegacy>(0);
+            builder.AddAttribute(1, nameof(BitPdfReaderLegacy.Config), new BitPdfReaderLegacyConfig { Id = PdfId });
+            builder.AddAttribute(2, nameof(BitPdfReaderLegacy.Id), "reader");
+            builder.AddAttribute(3, nameof(BitPdfReaderLegacy.Class), "custom-class");
+            builder.AddAttribute(4, nameof(BitPdfReaderLegacy.Style), "padding:1px");
+            builder.AddAttribute(5, nameof(BitPdfReaderLegacy.Dir), BitDir.Rtl);
+            builder.AddAttribute(6, "data-test", "root");
+            builder.CloseComponent();
+        });
+
+        var root = component.Find(".bit-pdr");
+
+        Assert.AreEqual("reader", root.Id);
+        Assert.AreEqual("root", root.GetAttribute("data-test"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        StringAssert.Contains(root.GetAttribute("style"), "padding:1px");
+        // The canvas keeps its own id, the one pdf.js draws into.
+        Assert.AreEqual(PdfId, component.Find("canvas").Id);
+    }
+
+    [TestMethod]
+    public async Task BitPdfReaderShouldDisposeJsInterop()
+    {
+        SetupJSInterop();
+
+        var component = RenderComponent<BitPdfReaderLegacy>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitPdfReaderLegacyConfig { Id = PdfId });
+        });
+
+        await component.Instance.DisposeAsync();
+
+        Assert.AreEqual(PdfId, Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.PdfReader.dispose").Arguments[0]);
+
+        // Disposing again is a no-op rather than a second teardown.
+        await component.Instance.DisposeAsync();
+
+        Context.JSInterop.VerifyInvoke("BitBlazorUI.Legacy.PdfReader.dispose", 1);
+    }
 }

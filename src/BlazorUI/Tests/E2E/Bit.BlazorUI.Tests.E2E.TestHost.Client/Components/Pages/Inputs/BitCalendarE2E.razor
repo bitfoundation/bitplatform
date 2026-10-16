@@ -1,0 +1,429 @@
+﻿@page "/e2e/calendar"
+@using System.Globalization
+@using System.Reflection
+
+<PageTitle>BitCalendar E2E</PageTitle>
+
+<h1>BitCalendar</h1>
+
+@* Every calendar inside this cascade is pinned to en-US and UTC, and given a fixed today (Friday, March 15, 2024, 10:00
+   UTC) of its own, so what the tests read does not depend on the machine, the clock or the time zone the host runs in. *@
+<BitParams Parameters="@_pageParams">
+
+    <E2ESection Id="basic" Title="Basic">
+        <BitCalendar Today="_today" Id="cal-basic" @bind-Value="_basicValue" OnSelectDate="() => _basicSelects++" />
+        <span id="basic-value">@Fmt(_basicValue)</span>
+        <span id="basic-selects">@_basicSelects</span>
+        <BitCalendar Today="_today" Id="cal-disabled" Disabled />
+        <BitCalendar Today="_today" Id="cal-readonly" ReadOnly @bind-Value="_readOnlyValue" />
+        <span id="readonly-value">@Fmt(_readOnlyValue)</span>
+        <BitCalendar Today="_today" Id="cal-no-today" ShowGoToToday="false" />
+        <BitCalendar Today="_today" Id="cal-format" DateFormat="yyyy/MM/dd" SelectedDateAriaAtomic="Picked {0}" HighlightToday="false" Events="@_events" />
+    </E2ESection>
+
+    <E2ESection Id="binding" Title="Binding">
+        <BitCalendar Today="_today" Id="cal-twoway" @bind-Value="_twoWayValue" />
+        <button id="btn-twoway-set" @onclick="() => _twoWayValue = new DateTimeOffset(2024, 5, 10, 0, 0, 0, TimeSpan.Zero)">Set May 10</button>
+        <button id="btn-twoway-clear" @onclick="() => _twoWayValue = null">Clear</button>
+        <span id="twoway-value">@Fmt(_twoWayValue)</span>
+        <BitCalendar Today="_today" Id="cal-onselect" OnSelectDate="v => _onSelectValue = v" />
+        <span id="onselect-value">@Fmt(_onSelectValue)</span>
+        <BitCalendar Today="_today" Id="cal-deselect" AllowDeselect @bind-Value="_deselectValue" />
+        <span id="deselect-value">@Fmt(_deselectValue)</span>
+        <BitCalendar Today="_today" Id="cal-oneway" Value="_oneWayValue" />
+    </E2ESection>
+
+    <E2ESection Id="starting-view" Title="Starting view">
+        <BitCalendar Today="_today" Id="cal-starting" StartingValue="new DateTimeOffset(2020, 12, 5, 8, 30, 0, TimeSpan.Zero)" ShowTimePicker />
+        <BitCalendar Id="cal-today" Today="new DateTimeOffset(2021, 3, 15, 0, 0, 0, TimeSpan.Zero)" />
+        <BitCalendar Today="_today" Id="cal-monthchange" OnMonthChange="d => { _monthChanges++; _displayedMonth = d; }" />
+        <span id="monthchange-value">@($"{_monthChanges}:{_displayedMonth?.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}")</span>
+    </E2ESection>
+
+    <E2ESection Id="min-max" Title="Min and Max">
+        <BitCalendar Today="_today" Id="cal-minmax" MinDate="new DateTimeOffset(2024, 3, 10, 0, 0, 0, TimeSpan.Zero)" MaxDate="new DateTimeOffset(2024, 3, 20, 0, 0, 0, TimeSpan.Zero)" />
+        <BitCalendar Today="_today" Id="cal-minmax-years" MinDate="new DateTimeOffset(2019, 3, 15, 0, 0, 0, TimeSpan.Zero)" MaxDate="new DateTimeOffset(2025, 3, 15, 0, 0, 0, TimeSpan.Zero)" />
+        <BitCalendar Today="_today" Id="cal-past" DisablePast />
+        <BitCalendar Today="_today" Id="cal-future" DisableFuture />
+    </E2ESection>
+
+    <E2ESection Id="disabled-days" Title="Disabled and highlighted days">
+        <BitCalendar Today="_today" Id="cal-weekends" DisabledDaysOfWeek="@_weekendDays" />
+        <BitCalendar Today="_today" Id="cal-disabled-dates" DisabledDates="@_disabledDates" IsDateDisabled="@(d => d.Day % 2 == 1)" />
+        <BitCalendar Today="_today" Id="cal-highlight" HighlightedDates="@_highlightedDates" GetDayClass="@(d => d.DayOfWeek == DayOfWeek.Sunday ? "sunday-cell" : null)" />
+    </E2ESection>
+
+    <E2ESection Id="week-layout" Title="Week layout">
+        <BitCalendar Today="_today" Id="cal-iso" ShowWeekNumbers FirstDayOfWeek="DayOfWeek.Monday" WeekNumberRule="CalendarWeekRule.FirstFourDayWeek"
+                     WeekNumbersHeaderTitle="Hafte" WeekNumberTitle="Hafte {0}" />
+        <BitCalendar Today="_today" Id="cal-no-outside" ShowOutsideDays="false" />
+        <BitCalendar Today="_today" Id="cal-feb" StartingValue="new DateTimeOffset(2026, 2, 10, 0, 0, 0, TimeSpan.Zero)" />
+        <BitCalendar Today="_today" Id="cal-fixed" FixedWeeks StartingValue="new DateTimeOffset(2026, 2, 10, 0, 0, 0, TimeSpan.Zero)" />
+    </E2ESection>
+
+    <E2ESection Id="pickers" Title="Month and year pickers">
+        <BitCalendar Today="_today" Id="cal-pickers" />
+        <BitCalendar Today="_today" Id="cal-no-monthpicker" ShowMonthPicker="_showMonthPicker" />
+        <button id="btn-toggle-monthpicker" @onclick="() => _showMonthPicker = !_showMonthPicker">Toggle month picker</button>
+        <BitCalendar Today="_today" Id="cal-overlay" ShowMonthPickerAsOverlay />
+        <BitCalendar Today="_today" Id="cal-highlight-month" HighlightCurrentMonth HighlightSelectedMonth StartingValue="new DateTimeOffset(2024, 6, 1, 0, 0, 0, TimeSpan.Zero)" />
+        <BitCalendar Today="_today" Id="cal-picker-titles" ShowMonthPickerAsOverlay
+                     MonthPickerToggleTitle="{0}, pick a month" YearPickerToggleTitle="{0}, pick a year" YearRangePickerToggleTitle="{0} to {1}"
+                     GoToPrevMonthTitle="Back a month" GoToNextMonthTitle="On a month" GoToTodayTitle="Back to today"
+                     GoToPrevYearTitle="Back to {0}" GoToNextYearTitle="On to {0}" GoToPrevYearRangeTitle="Years {0} to {1}" GoToNextYearRangeTitle="Years {0} to {1} next" />
+    </E2ESection>
+
+    <E2ESection Id="time-picker" Title="Time picker">
+        @* The steps of these two are single presses, so the press-and-hold spin is kept out of their way: a press whose
+           release reaches the page only after the render of the value it stepped - which re-renders this whole page and
+           can outlast the default 400ms delay under WebAssembly on a busy machine - would start it. *@
+        <BitCalendar Today="_today" Id="cal-time" ShowTimePicker ContinuousSpinDelay="60000" @bind-Value="_timeValue"
+                     TimePickerHourTitle="Hours" TimePickerMinuteTitle="Minutes" TimePickerIncreaseHourTitle="More hours" TimePickerDecreaseHourTitle="Fewer hours"
+                     TimePickerIncreaseMinuteTitle="More minutes" TimePickerDecreaseMinuteTitle="Fewer minutes" NowButtonTitle="Right now" />
+        <span id="time-value">@Fmt(_timeValue)</span>
+        <BitCalendar Today="_today" Id="cal-time12" ShowTimePicker ShowNowButton="false" TimeFormat="BitTimeFormat.TwelveHours" @bind-Value="_time12Value" />
+        <span id="time12-value">@Fmt(_time12Value)</span>
+        <BitCalendar Today="_today" Id="cal-time-overlay" ShowTimePicker ShowTimePickerAsOverlay ShowTimePickerTitle="Open the clock" HideTimePickerTitle="Close the clock" />
+        <BitCalendar Today="_today" Id="cal-time-step" ShowTimePicker ContinuousSpinDelay="60000" HourStep="3" MinuteStep="15" @bind-Value="_timeStepValue" />
+        <span id="time-step-value">@Fmt(_timeStepValue)</span>
+        <BitCalendar Today="_today" Id="cal-time-spin" ShowTimePicker ContinuousSpinDelay="150" ContinuousSpinInterval="60" @bind-Value="_timeSpinValue" />
+        <span id="time-spin-value">@Fmt(_timeSpinValue)</span>
+    </E2ESection>
+
+    <E2ESection Id="events" Title="Events">
+        <BitCalendar Today="_today" Id="cal-events" Events="@_events" @bind-Value="_eventsValue" />
+        <span id="events-value">@Fmt(_eventsValue)</span>
+        <BitCalendar Today="_today" Id="cal-events-colored" Events="@_coloredEvents" />
+        <BitCalendar Today="_today" Id="cal-events-nodetails" Events="@_events" ShowEventDetails="false" OnSelectDate="HandleEventDaySelect" />
+        <span id="events-of-day">@_eventsOfDay</span>
+        <BitCalendar Today="_today" Id="cal-events-tpl" Events="@_events">
+            <EventTemplate>
+                <b class="event-tpl">@context.Title</b>
+                <button class="event-open" @onclick="() => _openedEvent = context.Title">Open</button>
+            </EventTemplate>
+        </BitCalendar>
+        <span id="opened-event">@_openedEvent</span>
+        <BitCalendar Today="_today" Id="cal-events-texts" Events="@_events" EventTimeFromText="Starts" EventTimeUntilText="Ends" EventDetailsCloseButtonTitle="Dismiss" />
+    </E2ESection>
+
+    <E2ESection Id="templates" Title="Templates">
+        <BitCalendar Today="_today" Id="cal-day-tpl">
+            <DayCellTemplate>
+                <span class="day-cell @(context.DayOfWeek == DayOfWeek.Sunday ? "weekend-cell" : null)">@context.Day</span>
+            </DayCellTemplate>
+        </BitCalendar>
+        <BitCalendar Today="_today" Id="cal-month-year-tpl">
+            <MonthCellTemplate>
+                <span class="month-cell">M@(context.Month)</span>
+            </MonthCellTemplate>
+            <YearCellTemplate>
+                <span class="year-cell">@(context)AC</span>
+            </YearCellTemplate>
+        </BitCalendar>
+        <BitCalendar Today="_today" Id="cal-header-footer" @bind-Value="_footerValue">
+            <HeaderTemplate>
+                <b id="calendar-header">Pick a delivery date</b>
+            </HeaderTemplate>
+            <FooterTemplate>
+                <button id="btn-footer-set" @onclick="() => _footerValue = new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero)">First</button>
+                <button id="btn-footer-clear" @onclick="() => _footerValue = null">Clear</button>
+            </FooterTemplate>
+        </BitCalendar>
+        <span id="footer-value">@Fmt(_footerValue)</span>
+    </E2ESection>
+
+    <E2ESection Id="culture" Title="Culture">
+        <BitCalendar Today="_today" Id="cal-fa" Culture="_faIr" GoToTodayTitle="برو به امروز" @bind-Value="_faValue" />
+        <span id="fa-value">@Fmt(_faValue)</span>
+        <BitCalendar Today="_today" Id="cal-en" Culture="_enUs" />
+    </E2ESection>
+
+    <E2ESection Id="time-zone" Title="TimeZone">
+        <BitCalendar Today="_today" Id="cal-tz" TimeZone="_plusFive" ShowTimePicker @bind-Value="_tzValue" />
+        <span id="tz-value">@Fmt(_tzValue)</span>
+    </E2ESection>
+
+    <E2ESection Id="validation" Title="Validation">
+        <EditForm Model="_model" OnValidSubmit="() => _submit = 1" OnInvalidSubmit="() => _submit = -1">
+            <DataAnnotationsValidator />
+            <BitCalendar Today="_today" Id="cal-validation" Required @bind-Value="_model.Date" />
+            <div id="cal-error"><ValidationMessage For="@(() => _model.Date)" /></div>
+            <BitCalendar Today="_today" Id="cal-novalidate" NoValidate @bind-Value="_model.Other" />
+            <button id="btn-submit" type="submit">Submit</button>
+        </EditForm>
+        <span id="submit-result">@_submit</span>
+    </E2ESection>
+
+    <E2ESection Id="accessibility" Title="Accessibility">
+        <button id="btn-before-a11y">Before a11y</button>
+        <BitCalendar Today="_today" Id="cal-a11y" AriaLabel="Departure date" ShowWeekNumbers @bind-Value="_a11yValue" />
+        <button id="btn-after-a11y">After a11y</button>
+        <span id="a11y-value">@Fmt(_a11yValue)</span>
+        <button id="btn-focus" @onclick="() => _focusRef.FocusAsync()">Focus the calendar</button>
+        <BitCalendar @ref="_focusRef" Today="_today" Id="cal-focus-target" />
+    </E2ESection>
+
+    <E2ESection Id="multiple-months" Title="Multiple months">
+        <BitCalendar Today="_today" Id="cal-multi" MonthCount="2" ShowMonthPicker="false" @bind-Value="_multiValue" />
+        <span id="multi-value">@Fmt(_multiValue)</span>
+        <BitCalendar Today="_today" Id="cal-multi3" MonthCount="3" PagedNavigation ShowMonthPickerAsOverlay Events="@_events" OnMonthChange="d => _multi3Month = d" />
+        <span id="multi3-month">@(_multi3Month?.ToString("yyyy-MM", CultureInfo.InvariantCulture))</span>
+        <div id="narrow-box" style="width: 300px;">
+            <BitCalendar Today="_today" Id="cal-multi-narrow" MonthCount="2" ShowMonthPicker="false" />
+        </div>
+    </E2ESection>
+
+    <E2ESection Id="colors" Title="Color">
+        @foreach (var (color, suffix) in _colors)
+        {
+            <BitCalendar Today="_today" Id="@($"cal-color-{suffix}")" Color="color" HighlightCurrentMonth ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours"
+                         Value="@(new DateTimeOffset(2024, 3, 20, 9, 0, 0, TimeSpan.Zero))" ValueChanged="_ => { }" />
+        }
+        <BitCalendar Today="_today" Id="cal-color-default" HighlightCurrentMonth />
+        <BitCalendar Today="_today" Id="cal-color-wins" Color="BitColor.Error" Style="--bit-Calendar-today-background: rgb(1, 2, 3);" />
+    </E2ESection>
+
+    <E2ESection Id="external-icons" Title="External Icons">
+        <BitCalendar Today="_today" Id="cal-ext-fa" GoToTodayIcon="@BitIconInfo.Fa("solid calendar-day")" PrevMonthNavIcon="@BitIconInfo.Fa("solid chevron-left")" NextMonthNavIcon="@BitIconInfo.Fa("solid chevron-right")"
+                     PrevYearNavIcon="@BitIconInfo.Bi("arrow-left")" NextYearNavIcon="@BitIconInfo.Bi("arrow-right")"
+                     PrevYearRangeNavIcon="@BitIconInfo.Css("my-prev-range")" NextYearRangeNavIcon="@BitIconInfo.Css("my-next-range")" GoToTodayIconName="Home" />
+        <BitCalendar Today="_today" Id="cal-ext-bi" ShowTimePicker NowButtonIcon="@BitIconInfo.Bi("clock")"
+                     TimePickerIncreaseHourIcon="@BitIconInfo.Bi("chevron-up")" TimePickerDecreaseHourIcon="@BitIconInfo.Bi("chevron-down")"
+                     TimePickerIncreaseMinuteIcon="@BitIconInfo.Bi("plus")" TimePickerDecreaseMinuteIcon="@BitIconInfo.Bi("dash")" />
+        <BitCalendar Today="_today" Id="cal-ext-names" ShowTimePicker ShowTimePickerAsOverlay PrevMonthNavIconName="ChevronLeft" NextMonthNavIconName="ChevronRight" GoToTodayIconName="Home"
+                     ShowTimePickerIconName="Stopwatch" HideTimePickerIconName="Calendar" NowButtonIconName="Timer"
+                     TimePickerIncreaseHourIconName="Add" TimePickerDecreaseHourIconName="Remove" TimePickerIncreaseMinuteIconName="CaretUp" TimePickerDecreaseMinuteIconName="CaretDown"
+                     ShowTimePickerIcon="@BitIconInfo.Bi("alarm")" />
+    </E2ESection>
+
+    <E2ESection Id="sizes" Title="Size">
+        <BitCalendar Today="_today" Id="cal-size-sm" Size="BitSize.Small" ShowWeekNumbers />
+        <BitCalendar Today="_today" Id="cal-size-md" Size="BitSize.Medium" ShowWeekNumbers />
+        <BitCalendar Today="_today" Id="cal-size-lg" Size="BitSize.Large" ShowWeekNumbers />
+        <BitCalendar Today="_today" Id="cal-size-default" ShowWeekNumbers />
+        <BitCalendar Today="_today" Id="cal-size-wins" Size="BitSize.Large" Style="--bit-Calendar-day-size: 60px;" />
+    </E2ESection>
+
+    <E2ESection Id="style-class" Title="Style and Class">
+        <BitCalendar Today="_today" Id="cal-style" Style="margin: 16px; border-radius: 16px; background: rgb(165, 16, 68);" />
+        <BitCalendar Today="_today" Id="cal-class" Class="custom-class" />
+        <BitCalendar Today="_today" Id="cal-styles" ShowTimePicker ShowWeekNumbers HighlightedDates="@_highlightedDates" @bind-Value="_stylesValue"
+                     Styles="@(new() { Root = "margin: 4px;", Divider = "border-color: rgb(60, 179, 113);", DayPickerMonth = "color: rgb(0, 100, 0);", TodayDayButton = "background-color: rgb(0, 128, 0);", SelectedDayButton = "background-color: rgb(50, 205, 50);", HighlightedDayButton = "background-color: rgb(255, 255, 0);", DayButton = "letter-spacing: 1px;", WeekNumber = "color: rgb(255, 0, 0);", TimePickerIncreaseHourButton = "background-color: rgb(50, 205, 50);", TimePickerHourInput = "color: rgb(0, 0, 255);", Container = "padding: 3px;" })">
+            <HeaderTemplate>Header</HeaderTemplate>
+            <FooterTemplate>Footer</FooterTemplate>
+        </BitCalendar>
+        <BitCalendar Today="_today" Id="cal-classes" ShowWeekNumbers HighlightedDates="@_highlightedDates" @bind-Value="_classesValue"
+                     Classes="@(new() { Root = "custom-root", Container = "c-cnt", DayPickerWrapper = "custom-day-picker", DayButton = "custom-day", TodayDayButton = "custom-today-day", SelectedDayButton = "c-selected", HighlightedDayButton = "c-highlighted", PrevMonthNavButton = "custom-prev-month", NextMonthNavButton = "custom-next-month", GoToTodayButton = "c-gtt", DayPickerMonth = "custom-day-month", DayPickerHeader = "custom-day-header", DaysGrid = "c-grid", DaysHeaderRow = "c-dhr", DayNameHeader = "c-dnh", DaysRow = "c-row", WeekNumbersHeader = "custom-week-header", WeekNumber = "c-wn", YearMonthPickerWrapper = "custom-year-picker", MonthPickerHeader = "c-mph", YearPickerToggleButton = "c-ypt", MonthButton = "c-month", MonthsRow = "c-months-row", PrevYearNavButton = "c-pyn", NextYearNavButton = "c-nyn", Divider = "c-divider", Header = "c-header", Footer = "c-footer", PrevMonthNavIcon = "c-pmi", NextMonthNavIcon = "c-nmi", GoToTodayIcon = "c-gti" })">
+            <HeaderTemplate>Header</HeaderTemplate>
+            <FooterTemplate>Footer</FooterTemplate>
+        </BitCalendar>
+        <BitCalendar Today="_today" Id="cal-classes-time" ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" Value="@(new DateTimeOffset(2024, 3, 20, 9, 0, 0, TimeSpan.Zero))" ValueChanged="_ => { }"
+                     Classes="@(new() { TimePickerWrapper = "c-tpw", TimePickerHeader = "c-tph", TimeInputContainer = "c-tic", HourInputContainer = "c-hic", MinuteInputContainer = "c-mic", TimePickerHourInput = "c-hour", TimePickerMinuteInput = "c-minute", TimePickerHourMinuteSeparator = "c-sep", TimePickerAmButton = "c-am", TimePickerPmButton = "c-pm", TimePickerAmPmContainer = "c-ampm", NowButton = "c-now", NowButtonIcon = "c-nowi", TimePickerIncreaseHourButton = "c-ihb", TimePickerDecreaseHourButton = "c-dhb", TimePickerIncreaseMinuteButton = "c-imb", TimePickerDecreaseMinuteButton = "c-dmb", TimePickerIncreaseHourIcon = "c-ihi" })" />
+    </E2ESection>
+
+    <E2ESection Id="css-variables" Title="CSS variables">
+        <BitCalendar Today="_today" Id="cal-var-selected" @bind-Value="_cssVarsValue"
+                     Style="--bit-Calendar-selected-background: rgb(0, 120, 212); --bit-Calendar-selected-color: rgb(255, 255, 255); --bit-Calendar-selected-border-color: rgb(1, 1, 1); --bit-Calendar-today-radius: 2px; --bit-Calendar-today-background: rgb(10, 20, 30); --bit-Calendar-today-color: rgb(250, 250, 250);" />
+        <BitCalendar Today="_today" Id="cal-var-cells" ShowWeekNumbers
+                     Style="--bit-Calendar-day-size: 44px; --bit-Calendar-day-font-size: 14px; --bit-Calendar-day-radius: 999px; --bit-Calendar-week-number-background: rgb(240, 240, 240); --bit-Calendar-week-number-color: rgb(200, 0, 0); --bit-Calendar-outside-day-color: rgb(0, 150, 0); --bit-Calendar-color: rgb(20, 20, 120); --bit-Calendar-padding: 20px;" />
+        <div id="var-ancestor" style="--bit-Calendar-background: rgb(245, 245, 220); --bit-Calendar-radius: 16px; --bit-Calendar-hover-background: rgb(200, 200, 255); --bit-Calendar-event-color: rgb(0, 128, 0); --bit-Calendar-event-size: 6px; --bit-Calendar-event-gap: 3px; --bit-Calendar-highlighted-background: rgb(255, 228, 196); --bit-Calendar-divider-color: rgb(128, 0, 128);">
+            <BitCalendar Today="_today" Id="cal-var-anc" Events="@_events" HighlightedDates="@_highlightedDates" />
+        </div>
+        <div style="--bit-Calendar-disabled-color: rgb(200, 0, 0);">
+            <BitCalendar Today="_today" Id="cal-var-disabled" DisabledDaysOfWeek="@_weekendDays" />
+        </div>
+    </E2ESection>
+
+    <E2ESection Id="rtl" Title="RTL">
+        <BitCalendar Today="_today" Id="cal-rtl" Dir="BitDir.Rtl" ShowWeekNumbers />
+        <div dir="rtl">
+            <BitCalendar Today="_today" Id="cal-rtl-inherited" />
+        </div>
+    </E2ESection>
+
+    <E2ESection Id="dialog" Title="In a dialog">
+        <button id="btn-open-dialog" @onclick="() => _dialogOpen = true">Open the dialog</button>
+        <BitDialog @bind-IsOpen="_dialogOpen" Title="Pick a date" ShowOkButton="false" ShowCancelButton="false">
+            <BitCalendar Today="_today" Id="cal-in-dialog" ShowMonthPickerAsOverlay Events="@_events" />
+        </BitDialog>
+        <span id="dialog-open">@_dialogOpen</span>
+    </E2ESection>
+
+    <E2ESection Id="base" Title="Base behaviours">
+        <BitCalendar Today="_today" Id="cal-hidden" Visibility="BitVisibility.Hidden" />
+        <BitCalendar Today="_today" Id="cal-collapsed" Visibility="BitVisibility.Collapsed" />
+        <BitCalendar Today="_today" Id="cal-html-attrs" data-custom="abc" />
+        <BitCalendar Today="_today" Id="cal-handler-enabled" @onclick="() => _enabledRootClicks++" />
+        <BitCalendar Today="_today" Id="cal-handler-disabled" Disabled="_handlerDisabled" @onclick="() => _disabledRootClicks++" />
+        <button id="btn-toggle-handler-disabled" @onclick="() => _handlerDisabled = !_handlerDisabled">Toggle disabled</button>
+        <span id="enabled-root-clicks">@_enabledRootClicks</span>
+        <span id="disabled-root-clicks">@_disabledRootClicks</span>
+    </E2ESection>
+
+    <E2ESection Id="runtime" Title="Runtime parameter changes">
+        @if (_showRuntime)
+        {
+            <BitCalendar Today="_today" Id="cal-runtime" Color="_runtimeColor" Disabled="_runtimeDisabled" Culture="_runtimeCulture" MonthCount="_runtimeMonthCount" @bind-Value="_runtimeValue" />
+        }
+        <button id="btn-runtime-color" @onclick="() => _runtimeColor = BitColor.Success">Set color</button>
+        <button id="btn-runtime-disable" @onclick="() => _runtimeDisabled = !_runtimeDisabled">Toggle disabled</button>
+        <button id="btn-runtime-culture" @onclick="() => _runtimeCulture = _faIr">Switch to fa-IR</button>
+        <button id="btn-runtime-months" @onclick="() => _runtimeMonthCount = 2">Two months</button>
+        <button id="btn-runtime-unmount" @onclick="() => _showRuntime = !_showRuntime">Toggle mount</button>
+        <span id="runtime-value">@Fmt(_runtimeValue)</span>
+    </E2ESection>
+
+    <E2ESection Id="motion" Title="Motion">
+        <BitCalendar Today="_today" Id="cal-motion" Events="@_events" />
+        <BitCalendar Today="_today" Id="cal-motion-forced" Events="@_events" ForceAnimation />
+    </E2ESection>
+
+</BitParams>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_cascadeParams">
+        <BitCalendar Id="cal-cascade-1" Today="_today" />
+        <BitCalendar Id="cal-cascade-own" Today="_today" ShowWeekNumbers="false" ShowMonthPicker="false" />
+        <BitCalendar Id="cal-cascade-today" />
+    </BitParams>
+    <BitCalendar Id="cal-cascade-outside" Culture="_enUs" TimeZone="TimeZoneInfo.Utc" Today="_today" />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly DateTimeOffset _today = new(2024, 3, 15, 10, 0, 0, TimeSpan.Zero);
+    private static readonly CultureInfo _enUs = CultureInfo.GetCultureInfo("en-US");
+    private static readonly CultureInfo _faIr = CreateFaIrCulture();
+    private static readonly TimeZoneInfo _plusFive = TimeZoneInfo.CreateCustomTimeZone("E2E+5", TimeSpan.FromHours(5), "E2E +5", "E2E +5");
+
+    private readonly IBitComponentParams[] _pageParams =
+    [
+        new BitCalendarParams { Culture = _enUs, TimeZone = TimeZoneInfo.Utc }
+    ];
+
+    private readonly IBitComponentParams[] _cascadeParams =
+    [
+        new BitCalendarParams { Culture = _enUs, TimeZone = TimeZoneInfo.Utc, Today = _today, ShowWeekNumbers = true, FirstDayOfWeek = DayOfWeek.Monday, HighlightCurrentMonth = true }
+    ];
+
+    private DateTimeOffset? _basicValue;
+    private int _basicSelects;
+    private DateTimeOffset? _readOnlyValue;
+    private DateTimeOffset? _twoWayValue;
+    private DateTimeOffset? _onSelectValue;
+    private DateTimeOffset? _deselectValue = new DateTimeOffset(2024, 3, 12, 0, 0, 0, TimeSpan.Zero);
+    private DateTimeOffset? _oneWayValue = new DateTimeOffset(2024, 3, 12, 0, 0, 0, TimeSpan.Zero);
+    private int _monthChanges;
+    private DateTimeOffset? _displayedMonth;
+    private bool _showMonthPicker = true;
+    private DateTimeOffset? _timeValue;
+    private DateTimeOffset? _time12Value;
+    private DateTimeOffset? _timeStepValue;
+    private DateTimeOffset? _timeSpinValue;
+    private DateTimeOffset? _eventsValue;
+    private string _eventsOfDay = "-";
+    private string? _openedEvent;
+    private DateTimeOffset? _footerValue;
+    private DateTimeOffset? _faValue;
+    private DateTimeOffset? _tzValue;
+    private readonly CalendarModel _model = new();
+    private int _submit;
+    private DateTimeOffset? _a11yValue;
+    private BitCalendar _focusRef = default!;
+    private DateTimeOffset? _multiValue;
+    private DateTimeOffset? _multi3Month;
+    private DateTimeOffset? _stylesValue = new DateTimeOffset(2024, 3, 20, 0, 0, 0, TimeSpan.Zero);
+    private DateTimeOffset? _classesValue = new DateTimeOffset(2024, 3, 20, 0, 0, 0, TimeSpan.Zero);
+    private DateTimeOffset? _cssVarsValue = new DateTimeOffset(2024, 3, 20, 0, 0, 0, TimeSpan.Zero);
+    private bool _dialogOpen;
+    private int _enabledRootClicks;
+    private int _disabledRootClicks;
+    private bool _handlerDisabled = true;
+    private bool _showRuntime = true;
+    private BitColor? _runtimeColor;
+    private bool _runtimeDisabled;
+    private CultureInfo _runtimeCulture = _enUs;
+    private int _runtimeMonthCount = 1;
+    private DateTimeOffset? _runtimeValue;
+
+    private readonly DayOfWeek[] _weekendDays = [DayOfWeek.Saturday, DayOfWeek.Sunday];
+    private readonly DateTimeOffset[] _disabledDates = [new(2024, 3, 6, 0, 0, 0, TimeSpan.Zero), new(2024, 3, 8, 0, 0, 0, TimeSpan.Zero)];
+    private readonly DateTimeOffset[] _highlightedDates = [new(2024, 3, 8, 0, 0, 0, TimeSpan.Zero), new(2024, 3, 22, 0, 0, 0, TimeSpan.Zero)];
+
+    private readonly BitCalendarEvent[] _events =
+    [
+        new() { Title = "Standup", Body = "Daily sync", Date = new DateOnly(2024, 3, 12), StartTime = new TimeOnly(9, 0), EndTime = new TimeOnly(9, 15) },
+        new() { Title = "All hands", Body = "Whole company", Date = new DateOnly(2024, 3, 12) },
+        new() { Title = "Lunch", Date = new DateOnly(2024, 3, 18), StartTime = new TimeOnly(12, 0) },
+        new() { Title = "Deadline", Date = new DateOnly(2024, 3, 18), EndTime = new TimeOnly(17, 0) },
+        new() { Title = "Review", Date = new DateOnly(2024, 4, 2) }
+    ];
+
+    private readonly BitCalendarEvent[] _coloredEvents =
+    [
+        new() { Title = "Red", Date = new DateOnly(2024, 3, 12), Color = BitColor.Error },
+        new() { Title = "Green", Date = new DateOnly(2024, 3, 12), Color = BitColor.Success },
+        new() { Title = "Default", Date = new DateOnly(2024, 3, 12) },
+        new() { Title = "Fourth", Date = new DateOnly(2024, 3, 12) }
+    ];
+
+    private readonly (BitColor Color, string Suffix)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+
+    private static string Fmt(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm zzz", CultureInfo.InvariantCulture) ?? "null";
+
+    private void HandleEventDaySelect(DateTimeOffset? date)
+    {
+        if (date is null)
+        {
+            _eventsOfDay = "-";
+            return;
+        }
+
+        var day = DateOnly.FromDateTime(date.Value.Date);
+        var titles = _events.Where(e => e.Date == day).Select(e => e.Title).ToArray();
+        _eventsOfDay = titles.Length == 0 ? "none" : string.Join(", ", titles);
+    }
+
+    // The Persian calendar the way the demo's CultureInfoHelper builds it: fa-IR with its Farsi names on the Persian
+    // calendar, whatever the runtime picks for the culture by default.
+    private static CultureInfo CreateFaIrCulture()
+    {
+        var culture = CultureInfo.CreateSpecificCulture("fa-IR");
+        culture.GetType().GetField("_calendar", BindingFlags.NonPublic | BindingFlags.Instance)!.SetValue(culture, new PersianCalendar());
+        culture.DateTimeFormat.AMDesignator = "ق.ظ";
+        culture.DateTimeFormat.PMDesignator = "ب.ظ";
+        culture.DateTimeFormat.ShortDatePattern = "yyyy/MM/dd";
+        culture.DateTimeFormat.AbbreviatedDayNames = ["ی", "د", "س", "چ", "پ", "ج", "ش"];
+        culture.DateTimeFormat.ShortestDayNames = ["ی", "د", "س", "چ", "پ", "ج", "ش"];
+        return culture;
+    }
+
+    private sealed class CalendarModel
+    {
+        [Required(ErrorMessage = "Pick a date")]
+        public DateTimeOffset? Date { get; set; }
+
+        [Required(ErrorMessage = "Never shown")]
+        public DateTimeOffset? Other { get; set; }
+    }
+}

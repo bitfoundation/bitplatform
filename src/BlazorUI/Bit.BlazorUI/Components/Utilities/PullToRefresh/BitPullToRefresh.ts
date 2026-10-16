@@ -124,10 +124,11 @@
 
         // The two inline styles the gesture writes on elements it does not own, remembered so that disposing
         // puts back whatever the application had there rather than blanking it.
-        private readonly anchorTouchAction: string;
+        private anchorTouchAction: string;
         private scrollerOverscroll = '';
 
         private resizeObserver?: ResizeObserver;
+        private styleObserver?: MutationObserver;
         private touchActionInEffect = '';
         private overscrollInEffect = '';
 
@@ -178,6 +179,17 @@
                 this.resizeObserver.observe(this.anchorEl);
             } else {
                 this.syncWidth();
+            }
+
+            // The root and the strip are rendered by Blazor, which writes their style attribute anew whenever what it
+            // renders there changes (a Color, a CustomColor, a Style, a Styles.Root or Styles.Loading, a Visibility),
+            // and that takes away the touch-action and the width written here as well. They are put back as soon as
+            // the render has landed, before it is painted - and only when they are actually gone, so the writes below
+            // cost a style read when they are the ones being observed.
+            if (typeof MutationObserver !== 'undefined') {
+                this.styleObserver = new MutationObserver(this.onStyleRendered);
+                this.styleObserver.observe(this.anchorEl, { attributes: true, attributeFilter: ['style'] });
+                this.styleObserver.observe(this.loadingEl, { attributes: true, attributeFilter: ['style'] });
             }
         }
 
@@ -254,6 +266,7 @@
 
             this.unbindScroller();
             this.resizeObserver?.disconnect();
+            this.styleObserver?.disconnect();
             this.releasePointer();
 
             this.anchorEl.style.touchAction = this.anchorTouchAction;
@@ -663,6 +676,22 @@
 
         private onScroll = () => this.syncScrollStyles();
 
+        private onStyleRendered = (records: MutationRecord[]) => {
+            if (records.some(r => r.target === this.anchorEl) && this.anchorEl.style.touchAction !== this.touchActionInEffect) {
+                // What the render left is the application's own touch-action now: it is the one put back when the
+                // gesture is disabled or disposed, and the one the gesture's own is written over again.
+                this.anchorTouchAction = this.anchorEl.style.touchAction;
+                this.touchActionInEffect = this.anchorTouchAction;
+                this.syncScrollStyles();
+            }
+
+            // The strip's own writes (its min-height on every frame of a pull) are seen here too, so its width is
+            // measured again only once a render has actually taken it away.
+            if (!this.loadingEl.style.width && records.some(r => r.target === this.loadingEl)) {
+                this.syncWidth();
+            }
+        };
+
         // Written only when the value actually changes: a scroll handler that assigns an inline style on every
         // event makes the browser recalculate styles for the whole subtree at scroll speed.
         // At the edge the pull starts at, the browser keeps the panning that scrolls back into the content - pan-down
@@ -683,7 +712,10 @@
         }
 
         private syncWidth() {
-            this.loadingEl.style.width = `${this.anchorEl.getBoundingClientRect().width}px`;
+            const width = `${this.anchorEl.getBoundingClientRect().width}px`;
+            if (this.loadingEl.style.width !== width) {
+                this.loadingEl.style.width = width;
+            }
         }
 
 

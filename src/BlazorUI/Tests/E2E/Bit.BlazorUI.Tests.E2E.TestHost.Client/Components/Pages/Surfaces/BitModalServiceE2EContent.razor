@@ -1,0 +1,43 @@
+﻿@* The content the BitModalService E2E page shows its modals with: it reaches its own modal through the cascaded
+   reference and reports what it did to the page. Classes rather than ids, since several of these can be open at once;
+   the tests reach each through the data-modal attribute its modal was shown with. *@
+<div class="svc-content" style="padding: 24px;">
+    <p class="svc-text">@Text</p>
+    <span class="svc-id">@ModalReference?.Id</span>
+    <button class="svc-close" @onclick="() => ModalReference.Close()">Close</button>
+    <button class="svc-dismiss" @onclick="Dismiss">Dismiss</button>
+    <button class="svc-closewith" @onclick="() => ModalReference.CloseWith(Answer)">Answer</button>
+    <button class="svc-tryclose" @onclick="TryClose">TryClose</button>
+    <button class="svc-retitle" @onclick="@(() => ModalReference.Update(p => p.HeaderText = "Retitled"))">Retitle</button>
+    <button class="svc-allow" @onclick="() => Allow?.Invoke()">Allow</button>
+    <button class="svc-count" @onclick="() => Clicks++">Count @Clicks</button>
+</div>
+
+@code {
+    [CascadingParameter] private BitModalReference ModalReference { get; set; } = default!;
+
+    [Parameter] public string? Text { get; set; }
+
+    [Parameter] public object? Answer { get; set; } = "yes";
+
+    [Parameter] public Action<string>? Report { get; set; }
+
+    [Parameter] public Action? Allow { get; set; }
+
+    /// <summary>
+    /// What the page reads back through GetContentAsync.
+    /// </summary>
+    public int Clicks { get; private set; }
+
+    private async Task Dismiss()
+    {
+        var dismissed = await ModalReference.Dismiss();
+        Report?.Invoke("Dismiss:" + dismissed);
+    }
+
+    private async Task TryClose()
+    {
+        var closed = await ModalReference.TryClose("tried");
+        Report?.Invoke("TryClose:" + closed);
+    }
+}

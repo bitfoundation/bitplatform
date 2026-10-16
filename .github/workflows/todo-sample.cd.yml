@@ -383,7 +383,7 @@ jobs:
 
     - name: Optimize DbContext
       run: |
-          cd TodoSample/src/Server/TodoSample.Server.Web && dotnet build -c Release && dnx dotnet-ef@10.0.12 -- dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace TodoSample.Client.Core.Infrastructure.Data --project ../../Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj --verbose
+          cd TodoSample/src/Server/TodoSample.Server.Web && dotnet build -c Release && dnx dotnet-ef@10.0.13 -- dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace TodoSample.Client.Core.Infrastructure.Data --project ../../Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj --verbose
 
     - name: Publish
       run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
@@ -663,7 +663,7 @@ jobs:
   build_blazor_hybrid_ios:
     name: build blazor hybrid (iOS-macOS)
     if: inputs.ios
-    runs-on: macOS-26
+    runs-on: xcode-27
     permissions:
       contents: read
       actions: read
@@ -684,7 +684,7 @@ jobs:
 
     - uses: maxim-lobanov/setup-xcode@ed7a3b1fda3918c0306d1b724322adc0b8cc0a90 # v1.7.0
       with:
-        xcode-version: '26.6'
+        xcode-version: '27.0'
 
     - name: Use prerelease packages
       if: inputs.prerelease_packages

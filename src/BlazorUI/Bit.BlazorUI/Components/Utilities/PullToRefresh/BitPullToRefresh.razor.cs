@@ -512,7 +512,7 @@ public partial class BitPullToRefresh : BitComponentBase
             }
 
             CacheJsParameters();
-            await _js.BitPullToRefreshUpdate(UniqueId, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, Disabled is false, NoMouse, Direction);
+            await _js.BitPullToRefreshUpdate(UniqueId, _ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, Disabled is false, NoMouse, Direction);
 
             // A pull dropped by the disabling or the turn, or one a new Trigger has moved across the release line.
             NotifyStateChange();
@@ -525,7 +525,7 @@ public partial class BitPullToRefresh : BitComponentBase
         {
             CacheJsParameters();
             var dotnetObj = DotNetObjectReference.Create(this);
-            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, Disabled is false, NoMouse, Direction, dotnetObj);
+            await _js.BitPullToRefreshSetup(UniqueId, RootElement, _loadingRef, _ScrollerElement, ScrollerSelector, _Trigger, _Factor, _Margin, _Threshold, _MaxPull, Disabled is false, NoMouse, Direction, dotnetObj);
         }
 
         await base.OnAfterRenderAsync(firstRender);
@@ -552,6 +552,13 @@ public partial class BitPullToRefresh : BitComponentBase
     private int _Margin => Margin < 0 ? 0 : Margin;
     private int _Threshold => Threshold < 0 ? 0 : Threshold;
     private int _MaxPull => MaxPull < 0 ? 0 : MaxPull;
+
+    // A reference the page has not captured yet - which is what the first render hands over, since an @ref is only
+    // assigned once the page has rendered - points at no element, and the script would take the bare object it
+    // arrives as for the scroller and fail on it, taking the circuit down. It is sent as no reference at all until it
+    // is captured: the anchor's first child stands in meanwhile, and the render that hands the captured one over
+    // moves the gesture onto it.
+    private ElementReference? _ScrollerElement => ScrollerElement is { Id.Length: > 0 } ? ScrollerElement : null;
 
     private bool CanRelease => CanReleaseAt(_diff);
 

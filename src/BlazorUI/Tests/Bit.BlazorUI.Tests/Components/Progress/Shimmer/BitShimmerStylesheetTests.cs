@@ -86,4 +86,17 @@ public class BitShimmerStylesheetTests
             StringAssert.Contains(root, $"{property}: initial;");
         }
     }
+
+    [TestMethod]
+    public void BitShimmerInlineWithoutAWidthShouldFallBackToALength()
+    {
+        var stylesheet = SourceFiles.ReadStylesheet("Bit.BlazorUI", "Components", "Progress", "Shimmer", "BitShimmer.scss");
+
+        var inline = SourceFiles.GetScssBlock(stylesheet, "\n.bit-smr-lin.bit-smr-inl {");
+
+        // The theme's minimum control width is a floor for a labeled button, which Fluent leaves at `auto` - a width
+        // an empty inline-block resolves to nothing - so the inline placeholder has a length of its own.
+        StringAssert.Contains(inline, "width: spacing(8);");
+        Assert.IsFalse(inline.Contains("siz-ctrl-min-width"), "An inline shimmer falls back to the minimum width of a button, which is `auto` under Fluent.");
+    }
 }

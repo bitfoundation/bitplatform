@@ -70,6 +70,32 @@ public class BitPdfViewerAccessibilityTests : BunitTestContext
         });
 
         component.WaitForPages(1);
+
+        // The busy state is the literal "false" once the document is in - never a missing attribute, which
+        // would leave the earlier "true" standing for a reader that read it while the load ran.
+        Assert.AreEqual("false", component.Find(".bit-pdv-surface").GetAttribute("aria-busy"));
+        Assert.AreEqual(0, component.FindAll(".bit-pdv-progress").Count);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerSurfaceShouldBeBusyWhileADocumentLoads()
+    {
+        var response = new TaskCompletionSource<HttpResponseMessage>(TaskCreationOptions.RunContinuationsAsynchronously);
+        Services.AddSingleton(new HttpClient(new HeldHandler(response.Task)) { BaseAddress = new Uri("https://localhost/") });
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromUrl("doc.pdf"));
+        });
+
+        component.WaitForAssertion(() => Assert.AreEqual("true", component.Find(".bit-pdv-surface").GetAttribute("aria-busy")));
+        var progress = component.Find(".bit-pdv-progress");
+        Assert.AreEqual("progressbar", progress.GetAttribute("role"));
+        Assert.AreEqual("Loading document", progress.GetAttribute("aria-label"));
+
+        response.SetResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new ByteArrayContent(TestPdf.HelloWorld()) });
+
+        component.WaitForPages(1);
     }
 
     [TestMethod]

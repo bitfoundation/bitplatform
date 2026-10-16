@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -937,6 +938,77 @@ public partial class BitErrorBoundaryTests : BunitTestContext
         component.Find(".template-recover").Click();
 
         Assert.AreEqual("Recovered", component.Find(".throw-once-safe").TextContent);
+    }
+
+    [TestMethod]
+    public async Task BitErrorBoundaryErrorTemplateContextShouldRefreshAndGoHome()
+    {
+        BitErrorBoundaryContext? context = null;
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.HomeUrl, "https://example.com/start");
+            parameters.Add(p => p.ErrorTemplate, (RenderFragment<BitErrorBoundaryContext>)(ctx => b =>
+            {
+                context = ctx;
+                b.AddMarkupContent(0, "<div class=\"tpl\">Template</div>");
+            }));
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        var navMan = Services.GetRequiredService<BunitNavigationManager>();
+        var initialCount = navMan.History.Count;
+
+        await component.InvokeAsync(() => context!.Refresh());
+        Assert.IsTrue(navMan.History.Count > initialCount, "Refresh reloads the page like the default UI's Refresh button");
+
+        await component.InvokeAsync(() => context!.GoHome());
+        Assert.AreEqual("https://example.com/start", navMan.Uri);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldHandTheErrorTemplateTheSameContextWhileTheExceptionStays()
+    {
+        var contexts = new List<BitErrorBoundaryContext>();
+        var component = RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.ErrorTemplate, (RenderFragment<BitErrorBoundaryContext>)(ctx => b =>
+            {
+                contexts.Add(ctx);
+                b.AddMarkupContent(0, "<div class=\"tpl\">Template</div>");
+            }));
+            parameters.Add(p => p.ChildContent, ThrowingContent("err"));
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Title, "Another title"));
+
+        Assert.IsTrue(contexts.Count >= 2, "the template is rendered again with the boundary");
+        Assert.IsTrue(contexts.All(c => ReferenceEquals(c, contexts[0])), "a template bound to the context is not handed a new object on every render");
+        Assert.AreSame(component.Instance.CaughtException, contexts[0].Exception);
+    }
+
+    [TestMethod]
+    public void BitErrorBoundaryShouldSurviveANavigationAfterItIsDisposed()
+    {
+        ThrowSwitchComponent.Reset();
+
+        var recovered = 0;
+        RenderComponent<BitErrorBoundary>(parameters =>
+        {
+            parameters.Add(p => p.RecoverOnNavigation, true);
+            parameters.Add(p => p.OnRecover, EventCallback.Factory.Create<BitErrorBoundaryRecoverReason>(this, _ => recovered++));
+            parameters.AddChildContent(b =>
+            {
+                b.OpenComponent<ThrowSwitchComponent>(0);
+                b.CloseComponent();
+            });
+        });
+
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+
+        // A boundary that is gone has let go of the navigation manager, so the navigation reaches no handler of it.
+        Services.GetRequiredService<BunitNavigationManager>().NavigateTo("/another-page");
+
+        Assert.AreEqual(0, recovered);
     }
 
     [TestMethod]

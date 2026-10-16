@@ -1,0 +1,66 @@
+﻿@page "/e2e/button/float"
+
+<PageTitle>BitButton Float E2E</PageTitle>
+
+@* The floating buttons leave the flow and sit over the page, so they get a page of their own: on the main page they
+   would cover the controls the other tests click. The controls here are kept in the middle of the viewport, away
+   from every corner and edge a floating button can be pinned to. *@
+<div style="margin: 160px auto 0; width: 360px;">
+    <E2ESection Id="controls" Title="Controls">
+        <label>
+            FloatPosition
+            <select id="float-position" @bind="_position">
+                @foreach (var position in Enum.GetValues<BitPosition>())
+                {
+                    <option value="@position">@position</option>
+                }
+            </select>
+        </label>
+        <label>
+            FloatOffset
+            <input id="float-offset" @bind="_offset" @bind:event="oninput" />
+        </label>
+        <button id="btn-toggle-draggable" type="button" @onclick="() => _draggable = !_draggable">Toggle draggable</button>
+        <button id="btn-toggle-float" type="button" @onclick="() => _float = !_float">Toggle float</button>
+        <button id="btn-remove-float" type="button" @onclick="() => _present = !_present">Remove float</button>
+        <button id="btn-ping" type="button" @onclick="() => _pings++">Ping</button>
+        <span id="pings">@_pings</span>
+        <span id="float-clicks">@_clicks</span>
+        <span id="float-draggable">@_draggable</span>
+    </E2ESection>
+
+    <E2ESection Id="absolute" Title="FloatAbsolute">
+        <div id="float-container" style="position: relative; width: 300px; height: 200px; border: 1px solid #999;">
+            <BitButton Id="float-abs-btn" IconOnly AriaLabel="Edit" IconName="@BitIconName.Edit" Draggable FloatAbsolute
+                       FloatPosition="_absPosition" FloatOffset="@_absOffset" OnClick="() => _absClicks++" />
+        </div>
+        <button id="btn-abs-topleft" type="button" @onclick="() => _absPosition = BitPosition.TopLeft">Abs top left</button>
+        <button id="btn-abs-offset" type="button" @onclick="ToggleAbsOffset">Abs offset</button>
+        <span id="float-abs-clicks">@_absClicks</span>
+    </E2ESection>
+</div>
+
+@if (_present)
+{
+    <BitButton Id="float-btn" Rounded IconOnly AriaLabel="Add" Size="BitSize.Large" IconName="@BitIconName.Add"
+               Float="_float" Draggable="_draggable" FloatPosition="_position" FloatOffset="@_offset"
+               OnClick="() => _clicks++" />
+}
+
+<E2EStatus />
+
+@code {
+    private BitPosition _position = BitPosition.BottomRight;
+    private string? _offset = "16px";
+    private bool _draggable = true;
+    private bool _float = true;
+    private int _clicks;
+    private bool _present = true;
+    private int _pings;
+
+    private BitPosition _absPosition = BitPosition.BottomRight;
+    private string? _absOffset = "10";
+    private int _absClicks;
+
+    private void ToggleAbsOffset() => _absOffset = _absOffset == "10" ? "30px" : "10";
+}

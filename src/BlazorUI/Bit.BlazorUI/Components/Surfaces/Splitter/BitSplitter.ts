@@ -133,7 +133,10 @@
             let latestRaw = 0;
             let startPercent = 0;
             let appliedPercent = 0;
-            let lastToggle = 0;
+            // No press has toggled the fold yet: an event's timeStamp counts from the load of the page, so a zero
+            // here would take the first press within the first half second of it for the second half of a double
+            // click and leave a panel the page loaded folded shut.
+            let lastToggle = Number.NEGATIVE_INFINITY;
             let keyPercent = 0;
             let keyTimer = 0;
             let keyResizing = false;

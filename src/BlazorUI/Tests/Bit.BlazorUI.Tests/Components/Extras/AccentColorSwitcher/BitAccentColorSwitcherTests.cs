@@ -368,4 +368,299 @@ public class BitAccentColorSwitcherTests : BunitTestContext
 
         Assert.AreEqual("Main", root.GetAttribute("aria-label"));
     }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldRenderAGroupNamedAccentColorByDefault()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>();
+
+        var root = component.Find(".bit-acs");
+
+        Assert.AreEqual("group", root.GetAttribute("role"));
+        Assert.AreEqual("Accent color", root.GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldNameTheGroupWithTheAriaLabelParameter()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.AriaLabel, "Brand color");
+        });
+
+        Assert.AreEqual("Brand color", component.Find(".bit-acs").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldComposeTheSwatchAriaLabelFromTheName()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                Accents =
+                [
+                    new BitAccentColorItem { Name = "Crimson", Color = "#DC143C" },
+                    new BitAccentColorItem { Name = "Indigo", AriaLabel = "Pick indigo", Color = "#4B0082" },
+                    new BitAccentColorItem { Color = "#228B22" },
+                ]
+            });
+        });
+
+        var swatches = component.FindAll(".bit-acs-swt");
+
+        Assert.AreEqual("Apply the Crimson accent color", swatches[0].GetAttribute("aria-label"));
+        // An explicit AriaLabel is how an app localizes the label, so it wins over the composed English one.
+        Assert.AreEqual("Pick indigo", swatches[1].GetAttribute("aria-label"));
+        Assert.AreEqual("Indigo", swatches[1].GetAttribute("title"));
+        // An item without a name is still announced as something to press.
+        Assert.AreEqual("Apply this accent color", swatches[2].GetAttribute("aria-label"));
+        Assert.IsFalse(swatches[2].HasAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldRenderEverySwatchAsAButtonOfTypeButton()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>();
+
+        var swatches = component.FindAll(".bit-acs-swt");
+
+        Assert.IsTrue(swatches.All(s => s.TagName == "BUTTON"));
+        // Inside a form a button without a type submits it; a swatch never may.
+        Assert.IsTrue(swatches.All(s => s.GetAttribute("type") == "button"));
+        Assert.AreEqual(BitAccentColorSwitcher.DefaultAccents.Count - 1, swatches.Count(s => s.GetAttribute("aria-pressed") == "false"));
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldPaintTheNeutralSwatchThroughTheNeutralCustomProperty()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                Accents =
+                [
+                    new BitAccentColorItem { Name = "Default", Color = BitAccentColorPresets.Blue },
+                    // The same accent spelled another way is still the neutral one.
+                    new BitAccentColorItem { Name = "Bare", Color = BitAccentColorPresets.Blue.TrimStart('#').ToLowerInvariant() },
+                ]
+            });
+        });
+
+        // The neutral swatch shows the primary of the active packaged preset, which an applied accent overrides in
+        // --bit-clr-pri, so it is read off --bit-acs-ntr with the token's own hex as the fallback.
+        var expected = $"--bit-acs-clr:var(--bit-acs-ntr, {BitAccentColorPresets.Blue})";
+
+        foreach (var swatch in component.FindAll(".bit-acs-swt"))
+        {
+            StringAssert.Contains(swatch.GetAttribute("style"), expected, System.StringComparison.Ordinal);
+        }
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldPassAColorThatIsNotHexThroughForCssToJudge()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Config, new BitAccentColorConfig
+            {
+                Accents = [new BitAccentColorItem { Name = "Named", Color = "rebeccapurple" }]
+            });
+        });
+
+        // Only a missing # is supplied; anything else is the author's spelling, and a non-hex value gets no #.
+        StringAssert.Contains(component.Find(".bit-acs-swt").GetAttribute("style"), "--bit-acs-clr:rebeccapurple", System.StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldPairDisabledWithAriaDisabledOnEverySwatch()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        foreach (var swatch in component.FindAll(".bit-acs-swt"))
+        {
+            Assert.IsTrue(swatch.HasAttribute("disabled"));
+            Assert.AreEqual("true", swatch.GetAttribute("aria-disabled"));
+        }
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        foreach (var swatch in component.FindAll(".bit-acs-swt"))
+        {
+            Assert.IsFalse(swatch.HasAttribute("disabled"));
+            Assert.IsFalse(swatch.HasAttribute("aria-disabled"));
+        }
+
+        Assert.IsFalse(component.Find(".bit-acs").ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldNotApplyAClickWhileDisabled()
+    {
+        RegisterServices();
+
+        var changed = 0;
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.OnChange, (string _) => changed++);
+        });
+
+        // A script or an assistive technology can still deliver a click to the button; the handler guards it.
+        component.FindAll(".bit-acs-swt").First(s => s.GetAttribute("title") == "Purple").Click();
+
+        Assert.AreEqual(0, changed);
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.AccentColor.apply"));
+        Assert.AreEqual("Default", component.Find(".bit-acs-act").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldClearTheOverridesWhenTheNeutralSwatchIsPicked()
+    {
+        RegisterServices();
+
+        string? changed = null;
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.OnChange, (string color) => changed = color);
+        });
+
+        component.FindAll(".bit-acs-swt").First(s => s.GetAttribute("title") == "Purple").Click();
+        component.FindAll(".bit-acs-swt").First(s => s.GetAttribute("title") == "Default").Click();
+
+        // The packaged primary reproduces the packaged palette: nothing is applied, the stores and the attribute
+        // are cleared instead.
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.AccentColor.apply"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.AccentColor.clear"));
+        Assert.AreEqual(BitAccentColorPresets.Blue, changed);
+        Assert.AreEqual("Default", component.Find(".bit-acs-act").GetAttribute("title"));
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldMoveTheActiveStylesWithTheActiveSwatch()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Styles, new BitAccentColorSwitcherClassStyles { Root = "padding:4px", ActiveSwatch = "border-color:red" });
+        });
+
+        StringAssert.Contains(component.Find(".bit-acs").GetAttribute("style"), "padding:4px", System.StringComparison.Ordinal);
+
+        var swatches = component.FindAll(".bit-acs-swt");
+        Assert.AreEqual(1, swatches.Count(s => s.GetAttribute("style")!.Contains("border-color:red")));
+        StringAssert.Contains(swatches.First(s => s.GetAttribute("title") == "Default").GetAttribute("style"), "border-color:red", System.StringComparison.Ordinal);
+
+        swatches.First(s => s.GetAttribute("title") == "Purple").Click();
+
+        swatches = component.FindAll(".bit-acs-swt");
+        Assert.AreEqual(1, swatches.Count(s => s.GetAttribute("style")!.Contains("border-color:red")));
+        StringAssert.Contains(swatches.First(s => s.GetAttribute("title") == "Purple").GetAttribute("style"), "border-color:red", System.StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldKeepEveryInstanceOnTheOneAccent()
+    {
+        RegisterServices();
+
+        // Two switchers of one app chrome share the scoped service, and its AccentChanged event is what re-renders
+        // the one that was not clicked.
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitAccentColorSwitcher>(0);
+            builder.AddComponentParameter(1, nameof(BitAccentColorSwitcher.Class), "first");
+            builder.CloseComponent();
+            builder.OpenComponent<BitAccentColorSwitcher>(2);
+            builder.AddComponentParameter(3, nameof(BitAccentColorSwitcher.Class), "second");
+            builder.CloseComponent();
+        });
+
+        component.FindAll(".first .bit-acs-swt").First(s => s.GetAttribute("title") == "Purple").Click();
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual("Purple", component.Find(".second .bit-acs-act").GetAttribute("title"));
+            Assert.AreEqual("true", component.FindAll(".second .bit-acs-swt").First(s => s.GetAttribute("title") == "Purple").GetAttribute("aria-pressed"));
+        });
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldRenderTheBaseParameters()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>(parameters =>
+        {
+            parameters.Add(p => p.Id, "accents");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Style, "margin:1px");
+            parameters.Add(p => p.Visibility, BitVisibility.Hidden);
+        });
+
+        var root = component.Find(".bit-acs");
+
+        Assert.AreEqual("accents", root.Id);
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px", System.StringComparison.Ordinal);
+        StringAssert.Contains(root.GetAttribute("style"), "visibility:hidden", System.StringComparison.Ordinal);
+
+        component.Render(parameters => parameters.Add(p => p.Visibility, BitVisibility.Collapsed));
+
+        StringAssert.Contains(component.Find(".bit-acs").GetAttribute("style"), "display:none", System.StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldSplatHtmlAttributesOnTheRoot()
+    {
+        RegisterServices();
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitAccentColorSwitcher>(0);
+            builder.AddAttribute(1, "data-test", "accents");
+            builder.CloseComponent();
+        });
+
+        Assert.AreEqual("accents", component.Find(".bit-acs").GetAttribute("data-test"));
+    }
+
+    [TestMethod]
+    public void BitAccentColorSwitcherShouldReflectAnAccentAppliedThroughTheService()
+    {
+        RegisterServices();
+
+        var component = RenderComponent<BitAccentColorSwitcher>();
+
+        // An app applying an accent programmatically (a settings page, a free-form picker) moves the ring too.
+        var service = Context.Services.GetRequiredService<BitAccentColorService>();
+        service.ApplyAsync(BitAccentColorPresets.Green).GetAwaiter().GetResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual("Green", component.Find(".bit-acs-act").GetAttribute("title")));
+
+        // An accent none of the swatches offers rings none of them.
+        service.ApplyAsync("#123456").GetAwaiter().GetResult();
+
+        component.WaitForAssertion(() => Assert.AreEqual(0, component.FindAll(".bit-acs-act").Count));
+    }
 }

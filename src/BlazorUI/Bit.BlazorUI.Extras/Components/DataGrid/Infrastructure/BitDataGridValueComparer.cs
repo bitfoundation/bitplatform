@@ -1,5 +1,6 @@
 ﻿namespace Bit.BlazorUI;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 
 /// <summary>Null-safe comparer that orders nulls first and falls back to string comparison.</summary>
@@ -12,6 +13,7 @@ internal sealed class BitDataGridValueComparer : IComparer<object?>
     // such a type into one value. ValueType.ToString() (the default for structs) has the same problem:
     // it yields the type name unless the struct overrides ToString itself. Only treat ToString() as
     // meaningful when the runtime type actually overrides it past object/ValueType.
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "ToString is virtual on object, which every app keeps, so the override of a type an app instantiates is kept with it; on a type that has none the lookup finds object's or ValueType's, which is the answer it is after.")]
     internal static bool HasMeaningfulToString(Type type)
     {
         var declaringType = type.GetMethod(nameof(ToString), Type.EmptyTypes)?.DeclaringType;

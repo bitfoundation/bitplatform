@@ -207,6 +207,10 @@ $pdv-private-properties: scale;
 }
 
 .bit-pdv-group {
+    // The containing block of the visually hidden .bit-pdv-sr inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     display: flex;
     gap: spacing(0.5);
     align-items: center;
@@ -590,6 +594,13 @@ $pdv-private-properties: scale;
    clips whatever falls outside it. */
 .bit-pdv-page .bit-pdv-html-page a:focus-visible {
     @include pdv-inset-ring;
+}
+
+/* A link hotspot lies over the words it is written on, and so does the selection layer, which comes later in the
+   page and would take the click on those words for the start of a selection. Lifted above it, the hotspot follows
+   the link wherever it is clicked; a selection still starts anywhere beside it. */
+.bit-pdv-page .bit-pdv-html-page > a {
+    z-index: 1;
 }
 
 /* The coalesced selection/text layer sits on top of the painted content. Its

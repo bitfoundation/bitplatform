@@ -2027,7 +2027,7 @@ public class BitDropMenuTests : BunitTestContext
         {
             parameters.Add(p => p.Text, "Menu");
             parameters.Add(p => p.OpenOnHover, true);
-            parameters.Add(p => p.HoverOpenDelay, 60);
+            parameters.Add(p => p.HoverOpenDelay, 20);
         });
 
         component.Find(".bit-drm").MouseEnter();
@@ -2042,7 +2042,7 @@ public class BitDropMenuTests : BunitTestContext
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.isHoverDevice", _ => true).SetResult(true);
 
-        var hoverOpenDelay = 60;
+        var hoverOpenDelay = 20;
 
         var component = RenderComponent<BitDropMenu>(parameters =>
         {

@@ -360,8 +360,11 @@ public class BitNavPanelTests : BunitTestContext
         var a = component.Find("a:has(img.bit-npn-img)");
 
         Assert.AreEqual("/logo.png", img.GetAttribute("src"));
-        Assert.IsNotNull(img.GetAttribute("alt"));
-        Assert.AreEqual(a.GetAttribute("href"), url);
+        // The link carries the name, so the logo inside it is left without one.
+        Assert.AreEqual(string.Empty, img.GetAttribute("alt"));
+        Assert.AreEqual(url, a.GetAttribute("href"));
+        Assert.IsTrue(a.ClassList.Contains("bit-npn-hln"));
+        Assert.AreEqual("Home", a.GetAttribute("aria-label"));
     }
 
     [TestMethod]
@@ -664,7 +667,7 @@ public class BitNavPanelTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitNavPanelEscapeShouldDoNothingWhenClosedOrDisabled()
+    public void BitNavPanelEscapeShouldDoNothingWhenDisabled()
     {
         var isOpen = true;
 
@@ -675,9 +678,33 @@ public class BitNavPanelTests : BunitTestContext
             parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
         });
 
+        SetDrawerScreen(component, true);
+
         component.Find(".bit-npn").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
 
         component.WaitForAssertion(() => Assert.IsTrue(isOpen));
+    }
+
+    [TestMethod]
+    public void BitNavPanelEscapeShouldDoNothingWhenTheDrawerIsClosed()
+    {
+        var reported = 0;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.IsOpenChanged, (bool _) => reported++);
+        });
+
+        SetDrawerScreen(component, true);
+
+        // A closed drawer has nothing for the key to do, so it neither reports a state change nor claims the key.
+        component.WaitForAssertion(() => Assert.IsNull(component.Find(".bit-npn").GetAttribute("data-bit-esc")));
+
+        component.Find(".bit-npn").KeyDown(new Microsoft.AspNetCore.Components.Web.KeyboardEventArgs { Key = "Escape" });
+
+        Assert.AreEqual(0, reported);
     }
 
     [TestMethod]
@@ -1626,7 +1653,8 @@ public class BitNavPanelTests : BunitTestContext
     [TestMethod,
         DataRow(null, true),
         DataRow(BitDir.Auto, true),
-        DataRow(BitDir.Ltr, false)
+        DataRow(BitDir.Ltr, false),
+        DataRow(BitDir.Rtl, true)
     ]
     public async Task BitNavPanelSwipeShouldCloseTowardsTheEdgeOfTheDirectionItIsLaidOutIn(BitDir? dir, bool closes)
     {
@@ -1647,7 +1675,91 @@ public class BitNavPanelTests : BunitTestContext
         await component.InvokeAsync(() => trap.Instance._OnTrigger(100, 0, 1, 0));
 
         Assert.AreEqual(closes, isOpen is false);
-        Assert.AreEqual(dir is not BitDir.Ltr, Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
+        // A named direction is answered without a round trip; only one Dir does not name is read off the browser.
+        Assert.AreEqual(dir is null or BitDir.Auto, Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
+    }
+
+    [TestMethod,
+        DataRow(BitDir.Ltr, null, -40, true),
+        DataRow(BitDir.Ltr, null, 40, false),
+        DataRow(BitDir.Ltr, BitPlacement.End, 40, true),
+        DataRow(BitDir.Ltr, BitPlacement.End, -40, false),
+        DataRow(BitDir.Rtl, null, 40, true),
+        DataRow(BitDir.Rtl, BitPlacement.End, -40, true)
+    ]
+    public async Task BitNavPanelSwipeShouldDragTheDrawerTowardsTheEdgeItIsDockedToOnly(BitDir dir, BitPlacement? placement, int diffX, bool follows)
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.Placement, placement);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        var trap = component.FindComponent<BitSwipeTrap>();
+
+        // The drawer follows the finger towards the edge it came from, and stays put when dragged away from it.
+        await component.InvokeAsync(() => trap.Instance._OnMove(0, 0, diffX, 0, 0, 0));
+
+        var style = component.Find(".bit-npn").GetAttribute("style") ?? string.Empty;
+
+        Assert.AreEqual(follows, style.Contains($"transform: translateX({diffX}px)"), style);
+
+        // Letting go without a trigger puts it back.
+        await component.InvokeAsync(() => trap.Instance._OnEnd(0, 0, diffX, 0, 0, 0));
+
+        Assert.IsFalse((component.Find(".bit-npn").GetAttribute("style") ?? string.Empty).Contains("translateX"));
+    }
+
+    [TestMethod,
+        DataRow(BitDir.Ltr, null, 100, false),
+        DataRow(BitDir.Ltr, null, -100, true),
+        DataRow(BitDir.Ltr, BitPlacement.End, 100, true),
+        DataRow(BitDir.Rtl, BitPlacement.End, -100, true),
+        DataRow(BitDir.Rtl, BitPlacement.End, 100, false)
+    ]
+    public async Task BitNavPanelSwipeShouldCloseTheDrawerTowardsTheEdgeItIsDockedTo(BitDir dir, BitPlacement? placement, int diffX, bool closes)
+    {
+        var isOpen = true;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.Dir, dir);
+            parameters.Add(p => p.Placement, placement);
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+        });
+
+        var trap = component.FindComponent<BitSwipeTrap>();
+
+        await component.InvokeAsync(() => trap.Instance._OnTrigger(diffX, 0, 1, 0));
+
+        Assert.AreEqual(closes, isOpen is false);
+        // A named direction is never read off the browser.
+        Assert.IsFalse(Context.JSInterop.Invocations.Any(i => i.Identifier == "BitBlazorUI.Utils.isRtl"));
+    }
+
+    [TestMethod]
+    public async Task BitNavPanelSwipeShouldLeaveAClosedPanelAlone()
+    {
+        var reported = 0;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.Dir, BitDir.Ltr);
+            parameters.Add(p => p.IsOpen, false);
+            parameters.Add(p => p.IsOpenChanged, (bool _) => reported++);
+        });
+
+        var trap = component.FindComponent<BitSwipeTrap>();
+
+        await component.InvokeAsync(() => trap.Instance._OnMove(0, 0, -40, 0, 0, 0));
+        await component.InvokeAsync(() => trap.Instance._OnTrigger(-100, 0, 1, 0));
+
+        Assert.IsFalse((component.Find(".bit-npn").GetAttribute("style") ?? string.Empty).Contains("translateX"));
+        Assert.AreEqual(0, reported);
     }
 
     [TestMethod]
@@ -2256,6 +2368,574 @@ public class BitNavPanelTests : BunitTestContext
 
         // A link left on screen with nothing visible in it would still be a tab stop of the rail.
         StringAssert.Contains(component.Find(".bit-npn-hln").GetAttribute("style"), "display:none");
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldRenderTheBaseParametersOnItsRoot()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.Id, "the-panel");
+            parameters.Add(p => p.Class, "own-class");
+            parameters.Add(p => p.Style, "margin:1px");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+        });
+
+        var root = component.Find(".bit-npn");
+
+        Assert.AreEqual("the-panel", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("own-class"));
+        // The class is what an engine without :dir() docks the drawer by.
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        // The toggle button points at the id the panel was given.
+        Assert.AreEqual("the-panel", component.Find(".bit-npn-tbn").GetAttribute("aria-controls"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, null),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitNavPanelShouldRenderItsVisibility(BitVisibility visibility, string? expected)
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = component.Find(".bit-npn").GetAttribute("style") ?? string.Empty;
+
+        if (expected is null)
+        {
+            Assert.IsFalse(style.Contains("visibility:hidden") || style.Contains("display:none"), style);
+        }
+        else
+        {
+            StringAssert.Contains(style, expected);
+        }
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldSplatTheAttributesItWasGivenOnItsRoot()
+    {
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<BitNavPanel<BitNavItem>>(0);
+            builder.AddAttribute(1, nameof(BitNavPanel<BitNavItem>.Items), Items);
+            builder.AddAttribute(2, "data-test", "panel");
+            builder.AddAttribute(3, "title", "The menu");
+            builder.CloseComponent();
+        }).FindComponent<BitNavPanel<BitNavItem>>();
+
+        var root = component.Find(".bit-npn");
+
+        Assert.AreEqual("panel", root.GetAttribute("data-test"));
+        Assert.AreEqual("The menu", root.GetAttribute("title"));
+    }
+
+    [TestMethod,
+        DataRow(BitColor.Primary, "bit-nav-apri"),
+        DataRow(BitColor.Secondary, "bit-nav-asec"),
+        DataRow(BitColor.Tertiary, "bit-nav-ater"),
+        DataRow(BitColor.Info, "bit-nav-ainf"),
+        DataRow(BitColor.Success, "bit-nav-asuc"),
+        DataRow(BitColor.Warning, "bit-nav-awrn"),
+        DataRow(BitColor.SevereWarning, "bit-nav-aswr"),
+        DataRow(BitColor.Error, "bit-nav-aerr"),
+        DataRow(BitColor.PrimaryBackground, "bit-nav-apbg"),
+        DataRow(BitColor.SecondaryBackground, "bit-nav-asbg"),
+        DataRow(BitColor.TertiaryBackground, "bit-nav-atbg"),
+        DataRow(BitColor.PrimaryForeground, "bit-nav-apfg"),
+        DataRow(BitColor.SecondaryForeground, "bit-nav-asfg"),
+        DataRow(BitColor.TertiaryForeground, "bit-nav-atfg"),
+        DataRow(BitColor.PrimaryBorder, "bit-nav-apbr"),
+        DataRow(BitColor.SecondaryBorder, "bit-nav-asbr"),
+        DataRow(BitColor.TertiaryBorder, "bit-nav-atbr")
+    ]
+    public void BitNavPanelShouldPaintTheAccentOnItsRootAndItsNav(BitColor accent, string cssClass)
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.Accent, accent);
+        });
+
+        Assert.IsTrue(component.Find(".bit-npn").ClassList.Contains(cssClass));
+        Assert.AreEqual(accent, component.FindComponent<BitNav<BitNavItem>>().Instance.Accent);
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldPublishNoAccentClassByDefault()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+        });
+
+        Assert.IsFalse(component.Find(".bit-npn").ClassList.Any(c => c.StartsWith("bit-nav-a", StringComparison.Ordinal)));
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldHandItsNavParametersToTheNav()
+    {
+        var selectors = new BitNavNameSelectors<BitNavItem>();
+        var navClasses = new BitNavClassStyles { Root = "nav-classes" };
+        var navStyles = new BitNavClassStyles { Root = "color:red" };
+        RenderFragment<BitNavItem> headerTemplate = _ => builder => builder.AddMarkupContent(0, "<span class='hdr-tpl'></span>");
+        RenderFragment<BitNavItem> itemTemplate = _ => builder => builder.AddMarkupContent(0, "<span class='itm-tpl'></span>");
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, TreeItems());
+            parameters.Add(p => p.Color, BitColor.Success);
+            parameters.Add(p => p.CollapseAriaLabel, "Fold");
+            parameters.Add(p => p.ExpandAriaLabel, "Unfold");
+            parameters.Add(p => p.HeaderTemplate, headerTemplate);
+            parameters.Add(p => p.HeaderTemplateRenderMode, BitNavItemTemplateRenderMode.Replace);
+            parameters.Add(p => p.ItemTemplate, itemTemplate);
+            parameters.Add(p => p.ItemTemplateRenderMode, BitNavItemTemplateRenderMode.Replace);
+            parameters.Add(p => p.IndentPadding, 30);
+            parameters.Add(p => p.IndentReversedPadding, 6);
+            parameters.Add(p => p.IndentValue, 20);
+            parameters.Add(p => p.NameSelectors, selectors);
+            parameters.Add(p => p.NavClasses, navClasses);
+            parameters.Add(p => p.NavStyles, navStyles);
+            parameters.Add(p => p.NavMatch, BitNavMatch.Prefix);
+            parameters.Add(p => p.NavMode, BitNavMode.Manual);
+            parameters.Add(p => p.NoCollapse, true);
+            parameters.Add(p => p.RenderType, BitNavRenderType.Grouped);
+            parameters.Add(p => p.Reselectable, true);
+            parameters.Add(p => p.ReversedChevron, true);
+            parameters.Add(p => p.SingleExpand, true);
+            parameters.Add(p => p.Size, BitSize.Large);
+        });
+
+        var nav = component.FindComponent<BitNav<BitNavItem>>().Instance;
+
+        Assert.AreEqual(BitColor.Success, nav.Color);
+        Assert.AreEqual("Fold", nav.CollapseAriaLabel);
+        Assert.AreEqual("Unfold", nav.ExpandAriaLabel);
+        Assert.AreSame(headerTemplate, nav.HeaderTemplate);
+        Assert.AreEqual(BitNavItemTemplateRenderMode.Replace, nav.HeaderTemplateRenderMode);
+        Assert.AreSame(itemTemplate, nav.ItemTemplate);
+        Assert.AreEqual(BitNavItemTemplateRenderMode.Replace, nav.ItemTemplateRenderMode);
+        Assert.AreEqual(30, nav.IndentPadding);
+        Assert.AreEqual(6, nav.IndentReversedPadding);
+        Assert.AreEqual(20, nav.IndentValue);
+        Assert.AreSame(selectors, nav.NameSelectors);
+        Assert.AreSame(navClasses, nav.Classes);
+        Assert.AreSame(navStyles, nav.Styles);
+        Assert.AreEqual(BitNavMatch.Prefix, nav.Match);
+        Assert.AreEqual(BitNavMode.Manual, nav.Mode);
+        Assert.IsTrue(nav.NoCollapse);
+        Assert.AreEqual(BitNavRenderType.Grouped, nav.RenderType);
+        Assert.IsTrue(nav.Reselectable);
+        Assert.IsTrue(nav.ReversedChevron);
+        Assert.IsTrue(nav.SingleExpand);
+        Assert.AreEqual(BitSize.Large, nav.Size);
+        // The nav always fills the panel.
+        Assert.IsTrue(nav.FullWidth);
+
+        Assert.IsTrue(component.Find("nav.bit-nav").ClassList.Contains("nav-classes"));
+        StringAssert.Contains(component.Find("nav.bit-nav").GetAttribute("style"), "color:red");
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldRenderTheItemTemplateInEveryItem()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.ItemTemplate, (BitNavItem item) => builder => builder.AddMarkupContent(0, $"<span class='itm-tpl'>{item.Text}!</span>"));
+        });
+
+        var templates = component.FindAll(".bit-nav-ict .itm-tpl");
+
+        Assert.AreEqual(2, templates.Count);
+        Assert.AreEqual("Home!", templates[0].TextContent);
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldHandItsSearchBoxParametersToTheSearchBox()
+    {
+        var classes = new BitSearchBoxClassStyles { Root = "srb-classes" };
+        var styles = new BitSearchBoxClassStyles { Root = "color:red" };
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.Color, BitColor.Warning);
+            parameters.Add(p => p.SearchBoxClasses, classes);
+            parameters.Add(p => p.SearchBoxStyles, styles);
+            parameters.Add(p => p.SearchBoxPlaceholder, "Find a page");
+            parameters.Add(p => p.SearchDebounceTime, 42);
+        });
+
+        var searchBox = component.FindComponent<BitSearchBox>().Instance;
+
+        Assert.AreSame(classes, searchBox.Classes);
+        Assert.AreSame(styles, searchBox.Styles);
+        Assert.AreEqual(BitColor.Warning, searchBox.Color);
+        Assert.AreEqual(42, searchBox.DebounceTime);
+        Assert.IsTrue(searchBox.Immediate);
+        Assert.IsTrue(searchBox.Underlined);
+
+        var input = component.Find(".bit-srb-inp");
+
+        // The placeholder is the name of the box too, so it is never announced as a bare "edit text".
+        Assert.AreEqual("Find a page", input.GetAttribute("placeholder"));
+        Assert.AreEqual("Find a page", input.GetAttribute("aria-label"));
+        Assert.IsTrue(component.Find(".bit-srb").ClassList.Contains("srb-classes"));
+    }
+
+    [TestMethod]
+    public void BitNavPanelSearchBoxShouldFallBackToABuiltInName()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+        });
+
+        Assert.AreEqual("Search", component.Find(".bit-srb-inp").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldPassItsColorToItsButtons()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.Color, BitColor.Error);
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        Assert.IsTrue(component.Find(".bit-npn-tbn").ClassList.Contains("bit-btn-err"));
+        Assert.IsTrue(component.Find(".bit-npn-cbn").ClassList.Contains("bit-btn-err"));
+
+        component.Render(parameters => parameters.Add(p => p.IsToggled, true));
+
+        Assert.IsTrue(component.Find(".bit-npn-tsb").ClassList.Contains("bit-btn-err"));
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldReportItemTogglesAndSelections()
+    {
+        var items = TreeItems();
+        BitNavItem? toggled = null;
+        BitNavItem? selected = null;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, items);
+            parameters.Add(p => p.NavMode, BitNavMode.Manual);
+            parameters.Add(p => p.OnItemToggle, (BitNavItem item) => toggled = item);
+            parameters.Add(p => p.OnSelectItem, (BitNavItem item) => selected = item);
+        });
+
+        component.FindAll(".bit-nav-ict")[1].Click();
+
+        component.WaitForAssertion(() => Assert.AreSame(items[1], toggled));
+
+        component.FindAll(".bit-nav-ict")[0].Click();
+
+        component.WaitForAssertion(() => Assert.AreSame(items[0], selected));
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldApplyItsClassesAndStylesToEveryPart()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.IsOpen, true);
+            parameters.Add(p => p.IconUrl, "/logo.png");
+            parameters.Add(p => p.HeaderText, "bit");
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.Classes, new BitNavPanelClassStyles
+            {
+                Root = "c-root",
+                Overlay = "c-overlay",
+                Container = "c-container",
+                Header = "c-header",
+                HeaderIcon = "c-icon",
+                HeaderText = "c-text",
+                ToggleButton = "c-toggle",
+                CloseButton = "c-close",
+                SearchBox = "c-search",
+                Nav = "c-nav",
+            });
+            parameters.Add(p => p.Styles, new BitNavPanelClassStyles
+            {
+                Root = "color:red",
+                Overlay = "color:orange",
+                Container = "color:yellow",
+                Header = "color:green",
+                HeaderIcon = "color:blue",
+                HeaderText = "color:indigo",
+                ToggleButton = "color:violet",
+                CloseButton = "color:pink",
+                SearchBox = "color:brown",
+                Nav = "color:gray",
+            });
+        });
+
+        void AssertPart(string selector, string cssClass, string style)
+        {
+            var element = component.Find(selector);
+
+            Assert.IsTrue(element.ClassList.Contains(cssClass), selector);
+            StringAssert.Contains(element.GetAttribute("style"), style, selector);
+        }
+
+        AssertPart(".bit-npn", "c-root", "color:red");
+        AssertPart(".bit-npn-ovl", "c-overlay", "color:orange");
+        AssertPart(".bit-npn-cnt", "c-container", "color:yellow");
+        AssertPart(".bit-npn-hdr", "c-header", "color:green");
+        AssertPart(".bit-npn-img", "c-icon", "color:blue");
+        AssertPart(".bit-npn-htx", "c-text", "color:indigo");
+        AssertPart(".bit-npn-tbn", "c-toggle", "color:violet");
+        AssertPart(".bit-npn-cbn", "c-close", "color:pink");
+        AssertPart(".bit-srb", "c-search", "color:brown");
+        AssertPart("nav.bit-nav", "c-nav", "color:gray");
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldApplyItsToggledAndSearchButtonClassesAndStyles()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.IsToggled, true);
+            parameters.Add(p => p.Classes, new BitNavPanelClassStyles { Toggled = "c-toggled", ToggleSearchButton = "c-tsb" });
+            parameters.Add(p => p.Styles, new BitNavPanelClassStyles { Toggled = "color:red", ToggleSearchButton = "color:blue" });
+        });
+
+        var root = component.Find(".bit-npn");
+
+        Assert.IsTrue(root.ClassList.Contains("c-toggled"));
+        StringAssert.Contains(root.GetAttribute("style"), "color:red");
+
+        var searchButton = component.Find(".bit-npn-tsb");
+
+        Assert.IsTrue(searchButton.ClassList.Contains("c-tsb"));
+        StringAssert.Contains(searchButton.GetAttribute("style"), "color:blue");
+
+        // The rail is left, and the toggled look with it.
+        component.Render(parameters => parameters.Add(p => p.IsToggled, false));
+
+        Assert.IsFalse(component.Find(".bit-npn").ClassList.Contains("c-toggled"));
+        Assert.IsFalse((component.Find(".bit-npn").GetAttribute("style") ?? string.Empty).Contains("color:red"));
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldApplyItsEmptyListMessageClassesAndStyles()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.SearchText, "zzz");
+            parameters.Add(p => p.Classes, new BitNavPanelClassStyles { EmptyListMessage = "c-empty" });
+            parameters.Add(p => p.Styles, new BitNavPanelClassStyles { EmptyListMessage = "color:red" });
+        });
+
+        component.WaitForAssertion(() =>
+        {
+            var message = component.Find(".bit-txt");
+
+            Assert.AreEqual("Nothing found!", message.TextContent.Trim());
+            Assert.IsTrue(message.ClassList.Contains("c-empty"));
+            StringAssert.Contains(message.GetAttribute("style"), "color:red");
+        });
+    }
+
+    [TestMethod]
+    public void BitNavPanelRailShouldHideTheEmptyMessageAndTheSearchBox()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.SearchText, "zzz");
+            parameters.Add(p => p.IsToggled, true);
+        });
+
+        // The rail has no room for either; the search box stays rendered but hidden, so it keeps its state.
+        Assert.AreEqual(0, component.FindAll(".bit-txt").Count);
+        StringAssert.Contains(component.Find(".bit-srb").GetAttribute("style"), "display:none");
+    }
+
+    [TestMethod]
+    public void BitNavPanelFocusSearchBoxShouldLeaveTheRailAndFocusTheBox()
+    {
+        var isToggled = true;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+        });
+
+        component.InvokeAsync(() => component.Instance.FocusSearchBox());
+
+        component.WaitForAssertion(() => Assert.IsFalse(isToggled));
+
+        // The search box only exists once the panel has left the rail, so the focus is moved in the render that
+        // brings it back rather than after a guessed delay.
+        component.Render(parameters => parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v));
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.IsFalse(component.Find(".bit-npn").ClassList.Contains("bit-npn-tgl"));
+            Assert.AreEqual(1, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+        });
+    }
+
+    [TestMethod]
+    public async Task BitNavPanelFocusSearchBoxShouldDoNothingWithoutASearchBox()
+    {
+        var isToggled = true;
+
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.NoSearchBox, true);
+            parameters.Bind(p => p.IsToggled, isToggled, v => isToggled = v);
+        });
+
+        await component.InvokeAsync(() => component.Instance.FocusSearchBox());
+
+        Assert.IsTrue(isToggled);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitNavPanelShouldHandBackWhatItHoldsWhenDisposedOpen()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.IsOpen, true);
+        });
+
+        SetDrawerScreen(component, true);
+
+        component.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.setupFocusTrap"].Count);
+            Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.captureFocusOrigin"].Count);
+        });
+
+        // A drawer disposed while it is open would otherwise leave the page held by a key nothing releases again.
+        await component.Instance.DisposeAsync();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.restoreFocusOrigin"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitNavPanelShouldDisposeWithoutHavingHeldAnything()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+        });
+
+        await component.Instance.DisposeAsync();
+
+        // Only what was taken is handed back.
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.unlockScroll"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusTrap"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeFocusOrigin"].Count);
+    }
+
+    [TestMethod]
+    public void BitNavPanelDrawerShouldHoldTheScrollerOfTheAppShellItSitsIn()
+    {
+        var scroller = new ElementReference("the-shell-scroller");
+
+        var component = Context.Render(builder =>
+        {
+            builder.OpenComponent<CascadingValue<ElementReference?>>(0);
+            builder.AddAttribute(1, "Name", "BitAppShell.Container");
+            builder.AddAttribute(2, "Value", (ElementReference?)scroller);
+            builder.AddAttribute(3, "ChildContent", (RenderFragment)(b =>
+            {
+                b.OpenComponent<BitNavPanel<BitNavItem>>(0);
+                b.AddAttribute(1, nameof(BitNavPanel<BitNavItem>.Items), Items);
+                b.AddAttribute(2, nameof(BitNavPanel<BitNavItem>.IsOpen), true);
+                b.CloseComponent();
+            }));
+            builder.CloseComponent();
+        }).FindComponent<BitNavPanel<BitNavItem>>();
+
+        SetDrawerScreen(component, true);
+
+        // What the drawer holds is the region the shell scrolls rather than the document.
+        component.WaitForAssertion(() =>
+        {
+            var lockScroll = Context.JSInterop.Invocations["BitBlazorUI.Utils.lockScroll"].Single();
+
+            Assert.AreEqual(component.Find(".bit-npn").Id, lockScroll.Arguments[0]);
+            Assert.AreEqual(scroller.Id, ((ElementReference)lockScroll.Arguments[1]!).Id);
+        });
+    }
+
+    [TestMethod]
+    public void BitNavPanelShouldRenderTheToggleIconOfAnIconName()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.ToggleIconName, "GlobalNavButton");
+        });
+
+        Assert.IsTrue(component.Find(".bit-npn-tbn i").ClassList.Contains("bit-icon--GlobalNavButton"));
+        Assert.AreEqual(0, component.FindAll(".bit-icon-ex--ColumnRightTwoThirds").Count);
+
+        // Without one, the glyph ships with the Extras package rather than the icon font.
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.ToggleIconName, null);
+        });
+
+        Assert.AreEqual(1, component.FindAll(".bit-npn-tbn .bit-icon-ex--ColumnRightTwoThirds").Count);
+    }
+
+    [TestMethod]
+    public void BitNavPanelToggleButtonShouldFlipItsNameWithTheState()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+        });
+
+        Assert.AreEqual("Collapse the navigation panel", component.Find(".bit-npn-tbn").GetAttribute("aria-label"));
+
+        component.Render(parameters => parameters.Add(p => p.IsToggled, true));
+
+        Assert.AreEqual("Expand the navigation panel", component.Find(".bit-npn-tbn").GetAttribute("aria-label"));
+    }
+
+    [TestMethod]
+    public void BitNavPanelHeaderShouldRenderNothingOfTheLogoWithoutOne()
+    {
+        var component = RenderComponent<BitNavPanel<BitNavItem>>(parameters =>
+        {
+            parameters.Add(p => p.Items, Items);
+            parameters.Add(p => p.IconNavUrl, "/");
+        });
+
+        // A link with nothing in it would be a tab stop leading nowhere visible.
+        Assert.AreEqual(0, component.FindAll(".bit-npn-hdr a").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-npn-img").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-npn-tbn").Count);
     }
 
     // Drives the media query the panel reads its own shape from, which is the browser's answer in an app and

@@ -44,9 +44,11 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     private ElementReference _buttonDecrement;
     private bool _announceValue;
     private bool _isSpinButtonPressed;
+    private bool _isSpinButtonClick;
     private bool _isSelfValueChangePending;
     private string? _uncommittedImmediateText;
     private int _selfValueChangeVersion;
+    private Task _pendingKeyDown = Task.CompletedTask;
     private CancellationTokenSource _continuousChangeValueCts = new();
 
 
@@ -959,7 +961,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
         else if (NormalizeDigits)
         {
-            value = NormalizeUnicodeDigits(value);
+            // The Arabic decimal separator becomes the decimal separator of the culture the text is read in next:
+            // the field's own for the plain text, and the formatting culture's for a NumberFormat (whose separators
+            // MapCultureSeparatorsToInvariant maps below). A '.' would be no separator at all in a culture like fa-IR,
+            // so a fraction typed there could never be parsed.
+            var decimalSeparator = (NumberFormat is null ? ValueCulture : FormatCulture).NumberFormat.NumberDecimalSeparator;
+            value = NormalizeUnicodeDigits(value, decimalSeparator);
             digitsNormalized = string.Equals(value, originalValue, StringComparison.Ordinal) is false;
         }
 
@@ -1250,7 +1257,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private bool IsDisplayDigitEquivalent(string? originalValue, TValue value)
     {
-        return string.Equals(NormalizeUnicodeDigits(originalValue), FormatValueAsString(value), StringComparison.Ordinal);
+        return string.Equals(NormalizeUnicodeDigits(originalValue, ValueCulture.NumberFormat.NumberDecimalSeparator), FormatValueAsString(value), StringComparison.Ordinal);
     }
 
     protected override string? FormatValueAsString(TValue? value)
@@ -1440,7 +1447,39 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
     }
 
-    private async Task HandleOnKeyDown(KeyboardEventArgs e)
+    /// <summary>
+    /// Handles the keys in the order they were pressed. A key handler awaits a round trip before it decides
+    /// (<see cref="CommitPendingInputValue"/> reads the live text of the input, the consumer's OnKeyDown may await
+    /// anything), and every key arrives as an event of its own, so a key pressed while that round trip is out would
+    /// otherwise be handled first: an ArrowUp on a value at the Max followed at once by Home would land on the Min
+    /// and then step from there, the blocked ArrowUp running after the Home that was pressed after it. So each key
+    /// waits for the one before it to be handled.
+    /// </summary>
+    private Task HandleOnKeyDown(KeyboardEventArgs e)
+    {
+        var previous = _pendingKeyDown;
+
+        // The dispatcher runs one handler at a time, so reading and replacing the pending key needs no lock; a key
+        // with none in front of it starts at once, which keeps the common case synchronous up to its first await.
+        var current = previous.IsCompleted ? HandleOnKeyDownCore(e) : HandleOnKeyDownAfter(previous, e);
+
+        _pendingKeyDown = current;
+
+        return current;
+    }
+
+    private async Task HandleOnKeyDownAfter(Task previous, KeyboardEventArgs e)
+    {
+        // A key whose handling failed has had its failure reported through its own event; the next one is handled all
+        // the same, as it would have been had the two not overlapped.
+        try { await previous; } catch { }
+
+        if (IsDisposed) return;
+
+        await HandleOnKeyDownCore(e);
+    }
+
+    private async Task HandleOnKeyDownCore(KeyboardEventArgs e)
     {
         if (Disabled) return;
 
@@ -1613,6 +1652,15 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private async Task HandleOnInputContainerClick()
     {
+        // A click that bubbled up from a spin button is the button's own: its press has already put the focus where it
+        // belongs, or deliberately left it where it was - a touch tap, so that no soft keyboard slides up, and an
+        // assistive technology's activation (see HandleOnPointerDown and HandleOnButtonClick).
+        if (_isSpinButtonClick)
+        {
+            _isSpinButtonClick = false;
+            return;
+        }
+
         // Clicking the input itself already focused it, so the interop round trip is skipped there.
         if (Disabled || HideInput || _hasFocus) return;
 
@@ -1631,6 +1679,9 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
     /// </summary>
     private async Task HandleOnButtonClick(MouseEventArgs e, bool isIncrement)
     {
+        // Set before anything else: the same click reaches HandleOnInputContainerClick next, as it bubbles.
+        _isSpinButtonClick = true;
+
         if (e.Detail != 0) return;
 
         if (Disabled || ReadOnly || InvalidValueBinding()) return;
@@ -2076,6 +2127,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         }
 
         result = Snap(result);
+
+        // A step is rounded to the precision exactly as a typed value is (TryParseValueFromString), and before the
+        // value is published: three steps of 0.1 add up to 0.30000000000000004 in floating point, which the binding
+        // would otherwise receive while the input, normalized afterwards, shows 0.3.
+        result = Normalize(result);
+
         result = CheckMinAndMax(result);
 
         // The value is being changed via the spin buttons / wheel / arrow keys, so any preserved
@@ -2266,7 +2323,12 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
         return result;
     }
 
-    private static string? NormalizeUnicodeDigits(string? value)
+    /// <summary>
+    /// Maps every Unicode decimal digit to its Latin equivalent, the Arabic decimal separator to
+    /// <paramref name="decimalSeparator"/> (the one of the culture the result is parsed in next) and drops the Arabic
+    /// thousands separator.
+    /// </summary>
+    private static string? NormalizeUnicodeDigits(string? value, string decimalSeparator = ".")
     {
         if (value.HasNoValue()) return value;
 
@@ -2317,7 +2379,7 @@ public partial class BitNumberField<[DynamicallyAccessedMembers(DynamicallyAcces
             // Decimal separator emitted by Persian/Arabic keyboard layouts.
             if (c is '٫') // U+066B ARABIC DECIMAL SEPARATOR
             {
-                sb.Append('.');
+                sb.Append(decimalSeparator);
                 changed = true;
                 continue;
             }

@@ -213,7 +213,7 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// </summary>
     /// <remarks>
     /// This is the application closing the modal, so a close guard on its parameters is not asked. Use
-    /// <see cref="TryClose"/> where the guard is to have a say.
+    /// <see cref="TryClose(TReference, object?)"/> where the guard is to have a say.
     /// </remarks>
     public Task Close(TReference modalRef)
     {
@@ -226,7 +226,7 @@ public abstract class BitModalServiceBase<TReference, TParameters>
     /// </summary>
     /// <remarks>
     /// This is the application closing the modal, so a close guard on its parameters is not asked. Use
-    /// <see cref="TryClose"/> where the guard is to have a say.
+    /// <see cref="TryClose(TReference, object?)"/> where the guard is to have a say.
     /// </remarks>
     public Task Close(TReference modalRef, object? result)
     {

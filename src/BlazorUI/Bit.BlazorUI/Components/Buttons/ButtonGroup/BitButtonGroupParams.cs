@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitButtonGroup{TItem}"/> component.
@@ -170,7 +172,7 @@ public class BitButtonGroupParams : BitComponentBaseParams, IBitComponentParams
     /// <param name="bitButtonGroup">
     /// The <see cref="BitButtonGroup{TItem}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TItem>(BitButtonGroup<TItem> bitButtonGroup) where TItem : class
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitButtonGroup<TItem> bitButtonGroup) where TItem : class
     {
         if (bitButtonGroup is null) return;
 

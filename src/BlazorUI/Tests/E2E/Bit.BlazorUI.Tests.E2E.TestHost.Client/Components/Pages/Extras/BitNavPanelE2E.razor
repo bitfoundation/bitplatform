@@ -1,0 +1,333 @@
+﻿@page "/e2e/nav-panel"
+@page "/e2e/nav-panel/page/{Section}"
+
+<PageTitle>BitNavPanel E2E</PageTitle>
+
+<h1>BitNavPanel</h1>
+
+<style>
+    .npn-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: flex-start; }
+    .npn-box { width: 240px; }
+</style>
+
+<p>Section: <span id="npn-section">@(Section ?? "-")</span> Log: <span id="npn-log">@string.Join(",", _log)</span></p>
+
+<E2ESection Id="basic" Title="Basic">
+    <div class="npn-box">
+        <BitNavPanel Id="npn-basic" Items="@I("basic")" Style="height:420px" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="width" Title="Width">
+    <div class="npn-row">
+        <div><BitNavPanel Id="npn-fit" Items="@I("fit")" FitWidth Style="height:300px" /></div>
+        <div style="width:300px"><BitNavPanel Id="npn-full" Items="@I("full")" FullWidth Width="150" Style="height:300px" /></div>
+        <div><BitNavPanel Id="npn-width" Items="@I("width")" Width="200" ToggledWidth="72" Style="height:300px" /></div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rail" Title="Rail">
+    <div class="npn-row">
+        <div class="npn-box"><BitNavPanel Id="npn-hover" Items="@I("hover")" ExpandOnHover IsToggled Style="height:300px" /></div>
+        <div class="npn-box"><BitNavPanel Id="npn-notoggle" Items="@I("notoggle")" NoToggle Style="height:300px" /></div>
+        <div class="npn-box">
+            <button id="btn-toggle-hidden" @onclick="() => _hiddenToggled = !_hiddenToggled">Toggle the hidden-toggle panel</button>
+            <span id="hidden-toggled">@_hiddenToggled</span>
+            <BitNavPanel Id="npn-hidetoggle" Items="@I("hidetoggle")" HideToggle @bind-IsToggled="_hiddenToggled" ToggleAriaLabel="Never shown" Style="height:300px" />
+        </div>
+        <div class="npn-box"><BitNavPanel Id="npn-togglelabel" Items="@I("togglelabel")" ToggleAriaLabel="Fold the menu" ToggleIconName="@BitIconName.GlobalNavButton" Style="height:300px" /></div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="logo" Title="Logo">
+    <div class="npn-row">
+        <div class="npn-box"><BitNavPanel Id="npn-logo" Items="@I("logo")" IconUrl="@Logo" IconNavUrl="/e2e/nav-panel/page/home" IconAriaLabel="bit platform home" Style="height:300px" /></div>
+        <div class="npn-box"><BitNavPanel Id="npn-title" Items="@I("title")" IconUrl="@Logo" IconNavUrl="/e2e/nav-panel/page/home" HeaderText="BlazorUI" Style="height:300px" /></div>
+        <div class="npn-box"><BitNavPanel Id="npn-logo-nolink" Items="@I("nolink")" IconUrl="@Logo" AriaLabel="Main menu" Style="height:300px" /></div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="search" Title="Search">
+    <button id="btn-set-search" @onclick="@(() => _searchText = "set")">Search for "set"</button>
+    <span id="search-text">@(_searchText ?? "null")</span>
+    <span id="last-search">@(_lastSearch ?? "null")</span>
+    <div class="npn-row">
+        <div class="npn-box">
+            <BitNavPanel Id="npn-search" Items="@I("search")" @bind-SearchText="_searchText" SearchDebounceTime="100"
+                         OnSearch="v => _lastSearch = v" SearchBoxPlaceholder="Search in menu items..." EmptyListMessage="There is no item found."
+                         SearchAnnouncementProvider="@(count => $"{count} found")" Style="height:420px" />
+        </div>
+        <div class="npn-box">
+            <BitNavPanel Id="npn-search-filter" Items="@I("filter")" SearchDebounceTime="0"
+                         SearchFilter="(item, term) => item.Text.StartsWith(term, StringComparison.OrdinalIgnoreCase)" Style="height:420px">
+                <EmptyListTemplate><span class="npn-empty-tpl">Nothing here</span></EmptyListTemplate>
+            </BitNavPanel>
+        </div>
+        <div class="npn-box"><BitNavPanel Id="npn-nosearch" Items="@I("nosearch")" NoSearchBox Style="height:300px" /></div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="selection" Title="Selection">
+    <button id="btn-select-settings" @onclick="@(() => _selected = I("manual")[3])">Select Settings</button>
+    <span id="selected">@(_selected?.Text ?? "null")</span>
+    <div class="npn-box">
+        <BitNavPanel Id="npn-manual" Items="@I("manual")" NavMode="BitNavMode.Manual" @bind-SelectedItem="_selected" DefaultSelectedItem="@I("manual")[0]"
+                     Reselectable OnSelectItem="@((BitNavItem i) => Log($"select:{i.Text}"))" Style="height:420px" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="expansion" Title="Expansion">
+    <div class="npn-row">
+        <div class="npn-box"><BitNavPanel Id="npn-allexpanded" Items="@I("allexpanded")" AllExpanded ExpandAriaLabel="Open group" CollapseAriaLabel="Close group" Style="height:420px" /></div>
+        <div class="npn-box"><BitNavPanel Id="npn-single" Items="@I("single")" SingleExpand Style="height:420px" /></div>
+        <div class="npn-box"><BitNavPanel Id="npn-nocollapse" Items="@I("nocollapse")" NoCollapse Style="height:420px" /></div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="custom" Title="Custom items">
+    <div class="npn-box">
+        <BitNavPanel Id="npn-custom" Items="_customItems" NameSelectors="_customSelectors" NavMode="BitNavMode.Manual" Style="height:300px" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitNavPanel @ref="_templateRef" Id="npn-templates" Items="@I("templates")" FitWidth Style="height:300px">
+        <Header>
+            <div class="npn-custom-header">Custom header <button id="btn-custom-toggle" @onclick="() => _templateRef!.Toggle()">Mine</button></div>
+        </Header>
+        <ItemTemplate Context="item"><i class="npn-item-tpl">@item.Text!</i></ItemTemplate>
+        <Footer><div class="npn-custom-footer">Logout</div></Footer>
+    </BitNavPanel>
+    <div class="npn-box">
+        <BitNavPanel Id="npn-suffix" Items="@I("suffix")" Style="height:300px">
+            <ItemSuffixTemplate Context="item"><span class="npn-suffix">*</span></ItemSuffixTemplate>
+        </BitNavPanel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <div class="npn-box">
+        <BitNavPanel Id="npn-events" Items="@I("events")" NavMode="BitNavMode.Manual"
+                     OnItemClick="@((BitNavItem i) => Log($"click:{i.Text}"))" OnItemToggle="@((BitNavItem i) => Log($"toggle:{i.Text}"))" Style="height:420px" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="apis" Title="Public APIs">
+    <button id="btn-api-toggle" @onclick="() => _apiRef!.Toggle()">Toggle</button>
+    <button id="btn-api-expand-all" @onclick="() => _apiRef!.ExpandAll()">ExpandAll</button>
+    <button id="btn-api-collapse-all" @onclick="() => _apiRef!.CollapseAll()">CollapseAll</button>
+    <button id="btn-api-expand-item" @onclick="@(() => _apiRef!.ExpandItem(I("api")[1]))">ExpandItem</button>
+    <button id="btn-api-collapse-item" @onclick="@(() => _apiRef!.CollapseItem(I("api")[1]))">CollapseItem</button>
+    <button id="btn-api-toggle-item" @onclick="@(() => _apiRef!.ToggleItem(I("api")[1]))">ToggleItem</button>
+    <button id="btn-api-focus-item" @onclick="@(() => _apiRef!.FocusItem(I("api")[2]))">FocusItem</button>
+    <button id="btn-api-focus-search" @onclick="() => _apiRef!.FocusSearchBox()">FocusSearchBox</button>
+    <button id="btn-api-clear-search" @onclick="() => _apiRef!.ClearSearch()">ClearSearch</button>
+    <button id="btn-api-read" @onclick="@(() => _apiState = _apiRef!.IsItemExpanded(I("api")[1]).ToString())">IsItemExpanded</button>
+    <span id="api-state">@_apiState</span>
+    <span id="api-toggled">@_apiToggled</span>
+    <div class="npn-box">
+        <BitNavPanel @ref="_apiRef" Id="npn-api" Items="@I("api")" @bind-IsToggled="_apiToggled" SearchDebounceTime="0" Style="height:420px" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="drawer" Title="Drawer on every screen">
+    <button id="btn-open-drawer" @onclick="() => _drawerOpen = true">Open the drawer</button>
+    <span id="drawer-open">@_drawerOpen</span>
+    <BitNavPanel @ref="_drawerRef" Id="npn-drawer" Items="@I("drawer")" @bind-IsOpen="_drawerOpen" DrawerBreakpoint="BitNavPanelBreakpoint.Always"
+                 ShowCloseButton CloseAriaLabel="Shut the menu" CloseIconName="@BitIconName.ChromeClose" SearchDebounceTime="0" />
+    <button id="btn-open-end" @onclick="() => _endOpen = true">Open the end drawer</button>
+    <span id="end-open">@_endOpen</span>
+    <BitNavPanel Id="npn-drawer-end" Items="@I("end")" @bind-IsOpen="_endOpen" DrawerBreakpoint="BitNavPanelBreakpoint.Always" Placement="BitPlacement.End" AutoFocus />
+    <button id="btn-open-nonmodal" @onclick="() => _nonModalOpen = true">Open the non-modal drawer</button>
+    <span id="nonmodal-open">@_nonModalOpen</span>
+    <BitNavPanel Id="npn-drawer-nonmodal" Items="@I("nonmodal")" @bind-IsOpen="_nonModalOpen" DrawerBreakpoint="BitNavPanelBreakpoint.Always" NoOverlay NoAutoClose />
+    <button id="btn-api-open" @onclick="() => _drawerRef!.Open()">Open()</button>
+    <button id="btn-api-close" @onclick="() => _drawerRef!.Close()">Close()</button>
+    <button id="btn-never">A column on every screen</button>
+    <div class="npn-box"><BitNavPanel Id="npn-never" Items="@I("never")" DrawerBreakpoint="BitNavPanelBreakpoint.Never" Style="height:200px" /></div>
+</E2ESection>
+
+<E2ESection Id="sticky" Title="StickyEnds">
+    <div class="npn-box">
+        <BitNavPanel Id="npn-sticky" Items="_longItems" StickyEnds Style="height:300px">
+            <Footer><div class="npn-sticky-footer">Pinned footer</div></Footer>
+        </BitNavPanel>
+    </div>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="_params">
+        <div class="npn-row">
+            <div class="npn-box"><BitNavPanel Id="npn-cas" Items="@I("cas")" Style="height:300px" /></div>
+            <div class="npn-box"><BitNavPanel Id="npn-cas-own" Items="@I("casown")" SearchBoxPlaceholder="Own placeholder" Style="height:300px" /></div>
+        </div>
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <div class="npn-row">
+        @foreach (var color in Colors)
+        {
+            var name = color.ToString().ToLowerInvariant();
+            <div class="npn-box"><BitNavPanel Id="@($"npn-accent-{name}")" Items="@I($"accent-{name}")" Accent="color" NavMode="BitNavMode.Manual" DefaultSelectedItem="@I($"accent-{name}")[0]" NoSearchBox Style="height:160px" /></div>
+        }
+        <div class="npn-box"><BitNavPanel Id="npn-color" Items="@I("color")" Color="BitColor.Error" Style="height:200px" /></div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="icons" Title="External Icons">
+    <div class="npn-box">
+        <BitNavPanel Id="npn-icons" Items="@I("icons")" ToggleIcon="@BitIconInfo.Bi("list")" SearchIcon="@BitIconInfo.Bi("search")" ChevronDownIcon="@BitIconInfo.Bi("chevron-down")"
+                     IsToggled="_iconsToggled" Style="height:300px" />
+    </div>
+    <button id="btn-icons-toggle" @onclick="() => _iconsToggled = !_iconsToggled">Toggle the icons panel</button>
+    <div class="npn-box"><BitNavPanel Id="npn-icons-names" Items="@I("iconnames")" SearchIconName="@BitIconName.Zoom" ChevronDownIconName="@BitIconName.ChevronDownMed" IsToggled Style="height:300px" /></div>
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <div class="npn-row">
+        <div class="npn-box"><BitNavPanel Id="npn-size-small" Items="@I("small")" Size="BitSize.Small" NoSearchBox Style="height:200px" /></div>
+        <div class="npn-box"><BitNavPanel Id="npn-size-medium" Items="@I("medium")" Size="BitSize.Medium" NoSearchBox Style="height:200px" /></div>
+        <div class="npn-box"><BitNavPanel Id="npn-size-large" Items="@I("large")" Size="BitSize.Large" NoSearchBox Style="height:200px" /></div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <div class="npn-row">
+        <div class="npn-box">
+            <BitNavPanel Id="npn-styled" Items="@I("styled")" IconUrl="@Logo" HeaderText="Styled" ShowCloseButton IsToggled="_styledToggled" Class="npn-root-class"
+                         Style="height:300px; border: 2px solid rgb(1, 2, 3)"
+                         Classes="@(new() { Root = "c-root", Toggled = "c-toggled", Container = "c-container", Header = "c-header", HeaderIcon = "c-hicon", HeaderText = "c-htext",
+                                            ToggleButton = "c-toggle", CloseButton = "c-close", SearchBox = "c-search", ToggleSearchButton = "c-tsearch", EmptyListMessage = "c-empty", Nav = "c-nav" })"
+                         Styles="@(new() { Root = "padding-top: 3px", Toggled = "outline: 1px solid rgb(9, 9, 9)", Container = "padding-left: 4px", Header = "padding-right: 5px",
+                                           HeaderIcon = "opacity: 0.5", HeaderText = "color: rgb(10, 20, 30)", ToggleButton = "margin-left: 6px", SearchBox = "margin-top: 7px",
+                                           ToggleSearchButton = "margin-top: 8px", EmptyListMessage = "color: rgb(40, 50, 60)", Nav = "margin-bottom: 9px" })"
+                         NavClasses="@(new() { ItemContainer = "c-nav-item" })" NavStyles="@(new() { ItemContainer = "letter-spacing: 1px" })"
+                         SearchBoxClasses="@(new() { Root = "c-sb-root" })" SearchBoxStyles="@(new() { Root = "letter-spacing: 2px" })"
+                         SearchDebounceTime="0" />
+            <button id="btn-styled-toggle" @onclick="() => _styledToggled = !_styledToggled">Toggle the styled panel</button>
+        </div>
+        <div style="--bit-NavPanel-background: rgb(250, 240, 230); --bit-NavPanel-width: 210px; --bit-NavPanel-toggled-width: 77px; --bit-NavPanel-padding: 11px;
+                    --bit-NavPanel-container-padding: 13px; --bit-NavPanel-gap: 17px; --bit-NavPanel-radius: 19px; --bit-NavPanel-border-width: 3px;
+                    --bit-NavPanel-border-color: rgb(0, 0, 255); --bit-NavPanel-header-icon-size: 21px; --bit-NavPanel-shadow: rgb(0, 0, 0) 1px 1px 2px 0px;
+                    --bit-NavPanel-drawer-shadow: rgb(255, 0, 0) 2px 2px 3px 0px; --bit-NavPanel-overlay-background: rgba(0, 128, 0, 0.5); --bit-NavPanel-overlay-backdrop-filter: blur(2px)">
+            <BitNavPanel Id="npn-vars" Items="@I("vars")" IconUrl="@Logo" IsToggled="_varsToggled" Style="height:300px" />
+            <button id="btn-vars-toggle" @onclick="() => _varsToggled = !_varsToggled">Toggle the variables panel</button>
+            <button id="btn-vars-drawer" @onclick="() => _varsDrawerOpen = true">Open the variables drawer</button>
+            <BitNavPanel Id="npn-vars-drawer" Items="@I("varsdrawer")" @bind-IsOpen="_varsDrawerOpen" DrawerBreakpoint="BitNavPanelBreakpoint.Always" />
+        </div>
+        <div class="npn-box"><BitNavPanel Id="npn-nopad" Items="@I("nopad")" NoPad Top="40" Style="height:300px" /></div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="npn-box"><BitNavPanel Id="npn-rtl" Dir="BitDir.Rtl" Items="@I("rtl")" Style="height:300px" /></div>
+    <button id="btn-open-rtl-drawer" @onclick="() => _rtlDrawerOpen = true">Open the RTL drawer</button>
+    <BitNavPanel Id="npn-rtl-drawer" Dir="BitDir.Rtl" Items="@I("rtldrawer")" @bind-IsOpen="_rtlDrawerOpen" DrawerBreakpoint="BitNavPanelBreakpoint.Always" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div class="npn-box"><BitNavPanel Id="npn-disabled" Items="@I("disabled")" Disabled ShowCloseButton Style="height:300px" /></div>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <div class="npn-box"><BitNavPanel Id="npn-mounted" Items="@I("mounted")" Style="height:200px" /></div>
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    [Parameter] public string? Section { get; set; }
+
+    private const string Logo = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32'%3E%3Crect width='32' height='32' fill='%230065ef'/%3E%3C/svg%3E";
+
+    private static readonly BitColor[] Colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    public class E2EMenuItem21
+    {
+        public string? Label { get; set; }
+        public string? Glyph { get; set; }
+        public string? Tip { get; set; }
+        public List<E2EMenuItem21> Kids { get; set; } = [];
+    }
+
+    private readonly List<string> _log = [];
+    private readonly Dictionary<string, List<BitNavItem>> _items = [];
+    private BitNavItem? _selected;
+    private string? _searchText;
+    private string? _lastSearch;
+    private bool _hiddenToggled;
+    private bool _apiToggled;
+    private string _apiState = "-";
+    private bool _drawerOpen;
+    private bool _endOpen;
+    private bool _nonModalOpen;
+    private bool _iconsToggled = true;
+    private bool _styledToggled;
+    private bool _varsToggled;
+    private bool _varsDrawerOpen;
+    private bool _rtlDrawerOpen;
+    private bool _mounted = true;
+    private BitNavPanel<BitNavItem>? _templateRef;
+    private BitNavPanel<BitNavItem>? _apiRef;
+    private BitNavPanel<BitNavItem>? _drawerRef;
+
+    private readonly List<BitNavItem> _longItems = [.. Enumerable.Range(1, 40).Select(i => new BitNavItem { Text = $"Entry {i}", IconName = BitIconName.Page })];
+
+    private readonly List<E2EMenuItem21> _customItems =
+    [
+        new() { Label = "Custom home", Glyph = BitIconName.Home, Tip = "The home" },
+        new() { Label = "Custom group", Glyph = BitIconName.Folder, Kids = [new() { Label = "Custom child", Glyph = BitIconName.Page }] },
+    ];
+
+    private readonly BitNavNameSelectors<E2EMenuItem21> _customSelectors = new()
+    {
+        Text = { Selector = i => i.Label },
+        IconName = { Name = nameof(E2EMenuItem21.Glyph) },
+        Title = { Selector = i => i.Tip },
+        ChildItems = { Selector = i => i.Kids },
+    };
+
+    private readonly BitNavPanelParams[] _params =
+    [
+        new() { SearchBoxPlaceholder = "Cascaded placeholder", NoToggle = true, Size = BitSize.Small, Accent = BitColor.Success }
+    ];
+
+    private void Log(string entry) => _log.Add(entry);
+
+    // Every panel gets item instances of its own: a nav writes the expansion state back onto its items.
+    private List<BitNavItem> I(string key)
+    {
+        if (_items.TryGetValue(key, out var items)) return items;
+
+        return _items[key] =
+        [
+            new() { Text = "Home", IconName = BitIconName.Home, Url = "/e2e/nav-panel/page/home", Description = "The start page" },
+            new()
+            {
+                Text = "Products", IconName = BitIconName.Product, Data = "catalog",
+                ChildItems =
+                [
+                    new() { Text = "Phones", IconName = BitIconName.CellPhone, Url = "/e2e/nav-panel/page/phones" },
+                    new() { Text = "Laptops", IconName = BitIconName.Devices3, Url = "/e2e/nav-panel/page/laptops" },
+                ]
+            },
+            new()
+            {
+                Text = "Support", IconName = BitIconName.Help,
+                ChildItems = [new() { Text = "Contact us", IconName = BitIconName.Mail, Url = "/e2e/nav-panel/page/contact" }]
+            },
+            new() { Text = "Settings", IconName = BitIconName.Settings, Url = "/e2e/nav-panel/page/settings" },
+        ];
+    }
+}

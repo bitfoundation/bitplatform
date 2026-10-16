@@ -93,8 +93,9 @@
                         Description="One package carries the whole core library. Pick whichever of the three routes matches how you work.">
 
                 @* MountAll: all three panels belong in the rendered HTML, so the route a reader did not
-                   click is still there for search engines and for anyone reading with a screen reader. *@
-                <BitPivot MountAll>
+                   click is still there for search engines and for anyone reading with a screen reader.
+                   Scroll: the three headers are wider than the narrowest phones. *@
+                <BitPivot MountAll OverflowBehavior="BitPivotOverflowBehavior.Scroll">
                     <BitPivotItem HeaderText=".NET CLI">
                         <div class="gs-stack">
                             <BitText Element="p">Run this in the directory of the project your components live in:</BitText>

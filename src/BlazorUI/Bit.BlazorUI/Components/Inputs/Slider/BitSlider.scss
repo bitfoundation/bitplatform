@@ -73,6 +73,10 @@ $sld-private-properties:
     vlb-min, inp-start, inp-end, inp-mid, bar-start, bar-end;
 
 .bit-sld {
+    // The containing block of the visually hidden .bit-sld-dsc inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     // The values the Color and Size classes publish start out unset on every root, which those classes -
     // declared further down at the same weight - still win over on the root that carries them. That keeps a
     // slider placed in a label template of another one from inheriting the outer one's choice, and it is what
@@ -410,8 +414,15 @@ $sld-private-properties:
 // past the other still crosses. Which side each input keeps is therefore decided by where its thumb actually
 // stands - the near/far classes - and not by which end of the range it is named for: a crossed pair that kept
 // its named sides would have each input clipped away from its own thumb, leaving neither one grabbable.
+//
+// The cut is declared on the inputs themselves, which is where the component writes --bit-sld-inp-mid: a custom
+// property resolves the var() it reads where it is declared, so one declared on the root would read the root's
+// reset of the midpoint and cut every input at its own middle, wherever the thumbs stand.
 .bit-sld-rgd {
-    --bit-sld-inp-cut: calc(var(--bit-sld-thumb) / 2 + var(--bit-sld-inp-mid, 0.5) * (100% - var(--bit-sld-thumb)));
+    .bit-sld-inp-near,
+    .bit-sld-inp-far {
+        --bit-sld-inp-cut: calc(var(--bit-sld-thumb) / 2 + var(--bit-sld-inp-mid, 0.5) * (100% - var(--bit-sld-thumb)));
+    }
 
     .bit-sld-inp-near {
         clip-path: inset(0 calc(100% - var(--bit-sld-inp-cut)) 0 0);

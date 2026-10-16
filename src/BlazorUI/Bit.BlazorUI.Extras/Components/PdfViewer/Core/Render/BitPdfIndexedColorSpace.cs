@@ -19,9 +19,11 @@ internal sealed class BitPdfIndexedColorSpace : BitPdfColorSpace
 
     public override int Components => 1;
 
-    public static BitPdfIndexedColorSpace Build(List<object?> arr, IBitPdfXRef xref, BitPdfDict? resources)
+    public static BitPdfIndexedColorSpace Build(List<object?> arr, IBitPdfXRef xref, BitPdfDict? resources, BitPdfResolveScope scope)
     {
-        var baseCs = Create(arr.Count > 1 ? arr[1] : null, xref, resources);
+        // The base space resolves within the same scope, so an Indexed space over itself
+        // (directly or through a chain) ends in DeviceGray instead of recursing forever.
+        var baseCs = Create(arr.Count > 1 ? arr[1] : null, xref, resources, scope);
         // Indexed hival is a single-byte sample index, so the spec bounds it to 0..255.
         // Clamp to that range: a negative value would invert GetRgb's clamp bounds (throw),
         // and a huge one would let index * n overflow. Non-double falls back to 0.

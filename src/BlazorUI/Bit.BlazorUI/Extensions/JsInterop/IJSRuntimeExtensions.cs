@@ -79,7 +79,7 @@ public static class IJSRuntimeExtensions
 
 
 
-    [SuppressMessage("Trimming", "IL2075:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method. The return value of the source method does not have matching annotations.", Justification = "<Pending>")]
+    [UnconditionalSuppressMessage("Trimming", "IL2075", Justification = "Framework-internal members are probed reflectively; a member the trimmer removed makes the probe answer 'valid', and the interop call then surfaces the real error.")]
     public static bool IsRuntimeInvalid(this IJSRuntime jsRuntime)
     {
         if (jsRuntime is null) return false;
@@ -93,7 +93,7 @@ public static class IJSRuntimeExtensions
         return probe(jsRuntime);
     }
 
-    [SuppressMessage("Trimming", "IL2070:'this' argument does not satisfy 'DynamicallyAccessedMembersAttribute' in call to target method.", Justification = "Framework-internal members probed reflectively; failures fall back to 'valid'.")]
+    [UnconditionalSuppressMessage("Trimming", "IL2070", Justification = "Framework-internal members are probed reflectively; a member the trimmer removed makes the probe answer 'valid', and the interop call then surfaces the real error.")]
     private static Func<IJSRuntime, bool> BuildRuntimeInvalidProbe(Type type)
     {
         switch (type.Name)

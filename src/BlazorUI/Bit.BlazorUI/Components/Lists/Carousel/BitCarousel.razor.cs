@@ -2191,12 +2191,16 @@ public partial class BitCarousel : BitComponentBase
 
         if (_dotnetObj is not null)
         {
-            //_dotnetObj.Dispose(); // it is getting disposed in the following js call:
             try
             {
+                // The script releases the reference along with the observer.
                 await _js.BitObserversUnregisterResize(UniqueId, _carouselContainer, _dotnetObj);
             }
             catch (JSDisconnectedException) { } // we can ignore this exception here
+            catch (JSException) { } // the call never reached the script, which is what the release below is for
+
+            // Released here too, for an unregistering that never reached the script; releasing it twice is harmless.
+            _dotnetObj.Dispose();
         }
 
         await base.DisposeAsync(disposing);

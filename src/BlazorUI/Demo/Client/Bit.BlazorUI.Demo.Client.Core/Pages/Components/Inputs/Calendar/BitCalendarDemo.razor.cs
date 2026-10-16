@@ -756,7 +756,7 @@ public partial class BitCalendarDemo
             Name = "Today",
             Type = "DateTimeOffset?",
             DefaultValue = "null",
-            Description = "Overrides the current date and time considered as \"today\" and \"now\" in the calendar (useful for testing or custom time providers)."
+            Description = "Overrides the current date and time considered as \"today\" and \"now\" in the calendar (useful for testing or custom time providers). A calendar with no value opens on the month of it; a later change moves the day highlighted as today without paging the calendar away from the month on screen."
         },
         new()
         {
@@ -1418,7 +1418,9 @@ public partial class BitCalendarDemo
                     Name = "Color",
                     Type = "BitColor?",
                     DefaultValue = "null",
-                    Description = "The color of the indicator dot the event puts on its day. Without one the dot takes the color of the calendar itself."
+                    Description = "The color of the indicator dot the event puts on its day. Without one the dot takes the color of the calendar itself.",
+                    LinkType = LinkType.Link,
+                    Href = "#color-enum"
                 },
                 new()
                 {

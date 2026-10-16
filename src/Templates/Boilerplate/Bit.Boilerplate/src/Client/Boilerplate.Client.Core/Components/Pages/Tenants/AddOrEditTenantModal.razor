@@ -6,12 +6,13 @@
 }
 
 <BitModal @bind-IsOpen="isOpen"
-          AutoToggleScroll="false" Blocking="isChanged"
+          IsAlert="false" TitleAriaId="tenant-modal-title"
+          Blocking="isChanged" NoDismissOnEscape="isChanged"
           Draggable DragElementSelector=".header-stack">
     <section>
-        <BitStack Class="stack">
-            <BitStack VerticalAlign="BitAlignment.Center" Class="header-stack" Horizontal>
-                <BitText Typography="BitTypography.H5">
+        <BitStack Padding="1rem">
+            <BitStack VerticalAlign="BitAlignment.Center" Gap="0.5rem" Class="header-stack" Horizontal>
+                <BitText Id="tenant-modal-title" Typography="BitTypography.H5">
                     @if (tenant.Id == default)
                     {
                         @Localizer[nameof(AppStrings.AddTenant)]

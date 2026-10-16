@@ -1,6 +1,8 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
 
-public partial class _BitAccordionListItem<TItem> : ComponentBase, IDisposable where TItem : class
+namespace Bit.BlazorUI;
+
+public partial class _BitAccordionListItem<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : ComponentBase, IDisposable where TItem : class
 {
     private bool _skipRender;
     private TItem? _registeredItem;

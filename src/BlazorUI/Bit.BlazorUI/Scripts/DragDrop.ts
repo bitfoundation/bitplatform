@@ -66,6 +66,18 @@
                 // to the document and the surface following the pointer with no button held down.
                 document.addEventListener('pointercancel', handlePointerUp);
                 listeners['pointercancel'] = handlePointerUp;
+
+                // A press is a move from here on, never the start of the browser's own drag: a press on the handle
+                // that lands inside a selection made before it - one that reaches the handle from the content, even
+                // though the handle cannot be selected itself - would otherwise drag that text away in Firefox, and
+                // an image or a link in the handle would be dragged out of it in every engine, the pointer stream
+                // being cancelled under the move either way.
+                document.addEventListener('dragstart', handleDragStart, true);
+                listeners['dragstart'] = handleDragStart;
+            }
+
+            function handleDragStart(e: DragEvent) {
+                e.preventDefault();
             }
 
             function handlePointerMove(e: PointerEvent) {
@@ -103,6 +115,7 @@
                 document.removeEventListener('pointermove', handlePointerMove);
                 document.removeEventListener('pointerup', handlePointerUp);
                 document.removeEventListener('pointercancel', handlePointerUp);
+                document.removeEventListener('dragstart', handleDragStart, true);
             }
         }
 
@@ -155,11 +168,13 @@
             document.removeEventListener('pointermove', listeners['pointermove']);
             document.removeEventListener('pointerup', listeners['pointerup']);
             document.removeEventListener('pointercancel', listeners['pointercancel']);
+            document.removeEventListener('dragstart', listeners['dragstart'], true);
 
             delete listeners['pointerdown'];
             delete listeners['pointermove'];
             delete listeners['pointerup'];
             delete listeners['pointercancel'];
+            delete listeners['dragstart'];
             delete listeners['dragElement'];
             delete listeners['element'];
             delete listeners['pinnedOver'];

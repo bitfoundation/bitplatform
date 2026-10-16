@@ -125,6 +125,11 @@ public partial class AddOrEditProductPage
         }
     }
 
+    private void HandleOnInvalid(BitFileInfo[] files)
+    {
+        SnackBarService.Error(files[0].Message ?? Localizer[nameof(AppStrings.FileUploadFailed)]);
+    }
+
     private async Task HandleOnUploadFailed(BitFileInfo fileInfo)
     {
         isManagingFile = false;

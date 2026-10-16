@@ -1,0 +1,460 @@
+﻿@page "/e2e/slider"
+@using System.Globalization
+
+<PageTitle>BitSlider E2E</PageTitle>
+
+<h1>BitSlider</h1>
+
+<div style="width: 420px;">
+
+<E2ESection Id="basic" Title="Basic">
+    <BitSlider Id="sld-basic" Label="Basic slider" OnChange="v => { _basicChanges++; _basicValue = v; }" />
+    <span id="basic-change-count">@_basicChanges</span>
+    <span id="basic-value">@_basicValue</span>
+    <BitSlider Id="sld-default" Label="Volume" DefaultValue="7" />
+    <BitSlider Id="sld-percent" Label="Percentage" Min="0" Max="100" Step="10" DefaultValue="40" />
+    <BitSlider Id="sld-disabled" Label="Disabled slider" DefaultValue="5" Disabled="_disabled"
+               OnChange="v => _disabledValue = v"
+               @onclick="() => _disabledClicks++"
+               @onpointerdown="() => _disabledClicks++" />
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="disabled-value">@_disabledValue</span>
+    <BitSlider Id="sld-readonly" Label="ReadOnly slider" DefaultValue="6" ReadOnly OnChange="v => _readOnlyValue = v" />
+    <span id="readonly-value">@_readOnlyValue</span>
+</E2ESection>
+
+<E2ESection Id="range" Title="Range">
+    <BitSlider Id="sld-range" Label="Basic range" IsRanged OnRangeChange="r => _rangeText = Text(r)" />
+    <span id="range-value">@_rangeText</span>
+    <BitSlider Id="sld-price" Label="Price" IsRanged Min="0" Max="1000" Step="50" ValueFormat="C0" DefaultLowerValue="200" DefaultUpperValue="750" />
+    <BitSlider Id="sld-age" Label="Age band" IsRanged Min="0" Max="100" Step="5" @bind-RangeValue="_ageBand" />
+    <span id="age-value">@Text(_ageBand)</span>
+    <button id="btn-age-set" @onclick="@(() => _ageBand = new(10, 90))">10-90</button>
+    <button id="btn-age-reversed" @onclick="@(() => _ageBand = new(80, 20))">80-20</button>
+    <BitSlider Id="sld-range-disabled" Label="Disabled range" IsRanged DefaultLowerValue="2" DefaultUpperValue="5" Disabled />
+</E2ESection>
+
+<E2ESection Id="marks" Title="Marks">
+    <BitSlider Id="sld-show-marks" Label="Steps of one" ShowMarks DefaultValue="6" />
+    <BitSlider Id="sld-mark-labels" Label="Rating" ShowMarkLabels Max="5" DefaultValue="3" />
+    <BitSlider Id="sld-mark-step" Label="Budget" ShowMarkLabels Min="0" Max="1000" Step="10" MarkStep="200" ValueFormat="C0" DefaultValue="400" />
+    <BitSlider Id="sld-custom-marks" Label="Quality" Max="4" Marks="_qualityMarks" DefaultValue="2" ShowValue="false" />
+    <BitSlider Id="sld-load-marks" Label="Load" ShowMarkLabels Marks="_loadMarks" Max="100" Step="5" DefaultValue="45" />
+    <BitSlider Id="sld-mark-template" Label="How was it?" ShowValue="false" Max="4" DefaultValue="3">
+        <MarkLabelTemplate Context="mark">
+            <span class="face" data-value="@mark.Value">@_faces[(int)mark.Value]</span>
+        </MarkLabelTemplate>
+    </BitSlider>
+    <BitSlider Id="sld-restrict" Label="Storage" RestrictToMarks Min="0" Max="2000" Step="1" Marks="_storageMarks" ShowValue="false" @bind-Value="_storage" />
+    <span id="restrict-value">@_storage</span>
+    <BitSlider Id="sld-restrict-range" Label="Shift" IsRanged RestrictToMarks MinRange="4" Min="0" Max="24" Step="1" MarkStep="4" ValueFormat="0'h'" ShowMarks @bind-RangeValue="_shift" />
+    <span id="restrict-range-value">@Text(_shift)</span>
+</E2ESection>
+
+<E2ESection Id="vertical" Title="Vertical">
+    <div style="display: flex; gap: 40px;">
+        <BitSlider Id="sld-vertical" Label="Basic" IsVertical @bind-Value="_vertical" />
+        <BitSlider Id="sld-vertical-range" Label="Ranged" IsVertical IsRanged @bind-RangeValue="_verticalRange" />
+        <BitSlider Id="sld-vertical-marks" Label="Marks" IsVertical ShowMarks ShowMarkLabels MarkStep="2" DefaultValue="6" />
+        <BitSlider Id="sld-vertical-tall" Label="Taller" IsVertical Style="--bit-Slider-length: 288px" DefaultValue="8" />
+    </div>
+    <span id="vertical-value">@_vertical</span>
+    <span id="vertical-range-value">@Text(_verticalRange)</span>
+</E2ESection>
+
+<E2ESection Id="fill" Title="Fill, origin & inversion">
+    <BitSlider Id="sld-origin-zero" Label="Balance" Min="-5" Max="5" IsOriginFromZero @bind-Value="_balance" />
+    <span id="origin-zero-value">@_balance</span>
+    <BitSlider Id="sld-origin" Label="Against target" Min="0" Max="100" Step="5" Origin="60" DefaultValue="85" />
+    <BitSlider Id="sld-inverted" Label="Remaining" Max="100" Step="5" Inverted DefaultValue="30" />
+    <BitSlider Id="sld-inverted-range" Label="Excluded" IsRanged Inverted Min="0" Max="100" Step="5" DefaultLowerValue="35" DefaultUpperValue="65" ShowMarks MarkStep="10" />
+    <BitSlider Id="sld-nofill" Label="Position" NoFill ShowMarks Max="100" Step="5" MarkStep="10" DefaultValue="45" />
+    <BitSlider Id="sld-nofill-range" Label="Bounds" NoFill IsRanged Max="100" Step="5" DefaultLowerValue="25" DefaultUpperValue="75" />
+    <BitSlider Id="sld-fill-marks" Label="Active marks" ShowMarks Max="10" DefaultValue="4" />
+</E2ESection>
+
+<E2ESection Id="thumb-label" Title="Thumb label">
+    <BitSlider Id="sld-tl-off" Label="Off" ThumbLabel="BitSliderThumbLabel.Off" DefaultValue="4" />
+    <BitSlider Id="sld-tl-auto" Label="Auto" ThumbLabel="BitSliderThumbLabel.Auto" ShowValue="false" DefaultValue="4" />
+    <BitSlider Id="sld-tl-on" Label="On" ThumbLabel="BitSliderThumbLabel.On" ShowValue="false" Max="100" Step="5" DefaultValue="35" ValueFormat="0'%'" />
+    <BitSlider Id="sld-tl-range" Label="Range" IsRanged ThumbLabel="BitSliderThumbLabel.On" ShowValue="false" Min="0" Max="1000" Step="50" ValueFormat="C0" DefaultLowerValue="250" DefaultUpperValue="700" />
+    <BitSlider Id="sld-tl-template" Label="Volume" ThumbLabel="BitSliderThumbLabel.On" ShowValue="false" Max="100" Step="5" DefaultValue="60">
+        <ThumbLabelTemplate Context="value">
+            <span class="thumb-template">vol @value</span>
+        </ThumbLabelTemplate>
+    </BitSlider>
+</E2ESection>
+
+<E2ESection Id="constraints" Title="Range constraints">
+    <BitSlider Id="sld-free" IsRanged Max="100" Step="5" @bind-RangeValue="_freeRange" />
+    <span id="free-value">@Text(_freeRange)</span>
+    <BitSlider Id="sld-noswap" IsRanged NoSwap Max="100" Step="5" @bind-RangeValue="_noSwapRange" />
+    <span id="noswap-value">@Text(_noSwapRange)</span>
+    <BitSlider Id="sld-minrange" IsRanged MinRange="20" Max="100" Step="5" @bind-RangeValue="_minRange" />
+    <span id="minrange-value">@Text(_minRange)</span>
+    <BitSlider Id="sld-maxrange" IsRanged MaxRange="30" Max="100" Step="5" @bind-RangeValue="_maxRange" />
+    <span id="maxrange-value">@Text(_maxRange)</span>
+    <BitSlider Id="sld-pushable" IsRanged Pushable MinRange="20" Max="100" Step="5" @bind-RangeValue="_pushable" />
+    <span id="pushable-value">@Text(_pushable)</span>
+    <BitSlider Id="sld-narrowed" IsRanged MinRange="10" MaxRange="40" Max="100" Step="5" @bind-RangeValue="_narrowed" />
+    <span id="narrowed-value">@Text(_narrowed)</span>
+</E2ESection>
+
+<E2ESection Id="band" Title="Draggable band">
+    <BitSlider Id="sld-band" IsRanged DraggableTrack Max="100" Step="5" @bind-RangeValue="_band" OnRangeChangeEnd="r => _bandEnd++" />
+    <span id="band-value">@Text(_band)</span>
+    <span id="band-end">@_bandEnd</span>
+    <BitSlider Id="sld-band-fixed" IsRanged DraggableTrack MinRange="20" MaxRange="20" Max="100" Step="5" @bind-RangeValue="_bandFixed" />
+    <span id="band-fixed-value">@Text(_bandFixed)</span>
+    <BitSlider Id="sld-band-vertical" Label="Band" IsVertical IsRanged DraggableTrack Max="100" Step="5" @bind-RangeValue="_bandVertical" />
+    <span id="band-vertical-value">@Text(_bandVertical)</span>
+</E2ESection>
+
+<E2ESection Id="value-display" Title="Value display">
+    <BitSlider Id="sld-currency" Label="Currency" Min="0" Max="1000" Step="50" ValueFormat="C0" DefaultValue="450" />
+    <BitSlider Id="sld-percentage" Label="Percentage" Max="1" Step="0.01" ValueFormat="0 %" DefaultValue="0.69" />
+    <BitSlider Id="sld-decimals" Label="Fixed decimals" Max="5" Step="0.1" ValueFormat="0.0 rem" DefaultValue="2.5" />
+    <BitSlider Id="sld-time" Label="Meeting time" Min="480" Max="1080" Step="30" MarkStep="120" ShowMarkLabels GetValueText="TimeText" DefaultValue="750" />
+    <BitSlider Id="sld-no-value" Label="No value label" ShowValue="false" DefaultValue="4" />
+    <BitSlider Id="sld-label-template" DefaultValue="6" Max="10">
+        <LabelTemplate>
+            <span class="template-label">Templated <b>label</b></span>
+        </LabelTemplate>
+    </BitSlider>
+</E2ESection>
+
+<E2ESection Id="binding" Title="Binding">
+    <BitSlider Id="sld-one-way" Label="One-way" Value="_oneWay" />
+    <button id="btn-one-way" @onclick="() => _oneWay = 8">8</button>
+    <BitSlider Id="sld-two-way" Label="Two-way" @bind-Value="_twoWay" />
+    <span id="two-way-value">@_twoWay</span>
+    <button id="btn-two-way" @onclick="() => _twoWay = 3">3</button>
+    <button id="btn-two-way-over" @onclick="() => _twoWay = 25">25</button>
+    <BitSlider Id="sld-lower-upper" Label="Range" IsRanged Max="100" Step="5" @bind-LowerValue="_boundLower" @bind-UpperValue="_boundUpper" />
+    <span id="lower-value">@_boundLower</span>
+    <span id="upper-value">@_boundUpper</span>
+    <button id="btn-lower-upper" @onclick="() => { _boundLower = 40; _boundUpper = 60; }">40-60</button>
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitSlider Id="sld-events" Label="Drag me" Max="100" DefaultValue="20"
+               OnChange="v => { _changeCount++; _changeValue = v; }"
+               OnChangeEnd="v => { _changeEndCount++; _changeEndValue = v; }" />
+    <span id="change-count">@_changeCount</span>
+    <span id="change-value">@_changeValue</span>
+    <span id="change-end-count">@_changeEndCount</span>
+    <span id="change-end-value">@_changeEndValue</span>
+    <BitSlider Id="sld-range-events" Label="Drag me too" IsRanged Max="100" DefaultLowerValue="20" DefaultUpperValue="60"
+               OnRangeChange="r => { _rangeChangeCount++; _rangeChangeValue = Text(r); }"
+               OnRangeChangeEnd="r => { _rangeChangeEndCount++; _rangeChangeEndValue = Text(r); }" />
+    <span id="range-change-count">@_rangeChangeCount</span>
+    <span id="range-change-value">@_rangeChangeValue</span>
+    <span id="range-change-end-count">@_rangeChangeEndCount</span>
+    <span id="range-change-end-value">@_rangeChangeEndValue</span>
+    <button id="before-focus">before</button>
+    <BitSlider Id="sld-focus" Label="Focus me" IsRanged Max="100" Step="5" DefaultLowerValue="30" DefaultUpperValue="70"
+               OnFocusIn="e => { _focusIn++; _focusType = e.Type; }"
+               OnFocusOut="e => { _focusOut++; _focusType = e.Type; }" />
+    <button id="after-focus">after</button>
+    <span id="focus-in">@_focusIn</span>
+    <span id="focus-out">@_focusOut</span>
+    <span id="focus-type">@_focusType</span>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation" style="--bit-Slider-invalid-color: rgb(4, 5, 6);">
+    <EditForm Model="_model" OnValidSubmit="@(() => _formResult = "valid")" OnInvalidSubmit="@(() => _formResult = "invalid")">
+        <DataAnnotationsValidator />
+        <BitSlider Id="sld-form" Required Name="days" Label="How many days a week?" Max="7" ShowMarks ShowMarkLabels
+                   InputHtmlAttributes="@(new() { ["data-input"] = "days", ["aria-describedby"] = "sld-form-msg" })"
+                   @bind-Value="_model.Days" />
+        <div id="sld-form-msg"><ValidationMessage For="@(() => _model.Days)" /></div>
+        <BitSlider Id="sld-form-range" IsRanged Label="Budget bracket" Max="100" Step="5" Name="budget" @bind-RangeValue="_model.Budget" />
+        <div id="sld-form-range-msg"><ValidationMessage For="@(() => _model.Budget)" /></div>
+        <button id="sld-form-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-result">@_formResult</span>
+    <span id="form-days">@_model.Days</span>
+</E2ESection>
+
+<E2ESection Id="accessibility" Title="Accessibility">
+    <BitSlider Id="sld-valuetext" Label="Quality" Max="4" DefaultValue="2" AriaValueText="QualityText" />
+    <BitSlider Id="sld-largestep" Label="Frequency" Min="0" Max="1000" Step="10" LargeStep="100" @bind-Value="_frequency" ValueFormat="0 Hz" />
+    <span id="largestep-value">@_frequency</span>
+    <BitSlider Id="sld-keys" Label="Keys" Min="0" Max="1000" Step="10" @bind-Value="_keys" />
+    <span id="keys-value">@_keys</span>
+    <BitSlider Id="sld-from-to" IsRanged NoSwap Max="1000" Step="10" LargeStep="250" LowerAriaLabel="From" UpperAriaLabel="To" @bind-RangeValue="_fromTo" />
+    <span id="from-to-value">@Text(_fromTo)</span>
+    <BitSlider Id="sld-group" IsRanged AriaLabel="Price range" LowerAriaLabel="Minimum price" UpperAriaLabel="Maximum price" Max="1000" Step="50" DefaultLowerValue="150" DefaultUpperValue="800" />
+    <BitSlider @ref="_focusSlider" Id="sld-focus-api" IsRanged Max="100" Step="5" LowerAriaLabel="From" UpperAriaLabel="To" DefaultLowerValue="25" DefaultUpperValue="75" />
+    <button id="btn-focus-lower" @onclick="FocusLower">Focus lower</button>
+    <button id="btn-focus-upper" @onclick="FocusUpper">Focus upper</button>
+    <BitSlider Id="sld-description" Required Label="Monthly budget" AriaDescription="In thousands of euros." Min="0" Max="100" Step="5" DefaultValue="40" />
+    <BitSlider Id="sld-labelled-group" IsRanged Label="Delivery window" LowerAriaLabel="Earliest" UpperAriaLabel="Latest" AriaDescription="Both ends are days from today." Max="30" DefaultLowerValue="5" DefaultUpperValue="14" />
+    <BitSlider Id="sld-template-group" IsRanged Max="10" DefaultLowerValue="3" DefaultUpperValue="7">
+        <LabelTemplate>
+            <span>Frequency band</span>
+        </LabelTemplate>
+    </BitSlider>
+    <BitSlider Id="sld-aria-label" AriaLabel="Brightness" DefaultValue="3" />
+    <BitSlider Id="sld-tabindex" Label="Tab index" TabIndex="5" DefaultValue="3" />
+</E2ESection>
+
+<E2ESection Id="modal" Title="Escape inside a modal">
+    <button id="btn-open-modal" @onclick="() => _modalOpen = true">Open modal</button>
+    <BitModal @bind-IsOpen="_modalOpen">
+        <div style="padding: 24px; width: 300px;">
+            <BitSlider Id="sld-modal" Label="In a modal" @bind-Value="_modalValue" />
+        </div>
+    </BitModal>
+    <span id="modal-open">@_modalOpen</span>
+    <span id="modal-value">@_modalValue</span>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_sliderParams">
+        <BitSlider Id="sld-cascade-1" Label="Compression" DefaultValue="40" />
+        <BitSlider Id="sld-cascade-own" Label="Noise reduction" Color="BitColor.Warning" ShowMarkLabels="false" Max="50" DefaultValue="25" />
+    </BitParams>
+    <BitSlider Id="sld-cascade-outside" Label="Untouched" DefaultValue="4" />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <BitSlider Id="sld-color-none" DefaultValue="6" />
+    @foreach (var (color, slug) in _colors)
+    {
+        <BitSlider Id="@($"sld-color-{slug}")" Color="color" DefaultValue="6" ThumbLabel="BitSliderThumbLabel.On" />
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitSlider Id="sld-size-sm" Size="BitSize.Small" Label="Small" DefaultValue="4" ShowMarkLabels ThumbLabel="BitSliderThumbLabel.On" />
+    <BitSlider Id="sld-size-md" Size="BitSize.Medium" Label="Medium" DefaultValue="4" ShowMarkLabels ThumbLabel="BitSliderThumbLabel.On" />
+    <BitSlider Id="sld-size-lg" Size="BitSize.Large" Label="Large" DefaultValue="4" ShowMarkLabels ThumbLabel="BitSliderThumbLabel.On" />
+    <div style="display: flex; gap: 40px;">
+        <BitSlider Id="sld-size-vsm" Size="BitSize.Small" IsVertical DefaultValue="4" />
+        <BitSlider Id="sld-size-vlg" Size="BitSize.Large" IsVertical DefaultValue="4" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <BitSlider Id="sld-style" DefaultValue="3" Style="margin-inline: 13px; box-shadow: tomato 0 0 4px;" />
+    <BitSlider Id="sld-class" DefaultValue="3" Class="custom-class" />
+    <BitSlider Id="sld-styles" Label="Styles" DefaultValue="4" ShowMarkLabels IsOriginFromZero Min="-2" ThumbLabel="BitSliderThumbLabel.On"
+               Styles="@(new() { Root = "padding: 5px;", Label = "letter-spacing: 3px;", Container = "column-gap: 7px;", SliderBox = "outline: 1px solid rgb(1, 1, 1);", Track = "opacity: 0.9;", Fill = "background-color: rgb(2, 2, 2);", Thumb = "background-color: rgb(3, 3, 3);", ValueInput = "outline: 2px solid rgb(4, 4, 4);", OriginFromZero = "background-color: rgb(5, 5, 5);", ValueLabel = "color: rgb(6, 6, 6);", Mark = "background-color: rgb(7, 7, 7);", MarkLabel = "color: rgb(8, 8, 8);", ThumbLabel = "color: rgb(9, 9, 9);" })" />
+    <BitSlider Id="sld-styles-range" Label="Styles range" IsRanged DraggableTrack DefaultLowerValue="2" DefaultUpperValue="8"
+               Styles="@(new() { LowerThumb = "background-color: rgb(10, 10, 10);", UpperThumb = "background-color: rgb(11, 11, 11);", LowerValueInput = "outline: 2px solid rgb(12, 12, 12);", UpperValueInput = "outline: 2px solid rgb(13, 13, 13);", TrackInput = "outline: 2px solid rgb(14, 14, 14);", LowerValueLabel = "color: rgb(15, 15, 15);", UpperValueLabel = "color: rgb(16, 16, 16);" })" />
+    <BitSlider Id="sld-classes" Label="Classes" DefaultValue="4" ShowMarkLabels IsOriginFromZero Min="-2" ThumbLabel="BitSliderThumbLabel.On"
+               Classes="@(new() { Root = "c-root", Label = "c-lbl", Container = "c-cnt", SliderBox = "c-box", Track = "c-trk", Fill = "c-fil", Thumb = "c-thb", ValueInput = "c-inp", OriginFromZero = "c-ztk", ValueLabel = "c-vlb", Mark = "c-mrk", MarkLabel = "c-mlb", ThumbLabel = "c-tlb" })" />
+    <BitSlider Id="sld-classes-range" Label="Classes range" IsRanged DraggableTrack DefaultLowerValue="2" DefaultUpperValue="8"
+               Classes="@(new() { LowerThumb = "c-lthb", UpperThumb = "c-uthb", LowerValueInput = "c-linp", UpperValueInput = "c-uinp", TrackInput = "c-tinp", LowerValueLabel = "c-lvlb", UpperValueLabel = "c-uvlb" })" />
+    <BitSlider Id="sld-attrs" DefaultValue="3" data-test="attr-value" title="root title"
+               SliderBoxHtmlAttributes="@(new() { ["data-box"] = "box-value" })" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div id="css-vars-ancestor" style="--bit-Slider-color: rgb(218, 165, 32); --bit-Slider-rail-color: rgb(216, 201, 163); --bit-Slider-rail-size: 6px; --bit-Slider-rail-radius: 1px; --bit-Slider-thumb-size: 30px; --bit-Slider-thumb-radius: 4px; --bit-Slider-thumb-border-width: 3px; --bit-Slider-thumb-background: rgb(1, 2, 3); --bit-Slider-thumb-shadow: rgb(9, 9, 9) 0px 0px 2px 0px; --bit-Slider-gap: 9px; --bit-Slider-font-size: 17px; --bit-Slider-font-weight: 300; --bit-Slider-letter-spacing: 2px; --bit-Slider-label-color: rgb(220, 20, 60); --bit-Slider-value-color: rgb(0, 128, 0); --bit-Slider-required-color: rgb(0, 0, 255); --bit-Slider-mark-size: 6px; --bit-Slider-mark-color: rgb(10, 11, 12); --bit-Slider-mark-active-color: rgb(13, 14, 15); --bit-Slider-mark-label-color: rgb(16, 17, 18); --bit-Slider-mark-label-font-size: 11px; --bit-Slider-mark-label-height: 30px; --bit-Slider-thumb-label-color: rgb(19, 20, 21); --bit-Slider-thumb-label-background: rgb(22, 23, 24); --bit-Slider-thumb-label-radius: 5px; --bit-Slider-thumb-label-padding: 3px; --bit-Slider-thumb-label-font-size: 13px; --bit-Slider-thumb-label-room: 50px; --bit-Slider-origin-color: rgb(25, 26, 27); --bit-Slider-origin-width: 5px; --bit-Slider-transition-duration: 300ms;">
+        <BitSlider Id="sld-vars" Label="Vars" Required DefaultValue="4" Min="-5" Max="5" IsOriginFromZero ShowMarkLabels ThumbLabel="BitSliderThumbLabel.On" />
+        <BitSlider Id="sld-vars-explicit" Color="BitColor.Error" Size="BitSize.Small" DefaultValue="4" />
+        <div style="--bit-Slider-length: 150px;">
+            <BitSlider Id="sld-vars-vertical" IsVertical DefaultValue="4" />
+        </div>
+    </div>
+    <button id="before-vars-state">before</button>
+    <div style="--bit-Slider-disabled-color: rgb(1, 2, 3); --bit-Slider-hover-color: rgb(7, 8, 9); --bit-Slider-active-color: rgb(40, 50, 60); --bit-Slider-focus-color: rgb(10, 20, 30);">
+        <BitSlider Id="sld-vars-disabled" Disabled DefaultValue="3" />
+        <BitSlider Id="sld-vars-state" DefaultValue="3" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitSlider Id="sld-rtl" Dir="BitDir.Rtl" Label="RTL" @bind-Value="_rtl" />
+    <span id="rtl-value">@_rtl</span>
+    <BitSlider Id="sld-rtl-range" Dir="BitDir.Rtl" IsRanged Max="100" Step="5" @bind-RangeValue="_rtlRange" />
+    <span id="rtl-range-value">@Text(_rtlRange)</span>
+    <div dir="rtl">
+        <BitSlider Id="sld-rtl-inherited" Label="Inherited" @bind-Value="_rtlInherited" />
+    </div>
+    <span id="rtl-inherited-value">@_rtlInherited</span>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitSlider Id="sld-runtime" Label="@_runtimeLabel" Color="_runtimeColor" Size="_runtimeSize" Max="_runtimeMax" IsRanged="_runtimeRanged" DefaultValue="8" ShowMarks="_runtimeMarks" />
+    <button id="btn-runtime-color" @onclick="() => _runtimeColor = BitColor.Error">Error</button>
+    <button id="btn-runtime-size" @onclick="() => _runtimeSize = BitSize.Large">Large</button>
+    <button id="btn-runtime-max" @onclick="() => _runtimeMax = 20">Max 20</button>
+    <button id="btn-runtime-marks" @onclick="() => _runtimeMarks = true">Marks</button>
+    <button id="btn-runtime-label" @onclick="@(() => _runtimeLabel = "Changed label")">Label</button>
+    @if (_mounted)
+    {
+        <BitSlider Id="sld-unmount" IsRanged DraggableTrack DefaultLowerValue="2" DefaultUpperValue="6" />
+    }
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Motion">
+    <BitSlider Id="sld-motion" DefaultValue="2" />
+    <BitSlider Id="sld-motion-forced" ForceAnimation DefaultValue="2" />
+</E2ESection>
+
+</div>
+
+<E2EStatus />
+
+@code {
+    private static readonly string[] _faces = ["awful", "bad", "okay", "good", "great"];
+
+    private static readonly (BitColor Color, string Slug)[] _colors =
+    [
+        (BitColor.Primary, "pri"),
+        (BitColor.Secondary, "sec"),
+        (BitColor.Tertiary, "ter"),
+        (BitColor.Info, "inf"),
+        (BitColor.Success, "suc"),
+        (BitColor.Warning, "wrn"),
+        (BitColor.SevereWarning, "swr"),
+        (BitColor.Error, "err"),
+        (BitColor.PrimaryBackground, "pbg"),
+        (BitColor.SecondaryBackground, "sbg"),
+        (BitColor.TertiaryBackground, "tbg"),
+        (BitColor.PrimaryForeground, "pfg"),
+        (BitColor.SecondaryForeground, "sfg"),
+        (BitColor.TertiaryForeground, "tfg"),
+        (BitColor.PrimaryBorder, "pbr"),
+        (BitColor.SecondaryBorder, "sbr"),
+        (BitColor.TertiaryBorder, "tbr"),
+    ];
+
+    private readonly List<BitSliderMark> _qualityMarks = [new(0, "Draft"), new(1, "Low"), new(2, "Medium"), new(3, "High"), new(4, "Lossless"), new(9, "Out of range")];
+
+    private readonly List<BitSliderMark> _loadMarks =
+    [
+        new(0), new(25), new(50), new(75),
+        new(90, "limit") { Class = "limit-mark", Style = "background-color: rgb(255, 99, 71); color: rgb(255, 99, 71);" },
+        new(100)
+    ];
+
+    private readonly List<BitSliderMark> _storageMarks = [new(0, "0"), new(64, "64"), new(128, "128"), new(256, "256"), new(512, "512"), new(1000, "1 TB"), new(2000, "2 TB")];
+
+    private readonly BitSliderParams[] _sliderParams =
+    [
+        new()
+        {
+            Min = 0,
+            Max = 100,
+            Step = 5,
+            ShowMarks = true,
+            MarkStep = 25,
+            ShowMarkLabels = true,
+            Color = BitColor.Success,
+            Size = BitSize.Large,
+        }
+    ];
+
+    private int _basicChanges;
+    private double _basicValue;
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private double _disabledValue;
+    private double _readOnlyValue;
+
+    private string _rangeText = "";
+    private BitSliderRangeValue? _ageBand = new(20, 40);
+    private double _storage = 64;
+    private BitSliderRangeValue? _shift = new(8, 16);
+
+    private double _vertical = 4;
+    private BitSliderRangeValue? _verticalRange = new(2, 7);
+
+    private double _balance = 3;
+
+    private BitSliderRangeValue? _freeRange = new(30, 70);
+    private BitSliderRangeValue? _noSwapRange = new(30, 70);
+    private BitSliderRangeValue? _minRange = new(20, 60);
+    private BitSliderRangeValue? _maxRange = new(30, 50);
+    private BitSliderRangeValue? _pushable = new(20, 40);
+    private BitSliderRangeValue? _narrowed = new(10, 90);
+
+    private BitSliderRangeValue? _band = new(20, 40);
+    private int _bandEnd;
+    private BitSliderRangeValue? _bandFixed = new(30, 50);
+    private BitSliderRangeValue? _bandVertical = new(30, 60);
+
+    private double _oneWay = 2;
+    private double _twoWay = 5;
+    private double _boundLower = 20;
+    private double _boundUpper = 80;
+
+    private int _changeCount;
+    private double _changeValue;
+    private int _changeEndCount;
+    private double _changeEndValue;
+    private int _rangeChangeCount;
+    private string _rangeChangeValue = "";
+    private int _rangeChangeEndCount;
+    private string _rangeChangeEndValue = "";
+    private int _focusIn;
+    private int _focusOut;
+    private string _focusType = "";
+
+    private readonly SliderModel _model = new();
+    private string _formResult = "none";
+
+    private double _frequency = 400;
+    private double _keys = 500;
+    private BitSliderRangeValue? _fromTo = new(200, 600);
+    private BitSlider? _focusSlider;
+
+    private bool _modalOpen;
+    private double _modalValue = 5;
+
+    private double _rtl = 3;
+    private BitSliderRangeValue? _rtlRange = new(20, 60);
+    private double _rtlInherited = 3;
+
+    private string _runtimeLabel = "Runtime label";
+    private BitColor? _runtimeColor;
+    private BitSize? _runtimeSize;
+    private double _runtimeMax = 10;
+    private bool _runtimeRanged;
+    private bool _runtimeMarks;
+    private bool _mounted = true;
+
+    private static string Text(BitSliderRangeValue? range) => range is null ? "null" : $"{range.Lower.ToString(CultureInfo.InvariantCulture)}-{range.Upper.ToString(CultureInfo.InvariantCulture)}";
+
+    private static string TimeText(double minutes) => TimeSpan.FromMinutes(minutes).ToString(@"hh\:mm", CultureInfo.InvariantCulture);
+
+    private static string QualityText(double value) => value switch
+    {
+        0 => "Draft",
+        1 => "Low",
+        2 => "Medium",
+        3 => "High",
+        _ => "Lossless"
+    };
+
+    private async Task FocusLower()
+    {
+        if (_focusSlider is not null) await _focusSlider.FocusAsync();
+    }
+
+    private async Task FocusUpper()
+    {
+        if (_focusSlider is not null) await _focusSlider.FocusUpperAsync();
+    }
+
+    public class SliderModel
+    {
+        [Range(typeof(double), "4", "7", ErrorMessage = "Pick at least {1} days a week")]
+        public double Days { get; set; }
+
+        [MinimumRangeLength(20, ErrorMessage = "Cover a span of at least 20")]
+        public BitSliderRangeValue? Budget { get; set; } = new(40, 50);
+    }
+
+    [AttributeUsage(AttributeTargets.Property)]
+    public sealed class MinimumRangeLengthAttribute(double minimum) : ValidationAttribute
+    {
+        public override bool IsValid(object? value) => value is BitSliderRangeValue range && range.Length >= minimum;
+    }
+}

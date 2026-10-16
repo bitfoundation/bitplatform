@@ -1,0 +1,164 @@
+﻿@page "/e2e/date-picker/time"
+@using System.Globalization
+
+@* The time picker of BitDatePicker: the spin buttons by pointer, by keyboard and held down, the typed fields and their
+   PageUp/PageDown, the 12-hour clock, the seconds, the overlay, the now button, the step grids, the bounds and the
+   allowed values, and the titles. Every picker is pinned to en-US and to a "today" of June 12, 2024, 10:30. *@
+
+<PageTitle>BitDatePicker time E2E</PageTitle>
+
+<h1>BitDatePicker - time picker</h1>
+
+<E2ESection Id="t-basic" Title="ShowTimePicker">
+    <BitDatePicker Id="dp-time" ContinuousSpinDelay="3000" ShowTimePicker Culture="_en" Today="_today" @bind-Value="_timeValue" />
+    <div>Value: <span id="time-value">@Fmt(_timeValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-12h" Title="TimeFormat TwelveHours">
+    <BitDatePicker Id="dp-12h" ContinuousSpinDelay="3000" ShowTimePicker TimeFormat="BitTimeFormat.TwelveHours" Culture="_en" Today="_today" @bind-Value="_twelveValue" />
+    <div>Value: <span id="twelve-value">@Fmt(_twelveValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-seconds" Title="ShowSeconds with SecondStep 15">
+    <BitDatePicker Id="dp-seconds" ContinuousSpinDelay="3000" ShowTimePicker ShowSeconds SecondStep="15" Culture="_en" Today="_today" @bind-Value="_secondsValue" />
+    <div>Value: <span id="seconds-value">@FmtSeconds(_secondsValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-overlay" Title="ShowTimePickerAsOverlay">
+    <BitDatePicker Id="dp-time-overlay"
+                   ShowTimePicker
+                   ShowTimePickerAsOverlay
+                   ShowTimePickerTitle="Pick the time"
+                   HideTimePickerTitle="Back to the days"
+                   Culture="_en"
+                   Today="_today" />
+</E2ESection>
+
+<E2ESection Id="t-nonow" Title="ShowNowButton false">
+    <BitDatePicker Id="dp-nonow" ShowTimePicker ShowNowButton="false" Culture="_en" Today="_today" />
+</E2ESection>
+
+<E2ESection Id="t-steps" Title="HourStep 2 and MinuteStep 15">
+    <BitDatePicker Id="dp-steps" ContinuousSpinDelay="3000" ShowTimePicker HourStep="2" MinuteStep="15" Culture="_en" Today="_today" @bind-Value="_stepsValue" />
+    <div>Value: <span id="steps-value">@Fmt(_stepsValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-bounds" Title="MinTime, MaxTime and AllowedHours">
+    <BitDatePicker Id="dp-bounds" ContinuousSpinDelay="3000"
+                   ShowTimePicker
+                   MinuteStep="15"
+                   MinTime="TimeSpan.FromHours(9)"
+                   MaxTime="new TimeSpan(17, 30, 0)"
+                   AllowedHours="h => h != 13"
+                   Culture="_en"
+                   Today="_today"
+                   @bind-Value="_boundsValue" />
+    <div>Value: <span id="bounds-value">@Fmt(_boundsValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-allowed" Title="AllowedMinutes and AllowedSeconds">
+    <BitDatePicker Id="dp-allowed" ContinuousSpinDelay="3000"
+                   ShowTimePicker
+                   ShowSeconds
+                   AllowedMinutes="m => m % 10 == 0"
+                   AllowedSeconds="s => s % 20 == 0"
+                   Culture="_en"
+                   Today="_today"
+                   @bind-Value="_allowedValue" />
+    <div>Value: <span id="allowed-value">@FmtSeconds(_allowedValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-maxnow" Title="MaxDate with a time of day">
+    <BitDatePicker Id="dp-maxnow" ContinuousSpinDelay="3000" ShowTimePicker MaxDate="_today" Culture="_en" Today="_today" @bind-Value="_maxNowValue" />
+    <div>Value: <span id="maxnow-value">@Fmt(_maxNowValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-spin" Title="ContinuousSpinDelay and ContinuousSpinInterval">
+    <BitDatePicker Id="dp-spin" ShowTimePicker ContinuousSpinDelay="200" ContinuousSpinInterval="40" Culture="_en" Today="_today" @bind-Value="_spinValue" />
+    <div>Value: <span id="spin-value">@Fmt(_spinValue)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-titles" Title="Titles of the time picker">
+    <BitDatePicker Id="dp-time-titles"
+                   ShowTimePicker
+                   ShowSeconds
+                   Culture="_en"
+                   Today="_today"
+                   TimePickerHourTitle="Std"
+                   TimePickerMinuteTitle="Min"
+                   TimePickerSecondTitle="Sek"
+                   TimePickerIncreaseHourTitle="Std hoch"
+                   TimePickerDecreaseHourTitle="Std runter"
+                   TimePickerIncreaseMinuteTitle="Min hoch"
+                   TimePickerDecreaseMinuteTitle="Min runter"
+                   TimePickerIncreaseSecondTitle="Sek hoch"
+                   TimePickerDecreaseSecondTitle="Sek runter"
+                   NowButtonTitle="Jetzt" />
+</E2ESection>
+
+<E2ESection Id="t-disallowed" Title="DisallowedTimeErrorMessage">
+    <EditForm Model="_model">
+        <DataAnnotationsValidator />
+        <BitDatePicker Id="dp-disallowed"
+                       AllowTextInput
+                       ShowTimePicker
+                       MinTime="TimeSpan.FromHours(9)"
+                       DisallowedTimeErrorMessage="Only office hours."
+                       Culture="_en"
+                       Today="_today"
+                       @bind-Value="_model.Date" />
+        <div id="disallowed-message"><ValidationMessage For="() => _model.Date" /></div>
+    </EditForm>
+    <div>Value: <span id="disallowed-value">@Fmt(_model.Date)</span></div>
+</E2ESection>
+
+<E2ESection Id="t-states" Title="Disabled and ReadOnly time pickers">
+    <BitDatePicker Id="dp-time-dis" Standalone Disabled ShowTimePicker Culture="_en" Today="_today" />
+    <BitDatePicker Id="dp-time-ro"
+                   Standalone
+                   ReadOnly
+                   ShowTimePicker
+                   TimeFormat="BitTimeFormat.TwelveHours"
+                   Culture="_en"
+                   Today="_today"
+                   @bind-Value="_readOnlyValue" />
+    <div>Value: <span id="ro-value">@Fmt(_readOnlyValue)</span></div>
+</E2ESection>
+
+@* The pickers whose spin buttons are clicked once carry a ContinuousSpinDelay longer than any click: the delay runs on
+   the server from the pointerdown to the pointerup, which a busy machine can stretch past the default 400ms and turn
+   a click into the start of a press-and-hold spin. The press-and-hold itself is driven on a picker of its own. *@
+<E2EStatus />
+
+@code {
+    private static readonly CultureInfo _en = CultureInfo.GetCultureInfo("en-US");
+
+    private static DateTimeOffset Local(int year, int month, int day, int hour = 0, int minute = 0, int second = 0)
+    {
+        var dateTime = new DateTime(year, month, day, hour, minute, second);
+        return new DateTimeOffset(dateTime, TimeZoneInfo.Local.GetUtcOffset(dateTime));
+    }
+
+    private static string Fmt(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm", CultureInfo.InvariantCulture) ?? "null";
+
+    private static string FmtSeconds(DateTimeOffset? value) => value?.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) ?? "null";
+
+    private readonly DateTimeOffset _today = Local(2024, 6, 12, 10, 30);
+
+    private DateTimeOffset? _timeValue;
+    private DateTimeOffset? _twelveValue = Local(2024, 6, 12, 15, 30);
+    private DateTimeOffset? _secondsValue = Local(2024, 6, 12, 10, 30);
+    private DateTimeOffset? _stepsValue = Local(2024, 6, 12, 10, 30);
+    private DateTimeOffset? _boundsValue;
+    private DateTimeOffset? _allowedValue = Local(2024, 6, 12, 10, 30);
+    private DateTimeOffset? _maxNowValue;
+    private DateTimeOffset? _spinValue = Local(2024, 6, 12, 10, 0);
+    private DateTimeOffset? _readOnlyValue = Local(2024, 6, 12, 10, 30);
+
+    private readonly DateModel _model = new();
+
+    public class DateModel
+    {
+        public DateTimeOffset? Date { get; set; }
+    }
+}

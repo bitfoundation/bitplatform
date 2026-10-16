@@ -4,13 +4,13 @@
     <BitStack HorizontalAlign="BitAlignment.Center">
         @if (CurrentUser is null)
         {
-            <BitShimmer Height="4.5rem" Circle />
-            <BitShimmer Height="1.5rem" Width="12.5rem" />
+            <BitShimmer Height="4.5rem" Circle Background="BitColor.PrimaryBackground" />
+            <BitShimmer Height="1.5rem" Width="12.5rem" Background="BitColor.PrimaryBackground" />
             <br />
-            <BitShimmer Height="1.5rem" Width="25rem" />
-            <BitShimmer Height="1.5rem" Width="25rem" />
-            <BitShimmer Height="1.5rem" Width="25rem" />
-            <BitShimmer Height="1.5rem" Width="25rem" />
+            <BitShimmer Height="1.5rem" Width="25rem" Background="BitColor.PrimaryBackground" />
+            <BitShimmer Height="1.5rem" Width="25rem" Background="BitColor.PrimaryBackground" />
+            <BitShimmer Height="1.5rem" Width="25rem" Background="BitColor.PrimaryBackground" />
+            <BitShimmer Height="1.5rem" Width="25rem" Background="BitColor.PrimaryBackground" />
         }
         else
         {
@@ -44,8 +44,8 @@
                         }
                         else
                         {
-                            <BitShimmer Height="4.5rem" Circle />
-                            <BitShimmer Height="1.5rem" Width="12.5rem" />
+                            <BitShimmer Height="4.5rem" Circle Background="BitColor.PrimaryBackground" />
+                            <BitShimmer Height="1.5rem" Width="12.5rem" Background="BitColor.PrimaryBackground" />
                         }
                     </BitStack>
                 </LabelTemplate>
@@ -63,14 +63,15 @@
 
                 <BitStack FillContent>
                     <BitTextField @bind-Value="editUserDto.FullName"
+                                  AutoComplete="@BitAutoCompleteValue.Name"
                                   Label="@Localizer[nameof(AppStrings.FullName)]"
                                   Placeholder="@Localizer[nameof(AppStrings.FullName)]" />
                     <ValidationMessage For="@(() => editUserDto.FullName)" />
 
                     <BitDatePicker Responsive @bind-Value="editUserDto.BirthDate"
-                                   Class="edit-profile-dtp"
+                                   DisableFuture
+                                   ShowClearButton
                                    Label="@Localizer[nameof(AppStrings.BirthDate)]"
-                                   MaxDate="DateTimeOffset.Now"
                                    GoToTodayTitle="@Localizer[nameof(AppStrings.GoToToday)]"
                                    Placeholder="@Localizer[nameof(AppStrings.SelectBirthDate)]" />
                     <ValidationMessage For="@(() => editUserDto.BirthDate)" />

@@ -37,7 +37,15 @@ public partial class BitSpacerDemo
 </div>";
 
     private readonly string example2RazorCode = @"
-<div class=""demo-row"">
+<style>
+    .demo-wrap {
+        row-gap: 0.5rem;
+        flex-wrap: wrap;
+    }
+</style>
+
+
+<div class=""demo-row demo-wrap"">
     <BitProgress Circular Indeterminate />
     <BitSpacer Width=""64"" />
     <BitProgress Circular Indeterminate />
@@ -45,7 +53,7 @@ public partial class BitSpacerDemo
     <BitProgress Circular Indeterminate />
 </div>
 
-<div class=""demo-row"">
+<div class=""demo-row demo-wrap"">
     <div class=""demo-box"">1rem</div>
     <BitSpacer Gap=""1rem"" />
     <div class=""demo-box"">4ch</div>
@@ -147,7 +155,7 @@ public partial class BitSpacerDemo
 
     private readonly string example8RazorCode = @"
 <BitParams Parameters=""@spacerParams"">
-    <div class=""demo-row"">
+    <div class=""demo-row demo-wrap"">
         <div class=""demo-box"">Cascaded</div>
         <BitSpacer />
         <div class=""demo-box"">1.5rem</div>
@@ -178,7 +186,7 @@ private readonly BitSpacerParams[] spacerParams =
 </style>
 
 
-<div class=""demo-row"">
+<div class=""demo-row demo-wrap"">
     <div class=""demo-box"">Small</div>
     <BitSpacer Size=""BitSize.Small"" />
     <div class=""demo-box"">Medium</div>
@@ -196,7 +204,7 @@ private readonly BitSpacerParams[] spacerParams =
     <div class=""demo-box"">End</div>
 </div>
 
-<div class=""demo-row"" style=""--bit-Spacer-large-size:6rem"">
+<div class=""demo-row demo-wrap"" style=""--bit-Spacer-large-size:6rem"">
     <div class=""demo-box"">Large, re-sized</div>
     <BitSpacer Size=""BitSize.Large"" />
     <div class=""demo-box"">End</div>
@@ -212,7 +220,7 @@ private readonly BitSpacerParams[] spacerParams =
 </style>
 
 
-<div class=""demo-row"">
+<div class=""demo-row demo-wrap"">
     <div class=""demo-box"">Style</div>
     <BitSpacer Style=""min-width:4rem;background:tomato"" />
     <div class=""demo-box"">Class</div>

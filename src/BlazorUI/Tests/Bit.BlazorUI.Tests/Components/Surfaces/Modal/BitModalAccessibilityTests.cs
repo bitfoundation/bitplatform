@@ -116,11 +116,15 @@ public class BitModalAccessibilityTests : BunitTestContext
         });
 
         Assert.IsFalse(com.Find(".bit-mdl-cls").HasAttribute("disabled"));
+        Assert.IsFalse(com.Find(".bit-mdl-cls").HasAttribute("aria-disabled"));
 
-        // A disabled Modal ignores the press, so the button says so instead of taking it.
+        // A disabled Modal ignores the press, so the button says so instead of taking it - both ways, so that
+        // :disabled and [aria-disabled="true"] each find it.
         com.Render(parameters => parameters.Add(p => p.Disabled, true));
 
         Assert.IsTrue(com.Find(".bit-mdl-cls").HasAttribute("disabled"));
+        Assert.AreEqual("true", com.Find(".bit-mdl-cls").GetAttribute("aria-disabled"));
+        Assert.IsTrue(com.Find(".bit-mdl").ClassList.Contains("bit-dis"));
     }
 
     [TestMethod]

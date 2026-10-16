@@ -1,6 +1,8 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
 
-public partial class _BitTimelineItem<TItem> where TItem : class
+namespace Bit.BlazorUI;
+
+public partial class _BitTimelineItem<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> where TItem : class
 {
     private ElementReference _buttonElement = default!;
     private string? _buttonKeysElementId;

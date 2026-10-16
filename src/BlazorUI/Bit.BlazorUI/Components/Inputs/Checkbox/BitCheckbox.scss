@@ -45,6 +45,11 @@ $chb-private-properties: clr, clr-hover, clr-txt, clr-txt-sec, clr-txt-hover, cl
 .bit-chb {
     cursor: pointer;
     width: fit-content;
+    // The containing block of the visually hidden input (and description), which are absolutely
+    // positioned siblings of the label. Without it they are positioned against whatever ancestor
+    // happens to be, so a checkbox in a horizontally scrolling box - or past its edge - puts their
+    // pixel outside that box and widens the page around it instead of the box.
+    position: relative;
     // The width floor of the click target, which matters for the checkbox that carries no label at all -
     // a selection box in a grid row - whose target is otherwise the box alone. See .bit-chb-lbl for the
     // height floor and for what the two are for.

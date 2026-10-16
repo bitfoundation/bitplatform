@@ -19,15 +19,11 @@
                   Gap="0.5rem"
                   Horizontal="isSmallScreen is false">
             <BitStack Horizontal FitHeight>
-                <BitButton ReversedIcon
+                <BitButton IconPlacement="BitPlacement.End"
                            IconName="@BitIconName.Add"
                            OnClick="WrapHandled(CreateProduct)">
                     @Localizer[nameof(AppStrings.AddProduct)]
                 </BitButton>
-                @if (isLoading)
-                {
-                    <BitSlickBarsLoading CustomSize="32" />
-                }
             </BitStack>
             <BitSpacer />
             <BitSearchBox Underlined
@@ -43,28 +39,26 @@
                 <BitDataGrid @ref="dataGrid"
                              TItem="ProductDto"
                              Class="products-grid"
+                             AriaLabel="@Localizer[nameof(AppStrings.Products)]"
                              OnRead="LoadProducts"
-                             Loading="isLoading"
-                             Pageable Filterable Resizable Reorderable
-                             ShowToolbar ShowColumnChooser ShowCsvExport ShowExcelExport
-                             PageSize="10"
-                             Strings="DataGridStrings">
+                             Loading="isLoading">
                     <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Name)]"
-                                       Property="p => p.Name" />
+                                       Property="p => p.Name"
+                                       RowHeader />
 
                     <BitDataGridColumn Title="@Localizer[nameof(AppStrings.Category)]"
                                        Property="p => p.CategoryName"
                                        Width="200px" />
 
                     <BitDataGridColumn Title="@($"{Localizer[nameof(AppStrings.Price)]} ({CultureInfo.CurrentCulture.NumberFormat.CurrencySymbol})")"
-                                       Align="BitDataGridColumnAlign.Right"
+                                       Align="BitTextAlign.End"
                                        Property="p => p.Price"
                                        Width="160px"
                                        Filterable="false"
                                        Format="@($"N{CultureInfo.CurrentCulture.NumberFormat.CurrencyDecimalDigits}")" />
 
                     <BitDataGridColumn Title="@Localizer[(nameof(AppStrings.Action))]"
-                                       Align="BitDataGridColumnAlign.Center"
+                                       Align="BitTextAlign.Center"
                                        Width="110px"
                                        Sortable="false"
                                        Filterable="false">
@@ -72,11 +66,13 @@
                             <BitButton Variant="BitVariant.Text"
                                        IconName="@BitIconName.Edit"
                                        Title="@Localizer[(nameof(AppStrings.Edit))]"
+                                       AriaLabel="@Localizer[(nameof(AppStrings.Edit))]"
                                        Href="@($"{PageUrls.AddOrEditProduct}/{product.Id}")" />
                             <BitButton Color="BitColor.Error"
                                        Variant="BitVariant.Text"
                                        IconName="@BitIconName.Delete"
                                        Title="@Localizer[(nameof(AppStrings.Delete))]"
+                                       AriaLabel="@Localizer[(nameof(AppStrings.Delete))]"
                                        OnClick="WrapHandled(() => { isDeleteDialogOpen = true; deletingProduct = product; })" />
                         </Template>
                     </BitDataGridColumn>
@@ -88,7 +84,5 @@
 
 <BitDialog OnOk="WrapHandled(DeleteProduct)"
            @bind-IsOpen="isDeleteDialogOpen"
-           OkText="@Localizer[nameof(AppStrings.Yes)]"
-           CancelText="@Localizer[nameof(AppStrings.No)]"
            Title="@Localizer[nameof(AppStrings.DeleteProduct)]"
            Message="@Localizer.GetString(nameof(AppStrings.AreYouSureWannaDeleteProduct), deletingProduct?.Name ?? "")" />

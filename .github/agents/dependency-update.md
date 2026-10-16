@@ -80,7 +80,7 @@ consumes a test project, so every band takes the newest patch of its own band. L
 
 **Version ranges stay.** `[8.0.0,9.0.0)` is a compatibility contract, not a pin.
 
-**`Bit.*` self-references track the in-development version**, currently `10.6.2`. Never read
+**`Bit.*` self-references track the in-development version**, currently `10.7.0-pre-01`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
@@ -117,6 +117,8 @@ resizetizer and is not held.
 graph still brings `Fragment.Ktx` 1.8.9.x. R8 then fails the Android build with
 `Type androidx.fragment.app.FragmentKt is defined multiple times`. Move it only once something else in
 the graph already brings `Fragment.Ktx` 1.9.0 (an empty stub), rather than pinning Ktx in the template.
+`Xamarin.GooglePlayServices.Auth.Api.Phone` is held at 118.3.1 for the same reason: 118.3.1.1 pulls
+`GooglePlayServices.Basement` 118.10.0.3, which brings Fragment 1.9.0.
 
 **Linux runners are held at `ubuntu-24.04`**, in the GitHub workflows and the Azure DevOps `vmImage`.
 `ubuntu-26.04` defaults to JDK 25 (`(default)` in the image readme's Java table), and .NET for Android
@@ -188,6 +190,13 @@ Where the pin's comment is a moving major (`# v2`), rewrite it to the concrete r
 belongs to (`# v2.0.0`), so the comment records a version rather than a branch.
 
 Runner images (`runs-on`) are part of this: no `ubuntu-latest`, pin the concrete image.
+
+**Xcode follows the iOS workload.** The iOS jobs pin a runner image and `setup-xcode`'s `xcode-version`, and both
+must give the Xcode that .NET for iOS asks for: the `RecommendedXcodeVersion` in `Versions.plist` of the
+`Microsoft.iOS.Sdk.net<tfm>_<x.y>` pack whose version the newest workload set of the SDK's band names
+(`Microsoft.NET.Workloads.<band>` on NuGet). A workload set can raise it without any SDK bump, and then every iOS
+build fails with "This version of .NET for iOS requires Xcode ...". When the `macOS-*` image doesn't have that Xcode,
+use GitHub's image that does (`xcode-27` for Xcode 27).
 
 ### Azure DevOps
 

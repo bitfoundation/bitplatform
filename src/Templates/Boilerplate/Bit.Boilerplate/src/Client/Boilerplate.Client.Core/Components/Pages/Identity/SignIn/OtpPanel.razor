@@ -18,26 +18,20 @@
             <BitStack HorizontalAlign="BitAlignment.Center">
                 <BitOtpInput @bind-Value="Model.Otp"
                              AutoFocus
-                             Length="6"
-                             NormalizeDigits
                              IsLoading="IsWaiting"
-                             Size="BitSize.Large"
-                             Type="BitInputType.Number"
-                             InputMode="BitInputMode.Tel"
                              Label="@Localizer[nameof(AppStrings.Code)]"
                              OnFill="WrapHandled(async (string? otp) => await OnSignIn.InvokeAsync(otp))" />
                 <ValidationMessage For="@(() => Model.Otp)" />
             </BitStack>
 
             <BitButton IsLoading="IsWaiting"
-                       IsEnabled="IsWaiting is false"
                        ButtonType="BitButtonType.Submit">
                 @Localizer[nameof(AppStrings.Continue)]
             </BitButton>
 
             <BitText Typography="BitTypography.Body2">
                 @Localizer[nameof(AppStrings.OtpResendMessage)]
-                <BitLink IsEnabled="IsWaiting is false" OnClick="WrapHandled(async () => await OnResendOtp.InvokeAsync())">@Localizer[nameof(AppStrings.Resend)]</BitLink>
+                <BitLink Disabled="IsWaiting" OnClick="WrapHandled(async () => await OnResendOtp.InvokeAsync())">@Localizer[nameof(AppStrings.Resend)]</BitLink>
             </BitText>
 
             @if (hasEmail)

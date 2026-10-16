@@ -1328,7 +1328,7 @@ public class BitElementTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitElementShouldNotRenderChildContentInsideAVoidElementWhileWrapped()
+    public void BitElementShouldRenderTheContentOfAVoidElementWhileUnwrapped()
     {
         var component = RenderComponent<BitElement>(parameters =>
         {

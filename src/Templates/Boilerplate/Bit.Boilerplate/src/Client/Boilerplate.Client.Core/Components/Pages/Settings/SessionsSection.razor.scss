@@ -43,7 +43,6 @@ section {
     }
 
     .sessions-list {
-        width: 100%;
         padding: 2px;
         height: 20rem;
     }
@@ -52,14 +51,5 @@ section {
         padding-bottom: 0.5rem;
         margin-bottom: 0.5rem;
         border-bottom: 1px solid $bit-color-border-secondary;
-    }
-
-    // A client id is long either way - a metadata document url or an opaque token - so it gets its row and no more.
-    .oauth-client-id {
-        overflow: hidden;
-        white-space: nowrap;
-        text-overflow: ellipsis;
-        direction: ltr;
-        font-family: monospace;
     }
 }

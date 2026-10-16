@@ -3156,6 +3156,76 @@ public class BitCalloutTests : BunitTestContext
     }
 
     [TestMethod]
+    public async Task BitCalloutShouldTakeBackWhatItRegisteredWhenItIsDisposedWhileOpen()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Modal, true);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+            parameters.AddChildContent("<button>Inside</button>");
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        var calloutId = component.Find(".bit-clo-cal").Id;
+        var anchorId = component.Find(".bit-clo-acn").Id;
+
+        await Context.DisposeComponentsAsync();
+
+        // The popup is cleared from the JS side, the keyboard handed back with the remembered origin forgotten,
+        // the anchor no longer watched, and the page it was holding still let go of - with nothing left on the page
+        // to release any of it otherwise.
+        Assert.AreEqual(calloutId, Context.JSInterop.Invocations["BitBlazorUI.Callouts.clear"][^1].Arguments[0]);
+
+        var keyboard = Context.JSInterop.Invocations["BitBlazorUI.Callouts.disposeKeyboard"][^1].Arguments;
+        Assert.AreEqual(calloutId, keyboard[0]);
+        Assert.AreEqual(true, keyboard[1]);
+
+        Assert.AreEqual(anchorId, Context.JSInterop.Invocations["BitBlazorUI.Utils.disposeAriaPopup"][^1].Arguments[0]);
+
+        var overflow = Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"][^1].Arguments;
+        Assert.AreEqual("body", overflow[1]);
+        Assert.AreEqual(false, overflow[2]);
+    }
+
+    [TestMethod]
+    public async Task BitCalloutShouldNotReleaseAPageItNeverHeldWhenItIsDisposed()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        component.Find(".bit-clo-acn").Click();
+
+        await Context.DisposeComponentsAsync();
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Callouts.clear"].Count);
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Utils.toggleOverflow"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitCalloutShouldReleaseTheSwipeGesturesWhenItIsDisposed()
+    {
+        var component = RenderComponent<BitCallout>(parameters =>
+        {
+            parameters.Add(p => p.ResponsiveMode, BitResponsiveMode.Panel);
+            parameters.Add(p => p.Anchor, Markup("<button>Anchor</button>"));
+        });
+
+        var calloutId = component.Find(".bit-clo-cal").Id;
+
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count);
+
+        await Context.DisposeComponentsAsync();
+
+        var dispose = Context.JSInterop.Invocations["BitBlazorUI.Swipes.dispose"];
+
+        Assert.AreEqual(1, dispose.Count);
+        Assert.AreEqual(calloutId, dispose[0].Arguments[0]);
+    }
+
+    [TestMethod]
     public void BitCalloutShouldHandTheFocusBackWhenTheParentClosesIt()
     {
         Context.JSInterop.Setup<bool>("BitBlazorUI.Utils.containsActiveElement", _ => true).SetResult(true);

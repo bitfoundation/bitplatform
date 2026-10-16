@@ -13,6 +13,8 @@ public static class JsonNodeExtensions
         /// <summary>The job's id, or empty for a node that has none.</summary>
         public string JobId() => job?["id"]?.GetValue<string>() ?? "";
 
+        public string? Argument(int index) => job?["arguments"]?.AsArray().ElementAtOrDefault(index)?.GetValue<string>();
+
         /// <summary>Every argument joined and html-decoded - a mail job's recipient, subject and rendered body.</summary>
         public string DecodedArguments()
         {

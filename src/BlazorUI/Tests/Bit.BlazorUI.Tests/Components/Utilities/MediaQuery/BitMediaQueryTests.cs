@@ -728,6 +728,43 @@ public class BitMediaQueryTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitMediaQueryShouldTryTheSetupAgainAfterACircuitRefusedIt()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.MediaQuery.setup", _ => true).SetException(new Microsoft.JSInterop.JSDisconnectedException("gone"));
+
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        Assert.AreEqual(1, Setups(Context.JSInterop).Count);
+
+        // A setup the circuit refused is recorded as not done, so a later render with the very same custom query
+        // tries again rather than assuming a listener that was never created.
+        component.Render();
+
+        Assert.AreEqual(2, Setups(Context.JSInterop).Count);
+    }
+
+    [TestMethod]
+    public void BitMediaQueryShouldNotFailItsDisposalWhenTheCircuitIsGone()
+    {
+        var component = RenderComponent<BitMediaQuery>(parameters =>
+        {
+            parameters.Add(p => p.Query, "(max-width: 600px)");
+            parameters.AddChildContent("<span>content</span>");
+        });
+
+        Context.JSInterop.SetupVoid("BitBlazorUI.MediaQuery.dispose", _ => true).SetException(new Microsoft.JSInterop.JSDisconnectedException("gone"));
+
+        // There is nothing left to tear down on a gone circuit, and the renderer must not be handed a failed disposal.
+        Context.DisposeComponentsAsync().GetAwaiter().GetResult();
+
+        Assert.AreEqual(1, Disposals(Context.JSInterop).Count);
+    }
+
+    [TestMethod]
     public void BitMediaQueryShouldNotCallJsSetupWithoutAnyQuery()
     {
         var component = RenderComponent<BitMediaQuery>(parameters =>

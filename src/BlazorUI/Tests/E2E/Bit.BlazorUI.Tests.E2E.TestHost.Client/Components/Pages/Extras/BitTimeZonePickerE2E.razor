@@ -1,0 +1,334 @@
+﻿@page "/e2e/time-zone-picker"
+
+<PageTitle>BitTimeZonePicker E2E</PageTitle>
+
+<h1>BitTimeZonePicker</h1>
+
+<E2ESection Id="basic" Title="Basic & binding to an id">
+    <BitTimeZonePicker Id="tzp-basic" TValue="string" Placeholder="Select a time zone" @bind-Value="_basicId" />
+    <span id="basic-value">@(_basicId ?? "null")</span>
+    <button id="btn-set-tokyo" @onclick="@(() => _basicId = "Asia/Tokyo")">Set Tokyo</button>
+    <button id="btn-set-windows" @onclick="@(() => _basicId = "Iran Standard Time")">Set a Windows id</button>
+    <button id="btn-clear" @onclick="() => _basicId = null">Clear</button>
+</E2ESection>
+
+<E2ESection Id="tzi" Title="Binding a TimeZoneInfo">
+    <BitTimeZonePicker Id="tzp-tzi" Placeholder="Select a time zone" @bind-Value="_timeZone" />
+    <span id="tzi-id">@(_timeZone?.Id ?? "null")</span>
+    <span id="tzi-offset">@(_timeZone is null ? "null" : BitTimeZones.FormatUtcOffset(_timeZone.BaseUtcOffset))</span>
+    <button id="btn-set-tzi" @onclick="() => _timeZone = BitTimeZones.Find(KolkataId)!.TimeZoneInfo">Set Kolkata</button>
+    <BitTimeZonePicker Id="tzp-btz" Placeholder="Select a time zone" @bind-Value="_bitTimeZone" />
+    <span id="btz-name">@(_bitTimeZone?.Name ?? "null")</span>
+    <span id="btz-country">@(_bitTimeZone?.CountryCode ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="label" Title="Label & description">
+    <BitTimeZonePicker Id="tzp-label" TValue="string" Label="Time zone" Placeholder="Select a time zone" />
+    <BitTimeZonePicker Id="tzp-required" TValue="string" Label="Home" Required Placeholder="Select a time zone" />
+    <BitTimeZonePicker Id="tzp-description" TValue="string" Label="Office" Description="Where the office is." Placeholder="Select a time zone" />
+    <BitTimeZonePicker Id="tzp-label-template" TValue="string" Placeholder="Select a time zone">
+        <LabelTemplate><b class="custom-label">Templated label</b></LabelTemplate>
+        <DescriptionTemplate><i class="custom-description">Templated description</i></DescriptionTemplate>
+    </BitTimeZonePicker>
+    <BitTimeZonePicker Id="tzp-aria" TValue="string" AriaLabel="Meeting zone" Title="Zone field" Placeholder="Select a time zone" />
+</E2ESection>
+
+<E2ESection Id="defaults" Title="DefaultValue">
+    <BitTimeZonePicker Id="tzp-default" DefaultValue="@("Asia/Tokyo")" OnChange="(string? id) => _changedId = id" />
+    <span id="default-changed">@(_changedId ?? "null")</span>
+    <BitTimeZonePicker Id="tzp-windows" DefaultValue="@("Iran Standard Time")" />
+    <BitTimeZonePicker Id="tzp-renamed" DefaultValue="@("Asia/Calcutta")" />
+    <BitTimeZonePicker Id="tzp-unknown" DefaultValue="@("Mars/Olympus_Mons")" />
+</E2ESection>
+
+<E2ESection Id="custom" Title="Custom & preferred time zones">
+    <BitTimeZonePicker Id="tzp-europe" TValue="string" TimeZones="_europeanTimeZones" Placeholder="Select a time zone" />
+    <BitTimeZonePicker Id="tzp-offices" TValue="string" TimeZones="_officeTimeZones" ReferenceDate="_januaryFirst" Placeholder="Select a time zone" />
+    <BitTimeZonePicker Id="tzp-preferred" TValue="string" PreferredTimeZones="_preferredTimeZones" Placeholder="Select a time zone" />
+</E2ESection>
+
+<E2ESection Id="search" Title="Search box">
+    <BitTimeZonePicker Id="tzp-search" TValue="string" Placeholder="Select a time zone" SearchBoxPlaceholder="City, country or offset"
+                       NoResultsMessage="No matching time zone" ReferenceDate="_januaryFirst" @bind-Value="_searchId" />
+    <span id="search-value">@(_searchId ?? "null")</span>
+    <BitTimeZonePicker Id="tzp-nosearch" TValue="string" NoSearchBox Placeholder="Select a time zone" @bind-Value="_noSearchId" />
+    <span id="nosearch-value">@(_noSearchId ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="offsets" Title="Offsets & countries">
+    <BitTimeZonePicker Id="tzp-january" ReferenceDate="_januaryFirst" DefaultValue="@("America/New_York")" />
+    <BitTimeZonePicker Id="tzp-july" ReferenceDate="_julyFirst" DefaultValue="@("America/New_York")" />
+    <BitTimeZonePicker Id="tzp-nooffset" NoOffset DefaultValue="@("Asia/Tokyo")" />
+    <BitTimeZonePicker Id="tzp-nocountry" NoCountry DefaultValue="@("Asia/Tokyo")" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitTimeZonePicker Id="tzp-templates" DefaultValue="@("Australia/Sydney")">
+        <ValueTemplate Context="zone">
+            <span class="value-template">@(zone is null ? "Pick one" : $"{zone.Name} / {zone.CountryCode}")</span>
+        </ValueTemplate>
+        <ItemTemplate Context="zone">
+            <span class="item-template">@zone.Name / @zone.Id</span>
+        </ItemTemplate>
+        <NoResultsTemplate>
+            <span class="no-results-template">nothing here</span>
+        </NoResultsTemplate>
+    </BitTimeZonePicker>
+</E2ESection>
+
+<E2ESection Id="validation" Title="Validation">
+    <BitTimeZonePicker Id="tzp-invalid" Invalid DefaultValue="@("Europe/Madrid")" />
+    <BitTimeZonePicker Id="tzp-error" ErrorMessage="We have no office there yet." Description="Pick an office."
+                       DefaultValue="@("America/Sao_Paulo")" />
+    <BitTimeZonePicker Id="tzp-error-template" DefaultValue="@("America/Sao_Paulo")">
+        <ErrorMessageTemplate><b class="custom-error">Templated error</b></ErrorMessageTemplate>
+    </BitTimeZonePicker>
+    <EditForm Model="_model" OnValidSubmit="() => _submitted = _model.TimeZoneId" novalidate>
+        <DataAnnotationsValidator />
+        <BitTimeZonePicker Id="tzp-form" Label="Time zone" Required Placeholder="Select a time zone" @bind-Value="_model.TimeZoneId" />
+        <ValidationMessage For="() => _model.TimeZoneId" />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="submitted">@(_submitted ?? "not submitted")</span>
+    <EditForm Model="_model2" novalidate>
+        <DataAnnotationsValidator />
+        <BitTimeZonePicker Id="tzp-form-novalidate" NoValidate Placeholder="Not validated" @bind-Value="_model2.TimeZoneId" />
+        <div id="novalidate-message"><ValidationMessage For="() => _model2.TimeZoneId" /></div>
+        <button id="btn-submit-2" type="submit">Submit</button>
+    </EditForm>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled & ReadOnly">
+    <BitTimeZonePicker Id="tzp-disabled" Disabled="_disabled" DefaultValue="@("Europe/London")"
+                       HtmlAttributes="@(new() { ["onpointerdown"] = EventCallback.Factory.Create<PointerEventArgs>(this, () => _pagePointerDowns++), ["ondblclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageDblClicks++) })" />
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="page-pointerdowns">@_pagePointerDowns</span>
+    <span id="page-dblclicks">@_pageDblClicks</span>
+    <BitTimeZonePicker Id="tzp-readonly" ReadOnly DefaultValue="@("Europe/London")" />
+</E2ESection>
+
+<E2ESection Id="variants" Title="Variants">
+    <BitTimeZonePicker Id="tzp-plain" TValue="string" Placeholder="Plain" />
+    <BitTimeZonePicker Id="tzp-noborder" TValue="string" NoBorder Placeholder="NoBorder" />
+    <BitTimeZonePicker Id="tzp-underlined" TValue="string" Underlined Placeholder="Underlined" />
+    <BitTimeZonePicker Id="tzp-bg-primary" TValue="string" Background="BitColorKind.Primary" />
+    <BitTimeZonePicker Id="tzp-bg-secondary" TValue="string" Background="BitColorKind.Secondary" />
+    <BitTimeZonePicker Id="tzp-bg-tertiary" TValue="string" Background="BitColorKind.Tertiary" />
+    <BitTimeZonePicker Id="tzp-bg-transparent" TValue="string" Background="BitColorKind.Transparent" />
+    <BitTimeZonePicker Id="tzp-brd-primary" TValue="string" Border="BitColorKind.Primary" />
+    <BitTimeZonePicker Id="tzp-brd-secondary" TValue="string" Border="BitColorKind.Secondary" />
+    <BitTimeZonePicker Id="tzp-brd-tertiary" TValue="string" Border="BitColorKind.Tertiary" />
+    <BitTimeZonePicker Id="tzp-brd-transparent" TValue="string" Border="BitColorKind.Transparent" />
+</E2ESection>
+
+<E2ESection Id="callout" Title="Callout">
+    <BitTimeZonePicker Id="tzp-maxheight" TValue="string" MaxHeight="200" DropDirection="BitDropDirection.All" />
+    <BitTimeZonePicker Id="tzp-nowrap" TValue="string" NoWrapNavigation NoSearchBox />
+    <BitTimeZonePicker Id="tzp-wrap" TValue="string" NoSearchBox />
+    <BitTimeZonePicker Id="tzp-responsive" TValue="string" Responsive Label="Responsive zone" ResponsiveCloseButtonAriaLabel="Close the list" />
+    <BitTimeZonePicker Id="tzp-responsive-icon" TValue="string" Responsive Label="Icon" ResponsiveCloseIcon="@BitIconInfo.Css("my-close-icon")" />
+    <BitTimeZonePicker Id="tzp-responsive-iconname" TValue="string" Responsive Label="Icon name" ResponsiveCloseIconName="@BitIconName.ChromeClose" />
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitTimeZonePicker Id="tzp-events" TValue="string" Placeholder="Select a time zone"
+                       OnChange="(string? id) => { _evChange = id; _evChangeCount++; }"
+                       OnSearch="s => _evSearch = s"
+                       OnOpen="() => _evOpen++"
+                       OnClose="() => _evClose++"
+                       OnFocus="() => _evFocus++"
+                       OnBlur="() => _evBlur++" />
+    <span id="ev-change">@(_evChange ?? "null")</span>
+    <span id="ev-change-count">@_evChangeCount</span>
+    <span id="ev-search">@(_evSearch ?? "null")</span>
+    <span id="ev-open">@_evOpen</span>
+    <span id="ev-close">@_evClose</span>
+    <span id="ev-focus">@_evFocus</span>
+    <span id="ev-blur">@_evBlur</span>
+</E2ESection>
+
+<E2ESection Id="programmatic" Title="Programmatic control">
+    <BitTimeZonePicker @ref="_controlled" Id="tzp-controlled" TValue="string" @bind-IsOpen="_isOpen" @bind-Value="_controlledId"
+                       Placeholder="Select a time zone" />
+    <button id="btn-toggle-open" @onclick="() => _isOpen = !_isOpen">Toggle IsOpen</button>
+    <button id="btn-open" @onclick="() => _controlled.OpenAsync()">OpenAsync</button>
+    <button id="btn-close" @onclick="() => _controlled.CloseAsync()">CloseAsync</button>
+    <button id="btn-select-id" @onclick="@(() => _controlled.SelectTimeZoneAsync("Asia/Tokyo"))">SelectTimeZoneAsync(id)</button>
+    <button id="btn-select-tzi" @onclick="() => _controlled.SelectTimeZoneAsync(TimeZoneInfo.Utc)">SelectTimeZoneAsync(TimeZoneInfo)</button>
+    <button id="btn-focus" @onclick="async () => await _controlled.FocusAsync()">FocusAsync</button>
+    <button id="btn-read-selected" @onclick="() => _selectedName = _controlled.SelectedTimeZone?.Name">Read SelectedTimeZone</button>
+    <span id="is-open">@_isOpen</span>
+    <span id="controlled-value">@(_controlledId ?? "null")</span>
+    <span id="selected-name">@(_selectedName ?? "null")</span>
+</E2ESection>
+
+<E2ESection Id="form" Title="Form submission">
+    <form id="plain-form">
+        <BitTimeZonePicker Id="tzp-named" Name="timeZone" DefaultValue="@("Europe/Paris")" />
+    </form>
+</E2ESection>
+
+<E2ESection Id="localization" Title="Localization">
+    <BitTimeZonePicker Id="tzp-german" TValue="string" TimeZones="_germanTimeZones" Placeholder="Zeitzone wählen"
+                       SearchBoxPlaceholder="Suchen" SearchBoxAriaLabel="Zeitzone suchen" NoResultsMessage="Keine Zeitzone gefunden"
+                       SearchResultsAnnouncement="@(count => count == 1 ? "1 Zeitzone gefunden" : $"{count} Zeitzonen gefunden")" />
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_params">
+        <BitTimeZonePicker Id="tzp-params" TValue="string" />
+        <BitTimeZonePicker Id="tzp-params-own" TValue="string" NoBorder="false" Placeholder="Own placeholder" />
+    </BitParams>
+    <BitTimeZonePicker Id="tzp-params-outside" TValue="string" />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    @foreach (var (color, name) in Colors)
+    {
+        <BitTimeZonePicker Id="@($"tzp-color-{name}")" TValue="string" Color="color" Placeholder="@name" />
+    }
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitTimeZonePicker Id="tzp-size-small" Size="BitSize.Small" DefaultValue="@("Asia/Tokyo")" />
+    <BitTimeZonePicker Id="tzp-size-medium" Size="BitSize.Medium" DefaultValue="@("Asia/Tokyo")" />
+    <BitTimeZonePicker Id="tzp-size-large" Size="BitSize.Large" DefaultValue="@("Asia/Tokyo")" />
+</E2ESection>
+
+<E2ESection Id="style" Title="Style & Class">
+    <BitTimeZonePicker Id="tzp-vars" DefaultValue="@("Asia/Tokyo")"
+                       Style="--bit-TimeZonePicker-radius: 12px; --bit-TimeZonePicker-border-color: rgb(255, 0, 0); --bit-TimeZonePicker-background: rgb(255, 255, 0); --bit-TimeZonePicker-offset-color: rgb(0, 0, 255); --bit-TimeZonePicker-item-selected-background: rgb(237, 231, 246); --bit-TimeZonePicker-callout-radius: 9px;" />
+    <div id="vars-scope" style="--bit-TimeZonePicker-color: rgb(0, 128, 0); --bit-TimeZonePicker-callout-background: rgb(240, 248, 255); --bit-TimeZonePicker-item-country-color: rgb(0, 0, 128); --bit-TimeZonePicker-item-height: 50px;">
+        <BitTimeZonePicker Id="tzp-vars-scope" DefaultValue="@("Asia/Tokyo")" />
+    </div>
+    <BitTimeZonePicker Id="tzp-vars-wins" TValue="string" Color="BitColor.Error" Size="BitSize.Large"
+                       Style="--bit-TimeZonePicker-border-color: rgb(0, 0, 255); --bit-TimeZonePicker-min-height: 80px;" />
+    <BitTimeZonePicker Id="tzp-styled" DefaultValue="@("Asia/Tokyo")" Style="width: 300px;" Class="custom-class"
+                       Styles="@(new() { Field = "border-color: rgb(138, 43, 226);", ItemName = "color: rgb(138, 43, 226);" })"
+                       Classes="@(new() { Text = "custom-text", Offset = "custom-offset", Item = "custom-item", Callout = "custom-callout", ItemCountry = "custom-country" })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div dir="rtl">
+        <BitTimeZonePicker Id="tzp-rtl" TValue="string" Dir="BitDir.Rtl" TimeZones="_persianTimeZones" Label="منطقه زمانی" DefaultValue="@("Asia/Tehran")" />
+        <BitTimeZonePicker Id="tzp-rtl-inherited" TValue="string" TimeZones="_persianTimeZones" DefaultValue="@("Asia/Tehran")" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="dialog" Title="Inside a dialog">
+    <button id="btn-open-dialog" @onclick="() => _dialogOpen = true">Open dialog</button>
+    <BitDialog Id="tzp-dialog" @bind-IsOpen="_dialogOpen" Title="Dialog">
+        <Body>
+            <BitTimeZonePicker Id="tzp-in-dialog" TValue="string" Placeholder="Select a time zone" />
+        </Body>
+    </BitDialog>
+    <span id="dialog-open">@_dialogOpen</span>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitTimeZonePicker Id="tzp-unmount" TValue="string" Placeholder="Select a time zone" />
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class TimeZoneModel
+    {
+        [Required(ErrorMessage = "Select your time zone.")]
+        public string? TimeZoneId { get; set; }
+    }
+
+    private const string KolkataId = "Asia/Kolkata";
+
+    private static readonly (BitColor Color, string Name)[] Colors =
+    [
+        (BitColor.Primary, "primary"), (BitColor.Secondary, "secondary"), (BitColor.Tertiary, "tertiary"),
+        (BitColor.Info, "info"), (BitColor.Success, "success"), (BitColor.Warning, "warning"),
+        (BitColor.SevereWarning, "severewarning"), (BitColor.Error, "error"),
+        (BitColor.PrimaryBackground, "primarybackground"), (BitColor.SecondaryBackground, "secondarybackground"),
+        (BitColor.TertiaryBackground, "tertiarybackground"), (BitColor.PrimaryForeground, "primaryforeground"),
+        (BitColor.SecondaryForeground, "secondaryforeground"), (BitColor.TertiaryForeground, "tertiaryforeground"),
+        (BitColor.PrimaryBorder, "primaryborder"), (BitColor.SecondaryBorder, "secondaryborder"),
+        (BitColor.TertiaryBorder, "tertiaryborder")
+    ];
+
+    private static readonly DateTimeOffset _januaryFirst = new(2026, 1, 1, 12, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset _julyFirst = new(2026, 7, 1, 12, 0, 0, TimeSpan.Zero);
+
+    private static readonly List<BitTimeZone> _europeanTimeZones = [.. BitTimeZones.All.Where(z => z.Id.StartsWith("Europe/"))];
+
+    // Given out of order: the list shows them by offset.
+    private static readonly List<BitTimeZone> _officeTimeZones =
+    [
+        BitTimeZones.Find("Asia/Singapore")!,
+        BitTimeZones.Find("Europe/London")!,
+        BitTimeZones.Find("America/New_York")!,
+        BitTimeZones.Find("Asia/Tehran")!,
+        BitTimeZones.Find("Europe/Berlin")!
+    ];
+
+    private static readonly List<string> _preferredTimeZones = ["Europe/Berlin", "Asia/Tehran", "America/New_York"];
+
+    private static readonly List<BitTimeZone> _germanTimeZones =
+    [
+        new("Europe/Berlin", "Berlin", "DE", "W. Europe Standard Time", "Deutschland"),
+        new("Europe/Vienna", "Wien", "AT", "W. Europe Standard Time", "Österreich"),
+        new("Europe/Zurich", "Zürich", "CH", "W. Europe Standard Time", "Schweiz"),
+        new("Europe/Lisbon", "Lissabon", "PT", "GMT Standard Time", "Portugal")
+    ];
+
+    private static readonly List<BitTimeZone> _persianTimeZones =
+    [
+        new("Asia/Tehran", "تهران", "IR", "Iran Standard Time", "ایران"),
+        new("Asia/Kabul", "کابل", "AF", "Afghanistan Standard Time", "افغانستان"),
+        new("Asia/Dubai", "دبی", "AE", "Arabian Standard Time", "امارات")
+    ];
+
+    private readonly BitTimeZonePickerParams[] _params =
+    [
+        new()
+        {
+            TimeZones = _officeTimeZones,
+            Placeholder = "Cascaded placeholder",
+            NoBorder = true,
+            NoCountry = true,
+            Size = BitSize.Small
+        }
+    ];
+
+    private string? _basicId;
+    private TimeZoneInfo? _timeZone;
+    private BitTimeZone? _bitTimeZone;
+    private string? _changedId;
+    private string? _searchId;
+    private string? _noSearchId;
+
+    private readonly TimeZoneModel _model = new();
+    private readonly TimeZoneModel _model2 = new();
+    private string? _submitted;
+
+    private bool _disabled = true;
+    private int _pagePointerDowns;
+    private int _pageDblClicks;
+
+    private string? _evChange;
+    private int _evChangeCount;
+    private string? _evSearch;
+    private int _evOpen;
+    private int _evClose;
+    private int _evFocus;
+    private int _evBlur;
+
+    private BitTimeZonePicker<string> _controlled = default!;
+    private bool _isOpen;
+    private string? _controlledId;
+    private string? _selectedName;
+
+    private bool _dialogOpen;
+    private bool _mounted = true;
+}

@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Layouts.Header;
@@ -1152,12 +1154,41 @@ public class BitHeaderTests : BunitTestContext
 
         var skipLink = component.Find(".bit-hdr-skp");
 
-        Assert.AreEqual("#main", skipLink.GetAttribute("href"));
+        // A bare fragment names this very page: resolved against the base href of the app it would name another one.
+        Assert.AreEqual($"{Services.GetRequiredService<NavigationManager>().Uri}#main", skipLink.GetAttribute("href"));
         Assert.AreEqual("Skip to main content", skipLink.TextContent);
 
         // It is only a shortcut past the header if it comes before everything the header holds.
         Assert.AreEqual(skipLink, component.Find(".bit-hdr-gut").FirstElementChild);
         Assert.AreEqual(skipLink, component.Find(".bit-hdr").QuerySelector("a, button, input"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldRenderASkipLinkHrefThatIsNotABareFragmentAsItIs()
+    {
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.SkipLinkHref, "/content#main");
+        });
+
+        Assert.AreEqual("/content#main", component.Find(".bit-hdr-skp").GetAttribute("href"));
+    }
+
+    [TestMethod]
+    public void BitHeaderShouldMoveTheFocusToTheTargetOfAFragmentSkipLink()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Utils.scrollElementIntoView", _ => true);
+
+        var component = RenderComponent<BitHeader>(parameters =>
+        {
+            parameters.Add(p => p.SkipLinkHref, "#main");
+        });
+
+        component.Find(".bit-hdr-skp").Click();
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.scrollElementIntoView");
+        Assert.AreEqual("main", invocation.Arguments[0]);
+        Assert.AreEqual(true, invocation.Arguments[1]);
     }
 
     [TestMethod]
@@ -1416,7 +1447,7 @@ public class BitHeaderTests : BunitTestContext
         var skipLinks = component.FindAll(".bit-hdr-skp");
 
         Assert.AreEqual(2, skipLinks.Count);
-        Assert.AreEqual("#main", skipLinks[0].GetAttribute("href"));
+        Assert.AreEqual($"{Services.GetRequiredService<NavigationManager>().Uri}#main", skipLinks[0].GetAttribute("href"));
         Assert.AreEqual("Jump to the content", skipLinks[0].TextContent);
 
         // The cascaded offsets reach the script of both headers.

@@ -1,0 +1,762 @@
+﻿@page "/e2e/nav"
+
+<PageTitle>BitNav E2E</PageTitle>
+
+@* The BitNavItem API of BitNav in every configuration its E2E tests drive. The automatic mode, which needs real
+   navigations, lives on /e2e/nav/url; the custom generic items and the BitNavOption API have pages of their own. *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitNav Id="nav-basic" Items="_basicItems" AriaLabel="Basic nav" />
+</E2ESection>
+
+<E2ESection Id="width" Title="FitWidth and FullWidth">
+    <div id="width-container" style="width: 600px;">
+        <BitNav Id="nav-width-default" Items="_widthDefaultItems" />
+        <BitNav Id="nav-fit" Items="_fitItems" FitWidth />
+        <BitNav Id="nav-full" Items="_fullItems" FullWidth />
+    </div>
+</E2ESection>
+
+<E2ESection Id="grouped" Title="Grouped and Separator">
+    <BitNav Id="nav-grouped" Items="_groupedItems" RenderType="BitNavRenderType.Grouped" />
+    <BitNav Id="nav-separator" Items="_separatorItems" Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="manual" Title="Manual mode">
+    <BitNav Id="nav-manual-default"
+            Items="_manualDefaultItems"
+            Mode="BitNavMode.Manual"
+            DefaultSelectedItem="_manualDefaultItems[0].ChildItems[2]" />
+
+    <BitNav Id="nav-manual-bound"
+            Items="_manualBoundItems"
+            Mode="BitNavMode.Manual"
+            @bind-SelectedItem="_boundSelected"
+            OnSelectItem="(BitNavItem item) => _boundSelectCount++" />
+    <p>Bound: <span id="bound-selected">@(_boundSelected?.Text ?? "none")</span></p>
+    <p>Bound selects: <span id="bound-select-count">@_boundSelectCount</span></p>
+    <button id="btn-select-carrot" @onclick="() => _boundSelected = _manualBoundItems[1].ChildItems[0]">Select Carrot</button>
+    <button id="btn-clear-selection" @onclick="() => _boundSelected = null">Clear selection</button>
+
+    <BitNav Id="nav-manual-oneway"
+            Items="_manualOneWayItems"
+            Mode="BitNavMode.Manual"
+            SelectedItem="_manualOneWayItems[0]" />
+</E2ESection>
+
+<E2ESection Id="icononly" Title="IconOnly">
+    <button id="btn-toggle-icononly" @onclick="() => _iconOnly = !_iconOnly">Toggle IconOnly</button>
+    <BitNav Id="nav-icononly" Items="_iconOnlyItems" Mode="BitNavMode.Manual" IconOnly="_iconOnly" />
+</E2ESection>
+
+<E2ESection Id="expand" Title="Expand and Collapse">
+    <button id="btn-single-expand-all" @onclick="() => _singleNav.ExpandAll()">ExpandAll (SingleExpand)</button>
+    <BitNav @ref="_singleNav" Id="nav-single" Items="_singleItems" SingleExpand Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-allexpanded" Items="_allExpandedItems" AllExpanded Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-nocollapse" Items="_noCollapseItems" NoCollapse Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-nocollapse-grouped" Items="_noCollapseGroupedItems" NoCollapse RenderType="BitNavRenderType.Grouped" Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-initial-expanded" Items="_initialExpandedItems" Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="chevron" Title="Chevron and Indentation">
+    <BitNav Id="nav-reversed" Items="_reversedItems" ReversedChevron AllExpanded FitWidth Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-reversed-padding" Items="_reversedPaddingItems" ReversedChevron IndentReversedPadding="10" AllExpanded Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-chevron-icon" Items="_chevronIconItems" ChevronDownIconName="@BitIconName.CircleAdditionSolid" Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-indent" Items="_indentItems" IndentValue="40" IndentPadding="40" AllExpanded Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-indent-default" Items="_indentDefaultItems" AllExpanded Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="templates" Title="Custom templates">
+    <BitNav Id="nav-header-template" Items="_headerTemplateItems" RenderType="BitNavRenderType.Grouped">
+        <HeaderTemplate Context="item">
+            <span class="custom-header">Header: @item.Text</span>
+        </HeaderTemplate>
+    </BitNav>
+
+    <BitNav Id="nav-header-replace" Items="_headerReplaceItems" RenderType="BitNavRenderType.Grouped" HeaderTemplateRenderMode="BitNavItemTemplateRenderMode.Replace">
+        <HeaderTemplate Context="item">
+            <div class="custom-header-replaced">Replaced header: @item.Text</div>
+        </HeaderTemplate>
+    </BitNav>
+
+    <BitNav Id="nav-item-template" Items="_itemTemplateItems" Mode="BitNavMode.Manual" OnItemClick="(BitNavItem item) => _templateClicked = item.Text">
+        <ItemTemplate Context="item">
+            <span class="custom-item">Custom: @item.Text</span>
+        </ItemTemplate>
+    </BitNav>
+    <p>Template clicked: <span id="template-clicked">@_templateClicked</span></p>
+
+    <BitNav Id="nav-item-replace" Items="_itemReplaceItems" Mode="BitNavMode.Manual" ItemTemplateRenderMode="BitNavItemTemplateRenderMode.Replace">
+        <ItemTemplate Context="item">
+            <div class="custom-item-replaced">Replaced: @item.Text</div>
+        </ItemTemplate>
+    </BitNav>
+
+    <BitNav Id="nav-item-own-template" Items="_itemOwnTemplateItems" Mode="BitNavMode.Manual">
+        <ItemTemplate Context="item">
+            <span class="custom-item">Nav template: @item.Text</span>
+        </ItemTemplate>
+    </BitNav>
+
+    <BitNav Id="nav-replace-keyboard" Items="_replaceKeyboardItems" Mode="BitNavMode.Manual" />
+
+    <BitNav Id="nav-template-precedence" Items="_templatePrecedenceItems" Mode="BitNavMode.Manual" ItemTemplateRenderMode="BitNavItemTemplateRenderMode.Replace">
+        <ItemTemplate Context="item">
+            <div class="nav-replacing-template">Nav replaces: @item.Text</div>
+        </ItemTemplate>
+    </BitNav>
+
+    <BitNav Id="nav-header-precedence" Items="_headerPrecedenceItems" RenderType="BitNavRenderType.Grouped" HeaderTemplateRenderMode="BitNavItemTemplateRenderMode.Replace">
+        <HeaderTemplate Context="item">
+            <div class="nav-replacing-header">Nav replaces header: @item.Text</div>
+        </HeaderTemplate>
+    </BitNav>
+
+    <BitNav Id="nav-suffix" Items="_suffixItems" Mode="BitNavMode.Manual">
+        <ItemSuffixTemplate Context="item">
+            <span class="nav-suffix" aria-hidden="true">@item.Data</span>
+        </ItemSuffixTemplate>
+    </BitNav>
+</E2ESection>
+
+<E2ESection Id="api" Title="Public API">
+    <button id="btn-expand-all" @onclick="() => _apiNav.ExpandAll()">ExpandAll</button>
+    <button id="btn-collapse-all" @onclick="() => _apiNav.CollapseAll()">CollapseAll</button>
+    <button id="btn-expand-all-fruits" @onclick="() => _apiNav.ExpandAll(_apiItems[0])">ExpandAll(Fruits)</button>
+    <button id="btn-collapse-all-fruits" @onclick="() => _apiNav.CollapseAll(_apiItems[0])">CollapseAll(Fruits)</button>
+    <button id="btn-toggle-fruits" @onclick="() => _apiNav.ToggleItem(_apiItems[0])">Toggle Fruits</button>
+    <button id="btn-expand-fastfoods" @onclick="() => _apiNav.ExpandItem(_apiItems[1])">Expand Fast foods</button>
+    <button id="btn-collapse-fastfoods" @onclick="() => _apiNav.CollapseItem(_apiItems[1])">Collapse Fast foods</button>
+    <button id="btn-is-expanded" @onclick="ReadIsExpanded">IsItemExpanded</button>
+    <button id="btn-select-icecream" @onclick="() => _apiNav.SelectItem(_apiItems[2])">Select Ice cream</button>
+    <button id="btn-select-none" @onclick="() => _apiNav.SelectItem(null)">Select none</button>
+    <button id="btn-focus-veggie" @onclick="() => _apiNav.FocusItem(_apiItems[1].ChildItems[1].ChildItems[0])">Focus Veggie burger</button>
+    <p>Fruits expanded: <span id="api-fruits-expanded">@_apiFruitsExpanded</span>, Fast foods expanded: <span id="api-fastfoods-expanded">@_apiFastFoodsExpanded</span></p>
+    <p>API toggles: <span id="api-toggle-count">@_apiToggleCount</span>, API selected: <span id="api-selected">@(_apiSelected?.Text ?? "none")</span></p>
+    <BitNav @ref="_apiNav"
+            Id="nav-api"
+            Items="_apiItems"
+            Mode="BitNavMode.Manual"
+            OnItemToggle="(BitNavItem item) => _apiToggleCount++"
+            OnSelectItem="(BitNavItem item) => _apiSelected = item" />
+</E2ESection>
+
+<E2ESection Id="events" Title="Events">
+    <BitNav Id="nav-events"
+            Items="_eventItems"
+            Mode="BitNavMode.Manual"
+            OnItemClick="(BitNavItem item) => { _clickCount++; _lastClicked = item.Text; }"
+            OnSelectItem="(BitNavItem item) => { _selectCount++; _lastSelected = item?.Text; }"
+            OnItemToggle="(BitNavItem item) => OnEventToggle(item)" />
+    <p>
+        Clicks: <span id="event-click-count">@_clickCount</span> (<span id="event-last-clicked">@_lastClicked</span>),
+        selects: <span id="event-select-count">@_selectCount</span> (<span id="event-last-selected">@_lastSelected</span>),
+        toggles: <span id="event-toggle-count">@_toggleCount</span> (<span id="event-last-toggled">@_lastToggled</span>)
+    </p>
+
+    <BitNav Id="nav-reselectable"
+            Items="_reselectableItems"
+            Mode="BitNavMode.Manual"
+            Reselectable
+            OnItemClick="(BitNavItem item) => _reselectClickCount++"
+            OnSelectItem="(BitNavItem item) => _reselectSelectCount++" />
+    <p>
+        Reselectable clicks: <span id="reselect-click-count">@_reselectClickCount</span>,
+        selects: <span id="reselect-select-count">@_reselectSelectCount</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitNav Id="nav-a11y" Items="_a11yItems" AriaLabel="Components" Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-aria-labels" Items="_ariaLabelItems" ExpandAriaLabel="Open branch" CollapseAriaLabel="Close branch" Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-newtab" Items="_newTabItems" />
+    <BitNav Id="nav-newtab-custom" Items="_newTabCustomItems" NewTabHint="(new window)" />
+    <BitNav Id="nav-newtab-none" Items="_newTabNoneItems" NoNewTabHint />
+    <BitNav Id="nav-sca" Items="_scaItems" Mode="BitNavMode.Manual" DefaultSelectedItem="_scaItems[0].ChildItems[1]" />
+    <BitNav Id="nav-sca-grouped" Items="_scaGroupedItems" RenderType="BitNavRenderType.Grouped" Mode="BitNavMode.Manual" DefaultSelectedItem="_scaGroupedItems[0].ChildItems[0]" />
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="@([_navParams])">
+        <BitNav Id="nav-params-all" Items="_paramsAllItems" />
+        <BitNav Id="nav-params-own" Items="_paramsOwnItems" IconOnly="false" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="badges" Title="Badges and Dot">
+    <BitNav Id="nav-badges" Items="_badgeItems" Mode="BitNavMode.Manual" FitWidth />
+    <BitNav Id="nav-badges-icononly" Items="_badgeIconOnlyItems" Mode="BitNavMode.Manual" IconOnly />
+</E2ESection>
+
+<E2ESection Id="color" Title="Color">
+    <BitNav Id="nav-color-default" Items="_colorDefaultItems" Mode="BitNavMode.Manual" FitWidth />
+    @foreach (var (name, color) in _colors)
+    {
+        var items = _colorItems[name];
+        <BitNav Id="@($"nav-color-{name}")" Color="color" Items="items" Mode="BitNavMode.Manual" DefaultSelectedItem="items[0]" FitWidth />
+    }
+</E2ESection>
+
+<E2ESection Id="accent" Title="Accent">
+    <BitNav Id="nav-accent-default" Items="_accentDefaultItems" Mode="BitNavMode.Manual" DefaultSelectedItem="_accentDefaultItems[0]" FitWidth />
+    @foreach (var (name, color) in _colors)
+    {
+        var items = _accentItems[name];
+        <BitNav Id="@($"nav-accent-{name}")" Accent="color" Items="items" Mode="BitNavMode.Manual" DefaultSelectedItem="items[0]" FitWidth />
+    }
+</E2ESection>
+
+<E2ESection Id="external-icons" Title="External icons">
+    <BitNav Id="nav-external" Items="_externalIconItems" ChevronDownIcon="@(BitIconInfo.Bi("chevron-right"))" Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    <BitNav Id="nav-size-default" Items="_size_default" RenderType="BitNavRenderType.Grouped" AllExpanded FitWidth />
+    <BitNav Id="nav-size-small" Items="_size_small" Size="BitSize.Small" RenderType="BitNavRenderType.Grouped" AllExpanded FitWidth />
+    <BitNav Id="nav-size-medium" Items="_size_medium" Size="BitSize.Medium" RenderType="BitNavRenderType.Grouped" AllExpanded FitWidth />
+    <BitNav Id="nav-size-large" Items="_size_large" Size="BitSize.Large" RenderType="BitNavRenderType.Grouped" AllExpanded FitWidth />
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitNav Id="nav-style" Items="_styleItems" Style="max-width: 320px; border: 3px solid rgb(255, 99, 71);" />
+    <BitNav Id="nav-class" Items="_classItems" Class="custom-class" />
+    <BitNav Id="nav-item-style" Items="_itemStyleItems" Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-styles"
+            Items="_stylesItems"
+            AllExpanded
+            Mode="BitNavMode.Manual"
+            DefaultSelectedItem="_stylesItems[1]"
+            Styles="@(new() { Root = "background-color: rgb(42, 42, 42);",
+                              ItemContainer = "margin: 3px;",
+                              SelectedItemContainer = "border-color: rgb(255, 215, 0);",
+                              ToggleButton = "color: rgb(0, 255, 255);",
+                              ToggleIcon = "font-size: 9px;",
+                              Item = "color: rgb(255, 69, 0);",
+                              SelectedItem = "color: rgb(255, 215, 0);",
+                              ItemIcon = "color: rgb(1, 2, 3);",
+                              ItemText = "letter-spacing: 2px;",
+                              ItemBadge = "background-color: rgb(4, 5, 6);",
+                              ItemSuffix = "opacity: 0.5;",
+                              Description = "color: rgb(143, 188, 143);",
+                              Separator = "border-top-color: rgb(7, 8, 9);" })" />
+    <BitNav Id="nav-styles-grouped"
+            Items="_stylesGroupedItems"
+            RenderType="BitNavRenderType.Grouped"
+            Styles="@(new() { Header = "background-color: rgb(10, 11, 12);", HeaderText = "color: rgb(13, 14, 15);" })" />
+    <BitNav Id="nav-classes"
+            Items="_classesItems"
+            AllExpanded
+            Mode="BitNavMode.Manual"
+            DefaultSelectedItem="_classesItems[1]"
+            Classes="@(new() { Root = "custom-root",
+                               ItemContainer = "custom-item-container",
+                               SelectedItemContainer = "custom-selected-container",
+                               ToggleButton = "custom-toggle-button",
+                               ToggleIcon = "custom-toggle-icon",
+                               Item = "custom-item-part",
+                               SelectedItem = "custom-selected-item",
+                               ItemIcon = "custom-item-icon",
+                               ItemText = "custom-item-text",
+                               ItemBadge = "custom-item-badge",
+                               ItemSuffix = "custom-item-suffix",
+                               Description = "custom-description",
+                               Separator = "custom-separator" })" />
+    <BitNav Id="nav-classes-grouped"
+            Items="_classesGroupedItems"
+            RenderType="BitNavRenderType.Grouped"
+            Classes="@(new() { Header = "custom-header", HeaderText = "custom-header-text" })" />
+
+    <div id="vars-host" style="--bit-Nav-item-radius: 13px; --bit-Nav-item-min-height: 50px; --bit-Nav-icon-color: rgb(200, 0, 0); --bit-Nav-selected-background: rgb(10, 20, 30); --bit-Nav-selected-color: rgb(240, 240, 240); --bit-Nav-indicator-color: rgb(0, 128, 0); --bit-Nav-indicator-width: 6px; --bit-Nav-font-size: 19px; --bit-Nav-color: rgb(30, 60, 90); --bit-Nav-badge-background: rgb(0, 100, 0); --bit-Nav-badge-color: rgb(255, 255, 0); --bit-Nav-separator-color: rgb(50, 60, 70); --bit-Nav-description-color: rgb(70, 80, 90); --bit-Nav-item-gap: 7px;">
+        <BitNav Id="nav-vars" Items="_varsItems" Mode="BitNavMode.Manual" DefaultSelectedItem="_varsItems[0]" />
+        <BitNav Id="nav-vars-color" Items="_varsColorItems" Color="BitColor.Success" Size="BitSize.Small" Mode="BitNavMode.Manual" DefaultSelectedItem="_varsColorItems[0]" Accent="BitColor.Error" />
+    </div>
+
+    <div id="vars-state-host" style="--bit-Nav-hover-background: rgb(1, 100, 1); --bit-Nav-hover-color: rgb(2, 100, 2); --bit-Nav-hover-icon-color: rgb(3, 100, 3); --bit-Nav-hover-description-color: rgb(4, 100, 4); --bit-Nav-pressed-background: rgb(5, 100, 5); --bit-Nav-pressed-color: rgb(6, 100, 6); --bit-Nav-pressed-icon-color: rgb(7, 100, 7); --bit-Nav-pressed-description-color: rgb(8, 100, 8); --bit-Nav-selected-icon-color: rgb(9, 100, 9); --bit-Nav-selected-description-color: rgb(10, 100, 10); --bit-Nav-selected-hover-background: rgb(11, 100, 11); --bit-Nav-selected-pressed-background: rgb(12, 100, 12); --bit-Nav-selected-hover-color: rgb(13, 100, 13); --bit-Nav-selected-hover-icon-color: rgb(14, 100, 14); --bit-Nav-selected-hover-description-color: rgb(15, 100, 15); --bit-Nav-disabled-color: rgb(16, 100, 16); --bit-Nav-item-padding: 7px; --bit-Nav-icon-size: 21px; --bit-Nav-description-font-size: 9px; --bit-Nav-header-hover-background: rgb(17, 100, 17); --bit-Nav-badge-font-size: 13px; --bit-Nav-badge-height: 22px; --bit-Nav-badge-dot-size: 11px;">
+        <BitNav Id="nav-vars-state" Items="_varsStateItems" Mode="BitNavMode.Manual" DefaultSelectedItem="_varsStateItems[0]" />
+        <BitNav Id="nav-vars-state-grouped" Items="_varsStateGroupedItems" RenderType="BitNavRenderType.Grouped" />
+    </div>
+
+    <div id="vars-group-host" style="--bit-Nav-header-color: rgb(11, 22, 33); --bit-Nav-header-font-size: 23px; --bit-Nav-header-border-color: rgb(44, 55, 66); --bit-Nav-header-min-height: 61px;">
+        <BitNav Id="nav-vars-grouped" Items="_varsGroupedItems" RenderType="BitNavRenderType.Grouped" />
+    </div>
+
+    <button id="btn-cycle-visibility" @onclick="CycleVisibility">Cycle visibility</button>
+    <span id="visibility-state">@_visibility</span>
+    <BitNav Id="nav-visibility" Items="_visibilityItems" Visibility="_visibility" />
+
+    <BitNav Id="nav-html-attributes" Items="_htmlAttributeItems" data-test="nav-data" title="Nav title" HtmlAttributes="@(new() { ["data-extra"] = "extra-value" })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitNav Id="nav-rtl" Dir="BitDir.Rtl" Items="_rtlItems" Mode="BitNavMode.Manual" FullWidth />
+    <div dir="rtl">
+        <BitNav Id="nav-rtl-inherited" Items="_rtlInheritedItems" Mode="BitNavMode.Manual" />
+    </div>
+    <BitNav Id="nav-ltr" Items="_ltrItems" Mode="BitNavMode.Manual" FullWidth />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="btn-toggle-disabled" @onclick="() => _navDisabled = !_navDisabled">Toggle disabled</button>
+    <BitNav Id="nav-disabled"
+            Items="_disabledItems"
+            Disabled="_navDisabled"
+            Mode="BitNavMode.Manual"
+            OnItemClick="(BitNavItem item) => _disabledItemClicks++"
+            @onclick="() => _disabledRootClicks++"
+            @onkeydown="() => _disabledRootKeys++" />
+    <p>
+        Item clicks: <span id="disabled-item-clicks">@_disabledItemClicks</span>,
+        root clicks: <span id="disabled-root-clicks">@_disabledRootClicks</span>,
+        root keys: <span id="disabled-root-keys">@_disabledRootKeys</span>
+    </p>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard">
+    <BitNav Id="nav-keyboard" Items="_keyboardItems" Mode="BitNavMode.Manual" OnSelectItem="(BitNavItem item) => _keyboardSelected = item?.Text" />
+    <p>Keyboard selected: <span id="keyboard-selected">@_keyboardSelected</span></p>
+    <BitNav Id="nav-keyboard-single" Items="_keyboardSingleItems" Mode="BitNavMode.Manual" SingleExpand />
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Dynamic items">
+    <button id="btn-add-root" @onclick="AddRootItem">Add root item</button>
+    <button id="btn-add-child" @onclick="AddChildItem">Add child item</button>
+    <button id="btn-remove-root" @onclick="RemoveRootItem">Remove last root item</button>
+    <button id="btn-rebuild" @onclick="RebuildItems">Rebuild items</button>
+    <BitNav Id="nav-dynamic" Items="_dynamicItems" Mode="BitNavMode.Manual" />
+    <button id="btn-keyed-reverse" @onclick="ReverseKeyedItems">Reverse keyed items</button>
+    <BitNav Id="nav-keyed" Items="_keyedItems" Mode="BitNavMode.Manual" />
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-toggle-mount" @onclick="() => _showLifecycle = !_showLifecycle">Toggle mount</button>
+    <button id="btn-cycle-size" @onclick="CycleLifecycleSize">Cycle size</button>
+    <button id="btn-toggle-render-type" @onclick="ToggleRenderType">Toggle render type</button>
+    <span id="lifecycle-mounted">@_showLifecycle</span>
+    @if (_showLifecycle)
+    {
+        <BitNav Id="nav-lifecycle" Items="_lifecycleItems" Size="_lifecycleSize" RenderType="_lifecycleRenderType" Mode="BitNavMode.Manual" />
+    }
+</E2ESection>
+
+<E2ESection Id="motion" Title="Motion">
+    <BitNav Id="nav-motion" Items="_motionItems" Mode="BitNavMode.Manual" />
+    <BitNav Id="nav-motion-force" Items="_motionForceItems" Mode="BitNavMode.Manual" ForceAnimation />
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static BitNavItem Leaf(string text, string? icon = null) => new() { Text = text, IconName = icon };
+
+    private static BitNavItem Parent(string text, params BitNavItem[] children) => new() { Text = text, ChildItems = [.. children] };
+
+    private static List<BitNavItem> Food() =>
+    [
+        Parent("Fruits", Leaf("Apple"), Leaf("Banana"), Leaf("Cherry")),
+        Parent("Vegetables", Leaf("Carrot"), Leaf("Potato")),
+        Leaf("Ice cream")
+    ];
+
+    private static List<BitNavItem> ColorItems() =>
+    [
+        new() { Text = "Home", IconName = BitIconName.Home },
+        new() { Text = "Settings", IconName = BitIconName.Settings },
+    ];
+
+    private static List<BitNavItem> SizeItems() =>
+    [
+        new()
+        {
+            Text = "Group",
+            ChildItems =
+            [
+                new() { Text = "Home", IconName = BitIconName.Home, Description = "Description", Badge = "5" },
+                new() { Text = "Branch", IconName = BitIconName.Folder, ChildItems = [Leaf("Leaf")] },
+                new() { Text = "Dot", Dot = true },
+            ]
+        }
+    ];
+
+    private readonly List<BitNavItem> _basicItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home, Url = "/e2e/nav/url/home", Description = "Start here" },
+        new()
+        {
+            Text = "Docs",
+            IconName = BitIconName.Documentation,
+            ChildItems =
+            [
+                new() { Text = "Intro", Url = "/e2e/nav/url/docs/intro" },
+                new() { Text = "Guide", ChildItems = [Leaf("Step one"), Leaf("Step two")] },
+            ]
+        },
+        new() { Text = "Archived", IconName = BitIconName.Archive, Url = "/e2e/nav/url/archived", IsDisabled = true },
+        new() { Text = "Locked", IconName = BitIconName.Lock, IsDisabled = true },
+        new()
+        {
+            Text = "Reports",
+            Url = "/e2e/nav/url/reports",
+            ExpandAriaLabel = "Expand reports",
+            CollapseAriaLabel = "Collapse reports",
+            ChildItems = [Leaf("Monthly"), Leaf("Yearly")]
+        },
+        new() { Text = "Anchor", ForceAnchor = true },
+        new() { Text = "External", Url = "https://example.com/", Target = "_blank", Title = "External site" },
+        new() { Text = "Referrerless", Url = "https://example.org/", Target = "_blank", Rel = BitLinkRels.NoReferrer },
+    ];
+
+    private readonly List<BitNavItem> _widthDefaultItems = [Leaf("Short"), Leaf("A much longer item text")];
+    private readonly List<BitNavItem> _fitItems = [Leaf("Short"), Leaf("A much longer item text")];
+    private readonly List<BitNavItem> _fullItems = [Leaf("Short"), Leaf("A much longer item text")];
+
+    private readonly List<BitNavItem> _groupedItems =
+    [
+        new() { Text = "Fruits", Title = "Fruit group", ChildItems = [Leaf("Apple"), Leaf("Banana")] },
+        new() { Text = "Vegetables", ChildItems = [Leaf("Carrot")] },
+        new() { IsSeparator = true },
+        new() { Text = "Empty group", IconName = BitIconName.Info },
+    ];
+
+    private readonly List<BitNavItem> _separatorItems =
+    [
+        Leaf("Before"),
+        new() { IsSeparator = true },
+        Leaf("After"),
+    ];
+
+    private readonly List<BitNavItem> _manualDefaultItems = Food();
+    private readonly List<BitNavItem> _manualBoundItems = Food();
+    private readonly List<BitNavItem> _manualOneWayItems = Food();
+    private BitNavItem? _boundSelected;
+    private int _boundSelectCount;
+
+    private bool _iconOnly = true;
+    private readonly List<BitNavItem> _iconOnlyItems =
+    [
+        new() { Text = "Home", IconName = BitIconName.Home },
+        new() { Text = "Mail", IconName = BitIconName.Mail },
+    ];
+
+    private BitNav<BitNavItem> _singleNav = default!;
+    private readonly List<BitNavItem> _singleItems =
+    [
+        Parent("Alpha", Leaf("Alpha one"), Parent("Alpha nested", Leaf("Alpha deep"))),
+        Parent("Beta", Leaf("Beta one")),
+    ];
+
+    private readonly List<BitNavItem> _allExpandedItems =
+    [
+        Parent("Alpha", Leaf("Alpha one"), Parent("Alpha nested", Leaf("Alpha deep"))),
+        Parent("Beta", Leaf("Beta one")),
+    ];
+
+    private readonly List<BitNavItem> _noCollapseItems =
+    [
+        Parent("Alpha", Leaf("Alpha one"), Parent("Alpha nested", Leaf("Alpha deep"))),
+        Leaf("Beta"),
+    ];
+
+    private readonly List<BitNavItem> _noCollapseGroupedItems =
+    [
+        Parent("Group one", Leaf("One a"), Leaf("One b")),
+    ];
+
+    private readonly List<BitNavItem> _initialExpandedItems =
+    [
+        new() { Text = "Open", IsExpanded = true, ChildItems = [Leaf("Open child")] },
+        new() { Text = "Closed", ChildItems = [Leaf("Closed child")] },
+    ];
+
+    private readonly List<BitNavItem> _reversedItems = [Parent("Parent", Leaf("Child")), Leaf("Sibling")];
+    private readonly List<BitNavItem> _reversedPaddingItems = [Parent("Parent", Leaf("Child")), Leaf("Sibling")];
+    private readonly List<BitNavItem> _chevronIconItems = [Parent("Parent", Leaf("Child"))];
+    private readonly List<BitNavItem> _indentItems = [Parent("Parent", Leaf("Child")), Leaf("Sibling")];
+    private readonly List<BitNavItem> _indentDefaultItems = [Parent("Parent", Leaf("Child"), Parent("Nested", Leaf("Deep"))), Leaf("Sibling")];
+
+    private readonly List<BitNavItem> _headerTemplateItems = [Parent("Cars", Leaf("Audi"), Leaf("BMW"))];
+    private readonly List<BitNavItem> _headerReplaceItems = [Parent("Bikes", Leaf("Ducati"))];
+    private readonly List<BitNavItem> _itemTemplateItems = [Leaf("Inbox", BitIconName.Mail), Leaf("Sent", BitIconName.Send)];
+    private string? _templateClicked;
+    private readonly List<BitNavItem> _itemReplaceItems = [Leaf("Red"), Leaf("Green"), Leaf("Blue")];
+    private readonly List<BitNavItem> _itemOwnTemplateItems =
+    [
+        Leaf("Plain"),
+        new() { Text = "Own", Template = item => @<span class="own-template">Own template: @item.Text</span> },
+        new() { Text = "Own replaced", TemplateRenderMode = BitNavItemTemplateRenderMode.Replace, Template = item => @<div class="own-replaced">Own replaced: @item.Text</div> },
+    ];
+    private readonly List<BitNavItem> _replaceKeyboardItems =
+    [
+        Leaf("Before"),
+        new() { Text = "Replaced middle", TemplateRenderMode = BitNavItemTemplateRenderMode.Replace, Template = item => @<input class="replaced-input" aria-label="@item.Text" /> },
+        Leaf("After"),
+        new() { Text = "Replaced last", TemplateRenderMode = BitNavItemTemplateRenderMode.Replace, Template = item => @<span class="replaced-last">@item.Text</span> },
+    ];
+    private readonly List<BitNavItem> _templatePrecedenceItems =
+    [
+        Leaf("Replaced by the nav"),
+        new() { Text = "Own normal", Template = item => @<span class="own-normal-template">Own normal: @item.Text</span> },
+    ];
+    private readonly List<BitNavItem> _headerPrecedenceItems =
+    [
+        Parent("Replaced group", Leaf("Inside replaced")),
+        new() { Text = "Own header", Template = item => @<span class="own-header-template">Own header: @item.Text</span>, ChildItems = [Leaf("Inside own")] },
+    ];
+    private readonly List<BitNavItem> _suffixItems =
+    [
+        new() { Text = "Inbox", Data = "42" },
+        new() { Text = "Drafts", Data = "7", SuffixTemplate = item => @<span class="own-suffix">own @item.Data</span> },
+        new() { Text = "Badged", Data = "1", Badge = "9" },
+    ];
+
+    private BitNav<BitNavItem> _apiNav = default!;
+    private readonly List<BitNavItem> _apiItems =
+    [
+        Parent("Fruits", Leaf("Apple"), Leaf("Banana")),
+        Parent("Fast foods", Leaf("Burger"), Parent("Vegetarian", Leaf("Veggie burger"), Leaf("Falafel"))),
+        Leaf("Ice cream"),
+    ];
+    private bool _apiFruitsExpanded;
+    private bool _apiFastFoodsExpanded;
+    private int _apiToggleCount;
+    private BitNavItem? _apiSelected;
+
+    private void ReadIsExpanded()
+    {
+        _apiFruitsExpanded = _apiNav.IsItemExpanded(_apiItems[0]);
+        _apiFastFoodsExpanded = _apiNav.IsItemExpanded(_apiItems[1]);
+    }
+
+    private readonly List<BitNavItem> _eventItems = Food();
+    private int _clickCount;
+    private string? _lastClicked;
+    private int _selectCount;
+    private string? _lastSelected;
+    private int _toggleCount;
+    private string? _lastToggled;
+
+    private void OnEventToggle(BitNavItem item)
+    {
+        _toggleCount++;
+        _lastToggled = item.Text + ":" + (item.IsExpanded ? "expanded" : "collapsed");
+    }
+
+    private readonly List<BitNavItem> _reselectableItems = [Leaf("Again"), Leaf("Other")];
+    private int _reselectClickCount;
+    private int _reselectSelectCount;
+
+    private readonly List<BitNavItem> _a11yItems =
+    [
+        new() { Text = "Page item", AriaCurrent = BitNavAriaCurrent.Page },
+        new() { Text = "Step item", AriaCurrent = BitNavAriaCurrent.Step },
+        new() { Text = "Location item", AriaCurrent = BitNavAriaCurrent.Location },
+        new() { Text = "Date item", AriaCurrent = BitNavAriaCurrent.Date },
+        new() { Text = "Time item", AriaCurrent = BitNavAriaCurrent.Time },
+        new() { Text = "True item", AriaCurrent = BitNavAriaCurrent.True },
+        new() { Text = "Labeled item", AriaLabel = "Custom accessible name" },
+        new() { Text = "Described item", Description = "Item description" },
+    ];
+
+    private readonly List<BitNavItem> _ariaLabelItems =
+    [
+        new() { Text = "Linked parent", Url = "/e2e/nav/url/linked", ChildItems = [Leaf("Linked child")] },
+        new() { Text = "Own labels", Url = "/e2e/nav/url/own", ExpandAriaLabel = "Show own", CollapseAriaLabel = "Hide own", ChildItems = [Leaf("Own child")] },
+    ];
+
+    private readonly List<BitNavItem> _newTabItems = [new() { Text = "Blank", Url = "https://example.com/blank", Target = "_blank" }, new() { Text = "Labeled blank", AriaLabel = "Labeled", Url = "https://example.com/l", Target = "_blank" }];
+    private readonly List<BitNavItem> _newTabCustomItems = [new() { Text = "Blank", Url = "https://example.com/blank", Target = "_blank" }];
+    private readonly List<BitNavItem> _newTabNoneItems = [new() { Text = "Blank", Url = "https://example.com/blank", Target = "_blank" }];
+
+    private readonly List<BitNavItem> _scaItems = [Parent("Branch", Leaf("First leaf"), Leaf("Second leaf")), Leaf("Outside")];
+    private readonly List<BitNavItem> _scaGroupedItems = [Parent("Group", Leaf("Grouped leaf")), Parent("Other group", Leaf("Other leaf"))];
+
+    private readonly BitNavParams _navParams = new() { IconOnly = true, Color = BitColor.Error, Size = BitSize.Large, FitWidth = true };
+    private readonly List<BitNavItem> _paramsAllItems = ColorItems();
+    private readonly List<BitNavItem> _paramsOwnItems = ColorItems();
+
+    private readonly List<BitNavItem> _badgeItems =
+    [
+        new() { Text = "Inbox", IconName = BitIconName.Mail, Badge = "3" },
+        new() { Text = "Drafts", Badge = "12", BadgeAriaLabel = "12 drafts" },
+        new() { Text = "Alerts", Dot = true, BadgeAriaLabel = "New alerts" },
+        new() { Text = "Silent dot", Dot = true },
+        new() { Text = "Named", AriaLabel = "Named item", Badge = "4" },
+        new() { Text = "Both", Badge = "2", Dot = true },
+        new() { Text = "Off", Badge = "8", IsDisabled = true },
+    ];
+
+    private readonly List<BitNavItem> _badgeIconOnlyItems = [new() { Text = "Inbox", IconName = BitIconName.Mail, Badge = "3" }];
+
+    private static readonly (string Name, BitColor Color)[] _colors =
+    [
+        ("primary", BitColor.Primary),
+        ("secondary", BitColor.Secondary),
+        ("tertiary", BitColor.Tertiary),
+        ("info", BitColor.Info),
+        ("success", BitColor.Success),
+        ("warning", BitColor.Warning),
+        ("severe-warning", BitColor.SevereWarning),
+        ("error", BitColor.Error),
+        ("primary-background", BitColor.PrimaryBackground),
+        ("secondary-background", BitColor.SecondaryBackground),
+        ("tertiary-background", BitColor.TertiaryBackground),
+        ("primary-foreground", BitColor.PrimaryForeground),
+        ("secondary-foreground", BitColor.SecondaryForeground),
+        ("tertiary-foreground", BitColor.TertiaryForeground),
+        ("primary-border", BitColor.PrimaryBorder),
+        ("secondary-border", BitColor.SecondaryBorder),
+        ("tertiary-border", BitColor.TertiaryBorder),
+    ];
+
+    private readonly Dictionary<string, List<BitNavItem>> _colorItems = _colors.ToDictionary(c => c.Name, _ => ColorItems());
+    private readonly Dictionary<string, List<BitNavItem>> _accentItems = _colors.ToDictionary(c => c.Name, _ => ColorItems());
+    private readonly List<BitNavItem> _accentDefaultItems = ColorItems();
+    private readonly List<BitNavItem> _colorDefaultItems = ColorItems();
+    private readonly List<BitNavItem> _size_default = SizeItems();
+    private readonly List<BitNavItem> _size_small = SizeItems();
+    private readonly List<BitNavItem> _size_medium = SizeItems();
+    private readonly List<BitNavItem> _size_large = SizeItems();
+
+    private readonly List<BitNavItem> _externalIconItems =
+    [
+        new() { Text = "Css icon", Icon = BitIconInfo.Css("my-icon my-icon-house") },
+        new() { Text = "Bootstrap icon", Icon = BitIconInfo.Bi("gear-fill"), IconName = BitIconName.Home },
+        new() { Text = "FontAwesome icon", Icon = BitIconInfo.Fa("solid house") },
+        new() { Text = "Branch", Icon = BitIconInfo.Bi("folder"), ChildItems = [Leaf("Leaf")] },
+    ];
+
+    private readonly List<BitNavItem> _styleItems = ColorItems();
+    private readonly List<BitNavItem> _classItems = ColorItems();
+    private readonly List<BitNavItem> _itemStyleItems =
+    [
+        new() { Text = "Styled", Style = "background-color: rgb(1, 2, 3);" },
+        new() { Text = "Classed", Class = "item-class" },
+    ];
+
+    private static List<BitNavItem> PartItems() =>
+    [
+        new() { Text = "Parent", IconName = BitIconName.Folder, ChildItems = [Leaf("Child")] },
+        new() { Text = "Selected", IconName = BitIconName.Home, Description = "Described", Badge = "1" },
+        new() { IsSeparator = true },
+        new() { Text = "Plain", IconName = BitIconName.Mail },
+    ];
+
+    private readonly List<BitNavItem> _stylesItems = PartItems();
+    private readonly List<BitNavItem> _classesItems = PartItems();
+    private readonly List<BitNavItem> _stylesGroupedItems = [Parent("Styled group", Leaf("Inside"))];
+    private readonly List<BitNavItem> _classesGroupedItems = [Parent("Classed group", Leaf("Inside"))];
+
+    private readonly List<BitNavItem> _varsItems =
+    [
+        new() { Text = "Selected", IconName = BitIconName.Home, Badge = "5" },
+        new() { Text = "Other", IconName = BitIconName.Mail, Description = "Var description" },
+        new() { IsSeparator = true },
+        Leaf("Last"),
+    ];
+    private readonly List<BitNavItem> _varsColorItems = [new() { Text = "Selected", IconName = BitIconName.Home }, new() { Text = "Other", IconName = BitIconName.Mail }];
+    private readonly List<BitNavItem> _varsStateItems =
+    [
+        new() { Text = "Selected", IconName = BitIconName.Home, Description = "Selected description" },
+        new() { Text = "Other", IconName = BitIconName.Mail, Description = "Other description", Badge = "3" },
+        new() { Text = "Dotted", Dot = true },
+        new() { Text = "Off", IconName = BitIconName.Blocked, IsDisabled = true },
+    ];
+    private readonly List<BitNavItem> _varsStateGroupedItems = [Parent("State group", Leaf("Inside"))];
+    private readonly List<BitNavItem> _varsGroupedItems = [Parent("Var group", Leaf("Inside"))];
+
+    private BitVisibility _visibility = BitVisibility.Visible;
+    private readonly List<BitNavItem> _visibilityItems = ColorItems();
+
+    private void CycleVisibility()
+    {
+        _visibility = _visibility switch
+        {
+            BitVisibility.Visible => BitVisibility.Hidden,
+            BitVisibility.Hidden => BitVisibility.Collapsed,
+            _ => BitVisibility.Visible
+        };
+    }
+
+    private readonly List<BitNavItem> _htmlAttributeItems = ColorItems();
+
+    private readonly List<BitNavItem> _rtlItems = [Parent("Rtl parent", Leaf("Rtl child")), Leaf("Rtl sibling")];
+    private readonly List<BitNavItem> _rtlInheritedItems = [Parent("Inherited parent", Leaf("Inherited child")), Leaf("Inherited sibling")];
+    private readonly List<BitNavItem> _ltrItems = [Parent("Ltr parent", Leaf("Ltr child")), Leaf("Ltr sibling")];
+
+    private bool _navDisabled = true;
+    private int _disabledItemClicks;
+    private int _disabledRootClicks;
+    private int _disabledRootKeys;
+    private readonly List<BitNavItem> _disabledItems =
+    [
+        new() { Text = "Disabled link", Url = "/e2e/nav/url/somewhere" },
+        Leaf("Disabled button"),
+        Parent("Disabled parent", Leaf("Disabled child")),
+    ];
+
+    private readonly List<BitNavItem> _keyboardItems =
+    [
+        Leaf("Alpha"),
+        Parent("Beta", Leaf("Beta one"), new() { Text = "Beta two", IsDisabled = true }, Leaf("Beta three")),
+        new() { IsSeparator = true },
+        new() { Text = "Gamma", IsDisabled = true },
+        Parent("Delta", Leaf("Delta one")),
+        Leaf("Echo"),
+    ];
+    private string? _keyboardSelected;
+
+    private readonly List<BitNavItem> _keyboardSingleItems = [Parent("First", Leaf("First child")), Parent("Second", Leaf("Second child"))];
+
+    private List<BitNavItem> _dynamicItems = [Parent("Dynamic parent", Leaf("Dynamic child")), Leaf("Dynamic leaf")];
+    private int _dynamicCounter;
+
+    private void AddRootItem() => _dynamicItems.Add(Leaf($"Added {++_dynamicCounter}"));
+
+    private void AddChildItem() => _dynamicItems[0].ChildItems.Add(Leaf($"Added child {++_dynamicCounter}"));
+
+    private void RemoveRootItem() => _dynamicItems.RemoveAt(_dynamicItems.Count - 1);
+
+    // A brand new tree of new instances: the nav carries the expansion state over by each item's place in the tree.
+    private void RebuildItems()
+    {
+        _dynamicItems = [.. _dynamicItems.Select(Clone)];
+
+        static BitNavItem Clone(BitNavItem item) => new() { Text = item.Text, ChildItems = [.. item.ChildItems.Select(Clone)] };
+    }
+
+    private List<BitNavItem> _keyedItems =
+    [
+        new() { Key = "a", Text = "Keyed A", ChildItems = [Leaf("A child")] },
+        new() { Key = "b", Text = "Keyed B", ChildItems = [Leaf("B child")] },
+        new() { Key = "c", Text = "Keyed C", ChildItems = [Leaf("C child")] },
+    ];
+
+    // New instances in the reverse order: the nav carries each item's expansion state over by its Key.
+    private void ReverseKeyedItems()
+    {
+        _keyedItems = [.. _keyedItems.AsEnumerable().Reverse().Select(i => new BitNavItem { Key = i.Key, Text = i.Text, ChildItems = [Leaf(i.ChildItems[0].Text)] })];
+    }
+
+    private bool _showLifecycle = true;
+    private BitSize? _lifecycleSize;
+    private BitNavRenderType _lifecycleRenderType = BitNavRenderType.Normal;
+    private readonly List<BitNavItem> _lifecycleItems = [Parent("Life parent", Leaf("Life child")), Leaf("Life leaf")];
+
+    private void CycleLifecycleSize()
+    {
+        _lifecycleSize = _lifecycleSize switch
+        {
+            null => BitSize.Small,
+            BitSize.Small => BitSize.Medium,
+            BitSize.Medium => BitSize.Large,
+            _ => null
+        };
+    }
+
+    private void ToggleRenderType()
+    {
+        _lifecycleRenderType = _lifecycleRenderType is BitNavRenderType.Normal ? BitNavRenderType.Grouped : BitNavRenderType.Normal;
+    }
+
+    private readonly List<BitNavItem> _motionItems = [Parent("Motion parent", Leaf("Motion child"))];
+    private readonly List<BitNavItem> _motionForceItems = [Parent("Forced parent", Leaf("Forced child"))];
+}

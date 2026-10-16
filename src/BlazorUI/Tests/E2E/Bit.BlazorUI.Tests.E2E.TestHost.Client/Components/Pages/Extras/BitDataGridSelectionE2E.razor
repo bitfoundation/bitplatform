@@ -1,0 +1,123 @@
+﻿@page "/e2e/data-grid/selection"
+
+@* BitDataGrid's selection, keyboard cell navigation and clipboard: Single and Multiple selection with the two-way
+   SelectedItems, IsRowSelectionDisabled, RowHeader, the select-all box, Shift ranges, the selection API, the APG grid
+   keyboard (a single tab stop, the arrows, Home/End, Ctrl+Home/End, PageUp/PageDown, Space, Shift+Space, Ctrl+A) and
+   the Ctrl+C / CopyToClipboardAsync copy. *@
+
+<PageTitle>BitDataGrid selection E2E</PageTitle>
+
+<h1>BitDataGrid selection and keyboard</h1>
+
+<E2ESection Id="single" Title="Single selection">
+    <BitDataGrid TItem="Product" Id="grid-single" Items="@_products" KeyField="p => p.Id"
+                 SelectionMode="BitSelectionMode.Single" SelectedItems="@_single" SelectedItemsChanged="OnSingleChanged"
+                 IsRowSelectionDisabled="p => p.Discontinued">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" RowHeader="true" />
+        <BitDataGridColumn Property="p => p.Discontinued" />
+    </BitDataGrid>
+    <p>single <span id="single-selected">@Names(_single)</span> | changes <span id="single-count">@_singleCount</span></p>
+</E2ESection>
+
+<E2ESection Id="multi" Title="Multiple selection">
+    <button id="btn-set-selection" type="button" @onclick="SetSelection">Select Novel and Lamp</button>
+    <button id="btn-select-all-api" type="button" @onclick="() => _multiGrid.SelectAllAsync()">SelectAllAsync</button>
+    <button id="btn-clear-selection-api" type="button" @onclick="() => _multiGrid.ClearSelectionAsync()">ClearSelectionAsync</button>
+    <button id="btn-reload" type="button" @onclick="Reload">Reload the rows as new instances</button>
+    <BitDataGrid @ref="_multiGrid" TItem="Product" Id="grid-multi" Items="@_products" KeyField="p => p.Id"
+                 SelectionMode="BitSelectionMode.Multiple" @bind-SelectedItems="_multi"
+                 IsRowSelectionDisabled="p => p.Discontinued" Pageable="true" PageSize="6">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" RowHeader="true" />
+        <BitDataGridColumn Property="p => p.Discontinued" />
+    </BitDataGrid>
+    <p>multi <span id="multi-selected">@Names(_multi)</span></p>
+</E2ESection>
+
+<E2ESection Id="keyboard-selection" Title="Keyboard selection and clipboard">
+    <button id="btn-copy-api" type="button" @onclick="CopyFromApi">CopyToClipboardAsync</button>
+    <button id="btn-copy-fallback" type="button" @onclick="CopyWithFallback">CopyToClipboardAsync(Jacket)</button>
+    <span id="copy-result">@_copyResult</span>
+    <BitDataGrid @ref="_keyGrid" TItem="Product" Id="grid-key-select" Items="@_products" KeyField="p => p.Id"
+                 SelectionMode="BitSelectionMode.Multiple" @bind-SelectedItems="_keySelection"
+                 CellNavigation="true" ClipboardCopy="true">
+        <BitDataGridColumn Property="p => p.Id" Title="ID" />
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Stock" />
+        <BitDataGridColumn ColumnId="Tpl" Title="Not exported">
+            <Template Context="p">@p.Name</Template>
+        </BitDataGridColumn>
+    </BitDataGrid>
+    <p>keyboard selection <span id="key-selected">@Names(_keySelection)</span></p>
+    <BitDataGrid TItem="Product" Id="grid-no-copy" Items="@_products" KeyField="p => p.Id" CellNavigation="true">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+    </BitDataGrid>
+</E2ESection>
+
+<E2ESection Id="nav" Title="Cell navigation">
+    <button id="btn-before" type="button">Before</button>
+    <BitDataGrid TItem="Product" Id="grid-nav" Items="@_many" CellNavigation="true" Height="300px" Sortable="false">
+        <BitDataGridColumn Property="p => p.Id" />
+        <BitDataGridColumn Property="p => p.Name" />
+        <BitDataGridColumn Property="p => p.Stock" />
+        <BitDataGridColumn Property="p => p.Discontinued" />
+    </BitDataGrid>
+    <button id="btn-after" type="button">After</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    public class Product
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public int Stock { get; set; }
+        public bool Discontinued { get; set; }
+    }
+
+    private static List<Product> Products() =>
+    [
+        new() { Id = 1, Name = "Laptop", Stock = 5 },
+        new() { Id = 2, Name = "Novel", Stock = 120 },
+        new() { Id = 3, Name = "Jacket", Stock = 0, Discontinued = true },
+        new() { Id = 4, Name = "Lamp", Stock = 30 },
+        new() { Id = 5, Name = "Drone", Stock = 8 },
+        new() { Id = 6, Name = "Camera", Stock = 12 },
+        new() { Id = 7, Name = "Cookbook", Stock = 60, Discontinued = true },
+        new() { Id = 8, Name = "Sneaker", Stock = 45 },
+        new() { Id = 9, Name = "Mug", Stock = 200 },
+        new() { Id = 10, Name = "Puzzle", Stock = 70 },
+    ];
+
+    private List<Product> _products = Products();
+    private readonly List<Product> _many = Enumerable.Range(1, 30).Select(i => new Product { Id = i, Name = $"Item {i:00}", Stock = i * 3 }).ToList();
+
+    private BitDataGrid<Product> _multiGrid = default!;
+    private BitDataGrid<Product> _keyGrid = default!;
+
+    private IReadOnlyList<Product> _single = [];
+    private int _singleCount;
+    private IReadOnlyList<Product> _multi = [];
+    private IReadOnlyList<Product> _keySelection = [];
+    private string _copyResult = "";
+
+    private void OnSingleChanged(IReadOnlyList<Product> items)
+    {
+        _singleCount++;
+        _single = items;
+    }
+
+    private void SetSelection() => _multi = _products.Where(p => p.Name is "Novel" or "Lamp").ToList();
+
+    private async Task CopyFromApi() => _copyResult = $"copied {await _keyGrid.CopyToClipboardAsync()}";
+
+    private async Task CopyWithFallback() => _copyResult = $"copied {await _keyGrid.CopyToClipboardAsync(_products[2])}";
+
+    // The same rows as new objects, as a refetch returns them: KeyField is what keeps them selected.
+    private void Reload() => _products = Products();
+
+    private static string Names(IReadOnlyList<Product> items) => string.Join(",", items.OrderBy(p => p.Id).Select(p => p.Name));
+}

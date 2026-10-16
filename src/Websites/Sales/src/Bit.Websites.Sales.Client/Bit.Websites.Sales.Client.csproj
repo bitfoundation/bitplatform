@@ -17,7 +17,7 @@
 
     <ItemGroup>
         <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
     </ItemGroup>
 
     <ItemGroup>
@@ -26,20 +26,20 @@
 
         <Content Remove="appsettings.json" />
         <EmbeddedResource Include="appsettings.json" />
-        <PackageReference Include="Bit.Bswup" Version="10.6.2" />
-        <PackageReference Include="Bit.BlazorUI" Version="10.6.2" />
-        <PackageReference Include="Bit.BlazorUI.Icons" Version="10.6.2" />
-        <PackageReference Include="Bit.BlazorUI.Assets" Version="10.6.2" />
-        <PackageReference Include="Bit.Minifier" Version="10.6.2" PrivateAssets="all" />
-        <PackageReference Include="Bit.CodeAnalyzers" Version="10.6.2">
+        <PackageReference Include="Bit.Bswup" Version="10.7.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI" Version="10.7.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI.Icons" Version="10.7.0-pre-01" />
+        <PackageReference Include="Bit.BlazorUI.Assets" Version="10.7.0-pre-01" />
+        <PackageReference Include="Bit.Minifier" Version="10.7.0-pre-01" PrivateAssets="all" />
+        <PackageReference Include="Bit.CodeAnalyzers" Version="10.7.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Bit.SourceGenerators" Version="10.6.2">
+        <PackageReference Include="Bit.SourceGenerators" Version="10.7.0-pre-01">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.13" />
 
         <Using Include="System.Net.Http.Json" />
         <Using Include="System.Collections.Concurrent" />

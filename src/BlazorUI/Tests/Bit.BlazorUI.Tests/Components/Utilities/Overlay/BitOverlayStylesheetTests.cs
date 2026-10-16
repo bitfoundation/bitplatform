@@ -83,5 +83,17 @@ public class BitOverlayStylesheetTests
         StringAssert.Contains(stylesheet, "$mot-duration-short");
     }
 
+    [TestMethod]
+    public void BitOverlayShouldHandTheSelectabilityBackToTheChildrenOfItsContent()
+    {
+        // The layer is user-select:none, and the content box is display:contents - which Firefox skips when it resolves
+        // a child's user-select:auto, so the children are handed it themselves, at no weight a consumer's rule loses to.
+        var stylesheet = ReadStylesheet();
+
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl {"), "user-select: none;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n.bit-ovl-cnt {"), "user-select: text;");
+        StringAssert.Contains(SourceFiles.GetScssBlock(stylesheet, "\n:where(.bit-ovl-cnt) > * {"), "user-select: text;");
+    }
+
     private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Utilities", "Overlay", "BitOverlay.scss");
 }

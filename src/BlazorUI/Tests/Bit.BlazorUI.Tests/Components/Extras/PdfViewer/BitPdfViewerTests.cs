@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -399,20 +400,28 @@ public class BitPdfViewerTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPdfViewerShouldSwapPageDimensionsOnAQuarterTurn()
+    public async Task BitPdfViewerShouldSwapPageDimensionsOnAQuarterTurn()
     {
         var component = RenderComponent<BitPdfViewer>(parameters =>
         {
-            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.RichDocument()));
+            // 300x200 pages: a quarter turn is visible in the page box.
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.WithLayers()));
+            parameters.Add(p => p.InitialZoomMode, BitPdfZoomMode.ActualSize);
         });
 
-        component.WaitForPages(3);
+        component.WaitForPages(1);
+        StringAssert.StartsWith(component.Find("[data-page='1']").GetAttribute("style"), "width:300px;height:200px");
 
-        // The fixture's pages are square, so assert on a landscape-friendly axis:
-        // rotating must keep the page element sized and not blank it out.
-        string before = component.Find("[data-page='1']").GetAttribute("style") ?? string.Empty;
-        Assert.IsTrue(before.Contains("width:"));
-        Assert.IsTrue(before.Contains("height:"));
+        await component.InvokeAsync(() => component.Instance.RotateClockwise());
+
+        component.WaitForAssertion(() =>
+            StringAssert.StartsWith(component.Find("[data-page='1']").GetAttribute("style"), "width:200px;height:300px"));
+
+        // A half turn lands the box back on its own dimensions.
+        await component.InvokeAsync(() => component.Instance.RotateClockwise());
+
+        component.WaitForAssertion(() =>
+            StringAssert.StartsWith(component.Find("[data-page='1']").GetAttribute("style"), "width:300px;height:200px"));
     }
 
     [TestMethod]
@@ -560,6 +569,75 @@ public class BitPdfViewerTests : BunitTestContext
         string pageStyle = component.Find("[data-page='1']").GetAttribute("style") ?? "";
         Assert.IsTrue(pageStyle.Contains("--bit-pdv-scale"));
         Assert.IsTrue(pageStyle.Contains("opacity:0.5"));
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldApplyTheBaseParametersToItsRoot()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Id, "viewer-1");
+            parameters.Add(p => p.Class, "host-class");
+            parameters.Add(p => p.Style, "margin:1px");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["data-host"] = "yes" });
+        });
+
+        var root = component.Find(".bit-pdv");
+
+        Assert.AreEqual("viewer-1", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("host-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin:1px");
+        Assert.AreEqual("yes", root.GetAttribute("data-host"));
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, ""),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")]
+    public void BitPdfViewerShouldRespectVisibility(BitVisibility visibility, string expectedStyle)
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        string style = component.Find(".bit-pdv").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle.Length == 0)
+        {
+            Assert.IsFalse(style.Contains("visibility:") || style.Contains("display:"), style);
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldDropThePagesActivationHandlersWhileDisabled()
+    {
+        // The root takes DisabledAwareHtmlAttributes: a click handler the page splatted on it runs while the
+        // viewer is enabled and is dropped while it is disabled, as a natively disabled control's would be.
+        var clicks = 0;
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object>
+            {
+                ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => clicks++),
+            });
+        });
+
+        Assert.IsFalse(component.Find(".bit-pdv").HasAttribute("blazor:onclick"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, false));
+
+        component.Find(".bit-pdv").Click();
+        Assert.AreEqual(1, clicks);
     }
 
     [TestMethod]
@@ -1890,6 +1968,66 @@ public class BitPdfViewerTests : BunitTestContext
             BitPdfToolbarItems.All & ~BitPdfToolbarItems.OpenFile));
 
         Assert.AreEqual(0, component.FindAll("input[type='file']").Count);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldOpenAPickedFile()
+    {
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld(), "hello.pdf"));
+        });
+
+        component.WaitForPages(1);
+
+        // With no host handling OnFileOpened, the viewer opens the picked file itself.
+        component.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary(TestPdf.MultiPage(3), "picked.pdf"));
+
+        component.WaitForPages(3);
+        Assert.IsTrue(component.Find(".bit-pdv-title").TextContent.Contains("picked.pdf"));
+        // The Source parameter is the host's and stays what the host wrote.
+        Assert.AreEqual("hello.pdf", component.Instance.Source?.FileName);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldHandAPickedFileToTheHostThatListens()
+    {
+        BitPdfSource? opened = null;
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.Source, BitPdfSource.FromBytes(TestPdf.HelloWorld(), "hello.pdf"));
+            parameters.Add(p => p.OnFileOpened, EventCallback.Factory.Create<BitPdfSource>(this, s => opened = s));
+        });
+
+        component.WaitForPages(1);
+
+        component.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary(TestPdf.MultiPage(3), "picked.pdf"));
+
+        // The host drives Source itself, so the viewer keeps the document it has.
+        component.WaitForAssertion(() => Assert.IsNotNull(opened));
+        Assert.AreEqual("picked.pdf", opened.FileName);
+        Assert.IsTrue(opened.IsBytes);
+        CollectionAssert.AreEqual(TestPdf.MultiPage(3), opened.Bytes);
+        Assert.AreEqual(1, component.Instance.PageCount);
+    }
+
+    [TestMethod]
+    public void BitPdfViewerShouldReportAPickedFileThatIsNotADocument()
+    {
+        var errors = new List<string>();
+
+        var component = RenderComponent<BitPdfViewer>(parameters =>
+        {
+            parameters.Add(p => p.OnError, EventCallback.Factory.Create<string>(this, errors.Add));
+        });
+
+        component.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("not a pdf", "notes.txt"));
+
+        // With no document on screen the failure takes its place.
+        component.WaitForAssertion(() => Assert.AreEqual(1, errors.Count));
+        Assert.AreEqual(1, component.FindAll(".bit-pdv-error").Count);
+        Assert.AreEqual(0, component.Instance.PageCount);
     }
 
     [TestMethod]

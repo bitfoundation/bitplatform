@@ -29,11 +29,6 @@ section {
     }
 
     // A stack is full width by default, which would wrap each part of the hero.
-    .hero-gauge {
-        width: auto;
-        flex: 0 0 auto;
-    }
-
     .hero-summary {
         width: auto;
         flex: 1 1 22rem;
@@ -69,29 +64,9 @@ section {
         }
     }
 
-    .no-wrap {
-        white-space: nowrap;
-    }
-
-    .tip-start {
-        left: auto;
-        transform: none;
-        inset-inline-start: 0;
-    }
-
-    .tip-end {
-        left: auto;
-        transform: none;
-        inset-inline-end: 0;
-    }
-
     .search-box {
         flex: 1 1 18rem;
         max-width: 28rem;
-    }
-
-    .empty-state {
-        padding: 3rem 1rem;
     }
 
     .check-grid {
@@ -144,10 +119,6 @@ section {
         justify-content: center;
         color: var(--tone);
         background-color: color-mix(in srgb, var(--tone) 14%, transparent);
-    }
-
-    .check-title {
-        min-width: 0;
     }
 
     .status-tag {

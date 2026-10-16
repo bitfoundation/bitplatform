@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -1057,7 +1058,8 @@ public class BitImageTests : BunitTestContext
     }
 
     [TestMethod,
-        DataRow("test-tab-index"),
+        DataRow("3"),
+        DataRow("-1"),
         DataRow(null)
     ]
     public void BitImageShouldRespectTabIndex(string tabIndex)
@@ -2295,10 +2297,203 @@ public class BitImageTests : BunitTestContext
         CollectionAssert.AreEqual(new[] { reached, BitImageState.Loading }, states);
     }
 
+    // ---- the browser's own listeners and the focus --------------------------------------------------
+
     [TestMethod]
-    public void BitImageParamsShouldHaveCorrectParamName()
+    public void BitImageShouldStopTheSpaceKeyFromScrollingThePageUnderAClickableImage()
     {
-        Assert.AreEqual("BitParams.BitImage", BitImageParams.ParamName);
-        Assert.AreEqual(BitImageParams.ParamName, new BitImageParams().Name);
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        var invocation = Context.JSInterop.VerifyInvoke("BitBlazorUI.Utils.registerPreventKeys");
+
+        // It is the img that is focused and answers the key, so it is the img that carries the listener.
+        Assert.AreEqual(component.Instance.ImageElement, invocation.Arguments[0]);
+        CollectionAssert.AreEquivalent(new[] { " ", "Spacebar" }, (string[])invocation.Arguments[1]!);
+    }
+
+    [TestMethod]
+    public void BitImageShouldRegisterNoPreventedKeysWithoutAClickHandler()
+    {
+        RenderComponent<BitImage>(parameters => parameters.Add(p => p.Src, "image.png"));
+
+        Context.JSInterop.VerifyNotInvoke("BitBlazorUI.Utils.registerPreventKeys");
+    }
+
+    [TestMethod]
+    public void BitImageShouldRegisterThePreventedKeysOnlyOnce()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        component.Render(parameters => parameters.Add(p => p.Title, "re-rendered"));
+        component.Find(".bit-img-img").TriggerEvent("onload", new ProgressEventArgs());
+
+        // The listener stays on the element and reads the key list on every event, so neither a render nor the
+        // load pays another round trip.
+        Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+    }
+
+    [TestMethod]
+    public void BitImageShouldEmptyThePreventedKeysWhenItLosesItsClickHandler()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        component.Render(parameters => parameters.Add(p => p.OnClick, default(EventCallback<MouseEventArgs>)));
+
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
+
+        Assert.AreEqual(2, invocations.Count);
+        Assert.AreEqual(0, ((string[])invocations[1].Arguments[1]!).Length);
+    }
+
+    [TestMethod]
+    public async Task BitImageShouldRegisterThePreventedKeysAgainOnTheElementAReloadReplaces()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        await component.InvokeAsync(() => component.Instance.ReloadAsync());
+
+        // A reload replaces the img rather than patching it, and the listener went with the element it was put on.
+        var invocations = Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"];
+
+        Assert.AreEqual(2, invocations.Count);
+        Assert.AreEqual(component.Instance.ImageElement, invocations[1].Arguments[0]);
+        CollectionAssert.AreEquivalent(new[] { " ", "Spacebar" }, (string[])invocations[1].Arguments[1]!);
+    }
+
+    [TestMethod]
+    public void BitImageShouldTryRegisteringThePreventedKeysAgainAfterAFailedCall()
+    {
+        Context.JSInterop.SetupVoid("BitBlazorUI.Utils.registerPreventKeys", _ => true).SetException(new Microsoft.JSInterop.JSException("boom"));
+
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        // A call that did not land is not a listener: flagging it beforehand would leave the guard believing one
+        // is installed and never let it be tried again.
+        component.Render(parameters => parameters.Add(p => p.Title, "re-rendered"));
+
+        Assert.AreEqual(2, Context.JSInterop.Invocations["BitBlazorUI.Utils.registerPreventKeys"].Count);
+    }
+
+    [TestMethod,
+        DataRow(false),
+        DataRow(true)
+    ]
+    public async Task BitImageFocusAsyncShouldFocusTheImgRatherThanTheFrame(bool preventScroll)
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.OnClick, () => { });
+        });
+
+        if (preventScroll)
+        {
+            await component.Instance.FocusAsync(true);
+        }
+        else
+        {
+            await component.Instance.FocusAsync();
+        }
+
+        var invocations = Context.JSInterop.Invocations["Blazor._internal.domWrapper.focus"];
+
+        // The img is what is focusable, and the flag is the one asked for: the overload taking it is what focuses
+        // the image without scrolling the document to bring it into view.
+        Assert.AreEqual(1, invocations.Count);
+        Assert.AreEqual(component.Instance.ImageElement, invocations[0].Arguments[0]);
+        Assert.AreEqual(preventScroll, invocations[0].Arguments[1]);
+    }
+
+    [TestMethod]
+    public void BitImageShouldRespectTheClassesAndStylesOfTheErrorTemplate()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.ErrorTemplate, (RenderFragment)(builder => builder.AddContent(0, "error!")));
+            parameters.Add(p => p.Classes, new() { ErrorTemplate = "error-class" });
+            parameters.Add(p => p.Styles, new() { ErrorTemplate = "color:red" });
+        });
+
+        Assert.AreEqual(0, component.FindAll(".bit-img-tpl").Count);
+
+        component.Find(".bit-img-img").TriggerEvent("onerror", new ErrorEventArgs());
+
+        var template = component.Find(".bit-img-tpl");
+
+        Assert.IsTrue(template.ClassList.Contains("error-class"));
+        StringAssert.Contains(template.GetAttribute("style"), "color:red");
+        Assert.AreEqual("error!", template.TextContent);
+    }
+
+    [TestMethod]
+    public void BitImageShouldWriteItsSourcesAfterWhatSaysHowTheyAreFetched()
+    {
+        // The renderer writes the attributes of a new img one by one, and a browser may start the request the moment
+        // the src is written (at once for a URL in its memory cache), so a src ahead of loading="lazy" is fetched eagerly.
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Src, "image.png");
+            parameters.Add(p => p.Srcset, "image-2x.png 2x");
+            parameters.Add(p => p.Sizes, "100px");
+            parameters.Add(p => p.Loading, BitImageLoading.Lazy);
+            parameters.Add(p => p.FetchPriority, BitImageFetchPriority.Low);
+            parameters.Add(p => p.CrossOrigin, BitImageCrossOrigin.Anonymous);
+            parameters.Add(p => p.ReferrerPolicy, BitImageReferrerPolicy.NoReferrer);
+        });
+
+        var names = component.Find(".bit-img-img").Attributes.Select(a => a.Name).Where(n => n.StartsWith("blazor:", StringComparison.Ordinal) is false).ToList();
+
+        CollectionAssert.AreEqual(new List<string> { "sizes", "srcset", "src" }, names.Skip(names.Count - 3).ToList());
+        Assert.IsTrue(names.IndexOf("loading") < names.IndexOf("sizes"));
+        Assert.IsTrue(names.IndexOf("fetchpriority") < names.IndexOf("sizes"));
+        Assert.IsTrue(names.IndexOf("crossorigin") < names.IndexOf("sizes"));
+        Assert.IsTrue(names.IndexOf("referrerpolicy") < names.IndexOf("sizes"));
+    }
+
+    [TestMethod]
+    public void BitImageShouldWriteTheSourcesOfImageAttributesLastAndLetItsParametersWin()
+    {
+        var component = RenderComponent<BitImage>(parameters =>
+        {
+            parameters.Add(p => p.Srcset, "parameter-2x.png 2x");
+            parameters.Add(p => p.Loading, BitImageLoading.Lazy);
+            parameters.Add(p => p.ImageAttributes, new Dictionary<string, object>
+            {
+                ["SRC"] = "splatted.png",
+                ["srcSet"] = "splatted-2x.png 2x",
+                ["data-x"] = "1",
+            });
+        });
+
+        var img = component.Find(".bit-img-img");
+        var names = img.Attributes.Select(a => a.Name).Where(n => n.StartsWith("blazor:", StringComparison.Ordinal) is false).ToList();
+
+        Assert.AreEqual("src", names[^1]);
+        Assert.AreEqual("srcset", names[^2]);
+        Assert.IsTrue(names.IndexOf("loading") < names.IndexOf("srcset"));
+        Assert.AreEqual("splatted.png", img.GetAttribute("src"));
+        Assert.AreEqual("parameter-2x.png 2x", img.GetAttribute("srcset"));
+        Assert.AreEqual("1", img.GetAttribute("data-x"));
     }
 }

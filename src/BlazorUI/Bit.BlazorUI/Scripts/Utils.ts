@@ -1345,8 +1345,24 @@
 
             const controller = new AbortController();
             const claimed = new WeakSet<Event>();
+            const pressedInside = new WeakSet<Event>();
 
             (element as any).__bitEscapeRoot = true;
+
+            // Where the key was pressed is read before anything has acted on it: in the capture phase on the window,
+            // ahead of every listener of the page and of Blazor's delegation. A component's .NET handler that closes a
+            // popup of its own on the key - a date picker in the surface whose calendar was relocated to the body - puts
+            // that popup back inside the surface as it closes it, and under WebAssembly it does so while the event is
+            // still being dispatched, so the same question asked once the key has bubbled to the window would find a
+            // press made in the body inside the surface, and close the surface along with the popup.
+            window.addEventListener('keydown', e => {
+                if (e.key !== 'Escape') return;
+
+                const target = e.target as Node | null;
+                if (target && element.contains(target) && Utils.nearestEscapeRoot(target) === element) {
+                    pressedInside.add(e);
+                }
+            }, { signal: controller.signal, capture: true });
 
             element.addEventListener('keydown', e => {
                 if (e.key !== 'Escape') return;
@@ -1362,10 +1378,7 @@
             window.addEventListener('keydown', e => {
                 if (e.key !== 'Escape') return;
 
-                const target = e.target as Node | null;
-                if (!target || !element.contains(target)) return;
-
-                if (Utils.nearestEscapeRoot(target) !== element) return;
+                if (pressedInside.has(e) === false) return;
 
                 if (claimed.has(e) || e.defaultPrevented || Utils.isNestedSurfaceEscape(e, element)) return;
 
@@ -1419,11 +1432,28 @@
 
             // Read in the capture phase, ahead of the listeners that let an open callout close itself - after which
             // the stack of open callouts would no longer say there was one.
+            // Whether the press would be this layer's when no surface owns it is read here as well, before anything
+            // has acted on it (see watchEscape): a .NET handler that runs during the dispatch under WebAssembly may move
+            // or close what the answer is read off - the dialog the focus is in, the layers still open - before the key
+            // has bubbled to the window.
+            const topmost = new WeakSet<Event>();
+
             window.addEventListener('keydown', e => {
                 if (e.key !== 'Escape') return;
 
                 if (Utils.isComposingKey(e) || Callouts.current.calloutId) {
                     claimed.add(e);
+                }
+
+                // A dialog of the consumer's own the focus is inside of owns the key. Inside a layer, one is no surface
+                // that answers the key on its own: it is what the layer is the backdrop of, and the key closes it along
+                // with the layer (a press made inside the layer is the layer's, below) unless the consumer claims it.
+                const target = e.target as Node | null;
+                if (target instanceof Element && target.closest('[role="dialog"],[role="alertdialog"],dialog')) return;
+
+                const layers = Utils.openLayers();
+                if (layers[layers.length - 1] === element) {
+                    topmost.add(e);
                 }
             }, { signal: controller.signal, capture: true });
 
@@ -1449,14 +1479,7 @@
                     return;
                 }
 
-                // A dialog of the consumer's own the focus is inside of owns the key. Inside a layer, one is no surface
-                // that answers the key on its own: it is what the layer is the backdrop of, and the key closes it along
-                // with the layer (a press made inside the layer is the layer's, above) unless the consumer claims it.
-                const target = e.target as Node | null;
-                if (target instanceof Element && target.closest('[role="dialog"],[role="alertdialog"],dialog')) return;
-
-                const layers = Utils.openLayers();
-                if (layers[layers.length - 1] !== element) return;
+                if (topmost.has(e) === false) return;
 
                 dotnetObj.invokeMethodAsync('OnEscape');
             }, { signal: controller.signal });
@@ -2037,10 +2060,52 @@
             }
         }
 
+        // Thrown by isRtl to an arrow key the user has moved on from; BitComponentBase.IsRtlArrowAsync reads it.
+        public static readonly ARROW_KEY_OVERTAKEN = 'BitBlazorUI: the arrow key was overtaken';
+
+        private static _arrowKeyTarget: EventTarget | null = null;
+        private static _arrowKeyOvertaken = false;
+
+        // Follows the horizontal arrows and what takes the focus away from where one was pressed (see isRtl).
+        // general.ts calls it on the document element in the capture phase, for every keydown and every pointerdown, so
+        // it has seen a key before any listener of the page's elements and before Blazor sends it to .NET. A Tab and a pointer press
+        // are what move the focus without a component asking for it; every other key is a component's own to act
+        // on, in the order .NET handles them.
+        public static trackArrowKey(e: KeyboardEvent | PointerEvent) {
+            if (e.type === 'pointerdown') {
+                Utils._arrowKeyOvertaken = true;
+                return;
+            }
+
+            const key = e as KeyboardEvent;
+            if (Utils.isComposingKey(key)) return;
+
+            if (key.key === 'ArrowLeft' || key.key === 'ArrowRight' || key.code === 'ArrowLeft' || key.code === 'ArrowRight') {
+                Utils._arrowKeyTarget = key.target;
+                Utils._arrowKeyOvertaken = false;
+                return;
+            }
+
+            if (key.key === 'Tab') {
+                Utils._arrowKeyOvertaken = true;
+            }
+        }
+
         // Whether the element is laid out right to left. A component whose Dir is unset inherits the direction of
         // the page and one whose Dir is Auto takes it from its content, so neither is known to .NET; the computed
         // style resolves both, the dir attribute of every ancestor included.
-        public static isRtl(element: HTMLElement): boolean {
+        // Asked for a horizontal arrow (arrow), it is the round trip a key handler waits on before it moves the
+        // focus, so a Tab or a click that took the focus elsewhere while it was out would have that focus stolen back
+        // by a key the user has already moved on from. Such a key is answered with ARROW_KEY_OVERTAKEN instead of a
+        // direction, which .NET turns into the cancellation of the handler (BitComponentBase.IsRtlArrowAsync).
+        public static isRtl(element: HTMLElement, arrow?: boolean): boolean {
+            if (arrow
+                && Utils._arrowKeyOvertaken
+                && Utils._arrowKeyTarget
+                && document.activeElement !== Utils._arrowKeyTarget) {
+                throw new Error(Utils.ARROW_KEY_OVERTAKEN);
+            }
+
             if (!element) return false;
 
             try {

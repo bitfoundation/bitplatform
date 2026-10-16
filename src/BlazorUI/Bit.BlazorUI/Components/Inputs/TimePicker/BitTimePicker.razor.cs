@@ -1684,22 +1684,19 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         return _hour.Value < 12; // am is 00:00 to 11:59
     }
 
-    private Task HandleOnHourFocus() => HandleOnTimeInputFocus(TimeUnit.Hour, _inputHourRef);
+    private void HandleOnHourFocus() => HandleOnTimeInputFocus(TimeUnit.Hour);
 
-    private Task HandleOnMinuteFocus() => HandleOnTimeInputFocus(TimeUnit.Minute, _inputMinuteRef);
+    private void HandleOnMinuteFocus() => HandleOnTimeInputFocus(TimeUnit.Minute);
 
-    private Task HandleOnSecondFocus() => HandleOnTimeInputFocus(TimeUnit.Second, _inputSecondRef);
+    private void HandleOnSecondFocus() => HandleOnTimeInputFocus(TimeUnit.Second);
 
     // Every input starts its own run of digits, however it was reached - by Tab, by the pointer, or by the
-    // advance of the one before it.
-    private async Task HandleOnTimeInputFocus(TimeUnit unit, ElementReference input)
+    // advance of the one before it. Its text is selected by the script as the focus lands (see TimePicker.ts)
+    // rather than from here a round trip later, when the focus may already have moved on.
+    private void HandleOnTimeInputFocus(TimeUnit unit)
     {
         _focusedUnit = unit;
         _typedDigitCount = 0;
-
-        if (Disabled) return;
-
-        await _js.BitUtilsSelectText(input);
     }
 
     private void HandleOnTimeInputBlur()
@@ -2096,6 +2093,18 @@ public partial class BitTimePicker : BitInputBase<TimeSpan?>
         await HandleOnClearClick();
 
         await FocusInput();
+    }
+
+    // The clear button of the callout disables itself once there is nothing left to clear, and a button disabled
+    // under the focus drops it onto the document - out of the dialog the focus is held in, where Escape no longer
+    // reaches the picker. The hour input, the first part of the time just cleared, takes the focus before that.
+    private async Task HandleOnCalloutClearClick()
+    {
+        if (IsInteractive is false) return;
+
+        await HandleOnClearClick();
+
+        await FocusTimeInput(_inputHourRef);
     }
 
     // The string rather than the value, so a picker holding text it refused - which has no value at all -

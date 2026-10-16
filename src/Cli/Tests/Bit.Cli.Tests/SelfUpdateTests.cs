@@ -175,12 +175,12 @@ public class SelfUpdateTests
         using var host = new TestHost(HostOs.Linux, variables);
         host.AllToolsInstalled();
         host.Services.SelfUpdate = update(host);
-        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "10.7.0" })));
+        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "99.0.0" })));
 
         Assert.AreEqual(0, await host.RunAsync(["new", "Contoso", "--dry-run", "--yes", .. extra]), host.Output);
 
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["package", "search", ..]), host.Output);
-        Assert.IsFalse(host.Output.Contains("10.7.0", StringComparison.Ordinal), host.Output);
+        Assert.IsFalse(host.Output.Contains("99.0.0", StringComparison.Ordinal), host.Output);
     }
 
     private static SelfUpdate Official(TestHost host, string version = "10.6.2", string install = "tool")

@@ -152,7 +152,7 @@ public partial class BitNavPanelDemo
             Name = "FullWidth",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders the nav panel with full (100%) width.",
+            Description = "Renders the nav panel with full (100%) width: it fills its container, its padding included, and ignores the Width.",
         },
         new()
         {

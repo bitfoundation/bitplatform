@@ -1,0 +1,221 @@
+﻿@page "/e2e/media-query"
+
+@* Every feature of BitMediaQuery, one section each. The tests resize the real viewport across the breakpoints, so
+   every query writes the state it last reported into the page (OnChange or the IsMatched binding) beside the content
+   it renders for that state. *@
+
+<PageTitle>BitMediaQuery E2E</PageTitle>
+
+<E2ESection Id="screen-queries" Title="Every BitScreenQuery, with the default breakpoints">
+    @foreach (var query in Enum.GetValues<BitScreenQuery>())
+    {
+        var q = query;
+        <div>
+            <BitMediaQuery Id="@($"mdq-{q}")" ScreenQuery="q" OnChange="v => _screenStates[q] = v">
+                <Matched><b>yes</b></Matched>
+                <NotMatched><i>no</i></NotMatched>
+            </BitMediaQuery>
+            <span id="@($"sq-{q}")">@(_screenStates.TryGetValue(q, out var s) ? s.ToString() : "unset")</span>
+        </div>
+    }
+</E2ESection>
+
+<E2ESection Id="custom" Title="A custom Query: OnChange, the IsMatched binding, a leading at-media, a change at runtime">
+    <button id="btn-query-1200" @onclick="@(() => _customQuery = "(min-width: 1200px)")">min-width 1200</button>
+    <button id="btn-query-800" @onclick="@(() => _customQuery = "(min-width: 800px)")">min-width 800</button>
+    <button id="btn-query-null" @onclick="() => _customQuery = null">No Query (ScreenQuery GtSm)</button>
+    <span id="custom-query">@(_customQuery ?? "null")</span>
+    <span id="custom-bound">@_customBound</span>
+    <span id="custom-changes">@_customChanges</span>
+    <span id="custom-last">@_customLast</span>
+    <BitMediaQuery Id="mdq-custom" Query="@_customQuery" ScreenQuery="BitScreenQuery.GtSm" @bind-IsMatched="_customBound"
+                   OnChange="v => { _customChanges++; _customLast = v; }">
+        <Matched><b>wide</b></Matched>
+        <NotMatched><i>narrow</i></NotMatched>
+    </BitMediaQuery>
+    <BitMediaQuery Id="mdq-at-media" Query="@@media (orientation: portrait)">
+        <Matched><b>portrait</b></Matched>
+        <NotMatched><i>landscape</i></NotMatched>
+    </BitMediaQuery>
+    <BitMediaQuery Id="mdq-dark" Query="(prefers-color-scheme: dark)">
+        <Matched><b>dark</b></Matched>
+        <NotMatched><i>light</i></NotMatched>
+    </BitMediaQuery>
+    <BitMediaQuery Id="mdq-reduce" Query="(prefers-reduced-motion: reduce)">
+        <Matched><b>reduce</b></Matched>
+        <NotMatched><i>full</i></NotMatched>
+    </BitMediaQuery>
+    <BitMediaQuery Id="mdq-invalid" Query="screen and and (min-width: 1px)" OnChange="v => _invalidLast = v.ToString()">
+        <Matched><b>matched</b></Matched>
+        <NotMatched><i>never</i></NotMatched>
+    </BitMediaQuery>
+    <span id="invalid-last">@_invalidLast</span>
+    <span id="childcontent-state">@_childContentState</span>
+    <BitMediaQuery Id="mdq-childcontent" Query="(min-width: 800px)" OnChange="v => _childContentState = v.ToString()">
+        <span id="child-content">child content</span>
+    </BitMediaQuery>
+</E2ESection>
+
+<E2ESection Id="one-way" Title="IsMatched set one way freezes the state; OnChange still reports">
+    <span id="oneway-last">@_oneWayLast</span>
+    <BitMediaQuery Id="mdq-oneway" Query="(min-width: 1px)" IsMatched="false" OnChange="v => _oneWayLast = v.ToString()">
+        <Matched><b>matched</b></Matched>
+        <NotMatched><i>frozen</i></NotMatched>
+    </BitMediaQuery>
+</E2ESection>
+
+<E2ESection Id="default-matched" Title="DefaultMatched before the browser answers">
+    <BitMediaQuery Id="mdq-default" Query="(max-width: 1px)" DefaultMatched>
+        <Matched><b>guessed</b></Matched>
+        <NotMatched><i>answered</i></NotMatched>
+    </BitMediaQuery>
+    <BitMediaQuery Id="mdq-nodefault" Query="(min-width: 1px)">
+        <Matched><b>answered</b></Matched>
+        <NotMatched><i>not yet</i></NotMatched>
+    </BitMediaQuery>
+</E2ESection>
+
+<E2ESection Id="template" Title="Template keeps its content across the flip">
+    <BitMediaQuery Id="mdq-template" Query="(min-width: 800px)">
+        <Template Context="matched">
+            <input id="template-input" class="@(matched ? "wide" : "narrow")" />
+            <span id="template-state">@(matched ? "wide" : "narrow")</span>
+        </Template>
+    </BitMediaQuery>
+</E2ESection>
+
+<E2ESection Id="focus" Title="The focus is kept across a flip that replaces the focused element">
+    <BitMediaQuery Id="mdq-focus-same" Query="(min-width: 800px)">
+        <Matched><button id="focus-same">Wide</button></Matched>
+        <NotMatched><button id="focus-same">Narrow</button></NotMatched>
+    </BitMediaQuery>
+    <BitMediaQuery Id="mdq-focus-other" Query="(min-width: 800px)">
+        <Matched><button id="focus-wide">Wide</button></Matched>
+        <NotMatched><span>Narrow:</span><button id="focus-narrow">Narrow</button></NotMatched>
+    </BitMediaQuery>
+    <BitMediaQuery Id="mdq-focus-none" Query="(min-width: 800px)">
+        <Matched><button id="focus-gone">Wide</button></Matched>
+        <NotMatched><span>Nothing to focus</span></NotMatched>
+    </BitMediaQuery>
+</E2ESection>
+
+<E2ESection Id="element" Title="Element and NoWrapper">
+    <p>
+        Inline:
+        <BitMediaQuery Id="mdq-span" Element="span" Query="(min-width: 1px)"><b>in a paragraph</b></BitMediaQuery>
+    </p>
+    <ul>
+        <BitMediaQuery Id="mdq-li" Element="li" Query="(min-width: 1px)">a list item</BitMediaQuery>
+    </ul>
+    <BitMediaQuery Id="mdq-invalid-element" Element="d iv" Query="(min-width: 1px)">invalid tag</BitMediaQuery>
+    <BitMediaQuery Id="mdq-void-element" Element="br" Query="(min-width: 1px)">void tag</BitMediaQuery>
+    <div id="nowrapper-host">
+        <BitMediaQuery Id="mdq-nowrapper" NoWrapper Class="ignored" Query="(min-width: 800px)">
+            <Matched><b id="nowrapper-wide">wide</b></Matched>
+            <NotMatched><i id="nowrapper-narrow">narrow</i></NotMatched>
+        </BitMediaQuery>
+    </div>
+    <div id="nowrapper-collapsed-host">
+        <BitMediaQuery NoWrapper Visibility="BitVisibility.Collapsed" Query="(min-width: 1px)"><b>collapsed</b></BitMediaQuery>
+    </div>
+</E2ESection>
+
+<E2ESection Id="breakpoints" Title="Theme breakpoints: a scoped --bit-bp-*, a BitThemeProvider, the document re-valued at runtime">
+    <div style="--bit-bp-md: 1100px;">
+        <BitMediaQuery Id="mdq-scoped-md" ScreenQuery="BitScreenQuery.Md" OnChange="v => _scopedMd = v.ToString()">
+            <Matched><b>md</b></Matched>
+            <NotMatched><i>not md</i></NotMatched>
+        </BitMediaQuery>
+    </div>
+    <span id="scoped-md">@_scopedMd</span>
+    <BitThemeProvider Theme="_providerTheme">
+        <BitMediaQuery NoWrapper ScreenQuery="BitScreenQuery.GtSm" OnChange="v => _providerGtSm = v.ToString()" />
+    </BitThemeProvider>
+    <span id="provider-gtsm">@_providerGtSm</span>
+    <BitMediaQuery Id="mdq-doc-gtxs" ScreenQuery="BitScreenQuery.GtXs" OnChange="v => _docGtXs = v.ToString()">
+        <Matched><b>gtxs</b></Matched>
+        <NotMatched><i>xs</i></NotMatched>
+    </BitMediaQuery>
+    <span id="doc-gtxs">@_docGtXs</span>
+</E2ESection>
+
+<E2ESection Id="cascade" Title="BitParams cascade">
+    <button id="btn-cascade-change" @onclick="ChangeCascade">Change cascade</button>
+    <BitParams Parameters="_mediaParams">
+        <BitMediaQuery Id="mdq-cascade" OnChange="v => _cascadeState = v.ToString()">
+            <Matched><b>cascaded match</b></Matched>
+            <NotMatched><i>cascaded miss</i></NotMatched>
+        </BitMediaQuery>
+        <BitMediaQuery Id="mdq-cascade-own" ScreenQuery="BitScreenQuery.Xs" Element="div" OnChange="v => _cascadeOwnState = v.ToString()">
+            <Matched><b>own xs</b></Matched>
+            <NotMatched><i>own not xs</i></NotMatched>
+        </BitMediaQuery>
+    </BitParams>
+    <span id="cascade-state">@_cascadeState</span>
+    <span id="cascade-own-state">@_cascadeOwnState</span>
+</E2ESection>
+
+<E2ESection Id="base" Title="Id, Class, Style, Visibility, HtmlAttributes, AriaLabel, Dir">
+    <BitMediaQuery Id="mdq-base" Class="e2e-mdq-class" Style="color: rgb(200, 0, 0);" AriaLabel="Layout switch" Dir="BitDir.Rtl"
+                   data-e2e="mdq-attr" title="mdq title" Query="(min-width: 1px)">content</BitMediaQuery>
+    <BitMediaQuery Id="mdq-labelledby" aria-labelledby="mdq-base" Query="(min-width: 1px)">labelled</BitMediaQuery>
+    <BitMediaQuery Id="mdq-own-role" AriaLabel="Named" role="region" Query="(min-width: 1px)">own role</BitMediaQuery>
+    <BitMediaQuery Id="mdq-nav" Element="nav" AriaLabel="Named nav" Query="(min-width: 1px)">nav</BitMediaQuery>
+    <button id="btn-vis-visible" @onclick="() => _visibility = BitVisibility.Visible">Visible</button>
+    <button id="btn-vis-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+    <button id="btn-vis-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+    <BitMediaQuery Id="mdq-vis" Visibility="_visibility" Query="(min-width: 1px)">visibility</BitMediaQuery>
+</E2ESection>
+
+<E2ESection Id="unmount" Title="A media query removed from the page stops listening">
+    <button id="btn-unmount" @onclick="() => _unmountShown = !_unmountShown">Toggle mounted</button>
+    <span id="unmount-shown">@_unmountShown</span>
+    <span id="unmount-changes">@_unmountChanges</span>
+    @if (_unmountShown)
+    {
+        <BitMediaQuery Id="mdq-unmount" Query="(min-width: 800px)" OnChange="_ => _unmountChanges++">
+            <Matched><b>wide</b></Matched>
+            <NotMatched><i>narrow</i></NotMatched>
+        </BitMediaQuery>
+    }
+</E2ESection>
+
+<E2EStatus />
+
+<style>
+    .e2e-mdq-class {
+        background-color: rgb(1, 2, 3);
+    }
+</style>
+
+@code {
+    private readonly Dictionary<BitScreenQuery, bool> _screenStates = [];
+
+    private string? _customQuery = "(min-width: 800px)";
+    private bool _customBound;
+    private int _customChanges;
+    private bool _customLast;
+    private string _invalidLast = "unset";
+    private string _childContentState = "unset";
+
+    private string _oneWayLast = "unset";
+
+    private string _scopedMd = "unset";
+    private string _providerGtSm = "unset";
+    private string _docGtXs = "unset";
+    private readonly BitTheme _providerTheme = new() { Layout = new() { Breakpoints = new() { Md = "1100px" } } };
+
+    private BitMediaQueryParams[] _mediaParams = [new() { Query = "(min-width: 800px)", Element = "section" }];
+    private string _cascadeState = "unset";
+    private string _cascadeOwnState = "unset";
+
+    private BitVisibility _visibility;
+
+    private bool _unmountShown = true;
+    private int _unmountChanges;
+
+    private void ChangeCascade()
+    {
+        _mediaParams = [new() { Query = "(min-width: 1200px)", Element = "aside" }];
+    }
+}

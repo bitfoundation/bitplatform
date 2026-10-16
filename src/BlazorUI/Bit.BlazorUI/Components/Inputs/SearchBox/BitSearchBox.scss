@@ -338,6 +338,12 @@ $srb-private-properties: siz-height, siz-fontsize, siz-iconsize, siz-cbt-iconsiz
     margin: 0;
     flex: 1 1 0;
     min-width: 0;
+    // The flex basis sizes the input; the width is only what it contributes to the box around it. Left auto,
+    // an input contributes the width of its size attribute even to the narrowest the box can be, so a search box
+    // in a narrow container (a phone, a flex row beside a button) held that width and ran past the side instead
+    // of narrowing its input. A percentage width lets the input give all of it up there, while the width the box
+    // takes when nothing constrains it stays the one it always had.
+    width: 100%;
     border: none;
     outline: none;
     overflow: hidden;

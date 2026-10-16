@@ -720,7 +720,7 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
     {
         var component = RenderComponent<TLoading>(parameters =>
         {
-            parameters.Add(p => p.Delay, 50);
+            parameters.Add(p => p.Delay, 10);
         });
 
         // The first window is cancelled by the second, so the one that elapses is the one in effect.
@@ -729,8 +729,10 @@ public abstract class BitLoadingTestsBase<TLoading> : BunitTestContext where TLo
             parameters.Add(p => p.Delay, 10_000);
         });
 
-        Thread.Sleep(250);
+        var renders = component.RenderCount;
 
+        // The abandoned window would land as a render of its own well inside this wait had it not been cancelled.
+        Assert.IsFalse(SpinWait.SpinUntil(() => component.RenderCount > renders, 50));
         Assert.AreEqual(0, component.Find(".bit-ldn").ChildElementCount);
     }
 

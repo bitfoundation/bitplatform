@@ -1,6 +1,8 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
 
-public partial class _BitButtonGroupItem<TItem> where TItem : class
+namespace Bit.BlazorUI;
+
+public partial class _BitButtonGroupItem<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> where TItem : class
 {
     private ElementReference _element;
 

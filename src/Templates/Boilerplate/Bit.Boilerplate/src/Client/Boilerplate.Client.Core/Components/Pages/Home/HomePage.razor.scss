@@ -22,16 +22,12 @@ section {
     }
 
     .carousel-stack {
-        display: flex !important;
-
         .carousel-description {
             overflow: hidden;
             max-height: 70px;
         }
 
         @include lt-sm {
-            flex-direction: column !important;
-
             .carousel-image {
                 min-height: 30%;
             }
@@ -59,10 +55,4 @@ section {
         }
     }
     //#endif
-
-    .bit-products-stack {
-        @include lt-sm {
-            flex-wrap: wrap;
-        }
-    }
 }

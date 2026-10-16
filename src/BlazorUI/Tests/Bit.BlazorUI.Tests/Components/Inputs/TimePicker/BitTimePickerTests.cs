@@ -841,7 +841,7 @@ public class BitTimePickerTests : BunitTestContext
 
         component.Find("button[title='Increase hour']").PointerDown();
 
-        await Task.Delay(600);
+        await Task.Delay(30);
 
         Assert.AreEqual(new TimeSpan(11, 30, 0), value);
 
@@ -1218,36 +1218,30 @@ public class BitTimePickerTests : BunitTestContext
     {
         TimeSpan? value = null;
 
+        // "Now" is pinned through the parameter rather than read off the clock, so the run does not depend on
+        // the minute it happens in. The seconds are cut off: the minute that is running is still selectable.
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
             parameters.Add(p => p.DisablePast, true);
+            parameters.Add(p => p.Now, new TimeSpan(10, 30, 45));
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        var now = DateTime.Now.TimeOfDay;
+        component.Find(".bit-tpc-inp").Input("10:29");
+        Assert.IsNull(value);
 
-        // Midnight is in the past on every run but the first minute of the day, which is the one moment the
-        // bound lets it through - so the check follows the same rule the component does.
-        var isPast = new TimeSpan(0, 0, 0) < new TimeSpan(now.Hours, now.Minutes, 0);
+        component.Find(".bit-tpc-inp").Input("10:30");
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
 
-        component.Find(".bit-tpc-inp").Input("00:00");
+        // Stepping cannot leave the bound behind either: a step down wraps to the far end of the range rather
+        // than landing on a minute or an hour that is in the past.
+        component.Find("button[title='Decrease minute']").Click(new MouseEventArgs());
+        Assert.AreEqual(new TimeSpan(10, 59, 0), value);
 
-        if (isPast)
-        {
-            Assert.IsNull(value);
-        }
-        else
-        {
-            Assert.AreEqual(TimeSpan.Zero, value);
-        }
-
-        // Stepping cannot leave the bound behind either: the value is pulled up to the current time.
-        component.Find("button[title='Increase hour']").Click(new MouseEventArgs());
-
-        Assert.IsNotNull(value);
-        Assert.IsTrue(value >= new TimeSpan(now.Hours, now.Minutes, 0), $"{value} is before the current time.");
+        component.Find("button[title='Decrease hour']").Click(new MouseEventArgs());
+        Assert.AreEqual(new TimeSpan(23, 59, 0), value);
     }
 
     [TestMethod]
@@ -1258,23 +1252,44 @@ public class BitTimePickerTests : BunitTestContext
         var component = RenderComponent<BitTimePicker>(parameters =>
         {
             parameters.Add(p => p.DisableFuture, true);
+            parameters.Add(p => p.Now, new TimeSpan(10, 30, 45));
             parameters.Add(p => p.AllowTextInput, true);
             parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        component.Find(".bit-tpc-inp").Input("23:59");
+        component.Find(".bit-tpc-inp").Input("10:31");
+        Assert.IsNull(value);
 
-        var now = DateTime.Now.TimeOfDay;
+        component.Find(".bit-tpc-inp").Input("10:30");
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
 
-        if (new TimeSpan(23, 59, 0) > new TimeSpan(now.Hours, now.Minutes, 0))
+        // The step past the bound wraps to the start of the day rather than into the future.
+        component.Find("button[title='Increase minute']").Click(new MouseEventArgs());
+        Assert.AreEqual(new TimeSpan(10, 0, 0), value);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldTakeTheSecondsOfTheCurrentTimeAsABoundOnlyWhenItShowsThem()
+    {
+        TimeSpan? value = null;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
         {
-            Assert.IsNull(value);
-        }
-        else
-        {
-            Assert.AreEqual(new TimeSpan(23, 59, 0), value);
-        }
+            parameters.Add(p => p.DisablePast, true);
+            parameters.Add(p => p.ShowSeconds, true);
+            parameters.Add(p => p.Now, new TimeSpan(10, 30, 45));
+            parameters.Add(p => p.AllowTextInput, true);
+            parameters.Add(p => p.Culture, CultureInfo.InvariantCulture);
+            parameters.Bind(p => p.Value, value, v => value = v);
+        });
+
+        // A picker that can pick seconds bounds them too: 10:30:44 is in the past.
+        component.Find(".bit-tpc-inp").Input("10:30:44");
+        Assert.IsNull(value);
+
+        component.Find(".bit-tpc-inp").Input("10:30:45");
+        Assert.AreEqual(new TimeSpan(10, 30, 45), value);
     }
 
     [TestMethod]
@@ -1309,14 +1324,14 @@ public class BitTimePickerTests : BunitTestContext
         {
             parameters.Add(p => p.DisablePast, true);
             parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.Now, new TimeSpan(10, 30, 45));
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
-        var before = DateTime.Now.TimeOfDay;
         component.Find(".bit-tpc-abn").Click();
 
-        Assert.IsNotNull(value);
-        Assert.IsTrue(value >= new TimeSpan(before.Hours, before.Minutes, 0), $"{value} is before the current time.");
+        // The current minute is the very first one the bound lets through, so the button lands exactly on it.
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
     }
 
     [TestMethod]
@@ -1514,13 +1529,14 @@ public class BitTimePickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowNowButton, true);
             parameters.Add(p => p.MinuteStep, 15);
+            parameters.Add(p => p.Now, new TimeSpan(10, 37, 0));
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
         component.Find(".bit-tpc-abn").Click();
 
-        Assert.IsNotNull(value);
-        Assert.AreEqual(0, value.Value.Minutes % 15);
+        // The nearest point of the grid, which is what the picker itself could have been moved to.
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
     }
 
     [TestMethod]
@@ -1532,13 +1548,13 @@ public class BitTimePickerTests : BunitTestContext
         {
             parameters.Add(p => p.ShowNowButton, true);
             parameters.Add(p => p.AllowedMinutes, m => m % 30 == 0);
+            parameters.Add(p => p.Now, new TimeSpan(10, 40, 0));
             parameters.Bind(p => p.Value, value, v => value = v);
         });
 
         component.Find(".bit-tpc-abn").Click();
 
-        Assert.IsNotNull(value);
-        Assert.AreEqual(0, value.Value.Minutes % 30);
+        Assert.AreEqual(new TimeSpan(10, 30, 0), value);
     }
 
     [TestMethod]
@@ -3471,6 +3487,749 @@ public class BitTimePickerTests : BunitTestContext
         Assert.IsTrue(focus >= 0);
         Assert.IsTrue(toggle >= 0);
         Assert.IsTrue(focus < toggle);
+    }
+
+    #endregion
+
+    #region disabled, read-only & one-way bound
+
+    [TestMethod,
+        DataRow(true),
+        DataRow(false)
+    ]
+    public void BitTimePickerShouldPairDisabledWithAriaDisabledOnEveryNativeControl(bool disabled)
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, disabled);
+            parameters.Add(p => p.ShowSeconds, true);
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.Value, new TimeSpan(10, 30, 0));
+            parameters.Add(p => p.ValueChanged, (TimeSpan? _) => { });
+        });
+
+        var controls = component.FindAll(".bit-tpc-inp, .bit-tpc-tin, .bit-tpc-tbt, .bit-tpc-abn");
+
+        // the field input, the three time inputs, six spin buttons, AM/PM and the two actions
+        Assert.AreEqual(14, controls.Count);
+
+        foreach (var control in controls)
+        {
+            Assert.AreEqual(disabled, control.HasAttribute("disabled"), $"{control.ClassName} disabled");
+            Assert.AreEqual(disabled ? "true" : null, control.GetAttribute("aria-disabled"), $"{control.ClassName} aria-disabled");
+        }
+
+        Assert.AreEqual(disabled, component.Find(".bit-tpc").ClassList.Contains("bit-dis"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldKeepTheAriaDisabledThePageSplattedWhileEnabled()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.InputHtmlAttributes, new Dictionary<string, object> { ["aria-disabled"] = "false", ["data-test"] = "x" });
+        });
+
+        var input = component.Find(".bit-tpc-inp");
+
+        Assert.AreEqual("false", input.GetAttribute("aria-disabled"));
+        Assert.AreEqual("x", input.GetAttribute("data-test"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        Assert.AreEqual("true", component.Find(".bit-tpc-inp").GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerStandaloneShouldPairDisabledWithAriaDisabledOnTheHiddenInput()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Disabled, true);
+        });
+
+        var hidden = component.Find("input.bit-input-hidden");
+
+        Assert.IsTrue(hidden.HasAttribute("disabled"));
+        Assert.AreEqual("true", hidden.GetAttribute("aria-disabled"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldMarkAReadOnlyPickerOnTheRootAndTheCallout()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ReadOnly, true);
+        });
+
+        // The buttons of the callout carry the disabled attribute to keep them from being pressed, and the class is
+        // what takes the look of a switched off picker back off them - on the callout too, which leaves the root.
+        Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-tpc-rdl"));
+        Assert.IsTrue(component.Find(".bit-tpc-cal").ClassList.Contains("bit-tpc-rdl"));
+        Assert.IsTrue(component.FindAll(".bit-tpc-tin").All(i => i.HasAttribute("readonly") && i.GetAttribute("aria-readonly") == "true"));
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        // A disabled picker is a switched off one, whatever ReadOnly says.
+        Assert.IsFalse(component.Find(".bit-tpc").ClassList.Contains("bit-tpc-rdl"));
+        Assert.IsFalse(component.Find(".bit-tpc-cal").ClassList.Contains("bit-tpc-rdl"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldRefuseEveryChangeOfAValueBoundOneWay()
+    {
+        Context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        var selectCount = 0;
+
+        // A Value with neither a ValueChanged nor an OnChange dictates the time, so nothing can move it: the
+        // controls say so, and the paths that reach the value without a button do nothing either.
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Value, new TimeSpan(10, 30, 0));
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.OnSelectTime, (TimeSpan? _) => selectCount++);
+        });
+
+        Assert.IsTrue(component.FindAll(".bit-tpc-tbt, .bit-tpc-abn").All(b => b.HasAttribute("disabled") && b.GetAttribute("aria-disabled") == "true"));
+
+        component.Find("button[title='Increase hour']").Click(new MouseEventArgs());
+        component.FindAll(".bit-tpc-tin")[0].KeyDown("ArrowUp");
+        component.FindAll(".bit-tpc-tin")[1].Input("45");
+
+        Assert.AreEqual(new TimeSpan(10, 30, 0), component.Instance.Value);
+        Assert.AreEqual(0, selectCount);
+    }
+
+    #endregion
+
+    #region root attributes, styles & classes
+
+    [TestMethod]
+    public void BitTimePickerShouldCarryTheBaseAttributes()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Id, "the-picker");
+            parameters.Add(p => p.Class, "custom-class");
+            parameters.Add(p => p.Style, "margin: 1px;");
+            parameters.Add(p => p.Dir, BitDir.Rtl);
+            parameters.Add(p => p.Name, "meeting");
+            parameters.Add(p => p.TabIndex, "3");
+            parameters.Add(p => p.HtmlAttributes, new Dictionary<string, object> { ["data-splat"] = "root" });
+        });
+
+        var root = component.Find(".bit-tpc");
+        var input = component.Find(".bit-tpc-inp");
+
+        Assert.AreEqual("the-picker", root.Id);
+        Assert.IsTrue(root.ClassList.Contains("custom-class"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        StringAssert.Contains(root.GetAttribute("style"), "margin: 1px;");
+        Assert.AreEqual("root", root.GetAttribute("data-splat"));
+
+        // An explicit direction reaches the callout, which is laid out apart from the root while it is open.
+        Assert.IsTrue(component.Find(".bit-tpc-cal").ClassList.Contains("bit-tpc-rtl"));
+        Assert.AreEqual("rtl", component.Find(".bit-tpc-cal").GetAttribute("dir"));
+
+        Assert.AreEqual("meeting", input.GetAttribute("name"));
+        Assert.AreEqual("3", input.GetAttribute("tabindex"));
+        Assert.AreEqual(input.Id, component.Instance.InputId);
+    }
+
+    [TestMethod,
+        DataRow(BitVisibility.Visible, null),
+        DataRow(BitVisibility.Hidden, "visibility:hidden"),
+        DataRow(BitVisibility.Collapsed, "display:none")
+    ]
+    public void BitTimePickerVisibilityTest(BitVisibility visibility, string? expectedStyle)
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Visibility, visibility);
+        });
+
+        var style = component.Find(".bit-tpc").GetAttribute("style") ?? string.Empty;
+
+        if (expectedStyle is null)
+        {
+            Assert.IsFalse(style.Contains("visibility") || style.Contains("display"));
+        }
+        else
+        {
+            StringAssert.Contains(style, expectedStyle);
+        }
+    }
+
+    [TestMethod,
+        DataRow(BitPlacement.Start, true),
+        DataRow(BitPlacement.End, false),
+        DataRow(BitPlacement.Top, false)
+    ]
+    public void BitTimePickerIconPlacementTest(BitPlacement placement, bool leading)
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.IconPlacement, placement);
+        });
+
+        // Only Start means anything; every other placement leaves the icon on the end side.
+        Assert.AreEqual(leading, component.Find(".bit-tpc").ClassList.Contains("bit-tpc-lic"));
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true),
+        DataRow(true, true),
+        DataRow(false, false)
+    ]
+    public void BitTimePickerUnderlinedAndHasBorderTest(bool underlined, bool hasBorder)
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Underlined, underlined);
+            parameters.Add(p => p.HasBorder, hasBorder);
+        });
+
+        var root = component.Find(".bit-tpc");
+
+        Assert.AreEqual(underlined, root.ClassList.Contains("bit-tpc-und"));
+        Assert.AreEqual(hasBorder is false, root.ClassList.Contains("bit-tpc-nbd"));
+    }
+
+    [TestMethod,
+        DataRow(true, true),
+        DataRow(true, false),
+        DataRow(false, true),
+        DataRow(false, false)
+    ]
+    public void BitTimePickerRequiredTest(bool required, bool isEnabled)
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Required, required);
+            parameters.Add(p => p.Disabled, isEnabled is false);
+            parameters.Add(p => p.Label, "Meeting time");
+        });
+
+        Assert.AreEqual(required, component.Find(".bit-tpc-inp").HasAttribute("required"));
+
+        // A disabled picker cannot be submitted at all, so the asterisk demanding a value from it is left off.
+        Assert.AreEqual(required && isEnabled, component.Find(".bit-tpc").ClassList.Contains("bit-tpc-req"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerStandaloneShouldStateRequiredOnTheHourInputAndTheHiddenInput()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Required, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+        });
+
+        // The required attribute sits on the hidden value carrier, so the part that is actually operated has to
+        // state it for itself; a floating picker's hour input says nothing, the field carrying the state.
+        Assert.IsTrue(component.Find("input.bit-input-hidden").HasAttribute("required"));
+        Assert.AreEqual("true", component.Find(".bit-tpc-tin").GetAttribute("aria-required"));
+
+        // Standalone there is no popup: no overlay to close it with, and no close button either.
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-ovl").Count);
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-cbn").Count);
+        Assert.IsTrue(component.Find(".bit-tpc").ClassList.Contains("bit-tpc-sta"));
+
+        component.Render(parameters => parameters.Add(p => p.Standalone, false));
+
+        Assert.IsNull(component.Find(".bit-tpc-tin").GetAttribute("aria-required"));
+        Assert.AreEqual(1, component.FindAll(".bit-tpc-ovl").Count);
+        Assert.AreEqual(1, component.FindAll(".bit-tpc-cbn").Count);
+    }
+
+    [TestMethod]
+    public void BitTimePickerIconTemplateAndExternalIconTest()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Icon, BitIconInfo.Css("my-clock"));
+            parameters.Add(p => p.IconName, "AlarmClock");
+        });
+
+        var icon = component.Find(".bit-tpc-ico");
+
+        // The external icon wins over the built-in name.
+        Assert.IsTrue(icon.ClassList.Contains("my-clock"));
+        Assert.IsFalse(icon.ClassList.Contains("bit-icon--AlarmClock"));
+        Assert.AreEqual("true", icon.GetAttribute("aria-hidden"));
+
+        component.Render(parameters => parameters.Add(p => p.IconTemplate, builder => builder.AddMarkupContent(0, "<b class=\"tpl-icon\">i</b>")));
+
+        Assert.AreEqual(0, component.FindAll(".bit-tpc-ico").Count);
+        Assert.IsNotNull(component.Find(".bit-tpc-icn > .tpl-icon"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldRenderTheDefaultClockIcon()
+    {
+        var component = RenderComponent<BitTimePicker>();
+
+        Assert.IsTrue(component.Find(".bit-tpc-ico").ClassList.Contains("bit-icon--Clock"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerStylesAndClassesTest()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Label, "Meeting time");
+            parameters.Add(p => p.ShowSeconds, true);
+            parameters.Add(p => p.ShowNowButton, true);
+            parameters.Add(p => p.ShowClearButton, true);
+            parameters.Add(p => p.ShowCloseButton, true);
+            parameters.Add(p => p.ShowInputClearButton, true);
+            parameters.Add(p => p.TimeFormat, BitTimeFormat.TwelveHours);
+            parameters.Add(p => p.Description, "hint");
+            parameters.Add(p => p.ErrorMessage, "wrong");
+            parameters.Add(p => p.Value, new TimeSpan(10, 30, 0));
+            parameters.Add(p => p.ValueChanged, (TimeSpan? _) => { });
+            parameters.Add(p => p.CalloutHeaderTemplate, builder => builder.AddContent(0, "header"));
+            parameters.Add(p => p.CalloutFooterTemplate, builder => builder.AddContent(0, "footer"));
+            parameters.Add(p => p.Styles, new BitTimePickerClassStyles
+            {
+                Root = "--s: root;",
+                Label = "--s: label;",
+                InputWrapper = "--s: wrapper;",
+                InputContainer = "--s: container;",
+                Input = "--s: input;",
+                Icon = "--s: icon;",
+                InputClearButton = "--s: input-clear;",
+                InputClearButtonIcon = "--s: input-clear-icon;",
+                ErrorMessageContainer = "--s: error-container;",
+                ErrorMessage = "--s: error;",
+                DescriptionContainer = "--s: description-container;",
+                Description = "--s: description;",
+                Overlay = "--s: overlay;",
+                Callout = "--s: callout;",
+                CalloutContainer = "--s: callout-container;",
+                CalloutHeader = "--s: header;",
+                CalloutFooter = "--s: footer;",
+                TimeInputContainer = "--s: time-inputs;",
+                HourInputContainer = "--s: hour-container;",
+                IncreaseHourButton = "--s: hour-up;",
+                IncreaseHourIcon = "--s: hour-up-icon;",
+                HourInput = "--s: hour;",
+                DecreaseHourButton = "--s: hour-down;",
+                DecreaseHourIcon = "--s: hour-down-icon;",
+                HourMinuteSeparator = "--s: hm-separator;",
+                MinuteInputContainer = "--s: minute-container;",
+                IncreaseMinuteButton = "--s: minute-up;",
+                IncreaseMinuteIcon = "--s: minute-up-icon;",
+                MinuteInput = "--s: minute;",
+                DecreaseMinuteButton = "--s: minute-down;",
+                DecreaseMinuteIcon = "--s: minute-down-icon;",
+                MinuteSecondSeparator = "--s: ms-separator;",
+                SecondInputContainer = "--s: second-container;",
+                IncreaseSecondButton = "--s: second-up;",
+                IncreaseSecondIcon = "--s: second-up-icon;",
+                SecondInput = "--s: second;",
+                DecreaseSecondButton = "--s: second-down;",
+                DecreaseSecondIcon = "--s: second-down-icon;",
+                AmPmContainer = "--s: ampm;",
+                AmButton = "--s: am;",
+                PmButton = "--s: pm;",
+                Actions = "--s: actions;",
+                NowButton = "--s: now;",
+                ClearButton = "--s: clear;",
+                CloseButton = "--s: close;",
+                CloseButtonIcon = "--s: close-icon;",
+            });
+            parameters.Add(p => p.Classes, new BitTimePickerClassStyles
+            {
+                Root = "c-root",
+                Label = "c-label",
+                InputWrapper = "c-wrapper",
+                InputContainer = "c-container",
+                Input = "c-input",
+                Icon = "c-icon",
+                InputClearButton = "c-input-clear",
+                InputClearButtonIcon = "c-input-clear-icon",
+                ErrorMessageContainer = "c-error-container",
+                ErrorMessage = "c-error",
+                DescriptionContainer = "c-description-container",
+                Description = "c-description",
+                Overlay = "c-overlay",
+                Callout = "c-callout",
+                CalloutContainer = "c-callout-container",
+                CalloutHeader = "c-header",
+                CalloutFooter = "c-footer",
+                TimeInputContainer = "c-time-inputs",
+                HourInputContainer = "c-hour-container",
+                IncreaseHourButton = "c-hour-up",
+                IncreaseHourIcon = "c-hour-up-icon",
+                HourInput = "c-hour",
+                DecreaseHourButton = "c-hour-down",
+                DecreaseHourIcon = "c-hour-down-icon",
+                HourMinuteSeparator = "c-hm-separator",
+                MinuteInputContainer = "c-minute-container",
+                IncreaseMinuteButton = "c-minute-up",
+                IncreaseMinuteIcon = "c-minute-up-icon",
+                MinuteInput = "c-minute",
+                DecreaseMinuteButton = "c-minute-down",
+                DecreaseMinuteIcon = "c-minute-down-icon",
+                MinuteSecondSeparator = "c-ms-separator",
+                SecondInputContainer = "c-second-container",
+                IncreaseSecondButton = "c-second-up",
+                IncreaseSecondIcon = "c-second-up-icon",
+                SecondInput = "c-second",
+                DecreaseSecondButton = "c-second-down",
+                DecreaseSecondIcon = "c-second-down-icon",
+                AmPmContainer = "c-ampm",
+                AmButton = "c-am",
+                PmButton = "c-pm",
+                Actions = "c-actions",
+                NowButton = "c-now",
+                ClearButton = "c-clear",
+                CloseButton = "c-close",
+                CloseButtonIcon = "c-close-icon",
+            });
+        });
+
+        void AssertPart(string selector, string cssClass, string style)
+        {
+            var element = component.Find(selector);
+
+            Assert.IsTrue(element.ClassList.Contains(cssClass), $"{selector} lacks {cssClass}");
+            StringAssert.Contains(element.GetAttribute("style"), style, $"{selector} lacks {style}");
+        }
+
+        AssertPart(".bit-tpc", "c-root", "--s: root;");
+        AssertPart(".bit-tpc-lbl", "c-label", "--s: label;");
+        AssertPart(".bit-tpc-wrp", "c-wrapper", "--s: wrapper;");
+        AssertPart(".bit-tpc-icn", "c-container", "--s: container;");
+        AssertPart(".bit-tpc-inp", "c-input", "--s: input;");
+        AssertPart(".bit-tpc-ico", "c-icon", "--s: icon;");
+        AssertPart(".bit-tpc-clr", "c-input-clear", "--s: input-clear;");
+        AssertPart(".bit-tpc-clr > i", "c-input-clear-icon", "--s: input-clear-icon;");
+        AssertPart(".bit-tpc-erm", "c-error-container", "--s: error-container;");
+        AssertPart(".bit-tpc-erm > span", "c-error", "--s: error;");
+        AssertPart(".bit-tpc-des", "c-description-container", "--s: description-container;");
+        AssertPart(".bit-tpc-des > span", "c-description", "--s: description;");
+        AssertPart(".bit-tpc-ovl", "c-overlay", "--s: overlay;");
+        AssertPart(".bit-tpc-cal", "c-callout", "--s: callout;");
+        AssertPart(".bit-tpc-cac", "c-callout-container", "--s: callout-container;");
+        AssertPart(".bit-tpc-chd", "c-header", "--s: header;");
+        AssertPart(".bit-tpc-cft", "c-footer", "--s: footer;");
+        AssertPart(".bit-tpc-tic", "c-time-inputs", "--s: time-inputs;");
+        AssertPart(".bit-tpc-tic > .c-hour-container", "c-hour-container", "--s: hour-container;");
+        AssertPart("button[title='Increase hour']", "c-hour-up", "--s: hour-up;");
+        AssertPart("button[title='Increase hour'] > i", "c-hour-up-icon", "--s: hour-up-icon;");
+        AssertPart(".c-hour-container > .bit-tpc-tin", "c-hour", "--s: hour;");
+        AssertPart("button[title='Decrease hour']", "c-hour-down", "--s: hour-down;");
+        AssertPart("button[title='Decrease hour'] > i", "c-hour-down-icon", "--s: hour-down-icon;");
+        AssertPart(".bit-tpc-tic > .c-hm-separator", "c-hm-separator", "--s: hm-separator;");
+        AssertPart(".bit-tpc-tic > .c-minute-container", "c-minute-container", "--s: minute-container;");
+        AssertPart("button[title='Increase minute']", "c-minute-up", "--s: minute-up;");
+        AssertPart("button[title='Increase minute'] > i", "c-minute-up-icon", "--s: minute-up-icon;");
+        AssertPart(".c-minute-container > .bit-tpc-tin", "c-minute", "--s: minute;");
+        AssertPart("button[title='Decrease minute']", "c-minute-down", "--s: minute-down;");
+        AssertPart("button[title='Decrease minute'] > i", "c-minute-down-icon", "--s: minute-down-icon;");
+        AssertPart(".bit-tpc-tic > .c-ms-separator", "c-ms-separator", "--s: ms-separator;");
+        AssertPart(".bit-tpc-tic > .c-second-container", "c-second-container", "--s: second-container;");
+        AssertPart("button[title='Increase second']", "c-second-up", "--s: second-up;");
+        AssertPart("button[title='Increase second'] > i", "c-second-up-icon", "--s: second-up-icon;");
+        AssertPart(".c-second-container > .bit-tpc-tin", "c-second", "--s: second;");
+        AssertPart("button[title='Decrease second']", "c-second-down", "--s: second-down;");
+        AssertPart("button[title='Decrease second'] > i", "c-second-down-icon", "--s: second-down-icon;");
+        AssertPart(".bit-tpc-am-pm", "c-ampm", "--s: ampm;");
+        AssertPart(".bit-tpc-bam", "c-am", "--s: am;");
+        AssertPart(".bit-tpc-bpm", "c-pm", "--s: pm;");
+        AssertPart(".bit-tpc-act", "c-actions", "--s: actions;");
+        AssertPart(".bit-tpc-act > .c-now", "c-now", "--s: now;");
+        AssertPart(".bit-tpc-act > .c-clear", "c-clear", "--s: clear;");
+        AssertPart(".bit-tpc-cbn", "c-close", "--s: close;");
+        AssertPart(".bit-tpc-cbn > i", "c-close-icon", "--s: close-icon;");
+    }
+
+    [TestMethod]
+    public void BitTimePickerFocusedStylesAndClassesTest()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Styles, new BitTimePickerClassStyles { Root = "--s: root;", Focused = "--s: focused;" });
+            parameters.Add(p => p.Classes, new BitTimePickerClassStyles { Focused = "c-focused" });
+        });
+
+        var root = component.Find(".bit-tpc");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-tpc-foc"));
+        Assert.IsFalse(root.ClassList.Contains("c-focused"));
+        Assert.IsFalse(root.HasAttribute("data-bit-popup-style"));
+
+        component.Find(".bit-tpc-inp").FocusIn();
+
+        root = component.Find(".bit-tpc");
+
+        Assert.IsTrue(root.ClassList.Contains("bit-tpc-foc"));
+        Assert.IsTrue(root.ClassList.Contains("c-focused"));
+        StringAssert.Contains(root.GetAttribute("style"), "--s: focused;");
+
+        // While the passing style is applied the root says what it would hold without it, which is what a popup
+        // relocated to the body copies - so the popup never flips as the focus moves between the field and it.
+        Assert.AreEqual("--s: root;", root.GetAttribute("data-bit-popup-style"));
+
+        component.Find(".bit-tpc-inp").FocusOut();
+
+        root = component.Find(".bit-tpc");
+
+        Assert.IsFalse(root.ClassList.Contains("bit-tpc-foc"));
+        Assert.IsFalse(root.HasAttribute("data-bit-popup-style"));
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldRaiseTheFocusCallbacksOfTheField()
+    {
+        var log = new List<string>();
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.OnFocus, () => log.Add("focus"));
+            parameters.Add(p => p.OnFocusIn, () => log.Add("focusin"));
+            parameters.Add(p => p.OnFocusOut, () => log.Add("focusout"));
+        });
+
+        var input = component.Find(".bit-tpc-inp");
+        input.Focus();
+        input.FocusIn();
+        input.FocusOut();
+
+        CollectionAssert.AreEqual(new[] { "focus", "focusin", "focusout" }, log);
+
+        component.Render(parameters => parameters.Add(p => p.Disabled, true));
+
+        component.Find(".bit-tpc-inp").Focus();
+
+        Assert.AreEqual(3, log.Count);
+    }
+
+    #endregion
+
+    #region opening from code & the script side
+
+    [TestMethod]
+    public async Task BitTimePickerOpenCalloutAndDismissCalloutShouldDriveTheCallout()
+    {
+        var isOpen = false;
+        var log = new List<string>();
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnOpen, () => log.Add("open"));
+            parameters.Add(p => p.OnClose, () => log.Add("close"));
+            parameters.Add(p => p.OnClick, () => log.Add("click"));
+        });
+
+        await component.InvokeAsync(() => component.Instance.OpenCallout());
+
+        Assert.IsTrue(isOpen);
+
+        // A call from code is followed by no render of its own, so the one the binding would bring about is asked for here.
+        component.Render(parameters => parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v));
+
+        Assert.AreEqual("true", component.Find(".bit-tpc-inp").GetAttribute("aria-expanded"));
+        Assert.AreEqual(component.Find(".bit-tpc-cal").Id, component.Find(".bit-tpc-inp").GetAttribute("aria-controls"));
+        Assert.AreEqual(component.Find(".bit-tpc-cal").Id, component.Find(".bit-tpc-wrp").GetAttribute("aria-owns"));
+        StringAssert.Contains(component.Find(".bit-tpc-ovl").GetAttribute("style"), "display:block");
+
+        // Opening again changes nothing and reports nothing a second time.
+        await component.InvokeAsync(() => component.Instance.OpenCallout());
+
+        var focusCalls = Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus");
+
+        await component.InvokeAsync(() => component.Instance.DismissCallout());
+
+        Assert.IsFalse(isOpen);
+
+        component.Render(parameters => parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v));
+
+        Assert.IsFalse(component.Find(".bit-tpc-inp").HasAttribute("aria-controls"));
+        Assert.IsFalse(component.Find(".bit-tpc-wrp").HasAttribute("aria-owns"));
+        StringAssert.Contains(component.Find(".bit-tpc-ovl").GetAttribute("style"), "display:none");
+
+        // Opening from code is not a click on the field, and a close driven from code leaves the focus alone.
+        CollectionAssert.AreEqual(new[] { "open", "close" }, log);
+        Assert.AreEqual(focusCalls, Context.JSInterop.Invocations.Count(i => i.Identifier == "Blazor._internal.domWrapper.focus"));
+    }
+
+    [TestMethod]
+    public async Task BitTimePickerOpenCalloutShouldDoNothingOnAStandaloneOrDisabledPicker()
+    {
+        var opened = 0;
+
+        var standalone = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.OnOpen, () => opened++);
+        });
+
+        await standalone.InvokeAsync(() => standalone.Instance.OpenCallout());
+
+        var disabled = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Disabled, true);
+            parameters.Add(p => p.OnOpen, () => opened++);
+        });
+
+        await disabled.InvokeAsync(() => disabled.Instance.OpenCallout());
+
+        Assert.AreEqual(0, opened);
+        Assert.AreEqual("false", disabled.Find(".bit-tpc-inp").GetAttribute("aria-expanded"));
+    }
+
+    [TestMethod]
+    public async Task BitTimePickerOnCloseFromTheScriptSideShouldCloseAndReport()
+    {
+        var isOpen = true;
+        var closed = 0;
+
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Bind(p => p.IsOpen, isOpen, v => isOpen = v);
+            parameters.Add(p => p.OnClose, () => closed++);
+        });
+
+        // The swipe of the responsive sheet, among others, reaches the picker as this callback.
+        await component.InvokeAsync(() => component.Instance._OnClose());
+
+        Assert.IsFalse(isOpen);
+        Assert.AreEqual(1, closed);
+    }
+
+    [TestMethod]
+    public async Task BitTimePickerFocusAsyncShouldLandOnTheHourInputOfAStandalonePicker()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, true);
+        });
+
+        var before = FocusCalls();
+
+        // The hidden value carrier is nothing anyone can see, so the first part on the screen takes the focus.
+        await component.InvokeAsync(() => component.Instance.FocusAsync().AsTask());
+        await component.InvokeAsync(() => component.Instance.FocusAsync(true).AsTask());
+
+        Assert.AreEqual(before + 2, FocusCalls());
+    }
+
+    [TestMethod,
+        DataRow(true, true, false),
+        DataRow(false, true, true),
+        DataRow(true, false, false),
+        DataRow(false, false, false)
+    ]
+    public void BitTimePickerShouldSetUpTheSwipeOnlyForAResponsivePopup(bool standalone, bool responsive, bool swipes)
+    {
+        RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Standalone, standalone);
+            parameters.Add(p => p.Responsive, responsive);
+        });
+
+        // The swipe-to-dismiss belongs to the sheet the responsive mode turns the popup into, which a standalone
+        // picker never becomes; the key listener is set up for every picker, with no field to pass along standalone.
+        Assert.AreEqual(swipes ? 1 : 0, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swipes.setup"));
+
+        var setup = Context.JSInterop.Invocations.Single(i => i.Identifier == "BitBlazorUI.TimePicker.setup");
+
+        Assert.AreEqual(standalone, setup.Arguments[1] is null);
+    }
+
+    [TestMethod]
+    public void BitTimePickerShouldHandTheHeaderAndFooterIdsToTheCallout()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.CalloutHeaderTemplate, builder => builder.AddContent(0, "header"));
+            parameters.Add(p => p.CalloutFooterTemplate, builder => builder.AddContent(0, "footer"));
+        });
+
+        component.Find(".bit-tpc-wrp").Click();
+
+        var toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        // The parts above and below the scrolling content are measured by the script side, so it is told which they are.
+        Assert.AreEqual(component.Find(".bit-tpc-chd").Id, toggle.Arguments[12]);
+        Assert.AreEqual(component.Find(".bit-tpc-cft").Id, toggle.Arguments[13]);
+
+        var plain = RenderComponent<BitTimePicker>();
+
+        plain.Find(".bit-tpc-wrp").Click();
+
+        toggle = Context.JSInterop.Invocations.Last(i => i.Identifier == "BitBlazorUI.Callouts.toggle");
+
+        Assert.AreEqual(string.Empty, toggle.Arguments[12]);
+        Assert.AreEqual(string.Empty, toggle.Arguments[13]);
+    }
+
+    [TestMethod]
+    public async Task BitTimePickerShouldTearDownItsScriptsOnDispose()
+    {
+        RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.Responsive, true);
+        });
+
+        await Context.DisposeComponentsAsync();
+
+        // The key listener, the callout and the swipe gesture are all taken away with the picker.
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.TimePicker.dispose"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Callouts.clear"));
+        Assert.AreEqual(1, Context.JSInterop.Invocations.Count(i => i.Identifier == "BitBlazorUI.Swipes.dispose"));
+    }
+
+    [TestMethod,
+        DataRow(true, false),
+        DataRow(false, true)
+    ]
+    public void BitTimePickerAutoFocusShouldFocusTheFirstVisiblePartUnlessDisabled(bool disabled, bool focused)
+    {
+        RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.AutoFocus, true);
+            parameters.Add(p => p.Standalone, true);
+            parameters.Add(p => p.Disabled, disabled);
+        });
+
+        Assert.AreEqual(focused, FocusCalls() > 0);
+    }
+
+    [TestMethod]
+    public void BitTimePickerCalloutClearButtonShouldPairDisabledWithAriaDisabledWhileThereIsNothingToClear()
+    {
+        var component = RenderComponent<BitTimePicker>(parameters =>
+        {
+            parameters.Add(p => p.ShowClearButton, true);
+        });
+
+        var clearButton = component.Find(".bit-tpc-abn");
+
+        Assert.IsTrue(clearButton.HasAttribute("disabled"));
+        Assert.AreEqual("true", clearButton.GetAttribute("aria-disabled"));
+
+        component.Render(parameters =>
+        {
+            parameters.Add(p => p.Value, new TimeSpan(10, 30, 0));
+            parameters.Add(p => p.ValueChanged, (TimeSpan? _) => { });
+        });
+
+        clearButton = component.Find(".bit-tpc-abn");
+
+        Assert.IsFalse(clearButton.HasAttribute("disabled"));
+        Assert.IsNull(clearButton.GetAttribute("aria-disabled"));
     }
 
     #endregion

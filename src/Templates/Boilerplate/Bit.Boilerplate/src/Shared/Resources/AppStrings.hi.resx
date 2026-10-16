@@ -328,6 +328,12 @@
   <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
     <value>पंक्ति हटाई गई</value>
   </data>
+    <data name="DataGridAnnouncementSearched" xml:space="preserve">
+    <value>{0} खोजा जा रहा है</value>
+  </data>
+    <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
+    <value>खोज हटाई गई</value>
+  </data>
   <!-- Boilerplate strings -->
   <data name="Active" xml:space="preserve">
     <value>सक्रिय</value>
@@ -1580,9 +1586,6 @@
   <data name="Users" xml:space="preserve">
     <value>उपयोगकर्ता</value>
   </data>
-  <data name="UsersWithCount" xml:space="preserve">
-    <value>उपयोगकर्ता {0}</value>
-  </data>
   <data name="Features" xml:space="preserve">
     <value>विशेषताएं</value>
   </data>
@@ -1638,9 +1641,6 @@
   </data>
   <data name="DeleteRole" xml:space="preserve">
     <value>उपयोगकर्ता समूह हटाएं</value>
-  </data>
-  <data name="Sessions" xml:space="preserve">
-    <value>सत्र {0}</value>
   </data>
   <data name="DeleteUser" xml:space="preserve">
     <value>उपयोगकर्ता हटाएं</value>

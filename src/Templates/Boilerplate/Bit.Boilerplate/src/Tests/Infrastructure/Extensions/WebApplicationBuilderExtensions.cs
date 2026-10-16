@@ -37,9 +37,11 @@ public static partial class WebApplicationBuilderExtensions
             services.RemoveAll<IdentityEmailService>();
             services.AddScoped<IdentityEmailService, TestIdentityEmailService>();
 
+            EFCoreStorage? storage = null;
+
             services.AddHangfire((sp, hangfireConfiguration) =>
             {
-                hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
+                storage = hangfireConfiguration.UseEFCoreStorage(optionsBuilder =>
                 {
                     var keepAliveConnection = new Microsoft.Data.Sqlite.SqliteConnection($"Data Source=BoilerplateJobs-{Guid.NewGuid():N};Mode=Memory;Cache=Shared;");
                     keepAliveConnection.Open();
@@ -51,7 +53,8 @@ public static partial class WebApplicationBuilderExtensions
                     Schema = "jobs",
                     QueuePollInterval = new TimeSpan(0, 0, 1)
                 })
-                .UseDatabaseCreator();
+                .UseDatabaseCreator()
+                .Entry;
 
                 // Hangfire keeps its log provider in a process-wide static (Hangfire.Logging.LogProvider.CurrentLogProvider).
                 // With several hosts per dotnet test runner process, each AddHangfire binds that static to its own (disposable) ILoggerFactory,
@@ -65,6 +68,12 @@ public static partial class WebApplicationBuilderExtensions
                 hangfireConfiguration.UseIgnoredAssemblyVersionTypeResolver();
                 hangfireConfiguration.SetDataCompatibilityLevel(CompatibilityLevel.Version_180);
             });
+
+            services.Replace(ServiceDescriptor.Singleton<JobStorage>(sp =>
+            {
+                sp.GetRequiredService<IGlobalConfiguration>();
+                return storage!;
+            }));
         }
     }
 }

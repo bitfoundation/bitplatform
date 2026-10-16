@@ -17,6 +17,8 @@ public static class IPlaywrightExtensions
     /// </summary>
     private static readonly TimeSpan connectDeadline = TimeSpan.FromMinutes(1);
 
+    private const string chromeAndroidPackage = "com.android.chrome";
+
     extension(IPlaywright playwright)
     {
         /// <summary>
@@ -124,6 +126,99 @@ public static class IPlaywrightExtensions
                 await RunAdb($"shell am force-stop {applicationId}");
             }
             );
+        }
+
+        public async Task<(IPage Page, Func<Task> Stop)> LaunchAndroidChrome(string url, int localPort = 9224)
+        {
+            await EnsureAndroidDeviceOnline();
+
+            await RunAdb("shell settings put secure autofill_service null");
+            await RunAdb("shell settings put secure stylus_handwriting_enabled 0");
+
+            await RunAdb($"shell pm clear {chromeAndroidPackage}");
+            await RunAdb("shell \"echo '_ --disable-fre --no-default-browser-check --no-first-run' > /data/local/tmp/chrome-command-line\"");
+            await RunAdb($"shell am set-debug-app --persistent {chromeAndroidPackage}");
+            await RunAdb($"shell pm grant {chromeAndroidPackage} android.permission.POST_NOTIFICATIONS", allowNonZeroExit: true);
+            await RunAdb($"shell am start -a android.intent.action.VIEW -n {chromeAndroidPackage}/com.google.android.apps.chrome.Main -d '{url}'");
+
+            await RunAdb($"forward tcp:{localPort} localabstract:chrome_devtools_remote");
+
+            async Task StopChrome()
+            {
+                await RunAdb($"forward --remove tcp:{localPort}", allowNonZeroExit: true);
+                await RunAdb($"shell pm clear {chromeAndroidPackage}", allowNonZeroExit: true);
+                await RunAdb("shell am clear-debug-app", allowNonZeroExit: true);
+                await RunAdb("shell rm -f /data/local/tmp/chrome-command-line", allowNonZeroExit: true);
+            }
+
+            IBrowser? browser = null;
+            IPage page;
+
+            try
+            {
+                browser = await playwright.ConnectWithRetry($"http://localhost:{localPort}", noDefaults: true);
+
+                page = browser.SinglePage();
+
+                await AnswerConsentBanner(page);
+            }
+            catch
+            {
+                if (browser is not null)
+                    await browser.CloseAsync();
+
+                await StopChrome();
+                throw;
+            }
+
+            return (page, async () =>
+            {
+                await browser.CloseAsync();
+                await StopChrome();
+            }
+            );
+        }
+
+        public async Task SendAndroidSms(string sender, string text)
+        {
+            await EnsureAndroidDeviceOnline();
+
+            var serial = (await RunAdb("get-serialno")).Trim();
+
+            if (serial.StartsWith("emulator-", StringComparison.Ordinal) is false)
+                Assert.Inconclusive($"Only an emulator can be texted, and '{serial}' is a physical device.");
+
+            var escaped = text.ReplaceLineEndings("\\n").Replace("\"", "\\\"", StringComparison.Ordinal);
+
+            var output = await RunAdb($"emu sms send {sender} \"{escaped}\"");
+
+            if (output.Contains("OK", StringComparison.Ordinal) is false)
+                throw new InvalidOperationException($"The emulator did not take the sms: {output.Trim()}");
+        }
+
+        public async Task TapAndroidButton(string text)
+        {
+            await EnsureAndroidDeviceOnline();
+
+            var button = new Regex($"<node [^>]*text=\"{Regex.Escape(text)}\"[^>]*bounds=\"\\[(\\d+),(\\d+)\\]\\[(\\d+),(\\d+)\\]\"", RegexOptions.IgnoreCase);
+            var deadline = DateTimeOffset.UtcNow + TimeSpan.FromMinutes(1);
+
+            while (true)
+            {
+                var match = button.Match(await RunAdb("exec-out uiautomator dump /dev/tty", allowNonZeroExit: true));
+
+                if (match.Success)
+                {
+                    var bounds = match.Groups.Values.Skip(1).Select(group => int.Parse(group.Value, CultureInfo.InvariantCulture)).ToArray();
+                    await RunAdb($"shell input tap {(bounds[0] + bounds[2]) / 2} {(bounds[1] + bounds[3]) / 2}");
+                    return;
+                }
+
+                if (DateTimeOffset.UtcNow >= deadline)
+                    throw new TimeoutException($"No '{text}' button showed up on the Android screen within a minute.");
+
+                await Task.Delay(TimeSpan.FromMilliseconds(500));
+            }
         }
 
         /// <summary>

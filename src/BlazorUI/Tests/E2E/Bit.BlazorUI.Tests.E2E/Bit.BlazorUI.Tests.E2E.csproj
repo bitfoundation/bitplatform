@@ -1,0 +1,40 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <!-- Matches the test host it drives: Debug builds the latest TFM only, CI passes
+             -p:BuildAllTfms=true to cover net9.0 and net8.0 as well. -->
+        <TargetFrameworks Condition=" '$(Configuration)' == 'Debug' And '$(BuildAllTfms)' != 'true' ">net10.0</TargetFrameworks>
+        <IsPackable>false</IsPackable>
+        <LangVersion>14.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <RollForward>Major</RollForward>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <!-- The E2E host and the library projects are built before the tests, as a sibling of the Performance
+             tests would, by the solution; the test project itself references neither so a test build stays fast. -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.1" />
+        <!-- The plain Playwright package rather than Microsoft.Playwright.MSTest: that one is built against
+             MSTest 2, whose attributes MSTest 4 can no longer load, so not a single test was discovered.
+             E2ETestBase owns the browser and the page instead of inheriting them from PageTest. -->
+        <PackageReference Include="Microsoft.Playwright" Version="1.63.0" />
+        <PackageReference Include="MSTest" Version="4.5.1" />
+        <PackageReference Include="MSTest.Analyzers" Version="4.5.1">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System" />
+        <Using Include="System.Collections.Generic" />
+        <Using Include="System.Linq" />
+        <Using Include="System.Threading.Tasks" />
+        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+        <Using Include="Microsoft.Playwright" />
+        <Using Include="Microsoft.Playwright.Assertions" Static="true" />
+    </ItemGroup>
+
+</Project>

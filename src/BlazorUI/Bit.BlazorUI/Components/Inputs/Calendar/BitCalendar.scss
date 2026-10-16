@@ -502,6 +502,15 @@ $cal-private-properties: clr, clr-txt, clr-hover, clr-active, clr-focus, evt-clr
     }
 }
 
+// A culture that writes right to left lays the calendar out right to left by itself, the way an explicit Dir does
+// through the dir attribute: for an unset Dir the root carries only the bit-rtl class (BitCssClasses.CultureRtl), so
+// that class is what sets the direction - which the arrow keys already follow (ExplicitRtl), and the day, month and
+// year grids, the headers and the time picker then mirror along with them. The :dir() alternative adds nothing to
+// what an inherited or Auto direction already lays out.
+.bit-cal:is(.bit-rtl, :dir(rtl)) {
+    direction: rtl;
+}
+
 .bit-cal-dvd {
     top: 0;
     border-inline-end: $shp-border-width $shp-border-style var(--bit-Calendar-divider-color, #{$clr-brd-sec});

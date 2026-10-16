@@ -46,7 +46,7 @@ public partial class BitPivotDemo
             Name = "Alignment",
             Type = "BitAlignment?",
             DefaultValue = "null",
-            Description = "Determines the alignment of the header section of the pivot (default: Start).",
+            Description = "Determines the alignment of the header section of the pivot (default: Start). The distributions place the tabs along the header; Baseline and Stretch keep them at the start and align them across the header instead (on the first line of their labels, or each the full height of the header).",
             LinkType = LinkType.Link,
             Href = "#alignment-enum",
         },

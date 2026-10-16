@@ -96,7 +96,7 @@ public partial class AppDiagnosticModal
 
     private async Task GoTop()
     {
-        await logStackRef.RootElement.Scroll(0, 0);
+        await logStackRef.ScrollToStartAsync();
     }
 
     private static BitColor GetColor(LogLevel? level)

@@ -37,17 +37,9 @@
     }
 }
 
-.dep-top {
-    min-width: 0;
-}
-
 ::deep {
     .ack-intro {
         max-width: 70ch;
-    }
-
-    .ack-section-title {
-        font-weight: 600;
     }
 
     .ack-section-sub {
@@ -79,13 +71,7 @@
 
     // Let long license identifiers wrap instead of forcing the card wider.
     .dep-license {
-        height: auto;
-        max-width: 100%;
         align-self: flex-start;
-
-        span {
-            white-space: normal;
-            overflow-wrap: anywhere;
-        }
+        overflow-wrap: anywhere;
     }
 }

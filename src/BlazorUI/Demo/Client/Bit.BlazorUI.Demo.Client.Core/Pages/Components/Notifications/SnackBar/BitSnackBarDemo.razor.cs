@@ -257,7 +257,7 @@ public partial class BitSnackBarDemo
             Name = "ShowIcon",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Renders a leading icon in each snack bar item, chosen from its color unless one is provided.",
+            Description = "Renders a leading icon in each snack bar item, chosen from its color unless one is provided: the glyphs a BitMessage of the same color carries (Completed for Success, Warning for Warning, WarningSolid for SevereWarning, ErrorBadge for Error, Info for the rest).",
         },
         new()
         {

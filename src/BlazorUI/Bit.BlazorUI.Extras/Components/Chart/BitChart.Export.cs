@@ -59,7 +59,8 @@ public partial class BitChart
     /// <summary>
     /// Returns the chart as standalone SVG markup instead of downloading it - for embedding it in a
     /// report, mailing it, or storing it - with the theme tokens it references resolved into the markup
-    /// so it looks the same outside the app.
+    /// so it looks the same outside the app. The markup is read back from the browser in chunks, so a chart of any
+    /// size arrives whole, past the message size limit of a Blazor Server circuit.
     /// </summary>
     /// <param name="backgroundColor">Optional background painted behind the chart (SVG is transparent by default).</param>
     /// <returns>The SVG markup, or null when the chart has not been rendered in a browser yet.</returns>
@@ -77,7 +78,9 @@ public partial class BitChart
 
     /// <summary>
     /// Returns the chart as a rasterized <c>data:</c> URL - the same picture <see cref="ExportPngAsync"/>
-    /// downloads - ready to drop into an <c>img</c> src or a PDF. Mirrors Chart.js's <c>toBase64Image</c>.
+    /// downloads - ready to drop into an <c>img</c> src or a PDF. Mirrors Chart.js's <c>toBase64Image</c>. The data URL
+    /// is read back from the browser in chunks, so a picture of any size arrives whole, past the message size limit of a
+    /// Blazor Server circuit.
     /// </summary>
     /// <param name="mimeType">Image type to encode; <c>image/png</c> by default (<c>image/jpeg</c> and <c>image/webp</c> also work).</param>
     /// <param name="scale">Pixel ratio; 2 (the default) produces a crisp image on high-density displays.</param>

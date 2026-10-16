@@ -2655,6 +2655,7 @@ private IEnumerable<BitFileInfo> HiddenViewFiles =>
         border-radius: 2px;
         padding: 24px;
         width: 420px;
+        max-width: 100%;
         height: 200px;
         display: flex;
         flex-direction: column;
@@ -2705,6 +2706,7 @@ private IEnumerable<BitFileInfo> HiddenViewFiles =>
         border-radius: 2px;
         padding: 24px;
         width: 420px;
+        max-width: 100%;
         height: 200px;
         display: flex;
         flex-direction: column;

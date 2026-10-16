@@ -6,12 +6,13 @@
 }
 
 <BitModal @bind-IsOpen="isOpen"
-          AutoToggleScroll="false" Blocking="isChanged"
+          IsAlert="false" TitleAriaId="category-modal-title"
+          Blocking="isChanged" NoDismissOnEscape="isChanged"
           Draggable DragElementSelector=".header-stack">
     <section>
-        <BitStack Class="stack">
-            <BitStack VerticalAlign="BitAlignment.Center" Class="header-stack" Horizontal>
-                <BitText Typography="BitTypography.H5">
+        <BitStack Padding="1rem">
+            <BitStack VerticalAlign="BitAlignment.Center" Gap="0.5rem" Class="header-stack" Horizontal>
+                <BitText Id="category-modal-title" Typography="BitTypography.H5">
                     @if (category.Id == default)
                     {
                         @Localizer[nameof(AppStrings.AddCategory)]
@@ -40,9 +41,9 @@
                                       Placeholder="@Localizer[nameof(AppStrings.EnterCategoryName)]" />
                         <ValidationMessage For="() => category.Name" />
                         <br />
-                        <BitLabel>@Localizer[nameof(AppStrings.Color)]</BitLabel>
+                        <BitLabel Element="div" Id="category-color-label">@Localizer[nameof(AppStrings.Color)]</BitLabel>
 
-                        <BitStack>
+                        <BitStack role="group" aria-labelledby="category-color-label">
                             <BitStack Horizontal role="group" aria-label="@Localizer[nameof(AppStrings.PresetColors)]">
                                 @foreach (var color in new[] { "#FFCD56", "#FF6384", "#4BC0C0", "#FF9124", "#2B88D8", "#C7E0F4" })
                                 {
@@ -58,15 +59,18 @@
 
                             <BitStack Horizontal>
                                 <div class="color-square selected" style="background-color: @category.Color"></div>
-                                <BitToggleButton @bind-IsChecked="isColorPickerOpen" Variant="BitVariant.Outline">
+                                <BitToggleButton @bind-IsChecked="isColorPickerOpen"
+                                                 Variant="BitVariant.Outline"
+                                                 AriaMode="BitToggleButtonAriaMode.Expanded"
+                                                 AriaControls="category-color-picker">
                                     @Localizer[(nameof(AppStrings.CustomColor))]
                                 </BitToggleButton>
                             </BitStack>
 
                             @if (isColorPickerOpen)
                             {
-                                <div class="color-picker-container">
-                                    <BitColorPicker @bind-Color="category.Color" ShowPreview="true" />
+                                <div id="category-color-picker" class="color-picker-container">
+                                    <BitColorPicker @bind-Value="category.Color" ShowPreview Format="BitColorFormat.Hex" />
                                 </div>
                             }
                         </BitStack>

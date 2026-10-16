@@ -74,12 +74,20 @@
 
     var ariaDisabled = interactive && Disabled ? "true" : splattedDisabled;
 
-    @*  Nothing is listening on a flag that does nothing: an empty handler still costs a round trip to
-        the server on every click and every keystroke of a Blazor Server app. *@
-    var onClick = interactive ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick) : default;
-    var onKeyDown = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown) : default;
-    var onKeyUp = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyUp) : default;
-    var onBlur = interactive ? EventCallback.Factory.Create<FocusEventArgs>(this, HandleOnBlur) : default;
+    @*  Nothing of the flag's own is listening on a flag that does nothing: an empty handler still costs a
+        round trip to the server on every click and every keystroke of a Blazor Server app. Nor would an
+        empty one leave the page's own handler alone: written after the splat, it takes the splatted one
+        off the element, so the page's handler would never run. A flag with no click of its own therefore
+        writes back whatever the page splatted on it instead - read from the disabled-aware splat, so a
+        disabled flag still has none of the page's activation handlers to write back. *@
+    TryFindAttribute(DisabledAwareHtmlAttributes, "onclick", out var splattedOnClick);
+    TryFindAttribute(DisabledAwareHtmlAttributes, "onkeydown", out var splattedOnKeyDown);
+    TryFindAttribute(DisabledAwareHtmlAttributes, "onkeyup", out var splattedOnKeyUp);
+    TryFindAttribute(DisabledAwareHtmlAttributes, "onblur", out var splattedOnBlur);
+    object? onClick = interactive ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleOnClick) : splattedOnClick;
+    object? onKeyDown = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyDown) : splattedOnKeyDown;
+    object? onKeyUp = interactive ? EventCallback.Factory.Create<KeyboardEventArgs>(this, HandleOnKeyUp) : splattedOnKeyUp;
+    object? onBlur = interactive ? EventCallback.Factory.Create<FocusEventArgs>(this, HandleOnBlur) : splattedOnBlur;
 
     @*  The two the picture is given that are defaults rather than decisions of the flag's: a flag is
         not dragged out of the page it is read in, and it is decoded off the main thread because a list
@@ -118,10 +126,10 @@
      style="@StyleBuilder.Value"
      class="@ClassBuilder.Value"
      dir="@Dir?.ToString().ToLowerInvariant()"
-     @onclick="onClick"
-     @onkeydown="onKeyDown"
-     @onkeyup="onKeyUp"
-     @onblur="onBlur">
+     onclick="@onClick"
+     onkeydown="@onKeyDown"
+     onkeyup="@onKeyUp"
+     onblur="@onBlur">
     @if (emojiMode)
     {
         <span aria-hidden="true"

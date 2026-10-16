@@ -36,7 +36,7 @@ public partial class BitFcEventListDialog : IAsyncDisposable
         // Move focus into the dialog and trap Tab navigation once it has rendered; teardown in
         // DisposeAsync restores focus to the element that was focused before it opened.
         if (firstRender)
-            await BitFcDialogInterop.SetupAsync(JS, _dialogRef);
+            await BitFcDialogInterop.SetupAsync(JS, _dialogRef, _dialogTitleId);
     }
 
     // Whether Escape closes the dialog, the one rule OnDialogKeyDown and _EscapeClaim both go by: while the details
@@ -68,6 +68,6 @@ public partial class BitFcEventListDialog : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
-        await BitFcDialogInterop.TeardownAsync(JS, _dialogRef);
+        await BitFcDialogInterop.TeardownAsync(JS, _dialogTitleId);
     }
 }

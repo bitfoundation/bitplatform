@@ -762,7 +762,7 @@ public partial class BitTooltip : BitComponentBase
 
         // The group hands the tooltip its delay when it has none of its own, and takes the delay away
         // altogether while another tooltip of the group is still fresh in mind.
-        await ShowAfterDelay(Group?.ShouldSkipShowDelay() is true ? 0 : _ShowDelay);
+        await ShowAfterDelay(Group?.ShouldSkipShowDelay(this) is true ? 0 : _ShowDelay);
     }
 
     private async Task HandlePointerLeave(PointerEventArgs e)
@@ -777,8 +777,11 @@ public partial class BitTooltip : BitComponentBase
         _isPressWithin = false;
 
         // A press that has not been followed by a focus of its own leaves nothing behind once the pointer
-        // is gone, so the next keyboard arrival is answered as the keyboard rather than as that press.
-        if (_isFocusWithin is false) _isFocusFromPointer = false;
+        // is gone, so the next keyboard arrival is answered as the keyboard rather than as that press. A tap
+        // is the exception: the focus it gives its anchor comes with the mouse events the browser sends after
+        // the touch ones, so after this leave, and taken for the keyboard it would hold the tooltip on the
+        // screen past TouchHideDelay - and show one a quick tap was meant to leave out of TouchShowDelay.
+        if (_isFocusWithin is false && IsTouch(e) is false) _isFocusFromPointer = false;
 
         // A tap the pointer up of which never arrived - one that was cancelled, or taken by something
         // else on the page - leaves nothing for the next tap to be measured against.

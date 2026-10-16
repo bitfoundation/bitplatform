@@ -1,0 +1,370 @@
+﻿@page "/e2e/snack-bar"
+@inject NavigationManager Nav
+
+<PageTitle>BitSnackBar E2E</PageTitle>
+
+@* The host is configured from the query string (?ad=true&t=1000&pos=TopStart...), so each test opens the snack bar
+   it needs; the selects change Position, Variant and Size at runtime. The controls sit in the middle of the
+   viewport, away from the corners and edges the items are pinned to. *@
+<style>
+    .snb-controls { margin: 120px auto 0; max-width: 560px; display: flex; flex-wrap: wrap; gap: 4px; }
+    .snb-readouts { margin: 8px auto; max-width: 560px; font-family: monospace; font-size: 12px; }
+</style>
+
+<E2ESection Id="host" Title="Host">
+    <div dir="@(Irtl ? "rtl" : null)">
+    <BitSnackBar @ref="_host" Id="snb"
+                 Position="_position" Offset="@Off" TransitionDuration="@(Dur ?? 200)"
+                 AutoDismiss="Ad" AutoDismissTime="@(T is int t ? TimeSpan.FromMilliseconds(t) : null)"
+                 ReverseProgress="Rev" HideProgress="Hp" Persistent="Per" HideDismiss="Hd"
+                 SwipeToDismiss="Sw" SwipeThreshold="@(Th ?? 50)" MaxItems="Max" OverflowBehavior="Overflow"
+                 NewestOnTop="Not" PreventDuplicates="Dup" ShowIcon="Icon" IconName="@IName" Multiline="Ml" MaxWidth="@Mw"
+                 DismissOnClick="Doc" Variant="_variant" Size="_size" Role="@Role" AriaLabel="@Label" DismissAriaLabel="@DLabel"
+                 DismissIconName="@DIcon" Icon="@(Ext ? BitIconInfo.Fa("solid circle-info") : null)" DismissIcon="@(Ext ? BitIconInfo.Bi("x-lg") : null)" Hotkey="@Hotkeys" PauseOnHover="!NoHover" PauseOnPageHidden="Ph" PauseOnWindowBlur="Pb"
+                 ClearOnNavigation="Con" Dir="@(Rtl ? BitDir.Rtl : null)" Style="@HostStyle"
+                 OnShow="HandleShow" OnDismiss="HandleDismiss" OnItemClick="@(Oic ? EventCallback.Factory.Create<BitSnackBarItem>(this, HandleItemClick) : default)"
+                 TitleTemplate="@(Tpl == "title" ? _titleTemplate : null)"
+                 BodyTemplate="@(Tpl == "body" ? _bodyTemplate : null)"
+                 Template="@(Tpl == "full" ? _fullTemplate : null)"
+                 ActionsTemplate="@(Tpl == "actions" ? _actionsTemplate : null)"
+                 Styles="@(Tpl == "styles" ? _styles : null)"
+                 Classes="@(Tpl == "classes" ? _classes : null)"
+                 Visibility="@(Vis ? BitVisibility.Hidden : BitVisibility.Visible)" />
+    </div>
+</E2ESection>
+
+<div class="snb-controls">
+    <button id="btn-info" @onclick='() => _host.Info(Title("Info"), "Info body")'>Info</button>
+    <button id="btn-success" @onclick='() => _host.Success(Title("Success"), "Success body")'>Success</button>
+    <button id="btn-warning" @onclick='() => _host.Warning(Title("Warning"), "Warning body")'>Warning</button>
+    <button id="btn-severe" @onclick='() => _host.SevereWarning(Title("SevereWarning"), "SevereWarning body")'>SevereWarning</button>
+    <button id="btn-error" @onclick='() => _host.Error(Title("Error"), "Error body")'>Error</button>
+    <button id="btn-plain" @onclick='() => _host.Show(Title("Plain"), "Plain body")'>Plain</button>
+    <button id="btn-title-only" @onclick='() => _host.Show("Only title", null)'>Title only</button>
+    <button id="btn-dup" @onclick="ShowDuplicate">Duplicate</button>
+    <button id="btn-long" @onclick="() => _host.Show(LongTitle, LongBody)">Long</button>
+    <button id="btn-persistent-item" @onclick='() => ShowItem(new() { Title = Title("Persistent"), Body = "Stays", Persistent = true })'>Persistent item</button>
+    <button id="btn-hide-dismiss-item" @onclick='() => ShowItem(new() { Title = Title("NoButton"), Body = "No button", HideDismiss = true })'>HideDismiss item</button>
+    <button id="btn-hide-icon-item" @onclick='() => ShowItem(new() { Title = Title("NoIcon"), HideIcon = true })'>HideIcon item</button>
+    <button id="btn-icon-item" @onclick='() => ShowItem(new() { Title = Title("Ringer"), IconName = BitIconName.Ringer })'>IconName item</button>
+    <button id="btn-ext-icon-item" @onclick='() => ShowItem(new() { Title = Title("Bell"), Icon = BitIconInfo.Fa("solid bell") })'>Icon item</button>
+    <button id="btn-item-time" @onclick='() => ShowItem(new() { Title = Title("Quick"), AutoDismissTime = TimeSpan.FromMilliseconds(700) })'>Item time</button>
+    <button id="btn-item-actions" @onclick="ShowItemWithActions">Item actions</button>
+    <button id="btn-item-events" @onclick="ShowItemWithEvents">Item events</button>
+    <button id="btn-item-role-none" @onclick='() => ShowItem(new() { Title = Title("Silent"), Color = BitColor.Error, Role = "none" })'>Role none</button>
+    <button id="btn-item-role-alert" @onclick='() => ShowItem(new() { Title = Title("Loud"), Role = "alert" })'>Role alert</button>
+    <button id="btn-item-announce" @onclick='() => ShowItem(new() { Title = Title("Saved"), Body = "3 files", AnnounceText = "Three files were saved" })'>AnnounceText</button>
+    <button id="btn-item-css" @onclick='() => _host.Show(Title("Styled"), "css", cssClass: "item-class", cssStyle: "outline: 2px solid rgb(255, 0, 0); --bit-SnackBar-background: rgb(1, 2, 3);")'>Item css</button>
+    <button id="btn-loading" @onclick="ShowLoading">Loading</button>
+    <button id="btn-complete" @onclick="CompleteLoading">Complete</button>
+    <button id="btn-track-ok" @onclick="TrackOk">Track ok</button>
+    <button id="btn-track-fail" @onclick="TrackFail">Track fail</button>
+    <button id="btn-close-last" @onclick="() => _last is null ? Task.CompletedTask : _host.Close(_last)">Close last</button>
+    <button id="btn-update-last" @onclick="UpdateLast">Update last</button>
+    <button id="btn-pause-last" @onclick="() => _last is null ? Task.CompletedTask : _host.Pause(_last)">Pause last</button>
+    <button id="btn-resume-last" @onclick="() => _last is null ? Task.CompletedTask : _host.Resume(_last)">Resume last</button>
+    <button id="btn-clear" @onclick="() => _host.Clear()">Clear</button>
+    <button id="btn-focus" @onclick="() => _host.FocusAsync()">FocusAsync</button>
+    <button id="btn-refresh" @onclick="() => { }">Refresh</button>
+    <button id="btn-navigate" @onclick="Navigate">Navigate</button>
+    @foreach (var color in _colors)
+    {
+        var c = color;
+        <button id="@($"btn-color-{c}")" @onclick='() => _host.Show(c.ToString(), "body", c)'>@c</button>
+    }
+    <select id="sel-position" @bind="_position">
+        <option value="">(default)</option>
+        @foreach (var position in Enum.GetValues<BitPosition>())
+        {
+            <option value="@position">@position</option>
+        }
+    </select>
+    <select id="sel-variant" @bind="_variant">
+        <option value="">(default)</option>
+        <option value="@BitVariant.Fill">Fill</option>
+        <option value="@BitVariant.Outline">Outline</option>
+        <option value="@BitVariant.Text">Text</option>
+    </select>
+    <select id="sel-size" @bind="_size">
+        <option value="">(default)</option>
+        <option value="@BitSize.Small">Small</option>
+        <option value="@BitSize.Medium">Medium</option>
+        <option value="@BitSize.Large">Large</option>
+    </select>
+    <input id="focus-anchor" placeholder="focus anchor" />
+    <a id="link-home" href="/">Home</a>
+</div>
+
+<div class="snb-readouts">
+    shown <span id="shown-count">@_shownCount</span> |
+    last shown <span id="shown-last">@_shownLast</span> |
+    dismissed <span id="dismissed-count">@_dismissedCount</span> |
+    log <span id="dismissed-log">@_dismissedLog</span> |
+    clicks <span id="item-click-count">@_itemClickCount</span> |
+    last click <span id="item-click-last">@_itemClickLast</span> |
+    items <span id="items-count">@(_host?.Items.Count ?? 0)</span> |
+    pending <span id="pending-count">@(_host?.PendingItems.Count ?? 0)</span> |
+    dup <span id="dup-count">@_dupCount</span> |
+    same <span id="dup-same">@_dupSame</span> |
+    track <span id="track-result">@_trackResult</span> |
+    item onclick <span id="item-onclick-count">@_itemOnClickCount</span> |
+    item ondismiss <span id="item-ondismiss">@_itemOnDismiss</span> |
+    action <span id="action-result">@_actionResult</span>
+</div>
+
+<E2EStatus />
+
+@code {
+    private const string LongTitle = "A notification whose title runs on far longer than any snack bar has room for on one line";
+    private const string LongBody = "And a body that keeps going too, well past the width the item is held to, so it has to be cut off or wrapped onto more lines.";
+
+    [SupplyParameterFromQuery(Name = "pos")] public string? Pos { get; set; }
+    [SupplyParameterFromQuery(Name = "off")] public string? Off { get; set; }
+    [SupplyParameterFromQuery(Name = "dur")] public int? Dur { get; set; }
+    [SupplyParameterFromQuery(Name = "ad")] public bool Ad { get; set; }
+    [SupplyParameterFromQuery(Name = "t")] public int? T { get; set; }
+    [SupplyParameterFromQuery(Name = "rev")] public bool Rev { get; set; }
+    [SupplyParameterFromQuery(Name = "hp")] public bool Hp { get; set; }
+    [SupplyParameterFromQuery(Name = "per")] public bool Per { get; set; }
+    [SupplyParameterFromQuery(Name = "hd")] public bool Hd { get; set; }
+    [SupplyParameterFromQuery(Name = "sw")] public bool Sw { get; set; }
+    [SupplyParameterFromQuery(Name = "th")] public int? Th { get; set; }
+    [SupplyParameterFromQuery(Name = "max")] public int? Max { get; set; }
+    [SupplyParameterFromQuery(Name = "ovf")] public string? Ovf { get; set; }
+    [SupplyParameterFromQuery(Name = "not")] public bool Not { get; set; }
+    [SupplyParameterFromQuery(Name = "dup")] public bool Dup { get; set; }
+    [SupplyParameterFromQuery(Name = "icon")] public bool Icon { get; set; }
+    [SupplyParameterFromQuery(Name = "iname")] public string? IName { get; set; }
+    [SupplyParameterFromQuery(Name = "ml")] public bool Ml { get; set; }
+    [SupplyParameterFromQuery(Name = "mw")] public string? Mw { get; set; }
+    [SupplyParameterFromQuery(Name = "doc")] public bool Doc { get; set; }
+    [SupplyParameterFromQuery(Name = "var")] public string? Var { get; set; }
+    [SupplyParameterFromQuery(Name = "size")] public string? SizeName { get; set; }
+    [SupplyParameterFromQuery(Name = "role")] public string? Role { get; set; }
+    [SupplyParameterFromQuery(Name = "label")] public string? Label { get; set; }
+    [SupplyParameterFromQuery(Name = "dlabel")] public string? DLabel { get; set; }
+    [SupplyParameterFromQuery(Name = "dicon")] public string? DIcon { get; set; }
+    [SupplyParameterFromQuery(Name = "hk")] public string? Hk { get; set; }
+    [SupplyParameterFromQuery(Name = "nohover")] public bool NoHover { get; set; }
+    [SupplyParameterFromQuery(Name = "ph")] public bool Ph { get; set; }
+    [SupplyParameterFromQuery(Name = "pb")] public bool Pb { get; set; }
+    [SupplyParameterFromQuery(Name = "con")] public bool Con { get; set; }
+    [SupplyParameterFromQuery(Name = "rtl")] public bool Rtl { get; set; }
+    [SupplyParameterFromQuery(Name = "tpl")] public string? Tpl { get; set; }
+    [SupplyParameterFromQuery(Name = "style")] public string? HostStyle { get; set; }
+    [SupplyParameterFromQuery(Name = "nav")] public int? NavCount { get; set; }
+    [SupplyParameterFromQuery(Name = "oic")] public bool Oic { get; set; }
+    [SupplyParameterFromQuery(Name = "irtl")] public bool Irtl { get; set; }
+    [SupplyParameterFromQuery(Name = "vis")] public bool Vis { get; set; }
+    [SupplyParameterFromQuery(Name = "ext")] public bool Ext { get; set; }
+
+    private BitSnackBar _host = default!;
+    private BitPosition? _position;
+    private BitVariant? _variant;
+    private BitSize? _size;
+    private bool _configured;
+
+    private int _counter;
+    private int _shownCount;
+    private string? _shownLast;
+    private int _dismissedCount;
+    private string _dismissedLog = "";
+    private int _itemClickCount;
+    private string? _itemClickLast;
+    private int _dupCount;
+    private bool? _dupSame;
+    private string? _trackResult;
+    private int _itemOnClickCount;
+    private string? _itemOnDismiss;
+    private string? _actionResult;
+    private BitSnackBarItem? _last;
+    private BitSnackBarItem? _loading;
+
+    private BitSnackBarOverflowBehavior Overflow => Enum.TryParse<BitSnackBarOverflowBehavior>(Ovf, out var o) ? o : BitSnackBarOverflowBehavior.DismissOldest;
+    private string[]? Hotkeys => Hk is { Length: > 0 } ? Hk.Split(',') : null;
+
+    private readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground,
+        BitColor.TertiaryForeground, BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly BitSnackBarClassStyles _styles = new()
+    {
+        Root = "--bit-SnackBar-gap: 13px;",
+        Container = "letter-spacing: 1px;",
+        Header = "padding-top: 3px;",
+        IconContainer = "padding-left: 2px;",
+        Icon = "color: rgb(255, 0, 0);",
+        Spinner = "opacity: 0.7;",
+        DismissButton = "padding-right: 5px;",
+        DismissIcon = "color: rgb(0, 255, 0);",
+        Title = "color: rgb(0, 0, 255);",
+        Body = "color: rgb(1, 1, 1);",
+        Actions = "padding-bottom: 4px;",
+        ProgressBar = "opacity: 0.5;",
+    };
+
+    private readonly BitSnackBarClassStyles _classes = new()
+    {
+        Root = "c-root", Container = "c-container", Header = "c-header", IconContainer = "c-ict", Icon = "c-icon",
+        Spinner = "c-spinner", DismissButton = "c-dismiss", DismissIcon = "c-dismiss-icon", Title = "c-title",
+        Body = "c-body", Actions = "c-actions", ProgressBar = "c-progress",
+    };
+
+    private RenderFragment<string> _titleTemplate = default!;
+    private RenderFragment<string> _bodyTemplate = default!;
+    private RenderFragment<BitSnackBarItem> _fullTemplate = default!;
+    private RenderFragment<BitSnackBarItem> _actionsTemplate = default!;
+
+    protected override void OnInitialized()
+    {
+        _titleTemplate = title => @<span class="tpl-title">[@title]</span>;
+        _bodyTemplate = body => @<span class="tpl-body">{@body}</span>;
+        _fullTemplate = item => @<div class="tpl-full"><b>@item.Title</b> <button class="tpl-full-close" @onclick="() => _host.Close(item)">Close</button></div>;
+        _actionsTemplate = item => @<button class="tpl-undo" @onclick="() => { _actionResult = item.Title; return _host.Close(item); }">Undo</button>;
+    }
+
+    protected override void OnParametersSet()
+    {
+        if (_configured) return;
+        _configured = true;
+
+        _position = Enum.TryParse<BitPosition>(Pos, out var p) ? p : null;
+        _variant = Enum.TryParse<BitVariant>(Var, out var v) ? v : null;
+        _size = Enum.TryParse<BitSize>(SizeName, out var s) ? s : null;
+    }
+
+    private string Title(string kind) => $"{kind} {++_counter}";
+
+    private async Task ShowItem(BitSnackBarItem item)
+    {
+        _last = await _host.Show(item);
+    }
+
+    private async Task ShowDuplicate()
+    {
+        var first = await _host.Show("Dup", "Same");
+        var second = await _host.Show("Dup", "Same");
+        _dupSame = ReferenceEquals(first, second);
+        _dupCount = second.DuplicateCount;
+        _last = second;
+    }
+
+    private Task ShowItemWithActions()
+    {
+        BitSnackBarItem? item = null;
+        item = new BitSnackBarItem
+        {
+            Title = Title("Deleted"),
+            Body = "Item deleted",
+            Actions = @<button id="item-action-btn" @onclick="() => { _actionResult = item!.Title; return _host.Close(item!); }">Undo</button>
+        };
+        return ShowItem(item);
+    }
+
+    private Task ShowItemWithEvents()
+    {
+        return ShowItem(new BitSnackBarItem
+        {
+            Title = Title("Events"),
+            Body = "With callbacks",
+            Data = 42,
+            OnClick = _ =>
+            {
+                _itemOnClickCount++;
+                StateHasChanged();
+                return Task.CompletedTask;
+            },
+            OnDismiss = i =>
+            {
+                _itemOnDismiss = $"{i.DismissReason}:{i.Data}";
+                StateHasChanged();
+                return Task.CompletedTask;
+            }
+        });
+    }
+
+    private async Task ShowLoading()
+    {
+        _loading = await _host.Show(new BitSnackBarItem { Title = "Uploading", Body = "report.pdf", IsLoading = true });
+        _last = _loading;
+    }
+
+    private Task CompleteLoading()
+    {
+        if (_loading is null) return Task.CompletedTask;
+
+        _loading.IsLoading = false;
+        _loading.Title = "Uploaded";
+        _loading.Color = BitColor.Success;
+
+        return _host.Update(_loading);
+    }
+
+    private async Task TrackOk()
+    {
+        var result = await _host.Track(DelayedResult(), "Exporting", r => $"Exported {r} rows", ex => $"Failed: {ex.Message}");
+        _trackResult = $"ok:{result}";
+    }
+
+    private async Task TrackFail()
+    {
+        try
+        {
+            await _host.Track(DelayedFailure(), "Exporting", r => $"Exported {r} rows", ex => $"Failed: {ex.Message}");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _trackResult = $"thrown:{ex.Message}";
+        }
+    }
+
+    private static async Task<int> DelayedResult()
+    {
+        await Task.Delay(600);
+        return 42;
+    }
+
+    private static async Task<int> DelayedFailure()
+    {
+        await Task.Delay(600);
+        throw new InvalidOperationException("disk full");
+    }
+
+    private Task UpdateLast()
+    {
+        if (_last is null) return Task.CompletedTask;
+
+        _last.Title = "Updated title";
+        _last.Body = "Updated body";
+
+        return _host.Update(_last);
+    }
+
+    private void Navigate()
+    {
+        Nav.NavigateTo(Nav.GetUriWithQueryParameter("nav", (NavCount ?? 0) + 1));
+    }
+
+    private void HandleShow(BitSnackBarItem item)
+    {
+        _shownCount++;
+        _shownLast = item.Title;
+        _last = item;
+    }
+
+    private void HandleDismiss(BitSnackBarItem item)
+    {
+        _dismissedCount++;
+        _dismissedLog += $"{item.Title}:{item.DismissReason};";
+    }
+
+    private void HandleItemClick(BitSnackBarItem item)
+    {
+        _itemClickCount++;
+        _itemClickLast = item.Title;
+    }
+}

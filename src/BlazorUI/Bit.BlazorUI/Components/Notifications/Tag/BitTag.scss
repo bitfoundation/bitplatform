@@ -96,6 +96,10 @@ $tag-private-properties:
 // them. Left unset, each sends the var() reading it on to the public variable and then to the default, which is what
 // lets an explicit parameter outrank the variable while an unset one leaves the variable in charge.
 .bit-tag {
+    // The containing block of the visually hidden .bit-tag-vhd inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     @each $name in $tag-private-properties {
         --bit-tag-#{$name}: initial;
     }
@@ -180,6 +184,10 @@ $tag-private-properties:
 // the width of that rule back in CSS breaks as soon as the width is a unitless 0 or a keyword - calc() cannot add
 // either to a length - so the height is set inside the rule instead, where the rule no longer enters into it.
 .bit-tag-cnt {
+    // The containing block of the visually hidden .bit-tag-vhd inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     min-width: 0;
     border: none;
     flex: 1 1 auto;

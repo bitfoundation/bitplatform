@@ -1,0 +1,455 @@
+﻿@page "/e2e/grid"
+
+<PageTitle>BitGrid E2E</PageTitle>
+
+@* Every grid sits in a 600px host, and most of them have no spacing, so the width of an item is a number a test can
+   compute: 600 * span / columns. *@
+<style>
+    .grd-host { width: 600px; background: #f4f4f4; }
+    .grd-box { height: 30px; background: #ccc; font-size: 12px; box-sizing: border-box; }
+    .grd-content { width: 77px; height: 30px; background: #aaa; }
+    .grd-custom { background-color: rgb(255, 0, 0); }
+    .grd-item-custom { background-color: rgb(0, 128, 0); }
+</style>
+
+<E2ESection Id="columns" Title="Columns, the default twelve, --bit-Grid-columns, Span and ColumnSpan">
+    <div class="grd-host">
+        <BitGrid Id="cols-4" Columns="4" Spacing="0">
+            @for (var i = 1; i <= 8; i++)
+            {
+                <BitGridItem Id="@($"c4-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+    </div>
+    <div class="grd-host">
+        <BitGrid Id="cols-default">
+            @for (var i = 1; i <= 13; i++)
+            {
+                <BitGridItem Id="@($"cd-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+    </div>
+    <div class="grd-host" style="--bit-Grid-columns: 3">
+        <BitGrid Id="cols-var" Spacing="0">
+            @for (var i = 1; i <= 4; i++)
+            {
+                <BitGridItem Id="@($"cv-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+        <BitGrid Id="cols-var-own" Columns="2" Spacing="0">
+            <BitGridItem Id="cvo-1"><div class="grd-box">own Columns wins</div></BitGridItem>
+        </BitGrid>
+    </div>
+    <div class="grd-host">
+        <BitGrid Id="span-4" Span="@_span" Spacing="0">
+            @for (var i = 1; i <= 4; i++)
+            {
+                <BitGridItem Id="@($"s4-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+        <button id="btn-span" @onclick="() => _span = 6">Span 6</button>
+    </div>
+    <div class="grd-host">
+        <BitGrid Id="col-span" Spacing="0">
+            <BitGridItem Id="cs-8" ColumnSpan="8"><div class="grd-box">8</div></BitGridItem>
+            <BitGridItem Id="cs-4" ColumnSpan="4"><div class="grd-box">4</div></BitGridItem>
+            <BitGridItem Id="cs-20" ColumnSpan="20"><div class="grd-box">20: a full row</div></BitGridItem>
+            <BitGridItem Id="cs-3" ColumnSpan="3"><div class="grd-box">3</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="breakpoints" Title="ColumnsXs..ColumnsXxl and Xs..Xxl spans per breakpoint">
+    <div class="grd-host">
+        <BitGrid Id="bp-cols" Spacing="0" ColumnsXs="1" ColumnsSm="2" ColumnsMd="3" ColumnsLg="4" ColumnsXl="5" ColumnsXxl="6">
+            @for (var i = 1; i <= 6; i++)
+            {
+                <BitGridItem Id="@($"bpc-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+    </div>
+    <div class="grd-host">
+        <BitGrid Id="bp-spans" Spacing="0">
+            <BitGridItem Id="bps-1" Xs="12" Sm="6" Md="4" Lg="3" Xl="2" Xxl="1"><div class="grd-box">span</div></BitGridItem>
+        </BitGrid>
+    </div>
+    <div class="grd-host">
+        <BitGrid Id="bp-carry" Spacing="0" Columns="2" ColumnsMd="4">
+            <BitGridItem Id="bpcr-1" ColumnSpan="2" Md="1"><div class="grd-box">carry</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="auto-grow" Title="Auto, Grow, the grid's Grow and their breakpoints">
+    <div class="grd-host">
+        <BitGrid Id="ag" Spacing="0">
+            <BitGridItem Id="ag-auto" Auto><div class="grd-content">auto</div></BitGridItem>
+            <BitGridItem Id="ag-grow" Grow><div class="grd-box">grow</div></BitGridItem>
+            <BitGridItem Id="ag-span" ColumnSpan="3"><div class="grd-box">3</div></BitGridItem>
+        </BitGrid>
+    </div>
+    <div class="grd-host">
+        <BitGrid Id="ag-two" Spacing="0">
+            <BitGridItem Id="ag2-a" Grow><div class="grd-box">grow</div></BitGridItem>
+            <BitGridItem Id="ag2-b" Grow><div class="grd-box">grow</div></BitGridItem>
+            <BitGridItem Id="ag2-auto" Auto><div class="grd-content">auto</div></BitGridItem>
+        </BitGrid>
+    </div>
+    <div class="grd-host">
+        <BitGrid Id="no-grid-grow" Columns="3" Spacing="0">
+            @for (var i = 1; i <= 5; i++)
+            {
+                <BitGridItem Id="@($"ngg-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+        <BitGrid Id="grid-grow" Columns="3" Spacing="0" Grow>
+            @for (var i = 1; i <= 5; i++)
+            {
+                <BitGridItem Id="@($"gg-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+            <BitGridItem Id="gg-auto" Auto><div class="grd-content">auto</div></BitGridItem>
+        </BitGrid>
+    </div>
+    <div class="grd-host">
+        <BitGrid Id="ag-bp" Spacing="0">
+            <BitGridItem Id="ag-bp-auto" ColumnSpan="6" AutoXs="true" AutoSm="false" AutoMd="true" AutoLg="false" AutoXl="true" AutoXxl="false"><div class="grd-content">a</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="ag-bp-g" Spacing="0">
+            <BitGridItem Id="ag-bp-grow" ColumnSpan="3" GrowXs="false" GrowSm="true" GrowMd="false" GrowLg="true" GrowXl="false" GrowXxl="true"><div class="grd-box">g</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="offset" Title="Offset, AutoOffset and their breakpoints">
+    <div class="grd-host">
+        <BitGrid Id="off" Spacing="0">
+            <BitGridItem Id="off-2" ColumnSpan="2" Offset="2"><div class="grd-box">offset 2</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="off-gap" Spacing="12px">
+            <BitGridItem Id="offg-1" ColumnSpan="2" Offset="3"><div class="grd-box">offset 3, gaps included</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="aoff" Spacing="0">
+            <BitGridItem Id="aoff-1" ColumnSpan="2"><div class="grd-box">a</div></BitGridItem>
+            <BitGridItem Id="aoff-2" ColumnSpan="2" AutoOffset Offset="1"><div class="grd-box">auto offset</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="off-bp" Spacing="0">
+            <BitGridItem Id="offbp-1" ColumnSpan="2" OffsetXs="1" OffsetSm="2" OffsetMd="3" OffsetLg="4" OffsetXl="5" OffsetXxl="6"><div class="grd-box">o</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="aoff-bp" Spacing="0">
+            <BitGridItem Id="aoffbp-1" ColumnSpan="2" AutoOffsetXs="true" AutoOffsetSm="false" AutoOffsetMd="true" AutoOffsetLg="false" AutoOffsetXl="true" AutoOffsetXxl="false"><div class="grd-box">ao</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="order" Title="Order and OrderXs..OrderXxl">
+    <div class="grd-host">
+        <BitGrid Id="ord" Columns="4" Spacing="0">
+            <BitGridItem Id="ord-1" Order="3"><div class="grd-box">1, order 3</div></BitGridItem>
+            <BitGridItem Id="ord-2" Order="-1"><div class="grd-box">2, order -1</div></BitGridItem>
+            <BitGridItem Id="ord-3"><div class="grd-box">3</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="ord-bp" Columns="4" Spacing="0">
+            <BitGridItem Id="ordbp-a" OrderXs="2" OrderSm="0" OrderMd="2" OrderLg="0" OrderXl="2" OrderXxl="0"><div class="grd-box">a</div></BitGridItem>
+            <BitGridItem Id="ordbp-b"><div class="grd-box">b</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="alignment" Title="HorizontalAlign, VerticalAlign, Alignment, AlignContent, AlignSelf">
+    <select id="sel-ha" @onchange="e => _ha = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <select id="sel-va" @onchange="e => _va = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <select id="sel-al" @onchange="e => _al = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <select id="sel-ac" @onchange="e => _ac = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <select id="sel-as" @onchange="e => _as = ParseAlignment(e.Value)">
+        <option value="">(none)</option>
+        @foreach (var a in Enum.GetNames<BitAlignment>())
+        {
+            <option value="@a">@a</option>
+        }
+    </select>
+    <span id="al-state">@($"ha={_ha};va={_va};al={_al};ac={_ac};as={_as};")</span>
+    <div class="grd-host">
+        <BitGrid Id="al-grid" Spacing="0" HorizontalAlign="_ha" VerticalAlign="_va" Alignment="_al">
+            <BitGridItem Id="al-1" ColumnSpan="2"><div style="height: 100px; background: #ccc">tall</div></BitGridItem>
+            <BitGridItem Id="al-2" ColumnSpan="2" AlignSelf="_as"><div style="min-height: 30px; background: #ccc">short</div></BitGridItem>
+            <BitGridItem Id="al-3" ColumnSpan="2"><div style="height: 30px; background: #ccc">short</div></BitGridItem>
+        </BitGrid>
+    </div>
+    <div class="grd-host" style="height: 300px">
+        <BitGrid Id="ac-grid" Columns="3" Spacing="0" AlignContent="_ac" Style="height: 300px">
+            @for (var i = 1; i <= 6; i++)
+            {
+                <BitGridItem Id="@($"ac-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="spacing" Title="Spacing, HorizontalSpacing, VerticalSpacing, their breakpoints and the variables">
+    <div class="grd-host">
+        <BitGrid Id="sp-default" Columns="4">
+            @for (var i = 1; i <= 8; i++)
+            {
+                <BitGridItem Id="@($"spd-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+        <BitGrid Id="sp-10" Columns="4" Spacing="10px">
+            @for (var i = 1; i <= 8; i++)
+            {
+                <BitGridItem Id="@($"sp10-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+        <BitGrid Id="sp-axes" Columns="4" HorizontalSpacing="20px" VerticalSpacing="5px" Spacing="50px">
+            @for (var i = 1; i <= 8; i++)
+            {
+                <BitGridItem Id="@($"spa-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+        <BitGrid Id="sp-number" Columns="4" Spacing="8">
+            <BitGridItem><div class="grd-box">bare number</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="sp-negative" Columns="4" Spacing="-5">
+            <BitGridItem><div class="grd-box">negative</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="sp-bp" Columns="4" SpacingXs="1px" SpacingSm="2px" SpacingMd="3px" SpacingLg="4px" SpacingXl="5px" SpacingXxl="6px">
+            <BitGridItem><div class="grd-box">a</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="sp-axes-bp" Columns="4"
+                 HorizontalSpacingXs="11px" HorizontalSpacingSm="12px" HorizontalSpacingMd="13px" HorizontalSpacingLg="14px" HorizontalSpacingXl="15px" HorizontalSpacingXxl="16px"
+                 VerticalSpacingXs="21px" VerticalSpacingSm="22px" VerticalSpacingMd="23px" VerticalSpacingLg="24px" VerticalSpacingXl="25px" VerticalSpacingXxl="26px">
+            <BitGridItem><div class="grd-box">a</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="sp-mixed" Columns="4" Spacing="0.25rem" SpacingSm="0.75rem" VerticalSpacingMd="2rem">
+            <BitGridItem><div class="grd-box">a</div></BitGridItem>
+        </BitGrid>
+    </div>
+    <div class="grd-host" style="--bit-Grid-spacing: 1rem; --bit-Grid-vertical-spacing: 0.25rem">
+        <BitGrid Id="sp-var" Columns="4">
+            <BitGridItem><div class="grd-box">a</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="sp-var-own" Columns="4" Spacing="2px">
+            <BitGridItem><div class="grd-box">a</div></BitGridItem>
+        </BitGrid>
+    </div>
+    <div class="grd-host" style="--bit-Grid-horizontal-spacing: 7px">
+        <BitGrid Id="sp-var-h" Columns="4">
+            <BitGridItem><div class="grd-box">a</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="hiding" Title="A span of zero hides an item, per breakpoint too">
+    <div class="grd-host">
+        <BitGrid Id="hide" Spacing="0">
+            <BitGridItem Id="hide-0" ColumnSpan="0"><div class="grd-box">hidden</div></BitGridItem>
+            <BitGridItem Id="hide-shown" ColumnSpan="6"><div class="grd-box">shown</div></BitGridItem>
+            <BitGridItem Id="hide-bp" Xs="0" Sm="6" Md="0" Lg="6" Xl="0" Xxl="6"><div class="grd-box">per breakpoint</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="fluid" Title="MinItemWidth: fluid columns">
+    <div class="grd-host">
+        <BitGrid Id="fluid-200" MinItemWidth="@_minItemWidth" Spacing="0">
+            @for (var i = 1; i <= 8; i++)
+            {
+                <BitGridItem Id="@($"fl-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+        <button id="btn-min-width" @onclick="@(() => _minItemWidth = "250")">MinItemWidth 250</button>
+        <BitGrid Id="fluid-auto" MinItemWidth="200px" Spacing="0">
+            <BitGridItem Id="fla-auto" Auto><div class="grd-content">auto</div></BitGridItem>
+            <BitGridItem Id="fla-1"><div class="grd-box">1</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="container" Title="Container: breakpoints measured against the grid">
+    <div style="width: 500px">
+        <BitGrid Id="cq" Container Spacing="0">
+            <BitGridItem Id="cq-1" Xs="12" Sm="6"><div class="grd-box">container</div></BitGridItem>
+            <BitGridItem Id="cq-hide" Xs="0" Sm="6"><div class="grd-box">hidden in a narrow container</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="no-cq" Spacing="0">
+            <BitGridItem Id="nocq-1" Xs="12" Sm="6"><div class="grd-box">window</div></BitGridItem>
+        </BitGrid>
+    </div>
+    <div style="width: 700px">
+        <BitGrid Id="cq-wide" Container Spacing="0">
+            <BitGridItem Id="cqw-1" Xs="12" Sm="6"><div class="grd-box">container</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="wrapping" Title="NoWrap and Reversed">
+    <div class="grd-host">
+        <BitGrid Id="nowrap" Columns="4" Spacing="0" NoWrap>
+            @for (var i = 1; i <= 6; i++)
+            {
+                <BitGridItem Id="@($"nw-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+        <BitGrid Id="reversed" Columns="4" Spacing="0" Reversed>
+            @for (var i = 1; i <= 3; i++)
+            {
+                <BitGridItem Id="@($"rv-{i}")"><div class="grd-box">@i</div></BitGridItem>
+            }
+        </BitGrid>
+        <BitGrid Id="reversed-off" Columns="4" Spacing="0" Reversed>
+            <BitGridItem Id="rvo-1" Offset="1"><div class="grd-box">offset 1</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="reversed-aoff" Columns="4" Spacing="0" Reversed>
+            <BitGridItem Id="rva-1" AutoOffset><div class="grd-box">auto offset</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="nesting" Title="A grid inside an item">
+    <div class="grd-host">
+        <BitGrid Id="nest-outer" Spacing="0">
+            <BitGridItem Id="nest-item" ColumnSpan="8" Offset="1">
+                <BitGrid Id="nest-inner" Columns="2" Spacing="0">
+                    <BitGridItem Id="nest-a"><div class="grd-box">a</div></BitGridItem>
+                    <BitGridItem Id="nest-b"><div class="grd-box">b</div></BitGridItem>
+                </BitGrid>
+            </BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Element and AriaLabel">
+    <div class="grd-host">
+        <BitGrid Id="a11y-ul" Element="ul" AriaLabel="Fruits" Columns="4">
+            <BitGridItem>Apple</BitGridItem>
+            <BitGridItem>Banana</BitGridItem>
+            <BitGridItem Element="li" AriaLabel="Cherry fruit">Cherry</BitGridItem>
+        </BitGrid>
+        <BitGrid Id="a11y-ol" Element="ol" Columns="4">
+            <BitGridItem Id="a11y-ol-item">One</BitGridItem>
+        </BitGrid>
+        <BitGrid Id="a11y-section" Element="section" AriaLabel="Gallery" Columns="4">
+            <BitGridItem Id="a11y-article" Element="article">Card</BitGridItem>
+        </BitGrid>
+        <BitGrid Id="a11y-div" Columns="4">
+            <BitGridItem Id="a11y-div-item">Div</BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="cascading" Title="BitGridParams and BitGridItemParams">
+    <div class="grd-host">
+        <BitParams Parameters="@_gridParams">
+            <BitGrid Id="casc-grid">
+                @for (var i = 1; i <= 4; i++)
+                {
+                    <BitGridItem Id="@($"casc-{i}")"><div class="grd-box">@i</div></BitGridItem>
+                }
+            </BitGrid>
+            <BitGrid Id="casc-own" Columns="4">
+                <BitGridItem Id="casc-own-1" ColumnSpan="1"><div class="grd-box">own</div></BitGridItem>
+            </BitGrid>
+        </BitParams>
+        <BitGrid Id="casc-out" Spacing="0">
+            <BitGridItem Id="casc-out-1"><div class="grd-box">outside</div></BitGridItem>
+        </BitGrid>
+    </div>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, HtmlAttributes, Visibility, Disabled">
+    <div class="grd-host">
+        <BitGrid Id="styled" Columns="4" Class="grd-custom" Style="padding: 5px; border: 1px solid black" HtmlAttributes="@_attributes" TabIndex="0" data-own="grid">
+            <BitGridItem Id="styled-item" Class="grd-item-custom" Style="padding: 3px" HtmlAttributes="@_itemAttributes" TabIndex="0"><div class="grd-box">item</div></BitGridItem>
+            <BitGridItem Id="vis-item" Visibility="_visibility"><div class="grd-box">visibility</div></BitGridItem>
+        </BitGrid>
+        <button id="btn-hidden" @onclick="() => _visibility = BitVisibility.Hidden">Hidden</button>
+        <button id="btn-collapsed" @onclick="() => _visibility = BitVisibility.Collapsed">Collapsed</button>
+        <BitGrid Id="disabled-grid" Disabled="_disabled">
+            <BitGridItem Id="disabled-item" Disabled="_disabled"><div class="grd-box">disabled</div></BitGridItem>
+        </BitGrid>
+        <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="grd-host">
+        <BitGrid Id="rtl-grid" Dir="BitDir.Rtl" Columns="4" Spacing="0">
+            <BitGridItem Id="rtl-1"><div class="grd-box">1</div></BitGridItem>
+            <BitGridItem Id="rtl-2"><div class="grd-box">2</div></BitGridItem>
+        </BitGrid>
+        <BitGrid Id="rtl-off" Dir="BitDir.Rtl" Columns="4" Spacing="0">
+            <BitGridItem Id="rtlo-1" Offset="1"><div class="grd-box">offset 1</div></BitGridItem>
+        </BitGrid>
+        <div dir="rtl">
+            <BitGrid Id="rtl-inherited" Columns="4" Spacing="0">
+                <BitGridItem Id="rtli-1"><div class="grd-box">1</div></BitGridItem>
+            </BitGrid>
+        </div>
+    </div>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <div class="grd-host">
+        @if (_mounted)
+        {
+            <BitGrid Id="mount-grid" Columns="2" Spacing="0">
+                <BitGridItem Id="mount-item"><div class="grd-box">mounted</div></BitGridItem>
+            </BitGrid>
+        }
+        <button id="btn-unmount" @onclick="() => _mounted = false">Unmount</button>
+        <button id="btn-mount" @onclick="() => _mounted = true">Mount</button>
+        <span id="mounted">@_mounted</span>
+    </div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _span = 4;
+    private string _minItemWidth = "200px";
+    private BitAlignment? _ha;
+    private BitAlignment? _va;
+    private BitAlignment? _al;
+    private BitAlignment? _ac;
+    private BitAlignment? _as;
+    private bool _disabled = true;
+    private bool _mounted = true;
+    private BitVisibility _visibility = BitVisibility.Visible;
+
+    private readonly IBitComponentParams[] _gridParams =
+    [
+        new BitGridParams { Columns = 3, Spacing = "0" },
+        new BitGridItemParams { ColumnSpan = 2 },
+    ];
+
+    private readonly Dictionary<string, object> _attributes = new() { ["data-test"] = "grid", ["title"] = "A grid" };
+    private readonly Dictionary<string, object> _itemAttributes = new() { ["data-test"] = "item" };
+
+    private static BitAlignment? ParseAlignment(object? value)
+    {
+        return value is string s && s.Length > 0 ? Enum.Parse<BitAlignment>(s) : null;
+    }
+}

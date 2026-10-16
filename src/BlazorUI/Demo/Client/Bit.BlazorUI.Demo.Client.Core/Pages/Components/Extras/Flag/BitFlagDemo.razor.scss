@@ -16,6 +16,12 @@
         gap: 0.75rem;
         display: flex;
         align-items: center;
+
+        // A caption naming a parameter is one long word, so it breaks where a phone runs out of room.
+        > span {
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
     }
 }
 

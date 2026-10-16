@@ -9,7 +9,7 @@ namespace Bit.BlazorUI;
 /// A dropdown is a list in which the selected item is always visible while other items are 
 /// visible on demand by clicking a dropdown button. Dropdowns are typically used for forms.
 /// </summary>
-public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
+public partial class BitDropdown<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem, TValue> : BitInputBase<TValue> where TItem : class, new()
 {
     private int? _providerTotalItems;
     private Dictionary<TItem, int>? _providerPositions;
@@ -1170,9 +1170,18 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
     // Called by an option when its own parameters change, so the cached search results (which hold
     // the option instances themselves) cannot be reused after the data they were computed from changed.
-    internal void NotifyOptionParametersChanged()
+    // The field shows the text of the selected options, and the render that handed an option its new
+    // parameters drew the field before they arrived, so a selected option renders the dropdown again.
+    internal void NotifyOptionParametersChanged(BitDropdownOption<TValue> option)
     {
         _optionsVersion++;
+
+        if (IsDisposing) return;
+
+        if (option is TItem item && _selectedItems.Contains(item))
+        {
+            StateHasChanged();
+        }
     }
 
     // Everything derived from the current set of items: the search result and the set it is looked up
@@ -2221,7 +2230,10 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
 
         // A single pass over Values (which may be long after a select all) instead of a lookup per
         // selected item, so ordering the selection stays linear in the size of the selection.
+        // A null value never goes in (it has nullIndex of its own), so the notnull key of the dictionary holds.
+#pragma warning disable CS8714
         var indexes = new Dictionary<TValue, int>(Comparer);
+#pragma warning restore CS8714
         var nullIndex = -1;
         var index = 0;
         foreach (var value in Values)
@@ -2312,6 +2324,31 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         }
     }
 
+    // The focus a close stranded in the hidden callout (or dropped to the body) goes back to the trigger, and a focus
+    // anywhere else stays where it is - which only the browser knows, so it is the script that decides. Like
+    // RestoreFocusToTrigger, the move must not reopen the list through OpenOnFocus, so the note is left first and
+    // taken back when nothing moved: no focusin is on its way to consume it then.
+    private async Task ReclaimFocusFromTheCallout()
+    {
+        if (IsRendered is false || IsDisposed) return;
+
+        _suppressOpenOnFocus = true;
+
+        try
+        {
+            var moved = await _js.BitDropdownsReclaimFocus(_calloutId, Combo ? _comboBoxInputRef : InputElement);
+
+            if (moved is false)
+            {
+                _suppressOpenOnFocus = false;
+            }
+        }
+        catch
+        {
+            _suppressOpenOnFocus = false;
+        }
+    }
+
     // Dismissing the callout hides whatever inside it has the focus (an option, the search box), which
     // would otherwise drop the focus to the document body and strand a keyboard user at the top of the
     // page. Every dismissal the user asks for by hand goes through here so the focus comes back to the
@@ -2378,6 +2415,13 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
             if (IsOpen)
             {
                 await CloseCallout();
+
+                // The press was taken on the field, but the focus the opening hands to the list may have landed on
+                // an option since, and the close has just hidden it.
+                if (IsOpen is false)
+                {
+                    await ReclaimFocusFromTheCallout();
+                }
             }
             else
             {
@@ -2617,8 +2661,11 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (mode != BitDropdownFocusMode.Selected) return -1;
         if (Virtualize is false || ItemsProvider is not null) return -1;
 
+        // With nothing selected the first row is the one to reach, and it is index 0: on the first opening of the list
+        // that row is only rendered by the reveal this call follows, which Dropdowns.focusItem waits for when it is
+        // handed an index - handed none, it finds no rows yet and leaves the focus on the field.
         var selected = _selectedItems.FirstOrDefault();
-        if (selected is null) return -1;
+        if (selected is null) return 0;
 
         var index = 0;
         foreach (var item in GetDisplayItems())
@@ -3771,6 +3818,14 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         if (ReadOnly) return;
         if (Disabled || InvalidValueBinding()) return;
 
+        // The input event has already searched for everything that was typed, so the change event - the
+        // commit the browser raises when the input loses the focus (Tab, a click elsewhere) or on Enter -
+        // only ever restates a term. Those are the moments the dropdown closes the callout for, and closing
+        // discards the term (see OnSetIsOpen), so a change arriving with the callout closed is the stale
+        // commit of a term that is already gone: taking it would put the term back into the input and
+        // filter the next opening by it.
+        if (IsOpen is false) return;
+
         _comboInputText = e.Value?.ToString();
 
         if (Immediate) return;
@@ -3781,9 +3836,8 @@ public partial class BitDropdown<TItem, TValue> : BitInputBase<TValue> where TIt
         // reports.
         if (string.Equals(_searchText ?? string.Empty, _comboInputText ?? string.Empty, StringComparison.Ordinal)) return;
 
-        // The change event of an input is the commit of what was typed, which the browser raises when the
-        // input loses the focus (and when Enter is pressed). Both of those are moments the dropdown has
-        // just dismissed the callout for, so the search here must not reveal it again behind the user.
+        // A commit that reaches an open list before its close is the term the list is showing; it is
+        // applied without opening anything, since the close it precedes is on its way.
         await SearchComboItems(e, openCallout: false);
     }
 

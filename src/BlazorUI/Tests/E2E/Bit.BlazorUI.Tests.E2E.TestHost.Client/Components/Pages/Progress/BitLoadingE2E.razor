@@ -1,0 +1,168 @@
+﻿@page "/e2e/loading"
+
+<PageTitle>BitLoading E2E</PageTitle>
+
+<h1>BitLoading family</h1>
+
+@* Every loader of the family, each in the configurations the tests read off it: rendered through DynamicComponent so
+   the eighteen of them share one table of ids. *@
+<E2ESection Id="family" Title="Every loader">
+    @foreach (var (name, type) in _loaders)
+    {
+        <div class="loader-row" style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+            @foreach (var (variant, parameters) in _variants)
+            {
+                var values = new Dictionary<string, object?>(parameters) { ["Id"] = $"ldn-{name}-{variant}" };
+                if (variant == "label") values["Label"] = $"Loading {name}";
+                <DynamicComponent Type="type" Parameters="values" />
+            }
+        </div>
+    }
+</E2ESection>
+
+<E2ESection Id="placement" Title="Label placement">
+    <BitRingLoading Id="ldn-place-default" Label="Default" />
+    <BitRingLoading Id="ldn-place-Top" Label="Top" LabelPlacement="BitPlacement.Top" />
+    <BitRingLoading Id="ldn-place-Bottom" Label="Bottom" LabelPlacement="BitPlacement.Bottom" />
+    <BitRingLoading Id="ldn-place-Start" Label="Start" LabelPlacement="BitPlacement.Start" />
+    <BitRingLoading Id="ldn-place-End" Label="End" LabelPlacement="BitPlacement.End" />
+    <BitRingLoading Id="ldn-place-other" Label="Other" LabelPlacement="BitPlacement.TopAndBottom" />
+    <BitRingLoading Id="ldn-template" LabelPlacement="BitPlacement.Bottom">
+        <LabelTemplate><b id="label-template">Custom label</b></LabelTemplate>
+    </BitRingLoading>
+    <BitRingLoading Id="ldn-rtl-Start" Dir="BitDir.Rtl" Label="شروع" LabelPlacement="BitPlacement.Start" />
+    <BitRingLoading Id="ldn-rtl-End" Dir="BitDir.Rtl" Label="پایان" LabelPlacement="BitPlacement.End" />
+    <div dir="rtl">
+        <BitRingLoading Id="ldn-rtl-inherited" Label="شروع" LabelPlacement="BitPlacement.Start" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="delay" Title="Delay">
+    <button id="btn-show-delayed" @onclick="() => _showDelayed = true">Show delayed</button>
+    @if (_showDelayed)
+    {
+        <BitSpinnerLoading Id="ldn-delay" Delay="2000" Label="Delayed" />
+        <BitSpinnerLoading Id="ldn-delay-long" Delay="@_longDelay" Label="Long delay" />
+    }
+    <button id="btn-cancel-delay" @onclick="() => _longDelay = 0">Cancel delay</button>
+</E2ESection>
+
+<E2ESection Id="inline" Title="Inline">
+    <p id="inline-paragraph" style="font-size: 24px;">Syncing <BitRingLoading Id="ldn-inline" Inline /> now <BitRingLoading Id="ldn-inline-label" Inline Label="Saving" /> done.</p>
+    <button id="inline-button" style="font-size: 20px;"><BitDotsRingLoading Id="ldn-inline-button" Inline CustomColor="currentColor" /> Saving</button>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitSpinnerLoading Id="ldn-a11y-default" />
+    <BitSpinnerLoading Id="ldn-a11y-aria-label" AriaLabel="Fetching your orders" />
+    <BitSpinnerLoading Id="ldn-a11y-none" Role="none" />
+    <BitSpinnerLoading Id="ldn-a11y-assertive" Label="Signing you out" AriaLive="assertive" />
+    <BitSpinnerLoading Id="ldn-a11y-progressbar" Label="Exporting" Role="progressbar" />
+    <BitSpinnerLoading Id="ldn-a11y-progressbar-unnamed" Role="progressbar" />
+    <BitSpinnerLoading Id="ldn-a11y-label-aria" Label="Visible" AriaLabel="Spoken instead" />
+    <BitSpinnerLoading Id="ldn-a11y-splat" HtmlAttributes="@(new Dictionary<string, object> { ["role"] = "alert", ["aria-live"] = "off", ["aria-label"] = "Splatted name", ["dir"] = "rtl" })" />
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_loadingParams">
+        <BitRingLoading Id="ldn-params-ring" Label="Syncing" />
+        <BitDualRingLoading Id="ldn-params-dual" Label="Uploading" />
+        <BitSpinnerLoading Id="ldn-params-spinner" Label="Indexing" LabelPlacement="BitPlacement.Bottom" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitRingLoading Id="ldn-style" Label="Style" Style="padding: 16px; border: 1px solid rgb(128, 128, 128)" Class="e2e-loading-class" />
+    <BitGridLoading Id="ldn-styles" Label="Styles"
+                    Styles="@(new() { Root = "padding: 8px", Container = "outline: 1px solid rgb(1, 2, 3)", Child = "outline: 1px solid rgb(2, 3, 4)", Label = "color: rgb(4, 5, 6)" })"
+                    Classes="@(new() { Root = "e2e-root", Container = "e2e-container", Child = "e2e-child", Label = "e2e-label" })" />
+    <BitGridLoading Id="ldn-styles-srt" Styles="@(new() { ScreenReaderText = "color: rgb(7, 8, 9)" })" Classes="@(new() { ScreenReaderText = "e2e-srt" })" />
+    <BitRingLoading Id="ldn-hidden" Visibility="BitVisibility.Hidden" />
+    <BitRingLoading Id="ldn-collapsed" Visibility="BitVisibility.Collapsed" />
+    <BitRingLoading Id="ldn-disabled" Disabled Label="Disabled" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div style="--bit-Loading-color: rgb(10, 20, 30); --bit-Loading-track-color: rgb(40, 50, 60); --bit-Loading-size: 50px; --bit-Loading-thickness: 5px; --bit-Loading-speed: 0.5; --bit-Loading-gap: 13px; --bit-Loading-label-color: rgb(70, 80, 90); --bit-Loading-label-font-size: 17px; --bit-Loading-label-font-weight: 700;">
+        <BitRingLoading Id="ldn-css" Label="Restyled" />
+        <BitRingLoading Id="ldn-css-params" Label="Parameters win" Color="BitColor.Error" Size="BitSize.Small" Thickness="2" Speed="2" />
+        <BitRingLoading Id="ldn-css-custom" CustomSize="30" CustomColor="rgb(1, 128, 2)" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitRingLoading Id="ldn-runtime" Label="@_runtimeLabel" Size="_runtimeSize" Color="_runtimeColor" Paused="_runtimePaused" />
+    <button id="btn-set-size" @onclick="() => _runtimeSize = BitSize.Large">Large</button>
+    <button id="btn-set-color" @onclick="() => _runtimeColor = BitColor.Success">Success</button>
+    <button id="btn-toggle-paused" @onclick="() => _runtimePaused = !_runtimePaused">Toggle paused</button>
+    <button id="btn-set-label" @onclick="@(() => _runtimeLabel = "Almost there")">Change label</button>
+    <button id="btn-toggle-mounted" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitSpinnerLoading Id="ldn-mounted" Delay="5000" Label="Mounted" />
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private bool _showDelayed;
+    private int _longDelay = 60000;
+    private BitSize? _runtimeSize;
+    private BitColor? _runtimeColor;
+    private bool _runtimePaused;
+    private string _runtimeLabel = "Working";
+    private bool _mounted = true;
+
+    private readonly (string Name, Type Type)[] _loaders =
+    [
+        ("Bars", typeof(BitBarsLoading)),
+        ("BouncingDots", typeof(BitBouncingDotsLoading)),
+        ("Circle", typeof(BitCircleLoading)),
+        ("DotsRing", typeof(BitDotsRingLoading)),
+        ("DualRing", typeof(BitDualRingLoading)),
+        ("Ellipsis", typeof(BitEllipsisLoading)),
+        ("Grid", typeof(BitGridLoading)),
+        ("Heart", typeof(BitHeartLoading)),
+        ("Hourglass", typeof(BitHourglassLoading)),
+        ("OrbitingDots", typeof(BitOrbitingDotsLoading)),
+        ("Ring", typeof(BitRingLoading)),
+        ("Ripple", typeof(BitRippleLoading)),
+        ("Roller", typeof(BitRollerLoading)),
+        ("RollingDashes", typeof(BitRollingDashesLoading)),
+        ("RollingSquare", typeof(BitRollingSquareLoading)),
+        ("SlickBars", typeof(BitSlickBarsLoading)),
+        ("Spinner", typeof(BitSpinnerLoading)),
+        ("Xbox", typeof(BitXboxLoading)),
+    ];
+
+    private readonly (string Variant, Dictionary<string, object?> Parameters)[] _variants =
+    [
+        ("default", new()),
+        ("sm", new() { ["Size"] = BitSize.Small }),
+        ("md", new() { ["Size"] = BitSize.Medium }),
+        ("lg", new() { ["Size"] = BitSize.Large }),
+        ("custom", new() { ["CustomSize"] = 100 }),
+        ("custom-loses", new() { ["CustomSize"] = 100, ["Size"] = BitSize.Small }),
+        ("error", new() { ["Color"] = BitColor.Error }),
+        ("customcolor", new() { ["CustomColor"] = "rgb(1, 128, 2)" }),
+        ("color-wins", new() { ["CustomColor"] = "rgb(1, 128, 2)", ["Color"] = BitColor.Success }),
+        ("label", new() { ["LabelPlacement"] = BitPlacement.End }),
+        ("paused", new() { ["Paused"] = true }),
+        ("speed", new() { ["Speed"] = 2.0 }),
+        ("thick", new() { ["Thickness"] = 10 }),
+        ("force", new() { ["ForceAnimation"] = true }),
+    ];
+
+    private readonly BitLoadingParams[] _loadingParams =
+    [
+        new()
+        {
+            Thickness = 3,
+            Speed = 1.5,
+            LabelPlacement = BitPlacement.End,
+            Color = BitColor.Warning,
+        }
+    ];
+}

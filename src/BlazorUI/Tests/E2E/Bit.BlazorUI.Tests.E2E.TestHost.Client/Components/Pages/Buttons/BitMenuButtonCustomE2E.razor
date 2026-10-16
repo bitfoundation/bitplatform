@@ -1,0 +1,346 @@
+﻿@page "/e2e/menu-button/custom"
+
+<PageTitle>BitMenuButton E2E (custom items)</PageTitle>
+
+@* The custom-item API of BitMenuButton: a class of the page's own, every field of the component mapped onto it through
+   NameSelectors - some by property name, some by selector (IsChecked by name, since the component writes it back).
+   The sections, their ids and their data are those of the item-level sections of /e2e/menu-button. *@
+<h1>BitMenuButton (custom items)</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitMenuButton Id="mnb-basic" Text="Actions" Items="_basic" NameSelectors="_selectors" OnClick="(Cmd? i) => _clicked = Name(i)" />
+    <span id="basic-clicked">@_clicked</span>
+</E2ESection>
+
+<E2ESection Id="split" Title="Split">
+    <BitMenuButton Id="mnb-split" Split Text="Save" Items="_split" NameSelectors="_selectors" OnClick="(Cmd? i) => _splitClicked = Name(i)" />
+    <span id="split-clicked">@_splitClicked</span>
+</E2ESection>
+
+<E2ESection Id="sticky" Title="Sticky">
+    <BitMenuButton Id="mnb-sticky" Sticky Items="_sticky" NameSelectors="_selectors" @bind-SelectedItem="_stickySelected" OnChange="(Cmd item) => _stickyChanges.Add(item.Id!)" />
+    <span id="sticky-selected">@(_stickySelected?.Id ?? "null")</span>
+    <span id="sticky-changes">@string.Join(",", _stickyChanges)</span>
+    <BitMenuButton Id="mnb-sticky-default" Sticky Items="_stickyDefault" NameSelectors="_selectors" DefaultSelectedItem="_stickyDefault[1]" />
+    <BitMenuButton Id="mnb-sticky-isselected" Sticky Items="_stickyIsSelected" NameSelectors="_selectors" />
+    <BitMenuButton Id="mnb-split-sticky" Split Sticky Items="_splitSticky" NameSelectors="_selectors" OnClick="(Cmd? i) => _splitStickyHeader = i?.Id ?? NoneText" />
+    <span id="split-sticky-header">@_splitStickyHeader</span>
+    <span id="split-sticky-actions">@_splitStickyActions</span>
+</E2ESection>
+
+<E2ESection Id="icons" Title="Icons">
+    <BitMenuButton Id="mnb-icons" Text="Insert" IconName="@BitIconName.Add" Items="_icons" NameSelectors="_selectors" />
+    <BitMenuButton Id="mnb-icononly" IconOnly AriaLabel="More actions" IconName="@BitIconName.More" Items="_iconOnly" NameSelectors="_selectors" />
+    <BitMenuButton Id="mnb-noicon" NoIcon Text="No icon" IconName="@BitIconName.Add" Items="_noIcon" NameSelectors="_selectors" />
+    <BitMenuButton Id="mnb-ext-icon" Text="External" Icon="@BitIconInfo.Css("fa-solid fa-house")" Items="_extIcon" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="toggle" Title="Toggle">
+    <BitMenuButton Id="mnb-toggle" Split Toggle Text="Bold" Items="_toggle" NameSelectors="_selectors" @bind-IsToggled="_isToggled" OnToggleChange="v => _toggleChanges.Add(v.ToString())" />
+    <span id="toggle-value">@_isToggled</span>
+    <span id="toggle-changes">@string.Join(",", _toggleChanges)</span>
+    <BitMenuButton Id="mnb-toggle-default" Split Toggle DefaultIsToggled="true" Text="Italic" Items="_toggleDefault" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="checkable" Title="Checkable">
+    <BitMenuButton Id="mnb-check" Text="Format" Items="_check" NameSelectors="_selectors" CloseOnItemClick="false" OnClick="(Cmd? i) => _checkClicks++" />
+    <span id="check-state">@string.Join(",", _check.Where(i => i.Checked).Select(i => i.Id))</span>
+</E2ESection>
+
+<E2ESection Id="templates" Title="Templates">
+    <BitMenuButton Id="mnb-header-template" Items="_headerTemplate" NameSelectors="_selectors">
+        <HeaderTemplate><b class="tpl-header">Custom header</b></HeaderTemplate>
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-item-template" Text="Item template" Items="_itemTemplate" NameSelectors="_selectors">
+        <ItemTemplate Context="item"><i class="tpl-item">@item?.Label</i></ItemTemplate>
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-own-template" Text="Own template" Items="_ownTemplate" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="binding" Title="Binding">
+    <BitMenuButton Id="mnb-open-bind" Text="Bound open" Items="_openBind" NameSelectors="_selectors" @bind-IsOpen="_isOpen" />
+    <span id="open-value">@_isOpen</span>
+    <button id="btn-open" type="button" @onclick="() => _isOpen = true">Open from the page</button>
+</E2ESection>
+
+<E2ESection Id="grouping" Title="Grouping">
+    <BitMenuButton Id="mnb-grouping" Text="Grouped" Items="_grouping" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="details" Title="Item details">
+    <BitMenuButton Id="mnb-details" Text="Details" Items="_details" NameSelectors="_selectors" OnClick="(Cmd? i) => _detailsClicked = i?.Id ?? HeaderText" />
+    <span id="details-clicked">@_detailsClicked</span>
+    <BitMenuButton Id="mnb-disabled-interactive" Text="Disabled interactive" Items="_disabledInteractive" NameSelectors="_selectors" DisabledInteractive />
+</E2ESection>
+
+<E2ESection Id="links" Title="Links">
+    <BitMenuButton Id="mnb-links" Text="Links" Items="_links" NameSelectors="_selectors" />
+    <BitMenuButton Id="mnb-links-hint" Text="Links (own hint)" Items="_linksHint" NameSelectors="_selectors" NewTabHint="(new window)" />
+    <BitMenuButton Id="mnb-links-nohint" Text="Links (no hint)" Items="_linksNoHint" NameSelectors="_selectors" NoNewTabHint />
+</E2ESection>
+
+<E2ESection Id="loading" Title="Loading">
+    <BitMenuButton Id="mnb-loading" Split Text="Save" IconName="@BitIconName.Save" Items="_loadingItems" NameSelectors="_selectors" AutoLoading LoadingLabel="Saving..."
+                   OnClick="(Cmd? i) => LoadingClick()" @bind-IsLoading="_loadingValue" />
+    <span id="loading-clicks">@_loadingClicks</span>
+    <span id="loading-value">@_loadingValue</span>
+    <button id="btn-release-loading" type="button" @onclick="() => _loadingTcs.TrySetResult()">Release</button>
+    <BitMenuButton Id="mnb-loading-plain" Text="Busy" Items="_loadingPlain" NameSelectors="_selectors" IsLoading LoadingLabel="Working..." />
+    <BitMenuButton Id="mnb-loading-template" Text="Template" Items="_loadingTemplate" NameSelectors="_selectors" IsLoading>
+        <LoadingTemplate><span class="tpl-loading">Please wait</span></LoadingTemplate>
+    </BitMenuButton>
+    <BitMenuButton Id="mnb-loading-reclickable" Split Text="Again" Items="_loadingReclick" NameSelectors="_selectors" IsLoading Reclickable OnClick="(Cmd? i) => _reclicks++" />
+    <span id="reclicks">@_reclicks</span>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard">
+    <input id="kbd-before" aria-label="before" />
+    <BitMenuButton Id="mnb-keys" Text="Fruits" Items="_fruits" NameSelectors="_selectors" OnClick="(Cmd? i) => _keysClicked = i?.Id ?? HeaderText" />
+    <span id="keys-clicked">@_keysClicked</span>
+    <input id="kbd-after" aria-label="after" />
+</E2ESection>
+
+<E2ESection Id="submenu" Title="Submenu">
+    <BitMenuButton Id="mnb-submenu" Text="Insert" Items="_submenu" NameSelectors="_selectors" OnClick="(Cmd? i) => _submenuClicked = i?.Id ?? HeaderText" />
+    <span id="submenu-clicked">@_submenuClicked</span>
+</E2ESection>
+
+<E2ESection Id="item-styles" Title="Item Class &amp; Style">
+    <BitMenuButton Id="mnb-item-styles" Text="Styled items" Items="_itemStyles" NameSelectors="_selectors" />
+</E2ESection>
+
+<E2ESection Id="dynamic" Title="Items at runtime">
+    <BitMenuButton Id="mnb-dynamic" Text="Dynamic" Items="_dynamic" NameSelectors="_selectors" />
+    <button id="btn-add-item" type="button" @onclick="AddItem">Add item</button>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    @if (_mounted)
+    {
+        <BitMenuButton Id="mnb-mounted" Text="Mounted" Items="_mountedItems" NameSelectors="_selectors" />
+    }
+    <button id="btn-unmount" type="button" @onclick="() => _mounted = !_mounted">Toggle mount</button>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private const string HeaderText = "header";
+    private const string NoneText = "none";
+
+    private string _clicked = "none";
+    private string _splitClicked = "none";
+    private Cmd? _stickySelected;
+    private readonly List<string> _stickyChanges = [];
+    private string _splitStickyHeader = "none";
+    private int _splitStickyActions;
+    private bool _isToggled;
+    private readonly List<string> _toggleChanges = [];
+    private int _checkClicks;
+    private bool _isOpen;
+    private string _detailsClicked = "none";
+    private int _loadingClicks;
+    private bool _loadingValue;
+    private TaskCompletionSource _loadingTcs = new();
+    private int _reclicks;
+    private string _keysClicked = "none";
+    private string _submenuClicked = "none";
+    private bool _mounted = true;
+    private int _dynamicCounter;
+
+    // Every field of the component, half of them by property name and half by selector.
+    private readonly BitMenuButtonNameSelectors<Cmd> _selectors = new()
+    {
+        AriaLabel = { Name = nameof(Cmd.SpokenName) },
+        Checkable = { Selector = i => i.CanCheck },
+        ChildItems = { Selector = i => i.Children },
+        Class = { Name = nameof(Cmd.Css) },
+        Href = { Selector = i => i.Url },
+        Icon = { Selector = i => i.Symbol },
+        IconName = { Name = nameof(Cmd.Glyph) },
+        IsChecked = { Name = nameof(Cmd.Checked) },
+        IsDisabled = { Selector = i => i.Off },
+        IsHeader = { Name = nameof(Cmd.Heading) },
+        IsSelected = { Selector = i => i.Picked },
+        IsSeparator = { Name = nameof(Cmd.Divider) },
+        Key = { Name = nameof(Cmd.Id) },
+        OnClick = { Selector = i => i.Clicked },
+        RadioGroup = { Name = nameof(Cmd.Group) },
+        Rel = { Selector = i => i.Relation },
+        SecondaryText = { Name = nameof(Cmd.Hint) },
+        Style = { Selector = i => i.Inline },
+        Target = { Name = nameof(Cmd.UrlTarget) },
+        Template = { Selector = i => i.Content },
+        Text = { Name = nameof(Cmd.Label) },
+        Title = { Selector = i => i.Tip },
+    };
+
+    private readonly List<Cmd> _basic = Basic();
+    private readonly List<Cmd> _split = Basic();
+    private readonly List<Cmd> _sticky = Basic();
+    private readonly List<Cmd> _stickyDefault = Basic();
+    private readonly List<Cmd> _stickyIsSelected =
+    [
+        new() { Id = "add", Label = "Add" },
+        new() { Id = "edit", Label = "Edit" },
+        new() { Id = "delete", Label = "Delete", Picked = true }
+    ];
+    private readonly List<Cmd> _splitSticky;
+    private readonly List<Cmd> _icons =
+    [
+        new() { Id = "add", Label = "Add", Glyph = BitIconName.Add },
+        new() { Id = "edit", Label = "Edit", Glyph = BitIconName.Edit },
+        new() { Id = "delete", Label = "Delete", Symbol = BitIconInfo.Bi("trash") }
+    ];
+    private readonly List<Cmd> _iconOnly = Basic();
+    private readonly List<Cmd> _noIcon = Basic();
+    private readonly List<Cmd> _extIcon = Basic();
+    private readonly List<Cmd> _toggle = Basic();
+    private readonly List<Cmd> _toggleDefault = Basic();
+    private readonly List<Cmd> _check =
+    [
+        new() { Id = "bold", Label = "Bold", CanCheck = true },
+        new() { Id = "italic", Label = "Italic", CanCheck = true, Checked = true },
+        new() { Divider = true },
+        new() { Id = "left", Label = "Left", Group = "align", Checked = true },
+        new() { Id = "center", Label = "Center", Group = "align" },
+        new() { Id = "right", Label = "Right", Group = "align" }
+    ];
+    private readonly List<Cmd> _headerTemplate = Basic();
+    private readonly List<Cmd> _itemTemplate = Basic();
+    private readonly List<Cmd> _ownTemplate =
+    [
+        new() { Id = "custom", Label = "Custom", Content = item => @<span class="tpl-own">@item.Label template</span> },
+        new() { Id = "plain", Label = "Plain" }
+    ];
+    private readonly List<Cmd> _openBind = Basic();
+    private readonly List<Cmd> _grouping =
+    [
+        new() { Heading = true, Label = "Files", Tip = "File commands" },
+        new() { Id = "new", Label = "New" },
+        new() { Id = "open", Label = "Open" },
+        new() { Divider = true },
+        new() { Heading = true, Label = "Edit" },
+        new() { Id = "cut", Label = "Cut" }
+    ];
+    private readonly List<Cmd> _details =
+    [
+        new() { Id = "save", Label = "Save", Hint = "Ctrl+S", Tip = "Save the document" },
+        new() { Id = "locked", Label = "Locked", Off = true },
+        new() { Id = "named", Label = "Named", SpokenName = "A named item" }
+    ];
+    private readonly List<Cmd> _disabledInteractive =
+    [
+        new() { Id = "a", Label = "First" },
+        new() { Id = "b", Label = "Disabled", Off = true },
+        new() { Id = "c", Label = "Last" }
+    ];
+    private readonly List<Cmd> _links = Links();
+    private readonly List<Cmd> _linksHint = Links();
+    private readonly List<Cmd> _linksNoHint = Links();
+    private readonly List<Cmd> _loadingItems = Basic();
+    private readonly List<Cmd> _loadingPlain = Basic();
+    private readonly List<Cmd> _loadingTemplate = Basic();
+    private readonly List<Cmd> _loadingReclick = Basic();
+    private readonly List<Cmd> _fruits =
+    [
+        new() { Id = "apple", Label = "Apple" },
+        new() { Id = "banana", Label = "Banana" },
+        new() { Id = "blueberry", Label = "Blueberry" },
+        new() { Id = "cherry", Label = "Cherry" }
+    ];
+    private readonly List<Cmd> _submenu;
+    private readonly List<Cmd> _itemStyles =
+    [
+        new() { Id = "classed", Label = "Classed", Css = "item-own-class" },
+        new() { Id = "styled", Label = "Styled", Inline = "color: rgb(255, 0, 255);" }
+    ];
+    private List<Cmd> _dynamic = [new() { Id = "a", Label = "A" }];
+    private readonly List<Cmd> _mountedItems = Basic();
+
+    public BitMenuButtonCustomE2E()
+    {
+        _splitSticky =
+        [
+            new() { Id = "add", Label = "Add", Clicked = _ => { _splitStickyActions++; InvokeAsync(StateHasChanged); } },
+            new() { Id = "edit", Label = "Edit", Clicked = _ => { _splitStickyActions += 10; InvokeAsync(StateHasChanged); } }
+        ];
+        _submenu =
+        [
+            new() { Id = "text", Label = "Text box" },
+            new()
+            {
+                Id = "share", Label = "Share", Glyph = BitIconName.Share,
+                Children =
+                [
+                    new() { Id = "email", Label = "Email", Clicked = _ => { _submenuClicked = "email-own"; InvokeAsync(StateHasChanged); } },
+                    new() { Id = "link", Label = "Link" }
+                ]
+            },
+            new()
+            {
+                Id = "more", Label = "More",
+                Children =
+                [
+                    new() { Id = "print", Label = "Print", Children = [new() { Id = "pdf", Label = "PDF" }] },
+                    new() { Id = "export", Label = "Export" }
+                ]
+            }
+        ];
+    }
+
+    private static string Name(Cmd? item) => item?.Label ?? HeaderText;
+
+    private static List<Cmd> Basic() =>
+    [
+        new() { Id = "add", Label = "Add" },
+        new() { Id = "edit", Label = "Edit" },
+        new() { Id = "delete", Label = "Delete" }
+    ];
+
+    private static List<Cmd> Links() =>
+    [
+        new() { Id = "home", Label = "Home", Url = "/", UrlTarget = "_blank" },
+        new() { Id = "docs", Label = "Docs", Url = "https://example.com", Relation = BitLinkRels.NoFollow },
+        new() { Id = "self", Label = "Self", Url = "e2e/menu-button/custom#links" }
+    ];
+
+    private async Task LoadingClick()
+    {
+        _loadingClicks++;
+        _loadingTcs = new();
+        await _loadingTcs.Task;
+    }
+
+    private void AddItem()
+    {
+        _dynamicCounter++;
+        _dynamic = [.. _dynamic, new() { Id = $"n{_dynamicCounter}", Label = $"New {_dynamicCounter}" }];
+    }
+
+    public sealed class Cmd
+    {
+        public string? Id { get; set; }
+        public string? Label { get; set; }
+        public string? SpokenName { get; set; }
+        public bool CanCheck { get; set; }
+        public List<Cmd>? Children { get; set; }
+        public string? Css { get; set; }
+        public string? Url { get; set; }
+        public BitIconInfo? Symbol { get; set; }
+        public string? Glyph { get; set; }
+        public bool Checked { get; set; }
+        public bool Off { get; set; }
+        public bool Heading { get; set; }
+        public bool Picked { get; set; }
+        public bool Divider { get; set; }
+        public Action<Cmd>? Clicked { get; set; }
+        public string? Group { get; set; }
+        public BitLinkRels? Relation { get; set; }
+        public string? Hint { get; set; }
+        public string? Inline { get; set; }
+        public string? UrlTarget { get; set; }
+        public RenderFragment<Cmd>? Content { get; set; }
+        public string? Tip { get; set; }
+    }
+}

@@ -1,0 +1,265 @@
+﻿@page "/e2e/image"
+
+<PageTitle>BitImage E2E</PageTitle>
+
+<h1>BitImage</h1>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitImage Id="img-basic" Alt="A landscape picture" Title="Hover title" Src="samples/image-landscape.svg"
+              OnLoad="() => _basicLoads++" OnLoadingStateChange="s => _basicStates = Append(_basicStates, s)" />
+    <BitImage Id="img-disabled" Alt="A disabled picture" Disabled Src="samples/image-landscape.svg" />
+    <span id="basic-loads">@_basicLoads</span>
+    <span id="basic-states">@_basicStates</span>
+</E2ESection>
+
+<E2ESection Id="frame" Title="Frame size">
+    <div style="display: flex; gap: 8px; align-items: flex-start;">
+        <BitImage Id="img-width-rem" Width="9rem" Alt="Width in rem" Src="samples/image-landscape.svg" />
+        <BitImage Id="img-height-number" Height="80" Alt="Height as a number" Src="samples/image-landscape.svg" />
+        <BitImage Id="img-width-height" Width="256px" Height="128px" Alt="Both" Src="samples/image-landscape.svg" />
+        <BitImage Id="img-aspect" Width="160" AspectRatio="1" Alt="Aspect ratio" Src="samples/image-slow.svg?case=aspect" />
+    </div>
+    <div id="fluid-container" style="width: 100px;">
+        <BitImage Id="img-fluid" Fluid Alt="Fluid" Src="samples/image-landscape.svg" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="fit" Title="ImageFit">
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+        @foreach (var fit in _fits)
+        {
+            <BitImage Id="@($"img-fit-{fit}")" Width="160" Height="96" ImageFit="fit" Cover="BitImageCover.Landscape" Alt="@fit.ToString()" Src="samples/image-square.svg" />
+        }
+        <BitImage Id="img-fit-ccv-portrait" Width="240" Height="48" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Portrait" Alt="CenterCover portrait" Src="samples/image-landscape.svg" />
+        <BitImage Id="img-fit-ccv-landscape" Width="96" Height="144" ImageFit="BitImageFit.CenterCover" Cover="BitImageCover.Landscape" Alt="CenterCover landscape" Src="samples/image-landscape.svg" />
+        <BitImage Id="img-fit-cct-big" Width="100" Height="100" ImageFit="BitImageFit.CenterContain" Cover="BitImageCover.Landscape" Alt="CenterContain bigger image" Src="samples/image-wide.svg" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="position" Title="ImagePosition">
+    <BitImage Id="img-position" Width="100" Height="100" ImageFit="BitImageFit.Cover" ImagePosition="left top" Alt="Position" Src="samples/image-landscape.svg" />
+    <BitImage Id="img-position-default" Width="100" Height="100" ImageFit="BitImageFit.Cover" Alt="Default position" Src="samples/image-landscape.svg" />
+</E2ESection>
+
+<E2ESection Id="maximize" Title="MaximizeFrame">
+    <div id="max-parent" style="width: 300px; height: 150px;">
+        <BitImage Id="img-max" MaximizeFrame Alt="Maximized" Src="samples/image-square.svg" />
+    </div>
+    <div style="width: 300px; height: 150px;">
+        <BitImage Id="img-max-contain" MaximizeFrame ImageFit="BitImageFit.Contain" Alt="Maximized, contained" Src="samples/image-square.svg" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="shape" Title="Shape and shadow">
+    <BitImage Id="img-rounded" Rounded Width="128" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Rounded" Src="samples/image-square.svg" />
+    <BitImage Id="img-circular" Circular Width="128" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Circular" Src="samples/image-square.svg" />
+    <BitImage Id="img-circular-rounded" Circular Rounded Width="128" AspectRatio="1" Alt="Circular wins" Src="samples/image-square.svg" />
+    <BitImage Id="img-bordered" Bordered Rounded Width="128" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Bordered" Src="samples/image-square.svg" />
+    <BitImage Id="img-shadow" Shadow Rounded Width="128" AspectRatio="1" ImageFit="BitImageFit.Cover" Alt="Shadow" Src="samples/image-square.svg" />
+</E2ESection>
+
+<E2ESection Id="states" Title="Loading states">
+    <BitImage @ref="_slowImage" Id="img-slow" Width="120" Height="60" Alt="A slow picture" Src="samples/image-slow.svg?case=template"
+              OnLoad="() => _slowLoads++" OnLoadingStateChange="s => _slowStates = Append(_slowStates, s)">
+        <LoadingTemplate><div id="loading-template">Loading...</div></LoadingTemplate>
+        <ErrorTemplate><div id="error-template-unused">Failed</div></ErrorTemplate>
+    </BitImage>
+    <span id="slow-loads">@_slowLoads</span>
+    <span id="slow-states">@_slowStates</span>
+    <span id="slow-state-property">@_slowStateProperty</span>
+    <button id="btn-read-state" @onclick="() => _slowStateProperty = _slowImage.LoadingState.ToString()">Read state</button>
+    <button id="btn-reload" @onclick="() => _slowImage.ReloadAsync()">Reload</button>
+</E2ESection>
+
+<E2ESection Id="progressive" Title="Progressive loading">
+    <BitImage Id="img-fade" Width="120" Height="60" FadeIn Alt="Fades in" Src="samples/image-slow.svg?case=fade" />
+    <BitImage Id="img-start-visible" Width="120" Height="60" StartVisible Alt="Starts visible" Src="samples/image-slow.svg?case=start" />
+    <BitImage Id="img-placeholder" Width="120" Height="60" FadeIn PlaceholderSrc="@_placeholder" Alt="With a placeholder" Src="samples/image-slow.svg?case=placeholder" />
+    <BitImage Id="img-placeholder-nofade" Width="120" Height="60" PlaceholderSrc="@_placeholder" Alt="Placeholder without fade" Src="samples/image-slow.svg?case=nofade" />
+    <BitImage Id="img-fade-force" Width="120" Height="60" FadeIn ForceAnimation Alt="Forced fade" Src="samples/image-slow.svg?case=force" />
+</E2ESection>
+
+<E2ESection Id="native" Title="Native loading attributes">
+    <BitImage Id="img-native" Width="120" Loading="BitImageLoading.Eager" Decoding="BitImageDecoding.Async" FetchPriority="BitImageFetchPriority.High"
+              CrossOrigin="BitImageCrossOrigin.Anonymous" ReferrerPolicy="BitImageReferrerPolicy.NoReferrer" Draggable="false" Alt="Native attributes" Src="samples/image-landscape.svg"
+              ImageAttributes="@(new Dictionary<string, object> { ["data-e2e"] = "image", ["class"] = "splat-image-class", ["style"] = "outline: 2px solid rgb(1, 2, 3)" })" />
+    @foreach (var decoding in _decodings)
+    {
+        <BitImage Id="@($"img-decoding-{decoding}")" Width="20" Decoding="decoding" Alt="Decoding" Src="samples/image-square.svg" />
+    }
+    @foreach (var priority in _priorities)
+    {
+        <BitImage Id="@($"img-priority-{priority}")" Width="20" FetchPriority="priority" Alt="Priority" Src="samples/image-square.svg" />
+    }
+    <BitImage Id="img-cors-credentials" Width="20" CrossOrigin="BitImageCrossOrigin.UseCredentials" Alt="Credentials" Src="samples/image-square.svg" />
+    @foreach (var policy in _policies)
+    {
+        <BitImage Id="@($"img-referrer-{policy}")" Width="20" ReferrerPolicy="policy" Alt="Referrer" Src="samples/image-square.svg" />
+    }
+    <BitImage Id="img-draggable" Width="20" Draggable="true" Alt="Draggable" Src="samples/image-square.svg" />
+</E2ESection>
+
+<E2ESection Id="responsive" Title="Responsive sources">
+    <BitImage Id="img-srcset-small" Width="100" Alt="Srcset small" Sizes="100px" Srcset="samples/image-landscape.svg 200w, samples/image-wide.svg 400w" Src="samples/image-square.svg" />
+    <BitImage Id="img-srcset-large" Width="380" Alt="Srcset large" Sizes="380px" Srcset="samples/image-landscape.svg 200w, samples/image-wide.svg 400w" Src="samples/image-square.svg" />
+    <BitImage Id="img-sources" Width="120" Alt="Sources" Src="samples/image-square.svg"
+              Sources="@(new BitImageSource[] { new() { Type = "image/x-e2e-unsupported", Srcset = "samples/image-wide.svg" }, new() { Media = "(min-width: 1px)", Srcset = "samples/image-portrait.svg", Width = 100, Height = 200 }, new() { Srcset = "samples/image-landscape.svg" } })" />
+    <BitImage Id="img-sources-nomatch" Width="120" Alt="Sources without a match" Src="samples/image-square.svg"
+              Sources="@(new BitImageSource[] { new() { Media = "(max-width: 1px)", Srcset = "samples/image-portrait.svg" }, new() { Srcset = "" } })" />
+</E2ESection>
+
+<E2ESection Id="click" Title="OnClick">
+    <button id="before-clickable">before</button>
+    <BitImage Id="img-click" Rounded Width="120" Alt="Open the preview" Src="samples/image-landscape.svg" Draggable="false" OnClick="HandleClick" />
+    <BitImage Id="img-click-disabled" Width="120" Disabled Alt="Disabled preview" Src="samples/image-landscape.svg" OnClick="() => _disabledClicks++" />
+    <BitImage Id="img-click-named" Width="120" Alt="A landscape" AriaLabel="Open the gallery" Src="samples/image-landscape.svg" OnClick="() => _namedClicks++" />
+    <button id="after-clickable">after</button>
+    <span id="click-count">@_clicks</span>
+    <span id="click-args">@_clickArgs</span>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="named-clicks">@_namedClicks</span>
+</E2ESection>
+
+<E2ESection Id="content" Title="ChildContent">
+    <BitImage Id="img-content" Width="200" Height="100" Alt="With a caption" Src="samples/image-landscape.svg" OnClick="() => _contentImageClicks++">
+        <span id="caption" style="position: absolute; bottom: 0; left: 0;"><button id="caption-button" @onclick="() => _captionClicks++">Caption</button></span>
+    </BitImage>
+    <span id="content-image-clicks">@_contentImageClicks</span>
+    <span id="caption-clicks">@_captionClicks</span>
+</E2ESection>
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitImage Id="img-decorative" Width="40" Src="samples/image-square.svg" />
+    <BitImage Id="img-hidden-alt" Width="120" Height="60" Alt="Monthly sales chart" Src="samples/image-slow.svg?case=alt" />
+    <BitImage Id="img-image-attr-alt" Width="40" Src="samples/image-square.svg" ImageAttributes="@(new Dictionary<string, object> { ["alt"] = "Alt from attributes" })" />
+    <BitImage @ref="_focusableImage" Id="img-focusable" Width="120" Alt="Focusable" Src="samples/image-landscape.svg" OnClick="() => { }" />
+    <button id="btn-focus-image" @onclick="() => _focusableImage.FocusAsync()">Focus the image</button>
+</E2ESection>
+
+<E2ESection Id="lazy" Title="Lazy">
+    <div id="lazy-scroller" style="height: 150px; overflow: auto; border: 1px solid gray;">
+        <div style="height: 6000px;"></div>
+        <BitImage Id="img-lazy" Width="120" Height="60" Loading="BitImageLoading.Lazy" Alt="A lazy picture" Src="samples/image-landscape.svg?case=lazy" OnLoadingStateChange="s => _lazyState = s.ToString()" />
+        @if (_showLateLazy)
+        {
+            <BitImage Id="img-lazy-late" Width="120" Height="60" Loading="BitImageLoading.Lazy" Alt="A late lazy picture" Src="samples/image-landscape.svg?case=lazy-late" OnLoadingStateChange="s => _lateLazyState = s.ToString()" />
+        }
+    </div>
+    <button id="btn-show-late-lazy" @onclick="() => _showLateLazy = true">Show late lazy</button>
+    <span id="lazy-state">@_lazyState</span>
+    <span id="late-lazy-state">@_lateLazyState</span>
+</E2ESection>
+
+<E2ESection Id="params" Title="Cascading parameters">
+    <BitParams Parameters="_imageParams">
+        <BitImage Id="img-params-1" Alt="Cascaded" Src="samples/image-landscape.svg" />
+        <BitImage Id="img-params-2" Rounded="false" Alt="Own Rounded" Src="samples/image-landscape.svg" />
+    </BitParams>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitImage Id="img-style" Style="margin: 7px" Class="e2e-image-class" Width="60" Alt="Styled" Src="samples/image-landscape.svg" />
+    <BitImage Id="img-styles" Width="60" Alt="Styles" Src="samples/image-landscape.svg"
+              Styles="@(new() { Root = "padding: 3px", Image = "filter: grayscale(1)", Content = "color: rgb(1, 2, 3)" })"
+              Classes="@(new() { Root = "e2e-root", Image = "e2e-image", Content = "e2e-content" })">
+        <span>Overlay</span>
+    </BitImage>
+    <BitImage Id="img-styles-placeholder" Width="60" Height="30" Alt="Placeholder styles" PlaceholderSrc="@_placeholder" Src="samples/image-slow.svg?case=styles"
+              Styles="@(new() { Placeholder = "opacity: 0.5", LoadingTemplate = "color: rgb(4, 5, 6)" })"
+              Classes="@(new() { Placeholder = "e2e-placeholder", LoadingTemplate = "e2e-loading" })">
+        <LoadingTemplate>Loading</LoadingTemplate>
+    </BitImage>
+    <BitImage Id="img-hidden" Visibility="BitVisibility.Hidden" Width="60" Alt="Hidden" Src="samples/image-landscape.svg" />
+    <BitImage Id="img-collapsed" Visibility="BitVisibility.Collapsed" Width="60" Alt="Collapsed" Src="samples/image-landscape.svg" />
+</E2ESection>
+
+<E2ESection Id="css-vars" Title="CSS variables">
+    <div style="--bit-Image-background: rgb(10, 20, 30); --bit-Image-radius: 11px; --bit-Image-border-width: 4px; --bit-Image-border-color: rgb(200, 0, 0); --bit-Image-shadow: rgb(0, 0, 255) 2px 2px 0px 0px; --bit-Image-hover-shadow: rgb(0, 255, 0) 3px 3px 0px 0px; --bit-Image-hover-overlay: rgba(255, 0, 0, 0.5); --bit-Image-active-overlay: rgba(0, 0, 255, 0.5); --bit-Image-focus-color: rgb(0, 150, 0); --bit-Image-placeholder-blur: 3px;">
+        <BitImage Id="img-css" Rounded Bordered Shadow Width="120" Alt="Restyled" Src="samples/image-square.svg" OnClick="() => { }" />
+        <BitImage Id="img-css-placeholder" Width="60" Height="30" Alt="Blur" PlaceholderSrc="@_placeholder" Src="samples/image-slow.svg?case=blur" />
+    </div>
+    <div style="--bit-Image-fade-duration: 900ms; --bit-Image-fade-easing: linear;">
+        <BitImage Id="img-css-fade" Width="60" Height="30" FadeIn Alt="Fade timing" Src="samples/image-slow.svg?case=timing" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitImage Id="img-rtl" Dir="BitDir.Rtl" Width="60" Alt="RTL" Src="samples/image-landscape.svg" />
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime parameter changes">
+    <BitImage Id="img-runtime" Width="120" Alt="Runtime" Src="@_runtimeSrc" Disabled="_runtimeDisabled" OnLoadingStateChange="s => _runtimeStates = Append(_runtimeStates, s)" />
+    <span id="runtime-states">@_runtimeStates</span>
+    <button id="btn-set-src" @onclick="@(() => _runtimeSrc = "samples/image-portrait.svg")">Portrait</button>
+    <button id="btn-toggle-disabled" @onclick="() => _runtimeDisabled = !_runtimeDisabled">Toggle disabled</button>
+    <button id="btn-toggle-mounted" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <BitImage Id="img-mounted" Width="60" Alt="Mounted" Src="samples/image-square.svg" OnClick="() => { }" />
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private int _basicLoads;
+    private string _basicStates = "";
+    private BitImage _slowImage = default!;
+    private int _slowLoads;
+    private string _slowStates = "";
+    private string? _slowStateProperty;
+    private int _clicks;
+    private string? _clickArgs;
+    private int _disabledClicks;
+    private int _namedClicks;
+    private int _contentImageClicks;
+    private int _captionClicks;
+    private BitImage _focusableImage = default!;
+    private string? _lazyState;
+    private bool _showLateLazy;
+    private string? _lateLazyState;
+    private string _runtimeSrc = "samples/image-landscape.svg";
+    private bool _runtimeDisabled;
+    private string _runtimeStates = "";
+    private bool _mounted = true;
+
+    private const string _placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='4' height='2'%3E%3Crect width='4' height='2' fill='%2399f'/%3E%3C/svg%3E";
+
+    private readonly BitImageFit[] _fits =
+    [
+        BitImageFit.None, BitImageFit.Center, BitImageFit.CenterContain, BitImageFit.CenterCover,
+        BitImageFit.Contain, BitImageFit.Cover, BitImageFit.Fill, BitImageFit.ScaleDown
+    ];
+
+    private readonly BitImageDecoding[] _decodings = [BitImageDecoding.Auto, BitImageDecoding.Sync, BitImageDecoding.Async];
+
+    private readonly BitImageFetchPriority[] _priorities = [BitImageFetchPriority.Auto, BitImageFetchPriority.High, BitImageFetchPriority.Low];
+
+    private readonly BitImageReferrerPolicy[] _policies =
+    [
+        BitImageReferrerPolicy.NoReferrer, BitImageReferrerPolicy.NoReferrerWhenDowngrade, BitImageReferrerPolicy.Origin,
+        BitImageReferrerPolicy.OriginWhenCrossOrigin, BitImageReferrerPolicy.SameOrigin, BitImageReferrerPolicy.StrictOrigin,
+        BitImageReferrerPolicy.StrictOriginWhenCrossOrigin, BitImageReferrerPolicy.UnsafeUrl
+    ];
+
+    private readonly BitImageParams[] _imageParams =
+    [
+        new()
+        {
+            Width = "128px",
+            AspectRatio = "1",
+            ImageFit = BitImageFit.Cover,
+            Rounded = true,
+            Shadow = true,
+        }
+    ];
+
+    private static string Append(string log, BitImageState state) => $"{log}>{state}";
+
+    private void HandleClick(MouseEventArgs e)
+    {
+        _clicks++;
+        _clickArgs = $"detail={e.Detail};type={e.Type}";
+    }
+}

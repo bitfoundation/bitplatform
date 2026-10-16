@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!-- An app the way a consumer of the packages writes one, kept to two things the library's own projects cannot
+         check for it, since every one of them compiles with C# 14 and is never trimmed:
+
+         - Building it compiles the markup and the C# below as C# 12, the language a net8.0 app compiles with. A public
+           API that only C# 14 can call - an extension member (extension(T) blocks) standing where a plain member used
+           to - fails here with CS9202 on every build of the solution, rather than in an app after a release.
+         - Publishing it (dotnet publish -c Release) trims the app, the packages with it, and turns every trim warning
+           ILLink reports for them into an error: IsTrimmable promises an app that trimming leaves it working.
+
+         It references the projects rather than the packages, so it checks the code of the branch it is built from. -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>12</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+
+        <!-- The Blazor WebAssembly SDK hides the trim analysis warnings by default; here they are shown and each of
+             them is an error. The packages' own are reported one per call site (the target below); every other
+             assembly - the framework's own, which is not trim clean in full - is summed up in one IL2104 per
+             assembly, which is not this check's business. -->
+        <SuppressTrimAnalysisWarnings>false</SuppressTrimAnalysisWarnings>
+        <TrimmerSingleWarn>true</TrimmerSingleWarn>
+        <ILLinkTreatWarningsAsErrors>true</ILLinkTreatWarningsAsErrors>
+        <NoWarn>$(NoWarn);IL2104</NoWarn>
+    </PropertyGroup>
+
+    <Target Name="ReportBitBlazorUITrimWarningsPerCallSite" AfterTargets="PrepareForILLink">
+        <ItemGroup>
+            <ManagedAssemblyToLink Update="@(ManagedAssemblyToLink)" Condition=" $([System.String]::Copy('%(Filename)').StartsWith('Bit.BlazorUI')) " TrimmerSingleWarn="false" />
+        </ItemGroup>
+    </Target>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Assets\Bit.BlazorUI.Assets.csproj" />
+    </ItemGroup>
+
+</Project>

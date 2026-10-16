@@ -1098,8 +1098,8 @@ public class BitSnackBarTests : BunitTestContext
     [TestMethod,
          DataRow(BitColor.Info, "bit-icon--Info"),
          DataRow(BitColor.Success, "bit-icon--Completed"),
-         DataRow(BitColor.Warning, "bit-icon--Info"),
-         DataRow(BitColor.SevereWarning, "bit-icon--Warning"),
+         DataRow(BitColor.Warning, "bit-icon--Warning"),
+         DataRow(BitColor.SevereWarning, "bit-icon--WarningSolid"),
          DataRow(BitColor.Error, "bit-icon--ErrorBadge")
     ]
     public async Task BitSnackBarShowIconTest(BitColor color, string iconClass)

@@ -9,7 +9,8 @@
             height: 100%;
             margin: 0 auto;
             display: flex;
-            min-width: rem2(400px);
+            // Narrow enough for a phone's preview box; below it the wrapper scrolls instead.
+            min-width: rem2(240px);
             max-width: rem2(820px);
             box-sizing: border-box;
             min-height: rem2(280px);
@@ -19,6 +20,7 @@
 
     .buttons-container {
         display: flex;
+        flex-wrap: wrap;
         margin-top: 2rem;
         justify-content: center;
     }

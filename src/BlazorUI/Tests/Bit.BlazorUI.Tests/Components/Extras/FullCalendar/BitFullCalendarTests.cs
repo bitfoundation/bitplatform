@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Bunit;
@@ -1194,6 +1195,35 @@ public class BitFullCalendarTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitFullCalendarShouldFollowACalendarSwitchedOnACultureOfTheSameName()
+    {
+        // DateTimeFormat.Calendar is the documented way of switching the calendar of a culture: the name stays, and so
+        // does CultureInfo.Calendar (the culture's default), so only the calendar the format reads tells the two apart.
+        var hijri = CultureInfo.GetCultureInfo("ar-SA");
+        var gregorian = (CultureInfo)hijri.Clone();
+        gregorian.DateTimeFormat.Calendar = new GregorianCalendar();
+        var anchor = new DateTime(2026, 3, 18);
+
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events, Events());
+            parameters.Add(p => p.Culture, hijri);
+            parameters.Add(p => p.DefaultDate, anchor);
+        });
+
+        Assert.IsInstanceOfType<UmAlQuraCalendar>(component.Instance.State.Culture.DateTimeFormat.Calendar);
+        Assert.AreEqual(anchor.ToString("Y", hijri), component.Find(".bit-bfc-header-title").TextContent.Trim());
+
+        component.Render(parameters => parameters.Add(p => p.Culture, gregorian));
+
+        // The state took the switched culture, and the month grid is laid out in its calendar: March 2026, 31 days.
+        Assert.IsInstanceOfType<GregorianCalendar>(component.Instance.State.Culture.DateTimeFormat.Calendar);
+        Assert.AreEqual(anchor.ToString("Y", gregorian), component.Find(".bit-bfc-header-title").TextContent.Trim());
+        Assert.AreNotEqual(anchor.ToString("Y", hijri), component.Find(".bit-bfc-header-title").TextContent.Trim());
+        Assert.AreEqual(31, component.FindAll(".bit-bfc-month-cell:not(.other-month)").Count);
+    }
+
+    [TestMethod]
     public void BitFullCalendarShouldTreatADisabledCalendarAsReadOnly()
     {
         var component = RenderComponent<BitFullCalendar>(parameters =>
@@ -1707,6 +1737,90 @@ public class BitFullCalendarTests : BunitTestContext
 
         Assert.AreEqual(0, changes.Count);
         CollectionAssert.AreEqual(new[] { BitFullCalendarChangeRefusal.Overlap }, refusals.ToArray());
+    }
+
+    // A save of the built-in dialog passes through the same rules a drop does, and is reported the same way: the
+    // reason is shown in the dialog, next to its actions, rather than as the calendar's notice behind it, and
+    // OnRefused is raised all the same.
+
+    private IRenderedComponent<BitFullCalendar> RenderTwoOverlappingEvents(List<BitFullCalendarChangeEventArgs> changes, List<BitFullCalendarChangeRefusal> refusals, bool allowOverlap)
+    {
+        var today = DateTime.Today;
+        return RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events,
+            [
+                new BitFullCalendarEvent { Id = "1", Title = "Standup", StartDate = today.AddHours(9), EndDate = today.AddHours(10) },
+                new BitFullCalendarEvent { Id = "2", Title = "Retro", StartDate = today.AddHours(9).AddMinutes(30), EndDate = today.AddHours(11) }
+            ]);
+            parameters.Add(p => p.CultureName, "en-US");
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            parameters.Add(p => p.Settings, new BitFullCalendarSettings { AllowEventOverlap = allowOverlap });
+            parameters.Add(p => p.OnChange, EventCallback.Factory.Create<BitFullCalendarChangeEventArgs>(this, changes.Add));
+            parameters.Add(p => p.OnRefused, EventCallback.Factory.Create<BitFullCalendarChangeRefusal>(this, refusals.Add));
+        });
+    }
+
+    private static void SaveEventOneThroughTheDialog(IRenderedComponent<BitFullCalendar> component)
+    {
+        component.Find("[data-bit-bfc-event='1']").Click();
+        component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn").First(b => b.TextContent.Trim() == "Edit").Click();
+        SaveChangesButton(component).Click();
+    }
+
+    private static AngleSharp.Dom.IElement SaveChangesButton(IRenderedComponent<BitFullCalendar> component)
+        => component.FindAll(".bit-bfc-dialog-footer .bit-bfc-btn-primary").Single(b => b.TextContent.Trim() == "Save Changes");
+
+    [TestMethod]
+    public void BitFullCalendarDialogSaveTheRulesRefuseShouldRaiseOnRefusedAndSayWhyInTheDialog()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var refusals = new List<BitFullCalendarChangeRefusal>();
+        var component = RenderTwoOverlappingEvents(changes, refusals, allowOverlap: false);
+
+        SaveEventOneThroughTheDialog(component);
+
+        Assert.AreEqual(0, changes.Count);
+        Assert.AreEqual("This time range is already taken on that resource.", component.Find(".bit-bfc-dialog-footer [role=alert]").TextContent.Trim());
+        CollectionAssert.AreEqual(new[] { BitFullCalendarChangeRefusal.Overlap }, refusals.ToArray());
+        // the reason is shown once, where the user is looking - not again as the calendar's notice behind the dialog
+        Assert.AreEqual(string.Empty, component.Find(".bit-bfc-toast-region").TextContent.Trim());
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDialogSaveTheRulesAllowShouldRaiseNoRefusal()
+    {
+        var changes = new List<BitFullCalendarChangeEventArgs>();
+        var refusals = new List<BitFullCalendarChangeRefusal>();
+        var component = RenderTwoOverlappingEvents(changes, refusals, allowOverlap: true);
+
+        SaveEventOneThroughTheDialog(component);
+
+        Assert.AreEqual(1, changes.Count);
+        Assert.AreEqual(0, refusals.Count);
+    }
+
+    [TestMethod]
+    public void BitFullCalendarDialogSaveOnChangingCancelsShouldRaiseNoRefusal()
+    {
+        var refusals = new List<BitFullCalendarChangeRefusal>();
+        var today = DateTime.Today;
+        var component = RenderComponent<BitFullCalendar>(parameters =>
+        {
+            parameters.Add(p => p.Events,
+            [
+                new BitFullCalendarEvent { Id = "1", Title = "Standup", StartDate = today.AddHours(9), EndDate = today.AddHours(10) }
+            ]);
+            parameters.Add(p => p.CultureName, "en-US");
+            parameters.Add(p => p.DefaultView, BitFullCalendarView.Day);
+            parameters.Add(p => p.OnChanging, (BitFullCalendarChangingEventArgs args) => args.Cancel = true);
+            parameters.Add(p => p.OnRefused, EventCallback.Factory.Create<BitFullCalendarChangeRefusal>(this, refusals.Add));
+        });
+
+        SaveEventOneThroughTheDialog(component);
+
+        Assert.AreEqual(0, refusals.Count, "the app refused it itself, through OnChanging");
+        Assert.IsNotNull(SaveChangesButton(component), "the dialog stays open on what was typed");
     }
 
     [TestMethod]

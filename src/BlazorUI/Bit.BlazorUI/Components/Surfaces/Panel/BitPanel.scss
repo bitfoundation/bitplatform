@@ -118,7 +118,9 @@ $pnl-private-properties: zin-ovl, zin-cnt;
 
 .bit-pnl-ovl-opn {
     opacity: 1;
-    visibility: visible;
+    // Inherited rather than set: the root carries the panel's Visibility (visibility:hidden for Hidden), and a
+    // value set here would show the open overlay through a panel the page asked to keep out of sight.
+    visibility: inherit;
     transition: opacity $mot-duration $mot-easing-decelerate, visibility 0s linear 0s;
 }
 
@@ -369,7 +371,9 @@ $pnl-private-properties: zin-ovl, zin-cnt;
 // from inside it out against the panel instead of against the screen.
 .bit-pnl-opn {
     opacity: 1;
-    visibility: visible;
+    // Inherited for the same reason as the open overlay: a panel whose Visibility is Hidden stays out of sight
+    // while it is open.
+    visibility: inherit;
     transform: none;
     transition: transform $mot-duration $mot-easing-decelerate,
                 opacity $mot-duration-short $mot-easing-decelerate,

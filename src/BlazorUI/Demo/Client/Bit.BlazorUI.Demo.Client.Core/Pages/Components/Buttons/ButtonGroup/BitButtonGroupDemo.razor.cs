@@ -150,7 +150,7 @@ public partial class BitButtonGroupDemo
         {
             Name = "OnToggleChange",
             Type = "EventCallback<TItem>",
-            Description = "The callback that called when toggled item change."
+            Description = "The callback that is called when the user toggles or un-toggles an item, with that item. Only a change the user makes raises it, in both selection modes: the toggled items the group starts with (DefaultToggleKey, DefaultToggleKeys, a bound key) and the keys the page writes itself are applied without raising it."
         },
         new()
         {
@@ -746,6 +746,8 @@ public partial class BitButtonGroupDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link when the item renders as an anchor (by providing the Href property). When Target is _blank and no opener-related rel is given, noopener is added automatically.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -942,6 +944,8 @@ public partial class BitButtonGroupDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link when the option renders as an anchor (by providing the Href parameter). When Target is _blank and no opener-related rel is given, noopener is added automatically.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -1382,6 +1386,7 @@ public partial class BitButtonGroupDemo
             ]
         },
         DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitLinkRels(),
         DemoSharedEnums.BitSize()
     ];
 }

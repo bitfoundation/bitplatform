@@ -19,6 +19,7 @@ public partial class BitToggleButton : BitComponentBase
 
 
 
+    private bool _autoFocus;
     private bool _showLoading;
     private int _pendingChanges;
     private CancellationTokenSource? _loadingDelayCts;
@@ -613,6 +614,24 @@ public partial class BitToggleButton : BitComponentBase
 
         base.OnParametersSet();
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+
+        if (IsDisposed) return;
+
+        // The autofocus attribute is written on the button, but a browser honors it only while the document is
+        // still loading: an interactive render replaces the prerendered markup that took the focus, and a
+        // WebAssembly page or a button rendered later never gets that far. So the first render gives the focus
+        // itself, by the very rule the attribute is written by.
+        if (firstRender && _autoFocus)
+        {
+            await RootElement.FocusSafelyAsync();
+        }
+    }
+
+
 
     protected override async ValueTask DisposeAsync(bool disposing)
     {

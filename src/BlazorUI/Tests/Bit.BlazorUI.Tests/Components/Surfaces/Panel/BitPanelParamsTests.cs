@@ -2,13 +2,21 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Bunit;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Components.Surfaces.Panel;
 
+/// <summary>
+/// Covers the BitParams cascade of the Panel: what a BitPanelParams fills in, what it leaves alone because the panel
+/// wrote it for itself, that every plain parameter has a counterpart on the params object and every property of it
+/// reaches the panel, and that what the panel decides from its parameters - its chrome, its dismissals, the geometry
+/// of its swipe gesture - follows the cascaded values.
+/// </summary>
 [TestClass]
 public class BitPanelParamsTests : BunitTestContext
 {
@@ -201,91 +209,125 @@ public class BitPanelParamsTests : BunitTestContext
     }
 
     [TestMethod]
-    public void BitPanelStylesheetShouldOnlyReadItsPublicVariables()
+    public void BitPanelShouldApplyCascadedBaseParameters()
     {
-        var stylesheet = ReadStylesheet();
+        var component = RenderWithParams(new BitPanelParams { Dir = BitDir.Rtl, Disabled = true, Class = "cascaded" });
 
-        // A public variable declared by the component would stop the value set on an ancestor from inheriting.
-        Assert.IsFalse(Regex.IsMatch(stylesheet, @"--bit-Panel-[\w-]+\s*:"), "A public variable is declared by the stylesheet.");
+        var root = component.Find(".bit-pnl");
 
-        var documented = Regex.Matches(stylesheet, @"^//   (--bit-Panel-[\w-]+)", RegexOptions.Multiline)
-                              .Select(m => m.Groups[1].Value)
-                              .ToArray();
+        Assert.AreEqual("rtl", root.GetAttribute("dir"));
+        Assert.IsTrue(root.ClassList.Contains("bit-rtl"));
+        Assert.IsTrue(root.ClassList.Contains("bit-dis"));
+        Assert.IsTrue(root.ClassList.Contains("cascaded"));
+    }
 
-        Assert.IsTrue(documented.Length > 0);
+    // A cascaded dismissal setting is read by the handler that decides on it, not only by the markup.
+    [TestMethod]
+    public void BitPanelShouldHonourACascadedNoDismissOnEscapeAndBlocking()
+    {
+        var isOpen = true;
 
-        foreach (var name in documented)
+        var component = RenderWithParams(new BitPanelParams { NoDismissOnEscape = true, Blocking = true }, builder =>
         {
-            Assert.IsTrue(Regex.IsMatch(stylesheet, $@"var\({Regex.Escape(name)}\)|var\({Regex.Escape(name)},"),
-                          $"{name} is documented but never read.");
-        }
+            builder.AddAttribute(1, nameof(BitPanel.IsOpen), isOpen);
+            builder.AddAttribute(2, nameof(BitPanel.IsOpenChanged), EventCallback.Factory.Create<bool>(this, v => isOpen = v));
+        });
 
-        var read = Regex.Matches(stylesheet, @"var\((--bit-Panel-[\w-]+)[,)]").Select(m => m.Groups[1].Value).Distinct();
+        component.Find(".bit-pnl").KeyDown(new KeyboardEventArgs { Key = "Escape" });
+        Assert.IsTrue(isOpen);
 
-        foreach (var name in read)
+        component.Find(".bit-pnl-ovl").Click();
+        Assert.IsTrue(isOpen);
+    }
+
+    // The geometry the swipe gesture is registered with is decided from parameters the cascade may be giving.
+    [TestMethod]
+    public void BitPanelShouldRegisterTheSwipeGestureWithTheCascadedGeometry()
+    {
+        var component = RenderWithParams(new BitPanelParams { Placement = BitPlacement.Top, SwipeTrigger = 0.6m, Dir = BitDir.Rtl });
+
+        component.WaitForAssertion(() => Assert.AreEqual(1, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count));
+
+        var arguments = Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"][^1].Arguments;
+
+        Assert.AreEqual(0.6m, arguments[1]);
+        Assert.AreEqual("top", arguments[2]);
+        Assert.AreEqual(true, arguments[3]);
+        Assert.AreEqual(BitSwipeOrientation.Vertical, arguments[4]);
+    }
+
+    [TestMethod]
+    public void BitPanelShouldRegisterNoSwipeGestureWhenTheCascadeTurnsItOff()
+    {
+        RenderWithParams(new BitPanelParams { NoSwipe = true });
+
+        Assert.AreEqual(0, Context.JSInterop.Invocations["BitBlazorUI.Swipes.setup"].Count);
+    }
+
+    [TestMethod]
+    public async Task BitPanelShouldApplyTheCascadedChromeParameters()
+    {
+        var component = RenderWithParams(new BitPanelParams
         {
-            CollectionAssert.Contains(documented, name, $"{name} is read but not documented.");
-        }
-    }
-
-    [TestMethod]
-    public void BitPanelOpenStateShouldCarryNoTransform()
-    {
-        var stylesheet = ReadStylesheet();
-        var open = SourceFiles.GetScssBlock(stylesheet, "\n.bit-pnl-opn {");
-
-        // Any transform - an identity one included - makes the open panel the containing block of its fixed
-        // descendants, which lays a panel or a dialog opened from inside it out against the panel.
-        StringAssert.Contains(open, "transform: none;");
-    }
-
-    [TestMethod]
-    [DataRow(".bit-pnl-start", "top,bottom,left,right")]
-    [DataRow(".bit-pnl-end", "top,bottom,left,right")]
-    [DataRow(".bit-pnl-left", "top,bottom,left")]
-    [DataRow(".bit-pnl-right", "top,bottom,right")]
-    [DataRow(".bit-pnl-top", "top,left,right")]
-    [DataRow(".bit-pnl-bottom", "bottom,left,right")]
-    [DataRow(".bit-pnl-fsz", "top,right,bottom,left")]
-    public void BitPanelEdgesShouldMakeRoomForTheSafeAreaTheyTouch(string edge, string insets)
-    {
-        var stylesheet = ReadStylesheet();
-        var rule = SourceFiles.GetScssBlock(stylesheet, $"\n{edge} {{");
-
-        foreach (var inset in insets.Split(','))
+            ShowCloseButton = true,
+            CloseIconName = "ChromeClose",
+            FullSize = true,
+            IsAlert = true,
+            KeepMounted = true,
+        }, builder =>
         {
-            StringAssert.Contains(rule, $"var(--bit-pnl-sa-{inset})", $"{edge} does not make room for the {inset} inset.");
+            builder.AddAttribute(1, nameof(BitPanel.IsOpen), true);
+            // Bound, so the panel is free to close itself below (a one-way IsOpen is left as it was given).
+            builder.AddAttribute(2, nameof(BitPanel.IsOpenChanged), EventCallback.Factory.Create<bool>(this, _ => { }));
+            builder.AddAttribute(3, nameof(BitPanel.ChildContent), (RenderFragment)(b => b.AddMarkupContent(0, "<div class=\"kept\">Kept</div>")));
+        });
 
-            StringAssert.Contains(stylesheet, $"    --bit-pnl-sa-{inset}: env(safe-area-inset-{inset}, 0px);");
+        var container = component.Find(".bit-pnl-cnt");
 
-            // A panel laid out inside a box of the page touches no device edge.
-            StringAssert.Contains(RuleOf(stylesheet, ".bit-pnl-abs"), $"    --bit-pnl-sa-{inset}: 0px;");
-        }
+        Assert.AreEqual("alertdialog", container.GetAttribute("role"));
+        Assert.IsTrue(container.ClassList.Contains("bit-pnl-fsz"));
+        Assert.IsTrue(component.Find(".bit-pnl-cli").ClassList.Contains("bit-icon--ChromeClose"));
+
+        // KeepMounted is read once the panel has slid away, so the cascaded value has to reach that decision too.
+        var panel = component.FindComponent<BitPanel>();
+
+        await panel.InvokeAsync(() => panel.Instance.Close());
+        await panel.InvokeAsync(() => panel.Instance._OnTransitionEnd());
+
+        Assert.IsFalse(panel.Instance.IsOpen);
+        Assert.AreEqual(1, component.FindAll(".kept").Count);
     }
 
-    // The inset is taken away through the variables rather than by a padding on the container, which would
-    // outrank one the consumer gives the container through Classes.
     [TestMethod]
-    public void BitPanelLaidOutInABoxShouldLeaveThePaddingOfTheContainerToTheConsumer()
+    public void BitPanelShouldNotBeAffectedByAnEmptyParamsObject()
     {
-        StringAssert.DoesNotMatch(ReadStylesheet(), new Regex(@"\.bit-pnl-cnt\s*\{\s*padding"));
+        var component = RenderWithParams(new BitPanelParams(), builder =>
+        {
+            builder.AddAttribute(1, nameof(BitPanel.IsOpen), true);
+        });
+
+        var root = component.Find(".bit-pnl");
+        var container = component.Find(".bit-pnl-cnt");
+
+        Assert.AreEqual("bit-pnl", root.ClassName);
+        Assert.IsTrue(string.IsNullOrEmpty(root.GetAttribute("style")));
+        Assert.AreEqual("bit-pnl-cnt bit-pnl-end bit-pnl-opn", container.ClassName);
+        Assert.AreEqual("dialog", container.GetAttribute("role"));
+        Assert.AreEqual(0, component.FindAll(".bit-pnl-cls").Count);
+        Assert.IsFalse(component.Find(".bit-pnl-ovl").ClassList.Contains("bit-pnl-ovl-mfl"));
     }
 
-    // The direction is read off the layout as well as off the class Dir renders: the one so a panel given no
-    // direction of its own on a right-to-left page still slides out towards the edge it came from, the other
-    // so an explicit right-to-left still does on an engine without :dir(), which the forgiving :is() keeps the class for.
-    [TestMethod]
-    public void BitPanelShouldSlideTheWayThePageItIsInReads()
+    private IRenderedComponent<BitParams> RenderWithParams(BitPanelParams panelParams, Action<RenderTreeBuilder>? extraAttributes = null)
     {
-        var stylesheet = ReadStylesheet();
-
-        StringAssert.Contains(stylesheet, "    &:is(.bit-rtl, :dir(rtl)) {\n        --bit-pnl-transform-factor: -1;\n    }");
+        return RenderComponent<BitParams>(parameters =>
+        {
+            parameters.Add(p => p.Parameters, new List<IBitComponentParams> { panelParams });
+            parameters.AddChildContent(builder =>
+            {
+                builder.OpenComponent<BitPanel>(0);
+                extraAttributes?.Invoke(builder);
+                builder.CloseComponent();
+            });
+        });
     }
-
-    private static string RuleOf(string stylesheet, string selector)
-    {
-        return SourceFiles.GetScssBlock(stylesheet, $"\n{selector} {{");
-    }
-
-    private static string ReadStylesheet() => SourceFiles.Read("Bit.BlazorUI", "Components", "Surfaces", "Panel", "BitPanel.scss");
 }

@@ -58,6 +58,10 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
                          spn-size, clr, clr-focus, clr-bg, clr-brd, clr-brd-hover;
 
 .bit-nfl {
+    // The containing block of the visually hidden .bit-nfl-dsc inside it, which is absolutely positioned: held
+    // here, its pixel stays in whatever box scrolls this one, instead of adding to the scrollable overflow
+    // of a positioned ancestor outside it - a page widened by a pixel nobody can see.
+    position: relative;
     display: flex;
     font-weight: $tg-fw-regular;
     align-items: center;
@@ -221,6 +225,7 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
 }
 
 .bit-nfl-lct {
+    max-width: 100%;
     align-items: center;
     display: inline-flex;
     flex-flow: row nowrap;
@@ -237,7 +242,9 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
 
 .bit-nfl-lbl {
     box-shadow: none;
-    white-space: nowrap;
+    // A label longer than the room it is given wraps onto more lines, the way a text field's does, rather than
+    // holding one line and running past the side of the field and of a phone's screen with it.
+    overflow-wrap: break-word;
     box-sizing: border-box;
     padding: spacing(0.625) 0;
     line-height: spacing(2.5);
@@ -281,11 +288,12 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
 
 // Two stacked buttons split the height of the field between them, which at the default 32px leaves each of
 // them 16px tall - under the 24px minimum pointer target of WCAG 2.2 (SC 2.5.8), and well under what a
-// finger can hit. On a coarse pointer the field grows so that each half clears it; a mouse keeps the
-// compact stack that the layout is there for.
+// finger can hit. On a coarse pointer the field grows so that each half clears it - the border is added on top,
+// since the field is border-box and the stack only gets what is inside it; a mouse keeps the compact stack that
+// the layout is there for.
 @media (pointer: coarse) {
     .bit-nfl-mcp .bit-nfl-cnt {
-        height: max(var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md})), #{spacing(6)});
+        height: max(var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md})), calc(#{spacing(6)} + 2 * var(--bit-NumberField-border-width, #{$shp-border-width})));
     }
 }
 
@@ -293,7 +301,7 @@ $nfl-private-properties: height, fontsize, label-fontsize, icon-size, btn-width,
 // full-sized target, which is the equivalent-control exception SC 2.5.8 allows for. HideInput takes that
 // input away, so there the pair has to clear the minimum on every pointer.
 .bit-nfl-mcp .bit-nfl-hdi {
-    height: max(var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md})), #{spacing(6)});
+    height: max(var(--bit-nfl-height, var(--bit-NumberField-height, #{$siz-ctrl-md})), calc(#{spacing(6)} + 2 * var(--bit-NumberField-border-width, #{$shp-border-width})));
 }
 
 .bit-nfl-inp {

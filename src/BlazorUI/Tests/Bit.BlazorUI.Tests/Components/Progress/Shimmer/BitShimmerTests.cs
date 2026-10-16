@@ -876,16 +876,19 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters =>
         {
-            parameters.Add(p => p.MinShowTime, 1000);
+            parameters.Add(p => p.MinShowTime, 20);
             parameters.AddChildContent("Loaded content");
         });
 
         component.Render(parameters => parameters.Add(p => p.Loaded, true));
         component.Render(parameters => parameters.Add(p => p.Loaded, false));
 
-        // The response was taken back while the shortest life was still running, so the placeholder is what
-        // the shimmer should still be showing when the hold would have expired.
-        Thread.Sleep(1400);
+        var renders = component.RenderCount;
+
+        // The response was taken back while the shortest life was still running, so the placeholder is what the
+        // shimmer should still be showing when the hold would have expired: a hold that still lands would render
+        // the swap of its own accord, well inside this wait.
+        Assert.IsFalse(SpinWait.SpinUntil(() => component.RenderCount > renders, 80));
 
         Assert.IsFalse(component.Find(".bit-smr").ClassList.Contains("bit-smr-ldd"));
         Assert.AreEqual(1, component.FindAll(".bit-smr-wrp").Count);
@@ -896,11 +899,14 @@ public class BitShimmerTests : BunitTestContext
     {
         var component = RenderComponent<BitShimmer>(parameters =>
         {
-            parameters.Add(p => p.MinShowTime, 100);
+            parameters.Add(p => p.MinShowTime, 1);
             parameters.AddChildContent("Loaded content");
         });
 
-        Thread.Sleep(300);
+        // The wait is measured on the tick count, so the shortest life is over once that clock has moved on by at
+        // least as much - one tick at most, since the wait began no later than this reading.
+        var rendered = Environment.TickCount64;
+        SpinWait.SpinUntil(() => Environment.TickCount64 - rendered >= 1);
 
         component.Render(parameters => parameters.Add(p => p.Loaded, true));
 
@@ -991,7 +997,10 @@ public class BitShimmerTests : BunitTestContext
             parameters.AddChildContent("Loaded content");
         });
 
-        Thread.Sleep(600);
+        // The cover has arrived once its fade - 400ms, the longest of the packaged presets - is over, measured on the
+        // same tick count the component reads; there is no telling the component the cover is in any other way.
+        var rendered = Environment.TickCount64;
+        SpinWait.SpinUntil(() => Environment.TickCount64 - rendered >= 400);
 
         component.Render(parameters => parameters.Add(p => p.Loaded, true));
 

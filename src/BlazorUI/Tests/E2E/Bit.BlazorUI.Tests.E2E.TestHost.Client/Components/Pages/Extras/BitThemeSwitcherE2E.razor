@@ -1,0 +1,212 @@
+﻿@page "/e2e/theme-switcher"
+@implements IDisposable
+@inject BitThemeManager ThemeManager
+@inject BitThemeNotifications ThemeNotifications
+
+<PageTitle>BitThemeSwitcher E2E</PageTitle>
+
+@* The three packaged design systems are override-only bundles: linked after the core stylesheet, they are what
+   makes a pick of Fluent 2, Material or Cupertino re-skin the page at all. *@
+<HeadContent>
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.fluent2.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.material.css" />
+    <link rel="stylesheet" href="_content/Bit.BlazorUI.Extras/styles/bit.blazorui.cupertino.css" />
+</HeadContent>
+
+<h1>BitThemeSwitcher</h1>
+
+<p>Applied theme (read back): <span id="current-theme">@_currentTheme</span></p>
+<p>ThemeChanged: <span id="notified-count">@_notifiedCount</span> - <span id="notified-theme">@_notifiedTheme</span></p>
+
+@* A primary fill button and a plain surface: the computed colors a theme switch has to move. *@
+<div id="probe-surface" style="background-color: var(--bit-clr-bg-pri); color: var(--bit-clr-fg-pri); padding: 4px;">
+    <BitButton Id="probe-button">Probe</BitButton>
+</div>
+
+<E2ESection Id="basic" Title="Basic">
+    <BitThemeSwitcher Id="ths-basic" OnChange="HandleBasicChange" />
+    <div>OnChange count: <span id="basic-change-count">@_basicChangeCount</span></div>
+    <div>OnChange theme: <span id="basic-last-theme">@_basicLastTheme</span></div>
+</E2ESection>
+
+<E2ESection Id="design-systems" Title="DesignSystems">
+    <BitThemeSwitcher Id="ths-custom" DesignSystems="_customDesignSystems" OnChange="t => _customLastTheme = t" />
+    <div>OnChange theme: <span id="custom-last-theme">@_customLastTheme</span></div>
+</E2ESection>
+
+<E2ESection Id="parts" Title="NoColorScheme / NoDesignSystem">
+    <BitThemeSwitcher Id="ths-no-scheme" NoColorScheme />
+    <BitThemeSwitcher Id="ths-no-design" NoDesignSystem />
+    <BitThemeSwitcher Id="ths-none" NoColorScheme NoDesignSystem />
+</E2ESection>
+
+<E2ESection Id="icons-titles" Title="Icons and titles">
+    <BitThemeSwitcher Id="ths-titles"
+                      DesignSystemTitle="Skin"
+                      DarkSchemeTitle="Go dark"
+                      LightSchemeTitle="Go light"
+                      DarkSchemeIconName="@BitIconName.Brightness"
+                      LightSchemeIconName="@BitIconName.Sunny" />
+</E2ESection>
+
+<E2ESection Id="external" Title="Theme applied from outside">
+    <button id="btn-set-material-dark" type="button" @onclick="SetMaterialDark">SetThemeAsync(material-dark)</button>
+    <button id="btn-set-pair-cupertino" type="button" @onclick="SetPairCupertino">SetThemePairAsync(cupertino)</button>
+    <button id="btn-set-custom" type="button" @onclick="SetCustom">SetThemeAsync(brand-light)</button>
+    <button id="btn-read-theme" type="button" @onclick="ReadTheme">GetCurrentThemeAsync</button>
+</E2ESection>
+
+<E2ESection Id="style-class" Title="Style, Class, Styles, Classes">
+    <BitThemeSwitcher Id="ths-style"
+                      Class="custom-root-class"
+                      Style="padding: 7px; outline: 2px dashed rgb(255, 0, 0);" />
+    <BitThemeSwitcher Id="ths-styles"
+                      Styles="@(new() { Root = "gap: 21px", DesignSystem = "margin-inline-end: 3px", ColorSchemeButton = "border-radius: 3px", DarkSchemeButton = "outline: 1px solid rgb(0, 128, 0)", LightSchemeButton = "outline: 1px solid rgb(0, 0, 255)", Icon = "font-size: 11px" })" />
+    <BitThemeSwitcher Id="ths-classes"
+                      Classes="@(new() { Root = "c-root", DesignSystem = "c-ds", ColorSchemeButton = "c-csb", DarkSchemeButton = "c-drk", LightSchemeButton = "c-lgt", Icon = "c-ico" })" />
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <BitThemeSwitcher Id="ths-rtl" Dir="BitDir.Rtl" />
+    <div dir="rtl">
+        <BitThemeSwitcher Id="ths-rtl-inherited" />
+    </div>
+    <div dir="ltr">
+        <BitThemeSwitcher Id="ths-ltr" />
+    </div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <BitThemeSwitcher Id="ths-disabled"
+                      Disabled="_disabled"
+                      OnChange="t => _disabledChangeCount++"
+                      @onclick="() => _disabledRootClicks++" />
+    <div>Root clicks: <span id="disabled-root-clicks">@_disabledRootClicks</span></div>
+    <div>OnChange count: <span id="disabled-change-count">@_disabledChangeCount</span></div>
+</E2ESection>
+
+<E2ESection Id="aria" Title="AriaLabel and HtmlAttributes">
+    <BitThemeSwitcher Id="ths-aria" AriaLabel="Appearance" data-testid="switcher-attrs" />
+</E2ESection>
+
+<E2ESection Id="visibility" Title="Visibility">
+    <BitThemeSwitcher Id="ths-hidden" Visibility="BitVisibility.Hidden" />
+    <BitThemeSwitcher Id="ths-collapsed" Visibility="BitVisibility.Collapsed" />
+</E2ESection>
+
+<E2ESection Id="initial-theme" Title="InitialTheme / InitialThemePair">
+    <BitThemeSwitcher Id="ths-initial" NoColorScheme InitialTheme="cupertino-dark" />
+    <BitThemeSwitcher Id="ths-initial-pair" NoColorScheme InitialTheme="system" InitialThemePair="material-light%20material-dark" />
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Parameters changed at runtime">
+    <button id="btn-runtime-toggle-scheme" type="button" @onclick="() => _runtimeNoColorScheme = !_runtimeNoColorScheme">Toggle NoColorScheme</button>
+    <button id="btn-runtime-title" type="button" @onclick="ToggleRuntimeTitle">Toggle title</button>
+    <button id="btn-runtime-items" type="button" @onclick="ToggleRuntimeItems">Toggle items</button>
+    <button id="btn-runtime-mount" type="button" @onclick="() => _runtimeMounted = !_runtimeMounted">Toggle mounted</button>
+    @if (_runtimeMounted)
+    {
+        <BitThemeSwitcher Id="ths-runtime"
+                          NoColorScheme="_runtimeNoColorScheme"
+                          DesignSystemTitle="@_runtimeTitle"
+                          DesignSystems="_runtimeItems" />
+    }
+    <div>Mounted: <span id="runtime-mounted">@_runtimeMounted</span></div>
+</E2ESection>
+
+<E2ESection Id="in-dialog" Title="Inside a dialog">
+    <button id="btn-open-dialog" type="button" @onclick="() => _dialogOpen = true">Open the dialog</button>
+    <BitDialog @bind-IsOpen="_dialogOpen" Title="Appearance" Id="ths-dialog-host">
+        <BitThemeSwitcher Id="ths-dialog" />
+    </BitDialog>
+    <div>Dialog open: <span id="dialog-open">@_dialogOpen</span></div>
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private string? _currentTheme;
+    private int _notifiedCount;
+    private string? _notifiedTheme;
+
+    private int _basicChangeCount;
+    private string? _basicLastTheme;
+    private string? _customLastTheme;
+
+    private bool _dialogOpen;
+    private bool _disabled = true;
+    private int _disabledRootClicks;
+    private int _disabledChangeCount;
+
+    private bool _runtimeNoColorScheme;
+    private bool _runtimeMounted = true;
+    private string _runtimeTitle = "Design system";
+    private IEnumerable<BitThemeSwitcherItem>? _runtimeItems;
+
+    private readonly List<BitThemeSwitcherItem> _customDesignSystems =
+    [
+        new() { Text = "Classic", Value = "fluent", LightTheme = BitThemePresets.Light, DarkTheme = BitThemePresets.Dark, AriaLabel = "Classic Fluent" },
+        new() { Value = BitThemePresets.Cupertino },
+        new() { Text = "Material (off)", Value = BitThemePresets.Material, IsDisabled = true },
+        new() { Text = "Blank", Value = "" },
+    ];
+
+    protected override void OnInitialized()
+    {
+        ThemeNotifications.ThemeChanged += HandleThemeChanged;
+    }
+
+    private void HandleBasicChange(string theme)
+    {
+        _basicChangeCount++;
+        _basicLastTheme = theme;
+    }
+
+    private void HandleThemeChanged(object? sender, BitThemeChangedEventArgs e)
+    {
+        _ = InvokeAsync(() =>
+        {
+            _notifiedCount++;
+            _notifiedTheme = e.NewTheme;
+            StateHasChanged();
+        });
+    }
+
+    private async Task SetMaterialDark()
+    {
+        _currentTheme = await ThemeManager.SetThemeAsync(BitThemePresets.MaterialDark);
+    }
+
+    private async Task SetPairCupertino()
+    {
+        _currentTheme = await ThemeManager.SetThemePairAsync(BitThemePresets.CupertinoLight, BitThemePresets.CupertinoDark);
+    }
+
+    private async Task SetCustom()
+    {
+        _currentTheme = await ThemeManager.SetThemeAsync("brand-light");
+    }
+
+    private async Task ReadTheme()
+    {
+        _currentTheme = await ThemeManager.GetCurrentThemeAsync();
+    }
+
+    private void ToggleRuntimeTitle()
+    {
+        _runtimeTitle = _runtimeTitle == "Design system" ? "Look" : "Design system";
+    }
+
+    private void ToggleRuntimeItems()
+    {
+        _runtimeItems = _runtimeItems is null
+            ? [new() { Text = "Only Material", Value = BitThemePresets.Material }]
+            : null;
+    }
+
+    public void Dispose()
+    {
+        ThemeNotifications.ThemeChanged -= HandleThemeChanged;
+    }
+}

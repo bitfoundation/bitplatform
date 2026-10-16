@@ -7,7 +7,7 @@ namespace Bit.BlazorUI;
 /// A bar of navigation links to the main areas of an app, the way a mobile app puts its top-level
 /// destinations along the bottom of the screen or a rail puts them down its side.
 /// </summary>
-public partial class BitNavBar<TItem> : BitComponentBase where TItem : class
+public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem> : BitComponentBase where TItem : class
 {
     internal List<TItem> _items = [];
 

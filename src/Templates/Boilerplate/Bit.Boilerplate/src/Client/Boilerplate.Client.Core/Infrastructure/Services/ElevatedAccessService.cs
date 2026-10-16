@@ -29,8 +29,9 @@ public partial class ElevatedAccessService
         var modalParameters = new BitModalParameters
         {
             Draggable = true,
+            TitleAriaId = "elevated-access-title",
             DragElementSelector = ".header-stack",
-            OnOverlayClick = EventCallback.Factory.Create<MouseEventArgs>(this, () => Complete(false))
+            OnDismiss = EventCallback.Factory.Create<MouseEventArgs>(this, () => Complete(false))
         };
 
         modalReference = await modalService.Show<ElevatedAccessModal>(modalComponentParameters, modalParameters);

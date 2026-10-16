@@ -44,6 +44,8 @@ public partial class BitNavBarDemo
             Type = "BitColor?",
             DefaultValue = "null",
             Description = "The general color of the navbar, used for the icon, the text and the indicator of the selected item. An explicit value wins over the --bit-NavBar-* hover, selected, indicator, disabled and focus color variables; left unset, the navbar is primary unless they say otherwise.",
+            LinkType = LinkType.Link,
+            Href = "#color-enum",
         },
         new()
         {
@@ -483,6 +485,8 @@ public partial class BitNavBarDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link of the navbar item. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -662,6 +666,8 @@ public partial class BitNavBarDemo
                    Type = "BitLinkRels?",
                    DefaultValue = "null",
                    Description = "The rel attribute of the link of the navbar option. A Target of _blank adds noopener to it, unless it already says NoOpener, NoReferrer or Opener; noreferrer is never added on its own.",
+                   LinkType = LinkType.Link,
+                   Href = "#link-rels-enum",
                },
                new()
                {
@@ -1042,6 +1048,8 @@ public partial class BitNavBarDemo
                 new() { Name = "Stretch", Description = "Carries no distribution of its own here, so the navbar keeps its default. Use Justified to have the items fill the navbar.", Value = "7" }
             ]
         },
+        DemoSharedEnums.BitColor(),
+        DemoSharedEnums.BitLinkRels(),
         DemoSharedEnums.BitSize(),
     ];
 }

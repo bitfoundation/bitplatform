@@ -1,4 +1,6 @@
-﻿namespace Bit.BlazorUI;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Bit.BlazorUI;
 
 /// <summary>
 /// The parameters for <see cref="BitAccordionList{TItem}"/> component.
@@ -199,7 +201,7 @@ public class BitAccordionListParams : BitComponentBaseParams, IBitComponentParam
     /// <param name="bitAccordionList">
     /// The <see cref="BitAccordionList{TItem}"/> instance whose properties will be updated. Cannot be null.
     /// </param>
-    public void UpdateParameters<TItem>(BitAccordionList<TItem> bitAccordionList) where TItem : class
+    public void UpdateParameters<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)] TItem>(BitAccordionList<TItem> bitAccordionList) where TItem : class
     {
         if (bitAccordionList is null) return;
 

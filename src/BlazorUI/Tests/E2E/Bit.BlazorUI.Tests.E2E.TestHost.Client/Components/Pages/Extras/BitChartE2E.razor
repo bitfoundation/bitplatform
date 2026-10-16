@@ -1,0 +1,549 @@
+﻿@page "/e2e/chart"
+
+<PageTitle>BitChart E2E</PageTitle>
+
+<h1>BitChart</h1>
+
+@* Every chart sits in a box of a fixed width, so the geometry a test measures does not depend on the window; and
+   draws without its entry animation, so it is measured in its final state at once (the animation has a section
+   of its own). *@
+
+<E2ESection Id="types" Title="Chart types">
+    <div class="box"><BitChart Id="cht-bar" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-bar-h" Type="BitChartType.Bar" Data="_hBarData" Options="Horizontal()" /></div>
+    <div class="box"><BitChart Id="cht-bar-stacked" Type="BitChartType.Bar" Data="_barData" Options="Stacked()" /></div>
+    <div class="box"><BitChart Id="cht-bar-floating" Type="BitChartType.Bar" Data="_floatingData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-line" Type="BitChartType.Line" Data="_lineData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-area" Type="BitChartType.Line" Data="_areaData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-pie" Type="BitChartType.Pie" Data="_pieData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-doughnut" Type="BitChartType.Doughnut" Data="_pieData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-polar" Type="BitChartType.PolarArea" Data="_polarData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-radar" Type="BitChartType.Radar" Data="_radarData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-scatter" Type="BitChartType.Scatter" Data="_scatterData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-bubble" Type="BitChartType.Bubble" Data="_bubbleData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-mixed" Type="BitChartType.Bar" Data="_mixedData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-config" Config="_config" /></div>
+</E2ESection>
+
+<E2ESection Id="legend" Title="Legend">
+    <div class="box">
+        <BitChart @ref="_legendChart" Id="cht-legend" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()"
+                  OnLegendItemClick="HandleLegendClick" />
+    </div>
+    <span id="legend-clicks">@_legendClicks</span>
+    <span id="legend-last">@(_lastLegend ?? "null")</span>
+    <div class="box"><BitChart Id="cht-legend-right" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Right)" /></div>
+    <div class="box"><BitChart Id="cht-legend-bottom" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Bottom)" /></div>
+    <div class="box"><BitChart Id="cht-legend-static" Type="BitChartType.Bar" Data="_barData" Options="StaticLegend()" /></div>
+    <div class="box"><BitChart Id="cht-legend-hidden" Type="BitChartType.Bar" Data="_barData" Options="NoLegend()" /></div>
+    <div class="box"><BitChart Id="cht-legend-pie" Type="BitChartType.Pie" Data="_pieData" Options="NoAnim()" /></div>
+</E2ESection>
+
+<E2ESection Id="tooltip" Title="Tooltips & events">
+    <div class="box">
+        <BitChart Id="cht-tooltip" Type="BitChartType.Bar" Data="_barData" Options="TooltipOptions()"
+                  OnElementHover="HandleHover"
+                  OnElementClick="HandleClick" />
+    </div>
+    <span id="hover-count">@_hoverCount</span>
+    <span id="hover-last">@(_lastHover ?? "none")</span>
+    <span id="click-count">@_clickCount</span>
+    <span id="click-last">@(_lastClick ?? "none")</span>
+    <div class="box">
+        <BitChart Id="cht-tooltip-template" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()">
+            <TooltipTemplate Context="ctx">
+                <div class="custom-tooltip">@ctx.Title: @string.Join(" / ", ctx.Points.Select(p => p.FormattedValue))</div>
+            </TooltipTemplate>
+        </BitChart>
+    </div>
+    <div class="box"><BitChart Id="cht-tooltip-off" Type="BitChartType.Bar" Data="_barData" Options="NoTooltip()" /></div>
+</E2ESection>
+
+<E2ESection Id="keyboard" Title="Keyboard & screen readers">
+    <div class="box">
+        <BitChart Id="cht-keyboard" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" Description="Quarterly sales and costs."
+                  OnElementClick="HandleKeyClick" />
+    </div>
+    <span id="key-clicks">@_keyClicks</span>
+    <span id="key-last">@(_lastKeyClick ?? "none")</span>
+    <div class="box"><BitChart Id="cht-texts" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" Texts="_texts" AriaLabel="Custom chart name" NavigationHint="Custom hint." /></div>
+    <div class="box"><BitChart Id="cht-titled" Type="BitChartType.Line" Data="_lineData" Options="Titled()" /></div>
+</E2ESection>
+
+<E2ESection Id="table" Title="Accessible data table">
+    <div class="box"><BitChart Id="cht-table-scatter" Type="BitChartType.Bubble" Data="_bubbleData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-table-truncated" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" MaxTableRows="1" MaxTableColumns="2" /></div>
+    <div class="box"><BitChart Id="cht-no-table" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" GenerateTable="false" /></div>
+</E2ESection>
+
+<E2ESection Id="zoom" Title="Zoom & pan">
+    <div class="box">
+        <BitChart @ref="_zoomChart" Id="cht-zoom" Type="BitChartType.Line" Data="_zoomData" Options="ZoomOptions(drag: false)"
+                  OnZoomChange="ReadZoomRange" />
+    </div>
+    <span id="zoom-count">@_zoomCount</span>
+    <span id="zoom-range">@(_zoomRange ?? "none")</span>
+    <button id="btn-zoom-to" @onclick="ZoomTo">ZoomTo(x, 10, 20)</button>
+    <button id="btn-zoom-reset" @onclick="ResetZoom">ResetZoom</button>
+    <div class="box">
+        <BitChart @ref="_dragChart" Id="cht-zoom-drag" Type="BitChartType.Line" Data="_zoomData" Options="ZoomOptions(drag: true)"
+                  OnZoomChange="ReadDragRange" />
+    </div>
+    <span id="drag-range">@(_dragRange ?? "none")</span>
+</E2ESection>
+
+<E2ESection Id="methods" Title="Public methods & export">
+    <div class="box"><BitChart @ref="_methodsChart" Id="cht-methods" Type="BitChartType.Bar" Data="_methodsData" Options="NoAnim()" /></div>
+    <button id="btn-hide-ds1" @onclick="() => _methodsChart.SetDatasetVisible(1, false)">SetDatasetVisible(1, false)</button>
+    <button id="btn-toggle-ds0" @onclick="() => _methodsChart.ToggleDataset(0)">ToggleDataset(0)</button>
+    <button id="btn-reset-visibility" @onclick="() => _methodsChart.ResetVisibility()">ResetVisibility</button>
+    <div class="box"><BitChart @ref="_pieMethodsChart" Id="cht-methods-pie" Type="BitChartType.Pie" Data="_pieData" Options="NoAnim()" /></div>
+    <button id="btn-hide-idx2" @onclick="() => _pieMethodsChart.SetDataIndexVisible(2, false)">SetDataIndexVisible(2, false)</button>
+    <button id="btn-toggle-idx0" @onclick="() => _pieMethodsChart.ToggleDataIndex(0)">ToggleDataIndex(0)</button>
+    <button id="btn-reset-pie" @onclick="() => _pieMethodsChart.ResetVisibility()">ResetVisibility (pie)</button>
+    <button id="btn-read-pie" @onclick="ReadPieVisibility">Read slice visibility</button>
+    <span id="pie-visibility">@_pieVisibility</span>
+    <button id="btn-read-visibility" @onclick="ReadVisibility">Read visibility</button>
+    <span id="visibility">@_visibility</span>
+    <button id="btn-to-csv" @onclick="() => _csv = _methodsChart.ToCsv()">ToCsv</button>
+    <pre id="csv">@_csv</pre>
+    <button id="btn-to-svg" @onclick="ToSvg">ToSvgStringAsync</button>
+    <span id="svg-string">@_svgString</span>
+    <button id="btn-to-base64" @onclick="ToBase64">ToBase64ImageAsync</button>
+    <button id="btn-to-base64-small" @onclick="ToBase64Small">ToBase64ImageAsync (scale 0.5)</button>
+    <span id="base64">@_base64</span>
+    <button id="btn-export-csv" @onclick="@(() => _methodsChart.ExportCsvAsync("chart-data.csv"))">ExportCsvAsync</button>
+    <button id="btn-export-svg" @onclick="@(() => _methodsChart.ExportSvgAsync("chart.svg"))">ExportSvgAsync</button>
+    <button id="btn-export-png" @onclick="@(() => _methodsChart.ExportPngAsync("chart.png"))">ExportPngAsync</button>
+    <button id="btn-refresh" @onclick="Refresh">Refresh after a data change</button>
+</E2ESection>
+
+<E2ESection Id="states" Title="Loading & no data">
+    <div class="box"><BitChart Id="cht-loading" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" IsLoading="_loading" LoadingLabel="Fetching sales" /></div>
+    <button id="btn-toggle-loading" @onclick="() => _loading = !_loading">Toggle loading</button>
+    <div class="box">
+        <BitChart Id="cht-loading-template" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" IsLoading>
+            <LoadingTemplate><span class="custom-loading">Please wait</span></LoadingTemplate>
+        </BitChart>
+    </div>
+    <div class="box"><BitChart Id="cht-nodata" Type="BitChartType.Bar" Data="_emptyData" Options="NoAnim()" /></div>
+    <div class="box"><BitChart Id="cht-nodata-text" Type="BitChartType.Bar" Data="_emptyData" Options="NoAnim()" NoDataText="Nothing yet" /></div>
+    <div class="box">
+        <BitChart Id="cht-nodata-template" Type="BitChartType.Bar" Data="_emptyData" Options="NoAnim()">
+            <NoDataTemplate><b class="custom-nodata">Empty!</b></NoDataTemplate>
+        </BitChart>
+    </div>
+</E2ESection>
+
+<E2ESection Id="titles" Title="Titles">
+    <div class="box"><BitChart Id="cht-title" Type="BitChartType.Bar" Data="_barData" Options="Titled()" /></div>
+    <div class="box"><BitChart Id="cht-title-bottom" Type="BitChartType.Bar" Data="_barData" Options="TitledBottom()" /></div>
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <div class="box">
+        <BitChart Id="cht-disabled" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" Disabled="_disabled"
+                  OnElementClick="() => _disabledClicks++"
+                  HtmlAttributes="@(new() { ["onpointerdown"] = EventCallback.Factory.Create<PointerEventArgs>(this, () => _pagePointerDowns++), ["ondblclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _pageDblClicks++) })" />
+    </div>
+    <button id="btn-toggle-disabled" @onclick="() => _disabled = !_disabled">Toggle disabled</button>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="page-pointerdowns">@_pagePointerDowns</span>
+    <span id="page-dblclicks">@_pageDblClicks</span>
+</E2ESection>
+
+<E2ESection Id="style" Title="Style, Class & css variables">
+    <div class="box">
+        <BitChart Id="cht-styled" Type="BitChartType.Bar" Data="_barData" Options="Titled()" Class="custom-class" Style="border: 2px solid rgb(1, 2, 3);"
+                  Height="250px" Width="500px"
+                  Classes="@(new() { Root = "custom-root", Plot = "custom-plot", Legend = "custom-legend", LegendItem = "custom-legend-item", Title = "custom-title" })"
+                  Styles="@(new() { Plot = "background: rgb(250, 250, 210);", Legend = "outline: 1px solid rgb(4, 5, 6);" })" />
+    </div>
+    <div class="box" id="vars-scope" style="--bit-Chart-series-color-1: rgb(255, 0, 255); --bit-Chart-series-color-2: rgb(0, 255, 255); --bit-Chart-no-data-color: rgb(128, 0, 0); --bit-Chart-tooltip-background: rgb(0, 0, 128); --bit-Chart-legend-color: rgb(0, 100, 0);">
+        <BitChart Id="cht-vars" Type="BitChartType.Bar" Data="_paletteData" Options="NoAnim()" />
+        <BitChart Id="cht-vars-nodata" Type="BitChartType.Bar" Data="_emptyData" Options="NoAnim()" />
+    </div>
+    <div class="box">
+        <BitParams Parameters="_params">
+            <BitChart Id="cht-params" Type="BitChartType.Bar" Data="_emptyData" />
+        </BitParams>
+    </div>
+</E2ESection>
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="box"><BitChart Id="cht-rtl" Dir="BitDir.Rtl" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Start)" /></div>
+    <div class="box"><BitChart Id="cht-ltr-start" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Start)" /></div>
+    <div class="box" dir="rtl"><BitChart Id="cht-rtl-inherited" Type="BitChartType.Bar" Data="_barData" Options="LegendAt(BitPlacement.Start)" /></div>
+</E2ESection>
+
+<E2ESection Id="motion" Title="Animation & reduced motion">
+    <div class="box"><BitChart Id="cht-animated" Type="BitChartType.Bar" Data="_barData" /></div>
+    <div class="box"><BitChart Id="cht-animated-forced" ForceAnimation Type="BitChartType.Bar" Data="_barData" /></div>
+</E2ESection>
+
+<E2ESection Id="responsive" Title="Responsive">
+    <div id="resizable" style="width: @(_wide ? "600px" : "300px");">
+        <BitChart Id="cht-responsive" Type="BitChartType.Bar" Data="_barData" Options="NoAnim()" />
+    </div>
+    <button id="btn-resize" @onclick="() => _wide = !_wide">Resize</button>
+</E2ESection>
+
+<E2ESection Id="runtime" Title="Runtime changes">
+    <div class="box"><BitChart Id="cht-runtime" Type="_runtimeType" Data="_runtimeData" Options="NoAnim()" /></div>
+    <button id="btn-runtime-data" @onclick="ChangeRuntimeData">Change the data</button>
+    <button id="btn-runtime-type" @onclick="() => _runtimeType = _runtimeType == BitChartType.Bar ? BitChartType.Line : BitChartType.Bar">Change the type</button>
+</E2ESection>
+
+<E2ESection Id="lifecycle" Title="Lifecycle">
+    <button id="btn-unmount" @onclick="() => _mounted = !_mounted">Toggle mounted</button>
+    @if (_mounted)
+    {
+        <div class="box"><BitChart Id="cht-unmount" Type="BitChartType.Line" Data="_zoomData" Options="ZoomOptions(drag: false)" /></div>
+    }
+    <span id="mounted">@_mounted</span>
+</E2ESection>
+
+<style>
+    .box { width: 600px; }
+</style>
+
+<E2EStatus />
+
+@code {
+    private readonly BitChartData _barData = new()
+    {
+        Labels = { "A", "B", "C", "D" },
+        Datasets =
+        {
+            new BitChartDataset { Label = "Sales", Data = [10, 20, 30, 40], BackgroundColor = "rgb(255, 0, 0)" },
+            new BitChartDataset { Label = "Costs", Data = [5, 15, 25, 35], BackgroundColor = "rgb(0, 0, 255)" }
+        }
+    };
+
+    private readonly BitChartData _methodsData = new()
+    {
+        Labels = { "A", "B", "C", "D" },
+        Datasets =
+        {
+            new BitChartDataset { Label = "Sales", Data = [10, 20, 30, 40], BackgroundColor = "rgb(255, 0, 0)" },
+            new BitChartDataset { Label = "Costs", Data = [5, 15, 25, 35], BackgroundColor = "rgb(0, 0, 255)" }
+        }
+    };
+
+    private readonly BitChartData _paletteData = new()
+    {
+        Labels = { "A", "B" },
+        Datasets =
+        {
+            new BitChartDataset { Label = "First", Data = [1, 2] },
+            new BitChartDataset { Label = "Second", Data = [3, 4] }
+        }
+    };
+
+    private readonly BitChartData _hBarData = new()
+    {
+        Labels = { "X", "Y", "Z" },
+        Datasets = { new BitChartDataset { Label = "Width", Data = [10, 20, 30], BackgroundColor = "rgb(0, 128, 0)" } }
+    };
+
+    private readonly BitChartData _floatingData = new()
+    {
+        Labels = { "Mon", "Tue" },
+        Datasets = { new BitChartDataset { Label = "Range", RangeData = [(10, 20), (5, 25)], BackgroundColor = "rgb(255, 165, 0)" } }
+    };
+
+    private readonly BitChartData _lineData = new()
+    {
+        Labels = { "Jan", "Feb", "Mar", "Apr" },
+        Datasets = { new BitChartDataset { Label = "Visits", Data = [10, 30, 20, 40], BorderColor = "rgb(0, 128, 0)" } }
+    };
+
+    private readonly BitChartData _areaData = new()
+    {
+        Labels = { "Jan", "Feb", "Mar", "Apr" },
+        Datasets = { new BitChartDataset { Label = "Area", Data = [10, 30, 20, 40], Fill = BitChartFillMode.Origin, FillColor = "rgba(0, 128, 0, 0.3)" } }
+    };
+
+    private readonly BitChartData _pieData = new()
+    {
+        Labels = { "Red", "Blue", "Green" },
+        Datasets = { new BitChartDataset { Label = "Votes", Data = [1, 1, 2], BackgroundColors = ["rgb(255, 0, 0)", "rgb(0, 0, 255)", "rgb(0, 128, 0)"] } }
+    };
+
+    private readonly BitChartData _polarData = new()
+    {
+        Labels = { "One", "Two", "Three" },
+        Datasets = { new BitChartDataset { Label = "Polar", Data = [1, 2, 3] } }
+    };
+
+    private readonly BitChartData _radarData = new()
+    {
+        Labels = { "Speed", "Power", "Skill", "Stamina", "Luck" },
+        Datasets =
+        {
+            new BitChartDataset { Label = "Player 1", Data = [5, 4, 3, 2, 1] },
+            new BitChartDataset { Label = "Player 2", Data = [1, 2, 3, 4, 5] }
+        }
+    };
+
+    private readonly BitChartData _scatterData = new()
+    {
+        Datasets = { new BitChartDataset { Label = "Squares", Points = [new(1, 1), new(2, 4), new(3, 9)] } }
+    };
+
+    private readonly BitChartData _bubbleData = new()
+    {
+        Datasets = { new BitChartDataset { Label = "Bubbles", Points = [new(1, 1, 5), new(2, 2, 10), new(3, 3, 20)] } }
+    };
+
+    private readonly BitChartData _mixedData = new()
+    {
+        Labels = { "A", "B", "C" },
+        Datasets =
+        {
+            new BitChartDataset { Label = "Bars", Data = [10, 20, 30] },
+            new BitChartDataset { Label = "Trend", Type = BitChartType.Line, Data = [15, 25, 35] }
+        }
+    };
+
+    private readonly BitChartData _emptyData = new();
+
+    private readonly BitChartData _zoomData = new()
+    {
+        Datasets = { new BitChartDataset { Label = "Signal", Points = [.. Enumerable.Range(0, 51).Select(i => new BitChartDataPoint(i, Math.Sin(i / 5.0) * 10))] } }
+    };
+
+    private readonly BitChartConfig _config = new(BitChartType.Bar, new BitChartData
+    {
+        Labels = { "P", "Q" },
+        Datasets = { new BitChartDataset { Label = "Config", Data = [3, 6] } }
+    }, new BitChartOptions { Animation = new() { Animate = false } });
+
+    private readonly BitChartTexts _texts = new()
+    {
+        RoleDescription = "graph",
+        LegendAriaLabel = "Series of the graph",
+        Series = "Reihe"
+    };
+
+    private readonly BitChartParams[] _params =
+    [
+        new()
+        {
+            NoDataText = "Cascaded empty text",
+            Height = "200px",
+            Type = BitChartType.Line
+        }
+    ];
+
+    private BitChart _legendChart = default!;
+    private int _legendClicks;
+    private string? _lastLegend;
+
+    private int _hoverCount;
+    private string? _lastHover;
+    private int _clickCount;
+    private string? _lastClick;
+
+    private int _keyClicks;
+    private string? _lastKeyClick;
+
+    private BitChart _zoomChart = default!;
+    private int _zoomCount;
+    private string? _zoomRange;
+    private BitChart _dragChart = default!;
+    private string? _dragRange;
+
+    private BitChart _methodsChart = default!;
+    private BitChart _pieMethodsChart = default!;
+    private string _pieVisibility = "";
+    private string _visibility = "";
+    private string? _csv;
+    private string? _svgString;
+    private string? _base64;
+
+    private bool _loading = true;
+
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _pagePointerDowns;
+    private int _pageDblClicks;
+
+    private bool _wide = true;
+
+    private BitChartType _runtimeType = BitChartType.Bar;
+    private BitChartData _runtimeData = new()
+    {
+        Labels = { "A", "B" },
+        Datasets = { new BitChartDataset { Label = "Runtime", Data = [1, 2] } }
+    };
+
+    private bool _mounted = true;
+
+    private void HandleLegendClick(BitChartLegendItemModel item)
+    {
+        _legendClicks++;
+        _lastLegend = $"{item.Text}|{item.Index}|{item.Hidden}";
+    }
+
+    private void HandleHover(BitChartTooltipContext? ctx)
+    {
+        _hoverCount++;
+        _lastHover = ctx is null ? "null" : $"{ctx.Title}|{string.Join(",", ctx.Points.Select(p => $"{p.DatasetIndex}:{p.DataIndex}:{p.Value}"))}";
+    }
+
+    private void HandleClick((int DatasetIndex, int DataIndex) e)
+    {
+        _clickCount++;
+        _lastClick = $"{e.DatasetIndex},{e.DataIndex}";
+    }
+
+    private void HandleKeyClick((int DatasetIndex, int DataIndex) e)
+    {
+        _keyClicks++;
+        _lastKeyClick = $"{e.DatasetIndex},{e.DataIndex}";
+    }
+
+    private static BitChartOptions NoAnim() => new() { Animation = new() { Animate = false } };
+
+    private static BitChartOptions Horizontal() => new() { IndexAxis = BitChartIndexAxis.Y, Animation = new() { Animate = false } };
+
+    private static BitChartOptions Stacked() => new()
+    {
+        Animation = new() { Animate = false },
+        Scales =
+        {
+            ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Category, Stacked = true },
+            ["y"] = new BitChartScaleOptions { Id = "y", Type = BitChartScaleType.Linear, Stacked = true, BeginAtZero = true }
+        }
+    };
+
+    private static BitChartOptions LegendAt(BitPlacement placement) => new()
+    {
+        Animation = new() { Animate = false },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Placement = placement } }
+    };
+
+    private static BitChartOptions StaticLegend() => new()
+    {
+        Animation = new() { Animate = false },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { OnClickToggle = false, Title = "Static legend" } }
+    };
+
+    private static BitChartOptions NoLegend() => new()
+    {
+        Animation = new() { Animate = false },
+        Plugins = new BitChartPluginOptions { Legend = new BitChartLegendOptions { Display = false } }
+    };
+
+    private static BitChartOptions TooltipOptions() => new()
+    {
+        Animation = new() { Animate = false },
+        Interaction = new() { Mode = BitChartInteractionMode.Nearest },
+        Plugins = new BitChartPluginOptions
+        {
+            Tooltip = new BitChartTooltipOptions
+            {
+                Callbacks = new BitChartTooltipCallbacks { Footer = items => $"Total: {items.Sum(i => i.Value)}" }
+            }
+        }
+    };
+
+    private static BitChartOptions NoTooltip() => new()
+    {
+        Animation = new() { Animate = false },
+        Plugins = new BitChartPluginOptions { Tooltip = new BitChartTooltipOptions { Enabled = false } }
+    };
+
+    private static BitChartOptions Titled() => new()
+    {
+        Animation = new() { Animate = false },
+        Plugins = new BitChartPluginOptions
+        {
+            Title = new BitChartTitleOptions { Display = true, Text = "Quarterly figures" },
+            Subtitle = new BitChartTitleOptions { Display = true, Text = "In thousands" }
+        }
+    };
+
+    private static BitChartOptions TitledBottom() => new()
+    {
+        Animation = new() { Animate = false },
+        Plugins = new BitChartPluginOptions
+        {
+            Title = new BitChartTitleOptions { Display = true, Text = "Bottom title", Placement = BitPlacement.Bottom }
+        }
+    };
+
+    private static BitChartOptions ZoomOptions(bool drag) => new()
+    {
+        Animation = new() { Animate = false },
+        Zoom = new BitChartZoomOptions { Enabled = true, DragZoom = drag, Mode = BitChartZoomMode.X },
+        Scales = { ["x"] = new BitChartScaleOptions { Id = "x", Type = BitChartScaleType.Linear } }
+    };
+
+    private void ReadZoomRange()
+    {
+        _zoomCount++;
+        _zoomRange = FormatRange(_zoomChart.GetAxisRange("x"));
+    }
+
+    private void ReadDragRange() => _dragRange = FormatRange(_dragChart.GetAxisRange("x"));
+
+    private static string FormatRange((double Min, double Max)? range) =>
+        range is { } r ? $"{r.Min.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}|{r.Max.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)}" : "null";
+
+    private void ZoomTo()
+    {
+        _zoomChart.ZoomTo("x", 10, 20);
+        _zoomRange = FormatRange(_zoomChart.GetAxisRange("x"));
+    }
+
+    private void ResetZoom()
+    {
+        _zoomChart.ResetZoom();
+        _zoomRange = FormatRange(_zoomChart.GetAxisRange("x"));
+    }
+
+    private void ReadVisibility()
+    {
+        _visibility = $"ds0={_methodsChart.IsDatasetVisible(0)};ds1={_methodsChart.IsDatasetVisible(1)}";
+    }
+
+    private void ReadPieVisibility()
+    {
+        _pieVisibility = $"idx0={_pieMethodsChart.IsDataIndexVisible(0)};idx1={_pieMethodsChart.IsDataIndexVisible(1)};idx2={_pieMethodsChart.IsDataIndexVisible(2)}";
+    }
+
+    private async Task ToBase64Small()
+    {
+        var data = await _methodsChart.ToBase64ImageAsync(scale: 0.5);
+        _base64 = data is null ? "null" : $"{data[..Math.Min(22, data.Length)]}|{data.Length > 100}";
+    }
+
+    private async Task ToSvg()
+    {
+        var svg = await _methodsChart.ToSvgStringAsync();
+        _svgString = svg is null ? "null" : $"{svg.Length}|{svg[..Math.Min(4, svg.Length)]}|{svg.Contains("<rect")}";
+    }
+
+    private async Task ToBase64()
+    {
+        var data = await _methodsChart.ToBase64ImageAsync();
+        _base64 = data is null ? "null" : data[..Math.Min(22, data.Length)];
+    }
+
+    private void Refresh()
+    {
+        _methodsData.Datasets[0].Data[0] = 40;
+        _methodsChart.Refresh();
+    }
+
+    private void ChangeRuntimeData()
+    {
+        _runtimeData = new()
+        {
+            Labels = { "A", "B", "C" },
+            Datasets = { new BitChartDataset { Label = "Runtime", Data = [3, 2, 1] } }
+        };
+    }
+}

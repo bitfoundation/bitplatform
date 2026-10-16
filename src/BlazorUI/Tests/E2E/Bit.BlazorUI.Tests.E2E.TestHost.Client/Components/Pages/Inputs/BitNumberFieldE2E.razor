@@ -1,0 +1,718 @@
+﻿@page "/e2e/number-field"
+@using System.Globalization
+
+<PageTitle>BitNumberField E2E</PageTitle>
+
+<style>
+    .my-nf-icon::before { content: "N"; }
+    .my-nf-up::before { content: "+"; }
+    .my-nf-down::before { content: "-"; }
+    .my-nf-clear::before { content: "x"; }
+    .e2e-nf-box { width: 600px; }
+</style>
+
+<h1>BitNumberField</h1>
+
+@* ---------- Basic ---------- *@
+
+<E2ESection Id="basic" Title="Basic">
+    <BitNumberField Id="nf-basic" Label="Basic" @bind-Value="_basicValue" />
+    <span id="basic-value">[@_basicValue]</span>
+    <BitNumberField Id="nf-placeholder" Label="Placeholder" TValue="int?" Placeholder="Enter a number..." />
+    <BitNumberField Id="nf-required" Label="Required" TValue="int?" Required />
+    <BitNumberField Id="nf-required-nolabel" TValue="int?" Required />
+    <BitNumberField Id="nf-noselect" Label="NoSelectOnFocus" NoSelectOnFocus DefaultValue="1363" TValue="int?" />
+    <BitNumberField Id="nf-select" Label="Selects on focus" DefaultValue="1363" TValue="int?" />
+</E2ESection>
+
+<E2ESection Id="disabled" Title="Disabled">
+    <button id="before-disabled" type="button">before</button>
+    <BitNumberField Id="nf-disabled" Label="Disabled" TValue="int?" DefaultValue="1363" Disabled="_disabled" Mode="BitSpinButtonMode.Compact" ShowClearButton
+                    OnClick="() => _disabledClicks++" OnIncrement="(int? v) => _disabledSpins++"
+                    HtmlAttributes="_disabledRootAttributes" />
+    <button id="after-disabled" type="button">after</button>
+    <button id="btn-toggle-disabled" type="button" @onclick="() => _disabled = !_disabled">toggle disabled</button>
+    <span id="disabled-clicks">@_disabledClicks</span>
+    <span id="disabled-spins">@_disabledSpins</span>
+    <span id="disabled-root-clicks">@_disabledRootClicks</span>
+    <span id="disabled-root-hovers">@_disabledRootHovers</span>
+</E2ESection>
+
+<E2ESection Id="base" Title="Id, Class, Style, HtmlAttributes, Visibility, re-render">
+    <BitNumberField Id="nf-base" Label="Base" TValue="int" Class="my-root-class" Style="margin-top: 7px;" HtmlAttributes="@(new() { ["data-test"] = "base-attr" })"
+                    InputHtmlAttributes="@(new() { ["data-input-attr"] = "yes" })" Name="quantity" />
+    <BitNumberField Id="nf-visibility" Label="Visibility" TValue="int" Visibility="_visibility" />
+    <button id="btn-vis-visible" type="button" @onclick="() => _visibility = BitVisibility.Visible">visible</button>
+    <button id="btn-vis-hidden" type="button" @onclick="() => _visibility = BitVisibility.Hidden">hidden</button>
+    <button id="btn-vis-collapsed" type="button" @onclick="() => _visibility = BitVisibility.Collapsed">collapsed</button>
+    <BitNumberField Id="nf-rerender" Label="@_dynLabel" TValue="int" Mode="_dynMode" Max="@_dynMax" />
+    <button id="btn-change-params" type="button" @onclick="ChangeParams">change params</button>
+</E2ESection>
+
+@* ---------- Binding ---------- *@
+
+<E2ESection Id="binding" Title="Binding">
+    <BitNumberField Id="nf-oneway" Label="One-way" Value="_oneWayValue" />
+    <span id="oneway-value">[@_oneWayValue]</span>
+    <button id="btn-set-oneway" type="button" @onclick="() => _oneWayValue = 77">set one-way</button>
+    <BitNumberField Id="nf-twoway" Label="Two-way" @bind-Value="_twoWayValue" Mode="BitSpinButtonMode.Compact" />
+    <span id="twoway-value">[@_twoWayValue]</span>
+    <button id="btn-set-twoway" type="button" @onclick="() => _twoWayValue = 42">set two-way</button>
+    <BitNumberField Id="nf-uncontrolled" Label="Uncontrolled" TValue="int?" DefaultValue="7" OnChange="(int? v) => { _uncontrolledValue = v; _uncontrolledCount++; }" />
+    <span id="uncontrolled-value">[@_uncontrolledValue]</span>
+    <span id="uncontrolled-count">@_uncontrolledCount</span>
+</E2ESection>
+
+@* ---------- Spin buttons ---------- *@
+
+<E2ESection Id="spin" Title="Spin buttons">
+    <div class="e2e-nf-box">
+        <BitNumberField Id="nf-compact" Label="Compact" Mode="BitSpinButtonMode.Compact" @bind-Value="_compactValue" />
+        <span id="compact-value">[@_compactValue]</span>
+        <BitNumberField Id="nf-inline" Label="Inline" Mode="BitSpinButtonMode.Inline" @bind-Value="_inlineValue" />
+        <span id="inline-value">[@_inlineValue]</span>
+        <BitNumberField Id="nf-spread" Label="Spread" Mode="BitSpinButtonMode.Spread" @bind-Value="_spreadValue" />
+        <span id="spread-value">[@_spreadValue]</span>
+        <BitNumberField Id="nf-nomode" Label="No buttons" TValue="int" />
+        <BitNumberField Id="nf-custom-icons" Label="Custom icons" TValue="int" Mode="BitSpinButtonMode.Compact"
+                        IncrementTitle="Like it more" DecrementTitle="Like it less"
+                        IncrementIconName="@BitIconName.LikeSolid" DecrementIconName="@BitIconName.DislikeSolid" />
+        <BitNumberField Id="nf-continuous" Label="Continuous" Mode="BitSpinButtonMode.Spread" ContinuousSpinDelay="200" ContinuousSpinInterval="25" @bind-Value="_continuousValue" />
+        <span id="continuous-value">@_continuousValue</span>
+        <BitNumberField Id="nf-hideinput" HideInput @bind-Value="_hideInputValue" Mode="BitSpinButtonMode.Inline" Label="@($"HideInput: {_hideInputValue}")" />
+        <span id="hideinput-value">[@_hideInputValue]</span>
+        <BitNumberField Id="nf-hideinput-default" HideInput TValue="int" Label="HideInput without a mode" />
+    </div>
+</E2ESection>
+
+@* ---------- Min and Max ---------- *@
+
+<E2ESection Id="minmax" Title="Min and Max">
+    <BitNumberField Id="nf-min" Label="Min 0" Min="0" Mode="BitSpinButtonMode.Compact" @bind-Value="_minValue" />
+    <span id="min-value">[@_minValue]</span>
+    <BitNumberField Id="nf-minmax" Label="Min -10 Max 10" Min="-10" Max="10" Mode="BitSpinButtonMode.Compact" @bind-Value="_minMaxValue" />
+    <span id="minmax-value">[@_minMaxValue]</span>
+    <BitNumberField Id="nf-clamp" Label="Clamping" Min="0" Max="100" Mode="BitSpinButtonMode.Compact" @bind-Value="_clampValue" />
+    <span id="clamp-value">[@_clampValue]</span>
+    <BitNumberField Id="nf-noclamp" Label="NoClamp" NoClamp Min="0" Max="100" Mode="BitSpinButtonMode.Compact" @bind-Value="_noClampValue" />
+    <span id="noclamp-value">[@_noClampValue]</span>
+</E2ESection>
+
+@* ---------- Step, precision and snapping ---------- *@
+
+<E2ESection Id="step" Title="Step, precision and snapping">
+    <BitNumberField Id="nf-step" Label="Step 2" Step="2" Mode="BitSpinButtonMode.Compact" @bind-Value="_stepValue" />
+    <span id="step-value">[@_stepValue]</span>
+    <BitNumberField Id="nf-fraction" Label="Step 0.1" Step="0.1" Mode="BitSpinButtonMode.Compact" @bind-Value="_fractionValue" />
+    <span id="fraction-value">[@(_fractionValue.ToString(CultureInfo.InvariantCulture))]</span>
+    <BitNumberField Id="nf-pagestep" Label="PageStep 20" PageStep="20" @bind-Value="_pageStepValue" />
+    <span id="pagestep-value">[@_pageStepValue]</span>
+    <BitNumberField Id="nf-pagestep-default" Label="Default PageStep" Step="3" @bind-Value="_pageStepDefaultValue" />
+    <span id="pagestep-default-value">[@_pageStepDefaultValue]</span>
+    <BitNumberField Id="nf-precision" Label="Precision -2" Precision="-2" TValue="double" @bind-Value="_precisionValue" />
+    <span id="precision-value">[@(_precisionValue.ToString(CultureInfo.InvariantCulture))]</span>
+    <BitNumberField Id="nf-precision2" Label="Precision 2" Precision="2" TValue="double" @bind-Value="_precision2Value" />
+    <span id="precision2-value">[@(_precision2Value.ToString(CultureInfo.InvariantCulture))]</span>
+    <BitNumberField Id="nf-snap" Label="SnapToStep Min 2 Step 3" SnapToStep Min="2" Step="3" @bind-Value="_snapValue" />
+    <span id="snap-value">[@_snapValue]</span>
+    <BitNumberField Id="nf-snap-fraction" Label="SnapToStep Step 0.25" SnapToStep Step="0.25" @bind-Value="_snapFractionValue" />
+    <span id="snap-fraction-value">[@(_snapFractionValue.ToString(CultureInfo.InvariantCulture))]</span>
+</E2ESection>
+
+@* ---------- Numeric types ---------- *@
+
+<E2ESection Id="types" Title="Numeric types">
+    <BitNumberField Id="nf-type-byte" Label="byte" @bind-Value="_byteValue" />
+    <span id="type-byte-value">[@_byteValue]</span>
+    <BitNumberField Id="nf-type-sbyte" Label="sbyte" @bind-Value="_sbyteValue" />
+    <span id="type-sbyte-value">[@_sbyteValue]</span>
+    <BitNumberField Id="nf-type-short" Label="short" @bind-Value="_shortValue" />
+    <span id="type-short-value">[@_shortValue]</span>
+    <BitNumberField Id="nf-type-ushort" Label="ushort" @bind-Value="_ushortValue" />
+    <span id="type-ushort-value">[@_ushortValue]</span>
+    <BitNumberField Id="nf-type-int" Label="int" @bind-Value="_intValue" />
+    <span id="type-int-value">[@_intValue]</span>
+    <BitNumberField Id="nf-type-uint" Label="uint" @bind-Value="_uintValue" />
+    <span id="type-uint-value">[@_uintValue]</span>
+    <BitNumberField Id="nf-type-long" Label="long" @bind-Value="_longValue" />
+    <span id="type-long-value">[@_longValue]</span>
+    <BitNumberField Id="nf-type-ulong" Label="ulong" @bind-Value="_ulongValue" />
+    <span id="type-ulong-value">[@_ulongValue]</span>
+    <BitNumberField Id="nf-type-float" Label="float" @bind-Value="_floatValue" />
+    <span id="type-float-value">[@(_floatValue.ToString(CultureInfo.InvariantCulture))]</span>
+    <BitNumberField Id="nf-type-double" Label="double" @bind-Value="_doubleValue" />
+    <span id="type-double-value">[@(_doubleValue.ToString(CultureInfo.InvariantCulture))]</span>
+    <BitNumberField Id="nf-type-decimal" Label="decimal" @bind-Value="_decimalValue" Step="0.01" />
+    <span id="type-decimal-value">[@(_decimalValue.ToString(CultureInfo.InvariantCulture))]</span>
+    <BitNumberField Id="nf-type-nint" Label="int?" @bind-Value="_nullableIntValue" />
+    <span id="type-nint-value">[@(_nullableIntValue?.ToString() ?? "null")]</span>
+    <BitNumberField Id="nf-type-ndouble" Label="double?" @bind-Value="_nullableDoubleValue" />
+    <span id="type-ndouble-value">[@(_nullableDoubleValue?.ToString(CultureInfo.InvariantCulture) ?? "null")]</span>
+    <BitNumberField Id="nf-type-ndecimal" Label="decimal?" @bind-Value="_nullableDecimalValue" />
+    <span id="type-ndecimal-value">[@(_nullableDecimalValue?.ToString(CultureInfo.InvariantCulture) ?? "null")]</span>
+    <BitNumberField Id="nf-signed" Label="InputMode Text" InputMode="BitInputMode.Text" Min="-100" Max="100" @bind-Value="_signedValue" />
+    <span id="signed-value">[@_signedValue]</span>
+</E2ESection>
+
+@* ---------- Label position and template ---------- *@
+
+<E2ESection Id="label-placement" Title="Label position and template">
+    <div class="e2e-nf-box">
+        <BitNumberField Id="nf-lp-top" Label="Top" TValue="int" />
+        <BitNumberField Id="nf-lp-start" Label="Start" LabelPlacement="BitPlacement.Start" TValue="int" />
+        <BitNumberField Id="nf-lp-end" Label="End" LabelPlacement="BitPlacement.End" TValue="int" />
+        <BitNumberField Id="nf-lp-bottom" Label="Bottom" LabelPlacement="BitPlacement.Bottom" TValue="int" />
+        <BitNumberField Id="nf-label-template" TValue="int">
+            <LabelTemplate><span class="tpl-label">This is custom Label</span></LabelTemplate>
+        </BitNumberField>
+    </div>
+</E2ESection>
+
+@* ---------- Description, error and loading ---------- *@
+
+<E2ESection Id="messages" Title="Description, error and loading">
+    <div class="e2e-nf-box">
+        <BitNumberField Id="nf-desc" Label="Quantity" TValue="int" Min="1" Max="99" Description="Between 1 and 99 items per order." />
+        <BitNumberField Id="nf-error" Label="Seats" @bind-Value="_seatsValue" Immediate
+                        Description="We hold the room for 15 minutes."
+                        ErrorMessage="@(_seatsValue > 4 ? "Only 4 seats are left for this show." : null)" />
+        <BitNumberField Id="nf-invalid" Label="Invalid" TValue="int" Invalid DefaultValue="42" />
+        <BitNumberField Id="nf-loading" Label="Price" TValue="double" Loading="_loading" LoadingAriaLabel="Recalculating the price" DefaultValue="19.99" />
+        <button id="btn-toggle-loading" type="button" @onclick="() => _loading = !_loading">toggle loading</button>
+        <BitNumberField Id="nf-loading-default" Label="Loading" TValue="int" Loading />
+        <BitNumberField Id="nf-desc-template" Label="Discount" TValue="int">
+            <DescriptionTemplate><b class="tpl-desc">Anything above 50% needs approval.</b></DescriptionTemplate>
+        </BitNumberField>
+        <BitNumberField Id="nf-error-template" Label="Templated error" TValue="int">
+            <ErrorMessageTemplate><span class="tpl-error">Rejected.</span></ErrorMessageTemplate>
+        </BitNumberField>
+        <BitNumberField Id="nf-loading-template" Label="Templated loading" TValue="int" Loading>
+            <LoadingTemplate><span class="tpl-loading">busy</span></LoadingTemplate>
+        </BitNumberField>
+        <BitNumberField Id="nf-aria-desc" Label="Volume" TValue="int" AriaDescription="Use the arrow keys." Description="Visible hint" />
+        <BitNumberField Id="nf-desc-side" Label="Label on the side" TValue="int" LabelPlacement="BitPlacement.Start" Description="The hint wraps onto a line of its own." />
+    </div>
+</E2ESection>
+
+@* ---------- Appearance ---------- *@
+
+<E2ESection Id="appearance" Title="Appearance">
+    <BitNumberField Id="nf-default-look" Label="Default" TValue="int" />
+    <BitNumberField Id="nf-underlined" Label="Underlined" TValue="int" Underlined Mode="BitSpinButtonMode.Compact" />
+    <BitNumberField Id="nf-und-req" Label="Underlined Required" TValue="int" Underlined Required />
+    <BitNumberField Id="nf-noborder" Label="NoBorder" TValue="int" NoBorder />
+    <div id="fullwidth-box" class="e2e-nf-box" style="display: flex;">
+        <BitNumberField Id="nf-fullwidth" Label="FullWidth" TValue="int" FullWidth />
+    </div>
+    <div class="e2e-nf-box" style="display: flex;">
+        <BitNumberField Id="nf-notfullwidth" Label="Not FullWidth" TValue="int" />
+    </div>
+</E2ESection>
+
+@* ---------- Icon, prefix and suffix ---------- *@
+
+<E2ESection Id="affixes" Title="Icon, prefix and suffix">
+    <div class="e2e-nf-box">
+        <BitNumberField Id="nf-icon" TValue="int" Label="Icon" IconName="@BitIconName.Lightbulb" />
+        <BitNumberField Id="nf-icon-aria" TValue="int" Label="Icon named" IconName="@BitIconName.Lightbulb" IconAriaLabel="An idea" />
+        <BitNumberField Id="nf-affix" TValue="int" Label="Prefix and Suffix" Prefix="Distance:" Suffix="km" Mode="BitSpinButtonMode.Compact" />
+        <BitNumberField Id="nf-affix-disabled" TValue="int" Label="Disabled" Prefix="Distance:" Suffix="km" Disabled />
+        <BitNumberField Id="nf-affix-template" TValue="double" Label="Templates" Step="0.5">
+            <PrefixTemplate><span class="tpl-prefix">P</span></PrefixTemplate>
+            <SuffixTemplate><span class="tpl-suffix">USD</span></SuffixTemplate>
+        </BitNumberField>
+    </div>
+</E2ESection>
+
+@* ---------- Clear button ---------- *@
+
+<E2ESection Id="clear" Title="Clear button">
+    <BitNumberField Id="nf-clear" Label="Age" ShowClearButton @bind-Value="_clearValue" OnClear="() => _clearCount++" />
+    <span id="clear-value">[@(_clearValue?.ToString() ?? "null")]</span>
+    <span id="clear-count">@_clearCount</span>
+    <BitNumberField Id="nf-clear-icon" Label="Custom icon" TValue="int?" ShowClearButton ClearButtonIconName="@BitIconName.Delete" ClearButtonAriaLabel="Remove the age" DefaultValue="28" />
+    <BitNumberField Id="nf-clear-ext" Label="External icon" TValue="int?" ShowClearButton ClearButtonIcon="@BitIconInfo.Css("my-nf-clear")" DefaultValue="28" />
+    <BitNumberField Id="nf-clear-template" Label="Template" TValue="int?" ShowClearButton DefaultValue="28">
+        <ClearButtonTemplate><b class="tpl-clear">&times;</b></ClearButtonTemplate>
+    </BitNumberField>
+    <BitNumberField Id="nf-clear-escape" Label="Escape" ShowClearButton @bind-Value="_escapeValue"
+                    OnEscape="() => { _escapeCount++; _valueAtEscape = _escapeValue; }" OnClear="() => _escapeClears++" />
+    <span id="escape-value">[@(_escapeValue?.ToString() ?? "null")]</span>
+    <span id="escape-count">@_escapeCount</span>
+    <span id="escape-clears">@_escapeClears</span>
+    <span id="value-at-escape">[@_valueAtEscape]</span>
+    <BitNumberField Id="nf-clear-readonly" Label="ReadOnly" TValue="int?" ShowClearButton ReadOnly DefaultValue="5" />
+    <BitNumberField Id="nf-escape-noclear" Label="Escape without clear button" TValue="int?" DefaultValue="5" />
+
+    <button id="btn-open-dialog" type="button" @onclick="() => _dialogOpen = true">open dialog</button>
+    <span id="dialog-open">@_dialogOpen</span>
+    <BitDialog Id="nf-dialog-host" @bind-IsOpen="_dialogOpen" Title="Dialog" Message="A field in a dialog" AutoFocusSelector=".bit-nfl-inp">
+        <BitNumberField Id="nf-dialog" Label="In a dialog" TValue="int?" ShowClearButton DefaultValue="12" />
+    </BitDialog>
+</E2ESection>
+
+@* ---------- Number format and culture ---------- *@
+
+<E2ESection Id="format" Title="Number format and culture">
+    <div class="e2e-nf-box">
+        <BitNumberField Id="nf-n0" Label="N0" DefaultValue="1234567890d" NumberFormat="N0" Culture="_enUs" />
+        <BitNumberField Id="nf-c2-us" Label="C2 en-US" TValue="double" @bind-Value="_usCurrencyValue" NumberFormat="C2" Culture="_enUs" />
+        <span id="c2-us-value">[@(_usCurrencyValue.ToString(CultureInfo.InvariantCulture))]</span>
+        <span id="c2-us-expected">@(1234.5.ToString("C2", _enUs))</span>
+        <span id="c2-us-negative">@((-50d).ToString("C2", _enUs))</span>
+        <BitNumberField Id="nf-000000" Label="000000" DefaultValue="1363" NumberFormat="000000" />
+        <BitNumberField Id="nf-c2-de" Label="C2 de-DE" DefaultValue="1234.5" NumberFormat="C2" Culture="_deDe" />
+        <span id="c2-de-expected">@(1234.5.ToString("C2", _deDe))</span>
+        <BitNumberField Id="nf-de" Label="de-DE" TValue="double?" Culture="_deDe" @bind-Value="_germanValue" />
+        <span id="de-value">[@(_germanValue?.ToString(CultureInfo.InvariantCulture))]</span>
+        <BitNumberField Id="nf-us" Label="en-US" TValue="double?" Culture="_enUs" @bind-Value="_usValue" />
+        <span id="us-value">[@(_usValue?.ToString(CultureInfo.InvariantCulture))]</span>
+        <BitNumberField Id="nf-fa" Label="fa-IR" TValue="double?" Culture="_faIr" @bind-Value="_faValue" />
+        <span id="fa-value">[@(_faValue?.ToString(CultureInfo.InvariantCulture))]</span>
+        <span id="fa-decimal">@_faIr.NumberFormat.NumberDecimalSeparator</span>
+        <span id="fa-group">@_faIr.NumberFormat.NumberGroupSeparator</span>
+        <span id="fa-12-5">@(12.5.ToString(_faIr))</span>
+        <BitNumberField Id="nf-fa-n2" Label="fa-IR N2" DefaultValue="1234.5" NumberFormat="N2" Culture="_faIr" />
+        <span id="fa-n2-expected">@(1234.5.ToString("N2", _faIr))</span>
+        <BitNumberField Id="nf-fa-normalize" Label="fa-IR NormalizeDigits" TValue="double?" Culture="_faIr" NormalizeDigits @bind-Value="_faNormalizedValue" />
+        <span id="fa-normalize-value">[@(_faNormalizedValue?.ToString(CultureInfo.InvariantCulture))]</span>
+    </div>
+</E2ESection>
+
+@* ---------- Input behavior ---------- *@
+
+<E2ESection Id="behavior" Title="Input behavior">
+    <BitNumberField Id="nf-immediate" Label="Immediate" TValue="int?" @bind-Value="_immediateValue" @bind-Value:after="() => _immediateCount++" Immediate />
+    <span id="immediate-value">[@_immediateValue]</span>
+    <span id="immediate-count">@_immediateCount</span>
+    <BitNumberField Id="nf-immediate-decimal" Label="Immediate decimals" TValue="double?" @bind-Value="_immediateDecimalValue" Immediate />
+    <span id="immediate-decimal-value">[@(_immediateDecimalValue?.ToString(CultureInfo.InvariantCulture))]</span>
+    <BitNumberField Id="nf-debounce" Label="Debounce" TValue="int?" @bind-Value="_debounceValue" @bind-Value:after="() => _debounceCount++" Immediate DebounceTime="700" />
+    <span id="debounce-value">[@_debounceValue]</span>
+    <span id="debounce-count">@_debounceCount</span>
+    <BitNumberField Id="nf-throttle" Label="Throttle" TValue="int?" @bind-Value="_throttleValue" @bind-Value:after="ThrottleCommitted" Immediate ThrottleTime="1500" />
+    <span id="throttle-value">[@_throttleValue]</span>
+    <span id="throttle-count">@_throttleCount</span>
+    <span id="throttle-first">[@_throttleFirst]</span>
+    <BitNumberField Id="nf-readonly" Label="ReadOnly" ReadOnly Mode="BitSpinButtonMode.Compact" @bind-Value="_readOnlyValue" ShowClearButton />
+    <span id="readonly-value">[@_readOnlyValue]</span>
+    <BitNumberField Id="nf-inputreadonly" Label="IsInputReadOnly" IsInputReadOnly Mode="BitSpinButtonMode.Compact" @bind-Value="_inputReadOnlyValue" />
+    <span id="inputreadonly-value">[@_inputReadOnlyValue]</span>
+    <BitNumberField Id="nf-wheel" Label="Wheel" InvertMouseWheel="_invertWheel" @bind-Value="_wheelValue" OnIncrement="(int v) => _wheelIncrements++" />
+    <span id="wheel-value">[@_wheelValue]</span>
+    <span id="wheel-increments">@_wheelIncrements</span>
+    <button id="btn-invert-wheel" type="button" @onclick="() => _invertWheel = !_invertWheel">invert wheel</button>
+    <BitNumberField Id="nf-nowheel" Label="NoMouseWheel" NoMouseWheel @bind-Value="_noWheelValue" />
+    <span id="nowheel-value">[@_noWheelValue]</span>
+    <BitNumberField Id="nf-enterkeyhint" Label="EnterKeyHint" TValue="int?" EnterKeyHint="done" AutoComplete="on" />
+</E2ESection>
+
+@* ---------- NormalizeDigits ---------- *@
+
+<E2ESection Id="normalize" Title="NormalizeDigits">
+    <BitNumberField Id="nf-norm-off" Label="Without NormalizeDigits" @bind-Value="_normOffValue" />
+    <span id="norm-off-value">[@_normOffValue]</span>
+    <BitNumberField Id="nf-norm-on" Label="With NormalizeDigits" @bind-Value="_normOnValue" NormalizeDigits />
+    <span id="norm-on-value">[@_normOnValue]</span>
+    <BitNumberField Id="nf-norm-decimal" Label="Fractioned" @bind-Value="_normDecimalValue" NormalizeDigits Precision="2" />
+    <span id="norm-decimal-value">[@(_normDecimalValue.ToString(CultureInfo.InvariantCulture))]</span>
+    <BitNumberField Id="nf-norm-custom" Label="Custom normalizer" @bind-Value="_normCustomValue" DigitsNormalizer="CustomDigitsNormalizer" />
+    <span id="norm-custom-value">[@_normCustomValue]</span>
+    <BitNumberField Id="nf-norm-params" Label="Persian Min Max Step" NormalizeDigits Min="۱۰" Max="۲۰" Step="۵" Mode="BitSpinButtonMode.Compact" @bind-Value="_normParamsValue" />
+    <span id="norm-params-value">[@_normParamsValue]</span>
+</E2ESection>
+
+@* ---------- Events ---------- *@
+
+<E2ESection Id="events" Title="Events">
+    <BitNumberField Id="nf-ev-spin" Label="Spin events" Mode="BitSpinButtonMode.Compact"
+                    OnIncrement="(int v) => { _incrementCount++; _lastSpin = v; }"
+                    OnDecrement="(int v) => { _decrementCount++; _lastSpin = v; }" />
+    <span id="increment-count">@_incrementCount</span>
+    <span id="decrement-count">@_decrementCount</span>
+    <span id="last-spin">@_lastSpin</span>
+    <BitNumberField Id="nf-ev-change" Label="OnChange" TValue="int" OnChange="(int v) => { _changeCount++; _lastChange = v; }" Mode="BitSpinButtonMode.Compact" />
+    <span id="change-count">@_changeCount</span>
+    <span id="last-change">@_lastChange</span>
+    <BitNumberField Id="nf-ev-bounds" Label="Bounds 0 to 3" TValue="int" Min="0" Max="3" Mode="BitSpinButtonMode.Compact"
+                    OnMinReached="(int v) => _minReached++" OnMaxReached="(int v) => _maxReached++" />
+    <span id="min-reached">@_minReached</span>
+    <span id="max-reached">@_maxReached</span>
+    <BitNumberField Id="nf-ev-enter" Label="OnEnter" TValue="int?" @bind-Value="_enterValue" OnEnter="() => { _enterCount++; _valueAtEnter = _enterValue; }" />
+    <span id="enter-count">@_enterCount</span>
+    <span id="value-at-enter">[@_valueAtEnter]</span>
+    <BitNumberField Id="nf-ev-keys" Label="Keys, click and focus" TValue="int?"
+                    OnClick="() => _clickCount++"
+                    OnKeyUp="() => _keyUpCount++"
+                    OnKeyDown="(KeyboardEventArgs e) => _lastKey = e.Key"
+                    OnFocus="() => _focusCount++"
+                    OnBlur="() => _blurCount++"
+                    OnFocusIn="() => _focusInCount++"
+                    OnFocusOut="() => _focusOutCount++" />
+    <span id="ev-click">@_clickCount</span>
+    <span id="ev-keyup">@_keyUpCount</span>
+    <span id="ev-last-key">@_lastKey</span>
+    <span id="ev-focus">@_focusCount</span>
+    <span id="ev-blur">@_blurCount</span>
+    <span id="ev-focusin">@_focusInCount</span>
+    <span id="ev-focusout">@_focusOutCount</span>
+</E2ESection>
+
+@* ---------- Public API ---------- *@
+
+<E2ESection Id="api" Title="Public API">
+    <BitNumberField @ref="_apiRef" Id="nf-api" Label="Driven from the outside" TValue="int?" Min="0" Max="10" Step="2" @bind-Value="_apiValue"
+                    OnMaxReached="(int? v) => _apiMaxReached++" OnClear="() => _apiClears++" />
+    <span id="api-value">[@(_apiValue?.ToString() ?? "null")]</span>
+    <span id="api-max-reached">@_apiMaxReached</span>
+    <span id="api-clears">@_apiClears</span>
+    <button id="btn-api-dec" type="button" @onclick="ApiDecrement">Decrement</button>
+    <button id="btn-api-inc" type="button" @onclick="ApiIncrement">Increment</button>
+    <button id="btn-api-clear" type="button" @onclick="ApiClear">Clear</button>
+    <button id="btn-api-focus" type="button" @onclick="ApiFocus">Focus</button>
+    <BitNumberField @ref="_apiHideRef" Id="nf-api-hide" Label="HideInput API" TValue="int" HideInput />
+    <button id="btn-api-focus-hide" type="button" @onclick="ApiFocusHide">Focus HideInput</button>
+</E2ESection>
+
+@* ---------- Validation ---------- *@
+
+<E2ESection Id="validation" Title="Validation">
+    <EditForm Model="_model" OnValidSubmit="@(() => _formStatus = "Valid")" OnInvalidSubmit="@(() => _formStatus = "Invalid")">
+        <DataAnnotationsValidator />
+        <BitNumberField Id="nf-form-age" Label="Age" @bind-Value="_model.Age" />
+        <ValidationMessage For="@(() => _model.Age)" />
+        <BitNumberField Id="nf-form-weight" Label="Weight" DisplayName="Weight" ParsingErrorMessage="{0} must be a number." @bind-Value="_model.Weight" />
+        <ValidationMessage For="@(() => _model.Weight)" />
+        <BitNumberField Id="nf-form-percentage" Label="NoClamp Range" NoClamp Min="0" Max="100" @bind-Value="_model.Percentage" />
+        <ValidationMessage For="@(() => _model.Percentage)" />
+        <BitNumberField Id="nf-form-novalidate" Label="NoValidate" NoValidate @bind-Value="_model.Ignored" />
+        <button id="btn-submit" type="submit">Submit</button>
+    </EditForm>
+    <span id="form-status">@_formStatus</span>
+</E2ESection>
+
+@* ---------- Accessibility ---------- *@
+
+<E2ESection Id="a11y" Title="Accessibility">
+    <BitNumberField Id="nf-a11y-volume" Label="Volume" TValue="int" Min="0" Max="10" Mode="BitSpinButtonMode.Compact"
+                    IncrementAriaLabel="Louder" DecrementAriaLabel="Quieter" />
+    <BitNumberField Id="nf-a11y-rating" Label="Rating" TValue="int" Min="1" Max="5" DefaultValue="3" Mode="BitSpinButtonMode.Compact" AriaValueText="3 out of 5 stars" />
+    <BitNumberField Id="nf-a11y-set" Label="Quantity" TValue="int?" ShowClearButton DefaultValue="1" AriaSetSize="3" AriaPositionInSet="2" />
+    <BitNumberField Id="nf-a11y-arialabel" AriaLabel="Unlabelled quantity" TValue="int" Title="A tooltip" />
+    <BitNumberField Id="nf-a11y-valuenow" Label="Fixed aria-valuenow" TValue="int" AriaValueNow="99" DefaultValue="5" />
+</E2ESection>
+
+@* ---------- Cascading parameters ---------- *@
+
+<E2ESection Id="cascading" Title="Cascading parameters">
+    <BitParams Parameters="@_numberFieldParams">
+        <BitNumberField Id="nf-casc-1" Label="Width" TValue="int" />
+        <BitNumberField Id="nf-casc-own" Label="Depth" TValue="int" Suffix="m" />
+    </BitParams>
+    <BitNumberField Id="nf-casc-outside" Label="Outside" TValue="int" />
+</E2ESection>
+
+@* ---------- Background, Border, Accent, Size ---------- *@
+
+<E2ESection Id="background" Title="Background">
+    @foreach (var kind in _kinds)
+    {
+        <BitNumberField Id="@($"nf-bg-{kind.ToString().ToLowerInvariant()}")" Label="@kind.ToString()" TValue="int" Background="kind" />
+    }
+</E2ESection>
+
+<E2ESection Id="border" Title="Border">
+    @foreach (var kind in _kinds)
+    {
+        <BitNumberField Id="@($"nf-brd-{kind.ToString().ToLowerInvariant()}")" Label="@kind.ToString()" TValue="int" Border="kind" />
+    }
+</E2ESection>
+
+<E2ESection Id="accent" Title="Accent">
+    @foreach (var color in _colors)
+    {
+        <BitNumberField Id="@($"nf-acc-{color.ToString().ToLowerInvariant()}")" Label="@color.ToString()" TValue="int" Accent="color" IconName="@BitIconName.Money" Prefix="$" />
+    }
+    <BitNumberField Id="nf-acc-none" Label="No accent" TValue="int" IconName="@BitIconName.Money" />
+</E2ESection>
+
+<E2ESection Id="size" Title="Size">
+    @foreach (var size in _sizes)
+    {
+        <BitNumberField Id="@($"nf-size-{size.ToString().ToLowerInvariant()}")" Label="@size.ToString()" TValue="int" Size="size" Mode="BitSpinButtonMode.Compact" IconName="@BitIconName.Money" Suffix="kg" />
+    }
+</E2ESection>
+
+@* ---------- External icons ---------- *@
+
+<E2ESection Id="external-icons" Title="External icons">
+    <BitNumberField Id="nf-ext-string" Label="String" TValue="int" Icon="@("my-nf-icon")" />
+    <BitNumberField Id="nf-ext-fa" Label="Fa" TValue="int" Icon="@BitIconInfo.Fa("solid lightbulb")" />
+    <BitNumberField Id="nf-ext-bi" Label="Bi" TValue="int" Icon="@BitIconInfo.Bi("calculator")" />
+    <BitNumberField Id="nf-ext-spin" Label="Spin" TValue="int" Mode="BitSpinButtonMode.Compact" IncrementIcon="@BitIconInfo.Css("my-nf-up")" DecrementIcon="@BitIconInfo.Css("my-nf-down")" />
+</E2ESection>
+
+@* ---------- Style and Class ---------- *@
+
+<E2ESection Id="style-class" Title="Style and Class">
+    <BitNumberField Id="nf-style" DefaultValue="10" Style="box-shadow: rgb(0, 255, 255) 0px 0px 16px; margin-inline: 16px;" />
+    <BitNumberField Id="nf-class" DefaultValue="20" Class="custom-class" />
+    <BitNumberField Id="nf-styles" DefaultValue="1" Label="Styles" Description="Styled description"
+                    Styles="@(new() { Root = "margin-inline: 16px;",
+                                      Focused = "--focused-background: rgb(10, 20, 30);",
+                                      InputContainer = "background: var(--focused-background, rgb(200, 200, 200));",
+                                      Label = "font-weight: 900;",
+                                      Description = "font-style: italic;",
+                                      Input = "padding-left: 9px;" })" />
+    <BitNumberField Id="nf-classes" TValue="int?" Label="Classes"
+                    Classes="@(new() { Root = "custom-root",
+                                       InputContainer = "custom-input-wrapper",
+                                       Focused = "custom-focus",
+                                       Input = "custom-input",
+                                       Label = "custom-label" })" />
+    <div id="cssvar-scope" style="--bit-NumberField-radius: 20px; --bit-NumberField-background: rgb(1, 2, 3); --bit-NumberField-height: 50px; --bit-NumberField-label-color: rgb(4, 5, 6);">
+        <BitNumberField Id="nf-cssvar-ancestor" Label="Ancestor" TValue="int" />
+        <BitNumberField Id="nf-cssvar-explicit" Label="Explicit wins" TValue="int" Background="BitColorKind.Secondary" Size="BitSize.Small" />
+    </div>
+    <BitNumberField Id="nf-cssvar-style" Label="Instance" TValue="int" Style="--bit-NumberField-border-color: rgb(7, 8, 9); --bit-NumberField-border-width: 2px;" />
+</E2ESection>
+
+@* ---------- RTL ---------- *@
+
+<E2ESection Id="rtl" Title="RTL">
+    <div class="e2e-nf-box">
+        <BitNumberField Id="nf-ltr" Label="LTR" TValue="int" Mode="BitSpinButtonMode.Spread" Suffix="kg" LabelPlacement="BitPlacement.Start" />
+        <BitNumberField Id="nf-rtl" Dir="BitDir.Rtl" Label="RTL" TValue="int" Mode="BitSpinButtonMode.Spread" Suffix="kg" LabelPlacement="BitPlacement.Start" />
+        <CascadingValue Value="BitDir.Rtl">
+            <BitNumberField Id="nf-rtl-cascade" Label="Cascaded RTL" TValue="int" Mode="BitSpinButtonMode.Spread" Suffix="kg" />
+        </CascadingValue>
+        <div dir="rtl">
+            <BitNumberField Id="nf-rtl-inherited" Label="Inherited RTL" TValue="int" Mode="BitSpinButtonMode.Spread" Suffix="kg" />
+        </div>
+    </div>
+</E2ESection>
+
+@* ---------- Reduced motion ---------- *@
+
+<E2ESection Id="motion" Title="Reduced motion">
+    <BitNumberField Id="nf-motion" Label="Motion" TValue="int" />
+    <BitNumberField Id="nf-motion-force" Label="ForceAnimation" TValue="int" ForceAnimation />
+</E2ESection>
+
+@* ---------- Unmount ---------- *@
+
+<E2ESection Id="unmount" Title="Unmount">
+    <button id="btn-toggle-mount" type="button" @onclick="() => _mounted = !_mounted">toggle mount</button>
+    <span id="mounted">@_mounted</span>
+    @if (_mounted)
+    {
+        <BitNumberField Id="nf-mount" Label="Mounted" TValue="int" Mode="BitSpinButtonMode.Spread" ContinuousSpinDelay="100" ContinuousSpinInterval="20" ShowClearButton Min="0" Max="100" />
+    }
+</E2ESection>
+
+<E2EStatus />
+
+@code {
+    private static readonly BitColorKind[] _kinds = [BitColorKind.Primary, BitColorKind.Secondary, BitColorKind.Tertiary, BitColorKind.Transparent];
+    private static readonly BitSize[] _sizes = [BitSize.Small, BitSize.Medium, BitSize.Large];
+    private static readonly BitColor[] _colors =
+    [
+        BitColor.Primary, BitColor.Secondary, BitColor.Tertiary, BitColor.Info, BitColor.Success, BitColor.Warning,
+        BitColor.SevereWarning, BitColor.Error, BitColor.PrimaryBackground, BitColor.SecondaryBackground,
+        BitColor.TertiaryBackground, BitColor.PrimaryForeground, BitColor.SecondaryForeground, BitColor.TertiaryForeground,
+        BitColor.PrimaryBorder, BitColor.SecondaryBorder, BitColor.TertiaryBorder
+    ];
+
+    private readonly CultureInfo _enUs = new("en-US");
+    private readonly CultureInfo _deDe = new("de-DE");
+    private readonly CultureInfo _faIr = new("fa-IR");
+
+    private int? _basicValue;
+
+    private bool _disabled = true;
+    private int _disabledClicks;
+    private int _disabledSpins;
+    private int _disabledRootClicks;
+    private int _disabledRootHovers;
+    private Dictionary<string, object> _disabledRootAttributes = [];
+
+    private BitVisibility _visibility;
+    private string _dynLabel = "First label";
+    private BitSpinButtonMode? _dynMode;
+    private string? _dynMax;
+
+    private int _oneWayValue = 5;
+    private int _twoWayValue = 3;
+    private int? _uncontrolledValue;
+    private int _uncontrolledCount;
+
+    private int _compactValue;
+    private int _inlineValue;
+    private int _spreadValue;
+    private int _continuousValue;
+    private int _hideInputValue;
+
+    private int _minValue;
+    private int _minMaxValue;
+    private int _clampValue;
+    private int _noClampValue;
+
+    private int _stepValue;
+    private double _fractionValue;
+    private int _pageStepValue;
+    private int _pageStepDefaultValue;
+    private double _precisionValue;
+    private double _precision2Value;
+    private int _snapValue = 2;
+    private double _snapFractionValue;
+
+    private byte _byteValue;
+    private sbyte _sbyteValue;
+    private short _shortValue;
+    private ushort _ushortValue;
+    private int _intValue;
+    private uint _uintValue;
+    private long _longValue;
+    private ulong _ulongValue;
+    private float _floatValue;
+    private double _doubleValue;
+    private decimal _decimalValue;
+    private int? _nullableIntValue = 5;
+    private double? _nullableDoubleValue;
+    private decimal? _nullableDecimalValue;
+    private int _signedValue;
+
+    private int _seatsValue;
+    private bool _loading;
+
+    private int? _clearValue = 28;
+    private int _clearCount;
+    private int? _escapeValue = 9;
+    private int _escapeCount;
+    private int _escapeClears;
+    private int? _valueAtEscape;
+    private bool _dialogOpen;
+
+    private double _usCurrencyValue = 1234.5;
+    private double? _germanValue;
+    private double? _usValue;
+    private double? _faValue;
+    private double? _faNormalizedValue;
+
+    private int? _immediateValue;
+    private int _immediateCount;
+    private double? _immediateDecimalValue;
+    private int? _debounceValue;
+    private int _debounceCount;
+    private int? _throttleValue;
+    private int _throttleCount;
+    private int? _throttleFirst;
+    private int _readOnlyValue = 5;
+    private int _inputReadOnlyValue = 5;
+    private int _wheelValue;
+    private int _wheelIncrements;
+    private bool _invertWheel;
+    private int _noWheelValue;
+
+    private int _normOffValue;
+    private int _normOnValue;
+    private double _normDecimalValue;
+    private int _normCustomValue;
+    private int _normParamsValue;
+
+    private int _incrementCount;
+    private int _decrementCount;
+    private int _lastSpin;
+    private int _changeCount;
+    private int _lastChange;
+    private int _minReached;
+    private int _maxReached;
+    private int _enterCount;
+    private int? _enterValue;
+    private int? _valueAtEnter;
+    private int _clickCount;
+    private int _keyUpCount;
+    private string? _lastKey;
+    private int _focusCount;
+    private int _blurCount;
+    private int _focusInCount;
+    private int _focusOutCount;
+
+    private BitNumberField<int?>? _apiRef;
+    private BitNumberField<int>? _apiHideRef;
+    private int? _apiValue;
+    private int _apiMaxReached;
+    private int _apiClears;
+
+    private readonly FormModel _model = new();
+    private string _formStatus = "None";
+
+    private readonly BitNumberFieldParams[] _numberFieldParams =
+    [
+        new() { Min = "0", Max = "500", Step = "5", Suffix = "cm", Underlined = true, ShowClearButton = true, Accent = BitColor.Info, Mode = BitSpinButtonMode.Compact, Description = "Between 0 and 500, in steps of 5." }
+    ];
+
+    private bool _mounted = true;
+
+    protected override void OnInitialized()
+    {
+        _disabledRootAttributes = new()
+        {
+            ["onclick"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledRootClicks++),
+            ["onmouseover"] = EventCallback.Factory.Create<MouseEventArgs>(this, () => _disabledRootHovers++)
+        };
+    }
+
+    private void ChangeParams()
+    {
+        _dynLabel = "Second label";
+        _dynMode = BitSpinButtonMode.Inline;
+        _dynMax = "3";
+    }
+
+    private void ThrottleCommitted()
+    {
+        _throttleCount++;
+        _throttleFirst ??= _throttleValue;
+    }
+
+    private Task ApiIncrement() => _apiRef?.IncrementAsync() ?? Task.CompletedTask;
+
+    private Task ApiDecrement() => _apiRef?.DecrementAsync() ?? Task.CompletedTask;
+
+    private Task ApiClear() => _apiRef?.ClearAsync() ?? Task.CompletedTask;
+
+    private async Task ApiFocus()
+    {
+        if (_apiRef is not null) await _apiRef.FocusAsync();
+    }
+
+    private async Task ApiFocusHide()
+    {
+        if (_apiHideRef is not null) await _apiHideRef.FocusAsync();
+    }
+
+    private static string? CustomDigitsNormalizer(string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return value;
+
+        var chars = value.Where(c => c != '٬' && c != ',').Select(c => c is >= '۰' and <= '۹' ? (char)('0' + (c - '۰')) : c).ToArray();
+
+        return new string(chars);
+    }
+
+    private sealed class FormModel
+    {
+        [Required(ErrorMessage = "Enter an age")]
+        [Range(1, 150, ErrorMessage = "Nobody is that old")]
+        public int? Age { get; set; }
+
+        public double Weight { get; set; }
+
+        [Range(0, 100, ErrorMessage = "The percentage must be between 0 and 100")]
+        public int Percentage { get; set; }
+
+        [Range(1, 10, ErrorMessage = "Ignored out of range")]
+        public int Ignored { get; set; }
+    }
+}

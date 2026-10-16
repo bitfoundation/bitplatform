@@ -59,6 +59,19 @@
                 e.preventDefault();
             }, { passive: false, signal: bitController.controller.signal });
 
+            // A time input takes the focus with its text selected, so the first digit typed into it replaces the part
+            // instead of being appended to it. It is selected here, as the focus lands, rather than from .NET a round
+            // trip later: by then the focus may have moved on - a quick Tab, the advance of AutoAdvance - and select()
+            // pulls it back onto the input in Chromium and WebKit.
+            callout.addEventListener('focusin', e => {
+                const target = e.target as HTMLInputElement | null;
+                if (target === null || target.classList.contains('bit-tpc-tin') === false) return;
+
+                try {
+                    target.select();
+                } catch { } // an input that takes no selection keeps what it has
+            }, { signal: bitController.controller.signal });
+
             // A whole time pasted into one of the time inputs - "14:30", "2:30 PM" - is a time rather than a
             // part of one, which a number input would only refuse. It is handed to .NET to be read the way a
             // typed time is; a bare number is left to the input, which takes it as the part it is.
