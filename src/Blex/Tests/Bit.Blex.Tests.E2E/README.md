@@ -83,7 +83,7 @@ BLEX_E2E_PUBLISHED_HOST=$PWD/../../artifacts/harness-trimmed \
   dotnet test Tests/Bit.Blex.Tests.E2E/Bit.Blex.Tests.E2E.csproj --filter "FullyQualifiedName!~HybridModeTests"
 ```
 
-CI runs all of the above in the E2E stages of `.github/workflows/bit.ci.Blex.yml`.
+CI runs all of the above in `.github/workflows/bit.ci.Blex.e2e.yml`, which only runs when started by hand (Actions > "bit platform CI - Blex E2E" > Run workflow). The pull-request pipeline, `bit.ci.Blex.yml`, runs the build, unit, generator and MCP tests only.
 
 ## Hybrid notes
 
