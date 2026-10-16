@@ -276,6 +276,9 @@ _book
 /src/Bmotion/Bit.Bmotion/Scripts/**/*.js
 /src/Bmotion/Bit.Bmotion/wwwroot/**/*.js
 
+/src/Blex/Bit.Blex.Blazor/Scripts/**/*.js
+/src/Blex/Bit.Blex.Blazor/wwwroot/**/*.js
+
 /src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js
 

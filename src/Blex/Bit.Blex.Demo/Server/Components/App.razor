@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with
+       prerendering the HeadOutlet emits a real <title> element into this head. A second,
+       earlier one would win in the served HTML (browsers and crawlers take the first). *@
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Bit.Blex is lightweight, source-generator-powered reactive state management for Blazor and .NET MAUI, with Redux DevTools time-travel, effects, persistence and undo/redo built in." />
+    <meta name="color-scheme" content="dark light" />
+
+    @* What a link to the site looks like when it is shared. *@
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Bit.Blex" />
+    <meta property="og:title" content="Blex - reactive state management for Blazor" />
+    <meta property="og:description" content="One [BlexState] field, one [BlexAction] method. No reducers, no boilerplate - and Redux DevTools time-travel out of the box." />
+    <meta name="twitter:card" content="summary" />
+
+    <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="css/site.css" />
+
+    @* Apply the stored theme before first paint so the page never flashes the wrong one. The key
+       is the one Services/ThemeService.cs persists the reader's choice under. *@
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('blex-docs-theme');
+                if (!stored) {
+                    stored = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches
+                        ? 'light' : 'dark';
+                }
+                document.documentElement.setAttribute('data-theme', stored);
+            } catch (e) { /* private mode: keep the default */ }
+        })();
+    </script>
+
+    @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* Prerendered on the server, then hydrated by the WebAssembly runtime. Stores render their
+       initial state in the served HTML; <BlexProvider> hands that state to the interactive render
+       and then rehydrates the persisted stores from localStorage. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+
+    <div id="blazor-error-ui">
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">🗙</span>
+    </div>
+
+    @* Loaded before the Blazor script so window.blexDocs exists by the time the app boots. *@
+    <script src="js/site.js"></script>
+    <script src="_framework/blazor.web.js"></script>
+</body>
+
+</html>

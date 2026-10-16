@@ -7,6 +7,7 @@ on:
       - 'main'
     paths:
       - 'src/BlazorUI/**'
+      - 'src/Blex/**'
       - 'src/Bmotion/**'
       - 'src/Brouter/**'
       - 'src/Bswup/**'
@@ -150,6 +151,31 @@ jobs:
       run: dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bmotion
       run: dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output . --configuration Release
+
+    - name: dotnet build Blex
+      run: dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Blex
+      run: dotnet pack src/Blex/Bit.Blex/Bit.Blex.csproj --output . --configuration Release
+
+    - name: dotnet build Blex.Generators
+      run: dotnet build src/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Blex.Generators
+      run: dotnet pack src/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj --output . --configuration Release
+
+    - name: dotnet build Blex.Blazor
+      run: dotnet build src/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Blex.Blazor
+      run: dotnet pack src/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj --output . --configuration Release
+
+    - name: dotnet build Blex.Maui
+      run: dotnet build src/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Blex.Maui
+      run: dotnet pack src/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj --output . --configuration Release
+
+    - name: dotnet build Blex.Testing
+      run: dotnet build src/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Blex.Testing
+      run: dotnet pack src/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj --output . --configuration Release
 
     - name: dotnet build CodeAnalyzers
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

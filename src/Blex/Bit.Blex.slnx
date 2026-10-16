@@ -1,0 +1,34 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="Bit.Blex.Demo/Client/Bit.Blex.Demo.Client.csproj" />
+    <Project Path="Bit.Blex.Demo/Server/Bit.Blex.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Samples/">
+    <Project Path="Samples/Bit.Blex.Samples.Wasm/Bit.Blex.Samples.Wasm.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Blex.Tests/Bit.Blex.Tests.csproj" />
+    <Project Path="Tests/Bit.Blex.Tests.Generators/Bit.Blex.Tests.Generators.csproj" />
+    <Project Path="Tests/Bit.Blex.Tests.Mcp/Bit.Blex.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.Blex.Tests.E2E/Bit.Blex.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.Blex.Benchmarks/Bit.Blex.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Harness/">
+    <Project Path="Tests/Bit.Blex.Tests.Harness/Bit.Blex.Tests.Harness.csproj" />
+    <Project Path="Tests/Bit.Blex.Tests.Harness.Web/Bit.Blex.Tests.Harness.Web.csproj" />
+    <Project Path="Tests/Bit.Blex.Tests.Harness.Web.Client/Bit.Blex.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Tests/Bit.Blex.Tests.Harness.Hybrid/Bit.Blex.Tests.Harness.Hybrid.csproj" />
+  </Folder>
+  <Project Path="Bit.Blex/Bit.Blex.csproj" />
+  <Project Path="Bit.Blex.Blazor/Bit.Blex.Blazor.csproj" />
+  <Project Path="Bit.Blex.Generators/Bit.Blex.Generators.csproj" />
+  <Project Path="Bit.Blex.Maui/Bit.Blex.Maui.csproj" />
+  <Project Path="Bit.Blex.Testing/Bit.Blex.Testing.csproj" />
+</Solution>

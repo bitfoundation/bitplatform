@@ -1,0 +1,69 @@
+﻿@page "/todos"
+@inherits BlexComponentBase
+@inject TodoStore Store
+
+<PageTitle>Todos</PageTitle>
+
+<h1>Todos &mdash; entity adapter + effects</h1>
+
+<p>
+    Normalized collection state via <code>BlexEntityAdapter</code> (the <code>createEntityAdapter</code>
+    pattern): an ordered id list plus an id-keyed map, mutated immutably so change detection and
+    time-travel stay correct. "Seed sample data" is a generated <code>[BlexEffect]</code> &mdash; its
+    <code>SeedSampleDataIsLoading</code> flag below is emitted by the source generator, not
+    hand-rolled. Every mutation is a single, named, time-travelable action.
+</p>
+
+<div class="card p-3 mb-3" style="max-width: 36rem;">
+    <div class="input-group mb-3">
+        <input class="form-control" placeholder="What needs doing?" @bind="_draft"
+               @bind:event="oninput" @onkeydown="OnKeyDown" />
+        <button class="btn btn-primary" @onclick="Add" disabled="@string.IsNullOrWhiteSpace(_draft)">Add</button>
+    </div>
+
+    @if (Store.SeedSampleDataIsLoading)
+    {
+        <p><em>Loading sample data&hellip;</em></p>
+    }
+
+    <ul class="list-group mb-3">
+        @foreach (var item in Store.Items.All)
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <label class="@(item.Done ? "text-decoration-line-through text-muted" : "")">
+                    <input type="checkbox" class="form-check-input me-2"
+                           checked="@item.Done" @onchange="() => Store.Toggle(item.Id)" />
+                    @item.Text
+                </label>
+                <button class="btn btn-sm btn-outline-danger" @onclick="() => Store.Remove(item.Id)">&times;</button>
+            </li>
+        }
+    </ul>
+
+    <div class="d-flex justify-content-between align-items-center">
+        <span class="text-muted">@Store.Remaining of @Store.Total remaining</span>
+        <div class="btn-group">
+            <button class="btn btn-sm btn-outline-success" @onclick="Store.CompleteAll" disabled="@(Store.Remaining == 0)">Complete all</button>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="Store.ClearCompleted">Clear completed</button>
+            <button class="btn btn-sm btn-outline-info" @onclick="Store.SeedSampleData">Seed sample data</button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string _draft = string.Empty;
+
+    protected override void OnInitialized() => Subscribe(Store);
+
+    private void Add()
+    {
+        Store.Add(_draft);
+        _draft = string.Empty;
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            Add();
+    }
+}

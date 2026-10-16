@@ -1,0 +1,19 @@
+﻿@inherits BlexComponentBase
+@inject ProfileStore Profile
+
+@* Subscribes to one projection of the store. Its render count must move when DisplayName changes and stay put
+   when only Visits does - the parent re-renders on every change, and passes this component nothing, so
+   a render here can only come from its own subscription. *@
+<p id="name-watcher" data-name="@Profile.DisplayName" data-renders="@_renders">@Profile.DisplayName (@_renders renders)</p>
+
+@code {
+    private int _renders;
+
+    protected override void OnInitialized() => Subscribe(Profile, () => Profile.DisplayName);
+
+    protected override bool ShouldRender()
+    {
+        _renders++;
+        return true;
+    }
+}

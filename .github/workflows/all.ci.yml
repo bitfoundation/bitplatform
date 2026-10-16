@@ -51,6 +51,10 @@ on:
         description: Bmotion solution
         type: boolean
         default: true
+      blex:
+        description: Blex solution
+        type: boolean
+        default: true
       besql:
         description: Besql solution
         type: boolean
@@ -567,6 +571,31 @@ jobs:
         dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Blex
+      run: |
+        dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blex/Bit.Blex/Bit.Blex.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Blex.Generators
+      run: |
+        dotnet build src/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Blex.Blazor
+      run: |
+        dotnet build src/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Blex.Maui
+      run: |
+        dotnet build src/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Blex.Testing
+      run: |
+        dotnet build src/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj --output ./packages --configuration Release
+
     - name: Build and pack CodeAnalyzers
       run: |
         dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -624,6 +653,11 @@ jobs:
     name: bmotion
     if: ${{ inputs.bmotion }}
     uses: ./.github/workflows/bit.ci.Bmotion.yml
+
+  blex:
+    name: blex
+    if: ${{ inputs.blex }}
+    uses: ./.github/workflows/bit.ci.Blex.yml
 
   besql:
     name: besql
