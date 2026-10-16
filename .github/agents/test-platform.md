@@ -165,6 +165,11 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    - In a fresh worktree, a library whose build runs `npm install`, such as Bswup, breaks when its target frameworks
      build in parallel: the installs race on `node_modules` (`ENOTEMPTY`), and the half-installed folder then fails
      every build with `tsc` exiting 9009. Delete `node_modules`, build one framework (`-f net10.0`), then the rest.
+   - A job whose runner "received a shutdown signal" in the middle of a step ran the runner out of memory, and its log
+     says nothing more. To see what grew, have the step print `free -m` and the top processes by RSS every 30 seconds
+     from a background loop, and take a `dotnet-gcdump` of a `dotnet` process past a few GB, then kill it so the
+     failed-step upload still runs: a heap far smaller than the process means native memory, not .NET objects. One
+     lucky pass of the job alone on a runner proves nothing; compare a step's duration with an earlier run's instead.
    - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left. Never the `redis`
      container, which the demos use, nor another project's containers.
 
