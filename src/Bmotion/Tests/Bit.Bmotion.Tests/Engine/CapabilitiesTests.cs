@@ -24,7 +24,7 @@ public class CapabilitiesTests
     {
         var interop = new FakeBmotionInterop { IsInProcess = false, SupportsLinearEasing = false };
         var logger = new ListLogger<BmotionAnimationEngine>();
-        var engine = new BmotionAnimationEngine(interop, logger);
+        await using var engine = new BmotionAnimationEngine(interop, logger);
         engine.RegisterElement("el", null);
 
         // A color animation is never compositor-eligible, so on Server it degrades to instant.
@@ -44,7 +44,7 @@ public class CapabilitiesTests
     {
         var interop = new FakeBmotionInterop { IsInProcess = true };
         var logger = new ListLogger<BmotionAnimationEngine>();
-        var engine = new BmotionAnimationEngine(interop, logger);
+        await using var engine = new BmotionAnimationEngine(interop, logger);
         engine.RegisterElement("el", null);
 
         await engine.AnimateToAsync("el",

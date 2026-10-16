@@ -48,12 +48,19 @@ internal sealed class BmotionElementAnimationState
     /// </summary>
     internal int RefCount;
 
+    /// <summary>Whether a <c>&lt;Bmotion&gt;</c> ever owned the element (as opposed to programmatic animations only).</summary>
+    internal bool OwnedByComponent;
+
     // ── Active animations ─────────────────────────────────────────────────────
     private readonly Dictionary<string, IBmotionAnimationDriver> _activeAnims = new();
 
     // ── Gesture layer stack ────────────────────────────────────────────────────
     private static readonly string[] GesturePriority = ["drag", "focus", "tap", "hover", "inview"];
     private readonly Dictionary<string, GestureLayer> _gestureLayers = new();
+    // What each property a gesture took over showed before the first gesture touched it, for the
+    // properties the resting target doesn't define (an Initial-only value, say): it is what they
+    // come back to when the last gesture lets go, rather than an identity value the element never had.
+    private readonly Dictionary<string, object> _gestureOrigins = new(StringComparer.Ordinal);
     private Dictionary<string, object?>? _baseValues;
     private BmotionTransitionConfig? _baseTransition;
 
@@ -81,8 +88,10 @@ internal sealed class BmotionElementAnimationState
     // Transform writes are paused while a WAAPI FLIP layout animation owns the element's
     // transform, so the rAF engine doesn't fight (and visually tear) the layout animation.
     // The window is measured against Tick timestamps so no extra timer/interop is needed.
-    private double _transformSuspendMs;
-    private double _transformSuspendStart = -1;
+    // Until when (Environment.TickCount64) a FLIP owns the transform. A wall-clock deadline fixed
+    // when the FLIP starts: a window armed on the element's next tick would open whenever the element
+    // next animated - possibly long after the FLIP ended - and freeze that animation instead.
+    private long _transformSuspendUntil;
 
     // Reused across frames to avoid allocating a fresh CSS-update dictionary every rAF tick.
     // Safe because the synchronous JS interop marshals the returned dictionary before the next
@@ -227,19 +236,16 @@ internal sealed class BmotionElementAnimationState
     /// <summary>Pause rAF transform writes for <paramref name="durationMs"/> (measured from the next tick).</summary>
     internal void SuspendTransformWrites(double durationMs)
     {
-        if (durationMs <= 0) return;
-        _transformSuspendMs = durationMs;
-        _transformSuspendStart = -1; // armed on the next tick
+        if (!(durationMs > 0)) return;
+        _transformSuspendUntil = Environment.TickCount64 + (long)Math.Ceiling(durationMs);
     }
 
     private bool IsTransformSuspended(double timestamp)
     {
-        if (_transformSuspendMs <= 0) return false;
-        if (_transformSuspendStart < 0) _transformSuspendStart = timestamp;
-        if (timestamp - _transformSuspendStart < _transformSuspendMs) return true;
+        if (_transformSuspendUntil == 0) return false;
+        if (Environment.TickCount64 < _transformSuspendUntil) return true;
         // Window elapsed - clear so transforms resume.
-        _transformSuspendMs = 0;
-        _transformSuspendStart = -1;
+        _transformSuspendUntil = 0;
         return false;
     }
 
@@ -295,6 +301,10 @@ internal sealed class BmotionElementAnimationState
         foreach (var v in values.Values)
             if (v != null) { any = true; break; }
         if (!any) { completionSource?.TrySetResult(true); return; }
+
+        // Without a frame loop an inertia can't coast, but it still has a resting place: land there
+        // at once (snapped and clamped) rather than staying wherever it was released.
+        if (ForceInstant) values = ProjectInertiaRests(values, transition);
 
         // Track which keys actually get an active driver so the completion batch only waits on
         // animations that can finish (keys that snap instantly resolve immediately).
@@ -563,7 +573,13 @@ internal sealed class BmotionElementAnimationState
 
     public void ActivateGestureLayer(string gesture, Dictionary<string, object?> values, BmotionTransitionConfig? transition)
     {
-        _gestureLayers[gesture] = new GestureLayer(values, transition);
+        var added = new GestureLayer(values, transition);
+        _gestureLayers[gesture] = added;
+        foreach (var key in values.Keys)
+        {
+            if (_baseValues?.ContainsKey(key) == true || _gestureOrigins.ContainsKey(key)) continue;
+            if (CurrentValue(key) is { } origin) _gestureOrigins[key] = origin;
+        }
 
         // Respect gesture priority: don't let a lower-priority gesture animate over a
         // higher-priority one that is already active (mirrors DeactivateGestureLayer).
@@ -578,6 +594,7 @@ internal sealed class BmotionElementAnimationState
             }
         }
 
+        added.Applied = true;
         AnimateTo(values, transition);
     }
 
@@ -586,31 +603,56 @@ internal sealed class BmotionElementAnimationState
         if (!_gestureLayers.Remove(gesture, out var removed))
             return;
 
-        // Build the target the element should revert to: the base animation overlaid with
-        // every still-active gesture layer (lowest priority first so higher priority wins).
+        // Only what the gesture changed moves back (motion.dev semantics): the properties the removed
+        // layer set, plus those of any remaining layer a higher-priority one had kept from applying.
+        // Everything else is already where it belongs - re-running it would restart an in-flight
+        // enter animation (and lose its completion) or replay a keyframe sequence from frame one.
+        var keys = new HashSet<string>(removed.Values.Keys, StringComparer.Ordinal);
+        foreach (var layer in _gestureLayers.Values)
+        {
+            if (layer.Applied) continue;
+            keys.UnionWith(layer.Values.Keys);
+        }
+
+        // Build the target the element should revert to: the base animation (each sequence at its
+        // resting frame) overlaid with every still-active gesture layer (lowest priority first so
+        // higher priority wins).
         var target = new Dictionary<string, object?>();
+        // Settling on a resting frame plays once: a finite repeat would replay the way back.
         BmotionTransitionConfig? transition = _baseTransition;
+        if (transition is { IsInfiniteRepeat: false, Repeat: > 0 })
+        {
+            transition = transition.Clone();
+            transition.Repeat = 0;
+            transition.RepeatDelay = 0;
+        }
 
         if (_baseValues != null)
             foreach (var kv in _baseValues)
-                target[kv.Key] = kv.Value;
+                if (keys.Contains(kv.Key))
+                    target[kv.Key] = RestingValue(kv.Key, kv.Value, _baseTransition);
 
         for (int i = GesturePriority.Length - 1; i >= 0; i--)
         {
             if (_gestureLayers.TryGetValue(GesturePriority[i], out var layer))
             {
                 foreach (var kv in layer.Values)
-                    target[kv.Key] = kv.Value;
+                    if (keys.Contains(kv.Key))
+                        target[kv.Key] = kv.Value;
+                layer.Applied = true;
                 transition = layer.Transition; // highest-priority remaining layer wins the transition
             }
         }
 
         // Any property the removed layer set but no remaining layer/base defines must animate
-        // back to its identity value, otherwise it would stay stuck at the gesture value.
+        // back to what it showed before the gesture - or, when that was never known, its identity
+        // value - otherwise it would stay stuck at the gesture value.
         foreach (var key in removed.Values.Keys)
         {
             if (target.ContainsKey(key)) continue;
-            if (BmotionTransformComposer.IsTransformProp(key))
+            if (_gestureOrigins.Remove(key, out var origin))
+                target[key] = origin;
+            else if (BmotionTransformComposer.IsTransformProp(key))
                 target[key] = DefaultTransformValue(key);
             else if (!IsColorProp(key)) // colours have no safe identity to revert to
                 target[key] = DefaultNumericValue(key);
@@ -618,6 +660,16 @@ internal sealed class BmotionElementAnimationState
 
         if (target.Count > 0)
             AnimateTo(target, transition);
+    }
+
+    /// <summary>The value the element shows for <paramref name="key"/> now, when the engine knows it.</summary>
+    internal object? CurrentValue(string key)
+    {
+        if (BmotionTransformComposer.IsTransformProp(key))
+            return Transforms.TryGetValue(key, out double t) ? t : DefaultTransformValue(key);
+        if (NumericValues.TryGetValue(key, out double n)) return n;
+        if (StringValues.TryGetValue(key, out string? s)) return s;
+        return null;
     }
 
     // ═══════════════════════════════════════════════════════════════════════════
@@ -812,6 +864,21 @@ internal sealed class BmotionElementAnimationState
     internal static double DefaultNumericValue(string key) =>
         key is "opacity" or "pathLength" ? 1.0 : 0.0;
 
+    private static Dictionary<string, object?> ProjectInertiaRests(
+        Dictionary<string, object?> values, BmotionTransitionConfig? transition)
+    {
+        Dictionary<string, object?>? projected = null;
+        foreach (var (key, value) in values)
+        {
+            var perKey = transition?.Properties?.GetValueOrDefault(key) ?? transition;
+            if (perKey is not { Type: BmotionTransitionType.Inertia } || value is null) continue;
+            if (!TryConvertToDouble(value, out double from)) continue;
+            projected ??= new Dictionary<string, object?>(values);
+            projected[key] = BmotionInertiaDriver.ProjectRest(from, perKey);
+        }
+        return projected ?? values;
+    }
+
     private static bool TryGetDoubleArray(object? value, out double[]? result)
     {
         result = null;
@@ -912,7 +979,29 @@ internal sealed class BmotionElementAnimationState
         return false;
     }
 
-    private sealed record GestureLayer(Dictionary<string, object?> Values, BmotionTransitionConfig? Transition);
+    private sealed record GestureLayer(Dictionary<string, object?> Values, BmotionTransitionConfig? Transition)
+    {
+        /// <summary>Whether the layer's values were animated to (false while a higher-priority layer held it back).</summary>
+        public bool Applied { get; set; }
+    }
+
+    /// <summary>
+    /// The value a base target property comes back to when a gesture releases it: a keyframe
+    /// sequence settles on the frame it rests on rather than replaying from its first, unless it
+    /// loops forever - then there is no resting frame and the loop restarts.
+    /// </summary>
+    private static object? RestingValue(string key, object? value, BmotionTransitionConfig? transition)
+    {
+        var config = transition?.Properties is { } perKey && perKey.TryGetValue(key, out var own) ? own : transition;
+        if (config?.IsInfiniteRepeat == true) return value;
+        bool mirrorsBack = config is { RepeatType: BmRepeatType.Mirror } && config.Repeat % 2 == 1;
+        return value switch
+        {
+            double[] { Length: > 0 } numbers when double.IsFinite(mirrorsBack ? numbers[0] : numbers[^1]) => mirrorsBack ? numbers[0] : numbers[^1],
+            string[] { Length: > 0 } strings => mirrorsBack ? strings[0] : strings[^1],
+            _ => value,
+        };
+    }
 
     // ═══════════════════════════════════════════════════════════════════════════
     // WAAPI (compositor) offload bookkeeping
@@ -961,10 +1050,53 @@ internal sealed class BmotionElementAnimationState
             }
         }
 
-        /// <summary>Eased progress (may exceed [0,1] for springs) and velocity factor at elapsed wall time.</summary>
-        public (double Progress, double VelocityPerMs) SampleAt(long nowMs)
+        // Playback-rate bookkeeping, mirroring the Web Animation's own: how much of the animation had
+        // played when the rate last changed, since when, and at what rate it has played since.
+        private double _playedBeforeMs;
+        private long _rateSinceMs = -1;
+
+        /// <summary>The rate the browser plays the animation at (1 = realtime, 0 = paused).</summary>
+        public double Rate { get; private set; } = 1;
+
+        /// <summary>The completion the animation's starter awaits; handed to its continuation drivers if interrupted.</summary>
+        public TaskCompletionSource<bool>? Completion { get; set; }
+
+        /// <summary>Set when an interruption handed the plan's remaining keys (and <see cref="Completion"/>) to rAF drivers.</summary>
+        public bool HandedOff { get; set; }
+
+        /// <summary>How far into the animation (delay included) playback is, in ms of animation time.</summary>
+        public double PlayedMs(long nowMs)
         {
-            double elapsed = nowMs - StartMs - DelayMs;
+            if (_rateSinceMs < 0) _rateSinceMs = StartMs;
+            return _playedBeforeMs + (Math.Max(0, nowMs - _rateSinceMs) * Rate);
+        }
+
+        public void SetRate(long nowMs, double rate)
+        {
+            _playedBeforeMs = PlayedMs(nowMs);
+            _rateSinceMs = nowMs;
+            Rate = rate;
+        }
+
+        /// <summary>The whole animation's length in ms of animation time, delay included; infinity when it repeats forever.</summary>
+        public double TotalMs => Iterations < 0 ? double.PositiveInfinity : DelayMs + (Math.Max(DurationMs, 1) * (Iterations + 1));
+
+        /// <summary>The value <paramref name="key"/> shows <paramref name="playedMs"/> into the animation.</summary>
+        public double ValueAt(string key, double playedMs)
+        {
+            var (from, to) = Values[key];
+            var (progress, _) = SampleAtPlayed(playedMs);
+            return Frames != null && Frames.TryGetValue(key, out var frames)
+                ? KeyframeLerp(frames, progress)
+                : from + ((to - from) * progress);
+        }
+
+        /// <summary>Eased progress (may exceed [0,1] for springs) and velocity factor at elapsed wall time.</summary>
+        public (double Progress, double VelocityPerMs) SampleAt(long nowMs) => SampleAtPlayed(PlayedMs(nowMs));
+
+        private (double Progress, double VelocityPerMs) SampleAtPlayed(double playedMs)
+        {
+            double elapsed = playedMs - DelayMs;
             if (elapsed <= 0) return (Progress[0], 0);
 
             double cycles = elapsed / Math.Max(DurationMs, 1);
@@ -1023,7 +1155,7 @@ internal sealed class BmotionElementAnimationState
     /// property, a plan touching any transform component overlaps a key set touching any other.
     /// Pass <c>null</c> to realize all plans. Returns the removed plans' tokens (for JS cancel).
     /// </summary>
-    internal List<int>? RealizeWaapiPlans(IReadOnlyCollection<string>? keys)
+    internal List<int>? RealizeWaapiPlans(IReadOnlyCollection<string>? keys, bool continueOthers = false)
     {
         if (_waapiPlans.Count == 0) return null;
 
@@ -1045,6 +1177,9 @@ internal sealed class BmotionElementAnimationState
             RealizePlanValues(plan, now);
             _waapiPlans.RemoveAt(i);
             (tokens ??= new List<int>()).Add(plan.Token);
+            // The plan was cancelled for some of its keys only (transform is one CSS property, so
+            // animating y takes the compositor's x with it): the rest carry on where they were.
+            if (continueOthers && keys != null) ContinuePlan(plan, keys, now);
         }
         return tokens;
 
@@ -1054,6 +1189,58 @@ internal sealed class BmotionElementAnimationState
                 if (plan.Values.ContainsKey(key)) return true;
             return false;
         }
+    }
+
+    /// <summary>
+    /// Hands the keys of an interrupted compositor plan that the interruption doesn't animate to
+    /// drivers that carry on along the very same curve from where the compositor left them - with
+    /// the plan's completion, so whoever awaits it still hears when it is over. It was partly
+    /// superseded, so it settles as superseded (false), as a batch with a superseded key does.
+    /// Without a frame loop nothing can carry them, so they land on their targets at once instead.
+    /// </summary>
+    private void ContinuePlan(WaapiPlan plan, IReadOnlyCollection<string> interrupted, long nowMs)
+    {
+        double played = plan.PlayedMs(nowMs);
+        HashSet<string>? continued = null;
+        foreach (var key in plan.Values.Keys)
+        {
+            if (interrupted.Contains(key)) continue;
+            if (ForceInstant || double.IsInfinity(plan.TotalMs) is false && played >= plan.TotalMs)
+            {
+                WriteRealizedValue(key, plan.ValueAt(key, double.MaxValue / 4), markDirty: true);
+                continue;
+            }
+            bool isTransform = BmotionTransformComposer.IsTransformProp(key);
+            var k = key;
+            Action<double> apply = isTransform ? v => ApplyTransform(k, v) : v => ApplyNumeric(k, v);
+            _activeAnims[key] = new BmotionWaapiContinuationDriver(plan, key, played, apply);
+            (continued ??= new HashSet<string>()).Add(key);
+        }
+
+        if (continued is null || plan.Completion is not { } completion) return;
+        plan.HandedOff = true;
+        var carried = new TaskCompletionSource<bool>();
+        carried.Task.ContinueWith(_ => completion.TrySetResult(false), TaskContinuationOptions.ExecuteSynchronously);
+        _batches.Add(new CompletionBatch { Source = carried, Keys = continued });
+    }
+
+    /// <summary>The transform components with every compositor plan's transform keys at their targets.</summary>
+    internal Dictionary<string, double> TargetTransforms()
+    {
+        if (_waapiPlans.Count == 0) return Transforms;
+        var target = new Dictionary<string, double>(Transforms, StringComparer.OrdinalIgnoreCase);
+        foreach (var plan in _waapiPlans)
+            foreach (var (key, (_, to)) in plan.Values)
+                if (BmotionTransformComposer.IsTransformProp(key) && !double.IsInfinity(plan.TotalMs))
+                    target[key] = plan.ValueAt(key, plan.TotalMs + 1);
+        return target;
+    }
+
+    /// <summary>Applies a playback rate to the compositor plans' bookkeeping (the bridge applies it to the animations).</summary>
+    internal void SetWaapiPlansRate(double rate)
+    {
+        long now = Environment.TickCount64;
+        foreach (var plan in _waapiPlans) plan.SetRate(now, rate);
     }
 
     /// <summary>

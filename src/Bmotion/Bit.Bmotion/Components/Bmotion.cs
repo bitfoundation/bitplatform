@@ -516,11 +516,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // then on), so compute it once and reuse the cached string on subsequent renders.
         if (_initialStyleCache != null) return _initialStyleCache;
         CompileRestPlan();
+        CompileSkippedEnterPlan();
         string style;
         if (_restPlan is { } plan)
         {
             style = plan.SettledStyle;
-            var animation = BuildPrerenderAnimation(plan);
+            var animation = _skippedEnter ? string.Empty : BuildPrerenderAnimation(plan);
             if (_takenOverAtRest && animation.Length > 0) _restingStyleCache = style;
             style += animation;
         }
@@ -537,6 +538,40 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private string? _restingStyleCache;
     private string? _lastAuthorStyle;
     private bool _injected;
+
+    /// <summary>
+    /// <c>Initial="false"</c> (motion.dev's <c>initial={false}</c>): the element mounts already at its
+    /// animate target and never plays an enter animation. A scroll timeline starts from its own first
+    /// frame instead, so it is left out.
+    /// </summary>
+    private bool SkipsEnter => EffectiveInitial?.IsDisabled == true && Timeline == null;
+
+    // Whether _restPlan holds the resting state Initial="false" mounts at (see CompileSkippedEnterPlan).
+    private bool _skippedEnter;
+
+    /// <summary>
+    /// Compiles the state an <see cref="SkipsEnter"/> element mounts at - its enter target applied
+    /// instantly, with each keyframe sequence at its last frame - into <see cref="_restPlan"/>, the
+    /// same resting-state path an element prerendered at rest is taken over through. Every pass
+    /// compiles it, so the prerendered markup and the runtime agree without any handshake.
+    /// </summary>
+    private void CompileSkippedEnterPlan()
+    {
+        if (_restPlan != null || !SkipsEnter || ResolveEnterProps() is not { } props) return;
+        var instant = InstantTransition();
+        // Null for an SVG `d` morph, which only the bridge can write: that element enters as before.
+        _restPlan = BmotionPrerenderCss.Compile(null, props.ToJsDictionary(), instant, instant, TransformTemplate);
+        _skippedEnter = _restPlan != null;
+    }
+
+    /// <summary>The target the enter animation plays to: the animate target, or the inherited variant.</summary>
+    private BmProps? ResolveEnterProps()
+    {
+        if (EffectiveAnimate != null) return ResolveProps(EffectiveAnimate);
+        if (VariantCtx?.ActiveVariant is string name && (Variants != null || VariantCtx.Variants != null))
+            return GuardCss(Variants?.Get(name, Custom) ?? VariantCtx.Variants?.Get(name, Custom));
+        return null;
+    }
 
     private BmProps? ResolveInitialProps()
     {
@@ -565,7 +600,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // mount marks the render that replaces the prerendered markup.
         if (!_isStaticRender) PrerenderState.NoteMount();
 
-        if (_prerenderMode == BmPrerenderMode.Initial) return;
+        // Initial="false" renders at rest on every pass already (see CompileSkippedEnterPlan).
+        if (_prerenderMode == BmPrerenderMode.Initial || SkipsEnter) return;
         if (!_isStaticRender && !PrerenderState.IsHydrating) return;
 
         // A scroll timeline drives the target from scroll position, and its starting point is Initial.
@@ -793,7 +829,12 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             PrerenderState.EndHydration();
             _dotnet = DotNetObjectReference.Create(this);
             await InitialiseAsync();
+            if (_disposed) return;
             _initialized = true;
+            // Mounted into presence content that had already started leaving (or left while this
+            // was initialising): OnParametersSetAsync deferred the exit to now, and without it the
+            // presence would wait for this child forever.
+            if (_isExiting) await PlayExitAsync();
             // The initial injected style is what the engine seeded the DOM with; mark it reconciled.
             _committedStyle = _pendingStyle;
         }
@@ -840,6 +881,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             // exiting flag (otherwise the component stays frozen forever) and force the enter
             // animation to replay by invalidating the cached previous target.
             _isExiting = false;
+            _exitGeneration++;
             _prevAnimate = null;
             _prevInheritedVariant = null;
             PresenceCtx?.Register(this); // re-register in case the context was reset
@@ -887,10 +929,18 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         };
         if (osPreferenceMatters)
             await Engine.EnsureReducedMotionDetectedAsync();
+        // Every await below can resume after the component was disposed - an element unmounted
+        // while it was still initialising (a presence list, a filter, a page left at once). Carrying
+        // on would register it in the engine again after DisposeAsync took it out (a leak), fail to
+        // find its element, or hand the bridge the disposed DotNetObjectReference.
+        if (_disposed) return;
 
         // Register with C# engine (applies initial values synchronously). An element taken over at
         // rest starts from its resting values - the ones the prerendered markup already showed.
-        var initValues = _takenOverAtRest ? _restPlan!.Settled : ResolveProps(EffectiveInitial)?.ToJsDictionary();
+        // Otherwise it starts from exactly what BuildInitialStyle rendered, an initial variant
+        // inherited from an ancestor included: seeding less would start its first animation from
+        // identity values the element never showed (visible, at x 0, through a stagger delay).
+        var initValues = _takenOverAtRest || _skippedEnter ? _restPlan!.Settled : ResolveInitialProps()?.ToJsDictionary();
         Engine.RegisterElement(_id, initValues);
         Engine.SetOnFrame(_id, OnUpdate);
         Engine.SetTransformTemplate(_id, TransformTemplate);
@@ -899,7 +949,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // Mark element in the DOM for JS bridge. The rewriter guarantees the id was rendered, so
         // not finding it means something outside Blazor removed or re-identified the element
         // (or another element claimed the same id) - fail loudly instead of animating nothing.
-        if (!await Interop.RegisterElementAsync(_id))
+        bool found = await Interop.RegisterElementAsync(_id);
+        if (_disposed) return;
+        if (!found)
             throw new InvalidOperationException(
                 $"Bmotion could not find its animated element (id '{_id}') in the DOM. " +
                 "Check for duplicate ids or external scripts mutating the element.");
@@ -910,20 +962,25 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // on later updates, so enabling/disabling a gesture after first render is handled uniformly.
         ReconcileDragControls();
         await ReconcileEventListenersAsync();
+        if (_disposed) return;
         await ReconcileViewportAsync();
+        if (_disposed) return;
 
         // Shared-element transition: FLIP from wherever the previous LayoutId holder was.
         await HandleSharedLayoutMountAsync();
+        if (_disposed) return;
 
         // A scroll timeline drives the animate target from scroll position instead of time, so
         // when it takes ownership the time-based enter animation below must stand down.
         bool timelineOwns = await ReconcileScrollTimelineAsync();
+        if (_disposed) return;
 
         // Start enter animation
-        if (_takenOverAtRest)
+        if (_takenOverAtRest || _skippedEnter)
         {
-            // Prerendered at rest: the enter animation already played (in CSS) or was never meant
-            // to. Record the target as the gesture base, as playing it with setAsBase would have.
+            // Prerendered at rest, or Initial="false": the enter animation already played (in CSS) or
+            // was never meant to. Record the target as the gesture base, as playing it with setAsBase
+            // would have.
             TakeOverAtRest();
         }
         else if (!timelineOwns && EffectiveAnimate != null)
@@ -932,9 +989,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             if (animateProps != null)
             {
                 await OnAnimationStart.InvokeAsync(animateProps);
+                var transition = BuildEffectiveTransition(animateProps);
                 await Engine.AnimateToAsync(_id, animateProps.ToJsDictionary(),
-                    ApplyAfterChildren(BuildEffectiveTransition(animateProps)),
-                    () => OnAnimationComplete.InvokeAsync(animateProps), setAsBase: true);
+                    ApplyAfterChildren(transition?.Clone()),
+                    () => OnAnimationComplete.InvokeAsync(animateProps), setAsBase: true, baseTransition: transition ?? new());
             }
         }
         else if (!timelineOwns && VariantCtx != null && (Variants != null || VariantCtx.Variants != null))
@@ -946,9 +1004,15 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                 _prevInheritedVariant = inheritedVariant;
                 var props = Variants?.Get(inheritedVariant, Custom) ?? VariantCtx.Variants?.Get(inheritedVariant, Custom);
                 if (props != null)
+                {
+                    // A child animated by the cascade reports its animation like one with its own
+                    // Animate target does (motion.dev raises both for variant-driven children too).
+                    await OnAnimationStart.InvokeAsync(props);
                     await Engine.AnimateToAsync(_id, props.ToJsDictionary(),
                         BuildEffectiveTransitionWithDelay(VariantCtx.GetChildDelay(_variantChildIndex), props),
-                        setAsBase: true);
+                        () => OnAnimationComplete.InvokeAsync(props),
+                        setAsBase: true, baseTransition: BuildEffectiveTransition(props) ?? new());
+                }
             }
         }
 
@@ -992,7 +1056,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // re-seed it here so a subsequent parameter change brings it back to life.
         if (!Engine.IsRegistered(_id))
         {
-            var seed = ResolveProps(EffectiveInitial);
+            var seed = ResolveInitialProps();
             Engine.RegisterElement(_id, seed?.ToJsDictionary());
             _prevAnimate = null;            // force the animate below to replay
             _prevInheritedVariant = null;   // and the variant path too
@@ -1022,15 +1086,18 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             return;
         }
 
+        await RestorePreExitAsync();
+
         if (!BmTarget.AreEquivalent(_prevAnimate, EffectiveAnimate))
         {
             var animateProps = ResolveProps(EffectiveAnimate);
             if (animateProps != null)
             {
                 await OnAnimationStart.InvokeAsync(animateProps);
+                var transition = BuildEffectiveTransition(animateProps);
                 await Engine.AnimateToAsync(_id, animateProps.ToJsDictionary(),
-                    ApplyAfterChildren(BuildEffectiveTransition(animateProps)),
-                    () => OnAnimationComplete.InvokeAsync(animateProps), setAsBase: true);
+                    ApplyAfterChildren(transition?.Clone()),
+                    () => OnAnimationComplete.InvokeAsync(animateProps), setAsBase: true, baseTransition: transition ?? new());
             }
             _prevAnimate = EffectiveAnimate;
         }
@@ -1055,8 +1122,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
                         if (_variantChildIndex < 0)
                             _variantChildIndex = VariantCtx!.RegisterChild(EstimateOwnAnimationSeconds);
                         double delay = VariantCtx!.GetChildDelay(_variantChildIndex);
+                        await OnAnimationStart.InvokeAsync(props);
                         await Engine.AnimateToAsync(_id, props.ToJsDictionary(),
-                            BuildEffectiveTransitionWithDelay(delay, props), setAsBase: true);
+                            BuildEffectiveTransitionWithDelay(delay, props),
+                            () => OnAnimationComplete.InvokeAsync(props), setAsBase: true,
+                            baseTransition: BuildEffectiveTransition(props) ?? new());
                     }
                 }
             }
@@ -1067,11 +1137,19 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // Exit & FLIP
     // ════════════════════════════════════════════════════════════════════════════
 
+    // Bumped by every re-entry: an exit only reports completion if no re-entry happened since it
+    // started - a cancelled exit still in flight when a newer one starts must not complete that one.
+    private int _exitGeneration;
+
     internal async Task PlayExitAsync()
     {
+        int generation = _exitGeneration;
         var exitProps = ResolveProps(Exit);
         if (exitProps != null)
         {
+            // What the properties the exit takes over showed before it, for a re-entry to return
+            // the ones its enter target doesn't mention (an exit-only x, say) - see RestorePreExit.
+            _preExitValues = Engine.CaptureValues(_id, exitProps.ToJsDictionary().Keys);
             // popLayout: pin the element at its current spot with position:absolute so siblings
             // reflow immediately, then play the exit on the popped element.
             if (PresenceCtx is { PopLayout: true })
@@ -1082,7 +1160,27 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             }
             await Engine.AnimateToAwaitAsync(_id, exitProps.ToJsDictionary(), BuildEffectiveTransition(exitProps));
         }
-        PresenceCtx?.NotifyExitComplete(this);
+        // Re-entered while the exit played (OnParametersSetAsync cleared the flag and bumped the
+        // generation): this exit was cancelled, and reporting it would count it towards the next one.
+        if (_isExiting && generation == _exitGeneration) PresenceCtx?.NotifyExitComplete(this);
+    }
+
+    // The values captured as an exit started (PlayExitAsync), until the element re-enters or leaves.
+    private Dictionary<string, object?>? _preExitValues;
+
+    /// <summary>
+    /// After a re-entry cancelled an exit part-way: the enter replays the animate target, and the
+    /// properties only the exit touched animate back to what they were before it (motion.dev
+    /// semantics), instead of staying wherever the cancelled exit left them.
+    /// </summary>
+    private async Task RestorePreExitAsync()
+    {
+        if (_preExitValues is not { } restore || _isExiting) return;
+        _preExitValues = null;
+        if (ResolveEnterProps()?.ToJsDictionary() is { } enter)
+            foreach (var key in enter.Keys) restore.Remove(key);
+        if (restore.Count > 0)
+            await Engine.AnimateToAsync(_id, restore, BuildEffectiveTransition());
     }
 
     private async Task PlayFlipAsync(BmotionBoundingRect snap)
@@ -1121,7 +1219,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         string easing = t?.Type == BmotionTransitionType.Spring
             ? "cubic-bezier(0.14,1,0.34,1)"
             : BmEaseFunctions.ToCssString(t);
-        string? finalT = Engine.GetCurrentTransformString(_id);
+        string? finalT = Engine.GetTargetTransformString(_id);
 
         // Pause the engine's per-frame transform writes for the duration of the FLIP so the rAF
         // loop and the WAAPI layout animation don't both write `transform` and tear each other.
@@ -1193,12 +1291,22 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // transition.ToConfig() would bypass ShouldReduceMotion() and animate when it shouldn't.
         var config = BuildEffectiveTransition(props, transition);
         // Cancellation stops just the properties this call animates (Stop with null keys would
-        // clobber unrelated animations on the same element). The registration is scoped to this
-        // call so repeated calls with a long-lived token don't accumulate callbacks.
-        using var registration = cancellationToken.CanBeCanceled
+        // clobber unrelated animations on the same element). The registration lives as long as the
+        // animation does - AnimateToAsync returns once it has started, so disposing it then made a
+        // token cancelled mid-flight do nothing - and is released when the animation settles, so
+        // repeated calls with a long-lived token don't accumulate callbacks.
+        var registration = cancellationToken.CanBeCanceled
             ? cancellationToken.Register(() => Engine.Stop(_id, values.Keys.ToArray()))
             : default;
-        await Engine.AnimateToAsync(_id, values, config);
+        try
+        {
+            await Engine.AnimateToAsync(_id, values, config, onSettled: registration.Dispose);
+        }
+        catch
+        {
+            registration.Dispose();
+            throw;
+        }
     }
 
     public void Set(BmProps props)
@@ -1307,10 +1415,17 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         await OnDragStart.InvokeAsync();
     }
 
-    /// <summary>Called synchronously from JS for drag position updates (Blazor WASM only).</summary>
+    /// <summary>
+    /// Called from JS with each drag position: synchronously per pointer move on WebAssembly, and
+    /// asynchronously at most once per animation frame on Blazor Server.
+    /// </summary>
     [JSInvokable] public void SetDragPosition(double x, double y) => Engine.SetDragPosition(_id, x, y);
 
-    /// <summary>Called synchronously from JS to get current XY for drag start offset (Blazor WASM only).</summary>
+    /// <summary>
+    /// Called from JS at drag start for the element's current x/y: synchronously on WebAssembly; on
+    /// Blazor Server (which reads the position off the element instead) only so that compositor
+    /// animations the drag interrupts are folded back into the engine's state.
+    /// </summary>
     [JSInvokable]
     public BmotionXY GetCurrentXY()
     {
@@ -1606,6 +1721,9 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             if (DragPropagation) d["dragPropagation"] = true;
             if (!string.IsNullOrWhiteSpace(DragHandle)) d["dragHandle"] = DragHandle;
             if (!DragListener) d["dragListener"] = false;
+            // Without synchronous interop (Blazor Server) the bridge reports drag positions through
+            // async calls, one per animation frame, instead of reading and writing them inline.
+            if (!Interop.IsInProcess) d["dragAsync"] = true;
         }
         return d;
     }
@@ -1825,12 +1943,17 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     // Dispose
     // ════════════════════════════════════════════════════════════════════════════
 
+    // Set first thing in DisposeAsync; checked after every await of InitialiseAsync.
+    private bool _disposed;
+
     public async ValueTask DisposeAsync()
     {
+        _disposed = true;
         foreach (var subscription in _valueSubscriptions) subscription.Dispose();
         _valueSubscriptions.Clear();
         _attachedDragControls?.Detach(this);
         PresenceCtx?.Unregister(this);
+        if (_variantChildIndex >= 0) VariantCtx?.UnregisterChild(_variantChildIndex);
         if (_timelineToken != 0)
         {
             await Engine.DetachScrollTimelineAsync(_id, _timelineToken);

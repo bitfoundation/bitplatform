@@ -52,6 +52,7 @@ public class KeyframeOffloadTests
     public async Task KeyframeTransform_OffloadsWithNKeyframes()
     {
         var (engine, interop) = NewEngine();
+        await using var _ = engine;
         engine.RegisterElement("el", null);
 
         await engine.AnimateToAsync("el",
@@ -67,6 +68,7 @@ public class KeyframeOffloadTests
     public async Task ScalarPlusKeyframe_AlignOntoCommonGrid()
     {
         var (engine, interop) = NewEngine();
+        await using var _ = engine;
         engine.RegisterElement("el", null);
 
         // opacity is a scalar (2 frames); y is a 3-frame keyframe → both align to 3 keyframes.
@@ -83,6 +85,7 @@ public class KeyframeOffloadTests
     public async Task MixedKeyframeLengths_StayOnRafPath()
     {
         var (engine, interop) = NewEngine();
+        await using var _ = engine;
         engine.RegisterElement("el", null);
 
         // x has 2 frames, scale has 3 → mismatched keyframe lengths → not offloaded.
@@ -101,19 +104,41 @@ public class KeyframeOffloadTests
     public async Task InterruptingKeyframeOffload_RealizesMidKeyframeValue()
     {
         var (engine, interop) = NewEngine();
+        await using var _ = engine;
         engine.RegisterElement("el", null);
 
-        // Start a keyframe offload, then immediately animate the same prop again: the interrupt
-        // must fold the compositor plan back into state (via the keyframe mirror) without throwing.
-        await engine.AnimateToAsync("el",
-            new Dictionary<string, object?> { ["scale"] = new double[] { 1, 2, 1 } },
-            Bm.Tween(1.0).ToConfig());
+        // A pulse [1, 2, 1] that is exactly halfway through on the wall clock the mirror samples:
+        // a very long duration started half of it ago, so the scheduling jitter between here and
+        // the interrupt is a negligible fraction of the timeline. Halfway is the middle keyframe -
+        // a value a two-endpoint mirror (from 1 to 1) could never produce.
+        const double durationMs = 1_000_000;
+        engine.GetState("el")!.AddWaapiPlan(new BmotionElementAnimationState.WaapiPlan
+        {
+            Token = 4242,
+            StartMs = Environment.TickCount64 - (long)(durationMs / 2),
+            DelayMs = 0,
+            DurationMs = durationMs,
+            Progress = [0, 1], // linear
+            Values = new() { ["scale"] = (1, 1) },
+            Frames = new() { ["scale"] = [1, 2, 1] },
+            Iterations = 0,
+            Mirror = false,
+        });
+
+        // Interrupting the same property must fold the plan back into state through the keyframe
+        // mirror, and cancel the browser animation with commit so nothing flashes meanwhile.
         await engine.AnimateToAsync("el",
             new Dictionary<string, object?> { ["scale"] = 0.5 },
             Bm.Tween(0.3).ToConfig());
 
-        // The scale value is finite and within the plausible range the keyframe mirror could realize.
-        var scale = engine.GetDiagnostics().Single(d => d.Id == "el").Transforms["scale"];
-        Assert.IsTrue(double.IsFinite(scale));
+        var cancel = interop.ArgsOf("cancelWaapiAnimation").Single();
+        Assert.AreEqual(4242, cancel[1]);
+        Assert.AreEqual(true, cancel[2]);
+
+        // The new offload starts from the realized middle keyframe.
+        var keyframes = OffloadedKeyframes(interop)!;
+        var from = (string)((Dictionary<string, object>)keyframes[0])["transform"];
+        StringAssert.Contains(from, "scale(2)", $"the interrupted pulse must resume from its peak: {from}");
+        Assert.AreEqual(2.0, engine.GetDiagnostics().Single(d => d.Id == "el").Transforms["scale"], 1e-3);
     }
 }

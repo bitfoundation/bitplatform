@@ -237,8 +237,10 @@ public static class BmotionSetupGuide
         | Colour interpolation (backgroundColor, color, fill, ...) | **Jumps to the target** |
         | Dimension and layout properties (width, height, top, ...) | **Jumps to the target** |
         | Keyframe arrays, per-property transitions, arc paths | **Jumps to the target** |
-        | Drag, inertia, motion values, `Transition.OnUpdate` | **Not available** - they need the per-frame loop |
-        | Layout (FLIP) and shared-element transitions | **Jumps to the target** |
+        | Drag | **Works**, a round trip behind the pointer: one position per frame over async interop. A throw lands where its momentum would have come to rest |
+        | Inertia, `Transition.OnUpdate`, a component's `OnUpdate` | **Not available** - they need the per-frame loop (inertia lands on its resting point) |
+        | Motion values bound to elements | **Each change is written** through async interop - no per-frame smoothing |
+        | Layout (FLIP) and shared-element transitions | **Full.** The bridge plays them as Web Animations |
 
         ## Writing for this mode
 
@@ -255,7 +257,7 @@ public static class BmotionSetupGuide
 
         @if (Caps.SupportsFrameLoop is false)
         {
-            <p>Drag is disabled here: this page is served over Blazor Server.</p>
+            <p>Colours change instantly here: this page is served over Blazor Server.</p>
         }
         ```
         """;
@@ -304,8 +306,9 @@ public static class BmotionSetupGuide
 
         1. Build the interface out of `x`, `y`, `scale`, `rotate` and `opacity` animations. Those play in
            both modes, so the first visit and the second look the same.
-        2. Gate anything that needs the frame loop - drag, inertia, motion values, colour animation - on
-           the capability flag, and give the Server path a static equivalent:
+        2. Gate anything that needs the frame loop - inertia, colour and dimension animation, `OnUpdate` -
+           and anything that should feel immediate under the pointer, like drag, on the capability flag,
+           and give the Server path a static equivalent:
 
         ```razor
         @inject BmotionCapabilities Caps

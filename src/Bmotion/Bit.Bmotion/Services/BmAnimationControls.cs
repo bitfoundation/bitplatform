@@ -26,6 +26,10 @@ public sealed class BmAnimationControls
     // SetSpeed could observe _released == 0, lose the CPU, and then touch elements a concurrent
     // Stop/Complete/natural settlement has already released (and newer animations now own).
     private readonly object _sync = new();
+    // Whether SetSpeed moved the elements off realtime: the rate lives on the elements themselves,
+    // so it has to be put back when these controls let go of them - otherwise a <Bmotion> owning
+    // one of them would find every later animation of its own frozen or re-timed.
+    private bool _rateChanged;
 
     internal BmAnimationControls(
         IReadOnlyList<string> elementIds, BmotionAnimationEngine engine, Task completion, Action release,
@@ -46,7 +50,10 @@ public sealed class BmAnimationControls
         lock (_sync)
         {
             if (System.Threading.Interlocked.Exchange(ref _released, 1) == 0)
+            {
+                RestoreRate();
                 _release();
+            }
         }
     }
 
@@ -66,6 +73,7 @@ public sealed class BmAnimationControls
         lock (_sync)
         {
             if (System.Threading.Volatile.Read(ref _released) != 0) return;
+            _rateChanged = true;
             foreach (var id in _elementIds)
                 _engine.SetPlaybackRate(id, speed);
             // Segments that haven't started yet are governed by the timeline playhead, so the same
@@ -90,6 +98,7 @@ public sealed class BmAnimationControls
             {
                 foreach (var id in _elementIds)
                     _engine.Stop(id, null);
+                RestoreRate();
             }
             finally
             {
@@ -112,6 +121,7 @@ public sealed class BmAnimationControls
             {
                 foreach (var id in _elementIds)
                     _engine.Complete(id);
+                RestoreRate();
             }
             finally
             {
@@ -129,4 +139,12 @@ public sealed class BmAnimationControls
     // Invoked by the owning service once the completion task settles, so a natural finish also
     // releases the refcount (idempotent with Stop/Complete).
     internal void OnCompletionSettled() => ReleaseOnce();
+
+    private void RestoreRate()
+    {
+        if (!_rateChanged) return;
+        _rateChanged = false;
+        foreach (var id in _elementIds)
+            _engine.SetPlaybackRate(id, 1);
+    }
 }

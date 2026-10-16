@@ -337,9 +337,9 @@
         @using Bit.Bmotion
         @inject BmotionCapabilities Caps
 
-        @* SupportsFrameLoop is false on Blazor Server, where drag, inertia, colour interpolation,
-           keyframe arrays and motion values degrade to instant state changes. Branch on it rather
-           than shipping a control that silently does not move. *@
+        @* SupportsFrameLoop is false on Blazor Server, where inertia, colour interpolation and
+           keyframe arrays degrade to instant state changes and drag follows the pointer a round trip
+           behind. Branch on it rather than shipping a control that doesn't feel the way you meant. *@
         @if (Caps.SupportsFrameLoop)
         {
             <Bmotion Drag="true"><div class="box" /></Bmotion>

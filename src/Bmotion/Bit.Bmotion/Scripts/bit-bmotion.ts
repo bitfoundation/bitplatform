@@ -336,6 +336,7 @@ export function unregisterElement(elementId: string): void {
     _detachFromObservers(el, elementId);
     _vpRefs.delete(elementId);
     _popped.delete(elementId);
+    _flips.delete(elementId);
 }
 
 function _runCleanup(elementId: string): void {
@@ -529,6 +530,27 @@ function _attachDrag(
     // Default false (motion.dev semantics): a nested drag stops propagation so it doesn't also
     // start a draggable ancestor. Set dragPropagation to let both move together.
     const propagate      = !!opts.dragPropagation;
+    // Without synchronous interop (Blazor Server) the start position is read off the element and
+    // positions are reported through async calls, at most one per animation frame - the circuit
+    // can't take a message per pointer move, and only the latest position matters anyway.
+    const asyncMode      = !!opts.dragAsync;
+    let pendingX = 0, pendingY = 0, reportFrame: number | null = null;
+    const reportPosition = (x: number, y: number) => {
+        if (!asyncMode) { dotnetRef.invokeMethod('SetDragPosition', x, y); return; }
+        pendingX = x; pendingY = y;
+        if (reportFrame !== null) return;
+        reportFrame = requestAnimationFrame(() => {
+            reportFrame = null;
+            dotnetRef.invokeMethodAsync('SetDragPosition', pendingX, pendingY);
+        });
+    };
+    // Sends a position still waiting for its frame now, so the release is never processed before it.
+    const flushPosition = () => {
+        if (reportFrame === null) return;
+        cancelAnimationFrame(reportFrame);
+        reportFrame = null;
+        dotnetRef.invokeMethodAsync('SetDragPosition', pendingX, pendingY);
+    };
 
     // Elasticity is per-edge ({ left, right, top, bottom }); a plain number still means uniform.
     const elasticCfg = opts.dragElastic;
@@ -552,8 +574,16 @@ function _attachDrag(
         // and cancel it so the drag takes over seamlessly. C# resolves its own state from the
         // mirrored plan inside GetCurrentXY below.
         _cancelWaapiForElement(elementId, true);
-        // Retrieve starting transform position from C# state synchronously
-        const pos = dotnetRef.invokeMethod<BmXY | null>('GetCurrentXY');
+        // Retrieve starting transform position from C# state synchronously - or, without synchronous
+        // interop, from the element itself (just committed above, so it is what's on screen), letting
+        // C# fold the cancelled compositor animations back into its state in the background.
+        let pos: BmXY | null;
+        if (asyncMode) {
+            pos = _currentTranslation(el);
+            dotnetRef.invokeMethodAsync('GetCurrentXY');
+        } else {
+            pos = dotnetRef.invokeMethod<BmXY | null>('GetCurrentXY');
+        }
         startElX = pos ? pos.x : 0;
         startElY = pos ? pos.y : 0;
         startPX = clientX; startPY = clientY;
@@ -573,8 +603,13 @@ function _attachDrag(
 
     // Live constraint re-measurement (element-bounds only), active only while dragging.
     let _resizeObserver: ResizeObserver | null = null;
+    // The rect measured now includes the translation the drag has applied so far, so back out that
+    // one - as rendered, read off the element - not the one the drag started from. (The
+    // ResizeObserver reports once as soon as it observes, so this runs on every element-bounds drag.)
     const _remeasure = () => {
-        if (dragging) constraints = _resolveDragConstraints(constraintsCfg, el, startElX, startElY);
+        if (!dragging) return;
+        const cur = _currentTranslation(el);
+        constraints = _resolveDragConstraints(constraintsCfg, el, cur.x, cur.y);
     };
     const _needsRemeasure = () =>
         !!constraintsCfg && (!!constraintsCfg.parent || typeof constraintsCfg.selector === 'string');
@@ -636,14 +671,15 @@ function _attachDrag(
             x = clamped.x; y = clamped.y;
         }
 
-        // Sync drag position into C# state synchronously so ComputeFrame picks it up
-        dotnetRef.invokeMethod('SetDragPosition', x, y);
+        // Sync drag position into C# state (synchronously, so ComputeFrame picks it up this frame)
+        reportPosition(x, y);
         dotnetRef.invokeMethodAsync('OnDragMove');
     };
 
     const onUp = () => {
         if (!dragging) return;
         dragging = false;
+        flushPosition();
         _stopObservingConstraintChanges();
         // Report the constraints actually used for this drag so C#'s release logic (momentum
         // clamping / snap-back) uses the same bounds - essential for element-bounds constraints,
@@ -665,14 +701,26 @@ function _attachDrag(
     el.addEventListener('pointercancel', onUp);
     _dragStarters.set(elementId, begin);
     cleanups.push(() => {
+        // Listeners are re-attached whenever the gesture configuration changes, which can happen
+        // mid-drag: end that drag first, or C# would be left dragging (and WhileDrag applied) forever.
+        onUp();
         el.removeEventListener('pointerdown',   onDown);
         el.removeEventListener('pointermove',   onMove);
         el.removeEventListener('pointerup',     onUp);
         el.removeEventListener('pointercancel', onUp);
+        if (reportFrame !== null) { cancelAnimationFrame(reportFrame); reportFrame = null; }
         _stopObservingConstraintChanges();
         _dragStarters.delete(elementId);
         el.style.cursor = el.style.userSelect = el.style.touchAction = '';
     });
+}
+
+/** The translation an element shows right now, read off its computed transform. */
+function _currentTranslation(el: HTMLElement): BmXY {
+    const transform = getComputedStyle(el).transform;
+    if (!transform || transform === 'none') return { x: 0, y: 0 };
+    const m = new DOMMatrixReadOnly(transform);
+    return { x: m.m41, y: m.m42 };
 }
 
 const _dragStarters = new Map<string, (pointerId: number, clientX: number, clientY: number) => void>(); // elementId → begin(pointerId, clientX, clientY)
@@ -787,6 +835,9 @@ export function playWaapiAnimation(elementId: string, token: string, keyframes: 
         // Unsupported easing/keyframes on this browser - the C# engine falls back to its rAF path.
         return Promise.resolve(false);
     }
+    // Started on an element that is paused or re-timed (Blazor Server, where C# can't move it to
+    // its frame loop instead).
+    if (typeof timing.playbackRate === 'number') anim.playbackRate = timing.playbackRate;
 
     let map = _waapiAnims.get(elementId);
     if (!map) { map = new Map(); _waapiAnims.set(elementId, map); }
@@ -807,6 +858,13 @@ export function playWaapiAnimation(elementId: string, token: string, keyframes: 
         },
         () => { cleanup(); return false; } // cancelled (interrupted) - engine already reseeded state
     );
+}
+
+/** Sets the playback rate of every offloaded animation on the element (1 = realtime, 0 = paused). */
+export function setWaapiPlaybackRate(elementId: string, rate: number): void {
+    const map = _waapiAnims.get(elementId);
+    if (!map) return;
+    for (const anim of map.values()) anim.playbackRate = rate;
 }
 
 /** Cancels one offloaded animation; commit=true snapshots current values inline first. */
@@ -1005,7 +1063,13 @@ function _releaseScrubsForElement(elementId: string): void {
 // element IDs it currently observes so the observer can be disconnected once it falls empty
 // (otherwise distinct margin/threshold combinations would accumulate observers forever).
 const _vpObservers = new Map<string, { observer: IntersectionObserver; members: Set<string> }>(); // sig → { observer, members: Set<elementId> }
-const _vpRefs      = new Map<string, { dotnetRef: DotNet.DotNetObject; once: boolean }>(); // elementId → { dotnetRef, once }
+// inView: whether the last report forwarded for the element was "in view". IntersectionObserver
+// reports every element once as soon as it is observed, in view or not; a "not in view" is only
+// forwarded after an "in view", so an element that mounts off-screen is never told it left a
+// viewport it was never in. owesLeave: re-observed (options changed) while in view, so the new
+// observer's first "not in view" is a real leave.
+interface BmViewportRef { dotnetRef: DotNet.DotNetObject; once: boolean; inView: boolean; owesLeave: boolean; }
+const _vpRefs      = new Map<string, BmViewportRef>(); // elementId → BmViewportRef
 
 function _vpSig(margin: string, threshold: number, root: string | null): string {
     return `${root ?? ''}|${margin}|${threshold}`;
@@ -1023,6 +1087,14 @@ function _getVpEntry(margin: string, threshold: number, root: string | null): { 
             const id  = entry.target.getAttribute('data-bmid');
             const ref = id ? _vpRefs.get(id) : undefined;
             if (!ref || !id) continue;
+            if (entry.isIntersecting) {
+                if (ref.inView) continue;
+                ref.inView = true;
+            } else {
+                if (!ref.inView && !ref.owesLeave) continue;
+                ref.inView = false;
+            }
+            ref.owesLeave = false;
             ref.dotnetRef.invokeMethodAsync('OnIntersect', entry.isIntersecting);
             if (ref.once && entry.isIntersecting) {
                 _detachFromObservers(entry.target, id);
@@ -1059,7 +1131,10 @@ export function observeViewport(elementId: string, dotnetRef: DotNet.DotNetObjec
     // doesn't stack duplicate subscriptions (which would fire OnIntersect multiple times and
     // break the "once" behaviour across option changes).
     _detachFromObservers(el, elementId);
-    _vpRefs.set(elementId, { dotnetRef, once });
+    // A re-observe re-reports "in view" (C# re-observes to re-arm a WhileInView enabled late), and
+    // owes a "leave" when the element was in view before and the new options say it isn't.
+    const owesLeave = _vpRefs.get(elementId)?.inView ?? false;
+    _vpRefs.set(elementId, { dotnetRef, once, inView: false, owesLeave });
     const entry = _getVpEntry(margin, threshold, root);
     entry.members.add(elementId);
     entry.observer.observe(el);
@@ -1125,6 +1200,11 @@ export function getBoundingRect(elementId: string, options?: { trackScroll?: boo
     };
 }
 
+// The FLIP animation playing on each element, so a newer one can supersede it: end() settles and
+// reports it at once - synchronously, before the newer one sets the element up, rather than from a
+// cancel event that would arrive after and undo the newer one's transform-origin.
+const _flips = new Map<string, { anim: Animation; end: () => void }>();
+
 /**
  * Run a FLIP animation via the Web Animations API.
  * The element is currently at its NEW layout position; this animates it
@@ -1141,15 +1221,40 @@ export function playWaapiFlip(
         dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted');
         return;
     }
+    // A newer layout change supersedes the FLIP still playing (ended - settled and reported - then
+    // cancelled), instead of both running and the older one's finish resetting the newer one's origin.
+    const superseded = _flips.get(elementId);
+    if (superseded) {
+        superseded.end();
+        superseded.anim.cancel();
+    }
+
+    // Measure children relative to the parent before any transform takes hold.
+    const scales = Math.abs(sx - 1) > 1e-4 || Math.abs(sy - 1) > 1e-4;
+    const pRect = scales ? el.getBoundingClientRect() : null;
+    const childRects = scales ? Array.from(el.children).map(c => c.getBoundingClientRect()) : [];
+
     // The projection anchor (layoutAnchor): the point of the box that appears to stay still. The
     // deltas C# computed are measured from this same point, so the two must agree.
     const ax = (originX ?? 0) * 100, ay = (originY ?? 0) * 100;
     el.style.transformOrigin = `${ax}% ${ay}%`;
-    const timing: KeyframeAnimationOptions = { duration: durationMs, easing: easingStr || 'ease', fill: 'forwards' };
+    // The element's own transform (its animated x, scale, ...) stays on: the deltas were measured
+    // between boxes that both carry it, and the FLIP only projects the layout change on top. It
+    // starts from the transform showing right now (a compositor animation in flight included - the
+    // rects were measured with it on) and ends on the one the element is heading for
+    // (finalTransform, which C# takes with such animations at their end). fill:'none' - an
+    // animation filling forwards would override every transform the engine writes afterwards.
+    const live = getComputedStyle(el).transform;
+    const from = live && live !== 'none' ? live : '';
+    const own = finalTransform || '';
+    // What the inline transform is now: if something writes a newer one while the FLIP plays (a
+    // compositor animation committing its end), settling must not put this older one back over it.
+    const inlineAtStart = el.style.transform;
+    const timing: KeyframeAnimationOptions = { duration: durationMs, easing: easingStr || 'ease', fill: 'none' };
     const anim = el.animate(
         [
-            { transform: `translate(${dx}px,${dy}px) scaleX(${sx}) scaleY(${sy})` },
-            { transform: 'translate(0px,0px) scaleX(1) scaleY(1)' },
+            { transform: `translate(${dx}px,${dy}px) scaleX(${sx}) scaleY(${sy}) ${from}`.trim() },
+            { transform: own || 'none' },
         ],
         timing
     );
@@ -1159,7 +1264,7 @@ export function playWaapiFlip(
     // FLIP passes sx=sy=1, so this whole block is skipped and behaviour is unchanged there.
     // These end at their natural values, so they use fill:'none' and leave no persistent override.
     const cleanups: Array<() => void> = [];
-    if (Math.abs(sx - 1) > 1e-4 || Math.abs(sy - 1) > 1e-4) {
+    if (scales && pRect) {
         const correctTiming: KeyframeAnimationOptions = { duration: durationMs, easing: easingStr || 'ease', fill: 'none' };
 
         const radius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 0;
@@ -1174,11 +1279,11 @@ export function playWaapiFlip(
             );
         }
 
-        // Measure children relative to the (untransformed) parent before the transform takes hold.
-        const pRect = el.getBoundingClientRect();
-        for (const child of el.children) {
+        const children = Array.from(el.children);
+        for (let i = 0; i < children.length; i++) {
+            const child = children[i];
             if (!(child instanceof HTMLElement)) continue;
-            const c = flipChildCorrection(pRect, child.getBoundingClientRect(), sx, sy, dx, dy);
+            const c = flipChildCorrection(pRect, childRects[i], sx, sy, dx, dy);
             const prevOrigin = child.style.transformOrigin;
             child.style.transformOrigin = `${c.originX}px ${c.originY}px`;
             // translate first (outermost), then the inverse scale - the exact inverse of the
@@ -1197,7 +1302,7 @@ export function playWaapiFlip(
     // Run on finish AND cancel: a cancelled flip must not leave the '0 0' transform-origin (or
     // the children's counter-transform origins) stuck on the elements.
     const settle = () => {
-        el.style.transform = finalTransform || '';
+        if (el.style.transform === inlineAtStart) el.style.transform = finalTransform || '';
         el.style.transformOrigin = '';
         for (const done of cleanups) done();
     };
@@ -1205,8 +1310,17 @@ export function playWaapiFlip(
     // superseded, and that newer animation reports its own completion - so firing here too keeps
     // every started layout animation matched by exactly one completion, which is what a consumer
     // re-enabling interaction on OnLayoutAnimationComplete depends on.
-    anim.onfinish = () => { settle(); dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted'); };
-    anim.oncancel = () => { settle(); dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted'); };
+    let ended = false;
+    const end = () => {
+        if (ended) return;
+        ended = true;
+        if (_flips.get(elementId)?.anim === anim) _flips.delete(elementId);
+        settle();
+        dotnetRef?.invokeMethodAsync('OnLayoutAnimationCompleted');
+    };
+    anim.onfinish = end;
+    anim.oncancel = end;
+    _flips.set(elementId, { anim, end });
 }
 
 //
