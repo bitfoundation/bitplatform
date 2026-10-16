@@ -1,0 +1,68 @@
+name: bit platform CI - BevTools
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+    - 'src/BevTools/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-BevTools:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: build Bit.BevTools
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 9.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 8.0.x
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: dotnet workload restore
+      run:  cd src/BevTools && dotnet workload restore
+
+    - name: dotnet build
+      run: dotnet build src/BevTools/Bit.BevTools.slnx
+
+    - name: dotnet test (instrumentation, stores, diagnostics, panels - net8.0/net9.0/net10.0)
+      # Run from inside src so src/global.json's "test" runner setting applies
+      # (from the repo root the SDK falls back to the unsupported VSTest path).
+      run: cd src/BevTools/Tests/Bit.BevTools.Tests && dotnet test --no-build
+
+    - name: JS tests (bit-bevtools.js browser bridge)
+      run: |
+        cd src/BevTools/Tests/bit-bevtools-js
+        npm ci || npm install
+        npm test
+
+    # A smoke run only: numbers from shared CI runners are noise, but the harness must keep compiling and finishing.
+    - name: Benchmark harness smoke run
+      run: dotnet run -c Release --project src/BevTools/Tests/Bit.BevTools.Benchmarks
+      timeout-minutes: 15

@@ -1,0 +1,27 @@
+﻿@page "/products"
+@implements IDisposable
+@inject CartState Cart
+
+<PageTitle>Products</PageTitle>
+
+<h1>Products</h1>
+<p class="muted">Type in the search box and watch the Profiler: <code>ProductList</code> and every <code>ProductRow</code> re-render on each keystroke because <code>FilterState</code> notifies without coalescing and rows never override <code>ShouldRender</code>. Enable "search on type" to also fire one HTTP request per keystroke.</p>
+
+<div class="row">
+    <label><input type="checkbox" @bind="_searchOnType" /> search the API on every keystroke (duplicate/overlapping requests)</label>
+    <span class="muted">Cart: @Cart.ItemCount items, @Cart.Total.ToString("C") — see BevTools → State → CartState</span>
+</div>
+
+<FilterBar />
+<ProductList SearchOnType="_searchOnType" />
+
+@code {
+    private bool _searchOnType;
+
+    // The Add buttons belong to ProductList, so only it re-renders after a click; the cart summary above lives here.
+    protected override void OnInitialized() => Cart.Changed += OnCartChanged;
+
+    private void OnCartChanged(BevStateChangeInfo change) => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => Cart.Changed -= OnCartChanged;
+}

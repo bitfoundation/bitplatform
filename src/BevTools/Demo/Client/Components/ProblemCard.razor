@@ -1,0 +1,23 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+
+<div class="problem">
+    <h3>@Title</h3>
+    <div class="muted">@Symptom</div>
+    <ol>
+        @ChildContent
+    </ol>
+    @if (Href is not null)
+    {
+        <div class="row"><a href="@Href">Open @Href</a></div>
+    }
+</div>
+
+@code {
+    [Parameter] public string Title { get; set; } = "";
+
+    [Parameter] public string Symptom { get; set; } = "";
+
+    [Parameter] public string? Href { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

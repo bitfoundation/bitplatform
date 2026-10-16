@@ -1,0 +1,53 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@inject ProductApi Api
+
+<div class="card" style="grid-column: span 2">
+    <h3>Recent orders <span class="muted">(HTTP, 1.2–2.6 s server delay)</span></h3>
+    @if (_orders is null)
+    {
+        <div class="muted">@(_error ?? "loading…")</div>
+    }
+    else
+    {
+        <table>
+            <thead><tr><th>#</th><th>Customer</th><th>Total</th><th>Status</th></tr></thead>
+            <tbody>
+                @foreach (var o in _orders.Take(5))
+                {
+                    <tr><td>@o.Id</td><td>@o.Customer</td><td>@o.Total.ToString("C")</td><td>@o.Status</td></tr>
+                }
+            </tbody>
+        </table>
+    }
+    <div class="row"><button @onclick="Reload">Reload</button></div>
+</div>
+
+@code {
+    private List<Order>? _orders;
+    private string? _error;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && RendererInfo.IsInteractive)
+        {
+            await Reload();
+        }
+    }
+
+    private async Task Reload()
+    {
+        _orders = null;
+        _error = null;
+        StateHasChanged();
+        try
+        {
+            _orders = await Api.GetOrdersAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+
+        StateHasChanged();
+    }
+}

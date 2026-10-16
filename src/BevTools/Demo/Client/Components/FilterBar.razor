@@ -1,0 +1,24 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@inject FilterState Filter
+
+<div class="row">
+    <input placeholder="Search products (every keystroke notifies FilterState)" value="@Filter.Query" @oninput="OnQuery" style="min-width:320px" />
+    <select value="@Filter.Category" @onchange="OnCategory">
+        <option>All</option>
+        <option>Office</option>
+        <option>Audio</option>
+        <option>Furniture</option>
+        <option>Outdoor</option>
+        <option>Accessories</option>
+    </select>
+    <label>Max price <input type="range" min="10" max="1000" value="@Filter.MaxPrice" @oninput="OnPrice" /> @Filter.MaxPrice.ToString("C0")</label>
+    <button @onclick="Filter.Touch">Notify without change (@Filter.ChangeCount)</button>
+</div>
+
+@code {
+    private void OnQuery(ChangeEventArgs e) => Filter.Query = e.Value?.ToString() ?? string.Empty;
+
+    private void OnCategory(ChangeEventArgs e) => Filter.Category = e.Value?.ToString() ?? "All";
+
+    private void OnPrice(ChangeEventArgs e) => Filter.MaxPrice = decimal.TryParse(e.Value?.ToString(), out var v) ? v : 1000;
+}

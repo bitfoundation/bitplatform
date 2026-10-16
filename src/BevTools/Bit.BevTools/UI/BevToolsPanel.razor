@@ -1,0 +1,121 @@
+﻿@namespace Bit.BevTools
+
+@if (Session.IsEnabled && _interactive)
+{
+    <div class="bev-root" data-theme="@ThemeAttribute" @onkeydown="OnRootKeyDown">
+        <link rel="stylesheet" href="_content/Bit.BevTools/bit-bevtools.css" />
+        @if (!Ui.IsOpen)
+        {
+            if (Options.Ui.ShowBadge)
+            {
+                <button type="button" class="bev-badge" title="Open BevTools (@Options.Ui.ToggleShortcut)" aria-label="Open BevTools" @onclick="Toggle">
+                    <span>⚙ BevTools</span>
+                    @if (!Session.IsCapturing)
+                    {
+                        <span class="bev-pill bev-chip bev-warn" title="Capture is paused">⏸</span>
+                    }
+                    @if (Session.Errors.Count > 0)
+                    {
+                        <span class="bev-pill bev-chip bev-err">@Session.Errors.Count</span>
+                    }
+                    @if (Session.Diagnostics.ActiveWarningsOrErrors > 0)
+                    {
+                        <span class="bev-pill bev-chip bev-warn">⚠ @Session.Diagnostics.ActiveWarningsOrErrors</span>
+                    }
+                </button>
+            }
+        }
+        else
+        {
+            <CascadingValue Value="this" IsFixed="true">
+                <div class="@PanelClass">
+                    <div class="bev-header">
+                        <span class="bev-title">BevTools</span>
+                        <div class="bev-tabs" role="tablist">
+                            @foreach (var (id, title) in BuiltInPanels)
+                            {
+                                <button type="button" role="tab" id="bev-tab-@id" aria-selected="@(Ui.ActivePanelId == id ? "true" : "false")" aria-controls="bev-tabpanel" class="bev-tab @(Ui.ActivePanelId == id ? "bev-active" : "")" @onclick="() => ShowPanel(id)">
+                                    @title
+                                    @if (id == "errors" && Session.Errors.Count > 0)
+                                    {
+                                        <span class="bev-count bev-err">@Session.Errors.Count</span>
+                                    }
+                                    else if (id == "diagnostics" && Session.Diagnostics.ActiveWarningsOrErrors > 0)
+                                    {
+                                        <span class="bev-count bev-warn">@Session.Diagnostics.ActiveWarningsOrErrors</span>
+                                    }
+                                    else if (id == "network" && Session.Http.FailedCount > 0)
+                                    {
+                                        <span class="bev-count bev-err">@Session.Http.FailedCount</span>
+                                    }
+                                </button>
+                            }
+                            @foreach (var panel in ExtensionPanels)
+                            {
+                                <button type="button" role="tab" id="bev-tab-@panel.Id" aria-selected="@(Ui.ActivePanelId == panel.Id ? "true" : "false")" aria-controls="bev-tabpanel" class="bev-tab @(Ui.ActivePanelId == panel.Id ? "bev-active" : "")" @onclick="() => ShowPanel(panel.Id)">@panel.Title</button>
+                            }
+                        </div>
+                        <div class="bev-tools">
+                            <button type="button" class="@(Session.IsCapturing ? "" : "bev-paused")" title="@(Session.IsCapturing ? "Pause capture: freeze every buffer so what you are reading is not evicted. Errors are still collected." : "Resume capture" + (Session.PausedAt is { } pausedAt ? " (paused " + BevFmt.Ago(pausedAt) + ")" : ""))" aria-label="@(Session.IsCapturing ? "Pause capture" : "Resume capture")" aria-pressed="@(Session.IsCapturing ? "false" : "true")" @onclick="ToggleCapture">@(Session.IsCapturing ? "⏸ Pause" : "▶ Resume")</button>
+                            <label class="@(Ui.LiveUpdates ? "" : "bev-off")" title="When on, the open tab re-reads captured data as it arrives. Turn off on a very busy app and use Refresh.">
+                                <input type="checkbox" checked="@Ui.LiveUpdates" aria-label="Live updates" @onchange="OnLiveChanged" /> live
+                            </label>
+                            <button type="button" title="Re-read captured data now" aria-label="Refresh captured data" @onclick="Refresh">↻ Refresh</button>
+                            <button type="button" title="Search or run a command (Ctrl+K)" @onclick="() => OpenPalette()">🔍 Search / &gt; command</button>
+                            <button type="button" title="Theme: @Ui.Theme" @onclick="SetTheme">◐</button>
+                            <button type="button" title="Dock: @Ui.Dock" @onclick="SetDock">@(Ui.Dock == BevToolsDock.Bottom ? "▭" : "▯")</button>
+                            <button type="button" title="Size: @Ui.Size" @onclick="SetSize">⤢</button>
+                            <button type="button" title="Close (@Options.Ui.ToggleShortcut)" @onclick="Toggle">✕</button>
+                        </div>
+                    </div>
+                    <div class="bev-body" id="bev-tabpanel" role="tabpanel" aria-labelledby="bev-tab-@Ui.ActivePanelId" style="position: relative;">
+                        @*
+                            Keyed on the active panel id. Every case of the switch below renders a different component
+                            at the same position in the render tree; without a key the diff reuses that position and
+                            the newly shown panel ends up without its event handlers, so its buttons do nothing.
+                            bev-rev is cascaded so the open tab's SetParametersAsync runs when captured data changes:
+                            built-in tabs have no other parameters, and Blazor skips the call when they are unchanged.
+                        *@
+                        <CascadingValue Name="bev-rev" Value="_viewRevision">
+                        <div class="bev-panel-host" @key="Ui.ActivePanelId">
+                        @switch (Ui.ActivePanelId)
+                        {
+                            case "components": <BevComponentsPanel /> break;
+                            case "profiler": <BevProfilerPanel /> break;
+                            case "timeline": <BevTimelinePanel /> break;
+                            case "state": <BevStatePanel /> break;
+                            case "network": <BevNetworkPanel /> break;
+                            case "interop": <BevInteropPanel /> break;
+                            case "errors": <BevErrorsPanel /> break;
+                            case "services": <BevServicesPanel /> break;
+                            case "diagnostics": <BevDiagnosticsPanel /> break;
+                            case "browser": <BevBrowserPanel /> break;
+                            case "about": <BevAboutPanel /> break;
+                            default:
+                                var extension = ExtensionPanels.FirstOrDefault(p => p.Id == Ui.ActivePanelId);
+                                if (extension is not null)
+                                {
+                                    <div class="bev-scroll" style="flex:1"><DynamicComponent Type="extension.ComponentType" /></div>
+                                }
+                                else
+                                {
+                                    <div class="bev-empty">Unknown panel "@Ui.ActivePanelId".</div>
+                                }
+                                break;
+                        }
+                        </div>
+                        </CascadingValue>
+                        @if (Ui.CommandPaletteOpen)
+                        {
+                            <BevCommandPalette Initial="@_searchText" />
+                        }
+                        @if (Ui.Notification is not null && DateTimeOffset.UtcNow - Ui.NotificationAt < TimeSpan.FromSeconds(4))
+                        {
+                            <div class="bev-notification">@Ui.Notification</div>
+                        }
+                    </div>
+                </div>
+            </CascadingValue>
+        }
+    </div>
+}

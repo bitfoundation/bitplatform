@@ -47,6 +47,10 @@ on:
         description: Brouter solution
         type: boolean
         default: true
+      bevtools:
+        description: BevTools solution
+        type: boolean
+        default: true
       bmotion:
         description: Bmotion solution
         type: boolean
@@ -562,6 +566,21 @@ jobs:
         dotnet build src/Besql/Bit.Besql/Bit.Besql.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Besql/Bit.Besql/Bit.Besql.csproj --output ./packages --configuration Release
 
+    - name: Build and pack BevTools.Abstractions
+      run: |
+        dotnet build src/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BevTools
+      run: |
+        dotnet build src/BevTools/Bit.BevTools/Bit.BevTools.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BevTools/Bit.BevTools/Bit.BevTools.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BevTools.Server
+      run: |
+        dotnet build src/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj --output ./packages --configuration Release
+
     - name: Build and pack Bmotion
       run: |
         dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -619,6 +638,11 @@ jobs:
     name: brouter
     if: ${{ inputs.brouter }}
     uses: ./.github/workflows/bit.ci.Brouter.yml
+
+  bevtools:
+    name: bevtools
+    if: ${{ inputs.bevtools }}
+    uses: ./.github/workflows/bit.ci.BevTools.yml
 
   bmotion:
     name: bmotion

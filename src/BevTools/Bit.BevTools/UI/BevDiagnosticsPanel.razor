@@ -1,0 +1,108 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-split">
+    <div class="bev-left" style="flex-basis:64%">
+        <div class="bev-toolbar">
+            <strong>Findings</strong>
+            <span class="bev-muted">@_active.Count active · @_dismissed dismissed</span>
+            <span style="margin-left:auto"></span>
+            <label><input type="checkbox" checked="@_showDismissed" @onchange='e => { _showDismissed = e.Value is true; OnParametersSet(); }' /> show dismissed</label>
+            <button type="button" @onclick="() => Session.Diagnostics.Evaluate(force: true)">Re-run</button>
+            <button type="button" @onclick="() => Session.Diagnostics.Clear()">Clear</button>
+        </div>
+        <div class="bev-scroll">
+            @if (_active.Count == 0)
+            {
+                <div class="bev-empty">No findings. Rules run every second on recent activity and only report evidence-backed patterns (render storms, cascades, slow renders, duplicate requests, slow interop, repeated errors, DI lifetime problems).</div>
+            }
+            @foreach (var f in _active)
+            {
+                var d = f.Diagnostic;
+                <div class="bev-diag" style="@(f.Dismissed ? "opacity:.5" : "")">
+                    <div class="bev-diag-title">
+                        <span class="bev-sev-dot bev-@d.Severity.ToString().ToLowerInvariant()"></span>
+                        @d.Title
+                        <span class="bev-chip">@d.RuleId</span>
+                        <span class="bev-muted">first seen @BevFmt.Ago(f.FirstSeen) · still reported @BevFmt.Ago(f.LastSeen)</span>
+                    </div>
+                    <div class="bev-diag-evidence">@d.Evidence</div>
+                    @if (d.Suggestion is not null)
+                    {
+                        <div class="bev-diag-suggestion">💡 @d.Suggestion</div>
+                    }
+                    <div class="bev-diag-actions">
+                        @if (d.ComponentInstanceId is { } cid)
+                        {
+                            <button type="button" @onclick="() => Host.SelectComponent(cid)">Component ↗</button>
+                        }
+                        @if (d.RelatedEventIds is { Count: > 0 } related)
+                        {
+                            <button type="button" @onclick="() => Host.SelectEvent(related[0])">Events ↗</button>
+                        }
+                        @if (d.RuleId.StartsWith("di.", StringComparison.Ordinal))
+                        {
+                            <button type="button" @onclick='() => Host.ShowPanel("services")'>Services ↗</button>
+                        }
+                        @if (f.TimelineEventId > 0)
+                        {
+                            <button type="button" @onclick="() => Host.SelectEvent(f.TimelineEventId)">Timeline ↗</button>
+                        }
+                        @if (!f.Dismissed)
+                        {
+                            <button type="button" @onclick="() => Session.Diagnostics.Dismiss(d.EffectiveFingerprint)">Dismiss</button>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+    <div class="bev-right">
+        <div class="bev-section">
+            <div class="bev-section-title">Rules (@Session.Diagnostics.Rules.Count)</div>
+            <div class="bev-section-body">
+                <table>
+                    <thead><tr><th>Id</th><th>Rule</th><th></th></tr></thead>
+                    <tbody>
+                        @foreach (var rule in Session.Diagnostics.Rules)
+                        {
+                            var disabled = Session.Options.Diagnostics.DisabledRules.Contains(rule.Id);
+                            <tr><td class="bev-mono">@rule.Id</td><td><strong>@rule.Title</strong><div class="bev-muted">@rule.Description</div></td><td>@if (disabled) { <span class="bev-chip bev-warn">disabled</span> }</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="bev-section">
+            <div class="bev-section-title">Thresholds</div>
+            <div class="bev-section-body">
+                @{ var o = Session.Options.Diagnostics; }
+                <dl class="bev-kv">
+                    <dt>Render storm</dt><dd>≥ @o.RenderStormCount renders in @o.RenderStormWindowMs ms</dd>
+                    <dt>Render cascade</dt><dd>≥ @o.RenderCascadeSize components in one batch</dd>
+                    <dt>Slow render</dt><dd>≥ @o.SlowRenderMs ms</dd>
+                    <dt>Slow event handler</dt><dd>≥ @o.SlowEventHandlerMs ms</dd>
+                    <dt>Duplicate HTTP</dt><dd>≥ @o.DuplicateHttpCount identical in @o.DuplicateHttpWindowMs ms</dd>
+                    <dt>Slow HTTP</dt><dd>≥ @o.SlowHttpMs ms</dd>
+                    <dt>Slow JS interop</dt><dd>≥ @o.SlowJsInteropMs ms</dd>
+                    <dt>Excessive JS interop</dt><dd>≥ @o.ExcessiveJsInteropCount calls/s to one identifier</dd>
+                    <dt>Repeated error</dt><dd>≥ @o.RepeatedErrorCount occurrences</dd>
+                </dl>
+                <div class="bev-muted">Configure in <code>AddBitBevToolsServices(o =&gt; o.Diagnostics…)</code>.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private List<BevDiagnosticRecord> _active = [];
+    private int _dismissed;
+    private bool _showDismissed;
+
+    protected override void OnParametersSet()
+    {
+        var all = Session.Diagnostics.Findings;
+        _dismissed = all.Count(f => f.Dismissed);
+        _active = all.Where(f => _showDismissed || !f.Dismissed).ToList();
+    }
+}

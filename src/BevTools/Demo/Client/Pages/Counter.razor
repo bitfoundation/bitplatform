@@ -1,0 +1,27 @@
+﻿@page "/counter"
+
+<PageTitle>Counter</PageTitle>
+
+<h1>Counter</h1>
+<p class="muted">The classic. Useful as a baseline: one click → one <em>onclick → Counter.IncrementCount</em> event → one render of <code>Counter</code>, nothing else.</p>
+
+<p role="status">Current count: @currentCount</p>
+
+<button class="primary" @onclick="IncrementCount">Click me</button>
+<button @onclick="IncrementTenTimes">Increment 10× with awaits (10 renders from one event)</button>
+
+@code {
+    private int currentCount = 0;
+
+    private void IncrementCount() => currentCount++;
+
+    private async Task IncrementTenTimes()
+    {
+        for (var i = 0; i < 10; i++)
+        {
+            currentCount++;
+            StateHasChanged();
+            await Task.Delay(30);
+        }
+    }
+}

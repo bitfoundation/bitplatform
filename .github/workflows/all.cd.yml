@@ -53,6 +53,12 @@ jobs:
     with:
       prerelease_packages: ${{ inputs.prerelease_packages }}
 
+  bevtools_demo:
+    name: bevtools demo
+    if: inputs.server
+    uses: ./.github/workflows/bevtools.demo.cd.yml
+    secrets: inherit
+
   bmotion_demo:
     name: bmotion demo
     if: inputs.server

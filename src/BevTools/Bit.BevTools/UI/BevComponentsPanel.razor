@@ -1,0 +1,225 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-split">
+    <div class="bev-left">
+        <div class="bev-toolbar">
+            <input type="text" placeholder="Filter components (name)…" value="@Query" @oninput="OnQuery" />
+            <label title="Show framework/library components that are hidden by default"><input type="checkbox" checked="@Ui.ShowHiddenComponents" @onchange="ToggleHidden" /> internals</label>
+            <span class="bev-muted bev-nowrap">@_visible.Count / @_liveCount</span>
+        </div>
+        <div class="bev-scroll bev-tree" tabindex="0" role="tree" aria-label="Component tree" @onkeydown="OnKeyDown" @onkeydown:preventDefault="_preventDefault">
+            @if (_visible.Count == 0)
+            {
+                <div class="bev-empty">No components tracked yet. Components are registered as they are created; interact with the page.</div>
+            }
+            else
+            {
+                <Virtualize Items="_visible" ItemSize="22" Context="row" OverscanCount="20">
+                    @{
+                        var record = row.Node.Record;
+                        var flash = record.LastRenderAt is { } at && (DateTimeOffset.UtcNow - at).TotalMilliseconds < 800;
+                        var selected = Ui.SelectedComponentId == record.InstanceId;
+                        var hasChildren = row.Node.Children.Count > 0;
+                        var collapsed = hasChildren && Ui.CollapsedTreeNodes.Contains(record.InstanceId);
+                    }
+                    <div class="bev-tree-row @(selected ? "bev-selected" : "") @(flash ? "bev-flash" : "") @(record.IsHidden ? "bev-hidden-comp" : "")"
+                         role="treeitem" aria-level="@(row.Node.Depth + 1)" aria-selected="@(selected ? "true" : "false")" aria-expanded="@(hasChildren ? (collapsed ? "false" : "true") : null)"
+                         style="padding-left:@(row.Node.Depth * 14 + 4)px" @onclick="() => Select(record.InstanceId)" title="@record.TypeName">
+                        @if (hasChildren)
+                        {
+                            <span class="bev-caret" role="presentation" @onclick:stopPropagation="true" @onclick="() => ToggleCollapse(record.InstanceId)">@(collapsed ? "▸" : "▾")</span>
+                        }
+                        else
+                        {
+                            <span class="bev-caret"></span>
+                        }
+                        <span class="bev-name">@record.DisplayName</span>
+                        @if (!record.IsInstrumented && !record.IsHidden)
+                        {
+                            <span class="bev-chip" title="@record.InstrumentationNote">not measured</span>
+                        }
+                        <span class="bev-meta">
+                            @if (record.ErrorCount > 0)
+                            {
+                                <span class="bev-err">@record.ErrorCount ✕ </span>
+                            }
+                            @if (collapsed && row.Node.SubtreeRenders > record.RenderCount)
+                            {
+                                <span class="bev-subtree" title="renders in the collapsed subtree · time">⊕ @row.Node.SubtreeRenders × · @BevFmt.Ms(row.Node.SubtreeRenderMs)</span>
+                            }
+                            @if (record.RenderCount > 0)
+                            {
+                                <span title="renders · last render duration">@record.RenderCount × · @BevFmt.Ms(record.LastRenderMs)</span>
+                            }
+                        </span>
+                    </div>
+                </Virtualize>
+            }
+        </div>
+    </div>
+    <div class="bev-right">
+        @if (Ui.SelectedComponentId is { } id && Session.Components.Get(id) is { } selected)
+        {
+            <BevComponentInspector Record="selected" />
+        }
+        else
+        {
+            <div class="bev-empty">Select a component to inspect parameters, cascading values, state, services, rendering and events. Arrow keys navigate the tree.</div>
+        }
+    </div>
+</div>
+
+@code {
+    private sealed record Row(BevComponentTreeNode Node);
+
+    private string? Query => Ui.GetQuery("components");
+
+    private List<Row> _visible = [];
+    private int _liveCount;
+    private bool _preventDefault;
+
+    protected override void OnParametersSet() => Rebuild();
+
+    private void Rebuild()
+    {
+        Session.Components.Refresh();
+        var roots = Session.Components.BuildTree(Ui.ShowHiddenComponents);
+        var filter = BevQueryFilter.Parse(Query);
+        var rows = new List<Row>();
+        _liveCount = 0;
+        foreach (var root in roots)
+        {
+            Walk(root, rows, filter, forceShow: false);
+        }
+
+        _visible = rows;
+    }
+
+    private bool Walk(BevComponentTreeNode node, List<Row> rows, BevQueryFilter filter, bool forceShow)
+    {
+        _liveCount++;
+        var matches = filter.MatchesText(node.Record.DisplayName, node.Record.TypeName);
+        var collapsed = Ui.CollapsedTreeNodes.Contains(node.Record.InstanceId) && filter.Terms.Count == 0;
+        var index = rows.Count;
+        rows.Add(new Row(node));
+        var anyChildVisible = false;
+        if (!collapsed)
+        {
+            foreach (var child in node.Children)
+            {
+                anyChildVisible |= Walk(child, rows, filter, forceShow || matches);
+            }
+        }
+
+        if (!matches && !anyChildVisible && filter.Terms.Count > 0)
+        {
+            rows.RemoveAt(index);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void OnQuery(ChangeEventArgs e)
+    {
+        Ui.SetQuery("components", e.Value?.ToString());
+        Rebuild();
+    }
+
+    private void ToggleHidden(ChangeEventArgs e)
+    {
+        Ui.ShowHiddenComponents = e.Value is true;
+        Rebuild();
+    }
+
+    private void ToggleCollapse(long id)
+    {
+        if (!Ui.CollapsedTreeNodes.Remove(id))
+        {
+            Ui.CollapsedTreeNodes.Add(id);
+        }
+
+        Rebuild();
+    }
+
+    private void Select(long id)
+    {
+        var previous = Ui.SelectedComponentId is { } p ? Session.Components.Get(p) : null;
+        if (previous is not null && previous.InstanceId != id && !Session.Options.CaptureComponentStateOnRender)
+        {
+            previous.CaptureState = false;
+        }
+
+        Ui.SelectedComponentId = id;
+        var record = Session.Components.Get(id);
+        if (record is not null)
+        {
+            record.CaptureState = true;
+        }
+
+        Ui.Touch();
+    }
+
+    private void OnKeyDown(KeyboardEventArgs e)
+    {
+        _preventDefault = false;
+        if (_visible.Count == 0)
+        {
+            return;
+        }
+
+        var index = _visible.FindIndex(r => r.Node.Record.InstanceId == Ui.SelectedComponentId);
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                Select(_visible[Math.Min(_visible.Count - 1, index + 1)].Node.Record.InstanceId);
+                _preventDefault = true;
+                break;
+            case "ArrowUp":
+                Select(_visible[Math.Max(0, index - 1)].Node.Record.InstanceId);
+                _preventDefault = true;
+                break;
+            case "ArrowLeft" when index >= 0:
+                {
+                    var node = _visible[index].Node;
+                    if (node.Children.Count > 0 && !Ui.CollapsedTreeNodes.Contains(node.Record.InstanceId))
+                    {
+                        ToggleCollapse(node.Record.InstanceId);
+                    }
+                    else if (node.Record.Parent is { } parent)
+                    {
+                        Select(parent.InstanceId);
+                    }
+
+                    _preventDefault = true;
+                    break;
+                }
+
+            case "ArrowRight" when index >= 0:
+                {
+                    var node = _visible[index].Node;
+                    if (node.Children.Count > 0 && Ui.CollapsedTreeNodes.Contains(node.Record.InstanceId))
+                    {
+                        ToggleCollapse(node.Record.InstanceId);
+                    }
+                    else if (node.Children.Count > 0)
+                    {
+                        Select(node.Children[0].Record.InstanceId);
+                    }
+
+                    _preventDefault = true;
+                    break;
+                }
+
+            case "Home":
+                Select(_visible[0].Node.Record.InstanceId);
+                _preventDefault = true;
+                break;
+            case "End":
+                Select(_visible[^1].Node.Record.InstanceId);
+                _preventDefault = true;
+                break;
+        }
+    }
+}
