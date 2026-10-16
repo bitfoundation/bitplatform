@@ -1,0 +1,95 @@
+﻿@page "/mcp"
+
+<DocPage Href="mcp" Title="MCP server"
+         Lead="This site hosts a Model Context Protocol server, so an AI agent can work against Blex's real API, docs and generator instead of guessing at them.">
+
+    <p>
+        Point an MCP client at <code>https://blex.bitplatform.dev/mcp</code> - or at
+        <code>http://localhost:5280/mcp</code> when you run the documentation site locally. It speaks the
+        streamable HTTP transport, needs no authentication, and every tool on it is read-only.
+    </p>
+
+    <CodeBlock Code="@ClaudeCode" Language="bash" Title="Claude Code" />
+    <CodeBlock Code="@VsCode" Language="json" FileName=".vscode/mcp.json" />
+
+    <h2>Tools</h2>
+    <p>
+        One rule holds across the reference tools: pass the key of the thing you want and you get that thing;
+        leave it out and you get the index of what there is. Every tool is also a plain HTTP GET under
+        <code>/api/mcp/...</code> - <a href="api/mcp/GetBlexApi" target="_blank" rel="noopener">/api/mcp/GetBlexApi</a> is the type list -
+        so you can look at any answer in a browser.
+    </p>
+    <ApiTable Rows="@Tools" MemberHeader="Tool" />
+
+    <h2>InspectBlexStore</h2>
+    <p>
+        The one question documentation cannot answer is "what does the generator do with <em>this</em> class?".
+        <code>InspectBlexStore</code> answers it by running the real <code>Bit.Blex.Generators</code> over the
+        source it is given. It returns every <code>BLEX</code> diagnostic a build would report, the compiler
+        errors in the result, and the exact public members the generator adds - so an agent calls
+        <code>Increment()</code> because the generator said so, not because it guessed the naming convention.
+    </p>
+    <CodeBlock Code="@InspectRequest" Language="bash" Title="Try it from a terminal" />
+
+    <h2>Resources and prompts</h2>
+    <ApiTable Rows="@Resources" MemberHeader="Resource" />
+    <ApiTable Rows="@Prompts" MemberHeader="Prompt" />
+
+    <p>
+        The server also hands the model a short set of working rules at <code>initialize</code>, before any tool
+        is called, and completes every argument that is a key into a closed set - the docs slugs, the guide
+        headings, the type names, the diagnostic ids and the source paths.
+    </p>
+
+</DocPage>
+
+@code {
+    private static readonly IReadOnlyList<ApiTable.Row> Tools =
+    [
+        new("SearchBlex", "Searches the guide, the docs pages, every public member, the generator's diagnostics and the demo's sources at once; every hit names the follow-up call that returns its full text."),
+        new("GetBlexSetupGuide", "The wiring for one hosting model - <code>server</code>, <code>wasm</code>, <code>auto</code>, <code>standalone-wasm</code>, <code>maui-hybrid</code> or <code>maui</code> - as the real files of a working project."),
+        new("GetBlexGuideSection", "One section of the reference guide (the README) as Markdown."),
+        new("GetBlexDocsPage", "One page of this site as Markdown, rendered by the same component you are reading."),
+        new("GetBlexApi", "One public type in full - every member with its type, its real default value and its documentation - read out of the shipped assemblies."),
+        new("GetBlexDiagnostics", "One <code>BLEX</code> diagnostic with its cause, a rejected store and the fix."),
+        new("InspectBlexStore", "Runs the real generator over store source and returns its diagnostics and the members it generates."),
+        new("GetBlexSourceFile", "One source file of this site or of the standalone sample, verbatim."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> Resources =
+    [
+        new("blex://guide, blex://guide/{heading}", "The reference guide, whole or by section."),
+        new("blex://docs/{slug}", "A documentation page. Every page is also listed as a concrete resource."),
+        new("blex://api, blex://api/{typeName}", "The type index, or one type in full."),
+        new("blex://diagnostics, blex://diagnostics/{code}", "The diagnostics table, or one diagnostic in full."),
+        new("blex://source/{path}", "A source file of the demo or the sample."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> Prompts =
+    [
+        new("add-blex-to-app", "Adds Blex to an existing app, in the right order for its hosting model."),
+        new("implement-blex-feature", "Builds a state feature with the real API, checking every store with the generator."),
+        new("migrate-to-blex", "Moves an app off Fluxor (or hand-rolled state services) one feature at a time."),
+        new("debug-blex-state", "Diagnoses a component that does not re-render, lost persisted state, BLEX build errors and the like."),
+    ];
+
+    private const string ClaudeCode = """
+        claude mcp add --transport http bit-blex https://blex.bitplatform.dev/mcp
+        """;
+
+    private const string VsCode = """
+        {
+          "servers": {
+            "bit-blex": {
+              "type": "http",
+              "url": "https://blex.bitplatform.dev/mcp"
+            }
+          }
+        }
+        """;
+
+    private const string InspectRequest = """
+        curl -G "https://blex.bitplatform.dev/api/mcp/InspectBlexStore" \
+          --data-urlencode "source=[BlexStore] public partial class CounterStore { [BlexState] private int _count; [BlexAction] private void OnIncrement() => Count++; }"
+        """;
+}

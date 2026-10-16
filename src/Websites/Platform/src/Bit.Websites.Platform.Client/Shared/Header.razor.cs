@@ -25,6 +25,7 @@ public partial class Header : IDisposable
             new("Brouter", "Modern declarative Blazor router", Urls.Brouter, External: true),
             new("Bmotion", "Blazor-native animation library", Urls.Bmotion, External: true),
             new("Bonboarding", "Blazor-native product tours", Urls.Bonboarding, External: true),
+            new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
             new("BlazorUI", "Native Blazor UI components", Urls.BlazorUI, External: true),
         ]
     ];

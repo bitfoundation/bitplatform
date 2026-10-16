@@ -1,0 +1,367 @@
+﻿@page "/subscriptions"
+@inherits BlexComponentBase
+@inject CounterStore Counter
+@inject ContactsStore Contacts
+
+<DocPage Href="subscriptions" Title="Components & selectors"
+         Lead="Re-render on the state you actually use - from a whole store down to a single projected value.">
+
+    <h2>BlexComponentBase</h2>
+    <p>
+        Inherit from <code>BlexComponentBase</code> and call <code>Subscribe(...)</code> in
+        <code>OnInitialized</code>. The component re-renders whenever a subscribed store changes and
+        detaches every handler on dispose - there is no <code>StateHasChanged</code> to call and
+        nothing to clean up.
+    </p>
+
+    <CodeBlock Code="@Basic" Language="razor" />
+
+    <p>You can subscribe to several stores at once; the call is idempotent per store.</p>
+    <CodeBlock Code="@Multi" />
+
+    <ApiTable Title="BlexComponentBase" Rows="@BaseRows" />
+
+    <h2>Selector subscriptions</h2>
+    <p>
+        <code>Subscribe(store)</code> fires on <em>any</em> change to that store. On a store with
+        many independent fields - or one big collection - that re-renders components that do not care.
+        Subscribe to a projection instead, and the component only wakes up when the projected value
+        actually changes.
+    </p>
+
+    <CodeBlock Code="@Selector" />
+
+    <DemoCard Title="Whole store vs. selector"
+              Description="Two identical panels, subscribed differently. Change only the Step field and watch which one re-renders."
+              Source="@WatcherSource" SourceLanguage="razor">
+        <div class="grid grid--2" style="margin:0 0 0.9rem">
+            <WholeStoreWatcher />
+            <SelectorWatcher />
+        </div>
+        <div class="row">
+            <button class="btn btn-primary" @onclick="Counter.Increment">Change Count (both re-render)</button>
+            <button class="btn" @onclick="() => Counter.SetStep(Counter.Step == 1 ? 5 : 1)">
+                Change Step only (left re-renders, right does not)
+            </button>
+            <button class="btn btn-ghost" @onclick="Counter.ResetState">Reset</button>
+        </div>
+        <div class="readout" style="margin-top:0.9rem">
+            <div class="readout__item">
+                <span class="readout__label">Count</span>
+                <span class="readout__value">@Counter.Count</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Step</span>
+                <span class="readout__value">@Counter.Step</span>
+            </div>
+        </div>
+    </DemoCard>
+
+    <h2>Outside components</h2>
+    <p>
+        The same primitive is a plain extension method on <code>IBlexStore</code>, usable anywhere. It
+        returns a token - dispose it to stop observing.
+    </p>
+
+    <CodeBlock Code="@Standalone" />
+
+    <ApiTable Title="BlexStoreSubscriptionExtensions" Rows="@ExtensionRows" />
+
+    <h3>Previous and current</h3>
+    <p>
+        The two-argument overload delivers <code>(previous, current)</code>, which is what you want
+        for transition logic - analytics, animations, "changed from X to Y" logging. This is MobX's
+        <code>reaction</code> shape.
+    </p>
+    <CodeBlock Code="@PrevCurrent" />
+
+    <h3>Custom equality</h3>
+    <p>
+        Both overloads take an optional <code>IEqualityComparer&lt;T&gt;</code>. Supply one when the
+        projection returns something whose default equality is not what you mean - a collection, for
+        instance, where you want to compare contents rather than references.
+    </p>
+    <p>
+        This is the case that quietly defeats selectors. A projection like
+        <code>() =&gt; Contacts.All.Where(c =&gt; c.Starred)</code> builds a <em>new</em> object on
+        every evaluation, so the default reference comparison always reports a change and the
+        subscription fires on every action - precisely what selecting a projection was meant to
+        avoid. <code>BlexComparers</code> supplies the two comparers that fix it, the same job
+        zustand's <code>shallow</code> does.
+    </p>
+    <CodeBlock Code="@Comparer" />
+
+    <ApiTable Title="BlexComparers" Rows="@ComparerRows" />
+
+    <DemoCard Title="Same projection, two comparers"
+              Description="Both watch the starred contacts. Star and unstar to change the projection; add or remove an unstarred contact to leave it alone but still run it."
+              Source="@ComparerSource">
+        <div class="row">
+            <button class="btn btn-sm" @onclick="() => Contacts.ToggleStar(1)">Toggle Ada's star</button>
+            <button class="btn btn-sm" @onclick="AddUnstarred">Add an unstarred contact</button>
+            <button class="btn btn-sm btn-ghost" @onclick="ResetCounters">Reset counters</button>
+        </div>
+
+        <div class="readout" style="margin-top:0.8rem">
+            <div class="readout__item">
+                <span class="readout__label">Starred now</span>
+                <span class="readout__value readout__value--accent">@Contacts.Starred</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Default equality: fired</span>
+                <span class="readout__value">@_defaultFired</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Sequence comparer: fired</span>
+                <span class="readout__value readout__value--accent">@_sequenceFired</span>
+            </div>
+        </div>
+
+        <p class="small muted" style="margin-top:0.8rem;margin-bottom:0">
+            Adding an unstarred contact re-runs both projections and produces an identical sequence.
+            Only the left-hand counter moves - and it is the one that would have re-rendered a
+            component for nothing.
+        </p>
+    </DemoCard>
+
+    <h3>fireImmediately</h3>
+    <p>
+        Pass <code>fireImmediately: true</code> to invoke the callback once at subscription time with
+        the current value, so an observer does not have to seed itself. With the two-argument
+        overload, <code>previous</code> and <code>current</code> are both the value at subscription.
+        If that first call throws, the subscription is detached before the exception surfaces - the
+        caller never received a token, so a handler left attached would be unstoppable.
+    </p>
+
+    <h3>Across stores</h3>
+    <p>
+        <code>BlexManager</code> carries the same pair of overloads for a projection that spans
+        stores. Without it, a value derived from two stores has to be recomputed on every action of
+        every store - the cross-store equivalent of re-rendering the whole app on any change.
+    </p>
+    <CodeBlock Code="@ManagerSelector" Title="One callback, two stores" />
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="A manager selector runs after every action">
+        <p style="margin-bottom:0">
+            The store-level overload only runs when <em>that</em> store changes; the manager-level one
+            runs after every action in the application. Keep the projection cheap - read
+            already-memoized <a href="computed"><code>[BlexComputed]</code></a> properties
+            rather than recomputing over collections inside it.
+        </p>
+    </Callout>
+
+    <h2>Owning other subscriptions</h2>
+    <p>
+        <code>OwnsSubscription(IDisposable)</code> hands any token to the component so it is disposed
+        along with it - a manager subscription, a selector token you made yourself, anything.
+    </p>
+    <CodeBlock Code="@Owns" Language="razor" />
+
+    <h2>The raw event</h2>
+    <p>
+        Under everything is <code>IBlexStore.StateChanged</code>, a plain <code>Action</code> raised once
+        per action after the state has settled. Use it directly when you want no machinery at all -
+        just remember to unsubscribe.
+    </p>
+    <CodeBlock Code="@Raw" />
+
+    <Callout Kind="Callout.CalloutKind.Tip" Title="Rendering is already batched">
+        <p style="margin-bottom:0">
+            An action that changes five fields raises <code>StateChanged</code> once, not five times,
+            so you do not need selectors to avoid render storms <em>within</em> an action. Reach for
+            them when a component should ignore whole categories of change on a shared store.
+        </p>
+    </Callout>
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="Selectors compare, they do not deep-compare">
+        <p style="margin-bottom:0">
+            A selector returning <code>Store.Items</code> (a list) fires whenever the
+            <em>reference</em> changes - which, if you follow the immutable-assignment rule, is every
+            time the collection is replaced, even when the contents are equal. Project to something
+            small and comparable (<code>Items.Count</code>, an id, a formatted string), or pass
+            <code>BlexComparers.Sequence&lt;T&gt;()</code>.
+        </p>
+    </Callout>
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Manager selectors also see restores">
+        <p style="margin-bottom:0">
+            Undo/redo, a DevTools time-travel jump and an incoming cross-tab change all move state
+            without dispatching an action. A manager-level projection is re-evaluated after those too,
+            so it never keeps reporting a value the application no longer holds.
+        </p>
+    </Callout>
+
+</DocPage>
+
+@code {
+    private int _defaultFired;
+    private int _sequenceFired;
+    private int _added;
+
+    protected override void OnInitialized()
+    {
+        Subscribe(Counter, Contacts);
+
+        // The same projection twice, differing only in how the result is compared.
+        OwnsSubscription(Contacts.Subscribe(
+            () => Contacts.Contacts.All.Where(c => c.Starred),
+            _ => _defaultFired++));
+
+        OwnsSubscription(Contacts.Subscribe(
+            () => Contacts.Contacts.All.Where(c => c.Starred),
+            _ => _sequenceFired++,
+            BlexComparers.Sequence<Contact>()));
+    }
+
+    private void AddUnstarred() => Contacts.Add($"Zoe Newcomer {++_added}", "Runtime");
+
+    private void ResetCounters()
+    {
+        _defaultFired = 0;
+        _sequenceFired = 0;
+    }
+
+    private static readonly IReadOnlyList<ApiTable.Row> ComparerRows =
+    [
+        new("BlexComparers.Sequence&lt;T&gt;(comparer?)", "Element-by-element, in order. The default choice for a projected list, filter or LINQ query."),
+        new("BlexComparers.Set&lt;T&gt;(comparer?)", "Same elements, order and repetition ignored - for a selection whose order is incidental."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> BaseRows =
+    [
+        new("void Subscribe(params ReadOnlySpan&lt;IBlexStore&gt;)", "Re-render on any change to the given stores. Duplicate subscriptions are ignored."),
+        new("void Subscribe&lt;T&gt;(IBlexStore, Func&lt;T&gt;, IEqualityComparer&lt;T&gt;?)", "Re-render only when the projected value changes."),
+        new("void OwnsSubscription(IDisposable)", "Dispose the given token when the component is disposed."),
+        new("void Dispose(bool disposing)", "<code>protected virtual</code> hook for your own cleanup. Store subscriptions are already detached when it runs - override this instead of implementing <code>IDisposable</code> yourself."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ExtensionRows =
+    [
+        new("IDisposable Subscribe&lt;T&gt;(this IBlexStore, Func&lt;T&gt; selector, Action&lt;T&gt; onChanged, IEqualityComparer&lt;T&gt;? comparer = null, bool fireImmediately = false)", "Invoke <code>onChanged</code> with the new value whenever the projection changes."),
+        new("IDisposable Subscribe&lt;T&gt;(this IBlexStore, Func&lt;T&gt; selector, Action&lt;T, T&gt; onChanged, IEqualityComparer&lt;T&gt;? comparer = null, bool fireImmediately = false)", "The same, but the callback receives <code>(previous, current)</code>."),
+    ];
+
+    private const string Basic = """
+        @inherits BlexComponentBase
+        @inject CounterStore Counter
+
+        <p>Count: @Counter.Count</p>
+        <button @onclick="Counter.Increment">+1</button>
+
+        @code {
+            protected override void OnInitialized() => Subscribe(Counter);
+        }
+        """;
+
+    private const string Multi = """
+        protected override void OnInitialized() => Subscribe(Counter, Todos, Settings);
+        """;
+
+    private const string Selector = """
+        // Re-renders only when Count changes; a change to Step is ignored.
+        protected override void OnInitialized()
+            => Subscribe(Counter, () => Counter.Count);
+        """;
+
+    private const string WatcherSource = """
+        @* Left panel *@
+        @code {
+            protected override void OnInitialized() => Subscribe(Counter);
+        }
+
+        @* Right panel *@
+        @code {
+            protected override void OnInitialized() => Subscribe(Counter, () => Counter.Count);
+        }
+        """;
+
+    private const string Standalone = """
+        using var sub = store.Subscribe(
+            () => store.Count,
+            count => Console.WriteLine($"count is now {count}"));
+
+        // ... later
+        sub.Dispose();   // stop observing
+        """;
+
+    private const string PrevCurrent = """
+        var sub = store.Subscribe(
+            () => store.Status,
+            (previous, current) => _analytics.Track("status-changed", previous, current),
+            fireImmediately: true);
+        """;
+
+    private const string Comparer = """
+        // Fires on every action: Where(...) is a new object each time.
+        store.Subscribe(() => store.Contacts.All.Where(c => c.Starred), Refresh);
+
+        // Fires only when the starred contacts actually differ.
+        store.Subscribe(
+            () => store.Contacts.All.Where(c => c.Starred),
+            Refresh,
+            BlexComparers.Sequence<Contact>());
+
+        // Order is incidental for a selection of ids -- compare as a set.
+        store.Subscribe(
+            () => store.SelectedIds,
+            Refresh,
+            BlexComparers.Set<int>());
+
+        // Components take the same argument:
+        Subscribe(Store, () => Store.Visible, BlexComparers.Sequence<Contact>());
+        """;
+
+    private const string ComparerSource = """
+        private int _defaultFired;
+        private int _sequenceFired;
+
+        protected override void OnInitialized()
+        {
+            // Same projection, different equality.
+            OwnsSubscription(Contacts.Subscribe(
+                () => Contacts.Contacts.All.Where(c => c.Starred),
+                _ => _defaultFired++));
+
+            OwnsSubscription(Contacts.Subscribe(
+                () => Contacts.Contacts.All.Where(c => c.Starred),
+                _ => _sequenceFired++,
+                BlexComparers.Sequence<Contact>()));
+        }
+        """;
+
+    private const string ManagerSelector = """
+        @inject BlexManager Manager
+        @inject CartStore Cart
+        @inject ProfileStore Profile
+
+        protected override void OnInitialized()
+            => OwnsSubscription(Manager.Subscribe(
+                   () => Cart.Total > Profile.CreditLimit,     // spans two stores
+                   overLimit => _banner = overLimit ? "Over your limit" : null));
+
+        // The (previous, current) overload and a custom comparer work the same as on a store:
+        Manager.Subscribe(
+            () => Cart.Total,
+            (previous, current) => _analytics.CartValueChanged(previous, current));
+        """;
+
+    private const string Owns = """
+        @code {
+            [Inject] private BlexManager Manager { get; set; } = default!;
+
+            protected override void OnInitialized()
+            {
+                Subscribe(Store);
+                OwnsSubscription(Manager.SubscribeTo<OrdersStore>(ctx => Refresh()));
+            }
+        }
+        """;
+
+    private const string Raw = """
+        void OnChanged() => Console.WriteLine("something changed");
+
+        store.StateChanged += OnChanged;
+        // ...
+        store.StateChanged -= OnChanged;
+        """;
+}

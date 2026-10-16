@@ -24,6 +24,7 @@ public static class Urls
     public const string Brouter = "https://brouter.bitplatform.dev/";
     public const string Bmotion = "https://bmotion.bitplatform.dev/";
     public const string Bonboarding = "https://bonboarding.bitplatform.dev/";
+    public const string Blex = "https://blex.bitplatform.dev/";
 
     public const string PlatformPwa = "https://bitplatform.dev/";
     public const string PlatformPageSpeed = "https://pagespeed.web.dev/analysis/https-bitplatform-dev/qa9agr7isx?form_factor=mobile";

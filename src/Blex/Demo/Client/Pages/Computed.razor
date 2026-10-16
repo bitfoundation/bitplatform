@@ -1,0 +1,200 @@
+﻿@page "/computed"
+@inherits BlexComponentBase
+@inject CartStore Cart
+
+<DocPage Href="computed" Title="Computed state"
+         Lead="Derived values that recompute only when they have to, and invalidate themselves whenever state changes.">
+
+    <h2>The convention</h2>
+    <p>
+        Mark a parameterless method named <code>ComputeXxx()</code> or <code>GetXxx()</code> with
+        <code>[BlexComputed]</code> and the generator emits a memoized public property <code>Xxx</code>.
+        The value is calculated on first read, cached, and thrown away the moment any
+        <code>[BlexState]</code> field on that store changes.
+    </p>
+
+    <CodeBlock Code="@Basic" />
+
+    <p>Which becomes, in the generated partial:</p>
+    <CodeBlock Code="@Generated" Title="Generated" />
+
+    <h2>Memoization in practice</h2>
+    <p>
+        Reading a computed property ten times evaluates it once. Only a state change makes it stale.
+        The counters below are incremented <em>inside</em> the compute methods, so they show exactly
+        how often each one actually ran.
+    </p>
+
+    <DemoCard Title="Count the evaluations"
+              Description="Read the values repeatedly - the counters stay put. Change the state and they tick over exactly once."
+              Source="@DemoSource">
+        <div class="readout">
+            <div class="readout__item">
+                <span class="readout__label">Subtotal</span>
+                <span class="readout__value">@Cart.Subtotal.ToString("C")</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Total</span>
+                <span class="readout__value readout__value--accent">@Cart.Total.ToString("C")</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Items</span>
+                <span class="readout__value">@Cart.ItemCount</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Subtotal evaluated</span>
+                <span class="readout__value">@Cart.SubtotalEvaluations×</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Total evaluated</span>
+                <span class="readout__value">@Cart.TotalEvaluations×</span>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top:0.9rem">
+            <button class="btn" @onclick="ReadTenTimes">Read both 10× (no state change)</button>
+            <button class="btn btn-primary" @onclick="() => Cart.SetDiscount(Cart.DiscountRate == 0m ? 0.15m : 0m)">
+                Toggle 15% discount
+            </button>
+            <button class="btn btn-ghost" @onclick="ResetCounters">Reset counters</button>
+        </div>
+
+        @if (_lastRead is not null)
+        {
+            <p class="small muted" style="margin-top:0.7rem;margin-bottom:0">@_lastRead</p>
+        }
+
+        <ul class="list" style="margin-top:0.9rem">
+            @foreach (var line in Cart.Lines)
+            {
+                <li>
+                    <span class="list__name">@line.Name</span>
+                    <span class="list__meta">@line.UnitPrice.ToString("C") each</span>
+                    <button class="btn btn-sm" @onclick="() => Cart.SetQuantity(line.Sku, line.Quantity - 1)">−</button>
+                    <span style="min-width:1.5rem;text-align:center">@line.Quantity</span>
+                    <button class="btn btn-sm" @onclick="() => Cart.SetQuantity(line.Sku, line.Quantity + 1)">+</button>
+                </li>
+            }
+        </ul>
+    </DemoCard>
+
+    <h2>Composing computed values</h2>
+    <p>
+        A computed method may read other computed properties. <code>ComputeTotal()</code> above reads
+        <code>Subtotal</code>, so the first read of <code>Total</code> after a change evaluates both,
+        in dependency order, with no wiring on your part.
+    </p>
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="Invalidation is store-wide, not per-dependency">
+        <p style="margin-bottom:0">
+            Blex does not track which fields a computed method touched. <em>Any</em> state change
+            on the store invalidates <em>every</em> computed value on it. That keeps invalidation
+            correct and free of bookkeeping, but it means an expensive computation on a busy store
+            recomputes more often than strictly necessary. If that matters, split the store, or cache
+            inside the method against the specific inputs.
+        </p>
+    </Callout>
+
+    <h2>Rules</h2>
+    <ul>
+        <li>The method must be <strong>parameterless</strong> - a computed value backs a property, so there is nowhere to pass arguments (<code>BLEX004</code>).</li>
+        <li>The name must start with <code>Compute</code> or <code>Get</code> and have something after it (<code>BLEX003</code>).</li>
+        <li>It must be an instance method, not <code>static</code> (<code>BLEX008</code>).</li>
+        <li>The generated property name must not collide with anything else on the store (<code>BLEX005</code>).</li>
+        <li>Any return type is allowed, including collections and records.</li>
+    </ul>
+
+    <h2>Computed values are not serialized</h2>
+    <p>
+        Only <code>[BlexState]</code> fields go into <code>SerializeState()</code>. Computed values are
+        derived, so they are recalculated after a restore rather than stored - which means a
+        time-travel jump or a rehydrate can never leave a derived value out of sync with the state it
+        came from.
+    </p>
+
+    <Callout Kind="Callout.CalloutKind.Tip" Title="Keep compute methods pure">
+        <p style="margin-bottom:0">
+            A compute method should read state and return a value. Do not mutate state or start async
+            work in one: it runs lazily, at unpredictable times, from inside a property getter.
+            (The evaluation counters in the demo above break that rule deliberately, to make the
+            memoization visible.)
+        </p>
+    </Callout>
+
+</DocPage>
+
+@code {
+    private string? _lastRead;
+
+    protected override void OnInitialized() => Subscribe(Cart);
+
+    private void ReadTenTimes()
+    {
+        decimal sink = 0;
+        for (var i = 0; i < 10; i++)
+            sink += Cart.Subtotal + Cart.Total;
+
+        _lastRead = $"Read Subtotal and Total 10 times each (sum {sink:C}) - evaluation counters did not move.";
+    }
+
+    private void ResetCounters()
+    {
+        Cart.ResetEvaluationCounters();
+        _lastRead = null;
+    }
+
+    private const string Basic = """
+        [BlexStore(Name = "cart")]
+        public partial class CartStore
+        {
+            [BlexState] private IReadOnlyList<CartLine> _lines = [];
+            [BlexState] private decimal _discountRate;
+
+            [BlexComputed] private decimal ComputeSubtotal() => Lines.Sum(l => l.Total);
+
+            // Computed values may build on other computed values.
+            [BlexComputed] private decimal ComputeTotal() => Math.Round(Subtotal * (1 - DiscountRate), 2);
+
+            [BlexComputed] private int ComputeItemCount() => Lines.Sum(l => l.Quantity);
+        }
+        """;
+
+    private const string Generated = """
+        private bool __SubtotalValid;
+        private decimal __SubtotalValue = default!;
+
+        public decimal Subtotal
+        {
+            get
+            {
+                if (!__SubtotalValid)
+                {
+                    __SubtotalValue = ComputeSubtotal();
+                    __SubtotalValid = true;
+                }
+                return __SubtotalValue;
+            }
+        }
+
+        // Called by BlexStoreBase after every state change.
+        protected override void InvalidateComputed()
+        {
+            __SubtotalValid = false;
+            __TotalValid = false;
+            __ItemCountValid = false;
+        }
+        """;
+
+    private const string DemoSource = """
+        // The counters are ordinary properties, incremented inside the compute methods
+        // purely so this demo can show how often they really run.
+        public int SubtotalEvaluations { get; private set; }
+
+        [BlexComputed]
+        private decimal ComputeSubtotal()
+        {
+            SubtotalEvaluations++;
+            return Lines.Sum(l => l.Total);
+        }
+        """;
+}
