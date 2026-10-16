@@ -55,7 +55,7 @@ and `BmotionAnimateService` for the complete API surface.
   synchronous interop.
 - ⚠️ **Blazor Server** - the compositor path works (it needs only async interop), so
   enter/exit/hover/tap/variant animations on transform + opacity play normally, and drag follows
-  the pointer a round trip behind (one position per frame). Features that require the per-frame
+  the pointer a round trip behind (one position, and one `OnDrag`, per frame). Features that require the per-frame
   loop - inertia (a throw lands where it would have come to rest), color/dimension interpolation,
   keyframe arrays off the compositor - degrade to instant state changes.
 - ✅ **Prerendering / static SSR** - by default elements render their `Initial` state and animate

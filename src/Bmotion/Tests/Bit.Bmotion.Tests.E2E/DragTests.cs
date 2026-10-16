@@ -19,7 +19,8 @@ public sealed class DragTests : BmotionPageTest
 
         await ExpectEventAsync("free:start");
         await ExpectEventAsync("free:end");
-        Assert.IsTrue(await Event("free:move").CountAsync() > 1, "OnDrag should fire for every move.");
+        // Once per pointer move on WebAssembly; on Blazor Server the moves are coalesced to one per frame.
+        Assert.IsTrue(await Event("free:move").CountAsync() >= 1, "OnDrag should fire while the pointer moves.");
         await WaitForStateAsync("#free", "s => Math.abs(s.x - 80) < 1 && Math.abs(s.y - 30) < 1");
     }
 

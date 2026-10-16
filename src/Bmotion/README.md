@@ -4,7 +4,7 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
 
 **Hybrid engine:** compositor-eligible animations (tweens and zero-velocity springs on transform/opacity - i.e. most enter/exit/hover/variant animations) are pre-sampled in C# and handed to the browser's **Web Animations API**, so they play off the main thread with zero per-frame interop. Everything else runs on the C# rAF engine.
 
-> Targets **.NET 8, 9, and 10** · Full support on **Blazor WebAssembly**. On **Blazor Server**, compositor-eligible animations play normally (they need only async interop), and drag follows the pointer a round trip behind (one position per frame); features that require the per-frame loop - inertia (a throw lands where it would have come to rest), color/dimension interpolation, keyframe arrays off the compositor - degrade to instant state changes.
+> Targets **.NET 8, 9, and 10** · Full support on **Blazor WebAssembly**. On **Blazor Server**, compositor-eligible animations play normally (they need only async interop), and drag follows the pointer a round trip behind (one position, and one `OnDrag`, per frame); features that require the per-frame loop - inertia (a throw lands where it would have come to rest), color/dimension interpolation, keyframe arrays off the compositor - degrade to instant state changes.
 
 ---
 
@@ -665,6 +665,12 @@ never land outside the bounds.
     <div />
 </Bmotion>
 ```
+
+**Reconfiguring a drag mid-gesture ends it.** Changing any gesture parameter (`Drag`, `DragConstraints`,
+`DragElastic`, `DragHandle`, ...) while a drag is in progress re-attaches the element's listeners,
+which releases the drag first (`OnDragEnd` fires, momentum and snap-back run as for a pointer-up).
+Keep those parameters stable for the duration of a drag - bind them to state you change on
+`OnDragEnd`, not on `OnDrag`.
 
 ## Layout & shared elements
 

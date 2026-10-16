@@ -237,7 +237,7 @@ public static class BmotionSetupGuide
         | Colour interpolation (backgroundColor, color, fill, ...) | **Jumps to the target** |
         | Dimension and layout properties (width, height, top, ...) | **Jumps to the target** |
         | Keyframe arrays, per-property transitions, arc paths | **Jumps to the target** |
-        | Drag | **Works**, a round trip behind the pointer: one position per frame over async interop. A throw lands where its momentum would have come to rest |
+        | Drag | **Works**, a round trip behind the pointer: one position (and one `OnDrag`) per frame over async interop. A throw lands where its momentum would have come to rest |
         | Inertia, `Transition.OnUpdate`, a component's `OnUpdate` | **Not available** - they need the per-frame loop (inertia lands on its resting point) |
         | Motion values bound to elements | **Each change is written** through async interop - no per-frame smoothing |
         | Layout (FLIP) and shared-element transitions | **Full.** The bridge plays them as Web Animations |

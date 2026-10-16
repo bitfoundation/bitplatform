@@ -123,6 +123,35 @@ public class WaapiContinuationTests
     }
 
     [TestMethod]
+    public async Task TransformAfter_SamplesTheCompositorPlanWhereItWillBeThen_NotAtItsEnd()
+    {
+        // What a FLIP ends on: it masks the compositor animation for its own length, so it must land
+        // on the frame that animation will be showing when the FLIP lifts - a plan a quarter through
+        // its linear second, asked about a quarter second ahead, is halfway; asked about long after,
+        // it is at its end.
+        var (engine, _) = NewEngine();
+        await using var __ = engine;
+        engine.RegisterElement("el");
+        const double durationMs = 1_000_000;
+        var plan = new BmotionElementAnimationState.WaapiPlan
+        {
+            Token = 7,
+            StartMs = Environment.TickCount64 - (long)(durationMs / 4),
+            DelayMs = 0,
+            DurationMs = durationMs,
+            Progress = [0, 1],
+            Values = new() { ["x"] = (0, 100) },
+            Iterations = 0,
+            Mirror = false,
+        };
+        engine.GetState("el")!.AddWaapiPlan(plan);
+
+        Assert.AreEqual(50, engine.GetState("el")!.TransformsAfter(durationMs / 4)["x"], 0.5);
+        Assert.AreEqual(100, engine.GetState("el")!.TransformsAfter(durationMs * 2)["x"], 1e-9);
+        StringAssert.Contains(engine.GetTransformStringAfter("el", durationMs / 4)!, "50");
+    }
+
+    [TestMethod]
     public async Task EveryKeySuperseded_NothingIsContinued_AndTheOldCompletionIsNotRaised()
     {
         var (engine, interop) = NewEngine();

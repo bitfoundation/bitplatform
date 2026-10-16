@@ -531,25 +531,33 @@ function _attachDrag(
     // start a draggable ancestor. Set dragPropagation to let both move together.
     const propagate      = !!opts.dragPropagation;
     // Without synchronous interop (Blazor Server) the start position is read off the element and
-    // positions are reported through async calls, at most one per animation frame - the circuit
-    // can't take a message per pointer move, and only the latest position matters anyway.
+    // moves are reported through async calls, at most one per animation frame - the circuit can't
+    // take a message per pointer move, and only the latest position matters anyway. The OnDragMove
+    // callback rides in the same frame, after the position, so a handler always reads the position
+    // it was raised for.
     const asyncMode      = !!opts.dragAsync;
     let pendingX = 0, pendingY = 0, reportFrame: number | null = null;
-    const reportPosition = (x: number, y: number) => {
-        if (!asyncMode) { dotnetRef.invokeMethod('SetDragPosition', x, y); return; }
+    const sendPendingMove = () => {
+        dotnetRef.invokeMethodAsync('SetDragPosition', pendingX, pendingY);
+        dotnetRef.invokeMethodAsync('OnDragMove');
+    };
+    const reportMove = (x: number, y: number) => {
+        if (!asyncMode) {
+            // Synchronously, so ComputeFrame picks the position up this frame.
+            dotnetRef.invokeMethod('SetDragPosition', x, y);
+            dotnetRef.invokeMethodAsync('OnDragMove');
+            return;
+        }
         pendingX = x; pendingY = y;
         if (reportFrame !== null) return;
-        reportFrame = requestAnimationFrame(() => {
-            reportFrame = null;
-            dotnetRef.invokeMethodAsync('SetDragPosition', pendingX, pendingY);
-        });
+        reportFrame = requestAnimationFrame(() => { reportFrame = null; sendPendingMove(); });
     };
-    // Sends a position still waiting for its frame now, so the release is never processed before it.
+    // Sends a move still waiting for its frame now, so the release is never processed before it.
     const flushPosition = () => {
         if (reportFrame === null) return;
         cancelAnimationFrame(reportFrame);
         reportFrame = null;
-        dotnetRef.invokeMethodAsync('SetDragPosition', pendingX, pendingY);
+        sendPendingMove();
     };
 
     // Elasticity is per-edge ({ left, right, top, bottom }); a plain number still means uniform.
@@ -671,9 +679,7 @@ function _attachDrag(
             x = clamped.x; y = clamped.y;
         }
 
-        // Sync drag position into C# state (synchronously, so ComputeFrame picks it up this frame)
-        reportPosition(x, y);
-        dotnetRef.invokeMethodAsync('OnDragMove');
+        reportMove(x, y);
     };
 
     const onUp = () => {
@@ -1243,9 +1249,10 @@ export function playWaapiFlip(
     // The element's own transform (its animated x, scale, ...) stays on: the deltas were measured
     // between boxes that both carry it, and the FLIP only projects the layout change on top. It
     // starts from the transform showing right now (a compositor animation in flight included - the
-    // rects were measured with it on) and ends on the one the element is heading for
-    // (finalTransform, which C# takes with such animations at their end). fill:'none' - an
-    // animation filling forwards would override every transform the engine writes afterwards.
+    // rects were measured with it on) and ends on the one the element will be showing when the FLIP
+    // ends (finalTransform, which C# samples with such animations advanced by the FLIP's duration),
+    // so the animation underneath shows through at that same frame and nothing jumps. fill:'none' -
+    // an animation filling forwards would override every transform the engine writes afterwards.
     const live = getComputedStyle(el).transform;
     const from = live && live !== 'none' ? live : '';
     const own = finalTransform || '';

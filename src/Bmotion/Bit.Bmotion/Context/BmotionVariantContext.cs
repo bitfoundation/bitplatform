@@ -14,6 +14,10 @@ internal class BmotionVariantContext
     // A released slot (its child was disposed) is null: it keeps its index, so the indices other
     // children hold stay valid, but it no longer counts towards the cascade - see RankOf.
     private readonly List<Func<double>?> _childDurations = new();
+    // How many slots are held, and each slot's rank among the held ones - the latter computed once
+    // per change to the slots rather than per delay lookup, which a cascade asks for per child.
+    private int _heldSlots;
+    private int[]? _ranks;
 
     /// <summary>The currently active variant name selected by the nearest ancestor.</summary>
     public string? ActiveVariant { get; internal set; }
@@ -51,6 +55,8 @@ internal class BmotionVariantContext
     internal int RegisterChild(Func<double>? estimatedDuration = null)
     {
         _childDurations.Add(estimatedDuration ?? _noDuration);
+        _heldSlots++;
+        _ranks = null;
         return _childDurations.Count - 1;
     }
 
@@ -61,28 +67,30 @@ internal class BmotionVariantContext
     /// </summary>
     internal void UnregisterChild(int childIndex)
     {
-        if (childIndex >= 0 && childIndex < _childDurations.Count) _childDurations[childIndex] = null;
+        if (childIndex < 0 || childIndex >= _childDurations.Count || _childDurations[childIndex] is null) return;
+        _childDurations[childIndex] = null;
+        _heldSlots--;
+        _ranks = null;
     }
 
     /// <summary>How many children hold a stagger slot - the stagger's <c>total</c>.</summary>
-    internal int TotalChildren
-    {
-        get
-        {
-            int total = 0;
-            foreach (var slot in _childDurations) if (slot != null) total++;
-            return total;
-        }
-    }
+    internal int TotalChildren => _heldSlots;
 
     /// <summary>A child's position among the children still present - its place in the cascade.</summary>
     private int RankOf(int childIndex)
     {
-        if (childIndex < 0 || childIndex > _childDurations.Count) return childIndex;
-        int rank = 0;
-        for (int i = 0; i < childIndex && i < _childDurations.Count; i++)
-            if (_childDurations[i] != null) rank++;
-        return rank;
+        if (childIndex < 0 || childIndex >= _childDurations.Count) return childIndex < 0 ? childIndex : _heldSlots;
+        if (_ranks is null)
+        {
+            _ranks = new int[_childDurations.Count];
+            int rank = 0;
+            for (int i = 0; i < _ranks.Length; i++)
+            {
+                _ranks[i] = rank;
+                if (_childDurations[i] != null) rank++;
+            }
+        }
+        return _ranks[childIndex];
     }
 
     /// <summary>The next child index that would be handed out. Used to carry the counter across
@@ -100,6 +108,8 @@ internal class BmotionVariantContext
     {
         _childDurations.Clear();
         _childDurations.AddRange(previous._childDurations);
+        _heldSlots = previous._heldSlots;
+        _ranks = null;
     }
 
     /// <summary>Returns the stagger delay in seconds for a child at the given index.</summary>

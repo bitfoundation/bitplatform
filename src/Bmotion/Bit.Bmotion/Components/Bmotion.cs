@@ -1149,7 +1149,10 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         {
             // What the properties the exit takes over showed before it, for a re-entry to return
             // the ones its enter target doesn't mention (an exit-only x, say) - see RestorePreExit.
-            _preExitValues = Engine.CaptureValues(_id, exitProps.ToJsDictionary().Keys);
+            // Kept from the first exit until a re-entry restores it: a second exit starting before
+            // that restore ran (presence toggled twice in one render) would otherwise capture the
+            // values the first exit had reached part-way.
+            _preExitValues ??= Engine.CaptureValues(_id, exitProps.ToJsDictionary().Keys);
             // popLayout: pin the element at its current spot with position:absolute so siblings
             // reflow immediately, then play the exit on the popped element.
             if (PresenceCtx is { PopLayout: true })
@@ -1219,7 +1222,8 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         string easing = t?.Type == BmotionTransitionType.Spring
             ? "cubic-bezier(0.14,1,0.34,1)"
             : BmEaseFunctions.ToCssString(t);
-        string? finalT = Engine.GetTargetTransformString(_id);
+        // The transform the element shows when the FLIP ends, compositor animations advanced by its length.
+        string? finalT = Engine.GetTransformStringAfter(_id, dur);
 
         // Pause the engine's per-frame transform writes for the duration of the FLIP so the rAF
         // loop and the WAAPI layout animation don't both write `transform` and tear each other.

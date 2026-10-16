@@ -154,6 +154,23 @@ public class AnimateServiceStateTests
     }
 
     [TestMethod]
+    public async Task SpeedChange_PutsBackTheRateTheElementHadBefore_NotRealtime()
+    {
+        // An element its owner had paused: these controls re-timing and then releasing it must
+        // leave it paused, as they found it - not un-pause it behind the owner's back.
+        var (engine, controls) = await StartOnSharedElement();
+        await using var _ = engine;
+        engine.SetPlaybackRate("el", 0);
+        controls.SetSpeed(2);
+        Assert.AreEqual(2, RateOf(engine));
+        controls.Pause();
+
+        controls.Stop();
+
+        Assert.AreEqual(0, RateOf(engine), "the rate goes back to what it was before the first SetSpeed");
+    }
+
+    [TestMethod]
     public async Task NoSpeedChange_LeavesARateSetElsewhereAlone()
     {
         // The controls only undo what they did: a rate the element's owner set is not theirs to reset.

@@ -119,6 +119,8 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     // scale 1) and drop every value it doesn't animate. Bounded: an entry is a few dictionaries.
     private readonly Dictionary<string, BmotionElementAnimationState> _retained = new();
     private const int MaxRetained = 256;
+    // Stamps each retained state, so a full cache evicts the one retained longest ago.
+    private long _retainedSeq;
 
     /// <summary>Register an element and optionally seed its initial CSS state.</summary>
     public void RegisterElement(string elementId, Dictionary<string, object?>? initialValues = null)
@@ -168,7 +170,9 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
             _elements.Remove(elementId);
             if (!state.OwnedByComponent)
             {
-                if (_retained.Count >= MaxRetained) _retained.Remove(_retained.Keys.First());
+                // Oldest first: a dictionary's own order is not insertion order once entries were removed.
+                if (_retained.Count >= MaxRetained) _retained.Remove(_retained.MinBy(kv => kv.Value.RetainedAt).Key);
+                state.RetainedAt = ++_retainedSeq;
                 _retained[elementId] = state;
             }
         }
@@ -624,15 +628,21 @@ public sealed class BmotionAnimationEngine : IAsyncDisposable
     }
 
     /// <summary>
-    /// The transform the element is heading for: its current components with every compositor
-    /// animation in flight taken at its end. What a FLIP ends on - it masks the compositor
-    /// animation while it plays, so it must land where that animation lands, not where it began.
+    /// The transform the element will be showing <paramref name="afterMs"/> from now: its current
+    /// components with every compositor animation in flight advanced that far (to its end, if it is
+    /// over by then). What a FLIP of that length ends on - it masks the compositor animation while it
+    /// plays, so it must land exactly where that animation will be when the FLIP lifts, not where it
+    /// began and not at an end it has not reached yet.
     /// </summary>
-    internal string? GetTargetTransformString(string elementId)
+    internal string? GetTransformStringAfter(string elementId, double afterMs)
     {
         if (!_elements.TryGetValue(elementId, out var state)) return null;
-        return state.ComposeTransform(state.TargetTransforms());
+        return state.ComposeTransform(state.TransformsAfter(afterMs));
     }
+
+    /// <summary>The element's playback rate (1 = realtime, 0 = paused); 1 for an unknown element.</summary>
+    internal double GetPlaybackRate(string elementId)
+        => _elements.TryGetValue(elementId, out var state) ? state.PlaybackRate : 1;
 
     /// <summary>Returns the <see cref="BmotionElementAnimationState"/> for an element, or null.</summary>
     internal BmotionElementAnimationState? GetState(string elementId)

@@ -55,6 +55,9 @@ jobs:
       with:
         node-version: 24
 
+    - name: dotnet workload restore
+      run: cd src/Bmotion && dotnet workload restore
+
     - name: Build the harness host
       run: dotnet build src/Bmotion/Tests/Bit.Bmotion.Tests.Harness.Web/Bit.Bmotion.Tests.Harness.Web.csproj -c Release -f ${{ matrix.framework }}
 

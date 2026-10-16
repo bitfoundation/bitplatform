@@ -51,6 +51,9 @@ internal sealed class BmotionElementAnimationState
     /// <summary>Whether a <c>&lt;Bmotion&gt;</c> ever owned the element (as opposed to programmatic animations only).</summary>
     internal bool OwnedByComponent;
 
+    /// <summary>When the engine retained this state after its last programmatic owner released it (eviction order).</summary>
+    internal long RetainedAt;
+
     // ── Active animations ─────────────────────────────────────────────────────
     private readonly Dictionary<string, IBmotionAnimationDriver> _activeAnims = new();
 
@@ -1224,15 +1227,22 @@ internal sealed class BmotionElementAnimationState
         _batches.Add(new CompletionBatch { Source = carried, Keys = continued });
     }
 
-    /// <summary>The transform components with every compositor plan's transform keys at their targets.</summary>
-    internal Dictionary<string, double> TargetTransforms()
+    /// <summary>
+    /// The transform components as they will be <paramref name="afterMs"/> from now, with every
+    /// compositor plan's transform keys sampled that far ahead (at their resting value once they are
+    /// over). What a FLIP that masks those plans while it plays must end on, so that when it lifts
+    /// they show through at the very frame it left them at.
+    /// </summary>
+    internal Dictionary<string, double> TransformsAfter(double afterMs)
     {
         if (_waapiPlans.Count == 0) return Transforms;
+        long now = Environment.TickCount64;
         var target = new Dictionary<string, double>(Transforms, StringComparer.OrdinalIgnoreCase);
         foreach (var plan in _waapiPlans)
-            foreach (var (key, (_, to)) in plan.Values)
-                if (BmotionTransformComposer.IsTransformProp(key) && !double.IsInfinity(plan.TotalMs))
-                    target[key] = plan.ValueAt(key, plan.TotalMs + 1);
+            foreach (var key in plan.Values.Keys)
+                if (BmotionTransformComposer.IsTransformProp(key))
+                    // The plan's clock runs at its rate; afterMs of wall time is afterMs × rate of animation time.
+                    target[key] = plan.ValueAt(key, plan.PlayedMs(now) + (afterMs * plan.Rate));
         return target;
     }
 
