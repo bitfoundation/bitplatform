@@ -65,11 +65,13 @@ jobs:
       run: cd src/Blex/Tests/Bit.Blex.Tests.Mcp && dotnet test --no-build
 
     # Packing on every run means a broken nuspec, a missing analyzer or a stale readme path is caught
-    # here rather than at release time.
+    # here rather than at release time. Each project is built in Release with GeneratePackageOnBuild
+    # off before it is packed, as all.ci.yml and nuget.org.yml do: Bit.Build.props turns that
+    # property on for Release, and a bare `dotnet pack` of a multi-targeted project with it on fails
+    # with NU5026 (the pack-on-build step runs before every TFM's assembly is on disk).
     - name: dotnet pack
       run: |
-        dotnet pack src/Blex/Bit.Blex/Bit.Blex.csproj --output ./packages --configuration Release
-        dotnet pack src/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj --output ./packages --configuration Release
-        dotnet pack src/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj --output ./packages --configuration Release
-        dotnet pack src/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj --output ./packages --configuration Release
-        dotnet pack src/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj --output ./packages --configuration Release
+        for project in Bit.Blex Bit.Blex.Generators Bit.Blex.Blazor Bit.Blex.Maui Bit.Blex.Testing; do
+          dotnet build src/Blex/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Blex/$project/$project.csproj --output ./packages --configuration Release
+        done
