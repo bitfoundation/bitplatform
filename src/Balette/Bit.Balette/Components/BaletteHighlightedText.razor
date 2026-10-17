@@ -1,0 +1,38 @@
+﻿@namespace Bit.Balette
+
+@if (Positions is not { Length: > 0 } || string.IsNullOrEmpty(Text))
+{
+    @Text
+}
+else
+{
+    var set = new HashSet<int>(Positions);
+    var i = 0;
+    while (i < Text.Length)
+    {
+        var start = i;
+        var hit = set.Contains(i);
+        while (i < Text.Length && set.Contains(i) == hit)
+        {
+            i++;
+        }
+
+        var segment = Text.Substring(start, i - start);
+        if (hit)
+        {
+            <mark class="bit-balette-mark" data-balette="mark">@segment</mark>
+        }
+        else
+        {
+            @segment
+        }
+    }
+}
+
+@code {
+    /// <summary>Text to render.</summary>
+    [Parameter, EditorRequired] public string? Text { get; set; }
+
+    /// <summary>Character indexes to highlight.</summary>
+    [Parameter] public int[]? Positions { get; set; }
+}

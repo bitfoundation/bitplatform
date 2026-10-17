@@ -1,0 +1,30 @@
+﻿@namespace Bit.Balette
+
+@if (Shortcut is not null)
+{
+    var chords = Shortcut.DisplayTokens(IsMac);
+    <span class="bit-balette-shortcut @Class" data-balette="shortcut" aria-label="@Shortcut.ToDisplayString(IsMac)">
+        @for (var c = 0; c < chords.Count; c++)
+        {
+            if (c > 0)
+            {
+                <span class="bit-balette-shortcut-then" aria-hidden="true">then</span>
+            }
+            foreach (var token in chords[c])
+            {
+                <kbd class="bit-balette-kbd">@token</kbd>
+            }
+        }
+    </span>
+}
+
+@code {
+    /// <summary>Shortcut to render. Accepts a <see cref="BaletteKeyboardShortcut"/> (strings convert implicitly).</summary>
+    [Parameter, EditorRequired] public BaletteKeyboardShortcut? Shortcut { get; set; }
+
+    /// <summary>Render macOS symbols (⌘ ⇧ ⌥) instead of words.</summary>
+    [Parameter] public bool IsMac { get; set; }
+
+    /// <summary>Extra CSS class on the hint.</summary>
+    [Parameter] public string? Class { get; set; }
+}

@@ -1,0 +1,80 @@
+﻿@namespace Bit.Balette
+@implements IDisposable
+@inject BaletteService Palette
+@inject BaletteOptions Options
+
+<button type="button"
+        class="bit-balette-trigger @Class"
+        data-balette="trigger"
+        @onclick="OnClick"
+        aria-label="@(Options.Strings.OpenPalette)"
+        aria-keyshortcuts="@(ShortcutText)"
+        @attributes="AdditionalAttributes">
+    @if (ChildContent is not null)
+    {
+        @ChildContent
+    }
+    else
+    {
+        <svg class="bit-balette-svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="M11 4a7 7 0 1 0 4.2 12.6l3.6 3.6 1.4-1.4-3.6-3.6A7 7 0 0 0 11 4zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z" /></svg>
+        <span class="bit-balette-trigger-label">@(Label ?? Options.Strings.Search)</span>
+        @if (ShowShortcut && Shortcut is not null)
+        {
+            <BaletteShortcutHint Shortcut="Shortcut" IsMac="EffectiveIsMac" Class="bit-balette-trigger-shortcut" />
+        }
+    }
+</button>
+
+@code {
+    /// <summary>Label text. Defaults to "Search".</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Open the palette with this initial query (e.g. a mode prefix).</summary>
+    [Parameter] public string? Query { get; set; }
+
+    /// <summary>Open directly inside this command's page.</summary>
+    [Parameter] public string? PageCommandId { get; set; }
+
+    /// <summary>Show the toggle shortcut hint.</summary>
+    [Parameter] public bool ShowShortcut { get; set; } = true;
+
+    /// <summary>Force macOS symbols on or off. By default the platform detected by the palette is used.</summary>
+    [Parameter] public bool? IsMac { get; set; }
+
+    /// <summary>Extra CSS class on the button.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Replaces the button's content (icon, label and shortcut hint).</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Any other attribute, rendered on the button.</summary>
+    [Parameter(CaptureUnmatchedValues = true)] public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool EffectiveIsMac => IsMac ?? Palette.IsMac;
+
+    private BaletteKeyboardShortcut? Shortcut => Options.ToggleShortcut;
+
+    /// <summary>Value for <c>aria-keyshortcuts</c>, which uses DOM key names (Control, Meta, Shift, Alt).</summary>
+    private string? ShortcutText => Shortcut is null ? null : string.Join(" ", Shortcut.Chords.Select(AriaChord));
+
+    private string AriaChord(BaletteKeyChord c)
+    {
+        var parts = new List<string>(5);
+        if (c.Mod) parts.Add(EffectiveIsMac ? "Meta" : "Control");
+        if (c.Ctrl) parts.Add("Control");
+        if (c.Alt) parts.Add("Alt");
+        if (c.Shift) parts.Add("Shift");
+        if (c.Meta) parts.Add("Meta");
+        parts.Add(c.Key.Length == 1 ? c.Key.ToUpperInvariant() : char.ToUpperInvariant(c.Key[0]) + c.Key[1..]);
+        return string.Join("+", parts);
+    }
+
+    protected override void OnInitialized() => Palette.PlatformDetected += OnPlatformDetected;
+
+    private void OnPlatformDetected() => _ = InvokeAsync(StateHasChanged);
+
+    private Task OnClick() => Palette.OpenAsync(Query, PageCommandId);
+
+    /// <summary>Stops listening for the platform detection.</summary>
+    public void Dispose() => Palette.PlatformDetected -= OnPlatformDetected;
+}

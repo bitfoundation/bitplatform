@@ -97,6 +97,20 @@
     <Project Path="Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj" />
     <Project Path="Bink/Tests/Bit.Bink.Benchmarks/Bit.Bink.Benchmarks.csproj" />
   </Folder>
+  <Folder Name="/Balette/">
+    <File Path="Balette/README.md" />
+    <Project Path="Balette/Bit.Balette/Bit.Balette.csproj" />
+  </Folder>
+  <Folder Name="/Balette/Bit.Balette.Demo/">
+    <Project Path="Balette/Bit.Balette.Demo/Client/Bit.Balette.Demo.Client.csproj" />
+    <Project Path="Balette/Bit.Balette.Demo/Server/Bit.Balette.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Balette/Tests/">
+    <Project Path="Balette/Tests/Bit.Balette.Tests/Bit.Balette.Tests.csproj" />
+    <Project Path="Balette/Tests/Bit.Balette.Tests.Mcp/Bit.Balette.Tests.Mcp.csproj" />
+    <Project Path="Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj" />
+    <Project Path="Balette/Tests/Bit.Balette.Benchmarks/Bit.Balette.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />
