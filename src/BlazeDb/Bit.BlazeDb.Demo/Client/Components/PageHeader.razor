@@ -1,0 +1,33 @@
+﻿<div class="page-head rise">
+    @if (!string.IsNullOrWhiteSpace(Eyebrow))
+    {
+        <div class="eyebrow">
+            @if (!string.IsNullOrWhiteSpace(IconName))
+            {
+                <Icon Name="@IconName" Size="13" />
+            }
+            @Eyebrow
+        </div>
+    }
+    <h1>@Title</h1>
+    @if (!string.IsNullOrWhiteSpace(Lead))
+    {
+        <p class="lead">@Lead</p>
+    }
+    @if (ChildContent is not null)
+    {
+        <div class="chip-row mt-2">@ChildContent</div>
+    }
+</div>
+
+@code {
+    [Parameter] public string? Eyebrow { get; set; }
+
+    [Parameter] public string? IconName { get; set; }
+
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    [Parameter] public string? Lead { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

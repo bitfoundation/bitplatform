@@ -1,0 +1,23 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Bit.BlazeDb.Demo/">
+    <Project Path="Bit.BlazeDb.Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
+    <Project Path="Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.BlazeDb.Tests/Bit.BlazeDb.Tests.csproj" />
+    <Project Path="Tests/Bit.BlazeDb.Tests.Mcp/Bit.BlazeDb.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.BlazeDb.Benchmarks/Bit.BlazeDb.Benchmarks.csproj" />
+  </Folder>
+  <Project Path="Bit.BlazeDb/Bit.BlazeDb.csproj" />
+  <Project Path="Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj" />
+  <Project Path="Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj" />
+  <Project Path="Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj" />
+</Solution>

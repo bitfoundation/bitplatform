@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>preview</LangVersion>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- The host owns the launch profile: this project is never started on its own. -->
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <!-- Publishes this project's static web assets at the app root (not under _content/), the
+         way a Blazor Web App's client project is expected to contribute them. -->
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bit.BlazeDb\Bit.BlazeDb.csproj" />
+    <ProjectReference Include="..\..\Bit.BlazeDb.Browser\Bit.BlazeDb.Browser.csproj" />
+    <ProjectReference Include="..\..\Bit.BlazeDb.EntityFrameworkCore\Bit.BlazeDb.EntityFrameworkCore.csproj" />
+    <!-- The generator as an analyzer, which is what the Bit.BlazeDb.Generators package adds to a consumer. -->
+    <ProjectReference Include="..\..\Bit.BlazeDb.Generators\Bit.BlazeDb.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+  </ItemGroup>
+
+</Project>

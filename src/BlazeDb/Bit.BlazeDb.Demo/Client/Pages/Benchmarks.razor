@@ -1,0 +1,690 @@
+﻿@page "/bench"
+@using System.Runtime.InteropServices
+@implements IAsyncDisposable
+
+<PageTitle>Benchmarks - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Performance" IconName="gauge" Title="Measured here, in your browser, right now"
+            Lead="These are not numbers from a README. Every figure below is produced by running the operation in this tab against a real database, on your machine, in the WebAssembly runtime you are using to read this page.">
+    <span class="chip"><Icon Name="database" /> @_rowCount.ToString("N0") rows loaded</span>
+    <span class="chip"><Icon Name="cpu" /> @Runtime</span>
+    <span class="chip @(IsDebug ? "warn" : "ok")">
+        <Icon Name="@(IsDebug ? "alert" : "check")" /> @(IsDebug ? "Debug build" : "Release build")
+    </span>
+</PageHeader>
+
+<Section Title="Run the suite" IconName="play">
+    <Panel Title="Configuration" IconName="cpu">
+        <div class="form-row">
+            <div class="field" style="flex:0 1 190px">
+                <label class="field-label" for="b-rows">Rows in the table</label>
+                <select id="b-rows" class="input" value="@_requestedRows" disabled="@_busy"
+                        @onchange="OnRowsChanged">
+                    @foreach (var option in RowOptions)
+                    {
+                        <option value="@option">@option.ToString("N0")</option>
+                    }
+                </select>
+                <span class="field-hint">rebuilds the fixtures</span>
+            </div>
+            <div class="field" style="flex:0 1 190px">
+                <label class="field-label" for="b-scale">Work per benchmark</label>
+                <select id="b-scale" class="input" value="@_scale" disabled="@_busy" @onchange="OnScaleChanged">
+                    <option value="1">Quick</option>
+                    <option value="4">Thorough</option>
+                    <option value="12">Punishing</option>
+                </select>
+                <span class="field-hint">longer runs, steadier numbers</span>
+            </div>
+            <div class="field" style="flex:1 1 auto; align-self:flex-end">
+                <div class="flex wrap">
+                    <button class="btn btn-primary" disabled="@_busy" @onclick="RunAllAsync">
+                        <Icon Name="play" /> @(_busy ? "Running…" : "Run all benchmarks")
+                    </button>
+                    <button class="btn" disabled="@(_busy || _results.Count == 0)" @onclick="() => _results.Clear()">
+                        <Icon Name="refresh" /> Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        @if (_busy)
+        {
+            <div class="mt-2">
+                <div class="bar-track"><div class="bar-fill" style="width:@(_progress)%"></div></div>
+                <p class="tiny muted mt-1 mb-0">@_currentName</p>
+            </div>
+        }
+    </Panel>
+
+    @if (_results.Count > 0)
+    {
+        @foreach (var group in _results.GroupBy(r => r.Group))
+        {
+            <Panel Title="@group.Key" IconName="@GroupIcon(group.Key)" Flush="true" Class="mt-3">
+                <div class="table-wrap">
+                    <table class="data">
+                        <thead>
+                            <tr>
+                                <th>Operation</th>
+                                <th class="num">Operations</th>
+                                <th class="num">Total</th>
+                                <th class="num">Per op</th>
+                                <th class="num">Throughput</th>
+                                <th style="width:180px">Relative</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var result in group)
+                            {
+                                <tr>
+                                    <td>
+                                        <div class="strong">@result.Name</div>
+                                        <div class="tiny muted">@result.Note</div>
+                                    </td>
+                                    <td class="num mono">@result.Operations.ToString("N0")</td>
+                                    <td class="num mono">@DemoSandbox.Duration(result.Milliseconds)</td>
+                                    <td class="num mono strong">@DemoSandbox.Duration(result.PerOpMs)</td>
+                                    <td class="num mono">@FormatRate(result.OpsPerSecond)</td>
+                                    <td>
+                                        <div class="bar-track">
+                                            <div class="bar-fill @BarTone(result.OpsPerSecond)"
+                                                 style="width:@(BarWidth(result.OpsPerSecond))%"></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </Panel>
+        }
+    }
+    else
+    {
+        <Panel Class="mt-3">
+            <div class="empty">
+                <Icon Name="gauge" Size="26" />
+                <p class="mb-0">Nothing measured yet. Run the suite to fill this in.</p>
+            </div>
+        </Panel>
+    }
+
+    <Callout Tone="warn" Title="Read these numbers honestly." Class="mt-3">
+        The bars use a logarithmic scale because the spread between a dictionary lookup and a
+        storage append is four orders of magnitude. Browser timers are deliberately coarse, so
+        very fast operations are measured in bulk and averaged.
+        @if (IsDebug)
+        {
+            <text>
+                You are also looking at a <strong>Debug</strong> build with no AOT compilation -
+                a published Release build is typically several times faster.
+            </text>
+        }
+    </Callout>
+</Section>
+
+<Section Title="What the shape of these numbers means" IconName="info">
+    <div class="grid grid-3">
+        <Panel Title="Reads are free" IconName="bolt" Sub="no I/O at all">
+            <p class="small mb-2">
+                A point read is a <code>Dictionary</code> lookup on a live object graph. There is no
+                deserialization, no copy, no cache layer, no async state machine - which is why the
+                per-op figure lands in nanoseconds rather than microseconds.
+            </p>
+            <p class="small mb-0">
+                Nothing to await also means no re-render churn: a Blazor component can call
+                <code>TryGet</code> straight from its render logic.
+            </p>
+        </Panel>
+        <Panel Title="Writes are memory plus a buffer" IconName="disk" Sub="durability is a background job">
+            <p class="small mb-2">
+                A commit applies the change to memory and appends encoded bytes to an in-memory
+                buffer. Storage is touched by the flush loop, on its own schedule, so write latency
+                does not include a round trip to OPFS.
+            </p>
+            <p class="small mb-0">
+                Compare the per-row and single-transaction insert rows above: batching removes one
+                WAL record per row and is the single biggest write optimisation available.
+            </p>
+        </Panel>
+        <Panel Title="Indexes change the exponent" IconName="index" Sub="not the constant">
+            <p class="small mb-2">
+                The scan and the index lookup do the same logical work at these row counts, and the
+                scan is not far behind. The difference is what happens as the table grows: one is
+                O(n), the other O(1) or O(log n).
+            </p>
+            <p class="small mb-0">
+                Re-run at a larger row count to watch the scan row degrade while the index rows
+                stay flat.
+            </p>
+        </Panel>
+    </div>
+</Section>
+
+<Section Title="What it costs on disk" IconName="disk"
+         Lead="Throughput is only half the story. These figures come from the real encoder and the real snapshot writer, measured against an in-memory storage backend.">
+    <div class="grid grid-sidebar">
+        <Panel Title="Space" IconName="file" Flush="true">
+            <div class="table-wrap">
+                <table class="data">
+                    <thead><tr><th>Measurement</th><th class="num">Value</th><th>Notes</th></tr></thead>
+                    <tbody>
+                        <tr>
+                            <td>Encoded row</td>
+                            <td class="num mono strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.RowBytes))</td>
+                            <td class="small muted">average across the loaded table</td>
+                        </tr>
+                        <tr>
+                            <td>WAL record per insert</td>
+                            <td class="num mono strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.WalBytesPerRow))</td>
+                            <td class="small muted">16-byte header, table name, key, row</td>
+                        </tr>
+                        <tr>
+                            <td>Snapshot</td>
+                            <td class="num mono strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.SnapshotBytes))</td>
+                            <td class="small muted">@(_space is null ? "" : $"{_space.Rows:N0} rows, checksummed")</td>
+                        </tr>
+                        <tr>
+                            <td>Snapshot per row</td>
+                            <td class="num mono strong">@(_space is null ? "-" : DemoSandbox.Bytes(_space.SnapshotBytesPerRow))</td>
+                            <td class="small muted">length prefix plus the encoded row</td>
+                        </tr>
+                        <tr>
+                            <td>Checkpoint</td>
+                            <td class="num mono strong">@(_space is null ? "-" : DemoSandbox.Duration(_space.CheckpointMs))</td>
+                            <td class="small muted">encode every row and write atomically</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </Panel>
+
+        <div class="flex-col gap-lg">
+            <Panel Title="Where the bytes go" IconName="binary">
+                <p class="small mb-2">
+                    A WAL record costs a little more than the row itself: the record header carries a
+                    length, an LSN and a CRC32, and each operation names its table so replay can find
+                    it again.
+                </p>
+                <p class="small mb-0">
+                    Checkpointing is what stops that from mattering. The snapshot holds one copy of
+                    each live row, so a table rewritten a thousand times compacts back down to its
+                    real size.
+                </p>
+            </Panel>
+            <Panel Title="Budgeting for OPFS" IconName="shield">
+                <p class="small mb-0">
+                    Multiply the per-row snapshot figure by your expected row count, then double it:
+                    a checkpoint writes the new snapshot before deleting the old one, so peak usage
+                    is roughly two snapshots plus the WAL.
+                </p>
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+<Section Title="How the suite is written" IconName="code"
+         Lead="No harness, no attributes, no build step - the benchmark code is ordinary application code, which is the point.">
+    <div class="grid grid-2">
+        <CodeBlock Title="The measurement loop" Code="@HarnessSnippet" />
+        <CodeBlock Title="A representative case" Code="@CaseSnippet" />
+    </div>
+</Section>
+
+@code {
+    private sealed record BenchResult(string Group, string Name, string Note, int Operations, double Milliseconds)
+    {
+        public double PerOpMs => Operations == 0 ? 0 : Milliseconds / Operations;
+
+        public double OpsPerSecond => Milliseconds <= 0 ? 0 : Operations / (Milliseconds / 1000);
+    }
+
+    private sealed record SpaceReport(
+        int Rows,
+        double RowBytes,
+        double WalBytesPerRow,
+        long SnapshotBytes,
+        double SnapshotBytesPerRow,
+        double CheckpointMs);
+
+    private static readonly int[] RowOptions = [2_000, 10_000, 25_000, 50_000];
+
+    private readonly List<BenchResult> _results = [];
+
+    private BlazeDbDatabase? _db;
+    private BlazeDbTable<Guid, TodoEntry>? _table;
+    private Guid[] _ids = [];
+    private int _rowCount;
+    private int _requestedRows = 10_000;
+    private int _scale = 1;
+
+    private BlazeDbDatabase? _durable;
+    private BlazeDbInMemoryStorage? _durableStorage;
+
+    private SpaceReport? _space;
+    private bool _busy;
+    private int _progress;
+    private string _currentName = "";
+
+    private static bool IsDebug =>
+#if DEBUG
+        true;
+#else
+        false;
+#endif
+
+    private static string Runtime => RuntimeInformation.FrameworkDescription;
+
+    protected override async Task OnInitializedAsync() => await BuildFixturesAsync();
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_db is not null)
+        {
+            await _db.DisposeAsync();
+        }
+        if (_durable is not null)
+        {
+            await _durable.DisposeAsync();
+        }
+    }
+
+    // ----------------------------------------------------------- fixtures
+
+    private void OnScaleChanged(ChangeEventArgs e) =>
+        _scale = int.TryParse(e.Value?.ToString(), out var value) ? value : 1;
+
+    private async Task OnRowsChanged(ChangeEventArgs e)
+    {
+        _requestedRows = int.TryParse(e.Value?.ToString(), out var value) ? value : 10_000;
+        _results.Clear();
+        _space = null;
+        await BuildFixturesAsync();
+    }
+
+    private async Task BuildFixturesAsync()
+    {
+        _busy = true;
+        _currentName = $"Loading {_requestedRows:N0} rows…";
+        StateHasChanged();
+        await Task.Yield();
+
+        try
+        {
+            if (_db is not null)
+            {
+                await _db.DisposeAsync();
+            }
+            if (_durable is not null)
+            {
+                await _durable.DisposeAsync();
+            }
+
+            _db = await DemoSandbox.OpenAsync();
+            _table = _db.GetTable(TodoEntry.Table);
+            DemoData.SeedForBench(_db, _table, _requestedRows, out _ids);
+            _rowCount = _table.Count;
+
+            _durableStorage = new BlazeDbInMemoryStorage();
+            _durable = await DemoSandbox.OpenAsync(_durableStorage, flushInterval: TimeSpan.FromMilliseconds(50));
+        }
+        finally
+        {
+            _busy = false;
+            _currentName = "";
+            StateHasChanged();
+        }
+    }
+    // ------------------------------------------------------------- runner
+
+    private async Task RunAllAsync()
+    {
+        if (_db is null || _table is null || _durable is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _results.Clear();
+        _progress = 0;
+        StateHasChanged();
+        await Task.Yield();
+
+        try
+        {
+            await RunSuiteAsync(_table, _ids, _durable);
+        }
+        finally
+        {
+            _progress = 100;
+            _currentName = "";
+            _busy = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task RunSuiteAsync(BlazeDbTable<Guid, TodoEntry> table, Guid[] ids, BlazeDbDatabase durable)
+    {
+        var durableTable = durable.GetTable(TodoEntry.Table);
+        var scale = _scale;
+        // Writes grow the table permanently, so they scale more conservatively than reads.
+        var writeScale = Math.Min(scale, 3);
+        var steps = 14;
+        var done = 0;
+
+        async Task Step(string group, string name, string note, int ops, Action<int> body)
+        {
+            _currentName = $"{group} - {name}";
+            _progress = done * 100 / steps;
+            StateHasChanged();
+            await Task.Yield();
+
+            body(Math.Max(1, ops / 20));
+            var started = Stopwatch.GetTimestamp();
+            body(ops);
+            var elapsed = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+
+            _results.Add(new BenchResult(group, name, note, ops, elapsed));
+            done++;
+        }
+
+        var sink = 0;
+
+        // ---- Reads ----
+
+        await Step("Reads", "Point read by key", "table.TryGet(key, out var row)", 200_000 * scale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                if (table.TryGet(ids[i % ids.Length], out var row))
+                {
+                    sink += row.Effort;
+                }
+            }
+        });
+
+        await Step("Reads", "Existence check", "table.Contains(key)", 200_000 * scale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                if (table.Contains(ids[i % ids.Length]))
+                {
+                    sink++;
+                }
+            }
+        });
+
+        await Step("Reads", "Hash index count", "table.CountBy(Indexes.Category, \"engine\")", 200_000 * scale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                sink += table.CountBy(TodoEntry.Indexes.Category, "engine");
+            }
+        });
+
+        await Step("Reads", "Hash index enumeration", "one bucket of Indexes.Priority, fully drained", 200 * scale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                foreach (var row in table.Lookup(TodoEntry.Indexes.ByPriority, Priority.High))
+                {
+                    sink += row.Effort;
+                }
+            }
+        });
+
+        await Step("Reads", "Ordered range scan", "table.Range(Indexes.Effort, 20, 60)", 200 * scale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                foreach (var row in table.Range(TodoEntry.Indexes.Effort, BlazeDbBound<int>.At(20), BlazeDbBound<int>.At(60)))
+                {
+                    sink += row.Effort;
+                }
+            }
+        });
+
+        await Step("Reads", "Full scan with a predicate", $"every one of {_rowCount:N0} rows, filtered", 20 * scale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                foreach (var row in table.Scan())
+                {
+                    if (row.Done)
+                    {
+                        sink++;
+                    }
+                }
+            }
+        });
+
+        await Step("Reads", "Composed query", "index source, residual filter, order, take 20", 2_000 * scale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                var rows = BlazeDbQuery<Guid, TodoEntry>.From(table)
+                    .UseIndex(TodoEntry.Indexes.Effort, BlazeDbBound<int>.At(20), BlazeDbBound<int>.At(60))
+                    .Where(static r => !r.Done)
+                    .Take(20)
+                    .ToList();
+                sink += rows.Count;
+            }
+        });
+
+        // ---- Writes ----
+
+        await Step("Writes", "Insert, no storage", "pure in-memory table plus index maintenance", 50_000 * writeScale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                table.Insert(NewRow(i));
+            }
+        });
+
+        await Step("Writes", "Update (indexed value)", "table.Update(copy) with ordered-index fix-up", 50_000 * writeScale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                var id = ids[i % ids.Length];
+                if (table.TryGet(id, out var row))
+                {
+                    // Update takes a new instance so the table still holds the values its indexes
+                    // were built from; mutating `row` itself and passing it back is refused.
+                    var changed = row.Clone();
+                    changed.Effort = i % 120;
+                    table.Update(changed);
+                }
+            }
+        });
+
+        await Step("Writes", "Delete then reinsert", "two mutations per operation", 20_000 * writeScale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                var row = NewRow(i);
+                table.Insert(row);
+                table.Delete(row.Id);
+            }
+        });
+
+        await Step("Writes", "Insert with WAL, one commit per row", "a WAL record per row", 20_000 * writeScale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                durableTable.Insert(NewRow(i));
+            }
+        });
+
+        await Step("Writes", "Insert with WAL, one transaction", "a single WAL record for the batch", 20_000 * writeScale, ops =>
+        {
+            using var txn = durable.BeginTransaction();
+            for (var i = 0; i < ops; i++)
+            {
+                durableTable.Insert(NewRow(i));
+            }
+            txn.Commit();
+        });
+
+        // ---- Serialization ----
+
+        var writer = new BlazeDbBufferWriter(1024);
+        var sample = table.Get(ids[0])!;
+
+        await Step("Serialization", "Encode a row", "descriptor.RowWriter into a reused buffer", 200_000 * scale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                writer.Reset();
+                TodoEntry.Table.RowWriter(writer, sample);
+                sink += writer.Length;
+            }
+        });
+
+        writer.Reset();
+        TodoEntry.Table.RowWriter(writer, sample);
+        var encoded = writer.ToArray();
+
+        await Step("Serialization", "Decode a row", "descriptor.RowReader over a span", 200_000 * scale, ops =>
+        {
+            for (var i = 0; i < ops; i++)
+            {
+                var reader = new BlazeDbBufferReader(encoded);
+                sink += TodoEntry.Table.RowReader(ref reader).Effort;
+            }
+        });
+
+        await MeasureSpaceAsync();
+
+        _sink = sink;
+    }
+
+    // Kept so the JIT cannot elide the benchmark bodies.
+    private int _sink;
+
+    private static TodoEntry NewRow(int i) => new()
+    {
+        Id = Guid.NewGuid(),
+        Title = "bench row",
+        Done = i % 2 == 0,
+        Category = "bench",
+        Priority = (Priority)(i % 4),
+        CreatedAt = DateTime.UtcNow,
+        Effort = i % 120,
+    };
+
+    private async Task MeasureSpaceAsync()
+    {
+        _currentName = "Measuring space on storage…";
+        StateHasChanged();
+        await Task.Yield();
+
+        var storage = new BlazeDbInMemoryStorage();
+        await using var db = await DemoSandbox.OpenAsync(storage, flushInterval: TimeSpan.FromHours(1));
+        var table = db.GetTable(TodoEntry.Table);
+        var rows = Math.Min(_rowCount, 20_000);
+        // One autocommit insert per row, so the WAL figure really is one record (header included)
+        // per insert - a single seeding transaction would share one header across all of them.
+        for (var i = 0; i < rows; i++)
+        {
+            table.Insert(NewRow(i));
+        }
+
+        var writer = new BlazeDbBufferWriter(1024);
+        long rowTotal = 0;
+        foreach (var row in table.Scan())
+        {
+            writer.Reset();
+            TodoEntry.Table.RowWriter(writer, row);
+            rowTotal += writer.Length;
+        }
+
+        await db.FlushAsync();
+        var walBytes = storage.FileNames
+            .Where(f => f.StartsWith("wal-", StringComparison.Ordinal))
+            .Sum(f => (long)(storage.GetFile(f)?.Length ?? 0));
+
+        var started = Stopwatch.GetTimestamp();
+        await db.CheckpointAsync();
+        var checkpointMs = Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+
+        var snapshotName = storage.FileNames.FirstOrDefault(f => f.StartsWith("snapshot-", StringComparison.Ordinal));
+        var snapshotBytes = snapshotName is null ? 0 : storage.GetFile(snapshotName)?.Length ?? 0;
+
+        _space = new SpaceReport(
+            rows,
+            rows == 0 ? 0 : (double)rowTotal / rows,
+            rows == 0 ? 0 : (double)walBytes / rows,
+            snapshotBytes,
+            rows == 0 ? 0 : (double)snapshotBytes / rows,
+            checkpointMs);
+    }
+
+    // ------------------------------------------------------------ display
+
+    private static string GroupIcon(string group) => group switch
+    {
+        "Reads" => "search",
+        "Writes" => "plus",
+        _ => "binary",
+    };
+
+    private static string FormatRate(double opsPerSecond) => opsPerSecond switch
+    {
+        >= 1_000_000 => $"{opsPerSecond / 1_000_000:0.##}M/s",
+        >= 1_000 => $"{opsPerSecond / 1_000:0.#}K/s",
+        _ => $"{opsPerSecond:0}/s",
+    };
+
+    /// <summary>Log-scaled so a dictionary lookup and a snapshot write fit on one axis.</summary>
+    private double BarWidth(double opsPerSecond)
+    {
+        if (opsPerSecond <= 1)
+        {
+            return 2;
+        }
+        var max = _results.Max(r => r.OpsPerSecond);
+        if (max <= 1)
+        {
+            return 2;
+        }
+        var value = Math.Log10(opsPerSecond) / Math.Log10(max);
+        return Math.Clamp(value * 100, 4, 100);
+    }
+
+    private static string BarTone(double opsPerSecond) => opsPerSecond switch
+    {
+        >= 1_000_000 => "ok",
+        >= 10_000 => "accent",
+        _ => "info",
+    };
+
+    private const string HarnessSnippet = """
+        // Warm up, then measure. No attributes, no separate project.
+        body(ops / 20);
+
+        var started = Stopwatch.GetTimestamp();
+        body(ops);
+        var elapsed = Stopwatch.GetElapsedTime(started);
+
+        var perOp = elapsed.TotalMilliseconds / ops;
+        var throughput = ops / elapsed.TotalSeconds;
+        """;
+
+    private const string CaseSnippet = """
+        // Batched writes: one WAL record for the whole set.
+        using var txn = db.BeginTransaction();
+        for (var i = 0; i < ops; i++)
+        {
+            table.Insert(NewRow(i));
+        }
+        txn.Commit();
+
+        // Compare with the unbatched form, which encodes
+        // and buffers a record for every single row:
+        for (var i = 0; i < ops; i++)
+        {
+            table.Insert(NewRow(i));
+        }
+        """;
+}

@@ -1,0 +1,19 @@
+﻿{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "target": "ES2020",
+        // Every module is loaded by JSHost.ImportAsync and its functions are called as named exports by
+        // the [JSImport] bindings, so the output MUST stay an ES module: `module: ESNext` with
+        // `rootDir`/`outDir` emits each Scripts/*.ts straight to wwwroot/*.js with its `export`s preserved.
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
+        "rootDir": "Scripts",
+        "outDir": "wwwroot",
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [ "./Scripts/**/*.ts" ]
+}

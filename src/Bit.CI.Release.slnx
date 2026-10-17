@@ -51,6 +51,16 @@
     <Project Path="Bink/Bit.Bink/Bit.Bink.csproj" />
     <Project Path="Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
   </Folder>
+  <Folder Name="/BlazeDb/">
+    <File Path="BlazeDb/README.md" />
+    <Project Path="BlazeDb/Bit.BlazeDb.Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
+    <Project Path="BlazeDb/Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
+    <Project Path="BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj" />
+    <Project Path="BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj" />
+    <Project Path="BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj" />
+    <Project Path="BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj" />
+    <Project Path="BlazeDb/Tests/Bit.BlazeDb.Tests/Bit.BlazeDb.Tests.csproj" />
+  </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />

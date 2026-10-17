@@ -184,6 +184,23 @@
         },
         new()
         {
+            Title = "Data that stays in the browser",
+            Subtitle = "bit BlazeDb · memory-first database for Blazor",
+            LinkUrl = Urls.BlazeDb,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit BlazeDb is a memory-first, SQL-free embedded database for Blazor WebAssembly: rows live in memory as your
+                    own objects, reads are index lookups with no interop, and commits persist to OPFS in the background - with
+                    transactions, encryption, multi-tab replicas and an EF Core provider, all in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>var open = todos.Lookup(TodoItem.Indexes.Done, false);</CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Onboarding that guides",
             Subtitle = "bit Bonboarding · Blazor-native product tours",
             LinkUrl = Urls.Bonboarding,

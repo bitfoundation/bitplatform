@@ -1,0 +1,98 @@
+﻿@inject AppInterop Interop
+
+<div class="code @(Wrap ? "wrap" : null) @Class">
+    @if (ShowHeader)
+    {
+        <div class="code-head">
+            @if (!string.IsNullOrWhiteSpace(Title))
+            {
+                <span class="code-title">@Title</span>
+            }
+            <span class="code-lang">@LanguageLabel</span>
+            @if (AllowCopy)
+            {
+                <button type="button" class="icon-btn" title="@(_copied ? "Copied" : "Copy to clipboard")" @onclick="CopyAsync">
+                    <Icon Name="@(_copied ? "check" : "copy")" />
+                </button>
+            }
+        </div>
+    }
+    <pre><code>@_html</code></pre>
+</div>
+
+@code {
+    private MarkupString _html;
+    private bool _copied;
+    private string? _rendered;
+
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    [Parameter] public string Language { get; set; } = "csharp";
+
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter] public bool AllowCopy { get; set; } = true;
+
+    [Parameter] public bool Wrap { get; set; }
+
+    [Parameter] public bool ShowHeader { get; set; } = true;
+
+    [Parameter] public string? Class { get; set; }
+
+    private string LanguageLabel => Language.ToLowerInvariant() switch
+    {
+        "csharp" or "cs" or "c#" => "C#",
+        "razor" => "Razor",
+        "xml" => "XML",
+        "json" => "JSON",
+        "bash" or "shell" => "Shell",
+        _ => Language,
+    };
+
+    protected override void OnParametersSet()
+    {
+        var source = Code ?? "";
+        if (_rendered == source + "\u0000" + Language)
+        {
+            return;
+        }
+
+        _rendered = source + "\u0000" + Language;
+        _html = (MarkupString)CodeHighlighter.ToHtml(Dedent(source), Language);
+        _copied = false;
+    }
+
+    private async Task CopyAsync()
+    {
+        _copied = await Interop.CopyAsync(Dedent(Code ?? ""));
+        if (_copied)
+        {
+            await Task.Delay(1400);
+            _copied = false;
+        }
+    }
+
+    /// <summary>Strips the leading indentation shared by every line.</summary>
+    private static string Dedent(string code)
+    {
+        var lines = code.Replace("\r\n", "\n").Split('\n');
+        var indent = int.MaxValue;
+
+        foreach (var line in lines)
+        {
+            if (line.Trim().Length == 0)
+            {
+                continue;
+            }
+            indent = Math.Min(indent, line.Length - line.TrimStart().Length);
+        }
+
+        if (indent is 0 or int.MaxValue)
+        {
+            return code.Trim('\n').TrimEnd();
+        }
+
+        var trimmed = lines.Select(l => l.Length >= indent ? l[indent..] : l.TrimStart());
+        return string.Join('\n', trimmed).Trim('\n').TrimEnd();
+    }
+}

@@ -1,0 +1,704 @@
+﻿@page "/indexes"
+@implements IAsyncDisposable
+@inject DemoDbService Db
+
+<PageTitle>Indexes - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Engine" IconName="index" Title="Two index kinds, both maintained for you"
+            Lead="A hash index answers equality in constant time. An ordered index answers range and sort questions in logarithmic time. Every insert, update and delete keeps both in step - there is no reindex step and no stale index.">
+    <span class="chip on"><Icon Name="index" /> 3 hash</span>
+    <span class="chip on"><Icon Name="sort" /> 2 ordered</span>
+    <span class="chip"><Icon Name="database" /> @(_todos?.Count ?? 0) rows</span>
+</PageHeader>
+
+@if (_todos is null)
+{
+    <Panel><div class="empty">Opening the database…</div></Panel>
+}
+else
+{
+    <Section Title="Hash indexes - equality in O(1)" IconName="index"
+             Lead="Lookup returns every row whose indexed value equals the key. CountBy answers the same question without materialising anything.">
+        <div class="grid grid-sidebar">
+            <Panel Title="Try a lookup" IconName="search">
+                <div class="form-row">
+                    <div class="field">
+                        <label class="field-label" for="hash-index">Index</label>
+                        <select id="hash-index" class="select" @bind="_hashIndex" @bind:after="RunHash">
+                            <option value="Done">Indexes.Done - bool</option>
+                            <option value="Category">Indexes.Category - string?</option>
+                            <option value="ByPriority">Indexes.ByPriority - Priority enum</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="hash-value">Key</label>
+                        @if (_hashIndex == "Done")
+                        {
+                            <select id="hash-value" class="select" @bind="_doneKey" @bind:after="RunHash">
+                                <option value="false">false</option>
+                                <option value="true">true</option>
+                            </select>
+                        }
+                        else if (_hashIndex == "Category")
+                        {
+                            <select id="hash-value" class="select" @bind="_categoryKey" @bind:after="RunHash">
+                                @foreach (var c in DemoData.Categories)
+                                {
+                                    <option value="@c">@c</option>
+                                }
+                                <option value="__null">null</option>
+                                <option value="__missing">"nonexistent"</option>
+                            </select>
+                        }
+                        else
+                        {
+                            <select id="hash-value" class="select" @bind="_priorityKey" @bind:after="RunHash">
+                                @foreach (var p in Enum.GetValues<Priority>())
+                                {
+                                    <option value="@p">Priority.@p</option>
+                                }
+                            </select>
+                        }
+                    </div>
+                </div>
+
+                <div class="api-call mt-2">@_hashCode</div>
+
+                <div class="stats mt-2">
+                    <StatTile Label="Lookup rows" IconName="database" Value="@_hashRows.Count.ToString("N0")" Tone="accent" />
+                    <StatTile Label="CountBy" IconName="index" Value="@_hashCount.ToString("N0")" Note="no rows materialised" />
+                    <StatTile Label="Elapsed" IconName="clock" Value="@_hashTime" Note="both calls" />
+                </div>
+
+                @if (_hashRows.Count > 0)
+                {
+                    <div class="rows mt-2" style="border:1px solid var(--border); border-radius:var(--r-sm)">
+                        @foreach (var row in _hashRows.Take(6))
+                        {
+                            <div class="row-item">
+                                <div class="row-main">
+                                    <div class="row-title">@row.Title</div>
+                                    <div class="row-meta">
+                                        <span class="prio @row.Priority">@row.Priority</span>
+                                        <span class="badge @(row.Category is null ? "" : "accent")">@(row.Category ?? "null")</span>
+                                        <span class="mono">@(row.Done ? "done" : "open")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    @if (_hashRows.Count > 6)
+                    {
+                        <p class="tiny muted mt-1 mb-0">…and @(_hashRows.Count - 6) more.</p>
+                    }
+                }
+                else
+                {
+                    <div class="empty"><Icon Name="search" /><div>@_hashEmptyNote</div></div>
+                }
+            </Panel>
+
+            <div class="flex-col gap-lg">
+                <Panel Title="Null keys are indexed like any other" IconName="alert">
+                    <p class="small">
+                        A row whose indexed property is <code>null</code> is recorded in that index
+                        under null, so <code>Lookup(Category, null)</code> finds the uncategorised rows
+                        in one probe and an ordered index lists them first. Only a bounded
+                        <code>Range</code> leaves them out - null is inside no interval - and a unique
+                        index never counts them as duplicates.
+                    </p>
+                    <dl class="kv">
+                        <dt>Rows in table</dt>
+                        <dd>@_todos.Count</dd>
+                        <dt>Sum over categories</dt>
+                        <dd>@_categorySum</dd>
+                        <dt>Null category</dt>
+                        <dd>@(_todos.Count - _categorySum)</dd>
+                        <dt>Lookup(Category, null)</dt>
+                        <dd>@_nullLookupCount rows</dd>
+                    </dl>
+                    <p class="tiny muted mb-0">
+                        <code>CountBy</code> over the named categories plus the null bucket adds up to
+                        <code>table.Count</code>.
+                    </p>
+                </Panel>
+
+                <Panel Title="Index versus scan" IconName="gauge">
+                    <p class="small">
+                        Both of these compute the same number. One reads a bucket count; the other
+                        walks every row.
+                    </p>
+                    <button class="btn btn-sm btn-block" @onclick="CompareCounting">
+                        <Icon Name="play" /> Measure @CompareIterations iterations of each
+                    </button>
+                    @if (_compareDone)
+                    {
+                        <div class="table-wrap mt-2">
+                            <table class="data">
+                                <thead><tr><th>Call</th><th class="num">Per op</th></tr></thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="mono">CountBy(Done, true)</td>
+                                        <td class="num mono ok-text">@_countByTime</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="mono">Scan().Count(t =&gt; t.Done)</td>
+                                        <td class="num mono">@_scanTime</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <p class="tiny muted mt-1 mb-0">
+                            Same answer (@_compareResult rows) - @_compareFactor.
+                        </p>
+                    }
+                </Panel>
+            </div>
+        </div>
+    </Section>
+
+    <Section Title="Ordered indexes - ranges and sort order" IconName="sort"
+             Lead="Range takes two inclusive bounds and walks the index in either direction. An unbounded end leaves the range open, and an implicit conversion means a bare value is accepted wherever a bound is expected.">
+        <div class="grid grid-sidebar">
+            <Panel Title="Compose a range" IconName="filter">
+                <div class="form-row">
+                    <div class="field">
+                        <label class="field-label" for="ord-index">Index</label>
+                        <select id="ord-index" class="select" @bind="_orderedIndex" @bind:after="RunOrdered">
+                            <option value="Effort">Indexes.Effort - int</option>
+                            <option value="CreatedAt">Indexes.CreatedAt - DateTime</option>
+                        </select>
+                    </div>
+                    <div class="field" style="flex:0 0 auto">
+                        <label class="field-label">Direction</label>
+                        <div class="seg">
+                            <button class="@(!_descending ? "on" : null)" @onclick="() => SetDirection(false)">Ascending</button>
+                            <button class="@(_descending ? "on" : null)" @onclick="() => SetDirection(true)">Descending</button>
+                        </div>
+                    </div>
+                </div>
+
+                @if (_orderedIndex == "Effort")
+                {
+                    <div class="form-row mt-2">
+                        <div class="field">
+                            <label class="field-label" for="eff-from">From (inclusive)</label>
+                            <input id="eff-from" class="input mono" type="number" min="0" max="600" disabled="@_fromUnbounded"
+                                   @bind="_effortFrom" @bind:after="RunOrdered" />
+                            <label class="check mt-1">
+                                <input type="checkbox" @bind="_fromUnbounded" @bind:after="RunOrdered" />
+                                BlazeDbBound&lt;int&gt;.Unbounded
+                            </label>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="eff-to">To (inclusive)</label>
+                            <input id="eff-to" class="input mono" type="number" min="0" max="600" disabled="@_toUnbounded"
+                                   @bind="_effortTo" @bind:after="RunOrdered" />
+                            <label class="check mt-1">
+                                <input type="checkbox" @bind="_toUnbounded" @bind:after="RunOrdered" />
+                                BlazeDbBound&lt;int&gt;.Unbounded
+                            </label>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="form-row mt-2">
+                        <div class="field">
+                            <label class="field-label" for="date-from">From (inclusive)</label>
+                            <input id="date-from" class="input mono" type="date" disabled="@_fromUnbounded"
+                                   @bind="_dateFrom" @bind:after="RunOrdered" />
+                            <label class="check mt-1">
+                                <input type="checkbox" @bind="_fromUnbounded" @bind:after="RunOrdered" />
+                                BlazeDbBound&lt;DateTime&gt;.Unbounded
+                            </label>
+                        </div>
+                        <div class="field">
+                            <label class="field-label" for="date-to">To (inclusive)</label>
+                            <input id="date-to" class="input mono" type="date" disabled="@_toUnbounded"
+                                   @bind="_dateTo" @bind:after="RunOrdered" />
+                            <label class="check mt-1">
+                                <input type="checkbox" @bind="_toUnbounded" @bind:after="RunOrdered" />
+                                BlazeDbBound&lt;DateTime&gt;.Unbounded
+                            </label>
+                        </div>
+                    </div>
+                }
+
+                <div class="api-call mt-2">@_orderedCode</div>
+
+                <div class="stats mt-2">
+                    <StatTile Label="Rows in range" IconName="database" Tone="accent" Value="@_orderedRows.Count.ToString("N0")" />
+                    <StatTile Label="Elapsed" IconName="clock" Value="@_orderedTime" />
+                    <StatTile Label="Full traversal" IconName="sort" Value="@_orderByCount.ToString("N0")"
+                              Note="OrderBy(index) - every row" />
+                </div>
+
+                @if (_orderedRows.Count > 0)
+                {
+                    <div class="table-wrap mt-2">
+                        <table class="data">
+                            <thead>
+                                <tr>
+                                    <th>Title</th>
+                                    <th class="num">Effort</th>
+                                    <th>Created</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in _orderedRows.Take(10))
+                                {
+                                    <tr>
+                                        <td class="strong">@row.Title</td>
+                                        <td class="num mono">@row.Effort</td>
+                                        <td class="mono tiny">@row.CreatedAt.ToLocalTime().ToString("MMM d HH:mm")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    @if (_orderedRows.Count > 10)
+                    {
+                        <p class="tiny muted mt-1 mb-0">First 10 of @_orderedRows.Count in index order.</p>
+                    }
+                }
+                else
+                {
+                    <div class="empty"><Icon Name="filter" /><div>Nothing in that range.</div></div>
+                }
+            </Panel>
+
+            <div class="flex-col gap-lg">
+                <Panel Title="Every form of a range bound" IconName="code">
+                    <CodeBlock ShowHeader="false" Code="@BoundSnippet" />
+                </Panel>
+
+                <Panel Title="An inverted range is empty" IconName="info">
+                    <p class="small mb-1">
+                        Bounds are not reordered for you. When <code>from</code> is greater than
+                        <code>to</code> the result is empty rather than an error.
+                    </p>
+                    <button class="btn btn-sm btn-block" @onclick="RunInverted">
+                        <Icon Name="play" /> Range(Effort, 200, 10)
+                    </button>
+                    @if (_invertedNote is not null)
+                    {
+                        <div class="api-call mt-2">@_invertedNote</div>
+                    }
+                </Panel>
+            </div>
+        </div>
+    </Section>
+
+    <Section Title="Indexes follow every mutation" IconName="refresh"
+             Lead="This runs against a private in-memory database so you can watch bucket counts move without touching your own rows.">
+        <div class="grid grid-sidebar">
+            <Panel Title="Index state" IconName="layers" Flush="true">
+                <div class="table-wrap">
+                    <table class="data">
+                        <thead>
+                            <tr><th>Index</th><th>Key</th><th class="num">CountBy</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="mono">Done</td><td class="mono">false</td>
+                                <td class="num mono">@_sandboxOpen</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">Done</td><td class="mono">true</td>
+                                <td class="num mono">@_sandboxDone</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">Category</td><td class="mono">"engine"</td>
+                                <td class="num mono">@_sandboxEngine</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">Category</td><td class="mono">"docs"</td>
+                                <td class="num mono">@_sandboxDocs</td>
+                            </tr>
+                            <tr>
+                                <td class="mono">ByPriority</td><td class="mono">Critical</td>
+                                <td class="num mono">@_sandboxCritical</td>
+                            </tr>
+                            <tr>
+                                <td class="mono strong">table.Count</td><td></td>
+                                <td class="num mono strong">@_sandboxCount</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </Panel>
+
+            <div class="flex-col gap-lg">
+                <Panel Title="Mutate" IconName="play">
+                    <div class="flex-col">
+                        <button class="btn btn-sm btn-block" @onclick="SandboxInsert">
+                            <Icon Name="plus" /> Insert an open "engine" row
+                        </button>
+                        <button class="btn btn-sm btn-block" @onclick="SandboxFlipDone" disabled="@(_sandboxCount == 0)">
+                            <Icon Name="refresh" /> Update - flip Done on the first row
+                        </button>
+                        <button class="btn btn-sm btn-block" @onclick="SandboxRecategorise" disabled="@(_sandboxCount == 0)">
+                            <Icon Name="tag" /> Update - move a row to "docs"
+                        </button>
+                        <button class="btn btn-sm btn-block" @onclick="SandboxPromote" disabled="@(_sandboxCount == 0)">
+                            <Icon Name="bolt" /> Update - raise priority to Critical
+                        </button>
+                        <button class="btn btn-sm btn-block" @onclick="SandboxSetNull" disabled="@(_sandboxCount == 0)">
+                            <Icon Name="close" /> Update - set Category to null
+                        </button>
+                        <button class="btn btn-sm btn-block btn-danger" @onclick="SandboxDelete" disabled="@(_sandboxCount == 0)">
+                            <Icon Name="trash" /> Delete the first row
+                        </button>
+                    </div>
+                </Panel>
+
+                <Panel Title="What happened" IconName="history" Flush="true">
+                    <ScenarioSteps Steps="_log.Steps" EmptyText="Mutate the sandbox and watch the indexes react." />
+                </Panel>
+            </div>
+        </div>
+    </Section>
+}
+
+@code {
+    private const int CompareIterations = 200;
+
+    private BlazeDbTable<Guid, TodoEntry>? _todos;
+
+    // hash section
+    private string _hashIndex = "Done";
+    private string _doneKey = "false";
+    private string _categoryKey = "engine";
+    private string _priorityKey = nameof(Priority.Critical);
+    private List<TodoEntry> _hashRows = [];
+    private int _hashCount;
+    private string _hashCode = "";
+    private string _hashTime = "-";
+    private string _hashEmptyNote = "No rows for that key.";
+    private int _categorySum;
+    private int _nullLookupCount;
+
+    // counting comparison
+    private bool _compareDone;
+    private string _countByTime = "";
+    private string _scanTime = "";
+    private int _compareResult;
+    private string _compareFactor = "";
+
+    // ordered section
+    private string _orderedIndex = "Effort";
+    private bool _descending;
+    private bool _fromUnbounded;
+    private bool _toUnbounded;
+    private int _effortFrom = 40;
+    private int _effortTo = 100;
+    private DateTime _dateFrom = DateTime.UtcNow.AddDays(-14);
+    private DateTime _dateTo = DateTime.UtcNow;
+    private List<TodoEntry> _orderedRows = [];
+    private string _orderedCode = "";
+    private string _orderedTime = "-";
+    private int _orderByCount;
+    private string? _invertedNote;
+
+    // maintenance sandbox
+    private BlazeDbDatabase? _sandbox;
+    private BlazeDbTable<Guid, TodoEntry>? _sandboxTable;
+    private readonly ScenarioLog _log = new();
+    private int _sandboxCount;
+    private int _sandboxOpen;
+    private int _sandboxDone;
+    private int _sandboxEngine;
+    private int _sandboxDocs;
+    private int _sandboxCritical;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Db.GetDatabaseAsync();
+        _todos = Db.Todos;
+
+        _sandbox = await DemoSandbox.OpenAsync();
+        _sandboxTable = _sandbox.GetTable(TodoEntry.Table);
+
+        RunHash();
+        RunOrdered();
+        RefreshSandbox();
+    }
+
+    // ------------------------------------------------------------ hash index
+
+    private void RunHash()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+
+        switch (_hashIndex)
+        {
+            case "Done":
+                var done = _doneKey == "true";
+                _hashRows = _todos.Lookup(TodoEntry.Indexes.Done, done).ToList();
+                _hashCount = _todos.CountBy(TodoEntry.Indexes.Done, done);
+                _hashCode =
+                    $"todos.Lookup(TodoEntry.Indexes.Done, {_doneKey})\n" +
+                    $"todos.CountBy(TodoEntry.Indexes.Done, {_doneKey})";
+                _hashEmptyNote = "No rows for that key.";
+                break;
+
+            case "Category":
+                var key = _categoryKey switch
+                {
+                    "__null" => null,
+                    "__missing" => "nonexistent",
+                    _ => _categoryKey,
+                };
+                _hashRows = _todos.Lookup(TodoEntry.Indexes.Category, key).ToList();
+                _hashCount = _todos.CountBy(TodoEntry.Indexes.Category, key);
+                _hashCode =
+                    $"todos.Lookup(TodoEntry.Indexes.Category, {Literal(key)})\n" +
+                    $"todos.CountBy(TodoEntry.Indexes.Category, {Literal(key)})";
+                _hashEmptyNote = key is null
+                    ? "No rows have a null category right now; null is a key like any other."
+                    : "No rows for that key; a missing key is not an error.";
+                break;
+
+            default:
+                var priority = Enum.Parse<Priority>(_priorityKey);
+                _hashRows = _todos.Lookup(TodoEntry.Indexes.ByPriority, priority).ToList();
+                _hashCount = _todos.CountBy(TodoEntry.Indexes.ByPriority, priority);
+                _hashCode =
+                    $"todos.Lookup(TodoEntry.Indexes.ByPriority, Priority.{priority})\n" +
+                    $"todos.CountBy(TodoEntry.Indexes.ByPriority, Priority.{priority})";
+                _hashEmptyNote = "No rows at that priority.";
+                break;
+        }
+
+        _hashTime = DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds);
+        _categorySum = DemoData.Categories.Sum(c => _todos.CountBy(TodoEntry.Indexes.Category, c));
+        _nullLookupCount = _todos.Lookup(TodoEntry.Indexes.Category, null).Count();
+    }
+
+    private void CompareCounting()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        var indexed = 0;
+        var sw = Stopwatch.StartNew();
+        for (var i = 0; i < CompareIterations; i++)
+        {
+            indexed = _todos.CountBy(TodoEntry.Indexes.Done, true);
+        }
+        var indexedMs = sw.Elapsed.TotalMilliseconds / CompareIterations;
+
+        var scanned = 0;
+        sw.Restart();
+        for (var i = 0; i < CompareIterations; i++)
+        {
+            scanned = _todos.Scan().Count(t => t.Done);
+        }
+        var scanMs = sw.Elapsed.TotalMilliseconds / CompareIterations;
+
+        _countByTime = DemoSandbox.Duration(indexedMs);
+        _scanTime = DemoSandbox.Duration(scanMs);
+        _compareResult = indexed;
+        _compareFactor = indexedMs > 0
+            ? $"the index is about {scanMs / indexedMs:0.#}× faster here, and the gap widens with row count"
+            : "the indexed call is below the clock's resolution";
+        _compareDone = scanned >= 0;
+    }
+
+    // --------------------------------------------------------- ordered index
+
+    private void SetDirection(bool descending)
+    {
+        _descending = descending;
+        RunOrdered();
+    }
+
+    private void RunOrdered()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+
+        if (_orderedIndex == "Effort")
+        {
+            var from = _fromUnbounded ? BlazeDbBound<int>.Unbounded : BlazeDbBound<int>.At(_effortFrom);
+            var to = _toUnbounded ? BlazeDbBound<int>.Unbounded : BlazeDbBound<int>.At(_effortTo);
+
+            _orderedRows = _todos.Range(TodoEntry.Indexes.Effort, from, to, _descending).ToList();
+            _orderByCount = _todos.OrderBy(TodoEntry.Indexes.Effort, _descending).Count();
+            _orderedCode =
+                $"todos.Range(TodoEntry.Indexes.Effort,\n" +
+                $"            {(_fromUnbounded ? "BlazeDbBound<int>.Unbounded" : _effortFrom.ToString())},\n" +
+                $"            {(_toUnbounded ? "BlazeDbBound<int>.Unbounded" : _effortTo.ToString())},\n" +
+                $"            descending: {_descending.ToString().ToLowerInvariant()})";
+        }
+        else
+        {
+            var fromValue = DateTime.SpecifyKind(_dateFrom.Date, DateTimeKind.Utc);
+            var toValue = DateTime.SpecifyKind(_dateTo.Date.AddDays(1).AddTicks(-1), DateTimeKind.Utc);
+            var from = _fromUnbounded ? BlazeDbBound<DateTime>.Unbounded : BlazeDbBound<DateTime>.At(fromValue);
+            var to = _toUnbounded ? BlazeDbBound<DateTime>.Unbounded : BlazeDbBound<DateTime>.At(toValue);
+
+            _orderedRows = _todos.Range(TodoEntry.Indexes.CreatedAt, from, to, _descending).ToList();
+            _orderByCount = _todos.OrderBy(TodoEntry.Indexes.CreatedAt, _descending).Count();
+            _orderedCode =
+                $"todos.Range(TodoEntry.Indexes.CreatedAt,\n" +
+                $"            {(_fromUnbounded ? "BlazeDbBound<DateTime>.Unbounded" : $"new DateTime({fromValue:yyyy}, {fromValue:MM}, {fromValue:dd})")},\n" +
+                $"            {(_toUnbounded ? "BlazeDbBound<DateTime>.Unbounded" : $"new DateTime({_dateTo:yyyy}, {_dateTo:MM}, {_dateTo:dd}).AddDays(1).AddTicks(-1)")}, // end of that day\n" +
+                $"            descending: {_descending.ToString().ToLowerInvariant()})";
+        }
+
+        _orderedTime = DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds);
+    }
+
+    private void RunInverted()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        var count = _todos.Range(TodoEntry.Indexes.Effort, 200, 10).Count();
+        _invertedNote = $"todos.Range(TodoEntry.Indexes.Effort, 200, 10).Count() → {count}";
+    }
+
+    // ------------------------------------------------------------- sandbox
+
+    private void RefreshSandbox()
+    {
+        if (_sandboxTable is null)
+        {
+            return;
+        }
+
+        _sandboxCount = _sandboxTable.Count;
+        _sandboxOpen = _sandboxTable.CountBy(TodoEntry.Indexes.Done, false);
+        _sandboxDone = _sandboxTable.CountBy(TodoEntry.Indexes.Done, true);
+        _sandboxEngine = _sandboxTable.CountBy(TodoEntry.Indexes.Category, "engine");
+        _sandboxDocs = _sandboxTable.CountBy(TodoEntry.Indexes.Category, "docs");
+        _sandboxCritical = _sandboxTable.CountBy(TodoEntry.Indexes.ByPriority, Priority.Critical);
+    }
+
+    private void SandboxInsert()
+    {
+        if (_sandboxTable is null)
+        {
+            return;
+        }
+
+        _sandboxTable.Insert(new TodoEntry
+        {
+            Id = Guid.NewGuid(),
+            Title = $"sandbox row {_sandboxTable.Count + 1}",
+            Category = "engine",
+            Priority = Priority.Normal,
+            Done = false,
+            CreatedAt = DateTime.UtcNow,
+            Effort = 30,
+        });
+
+        _log.Ok("Insert", "table.Insert(row)", "Added to the row store and to all three matching index buckets.");
+        RefreshSandbox();
+    }
+
+    private void SandboxFlipDone() => MutateFirst(
+        row => row.Done = !row.Done,
+        "Update - Done flipped",
+        "The row moved from one Done bucket to the other. Same key, same row store slot.");
+
+    private void SandboxRecategorise() => MutateFirst(
+        row => row.Category = row.Category == "docs" ? "engine" : "docs",
+        "Update - Category changed",
+        "Removed from the old Category bucket and added to the new one.");
+
+    private void SandboxPromote() => MutateFirst(
+        row => row.Priority = row.Priority == Priority.Critical ? Priority.Low : Priority.Critical,
+        "Update - Priority changed",
+        "ByPriority is a hash index over an enum, so this is a bucket move too.");
+
+    private void SandboxSetNull() => MutateFirst(
+        row => row.Category = null,
+        "Update - Category set to null",
+        "The row moved from its category's bucket to the null bucket; Lookup(Category, null) now finds it.");
+
+    private void MutateFirst(Action<TodoEntry> mutate, string title, string note)
+    {
+        if (_sandboxTable is null)
+        {
+            return;
+        }
+
+        var first = _sandboxTable.Scan().FirstOrDefault();
+        if (first is null)
+        {
+            return;
+        }
+
+        var updated = first.Clone();
+        mutate(updated);
+        _sandboxTable.Update(updated);
+        _log.Ok(title, "table.Update(row)", note);
+        RefreshSandbox();
+    }
+
+    private void SandboxDelete()
+    {
+        if (_sandboxTable is null)
+        {
+            return;
+        }
+
+        var first = _sandboxTable.Scan().FirstOrDefault();
+        if (first is null)
+        {
+            return;
+        }
+
+        var removed = _sandboxTable.Delete(first.Id);
+        _log.Ok(
+            "Delete",
+            $"table.Delete(key) → {removed.ToString().ToLowerInvariant()}",
+            "Every index entry pointing at that row was removed with it.");
+        RefreshSandbox();
+    }
+
+    private static string Literal(string? value) => value is null ? "null" : $"\"{value}\"";
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_sandbox is not null)
+        {
+            await _sandbox.DisposeAsync();
+        }
+    }
+
+    private const string BoundSnippet = """
+        // Both ends inclusive.
+        todos.Range(index, 40, 100);
+
+        // One end open.
+        todos.Range(index, 40, BlazeDbBound<int>.Unbounded);
+
+        // Everything, in index order.
+        todos.Range(index,
+                    BlazeDbBound<int>.Unbounded,
+                    BlazeDbBound<int>.Unbounded);
+
+        // Explicit form of the implicit conversion.
+        todos.Range(index, BlazeDbBound<int>.At(40), BlazeDbBound<int>.At(100));
+
+        // Reverse traversal.
+        todos.Range(index, 40, 100, descending: true);
+        """;
+}

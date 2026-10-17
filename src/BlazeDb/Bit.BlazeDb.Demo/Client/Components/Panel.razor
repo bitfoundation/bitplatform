@@ -1,0 +1,43 @@
+﻿<div class="panel @Class">
+    @if (!string.IsNullOrWhiteSpace(Title) || Actions is not null)
+    {
+        <div class="panel-head">
+            <div class="panel-title">
+                @if (!string.IsNullOrWhiteSpace(IconName))
+                {
+                    <Icon Name="@IconName" />
+                }
+                <span>@Title</span>
+                @if (!string.IsNullOrWhiteSpace(Sub))
+                {
+                    <span class="panel-sub">@Sub</span>
+                }
+            </div>
+            @if (Actions is not null)
+            {
+                <div class="panel-actions">@Actions</div>
+            }
+        </div>
+    }
+    <div class="panel-body @(Flush ? "flush" : null) @BodyClass">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter] public string? IconName { get; set; }
+
+    [Parameter] public string? Sub { get; set; }
+
+    [Parameter] public bool Flush { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public string? BodyClass { get; set; }
+
+    [Parameter] public RenderFragment? Actions { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

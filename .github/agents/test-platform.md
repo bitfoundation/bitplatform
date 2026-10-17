@@ -334,7 +334,7 @@ does not serve silently gets the newest one it does.
    `feat(release): v-X.Y.Z` commit on `develop` has its tag: an untagged release is answered by the previous one,
    without a word.
 2. **What it does serve.** `mcp -McpVersion X.Y.Z` for each. The library tools (`Search*`, `Get*` and `Inspect*` of BlazorUI,
-   Brouter, Butil, Bswup, Bmotion and - from the first release that ships them - Bink, Bonboarding and Blex) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
+   Brouter, Butil, Bswup, Bmotion and - from the first release that ships them - Bink, BlazeDb, Bonboarding and Blex) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
    `SearchBitPlatformCode`) must all be there. Only the five shared ones (`AskGitHubRepository`,
    `SendBitPlatformFeedback`, `microsoft_docs_*`) means no release is served at all, and the README's
    *PlatformWebsite's MCP* section says why that happens. The server version it reports is the website's own build,
@@ -353,7 +353,7 @@ does not serve silently gets the newest one it does.
 4. **The answers are good.** Put one real task to each library's `Search` tool, worded the way a developer would
    describe it - BlazorUI "a dropdown the user can also type into", Butil "copy text to the clipboard", Bmotion "fade
    a list item in", Brouter "a route parameter that must be a number", Bswup "show the download progress of the app's
-   update", Bink "a signature pad that exports a PNG", Bonboarding "a step that waits for a panel that loads later", Blex "a counter whose value survives a page reload" - follow up with the `Get` tool it points to, and ask `SearchBitPlatformCode` about the Boilerplate. An
+   update", Bink "a signature pad that exports a PNG", BlazeDb "a todo list that survives a page reload", Bonboarding "a step that waits for a panel that loads later", Blex "a counter whose value survives a page reload" - follow up with the `Get` tool it points to, and ask `SearchBitPlatformCode` about the Boilerplate. An
    answer must be on topic, specific and true to the version asked for; one that answers wrongly is a failure too.
 
 Like an E2E failure, an MCP problem is fixed in `src/Websites/Platform` or in the library's own MCP server, and goes
