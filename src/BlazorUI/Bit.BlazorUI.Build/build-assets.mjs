@@ -32,11 +32,17 @@
 //   // bit-trim: on-demand           kept only when something calls into it (the default; it acknowledges that the
 //                                    file runs code as it loads, which a script must say something about)
 //
+// A stylesheet says 'always' or 'owners' only: it is kept for components, and no markup is read for it.
+//
+// A script runs code as it loads when its top level - or a function invoked right where it is written - calls a
+// function, constructs anything but a plain container (a Map, a Set), or assigns to the platform (window.onresize = ...).
+//
 // A script is kept, too, when an interop identifier an app's code can reach names it ("BitBlazorUI.Utils.isRtl" is
 // the script exporting Utils.isRtl), and when a script kept uses it. The bundle is written in the compiler's order of
-// the files, except that a script is moved after every script it uses as it loads: what runs at load - a listener
-// added to the page, an install() - finds what it calls already defined, and listeners added to one node at load keep
-// the order their scripts load in.
+// the files, except that a script is moved after every script it uses as it loads - what its top level uses, and what
+// the functions it calls there use in turn: what runs at load - a listener added to the page, an install() - finds what
+// it calls already defined, and listeners added to one node at load keep the order their scripts load in (the manifest
+// lists each script's, as "window keydown capture").
 
 import fs from 'node:fs';
 import path from 'node:path';
@@ -100,15 +106,17 @@ function buildScripts() {
     }
 
     const bySourceFile = new Map(modules.map(m => [m.sf, m]));
+    const caches = { files: new Map(), listeners: new Map() };
 
     for (const m of modules) {
         m.exports = collectExports(ts, m.sf);
-        m.pragma = readPragma(m.sf.text, m.file);
-        const refs = collectReferences(ts, checker, m.sf, bySourceFile);
+        m.pragma = readPragma(m.sf.text, m.file, SCRIPT_PRAGMAS);
+        const refs = collectReferences(ts, checker, m.sf, bySourceFile, caches);
         m.deps = refs.deps;
         m.loadDeps = refs.loadDeps;
         m.externals = refs.externals;
         m.loadTimeCalls = refs.loadTimeCalls;
+        m.listeners = refs.listeners;
     }
 
     // A file that runs code as it loads - a listener on the document, an install() - has to say when an app needs it,
@@ -173,6 +181,7 @@ function buildScripts() {
             always: m.pragma?.always === true,
             owners: m.pragma?.owners ?? [],
             markup: m.pragma?.markup ?? [],
+            listeners: m.listeners,
         });
     }
 
@@ -246,21 +255,23 @@ function collectExports(ts, sf) {
 // rather than inside a function (loadDeps), and what it uses of another package's namespace (externals, by path).
 // Types are erased from the emitted script and are no dependency at all. So is a namespace: BitBlazorUI and Utils are
 // containers several files add to, and the member reached through them is what decides the file.
-function collectReferences(ts, checker, sf, bySourceFile) {
+//
+// What runs as the bundle loads is more than the file's own top level: a function it calls there runs then too - an
+// immediately invoked one, or one of another file, and everything that one uses in turn - so the files a call at load
+// reaches through the functions it runs are load dependencies as well.
+function collectReferences(ts, checker, sf, bySourceFile, caches) {
     const deps = new Set();
     const loadDeps = new Set();
     const externals = new Set();
     const loadTimeCalls = [];
+    const listeners = [];
     const self = bySourceFile.get(sf);
 
+    const symbolOf = node => resolveValueSymbol(ts, checker, node);
+
     const record = (node, loadTime) => {
-        let symbol = ts.isShorthandPropertyAssignment(node.parent) && node.parent.name === node
-            ? checker.getShorthandAssignmentValueSymbol(node.parent)
-            : checker.getSymbolAtLocation(node);
+        const symbol = symbolOf(node);
         if (!symbol) return;
-        if (symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
-        if (symbol.flags & (ts.SymbolFlags.Module | ts.SymbolFlags.TypeAlias | ts.SymbolFlags.Interface | ts.SymbolFlags.TypeParameter)) return;
-        if (!symbol.declarations?.length) return;
 
         for (const declaration of symbol.declarations) {
             const file = declaration.getSourceFile();
@@ -268,6 +279,7 @@ function collectReferences(ts, checker, sf, bySourceFile) {
 
             const owner = bySourceFile.get(file);
             if (owner) {
+                if (!emitsCode(ts, declaration)) continue;
                 deps.add(owner.name);
                 if (loadTime) loadDeps.add(owner.name);
             } else if (file.isDeclarationFile && !isLibraryDeclaration(file.fileName)) {
@@ -279,21 +291,55 @@ function collectReferences(ts, checker, sf, bySourceFile) {
         }
     };
 
+    // The files whose code a call made at load runs - the declarations the callee names, and what they use - and the
+    // listeners it adds to the page as it runs.
+    const recordRun = callee => {
+        const symbol = symbolOf(callee);
+        if (!symbol) return;
+        for (const declaration of symbol.declarations) {
+            for (const name of filesRunBy(ts, checker, declaration, bySourceFile, caches.files)) loadDeps.add(name);
+            listeners.push(...listenersRunBy(ts, checker, declaration, bySourceFile, caches.listeners, new Set()));
+        }
+    };
+
     const isStatic = node => (ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Static) !== 0;
 
+    const flag = node => {
+        const { line, character } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
+        loadTimeCalls.push({ line: line + 1, column: character + 1, text: node.getText(sf).split('\n')[0].substring(0, 80) });
+    };
+
     const visit = (node, loadTime) => {
+        // The base class of a class is a value, evaluated where the class is declared - which ts.isTypeNode, true for
+        // the node wrapping an extends clause's expression, would pass over with the type arguments around it.
+        if (ts.isExpressionWithTypeArguments(node) && isClassExtends(ts, node)) {
+            visit(node.expression, loadTime);
+            return;
+        }
         if (ts.isTypeNode(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) return;
         if (ts.isHeritageClause(node) && node.token === ts.SyntaxKind.ImplementsKeyword) return;
         if (node.kind === ts.SyntaxKind.DeclareKeyword) return;
         if ((ts.isModuleDeclaration(node) || ts.isClassDeclaration(node) || ts.isFunctionDeclaration(node) || ts.isVariableStatement(node) || ts.isEnumDeclaration(node))
             && (ts.getCombinedModifierFlags(node) & ts.ModifierFlags.Ambient)) return;
 
-        if (ts.isFunctionLike(node) && !ts.isClassStaticBlockDeclaration(node)) loadTime = false;
+        // A function runs when it is called - except one called right where it is written, which runs right then.
+        if (ts.isFunctionLike(node) && !ts.isClassStaticBlockDeclaration(node) && !isImmediatelyInvoked(ts, node)) loadTime = false;
         else if (ts.isPropertyDeclaration(node) && !isStatic(node)) loadTime = false;
 
-        if (loadTime && (ts.isCallExpression(node) || ts.isTaggedTemplateExpression(node))) {
-            const { line, character } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
-            loadTimeCalls.push({ line: line + 1, column: character + 1, text: node.getText(sf).split('\n')[0].substring(0, 80) });
+        if (loadTime) {
+            if (ts.isCallExpression(node) || ts.isTaggedTemplateExpression(node)) {
+                flag(node);
+                const listener = ts.isCallExpression(node) ? describeListener(ts, sf, node) : null;
+                if (listener) listeners.push(listener);
+                recordRun(calleeName(ts, ts.isCallExpression(node) ? node.expression : node.tag));
+            } else if (ts.isNewExpression(node)) {
+                // A constructor runs as much as a function does; a plain container of the platform's has nothing to say.
+                if (!isPureConstructor(ts, checker, node)) flag(node);
+                recordRun(calleeName(ts, node.expression));
+            } else if (isAssignment(ts, node) && assignsToThePlatform(ts, checker, node.left)) {
+                // window.onresize = ..., document.onkeydown = ...: a handler set on the page, as much as one added to it.
+                flag(node);
+            }
         }
 
         if (ts.isIdentifier(node)) record(node, loadTime);
@@ -306,7 +352,191 @@ function collectReferences(ts, checker, sf, bySourceFile) {
     deps.delete(self.name);
     loadDeps.delete(self.name);
 
-    return { deps, loadDeps, externals, loadTimeCalls };
+    return { deps, loadDeps, externals, loadTimeCalls, listeners };
+}
+
+// The symbol of a value a name refers to, through an import alias; null for a type, a namespace (a container several
+// files add to) or a name the compiler declares nowhere.
+function resolveValueSymbol(ts, checker, node) {
+    if (!node || !ts.isIdentifier(node)) return null;
+    let symbol = ts.isShorthandPropertyAssignment(node.parent) && node.parent.name === node
+        ? checker.getShorthandAssignmentValueSymbol(node.parent)
+        : checker.getSymbolAtLocation(node);
+    if (!symbol) return null;
+    if (symbol.flags & ts.SymbolFlags.Alias) symbol = checker.getAliasedSymbol(symbol);
+    if (symbol.flags & (ts.SymbolFlags.Module | ts.SymbolFlags.TypeAlias | ts.SymbolFlags.Interface | ts.SymbolFlags.TypeParameter)) return null;
+    if (!symbol.declarations?.length) return null;
+    return symbol;
+}
+
+// The files of the package whose code runs when the given declaration runs: everything its body uses, and through every
+// function or class of the package it names, what those use in turn - more than a call may reach, never less.
+function filesRunBy(ts, checker, declaration, bySourceFile, cache) {
+    if (cache.has(declaration)) return cache.get(declaration);
+
+    const files = new Set();
+    const seen = new Set();
+    const pending = [declaration];
+
+    while (pending.length) {
+        const current = pending.pop();
+        if (seen.has(current)) continue;
+        seen.add(current);
+
+        const file = current.getSourceFile();
+        const owner = bySourceFile.get(file);
+        if (!owner || !emitsCode(ts, current)) continue;
+        files.add(owner.name);
+
+        const code = codeRunBy(ts, current);
+        if (!code) continue;
+
+        const walk = node => {
+            if (ts.isExpressionWithTypeArguments(node) && isClassExtends(ts, node)) return walk(node.expression);
+            if (ts.isTypeNode(node) || ts.isInterfaceDeclaration(node) || ts.isTypeAliasDeclaration(node)) return;
+            if (ts.isIdentifier(node)) {
+                const symbol = resolveValueSymbol(ts, checker, node);
+                for (const d of symbol?.declarations ?? []) {
+                    if (!bySourceFile.has(d.getSourceFile()) || !emitsCode(ts, d)) continue;
+                    files.add(bySourceFile.get(d.getSourceFile()).name);
+                    if (codeRunBy(ts, d)) pending.push(d);
+                }
+            }
+            ts.forEachChild(node, walk);
+        };
+        walk(code);
+    }
+
+    cache.set(declaration, files);
+    return files;
+}
+
+// The listeners a declaration adds to the page when it is called or constructed: the addEventListener calls its code makes
+// as it runs - not one inside a function of its own, a handler that runs later - and those of what it calls in turn.
+function listenersRunBy(ts, checker, declaration, bySourceFile, cache, active) {
+    if (cache.has(declaration)) return cache.get(declaration);
+    if (active.has(declaration) || !bySourceFile.has(declaration.getSourceFile()) || !emitsCode(ts, declaration)) return [];
+
+    const code = codeRunBy(ts, declaration);
+    if (!code) return [];
+
+    // A class runs its constructor and its fields' initializers when constructed; its methods wait to be called.
+    const roots = ts.isClassLike(code)
+        ? code.members.flatMap(m => ts.isConstructorDeclaration(m) && m.body ? [m.body] : ts.isPropertyDeclaration(m) && m.initializer && !(ts.getCombinedModifierFlags(m) & ts.ModifierFlags.Static) ? [m.initializer] : [])
+        : [ts.isFunctionLike(code) ? code.body : code].filter(Boolean);
+
+    active.add(declaration);
+    const sf = declaration.getSourceFile();
+    const found = [];
+    const run = callee => {
+        const symbol = resolveValueSymbol(ts, checker, callee);
+        for (const d of symbol?.declarations ?? []) found.push(...listenersRunBy(ts, checker, d, bySourceFile, cache, active));
+    };
+    const walk = node => {
+        if (ts.isFunctionLike(node) && !isImmediatelyInvoked(ts, node)) return;
+        if (ts.isClassLike(node)) return;
+        if (ts.isCallExpression(node)) {
+            const listener = describeListener(ts, sf, node);
+            if (listener) found.push(listener);
+            run(calleeName(ts, node.expression));
+        } else if (ts.isNewExpression(node)) {
+            run(calleeName(ts, node.expression));
+        }
+        ts.forEachChild(node, walk);
+    };
+    for (const root of roots) walk(root);
+    active.delete(declaration);
+
+    cache.set(declaration, found);
+    return found;
+}
+
+// The code that runs when a declaration is called or constructed: a function's or a method's own, a variable's function,
+// a class's (its constructor, its field initializers, its base class). Null for a declaration that runs nothing.
+function codeRunBy(ts, declaration) {
+    if (ts.isFunctionDeclaration(declaration) || ts.isMethodDeclaration(declaration) || ts.isConstructorDeclaration(declaration)
+        || ts.isGetAccessorDeclaration(declaration) || ts.isSetAccessorDeclaration(declaration)
+        || ts.isFunctionExpression(declaration) || ts.isArrowFunction(declaration)) return declaration.body ?? null;
+    if (ts.isClassDeclaration(declaration) || ts.isClassExpression(declaration)) return declaration;
+    if ((ts.isVariableDeclaration(declaration) || ts.isPropertyDeclaration(declaration) || ts.isPropertyAssignment(declaration)) && declaration.initializer) {
+        let init = declaration.initializer;
+        while (ts.isParenthesizedExpression(init)) init = init.expression;
+        if (ts.isFunctionExpression(init) || ts.isArrowFunction(init) || ts.isClassExpression(init)) return init;
+    }
+    return null;
+}
+
+// Whether a declaration is code the script runs, rather than a type a reference is checked against: the members of an
+// interface or a type literal, and what a 'declare' says exists elsewhere (a vendored library, the platform), emit nothing.
+function emitsCode(ts, declaration) {
+    if (ts.isMethodSignature(declaration) || ts.isPropertySignature(declaration) || ts.isCallSignatureDeclaration(declaration)
+        || ts.isConstructSignatureDeclaration(declaration) || ts.isIndexSignatureDeclaration(declaration)) return false;
+    return (ts.getCombinedModifierFlags(declaration) & ts.ModifierFlags.Ambient) === 0;
+}
+
+function isClassExtends(ts, node) {
+    const clause = node.parent;
+    return ts.isHeritageClause(clause) && clause.token === ts.SyntaxKind.ExtendsKeyword && !ts.isInterfaceDeclaration(clause.parent);
+}
+
+// (function () { ... })(), (() => { ... })(), and the same through .call(this) or .apply(this, ...).
+function isImmediatelyInvoked(ts, node) {
+    if (!ts.isFunctionExpression(node) && !ts.isArrowFunction(node)) return false;
+
+    let callee = node;
+    while (ts.isParenthesizedExpression(callee.parent)) callee = callee.parent;
+    const parent = callee.parent;
+
+    if (ts.isCallExpression(parent) && parent.expression === callee) return true;
+    return ts.isPropertyAccessExpression(parent) && parent.expression === callee && (parent.name.text === 'call' || parent.name.text === 'apply')
+        && ts.isCallExpression(parent.parent) && parent.parent.expression === parent;
+}
+
+// The name a call is made through: f in f(), the member in a.b.f(), the function itself for an immediately invoked one
+// (whose body the walk of the file visits as load time already).
+function calleeName(ts, expression) {
+    while (ts.isParenthesizedExpression(expression)) expression = expression.expression;
+    if (ts.isPropertyAccessExpression(expression)) return expression.name;
+    return ts.isIdentifier(expression) ? expression : null;
+}
+
+// The constructors of the platform that only make a value: a script creating one of these as it loads touches nothing.
+const PURE_CONSTRUCTORS = new Set(['Map', 'Set', 'WeakMap', 'WeakSet', 'WeakRef', 'Array', 'Object', 'RegExp', 'Date', 'Error', 'TypeError', 'RangeError']);
+
+function isPureConstructor(ts, checker, node) {
+    const name = calleeName(ts, node.expression);
+    if (!name || !PURE_CONSTRUCTORS.has(name.text)) return false;
+    const symbol = checker.getSymbolAtLocation(name);
+    return !!symbol?.declarations?.length && symbol.declarations.every(d => isLibraryDeclaration(d.getSourceFile().fileName));
+}
+
+function isAssignment(ts, node) {
+    return ts.isBinaryExpression(node) && node.operatorToken.kind >= ts.SyntaxKind.FirstAssignment && node.operatorToken.kind <= ts.SyntaxKind.LastAssignment;
+}
+
+// Whether an assignment's target is something of the platform's - a property of window, document, a prototype of the
+// DOM, a global - rather than state of the package's own.
+function assignsToThePlatform(ts, checker, target) {
+    let root = target;
+    while (ts.isPropertyAccessExpression(root) || ts.isElementAccessExpression(root) || ts.isParenthesizedExpression(root)) root = root.expression;
+    if (!ts.isIdentifier(root)) return false;
+    const symbol = checker.getSymbolAtLocation(root);
+    if (!symbol?.declarations?.length) return true;
+    return symbol.declarations.every(d => isLibraryDeclaration(d.getSourceFile().fileName));
+}
+
+// A listener added to the page as the script loads - x.addEventListener('type', ..., true | { capture: true }) - as
+// "x type" or "x type capture", the order of listeners on one node being the order they were added in.
+function describeListener(ts, sf, call) {
+    const callee = call.expression;
+    if (!ts.isPropertyAccessExpression(callee) || callee.name.text !== 'addEventListener' || call.arguments.length < 2) return null;
+
+    const [type, , options] = call.arguments;
+    const name = ts.isStringLiteralLike(type) ? type.text : type.getText(sf);
+    const capture = options !== undefined && (options.kind === ts.SyntaxKind.TrueKeyword
+        || (ts.isObjectLiteralExpression(options) && options.properties.some(p => ts.isPropertyAssignment(p) && p.name.getText(sf) === 'capture' && p.initializer.kind === ts.SyntaxKind.TrueKeyword)));
+
+    return `${callee.expression.getText(sf)} ${name}${capture ? ' capture' : ''}`;
 }
 
 function esbuildTarget(ts, target) {
@@ -546,7 +776,7 @@ function readComponentImports(componentsPath) {
         if (seen.has(name)) throw new BuildError(`${rel(componentsPath)}: two components named '${name}' (${seen.get(name)} and ${rel(source)}). A component stylesheet's file name is its chunk name.`);
         seen.set(name, rel(source));
 
-        chunks.push({ name, import: importPath, source: rel(source), pragma: readPragma(fs.readFileSync(source, 'utf8'), rel(source)) });
+        chunks.push({ name, import: importPath, source: rel(source), pragma: readPragma(fs.readFileSync(source, 'utf8'), rel(source), STYLE_PRAGMAS) });
     }
 
     return chunks;
@@ -614,17 +844,26 @@ function describeMismatch(bundle, full, composed) {
 // Shared
 // ---------------------------------------------------------------------------------------------------------------------
 
-function readPragma(text, file) {
+// What a bit-trim comment can say in each kind of file. A stylesheet is kept for its components alone: the trimming reads
+// no markup for one, and with no script running it as it loads there is nothing for 'on-demand' to acknowledge.
+const SCRIPT_PRAGMAS = ['always', 'on-demand', 'owners', 'markup'];
+const STYLE_PRAGMAS = ['always', 'owners'];
+
+function readPragma(text, file, allowed) {
+    const describe = { always: "'always'", 'on-demand': "'on-demand'", owners: "'owners <Type> ...'", markup: "'markup <text> ...'" };
+    const expected = allowed.map(k => describe[k]).join(', ').replace(/, ([^,]*)$/, ' or $1');
+
     let pragma = null;
     for (const match of text.matchAll(/\/\/\s*bit-trim:\s*(.*)$/gm)) {
         const words = match[1].trim().split(/[\s,]+/).filter(Boolean);
         const [kind, ...rest] = words;
         pragma ??= {};
+        if (!allowed.includes(kind)) throw new BuildError(`${file}: '// bit-trim: ${match[1].trim()}' is not one of ${expected}.`);
         if (kind === 'always' && rest.length === 0) pragma.always = true;
         else if (kind === 'on-demand' && rest.length === 0) pragma.onDemand = true;
         else if (kind === 'owners' && rest.length) pragma.owners = [...new Set([...(pragma.owners ?? []), ...rest])];
         else if (kind === 'markup' && rest.length) pragma.markup = [...new Set([...(pragma.markup ?? []), ...rest])];
-        else throw new BuildError(`${file}: '// bit-trim: ${match[1].trim()}' is not one of 'always', 'on-demand', 'owners <Type> ...' or 'markup <text> ...'.`);
+        else throw new BuildError(`${file}: '// bit-trim: ${match[1].trim()}' is not one of ${expected}.`);
     }
 
     if (pragma && pragma.always && (pragma.owners || pragma.onDemand || pragma.markup)) throw new BuildError(`${file}: 'always' says everything there is to say; drop the other bit-trim comments.`);

@@ -38,6 +38,12 @@ public sealed class ScriptModule
     /// </summary>
     public List<string> Markup { get; } = [];
 
+    /// <summary>
+    /// The listeners it adds to the page as it loads, in the order it adds them - its top level's, and those of the
+    /// functions it calls there - each as its target, its event and whether it captures ("window keydown capture").
+    /// </summary>
+    public List<string> Listeners { get; } = [];
+
     /// <summary>Kept in every trimmed bundle.</summary>
     public bool Always { get; set; }
 

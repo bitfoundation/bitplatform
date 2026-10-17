@@ -74,6 +74,7 @@ public sealed class PackageAssets
                 module.Externals.AddRange(Json.GetStrings(obj, "externals"));
                 module.Owners.AddRange(Json.GetStrings(obj, "owners"));
                 module.Markup.AddRange(Json.GetStrings(obj, "markup"));
+                module.Listeners.AddRange(Json.GetStrings(obj, "listeners"));
                 package.ScriptModules.Add(module);
             }
         }

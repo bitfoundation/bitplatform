@@ -215,6 +215,58 @@ public sealed class BitAssetTrimmingContractTests
     }
 
     [TestMethod]
+    [DataRow("BitBlazorUI.Utils", "Bit.BlazorUI:Utils.FocusTraps")]
+    [DataRow("BitBlazorUI.Utils", "Bit.BlazorUI:Utils.Escape")]
+    [DataRow("BitBlazorUI.Callouts", "Bit.BlazorUI:Callouts")]
+    [DataRow("BitBlazorUI.Callouts", "Bit.BlazorUI:Callouts.Registry")]
+    public void AnIdentifierStoppingAtANamespaceShouldNameEveryScriptAddingToIt(string identifier, string script)
+    {
+        // An app's script holding the namespace itself (const u = BitBlazorUI.Utils; or a call made through brackets, whose
+        // text stops there) can reach any member of it: a namespace is no export of its own, and resolving to nothing
+        // would drop every script it calls.
+        var selection = new AssetSelection(Assets.Value);
+        CollectionAssert.Contains(selection.ResolveIdentifier(identifier).Select(m => m.Id).ToList(), script, identifier);
+    }
+
+    [TestMethod]
+    [DataRow("window.fixtureDispose = id => BitBlazorUI.PageVisibility.dispose(id);", "BitBlazorUI.PageVisibility.dispose")]
+    [DataRow("window.BitBlazorUI.PageVisibility.dispose(id);", "BitBlazorUI.PageVisibility.dispose")]
+    [DataRow("globalThis.BitBlazorUI.Utils.isRtl(el)", "BitBlazorUI.Utils.isRtl")]
+    [DataRow("BitBlazorUI.Theme?.onChange(handler)", "BitBlazorUI.Theme.onChange")]
+    [DataRow("window.BitBlazorUI?.Callouts?.toggle()", "BitBlazorUI.Callouts.toggle")]
+    [DataRow("const u = BitBlazorUI.Utils; u.setupFocusTrap(el);", "BitBlazorUI.Utils")]
+    public void AnIdentifierInAnAppsOwnScriptShouldBeReadHoweverItIsReached(string text, string identifier)
+    {
+        // The plain form an interop call of .NET code writes, whether the script reached the namespace through a global or
+        // through optional chaining.
+        CollectionAssert.AreEqual(new[] { identifier }, AssetSelection.IdentifiersIn(text).ToList(), text);
+    }
+
+    [TestMethod]
+    public void ANameEndingInTheNamespaceShouldNotBeReadAsAnIdentifier()
+    {
+        Assert.AreEqual(0, AssetSelection.IdentifiersIn("MyBitBlazorUI.Utils.isRtl(); $BitBlazorUI.x();").Count());
+    }
+
+    [TestMethod]
+    public void ThePlatformsAssembliesShouldBeToldFromAnAppsOwnByTheirKey()
+    {
+        // The scan reads every assembly of the app but the platform's - an assembly naming only BitIconName consts, or an
+        // interop identifier through a plain IJSRuntime, references no library assembly and still names what it uses.
+        Assert.IsTrue(IsPlatformAssembly(typeof(object).Assembly.Location), "The core library");
+        Assert.IsTrue(IsPlatformAssembly(typeof(IComponent).Assembly.Location), "ASP.NET Core");
+        Assert.IsTrue(IsPlatformAssembly(typeof(Regex).Assembly.Location), "The base class library");
+        Assert.IsFalse(IsPlatformAssembly(typeof(BitButton).Assembly.Location), "Bit.BlazorUI is signed with a key of its own.");
+        Assert.IsFalse(IsPlatformAssembly(typeof(BitAssetTrimmingContractTests).Assembly.Location), "An unsigned assembly.");
+
+        static bool IsPlatformAssembly(string path)
+        {
+            using var pe = new PEReader(File.OpenRead(path));
+            return AppScan.IsPlatformAssembly(pe.GetMetadataReader());
+        }
+    }
+
+    [TestMethod]
     public void AnOwnerEndingInAStarShouldStandForEveryTypeStartingWithIt()
     {
         var names = new HashSet<string>(["BitFcDayView", "BitButton"], StringComparer.Ordinal);

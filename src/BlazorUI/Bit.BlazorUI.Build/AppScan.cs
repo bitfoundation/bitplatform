@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using System.Reflection.PortableExecutable;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Bit.BlazorUI.Build;
 
@@ -13,9 +16,11 @@ namespace Bit.BlazorUI.Build;
 /// which is where the icon names an app passes end up (BitIconName.Add is a const, so the literal is the app's own).
 /// </summary>
 /// <remarks>
-/// Which assemblies count is decided by whether they reference a library assembly at all, never by their names: a filter
-/// on System.* and Microsoft.* would be fast and would silently pass over an app's own library named that way, and an
-/// assembly passed over is a component left out.
+/// Which assemblies count is never decided by their names: a filter on System.* and Microsoft.* would be fast and would
+/// silently pass over an app's own library named that way, and an assembly passed over is a component left out. Nor by
+/// whether they reference a library assembly: a project naming only BitIconName consts (inlined, so no reference is
+/// emitted), or calling an interop identifier through a plain IJSRuntime, references none and still names what it uses.
+/// Every assembly is read but the platform's own, which are told apart by the key they are signed with.
 /// </remarks>
 public static class AppScan
 {
@@ -24,10 +29,10 @@ public static class AppScan
         /// <summary>The library types the app's assemblies reference.</summary>
         public HashSet<TypeNode> Roots { get; } = [];
 
-        /// <summary>The string literals of the assemblies that reference a library assembly.</summary>
+        /// <summary>The string literals of the assemblies read.</summary>
         public HashSet<string> Strings { get; } = new(StringComparer.Ordinal);
 
-        /// <summary>The assemblies read that do reference a library assembly.</summary>
+        /// <summary>The assemblies read: every one but the libraries' own and the platform's.</summary>
         public List<string> Scanned { get; } = [];
     }
 
@@ -54,11 +59,13 @@ public static class AppScan
                 var reader = pe.GetMetadataReader();
                 if (reader.IsAssembly is false) continue;
                 if (libraryNames.Contains(reader.GetString(reader.GetAssemblyDefinition().Name))) continue;
-                if (ReferencesAny(reader, libraryNames) is false) continue;
+
+                var references = ReferencesAny(reader, libraryNames);
+                if (references is false && IsPlatformAssembly(reader)) continue;
 
                 result.Scanned.Add(path);
 
-                if (graph is not null)
+                if (graph is not null && references)
                 {
                     foreach (var handle in reader.TypeReferences)
                     {
@@ -85,6 +92,34 @@ public static class AppScan
         }
         return false;
     }
+
+    /// <summary>
+    /// Whether the assembly is one of the .NET platform's own - the runtime, the base class library, ASP.NET Core, the
+    /// Microsoft.Extensions libraries - by the public key it is signed with, which no app's own assembly carries.
+    /// </summary>
+    public static bool IsPlatformAssembly(MetadataReader reader)
+    {
+        var key = reader.GetAssemblyDefinition().PublicKey;
+        if (key.IsNil) return false;
+
+        var blob = reader.GetBlobBytes(key);
+        if (blob.Length == 0) return false;
+
+        // A public key's token is the last eight bytes of its SHA-1 hash, in reverse order.
+        using var sha1 = SHA1.Create();
+        var hash = sha1.ComputeHash(blob);
+        var token = new StringBuilder(16);
+        for (var i = hash.Length - 1; i >= hash.Length - 8; i--) token.Append(hash[i].ToString("x2", CultureInfo.InvariantCulture));
+
+        return PlatformKeyTokens.Contains(token.ToString());
+    }
+
+    // The ECMA key (the core library), Microsoft's keys (the framework, ASP.NET Core, Microsoft.Extensions) and the .NET
+    // Foundation's.
+    private static readonly HashSet<string> PlatformKeyTokens = new(StringComparer.Ordinal)
+    {
+        "b77a5c561934e089", "b03f5f7f11d50a3a", "7cec85d7bea7798e", "adb9793829ddae60", "31bf3856ad364e35", "cc7b13ffcd2ddd51",
+    };
 
     /// <summary>Every string literal of an assembly - the #US heap, which holds nothing else.</summary>
     public static IEnumerable<string> ReadUserStrings(MetadataReader reader)

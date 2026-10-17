@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection.Metadata;
@@ -134,11 +135,14 @@ public sealed class TrimBitBlazorUIAssets : Task
             return false;
         }
 
-        var hasNames = Components.Length > 0 || Assets.Length > 0 || Icons.Length > 0;
-        if (trimmed is false && scan is false && hasNames is false) return StandDown("nothing says what this app uses (no trimmed publish, no scan, no names in the csproj)");
+        // The components a csproj names are the whole of what it renders where nothing else says so. The scripts,
+        // stylesheets and icons it names only add to what something else said: a list of glyphs is no list of components.
+        if (trimmed is false && scan is false && Components.Length == 0) return StandDown("nothing says what this app uses (no trimmed publish, no scan, no <BitBlazorUIComponent> in the csproj)");
 
         var presentNames = new HashSet<string>(StringComparer.Ordinal);
-        var strings = new List<string>();
+        // Sets, not lists: the library's literals repeat once per type that loads them, and every text is searched for
+        // each marker, vendor folder and icon name below.
+        var strings = new HashSet<string>(StringComparer.Ordinal);
         var appStrings = new HashSet<string>(StringComparer.Ordinal);
 
         LibraryGraph? graph = null;
@@ -147,7 +151,7 @@ public sealed class TrimBitBlazorUIAssets : Task
             if (trimmed || scan is false)
             {
                 // Only the names a csproj gives need the graph here; a trimmed publish answers the rest itself.
-                if (Components.Length > 0) graph = LoadGraph(libraryNames, required: true);
+                if (Components.Length > 0) graph = LoadGraph(libraryNames, required: true, out _);
                 if (Components.Length > 0 && graph is null) return false;
             }
 
@@ -157,11 +161,11 @@ public sealed class TrimBitBlazorUIAssets : Task
             }
             else if (scan)
             {
-                graph = LoadGraph(libraryNames, required: ScanRequested);
+                graph = LoadGraph(libraryNames, required: ScanRequested, out var missing);
                 if (graph is null)
                 {
                     if (Log.HasLoggedErrors) return false;
-                    return StandDown("the untrimmed bit BlazorUI assemblies to scan against were not found");
+                    return StandDown(missing!, MessageImportance.High);
                 }
 
                 var result = AppScan.Scan(ScanAssemblies.Select(a => a.GetMetadata("FullPath")), libraryNames, graph);
@@ -169,9 +173,9 @@ public sealed class TrimBitBlazorUIAssets : Task
 
                 var reached = graph.Closure(result.Roots);
                 foreach (var type in reached) presentNames.Add(type.Name);
-                strings.AddRange(LibraryGraph.StringsOf(reached));
+                strings.UnionWith(LibraryGraph.StringsOf(reached));
 
-                Log.LogMessage(MessageImportance.Low, "Bit.BlazorUI: scanned {0} for the library types they reference: {1}.",
+                Log.LogMessage(MessageImportance.Low, "Bit.BlazorUI: read {0} for what they use of the packages; the library types they reference: {1}.",
                     string.Join(", ", result.Scanned.Select(Path.GetFileName)),
                     string.Join(", ", result.Roots.Where(r => r.FullName.IndexOf('/') < 0).Select(r => r.Name).Distinct().OrderBy(n => n, StringComparer.Ordinal)));
             }
@@ -188,7 +192,7 @@ public sealed class TrimBitBlazorUIAssets : Task
 
                 var reached = graph.Closure(types);
                 foreach (var type in reached) presentNames.Add(type.Name);
-                strings.AddRange(LibraryGraph.StringsOf(reached));
+                strings.UnionWith(LibraryGraph.StringsOf(reached));
             }
             if (Log.HasLoggedErrors) return false;
         }
@@ -207,6 +211,10 @@ public sealed class TrimBitBlazorUIAssets : Task
             // The packages' own files (a ProjectReference's static web assets are of the Project source type, like the
             // app's) are what is being trimmed, not what the app says.
             if (libraryNames.Contains(file.GetMetadata("SourceId"))) continue;
+            // Nor are the framework's: the .NET 10 SDK hands blazor.web.js and its siblings in as assets the app
+            // discovered, under the _framework folder no app writes its own files to - and their text names a word of
+            // every kind (Delete, Copy, Search), each one a glyph kept for nothing.
+            if (file.GetMetadata("RelativePath").Replace('\\', '/').TrimStart('/').StartsWith("_framework/", StringComparison.OrdinalIgnoreCase)) continue;
 
             appStrings.Add(File.ReadAllText(path));
         }
@@ -214,11 +222,12 @@ public sealed class TrimBitBlazorUIAssets : Task
         // The same for the app's own string literals, where markup of its own lands: an inline <script> of a .razor page.
         foreach (var text in appStrings.ToList())
         {
-            if (text.IndexOf("BitBlazorUI.", StringComparison.Ordinal) < 0) continue;
-            foreach (System.Text.RegularExpressions.Match match in IdentifierInText.Matches(text)) appStrings.Add(match.Value);
+            if (text.IndexOf("BitBlazorUI", StringComparison.Ordinal) < 0) continue;
+            foreach (var identifier in AssetSelection.IdentifiersIn(text)) appStrings.Add(identifier);
         }
 
-        var texts = strings.Concat(appStrings).ToList();
+        var texts = new HashSet<string>(strings, StringComparer.Ordinal);
+        texts.UnionWith(appStrings);
 
         var selection = new AssetSelection(packages);
         selection.Select(presentNames, texts);
@@ -231,10 +240,11 @@ public sealed class TrimBitBlazorUIAssets : Task
             }
         }
 
-        var iconSets = packages.SelectMany(p => p.IconSets.Select(s => (Package: p, Set: s))).ToList();
-        if (TrimIcons && iconSets.Count > 0)
+        // Each icon set's glyphs, read once for the selection and the bundle alike - and only when they are trimmed.
+        var iconSets = TrimIcons ? packages.SelectMany(p => p.IconSets.Select(s => (Package: p, Set: s, Glyphs: AssetComposer.ReadGlyphs(p, s)))).ToList() : [];
+        if (iconSets.Count > 0)
         {
-            var known = iconSets.SelectMany(s => AssetComposer.ReadGlyphs(s.Package, s.Set, out _, out _).Select(g => g.Key)).ToList();
+            var known = iconSets.SelectMany(s => s.Glyphs.Rules.Select(g => g.Key)).ToList();
             selection.SelectIcons(texts, known, iconSets.Select(s => s.Set.ClassPrefix));
 
             var knownSet = new HashSet<string>(known, StringComparer.Ordinal);
@@ -245,7 +255,7 @@ public sealed class TrimBitBlazorUIAssets : Task
                 else Log.LogError("Bit.BlazorUI: <BitBlazorUIIcon Include=\"{0}\" /> names no icon of Bit.BlazorUI.Icons.", name);
             }
         }
-        else if (Icons.Length > 0 && iconSets.Count == 0)
+        else if (Icons.Length > 0 && packages.All(p => p.IconSets.Count == 0))
         {
             Log.LogWarning("Bit.BlazorUI: <BitBlazorUIIcon> items are given, but this app does not reference Bit.BlazorUI.Icons.");
         }
@@ -261,8 +271,8 @@ public sealed class TrimBitBlazorUIAssets : Task
         {
             if (TrimScripts) outputs.AddRange(AssetComposer.ComposeScripts(package, selection, OutputDirectory));
             if (TrimStyles) outputs.AddRange(AssetComposer.ComposeStyles(package, selection, OutputDirectory));
-            if (TrimIcons) outputs.AddRange(AssetComposer.ComposeIcons(package, selection, OutputDirectory));
         }
+        foreach (var (package, set, glyphs) in iconSets) outputs.Add(AssetComposer.ComposeIcons(package, set, glyphs, selection, OutputDirectory));
 
         Report(packages, selection, outputs);
 
@@ -306,16 +316,16 @@ public sealed class TrimBitBlazorUIAssets : Task
         RemovedAssets = [.. removed];
     }
 
-    private bool StandDown(string? why)
+    private bool StandDown(string? why, MessageImportance importance = MessageImportance.Normal)
     {
-        if (why is not null) Log.LogMessage(MessageImportance.Normal, "Bit.BlazorUI: {0}; publishing the full scripts and stylesheets.", why);
+        if (why is not null) Log.LogMessage(importance, "Bit.BlazorUI: {0}; publishing the full scripts and stylesheets.", why);
         Skipped = true;
         return true;
     }
 
     // The trimmed copies of the library assemblies name exactly the types and identifiers the app can still reach; the
     // app's own assemblies beside them add the string literals it passes in (icon names, an identifier it calls itself).
-    private bool ReadTrimmed(ISet<string> libraryNames, ISet<string> presentNames, List<string> strings, ISet<string> appStrings)
+    private bool ReadTrimmed(ISet<string> libraryNames, ISet<string> presentNames, ISet<string> strings, ISet<string> appStrings)
     {
         if (Directory.Exists(TrimmedAssembliesDirectory) is false) return false;
 
@@ -335,7 +345,7 @@ public sealed class TrimBitBlazorUIAssets : Task
                 presentNames.Add(tick < 0 ? name : name.Substring(0, tick));
             }
 
-            strings.AddRange(AppScan.ReadUserStrings(reader));
+            strings.UnionWith(AppScan.ReadUserStrings(reader));
         }
 
         if (found)
@@ -347,8 +357,14 @@ public sealed class TrimBitBlazorUIAssets : Task
         return found;
     }
 
-    private LibraryGraph? LoadGraph(ISet<string> libraryNames, bool required)
+    /// <summary>
+    /// The untrimmed library assemblies as one graph; null, with an error logged when they are required and the reason
+    /// handed back when they are not, where they cannot be told.
+    /// </summary>
+    private LibraryGraph? LoadGraph(ISet<string> libraryNames, bool required, out string? missing)
     {
+        missing = null;
+
         var byName = LibraryAssemblies
             .Select(a => a.GetMetadata("FullPath"))
             .Where(p => libraryNames.Contains(Path.GetFileNameWithoutExtension(p)))
@@ -358,14 +374,18 @@ public sealed class TrimBitBlazorUIAssets : Task
         var ambiguous = byName.FirstOrDefault(g => g.Distinct(StringComparer.OrdinalIgnoreCase).Count() > 1);
         if (ambiguous is not null)
         {
-            if (required) Log.LogError("Bit.BlazorUI: more than one {0}.dll is referenced ({1}), so there is no telling which one this app compiled against. Set BitBlazorUILibraryAssembly to the one it did.", ambiguous.Key, string.Join(", ", ambiguous.Distinct()));
+            var why = string.Format(CultureInfo.InvariantCulture, "more than one {0}.dll is referenced ({1}), so there is no telling which one this app compiled against. Set BitBlazorUILibraryAssembly to the one it did", ambiguous.Key, string.Join(", ", ambiguous.Distinct()));
+            if (required) Log.LogError("Bit.BlazorUI: {0}.", why);
+            else missing = why;
             return null;
         }
 
         var paths = byName.Select(g => g.First()).Where(File.Exists).ToList();
         if (paths.Count == 0)
         {
-            if (required) Log.LogError("Bit.BlazorUI: the untrimmed bit BlazorUI assemblies are needed to work out what the app uses, and none was found among its references. Set BitBlazorUILibraryAssembly to them.");
+            const string why = "the untrimmed bit BlazorUI assemblies are needed to work out what the app uses, and none was found among its references. Set BitBlazorUILibraryAssembly to them";
+            if (required) Log.LogError("Bit.BlazorUI: {0}.", why);
+            else missing = why;
             return null;
         }
 
@@ -378,7 +398,7 @@ public sealed class TrimBitBlazorUIAssets : Task
         {
             Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: {0} -> {1} of {2} pieces, {3:N0} of {4:N0} bytes ({5}).",
                 $"{output.PackageId}/{output.Bundle}", output.KeptPieces, output.AllPieces, output.TrimmedLength, output.FullLength,
-                output.FullLength == 0 ? "-" : $"-{100 - (output.TrimmedLength * 100 / output.FullLength)}%");
+                output.FullLength == 0 ? "-" : $"-{Math.Round(100.0 * (output.FullLength - output.TrimmedLength) / output.FullLength, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}%");
         }
 
         foreach (var package in packages)
@@ -456,9 +476,6 @@ public sealed class TrimBitBlazorUIAssets : Task
         StaleAssets = [.. stale];
         return Log.HasLoggedErrors is false;
     }
-
-    private static readonly System.Text.RegularExpressions.Regex IdentifierInText =
-        new(@"(?<![\w$.])BitBlazorUI(\.[A-Za-z_$][A-Za-z0-9_$]*)+", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
     private static readonly string[] CopiedMetadata =
     [

@@ -60,14 +60,17 @@
                                  Types the app needs whatever the signals concluded - a component rendered by
                                  reflection or through a DynamicComponent built from a type name. Everything the type
                                  reaches comes with it: its stylesheet, its scripts, the components it renders. A name
-                                 that is no type of the packages fails the publish.
+                                 that is no type of the packages fails the publish. With BitBlazorUIScan None and the
+                                 publish not trimmed, these are a signal of their own: the whole of what the app renders.
+                                 The two items below only ever add to a signal - a list of scripts or glyphs says nothing
+                                 of the components an app renders - so with nothing else in play they trim nothing.
 
       <BitBlazorUIAsset Include="Callouts;BitButton" />
                                  Scripts (the TypeScript file's name) and component stylesheets (the .scss file's name)
                                  kept by name - for JavaScript calling into BitBlazorUI.* from where the publish cannot
-                                 read it (the app's own .js and .html files, of every project it references, are read),
-                                 or markup of the app's own using a component's classes without the component. A name
-                                 that is neither fails the publish.
+                                 read it (the app's own .js and .html files, of every project it references, are read,
+                                 and so are the string literals of its assemblies), or markup of the app's own using a
+                                 component's classes without the component. A name that is neither fails the publish.
 
       <BitBlazorUIIcon Include="Add;Delete" />
                                  Glyphs kept whatever the code says, with BitBlazorUITrimIcons on - the icon names that
@@ -79,9 +82,10 @@
 
       <BitBlazorUIScanFile Include="..." />
                                  Text files read for what the app says outside its code - a host page or a script the
-                                 static web assets do not hold - with the .html and .js of the app's projects included
-                                 already. Their text counts like a string literal of the app's code: icon names, the
-                                 bit-theme attributes, a data-bit-esc of the app's own markup.
+                                 static web assets do not hold - with the .html and .js of the app's projects (not the
+                                 framework's own, under _framework) included already. Their text counts like a string
+                                 literal of the app's code: icon names, the bit-theme attributes, a data-bit-esc of the
+                                 app's own markup.
 
       <BitBlazorUILibraryAssembly Include="..." />
                                  The untrimmed Bit.BlazorUI*.dll the scan reads the components from. Defaults to the
@@ -180,7 +184,7 @@
             <_BitBlazorUIScanMode Condition="'$(PublishTrimmed)' != 'true'">$(BitBlazorUIScan)</_BitBlazorUIScanMode>
 
             <_BitBlazorUIHasSignal>false</_BitBlazorUIHasSignal>
-            <_BitBlazorUIHasSignal Condition="'$(PublishTrimmed)' == 'true' or '$(_BitBlazorUIScanMode)' != 'None' or '@(BitBlazorUIComponent)' != '' or '@(BitBlazorUIAsset)' != '' or '@(BitBlazorUIIcon)' != ''">true</_BitBlazorUIHasSignal>
+            <_BitBlazorUIHasSignal Condition="'$(PublishTrimmed)' == 'true' or '$(_BitBlazorUIScanMode)' != 'None' or '@(BitBlazorUIComponent)' != ''">true</_BitBlazorUIHasSignal>
 
             <_BitBlazorUIPublishTrimming>false</_BitBlazorUIPublishTrimming>
             <_BitBlazorUIPublishTrimming Condition="'$(_BitBlazorUITrimAny)' == 'true' and '$(_BitBlazorUIHasSignal)' == 'true' and '$(_BitBlazorUIIsTrimmingHead)' == 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitBlazorUIPublishTrimming>

@@ -54,7 +54,6 @@
     <ItemGroup>
         <TypeScriptFiles Include="**\*.ts" />
         <ScssFiles Include="**\*.scss" />
-        <BitAssetsScript Include="..\Bit.BlazorUI.Build\build-assets.mjs" />
     </ItemGroup>
 
     <!-- What the core package's publish-time trimming reads of this one (see Bit.BlazorUI's
@@ -63,25 +62,8 @@
         <None Include="buildTransitive\Bit.BlazorUI.Legacy.targets" Pack="true" PackagePath="buildTransitive\;build\" />
     </ItemGroup>
 
-    <PropertyGroup>
-        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);IncludeBitBlazorUIAssetsInPackage</TargetsForTfmSpecificContentInPackage>
-        <!-- The first target framework, outside the condition that reads it: a semicolon is not allowed in one. -->
-        <_BitBlazorUIPackedTfm>$(TargetFrameworks.Split(';')[0])</_BitBlazorUIPackedTfm>
-        <_BitAssetsMinify Condition=" '$(Configuration)' == 'Release' ">--minify</_BitAssetsMinify>
-    </PropertyGroup>
-
-    <Target Name="IncludeBitBlazorUIAssetsInPackage" Condition="'$(TargetFramework)' == '$(_BitBlazorUIPackedTfm)'">
-        <ItemGroup>
-            <_BitBlazorUIAssetPiece Include="$(BaseIntermediateOutputPath)bit-assets\**\*" />
-            <TfmSpecificPackageFile Include="@(_BitBlazorUIAssetPiece)" PackagePath="buildTransitive\bit-assets\%(RecursiveDir)%(Filename)%(Extension)" />
-        </ItemGroup>
-    </Target>
-
-    <!-- No source map is written (build-assets.mjs deletes one an older build left beside a bundle), so none is content,
-         even while an older one is still on disk as the project is evaluated. -->
-    <ItemGroup>
-        <Content Remove="wwwroot\styles\*.map;wwwroot\scripts\*.map" />
-    </ItemGroup>
+    <!-- How this package's pieces are written and packed, shared by the packages that have any. -->
+    <Import Project="..\Bit.BlazorUI.Build\Bit.BlazorUI.Assets.targets" />
 
     <Target Name="BeforeBuildTasks" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript;BuildCss" />
 

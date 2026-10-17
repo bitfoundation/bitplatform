@@ -8,7 +8,7 @@
     the gate, the task, the asset swap, the endpoints. None of that is reachable from a test calling into
     Bit.BlazorUI.Build, so the checks that cover it publish a real app and read what came out, and this is that app.
 
-    A plain web app (the server of a Blazor Web App, statically rendered) rather than a WebAssembly one: it publishes in
+    A plain web app (a Blazor Web App's server, interactive on the server) rather than a WebAssembly one: it publishes in
     seconds rather than minutes, and it is the shape the scan exists for - a publish ILLink never touches. The
     WebAssembly shape, trimmed by ILLink, is Bit.BlazorUI.Tests.Consumer's.
 

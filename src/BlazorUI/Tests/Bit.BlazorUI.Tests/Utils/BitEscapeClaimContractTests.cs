@@ -1,6 +1,7 @@
 ﻿using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Bit.BlazorUI.Build;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Bit.BlazorUI.Tests.Utils;
@@ -27,6 +28,25 @@ public sealed class BitEscapeClaimContractTests
         // Kept by the publish-time trimming for every component that claims a key in its markup - the claim is read off
         // the DOM, so no interop call of theirs names this script.
         StringAssert.Contains(escape, "// bit-trim: markup data-bit-esc");
+    }
+
+    [TestMethod]
+    public void TheClaimShouldBeTheFirstListenerOfTheKeyOnTheWindow()
+    {
+        // The window in the capture phase is the first place a key is dispatched to, and the listeners of one node run in
+        // the order they were added - so the claim is on the event ahead of every surface only while no script the bundle
+        // loads before Utils.Escape adds a capturing keydown listener to the window as it loads, at its top level or in a
+        // function it calls there. That used to be one file's order (general.ts); now every script adds its own page-level
+        // listeners, so it is the bundle's: the manifest lists the scripts in the order they load and, for each, the
+        // listeners it adds as it does ("window keydown capture"), as build-assets.mjs works them out.
+        var core = PackageAssets.Load(SourceFiles.GetPath("Bit.BlazorUI", "obj", "bit-assets"));
+
+        var windowKeydowns = core.ScriptModules.Where(m => m.Listeners.Contains("window keydown capture")).Select(m => m.Name).ToList();
+
+        Assert.IsNotEmpty(windowKeydowns, "No script of the core bundle adds a capturing keydown listener to the window as it loads: the claim is not added where it has to be.");
+        Assert.AreEqual("Utils.Escape", windowKeydowns[0], $"A script loading ahead of Utils.Escape adds a capturing keydown listener to the window, which runs before the claim: {string.Join(", ", windowKeydowns)}.");
+        Assert.AreEqual("window keydown capture", core.ScriptModules.Single(m => m.Name == "Utils.Escape").Listeners.First(l => l.StartsWith("window keydown", System.StringComparison.Ordinal)),
+                        "Utils.Escape adds a keydown listener to the window ahead of the claim's own.");
     }
 
     [TestMethod]

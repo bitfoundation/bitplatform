@@ -19,6 +19,20 @@ public sealed class AssetSelection
     /// <summary>What an interop identifier looks like: the namespace and a path of names under it.</summary>
     public static readonly Regex Identifier = new(@"^BitBlazorUI(\.[A-Za-z_$][A-Za-z0-9_$]*)+$", RegexOptions.CultureInvariant);
 
+    // One in a longer text: not preceded by a part of a longer name (MyBitBlazorUI, $BitBlazorUI) - a dot before it is a
+    // global's - and through optional chaining as well.
+    private static readonly Regex IdentifierInText = new(@"(?<![\w$])BitBlazorUI(?:\??\.[A-Za-z_$][A-Za-z0-9_$]*)+", RegexOptions.CultureInvariant);
+
+    /// <summary>
+    /// Every interop identifier a text of the app's own holds - a script, a page's markup: <c>BitBlazorUI.Theme.onChange</c>,
+    /// reached through a global (<c>window.BitBlazorUI...</c>, <c>globalThis.BitBlazorUI...</c>) or through optional
+    /// chaining (<c>BitBlazorUI.Theme?.onChange</c>) alike, each written the plain way an interop call of .NET code writes it.
+    /// </summary>
+    public static IEnumerable<string> IdentifiersIn(string text)
+    {
+        foreach (Match match in IdentifierInText.Matches(text)) yield return match.Value.Replace("?.", ".");
+    }
+
     private readonly IReadOnlyList<PackageAssets> _packages;
     private readonly Dictionary<string, List<ScriptModule>> _exports = new(StringComparer.Ordinal);
 
@@ -46,7 +60,11 @@ public sealed class AssetSelection
     /// <summary>Identifiers that looked like interop calls but named nothing any script exports.</summary>
     public SortedSet<string> UnresolvedIdentifiers { get; } = new(StringComparer.Ordinal);
 
-    /// <summary>The scripts an interop identifier calls into: "BitBlazorUI.Utils.isRtl" is Utils.isRtl if a script exports exactly that, else Utils.</summary>
+    /// <summary>
+    /// The scripts an interop identifier calls into: "BitBlazorUI.Utils.isRtl" is Utils.isRtl if a script exports exactly
+    /// that, else Utils. An identifier that stops at a namespace several files add to ("BitBlazorUI.Utils" - an alias of
+    /// it, or the text of a call made through brackets) is every script adding to it.
+    /// </summary>
     public IReadOnlyList<ScriptModule> ResolveIdentifier(string identifier)
     {
         if (Identifier.IsMatch(identifier) is false) return [];
@@ -62,7 +80,14 @@ public sealed class AssetSelection
             if (dot < 0) break;
             key = key.Substring(0, dot);
         }
-        return [];
+
+        // A namespace is no export of its own, only the container of its members' (Utils.isRtl, Callouts.toggle). What
+        // is reached through the namespace itself can be any of them, so all of them are kept - never none.
+        var prefix = path + ".";
+        return _exports.Where(e => e.Key.StartsWith(prefix, StringComparison.Ordinal))
+                       .SelectMany(e => e.Value)
+                       .Distinct()
+                       .ToList();
     }
 
     /// <summary>

@@ -46,24 +46,39 @@ public sealed class PublishResult(string directory, int exitCode, string output)
         }
     }
 
-    /// <summary>The names of the scripts of a package that the published script bundle holds, in bundle order.</summary>
+    /// <summary>
+    /// The names of the scripts of a package that the published script bundle holds, in bundle order: the one run of the
+    /// pieces, in their order, that the bundle is made of after its prologue - so a piece whose text also stands inside
+    /// another one is never taken for kept where it was left out. Fails when no run of them makes the bundle.
+    /// </summary>
     public List<string> KeptScripts(string package)
     {
         var pieces = GetPieces(package);
         var bundle = ReadAsset(package, pieces.ScriptBundle!);
-        return pieces.ScriptModules.Where(m => Piece(pieces, m.File) is var text && text.Trim().Length > 0 && bundle.Contains(text, StringComparison.Ordinal))
-                                   .Select(m => m.Name)
-                                   .ToList();
+        Assert.IsTrue(bundle.StartsWith(pieces.ScriptPrologue, StringComparison.Ordinal), $"{package}'s published script does not start with the prologue of its pieces.");
+
+        var kept = Decompose(bundle, pieces.ScriptPrologue.Length, bundle.Length, pieces.ScriptModules.Select(m => (m.Name, Piece(pieces, m.File))).ToList());
+        Assert.IsNotNull(kept, $"{package}'s published script is not its prologue and a run of its pieces in the bundle's order.");
+        return kept;
     }
 
-    /// <summary>The names of the component stylesheets of a package that a published stylesheet holds, in cascade order.</summary>
+    /// <summary>
+    /// The names of the component stylesheets of a package that a published stylesheet holds, in cascade order: the run of
+    /// the component pieces between the bundle's own two parts. Fails when no run of them makes the stylesheet.
+    /// </summary>
     public List<string> KeptStyles(string package, string? bundle = null)
     {
         var pieces = GetPieces(package);
-        var css = ReadAsset(package, bundle ?? pieces.StyleBundles[0].Bundle);
-        return pieces.StyleChunks.Where(c => Piece(pieces, c.File) is var text && text.Trim().Length > 0 && css.Contains(text, StringComparison.Ordinal))
-                                 .Select(c => c.Name)
-                                 .ToList();
+        var styleBundle = bundle is null ? pieces.StyleBundles[0] : pieces.StyleBundles.Single(b => b.Bundle == bundle);
+        var css = ReadAsset(package, styleBundle.Bundle).TrimStart('﻿');
+        var prefix = Piece(pieces, styleBundle.Prefix);
+        var suffix = Piece(pieces, styleBundle.Suffix);
+        Assert.IsTrue(css.Length >= prefix.Length + suffix.Length && css.StartsWith(prefix, StringComparison.Ordinal) && css.EndsWith(suffix, StringComparison.Ordinal),
+                      $"{package}/{styleBundle.Bundle} does not start and end with its own parts.");
+
+        var kept = Decompose(css, prefix.Length, css.Length - suffix.Length, pieces.StyleChunks.Select(c => (c.Name, Piece(pieces, c.File))).ToList());
+        Assert.IsNotNull(kept, $"{package}/{styleBundle.Bundle} is not its own parts around a run of its component pieces in the bundle's order.");
+        return kept;
     }
 
     /// <summary>The published script bundle of a package, against the bundle the pieces it holds make, in their order.</summary>
@@ -99,6 +114,36 @@ public sealed class PublishResult(string directory, int exitCode, string output)
     }
 
     private static string Piece(PackageAssets pieces, string relativePath) => File.ReadAllText(pieces.Resolve(relativePath), Encoding.UTF8);
+
+    // The pieces, in their order, whose texts written one after another are exactly text[start..end] - a search over which
+    // ones are left out, since a piece can begin with what another one does. An empty piece adds nothing and is never
+    // counted as kept; null when no choice of them makes the text.
+    private static List<string>? Decompose(string text, int start, int end, List<(string Name, string Text)> pieces)
+    {
+        var failed = new HashSet<(int Piece, int Position)>();
+        var kept = new List<string>();
+
+        bool Match(int index, int position)
+        {
+            if (position == end) return true;
+            if (index == pieces.Count || failed.Contains((index, position))) return false;
+
+            var piece = pieces[index].Text;
+            if (piece.Length > 0 && position + piece.Length <= end && string.CompareOrdinal(text, position, piece, 0, piece.Length) == 0)
+            {
+                kept.Add(pieces[index].Name);
+                if (Match(index + 1, position + piece.Length)) return true;
+                kept.RemoveAt(kept.Count - 1);
+            }
+
+            if (Match(index + 1, position)) return true;
+
+            failed.Add((index, position));
+            return false;
+        }
+
+        return Match(0, start) ? kept : null;
+    }
 
     private static string Tail(string text) => text.Length <= 6000 ? text : "..." + text[^6000..];
 }

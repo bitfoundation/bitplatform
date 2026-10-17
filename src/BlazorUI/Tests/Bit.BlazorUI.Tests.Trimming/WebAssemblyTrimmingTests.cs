@@ -1,19 +1,14 @@
-﻿using System.Text.RegularExpressions;
-using Bit.BlazorUI.Tests.Trimming.Infrastructure;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.Extensions.FileProviders;
+﻿using Bit.BlazorUI.Tests.Trimming.Infrastructure;
 using Microsoft.Playwright;
 
 namespace Bit.BlazorUI.Tests.Trimming;
 
 /// <summary>
 /// The trimming a Blazor WebAssembly app gets by default: Bit.BlazorUI.Tests.Consumer, published trimmed, its bundles put
-/// back together off what ILLink left in the trimmed library assemblies - and, run in a browser, working.
+/// back together off what ILLink left in the trimmed library assemblies - and, run in every engine, working.
 /// </summary>
 [TestClass]
-public sealed partial class WebAssemblyTrimmingTests
+public sealed class WebAssemblyTrimmingTests
 {
     private const string Core = "Bit.BlazorUI";
     private const string Extras = "Bit.BlazorUI.Extras";
@@ -47,101 +42,62 @@ public sealed partial class WebAssemblyTrimmingTests
     }
 
     [TestMethod]
-    public async Task ATrimmedAppShouldRunWithEveryComponentStyledAndNoScriptMissing()
+    [DynamicData(nameof(BrowserSession.Engines), typeof(BrowserSession))]
+    public async Task ATrimmedAppShouldRunWithEveryComponentStyledAndNoScriptMissing(string engine)
     {
-        if (Environment.GetEnvironmentVariable("RUN_BROWSER_TESTS") != "1") Assert.Inconclusive("Set RUN_BROWSER_TESTS=1 to run the trimmed app in a browser.");
-
+        await using var session = await BrowserSession.OpenAsync(engine);
         Published.AssertSucceeded();
 
-        await using var server = await StaticServer.StartAsync(Published.WebRoot);
-        using var playwright = await Playwright.CreateAsync();
-        await using var browser = await playwright.Chromium.LaunchAsync(new() { Headless = true });
-        var page = await browser.NewPageAsync();
-
-        var errors = new List<string>();
-        page.Console += (_, message) => { if (message.Type == "error") errors.Add($"console: {message.Text}"); };
-        page.PageError += (_, error) => errors.Add($"page: {error}");
-        page.Response += (_, response) => { if (response.Status >= 400) errors.Add($"{response.Status}: {response.Url}"); };
+        await using var server = await AppServer.StartStaticAsync(Published.WebRoot);
+        var page = session.Page;
 
         await page.GotoAsync(server.Url);
-        await page.WaitForSelectorAsync(".bit-btn", new() { Timeout = 60_000 });
+        await page.WaitForSelectorAsync(".bit-btn", new() { Timeout = 90_000 });
 
         // What was trimmed away is gone from the page, and what the app uses is there.
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.Callouts.toggle === 'function' && typeof BitBlazorUI.Utils.claimEscape === 'function'"));
         Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.ScrollablePane === 'undefined' && typeof BitBlazorUI.Splitter === 'undefined'"));
 
-        // Every component class on the page has the stylesheet that styles it: the first segment of each bit- class
-        // names a component's stylesheet (bit-btn, BitButton's), and that stylesheet is in the published bundle.
-        var classes = await page.EvaluateAsync<string[]>("() => [...new Set([...document.querySelectorAll('[class]')].flatMap(e => [...e.classList]).filter(c => c.startsWith('bit-')))]");
-        var prefixes = ChunkPrefixes();
-        var kept = Published.KeptStyles(Core).Concat(Published.KeptStyles(Extras)).ToHashSet();
-        var unstyled = classes.Select(c => ClassPrefix().Match(c))
-                              .Where(m => m.Success && prefixes.ContainsKey(m.Groups["prefix"].Value))
-                              .Select(m => (Class: m.Value, Chunk: prefixes[m.Groups["prefix"].Value]))
-                              .Where(x => kept.Contains(x.Chunk) is false)
-                              .Select(x => $"{x.Class} ({x.Chunk})")
-                              .Distinct()
-                              .ToList();
-        Assert.AreEqual(0, unstyled.Count, $"The page renders classes whose stylesheet the trimmed bundle left out: {string.Join(", ", unstyled)}");
+        await session.AssertEveryComponentIsStyledAsync(Published, Core, Extras);
 
-        // A callout opens - the script with the most moving parts of all - and closes on Escape.
-        await page.Locator(".bit-drp").First.ClickAsync();
-        await page.WaitForFunctionAsync("() => BitBlazorUI.Callouts.current.calloutId !== ''", null, new() { Timeout = 10_000 });
+        // The components whose scripts the trimming had to keep for them, each doing what it relies on its scripts for.
+        // A callout - the script with the most moving parts of all - opens and closes on Escape, from each kind of field.
+        await session.OpenAndEscapeCalloutAsync(page.Locator(".bit-drp").First, "BitDropdown");
+        await session.OpenAndEscapeCalloutAsync(page.Locator(".bit-dtp input").First, "BitDatePicker");
+        await session.OpenAndEscapeCalloutAsync(page.Locator(".bit-mnb button").First, "BitMenuButton");
+
+        // A tag typed into the tags input and committed with Enter (BitTagsInput.ts).
+        await page.Locator(".bit-tgi input").First.FillAsync("alpha");
+        await page.Locator(".bit-tgi input").First.PressAsync("Enter");
+        await session.WaitForAsync("() => document.querySelectorAll('.bit-tgi-tag').length === 1", "BitTagsInput did not add the tag typed into it");
+
+        // Text typed into the rich text editor's surface (BitRichTextEditor.ts, of the Extras).
+        await page.Locator(".bit-rte-edt").First.ClickAsync();
+        await page.Keyboard.TypeAsync("hello");
+        await session.WaitForAsync("() => document.querySelector('.bit-rte-edt').textContent.includes('hello')", "BitRichTextEditor did not take the text typed into it");
+
+        // The theme switcher flips the document's theme (BitTheme.ts) and back. From the keyboard: the app's nav panel,
+        // fixed to the side of the page, lies over the controls further down it.
+        await PressAsync(page.Locator(".bit-ths-lgt").First);
+        await session.WaitForAsync("() => document.documentElement.getAttribute('bit-theme') === 'dark'", "BitThemeSwitcher did not turn the page dark");
+        await PressAsync(page.Locator(".bit-ths-drk").First);
+        await session.WaitForAsync("() => document.documentElement.getAttribute('bit-theme') === 'light'", "BitThemeSwitcher did not turn the page light again");
+
+        // A modal opened by a button, and closed on Escape by the surfaces' script.
+        await PressAsync(page.GetByRole(AriaRole.Button, new() { Name = "Open", Exact = true }).First);
+        await session.WaitForAsync("() => !!document.querySelector('.bit-mdl')", "BitModal did not open");
         await page.Keyboard.PressAsync("Escape");
-        await page.WaitForFunctionAsync("() => BitBlazorUI.Callouts.current.calloutId === ''", null, new() { Timeout = 10_000 });
+        await session.WaitForAsync("() => !document.querySelector('.bit-mdl')", "Escape did not close the BitModal");
 
-        Assert.AreEqual(0, errors.Count, $"The trimmed app reported errors: {string.Join(" | ", errors)}");
+        // The data grid's rows, read through the names of the app's own record.
+        await session.WaitForAsync("() => document.querySelector('.bit-dtg')?.textContent.includes('Ada')", "BitDataGrid rendered no rows");
+
+        session.AssertNoErrors($"The trimmed app in {engine}");
     }
 
-    // The class prefix each component stylesheet of the core and the Extras names its classes with (btn for BitButton):
-    // the one most of its class selectors start with.
-    private static Dictionary<string, string> ChunkPrefixes()
+    private static async Task PressAsync(ILocator button)
     {
-        var result = new Dictionary<string, string>(StringComparer.Ordinal);
-        foreach (var pieces in new[] { PublishResult.GetPieces(Core), PublishResult.GetPieces(Extras) })
-        {
-            foreach (var chunk in pieces.StyleChunks)
-            {
-                var prefix = ClassPrefix().Matches(File.ReadAllText(pieces.Resolve(chunk.File)))
-                                          .GroupBy(m => m.Groups["prefix"].Value)
-                                          .OrderByDescending(g => g.Count())
-                                          .Select(g => g.Key)
-                                          .FirstOrDefault();
-                if (prefix is not null) result.TryAdd(prefix, chunk.Name);
-            }
-        }
-        return result;
-    }
-
-    [GeneratedRegex(@"(?<![\w-])bit-(?<prefix>[a-z0-9]+)(?=[-\s.:,{)\]>]|$)")]
-    private static partial Regex ClassPrefix();
-
-    /// <summary>Serves a published WebAssembly app's wwwroot the way a static host would.</summary>
-    private sealed class StaticServer(WebApplication app, string url) : IAsyncDisposable
-    {
-        public string Url { get; } = url;
-
-        public static async Task<StaticServer> StartAsync(string webRoot)
-        {
-            var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { WebRootPath = webRoot, ContentRootPath = webRoot });
-            builder.WebHost.UseUrls("http://127.0.0.1:0");
-            var app = builder.Build();
-
-            var types = new FileExtensionContentTypeProvider();
-            types.Mappings[".wasm"] = "application/wasm";
-            types.Mappings[".dat"] = "application/octet-stream";
-            types.Mappings[".blat"] = "application/octet-stream";
-            types.Mappings[".webcil"] = "application/octet-stream";
-
-            var files = new PhysicalFileProvider(webRoot);
-            app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = files });
-            app.UseStaticFiles(new StaticFileOptions { FileProvider = files, ContentTypeProvider = types, ServeUnknownFileTypes = true });
-            app.MapFallbackToFile("index.html", new StaticFileOptions { FileProvider = files });
-
-            await app.StartAsync();
-            return new StaticServer(app, app.Urls.First());
-        }
-
-        public async ValueTask DisposeAsync() => await app.DisposeAsync();
+        await button.FocusAsync();
+        await button.PressAsync("Enter");
     }
 }

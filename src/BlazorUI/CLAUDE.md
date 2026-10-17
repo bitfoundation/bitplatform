@@ -53,12 +53,16 @@ trimmed - off the app's type references and everything they reach. A piece left 
   exporting `Utils.isRtl`) - always a **literal**, never put together at run time; the one exception, BitMap's providers,
   names its provider types instead. Or a comment in the file: `// bit-trim: owners BitNav` (kept with that type; `BitFc*`
   for a family), `// bit-trim: markup data-bit-esc` (kept when the code an app can run, or its static html, holds that
-  text - for a script acting on what markup says), `// bit-trim: always`. A file that runs code as it loads must carry one
-  of these (or `on-demand`): `build-assets.mjs` fails on one that does not.
+  text - for a script acting on what markup says), `// bit-trim: always`. A file that runs code as it loads - its top
+  level, or a function invoked where it is written, calls anything, constructs anything but a plain `Map` / `Set`, or
+  assigns to the platform (`window.onresize = ...`) - must carry one of these (or `on-demand`): `build-assets.mjs` fails
+  on one that does not. A stylesheet says `always` or `owners` only.
 - **A script adds its own page-level listeners as it loads**, never `general.ts`, so an app trimmed down to components
-  that do not need them gets none. The bundle is ordered so a script follows every script it uses at load; listeners that
-  must run in a set order on one node go through a hook of the earlier script (`Utils.afterEscapeClaim`), not the file
-  order.
+  that do not need them gets none. The bundle is ordered so a script follows every script it uses at load - what its top
+  level uses, and what the functions it calls there use in turn; listeners that must run in a set order on one node go
+  through a hook of the earlier script (`Utils.afterEscapeClaim`), not the file order. The manifest lists the listeners
+  each script adds as it loads (`"window keydown capture"`), which is how `BitEscapeClaimContractTests` pins the claim as
+  the first keydown listener of the window.
 - **`Utils` and `Callouts` are namespaces spread over a file per feature** (`Utils.Escape.ts`, `Utils.Focus.ts`,
   `Callouts.Registry.ts`, ...), each one a piece: a function goes in the file of its feature, or a new `Utils.<Feature>.ts`.
   State that scripts of different features share goes in a small file of its own (`Callouts.Registry.ts`); where the

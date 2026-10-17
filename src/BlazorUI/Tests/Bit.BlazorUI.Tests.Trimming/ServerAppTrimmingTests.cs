@@ -3,9 +3,9 @@
 namespace Bit.BlazorUI.Tests.Trimming;
 
 /// <summary>
-/// The trimming of a publish ILLink does not touch - a Blazor Web App's server, statically rendering Fixture's App.razor -
-/// which reads the app's assemblies for the library types they reference (BitBlazorUIScan) and the untrimmed library
-/// assemblies for everything those reach.
+/// The trimming of a publish ILLink does not touch - a Blazor Web App's server, rendering Fixture's Main.razor
+/// interactively - which reads the app's assemblies for the library types they reference (BitBlazorUIScan) and the
+/// untrimmed library assemblies for everything those reach.
 /// </summary>
 [TestClass]
 public sealed class ServerAppTrimmingTests
@@ -57,7 +57,7 @@ public sealed class ServerAppTrimmingTests
         var scripts = Trimmed.KeptScripts(Core);
 
         // What the components call into, what those scripts use, what every bundle has - and what the app's own script
-        // (wwwroot/scripts/fixture.js) calls, which nothing of its .NET code names.
+        // (wwwroot/scripts/fixture.js) calls through window.BitBlazorUI, which nothing of its .NET code names.
         foreach (var expected in new[] { "general", "Utils.Keys", "BitTextField", "Utils.Escape", "Callouts", "Callouts.Registry", "Utils.Tooltips", "Utils.Focus", "PageVisibility" })
         {
             CollectionAssert.Contains(scripts, expected, $"The trimmed core script is missing {expected}.");
@@ -171,6 +171,81 @@ public sealed class ServerAppTrimmingTests
 
         CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")),
                                   File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
+    }
+
+    [TestMethod]
+    public void NamesOfScriptsOrIconsAloneShouldNotTrimAnything()
+    {
+        // A list of glyphs or scripts says nothing of the components an app renders: with the scan off and no component
+        // named, the names add to nothing, and every bundle is published whole - never trimmed down to the names alone.
+        var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=true", "BitBlazorUIScan=None", "FixtureIcons=Add", "FixtureAssets=BitButton");
+        publish.AssertSucceeded();
+
+        foreach (var (package, bundle) in new[] { (Core, "scripts/bit.blazorui.js"), (Core, "styles/bit.blazorui.css"), (Icons, "styles/bit.blazorui.icons.css") })
+        {
+            CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, package, "wwwroot", bundle.Replace('/', Path.DirectorySeparatorChar))),
+                                      File.ReadAllBytes(publish.GetAssetPath(package, bundle)),
+                                      $"{package}/{bundle} was trimmed off names that say nothing of the app's components.");
+        }
+    }
+
+    [TestMethod]
+    [DynamicData(nameof(BrowserSession.Engines), typeof(BrowserSession))]
+    public async Task TheTrimmedAppShouldRunInEveryEngine(string engine)
+    {
+        await using var session = await BrowserSession.OpenAsync(engine);
+        Trimmed.AssertSucceeded();
+
+        await using var server = await AppServer.StartPublishedAsync(Trimmed.Directory, "Bit.BlazorUI.Tests.Trimming.Fixture");
+        var page = session.Page;
+
+        await page.GotoAsync(server.Url);
+        await session.WaitForAsync("() => document.getElementById('fixture-ready')?.hidden === false", "The circuit never rendered the components");
+
+        await session.AssertEveryComponentIsStyledAsync(Trimmed, Core, Extras);
+
+        // Kept for what the app renders, and the rest left out of the very bundle the page loaded.
+        Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.Callouts.toggle === 'function' && typeof BitBlazorUI.Utils.setupTooltip === 'function'"));
+        Assert.IsTrue(await page.EvaluateAsync<bool>("() => typeof BitBlazorUI.Swiper === 'undefined' && typeof BitBlazorUI.SnackBars === 'undefined'"));
+
+        // The dropdown's callout opens and closes on Escape.
+        await session.OpenAndEscapeCalloutAsync(page.Locator(".bit-drp").First, "BitDropdown");
+
+        // The tooltip shows on the pointer and goes on Escape (Utils.Tooltips, kept for BitTooltip's interop calls).
+        await page.Locator(".bit-ttp .bit-ico").First.HoverAsync();
+        await session.WaitForAsync("() => { const tip = document.querySelector('.bit-ttp [role=tooltip]'); return !!tip && getComputedStyle(tip).visibility !== 'hidden' && tip.getBoundingClientRect().width > 0; }", "BitTooltip did not show on the pointer");
+        await page.Keyboard.PressAsync("Escape");
+        await session.WaitForAsync("() => { const tip = document.querySelector('.bit-ttp [role=tooltip]'); return !tip || getComputedStyle(tip).visibility === 'hidden' || tip.getBoundingClientRect().width === 0; }", "Escape did not dismiss the BitTooltip");
+
+        // Typed into the text field, which stays what was typed.
+        await page.Locator(".bit-tfl input").First.FillAsync("Ada");
+        Assert.AreEqual("Ada", await page.Locator(".bit-tfl input").First.InputValueAsync());
+
+        // The app's own script reaches the script it calls through the global.
+        await page.EvaluateAsync("() => window.fixtureDisposeVisibility('nothing-registered')");
+
+        // The icon stylesheet the page loaded has the glyph the code names, and not the one it does not (read off its rules:
+        // the core stylesheet draws a few common glyphs of its own, Delete among them).
+        var glyphs = await page.EvaluateAsync<bool[]>(@"() => {
+            const sheet = [...document.styleSheets].find(s => (s.href || '').includes('bit.blazorui.icons'));
+            const selectors = [...sheet.cssRules].map(r => r.selectorText || '');
+            return ['Add', 'Delete'].map(name => selectors.some(s => s.includes('.bit-icon--' + name + '::')));
+        }");
+        Assert.IsTrue(glyphs[0], "The icon stylesheet the page loaded has no rule for the Add glyph the code names.");
+        Assert.IsFalse(glyphs[1], "The icon stylesheet the page loaded still has a rule for the Delete glyph nothing names.");
+
+        // And the glyph is drawn with it.
+        var add = await page.EvaluateAsync<string>(@"() => {
+            const probe = document.createElement('i');
+            probe.className = 'bit-icon bit-icon--Add';
+            document.body.appendChild(probe);
+            const content = getComputedStyle(probe, '::before').content;
+            probe.remove();
+            return content;
+        }");
+        Assert.IsFalse(add is "none" or "normal" or "" or "\"\"", $"The Add glyph the code names is not drawn: {add}");
+
+        session.AssertNoErrors($"The trimmed server app in {engine}");
     }
 
     [TestMethod]

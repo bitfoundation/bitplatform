@@ -432,7 +432,7 @@
             // so. Nothing is measured for it, because the platforms disagree on which viewport the keyboard
             // shrinks: iOS leaves the layout viewport alone and shrinks the visual one, while Android Chrome
             // shrinks both - which leaves the difference between them, the only thing a measurement could
-            // read, at zero on exactly the platform that needs Callouts. The focus reads the same on both.
+            // read, at zero on exactly the platform that needs this. The focus reads the same on both.
             // It is asked of the whole stack rather than of this callout alone: a callout opened from inside
             // another one is relocated to the body and is no longer a descendant of the outer one, which
             // would otherwise leave that outer callout hidden underneath the inner one whose own keyboard
@@ -449,7 +449,7 @@
             // point at, and the clamping below would leave it stuck against an edge of the screen next to
             // whatever happens to be there. It is hidden rather than dismissed, so it comes back with its
             // component: a callout is normally dismissed by the page moving under it, and the ones that
-            // asked not to be are the ones that reach Callouts.
+            // asked not to be are the ones that reach this.
             // Strictly outside on one of the axes: a zero-height component (which is what a callout with
             // no anchor of its own is positioned against) sitting exactly on an edge of the band is still
             // on screen, not past it.
