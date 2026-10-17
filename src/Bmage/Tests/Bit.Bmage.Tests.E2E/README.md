@@ -71,6 +71,12 @@ ahead of time) is several times faster.
 When no browser can be launched at all, every test reports **Inconclusive** with the reason rather than failing, so a
 checkout without browsers still runs the rest of the repository's suites.
 
+## CI
+
+`.github/workflows/bit.ci.Bmage.e2e.yml` runs the whole suite in Release, and only when started by hand (Actions >
+"bit platform CI - Bmage E2E" > Run workflow); the test results (TRX) are uploaded as an artifact. The pull-request
+pipeline, `bit.ci.Bmage.yml`, runs the build, engine and MCP server tests only.
+
 ## Layout
 
 * `AssemblySetup.cs` - builds the demo host (unless told not to) and starts it once for the whole run; stops it and
