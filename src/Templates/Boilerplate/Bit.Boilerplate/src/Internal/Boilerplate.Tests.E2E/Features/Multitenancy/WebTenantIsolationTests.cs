@@ -87,10 +87,36 @@ public partial class WebTenantIsolationTests : AppTestBase
                 "products.xml is anonymous, so it is the host's store; it must not advertise another store's product.");
         }
 
+        // ---- API again, off the very urls Home asks for, after an anonymous visitor asked for them ----
+        // ProductsCarousel's query and ProductsSection's first page. Asked anonymously they are answered with the main
+        // store's catalogue, which the CDN edge and the browser keep under the url alone (See AppResponseCachePolicy),
+        // as any visitor of the last five minutes leaves it there. The member must still get its own store's rows
+        // (See AuthDelegatingHandler).
+        ODataQuery[] homeQueries =
+        [
+            new() { Top = 6, OrderBy = nameof(ProductDto.Name) },
+            new() { Top = 10, Skip = 0, OrderBy = nameof(ProductDto.Name) }
+        ];
+
+        await using (var anonymousApiClient = DeployedApiClientProvider.CreateApiClientFor(DeployedApps.Sales))
+        {
+            foreach (var query in homeQueries)
+            {
+                await anonymousApiClient.Services.GetRequiredService<IProductViewController>().WithQuery(query).Get(TestContext.CancellationToken);
+            }
+        }
+
+        foreach (var query in homeQueries)
+        {
+            var seenOnHome = await memberApiClient.Services.GetRequiredService<IProductViewController>().WithQuery(query).Get(TestContext.CancellationToken);
+
+            Assert.AreEqual(productName, string.Join(", ", seenOnHome.Select(p => p.Name)),
+                $"'{query}' answered the member with the main store's catalogue, off a cache keyed on the url alone.");
+        }
+
         // ---- UI: the home page of the signed-in member ----
-        // Straight to sign-in rather than through Home: the carousel's ProductView/Get is UserAgnostic with a five
-        // minute max-age (See AppResponseCachePolicy), so opening Home anonymously first would put the host store's
-        // answer in the browser cache, and the member would then be shown it from there, off the very same url.
+        // The edge holds the main store's answer to both of Home's queries now (See above), so this is the page a member
+        // gets whenever anyone had come by first.
         var page = Page;
         await page.GotoAsync(new Uri(new Uri(DeployedApps.Sales), PageUrls.SignIn).ToString(), new() { WaitUntil = WaitUntilState.NetworkIdle });
         await WaitUntilInteractive(page);

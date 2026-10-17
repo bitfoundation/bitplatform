@@ -266,9 +266,18 @@ Vary: Origin, X-Origin
 The `UserAgnostic` property is critical for security. If a response contains user-specific data (e.g., user's name, roles, or tenant information), it **must not** be cached in shared caches (CDN edge or output cache). Setting `UserAgnostic = true` is only safe when the response is identical for all users.
 
 > **Multi-tenant + CDN edge:** the `Tenant` discriminator above is part of the **ASP.NET Core output cache key only** -
-> `VaryByValues` never becomes a response header, so a CDN cannot see it. The output cache therefore keeps tenants apart
-> correctly, but an edge cache keyed on host + path does not. Until the tenant is part of the URL or the host, treat
-> `UserAgnostic = true` together with `EnableCdnEdgeCaching` as unsafe for any response whose body is tenant-filtered.
+> `VaryByValues` never becomes a response header, so a CDN cannot see it. That's why a response the server filtered by
+> the caller's tenant claim gets no edge or browser lifetime at all, and only the output cache keeps it.
+>
+> An anonymous caller's tenant comes from the host, so its answer is cached as usual. A signed-in member of another
+> tenant asks for the very same url though, so the client adds the member's tenant to every GET it sends
+> (`?_tenant=...`, See `AuthDelegatingHandler`) and never reads the anonymous answer from the edge or the browser cache.
+> The server does not resolve the tenant from that parameter, and a response to a url carrying it never gets an edge or
+> browser lifetime, so an anonymous caller can't plant an answer where a tenant's members look.
+>
+> Pre-rendered pages are covered the same way: the values persisted into a page are keyed by the signed-in user (See
+> `WebClientPrerenderStateService`), so when the edge hands a member a page rendered for an anonymous visitor, the
+> member's client fetches its own data instead of reusing the host's.
 
 ---
 
