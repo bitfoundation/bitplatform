@@ -1,0 +1,21 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Bit.BbScanner.Demo/">
+    <Project Path="Bit.BbScanner.Demo/Client/Bit.BbScanner.Demo.Client.csproj" />
+    <Project Path="Bit.BbScanner.Demo/Server/Bit.BbScanner.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.BbScanner.TestKit/Bit.BbScanner.TestKit.csproj" />
+    <Project Path="Tests/Bit.BbScanner.Tests/Bit.BbScanner.Tests.csproj" />
+    <Project Path="Tests/Bit.BbScanner.Tests.Mcp/Bit.BbScanner.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.BbScanner.Benchmarks/Bit.BbScanner.Benchmarks.csproj" />
+  </Folder>
+  <Project Path="Bit.BbScanner/Bit.BbScanner.csproj" />
+</Solution>

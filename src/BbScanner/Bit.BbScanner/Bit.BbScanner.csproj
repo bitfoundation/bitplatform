@@ -1,0 +1,133 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <RootNamespace>Bit.BbScanner</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsTrimmable>true</IsTrimmable>
+        <!-- The imaging stages (pixel conversion, binarization and the bit planes) work on spans of pixels through pointers. -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Description>A dependency-free, high performance barcode scanner for Blazor: BbScanner reads QR Code, Data Matrix, Code 128, Code 39, EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images. The decoding is implemented entirely in C#: no barcode SDK and no JavaScript scanner library; the browser layer only opens the camera and copies pixels.</Description>
+        <PackageTags>Bit;Blazor;Barcode;QrCode;Scanner;DataMatrix;Pdf417;Ean;Upc;Code128;Code39;Itf;Camera;WebAssembly</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Use floating low-bound version ranges so consumers can pin to any patch release on
+             their TFM. The upper bound prevents accidentally pulling a major-version package that
+             targets a newer TFM. -->
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0,9.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0,10.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0)" />
+    </ItemGroup>
+
+    <!-- Keep the build inputs (tsconfig + package manifests) out of the published static web
+         assets while still showing them in the project. -->
+    <ItemGroup>
+        <Content Remove="package*.json;tsconfig.json" />
+        <None Include="package*.json;tsconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TypeScriptFiles Include="Scripts\**\*.ts" />
+        <StyleFiles Include="Styles\**\*.css" />
+    </ItemGroup>
+
+    <!-- Restores npm packages, compiles the TypeScript modules and bundles the stylesheet. Every
+         sub-target is incremental via its Inputs/Outputs, so this is a no-op when nothing changed. -->
+    <Target Name="BuildBbScannerAssets" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript;BuildCss" />
+
+    <!-- The outputs (wwwroot/bit-bbscanner.js, wwwroot/Bit.BbScanner.lib.module.js and wwwroot/bit-bbscanner.css)
+         are generated, git-ignored files. On a clean build they do not exist when the default
+         "wwwroot/**" Content glob is evaluated, so the static web asset discovery in
+         ResolveProjectStaticWebAssets would miss them and consumers would get a 404 for
+         _content/Bit.BbScanner/bit-bbscanner.js. Hooking BeforeTargets="ResolveProjectStaticWebAssets"
+         guarantees they are generated first and then explicitly added to @(Content). The
+         Remove-before-Include keeps each to a single Content entry for builds where the glob already
+         captured them. -->
+    <Target Name="IncludeBbScannerAssetsAsStaticWebAsset"
+            BeforeTargets="ResolveProjectStaticWebAssets"
+            DependsOnTargets="BuildBbScannerAssetsOnce">
+        <ItemGroup>
+            <Content Remove="wwwroot\bit-bbscanner.js" />
+            <Content Include="wwwroot\bit-bbscanner.js" />
+            <Content Remove="wwwroot\Bit.BbScanner.lib.module.js" />
+            <Content Include="wwwroot\Bit.BbScanner.lib.module.js" />
+            <Content Remove="wwwroot\bit-bbscanner.css" />
+            <Content Include="wwwroot\bit-bbscanner.css" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Runs BuildBbScannerAssets through the MSBuild task with TargetFramework removed, so every per-TFM
+         build asks for the same project configuration. MSBuild keeps one result per project and
+         global properties: the first request runs tsc/esbuild, concurrent ones wait for it, and later
+         ones reuse it. A ProjectReference builds this project's inner builds directly (one per
+         referencing target framework, in parallel) without ever running the outer build, so without
+         this each of them would run tsc against the same wwwroot output at once. -->
+    <Target Name="BuildBbScannerAssetsOnce">
+        <MSBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="BuildBbScannerAssets"
+                 RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
+    </Target>
+
+    <!-- In a multi-targeted build, produce the outputs exactly once in the outer (cross-targeting)
+         build, before the per-TFM inner builds are dispatched. -->
+    <Target Name="BuildBbScannerAssetsOnCrossTargeting"
+            BeforeTargets="DispatchToInnerBuilds"
+            Condition="'$(IsCrossTargetingBuild)' == 'true'"
+            DependsOnTargets="BuildBbScannerAssets" />
+
+    <!-- `npm ci` installs exactly what the checked-in package-lock.json pins, and fails fast when the
+         lockfile and package.json drift instead of silently rewriting the lock. -->
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <!-- The output differs per configuration (Release is minified) but lands in the same files, so
+         the sources alone cannot drive the up-to-date check: after a Debug build, a Release build
+         would see the outputs newer than the sources and skip, shipping unminified files (and vice
+         versa). A per-configuration stamp in obj/ makes switching configurations invalidate the check;
+         the stale stamp of the other configuration is deleted so switching back rebuilds too. -->
+    <Target Name="BuildJavaScript"
+            Inputs="@(TypeScriptFiles);tsconfig.json"
+            Outputs="wwwroot/bit-bbscanner.js;wwwroot/Bit.BbScanner.lib.module.js;$(BaseIntermediateOutputPath)bit-bbscanner.js.$(Configuration).stamp">
+        <ItemGroup>
+            <_BbScannerStaleJsStamps Include="$(BaseIntermediateOutputPath)bit-bbscanner.js.*.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_BbScannerStaleJsStamps)" />
+        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place,
+             so an interrupted minify cannot leave a half-written module behind that the Outputs check
+             then treats as up to date. format=esm keeps the named exports the C# side imports through
+             [JSImport], and the target matches tsconfig so the minifier does not raise the syntax level
+             back up. -->
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-bbscanner.js --minify --format=esm --target=es2019 --outfile=wwwroot/bit-bbscanner.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-bbscanner.min.js" DestinationFiles="wwwroot/bit-bbscanner.js" OverwriteReadOnlyFiles="true" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/Bit.BbScanner.lib.module.js --minify --format=esm --target=es2019 --outfile=wwwroot/Bit.BbScanner.lib.module.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/Bit.BbScanner.lib.module.min.js" DestinationFiles="wwwroot/Bit.BbScanner.lib.module.js" OverwriteReadOnlyFiles="true" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+        <Touch Files="$(BaseIntermediateOutputPath)bit-bbscanner.js.$(Configuration).stamp" AlwaysCreate="true" />
+    </Target>
+
+    <!-- The stylesheet is plain CSS: esbuild only copies it in Debug and minifies it in Release. The
+         same per-configuration stamp as BuildJavaScript keeps a Debug output from surviving into a
+         Release package. -->
+    <Target Name="BuildCss"
+            Inputs="@(StyleFiles)"
+            Outputs="wwwroot/bit-bbscanner.css;$(BaseIntermediateOutputPath)bit-bbscanner.css.$(Configuration).stamp">
+        <ItemGroup>
+            <_BbScannerStaleCssStamps Include="$(BaseIntermediateOutputPath)bit-bbscanner.css.*.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_BbScannerStaleCssStamps)" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild Styles/bit-bbscanner.css --minify --outfile=wwwroot/bit-bbscanner.css" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' != 'Release' " Command="node_modules/.bin/esbuild Styles/bit-bbscanner.css --outfile=wwwroot/bit-bbscanner.css" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+        <Touch Files="$(BaseIntermediateOutputPath)bit-bbscanner.css.$(Configuration).stamp" AlwaysCreate="true" />
+    </Target>
+
+</Project>

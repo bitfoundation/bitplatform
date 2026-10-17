@@ -184,6 +184,23 @@
         },
         new()
         {
+            Title = "Barcodes read in C#",
+            Subtitle = "bit BbScanner · Blazor-native barcode scanner",
+            LinkUrl = Urls.BbScanner,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit BbScanner is a dependency-free barcode scanner that reads QR Code, Data Matrix, Code 128, Code 39,
+                    EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images, with the decoding written in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BbScanner Formats="BbBarcodeFormat.QrCode"
+           OnScan="HandleScan" /></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Onboarding that guides",
             Subtitle = "bit Bonboarding · Blazor-native product tours",
             LinkUrl = Urls.Bonboarding,

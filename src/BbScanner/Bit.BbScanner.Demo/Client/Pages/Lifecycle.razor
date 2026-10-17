@@ -1,0 +1,134 @@
+﻿@page "/lifecycle"
+
+<PageTitle>Lifecycle - bit BbScanner</PageTitle>
+
+<h1>Lifecycle and duplicate prevention</h1>
+<p class="lede">
+    Start, stop, pause and resume are explicit and cheap. Pausing keeps the camera open, so
+    resuming is instant; stopping releases the track and turns the camera indicator off.
+</p>
+
+<div class="split">
+    <div class="stack">
+        <BbScanner @ref="_scanner"
+                   AutoStart="false"
+                   ShowControls="false"
+                   DuplicateSuppressionWindow="TimeSpan.FromSeconds(_windowSeconds)"
+                   OnScan="HandleScan"
+                   OnStatusChanged="HandleStatus" />
+
+        <div class="card">
+            <div class="button-row">
+                <button class="button button--primary" type="button" @onclick="Start">Start</button>
+                <button class="button" type="button" @onclick="Stop">Stop</button>
+                <button class="button" type="button" @onclick="Pause">Pause</button>
+                <button class="button" type="button" @onclick="Resume">Resume</button>
+            </div>
+            <p class="field__hint" style="margin-block-start:0.6rem;">
+                Status: <span class="pill">@(_scanner?.Status.ToString() ?? "Idle")</span>
+            </p>
+        </div>
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <h3 style="margin-block-start:0;">Duplicate suppression</h3>
+            <div class="field">
+                <label class="field__label">Window: @_windowSeconds s</label>
+                <input type="range" min="0" max="10" step="1" value="@_windowSeconds" @onchange="OnWindowChanged" />
+            </div>
+            <p class="field__hint">
+                Suppression is keyed on the value and the symbology together, so moving the camera
+                to a different barcode reports immediately instead of waiting out the window.
+                Holding the same one in view keeps it suppressed rather than re-firing on a timer.
+            </p>
+            <p class="field__hint">
+                Set it to zero and the scanner reports every frame that decodes, which is the
+                right setting for measuring throughput.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Scan counters</h3>
+            <div class="stat-grid">
+                <div class="stat">
+                    <div class="stat__label">Reported</div>
+                    <div class="stat__value">@_reported</div>
+                </div>
+                <div class="stat">
+                    <div class="stat__label">Distinct values</div>
+                    <div class="stat__value">@_distinct.Count</div>
+                </div>
+                <div class="stat">
+                    <div class="stat__label">Status changes</div>
+                    <div class="stat__value">@_statusChanges</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Disposal</h3>
+            <p style="font-size:0.9rem;color:var(--fg-muted);margin:0;">
+                The component implements <code>IAsyncDisposable</code>. Navigating away cancels the
+                frame loop, stops every media track, releases the JavaScript session and returns
+                the pooled buffers. Nothing keeps the camera alive after the component is gone.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div style="margin-block-start:1.25rem;">
+    <ResultLog Results="_results" OnClear="Clear" />
+</div>
+
+@code {
+    private readonly List<BbBarcodeResult> _results = [];
+    private readonly HashSet<string> _distinct = [];
+
+    private BbScanner? _scanner;
+    private int _windowSeconds = 2;
+    private int _reported;
+    private int _statusChanges;
+
+    private Task Start() => _scanner?.StartAsync() ?? Task.CompletedTask;
+
+    private Task Stop() => _scanner?.StopAsync() ?? Task.CompletedTask;
+
+    private void Pause() => _scanner?.Pause();
+
+    private void Resume() => _scanner?.Resume();
+
+    private void OnWindowChanged(ChangeEventArgs args)
+    {
+        if (int.TryParse(args.Value?.ToString(), out var seconds))
+        {
+            _windowSeconds = seconds;
+        }
+    }
+
+    private void HandleScan(BbBarcodeResult result)
+    {
+        _reported++;
+        _distinct.Add(result.Text);
+        _results.Insert(0, result);
+        if (_results.Count > 30)
+        {
+            _results.RemoveAt(_results.Count - 1);
+        }
+
+        StateHasChanged();
+    }
+
+    private void HandleStatus(BbScannerStatus status)
+    {
+        _statusChanges++;
+        StateHasChanged();
+    }
+
+    private void Clear()
+    {
+        _results.Clear();
+        _distinct.Clear();
+        _reported = 0;
+    }
+}

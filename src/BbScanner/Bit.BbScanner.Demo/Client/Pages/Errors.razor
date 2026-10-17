@@ -1,0 +1,140 @@
+﻿@page "/errors"
+
+<PageTitle>Errors and permissions - bit BbScanner</PageTitle>
+
+<h1>Errors and permissions</h1>
+<p class="lede">
+    Camera failures are ordinary and expected: permission denied, no camera, camera already in
+    use. The component classifies each one so an application can respond without parsing message
+    text.
+</p>
+
+<div class="split">
+    <div class="stack">
+        <BbScanner @ref="_scanner"
+                   AutoStart="false"
+                   DeviceId="@_deviceId"
+                   RequestedWidth="_width"
+                   RequestedHeight="_height"
+                   OnError="HandleError"
+                   OnStatusChanged="HandleStatus" />
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Provoke a failure</h3>
+            <div class="button-row">
+                <button class="button" type="button" @onclick="StartNormally">Start normally</button>
+                <button class="button" type="button" @onclick="StartWithBadDevice">Unknown camera id</button>
+            </div>
+            <p class="field__hint" style="margin-block-start:0.6rem;">
+                An unknown <code>DeviceId</code> is requested as an exact constraint, so browsers
+                reject it with <code>OverconstrainedError</code>, which the component reports as
+                <code>ConstraintsUnsatisfied</code>.
+            </p>
+            <p class="field__hint">
+                <code>RequestedWidth</code> and <code>RequestedHeight</code> are sent as
+                <em>ideal</em> constraints, so an unreachable resolution is negotiated down rather
+                than refused; resolution alone never produces an error.
+            </p>
+            <p class="field__hint">
+                To see a permission denial, block camera access for this site in the browser and
+                press <em>Start normally</em>.
+            </p>
+        </div>
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <h3 style="margin-block-start:0;">Current state</h3>
+            <p style="margin:0;">Status: <span class="pill">@_status</span></p>
+            @if (_error is not null)
+            {
+                <div class="note note--warning" style="margin-block-start:0.75rem;">
+                    <p style="margin:0 0 0.35rem;"><strong>@_error.Kind</strong></p>
+                    <p style="margin:0;">@_error.Message</p>
+                </div>
+                <p class="field__hint" style="margin-block-start:0.6rem;">Suggested handling: @Advice(_error.Kind)</p>
+            }
+            else
+            {
+                <p class="empty" style="padding:0.25rem;">No error.</p>
+            }
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Error kinds</h3>
+            <table>
+                <tbody>
+                    <tr><td class="mono">PermissionDenied</td><td>The user or a policy refused the camera.</td></tr>
+                    <tr><td class="mono">NoCamera</td><td>No device matched the request.</td></tr>
+                    <tr><td class="mono">CameraUnavailable</td><td>A device exists but is held by something else.</td></tr>
+                    <tr><td class="mono">ConstraintsUnsatisfied</td><td>No camera can meet the requested constraints.</td></tr>
+                    <tr><td class="mono">NotSupported</td><td>No camera API, or the page is not a secure context.</td></tr>
+                    <tr><td class="mono">Unknown</td><td>Anything the browser did not classify.</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Secure context</h3>
+            <p style="font-size:0.9rem;color:var(--fg-muted);margin:0;">
+                Browsers only expose <code>getUserMedia</code> over HTTPS or on
+                <code>localhost</code>. Served any other way the component reports
+                <code>NotSupported</code> immediately, with a message that says exactly that,
+                instead of hanging on a permission prompt that will never appear.
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private BbScanner? _scanner;
+    private BbScannerException? _error;
+    private BbScannerStatus _status = BbScannerStatus.Idle;
+    private string? _deviceId;
+    private int _width = 1280;
+    private int _height = 720;
+
+    private async Task StartNormally()
+    {
+        _deviceId = null;
+        _width = 1280;
+        _height = 720;
+        _error = null;
+        StateHasChanged();
+        await Task.Yield();
+        await (_scanner?.StartAsync() ?? Task.CompletedTask);
+    }
+
+    private async Task StartWithBadDevice()
+    {
+        _deviceId = "this-device-does-not-exist";
+        _error = null;
+        StateHasChanged();
+        await Task.Yield();
+        await (_scanner?.StartAsync() ?? Task.CompletedTask);
+    }
+
+    private void HandleError(BbScannerException error)
+    {
+        _error = error;
+        StateHasChanged();
+    }
+
+    private void HandleStatus(BbScannerStatus status)
+    {
+        _status = status;
+        StateHasChanged();
+    }
+
+    private static string Advice(BbScannerErrorKind kind) => kind switch
+    {
+        BbScannerErrorKind.PermissionDenied =>
+            "explain why the camera is needed and offer a retry, since the browser will not re-prompt on its own.",
+        BbScannerErrorKind.NoCamera => "fall back to image scanning or manual entry.",
+        BbScannerErrorKind.CameraUnavailable => "ask the user to close other applications using the camera, then retry.",
+        BbScannerErrorKind.ConstraintsUnsatisfied =>
+            "drop the DeviceId and start again with Facing, since the requested camera is gone.",
+        BbScannerErrorKind.NotSupported => "serve over HTTPS, or hide the scanner entirely on this browser.",
+        _ => "log the inner exception and offer a retry.",
+    };
+}

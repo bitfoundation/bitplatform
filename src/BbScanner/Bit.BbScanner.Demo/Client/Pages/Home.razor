@@ -1,0 +1,142 @@
+﻿@page "/"
+
+<PageTitle>bit BbScanner - barcode scanning for Blazor</PageTitle>
+
+<h1>bit BbScanner</h1>
+<p class="lede">
+    A barcode scanner for Blazor with the decoding written from scratch in C#. No barcode SDK, no
+    JavaScript scanner library, no component framework. The browser opens the camera and copies
+    pixels; everything after that is managed code.
+</p>
+
+<div class="grid grid--3" style="margin-block-start:1.5rem;">
+    <div class="card">
+        <h3 style="margin-block-start:0;">Nine symbologies</h3>
+        <p style="margin:0;color:var(--fg-muted);font-size:0.9rem;">
+            QR Code, Data Matrix, Code 128, Code 39, EAN-13, EAN-8, UPC-A, UPC-E and ITF, each
+            decoded by a reader written against the specification. PDF417 is implemented but needs
+            its specification symbol table.
+        </p>
+    </div>
+    <div class="card">
+        <h3 style="margin-block-start:0;">One copy per frame</h3>
+        <p style="margin:0;color:var(--fg-muted);font-size:0.9rem;">
+            JavaScript writes the frame straight into managed memory through a memory view. There
+            is no JSON, no base64 and no second buffer.
+        </p>
+    </div>
+    <div class="card">
+        <h3 style="margin-block-start:0;">No garbage per frame</h3>
+        <p style="margin:0;color:var(--fg-muted);font-size:0.9rem;">
+            Buffers, bit planes, detectors and scan lines are all reused across frames. A frame
+            with no barcode in it allocates nothing on the linear path and a few dozen bytes on
+            the matrix one, whatever the frame contains.
+        </p>
+    </div>
+</div>
+
+<h2>Try it</h2>
+<div class="split">
+    <div>
+        <BbScanner Formats="BbBarcodeFormat.All"
+                   Region="BbScanRegion.CenteredSquare(0.75)"
+                   OnScan="OnScan" />
+        <p class="field__hint" style="margin-block-start:0.6rem;">
+            Needs HTTPS or localhost, and camera permission. No camera to hand? Use
+            <a href="image">image scanning</a> or open the
+            <a href="samples">sample barcodes</a> on another screen.
+        </p>
+    </div>
+    <div class="stack">
+        @if (_last is not null)
+        {
+            <div class="card">
+                <h3 style="margin-block-start:0;">Last scan</h3>
+                <p style="margin:0 0 0.5rem;"><span class="pill">@_last.Format</span></p>
+                <pre style="margin:0;"><code>@_last.Text</code></pre>
+            </div>
+        }
+        else
+        {
+            <div class="card">
+                <p class="empty" style="padding:0.5rem;">Scan something to see the strongly typed result here.</p>
+            </div>
+        }
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Quick start</h3>
+            <pre><code>&lt;BbScanner Formats="BbBarcodeFormat.QrCode | BbBarcodeFormat.Ean13"
+                Region="BbScanRegion.CenteredSquare(0.7)"
+                OnScan="HandleScan" /&gt;
+
+@@code {
+    private void HandleScan(BbBarcodeResult result)
+    {
+        Console.WriteLine($"{result.Format}: {result.Text}");
+    }
+}</code></pre>
+        </div>
+    </div>
+</div>
+
+<h2>Installation</h2>
+<pre><code>dotnet add package Bit.BbScanner</code></pre>
+<p>Then add the namespace to <code>_Imports.razor</code>:</p>
+<pre><code>@@using Bit.BbScanner</code></pre>
+<p>
+    That is the whole setup. There is no service registration, no JavaScript tag, no stylesheet
+    link and no initialisation call: the package's Blazor initializer adds
+    <code>_content/Bit.BbScanner/bit-bbscanner.css</code> to the page, and the component loads its
+    own module the first time it renders. Camera scanning runs on WebAssembly, so put the scanner
+    on a page rendered with <code>InteractiveWebAssembly</code>, or in a standalone Blazor
+    WebAssembly app.
+</p>
+
+<h2>How it works</h2>
+<table>
+    <thead>
+        <tr><th>Stage</th><th>Where</th><th>What happens</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Capture</td>
+            <td>Browser</td>
+            <td><code>getUserMedia</code> feeds a <code>&lt;video&gt;</code>; a canvas scales frames to the processing size.</td>
+        </tr>
+        <tr>
+            <td>Transfer</td>
+            <td>Boundary</td>
+            <td>One <code>JSImport</code> call copies RGBA into a reused managed buffer.</td>
+        </tr>
+        <tr>
+            <td>Luminance</td>
+            <td>C#</td>
+            <td>Fixed point BT.601 weights, with optional subsampling in the same pass.</td>
+        </tr>
+        <tr>
+            <td>Binarise</td>
+            <td>C#</td>
+            <td>Adaptive 8×8 block thresholds for matrix codes, per-row histograms for linear ones.</td>
+        </tr>
+        <tr>
+            <td>Detect</td>
+            <td>C#</td>
+            <td>Finder pattern search, perspective transform and grid sampling.</td>
+        </tr>
+        <tr>
+            <td>Decode</td>
+            <td>C#</td>
+            <td>Reed-Solomon correction, de-interleaving and bit stream parsing.</td>
+        </tr>
+    </tbody>
+</table>
+
+@code {
+    private BbBarcodeResult? _last;
+
+    private void OnScan(BbBarcodeResult result)
+    {
+        _last = result;
+        StateHasChanged();
+    }
+}

@@ -280,6 +280,10 @@ _book
 /src/Bink/Bit.Bink/wwwroot/**/*.js
 /src/Bink/Bit.Bink/wwwroot/**/*.css
 
+/src/BbScanner/Bit.BbScanner/Scripts/**/*.js
+/src/BbScanner/Bit.BbScanner/wwwroot/**/*.js
+/src/BbScanner/Bit.BbScanner/wwwroot/**/*.css
+
 /src/Blex/Bit.Blex.Blazor/Scripts/**/*.js
 /src/Blex/Bit.Blex.Blazor/wwwroot/**/*.js
 

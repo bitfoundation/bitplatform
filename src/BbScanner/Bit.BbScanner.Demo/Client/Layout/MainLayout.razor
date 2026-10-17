@@ -1,0 +1,13 @@
+﻿@inherits LayoutComponentBase
+
+@* data-interactive turns true once the page runs in the browser. Prerendered markup is on screen
+   long before its event handlers are, which is what the E2E suite waits out with it. *@
+<div class="shell" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <NavMenu />
+    <main class="content" id="main" tabindex="-1">
+        <div class="content__inner">
+            @Body
+        </div>
+    </main>
+</div>

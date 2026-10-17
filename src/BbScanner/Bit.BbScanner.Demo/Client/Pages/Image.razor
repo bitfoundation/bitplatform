@@ -1,0 +1,124 @@
+﻿@page "/image"
+
+<PageTitle>Image scanning - bit BbScanner</PageTitle>
+
+<h1>Image and file scanning</h1>
+<p class="lede">
+    The same decoder reads a still image. Nothing about the pipeline changes; only the tuning
+    does, because a one-shot decode can afford to be exhaustive.
+</p>
+
+<div class="split">
+    <div class="stack">
+        <BbScanner @ref="_scanner"
+                   AutoStart="false"
+                   ShowStatusBar="true"
+                   Formats="BbBarcodeFormat.All"
+                   EnableFileScanning="true"
+                   OnScan="HandleScan"
+                   OnError="e => _error = e" />
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Pick an image</h3>
+            <p class="field__hint">
+                The component ships a hidden file input and the plumbing to read it. Opening it
+                from your own button is a single call.
+            </p>
+            <div class="button-row">
+                <button class="button button--primary" type="button" @onclick="OpenPicker">Choose an image</button>
+                <button class="button" type="button" @onclick="DecodeGeneratedImage">Decode a generated image</button>
+                <button class="button" type="button" @onclick="() => _results.Clear()" disabled="@(_results.Count == 0)">Clear</button>
+            </div>
+            <p class="field__hint" style="margin-block-start:0.6rem;">
+                The second button skips the picker entirely: it renders a symbol into a pixel
+                buffer and hands it to <code>DecodeImage</code>, which is the path an application
+                uses when it sources images itself.
+            </p>
+        </div>
+
+        @if (_error is not null)
+        {
+            <div class="note note--warning"><strong>@_error.Kind</strong> — @_error.Message</div>
+        }
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <h3 style="margin-block-start:0;">Why still images differ</h3>
+            <p style="font-size:0.9rem;color:var(--fg-muted);">
+                A camera gets another chance in fifty milliseconds, so a live frame should give up
+                early. A file gets one chance, so
+                <code>BbScannerOptions.ForStillImages()</code> raises the scan line count, enables the
+                exhaustive detector path and allows inverted symbols.
+            </p>
+            <pre><code>var options = BbScannerOptions.ForStillImages();
+options.Formats = BbBarcodeFormat.QrCode;
+
+using var decoder = new BbBarcodeDecoder(options);
+var result = decoder.Decode(pixels, width, height, BbPixelFormat.Rgba32);</code></pre>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Large photographs</h3>
+            <p style="font-size:0.9rem;color:var(--fg-muted);margin:0;">
+                A twelve megapixel photo carries no more barcode detail than a two megapixel one,
+                so the component asks the browser to scale anything larger than 1600 pixels on its
+                longest edge before it crosses into managed code. That alone is the difference
+                between a snappy decode and a visible pause on a phone.
+            </p>
+        </div>
+    </div>
+</div>
+
+<div style="margin-block-start:1.25rem;">
+    <ResultLog Results="_results" OnClear="() => _results.Clear()" />
+</div>
+
+@code {
+    /// <summary>
+    /// Decodes a buffer the page owns, through <see cref="BbScanner.DecodeImage"/>. No
+    /// camera and no file picker are involved.
+    /// </summary>
+    private void DecodeGeneratedImage()
+    {
+        _error = null;
+
+        var sample = SampleCatalog.All.First(s => s.Format == BbBarcodeFormat.QrCode);
+        using var image = Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(sample.Matrix!, scale: 6);
+
+        // Expand to the packed RGBA an application would normally get from a canvas.
+        var rgba = new byte[image.Width * image.Height * 4];
+        for (var i = 0; i < image.Width * image.Height; i++)
+        {
+            rgba[(i * 4) + 0] = image.Pixels[i];
+            rgba[(i * 4) + 1] = image.Pixels[i];
+            rgba[(i * 4) + 2] = image.Pixels[i];
+            rgba[(i * 4) + 3] = 255;
+        }
+
+        var result = _scanner?.DecodeImage(
+            rgba, image.Width, image.Height, BbPixelFormat.Rgba32);
+
+        if (result is not null)
+        {
+            _results.Insert(0, result);
+        }
+        else
+        {
+            _error = new BbScannerException(BbScannerErrorKind.Unknown, "The generated image did not decode.");
+        }
+    }
+
+    private readonly List<BbBarcodeResult> _results = [];
+    private BbScanner? _scanner;
+    private BbScannerException? _error;
+
+    private Task OpenPicker() => _scanner is null ? Task.CompletedTask : _scanner.OpenFilePickerAsync();
+
+    private void HandleScan(BbBarcodeResult result)
+    {
+        _error = null;
+        _results.Insert(0, result);
+        StateHasChanged();
+    }
+}

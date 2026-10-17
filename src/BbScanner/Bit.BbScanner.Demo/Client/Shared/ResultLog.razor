@@ -1,0 +1,104 @@
+﻿@*
+    A rolling log of decoded results, showing everything the library reports so that the demo
+    doubles as documentation of the result type.
+*@
+
+<div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:1rem;">
+        <h3 style="margin:0;">Results</h3>
+        <div class="button-row">
+            <span class="pill pill--muted">@Results.Count total</span>
+            <button class="button" type="button" @onclick="Clear" disabled="@(Results.Count == 0)">Clear</button>
+        </div>
+    </div>
+
+    @if (Results.Count == 0)
+    {
+        <p class="empty">Nothing scanned yet. Point the camera at a barcode, or use the sample codes.</p>
+    }
+    else
+    {
+        <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Time</th>
+                    <th>Format</th>
+                    <th>Value</th>
+                    <th>Position</th>
+                    <th>Details</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var entry in Results)
+                {
+                    <tr data-testid="result-row">
+                        <td style="white-space:nowrap;">@entry.Timestamp.ToLocalTime().ToString("HH:mm:ss")</td>
+                        <td><span class="pill" data-testid="result-format">@entry.Format</span></td>
+                        <td class="mono" data-testid="result-value">@entry.Text</td>
+                        <td class="mono" style="white-space:nowrap;">@Describe(entry.BoundingBox)</td>
+                        <td>@Describe(entry.Metadata)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        </div>
+    }
+</div>
+
+@code {
+    /// <summary>The results to display, newest first.</summary>
+    [Parameter]
+    public IReadOnlyList<BbBarcodeResult> Results { get; set; } = [];
+
+    /// <summary>Raised when the user clears the log.</summary>
+    [Parameter]
+    public EventCallback OnClear { get; set; }
+
+    private Task Clear() => OnClear.InvokeAsync();
+
+    private static string Describe(BbScanRect box) =>
+        box.Width <= 0 ? "-" : $"{box.X:0}, {box.Y:0} · {box.Width:0}×{box.Height:0}";
+
+    private static string Describe(BbBarcodeResultMetadata? metadata)
+    {
+        if (metadata is null)
+        {
+            return "-";
+        }
+
+        var parts = new List<string>(6);
+
+        if (metadata.SymbolVersion is not null)
+        {
+            parts.Add($"version {metadata.SymbolVersion}");
+        }
+
+        if (metadata.ErrorCorrectionLevel is not null)
+        {
+            parts.Add($"EC {metadata.ErrorCorrectionLevel}");
+        }
+
+        if (metadata.ErrorsCorrected is > 0)
+        {
+            parts.Add($"{metadata.ErrorsCorrected} corrected");
+        }
+
+        if (metadata.Eci is not null)
+        {
+            parts.Add($"ECI {metadata.Eci}");
+        }
+
+        if (metadata.IsGs1 == true)
+        {
+            parts.Add("GS1");
+        }
+
+        if (metadata.StructuredAppendIndex is not null)
+        {
+            parts.Add($"part {metadata.StructuredAppendIndex + 1} of {metadata.StructuredAppendCount}");
+        }
+
+        return parts.Count == 0 ? "-" : string.Join(" · ", parts);
+    }
+}

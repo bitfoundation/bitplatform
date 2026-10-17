@@ -1,0 +1,120 @@
+﻿@page "/region"
+
+<PageTitle>Scan region - bit BbScanner</PageTitle>
+
+<h1>Scan region</h1>
+<p class="lede">
+    A region is expressed in normalized coordinates, so it survives whatever resolution the
+    browser negotiates. Cropping happens before any pixel is touched, which makes every later
+    stage cheaper in proportion to the area removed.
+</p>
+
+<div class="split">
+    <div class="stack">
+        <BbScanner Region="_region"
+                   ShowMask="_showMask"
+                   Formats="BbBarcodeFormat.All"
+                   OnScan="r => _last = r"
+                   OnDiagnostics="d => { _diagnostics = d; StateHasChanged(); }" />
+
+        <DiagnosticsPanel Diagnostics="_diagnostics" />
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <h3 style="margin-block-start:0;">Presets</h3>
+            <div class="button-row">
+                <button class="button" type="button" @onclick='() => Set(BbScanRegion.Full, "Full frame")'>Full frame</button>
+                <button class="button" type="button" @onclick='() => Set(BbScanRegion.CenteredSquare(0.7), "Centred square")'>Centred square</button>
+                <button class="button" type="button" @onclick='() => Set(new BbScanRegion(0.05, 0.35, 0.9, 0.3), "Linear band")'>Linear band</button>
+                <button class="button" type="button" @onclick='() => Set(new BbScanRegion(0.5, 0, 0.5, 1), "Right half")'>Right half</button>
+            </div>
+            <p class="field__hint" style="margin-block-start:0.6rem;">Current: @_label</p>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Custom</h3>
+            <div class="field">
+                <label class="field__label">X: @_x.ToString("0.00")</label>
+                <input type="range" min="0" max="0.9" step="0.05" value="@_x" @onchange="e => Update(x: ToDouble(e))" />
+            </div>
+            <div class="field">
+                <label class="field__label">Y: @_y.ToString("0.00")</label>
+                <input type="range" min="0" max="0.9" step="0.05" value="@_y" @onchange="e => Update(y: ToDouble(e))" />
+            </div>
+            <div class="field">
+                <label class="field__label">Width: @_w.ToString("0.00")</label>
+                <input type="range" min="0.1" max="1" step="0.05" value="@_w" @onchange="e => Update(w: ToDouble(e))" />
+            </div>
+            <div class="field">
+                <label class="field__label">Height: @_h.ToString("0.00")</label>
+                <input type="range" min="0.1" max="1" step="0.05" value="@_h" @onchange="e => Update(h: ToDouble(e))" />
+            </div>
+            <label class="checkbox">
+                <input type="checkbox" checked="@_showMask" @onchange="e => _showMask = (bool)(e.Value ?? true)" />
+                Dim the area outside the region
+            </label>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Result positions</h3>
+            <p style="font-size:0.9rem;color:var(--fg-muted);">
+                Corner points are always reported in the coordinates of the frame the camera
+                produced, not of the cropped region, so an overlay drawn from them lines up with
+                what the user sees.
+            </p>
+            @if (_last is not null)
+            {
+                <pre style="margin:0;"><code>@Describe(_last)</code></pre>
+            }
+            else
+            {
+                <p class="empty" style="padding:0.25rem;">Scan something to see its corner points.</p>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private BbScanRegion _region = BbScanRegion.CenteredSquare(0.7);
+    private BbScanDiagnostics _diagnostics;
+    private BbBarcodeResult? _last;
+    private string _label = "Centred square";
+    private bool _showMask = true;
+
+    private double _x = 0.15;
+    private double _y = 0.15;
+    private double _w = 0.7;
+    private double _h = 0.7;
+
+    private void Set(BbScanRegion region, string label)
+    {
+        _region = region;
+        _label = label;
+        _x = region.X;
+        _y = region.Y;
+        _w = region.Width;
+        _h = region.Height;
+    }
+
+    private void Update(double? x = null, double? y = null, double? w = null, double? h = null)
+    {
+        _x = x ?? _x;
+        _y = y ?? _y;
+        _w = w ?? _w;
+        _h = h ?? _h;
+        _region = new BbScanRegion(_x, _y, _w, _h).Normalized();
+        _label = "Custom";
+    }
+
+    private static double ToDouble(ChangeEventArgs args) =>
+        double.TryParse(args.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value)
+            ? value
+            : 0;
+
+    private static string Describe(BbBarcodeResult result)
+    {
+        var corners = string.Join("\n  ", result.Corners.Select(p => p.ToString()));
+        return $"Format: {result.Format}\nFrame:  {result.FrameWidth}x{result.FrameHeight}\nBox:    {result.BoundingBox}\nPoints:\n  {corners}";
+    }
+}

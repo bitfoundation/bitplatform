@@ -6,6 +6,7 @@ on:
     branches:
       - 'main'
     paths:
+      - 'src/BbScanner/**'
       - 'src/BlazorUI/**'
       - 'src/Bink/**'
       - 'src/Blex/**'
@@ -158,6 +159,11 @@ jobs:
       run: dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bink
       run: dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output . --configuration Release
+
+    - name: dotnet build BbScanner
+      run: dotnet build src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BbScanner
+      run: dotnet pack src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output . --configuration Release
 
     - name: dotnet build Blex
       run: dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

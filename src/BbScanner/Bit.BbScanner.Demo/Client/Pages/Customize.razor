@@ -1,0 +1,199 @@
+﻿@page "/customize"
+
+<PageTitle>Customisation - bit BbScanner</PageTitle>
+
+<h1>Customisation</h1>
+<p class="lede">
+    Every colour, radius and dimension is a CSS custom property, and every visual element can be
+    replaced with a render fragment. Nothing needs a selector override.
+</p>
+
+<div class="split">
+    <div class="stack">
+@* The custom properties are set on the scanner itself, through the unmatched attribute
+   capture, because a declaration on the element always beats one inherited from an ancestor. *@
+        <BbScanner Formats="BbBarcodeFormat.All"
+                   Region="BbScanRegion.CenteredSquare(0.72)"
+                   ShowControls="_showControls"
+                   CssClass="demo-scanner"
+                   AriaLabel="Customisable barcode scanner"
+                   Overlay="CurrentOverlay"
+                   MessageTemplate="MessageTemplate"
+                   style="@ThemeStyle()"
+                   OnScan="r => _last = r" />
+
+        @if (_last is not null)
+        {
+            <div class="card">
+                <h3 style="margin-block-start:0;">Last scan</h3>
+                <p style="margin:0;"><span class="pill">@_last.Format</span></p>
+                <pre style="margin:0.5rem 0 0;"><code>@_last.Text</code></pre>
+            </div>
+        }
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <h3 style="margin-block-start:0;">Theme</h3>
+
+            <div class="field">
+                <label class="field__label" for="accent">Accent and reticle</label>
+                <select id="accent" value="@_accent" @onchange="e => _accent = e.Value?.ToString() ?? _accent">
+                    <option value="#4f8cff">Blue</option>
+                    <option value="#35c77c">Green</option>
+                    <option value="#ff9f45">Amber</option>
+                    <option value="#ff5f9e">Pink</option>
+                    <option value="#ffffff">White</option>
+                </select>
+            </div>
+
+            <div class="field">
+                <label class="field__label">Corner radius: @_radius rem</label>
+                <input type="range" min="0" max="2" step="0.25" value="@_radius" @onchange="e => _radius = ToDouble(e, 0.75)" />
+            </div>
+
+            <div class="field">
+                <label class="field__label">Reticle thickness: @_thickness px</label>
+                <input type="range" min="1" max="8" step="1" value="@_thickness" @onchange="e => _thickness = (int)ToDouble(e, 3)" />
+            </div>
+
+            <div class="field">
+                <label class="field__label">Reticle corner length: @_cornerLength %</label>
+                <input type="range" min="5" max="50" step="1" value="@_cornerLength" @onchange="e => _cornerLength = (int)ToDouble(e, 14)" />
+            </div>
+
+            <div class="field">
+                <label class="field__label">Overlay dimming: @_dim %</label>
+                <input type="range" min="0" max="90" step="5" value="@_dim" @onchange="e => _dim = (int)ToDouble(e, 55)" />
+            </div>
+
+            <label class="checkbox">
+                <input type="checkbox" checked="@_showControls" @onchange="e => _showControls = (bool)(e.Value ?? true)" />
+                Built-in controls
+            </label>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Overlay</h3>
+            <div class="field">
+                <select value="@_overlayStyle" @onchange="OnOverlayChanged">
+                    <option value="@OverlayStyle.Default">Built-in reticle</option>
+                    <option value="@OverlayStyle.Crosshair">Custom crosshair</option>
+                    <option value="@OverlayStyle.Instruction">Instruction text</option>
+                </select>
+            </div>
+            <p class="field__hint">
+                The <code>Overlay</code> fragment receives the scanner itself, so a custom overlay
+                can read the status, the open camera and the current zoom without extra plumbing.
+            </p>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Generated CSS</h3>
+            <pre style="margin:0;"><code>@ThemeStyle().Replace(";", ";\n")</code></pre>
+        </div>
+    </div>
+</div>
+
+<h2>Every custom property</h2>
+<table>
+    <thead>
+        <tr><th>Property</th><th>Default</th><th>Controls</th></tr>
+    </thead>
+    <tbody>
+        <tr><td class="mono">--bit-bbscanner-radius</td><td class="mono">0.75rem</td><td>Corner radius of the viewport</td></tr>
+        <tr><td class="mono">--bit-bbscanner-bg</td><td class="mono">#0b0d12</td><td>Backdrop behind the video</td></tr>
+        <tr><td class="mono">--bit-bbscanner-fg</td><td class="mono">#f5f7fa</td><td>Text colour</td></tr>
+        <tr><td class="mono">--bit-bbscanner-muted</td><td class="mono">#9aa4b2</td><td>Secondary text and idle indicator</td></tr>
+        <tr><td class="mono">--bit-bbscanner-accent</td><td class="mono">#4f8cff</td><td>Active controls and starting state</td></tr>
+        <tr><td class="mono">--bit-bbscanner-danger</td><td class="mono">#ff5f57</td><td>Faulted state</td></tr>
+        <tr><td class="mono">--bit-bbscanner-success</td><td class="mono">#35c77c</td><td>Scanning state and result highlight</td></tr>
+        <tr><td class="mono">--bit-bbscanner-overlay</td><td class="mono">rgba(6,8,12,0.55)</td><td>Dimming outside the scan region</td></tr>
+        <tr><td class="mono">--bit-bbscanner-reticle-color</td><td class="mono">#ffffff</td><td>Reticle corners</td></tr>
+        <tr><td class="mono">--bit-bbscanner-reticle-thickness</td><td class="mono">3px</td><td>Reticle stroke width</td></tr>
+        <tr><td class="mono">--bit-bbscanner-reticle-length</td><td class="mono">14%</td><td>Reticle corner arm length</td></tr>
+        <tr><td class="mono">--bit-bbscanner-reticle-radius</td><td class="mono">0.5rem</td><td>Reticle corner rounding</td></tr>
+        <tr><td class="mono">--bit-bbscanner-control-bg</td><td class="mono">rgba(18,22,30,0.72)</td><td>Control background</td></tr>
+        <tr><td class="mono">--bit-bbscanner-control-fg</td><td class="mono">#f5f7fa</td><td>Control text</td></tr>
+        <tr><td class="mono">--bit-bbscanner-control-hover-bg</td><td class="mono">rgba(40,48,62,0.9)</td><td>Control hover background</td></tr>
+        <tr><td class="mono">--bit-bbscanner-focus-ring</td><td class="mono">0 0 0 3px …</td><td>Keyboard focus indicator</td></tr>
+        <tr><td class="mono">--bit-bbscanner-font</td><td class="mono">system-ui, …</td><td>Font stack</td></tr>
+        <tr><td class="mono">--bit-bbscanner-gap</td><td class="mono">0.5rem</td><td>Spacing inside the control bars</td></tr>
+        <tr><td class="mono">--bit-bbscanner-transition</td><td class="mono">160ms ease</td><td>Transition timing</td></tr>
+    </tbody>
+</table>
+
+<h2>Accessibility and direction</h2>
+<p>
+    The scanner is a labelled region, the controls are real buttons with pressed state, results
+    are announced through a polite live region, and the layout uses logical properties throughout
+    so a right to left document needs no extra work. Animation is suppressed under
+    <code>prefers-reduced-motion</code>, and the reticle and controls switch to system colours
+    under <code>forced-colors</code>.
+</p>
+
+@code {
+    private readonly RenderFragment<string> MessageTemplate = message =>
+        @<span class="demo-message">@message</span>;
+
+    private enum OverlayStyle
+    {
+        Default,
+        Crosshair,
+        Instruction,
+    }
+
+    private BbBarcodeResult? _last;
+    private OverlayStyle _overlayStyle = OverlayStyle.Default;
+
+    /// <summary>The overlay fragment for the selected style, or null to keep the built-in reticle.</summary>
+    private RenderFragment<BbScanner>? CurrentOverlay => _overlayStyle switch
+    {
+        OverlayStyle.Crosshair => CrosshairOverlay,
+        OverlayStyle.Instruction => InstructionOverlay,
+        _ => null,
+    };
+
+    private RenderFragment<BbScanner> CrosshairOverlay => scanner =>
+    @<div style="position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;">
+        <svg width="140" height="140" viewBox="0 0 120 120" aria-hidden="true">
+            <circle cx="60" cy="60" r="52" fill="none" stroke="@_accent" stroke-width="2" stroke-dasharray="10 8" />
+            <line x1="60" y1="24" x2="60" y2="46" stroke="@_accent" stroke-width="3" />
+            <line x1="60" y1="74" x2="60" y2="96" stroke="@_accent" stroke-width="3" />
+            <line x1="24" y1="60" x2="46" y2="60" stroke="@_accent" stroke-width="3" />
+            <line x1="74" y1="60" x2="96" y2="60" stroke="@_accent" stroke-width="3" />
+        </svg>
+    </div>;
+
+    private RenderFragment<BbScanner> InstructionOverlay => scanner =>
+    @<div style="position:absolute;inset-block-start:38%;inset-inline:1.5rem;text-align:center;pointer-events:none;">
+        <p style="margin:0;font-size:1.05rem;font-weight:600;">Hold the barcode inside the frame</p>
+        <p style="margin:0.25rem 0 0;font-size:0.85rem;opacity:0.75;">
+            @(scanner.Status == BbScannerStatus.Scanning ? "Looking..." : scanner.Status.ToString())
+        </p>
+    </div>;
+    private string _accent = "#4f8cff";
+    private double _radius = 0.75;
+    private int _thickness = 3;
+    private int _cornerLength = 14;
+    private int _dim = 55;
+    private bool _showControls = true;
+
+    private string ThemeStyle() =>
+        $"--bit-bbscanner-accent:{_accent};--bit-bbscanner-reticle-color:{_accent};--bit-bbscanner-radius:{_radius.ToString(System.Globalization.CultureInfo.InvariantCulture)}rem;" +
+        $"--bit-bbscanner-reticle-thickness:{_thickness}px;--bit-bbscanner-reticle-length:{_cornerLength}%;" +
+        $"--bit-bbscanner-overlay:rgba(6,8,12,{(_dim / 100.0).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture)})";
+
+    private void OnOverlayChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<OverlayStyle>(args.Value?.ToString(), out var style))
+        {
+            _overlayStyle = style;
+        }
+    }
+
+    private static double ToDouble(ChangeEventArgs args, double fallback) =>
+        double.TryParse(args.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value)
+            ? value
+            : fallback;
+}

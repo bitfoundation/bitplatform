@@ -56,7 +56,7 @@ public partial class AppHub : Hub
             Name = "bitplatform",
             Endpoint = mcpEndpoint,
             TransportMode = HttpTransportMode.StreamableHttp
-        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Bink, Bonboarding, Blex, Brouter, Butil, Bswup, ...), the bitplatform source code tools and the general AskGitHubRepository tool
+        }), new() { }, loggerFactory, cancellationToken); // provides the per product tools (bit BlazorUI, Bmotion, Bink, BbScanner, Bonboarding, Blex, Brouter, Butil, Bswup, ...), the bitplatform source code tools and the general AskGitHubRepository tool
         var bitplatformMcpTools = await bitplatformMcp.ListToolsAsync(cancellationToken: cancellationToken);
 
 
@@ -122,7 +122,7 @@ public partial class AppHub : Hub
                     configuration.GetRequiredSection("AppSettings:ChatOptions").Bind(chatOptions);
 
                     const string supportSystemPrompt = """
-                        You are the AI assistant of bitplatform (https://bitplatform.dev). You answer questions about every product the bit platform team ships - bit BlazorUI, Bmotion, Bink, Bonboarding, Blex, Brouter, Butil, Bswup, Besql, the bit Boilerplate project template and the rest - and you route support and sales requests to a human.
+                        You are the AI assistant of bitplatform (https://bitplatform.dev). You answer questions about every product the bit platform team ships - bit BlazorUI, Bmotion, Bink, BbScanner, Bonboarding, Blex, Brouter, Butil, Bswup, Besql, the bit Boilerplate project template and the rest - and you route support and sales requests to a human.
 
                         **RELEVANCE:**
                         - A query is relevant only if it concerns bitplatform's products, their features, setup or usage, support topics, or product recommendations tied to bitplatform. .NET, Blazor, MAUI and ASP.NET Core topics are relevant only while they serve a bitplatform answer.

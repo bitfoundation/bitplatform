@@ -1,0 +1,143 @@
+﻿@namespace Bit.BbScanner
+@implements IAsyncDisposable
+
+<div @attributes="AdditionalAttributes"
+     class="@RootClass()"
+     style="@RootStyle()"
+     data-status="@_status.ToString().ToLowerInvariant()"
+     data-fill="@(Fill ? "contain" : "aspect")"
+     role="region"
+     aria-label="@AriaLabel">
+
+    <video id="@_videoElementId"
+           class="bit-bbscanner__video"
+           data-mirrored="@(_mirrored ? "true" : "false")"
+           playsinline
+           muted
+           autoplay
+           aria-hidden="true"></video>
+
+    @if (ShowMask && !_region.IsFull)
+    {
+        <div class="bit-bbscanner__mask" style="clip-path: @MaskClipPath()"></div>
+    }
+
+    @if (Overlay is not null)
+    {
+        @Overlay(this)
+    }
+    else if (ShowReticle)
+    {
+        <div class="bit-bbscanner__reticle" style="@ReticleStyle()" aria-hidden="true">
+            <span class="bit-bbscanner__corner bit-bbscanner__corner--tl"></span>
+            <span class="bit-bbscanner__corner bit-bbscanner__corner--tr"></span>
+            <span class="bit-bbscanner__corner bit-bbscanner__corner--bl"></span>
+            <span class="bit-bbscanner__corner bit-bbscanner__corner--br"></span>
+        </div>
+    }
+
+    @if (HighlightResults && _highlight is not null)
+    {
+        <div class="bit-bbscanner__hit" style="@_highlight" aria-hidden="true"></div>
+    }
+
+    @if (ShowStatusBar)
+    {
+        <div class="bit-bbscanner__status">
+            <span class="bit-bbscanner__dot" aria-hidden="true"></span>
+            <span>@StatusText()</span>
+        </div>
+    }
+
+    @if (_message is not null)
+    {
+        <div class="bit-bbscanner__message @(_status == BbScannerStatus.Faulted ? "bit-bbscanner__message--error" : null)">
+            @if (MessageTemplate is not null)
+            {
+                @MessageTemplate(_message!)
+            }
+            else
+            {
+                @_message
+            }
+        </div>
+    }
+
+    @if (ShowControls)
+    {
+        <div class="bit-bbscanner__controls">
+            @if (_status is BbScannerStatus.Scanning or BbScannerStatus.Paused)
+            {
+                <button type="button"
+                        class="bit-bbscanner__button"
+                        aria-pressed="@(_status == BbScannerStatus.Paused ? "true" : "false")"
+                        @onclick="TogglePauseAsync">
+                    @(_status == BbScannerStatus.Paused ? "Resume" : "Pause")
+                </button>
+                <button type="button" class="bit-bbscanner__button" @onclick="StopAsync">Stop</button>
+            }
+            else
+            {
+                <button type="button" class="bit-bbscanner__button" @onclick="() => StartAsync()">Start</button>
+            }
+
+            @if (_cameras.Count > 1)
+            {
+                <select class="bit-bbscanner__select"
+                        aria-label="Camera"
+                        value="@_activeDeviceId"
+                        @onchange="OnCameraSelectedAsync">
+                    @foreach (var camera in _cameras)
+                    {
+                        <option value="@camera.DeviceId">@camera.Label</option>
+                    }
+                </select>
+            }
+
+            @if (_camera?.SupportsTorch == true)
+            {
+                <button type="button"
+                        class="bit-bbscanner__button"
+                        aria-pressed="@(_torchOn ? "true" : "false")"
+                        aria-label="Torch"
+                        @onclick="ToggleTorchAsync">
+                    Torch
+                </button>
+            }
+
+            @if (_camera?.SupportsZoom == true && _camera.ZoomMax > _camera.ZoomMin)
+            {
+                <input class="bit-bbscanner__range"
+                       type="range"
+                       aria-label="Zoom"
+                       min="@Invariant(_camera.ZoomMin)"
+                       max="@Invariant(_camera.ZoomMax)"
+                       step="@Invariant(_camera.ZoomStep > 0 ? _camera.ZoomStep : 0.1)"
+                       value="@Invariant(_zoom)"
+                       @onchange="OnZoomChangedAsync" />
+            }
+
+            @if (EnableFileScanning)
+            {
+                <button type="button" class="bit-bbscanner__button" @onclick="OpenFilePickerAsync">Scan image</button>
+            }
+
+            @ControlsContent
+        </div>
+    }
+
+    @if (EnableFileScanning)
+    {
+        <input id="@_fileInputId"
+               class="bit-bbscanner__file"
+               type="file"
+               accept="image/*"
+               tabindex="-1"
+               aria-hidden="true"
+               @onchange="OnFileSelectedAsync" />
+    }
+
+    <div class="bit-bbscanner__sr" role="status" aria-live="polite">@_announcement</div>
+
+    @ChildContent
+</div>

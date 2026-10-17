@@ -97,6 +97,21 @@
     <Project Path="Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj" />
     <Project Path="Bink/Tests/Bit.Bink.Benchmarks/Bit.Bink.Benchmarks.csproj" />
   </Folder>
+  <Folder Name="/BbScanner/">
+    <File Path="BbScanner/README.md" />
+    <Project Path="BbScanner/Bit.BbScanner/Bit.BbScanner.csproj" />
+  </Folder>
+  <Folder Name="/BbScanner/Bit.BbScanner.Demo/">
+    <Project Path="BbScanner/Bit.BbScanner.Demo/Client/Bit.BbScanner.Demo.Client.csproj" />
+    <Project Path="BbScanner/Bit.BbScanner.Demo/Server/Bit.BbScanner.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/BbScanner/Tests/">
+    <Project Path="BbScanner/Tests/Bit.BbScanner.TestKit/Bit.BbScanner.TestKit.csproj" />
+    <Project Path="BbScanner/Tests/Bit.BbScanner.Tests/Bit.BbScanner.Tests.csproj" />
+    <Project Path="BbScanner/Tests/Bit.BbScanner.Tests.Mcp/Bit.BbScanner.Tests.Mcp.csproj" />
+    <Project Path="BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj" />
+    <Project Path="BbScanner/Tests/Bit.BbScanner.Benchmarks/Bit.BbScanner.Benchmarks.csproj" />
+  </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />

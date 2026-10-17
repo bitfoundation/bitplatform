@@ -71,6 +71,12 @@ jobs:
     uses: ./.github/workflows/bink.demo.cd.yml
     secrets: inherit
 
+  bbscanner_demo:
+    name: bbscanner demo
+    if: inputs.server
+    uses: ./.github/workflows/bbscanner.demo.cd.yml
+    secrets: inherit
+
   bonboarding_demo:
     name: bonboarding demo
     if: inputs.server

@@ -18,6 +18,7 @@ internal sealed partial class McpDocumentationSite : IDisposable
     public static readonly (string UpstreamName, string ProjectPath)[] Projects =
     [
         ("bitBlazorUI", "src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj"),
+        ("bitBbScanner", "src/BbScanner/Bit.BbScanner.Demo/Server/Bit.BbScanner.Demo.Server.csproj"),
         ("bitBink", "src/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj"),
         ("bitBlex", "src/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj"),
         ("bitBonboarding", "src/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj"),

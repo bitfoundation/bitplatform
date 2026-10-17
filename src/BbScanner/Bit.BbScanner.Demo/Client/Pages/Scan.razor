@@ -1,0 +1,361 @@
+﻿@page "/scan"
+
+<PageTitle>Live playground - bit BbScanner</PageTitle>
+
+<h1>Live playground</h1>
+<p class="lede">
+    Every parameter of <code>&lt;BbScanner&gt;</code> in one place. Changes apply to the
+    running scanner without dropping the camera.
+</p>
+
+<div class="split">
+    <div class="stack">
+    <div style="@(_fill ? "block-size:22rem;" : null)">
+        <BbScanner @ref="_scanner"
+                   Formats="_formats"
+                   Region="_region"
+                   Options="_options"
+                   TargetFrameRate="_frameRate"
+                   MaxProcessingSize="_processingSize"
+                   DuplicateSuppressionWindow="TimeSpan.FromSeconds(_duplicateSeconds)"
+                   Facing="_facing"
+                   ShowControls="_showControls"
+                   ShowStatusBar="_showStatus"
+                   ShowReticle="_showReticle"
+                   ShowMask="_showMask"
+                   HighlightResults="_highlight"
+                   EnableFileScanning="true"
+                   AutoStart="true"
+                   Fill="_fill"
+                   OnScan="HandleScan"
+                   OnError="HandleError"
+                   OnStatusChanged="HandleStatus"
+                   OnDiagnostics="HandleDiagnostics">
+            <ControlsContent>
+                @* Appended to the built-in control bar. *@
+                <button type="button" class="bit-bbscanner__button" @onclick="() => _results.Clear()">Clear log</button>
+            </ControlsContent>
+            <ChildContent>
+                @* Arbitrary content on top of the viewfinder. *@
+                @if (_lastFormat is not null)
+                {
+                    <div class="scan-badge">@_lastFormat</div>
+                }
+            </ChildContent>
+        </BbScanner>
+    </div>
+
+        <DiagnosticsPanel Diagnostics="_diagnostics"
+                          FramesDecoded="_scanner?.FramesDecoded ?? 0"
+                          FramesWithSymbol="_scanner?.FramesWithSymbol ?? 0" />
+    </div>
+
+    <div class="stack">
+        <div class="card">
+            <h3 style="margin-block-start:0;">Formats</h3>
+            <p class="field__hint">
+                Narrowing the set is the cheapest speed-up available: an unused symbology costs
+                nothing because its decoder is never created.
+            </p>
+            <p class="field__hint">
+                PDF417 stays inert until a specification symbol character table is registered;
+                see the README for why.
+            </p>
+            <div class="grid grid--2" style="gap:0 1rem;">
+                @foreach (var format in Formats)
+                {
+                    <label class="checkbox">
+                        <input type="checkbox"
+                               checked="@_formats.HasFlag(format)"
+                               @onchange="e => ToggleFormat(format, (bool)(e.Value ?? false))" />
+                        <span>@Label(format)</span>
+                    </label>
+                }
+            </div>
+            <div class="button-row" style="margin-block-start:0.75rem;">
+                <button class="button" type="button" @onclick="() => SetFormats(BbBarcodeFormat.All)">All</button>
+                <button class="button" type="button" @onclick="() => SetFormats(BbBarcodeFormat.AllMatrix)">Matrix only</button>
+                <button class="button" type="button" @onclick="() => SetFormats(BbBarcodeFormat.AllLinear)">Linear only</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Capture</h3>
+
+            <div class="field">
+                <label class="field__label" for="fps">Target frame rate: @_frameRate fps</label>
+                <input id="fps" type="range" min="1" max="30" step="1"
+                       value="@_frameRate" @onchange="e => _frameRate = ToInt(e, 15)" />
+                <span class="field__hint">Above about twenty the extra frames rarely change how fast a symbol is found.</span>
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="size">Processing size: @_processingSize px</label>
+                <input id="size" type="range" min="240" max="1280" step="40"
+                       value="@_processingSize" @onchange="e => _processingSize = ToInt(e, 640)" />
+                <span class="field__hint">Longest edge of the image the decoder sees. The browser scales the frame before it crosses into C#.</span>
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="region">Scan region: @((_regionFraction * 100).ToString("0"))%</label>
+                <input id="region" type="range" min="20" max="100" step="5"
+                       value="@(_regionFraction * 100)" @onchange="OnRegionChanged" />
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="dupe">Duplicate suppression: @_duplicateSeconds s</label>
+                <input id="dupe" type="range" min="0" max="10" step="1"
+                       value="@_duplicateSeconds" @onchange="e => _duplicateSeconds = ToInt(e, 2)" />
+                <span class="field__hint">Zero reports every frame that decodes, which is useful for measuring throughput.</span>
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="facing">Preferred camera</label>
+                <select id="facing" value="@_facing" @onchange="OnFacingChanged">
+                    <option value="@BbCameraFacing.Rear">Rear</option>
+                    <option value="@BbCameraFacing.Front">Front</option>
+                    <option value="@BbCameraFacing.Any">Any</option>
+                </select>
+                <span class="field__hint">Applied the next time the camera is started.</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Advanced tuning</h3>
+            <p class="field__hint">
+                Everything here is a property of <code>BbScannerOptions</code>, passed through the
+                <code>Options</code> parameter. <code>Formats</code> and <code>Region</code> are
+                still applied on top of it.
+            </p>
+
+            <div class="field">
+                <label class="field__label" for="lines">Scan lines per orientation: @_options.MaxScanLines</label>
+                <input id="lines" type="range" min="1" max="60" step="1"
+                       value="@_options.MaxScanLines" @onchange="e => Tune(o => o.MaxScanLines = ToInt(e, 15))" />
+                <span class="field__hint">How many lines each orientation gets when looking for linear symbols.</span>
+            </div>
+
+            <div class="field">
+                <label class="field__label" for="downsample">Downsample factor: @_options.DownsampleFactor</label>
+                <input id="downsample" type="range" min="1" max="4" step="1"
+                       value="@_options.DownsampleFactor" @onchange="e => Tune(o => o.DownsampleFactor = ToInt(e, 1))" />
+                <span class="field__hint">Subsamples while converting to grayscale. Quadratic, and costs the smallest readable symbol.</span>
+            </div>
+
+            <label class="checkbox">
+                <input type="checkbox" checked="@_options.TryHarder"
+                       @onchange="e => Tune(o => o.TryHarder = (bool)(e.Value ?? false))" />
+                Try harder (exhaustive detection and the full rotation sweep)
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" checked="@_options.AllowInverted"
+                       @onchange="e => Tune(o => o.AllowInverted = (bool)(e.Value ?? false))" />
+                Allow inverted (light on dark) symbols
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" checked="@_options.TryReversedRows"
+                       @onchange="e => Tune(o => o.TryReversedRows = (bool)(e.Value ?? false))" />
+                Read linear symbols right to left as well
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" checked="@_options.TryVerticalLines"
+                       @onchange="e => Tune(o => o.TryVerticalLines = (bool)(e.Value ?? false))" />
+                Scan columns and tilted lines, for rotated linear symbols
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" checked="@_options.Code39CheckDigit"
+                       @onchange="e => Tune(o => o.Code39CheckDigit = (bool)(e.Value ?? false))" />
+                Require the Code 39 modulo 43 check character
+            </label>
+            <label class="checkbox">
+                <input type="checkbox" checked="@_options.Code39ExtendedMode"
+                       @onchange="e => Tune(o => o.Code39ExtendedMode = (bool)(e.Value ?? false))" />
+                Interpret Code 39 as full ASCII
+            </label>
+
+            <div class="field" style="margin-block-start:0.75rem;">
+                <label class="field__label" for="itf">Accepted ITF lengths</label>
+                <select id="itf" value="@_itfLengths" @onchange="OnItfLengthsChanged">
+                    <option value="default">6 to 20, even (default)</option>
+                    <option value="14">14 only (ITF-14)</option>
+                    <option value="any">Any even length</option>
+                </select>
+                <span class="field__hint">ITF has no check character, so its accepted lengths are the main guard against a truncated read.</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Chrome</h3>
+            <label class="checkbox"><input type="checkbox" checked="@_showControls" @onchange="e => _showControls = (bool)(e.Value ?? true)" /> Built-in controls</label>
+            <label class="checkbox"><input type="checkbox" checked="@_showStatus" @onchange="e => _showStatus = (bool)(e.Value ?? true)" /> Status bar</label>
+            <label class="checkbox"><input type="checkbox" checked="@_showReticle" @onchange="e => _showReticle = (bool)(e.Value ?? true)" /> Reticle</label>
+            <label class="checkbox"><input type="checkbox" checked="@_showMask" @onchange="e => _showMask = (bool)(e.Value ?? true)" /> Dim outside the region</label>
+            <label class="checkbox"><input type="checkbox" checked="@_highlight" @onchange="e => _highlight = (bool)(e.Value ?? true)" /> Highlight decoded symbol</label>
+            <label class="checkbox"><input type="checkbox" checked="@_fill" @onchange="e => _fill = (bool)(e.Value ?? false)" /> Fill the parent instead of keeping the camera's aspect ratio</label>
+        </div>
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Programmatic control</h3>
+            <p class="field__hint">The same operations the built-in controls perform, driven from the page.</p>
+            <div class="button-row">
+                <button class="button" type="button" @onclick="() => _scanner!.StartAsync()">Start</button>
+                <button class="button" type="button" @onclick="() => _scanner!.StopAsync()">Stop</button>
+                <button class="button" type="button" @onclick="() => _scanner!.Pause()">Pause</button>
+                <button class="button" type="button" @onclick="() => _scanner!.Resume()">Resume</button>
+                <button class="button" type="button" @onclick="OpenPicker">Scan an image</button>
+            </div>
+            <p class="field__hint" style="margin-block-start:0.6rem;">
+                Status: <span class="pill">@(_scanner?.Status.ToString() ?? "-")</span>
+                @if (_scanner?.Camera is { } camera)
+                {
+                    <span class="pill pill--muted">@camera.Width×@camera.Height</span>
+                }
+            </p>
+        </div>
+
+        @if (_error is not null)
+        {
+            <div class="note note--warning">
+                <strong>@_error.Kind</strong> — @_error.Message
+            </div>
+        }
+    </div>
+</div>
+
+<div style="margin-block-start:1.25rem;">
+    <ResultLog Results="_results" OnClear="() => _results.Clear()" />
+</div>
+
+@code {
+    private BbScannerOptions _options = new();
+    private string _itfLengths = "default";
+    private bool _fill;
+    private string? _lastFormat;
+
+    /// <summary>
+    /// Options are cloned before every edit, so the running decoder is reconfigured by a new
+    /// instance rather than mutated underneath itself.
+    /// </summary>
+    private void Tune(Action<BbScannerOptions> edit)
+    {
+        var next = _options.Clone();
+        edit(next);
+        next.Validate();
+        _options = next;
+    }
+
+    private void OnItfLengthsChanged(ChangeEventArgs args)
+    {
+        _itfLengths = args.Value?.ToString() ?? "default";
+        IReadOnlyCollection<int> lengths = _itfLengths switch
+        {
+            "14" => [14],
+            "any" => [],
+            _ => [6, 8, 10, 12, 14, 16, 18, 20],
+        };
+
+        Tune(o => o.ItfLengths = lengths);
+    }
+
+    private static readonly BbBarcodeFormat[] Formats =
+    [
+        BbBarcodeFormat.QrCode, BbBarcodeFormat.DataMatrix, BbBarcodeFormat.Code128, BbBarcodeFormat.Code39,
+        BbBarcodeFormat.Ean13, BbBarcodeFormat.Ean8, BbBarcodeFormat.UpcA, BbBarcodeFormat.UpcE, BbBarcodeFormat.Itf,
+        BbBarcodeFormat.Pdf417,
+    ];
+
+    private readonly List<BbBarcodeResult> _results = [];
+
+    private BbScanner? _scanner;
+    private BbBarcodeFormat _formats = BbBarcodeFormat.All;
+    private BbScanRegion _region = BbScanRegion.CenteredSquare(0.7);
+    private double _regionFraction = 0.7;
+    private BbCameraFacing _facing = BbCameraFacing.Rear;
+    private BbScanDiagnostics _diagnostics;
+    private BbScannerException? _error;
+
+    private int _frameRate = 15;
+    private int _processingSize = 640;
+    private int _duplicateSeconds = 2;
+    private bool _showControls = true;
+    private bool _showStatus = true;
+    private bool _showReticle = true;
+    private bool _showMask = true;
+    private bool _highlight = true;
+
+    private void HandleScan(BbBarcodeResult result)
+    {
+        _lastFormat = result.Format.ToString();
+        _results.Insert(0, result);
+        if (_results.Count > 40)
+        {
+            _results.RemoveAt(_results.Count - 1);
+        }
+
+        StateHasChanged();
+    }
+
+    private void HandleError(BbScannerException error)
+    {
+        _error = error;
+        StateHasChanged();
+    }
+
+    private void HandleStatus(BbScannerStatus status)
+    {
+        if (status != BbScannerStatus.Faulted)
+        {
+            _error = null;
+        }
+
+        StateHasChanged();
+    }
+
+    private void HandleDiagnostics(BbScanDiagnostics diagnostics)
+    {
+        _diagnostics = diagnostics;
+
+        StateHasChanged();
+    }
+
+    private void ToggleFormat(BbBarcodeFormat format, bool enabled)
+    {
+        _formats = enabled ? _formats | format : _formats & ~format;
+    }
+
+    private void SetFormats(BbBarcodeFormat formats) => _formats = formats;
+
+    private void OnRegionChanged(ChangeEventArgs args)
+    {
+        _regionFraction = Math.Clamp(ToInt(args, 70) / 100.0, 0.2, 1.0);
+        _region = _regionFraction >= 0.999 ? BbScanRegion.Full : BbScanRegion.CenteredSquare(_regionFraction);
+    }
+
+    private void OnFacingChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<BbCameraFacing>(args.Value?.ToString(), out var facing))
+        {
+            _facing = facing;
+        }
+    }
+
+    private Task OpenPicker() => _scanner is null ? Task.CompletedTask : _scanner.OpenFilePickerAsync();
+
+    private static int ToInt(ChangeEventArgs args, int fallback) =>
+        int.TryParse(args.Value?.ToString(), out var value) ? value : fallback;
+
+    private static string Label(BbBarcodeFormat format) => format switch
+    {
+        BbBarcodeFormat.QrCode => "QR Code",
+        BbBarcodeFormat.DataMatrix => "Data Matrix",
+        BbBarcodeFormat.Code128 => "Code 128",
+        BbBarcodeFormat.Code39 => "Code 39",
+        BbBarcodeFormat.Ean13 => "EAN-13",
+        BbBarcodeFormat.Ean8 => "EAN-8",
+        BbBarcodeFormat.UpcA => "UPC-A",
+        BbBarcodeFormat.UpcE => "UPC-E",
+        BbBarcodeFormat.Itf => "ITF",
+        BbBarcodeFormat.Pdf417 => "PDF417 (needs table)",
+        _ => format.ToString(),
+    };
+}
