@@ -51,25 +51,55 @@ public partial class McpVersionsService : BackgroundService
             using PeriodicTimer timer = new(TimeSpan.FromMinutes(1));
 
             // A release that could not be prepared is retried long before the next look for new tags.
-            var nextRefresh = DateTimeOffset.UtcNow + (await Prepare(settings, stoppingToken) ? settings.RefreshInterval : retryInterval);
+            var nextRefresh = DateTimeOffset.UtcNow + (await TryPrepare(settings, stoppingToken) ? settings.RefreshInterval : retryInterval);
 
             while (await timer.WaitForNextTickAsync(stoppingToken))
             {
-                await Supervise(stoppingToken);
+                await TrySupervise(stoppingToken);
 
                 if (DateTimeOffset.UtcNow < nextRefresh) continue;
 
                 // Picks up a release tagged since the site started, without a redeploy.
                 settings = appSettings.CurrentValue.Mcp!;
 
-                nextRefresh = DateTimeOffset.UtcNow + (await Prepare(settings, stoppingToken) ? settings.RefreshInterval : retryInterval);
+                nextRefresh = DateTimeOffset.UtcNow + (await TryPrepare(settings, stoppingToken) ? settings.RefreshInterval : retryInterval);
             }
         }
         catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested) { }
-        catch (Exception exp)
+    }
+
+    /// <summary>
+    /// <see cref="Prepare"/>, with an attempt that throws logged and counted as a failed one, so it is retried after
+    /// <see cref="retryInterval"/>. Thrown out of the loop above, it would end it, leaving /mcp with the third party tools
+    /// alone and no release at all until the site restarts.
+    /// </summary>
+    private async Task<bool> TryPrepare(McpSettings settings, CancellationToken cancellationToken)
+    {
+        try
         {
-            // The endpoint still answers, with the third party tools alone until a release comes up.
-            logger.LogError(exp, "Preparing the releases of /mcp failed.");
+            return await Prepare(settings, cancellationToken);
+        }
+        catch (Exception exp) when (cancellationToken.IsCancellationRequested is false)
+        {
+            logger.LogError(exp, "Preparing the releases of /mcp failed, retrying in {RetryInterval}.", retryInterval);
+
+            return false;
+        }
+    }
+
+    /// <summary>
+    /// <see cref="Supervise"/>, with a pass that throws logged and the next one made a minute later, for the reason
+    /// <see cref="TryPrepare"/> gives.
+    /// </summary>
+    private async Task TrySupervise(CancellationToken cancellationToken)
+    {
+        try
+        {
+            await Supervise(cancellationToken);
+        }
+        catch (Exception exp) when (cancellationToken.IsCancellationRequested is false)
+        {
+            logger.LogError(exp, "Restarting the documentation sites of /mcp failed.");
         }
     }
 
