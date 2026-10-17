@@ -1,0 +1,269 @@
+﻿@page "/performance"
+@implements IDisposable
+
+@* The numbers, and the one decision that matters more than any of them in a browser: compiling
+   ahead of time. The live benchmark runs the interpreter-vs-AOT table's own operations in the
+   reader's browser, so whether the site they are on was compiled ahead of time shows up in their
+   own measurements rather than in a claim. *@
+
+<PageTitle>Performance - Bit.Bmage</PageTitle>
+
+<h1>Performance</h1>
+
+<p class="page-intro">
+    Every number here was measured with BenchmarkDotNet, not estimated - and in the browser, they only
+    hold with <strong>ahead-of-time compilation</strong>. Read the first section before anything else.
+</p>
+
+<div class="demo-section">
+    <h2>Measure this browser</h2>
+    <p>
+        The operations from the table below, on a generated 1920 &times; 1080 image, best of three
+        after a warm-up. Hundreds of milliseconds per row means the interpreter; tens means AOT.
+        This site is published with AOT; under <code>dotnet run</code> it is interpreted, and the
+        run takes minutes rather than seconds - which is the point.
+    </p>
+    <div class="sample-row">
+        <button type="button" class="btn btn-accent" disabled="@(_busy || IsHydrating)" @onclick="RunAsync">
+            <Icon Path="@Icons.Gauge" />
+            Run the benchmark
+        </button>
+        @if (_busy)
+        {
+            <span class="working" role="status">Measuring @_current&hellip;</span>
+        }
+    </div>
+
+    @if (_results.Count > 0)
+    {
+        <div class="table-scroll perf-results" tabindex="0" role="region" aria-label="Benchmark results for this browser">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">Operation</th>
+                        <th scope="col" class="num">This browser</th>
+                        <th scope="col" class="num">Interpreter</th>
+                        <th scope="col" class="num">AOT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var result in _results)
+                    {
+                        <tr>
+                            <th scope="row">@result.Name</th>
+                            <td class="num"><strong>@result.Elapsed.TotalMilliseconds.ToString("0") ms</strong></td>
+                            <td class="num">@result.Interpreter ms</td>
+                            <td class="num">@result.Aot ms</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>WebAssembly: compile ahead of time</h2>
+    <p>
+        By default Blazor WebAssembly runs .NET code on an IL interpreter. Tight pixel loops are its
+        worst case: every <code>Vector4</code> operation RyuJIT turns into one SIMD instruction becomes
+        a separate interpreted step. Measured on a 1920 &times; 1080 image in Chrome, best of three after
+        a warm-up:
+    </p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Interpreter against AOT">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Operation</th><th scope="col" class="num">Interpreter</th><th scope="col" class="num">AOT</th><th scope="col" class="num">Desktop .NET</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Reference)
+                {
+                    <tr><th scope="row">@row.Name</th><td class="num">@row.Interpreter ms</td><td class="num"><strong>@row.Aot ms</strong></td><td class="num">@row.Desktop ms</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <p>
+        The interpreter is 10 to 35&times; slower than desktop .NET; AOT is 1.2 to 2.4&times;. A Debug
+        build measured the same as Release on the interpreter, so the build configuration is not the
+        issue. <a href="/hosting">Hosting models</a> shows how to switch it on, and how this site does.
+    </p>
+    <CodeSnippet Code="@AotSnippet" Language="XML" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Resizing</h2>
+    <p>Downscaling to 1280px on the long edge, and generating a 200px thumbnail (desktop .NET 10, AVX2):</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Resize timings">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Operation</th><th scope="col" class="num">1920&times;1080</th><th scope="col" class="num">3840&times;2160</th><th scope="col" class="num">6000&times;4000</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">Box</th><td class="num">15.0 ms</td><td class="num">35.4 ms</td><td class="num">127 ms</td></tr>
+                <tr><th scope="row">Bilinear</th><td class="num">17.4 ms</td><td class="num">40.2 ms</td><td class="num">114 ms</td></tr>
+                <tr><th scope="row">Bicubic</th><td class="num">21.9 ms</td><td class="num">49.0 ms</td><td class="num">124 ms</td></tr>
+                <tr><th scope="row">Lanczos3</th><td class="num">26.8 ms</td><td class="num">67.7 ms</td><td class="num">134 ms</td></tr>
+                <tr><th scope="row">Thumbnail to 200px (Auto)</th><td class="num">6.6 ms</td><td class="num">19.2 ms</td><td class="num">52.4 ms</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Allocations stay between 22 KB and 180 KB regardless of source size, because pixel buffers are
+        pooled and the resampler works a row at a time. Thumbnailing a 24 megapixel photo originally
+        took 368 ms; an exact integer box prepass to within 2&times; of the target, finished by the
+        requested filter, brought it to 52 ms and cut its allocations tenfold - with quality guarded by
+        tests that a ramp stays linear and a fine checkerboard averages to grey rather than aliasing.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Operations and pipelines</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Operation timings">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Operation</th><th scope="col" class="num">1920&times;1080</th><th scope="col" class="num">3840&times;2160</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">Crop</th><td class="num">0.04 ms</td><td class="num">0.41 ms</td></tr>
+                <tr><th scope="row">Rotate 90 (lossless)</th><td class="num">2.0 ms</td><td class="num">20.2 ms</td></tr>
+                <tr><th scope="row">Brightness (one pass)</th><td class="num">18.0 ms</td><td class="num">70.7 ms</td></tr>
+                <tr><th scope="row">Four adjustments, fused</th><td class="num">47.4 ms</td><td class="num">188.9 ms</td></tr>
+                <tr><th scope="row">Four adjustments, unfused</th><td class="num">76.7 ms</td><td class="num">292.3 ms</td></tr>
+                <tr><th scope="row">Gaussian blur, radius 8</th><td class="num">55.7 ms</td><td class="num">226.1 ms</td></tr>
+                <tr><th scope="row">Unsharp mask</th><td class="num">103.8 ms</td><td class="num">331.0 ms</td></tr>
+                <tr><th scope="row">Rotate 37&deg; (resampled)</th><td class="num">222.0 ms</td><td class="num">888.6 ms</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <ul>
+        <li><strong>Fusing adjustments is worth 1.55&times;.</strong> Four adjustments in one pass beat four passes, because the cost is reading and writing pixels rather than the arithmetic.</li>
+        <li><strong>A right angle is 100&times; cheaper than an arbitrary one</strong>, because it moves pixels rather than resampling them. The optimiser routes multiples of 90&deg; to the lossless path automatically.</li>
+        <li><strong>Blur is independent of radius</strong>: three box passes approximating a gaussian, so radius 40 costs the same as radius 4.</li>
+        <li><strong>Resize then crop fuses</strong> into one resample of only the surviving region - 47.9 ms against 117.7 ms on a 4000 &times; 3000 source, bit-identical.</li>
+    </ul>
+</div>
+
+<div class="demo-section">
+    <h2>Codecs</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Codec timings">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Operation</th><th scope="col" class="num">1024&times;768</th><th scope="col" class="num">3840&times;2160</th><th scope="col" class="num">Allocated (4K)</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">PNG decode</th><td class="num">10.5 ms</td><td class="num">104 ms</td><td class="num">37 MB</td></tr>
+                <tr><th scope="row">JPEG decode</th><td class="num">10.7 ms</td><td class="num">117 ms</td><td class="num">14 MB</td></tr>
+                <tr><th scope="row">JPEG encode, quality 85</th><td class="num">17.0 ms</td><td class="num">175 ms</td><td class="num">6.7 MB</td></tr>
+                <tr><th scope="row">PNG encode, level 1</th><td class="num">25.1 ms</td><td class="num">252 ms</td><td class="num">98 MB</td></tr>
+                <tr><th scope="row">PNG encode, level 6</th><td class="num">82.1 ms</td><td class="num">848 ms</td><td class="num">46 MB</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        PNG compression level matters more than anything else here: level 6 is 3.4&times; slower than
+        level 1 for a modest size gain. Level 1 suits a preview that is on screen for a moment; the
+        default of 6 suits the file the user keeps.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Interactive editing</h2>
+    <p>
+        The editor works on a proxy no larger than 2048px on its longest edge and replays the edit at
+        full resolution on export: for a 24 megapixel photo, a 25&times; reduction in the pixels each
+        preview touches - the difference between a slider that tracks your finger and one that does
+        not. History stores descriptions, not pixels: a test asserts that 100 undo steps on a 6000
+        &times; 4000 image stay under 1 MB, where pixel snapshots would need about 4.8 GB.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Guidance</h2>
+    <ul>
+        <li><strong>Cap dimensions before anything else.</strong> Every later operation costs proportionally less.</li>
+        <li><strong>Group adjustments together.</strong> Consecutive per-pixel operations fuse into one pass; a geometric operation between them prevents that.</li>
+        <li><strong>Prefer right angles.</strong> <code>Rotate(90)</code> takes the lossless path; <code>Rotate(90.5)</code> resamples the whole image.</li>
+        <li><strong>Keep batch concurrency low.</strong> Each worker holds a decoded image; four on 24 megapixel photos is roughly 400 MB of live pixels.</li>
+        <li><strong>Dispose buffers</strong>, and <strong>use object URLs</strong>, not data URLs.</li>
+    </ul>
+    <CodeSnippet Code="ImagePipeline.Create().AutoOrient().MaxSize(1920, 1920).Sharpen(0.3f)" Language="C#" Expanded="true" />
+</div>
+
+@code {
+    private sealed record ReferenceRow(string Name, int Interpreter, int Aot, int Desktop);
+
+    private sealed record Result(string Name, TimeSpan Elapsed, int Interpreter, int Aot);
+
+    private static readonly ReferenceRow[] Reference =
+    [
+        new("Resize to 1280, Lanczos3", 505, 56, 34),
+        new("Brightness", 406, 27, 21),
+        new("Four adjustments, fused", 1008, 63, 48),
+        new("Gaussian blur, radius 8", 789, 88, 57),
+        new("Unsharp mask", 1267, 119, 86),
+    ];
+
+    // The same operations as the reference table, so the reader's numbers line up against it row by row.
+    private static readonly (string Name, Func<ImagePipeline> Pipeline)[] Benchmarks =
+    [
+        ("Resize to 1280, Lanczos3", () => ImagePipeline.Create().Resize(1280, 1280, ResizeMode.Fit, ResamplingFilter.Lanczos3)),
+        ("Brightness", () => ImagePipeline.Create().Brightness(0.2f)),
+        ("Four adjustments, fused", () => ImagePipeline.Create().Brightness(0.1f).Contrast(0.15f).Saturation(0.2f).Vibrance(0.2f)),
+        ("Gaussian blur, radius 8", () => ImagePipeline.Create().Blur(8f)),
+        ("Unsharp mask", () => ImagePipeline.Create().Sharpen(0.5f)),
+    ];
+
+    private readonly List<Result> _results = [];
+    private string _current = "";
+    private bool _busy;
+    private bool _disposed;
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    private const string AotSnippet = """
+        <PropertyGroup>
+          <RunAOTCompilation>true</RunAOTCompilation>
+        </PropertyGroup>
+        """;
+
+    private async Task RunAsync()
+    {
+        _busy = true;
+        _results.Clear();
+        _current = "the source";
+        StateHasChanged();
+        await Task.Yield();
+
+        using var source = SampleImages.Landscape(1920, 1080);
+
+        for (var i = 0; i < Benchmarks.Length && !_disposed; i++)
+        {
+            var (name, pipeline) = Benchmarks[i];
+            _current = name.ToLowerInvariant();
+            StateHasChanged();
+            await Task.Yield();
+
+            // One warm-up, then the best of three: the first run pays for JIT-free but cold code paths
+            // and pool growth, which is not what the row is measuring.
+            var best = TimeSpan.MaxValue;
+            for (var attempt = 0; attempt < 4 && !_disposed; attempt++)
+            {
+                var started = System.Diagnostics.Stopwatch.StartNew();
+                using (pipeline().Execute(source)) { }
+                started.Stop();
+                if (attempt > 0 && started.Elapsed < best) best = started.Elapsed;
+
+                // Let the page breathe between runs on a single-threaded runtime.
+                await Task.Yield();
+            }
+
+            var reference = Reference[i];
+            _results.Add(new Result(name, best, reference.Interpreter, reference.Aot));
+        }
+
+        _busy = false;
+    }
+
+    public void Dispose() => _disposed = true;
+}

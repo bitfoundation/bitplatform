@@ -1,0 +1,464 @@
+﻿@page "/headless"
+@implements IDisposable
+@inject ImageLoader Loader
+@inject ImageExporter Exporter
+
+@* Not one editor component on the page: every example below is the engine driven from plain C#,
+   run against whichever image the reader drops, and printed with the code that produced it. That
+   is how the library is used in an upload handler, a thumbnail service or a console tool - the
+   editor is one consumer of this API, not the API itself. *@
+
+<PageTitle>Headless API - Bit.Bmage</PageTitle>
+
+<h1>The headless API</h1>
+
+<p class="page-intro">
+    Not a single component on this page uses the editor. Everything below is <strong>the same engine
+    driven from plain C#</strong>, which is how you would use it in an upload handler, a thumbnail
+    service, or a console tool.
+</p>
+
+<div class="demo-section">
+    <h2>Run every example</h2>
+
+    @if (_error is not null)
+    {
+        <div class="alert alert-error" role="alert">@_error</div>
+    }
+
+    <BmageDropZone Label="Drop an image to run every example against it" OnFilesSelected="OnFilesSelected" />
+    <div class="sample-row">
+        <button type="button" class="btn" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a sample image</button>
+        @if (_busy)
+        {
+            <span class="working" role="status">Running example @(_examples.Count + 1) of @ExampleCount&hellip;</span>
+        }
+    </div>
+
+    @if (_source is not null)
+    {
+        <hr class="divider" />
+        <p class="card-title">Source</p>
+        <div class="preview-row">
+            <ImagePreview Image="_source" Alt="Source image" Style="max-height:180px" />
+            <div class="table-scroll headless-source" tabindex="0" role="region" aria-label="Source image details">
+                <table class="data">
+                    <tbody>
+                        <tr><th scope="row">Dimensions</th><td class="num">@_source.Width &times; @_source.Height</td></tr>
+                        <tr><th scope="row">Pixels in memory</th><td class="num">@Display.Bytes(_source.ByteLength)</td></tr>
+                        <tr><th scope="row">Source format</th><td>@(_source.Metadata?.SourceFormat.ToString() ?? "unknown")</td></tr>
+                        <tr><th scope="row">Transparency</th><td>@(_hasAlpha ? "yes" : "no")</td></tr>
+                        @if (_exif is not null)
+                        {
+                            <tr><th scope="row">Camera</th><td>@($"{_exif.Make} {_exif.Model}".Trim() is { Length: > 0 } c ? c : "—")</td></tr>
+                            <tr><th scope="row">Taken</th><td>@(_exif.DateTaken?.ToString("yyyy-MM-dd HH:mm") ?? "—")</td></tr>
+                            <tr>
+                                <th scope="row">Location</th>
+                                <td>
+                                    @if (_exif.Location is { } location)
+                                    {
+                                        <span class="text-bad">@location.ToString() — removed on export</span>
+                                    }
+                                    else
+                                    {
+                                        <text>none</text>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    }
+</div>
+
+@if (_source is not null)
+{
+    <div class="demo-section">
+        <h2>The results</h2>
+        <div class="grid">
+            @foreach (var example in _examples)
+            {
+                <div class="card" @key="example.Version">
+                    <p class="card-title">@example.Title</p>
+                    <ImagePreview Image="example.Image" Version="example.Version" Alt="@example.Title" Class="headless-preview" />
+                    <p class="small muted headless-description">@example.Description</p>
+                    <p class="small mono">@example.Image.Width &times; @example.Image.Height &middot; @Display.Bytes(example.Bytes)</p>
+                    <pre class="code">@example.Code</pre>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+<div class="demo-section">
+    <h2>No browser at all</h2>
+    <p>
+        The same packages work in an ASP.NET Core endpoint or a console app. Register the headless
+        services and you get the managed PNG, JPEG, BMP and GIF codecs with no JavaScript involved -
+        and <code>ImageProcessor</code> directly, because the managed codecs need no probing. Asking
+        for WebP there throws <code>ImageCapabilityException</code> saying so.
+    </p>
+    <CodeSnippet Code="@ServerSnippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>The pieces</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Headless types">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Type</th><th scope="col">Purpose</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>ImageBuffer</code></th><td>The pixels. Pooled; dispose it.</td></tr>
+                <tr><th scope="row"><code>ImagePipeline</code></th><td>An immutable list of operations - see <a href="/pipelines">Pipelines</a>.</td></tr>
+                <tr><th scope="row"><code>ImageProcessor</code></th><td>Decode, process, encode and batch. Registered directly by <code>AddBitBmageHeadlessServices</code>; in a browser app, get one from <code>ImageProcessorFactory.GetAsync()</code>.</td></tr>
+                <tr><th scope="row"><code>ImageCanvas</code></th><td>Immediate-mode drawing.</td></tr>
+                <tr><th scope="row"><code>ImageCodecRegistry</code></th><td>Which decoders and encoders are available; register your own to take precedence.</td></tr>
+                <tr><th scope="row"><code>ImageDocument</code></th><td>A non-destructive edit: pipeline plus annotations.</td></tr>
+                <tr><th scope="row"><code>DocumentRenderer</code></th><td>Renders a document against a source image.</td></tr>
+                <tr><th scope="row"><code>EditHistory</code></th><td>Undo and redo over documents.</td></tr>
+                <tr><th scope="row"><code>FontTextRasterizer</code></th><td>Text from a font file, no browser needed.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Drawing without a UI</h2>
+    <p>
+        <code>ImageCanvas</code> is a complete drawing surface - the last example above was composed
+        with it. Paths come from <code>PathBuilder</code> (lines, quadratic and cubic curves, arcs,
+        rounded rectangles, ellipses, polygons, flattened adaptively), and fills take a colour or any
+        <code>IPaint</code>: solid, linear and radial gradients, or your own.
+    </p>
+    <CodeSnippet Code="@CanvasSnippet" Language="C#" />
+    <p>
+        Text needs a rasterizer. In a browser, <code>BrowserTextRasterizer</code> uses the platform's
+        text engine (shaping, emoji, right-to-left). Anywhere else, <code>FontTextRasterizer</code>
+        draws from a TrueType or OpenType font with <code>glyf</code> outlines - kerning and word
+        wrapping included, complex shaping not.
+    </p>
+    <CodeSnippet Code="@FontSnippet" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Analysing an image</h2>
+    <p>
+        <code>ImageStatistics</code> samples on a regular grid by default, which keeps a 24 megapixel
+        photo well under a frame while staying indistinguishable from a full pass. The dominant
+        colours on the <a href="/avatar">Avatar</a> page come from here.
+    </p>
+    <CodeSnippet Code="@StatsSnippet" Language="C#" />
+    <p>
+        <code>ImagePlaceholder</code> is the low-quality image placeholder pattern: a 67 character
+        token for a 4&times;4 grid, small enough to return from a list endpoint, that renders the right
+        colours and shape immediately - as pixels, or as CSS gradients alone.
+    </p>
+    <CodeSnippet Code="@PlaceholderSnippet" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Non-destructive editing without the editor</h2>
+    <p>
+        The editor's document model is public. A document is a value: serialise it, send it to a
+        server, or apply it to a different image - rendering never modifies the source.
+    </p>
+    <CodeSnippet Code="@DocumentSnippet" Language="C#" Expanded="true" />
+</div>
+
+@code {
+    private sealed record Example(string Title, string Description, string Code, ImageBuffer Image, long Bytes, long Version);
+
+    private ImageBuffer? _source;
+    private readonly List<Example> _examples = [];
+    private ExifData? _exif;
+    private bool _hasAlpha;
+    private string? _error;
+    private long _version;
+    private bool _busy;
+    // Identifies the newest run, so a second image dropped mid-run does not mix its examples with the first one's.
+    private int _run;
+    private const int ExampleCount = 7;
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    private const string ServerSnippet = """
+        // Program.cs of an API that accepts uploads
+        builder.Services.AddBitBmageHeadlessServices(o => o.Limits = ImageLimits.Default);
+
+        // In the endpoint
+        app.MapPost("/upload", async (IFormFile file, ImageProcessor processor) =>
+        {
+            // Cap the upload before reading it; IFormFile reports its length up front.
+            if (file.Length > 20 * 1024 * 1024) return Results.BadRequest("Too large.");
+            using var buffer = new MemoryStream();
+            await file.CopyToAsync(buffer);
+            var bytes = buffer.ToArray();
+
+            // Reject before decoding anything.
+            var info = processor.Identify(bytes);
+            if (info is null) return Results.BadRequest("Not a supported image.");
+            if ((long)info.Width * info.Height > 30_000_000) return Results.BadRequest("Too large.");
+
+            var thumb = await processor.ProcessAsync(
+                bytes,
+                ImagePipeline.Create().AutoOrient().MaxSize(400, 400),
+                new ImageExportOptions { Format = ImageFormat.Jpeg, Quality = 0.8 });
+
+            return Results.File(thumb.Data, thumb.MimeType);
+        });
+        """;
+
+    private const string CanvasSnippet = """
+        using var canvas = ImageCanvas.Create(1200, 630, new Rgba32(17, 19, 24));
+
+        canvas.DrawImage(photo, new RectangleF(700, 0, 500, 630));
+
+        // Fade the photo into the panel.
+        var fade = new LinearGradientPaint(
+            new Vector2(700, 0), new Vector2(900, 0),
+            [(0f, new Rgba32(17, 19, 24, 255)), (1f, new Rgba32(17, 19, 24, 0))]);
+        canvas.FillPath(new PathBuilder().AddRectangle(new RectangleF(700, 0, 200, 630)).Build(), fade);
+
+        canvas.FillRoundedRectangle(new RectangleF(60, 60, 160, 40), 20, new Rgba32(105, 65, 198));
+        canvas.DrawText("Release notes", new Vector2(60, 200), new TextStyle
+        {
+            FontSize = 56,
+            Bold = true,
+            FillColor = Rgba32.White,
+            MaxWidth = 580,
+        }, textRasterizer);
+
+        var png = await canvas.ExportAsync(ImageExportOptions.Png);
+        """;
+
+    private const string FontSnippet = """
+        var font = FontFile.Load(await File.ReadAllBytesAsync("Inter-Regular.ttf"));
+        var rasterizer = new FontTextRasterizer()
+            .Register("Inter", font)
+            .Register("Inter", boldFont, bold: true);
+
+        var metrics = rasterizer.Measure("Hello", style);
+        canvas.DrawText("Hello", position, style, rasterizer);
+        """;
+
+    private const string StatsSnippet = """
+        var stats = ImageStatistics.Measure(image);
+
+        stats.Luminance.Mean;              // exposure
+        stats.Luminance.GetPercentile(0.5);
+        stats.Red.Minimum;                 // per-channel range
+        stats.AverageColor;                // a placeholder or letterbox colour
+        stats.IsGrayscale;
+        stats.HasTransparency;
+
+        var palette = ImageStatistics.GetDominantColors(image, count: 5, ignoreNearWhiteAndBlack: true);
+        foreach (var c in palette) Console.WriteLine($"{c.Color.ToHex(false)} {c.Percent:0.#}%");
+        """;
+
+    private const string PlaceholderSnippet = """
+        var placeholder = ImagePlaceholder.Create(image, columns: 4, rows: 4);
+
+        var token = placeholder.ToCompactString();   // store it beside the row
+        placeholder.AspectRatio;                     // reserve layout space before the image loads
+        placeholder.AverageColor;                    // a single-colour fallback
+
+        // Later, in the browser or on the server:
+        var restored = ImagePlaceholder.Parse(token, width, height);
+        using var blurred = restored!.Render(400, 300);   // smooth, no image request
+        var css = restored.ToCssBackground();             // or CSS gradients alone
+        """;
+
+    private const string DocumentSnippet = """
+        var document = ImageDocument.Create(source)
+            .AddOperation(new CropOperation(100, 100, 800, 600))
+            .AddOperation(new BrightnessAdjustment(0.1f))
+            .AddAnnotation(new ArrowAnnotation { Start = a, End = b });
+
+        var history = new EditHistory(document);
+        history.Push(document.AddAnnotation(label), "Add label");
+        history.Undo();
+
+        using var rendered = new DocumentRenderer(textRasterizer)
+            .Render(history.Current, source);
+        """;
+
+    private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
+    {
+        if (files.Count == 0) return;
+        _error = null;
+        try
+        {
+            await RunAsync(await Loader.LoadAsync(files[0]));
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+        }
+    }
+
+    private async Task UseSample()
+    {
+        _error = null;
+        _busy = true;
+        StateHasChanged();
+        await Task.Yield();
+        await RunAsync(SampleImages.Landscape());
+    }
+
+    private async Task RunAsync(ImageBuffer image)
+    {
+        Clear();
+        var run = _run;
+        _source = image;
+        _exif = _source.Metadata?.Exif;
+        _hasAlpha = _source.HasTransparency();
+        _busy = true;
+        StateHasChanged();
+        try
+        {
+            await BuildExamples(run);
+        }
+        catch (Exception) when (run != _run)
+        {
+            // Superseded by a newer image.
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+        }
+        finally
+        {
+            if (run == _run)
+            {
+                _busy = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task BuildExamples(int run)
+    {
+        if (_source is null) return;
+
+        await Add(run, "Thumbnail",
+            "A capped, sharpened thumbnail: the single most common upload task.",
+            "ImagePipeline.Create()\n    .AutoOrient()\n    .MaxSize(320, 320)\n    .Sharpen(0.3f)",
+            ImagePipeline.Create().AutoOrient().MaxSize(320, 320).Sharpen(0.3f));
+
+        await Add(run, "Square cover crop",
+            "Cover fills the target exactly, cropping the overflow instead of distorting.",
+            "ImagePipeline.Create()\n    .Cover(300, 300, Anchor.Center)",
+            ImagePipeline.Create().Cover(300, 300));
+
+        await Add(run, "Letterboxed",
+            "Contain keeps the whole subject and pads to the exact canvas.",
+            "ImagePipeline.Create()\n    .Resize(400, 260, ResizeMode.Contain,\n            background: new Rgba32(24, 26, 31))",
+            ImagePipeline.Create().Resize(400, 260, ResizeMode.Contain, background: new Rgba32(24, 26, 31)));
+
+        await Add(run, "Graded",
+            "Adjustments compose and fuse into a single pass over the pixels.",
+            "ImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Exposure(0.3f)\n    .Contrast(0.15f)\n    .Vibrance(0.35f)\n    .Vignette(0.3f)",
+            ImagePipeline.Create().MaxSize(360, 360).Exposure(0.3f).Contrast(0.15f).Vibrance(0.35f).Vignette(0.3f));
+
+        await Add(run, "Rotated 12°",
+            "Arbitrary rotation expands the canvas and keeps the corners transparent.",
+            "ImagePipeline.Create()\n    .MaxSize(300, 300)\n    .Rotate(12, background: Rgba32.Transparent)",
+            ImagePipeline.Create().MaxSize(300, 300).Rotate(12, Rgba32.Transparent));
+
+        await Add(run, "Redacted region",
+            "Filters accept a region, so only part of the image is touched.",
+            "ImagePipeline.Create()\n    .MaxSize(360, 360)\n    .Pixelate(14, new Rectangle(0, 0, 180, 90))",
+            ImagePipeline.Create().MaxSize(360, 360).Pixelate(14, new System.Drawing.Rectangle(0, 0, 180, 90)));
+
+        await AddComposed(run);
+    }
+
+    private async Task Add(int run, string title, string description, string code, ImagePipeline pipeline)
+    {
+        if (run != _run || _source is not { } source) return;
+        var image = await pipeline.ExecuteAsync(source);
+        try
+        {
+            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png });
+            if (run != _run)
+            {
+                image.Dispose();
+                return;
+            }
+            _examples.Add(new Example(title, description, code, image, encoded.Length, ++_version));
+        }
+        catch
+        {
+            image.Dispose();
+            throw;
+        }
+        StateHasChanged();
+        await Task.Yield();
+    }
+
+    /// <summary>Builds a composed card image with the drawing API to show it working without any editor UI.</summary>
+    private async Task AddComposed(int run)
+    {
+        if (run != _run || _source is null) return;
+        const int width = 420;
+        const int height = 240;
+        var canvas = ImageCanvas.Create(width, height, new Rgba32(17, 19, 24));
+        try
+        {
+            using var photo = await ImagePipeline.Create().Cover(180, height).ExecuteAsync(_source);
+            canvas.DrawImage(photo, new System.Drawing.RectangleF(width - 180, 0, 180, height));
+
+            // A gradient scrim so the photo blends into the panel rather than butting against it.
+            var fade = new LinearGradientPaint(
+                new Vector2(width - 180, 0), new Vector2(width - 110, 0),
+                [(0f, new Rgba32(17, 19, 24, 255)), (1f, new Rgba32(17, 19, 24, 0))]);
+            canvas.FillPath(new PathBuilder().AddRectangle(new System.Drawing.RectangleF(width - 180, 0, 80, height)).Build(), fade);
+
+            canvas.FillRoundedRectangle(new System.Drawing.RectangleF(20, 24, 90, 24), 12, new Rgba32(105, 65, 198));
+            canvas.DrawLine(new Vector2(20, 76), new Vector2(210, 76), new Rgba32(255, 255, 255, 70), new StrokeStyle { Width = 2 });
+            canvas.DrawArrow(new Vector2(24, 190), new Vector2(150, 130), new Rgba32(255, 90, 90), new StrokeStyle { Width = 4 });
+            canvas.DrawEllipse(new System.Drawing.RectangleF(150, 100, 70, 60), new Rgba32(255, 200, 40), new StrokeStyle { Width = 3, DashPattern = [8f, 5f] });
+
+            var image = canvas.Snapshot();
+            var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions { Format = ImageFormat.Png });
+            if (run != _run)
+            {
+                image.Dispose();
+                return;
+            }
+            _examples.Add(new Example(
+                "Composed with ImageCanvas",
+                "Shapes, gradients, arrows and an image composited together, with no editor component involved.",
+                "using var canvas = ImageCanvas.Create(420, 240, background);\ncanvas.DrawImage(photo, destination);\ncanvas.FillRoundedRectangle(badge, 12, accent);\ncanvas.DrawArrow(from, to, red, stroke);\nvar png = await canvas.ExportAsync();",
+                image, encoded.Length, ++_version));
+        }
+        finally
+        {
+            canvas.Dispose();
+        }
+    }
+
+    private void Clear()
+    {
+        _run++;
+        foreach (var example in _examples) example.Image.Dispose();
+        _examples.Clear();
+        _source?.Dispose();
+        _source = null;
+        _exif = null;
+        _hasAlpha = false;
+    }
+
+    private static string Describe(Exception ex) => ex switch
+    {
+        ImageLimitExceededException => "That image is too large to process here.",
+        ImageDecodeException => "That file could not be read as an image.",
+        ImageCapabilityException c => c.Message,
+        _ => ex.Message,
+    };
+
+    public void Dispose() => Clear();
+}

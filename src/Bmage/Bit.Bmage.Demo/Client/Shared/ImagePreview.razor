@@ -1,0 +1,94 @@
+﻿@implements IAsyncDisposable
+@inject ImageExporter Exporter
+
+@*
+    Shows an ImageBuffer as an <img>. Encodes to PNG once and hands the browser an object URL, which is far cheaper
+    than a data URL and lets the browser own the decoded bitmap.
+*@
+
+@if (_url is not null)
+{
+    <img class="preview-image @Class" src="@_url" alt="@Alt" style="@Style" />
+}
+else if (_error is not null)
+{
+    <div class="preview-image @Class" style="@Style" role="img" aria-label="@Alt" title="@_error"></div>
+}
+else if (Image is not null)
+{
+    @* Encoding is in flight; show a placeholder of the right shape rather than collapsing the layout. *@
+    <div class="preview-image @Class" style="@Style" aria-busy="true" aria-label="@Alt" role="img"></div>
+}
+
+@code {
+    private string? _url;
+    private ImageBuffer? _rendered;
+    private long _renderedVersion = -1;
+    private string? _error;
+    // Parameters can change again while an encode is in flight; only the newest request may publish its URL.
+    private int _request;
+
+    /// <summary>The image to show. Not owned by this component.</summary>
+    [Parameter] public ImageBuffer? Image { get; set; }
+
+    /// <summary>Increment when the image contents change without the reference changing.</summary>
+    [Parameter] public long Version { get; set; }
+
+    /// <summary>Accessible description of the image.</summary>
+    [Parameter] public string Alt { get; set; } = "Preview";
+
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Image is null || Image.IsDisposed)
+        {
+            _request++;
+            _rendered = null;
+            await ReleaseAsync();
+            return;
+        }
+        if (ReferenceEquals(_rendered, Image) && _renderedVersion == Version) return;
+        var request = ++_request;
+        _rendered = Image;
+        _renderedVersion = Version;
+        await ReleaseAsync();
+        _error = null;
+        try
+        {
+            var encoded = await Exporter.EncodeAsync(Image, ImageExportOptions.Png);
+            var url = await Exporter.CreateObjectUrlAsync(encoded);
+            if (request != _request)
+            {
+                // Superseded while encoding: this URL would show an outdated image and never be revoked.
+                await Exporter.ReleaseObjectUrlAsync(url);
+                return;
+            }
+            _url = url;
+        }
+        catch (Exception ex) when (request == _request)
+        {
+            _url = null;
+            _error = ex.Message;
+        }
+        catch (Exception)
+        {
+            // A superseded request failing (its image was disposed, say) is not this component's error to show.
+        }
+    }
+
+    private async Task ReleaseAsync()
+    {
+        if (_url is null) return;
+        var url = _url;
+        _url = null;
+        await Exporter.ReleaseObjectUrlAsync(url);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _request++;
+        await ReleaseAsync();
+    }
+}

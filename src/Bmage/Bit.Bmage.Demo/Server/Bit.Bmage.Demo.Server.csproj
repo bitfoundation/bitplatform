@@ -1,0 +1,65 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+    <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bit.Bmage\Bit.Bmage.csproj" />
+    <ProjectReference Include="..\Client\Bit.Bmage.Demo.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Bit.Bmage" />
+    <Using Include="Microsoft.AspNetCore.Mvc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The MCP tests reach the internal helpers - the document bound, the first-sentence cut - that
+         every tool answer goes through. -->
+    <InternalsVisibleTo Include="Bit.Bmage.Tests.Mcp" />
+  </ItemGroup>
+
+  <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+       working from a published deployment, where none of these files exist next to the app.
+       LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\README.md" LogicalName="BmageDocs/README.md" />
+
+    <!-- The guides: one document per subject, each of which GetBmageDocument hands out whole or a
+         section at a time. -->
+    <EmbeddedResource Include="..\..\docs\*.md">
+      <LogicalName>BmageDocs/docs/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <!-- Every demo page, which is also every worked example the tools can point an agent at. -->
+    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs;..\Client\**\*.css"
+                      Exclude="..\Client\bin\**;..\Client\obj\**">
+      <LogicalName>BmageSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <!-- The client project file: it is where RunAOTCompilation is switched on for a publish, which
+         the setup guides have to be able to show as a real file rather than as a paraphrase. -->
+    <EmbeddedResource Include="..\Client\Bit.Bmage.Demo.Client.csproj" LogicalName="BmageSource/Demo/Client/Bit.Bmage.Demo.Client.csproj" />
+
+    <!-- The host: how a Blazor Web App is wired up around Bmage. -->
+    <EmbeddedResource Include="Program.cs" LogicalName="BmageSource/Demo/Server/Program.cs" />
+
+    <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**' matched,
+         so it would start at the folder below and drop the one the components live in. -->
+    <EmbeddedResource Include="Components\**\*.razor">
+      <LogicalName>BmageSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

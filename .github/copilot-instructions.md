@@ -46,8 +46,8 @@
 ## Rules
 
 **RULE 1:** If a task (question, code modification or review) involves the use of bit BlazorUI components (e.g., `BitButton`, `BitTooltip`, `BitTextField`),
-or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Bmotion`, `bit Bink`, `bit Bonboarding`, `bit Blex`, `bit Brouter`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
-you **MUST** use the `bitplatform` MCP server's tools - start with the matching `Search<Library>` tool (e.g. `SearchBitBlazorUI`, `SearchBswup`, `SearchButil`, `SearchBmotion`, `SearchBink`, `SearchBonboarding`, `SearchBlex`, `SearchBrouter`) and follow the calls it names - to find the correct implementation and usage patterns before writing or changing any code.
+or refers to `bitplatform`, `bit Bswup`, `bit Butil`, `bit Bmotion`, `bit Bink`, `bit Bonboarding`, `bit Blex`, `bit Bmage`, `bit Brouter`, or `bit Boilerplate`, or involves UI components without explicitly specifying their UI toolkit,
+you **MUST** use the `bitplatform` MCP server's tools - start with the matching `Search<Library>` tool (e.g. `SearchBitBlazorUI`, `SearchBswup`, `SearchButil`, `SearchBmotion`, `SearchBink`, `SearchBonboarding`, `SearchBlex`, `SearchBmage`, `SearchBrouter`) and follow the calls it names - to find the correct implementation and usage patterns before writing or changing any code.
 
 **End of RULE 1**
 
