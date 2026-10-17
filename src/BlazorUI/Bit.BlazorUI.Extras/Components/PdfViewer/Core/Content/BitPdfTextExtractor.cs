@@ -117,7 +117,7 @@ public static class BitPdfTextExtractor
         {
             content = page.GetContentBytes();
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             return string.Empty;
         }
