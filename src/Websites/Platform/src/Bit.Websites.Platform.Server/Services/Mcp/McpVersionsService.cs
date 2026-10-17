@@ -157,8 +157,9 @@ public partial class McpVersionsService : BackgroundService
 
         if (project is null) return;
 
-        // A library shipped after a release has no documentation site in that release's worktree. That release
-        // is still served, just without the library's tools, rather than failing the build of a missing project.
+        // A library added after this release has no project in its worktree. That release simply does not
+        // serve that library's tools - it must not stop the release from being served at all, which is what
+        // a site that cannot be built would do below.
         var released = McpDocumentationSite.Projects
             .Select(documentation => (documentation.UpstreamName, ProjectFilePath: Path.Combine(worktreePath, documentation.ProjectPath.Replace('/', Path.DirectorySeparatorChar))))
             .Where(documentation => File.Exists(documentation.ProjectFilePath))

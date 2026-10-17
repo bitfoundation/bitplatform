@@ -1,0 +1,123 @@
+﻿@page "/programmatic"
+@inject BmotionAnimateService Motion
+
+@* The programmatic API: BmotionAnimateService (by selector with a stagger, by ElementReference, raw numbers,
+   twice in a row, sequences, cancellation) with its playback controls, and a <Bmotion>'s own instance methods. *@
+
+<HarnessHeader Title="Programmatic" Ready="Ready" OnLog="BindLog" />
+
+<h2>Service</h2>
+<section>
+    <button id="selector" @onclick="AnimateSelectorAsync">animate .prog</button>
+    <button id="pause" @onclick="() => _controls?.Pause()">pause</button>
+    <button id="play" @onclick="() => _controls?.Play()">play</button>
+    <button id="speed" @onclick="() => _controls?.SetSpeed(4)">speed 4</button>
+    <button id="stop" @onclick="() => _controls?.Stop()">stop</button>
+    <button id="complete" @onclick="() => _controls?.Complete()">complete</button>
+    <div class="row">
+        <div class="prog small" id="prog-0"></div>
+        <div class="prog small" id="prog-1"></div>
+        <div class="prog small" id="prog-2"></div>
+    </div>
+</section>
+
+<section class="row">
+    <button id="by-ref" @onclick="AnimateByRefAsync">animate by ref</button>
+    <div class="small" id="by-ref-target" @ref="_refTarget"></div>
+
+    <button id="count" @onclick="CountAsync">count to 100</button>
+    <Readout @ref="_count" Id="count-value" Initial="0" />
+</section>
+
+<section class="row">
+    <button id="twice" @onclick="TwiceAsync">twice</button>
+    <div class="small" id="twice-target"></div>
+
+    <button id="cancel" @onclick="CancelMidFlightAsync">cancel mid-flight</button>
+    <div class="small" id="cancel-target"></div>
+</section>
+
+<section class="row">
+    <button id="sequence" @onclick="SequenceAsync">sequence</button>
+    <div class="small" id="seq-a"></div>
+    <div class="small" id="seq-b"></div>
+</section>
+
+<h2>Instance methods</h2>
+<section class="row">
+    <button id="ref-animate" @onclick="() => _box.AnimateAsync(Bm.To(x: 120), Bm.Tween(0.6, BmEase.Linear))">animate</button>
+    <button id="ref-cancel" @onclick="RefAnimateThenCancelAsync">animate then cancel</button>
+    <button id="ref-set" @onclick='() => _box.Set(Bm.To(y: 20))'>set</button>
+    <button id="ref-set-async" @onclick='() => _box.SetAsync(Bm.To(opacity: 0.4))'>set async</button>
+    <button id="ref-pause" @onclick="() => _box.Pause()">pause</button>
+    <button id="ref-resume" @onclick="() => _box.Resume()">resume</button>
+    <button id="ref-stop" @onclick='() => _box.Stop("x")'>stop x</button>
+    <Bmotion @ref="_box" Animate="Bm.To(opacity: 1)">
+        <div id="box" class="small"></div>
+    </Bmotion>
+</section>
+
+@code {
+    private BmAnimationControls? _controls;
+    private ElementReference _refTarget;
+    private Readout _count = default!;
+    private Bmotion _box = default!;
+
+    private async Task AnimateSelectorAsync()
+    {
+        _controls = await Motion.AnimateAsync(".prog", Bm.To(x: 200), Bm.Tween(1, BmEase.Linear), stagger: Bm.Stagger(0.3));
+        Log("selector:started");
+        await _controls;
+        Log("selector:done");
+    }
+
+    private async Task AnimateByRefAsync()
+    {
+        await await Motion.AnimateAsync(_refTarget, Bm.To(x: 80, opacity: 0.5), Bm.Tween(0.3));
+        Log("by-ref:done");
+    }
+
+    private async Task CountAsync()
+    {
+        await Motion.AnimateAsync(0, 100, v => _count.Set(Math.Round(v)), Bm.Tween(0.5));
+        Log("count:done");
+    }
+
+    private async Task TwiceAsync()
+    {
+        await await Motion.AnimateAsync("#twice-target", Bm.To(x: 100, scale: 1.5), Bm.Tween(0.2));
+        Log("twice:first");
+        await await Motion.AnimateAsync("#twice-target", Bm.To(x: 200), Bm.Tween(0.6, BmEase.Linear));
+        Log("twice:second");
+    }
+
+    private async Task CancelMidFlightAsync()
+    {
+        using var cts = new CancellationTokenSource();
+        var controls = await Motion.AnimateAsync("#cancel-target", Bm.To(x: 300), Bm.Tween(1.5, BmEase.Linear), cancellationToken: cts.Token);
+        await Task.Delay(400);
+        cts.Cancel();
+        await controls;
+        Log("cancel:settled");
+    }
+
+    private async Task SequenceAsync()
+    {
+        var sequence = new BmSequence()
+            .Add("#seq-a", Bm.To(x: 100), Bm.Tween(0.3))
+            .Add("#seq-a", Bm.To(y: 40), Bm.Tween(0.3), at: "-0.1")
+            .Label("burst")
+            .Add("#seq-b", Bm.To(scale: 1.5), Bm.Tween(0.2), at: "burst");
+        await await Motion.RunAsync(sequence);
+        Log("sequence:done");
+    }
+
+    private async Task RefAnimateThenCancelAsync()
+    {
+        using var cts = new CancellationTokenSource();
+        await _box.AnimateAsync(Bm.To(x: 300), Bm.Tween(1.5, BmEase.Linear), cts.Token);
+        await Task.Delay(400);
+        cts.Cancel();
+        Log("ref-cancel:cancelled");
+    }
+}

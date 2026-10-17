@@ -279,6 +279,17 @@ _book
 /src/Bmage/Bit.Bmage/Scripts/**/*.js
 /src/Bmage/Bit.Bmage/wwwroot/**/*.js
 
+/src/Bink/Bit.Bink/Scripts/**/*.js
+/src/Bink/Bit.Bink/wwwroot/**/*.js
+/src/Bink/Bit.Bink/wwwroot/**/*.css
+
+/src/Blex/Bit.Blex.Blazor/Scripts/**/*.js
+/src/Blex/Bit.Blex.Blazor/wwwroot/**/*.js
+
+/src/Bonboarding/Bit.Bonboarding/Scripts/**/*.js
+/src/Bonboarding/Bit.Bonboarding/wwwroot/**/*.js
+/src/Bonboarding/Bit.Bonboarding/wwwroot/**/*.css
+
 /src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js
 

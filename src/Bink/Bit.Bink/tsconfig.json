@@ -1,0 +1,22 @@
+﻿{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "allowJs": true,
+        "target": "ES2019",
+        // bit-bink.js is loaded by the C# interop both through IJSRuntime's dynamic `import()` and through
+        // JSHost.ImportAsync (the zero-copy [JSImport] render path), and both call its functions as named module
+        // exports. Bit.Bink.lib.module.js is a Blazor JS initializer, which Blazor also imports as a module to call
+        // its `beforeStart`/`beforeWebStart` exports. So the output MUST stay an ES module: `module: ESNext` with
+        // `rootDir`/`outDir` emits each Scripts/*.ts straight to wwwroot/*.js with its `export`s preserved.
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
+        "rootDir": "Scripts",
+        "outDir": "wwwroot",
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [ "./Scripts/**/*.ts" ]
+}

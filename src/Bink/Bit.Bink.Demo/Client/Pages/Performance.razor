@@ -1,0 +1,256 @@
+﻿@page "/performance"
+@using System.Diagnostics
+@using System.Numerics
+
+<PageTitle>Performance - bit Bink</PageTitle>
+
+<h1>Performance</h1>
+<p class="page-intro">
+    Numbers measured here, in your browser, on this machine. Load a synthetic document and draw over it: the
+    canvas keeps responding because a redraw only touches the visible region, and drawing only redraws the
+    overlay. Every figure below is produced by running the real engine, not quoted from a specification.
+</p>
+
+<div class="panel">
+    <div class="toolbar" role="toolbar" aria-label="Performance controls">
+        <label class="field">
+            Strokes
+            <select value="@_strokeCount" @onchange="OnCountChanged" aria-label="Number of strokes">
+                <option value="500">500</option>
+                <option value="2000">2,000</option>
+                <option value="5000">5,000</option>
+                <option value="10000">10,000</option>
+            </select>
+        </label>
+        <label class="field">
+            Points each
+            <select value="@_pointsPerStroke" @onchange="OnPointsChanged" aria-label="Points per stroke">
+                <option value="20">20</option>
+                <option value="60">60</option>
+                <option value="150">150</option>
+            </select>
+        </label>
+        <button type="button" class="btn primary" disabled="@_busy" @onclick="GenerateAsync">Generate</button>
+        <button type="button" class="btn" disabled="@(_busy || _document.IsEmpty)" @onclick="MeasureAsync">Measure</button>
+        <div class="toolbar-spacer"></div>
+        <button type="button" class="btn danger" disabled="@(_busy || _document.IsEmpty)" @onclick="Clear">Clear</button>
+    </div>
+
+    <div class="canvas-host">
+        <BinkCanvas @ref="_canvas"
+                   Document="_document"
+                   Height="420px"
+                   Brush="_brush"
+                   Tool="_tool"
+                   EnableTouchGestures="true"
+                   AriaLabel="Performance test canvas"
+                   DocumentChanged="() => StateHasChanged()"
+                   Ready="() => StateHasChanged()" />
+    </div>
+
+    <CanvasStatus Canvas="_canvas">
+        @if (_busy)
+        {
+            <span role="status"><strong>@(_step ?? "working")...</strong></span>
+        }
+    </CanvasStatus>
+</div>
+
+@if (_results.Count > 0)
+{
+    <h2>Measurements</h2>
+    <table>
+        <thead>
+            <tr><th>Operation</th><th>Result</th><th>What it covers</th></tr>
+        </thead>
+        <tbody>
+            @foreach (Measurement m in _results)
+            {
+                <tr>
+                    <td>@m.Name</td>
+                    <td><strong>@m.Value</strong></td>
+                    <td style="color:var(--text-muted)">@m.Detail</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<div class="note">
+    Drawing on a loaded document stays smooth because the live stroke is rendered on a separate overlay canvas:
+    the thousands of committed strokes are not touched until the pen lifts. Pointer input is batched once per
+    animation frame and never triggers a Blazor render.
+</div>
+
+@code {
+    private sealed record Measurement(string Name, string Value, string Detail);
+
+    private BinkCanvas? _canvas;
+    private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 1600, Height = 1000, Background = BinkColor.White });
+    private readonly BinkBrush _brush = new BinkPenBrush { Width = 3f, Color = BinkColor.Parse("#dc2626") };
+    private readonly IBinkTool _tool = new BinkDrawTool();
+    private readonly List<Measurement> _results = new();
+    private int _strokeCount = 2000;
+    private int _pointsPerStroke = 60;
+    private bool _busy;
+    private string? _step;
+
+    private void Clear()
+    {
+        _document.Clear();
+        _results.Clear();
+        _canvas?.Refresh();
+    }
+
+    /// <summary>
+    /// Shows the step about to run and lets the browser paint before it starts. WebAssembly runs on the page's
+    /// only thread, so without this the whole measurement would appear as one long freeze.
+    /// </summary>
+    private async Task StepAsync(string name)
+    {
+        _step = name;
+        StateHasChanged();
+        await Task.Delay(1);
+    }
+
+    private void OnCountChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int value)) _strokeCount = value;
+    }
+
+    private void OnPointsChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int value)) _pointsPerStroke = value;
+    }
+
+    private async Task GenerateAsync()
+    {
+        _busy = true;
+        _results.Clear();
+        await StepAsync("Building the document");
+
+        var stopwatch = Stopwatch.StartNew();
+        _document.Clear();
+        var random = new Random(20260908);
+        Guid layer = _document.Layers[0].Id;
+
+        // One batch: the document raises a single change and the canvas redraws once.
+        using (_document.BeginBatch("Generate"))
+        {
+            for (int i = 0; i < _strokeCount; i++)
+            {
+                _document.AddElement(CreateStroke(random), layer);
+            }
+        }
+        stopwatch.Stop();
+
+        _results.Add(new Measurement(
+            "Build document",
+            $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{_strokeCount:N0} strokes, {_document.TotalPointCount:N0} points, including geometry-free construction"));
+
+        _busy = false;
+        _canvas?.Refresh();
+        StateHasChanged();
+    }
+
+    private BinkStroke CreateStroke(Random random)
+    {
+        float cx = (float)random.NextDouble() * 1500f + 50f;
+        float cy = (float)random.NextDouble() * 900f + 50f;
+        float scale = 6f + (float)random.NextDouble() * 30f;
+        float phase = (float)random.NextDouble() * MathF.Tau;
+
+        var buffer = new BinkStrokePointBuffer(_pointsPerStroke);
+        for (int p = 0; p < _pointsPerStroke; p++)
+        {
+            float t = p / (float)_pointsPerStroke;
+            float angle = phase + t * MathF.Tau;
+            buffer.Add(new BinkPoint(
+                cx + MathF.Cos(angle) * scale * (1 + t),
+                cy + MathF.Sin(angle * 1.3f) * scale,
+                0.25f + 0.7f * MathF.Sin(t * MathF.PI),
+                p * 6f));
+        }
+        return new BinkStroke(buffer.ToStrokePoints(), _brush with { Color = new BinkColor((byte)random.Next(60, 200), (byte)random.Next(60, 200), (byte)random.Next(60, 200)) });
+    }
+
+    private async Task MeasureAsync()
+    {
+        _busy = true;
+
+        _results.RemoveAll(m => m.Name != "Build document");
+
+        await StepAsync("Generating geometry");
+        // Geometry generation: the cost of turning every stroke into a fillable outline once.
+        var stopwatch = Stopwatch.StartNew();
+        int vertices = 0;
+        foreach (BinkElement element in _document.AllElements)
+        {
+            if (element is BinkStroke stroke) vertices += stroke.Geometry.Path.VerbCount;
+        }
+        stopwatch.Stop();
+        _results.Add(new Measurement("Generate all geometry", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{vertices:N0} path segments, cached afterwards so redraws reuse them"));
+
+        await StepAsync("Recording a full redraw");
+        // A cached redraw: what every pan, zoom or committed stroke costs.
+        stopwatch.Restart();
+        var recorder = new BinkCanvasRenderContext(1 << 16);
+        BinkDocumentRenderer.Render(_document, recorder);
+        stopwatch.Stop();
+        _results.Add(new Measurement("Record a full redraw", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{recorder.Count:N0} canvas commands for the whole document"));
+
+        await StepAsync("Recording the visible region");
+        // The realistic case: only what is on screen.
+        BinkRect visible = _canvas?.CurrentViewport.VisibleRect(_canvas.ViewSize) ?? new BinkRect(0, 0, 800, 420);
+        stopwatch.Restart();
+        var culled = new BinkCanvasRenderContext(1 << 16);
+        BinkDocumentRenderer.Render(_document, culled, new BinkRenderOptions { ClipBounds = visible });
+        stopwatch.Stop();
+        _results.Add(new Measurement("Record the visible region", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{culled.Count:N0} commands, which is what a real redraw costs"));
+
+        await StepAsync("Hit testing");
+        // Hit testing, the cost of a click with the selection tool.
+        stopwatch.Restart();
+        int hits = 0;
+        for (int i = 0; i < 200; i++)
+        {
+            var point = new Vector2(i * 7f % 1600f, i * 13f % 1000f);
+            if (BinkDocumentQuery.HitTest(_document, point, 4f) is not null) hits++;
+        }
+        stopwatch.Stop();
+        _results.Add(new Measurement("Hit test", $"{stopwatch.Elapsed.TotalMilliseconds / 200d * 1000:0} us per click",
+            $"{hits} of 200 probes landed on a stroke"));
+
+        await StepAsync("Saving and loading");
+        // Serialization.
+        stopwatch.Restart();
+        byte[] saved = BinkSerializer.SerializeToUtf8Bytes(_document);
+        stopwatch.Stop();
+        double saveMs = stopwatch.Elapsed.TotalMilliseconds;
+
+        stopwatch.Restart();
+        BinkDocument reloaded = BinkSerializer.Deserialize(saved);
+        stopwatch.Stop();
+
+        _results.Add(new Measurement("Save", $"{saveMs:0} ms",
+            $"{saved.Length / 1024.0:N0} KB, {saved.Length / (double)Math.Max(_document.TotalPointCount, 1):0.0} bytes per point"));
+        _results.Add(new Measurement("Load", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{reloaded.ElementCount:N0} elements restored"));
+
+        await StepAsync("Exporting SVG");
+        // SVG export.
+        stopwatch.Restart();
+        string svg = BinkSvgExporter.Export(_document);
+        stopwatch.Stop();
+        _results.Add(new Measurement("Export SVG", $"{stopwatch.Elapsed.TotalMilliseconds:0} ms",
+            $"{svg.Length / 1024.0:N0} KB of vector paths"));
+
+        _busy = false;
+        _step = null;
+        StateHasChanged();
+    }
+}

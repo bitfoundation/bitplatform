@@ -1,0 +1,15 @@
+﻿body {
+    font-family: system-ui, sans-serif;
+    margin: 1rem;
+}
+
+.harness-nav {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+#status {
+    color: #666;
+    font-size: 0.85rem;
+}

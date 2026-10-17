@@ -38,6 +38,34 @@
     <Project Path="Besql/Demo/Bit.Besql.Demo.Client/Bit.Besql.Demo.Client.csproj" />
     <Project Path="Besql/Demo/Bit.Besql.Demo/Bit.Besql.Demo.csproj" />
   </Folder>
+  <Folder Name="/Blex/">
+    <File Path="Blex/README.md" />
+    <Project Path="Blex/Bit.Blex/Bit.Blex.csproj" />
+    <Project Path="Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj" />
+    <Project Path="Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj" />
+    <Project Path="Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj" />
+    <Project Path="Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj" />
+  </Folder>
+  <Folder Name="/Blex/Demo/">
+    <Project Path="Blex/Demo/Client/Bit.Blex.Demo.Client.csproj" />
+    <Project Path="Blex/Demo/Server/Bit.Blex.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Blex/Samples/">
+    <Project Path="Blex/Samples/Bit.Blex.Samples.Wasm/Bit.Blex.Samples.Wasm.csproj" />
+  </Folder>
+  <Folder Name="/Blex/Tests/">
+    <Project Path="Blex/Tests/Bit.Blex.Benchmarks/Bit.Blex.Benchmarks.csproj" />
+    <Project Path="Blex/Tests/Bit.Blex.Tests/Bit.Blex.Tests.csproj" />
+    <Project Path="Blex/Tests/Bit.Blex.Tests.Generators/Bit.Blex.Tests.Generators.csproj" />
+    <Project Path="Blex/Tests/Bit.Blex.Tests.Mcp/Bit.Blex.Tests.Mcp.csproj" />
+    <Project Path="Blex/Tests/Bit.Blex.Tests.E2E/Bit.Blex.Tests.E2E.csproj" />
+  </Folder>
+  <Folder Name="/Blex/Tests/Harness/">
+    <Project Path="Blex/Tests/Bit.Blex.Tests.Harness/Bit.Blex.Tests.Harness.csproj" />
+    <Project Path="Blex/Tests/Bit.Blex.Tests.Harness.Web/Bit.Blex.Tests.Harness.Web.csproj" />
+    <Project Path="Blex/Tests/Bit.Blex.Tests.Harness.Web.Client/Bit.Blex.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Blex/Tests/Bit.Blex.Tests.Harness.Hybrid/Bit.Blex.Tests.Harness.Hybrid.csproj" />
+  </Folder>
   <Folder Name="/Bmage/">
     <File Path="Bmage/README.md" />
     <Project Path="Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj" />
@@ -64,7 +92,38 @@
   </Folder>
   <Folder Name="/Bmotion/Tests/">
     <Project Path="Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
+    <Project Path="Bmotion/Tests/Bit.Bmotion.Tests.E2E/Bit.Bmotion.Tests.E2E.csproj" />
     <Project Path="Bmotion/Tests/Bit.Bmotion.Tests.Mcp/Bit.Bmotion.Tests.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/Bmotion/Tests/Harness/">
+    <Project Path="Bmotion/Tests/Bit.Bmotion.Tests.Harness.Web.Client/Bit.Bmotion.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Bmotion/Tests/Bit.Bmotion.Tests.Harness.Web/Bit.Bmotion.Tests.Harness.Web.csproj" />
+  </Folder>
+  <Folder Name="/Bink/">
+    <File Path="Bink/README.md" />
+    <Project Path="Bink/Bit.Bink/Bit.Bink.csproj" />
+  </Folder>
+  <Folder Name="/Bink/Bit.Bink.Demo/">
+    <Project Path="Bink/Bit.Bink.Demo/Client/Bit.Bink.Demo.Client.csproj" />
+    <Project Path="Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bink/Tests/">
+    <Project Path="Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
+    <Project Path="Bink/Tests/Bit.Bink.Tests.Mcp/Bit.Bink.Tests.Mcp.csproj" />
+    <Project Path="Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj" />
+    <Project Path="Bink/Tests/Bit.Bink.Benchmarks/Bit.Bink.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/Bonboarding/">
+    <File Path="Bonboarding/README.md" />
+    <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />
+  </Folder>
+  <Folder Name="/Bonboarding/Demo/">
+    <Project Path="Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
+    <Project Path="Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bonboarding/Tests/">
+    <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
+    <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp/Bit.Bonboarding.Tests.Mcp.csproj" />
   </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />

@@ -1,0 +1,117 @@
+﻿@page "/layout"
+
+@* Layout animations (FLIP): position and size changes a re-render causes, an element that also animates its own
+   transform, LayoutDependency gating the measurement, and LayoutId shared-element transitions between tabs. *@
+
+<HarnessHeader Title="Layout" Ready="Ready" OnLog="BindLog" />
+
+<button id="move" @onclick="() => Change(() => _end = !_end)">move</button>
+<button id="grow" @onclick="() => Change(() => _wide = !_wide)">grow</button>
+<button id="shift" @onclick="() => Change(() => _shift = !_shift)">shift</button>
+<button id="rerender" @onclick="() => Change(() => _renders++)">re-render</button>
+
+<div class="layout-row @(_end ? "end" : "")">
+    <Bmotion Layout="true"
+             Animate="Bm.To(opacity: 1)"
+             Transition="Bm.Tween(0.5, BmEase.Linear)"
+             OnAnimationStart='_ => Log("armed:move")'
+             OnLayoutAnimationStart='() => Log("move:start")'
+             OnLayoutAnimationComplete='() => Log("move:complete")'>
+        <div id="move-box" class="box"></div>
+    </Bmotion>
+</div>
+
+<div class="layout-row">
+    <Bmotion Layout="BmLayout.Size"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:grow")'
+             Transition="Bm.Tween(0.5, BmEase.Linear)"
+             OnLayoutAnimationComplete='() => Log("grow:complete")'>
+        <div id="grow-box" class="box" style="width: @(_wide ? 200 : 60)px"></div>
+    </Bmotion>
+</div>
+
+@* A layout element that also owns its transform: after a FLIP it must still show its own x. *@
+<div class="layout-row @(_end ? "end" : "")">
+    <Bmotion Layout="true"
+             Animate="Bm.To(x: _shift ? -50 : 0)"
+             Transition="Bm.Tween(0.3, BmEase.Linear)"
+             OnLayoutAnimationComplete='() => Log("both:layout-complete")'
+             OnAnimationStart='_ => Log("armed:both")'
+             OnAnimationComplete='_ => Log("both:complete")'>
+        <div id="both-box" class="box"></div>
+    </Bmotion>
+</div>
+
+@* LayoutDependency: only a change of _end is a layout change; other re-renders don't measure. *@
+<div class="layout-row @(_end ? "end" : "")">
+    <Bmotion Layout="true" LayoutDependency="_end"
+             Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:dep")'
+             Transition="Bm.Tween(0.3)"
+             OnLayoutAnimationStart='() => Log("dep:start")'>
+        <div id="dep-box" class="small"></div>
+    </Bmotion>
+</div>
+
+<h2>Shared element</h2>
+<div class="tabs">
+    @for (var i = 0; i < 3; i++)
+    {
+        var tab = i;
+        <div class="tab" id="tab@(tab)" @onclick="() => Change(() => _tab = tab)">
+            Tab @tab
+            @if (_tab == tab)
+            {
+                <Bmotion LayoutId="underline"
+                         Animate="Bm.To(opacity: 1)"
+                         OnAnimationStart='_ => Log($"armed:underline{tab}")'
+                         Transition="Bm.Tween(0.5, BmEase.Linear)"
+                         OnLayoutAnimationComplete='() => Log("underline:complete")'>
+                    <div class="underline" id="underline"></div>
+                </Bmotion>
+            }
+        </div>
+    }
+</div>
+
+<h2>Layout groups</h2>
+@* The same LayoutId in two groups: each group's elements hand off among themselves only. *@
+<div class="tabs">
+    <BmotionLayoutGroup Name="a">
+        @for (var i = 0; i < 2; i++)
+        {
+            var tab = i;
+            <div class="tab" id="ga-tab@(tab)" @onclick="() => Change(() => _groupTab = tab)">
+                A @tab
+                @if (_groupTab == tab)
+                {
+                    <Bmotion LayoutId="marker" Transition="Bm.Tween(0.5, BmEase.Linear)"
+                             Animate="Bm.To(opacity: 1)"
+                             OnAnimationStart='_ => Log($"armed:ga{tab}")'
+                             OnLayoutAnimationStart='() => Log("group-a:start")'>
+                        <div class="underline" id="ga-marker"></div>
+                    </Bmotion>
+                }
+            </div>
+        }
+    </BmotionLayoutGroup>
+    <BmotionLayoutGroup Name="b">
+        <div class="tab" id="gb-tab">
+            B
+            <Bmotion LayoutId="marker" Transition="Bm.Tween(0.5)"
+                     OnLayoutAnimationStart='() => Log("group-b:start")'>
+                <div class="underline" id="gb-marker"></div>
+            </Bmotion>
+        </div>
+    </BmotionLayoutGroup>
+</div>
+
+@code {
+    private bool _end;
+    private bool _wide;
+    private bool _shift;
+    private int _renders;
+    private int _tab;
+    private int _groupTab;
+}

@@ -1,0 +1,87 @@
+﻿@page "/diagnostics"
+
+<DocPage Href="diagnostics" Title="Compile-time diagnostics"
+         Lead="The generator validates every store and fails the build with a precise message rather than emitting code that does not compile.">
+
+    <p>
+        All nineteen diagnostics live in the <code>Bit.Blex.Generators</code> category. Sixteen are errors - they
+        describe shapes the generator genuinely cannot emit - and three are warnings about code that
+        compiles but almost certainly does not do what you meant.
+    </p>
+
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr><th>Code</th><th>Severity</th><th>Summary</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var d in DiagnosticsCatalog.All)
+                {
+                    <tr>
+                        <td><a href="#@d.Code.ToLowerInvariant()"><code>@d.Code</code></a></td>
+                        <td>
+                            @if (d.IsError)
+                            {
+                                <span class="pill pill--err">Error</span>
+                            }
+                            else
+                            {
+                                <span class="pill pill--busy">Warning</span>
+                            }
+                        </td>
+                        <td>@d.Title</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @foreach (var d in DiagnosticsCatalog.All)
+    {
+        <h2 id="@d.Code.ToLowerInvariant()">
+            <code>@d.Code</code> - @d.Title
+        </h2>
+        <p>@((MarkupString)d.Cause)</p>
+        @if (!string.IsNullOrEmpty(d.Bad))
+        {
+            <CodeBlock Code="@d.Bad" Title="Rejected" Compact="true" />
+        }
+        @if (!string.IsNullOrEmpty(d.Good))
+        {
+            <CodeBlock Code="@d.Good" Title="Fix" Compact="true" />
+        }
+    }
+
+    <h2>Suppressing a warning</h2>
+    <p>
+        The three warnings are suppressible like any other. Blex's own test project suppresses
+        <code>BLEX011</code> project-wide, because it has a fixture that deliberately declares a
+        value-returning action.
+    </p>
+    <CodeBlock Code="@Suppress" Language="xml" FileName="MyApp.csproj" />
+    <CodeBlock Code="@SuppressLocal" Title="Or locally" Compact="true" />
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Nothing is emitted for a rejected store">
+        <p style="margin-bottom:0">
+            When a store fails validation, the generator reports the diagnostic and emits
+            <em>no</em> partial for it. Expect a cascade of "does not contain a definition for
+            <code>Count</code>" errors alongside the Blex diagnostic - fix the Blex one first and
+            the rest disappear.
+        </p>
+    </Callout>
+
+</DocPage>
+
+@code {
+    private const string Suppress = """
+        <PropertyGroup>
+          <NoWarn>$(NoWarn);BLEX011</NoWarn>
+        </PropertyGroup>
+        """;
+
+    private const string SuppressLocal = """
+        #pragma warning disable BLEX011
+        [BlexAction] private int OnIncrement() => ++Count;
+        #pragma warning restore BLEX011
+        """;
+}

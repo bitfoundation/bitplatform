@@ -1,0 +1,166 @@
+﻿@page "/placement"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Placement and spotlight</PageTitle>
+
+<h1>Placement &amp; spotlight</h1>
+
+<p class="page-intro">
+    Positioning is computed in C# from a measured rectangle. Pick a target near an edge and a
+    placement that cannot fit, and watch the engine slide the popover along the target rather than
+    jumping it to another side; it only flips when sliding is not enough.
+</p>
+
+<section class="demo-section">
+    <h2>Try it</h2>
+
+    <p>
+        The panel below scrolls. Steps four and five sit outside the visible area, which exercises
+        scroll-into-view and the observers that keep the popover glued to a moving target.
+    </p>
+
+    <div class="controls">
+        <div class="field">
+            <label for="placement">Placement</label>
+            <select id="placement" @bind="_placement">
+                @foreach (var value in Enum.GetValues<BonboardingPlacement>())
+                {
+                    <option value="@value">@value</option>
+                }
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="shape">Spotlight shape</label>
+            <select id="shape" @bind="_shape">
+                @foreach (var value in Enum.GetValues<BonboardingSpotlightShape>())
+                {
+                    <option value="@value">@value</option>
+                }
+            </select>
+        </div>
+
+        <div class="field">
+            <label for="padding">Spotlight padding</label>
+            <input id="padding" type="number" min="0" max="40" step="2" @bind="_spotlightPadding" />
+        </div>
+
+        <div class="field">
+            <label for="offset">Popover offset</label>
+            <input id="offset" type="number" min="0" max="60" step="2" @bind="_offset" />
+        </div>
+
+        <div class="field">
+            <label for="interaction">Interaction</label>
+            <select id="interaction" @bind="_interaction">
+                @foreach (var value in Enum.GetValues<BonboardingInteractionMode>())
+                {
+                    <option value="@value">@value</option>
+                }
+            </select>
+        </div>
+
+        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the tour</button>
+    </div>
+
+    <div class="playground">
+        <div class="playground-inner">
+            @foreach (var target in Targets)
+            {
+                <div class="dot-target"
+                     data-bonboarding-anchor="@target.Anchor"
+                     style="left:@(target.Left); top:@(target.Top)">@target.Label</div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="demo-section">
+    <h2>What the options do</h2>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Option</th><th>Effect</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Placement</code></td>
+                    <td>The side and alignment to try first. <code>Auto</code> picks the side with the most free space.</td>
+                </tr>
+                <tr>
+                    <td><code>PlacementFallbacks</code></td>
+                    <td>An explicit order to try when the preferred placement does not fit. Left unset, the engine derives one.</td>
+                </tr>
+                <tr>
+                    <td><code>SpotlightShape</code></td>
+                    <td><code>Rounded</code>, <code>Rectangle</code>, <code>Circle</code>, or <code>None</code> to dim without a cut-out.</td>
+                </tr>
+                <tr>
+                    <td><code>SpotlightPadding</code></td>
+                    <td>Breathing room around the target. It also grows the rectangle the popover is positioned against.</td>
+                </tr>
+                <tr>
+                    <td><code>Interaction</code></td>
+                    <td>
+                        <code>Blocked</code> swallows every click outside the popover, <code>TargetOnly</code> makes the
+                        spotlight hole click-through, and <code>Free</code> leaves the page entirely usable.
+                    </td>
+                </tr>
+                <tr>
+                    <td><code>Scroll</code></td>
+                    <td>How an off-screen target is brought into view, including doing nothing at all.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+@code {
+    private BonboardingPlacement _placement = BonboardingPlacement.Auto;
+    private BonboardingSpotlightShape _shape = BonboardingSpotlightShape.Rounded;
+    private BonboardingInteractionMode _interaction = BonboardingInteractionMode.Blocked;
+    private double _spotlightPadding = 8;
+    private double _offset = 12;
+
+    private sealed record TargetSpot(string Anchor, string Label, string Left, string Top);
+
+    private static readonly TargetSpot[] Targets =
+    [
+        new("spot-nw", "Top left", "1rem", "1rem"),
+        new("spot-ne", "Top right", "calc(100% - 7rem)", "1rem"),
+        new("spot-c", "Centre", "calc(50% - 2.75rem)", "9rem"),
+        new("spot-sw", "Low left", "1rem", "30rem"),
+        new("spot-se", "Low right", "calc(100% - 7rem)", "36rem"),
+    ];
+
+    private Task StartAsync()
+    {
+        var tour = new BonboardingTourDefinition
+        {
+            Id = "placement-playground",
+            // A playground should always start fresh rather than resuming yesterday's position.
+            Persist = false,
+            Placement = _placement,
+            SpotlightShape = _shape,
+            SpotlightPadding = _spotlightPadding,
+            Offset = _offset,
+            Interaction = _interaction,
+            Progress = BonboardingProgressStyle.Text,
+        };
+
+        foreach (var target in Targets)
+        {
+            tour.Steps.Add(new BonboardingStepDefinition
+            {
+                Id = target.Anchor,
+                Target = BonboardingStepTarget.Anchor(target.Anchor),
+                Title = target.Label,
+                Description = $"Requested {_placement}. The engine keeps this inside the viewport, "
+                    + "sliding along the target before it considers another side.",
+            });
+        }
+
+        return BonboardingService.StartAsync(tour);
+    }
+}

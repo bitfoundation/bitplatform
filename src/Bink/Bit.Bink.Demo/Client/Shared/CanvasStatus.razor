@@ -1,0 +1,30 @@
+﻿@* Shows what the engine and the device are actually doing. Useful for judging the library, not decoration. *@
+
+@if (Canvas is not null)
+{
+    <div class="statusbar" aria-live="off">
+        <span><strong>@Canvas.CurrentDocument.ElementCount</strong> elements</span>
+        <span><strong>@Canvas.CurrentDocument.TotalPointCount</strong> points</span>
+        <span><strong>@Canvas.History.UndoCount</strong> undo steps</span>
+        <span>Zoom <strong>@((Canvas.CurrentViewport.Zoom * 100).ToString("0"))%</strong></span>
+        <span class="badge @(Canvas.UsesFastRenderPath ? "on" : null)">
+            @(Canvas.UsesFastRenderPath ? "zero-copy render" : "standard interop")
+        </span>
+        <span class="badge @(Canvas.Capabilities.CoalescedEvents ? "on" : null)">coalesced input</span>
+        <span class="badge @(Canvas.Capabilities.ObservedPressure ? "on" : null)">
+            @(Canvas.Capabilities.ObservedPressure ? "pen pressure" : "no pressure hardware")
+        </span>
+        @if (Canvas.Capabilities.ObservedTilt)
+        {
+            <span class="badge on">tilt</span>
+        }
+        <span>DPR <strong>@Canvas.Capabilities.DevicePixelRatio.ToString("0.##")</strong></span>
+        @ChildContent
+    </div>
+}
+
+@code {
+    [Parameter] public BinkCanvas? Canvas { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

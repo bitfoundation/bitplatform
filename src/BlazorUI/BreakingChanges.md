@@ -3,7 +3,15 @@
 Breaking changes to the public API of the bit BlazorUI packages (`Bit.BlazorUI`, `Bit.BlazorUI.Extras`,
 `Bit.BlazorUI.Assets`), newest version first, each with what to change in your code.
 
-## 10.7.0 (first shipped in 10.7.0-pre-01)
+## 10.7.0 (first shipped in 10.7.0-pre-02)
+
+### `BitFullCalendarChangeNotifier` passes on whether to show the refusal notice ([#13827](https://github.com/bitfoundation/bitplatform/issues/13827))
+
+`BitFullCalendarChangeNotifier.RefusalReporter` is now an `Action<BitFullCalendarChangeRefusal, bool>`, whose second
+argument says whether the calendar shows its own notice for the refusal: a dialog that already shows the reason
+inline turns it off. `ReportRefusal` takes it as an optional `showNotice`, `true` by default, so a call to it compiles
+as before, and an assembly compiled against the earlier one has to be compiled again. **An app that sets
+`RefusalReporter` itself** takes the second argument: `(refusal, showNotice) => ...`.
 
 ### The item type of the item-based components keeps its public properties in a trimmed app
 

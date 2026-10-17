@@ -1,0 +1,181 @@
+﻿@page "/headless"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Headless UI</PageTitle>
+
+<h1>Headless UI</h1>
+
+<p class="page-intro">
+    When the default card is not what you want, replace it. The library still owns the popover
+    element, so measurement, collision-aware placement, focus management and dialog semantics keep
+    working; you own everything inside it.
+</p>
+
+<section class="demo-section">
+    <h2>A card the library did not draw</h2>
+
+    <div class="demo-actions">
+        <button type="button" class="btn btn-primary" @onclick="StartAsync">Run the custom-rendered tour</button>
+        <span class="pill">Rendered by this page, not by the library</span>
+    </div>
+
+    <AppWindow />
+</section>
+
+<section class="demo-section">
+    <h2>Three levels of customisation</h2>
+
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr><th>Level</th><th>How</th><th>Use it when</th></tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Restyle</td>
+                    <td><code>--bit-bonboarding-*</code> custom properties</td>
+                    <td>The layout is right, the colours are not.</td>
+                </tr>
+                <tr>
+                    <td>Recompose</td>
+                    <td><code>BonboardingStepDefinition.Header</code>, <code>.Body</code>, <code>.Footer</code></td>
+                    <td>One step needs a form, an image or a different set of buttons.</td>
+                </tr>
+                <tr>
+                    <td>Replace</td>
+                    <td><code>BonboardingRoot.ChildContent</code>, or a tour or step <code>Template</code></td>
+                    <td>The card should look nothing like the default.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="demo-section">
+    <h2>A per-step body</h2>
+
+    <p>
+        The second step of the tour above renders a form inside the popover and disables its own Next
+        button until the form is filled in. It is ordinary Razor.
+    </p>
+
+    <pre><code>@Example</code></pre>
+</section>
+
+@* A second, independently rendered host, driven by the session started below. Custom content
+   replaces the card entirely while the engine keeps positioning it. *@
+<BonboardingRoot Session="_session" Unstyled="true" PopoverClass="custom-shell">
+    <ChildContent>
+        <div class="custom-card">
+            <div class="custom-card-head">
+                <span class="custom-step">@context.Position / @context.Count</span>
+                <strong>@context.Title</strong>
+            </div>
+
+            <p class="custom-body">@context.Description</p>
+
+            <div class="custom-actions">
+                <button type="button" class="btn" @onclick="context.CloseAsync">Close</button>
+                <span style="margin-inline-start:auto"></span>
+                @if (!context.IsFirst)
+                {
+                    <button type="button" class="btn" @onclick="context.PreviousAsync">@context.PreviousLabel</button>
+                }
+                <button type="button" class="btn btn-primary" data-bonboarding-autofocus @onclick="context.NextAsync">
+                    @context.NextLabel
+                </button>
+            </div>
+        </div>
+    </ChildContent>
+</BonboardingRoot>
+
+<style>
+    .custom-shell {
+        position: fixed;
+        left: 0;
+        top: 0;
+        /* Matches the card so the engine, which measures this element, keeps the arrow off its corners. */
+        border-radius: 18px;
+        width: 24rem;
+        max-width: calc(100vw - 2rem);
+        pointer-events: auto;
+        filter: drop-shadow(0 18px 40px rgba(8, 12, 30, 0.35));
+        /* The arrow is still the library's, and it is painted with these two: match the card. The
+           card is a gradient, so the surface is its colour near the edges the arrow meets. */
+        --bit-bonboarding-surface: #161934;
+        --bit-bonboarding-border: rgba(255, 255, 255, 0.12);
+    }
+
+    .custom-card {
+        background: linear-gradient(150deg, #111827, #1e1b4b);
+        color: #f8fafc;
+        border-radius: 18px;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        padding: 1.1rem 1.25rem 1rem;
+    }
+
+    .custom-card-head { display: flex; align-items: baseline; gap: 0.6rem; margin-bottom: 0.5rem; }
+    .custom-step { font-size: 0.72rem; letter-spacing: 0.08em; color: #a5b4fc; }
+    .custom-body { color: #cbd5e1; font-size: 0.9rem; margin: 0 0 1rem; }
+    .custom-actions { display: flex; gap: 0.5rem; align-items: center; }
+    .custom-card .btn { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.18); color: #e2e8f0; }
+    .custom-card .btn-primary { background: #a5b4fc; border-color: #a5b4fc; color: #1e1b4b; }
+</style>
+
+@code {
+    private IBonboardingTourSession? _session;
+
+    private async Task StartAsync()
+    {
+        _session = await BonboardingService.StartAsync(new BonboardingTourDefinition
+        {
+            Id = "headless",
+            Persist = false,
+            // Nothing here mentions the UI: the definition is pure data either way.
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    Id = "create",
+                    Target = BonboardingStepTarget.Anchor("new-project"),
+                    Title = "Completely custom",
+                    Description = "This card is rendered by the page, not by the library.",
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "usage",
+                    Target = BonboardingStepTarget.Anchor("usage"),
+                    Title = "Still placed for you",
+                    Description = "Collision handling, scrolling, focus and the observers all still apply.",
+                    Placement = BonboardingPlacement.Bottom,
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "account",
+                    Target = BonboardingStepTarget.Anchor("account"),
+                    Title = "And still accessible",
+                    Description = "The element is a labelled dialog with a focus trap, whatever you put inside it.",
+                    Placement = BonboardingPlacement.BottomEnd,
+                },
+            },
+        });
+
+        StateHasChanged();
+    }
+
+    private const string Example = """
+        <BonboardingRoot Unstyled="true" PopoverClass="my-card">
+            <ChildContent>
+                <h2>@context.Title</h2>
+                <p>@context.Description</p>
+                <button @onclick="context.PreviousAsync">@context.PreviousLabel</button>
+                <button @onclick="context.NextAsync">@context.NextLabel</button>
+            </ChildContent>
+        </BonboardingRoot>
+
+        @* Or just one step, leaving the rest of the tour on the default chrome: *@
+        <BonboardingStep Anchor="plan" Title="Choose a plan">
+            <MyPlanPicker OnPicked="context.NextAsync" />
+        </BonboardingStep>
+        """;
+}

@@ -58,7 +58,7 @@ assembly. These are floors for the oldest supported SDK:
 | `Microsoft.CodeAnalysis.Analyzers` | 3.3.3 | `Bit.BlazorUI.SourceGenerators`, `Bit.SourceGenerators` |
 | `Microsoft.CodeAnalysis.CSharp.Workspaces` | 4.3.1 | `Bit.BlazorUI.SourceGenerators`, `Bit.SourceGenerators` |
 | `Microsoft.CodeAnalysis.Workspaces.Common` | 4.3.1 | `Bit.CodeAnalyzers` |
-| `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.Brouter.Generators` + its test project (must match) |
+| `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.Brouter.Generators`, `Bit.Blex.Generators` + their test projects, and `Bit.Blex.Demo.Server` (runs the Blex generator for its MCP server) (must match) |
 | `Microsoft.CodeAnalysis.CSharp` | 4.14.0 | `Bit.CodeAnalyzers` |
 | `Microsoft.Build.Utilities.Core` | 17.7.2 | `Bit.Butil.Build` |
 
@@ -80,14 +80,14 @@ consumes a test project, so every band takes the newest patch of its own band. L
 
 **Version ranges stay.** `[8.0.0,9.0.0)` is a compatibility contract, not a pin.
 
-**`Bit.*` self-references track the in-development version**, currently `10.7.0-pre-01`. Never read
+**`Bit.*` self-references track the in-development version**, currently `10.7.0-pre-02`. Never read
 these off nuget.org — the published `latest` is behind the working tree by design, and unrelated
 higher-numbered lines exist there.
 
 **TypeScript is held at 5.9.3 in the libraries.** 7.x is the Go rewrite
 (`microsoft/typescript-go`), not an incremental release. `Boilerplate.Client.Core` is the canary and
 is already on 7.0.2 — if a bump is wanted, move one library project, build it, and only then the
-rest. Do not move all eleven at once.
+rest. Do not move all twelve at once.
 
 **Vitest is held at `^3`** in `src/Bmotion/Tests/bit-bmotion-js` and `src/Bswup/Tests/bit-bswup-js`.
 

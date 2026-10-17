@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Drives the harness pages of Bit.Bmotion.Tests.Harness.Web in a real browser (Chromium, through
+         Playwright), in whichever render mode BMOTION_E2E_HOST names - see README.md. -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <LangVersion>latest</LangVersion>
+
+        <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner. EnableMSTestRunner builds that
+             test host into the assembly itself, and it only generates the entry point for an executable project. -->
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Playwright" Version="1.63.0" />
+        <PackageReference Include="MSTest" Version="4.5.1" />
+    </ItemGroup>
+
+    <!-- Deliberately no ProjectReference to Bit.Bmotion or the harness: every test here drives a running host
+         through the browser, exactly as an app's user would, and HarnessBuild builds that host before the run
+         (a ProjectReference would only build it for the framework this project targets). -->
+
+</Project>

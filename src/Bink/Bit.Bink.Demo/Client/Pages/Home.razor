@@ -1,0 +1,108 @@
+﻿@page "/"
+
+<PageTitle>bit Bink - drawing and ink for Blazor</PageTitle>
+
+<h1>bit Bink</h1>
+<p class="page-intro">
+    A native drawing and ink engine for Blazor. The stroke model, smoothing, pressure response, hit testing,
+    undo, serialization and export are all written in C#. JavaScript only collects pointer events and replays a
+    command buffer onto a canvas.
+</p>
+
+<div class="panel" style="padding:1rem">
+    @* A host that reads canvas state (such as the undo button below) re-renders on this callback.
+       Pointer input itself never re-renders anything. *@
+    <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()" Height="260px" EnableTouchGestures="true" Brush="_brush" AriaLabel="Try drawing here"
+               DocumentChanged="() => StateHasChanged()" />
+</div>
+<div class="toolbar" style="border:1px solid var(--border);border-top:none;border-radius:0 0 10px 10px">
+    <span class="field">Draw above with a mouse, a finger or a stylus.</span>
+    <div class="toolbar-spacer"></div>
+    <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanUndo)" @onclick="Undo">Undo</button>
+    <button type="button" class="btn danger" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="Clear">Clear</button>
+</div>
+
+<h2>What it is for</h2>
+<div class="grid">
+    <a class="card" href="signature">
+        <h3>Signature</h3>
+        <p>A signature field with pressure-aware ink, undo and vector export that stays sharp at any size.</p>
+    </a>
+    <a class="card" href="handwriting">
+        <h3>Handwriting</h3>
+        <p>A note-taking surface tuned for fast writing, with pen pressure, tilt and palm rejection.</p>
+    </a>
+    <a class="card" href="whiteboard">
+        <h3>Whiteboard</h3>
+        <p>Pens, markers, highlighters, shapes, text, selection, layers, pan and zoom.</p>
+    </a>
+    <a class="card" href="diagram">
+        <h3>Diagram surface</h3>
+        <p>Nodes and connectors that stay attached when you move things, on a snapping grid.</p>
+    </a>
+    <a class="card" href="image-annotation">
+        <h3>Image annotation</h3>
+        <p>Drop in a screenshot, mark it up with arrows and highlights, export a flattened PNG.</p>
+    </a>
+    <a class="card" href="document-annotation">
+        <h3>Document review</h3>
+        <p>Text highlights, callouts and freehand notes over a document surface.</p>
+    </a>
+    <a class="card" href="collaboration">
+        <h3>Collaboration</h3>
+        <p>Two canvases synchronizing through operations, with live cursors and remote ink.</p>
+    </a>
+</div>
+
+<h2>Under the hood</h2>
+<div class="grid">
+    <a class="card" href="serialization">
+        <h3>Serialization</h3>
+        <p>Save, inspect, edit and reload the vector document, and see what each format costs in bytes.</p>
+    </a>
+    <a class="card" href="performance">
+        <h3>Performance</h3>
+        <p>Generate thousands of strokes and time geometry, redraw, hit testing, save, load and export.</p>
+    </a>
+</div>
+
+<h2>How it is built</h2>
+<pre><code>Pointer events (browser)
+  -> batched once per animation frame
+  -> BinkStrokeBuilder        spacing filter, streamline smoothing, pressure
+  -> BinkStroke + BinkBrush   immutable vector model
+  -> BinkDrawingOperation     the unit of undo, diffing and collaboration
+  -> BinkDocument             layers of elements
+  -> IBinkRenderContext       canvas commands, SVG, or the built-in rasterizer</code></pre>
+
+<p>
+    One rendering path serves the screen, SVG export and PNG export, so the exported file always matches what
+    was drawn. Pointer input never triggers a Blazor render: samples arrive once per frame, the active tool
+    processes them, and only the affected canvas layer is redrawn.
+</p>
+
+<div class="note">
+    In WebAssembly the command buffer reaches JavaScript as a view over managed memory, so a redraw costs one
+    interop call and no serialization. In Blazor Server the same engine runs on the server and a lightweight
+    trail is drawn locally while each batch is in flight, so the pen still feels attached to the hand.
+</div>
+
+<h2>Get started</h2>
+<pre><code>dotnet add package Bit.Bink</code></pre>
+<pre><code>@@using Bit.Bink
+
+&lt;BinkCanvas Height="400px" /&gt;</code></pre>
+<p>
+    The stylesheet is added by the package's JavaScript initializer, so there is nothing to put in the host page.
+    The source code, the documentation and the code of this demo are on
+    <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Bink" target="_blank" rel="noopener">GitHub</a>.
+</p>
+
+@code {
+    private BinkCanvas? _canvas;
+    private readonly BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#111827") };
+
+    private void Undo() => _canvas?.Undo();
+
+    private void Clear() => _canvas?.Clear();
+}

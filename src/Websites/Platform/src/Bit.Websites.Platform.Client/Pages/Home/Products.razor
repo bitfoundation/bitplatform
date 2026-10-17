@@ -184,5 +184,63 @@
                 </div>
             </text>
         },
+        new()
+        {
+            Title = "Ink that feels like paper",
+            Subtitle = "bit Bink · Blazor-native drawing and ink",
+            LinkUrl = Urls.Bink,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bink is a Blazor-native drawing and ink library with pressure- and tilt-aware strokes, brushes, erasers,
+                    shapes, annotations, selection, layers, undo/redo, real-time collaboration and SVG/PNG export, all in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BinkCanvas @@ref="canvas" Width="400px" Height="180px"
+            AriaLabel="Signature" /></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Onboarding that guides",
+            Subtitle = "bit Bonboarding · Blazor-native product tours",
+            LinkUrl = Urls.Bonboarding,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bonboarding is a Blazor-native onboarding library with multi-step tours, spotlights, collision-aware
+                    placement, branching and multi-page flows, persistence and built-in accessibility, all decided in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BonboardingTour Id="welcome" AutoStart="BonboardingAutoStart.Once">
+    &lt;BonboardingStep Anchor="new-project" Title="Create a project" />
+    &lt;BonboardingStep Anchor="search" Title="Find anything" />
+&lt;/BonboardingTour></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "State that stays in sync",
+            Subtitle = "bit Blex · reactive state management for Blazor and .NET MAUI",
+            LinkUrl = Urls.Blex,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Blex turns plain C# fields and methods into observable stores with a source generator: computed state,
+                    effects, middleware, persistence, undo/redo and Redux DevTools time-travel, with no reducer boilerplate.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>[BlexStore(Name = "counter")]
+public partial class CounterStore
+{
+    [BlexState] private int _count;
+    [BlexComputed] private bool ComputeIsEven() => Count % 2 == 0;
+    [BlexAction] private void OnIncrement() => Count++;
+}</CodeBox>
+                </div>
+            </text>
+        },
     ];
 }

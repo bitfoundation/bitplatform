@@ -1,0 +1,416 @@
+﻿@page "/cross-store"
+@inherits BlexComponentBase
+@inject BlexManager Manager
+@inject OrdersStore Orders
+@inject NotificationsStore Notifications
+
+<DocPage Href="cross-store" Title="Cross-store coordination"
+         Lead="Let one store react to another's actions without either of them knowing the other exists.">
+
+    <h2>BlexManager</h2>
+    <p>
+        The manager aggregates every registered store into one global state tree, runs the middleware
+        pipeline, feeds the DevTools bridge and applies time-travel snapshots. Most application code
+        never touches it - you inject stores. You reach for the manager when you need coordination,
+        a global snapshot, or dynamic registration.
+    </p>
+
+    <ApiTable Title="Registry" Rows="@RegistryRows" />
+    <ApiTable Title="Observation" Rows="@ObservationRows" />
+    <ApiTable Title="Global state" Rows="@StateRows" />
+
+    <h2>Subscribing to actions</h2>
+    <p>
+        <code>Subscribe</code> and its filtered variants are the building block for coordination:
+        react to one store's action and drive another. Handler exceptions are isolated and routed to
+        <a href="errors"><code>OnError</code></a>, so a misbehaving reactor cannot break dispatch for
+        everyone else.
+    </p>
+
+    <CodeBlock Code="@SubscribeSample" />
+
+    <DemoCard Title="Orders notify, without knowing about notifications"
+              Description="Placing an order dispatches only orders/Place. A manager subscription - registered by this page - turns it into a notification."
+              Source="@WiringSource">
+        <div class="row">
+            <input type="text" placeholder="Item" value="@_item" @oninput="OnItemInput" style="min-width:150px" />
+            <input type="number" min="1" max="99" value="@_qty" @oninput="OnQtyInput" style="width:80px" />
+            <button class="btn btn-primary" @onclick="Place" disabled="@string.IsNullOrWhiteSpace(_item)">Place order</button>
+            <button class="btn" @onclick="Orders.CancelLast" disabled="@(Orders.Count == 0)">Cancel last</button>
+            <button class="btn btn-ghost" @onclick="ClearBoth">Clear both</button>
+            <button class="btn btn-ghost" title="BlexManager.ResetAll()" @onclick="ResetEverything">ResetAll()</button>
+        </div>
+        <p class="small muted" style="margin-top:0.5rem;margin-bottom:0">@_resetNote</p>
+
+        <div class="grid grid--2" style="margin-top:0.9rem">
+            <div class="card">
+                <p class="card__title">orders <span class="card__num">@Orders.Count orders · @Orders.Units units</span></p>
+                @if (Orders.Orders.Count == 0)
+                {
+                    <p class="card__body">No orders yet.</p>
+                }
+                else
+                {
+                    <ul class="list">
+                        @foreach (var order in Orders.Orders)
+                        {
+                            <li><span class="list__name">#@order.Id @order.Item</span><span class="list__meta">×@order.Quantity</span></li>
+                        }
+                    </ul>
+                }
+            </div>
+            <div class="card">
+                <p class="card__title">notifications <span class="card__num">@Notifications.Unread unread</span></p>
+                @if (Notifications.Messages.Count == 0)
+                {
+                    <p class="card__body">Nothing yet.</p>
+                }
+                else
+                {
+                    <ul class="list">
+                        @foreach (var message in Notifications.Messages)
+                        {
+                            <li><span class="list__name">@message</span></li>
+                        }
+                    </ul>
+                }
+            </div>
+        </div>
+        <p class="small muted" style="margin-top:0.7rem;margin-bottom:0">
+            The Inspector's feed shows both actions: <code>orders/Place</code> first, then
+            <code>notifications/Push</code> dispatched by the reactor.
+        </p>
+    </DemoCard>
+
+    <h2>The action context</h2>
+    <p>Every observer receives a <code>BlexActionContext</code> describing what just happened.</p>
+    <ApiTable Title="BlexActionContext" Rows="@ContextRows" />
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="Read GlobalState synchronously">
+        <p style="margin-bottom:0">
+            <code>GlobalState</code> is captured lazily on first access, because serializing every
+            store is expensive and most observers never need it. Read it <em>inside</em> your handler:
+            reading it later - after further actions have run - would capture their state instead.
+            Treat the returned tree as read-only; every observer of that action shares the instance.
+        </p>
+    </Callout>
+
+    <h2>Async reactors</h2>
+    <p>
+        <code>SubscribeAsync</code> lets a reactor start async work - typically an effect on another
+        store. The returned task is observed, so a failure is reported through <code>OnError</code>
+        rather than surfacing as an unobserved exception.
+    </p>
+    <CodeBlock Code="@AsyncSample" />
+
+    <Callout Kind="Callout.CalloutKind.Warning" Title="Watch for reaction loops">
+        <p style="margin-bottom:0">
+            A reactor that dispatches an action which its own filter matches will recurse until the
+            stack gives out. Keep reactors one-directional, or guard them with a flag. Blex freezes
+            the in-flight snapshots of actions still being observed before a reactor's follow-up
+            action mutates state, so attribution stays correct - but it will not stop a genuine loop.
+        </p>
+    </Callout>
+
+    <h2>Derived values that span stores</h2>
+    <p>
+        A subscription answers "tell me when this changed". The other half of the problem is "give me
+        this value, cheaply, from several places at once" - and that is what
+        <code>[BlexComputed]</code> does inside one store. <code>CreateSelector</code> lifts it to
+        the manager: a lazy, memoized projection over the whole tree that recomputes at most once per
+        action, however many readers ask for it.
+    </p>
+    <CodeBlock Code="@SelectorSample" />
+
+    <DemoCard Title="One computation, three readers"
+              Description="Every card below reads the same selector. Place an order and watch the computation counter move once, not three times - and not at all until something reads it."
+              Source="@SelectorDemoSource">
+        <div class="row">
+            <button class="btn btn-primary" @onclick="PlaceOrder">Place an order</button>
+            <button class="btn" @onclick="Orders.CancelLast" disabled="@(Orders.Count == 0)">Cancel last</button>
+            <button class="btn btn-ghost" @onclick="ResetSelectorCounter">Reset counter</button>
+        </div>
+
+        <div class="grid grid--3" style="margin-top:0.9rem">
+            <div class="card">
+                <p class="card__title">Reader A <span class="card__num">@Summary.Value</span></p>
+            </div>
+            <div class="card">
+                <p class="card__title">Reader B <span class="card__num">@Summary.Value</span></p>
+            </div>
+            <div class="card">
+                <p class="card__title">Reader C <span class="card__num">@Summary.Value</span></p>
+            </div>
+        </div>
+
+        <div class="readout" style="margin-top:0.9rem">
+            <div class="readout__item">
+                <span class="readout__label">Projection ran</span>
+                <span class="readout__value readout__value--accent">@_selectorRuns time(s)</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Renders of this page</span>
+                <span class="readout__value">@_renders</span>
+            </div>
+        </div>
+    </DemoCard>
+
+    <Callout Kind="Callout.CalloutKind.Tip" Title="Subscribe pushes, CreateSelector pulls">
+        <p style="margin-bottom:0">
+            <code>Subscribe(selector, …)</code> evaluates eagerly after every action so it can tell
+            one observer that the value moved - use it when something must <em>happen</em>.
+            <code>CreateSelector</code> evaluates lazily and shares the result - use it when
+            something must be <em>read</em>. An action whose result nobody reads costs a flag write.
+            Dispose the selector (or hand it to <code>OwnsSubscription</code>) to detach it.
+        </p>
+    </Callout>
+
+    <h2>Where to put the wiring</h2>
+    <p>Three practical options, in rough order of preference:</p>
+    <ul>
+        <li>
+            <strong>A component that owns the lifetime</strong> - <code>OwnsSubscription(...)</code>
+            in <code>OnInitialized</code>. Good when the coordination only matters while some part of
+            the UI is alive. This page does exactly that.
+        </li>
+        <li>
+            <strong>Middleware</strong> - register an <code>IBlexMiddleware</code> that reacts in
+            <code>OnAction</code>. Good for app-wide, always-on rules. See
+            <a href="middleware">Middleware</a>.
+        </li>
+        <li>
+            <strong>A coordinator service</strong> - a scoped service that subscribes in its
+            constructor and disposes its tokens. Resolve it once at startup so it exists.
+        </li>
+    </ul>
+
+    <h2>Dynamic registration</h2>
+    <p>
+        Stores register themselves when first resolved from DI, and
+        <code>&lt;BlexProvider&gt;</code> registers everything up front. For a lazily-loaded
+        feature you can register and unregister by hand. An unregistered store keeps working
+        standalone - its actions simply stop being observed.
+    </p>
+    <CodeBlock Code="@RegisterSample" />
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Single-threaded by design">
+        <p style="margin-bottom:0">
+            The manager is built for single-threaded dispatch, matching Blazor's rendering model. Its
+            internal lock protects the store registry and global-state capture only; the pipeline
+            itself - the sequence counter, middleware, DevTools - assumes actions are not dispatched
+            concurrently. If you dispatch from several threads, coordinate externally.
+        </p>
+    </Callout>
+
+</DocPage>
+
+@code {
+    private string _item = "Widget";
+    private int _qty = 1;
+
+    private int _selectorRuns;
+    private int _renders;
+    private int _placed;
+
+    /// <summary>
+    /// A cross-store derived value, memoized by the manager. Every reader below shares it, and it
+    /// recomputes at most once per action - lazily, so an action nobody reads costs nothing.
+    /// </summary>
+    private BlexSelector<string> Summary { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        Subscribe(Orders, Notifications);
+
+        Summary = Manager.CreateSelector(() =>
+        {
+            _selectorRuns++;
+            return $"{Orders.Units} unit(s) · {Notifications.Unread} message(s)";
+        });
+
+        // The selector holds a manager subscription, so the component owns its lifetime.
+        OwnsSubscription(Summary);
+
+        // The wiring: react to one store's actions by driving another. The token is handed to the
+        // base class so it is disposed with this component.
+        OwnsSubscription(Manager.SubscribeTo<OrdersStore>(ctx =>
+        {
+            if (ctx.ActionName == "Place")
+            {
+                var item = ctx.Args.FirstOrDefault(a => a.Name == "item").Value;
+                var quantity = ctx.Args.FirstOrDefault(a => a.Name == "quantity").Value;
+                Notifications.Push($"Order #{Orders.Count}: {quantity}× {item}");
+            }
+            else if (ctx.ActionName == "CancelLast")
+            {
+                Notifications.Push("An order was cancelled.");
+            }
+        }));
+    }
+
+    protected override void OnAfterRender(bool firstRender) => _renders++;
+
+    private void PlaceOrder() => Orders.Place($"Gadget {++_placed}", 2);
+
+    private void ResetSelectorCounter() => _selectorRuns = 0;
+
+    private void OnItemInput(ChangeEventArgs e) => _item = e.Value?.ToString() ?? "";
+
+    private void OnQtyInput(ChangeEventArgs e)
+        => _qty = int.TryParse(e.Value?.ToString(), out var value) ? Math.Clamp(value, 1, 99) : 1;
+
+    private void Place() => Orders.Place(_item, _qty);
+
+    private void ClearBoth()
+    {
+        Orders.Clear();
+        Notifications.Clear();
+    }
+
+    private string _resetNote = "";
+
+    /// <summary>
+    /// One call, every registered store back to its registered state. Watch the Inspector: it lists
+    /// a separate <c>ResetState</c> entry per store that actually had something to undo - stores
+    /// already sitting on their initial state are skipped rather than recorded.
+    /// </summary>
+    private void ResetEverything()
+    {
+        var recorded = new List<string>();
+        using (Manager.Subscribe(ctx => recorded.Add(ctx.QualifiedName)))
+        {
+            Manager.ResetAll();
+        }
+
+        _resetNote = recorded.Count == 0
+            ? "Every store already held its registered state, so ResetAll recorded nothing at all."
+            : $"Recorded {recorded.Count} action(s): {string.Join(", ", recorded)}.";
+    }
+
+    private static readonly IReadOnlyList<ApiTable.Row> RegistryRows =
+    [
+        new("IReadOnlyList&lt;IBlexStore&gt; Stores", "Every registered store."),
+        new("TStore? GetStore&lt;TStore&gt;()", "The first registered store of that type, or <code>null</code>."),
+        new("void Register(IBlexStore)", "Adds a store. Idempotent. Captures its initial state so <code>ResetState()</code> has somewhere to return to."),
+        new("void Unregister(IBlexStore)", "Removes a store; it keeps working, but its actions are no longer observed."),
+        new("void ResetAll()", "Resets every registered store to its registered state, each as its own normal <code>ResetState</code> action. Stores already holding that state are skipped; one that fails is reported and skipped, and the rest still reset."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ObservationRows =
+    [
+        new("event Action&lt;BlexActionContext&gt;? ActionDispatched", "Raised after every action, once the per-store event has fired. Prefer <code>Subscribe</code>, which isolates handler exceptions."),
+        new("IDisposable Subscribe(Action&lt;BlexActionContext&gt;, Func&lt;…, bool&gt;? filter)", "Observe actions, optionally filtered. Handler exceptions are caught and reported."),
+        new("IDisposable SubscribeTo&lt;TStore&gt;(Action&lt;…&gt;)", "Only actions from that store type."),
+        new("IDisposable SubscribeToAction(string, Action&lt;…&gt;)", "Matches the bare name (<code>\"Increment\"</code>) or the qualified name (<code>\"counter/Increment\"</code>)."),
+        new("IDisposable SubscribeAsync(Func&lt;…, Task&gt;, Func&lt;…, bool&gt;? filter)", "An async reactor. The task is observed; failures are reported rather than left unobserved."),
+        new("IDisposable Subscribe&lt;T&gt;(Func&lt;T&gt; selector, Action&lt;T&gt;, IEqualityComparer&lt;T&gt;?, bool fireImmediately)", "Fires only when a projection <em>spanning stores</em> changes. An <code>Action&lt;T, T&gt;</code> overload delivers <code>(previous, current)</code>. Re-evaluated after restores too. See <a href=\"subscriptions\">Subscriptions</a>."),
+        new("BlexSelector&lt;T&gt; CreateSelector&lt;T&gt;(Func&lt;T&gt;)", "A lazy, memoized derived value over the whole tree - <code>[BlexComputed]</code> lifted to the manager. Read <code>.Value</code>; it recomputes at most once per action, and only when something reads it. Dispose to detach."),
+        new("event Action&lt;BlexActionErrorContext&gt;? ActionFailed", "Raised when an action body throws. The exception still propagates. See <a href=\"middleware\">Middleware</a>."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> StateRows =
+    [
+        new("JsonObject CaptureGlobalState()", "Builds the whole tree: <code>{ \"storeName\": { …state… }, … }</code>."),
+        new("void RestoreGlobalState(JsonObject)", "Applies a tree to every store without recording actions. A slice that fails to deserialize is reported and skipped; the other stores still restore."),
+        new("event Action? StateRestored", "Raised after a restore. Persistence uses it to write the restored state back so a reload does not resurrect the pre-restore state."),
+        new("Func&lt;JsonObject, JsonObject&gt;? DevToolsStateSanitizer", "Applied to the tree before it reaches DevTools. See <a href=\"devtools\">DevTools</a>."),
+        new("Func&lt;string, string&gt;? DevToolsActionSanitizer", "Applied to the action label before it reaches DevTools."),
+        new("Action&lt;BlexError&gt;? OnError", "Sink for isolated pipeline failures. See <a href=\"errors\">Error isolation</a>."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ContextRows =
+    [
+        new("IBlexStore Store", "The store that produced the action."),
+        new("string ActionName", "The bare name, e.g. <code>\"Increment\"</code> or <code>\"Set Count\"</code>."),
+        new("string QualifiedName", "<code>\"storeName/ActionName\"</code>."),
+        new("IReadOnlyList&lt;BlexActionArg&gt; Args", "The captured parameter name/value pairs. Empty for parameterless actions; a <code>Set X</code> carries the assigned value."),
+        new("int Sequence", "Monotonic action number."),
+        new("DateTimeOffset Timestamp", "When the action completed, in UTC."),
+        new("JsonObject GlobalState", "The whole state tree immediately after the action. Captured lazily on first access."),
+    ];
+
+    private const string SelectorSample = """
+        // Created once, read from anywhere.
+        var summary = manager.CreateSelector(
+            () => $"{orders.Units} unit(s) · {notifications.Unread} message(s)");
+
+        summary.Value;   // computes
+        summary.Value;   // cached
+        orders.Place("Widget", 2);
+        summary.Value;   // recomputes, once, for every reader
+
+        summary.Dispose();   // detaches from the manager
+
+        // In a component, let the base class own it:
+        protected override void OnInitialized()
+        {
+            _summary = Manager.CreateSelector(() => Orders.Units + Cart.Lines.Count);
+            OwnsSubscription(_summary);
+        }
+        """;
+
+    private const string SelectorDemoSource = """
+        private BlexSelector<string> Summary { get; set; } = default!;
+
+        protected override void OnInitialized()
+        {
+            Summary = Manager.CreateSelector(() =>
+                $"{Orders.Units} unit(s) · {Notifications.Unread} message(s)");
+
+            OwnsSubscription(Summary);   // disposed with the component
+        }
+
+        // Every reader shares one computation per action:
+        //   <p>@Summary.Value</p>
+        //   <p>@Summary.Value</p>
+        //   <p>@Summary.Value</p>
+        """;
+
+    private const string SubscribeSample = """
+        // Everything from one store type
+        manager.SubscribeTo<CounterStore>(ctx => Console.WriteLine(ctx.QualifiedName));
+
+        // One action, by bare or qualified name
+        manager.SubscribeToAction("Increment", ctx => _analytics.Track("increment"));
+        manager.SubscribeToAction("counter/Increment", ctx => { });
+
+        // Anything, with your own filter
+        manager.Subscribe(
+            ctx => _log.Add(ctx.QualifiedName),
+            filter: ctx => ctx.Args.Count > 0);
+
+        // Dispose the returned token to stop observing.
+        """;
+
+    private const string WiringSource = """
+        // In the component that owns the coordination:
+        protected override void OnInitialized()
+        {
+            Subscribe(Orders, Notifications);
+
+            OwnsSubscription(Manager.SubscribeTo<OrdersStore>(ctx =>
+            {
+                if (ctx.ActionName == "Place")
+                {
+                    var item = ctx.Args.FirstOrDefault(a => a.Name == "item").Value;
+                    var quantity = ctx.Args.FirstOrDefault(a => a.Name == "quantity").Value;
+                    Notifications.Push($"Order #{Orders.Count}: {quantity}x {item}");
+                }
+            }));
+        }
+        """;
+
+    private const string AsyncSample = """
+        manager.SubscribeAsync(
+            async ctx => await profileStore.Reload(),
+            filter: ctx => ctx.QualifiedName == "auth/SignIn");
+        """;
+
+    private const string RegisterSample = """
+        var featureStore = new FeatureStore();
+        manager.Register(featureStore);      // now observed: middleware, DevTools, history, persistence
+
+        // ... when the feature is torn down
+        manager.Unregister(featureStore);    // still usable, just no longer observed
+        """;
+}

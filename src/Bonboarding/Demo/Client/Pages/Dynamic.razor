@@ -1,0 +1,252 @@
+﻿@page "/dynamic"
+@inject IBonboardingService BonboardingService
+
+<PageTitle>Dynamic targets</PageTitle>
+
+<h1>Dynamic targets</h1>
+
+<p class="page-intro">
+    Real applications render late, re-render often, and sometimes never show the element a tour
+    expects. Each step declares what should happen in that case, and waiting is driven by a mutation
+    observer rather than a polling timer.
+</p>
+
+<section class="demo-section">
+    <h2>Waiting for an element that does not exist yet</h2>
+
+    <p>
+        Start the tour, then reveal the panel. The second step is waiting for
+        <code>data-bonboarding-anchor="late-panel"</code> and picks it up the moment it appears.
+    </p>
+
+    <div class="demo-actions">
+        <button type="button" class="btn btn-primary" @onclick="StartWaitTourAsync">Run the waiting tour</button>
+        <button type="button" class="btn" data-bonboarding-anchor="reveal" @onclick="Reveal">
+            @(_revealed ? "Hide the panel" : "Reveal the panel")
+        </button>
+        <button type="button" class="btn" @onclick="RevealSlowly">Reveal after 2 seconds</button>
+    </div>
+
+    @if (_revealed)
+    {
+        <div class="card" data-bonboarding-anchor="late-panel">
+            <h3>Rendered on demand</h3>
+            <p>
+                This panel did not exist when the tour started. The step waited for it, scrolled it into
+                view and positioned against it.
+            </p>
+        </div>
+    }
+</section>
+
+<section class="demo-section">
+    <h2>Missing-target strategies</h2>
+
+    <p>
+        Each button runs a two-step tour whose first step points at an element that is not on this page.
+        Only the strategy differs.
+    </p>
+
+    <div class="demo-actions">
+        <button type="button" class="btn" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Skip)">Skip</button>
+        <button type="button" class="btn" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Center)">Centre</button>
+        <button type="button" class="btn" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Wait)">Wait, then skip</button>
+        <button type="button" class="btn" @onclick="() => StartMissingAsync(BonboardingMissingTargetBehavior.Fail)">Fail</button>
+    </div>
+
+    @if (_failure is not null)
+    {
+        <div class="note note-danger" role="alert">
+            <Icon Path="@Icons.Error" />
+            <span><strong>The tour failed, as asked:</strong> @_failure</span>
+        </div>
+    }
+</section>
+
+<section class="demo-section">
+    <h2>Let the user do it</h2>
+
+    <p>
+        A step with an <code>BonboardingAdvanceTrigger</code> waits for a real interaction. The overlay becomes
+        click-through around the target automatically, so the user can actually press the button they are
+        being told about.
+    </p>
+
+    <div class="demo-actions">
+        <button type="button" class="btn btn-primary" @onclick="StartInteractiveTourAsync">Run the interactive tour</button>
+        <button type="button" class="btn" data-bonboarding-anchor="do-it" @onclick="Increment">
+            Clicked @_clicks @(_clicks == 1 ? "time" : "times")
+        </button>
+    </div>
+</section>
+
+<section class="demo-section">
+    <h2>Targets chosen at run time</h2>
+
+    <p>
+        <code>BonboardingStepTarget.Dynamic</code> defers the decision until the step activates, so a tour can point
+        at whichever row, tab or card is relevant right now.
+    </p>
+
+    <div class="demo-actions">
+        @foreach (var row in Rows)
+        {
+            <button type="button"
+                    class="btn @(row == _selectedRow ? "btn-primary" : null)"
+                    aria-pressed="@(row == _selectedRow ? "true" : "false")"
+                    data-bonboarding-anchor="row-@row"
+                    @onclick="() => _selectedRow = row">Row @row</button>
+        }
+        <button type="button" class="btn" @onclick="StartDynamicTourAsync">Point at the selected row</button>
+    </div>
+
+    <pre><code>@DynamicExample</code></pre>
+</section>
+
+@code {
+    private static readonly int[] Rows = [1, 2, 3, 4];
+
+    private bool _revealed;
+    private int _clicks;
+    private int _selectedRow = 2;
+    private string? _failure;
+
+    private void Reveal() => _revealed = !_revealed;
+
+    private async Task RevealSlowly()
+    {
+        _revealed = false;
+        StateHasChanged();
+
+        await Task.Delay(2000);
+
+        _revealed = true;
+        StateHasChanged();
+    }
+
+    private void Increment() => _clicks++;
+
+    private Task StartWaitTourAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    {
+        Id = "waiting",
+        Persist = false,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "reveal",
+                Target = BonboardingStepTarget.Anchor("reveal"),
+                Title = "Reveal the panel",
+                Description = "Press Next, then use this button. The tour will wait for the panel to render.",
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "late",
+                Target = BonboardingStepTarget.Anchor("late-panel"),
+                Title = "There it is",
+                Description = "The step waited for this element, then scrolled and positioned against it.",
+                MissingTarget = BonboardingMissingTargetBehavior.Wait,
+                WaitTimeout = TimeSpan.FromSeconds(30),
+            },
+        },
+    });
+
+    private async Task StartMissingAsync(BonboardingMissingTargetBehavior behavior)
+    {
+        _failure = null;
+
+        var tour = new BonboardingTourDefinition
+        {
+            Id = $"missing-{behavior}",
+            Persist = false,
+            Steps =
+            {
+                new BonboardingStepDefinition
+                {
+                    Id = "ghost",
+                    Target = BonboardingStepTarget.Css("#definitely-not-here"),
+                    Title = "This target does not exist",
+                    Description = $"Strategy: {behavior}.",
+                    MissingTarget = behavior,
+                    // Keep the demo brisk; the default is ten seconds.
+                    WaitTimeout = TimeSpan.FromSeconds(3),
+                    WaitTimeoutBehavior = BonboardingMissingTargetBehavior.Skip,
+                },
+                new BonboardingStepDefinition
+                {
+                    Id = "after",
+                    Target = BonboardingStepTarget.Anchor("reveal"),
+                    Title = "The tour carried on",
+                    Description = "Whatever happened to the previous step, this one still runs.",
+                },
+            },
+            OnEnded = args =>
+            {
+                if (args.Reason != BonboardingTourEndReason.Failed) return ValueTask.CompletedTask;
+
+                _failure = args.Error?.Message;
+
+                // The tour can end from a browser callback, outside the renderer's context.
+                return new ValueTask(InvokeAsync(StateHasChanged));
+            },
+        };
+
+        await BonboardingService.StartAsync(tour);
+    }
+
+    private Task StartInteractiveTourAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    {
+        Id = "interactive",
+        Persist = false,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "explain",
+                Title = "Try it yourself",
+                Description = "The next step will not offer a Next button. You have to click the real control.",
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "click-it",
+                Target = BonboardingStepTarget.Anchor("do-it"),
+                Title = "Now click this button",
+                Description = "The overlay is click-through around the highlighted element.",
+                AdvanceOn = BonboardingAdvanceTrigger.TargetClick,
+                ShowNext = false,
+            },
+            new BonboardingStepDefinition
+            {
+                Id = "done",
+                Title = "Nicely done",
+                Description = "The tour advanced because you used the application, not because you pressed Next.",
+            },
+        },
+    });
+
+    private Task StartDynamicTourAsync() => BonboardingService.StartAsync(new BonboardingTourDefinition
+    {
+        Id = "dynamic-target",
+        Persist = false,
+        Steps =
+        {
+            new BonboardingStepDefinition
+            {
+                Id = "selected",
+                // Resolved when the step activates, so it follows the current selection.
+                Target = BonboardingStepTarget.Dynamic(_ => BonboardingStepTarget.Anchor($"row-{_selectedRow}")),
+                Title = $"Row {_selectedRow}",
+                Description = "The target was chosen when this step activated, not when the tour was written.",
+            },
+        },
+    });
+
+    private const string DynamicExample = """
+        new BonboardingStepDefinition
+        {
+            Target = BonboardingStepTarget.Dynamic(context =>
+                BonboardingStepTarget.Anchor($"row-{context.State["selectedRow"]}")),
+            Title = "The row you picked",
+        }
+        """;
+}

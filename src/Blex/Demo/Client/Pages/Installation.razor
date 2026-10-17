@@ -1,0 +1,198 @@
+﻿@page "/installation"
+
+<DocPage Href="installation" Title="Installation"
+         Lead="Three packages, one DI call per store, and one component wrapped around your router.">
+
+    <h2>Packages</h2>
+    <p>
+        Reference <code>Bit.Blex</code> for the runtime, <code>Bit.Blex.Generators</code> for the
+        source generator that turns your <code>[BlexStore]</code> classes into reactive stores, and
+        <code>Bit.Blex.Blazor</code> for the Blazor integration. The generator package ships as an
+        analyzer only (under <code>analyzers/dotnet/cs</code>), so it adds nothing to your app's
+        output. Every runtime package targets <code>net8.0</code>, <code>net9.0</code> and
+        <code>net10.0</code>.
+    </p>
+
+    <CodeBlock Code="@Install" Language="bash" Title="Add the packages" />
+
+    <p>Or directly in the project file:</p>
+    <CodeBlock Code="@CsprojSample" Language="xml" FileName="MyApp.csproj" />
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Working inside this repository">
+        <p style="margin-bottom:0">
+            The sample and docs projects live next to the sources, so they reference the generator
+            as an analyzer <em>project</em> reference instead of consuming the published package:
+            <code>&lt;ProjectReference Include="..\..\Bit.Blex.Generators\Bit.Blex.Generators.csproj"
+            OutputItemType="Analyzer" ReferenceOutputAssembly="false" /&gt;</code>.
+        </p>
+    </Callout>
+
+    <h2>Register the services</h2>
+    <p>
+        <code>AddBitBlexServices</code> registers the manager and the middleware pipeline;
+        <code>AddBitBlexStore&lt;T&gt;</code> registers each store as a scoped service exposed both as
+        its concrete type and as <code>IBlexStore</code>. A store is attached to the manager on first
+        resolution, so its actions are observed even in hosts without a provider component - console
+        apps, workers and tests included.
+    </p>
+
+    <CodeBlock Code="@ProgramSample" FileName="Program.cs" />
+
+    <ApiTable Title="Registration APIs" Rows="@RegistrationRows" MemberHeader="Call" />
+
+    <h2>Add the provider</h2>
+    <p>
+        <code>&lt;BlexProvider&gt;</code> goes once, near the root of the app, wrapping the router.
+        On initialization it registers every <code>IBlexStore</code> with the manager, restores
+        prerendered and persisted state, and starts undo/redo recording; on first render it connects
+        the Redux DevTools bridge.
+    </p>
+
+    <CodeBlock Code="@AppSample" Language="razor" FileName="App.razor" />
+
+    <ApiTable Title="&lt;BlexProvider&gt; parameters" Rows="@ProviderRows" MemberHeader="Parameter" />
+
+    <Callout Kind="Callout.CalloutKind.Warning" Title="Turn DevTools off in production">
+        <p style="margin-bottom:0">
+            While enabled, the entire application state tree is serialized and handed to the Redux
+            DevTools browser extension on every action. Bind <code>EnableDevTools</code> to your host
+            environment so production builds never expose application state to an installed extension.
+            See <a href="devtools">DevTools &amp; time travel</a> for redaction options.
+        </p>
+    </Callout>
+
+    <h2>Without Blazor</h2>
+    <p>
+        The core package has no JS or Blazor dependency. In a console app, worker or test, resolve
+        the stores from DI (which registers them with the manager) and drive them directly. For
+        persistence, implement <code>IBlexStorage</code> over a file or database and call
+        <code>AddBitBlexPersistence()</code>.
+    </p>
+
+    <CodeBlock Code="@HeadlessSample" Title="Headless host" />
+
+    <h2>Trimming and AOT</h2>
+    <p>
+        Snapshots - <code>SerializeState</code>, persistence, the DevTools payload - go through
+        <code>System.Text.Json</code>. By default that is the reflection-based serializer, whose
+        metadata a trimmed publish (the Blazor WebAssembly release default) is free to strip for
+        types it cannot see being used. Point the shared options at a source-generated context and
+        every generated snapshot uses it instead.
+    </p>
+    <CodeBlock Code="@AotSample" FileName="Program.cs" />
+
+    <Callout Kind="Callout.CalloutKind.Tip" Title="Register the state types, not the stores">
+        <p style="margin-bottom:0">
+            A store class is never serialized - only the value of each <code>[BlexState]</code>
+            field, one property at a time. So the context needs <code>CartLine</code> and
+            <code>BlexEntityState&lt;Todo, int&gt;</code>, not <code>CartStore</code>. A store whose
+            state is all primitives and strings needs nothing at all.
+        </p>
+    </Callout>
+
+    <h2>Requirements</h2>
+    <ul>
+        <li><strong>.NET 10</strong> for <code>Bit.Blex</code>, <code>Bit.Blex.Blazor</code> and <code>Bit.Blex.Testing</code>.</li>
+        <li><strong>netstandard2.0</strong> for the generator, as Roslyn analyzers require.</li>
+        <li>Nullable reference types are supported and expected; generated code is annotated.</li>
+    </ul>
+
+</DocPage>
+
+@code {
+    private static readonly IReadOnlyList<ApiTable.Row> RegistrationRows =
+    [
+        new("AddBitBlexServices(Action&lt;BlexOptions&gt;?)", "Registers <code>BlexManager</code> (scoped) and the middleware pipeline. The options object configures the DevTools name, sanitizers, middleware and the error sink."),
+        new("AddBitBlexStore&lt;TStore&gt;()", "Registers a store as scoped, resolvable both as <code>TStore</code> and as <code>IBlexStore</code>. Constructor dependencies are injected, so a store can take an <code>HttpClient</code> like any other service."),
+        new("AddBitBlexPersistence(Action&lt;BlexPersistenceOptions&gt;?)", "Enables durable persistence for stores marked <code>Persist = true</code>. Requires an <code>IBlexStorage</code> registration."),
+        new("AddBitBlexLocalStoragePersistence(…)", "Blazor: registers <code>BlexBrowserStorage</code> over <code>window.localStorage</code> and calls <code>AddBitBlexPersistence</code>."),
+        new("AddBitBlexSessionStoragePersistence(…)", "Blazor: the same, over <code>window.sessionStorage</code> - cleared when the tab closes."),
+        new("AddBitBlexHistory(int maxEntries = 100)", "Registers <code>BlexHistory</code> for in-app undo/redo. <code>&lt;BlexProvider&gt;</code> starts recording once rehydration completes."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ProviderRows =
+    [
+        new("EnableDevTools", "<code>bool</code>, default <code>true</code>. Connects the Redux DevTools bridge on first render. Set to <code>false</code> in production."),
+        new("PersistComponentState", "<code>bool</code>, default <code>true</code>. Hands prerendered store state to the interactive render through Blazor's <code>PersistentComponentState</code>, avoiding the prerender \"double render\" flicker. No effect when the framework service is unavailable."),
+        new("ChildContent", "The application content rendered inside the provider."),
+    ];
+
+    private const string Install = """
+        dotnet add package Bit.Blex
+        dotnet add package Bit.Blex.Generators
+        dotnet add package Bit.Blex.Blazor
+
+        # optional, for unit tests
+        dotnet add package Bit.Blex.Testing
+        """;
+
+    private const string CsprojSample = """
+        <ItemGroup>
+          <PackageReference Include="Bit.Blex" Version="10.7.0" />
+          <PackageReference Include="Bit.Blex.Generators" Version="10.7.0" PrivateAssets="all" />
+          <PackageReference Include="Bit.Blex.Blazor" Version="10.7.0" />
+        </ItemGroup>
+        """;
+
+    private const string ProgramSample = """
+        using Bit.Blex;
+        using Bit.Blex.Blazor;
+
+        var builder = WebAssemblyHostBuilder.CreateDefault(args);
+        builder.RootComponents.Add<App>("#app");
+
+        builder.Services.AddBitBlexServices(options =>
+        {
+            options.DevToolsName = "My App";
+            options.UseMiddleware(ctx => Console.WriteLine($"[blex] {ctx.QualifiedName}"));
+        });
+
+        builder.Services.AddBitBlexStore<CounterStore>();
+        builder.Services.AddBitBlexStore<TodoStore>();
+
+        // Optional extras
+        builder.Services.AddBitBlexLocalStoragePersistence();
+        builder.Services.AddBitBlexHistory();
+
+        await builder.Build().RunAsync();
+        """;
+
+    private const string AppSample = """
+        <BlexProvider EnableDevTools="@builder.HostEnvironment.IsDevelopment()">
+            <Router AppAssembly="@typeof(App).Assembly">
+                <Found Context="routeData">
+                    <RouteView RouteData="@routeData" DefaultLayout="@typeof(MainLayout)" />
+                </Found>
+                <NotFound>
+                    <p>Not found.</p>
+                </NotFound>
+            </Router>
+        </BlexProvider>
+        """;
+
+    private const string AotSample = """
+        [JsonSerializable(typeof(CartLine))]
+        [JsonSerializable(typeof(BlexEntityState<Todo, int>))]
+        internal partial class AppJsonContext : JsonSerializerContext;
+
+        // Before any store is resolved or snapshotted -- the options instance becomes
+        // read-only on first use, so this belongs in startup.
+        BlexJson.Configure(o => o.TypeInfoResolver = AppJsonContext.Default);
+        """;
+
+    private const string HeadlessSample = """
+        var services = new ServiceCollection();
+        services.AddBitBlexServices();
+        services.AddBitBlexStore<CounterStore>();
+
+        var provider = services.BuildServiceProvider();
+
+        // Resolving the store registers it with the manager.
+        var store = provider.GetRequiredService<CounterStore>();
+        var manager = provider.GetRequiredService<BlexManager>();
+
+        store.Increment();
+        Console.WriteLine(manager.CaptureGlobalState().ToJsonString());
+        // {"counter":{"Count":1,"Step":1}}
+        """;
+}
