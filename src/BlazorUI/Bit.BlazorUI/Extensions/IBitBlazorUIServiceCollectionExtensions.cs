@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Bit.BlazorUI;
 
+[BitAssetTrimmingRegistrar]
 public static class IBitBlazorUIServiceCollectionExtensions
 {
     /// <summary>

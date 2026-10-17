@@ -79,6 +79,10 @@
         <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Legacy\Bit.BlazorUI.Legacy.csproj" />
+        <!-- The publish-time asset trimming: its task assembly for the tests of what it keeps, and the Icons package built
+             for the pieces its manifest names (nothing here references its assembly). -->
+        <ProjectReference Include="..\..\Bit.BlazorUI.Build\Bit.BlazorUI.Build.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <!-- The tests that pin a contract a render cannot see read the source checkout itself - stylesheets, demo

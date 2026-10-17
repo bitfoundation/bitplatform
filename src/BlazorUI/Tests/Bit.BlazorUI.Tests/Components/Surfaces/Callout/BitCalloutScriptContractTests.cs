@@ -22,7 +22,7 @@ public class BitCalloutScriptContractTests
         var script = StripComments(ReadFile("Bit.BlazorUI", "Scripts", "Callouts.ts"));
         var bridge = StripComments(ReadFile("Bit.BlazorUI", "Extensions", "JsInterop", "CalloutsJsRuntimeExtensions.cs"));
 
-        var signature = Regex.Match(script, @"public static toggle\((?<params>.*?)\)\s*\{", RegexOptions.Singleline);
+        var signature = Regex.Match(script, @"export function toggle\((?<params>.*?)\)\s*\{", RegexOptions.Singleline);
         Assert.IsTrue(signature.Success, "Callouts.toggle was not found in Callouts.ts.");
 
         var parameters = Regex.Matches(signature.Groups["params"].Value, @"^\s*(\w+)\s*:", RegexOptions.Multiline)
@@ -59,15 +59,14 @@ public class BitCalloutScriptContractTests
     public void CalloutsOverlayClickShouldBeHeardAheadOfBlazor()
     {
         var script = StripComments(ReadFile("Bit.BlazorUI", "Scripts", "Callouts.ts"));
-        var general = StripComments(ReadFile("Bit.BlazorUI", "Scripts", "general.ts"));
 
-        StringAssert.Contains(script, "public static dismissOnOverlayClick(");
+        StringAssert.Contains(script, "export function dismissOnOverlayClick(");
 
         // The overlay's own Blazor handler dismisses the innermost callout on the same click, so the listener that
         // dismisses the ones under it too has to run first and keep the click from reaching that handler: on the
-        // window, in the capture phase.
-        var listener = Regex.Match(general, @"window\.addEventListener\('click',(?<body>.*?)\},\s*true\);", RegexOptions.Singleline);
-        Assert.IsTrue(listener.Success, "The capture-phase click listener on the window was not found in general.ts.");
+        // window, in the capture phase, added as the script loads.
+        var listener = Regex.Match(script, @"\nwindow\.addEventListener\('click',(?<body>.*?)\},\s*true\);", RegexOptions.Singleline);
+        Assert.IsTrue(listener.Success, "The capture-phase click listener on the window was not found in Callouts.ts.");
         StringAssert.Contains(listener.Groups["body"].Value, "Callouts.dismissOnOverlayClick(");
         StringAssert.Contains(listener.Groups["body"].Value, "stopImmediatePropagation()");
     }

@@ -21,6 +21,7 @@
         private static readonly MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 
         // On Apple platforms Option (Alt) is a text modifier: Option+<key> types a character rather than reaching a menu.
+        // bit-trim: on-demand
         private static readonly ALT_TYPES_TEXT = /Mac|iPhone|iPad|iPod/i.test(
             (navigator as any).userAgentData?.platform || navigator.platform || navigator.userAgent || '');
 

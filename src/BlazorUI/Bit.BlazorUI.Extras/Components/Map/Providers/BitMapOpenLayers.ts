@@ -4,6 +4,9 @@
      * OpenLayers provider. Loads OpenLayers ES modules from esm.sh on first init.
      * Mirrors the public surface used by every BitMap provider.
      */
+    // bit-trim: owners BitOpenLayersMapProvider
+    // Called through the JsObjectName of its provider, which BitMap puts together into the identifier it calls (see
+    // BitMapJsRuntimeExtensions), so no interop identifier names this script: the provider type an app passes keeps it.
     export class BitMapOpenLayers {
         private static _olLoadPromise: Promise<any> | null = null;
 

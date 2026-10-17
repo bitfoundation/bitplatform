@@ -3,6 +3,9 @@
      * Mapbox GL JS provider. Loads from the official Mapbox CDN; the C# layer adds the script tag.
      * Routes every method through BitMapGlBase using the 'mapbox' provider key.
      */
+    // bit-trim: owners BitMapboxMapProvider
+    // Called through the JsObjectName of its provider, which BitMap puts together into the identifier it calls (see
+    // BitMapJsRuntimeExtensions), so no interop identifier names this script: the provider type an app passes keeps it.
     export class BitMapMapbox {
         private static readonly _key = 'mapbox';
         private static readonly _global = 'mapboxgl';

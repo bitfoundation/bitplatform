@@ -2,6 +2,7 @@
 // is suppressed here instead of with @onkeypress:preventDefault on the item: Blazor applies that flag to every
 // keypress bubbling through the item, so it would also swallow what is typed into a control of a custom
 // template. Only a key pressed on the item itself is taken; the activation stays in the Blazor keydown handler.
+// bit-trim: owners BitTimeline
 document.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key !== ' ' && e.key !== 'Spacebar') return;
 

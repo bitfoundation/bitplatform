@@ -76,6 +76,40 @@ internal static class SourceFiles
         return ReadFullPath(GetPath(segments));
     }
 
+    /// <summary>
+    /// Reads every file of the core library's BitBlazorUI.Utils namespace - Scripts/Utils.ts and the Scripts/Utils.*.ts
+    /// files beside it, one per feature, which the publish-time trimming keeps or leaves out of a bundle one by one -
+    /// as one text, in the order of their names.
+    /// </summary>
+    public static string ReadUtilsScripts()
+    {
+        var folder = GetDirectory("Bit.BlazorUI", "Scripts");
+
+        var files = Directory.EnumerateFiles(folder, "Utils*.ts")
+                             .Where(file => Path.GetFileName(file) is var name && (name == "Utils.ts" || name.StartsWith("Utils.", StringComparison.Ordinal)))
+                             .OrderBy(file => file, StringComparer.Ordinal)
+                             .ToList();
+
+        Assert.IsTrue(files.Count > 1, $"The Utils scripts were not found in {folder}.");
+
+        return string.Join("\n", files.Select(ReadFullPath));
+    }
+
+    /// <summary>
+    /// The text of a member of a script - a function of a namespace (<c>export function name(</c>) or a static of a
+    /// class (<c>public static name(</c>) - from its declaration to the next member declared at the same depth.
+    /// </summary>
+    public static string GetScriptMember(string script, string name, string type = "Utils")
+    {
+        var match = Regex.Match(script,
+            $@"\n        (?:(?:public|private) static (?:async )?|export (?:async )?function |export (?:const|let) ){name}\b.*?(?=\n        (?:public|private|export) |\n    \}})",
+            RegexOptions.Singleline);
+
+        Assert.IsTrue(match.Success, $"{type}.{name} was not found in the script.");
+
+        return match.Value;
+    }
+
     /// <summary>Reads a file by its full path, with its line endings normalized to \n; fails when it is missing.</summary>
     public static string ReadFullPath(string path)
     {

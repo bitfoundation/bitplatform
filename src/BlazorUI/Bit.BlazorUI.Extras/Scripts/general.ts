@@ -4,6 +4,9 @@
     dispose(): void;
 }
 
+// bit-trim: always
+// The window size the --bit-env-*-avl variables of the stylesheet are computed from, which an app's own styles may read
+// as well as the components of this package.
 window.addEventListener('load', setBitEnvCssVars);
 window.addEventListener('resize', setBitEnvCssVars);
 

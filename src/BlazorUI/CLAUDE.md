@@ -38,6 +38,54 @@ file that was just created.
 - A new extension that has to go without a BOM (a served asset, a manifest) is exempted in
   `src/BlazorUI/.editorconfig`, never in the test's list.
 
+## The scripts and stylesheets are trimmed at publish
+
+Every package's bundles (`bit.blazorui.js`, `bit.blazorui.css` and its Fluent variants, the Extras', Legacy's and
+Icons' ones) are written by `Bit.BlazorUI.Build/build-assets.mjs` from **pieces** - one per `.ts` file, one per component
+stylesheet imported by the package's components file, one per icon glyph - which the package ships with a manifest
+(`obj/bit-assets`, `buildTransitive/bit-assets` in the package). At publish, the `Bit.BlazorUI.Build` MSBuild task
+(`buildTransitive/Bit.BlazorUI.targets`, documented there for consumers) puts each bundle back together from the pieces
+an app can use: off the types and string literals ILLink left in the trimmed assemblies, or - where the publish is not
+trimmed - off the app's type references and everything they reach. A piece left out is a component drawn unstyled or a
+`BitBlazorUI.x is undefined` in production only, so what keeps each piece is a contract:
+
+- **A script is kept by what names it.** An interop identifier in C# (`"BitBlazorUI.Utils.isRtl"` keeps the file
+  exporting `Utils.isRtl`) - always a **literal**, never put together at run time; the one exception, BitMap's providers,
+  names its provider types instead. Or a comment in the file: `// bit-trim: owners BitNav` (kept with that type; `BitFc*`
+  for a family), `// bit-trim: markup data-bit-esc` (kept when the code an app can run, or its static html, holds that
+  text - for a script acting on what markup says), `// bit-trim: always`. A file that runs code as it loads - its top
+  level, or a function invoked where it is written, calls anything, constructs anything but a plain `Map` / `Set`, or
+  assigns to the platform (`window.onresize = ...`) - must carry one of these (or `on-demand`): `build-assets.mjs` fails
+  on one that does not. A stylesheet says `always` or `owners` only.
+- **A script adds its own page-level listeners as it loads**, never `general.ts`, so an app trimmed down to components
+  that do not need them gets none. The bundle is ordered so a script follows every script it uses at load - what its top
+  level uses, and what the functions it calls there use in turn; listeners that must run in a set order on one node go
+  through a hook of the earlier script (`Utils.afterEscapeClaim`), not the file order. The manifest lists the listeners
+  each script adds as it loads (`"window keydown capture"`), which is how `BitEscapeClaimContractTests` pins the claim as
+  the first keydown listener of the window.
+- **`Utils` and `Callouts` are namespaces spread over a file per feature** (`Utils.Escape.ts`, `Utils.Focus.ts`,
+  `Callouts.Registry.ts`, ...), each one a piece: a function goes in the file of its feature, or a new `Utils.<Feature>.ts`.
+  State that scripts of different features share goes in a small file of its own (`Callouts.Registry.ts`); where the
+  dependency would have to point back the other way, the owner exposes a hook the dependent registers with as it loads
+  (`Utils.addEscapeBoundary`). `general.ts` and `Utils.Keys.ts` are what every bundle keeps - add nothing to them that
+  not every app needs.
+- **A component stylesheet compiles on its own**, with `functions.scss` as its only preamble - no variable, mixin or
+  `@extend` of another component, no keyframes of another component, and no global token (`:root`) declared in it: those
+  go in `general.scss` or the theme files, which every bundle keeps. It is kept for the component of its file name; a
+  stylesheet styling the parts of a family that are components of their own says so (`// bit-trim: owners BitFullCalendar
+  BitFc*`). `build-assets.mjs` fails when the pieces do not add up to the whole bundle byte for byte.
+- **The Extras' scripts call the core's through `Scripts/BitBlazorUI.d.ts`**, which is also what keeps those core
+  functions in a trimmed core bundle: declare every core member a script of the Extras uses.
+- **A folder of vendored files** (a library a component loads at run time, a set of images) is declared as a
+  `BitBlazorUIVendorFolder` in its package's `buildTransitive` targets, and is published only where code naming
+  `_content/<package>/<folder>/` is.
+- **A class that only registers services carries `[BitAssetTrimmingRegistrar]`**: the scan does not follow it, since
+  registering renders nothing and an app using a service names it itself.
+- `BitAssetTrimmingContractTests` checks these against the compiled assemblies (every identifier resolves, every owner is a
+  type, every component brings the stylesheets of the classes it renders); `Tests/Bit.BlazorUI.Tests.Trimming` publishes
+  real apps and reads what came out (`dotnet run`, see its README). Run both after touching a script's exports, a
+  `bit-trim` comment, the components file or the targets.
+
 ## Razor comments
 
 **Never put a `@* ... *@` comment inside a tag, between its attributes.** It compiles, but the Razor
@@ -92,7 +140,8 @@ components' markup, defaults and accessibility behaviour as well.
 
 A field inside a dialog clears on Escape, and the dialog waits for the next press. Whoever acts on the key
 claims it by preventing its default, and every surface that closes on Escape (BitDialog, BitModal, BitPanel,
-the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.ts`) leaves a claimed key alone.
+the callouts, BitTooltip, BitMessage - the listeners in `Scripts/Utils.Escape.ts`, `Utils.EscapeSurfaces.ts` and
+`Utils.Tooltips.ts`) leaves a claimed key alone.
 
 - **A component that acts on Escape in .NET says so in its markup.** A Blazor `@onkeydown:preventDefault`
   holds for every key, and the handler runs too late for any listener to read its answer, so the component

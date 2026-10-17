@@ -1,0 +1,20 @@
+﻿<Project>
+
+    <!-- Names this package's script and stylesheet pieces to the publish-time asset trimming of Bit.BlazorUI, which this
+         package depends on and whose buildTransitive\Bit.BlazorUI.targets does the trimming (and documents how to
+         configure it): buildTransitive\bit-assets in the package, obj\bit-assets in the source tree. Removed before they
+         are included, so a second import of this file (from build\ as well as buildTransitive\) leaves one of each. -->
+    <ItemGroup>
+        <BitBlazorUIAssetFolder Remove="$(MSBuildThisFileDirectory)bit-assets\;$(MSBuildThisFileDirectory)..\obj\bit-assets\" />
+        <BitBlazorUIAssetFolder Include="$(MSBuildThisFileDirectory)bit-assets\;$(MSBuildThisFileDirectory)..\obj\bit-assets\" Package="Bit.BlazorUI.Legacy" />
+    </ItemGroup>
+
+    <!-- The libraries a component of this package loads at run time from its own wwwroot, each named by the code that
+         loads it (_content/Bit.BlazorUI.Legacy/pdf.js/...): a publish leaves out the ones nothing the app can run names
+         (BitBlazorUITrimVendorAssets). -->
+    <ItemGroup>
+        <BitBlazorUIVendorFolder Remove="chart.js;marked;pdf.js;quilljs" />
+        <BitBlazorUIVendorFolder Include="chart.js;marked;pdf.js;quilljs" Package="Bit.BlazorUI.Legacy" />
+    </ItemGroup>
+
+</Project>

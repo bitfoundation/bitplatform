@@ -70,11 +70,28 @@
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
+    <!-- The publish-time trimming of the scripts and stylesheets an app gets: the MSBuild task (packed under tasks\, see
+         below) and the consumer-side targets that run it. Built, not referenced: nothing in this library calls into it. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.Build\Bit.BlazorUI.Build.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+        <None Include="buildTransitive\Bit.BlazorUI.targets;buildTransitive\Bit.BlazorUI.Endpoints.targets" Pack="true" PackagePath="buildTransitive\;build\" />
+    </ItemGroup>
+
+    <!-- What the package carries besides the library and its static web assets:
+           buildTransitive\*.targets (+ build\)    the consumer-side trimming (see buildTransitive\Bit.BlazorUI.targets)
+           buildTransitive\bit-assets\**           the pieces the bundles are made of, and their manifests
+           tasks\Bit.BlazorUI.Build.dll            the MSBuild task that puts a trimmed bundle together
+         The last two through the import, which the other packages share for their pieces. -->
+    <PropertyGroup>
+        <BitBlazorUIPackBuildTask>true</BitBlazorUIPackBuildTask>
+    </PropertyGroup>
+    <Import Project="..\Bit.BlazorUI.Build\Bit.BlazorUI.Assets.targets" />
+
     <Target Name="BeforeBuildTasks" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript;BuildCss" />
 
     <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <ItemGroup>
-            <Content Include="wwwroot\scripts\*.js;wwwroot\styles\*.css*" Exclude="@(Content);@(None)" />
+            <Content Include="wwwroot\scripts\*.js;wwwroot\styles\*.css" Exclude="@(Content);@(None)" />
         </ItemGroup>
     </Target>
 
@@ -91,14 +108,13 @@
         <Exec Condition=" '$(CI)' != 'true' " Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <!-- The stamp is per configuration, and a build takes every other configuration's stamp away, so switching from one
-         configuration to another rebuilds the script either way even when no .ts file changed in between: a Release
-         build after a Debug one minifies it, and a Debug build after a Release one writes it readable again. The
-         minifier is held to the target tsconfig.json compiles to (ES2019): left to its own default it writes newer
-         syntax (?? and ?.) back into the script, which the engines ES2019 is there for reject. -->
-    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot\scripts\bit.blazorui.js;$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.js.stamp">
-        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/bit.blazorui.js --minify --target=es2019 --outfile=wwwroot/scripts/bit.blazorui.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <!-- build-assets.mjs compiles every .ts file on its own and writes bit.blazorui.js from the pieces, keeping the
+         pieces and a manifest of what each needs in obj\bit-assets for the package (see the script for the shape of
+         both). The stamp is per configuration, and a build takes every other configuration's stamp away, so switching
+         from one configuration to another rebuilds the script either way even when no .ts file changed in between: a
+         Release build after a Debug one minifies it, and a Debug build after a Release one writes it readable again. -->
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;@(BitAssetsScript)" Outputs="wwwroot\scripts\bit.blazorui.js;$(BaseIntermediateOutputPath)bit-assets\scripts.json;$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.js.stamp">
+        <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; scripts --package $(PackageId) --tsconfig tsconfig.json --bundle scripts/bit.blazorui.js --out $(BaseIntermediateOutputPath)bit-assets $(_BitAssetsMinify)" StandardOutputImportance="high" StandardErrorImportance="high" />
         <ItemGroup>
             <_OtherConfigurationScriptStamps Include="$(BaseIntermediateOutputPath)*\bit.blazorui.js.stamp" Exclude="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.js.stamp" />
         </ItemGroup>
@@ -107,8 +123,12 @@
         <Touch Files="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.js.stamp" AlwaysCreate="true" />
     </Target>
 
-    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.css;wwwroot/styles/bit.blazorui.fluent.css;wwwroot/styles/bit.blazorui.fluent-dark.css;wwwroot/styles/bit.blazorui.fluent-light.css">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.scss:wwwroot/styles/bit.blazorui.css Styles/Fluent/bit.blazorui.fluent.scss:wwwroot/styles/bit.blazorui.fluent.css Styles/Fluent/bit.blazorui.fluent-dark.scss:wwwroot/styles/bit.blazorui.fluent-dark.css Styles/Fluent/bit.blazorui.fluent-light.scss:wwwroot/styles/bit.blazorui.fluent-light.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <!-- Each bundle compiles to exactly its own part, every component stylesheet compiled on its own, and its own part
+         again - build-assets.mjs checks that before it writes anything - which is what lets a publish keep only the
+         component stylesheets an app can use. functions.scss is the preamble a component may lean on without importing
+         it, the way general.scss imports it ahead of components.scss. -->
+    <Target Name="BuildCss" Inputs="@(ScssFiles);@(BitAssetsScript)" Outputs="wwwroot/styles/bit.blazorui.css;wwwroot/styles/bit.blazorui.fluent.css;wwwroot/styles/bit.blazorui.fluent-dark.css;wwwroot/styles/bit.blazorui.fluent-light.css;$(BaseIntermediateOutputPath)bit-assets\styles.json">
+        <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; styles --package $(PackageId) --components Styles/components.scss --preamble Styles/functions.scss --out $(BaseIntermediateOutputPath)bit-assets --bundle Styles/bit.blazorui.scss=styles/bit.blazorui.css --bundle Styles/Fluent/bit.blazorui.fluent.scss=styles/bit.blazorui.fluent.css --bundle Styles/Fluent/bit.blazorui.fluent-dark.scss=styles/bit.blazorui.fluent-dark.css --bundle Styles/Fluent/bit.blazorui.fluent-light.scss=styles/bit.blazorui.fluent-light.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
     <ItemGroup>

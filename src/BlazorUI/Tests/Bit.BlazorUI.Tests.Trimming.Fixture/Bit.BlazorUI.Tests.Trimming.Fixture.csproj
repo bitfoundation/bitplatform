@@ -1,0 +1,51 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <!--
+    An app that exists to be published, over and over, with different asset trimming settings - see
+    Bit.BlazorUI.Tests.Trimming, which is the only thing that ever publishes it.
+
+    Everything the trimming does happens inside `dotnet publish`, in MSBuild, over the SDK's static web asset lists:
+    the gate, the task, the asset swap, the endpoints. None of that is reachable from a test calling into
+    Bit.BlazorUI.Build, so the checks that cover it publish a real app and read what came out, and this is that app.
+
+    A plain web app (a Blazor Web App's server, interactive on the server) rather than a WebAssembly one: it publishes in
+    seconds rather than minutes, and it is the shape the scan exists for - a publish ILLink never touches. The
+    WebAssembly shape, trimmed by ILLink, is Bit.BlazorUI.Tests.Consumer's.
+
+    Not in the solution, and not a test project: building it on its own proves nothing.
+    -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <!-- Not a WebAssembly project, so the trimming is off by default here; the scenarios that want it say so. -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Legacy\Bit.BlazorUI.Legacy.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Icons\Bit.BlazorUI.Icons.csproj" />
+    </ItemGroup>
+
+    <!-- The <BitBlazorUIComponent>, <BitBlazorUIAsset> and <BitBlazorUIIcon> items of a scenario, passed in as properties
+         because that is what a command line can set; a real csproj writes the items out. Pipe-separated, since an MSBuild
+         command line reads both a semicolon and a comma as the end of a property. -->
+    <ItemGroup>
+        <BitBlazorUIComponent Include="$([MSBuild]::Unescape($(FixtureComponents.Replace('|', ';'))))" Condition="'$(FixtureComponents)' != ''" />
+        <BitBlazorUIAsset Include="$([MSBuild]::Unescape($(FixtureAssets.Replace('|', ';'))))" Condition="'$(FixtureAssets)' != ''" />
+        <BitBlazorUIIcon Include="$([MSBuild]::Unescape($(FixtureIcons.Replace('|', ';'))))" Condition="'$(FixtureIcons)' != ''" />
+        <BitBlazorUIScanFile Include="$([MSBuild]::Unescape($(FixtureScanFiles.Replace('|', ';'))))" Condition="'$(FixtureScanFiles)' != ''" />
+    </ItemGroup>
+
+    <!-- The packages reach this app as ProjectReferences, so the consumer-side targets NuGet would import are imported by
+         hand; they read the source tree's pieces and task build on their own. -->
+    <Import Project="..\..\Bit.BlazorUI\buildTransitive\Bit.BlazorUI.targets" />
+    <Import Project="..\..\Bit.BlazorUI.Extras\buildTransitive\Bit.BlazorUI.Extras.targets" />
+    <Import Project="..\..\Bit.BlazorUI.Legacy\buildTransitive\Bit.BlazorUI.Legacy.targets" />
+    <Import Project="..\..\Bit.BlazorUI.Icons\buildTransitive\Bit.BlazorUI.Icons.targets" />
+
+</Project>

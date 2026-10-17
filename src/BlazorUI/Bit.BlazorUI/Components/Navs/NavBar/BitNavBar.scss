@@ -1,5 +1,8 @@
 ﻿@import "../../../Styles/functions.scss";
 
+// bit-trim: owners BitNavBar _BitNavBarChild
+// The items of the nav bar are drawn by a component of their own, styled here with the nav bar.
+
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // navbar and one set on the Style of an instance re-skins that one and the navbars nested in it:
 //   --bit-NavBar-background              fill of the bar                                   (default: transparent)
