@@ -1,0 +1,130 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <RootNamespace>Bit.Balette</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsTrimmable>true</IsTrimmable>
+        <Description>A Blazor-native, accessible, keyboard-first command palette (Ctrl+K / Cmd+K): fzf-style fuzzy search, nested pages, prefix modes, async sources, recents and frecency, global shortcuts and sequences, multi-select, prompts, theming and full templating. Matching, ranking and every decision run in C#; the browser layer only handles the dialog, focus and keys.</Description>
+        <PackageTags>Bit;Blazor;CommandPalette;Cmdk;CommandMenu;Search;FuzzySearch;Keyboard;Shortcuts;Accessibility</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Use floating low-bound version ranges so consumers can pin to any patch release on
+             their TFM. The upper bound prevents accidentally pulling a major-version package that
+             targets a newer TFM. -->
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0,9.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0,10.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Bit.Balette.Tests" PublicKey="00240000048000009400000006020000002400005253413100040000010001008D726FE8F1BED8CA2A003848640C872C6A5F2191C81EDA677B249A6E34BD9134EBA9FF7251582A5020CB3EEE83A61E7034CE712F5873D60F7C3C61F48592B256C560D7B3384E9889E4F81E4D406BC2B639915A4062D60751193AE66028D7BD4B9A3BF0823F1E38ABE5EADC3CD9615C6FF811974A9F6F89297DC2A722BF23D0BB" />
+        <InternalsVisibleTo Include="Bit.Balette.Benchmarks" PublicKey="00240000048000009400000006020000002400005253413100040000010001008D726FE8F1BED8CA2A003848640C872C6A5F2191C81EDA677B249A6E34BD9134EBA9FF7251582A5020CB3EEE83A61E7034CE712F5873D60F7C3C61F48592B256C560D7B3384E9889E4F81E4D406BC2B639915A4062D60751193AE66028D7BD4B9A3BF0823F1E38ABE5EADC3CD9615C6FF811974A9F6F89297DC2A722BF23D0BB" />
+    </ItemGroup>
+
+    <!-- Keep the build inputs (tsconfig + package manifests) out of the published static web
+         assets while still showing them in the project. -->
+    <ItemGroup>
+        <Content Remove="package*.json;tsconfig.json" />
+        <None Include="package*.json;tsconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TypeScriptFiles Include="Scripts\**\*.ts" />
+        <StyleFiles Include="Styles\**\*.css" />
+    </ItemGroup>
+
+    <!-- Restores npm packages, compiles the TypeScript module and bundles the stylesheet. Every
+         sub-target is incremental via its Inputs/Outputs, so this is a no-op when nothing changed. -->
+    <Target Name="BuildBaletteAssets" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript;BuildCss" />
+
+    <!-- The outputs (wwwroot/bit-balette.js and wwwroot/bit-balette.css) are generated,
+         git-ignored files. On a clean build they do not exist when the default "wwwroot/**" Content
+         glob is evaluated, so the static web asset discovery in ResolveProjectStaticWebAssets would
+         miss them and consumers would get a 404 for _content/Bit.Balette/bit-balette.js.
+         Hooking BeforeTargets="ResolveProjectStaticWebAssets" guarantees they are generated first and
+         then explicitly added to @(Content). The Remove-before-Include keeps each to a single Content
+         entry for builds where the glob already captured them. -->
+    <Target Name="IncludeBaletteAssetsAsStaticWebAsset"
+            BeforeTargets="ResolveProjectStaticWebAssets"
+            DependsOnTargets="BuildBaletteAssetsOnce">
+        <ItemGroup>
+            <Content Remove="wwwroot\bit-balette.js" />
+            <Content Include="wwwroot\bit-balette.js" />
+            <Content Remove="wwwroot\bit-balette.css" />
+            <Content Include="wwwroot\bit-balette.css" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Runs BuildBaletteAssets through the MSBuild task with TargetFramework removed, so every
+         per-TFM build asks for the same project configuration. MSBuild keeps one result per project
+         and global properties: the first request runs tsc/esbuild, concurrent ones wait for it, and
+         later ones reuse it. A ProjectReference builds this project's inner builds directly (one per
+         referencing target framework, in parallel) without ever running the outer build, so without
+         this each of them would run tsc against the same wwwroot output at once. -->
+    <Target Name="BuildBaletteAssetsOnce">
+        <MSBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="BuildBaletteAssets"
+                 RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
+    </Target>
+
+    <!-- In a multi-targeted build, produce the outputs exactly once in the outer (cross-targeting)
+         build, before the per-TFM inner builds are dispatched. -->
+    <Target Name="BuildBaletteAssetsOnCrossTargeting"
+            BeforeTargets="DispatchToInnerBuilds"
+            Condition="'$(IsCrossTargetingBuild)' == 'true'"
+            DependsOnTargets="BuildBaletteAssets" />
+
+    <!-- `npm ci` installs exactly what the checked-in package-lock.json pins, and fails fast when the
+         lockfile and package.json drift instead of silently rewriting the lock. -->
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <!-- The output differs per configuration (Release is minified) but lands in the same file, so the
+         sources alone cannot drive the up-to-date check: after a Debug build, a Release build would
+         see the output newer than the sources and skip, shipping unminified files (and vice versa).
+         A per-configuration stamp in obj/ makes switching configurations invalidate the check; the
+         stale stamp of the other configuration is deleted so switching back rebuilds too. -->
+    <Target Name="BuildJavaScript"
+            Inputs="@(TypeScriptFiles);tsconfig.json"
+            Outputs="wwwroot/bit-balette.js;$(BaseIntermediateOutputPath)bit-balette.js.$(Configuration).stamp">
+        <ItemGroup>
+            <_BaletteStaleJsStamps Include="$(BaseIntermediateOutputPath)bit-balette.js.*.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_BaletteStaleJsStamps)" />
+        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <!-- Minify to a temp file and move it into place, rather than overwriting the input in-place,
+             so an interrupted minify cannot leave a half-written module behind that the Outputs check
+             then treats as up to date. format=esm keeps the named exports the C# side imports, and
+             the target matches tsconfig so the minifier does not raise the syntax level back up. -->
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/bit-balette.js --minify --format=esm --target=es2019 --outfile=wwwroot/bit-balette.min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="wwwroot/bit-balette.min.js" DestinationFiles="wwwroot/bit-balette.js" OverwriteReadOnlyFiles="true" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+        <Touch Files="$(BaseIntermediateOutputPath)bit-balette.js.$(Configuration).stamp" AlwaysCreate="true" />
+    </Target>
+
+    <!-- The stylesheet is plain CSS: esbuild only copies it in Debug and minifies it in Release. The
+         same per-configuration stamp as BuildJavaScript keeps a Debug output from surviving into a
+         Release package. -->
+    <Target Name="BuildCss"
+            Inputs="@(StyleFiles)"
+            Outputs="wwwroot/bit-balette.css;$(BaseIntermediateOutputPath)bit-balette.css.$(Configuration).stamp">
+        <ItemGroup>
+            <_BaletteStaleCssStamps Include="$(BaseIntermediateOutputPath)bit-balette.css.*.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_BaletteStaleCssStamps)" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild Styles/bit-balette.css --minify --outfile=wwwroot/bit-balette.css" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' != 'Release' " Command="node_modules/.bin/esbuild Styles/bit-balette.css --outfile=wwwroot/bit-balette.css" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+        <Touch Files="$(BaseIntermediateOutputPath)bit-balette.css.$(Configuration).stamp" AlwaysCreate="true" />
+    </Target>
+
+</Project>
