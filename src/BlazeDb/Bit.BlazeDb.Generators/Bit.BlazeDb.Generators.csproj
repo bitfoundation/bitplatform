@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" TreatAsLocalProperty="TargetFrameworks">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFramework>netstandard2.0</TargetFramework>
+        <!-- Always single-targeted, whatever a build passes down: a publish that narrows every project with
+             -p:TargetFrameworks=net10.0 would otherwise retarget an analyzer that only ever runs inside the
+             compiler. TreatAsLocalProperty above is what lets this win. -->
+        <TargetFrameworks></TargetFrameworks>
+        <!-- Roslyn source generator: the assembly ships as an analyzer, not a lib reference. -->
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <!-- netstandard2.0 has no nullable annotations in the BCL; keep nullable on for our own code
+             but don't warn about the BCL's unannotated surface. -->
+        <NoWarn>$(NoWarn);nullable</NoWarn>
+        <IsAotCompatible>false</IsAotCompatible>
+        <PackageTags>$(PackageTags);Blazor;Database;Source generator</PackageTags>
+        <Description>The Roslyn source generator for Bit.BlazeDb: turns [BlazeDbTable] types into table descriptors with binary row and key serializers, key extractors and typed index definitions, with no runtime reflection.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- 4.8 keeps the generator loadable by every SDK/IDE Roslyn from .NET 8 tooling onwards. -->
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" PrivateAssets="all" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Release tracking for the diagnostics this generator reports (RS2008). -->
+        <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
+        <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Pack as an analyzer so `dotnet add package Bit.BlazeDb.Generators` just works. -->
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+    </ItemGroup>
+
+</Project>

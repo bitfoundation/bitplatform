@@ -1,0 +1,280 @@
+﻿@page "/"
+@inject DemoDbService Db
+
+<PageTitle>BlazeDb - a memory-first database for the browser</PageTitle>
+
+<div class="hero rise">
+    <div class="hero-inner">
+        <div class="eyebrow"><Icon Name="flame" Size="13" /> Embedded engine for .NET &amp; Blazor WebAssembly</div>
+        <h1>Your data lives in <span class="grad">memory</span>.<br />Durability is a background job.</h1>
+        <p>
+            BlazeDb is a SQL-free embedded database that keeps every row as a strongly-typed .NET
+            object in managed memory. Reads are plain method calls into hash and ordered indexes -
+            no query parsing, no JavaScript interop, no I/O. Writes commit to memory synchronously
+            and stream to a write-ahead log that reaches OPFS in the background.
+        </p>
+        <div class="hero-actions">
+            <a class="btn btn-primary btn-lg" href="todos"><Icon Name="play" /> Open the live app</a>
+            <a class="btn btn-outline btn-lg" href="schema"><Icon Name="code" /> Tour the API</a>
+        </div>
+        <div class="hero-chips">
+            <span class="chip"><Icon Name="bolt" /> 2.6 ns point reads</span>
+            <span class="chip"><Icon Name="shield" /> WAL + snapshots</span>
+            <span class="chip"><Icon Name="cpu" /> Zero runtime reflection</span>
+            <span class="chip"><Icon Name="disk" /> OPFS persistence</span>
+        </div>
+    </div>
+</div>
+
+<Section Title="This page is running on the engine" IconName="database"
+         Lead="Everything below is read from the live database this tab opened when the app started.">
+    <div class="stats">
+        <StatTile Label="Rows in memory" IconName="database" Tone="accent"
+                  Value="@(Db.IsOpen ? Db.Todos.Count.ToString("N0") : "-")"
+                  Note="todos table" />
+        <StatTile Label="Secondary indexes" IconName="index"
+                  Value="@TodoEntry.Table.Indexes.Count.ToString()"
+                  Note="3 hash · 2 ordered" />
+        <StatTile Label="Tables registered" IconName="layers" Value="3"
+                  Note="todos · settings · metrics" />
+        <StatTile Label="Storage backend" IconName="disk" Tone="@(Db.IsPersistent ? "ok" : "")"
+                  Value="@(Db.IsPersistent ? "OPFS" : "Memory")"
+                  Note="@(Db.IsPersistent ? "survives reload" : "this session only")" />
+        <StatTile Label="Engine I/O calls" IconName="history"
+                  Value="@((Db.Trace?.CallCount ?? 0).ToString("N0"))"
+                  Note="@($"{DemoSandbox.Bytes(Db.Trace?.BytesWritten ?? 0)} written")" />
+    </div>
+
+    @if (!Db.IsPersistent && Db.StorageNote is not null)
+    {
+        <Callout Tone="warn" Title="Running without persistence." Class="mt-2">
+            @Db.StorageNote Every feature still works; data simply disappears when you close the tab.
+        </Callout>
+    }
+</Section>
+
+<Section Title="Three costs BlazeDb removes" IconName="bolt">
+    <div class="grid grid-3">
+        <div class="card">
+            <div class="card-icon"><Icon Name="cpu" /></div>
+            <h3>No interop on the read path</h3>
+            <p>
+                sqlite-wasm bridges and IndexedDB wrappers cross into JavaScript for every
+                operation. BlazeDb keeps rows as managed objects, so a lookup is a dictionary
+                probe inside the same wasm heap.
+            </p>
+        </div>
+        <div class="card">
+            <div class="card-icon"><Icon Name="query" /></div>
+            <h3>No query language</h3>
+            <p>
+                Nothing to parse, plan or bind. You call typed primitives - <code>Get</code>,
+                <code>Lookup</code>, <code>Range</code>, <code>Scan</code> - or compose them
+                through <code>BlazeDbQuery&lt;TKey, TRow&gt;</code>.
+            </p>
+        </div>
+        <div class="card">
+            <div class="card-icon"><Icon Name="shield" /></div>
+            <h3>No synchronous I/O</h3>
+            <p>
+                Commits apply to memory immediately and append to a write-ahead log that a
+                background loop flushes to storage. Your UI never awaits the disk.
+            </p>
+        </div>
+    </div>
+</Section>
+
+<Section Title="How a write travels" IconName="layers"
+         Lead="Reads stop at the first layer. Only writes continue past it, and never on your thread.">
+    <Panel>
+        <div class="diagram">
+            <div class="dg-row">
+                <div class="dg-box">
+                    <div class="dg-title"><Icon Name="code" /> Your component</div>
+                    <div class="dg-note">todos.Insert(row)</div>
+                </div>
+            </div>
+            <div class="dg-arrow"><Icon Name="arrow-down" /> synchronous</div>
+            <div class="dg-row">
+                <div class="dg-box mem">
+                    <div class="dg-title"><Icon Name="database" /> Row store</div>
+                    <div class="dg-note">Dictionary&lt;TKey, TRow&gt; of live objects</div>
+                </div>
+                <div class="dg-box mem">
+                    <div class="dg-title"><Icon Name="index" /> Hash indexes</div>
+                    <div class="dg-note">O(1) equality buckets</div>
+                </div>
+                <div class="dg-box mem">
+                    <div class="dg-title"><Icon Name="sort" /> Ordered indexes</div>
+                    <div class="dg-note">O(log n) range scans</div>
+                </div>
+            </div>
+            <div class="dg-arrow"><Icon Name="arrow-down" /> recorded, still synchronous</div>
+            <div class="dg-row">
+                <div class="dg-box">
+                    <div class="dg-title"><Icon Name="txn" /> Transaction buffer</div>
+                    <div class="dg-note">Undo log + WAL records, atomic on Commit()</div>
+                </div>
+            </div>
+            <div class="dg-arrow"><Icon Name="arrow-down" /> background loop, every FlushInterval</div>
+            <div class="dg-row">
+                <div class="dg-box io">
+                    <div class="dg-title"><Icon Name="file" /> wal-N.blz</div>
+                    <div class="dg-note">Append-only, CRC per record</div>
+                </div>
+                <div class="dg-box io">
+                    <div class="dg-title"><Icon Name="layers" /> snapshot-N.blz</div>
+                    <div class="dg-note">Full image written at checkpoint</div>
+                </div>
+                <div class="dg-box io">
+                    <div class="dg-title"><Icon Name="key" /> manifest.blz</div>
+                    <div class="dg-note">Points at the newest valid snapshot</div>
+                </div>
+            </div>
+            <div class="dg-arrow"><Icon Name="arrow-down" /> IBlazeDbStorage - four async methods</div>
+            <div class="dg-row">
+                <div class="dg-box io">
+                    <div class="dg-title"><Icon Name="disk" /> BlazeDbOpfsStorage</div>
+                    <div class="dg-note">Browser, private origin file system</div>
+                </div>
+                <div class="dg-box io">
+                    <div class="dg-title"><Icon Name="disk" /> BlazeDbFileStorage</div>
+                    <div class="dg-note">Desktop and server hosts</div>
+                </div>
+                <div class="dg-box io">
+                    <div class="dg-title"><Icon Name="cpu" /> BlazeDbInMemoryStorage</div>
+                    <div class="dg-note">Tests and crash simulation</div>
+                </div>
+            </div>
+        </div>
+    </Panel>
+</Section>
+
+<Section Title="Quick start" IconName="code"
+         Lead="Declare a table, open a database, query it. That is the whole surface for typical use.">
+    <div class="grid grid-2">
+        <CodeBlock Title="Model.cs" Code="@ModelSnippet" />
+        <CodeBlock Title="Usage.cs" Code="@UsageSnippet" />
+    </div>
+    <Callout Tone="accent" Title="Nothing is reflected at runtime.">
+        The Roslyn generator emits the serializers, key extractor and index definitions at compile
+        time, which is what makes the engine trimming- and AOT-safe.
+        <a href="schema">See exactly what it generates →</a>
+    </Callout>
+</Section>
+
+<Section Title="Measured performance" IconName="gauge"
+         Lead="BenchmarkDotNet on .NET 10, 10,000-row table, against native in-memory SQLite with prepared statements.">
+    <Panel Flush="true">
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th>Operation</th>
+                        <th class="num">BlazeDb</th>
+                        <th class="num">SQLite</th>
+                        <th>Why</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="strong">Point get by key</td>
+                        <td class="num mono">2.6 ns</td>
+                        <td class="num mono">876 ns</td>
+                        <td>Dictionary probe, zero allocation, no statement binding</td>
+                    </tr>
+                    <tr>
+                        <td class="strong">Count by hash index</td>
+                        <td class="num mono">2.7 ns</td>
+                        <td class="num mono">67,649 ns</td>
+                        <td>Bucket size lookup versus a table scan</td>
+                    </tr>
+                    <tr>
+                        <td class="strong">Ordered range scan (~5,100 rows)</td>
+                        <td class="num mono">55.6 µs</td>
+                        <td class="num mono">69.3 µs</td>
+                        <td>Comparable - both are index-driven</td>
+                    </tr>
+                    <tr>
+                        <td class="strong">Upsert, autocommit</td>
+                        <td class="num mono">462 ns</td>
+                        <td class="num mono">752 ns</td>
+                        <td>With WAL journaling; 328 ns memory-only</td>
+                    </tr>
+                    <tr>
+                        <td class="strong">Upsert in a 1,000-op transaction</td>
+                        <td class="num mono">487 ns</td>
+                        <td class="num mono">682 ns</td>
+                        <td>Per operation, still journaled</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </Panel>
+    <Callout Tone="info" Title="Native SQLite is a favourable comparison.">
+        A real sqlite-wasm deployment additionally pays JavaScript interop, worker round-trips and
+        wasm execution overhead on every query. <a href="bench">Run the benchmark in this browser →</a>
+    </Callout>
+</Section>
+
+<Section Title="Everything this demo covers" IconName="map">
+    <div class="grid grid-2">
+        @foreach (var item in SiteMap.Items.Where(i => i.Path.Length > 0))
+        {
+            <a class="card" href="@item.Path">
+                <div class="card-icon"><Icon Name="@item.Icon" /></div>
+                <h3>@item.Title</h3>
+                <p>@item.Blurb</p>
+                <span class="card-arrow">Open <Icon Name="arrow-right" /></span>
+            </a>
+        }
+    </div>
+</Section>
+
+@code {
+    protected override async Task OnInitializedAsync() => await Db.GetDatabaseAsync();
+
+    private const string ModelSnippet = """
+        [BlazeDbTable("todos")]
+        public partial class TodoEntry
+        {
+            [BlazeDbKey] public Guid Id { get; set; }
+
+            public string Title { get; set; } = "";
+
+            [BlazeDbIndex] public bool Done { get; set; }
+
+            [BlazeDbIndex] public string? Category { get; set; }
+
+            [BlazeDbOrderedIndex] public DateTime CreatedAt { get; set; }
+        }
+        """;
+
+    private const string UsageSnippet = """
+        var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
+        {
+            Storage = await BlazeDbOpfsStorage.CreateAsync("mydb"),
+            FlushInterval = TimeSpan.FromMilliseconds(100),
+        }.AddTable(TodoEntry.Table));
+
+        var todos = db.GetTable(TodoEntry.Table);
+
+        todos.Insert(new TodoEntry { Id = id, Title = "hello", CreatedAt = DateTime.UtcNow });
+
+        var one = todos.Get(id);                                  // O(1), no I/O
+        var open = todos.Lookup(TodoEntry.Indexes.Done, false);   // hash index
+        var newest = todos.OrderBy(TodoEntry.Indexes.CreatedAt, descending: true);
+
+        using (var txn = db.BeginTransaction())
+        {
+            // Rows are live objects: hand Update a copy, so the table can still see the
+            // values its indexes were built from (or use UpdateInPlace with those values).
+            var changed = one!.Clone();
+            changed.Done = true;
+            todos.Update(changed);
+            txn.Commit();
+        }
+
+        await db.FlushAsync();   // force durability now
+        """;
+}

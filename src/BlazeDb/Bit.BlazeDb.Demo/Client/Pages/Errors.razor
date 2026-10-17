@@ -1,0 +1,642 @@
+﻿@page "/errors"
+
+<PageTitle>Errors &amp; edge cases - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Behaviour under stress" IconName="alert" Title="Every way BlazeDb says no"
+            Lead="A database earns trust by failing predictably. Each case below is executed for real against a throwaway database and reports the exception type and message it actually produced.">
+    <span class="chip"><Icon Name="play" /> @Cases.Length executable cases</span>
+    @if (_ran > 0)
+    {
+        <span class="chip @(_failed == 0 ? "ok" : "err")">
+            <Icon Name="@(_failed == 0 ? "check" : "alert")" />
+            @(_ran - _failed)/@_ran behaved as documented
+        </span>
+    }
+</PageHeader>
+
+<Section Title="Run the failure modes" IconName="play"
+         Lead="Nothing here is a screenshot. Each row opens its own database, provokes the failure and prints what came back.">
+    <div class="flex wrap mb-3">
+        <button class="btn btn-primary" disabled="@_busy" @onclick="RunAllAsync">
+            <Icon Name="play" /> @(_busy ? "Running…" : "Run every case")
+        </button>
+        <button class="btn" disabled="@(_busy || _results.Count == 0)" @onclick="Clear">
+            <Icon Name="refresh" /> Clear results
+        </button>
+    </div>
+
+    @foreach (var group in Cases.GroupBy(c => c.Group))
+    {
+        <Panel Title="@group.Key" IconName="@GroupIcon(group.Key)" Flush="true" Class="mb-3">
+            <div class="case-list">
+                @foreach (var item in group)
+                {
+                    var result = _results.GetValueOrDefault(item.Id);
+                    <div class="case">
+                        <div class="case-head">
+                            <div class="case-what">
+                                <div class="case-title">@item.Title</div>
+                                <code class="case-api">@item.Api</code>
+                            </div>
+                            <div class="case-side">
+                                <span class="badge @ExpectedTone(item)">@item.Expected</span>
+                                <button class="btn btn-sm" disabled="@_busy" @onclick="() => RunCaseAsync(item)">
+                                    <Icon Name="play" /> Run
+                                </button>
+                            </div>
+                        </div>
+                        <p class="case-note">@item.Note</p>
+                        @if (result is not null)
+                        {
+                            <div class="case-result @result.Tone">
+                                <Icon Name="@(result.Tone == "ok" ? "check" : "alert")" />
+                                <span>@result.Detail</span>
+                            </div>
+                        }
+                    </div>
+                }
+            </div>
+        </Panel>
+    }
+</Section>
+
+<Section Title="Things that look like errors but are not" IconName="info"
+         Lead="Several operations that other databases treat as exceptional are ordinary return values here, because they are ordinary situations.">
+    <div class="grid grid-3">
+        <Panel Title="Missing rows" IconName="search">
+            <CodeBlock ShowHeader="false" Code="@MissingSnippet" />
+            <p class="small mt-2 mb-0">
+                <code>Get</code> returns <code>default</code>, <code>TryGet</code> returns
+                <code>false</code>, and <code>Delete</code> returns <code>false</code>. Only
+                <code>Update</code> insists the row exists.
+            </p>
+        </Panel>
+        <Panel Title="Null index keys" IconName="key">
+            <CodeBlock ShowHeader="false" Code="@NullIndexSnippet" />
+            <p class="small mt-2 mb-0">
+                A null is an index key like any other: a lookup with a null key returns the rows
+                whose value is null, never an error, and unique indexes still allow any number of
+                them. Only a bounded range excludes them, since null lies inside no interval.
+            </p>
+        </Panel>
+        <Panel Title="Empty results" IconName="query">
+            <CodeBlock ShowHeader="false" Code="@EmptySnippet" />
+            <p class="small mt-2 mb-0">
+                A range with no matches, a lookup on an absent value and a query with an
+                impossible predicate all yield an empty sequence - never null.
+            </p>
+        </Panel>
+    </div>
+</Section>
+
+<Section Title="Handling patterns" IconName="shield"
+         Lead="Three patterns cover almost everything an application needs to do about failure.">
+    <div class="grid grid-3">
+        <Panel Title="Open with a fallback" IconName="database" Sub="the one you must write">
+            <CodeBlock ShowHeader="false" Code="@OpenPatternSnippet" />
+            <p class="small mt-2 mb-0">
+                This site does the same, except that a locked or unavailable OPFS falls back to an
+                in-memory database rather than a replica - the badge in the sidebar reflects which
+                branch it took.
+            </p>
+        </Panel>
+        <Panel Title="Guard a durability point" IconName="disk">
+            <CodeBlock ShowHeader="false" Code="@FlushPatternSnippet" />
+            <p class="small mt-2 mb-0">
+                A background flush failure never loses data - the bytes go back into the buffer and
+                the flusher retries on its next tick. <code>db.LastBackgroundError</code> exposes the
+                standing failure (and clears once a flush succeeds), and an explicit
+                <code>FlushAsync</code> throws the storage error itself if it hits the same problem.
+            </p>
+        </Panel>
+        <Panel Title="Keep memory and disk in step" IconName="txn">
+            <CodeBlock ShowHeader="false" Code="@TxnPatternSnippet" />
+            <p class="small mt-2 mb-0">
+                Rollback reverses in-memory state and index entries in reverse order and writes
+                nothing to the log, so an abandoned transaction leaves no trace on either side.
+            </p>
+        </Panel>
+    </div>
+
+    <Callout Tone="warn" Title="One caveat worth internalising." Class="mt-3">
+        Rows are live objects, not copies. Mutating a row you fetched changes the table immediately,
+        before and regardless of any <code>Update</code> call, and a rollback cannot undo it. Clone
+        before editing if you need transactional semantics - the <a href="todos">CRUD page</a> does
+        exactly that.
+    </Callout>
+</Section>
+
+@code {
+    private sealed record Case(
+        string Id,
+        string Group,
+        string Title,
+        string Api,
+        string Expected,
+        string Note,
+        Func<Errors, Task<string>> Run);
+
+    private sealed record Result(string Tone, string Detail);
+
+    private readonly Dictionary<string, Result> _results = [];
+    private bool _busy;
+    private int _ran;
+    private int _failed;
+
+    private static readonly Case[] Cases =
+    [
+        new("dup", "Writes", "Inserting a key that already exists",
+            "table.Insert(row)", nameof(BlazeDbDuplicateKeyException),
+            "Insert refuses to overwrite. The check happens before anything reaches memory or the log, so the table is untouched.",
+            static p => p.DuplicateKeyAsync()),
+
+        new("update-missing", "Writes", "Updating a row that is not there",
+            "table.Update(row)", nameof(KeyNotFoundException),
+            "Update is strict on purpose: silently inserting would hide a bug in the calling code. Use Upsert when either outcome is fine.",
+            static p => p.UpdateMissingAsync()),
+
+        new("delete-missing", "Writes", "Deleting a key that is not there",
+            "table.Delete(key)", "returns false",
+            "Deleting nothing is not a failure, so no exception is raised and no WAL record is written.",
+            static p => p.DeleteMissingAsync()),
+
+        new("unregistered", "Schema", "Asking for a table that was never registered",
+            "db.GetTable(descriptor)", nameof(BlazeDbException),
+            "Tables are created when the database opens. A descriptor missing from BlazeDbDatabaseOptions is a configuration mistake, caught on first access.",
+            static p => p.UnregisteredTableAsync()),
+
+        new("dup-table", "Schema", "Two tables with the same name",
+            "options.AddTable(...).AddTable(...)", nameof(BlazeDbException),
+            "Table names are the identity used in WAL records, so collisions are rejected while the database opens rather than during recovery.",
+            static p => p.DuplicateTableNameAsync()),
+
+        new("empty-index", "Schema", "An index with a blank name",
+            "new BlazeDbHashIndexDefinition<T, TKey>(\"\", ...)", nameof(ArgumentException),
+            "Index names identify the index in Lookup and Range calls, so an empty one is rejected at construction.",
+            static p => p.EmptyIndexNameAsync()),
+
+        new("foreign-index", "Schema", "Using an index that belongs to another table",
+            "table.CountBy(otherIndex, value)", nameof(BlazeDbException),
+            "Index definitions are matched by reference against the descriptor. A lookalike built at the call site is not the same index.",
+            static p => p.ForeignIndexAsync()),
+
+        new("nested", "Transactions", "Opening a transaction inside a transaction",
+            "db.BeginTransaction()", nameof(InvalidOperationException),
+            "The engine is single-writer, so there is exactly one ambient transaction. Nesting is a design error rather than a savepoint request.",
+            static p => p.NestedTransactionAsync()),
+
+        new("reuse", "Transactions", "Committing the same transaction twice",
+            "txn.Commit()", nameof(InvalidOperationException),
+            "A transaction is a one-shot object. The second call cannot mean anything sensible, so it throws instead of guessing.",
+            static p => p.ReuseTransactionAsync()),
+
+        new("checkpoint", "Transactions", "Checkpointing while a transaction is open",
+            "db.CheckpointAsync()", nameof(InvalidOperationException),
+            "A snapshot must be a committed state. Explicit checkpoints refuse; the background checkpointer simply defers instead.",
+            static p => p.CheckpointDuringTransactionAsync()),
+
+        new("disposed", "Transactions", "Writing after the database is disposed",
+            "table.Insert(row)", nameof(ObjectDisposedException),
+            "Disposal flushes and stops the background loop. Later writes would never reach storage, so they are refused outright.",
+            static p => p.DisposedAsync()),
+
+        new("two-sources", "Queries", "Two index sources on one query",
+            "query.UseIndex(a, ...).UseIndex(b, ...)", nameof(InvalidOperationException),
+            "A query reads from exactly one source. Combining indexes is a deliberate non-feature - filter residually instead.",
+            static p => p.TwoSourcesAsync()),
+
+        new("mutate-scan", "Queries", "Inserting while enumerating a scan",
+            "foreach (var r in table.Scan()) table.Insert(...)", nameof(InvalidOperationException),
+            "Scan is a lazy view over live storage, with the same rules as any dictionary enumeration. Materialise with ToList() first.",
+            static p => p.MutateWhileScanningAsync()),
+
+        new("corrupt-snapshot", "Persistence", "A snapshot with a flipped byte",
+            "BlazeDbDatabase.OpenAsync(options)", nameof(BlazeDbCorruptDatabaseException),
+            "Snapshots carry a CRC32 over their whole body. A single altered byte is caught before any of it is loaded.",
+            static p => p.CorruptSnapshotAsync()),
+
+        new("corrupt-manifest", "Persistence", "A manifest with a broken header",
+            "BlazeDbDatabase.OpenAsync(options)", nameof(BlazeDbCorruptDatabaseException),
+            "The manifest is the root of the file tree. It is validated by magic bytes, version and checksum before it is trusted.",
+            static p => p.CorruptManifestAsync()),
+
+        new("missing-snapshot", "Persistence", "A manifest pointing at a deleted snapshot",
+            "BlazeDbDatabase.OpenAsync(options)", nameof(BlazeDbCorruptDatabaseException),
+            "Recovery will not quietly start from an empty state when the snapshot it was promised has gone.",
+            static p => p.MissingSnapshotAsync()),
+
+        new("unknown-wal-table", "Persistence", "A log referencing a table you dropped",
+            "BlazeDbDatabase.OpenAsync(options)", nameof(BlazeDbException),
+            "Replay names tables as strings. Removing a table from BlazeDbDatabaseOptions while its records are still in the log is caught rather than skipped.",
+            static p => p.UnknownWalTableAsync()),
+
+        new("truncated-row", "Persistence", "A row buffer that ends mid-field",
+            "descriptor.RowReader(ref reader)", nameof(InvalidDataException),
+            "Every read is bounds-checked. Unknown fields are skipped, but a length that overruns the buffer is damage, not evolution.",
+            static p => p.TruncatedRowAsync()),
+    ];
+
+    // ------------------------------------------------------------------ runner
+
+    private async Task RunAllAsync()
+    {
+        _busy = true;
+        _results.Clear();
+        StateHasChanged();
+
+        try
+        {
+            foreach (var item in Cases)
+            {
+                await ExecuteAsync(item);
+                StateHasChanged();
+                await Task.Yield();
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RunCaseAsync(Case item)
+    {
+        _busy = true;
+        StateHasChanged();
+        await ExecuteAsync(item);
+        _busy = false;
+    }
+
+    private async Task ExecuteAsync(Case item)
+    {
+        var expectsThrow = item.Expected.EndsWith("Exception", StringComparison.Ordinal);
+
+        try
+        {
+            var detail = await item.Run(this);
+            _results[item.Id] = expectsThrow
+                ? new Result("err", $"No exception was raised. {detail}")
+                : new Result("ok", detail);
+        }
+        catch (Exception ex)
+        {
+            var matched = expectsThrow && ex.GetType().Name == item.Expected;
+            _results[item.Id] = new Result(matched ? "ok" : "err", $"{ex.GetType().Name}: {ex.Message}");
+        }
+
+        Recount();
+    }
+
+    private void Recount()
+    {
+        _ran = _results.Count;
+        _failed = _results.Values.Count(r => r.Tone != "ok");
+    }
+
+    private void Clear()
+    {
+        _results.Clear();
+        Recount();
+    }
+
+    // ------------------------------------------------------------------- cases
+
+    private async Task<string> DuplicateKeyAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+        var id = Guid.NewGuid();
+
+        table.Insert(new TodoEntry { Id = id, Title = "first" });
+        table.Insert(new TodoEntry { Id = id, Title = "second" });
+
+        return $"Table holds {table.Count} rows.";
+    }
+
+    private async Task<string> UpdateMissingAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+
+        table.Update(new TodoEntry { Id = Guid.NewGuid(), Title = "never inserted" });
+
+        return "Update succeeded.";
+    }
+
+    private async Task<string> DeleteMissingAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+
+        var deleted = table.Delete(Guid.NewGuid());
+
+        return $"Delete returned {deleted.ToString().ToLowerInvariant()}; the table still holds {table.Count} rows and nothing was logged.";
+    }
+
+    private async Task<string> UnregisteredTableAsync()
+    {
+        var options = new BlazeDbDatabaseOptions().AddTable(TodoEntry.Table);
+        await using var db = await BlazeDbDatabase.OpenAsync(options);
+
+        db.GetTable(MetricTable.Descriptor);
+
+        return "GetTable returned a table.";
+    }
+
+    private async Task<string> DuplicateTableNameAsync()
+    {
+        var options = new BlazeDbDatabaseOptions()
+            .AddTable(TodoEntry.Table)
+            .AddTable(TodoEntry.Table);
+
+        await using var db = await BlazeDbDatabase.OpenAsync(options);
+        return "The database opened with a duplicate table.";
+    }
+
+    private Task<string> EmptyIndexNameAsync()
+    {
+        var index = new BlazeDbHashIndexDefinition<TodoEntry, bool>("", static r => r.Done);
+        return Task.FromResult($"Created an index named '{index.Name}'.");
+    }
+
+    private async Task<string> ForeignIndexAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+
+        // Same name, same selector, different object - the descriptor never saw it.
+        var lookalike = new BlazeDbHashIndexDefinition<TodoEntry, bool>("Done", static r => r.Done);
+        var count = table.CountBy(lookalike, true);
+
+        return $"CountBy returned {count}.";
+    }
+
+    private async Task<string> NestedTransactionAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+
+        using var outer = db.BeginTransaction();
+        using var inner = db.BeginTransaction();
+
+        return "Both transactions started.";
+    }
+
+    private async Task<string> ReuseTransactionAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+
+        using var txn = db.BeginTransaction();
+        table.Insert(new TodoEntry { Id = Guid.NewGuid(), Title = "committed once" });
+        txn.Commit();
+        txn.Commit();
+
+        return "The transaction committed twice.";
+    }
+
+    private async Task<string> CheckpointDuringTransactionAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync(new BlazeDbInMemoryStorage());
+        var table = db.GetTable(TodoEntry.Table);
+
+        using var txn = db.BeginTransaction();
+        table.Insert(new TodoEntry { Id = Guid.NewGuid(), Title = "uncommitted" });
+        await db.CheckpointAsync();
+
+        return "The checkpoint completed mid-transaction.";
+    }
+
+    private async Task<string> DisposedAsync()
+    {
+        var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+        await db.DisposeAsync();
+
+        table.Insert(new TodoEntry { Id = Guid.NewGuid(), Title = "after disposal" });
+
+        return "The write was accepted.";
+    }
+
+    private async Task<string> TwoSourcesAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+
+        var query = BlazeDbQuery<Guid, TodoEntry>.From(table)
+            .UseIndex(TodoEntry.Indexes.Done, true)
+            .UseIndex(TodoEntry.Indexes.Effort, BlazeDbBound<int>.At(0), BlazeDbBound<int>.Unbounded);
+
+        return $"The query built with two sources and returned {query.Count()} rows.";
+    }
+
+    private async Task<string> MutateWhileScanningAsync()
+    {
+        await using var db = await DemoSandbox.OpenAsync();
+        var table = db.GetTable(TodoEntry.Table);
+        DemoData.Seed(db, table, count: 8);
+
+        var seen = 0;
+        foreach (var row in table.Scan())
+        {
+            if (seen++ == 0)
+            {
+                table.Insert(new TodoEntry { Id = Guid.NewGuid(), Title = "added mid-scan" });
+            }
+        }
+
+        return $"Enumerated {seen} rows without complaint.";
+    }
+
+    private async Task<string> CorruptSnapshotAsync()
+    {
+        var storage = new BlazeDbInMemoryStorage();
+        await using (var db = await DemoSandbox.OpenAsync(storage))
+        {
+            DemoData.Seed(db, db.GetTable(TodoEntry.Table), count: 6);
+            await db.CheckpointAsync();
+        }
+
+        var name = storage.FileNames.First(f => f.StartsWith("snapshot-", StringComparison.Ordinal));
+        var bytes = storage.GetFile(name)!;
+        bytes[bytes.Length / 2] ^= 0xFF;
+        storage.SetFile(name, bytes);
+
+        await using var reopened = await DemoSandbox.OpenAsync(storage);
+        return $"Reopened with {reopened.GetTable(TodoEntry.Table).Count} rows.";
+    }
+
+    private async Task<string> CorruptManifestAsync()
+    {
+        var storage = new BlazeDbInMemoryStorage();
+        await using (var db = await DemoSandbox.OpenAsync(storage))
+        {
+            DemoData.Seed(db, db.GetTable(TodoEntry.Table), count: 3);
+            await db.FlushAsync();
+        }
+
+        storage.SetFile("manifest.blz", [0x4E, 0x4F, 0x50, 0x45, 0x01, 0x00, 0x00, 0x00, 0x00]);
+
+        await using var reopened = await DemoSandbox.OpenAsync(storage);
+        return $"Reopened with {reopened.GetTable(TodoEntry.Table).Count} rows.";
+    }
+
+    private async Task<string> MissingSnapshotAsync()
+    {
+        var storage = new BlazeDbInMemoryStorage();
+        await using (var db = await DemoSandbox.OpenAsync(storage))
+        {
+            DemoData.Seed(db, db.GetTable(TodoEntry.Table), count: 4);
+            await db.CheckpointAsync();
+        }
+
+        var name = storage.FileNames.First(f => f.StartsWith("snapshot-", StringComparison.Ordinal));
+        await storage.DeleteAsync(name);
+
+        await using var reopened = await DemoSandbox.OpenAsync(storage);
+        return $"Reopened with {reopened.GetTable(TodoEntry.Table).Count} rows.";
+    }
+
+    private async Task<string> UnknownWalTableAsync()
+    {
+        var storage = new BlazeDbInMemoryStorage();
+        await using (var db = await DemoSandbox.OpenAsync(storage))
+        {
+            db.GetTable(Setting.Table).Insert(new Setting
+            {
+                Name = "demo.flag",
+                Value = "on",
+                UpdatedAt = DateTime.UtcNow,
+            });
+            await db.FlushAsync();
+        }
+
+        // The log still names "settings", but this schema no longer has it.
+        var narrowed = new BlazeDbDatabaseOptions { Storage = storage }.AddTable(TodoEntry.Table);
+        await using var reopened = await BlazeDbDatabase.OpenAsync(narrowed);
+
+        return "Recovery skipped the unknown table.";
+    }
+
+    private Task<string> TruncatedRowAsync()
+    {
+        var writer = new BlazeDbBufferWriter();
+        TodoEntry.Table.RowWriter(writer, new TodoEntry
+        {
+            Id = Guid.NewGuid(),
+            Title = "a row whose final field gets clipped",
+            Notes = "with notes attached",
+            Payload = [1, 2, 3, 4, 5, 6, 7, 8],
+        });
+
+        // The last field written is the length-delimited payload; drop its tail so the
+        // declared length overruns what is actually there.
+        var full = writer.ToArray();
+        var reader = new BlazeDbBufferReader(full.AsSpan(0, full.Length - 3));
+        var row = TodoEntry.Table.RowReader(ref reader);
+
+        return Task.FromResult($"Decoded a clipped buffer into Title = \"{row.Title}\".");
+    }
+
+    // ----------------------------------------------------------------- display
+
+    private static string GroupIcon(string group) => group switch
+    {
+        "Writes" => "plus",
+        "Schema" => "schema",
+        "Transactions" => "txn",
+        "Queries" => "query",
+        _ => "disk",
+    };
+
+    private static string ExpectedTone(Case item) =>
+        item.Expected.EndsWith("Exception", StringComparison.Ordinal) ? "warn mono" : "ok mono";
+
+    private const string MissingSnippet = """
+        var row = table.Get(missingKey);          // null
+        var found = table.TryGet(missingKey, out var r);  // false
+        var removed = table.Delete(missingKey);   // false
+        table.Upsert(row);                        // inserts or replaces
+        """;
+
+    private const string NullIndexSnippet = """
+        [BlazeDbIndex]
+        public string? Category { get; set; }
+
+        // The uncategorised rows, in one probe:
+        var uncategorised = table.Lookup(TodoEntry.Indexes.Category, null);
+        var howMany = table.CountBy(TodoEntry.Indexes.Category, null);
+
+        // A unique index allows any number of nulls; a bounded Range excludes them.
+        """;
+
+    private const string EmptySnippet = """
+        table.Range(TodoEntry.Indexes.Effort,
+            BlazeDbBound<int>.At(10_000),
+            BlazeDbBound<int>.Unbounded);                // empty, not null
+
+        BlazeDbQuery<Guid, TodoEntry>.From(table)
+            .Where(static r => false)
+            .FirstOrDefault();                    // null
+        """;
+
+    private const string OpenPatternSnippet = """
+        try
+        {
+            options.Storage = await BlazeDbOpfsStorage.CreateAsync("mydb");
+        }
+        catch (BlazeDbDatabaseLockedException)
+        {
+            // Another tab owns the write lock: open a read-only replica, or wait.
+            options.Storage = await BlazeDbOpfsStorage.CreateReadOnlyAsync("mydb");
+            options.ReadOnly = options.Storage is not null;
+        }
+
+        try
+        {
+            return await BlazeDbDatabase.OpenAsync(options);
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            logger.LogError(ex, "Unreadable database; starting fresh.");
+            options.Storage = new BlazeDbInMemoryStorage();
+            return await BlazeDbDatabase.OpenAsync(options);
+        }
+        """;
+
+    private const string FlushPatternSnippet = """
+        try
+        {
+            await db.FlushAsync();
+        }
+        catch (BlazeDbStorageQuotaExceededException ex)
+        {
+            ShowStorageFullWarning(ex.Quota);   // data is safe in memory; free space, retry
+        }
+        catch (Exception ex)
+        {
+            // Storage rejected the append - permissions, a closed handle. Buffered
+            // bytes were put back, so a later flush can still succeed.
+            ShowUnsavedWarning(ex);
+        }
+
+        // Or, without forcing a flush, watch the background flusher:
+        if (db.LastBackgroundError is { } standing) ShowUnsavedWarning(standing);
+        """;
+
+    private const string TxnPatternSnippet = """
+        using var txn = db.BeginTransaction();
+        try
+        {
+            foreach (var row in batch)
+            {
+                table.Upsert(row);
+            }
+            txn.Commit();
+        }
+        catch (BlazeDbDuplicateKeyException)
+        {
+            txn.Rollback();   // or just let the using block dispose
+            throw;
+        }
+        """;
+}

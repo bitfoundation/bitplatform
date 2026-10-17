@@ -8,6 +8,7 @@ on:
     paths:
       - 'src/BlazorUI/**'
       - 'src/Bink/**'
+      - 'src/BlazeDb/**'
       - 'src/Blex/**'
       - 'src/Bmotion/**'
       - 'src/Bonboarding/**'
@@ -158,6 +159,26 @@ jobs:
       run: dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bink
       run: dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output . --configuration Release
+
+    - name: dotnet build BlazeDb
+      run: dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazeDb
+      run: dotnet pack src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj --output . --configuration Release
+
+    - name: dotnet build BlazeDb.Generators
+      run: dotnet build src/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazeDb.Generators
+      run: dotnet pack src/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj --output . --configuration Release
+
+    - name: dotnet build BlazeDb.Browser
+      run: dotnet build src/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazeDb.Browser
+      run: dotnet pack src/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj --output . --configuration Release
+
+    - name: dotnet build BlazeDb.EntityFrameworkCore
+      run: dotnet build src/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BlazeDb.EntityFrameworkCore
+      run: dotnet pack src/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj --output . --configuration Release
 
     - name: dotnet build Blex
       run: dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

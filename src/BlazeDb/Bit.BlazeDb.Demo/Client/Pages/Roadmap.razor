@@ -1,0 +1,234 @@
+﻿@page "/roadmap"
+
+<PageTitle>Roadmap - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Reference" IconName="map" Title="What ships, what is next, and what never will"
+            Lead="BlazeDb is a memory-first engine with a deliberately small surface. This page is the honest inventory: everything it does, and the things it will not try to be.">
+    <span class="chip ok"><Icon Name="check" /> @Shipped.Length shipped</span>
+    <span class="chip info"><Icon Name="clock" /> nothing outstanding</span>
+    <span class="chip"><Icon Name="close" /> @NonGoals.Length explicit non-goals</span>
+</PageHeader>
+
+<Section Title="Shipped" IconName="check"
+         Lead="Where an item has a page on this site, the link drives it against a real database rather than describing it. The rest are covered by the test suite.">
+    <div class="grid grid-2">
+        @foreach (var item in Shipped)
+        {
+            <Panel Title="@item.Title" IconName="@item.Icon" Sub="@item.Sub">
+                <p class="small mb-2">@item.Body</p>
+                @if (item.Proof is not null)
+                {
+                    <a class="btn btn-sm" href="@item.Proof">
+                        <Icon Name="arrow-right" /> @item.ProofLabel
+                    </a>
+                }
+            </Panel>
+        }
+    </div>
+</Section>
+
+<Section Title="The EF Core provider" IconName="layers"
+         Lead="A translation layer, not a second database: AddDbContext plus UseBlazeDb is the whole setup, LINQ becomes a query plan, and SaveChanges is one transaction.">
+    <div class="grid grid-2">
+        <Panel Title="What it is" IconName="schema">
+            <p class="small mb-2">
+                Entity types are the same <code>[BlazeDbTable]</code> classes the rest of the engine
+                uses. <code>AddDbContext</code> and <code>UseBlazeDb</code> are the setup; queries
+                hand back the live row, so tracking needs no materialisation step, and a mutation is
+                visible in memory before <code>SaveChanges</code> journals it.
+            </p>
+            <a class="btn btn-sm" href="efcore">
+                <Icon Name="arrow-right" /> Open the EF Core page
+            </a>
+        </Panel>
+        <Callout Tone="warn" Title="A query returns the row, not a copy:">
+            mutating a tracked entity changes the database in memory straight away. SaveChanges
+            is what commits it as one transaction and one log record, and what moves the index
+            entries onto the new values.
+        </Callout>
+    </div>
+</Section>
+
+<Section Title="Planned" IconName="clock"
+         Lead="Nothing. Every item this roadmap has ever listed is now in the shipped table above, and the list below is what the engine will not grow into instead.">
+    <Callout Tone="ok" Title="The roadmap is empty on purpose:">
+        the surface was scoped up front and is now complete. New work should have to argue for
+        itself against the non-goals rather than inherit a place in a queue.
+    </Callout>
+</Section>
+
+<Section Title="Deliberately not doing this" IconName="close"
+         Lead="A client-side engine earns its speed by refusing work. These omissions are the reason the numbers on the benchmarks page look the way they do.">
+    <div class="grid grid-2">
+        @foreach (var item in NonGoals)
+        {
+            <Panel Title="@item.Title" IconName="close" Sub="@item.Area">
+                <p class="small mb-0">@item.Body</p>
+            </Panel>
+        }
+    </div>
+</Section>
+
+<Section Title="The repository" IconName="layers">
+    <div class="grid grid-sidebar">
+        <Panel Title="Projects" IconName="file" Flush="true">
+            <div class="table-wrap">
+                <table class="data">
+                    <thead><tr><th>Project</th><th>Purpose</th><th class="num">State</th></tr></thead>
+                    <tbody>
+                        @foreach (var project in Projects)
+                        {
+                            <tr>
+                                <td class="mono small">@project.Name</td>
+                                <td class="small">@project.Purpose</td>
+                                <td class="num"><span class="badge @(project.State == "scaffold" ? "warn" : "ok")">@project.State</span></td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </Panel>
+
+        <div class="flex-col gap-lg">
+            <Panel Title="Build and test" IconName="cpu">
+                <CodeBlock ShowHeader="false" Language="bash" Code="@BuildSnippet" />
+            </Panel>
+            <Panel Title="Design rules" IconName="shield">
+                <ul class="ticks">
+                    <li>Reads never touch storage and never allocate a copy.</li>
+                    <li>Durability is asynchronous, explicit when you need it to be.</li>
+                    <li>No reflection at runtime - a generator emits everything.</li>
+                    <li>One writer, because the browser gives you one thread.</li>
+                    <li>Corrupt input fails loudly; unknown input is skipped quietly.</li>
+                    <li>Every public type fits in your head.</li>
+                </ul>
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+@code {
+    private sealed record Feature(string Title, string Icon, string Sub, string Body, string? Proof, string ProofLabel);
+
+    private sealed record Item(string Title, string Area, string Body, string Effort = "");
+
+    private sealed record Project(string Name, string Purpose, string State);
+
+    private static readonly Feature[] Shipped =
+    [
+        new("Tables over live objects", "database", "Bit.BlazeDb",
+            "A primary-key hash index over the row objects themselves, with Insert, Update, Upsert, Delete, Get, TryGet, Contains and Scan. Reads are synchronous method calls with no I/O and no deserialization.",
+            "todos", "See it driving a real app"),
+
+        new("Source-generated schema", "schema", "Bit.BlazeDb.Generators",
+            "An incremental Roslyn generator turns [BlazeDbTable], [BlazeDbKey], [BlazeDbIndex], [BlazeDbOrderedIndex], [BlazeDbField] and [BlazeDbIgnore] into a descriptor with binary serializers, a key extractor and index definitions. No runtime reflection, so trimming and AOT are safe.",
+            "schema", "Inspect the generated descriptor"),
+
+        new("Hash and ordered indexes", "index", "Bit.BlazeDb",
+            "Equality lookups in O(1) and range scans in O(log n) with inclusive or open bounds, maintained automatically on every mutation including rollback.",
+            "indexes", "Try the lookups live"),
+
+        new("Composable query plans", "query", "Bit.BlazeDb.Querying",
+            "One index source, any number of residual predicates, ordering, paging and projection - the primitive the EF Core provider translates LINQ onto, usable directly too.",
+            "queries", "Build a query"),
+
+        new("Atomic transactions", "txn", "Bit.BlazeDb",
+            "An ambient single-writer transaction with commit, rollback and reverse-order undo of both rows and index entries. A committed batch is one log record.",
+            "transactions", "Watch commit and rollback"),
+
+        new("Write-ahead log and snapshots", "shield", "Bit.BlazeDb.Wal",
+            "Group-committed WAL records with per-record CRC32, atomic manifest updates, snapshot compaction, torn-tail truncation and replay on open.",
+            "durability", "Crash it on purpose"),
+
+        new("Pluggable storage", "disk", "Bit.BlazeDb.Storage",
+            "A four-method contract with in-memory and file backends in the core, and an OPFS backend plus Web Locks single-writer election for the browser.",
+            "storage", "Trace the engine's I/O"),
+
+        new("Compact binary format", "binary", "Bit.BlazeDb.Serialization",
+            "Tagged, length-delimited encoding with varints, absent-means-null fields and unknown-field skipping, so old readers survive new writers.",
+            "serialization", "Read the actual bytes"),
+
+        new("Predictable failure", "alert", "Bit.BlazeDb",
+            "A small exception hierarchy under BlazeDbException, with checksum validation on everything persisted and clear rules about what throws versus what returns false.",
+            "errors", "Trigger every one"),
+
+        new("Browser integration", "cpu", "Bit.BlazeDb.Browser",
+            "OPFS access through a [JSImport] ES module - atomic writes through createWritable's swap file - plus Web Locks so a second tab cannot corrupt the first one's files.",
+            "storage", "See the browser notes"),
+
+        new("Unique constraints", "shield", "Bit.BlazeDb",
+            "A uniqueness flag on hash and ordered indexes, checked before anything is mutated so a rejected write leaves the table and its indexes untouched. Null values are exempt, as everywhere else in the indexing layer.",
+            null, ""),
+
+        new("Compound indexes", "index", "Bit.BlazeDb",
+            "[BlazeDbCompoundIndex] and [BlazeDbCompoundOrderedIndex] build an index keyed by a value tuple, so a filter on several members resolves to one lookup. Ordered ones sort lexicographically, which keeps a leading-key prefix a single contiguous scan.",
+            null, ""),
+
+        new("Streaming query results", "query", "Bit.BlazeDb.Querying",
+            "ExecuteAsync hands control back to the browser every N rows, so scanning a large table cannot freeze rendering on WebAssembly's single thread. Filters, ordering and paging apply exactly as in the synchronous path.",
+            null, ""),
+
+        new("Encryption at rest", "lock", "Bit.BlazeDb.Storage",
+            "An IBlazeDbStorage decorator that seals every write into an AES-GCM frame, keeping appends genuine appends. The file name is bound in as associated data, and a torn trailing frame is ignored while a tampered one is reported as corruption.",
+            null, ""),
+
+        new("Quota-aware persistence", "disk", "Bit.BlazeDb",
+            "The engine consults navigator.storage estimates before flushing, compacts when space runs short, and refuses deliberately rather than discovering the limit as a failed append. Data stays intact in memory and the flush can be retried.",
+            null, ""),
+
+        new("IndexedDB fallback", "database", "Bit.BlazeDb.Browser",
+            "A second browser backend for contexts without OPFS, such as Firefox private windows. Same four-method contract, same single-writer lock, so nothing above it changes.",
+            null, ""),
+
+        new("Cross-tab read replicas", "refresh", "Bit.BlazeDb.Browser",
+            "Read-only tabs recover from storage and reload when the writer announces a checkpoint over a BroadcastChannel. Only the signal crosses tabs - the data always travels through storage, so a replica cannot observe an uncommitted state.",
+            null, ""),
+
+        new("EF Core provider", "layers", "Bit.BlazeDb.EntityFrameworkCore",
+            "AddDbContext / UseBlazeDb over the generated descriptors, SaveChanges as one transaction, and LINQ translated onto the query plan with index selection. Queries hand back the live row, so tracking needs no materialization step.",
+            "efcore", "Run it against this database"),
+    ];
+
+    private static readonly Item[] NonGoals =
+    [
+        new("SQL", "query language",
+            "There is no parser, planner or optimiser, and there will not be. Typed primitives compose better in C#, cost nothing at runtime and cannot produce a syntax error at three in the morning."),
+
+        new("Multi-writer concurrency", "concurrency",
+            "The browser gives one thread per tab, so the engine assumes one logical writer and elects it with a Web Lock. Locking pages, MVCC and deadlock detection would all be overhead paid for nothing."),
+
+        new("Server-side scale", "positioning",
+            "The whole dataset lives in memory by design. That is the right trade for a client-side application working with its own user's data, and the wrong one for a shared multi-tenant database."),
+
+        new("Sync and conflict resolution", "distribution",
+            "Replication is an application concern with application-specific merge rules. The engine gives you a durable local store and stays out of the way."),
+
+        new("Lazy loading from storage", "architecture",
+            "Everything is loaded on open. Partial loading would put I/O back on the read path and make every accessor async - the exact cost this engine exists to avoid."),
+
+        new("Full-text search", "features",
+            "Tokenisation, stemming and ranking are a library, not a database feature. Rows are live objects, so a dedicated index over them composes cleanly from outside."),
+    ];
+
+    private static readonly Project[] Projects =
+    [
+        new("Bit.BlazeDb", "The engine: tables, indexes, transactions, WAL and snapshots, storage abstraction. No browser dependency.", "shipped"),
+        new("Bit.BlazeDb.Generators", "Incremental generator for serializers, key extractors and index definitions.", "shipped"),
+        new("Bit.BlazeDb.Browser", "OPFS and IndexedDB backends, Web Locks election, WebCrypto, cross-tab sync.", "shipped"),
+        new("Bit.BlazeDb.EntityFrameworkCore", "The non-relational EF Core provider.", "shipped"),
+        new("Bit.BlazeDb.Demo", "This site: the WebAssembly client and the host that serves it, together with the MCP server at /mcp.", "shipped"),
+        new("Bit.BlazeDb.Tests", "Engine and EF Core provider tests, including crash recovery, torn writes, tracking and query plans.", "shipped"),
+        new("Bit.BlazeDb.Tests.Mcp", "The MCP server, spoken to over the wire the way a client does.", "shipped"),
+        new("Bit.BlazeDb.Tests.E2E", "This site in Chromium: OPFS and IndexedDB persistence across reloads, and every page.", "shipped"),
+        new("Bit.BlazeDb.Benchmarks", "BenchmarkDotNet suite, including comparisons against SQLite.", "shipped"),
+    ];
+
+    private const string BuildSnippet = """
+        # from the bitplatform repository's src folder
+        dotnet build BlazeDb/Bit.BlazeDb.slnx
+        dotnet test --project BlazeDb/Tests/Bit.BlazeDb.Tests
+        dotnet run --project BlazeDb/Bit.BlazeDb.Demo/Server
+        dotnet run -c Release --project BlazeDb/Tests/Bit.BlazeDb.Benchmarks -- --filter "*"
+        """;
+
+}

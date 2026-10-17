@@ -1,0 +1,32 @@
+﻿<div class="callout @Tone @Class">
+    <Icon Name="@ResolvedIcon" />
+    <div class="callout-body">
+        @if (!string.IsNullOrWhiteSpace(Title))
+        {
+            <strong>@Title</strong>@(" ")
+        }
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    /// <summary>One of <c>info</c>, <c>ok</c>, <c>warn</c>, <c>err</c> or <c>accent</c>.</summary>
+    [Parameter] public string Tone { get; set; } = "info";
+
+    [Parameter] public string? IconName { get; set; }
+
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string ResolvedIcon => IconName ?? Tone switch
+    {
+        "ok" => "check",
+        "warn" => "alert",
+        "err" => "alert",
+        "accent" => "bolt",
+        _ => "info",
+    };
+}

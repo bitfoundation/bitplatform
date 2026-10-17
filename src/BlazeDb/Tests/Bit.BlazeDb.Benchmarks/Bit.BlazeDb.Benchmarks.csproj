@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net10.0 matches
+             global.json's pinned SDK. -->
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
+        <IsPackable>false</IsPackable>
+        <ServerGarbageCollection>true</ServerGarbageCollection>
+        <!-- BenchmarkDotNet refuses to measure an unoptimized assembly, so keep the JIT-relevant optimizations on
+             even when the project is built without -c Release. Numbers should still come from a Release run. -->
+        <Optimize>true</Optimize>
+        <!-- Not a unit-test project: it's a console harness run manually (dotnet run -c Release), so it
+             deliberately does NOT set IsTestProject. -->
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+        <!-- The baseline every number is measured against: native SQLite, in memory, with prepared statements. -->
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.13" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazeDb\Bit.BlazeDb.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazeDb.EntityFrameworkCore\Bit.BlazeDb.EntityFrameworkCore.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazeDb.Generators\Bit.BlazeDb.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+</Project>

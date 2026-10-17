@@ -1,0 +1,534 @@
+﻿@page "/schema"
+@inject DemoDbService Db
+
+<PageTitle>Schema &amp; codegen - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Engine" IconName="schema" Title="Schema comes from your types"
+            Lead="A Roslyn incremental generator turns an annotated partial class into a table descriptor, binary serializers, a key extractor and index definitions - all at compile time, so nothing is reflected at runtime.">
+    <span class="chip"><Icon Name="cpu" /> Trimming &amp; AOT safe</span>
+    <span class="chip"><Icon Name="index" /> @TodoEntry.Table.Indexes.Count index definitions generated</span>
+    <span class="chip"><Icon Name="code" /> 10 compile-time diagnostics</span>
+</PageHeader>
+
+<Section Title="The model this whole site runs on" IconName="code"
+         Lead="One class covers every property kind the generator supports, both index kinds, a custom index name and an ignored property.">
+    <div class="grid grid-2">
+        <CodeBlock Title="Data/DemoModels.cs" Code="@ModelSource" />
+        <div class="flex-col gap-lg">
+            <CodeBlock Title="Generated: TodoEntry.BlazeDb.g.cs (shape)" Code="@GeneratedSource" />
+            <Callout Tone="accent" Title="Why a generator rather than reflection?">
+                Emitting the reader, writer and key extractor as ordinary C# means the wasm linker can
+                trim everything unused, there is no startup cost to build metadata, and native AOT works.
+            </Callout>
+        </div>
+    </div>
+</Section>
+
+<Section Title="The generated descriptor, inspected live" IconName="database"
+         Lead="These values are read from the actual static members the generator produced for this build.">
+    <div class="grid grid-2">
+        <Panel Title="TodoEntry.Table" IconName="layers" Sub="the generated descriptor">
+            <dl class="kv">
+                <dt>Name</dt>
+                <dd>"@TodoEntry.Table.Name"</dd>
+                <dt>Key type</dt>
+                <dd>Guid</dd>
+                <dt>KeySelector</dt>
+                <dd>static row =&gt; row.Id</dd>
+                <dt>BlazeDbRowWriter</dt>
+                <dd>__BlazeWriteRow</dd>
+                <dt>BlazeDbRowReader</dt>
+                <dd>__BlazeReadRow</dd>
+                <dt>Indexes</dt>
+                <dd>@TodoEntry.Table.Indexes.Count</dd>
+            </dl>
+        </Panel>
+
+        <Panel Title="TodoEntry.Indexes" IconName="index" Sub="one static field per indexed property">
+            <div class="table-wrap">
+                <table class="data">
+                    <thead>
+                        <tr><th>Member</th><th>Kind</th><th>Runtime type</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var index in TodoEntry.Table.Indexes)
+                        {
+                            var name = index.GetType().Name.StartsWith("Hash") ? "hash" : "ordered";
+                            <tr>
+                                <td class="mono strong">@index.Name</td>
+                                <td><span class="badge @(name == "hash" ? "info" : "accent")">@name</span></td>
+                                <td class="mono">@TypeName(index.GetType())</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            <p class="small muted mt-2">
+                <code>ByPriority</code> is named through <code>[BlazeDbIndex(Name = "ByPriority")]</code>; the
+                others default to their property name.
+            </p>
+        </Panel>
+    </div>
+
+    <div class="grid grid-3 mt-2">
+        <StatTile Label="todos rows" IconName="database" Value="@RowCount(TodoEntry.Table.Name)" Note="live table" />
+        <StatTile Label="settings rows" IconName="key" Value="@(Db.IsOpen ? Db.Settings.Count.ToString() : "-")" Note="string keys, explicit field numbers" />
+        <StatTile Label="metrics rows" IconName="gauge" Value="@(_metrics?.Count.ToString() ?? "-")" Note="hand-written descriptor" />
+    </div>
+</Section>
+
+<Section Title="Attributes" IconName="tag" Lead="Eight attributes describe everything the engine needs.">
+    <Panel Flush="true">
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr><th>Attribute</th><th>Target</th><th>Effect</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="mono strong">[BlazeDbTable(name?)]</td>
+                        <td>class · struct</td>
+                        <td>Marks a <code>partial</code> type as a table. The name defaults to the type name and becomes the persisted table identity.</td>
+                    </tr>
+                    <tr>
+                        <td class="mono strong">[BlazeDbKey]</td>
+                        <td>property</td>
+                        <td>Exactly one per table. Must be a non-nullable scalar - <code>int?</code>, <code>string?</code> and <code>byte[]</code> are rejected.</td>
+                    </tr>
+                    <tr>
+                        <td class="mono strong">[BlazeDbIndex]</td>
+                        <td>property</td>
+                        <td>Hash equality index for O(1) <code>Lookup</code> and <code>CountBy</code>. Optional <code>Name</code>.</td>
+                    </tr>
+                    <tr>
+                        <td class="mono strong">[BlazeDbOrderedIndex]</td>
+                        <td>property</td>
+                        <td>Ordered index for <code>OrderBy</code> and <code>Range</code>. A property may carry both index attributes.</td>
+                    </tr>
+                    <tr>
+                        <td class="mono strong">[BlazeDbField(n)]</td>
+                        <td>property</td>
+                        <td>Pins the wire field number. Without it numbers follow declaration order, so reordering properties would break existing data.</td>
+                    </tr>
+                    <tr>
+                        <td class="mono strong">[BlazeDbIgnore]</td>
+                        <td>property</td>
+                        <td>Excluded from serialization entirely. Still a normal property in memory.</td>
+                    </tr>
+                    <tr>
+                        <td class="mono strong">[BlazeDbIndex(Unique = true)]</td>
+                        <td>property</td>
+                        <td>Either index attribute can be unique: a write that would duplicate a non-null value throws <code>BlazeDbUniqueConstraintViolationException</code> before anything is changed.</td>
+                    </tr>
+                    <tr>
+                        <td class="mono strong">[BlazeDbCompoundIndex(name, props…)]</td>
+                        <td>class · struct</td>
+                        <td>One hash index over several properties, keyed by their value tuple, so a filter on all of them is a single lookup. Repeatable; optional <code>Unique</code>.</td>
+                    </tr>
+                    <tr>
+                        <td class="mono strong">[BlazeDbCompoundOrderedIndex(name, props…)]</td>
+                        <td>class · struct</td>
+                        <td>The ordered equivalent: rows sort by the tuple, so a range over a leading-property prefix is one contiguous scan.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </Panel>
+
+    <Callout Tone="ok" Title="Proof that [BlazeDbIgnore] is honoured.">
+        A row with <code>Transient = "@IgnoreProbeInput"</code> was serialized and read back through the
+        generated <code>BlazeDbRowWriter</code>/<code>BlazeDbRowReader</code>; the decoded value is
+        <code>"@_ignoreProbeResult"</code> - the field initialiser, not the value that was written.
+    </Callout>
+</Section>
+
+<Section Title="Supported property types" IconName="binary"
+         Lead="Anything in this table can be a column. Index keys may be any supported scalar; collections cannot be indexed.">
+    <div class="grid grid-2">
+        <Panel Title="Scalars" IconName="check" Flush="true">
+            <div class="table-wrap">
+                <table class="data">
+                    <thead><tr><th>C# type</th><th>Encoding</th></tr></thead>
+                    <tbody>
+                        <tr><td class="mono">bool</td><td class="mono">varint</td></tr>
+                        <tr><td class="mono">sbyte · short · int · long</td><td class="mono">zig-zag varint</td></tr>
+                        <tr><td class="mono">byte · ushort · uint · ulong · char</td><td class="mono">varint</td></tr>
+                        <tr><td class="mono">float</td><td class="mono">fixed32</td></tr>
+                        <tr><td class="mono">double</td><td class="mono">fixed64</td></tr>
+                        <tr><td class="mono">decimal</td><td class="mono">length-delimited</td></tr>
+                        <tr><td class="mono">string</td><td class="mono">length-delimited UTF-8</td></tr>
+                        <tr><td class="mono">Guid</td><td class="mono">length-delimited, 16 bytes</td></tr>
+                        <tr><td class="mono">DateTime</td><td class="mono">fixed64, Kind preserved</td></tr>
+                        <tr><td class="mono">DateTimeOffset</td><td class="mono">length-delimited, 16 bytes</td></tr>
+                        <tr><td class="mono">TimeSpan</td><td class="mono">fixed64 ticks</td></tr>
+                        <tr><td class="mono">any enum</td><td class="mono">varint</td></tr>
+                        <tr><td class="mono">byte[]</td><td class="mono">length-delimited blob</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </Panel>
+
+        <div class="flex-col gap-lg">
+            <Panel Title="Nullable and repeated" IconName="layers">
+                <ul class="small">
+                    <li><code>T?</code> for any supported value scalar - omitted from the wire when null.</li>
+                    <li><code>string?</code> - omitted when null.</li>
+                    <li><code>T[]</code> and <code>List&lt;T&gt;</code> of any supported scalar - written as repeated tags.</li>
+                    <li>
+                        An empty collection writes no tags, so it is indistinguishable from a null one
+                        on the wire. A non-nullable property therefore reads back empty, and a
+                        <code>List&lt;T&gt;?</code> or <code>T[]?</code> reads back <em>null</em> - if that
+                        difference matters, declare the property non-nullable.
+                    </li>
+                </ul>
+            </Panel>
+
+            <Panel Title="Not supported" IconName="alert">
+                <ul class="small">
+                    <li>Nested or complex property types (another class, struct or record).</li>
+                    <li><code>Dictionary&lt;,&gt;</code>, <code>HashSet&lt;T&gt;</code>, <code>IEnumerable&lt;T&gt;</code>.</li>
+                    <li><code>byte[]</code> as a collection element - <code>List&lt;byte[]&gt;</code> is out.</li>
+                    <li>Generic or nested table types.</li>
+                    <li>Inherited properties - only a table type's own properties are serialized.</li>
+                    <li>Properties without both a getter and a setter - silently skipped.</li>
+                    <li>Indexing a collection property.</li>
+                </ul>
+                <p class="small muted mb-0">
+                    Everything in this list is a compile error or a deliberate omission, never a
+                    silent runtime failure.
+                </p>
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+<Section Title="Generator diagnostics" IconName="alert"
+         Lead="Misuse is caught at build time, on the attribute or property at fault. These are the diagnostics the generator can report.">
+    <Panel Flush="true">
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr><th>ID</th><th>Meaning</th><th>Triggered by</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var diagnostic in DiagnosticsCatalog.All)
+                    {
+                        <tr>
+                            <td class="mono strong">@diagnostic.Code @(diagnostic.IsError ? null : "(warning)")</td>
+                            <td>@diagnostic.Title</td>
+                            <td class="mono">@diagnostic.Trigger</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </Panel>
+    <Callout Tone="info" Title="Requirements at a glance.">
+        A table type must be <code>partial</code>, top level, non-generic, have exactly one
+        <code>[BlazeDbKey]</code> and - if it is a class - a parameterless constructor. Records work as long
+        as they are not positional-only.
+    </Callout>
+</Section>
+
+<Section Title="The generator is optional" IconName="key"
+         Lead="A BlazeDbTableDescriptor is a plain object. Write one by hand and positional records, custom comparers and computed keys all become available.">
+    <div class="grid grid-2">
+        <CodeBlock Title="Hand-written descriptor" Code="@ManualSource" />
+
+        <Panel Title="metrics - live, hand-written" IconName="gauge">
+            <Actions>
+                <button class="btn btn-sm" @onclick="AddMetric"><Icon Name="plus" /> Insert</button>
+            </Actions>
+            <ChildContent>
+                @if (_metrics is null)
+                {
+                    <div class="empty">Opening…</div>
+                }
+                else if (_metricRows.Count == 0)
+                {
+                    <div class="empty"><Icon Name="gauge" /><div>No metrics yet - insert one.</div></div>
+                }
+                else
+                {
+                    <div class="table-wrap">
+                        <table class="data">
+                            <thead><tr><th>Id</th><th>Name</th><th class="num">Value</th><th>At</th></tr></thead>
+                            <tbody>
+                                @foreach (var metric in _metricRows)
+                                {
+                                    <tr>
+                                        <td class="mono">@metric.Id</td>
+                                        <td class="mono strong">@metric.Name</td>
+                                        <td class="num mono">@metric.Value.ToString("0.000")</td>
+                                        <td class="mono tiny">@metric.At.ToLocalTime().ToString("HH:mm:ss")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="api-call mt-2">@_metricNote</div>
+                }
+            </ChildContent>
+        </Panel>
+    </div>
+    <Callout Tone="accent" Title="Note the case-insensitive index.">
+        <code>MetricTable.ByName</code> passes <code>StringComparer.OrdinalIgnoreCase</code> to the
+        hash index, which is something attributes cannot express. Hand-written descriptors are the
+        escape hatch for custom comparers.
+    </Callout>
+</Section>
+
+@code {
+    private const string IgnoreProbeInput = "this value is never persisted";
+
+    private BlazeDbTable<int, Metric>? _metrics;
+    private List<Metric> _metricRows = [];
+    private string _metricNote = "";
+    private string _ignoreProbeResult = "";
+    private int _nextMetricId = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var db = await Db.GetDatabaseAsync();
+        _metrics = db.GetTable(MetricTable.Descriptor);
+        _nextMetricId = _metrics.Count == 0 ? 1 : _metrics.Scan().Max(m => m.Id) + 1;
+        RefreshMetrics();
+        _ignoreProbeResult = ProbeIgnoredProperty();
+    }
+
+    private void AddMetric()
+    {
+        if (_metrics is null)
+        {
+            return;
+        }
+
+        var names = new[] { "flush.latency", "wal.bytes", "index.hits", "snapshot.size" };
+        var name = names[_nextMetricId % names.Length];
+
+        _metrics.Upsert(new Metric(_nextMetricId++, name, Random.Shared.NextDouble() * 100, DateTime.UtcNow));
+        RefreshMetrics();
+    }
+
+    private void RefreshMetrics()
+    {
+        if (_metrics is null)
+        {
+            return;
+        }
+
+        _metricRows = _metrics.OrderBy(MetricTable.ByValue, descending: true).ToList();
+
+        var probe = _metricRows.FirstOrDefault();
+        _metricNote = probe is null
+            ? ""
+            : $"metrics.OrderBy(MetricTable.ByValue, descending: true) → {_metricRows.Count} rows\n" +
+              $"metrics.Lookup(MetricTable.ByName, \"{probe.Name.ToUpperInvariant()}\") → " +
+              $"{_metrics.Lookup(MetricTable.ByName, probe.Name.ToUpperInvariant()).Count()} rows (case-insensitive comparer)";
+    }
+
+    /// <summary>Round-trips a row to prove the ignored property is not on the wire.</summary>
+    private static string ProbeIgnoredProperty()
+    {
+        var row = new TodoEntry
+        {
+            Id = Guid.NewGuid(),
+            Title = "ignore probe",
+            Transient = IgnoreProbeInput,
+        };
+
+        var writer = new BlazeDbBufferWriter();
+        TodoEntry.Table.RowWriter(writer, row);
+        var reader = new BlazeDbBufferReader(writer.WrittenSpan);
+        return TodoEntry.Table.RowReader(ref reader).Transient;
+    }
+
+    private string RowCount(string _) => Db.IsOpen ? Db.Todos.Count.ToString("N0") : "-";
+
+    private static string TypeName(Type type)
+    {
+        if (!type.IsGenericType)
+        {
+            return type.Name;
+        }
+
+        var tick = type.Name.IndexOf('`');
+        var name = tick < 0 ? type.Name : type.Name[..tick];
+        var args = string.Join(", ", type.GetGenericArguments().Select(TypeName));
+        return $"{name}<{args}>";
+    }
+
+    private const string ModelSource = """
+        public enum Priority { Low, Normal, High, Critical }
+
+        [BlazeDbTable("todos")]
+        public partial class TodoEntry
+        {
+            [BlazeDbKey]
+            public Guid Id { get; set; }
+
+            public string Title { get; set; } = "";
+            public string? Notes { get; set; }
+
+            [BlazeDbIndex]
+            public bool Done { get; set; }
+
+            [BlazeDbIndex]
+            public string? Category { get; set; }
+
+            [BlazeDbIndex(Name = "ByPriority")]
+            public Priority Priority { get; set; }
+
+            [BlazeDbOrderedIndex]
+            public DateTime CreatedAt { get; set; }
+
+            [BlazeDbOrderedIndex]
+            public int Effort { get; set; }
+
+            public int? Rating { get; set; }
+            public decimal Cost { get; set; }
+            public double Weight { get; set; }
+            public TimeSpan Duration { get; set; }
+            public DateTimeOffset? DueAt { get; set; }
+            public List<string> Tags { get; set; } = [];
+            public int[] Scores { get; set; } = [];
+            public byte[] Payload { get; set; } = [];
+
+            [BlazeDbIgnore]
+            public string Transient { get; set; } = "computed at runtime";
+        }
+
+        // A second table: string key, explicit field numbers.
+        [BlazeDbTable("settings")]
+        public partial class Setting
+        {
+            [BlazeDbField(1)][BlazeDbKey] public string Name { get; set; } = "";
+            [BlazeDbField(2)] public string Value { get; set; } = "";
+            [BlazeDbField(3)] public DateTime UpdatedAt { get; set; }
+        }
+        """;
+
+    private const string GeneratedSource = """
+        // <auto-generated by Bit.BlazeDb.Generators />
+        #nullable enable
+
+        namespace Bit.BlazeDb.Demo.Client.Data
+        {
+            partial class TodoEntry
+            {
+                public static readonly BlazeDbTableDescriptor<Guid, TodoEntry> Table = new(
+                    "todos",
+                    static row => row.Id,
+                    __BlazeWriteRow,
+                    __BlazeReadRow,
+                    __BlazeWriteKey,
+                    __BlazeReadKey,
+                    new BlazeDbIndexDefinition<TodoEntry>[]
+                    {
+                        Indexes.Done,
+                        Indexes.Category,
+                        Indexes.ByPriority,
+                        Indexes.CreatedAt,
+                        Indexes.Effort,
+                    });
+
+                public static class Indexes
+                {
+                    public static readonly BlazeDbHashIndexDefinition<TodoEntry, bool> Done =
+                        new("Done", static row => row.Done);
+
+                    public static readonly BlazeDbHashIndexDefinition<TodoEntry, string?> Category =
+                        new("Category", static row => row.Category);
+
+                    public static readonly BlazeDbHashIndexDefinition<TodoEntry, Priority> ByPriority =
+                        new("ByPriority", static row => row.Priority);
+
+                    public static readonly BlazeDbOrderedIndexDefinition<TodoEntry, DateTime> CreatedAt =
+                        new("CreatedAt", static row => row.CreatedAt);
+
+                    public static readonly BlazeDbOrderedIndexDefinition<TodoEntry, int> Effort =
+                        new("Effort", static row => row.Effort);
+                }
+
+                private static void __BlazeWriteRow(BlazeDbBufferWriter writer, TodoEntry row)
+                {
+                    writer.WriteTag(1, BlazeDbWireType.LengthDelimited);
+                    writer.WriteGuid(row.Id);
+                    writer.WriteTag(2, BlazeDbWireType.LengthDelimited);
+                    writer.WriteString(row.Title);
+                    if (row.Notes is not null) { /* field 3 */ }
+                    // …one branch per property, nulls omitted, collections repeated
+                }
+
+                private static TodoEntry __BlazeReadRow(ref BlazeDbBufferReader reader)
+                {
+                    // tag loop; unknown field numbers are skipped, which is what
+                    // makes older readers tolerate newer writers
+                    while (reader.Remaining > 0)
+                    {
+                        var (field, wire) = reader.ReadTag();
+                        switch (field)
+                        {
+                            case 1: __v1 = reader.ReadGuid(); break;
+                            default: reader.SkipField(wire); break;
+                        }
+                    }
+                    return new TodoEntry { /* … */ };
+                }
+            }
+        }
+        """;
+
+    private const string ManualSource = """
+        public sealed record Metric(int Id, string Name, double Value, DateTime At);
+
+        public static class MetricTable
+        {
+            // A case-insensitive hash index - attributes cannot express this.
+            public static readonly BlazeDbHashIndexDefinition<Metric, string> ByName =
+                new("ByName", static m => m.Name, StringComparer.OrdinalIgnoreCase);
+
+            public static readonly BlazeDbOrderedIndexDefinition<Metric, double> ByValue =
+                new("ByValue", static m => m.Value);
+
+            public static readonly BlazeDbTableDescriptor<int, Metric> Descriptor = new(
+                "metrics",
+                static m => m.Id,
+                WriteRow,
+                ReadRow,
+                static (w, k) => w.WriteVarInt(k),
+                static (ref BlazeDbBufferReader r) => (int)r.ReadVarInt(),
+                [ByName, ByValue]);
+
+            private static void WriteRow(BlazeDbBufferWriter writer, Metric row)
+            {
+                writer.WriteTag(1, BlazeDbWireType.VarInt);
+                writer.WriteVarInt(row.Id);
+                writer.WriteTag(2, BlazeDbWireType.LengthDelimited);
+                writer.WriteString(row.Name);
+                writer.WriteTag(3, BlazeDbWireType.Fixed64);
+                writer.WriteDouble(row.Value);
+                writer.WriteTag(4, BlazeDbWireType.Fixed64);
+                writer.WriteDateTime(row.At);
+            }
+
+            private static Metric ReadRow(ref BlazeDbBufferReader reader)
+            {
+                var id = 0; var name = ""; var value = 0d; var at = default(DateTime);
+                while (reader.Remaining > 0)
+                {
+                    var (field, wireType) = reader.ReadTag();
+                    switch (field)
+                    {
+                        case 1: id = (int)reader.ReadVarInt(); break;
+                        case 2: name = reader.ReadString(); break;
+                        case 3: value = reader.ReadDouble(); break;
+                        case 4: at = reader.ReadDateTime(); break;
+                        default: reader.SkipField(wireType); break;
+                    }
+                }
+                return new Metric(id, name, value, at);
+            }
+        }
+        """;
+}

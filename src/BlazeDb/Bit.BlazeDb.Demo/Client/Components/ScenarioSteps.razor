@@ -1,0 +1,35 @@
+﻿@if (Steps.Count == 0)
+{
+    <div class="empty">
+        <Icon Name="play" />
+        <div>@EmptyText</div>
+    </div>
+}
+else
+{
+    <div class="steps">
+        @foreach (var step in Steps)
+        {
+            <div class="step @step.Tone">
+                <div class="step-num">@step.Number</div>
+                <div class="step-body">
+                    <div class="step-title">@step.Title</div>
+                    @if (!string.IsNullOrWhiteSpace(step.Code))
+                    {
+                        <div class="step-code">@step.Code</div>
+                    }
+                    @if (!string.IsNullOrWhiteSpace(step.Note))
+                    {
+                        <div class="step-note">@step.Note</div>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<ScenarioStep> Steps { get; set; } = [];
+
+    [Parameter] public string EmptyText { get; set; } = "Run a scenario to see what the engine does, step by step.";
+}

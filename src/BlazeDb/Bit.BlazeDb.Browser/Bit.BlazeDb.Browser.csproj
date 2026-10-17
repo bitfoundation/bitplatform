@@ -1,0 +1,104 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <RootNamespace>Bit.BlazeDb.Browser</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsTrimmable>true</IsTrimmable>
+        <!-- The [JSImport] bindings hand spans of the managed heap to JavaScript without a copy. -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Description>Browser storage backends for Bit.BlazeDb: OPFS and IndexedDB, Web Locks single-writer election, a WebCrypto AES-GCM cipher, and cross-tab sync between a writer tab and read-only replicas.</Description>
+        <PackageTags>$(PackageTags);Blazor;WebAssembly;Database;OPFS;IndexedDB;WebCrypto</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazeDb\Bit.BlazeDb.csproj" />
+    </ItemGroup>
+
+    <!-- Keep the build inputs (tsconfig + package manifests) out of the published static web
+         assets while still showing them in the project. -->
+    <ItemGroup>
+        <Content Remove="package*.json;tsconfig.json" />
+        <None Include="package*.json;tsconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TypeScriptFiles Include="Scripts\**\*.ts" />
+        <_BlazeDbJsOutputs Include="wwwroot\bit-blazedb-opfs.js;wwwroot\bit-blazedb-idb.js;wwwroot\bit-blazedb-crypto.js;wwwroot\bit-blazedb-tabs.js" />
+    </ItemGroup>
+
+    <!-- Restores npm packages and compiles the TypeScript modules. Both sub-targets are incremental
+         via their Inputs/Outputs, so this is a no-op when nothing changed. -->
+    <Target Name="BuildBlazeDbJavaScript" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript" />
+
+    <!-- The outputs (wwwroot/bit-blazedb-*.js) are generated, git-ignored files. On a clean build they
+         do not exist when the default "wwwroot/**" Content glob is evaluated, so the static web asset
+         discovery in ResolveProjectStaticWebAssets would miss them and consumers would get a 404 for
+         _content/Bit.BlazeDb.Browser/bit-blazedb-opfs.js. Hooking BeforeTargets="ResolveProjectStaticWebAssets"
+         guarantees they are generated first and then explicitly added to @(Content). The
+         Remove-before-Include keeps each to a single Content entry for builds where the glob already
+         captured them. -->
+    <Target Name="IncludeBlazeDbJavaScriptAsStaticWebAsset"
+            BeforeTargets="ResolveProjectStaticWebAssets"
+            DependsOnTargets="BuildBlazeDbJavaScriptOnce">
+        <ItemGroup>
+            <Content Remove="@(_BlazeDbJsOutputs)" />
+            <Content Include="@(_BlazeDbJsOutputs)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Runs BuildBlazeDbJavaScript through the MSBuild task with TargetFramework removed, so every
+         per-TFM build asks for the same project configuration. MSBuild keeps one result per project and
+         global properties: the first request runs tsc/esbuild, concurrent ones wait for it, and later
+         ones reuse it. A ProjectReference builds this project's inner builds directly (one per
+         referencing target framework, in parallel) without ever running the outer build, so without
+         this each of them would run tsc against the same wwwroot output at once. -->
+    <Target Name="BuildBlazeDbJavaScriptOnce">
+        <MSBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="BuildBlazeDbJavaScript"
+                 RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
+    </Target>
+
+    <!-- In a multi-targeted build, produce the outputs exactly once in the outer (cross-targeting)
+         build, before the per-TFM inner builds are dispatched. -->
+    <Target Name="BuildBlazeDbJavaScriptOnCrossTargeting"
+            BeforeTargets="DispatchToInnerBuilds"
+            Condition="'$(IsCrossTargetingBuild)' == 'true'"
+            DependsOnTargets="BuildBlazeDbJavaScript" />
+
+    <!-- `npm ci` installs exactly what the checked-in package-lock.json pins, and fails fast when the
+         lockfile and package.json drift instead of silently rewriting the lock. -->
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <!-- The output differs per configuration (Release is minified) but lands in the same files, so
+         the sources alone cannot drive the up-to-date check: after a Debug build, a Release build
+         would see the outputs newer than the sources and skip, shipping unminified files (and vice
+         versa). A per-configuration stamp in obj/ makes switching configurations invalidate the check;
+         the stale stamp of the other configuration is deleted so switching back rebuilds too. Each
+         module is minified to a temp file and moved into place, so an interrupted run cannot leave a
+         half-written module behind that the Outputs check then treats as up to date. format=esm keeps
+         the named exports the [JSImport] bindings call, and the target matches tsconfig so the
+         minifier does not raise the syntax level back up. -->
+    <Target Name="BuildJavaScript"
+            Inputs="@(TypeScriptFiles);tsconfig.json"
+            Outputs="@(_BlazeDbJsOutputs);$(BaseIntermediateOutputPath)bit-blazedb.js.$(Configuration).stamp">
+        <ItemGroup>
+            <_BlazeDbStaleJsStamps Include="$(BaseIntermediateOutputPath)bit-blazedb.js.*.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_BlazeDbStaleJsStamps)" />
+        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild %(_BlazeDbJsOutputs.Identity) --minify --format=esm --target=es2020 --outfile=%(_BlazeDbJsOutputs.RelativeDir)%(_BlazeDbJsOutputs.Filename).min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="@(_BlazeDbJsOutputs->'%(RelativeDir)%(Filename).min.js')" DestinationFiles="@(_BlazeDbJsOutputs)" OverwriteReadOnlyFiles="true" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+        <Touch Files="$(BaseIntermediateOutputPath)bit-blazedb.js.$(Configuration).stamp" AlwaysCreate="true" />
+    </Target>
+
+</Project>
