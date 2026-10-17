@@ -170,7 +170,7 @@ public sealed class AssetSelection
 
         foreach (var s in strings)
         {
-            if (s.Length == 0 || s.Length > 4096) continue;
+            if (s.Length == 0) continue;
             if (known.Contains(s)) { Icons.Add(s); continue; }
 
             foreach (var word in s.Split([' ', '\t', '\n', '\r', ',', ';', '"', '\'', '.', ':', '(', ')', '[', ']', '{', '}', '<', '>', '/', '=', '#'], StringSplitOptions.RemoveEmptyEntries))

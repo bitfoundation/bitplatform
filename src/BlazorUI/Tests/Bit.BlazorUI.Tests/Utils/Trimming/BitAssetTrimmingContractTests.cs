@@ -225,6 +225,18 @@ public sealed class BitAssetTrimmingContractTests
         Assert.IsFalse(AssetSelection.IsPresent("BitBut", names), "A name without the star matches whole names only.");
     }
 
+    [TestMethod]
+    public void AGlyphNamedInALongTextShouldBeKept()
+    {
+        // A static html page or a large literal holds far more than one icon's name; the glyphs it names are kept all the same.
+        var selection = new AssetSelection([]);
+        var text = new string('x', 10_000) + " <i class=\"bit-icon bit-icon--Add\"></i> Delete " + new string('y', 10_000);
+
+        selection.SelectIcons([text, ""], ["Add", "Delete", "Edit"], ["bit-icon--"]);
+
+        CollectionAssert.AreEquivalent(new[] { "Add", "Delete" }, selection.Icons.ToList());
+    }
+
     private static PackageAssets LoadAssets(string package)
     {
         var folder = SourceFiles.GetPath(package, "obj", "bit-assets");
