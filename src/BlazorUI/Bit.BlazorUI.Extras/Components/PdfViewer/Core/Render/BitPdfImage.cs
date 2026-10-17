@@ -41,7 +41,7 @@ internal static class BitPdfImage
         {
             data = BitPdfStreamDecoder.Decode(stream, inline);
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             return null;
         }
@@ -82,7 +82,7 @@ internal static class BitPdfImage
             {
                 data = BitPdfCcittFaxDecoder.Decode(data, ReadCcittParams(dict, xref, width, height));
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 return null;
             }
@@ -132,7 +132,7 @@ internal static class BitPdfImage
             byte[] png = BitPdfPngEncoder.EncodeRgba(width, height, rgba);
             return "data:image/png;base64," + Convert.ToBase64String(png);
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             return null;
         }
@@ -420,7 +420,7 @@ internal static class BitPdfImage
         {
             mdata = BitPdfStreamDecoder.Decode(smask);
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             return;
         }
@@ -590,7 +590,7 @@ internal static class BitPdfImage
                 mdata = BitPdfCcittFaxDecoder.Decode(mdata, ReadCcittParams(mask.Dict, xref, mw, mh));
             }
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             return;
         }

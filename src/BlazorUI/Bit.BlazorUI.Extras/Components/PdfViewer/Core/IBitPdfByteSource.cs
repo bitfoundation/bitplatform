@@ -8,14 +8,15 @@ namespace Bit.BlazorUI;
 /// Reads are synchronous; this contract does not perform asynchronous I/O.
 /// </summary>
 /// <remarks>
-/// Borrowed storage must not be mutated or recycled while a consumer retains a
-/// view. The caller of a memory source must keep its input bytes stable during
-/// parsing. A future bounded source must account for held/pinned views and
-/// in-flight buffers, not just the entries remaining in its cache.
+/// Borrowed windows must be disposed after their last use; their storage must not
+/// be mutated or recycled while the window is held. The caller of a memory source
+/// must keep its input bytes stable during parsing. Bounded sources account for
+/// held/pinned views, in-flight buffers and cross-block copies, including storage
+/// retained after eviction or disposal until its final lease is released.
 /// HTTP support will use a dedicated missing-data exception and asynchronous
 /// acquisition outside the engine. Every malformed-content catch-all must let
-/// that signal and cancellation escape; neither may initiate recovery scanning.
-/// The exception, catch filters and retry coordinator belong to that later stage.
+/// that signal, source I/O failures, disposal and cancellation escape; neither may initiate recovery scanning.
+/// The missing-data exception and retry coordinator belong to that later stage.
 /// </remarks>
 internal interface IBitPdfByteSource
 {
@@ -29,10 +30,10 @@ internal interface IBitPdfByteSource
     bool TryGetContiguous(out ReadOnlyMemory<byte> memory);
 
     /// <summary>
-    /// Borrows a read-only view of an exact range, without copying. The entire
+    /// Borrows a scoped read-only window of an exact range. The entire
     /// range must be within the source. The backing storage belongs to the source.
     /// </summary>
-    ReadOnlyMemory<byte> GetMemory(int offset, int length);
+    BitPdfByteSourceWindow GetMemory(int offset, int length);
 
     /// <summary>
     /// Creates an independent cursor over an exact range, or the remainder when

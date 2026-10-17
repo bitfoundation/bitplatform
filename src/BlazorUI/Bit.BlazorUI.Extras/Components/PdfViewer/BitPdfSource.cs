@@ -2,7 +2,7 @@
 
 /// <summary>
 /// Identifies where a PDF document is loaded from. A source is either a byte
-/// buffer already in memory, or a URL the document can be fetched from.
+/// buffer already in memory, a URL, or a factory opening a seekable stream.
 /// </summary>
 public sealed class BitPdfSource
 {
@@ -28,11 +28,13 @@ public sealed class BitPdfSource
     /// <summary><c>true</c> when this source carries an in-memory byte buffer.</summary>
     public bool IsBytes => Bytes is not null;
 
+    internal Func<CancellationToken, Task<Stream>>? StreamFactory { get; private init; }
+
     private BitPdfSource() { }
 
     private BitPdfSource With(Action<Builder> configure)
     {
-        var builder = new Builder { Bytes = Bytes, Url = Url, FileName = FileName, Password = Password, Headers = Headers };
+        var builder = new Builder { Bytes = Bytes, Url = Url, FileName = FileName, Password = Password, Headers = Headers, StreamFactory = StreamFactory };
         configure(builder);
         return new BitPdfSource
         {
@@ -41,11 +43,13 @@ public sealed class BitPdfSource
             FileName = builder.FileName,
             Password = builder.Password,
             Headers = builder.Headers,
+            StreamFactory = builder.StreamFactory,
         };
     }
 
     private sealed class Builder
     {
+        public Func<CancellationToken, Task<Stream>>? StreamFactory { get; set; }
         public byte[]? Bytes { get; set; }
         public string? Url { get; set; }
         public string? FileName { get; set; }
@@ -65,6 +69,31 @@ public sealed class BitPdfSource
     /// </summary>
     public BitPdfSource WithHeaders(IReadOnlyDictionary<string, string>? headers)
         => With(b => b.Headers = headers);
+
+    /// <summary>
+    /// Opens a readable, seekable stream on demand, without buffering the complete PDF.
+    /// The viewer owns each returned stream and disposes it when its load ends.
+    /// </summary>
+    /// <remarks>
+    /// Return a fresh stream for each invocation. Its initial position is the PDF
+    /// origin; its remaining length must fit Int32. Bytes and length must remain
+    /// unchanged while open, and the stream must support synchronous reads. External
+    /// concurrent use is unsupported. Password retries reuse the same stream.
+    /// On a server the factory and stream work run off the circuit. The factory
+    /// receives cancellation when its load is superseded or the viewer is disposed.
+    /// There is no leaveOpen option; a caller needing different ownership can
+    /// return a non-disposing wrapper. Same-length content changes cannot be detected.
+    /// Keep this source in a field: source identity is by reference. Prerendering
+    /// and interactive rendering each open their own stream. The stream-backed
+    /// Document and its raw streams are valid only while that viewer load is active.
+    /// This source is intended for files/server blobs, not IBrowserFile uploads;
+    /// the viewer's upload path continues using FromStreamAsync snapshots. This
+    /// does not provide HTTP Range loading or asynchronous browser network reads.
+    /// The viewer serializes byte copies with rendering and asynchronous helpers.
+    /// Await a browser copy before accessing Document or its raw streams directly.
+    /// </remarks>
+    public static BitPdfSource FromStreamFactory(Func<CancellationToken, Task<Stream>> streamFactory, string? fileName = null)
+        => new() { StreamFactory = streamFactory ?? throw new ArgumentNullException(nameof(streamFactory)), FileName = fileName };
 
     /// <summary>Creates a source from an in-memory byte buffer.</summary>
     public static BitPdfSource FromBytes(byte[] bytes, string? fileName = null)
