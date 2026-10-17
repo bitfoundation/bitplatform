@@ -1,0 +1,276 @@
+﻿@page "/"
+@inject IJSRuntime JS
+
+@* The landing page. It is not a documentation page and does not get the docs shell around it -
+   no nav panel, no "on this page" rail, no reading column (see Layout/MainLayout.razor). Instead
+   it lays out its own full-bleed sections, alternating surfaces, and prints its own index into the
+   docs - which is the job the nav panel would otherwise be doing here.
+
+   Its argument is the workflows: every tile is a page that does a real job end to end in the
+   reader's own browser, so the page points at them rather than describing them at length.
+
+   Its styles live under "Landing page" in wwwroot/css/app.css. *@
+
+<PageTitle>Bmage - browser-side image processing for Blazor</PageTitle>
+
+<div class="homepage">
+
+    @* ── Hero ──────────────────────────────────────────────────────────────── *@
+    <section class="homepage-section hero-section">
+        <div class="homepage-section-content">
+            <div class="hero-copy">
+                <a class="hero-eyebrow" href="/editor">
+                    <Icon Path="@Icons.Sparkle" />
+                    A full image editor component, included
+                </a>
+
+                <h1>Images for Blazor, <span class="accent">processed in C#</span></h1>
+
+                <p class="hero-lead">
+                    Load, crop, resize, adjust, annotate, redact and export images entirely on the
+                    user's device, from strongly typed C#. No server round trips, no base64, no
+                    JavaScript image library.
+                </p>
+
+                <div class="hero-actions">
+                    <a class="btn-primary" href="/getting-started">
+                        Get started
+                        <Icon Path="@Icons.ArrowRight" />
+                    </a>
+                    <a class="btn-secondary" target="_blank" rel="noopener noreferrer"
+                       href="https://github.com/bitfoundation/bitplatform">
+                        <span class="github-mark" aria-hidden="true"></span>
+                        View on GitHub
+                    </a>
+                </div>
+
+                <div class="install-line">
+                    <code><span class="prompt" aria-hidden="true">&gt;&nbsp;</span>@_install</code>
+                    <button type="button" class="install-copy" @onclick="CopyInstallAsync"
+                            aria-label="@(_installCopied ? "Install command copied to the clipboard" : "Copy the install command")">
+                        <Icon Path="@(_installCopied ? Icons.Check : Icons.Copy)" />
+                        @(_installCopied ? "Copied" : "Copy")
+                    </button>
+                </div>
+            </div>
+
+            @* The hero says what the library does; this is where it is shown doing it - one tile per
+               workflow, each a link into a page that runs it on the reader's own image. *@
+            <nav class="hero-stage" aria-label="Workflows">
+                @foreach (var tile in _tiles)
+                {
+                    <a class="hero-tile" href="@($"/{tile.Href}")">
+                        <span class="hero-tile-icon">
+                            <Icon Path="@tile.Icon" />
+                        </span>
+                        <span class="hero-tile-title">@tile.Title</span>
+                        <span class="hero-tile-desc">@tile.Description</span>
+                    </a>
+                }
+            </nav>
+        </div>
+    </section>
+
+    @* ── Quick start ───────────────────────────────────────────────────────── *@
+    <section class="homepage-section alt-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">Quick start</span>
+            <h2>One pipeline, start to finish</h2>
+            <p class="section-lead">
+                That runs in the browser. The original file never leaves it, the phone's rotation
+                is applied, the GPS coordinates are stripped, and the result is a WebP that fits the
+                size budget you asked for.
+            </p>
+
+            <div class="quick-start-body">
+                <CodeSnippet Code="@_quickStart" Language="C#" Expanded="true" />
+            </div>
+        </div>
+    </section>
+
+    @* ── Why ───────────────────────────────────────────────────────────────── *@
+    <section class="homepage-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">Why Bmage</span>
+            <h2>The engine is C#, the browser does what only it can</h2>
+            <p class="section-lead">
+                The resampler, the rasteriser, the colour pipeline, the TrueType text engine and the
+                PNG, JPEG, BMP and GIF codecs are implemented in the library. The browser is used for
+                what only it can do: WebP and AVIF, the clipboard, the camera, and drawing pixels on
+                screen.
+            </p>
+
+            <div class="stat-row">
+                @foreach (var stat in _stats)
+                {
+                    <div class="stat">
+                        <span class="stat-value">@stat.Value</span>
+                        <span class="stat-label">@stat.Label</span>
+                    </div>
+                }
+            </div>
+
+            <p class="section-note">Everything in the box:</p>
+            <div class="badge-list">
+                @foreach (var feature in _features)
+                {
+                    <span class="badge">@feature</span>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* ── What makes it different ───────────────────────────────────────────── *@
+    <section class="homepage-section alt-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">Design</span>
+            <h2>What makes it different</h2>
+            <p class="section-lead">
+                Six decisions run through the whole library. Every card links to the page that shows
+                the decision paying off.
+            </p>
+
+            <div class="feature-grid">
+                @foreach (var feature in _capabilities)
+                {
+                    <a class="feature-card" href="@($"/{feature.Href}")">
+                        <span class="feature-card-icon">
+                            <Icon Path="@feature.Icon" />
+                        </span>
+                        <h3>@feature.Title</h3>
+                        <p>@feature.Description</p>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* ── Every page ────────────────────────────────────────────────────────── *@
+    @* The landing page has no nav panel, so the full index of the docs lives here instead: a
+       reader who arrives at the root should be able to reach any page without first having to
+       find their way into them. It is grouped exactly as the panel groups it, from the same
+       list. *@
+    <section class="homepage-section">
+        <div class="homepage-section-content">
+            <span class="section-eyebrow">Documentation</span>
+            <h2>Explore every page</h2>
+            <p class="section-lead">
+                @NavItem.Docs.Length pages, in the order they are meant to be read. Press
+                <span class="kbd">Ctrl K</span> anywhere on the site to jump straight to one.
+            </p>
+
+            <div class="demo-index">
+                @foreach (var group in NavItem.Groups)
+                {
+                    <div class="demo-index-group">
+                        <h3>
+                            <Icon Path="@group.Icon" />
+                            @group.Category
+                        </h3>
+                        @foreach (var item in group.Items)
+                        {
+                            <a class="demo-index-link" href="@item.Url">@item.Title</a>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    @* ── Closing call to action ────────────────────────────────────────────── *@
+    <section class="homepage-section alt-section cta-section">
+        <div class="homepage-section-content">
+            <h2>Start processing</h2>
+            <p class="section-lead">
+                Bmage is part of bit platform, free and open source. The whole engine lives in the
+                repository, so you can read it, file an issue against it, or send a pull request.
+            </p>
+            <div class="hero-actions">
+                <a class="btn-primary" href="/getting-started">
+                    Get started
+                    <Icon Path="@Icons.ArrowRight" />
+                </a>
+                <a class="btn-secondary" target="_blank" rel="noopener noreferrer"
+                   href="https://github.com/bitfoundation/bitplatform">
+                    <span class="github-mark" aria-hidden="true"></span>
+                    View on GitHub
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+
+@code {
+    /// <summary>A hero or feature tile: a headline capability, its one-line pitch and where it is shown.</summary>
+    private sealed record Tile(string Title, string Description, string Href, string Icon);
+
+    /// <summary>One of the numbers under the pitch, which is the part of it that can be checked.</summary>
+    private sealed record Stat(string Value, string Label);
+
+    private const string _install = "dotnet add package Bit.Bmage.Editor";
+
+    private bool _installCopied;
+
+    private readonly Stat[] _stats =
+    [
+        new(".NET 8+", "Targets .NET 8, 9 and 10"),
+        new("0", "JavaScript image libraries"),
+        new("9", "Worked workflows, with source"),
+        new("MIT", "Free and open source"),
+    ];
+
+    private readonly string[] _features =
+    [
+        "Crop", "Smart crop", "Resize", "Rotate", "Adjustments", "Filters", "Auto levels",
+        "Annotations", "Redaction", "Text", "Drawing", "Undo and redo", "WebP", "AVIF",
+        "Size budgets", "EXIF", "Metadata policies", "Batch", "Capability probing", "Headless",
+    ];
+
+    private readonly Tile[] _tiles =
+    [
+        new("Avatar editor", "Square or circle, sized to a byte budget.", "avatar", Icons.Person),
+        new("Screenshots", "Arrows, steps and redaction that sticks.", "annotate", Icons.Pen),
+        new("Upload optimisation", "Smaller files before they leave the device.", "optimize", Icons.Gauge),
+        new("Product images", "Every catalogue size from one upload.", "product", Icons.Tag),
+    ];
+
+    private readonly Tile[] _capabilities =
+    [
+        new("Non-destructive by construction", "An edit is a list of operations, not a mutated buffer. Undo costs a few hundred bytes, previews are cheap, and any earlier step can be changed.", "pipelines", Icons.Pipeline),
+        new("Real pixels, real C#", "The resampler, rasteriser, colour engine and four codecs are implemented in the library. The browser is used only for WebP and AVIF.", "headless", Icons.Code),
+        new("Large images stay usable", "Editing runs on a proxy sized for the display and replays at full resolution on export, so a 24 megapixel photo does not stall the UI.", "editor", Icons.Crop),
+        new("Privacy is the default", "Metadata is removed unless you ask for it. GPS coordinates never leak into an exported avatar by accident.", "metadata", Icons.Shield),
+        new("Nothing assumed about the browser", "Format support is probed by encoding a pixel. When AVIF is unavailable you are told, not silently handed a PNG.", "capabilities", Icons.Chip),
+        new("Headless first", "Every capability works without the editor component, so the same pipeline runs in an upload handler or a console tool.", "headless", Icons.Server),
+    ];
+
+    private async Task CopyInstallAsync()
+    {
+        try
+        {
+            _installCopied = await JS.InvokeAsync<bool>("bmdCopyToClipboard", _install);
+        }
+        catch
+        {
+            // The command is printed next to the button, so a clipboard the browser refuses to
+            // hand over costs the reader a selection rather than the information.
+            _installCopied = false;
+        }
+    }
+
+    private const string _quickStart = """
+        var result = await processor.ProcessAsync(
+            uploadedFile,
+            ImagePipeline.Create()
+                .AutoOrient()
+                .Cover(512, 512)
+                .Sharpen(0.3f),
+            new ImageExportOptions
+            {
+                Format      = ImageFormat.WebP,
+                Quality     = 0.82,
+                Metadata    = MetadataPolicy.StripSensitive,
+                MaxFileSize = 120 * 1024,
+            });
+        """;
+}

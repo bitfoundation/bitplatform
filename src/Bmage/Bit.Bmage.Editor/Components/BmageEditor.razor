@@ -1,0 +1,965 @@
+﻿@using System.Drawing
+@using Bit.Bmage.Editor.Tools
+@using Bit.Bmage.Operations
+@using Bit.Bmage.Operations.Adjustments
+@using Bit.Bmage.Operations.Transforms
+@implements IAsyncDisposable
+@inject ImageLoader Loader
+@inject ImageExporter Exporter
+@inject IImageCapabilityProvider Capabilities
+@inject Bit.Bmage.Text.FontTextRasterizer FontRasterizer
+@inject BitBmageOptions Options
+
+@*
+    The complete editor. Every visual element is a slot: hosts can replace the toolbar, panels or empty state entirely
+    while keeping the editing engine, or use the defaults and get a working editor in one line of markup.
+*@
+
+<div class="bmg-editor @(Class) @(_capabilities?.Environment == ImageEnvironment.Prerendering ? "bmg-prerender" : null)"
+     style="@Style"
+     dir="@Direction"
+     role="region"
+     aria-label="@(AriaLabel ?? Strings.EditorLabel)"
+     aria-busy="@(_busy ? "true" : "false")">
+
+    @if (Toolbar is not null)
+    {
+        @Toolbar(BuildContext())
+    }
+    else if (ShowToolbar)
+    {
+        <BmageEditorToolbar Context="BuildContext()" />
+    }
+
+    <div class="bmg-editor-body">
+        <div class="bmg-editor-stage">
+            @if (_session is null)
+            {
+                @if (EmptyState is not null)
+                {
+                    @EmptyState
+                }
+                else
+                {
+                    <BmageDropZone Strings="Strings"
+                                   Accept="@AcceptedFileTypes"
+                                   Multiple="false"
+                                   OnFilesSelected="OnFilesSelected" />
+                }
+            }
+            else
+            {
+                <BmageEditorCanvas @ref="_canvas"
+                                   Image="_session.Preview"
+                                   Version="_previewVersion"
+                                   Zoom="_zoom"
+                                   Pan="_pan"
+                                   Strings="Strings"
+                                   Busy="_busy"
+                                   ShowCropOverlay="_tool == EditorToolKind.Crop"
+                                   CropRectangle="_cropRectangle"
+                                   SelectionBounds="SelectionBounds"
+                                   OnDragStart="OnDragStart"
+                                   OnDragMove="OnDragMove"
+                                   OnDragEnd="OnDragEnd"
+                                   OnCropHandleDown="OnCropHandleDown"
+                                   OnZoom="OnZoomGesture"
+                                   OnKeyPressed="OnKeyPressed" />
+            }
+
+            @if (_message is not null)
+            {
+                <div class="bmg-message bmg-message-@(_messageIsError ? "error" : "info")" role="@(_messageIsError ? "alert" : "status")" aria-live="polite">
+                    <span>@_message</span>
+                    <button type="button" class="bmg-message-dismiss" aria-label="@Strings.Cancel" @onclick="() => _message = null">×</button>
+                </div>
+            }
+        </div>
+
+        @if (Panel is not null)
+        {
+            @Panel(BuildContext())
+        }
+        else if (ShowPanel && _session is not null)
+        {
+            <BmageEditorPanel Context="BuildContext()" />
+        }
+    </div>
+
+    @if (Footer is not null)
+    {
+        @Footer(BuildContext())
+    }
+</div>
+
+@code {
+    private ImageEditSession? _session;
+    private BmageEditorCanvas? _canvas;
+    private ImageCapabilities? _capabilities;
+    private EditorToolKind _tool = EditorToolKind.Select;
+    private EditorToolSettings _settings = new();
+    private ToolDrag? _drag;
+    private Annotation? _dragPreview;
+    private Guid? _selectedId;
+    private Vector2 _selectionDragOrigin;
+    private RectangleF? _cropRectangle;
+    private CropHandle? _cropHandle;
+    private RectangleF _cropStart;
+    private AspectRatio? _cropAspect;
+    private double _zoom = 1.0;
+    private Vector2 _pan;
+    private long _previewVersion;
+    private bool _busy;
+    private string? _message;
+    private bool _messageIsError;
+    private CancellationTokenSource? _renderCts;
+    private int _stepCounter;
+    // The Image parameter last loaded. The session holds a copy, so it cannot be compared with the parameter itself.
+    private ImageBuffer? _loadedParameter;
+    private bool _fitPending;
+    private SizeF? _viewport;
+    private Vector2 _panLast;
+
+    /// <summary>The image to edit. Setting this replaces the current session and discards its history.</summary>
+    [Parameter] public ImageBuffer? Image { get; set; }
+
+    /// <summary>Localised strings for every label in the editor.</summary>
+    [Parameter] public BmageEditorStrings Strings { get; set; } = BmageEditorStrings.Default;
+
+    /// <summary>Text direction, "ltr" or "rtl".</summary>
+    [Parameter] public string Direction { get; set; } = "ltr";
+
+    /// <summary>Extra CSS classes on the root element.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Inline styles on the root element.</summary>
+    [Parameter] public string? Style { get; set; }
+
+    /// <summary>Accessible label for the editor region.</summary>
+    [Parameter] public string? AriaLabel { get; set; }
+
+    /// <summary>Show the built-in toolbar. Ignored when <see cref="Toolbar"/> is set.</summary>
+    [Parameter] public bool ShowToolbar { get; set; } = true;
+
+    /// <summary>Show the built-in options panel. Ignored when <see cref="Panel"/> is set.</summary>
+    [Parameter] public bool ShowPanel { get; set; } = true;
+
+    /// <summary>Replaces the toolbar entirely. The context exposes every editor action.</summary>
+    [Parameter] public RenderFragment<BmageEditorContext>? Toolbar { get; set; }
+
+    /// <summary>Replaces the options panel entirely.</summary>
+    [Parameter] public RenderFragment<BmageEditorContext>? Panel { get; set; }
+
+    /// <summary>Content rendered below the editor body.</summary>
+    [Parameter] public RenderFragment<BmageEditorContext>? Footer { get; set; }
+
+    /// <summary>Replaces the "no image loaded" view.</summary>
+    [Parameter] public RenderFragment? EmptyState { get; set; }
+
+    /// <summary>File types offered by the built-in file picker.</summary>
+    [Parameter] public string AcceptedFileTypes { get; set; } = "image/*";
+
+    /// <summary>
+    /// Longest edge used for interactive editing. Larger images are edited through a downscaled proxy and the edit is
+    /// replayed at full resolution on export. Null uses <see cref="BitBmageOptions.MaxInteractiveDimension"/>, or
+    /// 2048 when that is not configured either. Zero edits at full resolution, which is only sensible for small images.
+    /// </summary>
+    [Parameter] public int? MaxProxyDimension { get; set; }
+
+    private int EffectiveProxyDimension => MaxProxyDimension ?? Options.MaxInteractiveDimension ?? 2048;
+
+    /// <summary>Number of undo steps kept.</summary>
+    [Parameter] public int MaxHistoryDepth { get; set; } = 100;
+
+    /// <summary>
+    /// Draws text and step-number annotations. Null uses the <see cref="Bit.Bmage.Text.FontTextRasterizer"/> from
+    /// dependency injection, which renders text once a font has been registered with it.
+    /// </summary>
+    [Parameter] public ITextRasterizer? TextRasterizer { get; set; }
+
+    /// <summary>Export settings used by the built-in save action.</summary>
+    [Parameter] public ImageExportOptions ExportOptions { get; set; } = ImageExportOptions.Png;
+
+    /// <summary>Raised after every edit, with the current document.</summary>
+    [Parameter] public EventCallback<ImageDocument> OnDocumentChanged { get; set; }
+
+    /// <summary>Raised when the user exports, with the encoded result.</summary>
+    [Parameter] public EventCallback<EncodedImage> OnExported { get; set; }
+
+    /// <summary>Raised when an image is loaded into the editor.</summary>
+    [Parameter] public EventCallback<ImageBuffer> OnImageLoaded { get; set; }
+
+    /// <summary>Raised when an operation fails. When not handled, the error is shown in the editor.</summary>
+    [Parameter] public EventCallback<Exception> OnError { get; set; }
+
+    /// <summary>The live editing session, or null when no image is loaded.</summary>
+    public ImageEditSession? Session => _session;
+
+    /// <summary>The current document, or null when no image is loaded.</summary>
+    public ImageDocument? Document => _session?.Document;
+
+    // Annotations live in full-resolution coordinates; the canvas shows the preview, which may be a smaller proxy.
+    private RectangleF? SelectionBounds => _selectedId is { } id && _session?.Document.FindAnnotation(id) is { } a
+        ? ToPreview(a.GetRotatedBounds())
+        : null;
+
+    private Vector2 ToDocument(Vector2 previewPoint) => _session?.PreviewToOutput(previewPoint) ?? previewPoint;
+
+    private RectangleF ToPreview(RectangleF r)
+    {
+        if (_session is not { UsesProxy: true } session) return r;
+        var scale = (float)session.ProxyScale;
+        return new RectangleF(r.X * scale, r.Y * scale, r.Width * scale, r.Height * scale);
+    }
+
+    /// <summary>Preview pixels per document pixel.</summary>
+    private float PreviewScale => _session is { UsesProxy: true } s ? (float)s.ProxyScale : 1f;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _capabilities = await Capabilities.GetAsync();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Image is not null && !ReferenceEquals(_loadedParameter, Image))
+        {
+            _loadedParameter = Image;
+            await LoadImageAsync(Image, takeOwnership: false);
+        }
+        else if (Image is null)
+        {
+            _loadedParameter = null;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Fitting needs the size of the editing area, which only exists once the canvas has rendered.
+        if (!_fitPending || _canvas is null || _session?.Preview is not { } preview) return;
+        _fitPending = false;
+        _viewport = await _canvas.GetViewportSizeAsync();
+        if (_viewport is not { } viewport) return;
+        const float margin = 24;
+        var fit = Math.Min((viewport.Width - margin) / preview.Width, (viewport.Height - margin) / preview.Height);
+        _zoom = Math.Clamp(Math.Min(1.0, fit), 0.05, 32);
+        _pan = new Vector2(
+            (float)((viewport.Width - preview.Width * _zoom) / 2),
+            (float)((viewport.Height - preview.Height * _zoom) / 2));
+        StateHasChanged();
+    }
+
+    private BmageEditorContext BuildContext() => new(this);
+
+    // ---- Loading ----
+
+    private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
+    {
+        if (files.Count == 0) return;
+        await RunAsync(async () =>
+        {
+            var image = await Loader.LoadAsync(files[0]);
+            await LoadImageAsync(image, takeOwnership: true);
+        });
+    }
+
+    /// <summary>Loads an image into the editor, replacing any current session.</summary>
+    public async Task LoadImageAsync(ImageBuffer image, bool takeOwnership = true)
+    {
+        ArgumentNullException.ThrowIfNull(image);
+        _session?.Dispose();
+        // When the caller keeps ownership the session gets a copy, so disposing the session never frees their buffer.
+        var owned = takeOwnership ? image : image.Clone();
+        _session = new ImageEditSession(owned, new ImageEditSessionOptions
+        {
+            MaxProxyDimension = EffectiveProxyDimension,
+            MaxHistoryDepth = MaxHistoryDepth,
+            TextRasterizer = EffectiveTextRasterizer,
+        });
+        _selectedId = null;
+        _cropRectangle = null;
+        _stepCounter = 0;
+        _zoom = 1;
+        _pan = default;
+        await RenderPreviewAsync();
+        FitToWindow();
+        await OnImageLoaded.InvokeAsync(owned);
+        StateHasChanged();
+    }
+
+    /// <summary>Loads an image from any source.</summary>
+    public Task LoadAsync(ImageSource source) => RunAsync(async () =>
+    {
+        var image = await Loader.LoadAsync(source);
+        await LoadImageAsync(image, takeOwnership: true);
+    });
+
+    /// <summary>Loads the image currently on the clipboard, if any.</summary>
+    public Task PasteAsync() => RunAsync(async () =>
+    {
+        var image = await Loader.LoadFromClipboardAsync();
+        if (image is null)
+        {
+            ShowMessage(Strings.NoImage, isError: false);
+            return;
+        }
+        await LoadImageAsync(image, takeOwnership: true);
+    });
+
+    // ---- Preview rendering ----
+
+    private async Task RenderPreviewAsync(Func<ImageDocument, ImageDocument>? overlay = null)
+    {
+        if (_session is null) return;
+
+        // Each render owns exactly one token source and is the only code that disposes it. Superseding renders only
+        // cancel it: disposing another call's source would pull the token out from under a render still using it.
+        var cts = new CancellationTokenSource();
+        CancelQuietly(Interlocked.Exchange(ref _renderCts, cts));
+        try
+        {
+            await _session.RenderPreviewAsync(overlay, cts.Token);
+            _previewVersion++;
+        }
+        catch (OperationCanceledException)
+        {
+            // Superseded by a newer render.
+        }
+        catch (Exception ex)
+        {
+            await ReportErrorAsync(ex);
+        }
+        finally
+        {
+            Interlocked.CompareExchange(ref _renderCts, null, cts);
+            cts.Dispose();
+        }
+    }
+
+    /// <summary>
+    /// Cancels a token source owned by another render. That render may already have finished and disposed it, which
+    /// is not an error: a finished render has nothing left to cancel.
+    /// </summary>
+    private static void CancelQuietly(CancellationTokenSource? cts)
+    {
+        if (cts is null) return;
+        try { cts.Cancel(); }
+        catch (ObjectDisposedException) { /* the owning render already completed */ }
+    }
+
+    private async Task ApplyAndRenderAsync(Func<ImageDocument, ImageDocument> change, string label, bool transient = false)
+    {
+        if (_session is null) return;
+        if (transient) _session.ApplyTransient(change, label);
+        else _session.Apply(change, label);
+        await RenderPreviewAsync();
+        await OnDocumentChanged.InvokeAsync(_session.Document);
+        StateHasChanged();
+    }
+
+    // ---- Pointer interaction ----
+
+    private async Task OnDragStart(CanvasPointerArgs e)
+    {
+        if (_session is null) return;
+        // Crop works on the preview (ApplyCropAsync maps it to full resolution); everything else edits the document.
+        var point = _tool == EditorToolKind.Crop ? e.Point : ToDocument(e.Point);
+        switch (_tool)
+        {
+            case EditorToolKind.Pan:
+                _drag = new ToolDrag { Start = point, Current = point };
+                _panLast = e.Screen;
+                break;
+
+            case EditorToolKind.Crop:
+                if (_cropRectangle is null)
+                {
+                    _cropRectangle = new RectangleF(point.X, point.Y, 0, 0);
+                    _drag = new ToolDrag { Start = point, Current = point, ShiftKey = e.ShiftKey };
+                }
+                else if (e.Handle is null)
+                {
+                    // Dragging inside the existing rectangle moves it.
+                    _cropHandle = _cropRectangle.Value.Contains(point.X, point.Y) ? CropHandle.Move : null;
+                    _cropStart = _cropRectangle.Value;
+                    _drag = new ToolDrag { Start = point, Current = point };
+                }
+                break;
+
+            case EditorToolKind.Select:
+                var hit = _session.Document.HitTest(point, 6f / (float)Math.Max(_zoom, 0.01) / PreviewScale);
+                _selectedId = hit?.Id;
+                if (hit is not null)
+                {
+                    _selectionDragOrigin = point;
+                    _drag = new ToolDrag { Start = point, Current = point };
+                }
+                break;
+
+            case EditorToolKind.Text:
+                WarnIfTextCannotRender();
+                await AddTextAnnotationAsync(point);
+                break;
+
+            case EditorToolKind.Step:
+                WarnIfTextCannotRender();
+                _stepCounter++;
+                await ApplyAndRenderAsync(d => d.AddAnnotation(new StepAnnotation
+                {
+                    Center = point,
+                    Number = _stepCounter,
+                    Radius = Math.Max(12f, _settings.StrokeWidth * 4),
+                    BackgroundColor = _settings.StrokeColor,
+                    TextStyle = _settings.ToTextStyle() with
+                    {
+                        Alignment = TextAlignment.Center,
+                        Baseline = TextBaseline.Middle,
+                        Bold = true,
+                        FillColor = Rgba32.White,
+                    },
+                }), Strings.Step);
+                break;
+
+            default:
+                if (EditorTools.BuiltIn.ContainsKey(_tool))
+                {
+                    _drag = new ToolDrag { Start = point, Current = point, ShiftKey = e.ShiftKey, AltKey = e.AltKey };
+                    _drag.Points.Add(point);
+                }
+                break;
+        }
+        StateHasChanged();
+    }
+
+    private async Task OnDragMove(CanvasPointerArgs e)
+    {
+        if (_session is null || _drag is null) return;
+        var point = _tool == EditorToolKind.Crop ? e.Point : ToDocument(e.Point);
+        _drag.Current = point;
+        _drag.ShiftKey = e.ShiftKey;
+        _drag.AltKey = e.AltKey;
+
+        switch (_tool)
+        {
+            case EditorToolKind.Pan:
+                // Measured on screen: image coordinates move under the pointer as the view pans.
+                _pan += e.Screen - _panLast;
+                _panLast = e.Screen;
+                StateHasChanged();
+                return;
+
+            case EditorToolKind.Crop:
+                UpdateCropRectangle(point);
+                StateHasChanged();
+                return;
+
+            case EditorToolKind.Select when _selectedId is { } id:
+            {
+                var delta = point - _selectionDragOrigin;
+                if (delta.LengthSquared() < 0.01f) return;
+                _selectionDragOrigin = point;
+                var annotation = _session.Document.FindAnnotation(id);
+                if (annotation is null || annotation.IsLocked) return;
+                await ApplyAndRenderAsync(d => d.UpdateAnnotation(annotation.Translate(delta.X, delta.Y)), Strings.Select, transient: true);
+                return;
+            }
+
+            default:
+                if (EditorTools.BuiltIn.TryGetValue(_tool, out var tool))
+                {
+                    if (_tool == EditorToolKind.Draw) AddSmoothedPoint(point);
+                    _dragPreview = tool.BuildPreview(_drag, _settings);
+                    await RenderWithPreviewAsync();
+                }
+                return;
+        }
+    }
+
+    private async Task OnDragEnd(CanvasPointerArgs e)
+    {
+        if (_session is null || _drag is null) return;
+        var drag = _drag;
+        _drag = null;
+        _cropHandle = null;
+        _dragPreview = null;
+
+        switch (_tool)
+        {
+            case EditorToolKind.Pan or EditorToolKind.Crop:
+                StateHasChanged();
+                return;
+
+            case EditorToolKind.Select:
+                if (_selectedId is not null) _session.Commit(Strings.Select);
+                StateHasChanged();
+                return;
+
+            default:
+                if (EditorTools.BuiltIn.TryGetValue(_tool, out var tool))
+                {
+                    drag.Current = ToDocument(e.Point);
+                    var annotation = tool.BuildFinal(drag, _settings);
+                    if (annotation is not null)
+                    {
+                        await ApplyAndRenderAsync(d => d.AddAnnotation(annotation with { Opacity = _settings.Opacity }), ToolLabel(_tool));
+                        _selectedId = annotation.Id;
+                    }
+                    else
+                    {
+                        await RenderPreviewAsync();
+                        StateHasChanged();
+                    }
+                }
+                return;
+        }
+    }
+
+    /// <summary>
+    /// Renders the preview with the in-progress shape drawn on top, without touching the document or history.
+    /// </summary>
+    private async Task RenderWithPreviewAsync()
+    {
+        if (_session is null) return;
+        var preview = _dragPreview;
+        if (preview is null) { await RenderPreviewAsync(); return; }
+        // Drawn as an overlay, so the document and its history never contain a half-finished shape.
+        await RenderPreviewAsync(d => d.AddAnnotation(preview));
+        StateHasChanged();
+    }
+
+    /// <summary>Adds a freehand point, skipping ones too close to the last to keep the stroke small and smooth.</summary>
+    private void AddSmoothedPoint(Vector2 point)
+    {
+        if (_drag is null) return;
+        var minimumSpacing = 1.5f / (float)Math.Max(_zoom, 0.05) / PreviewScale;
+        if (_drag.Points.Count > 0 && Vector2.Distance(_drag.Points[^1], point) < minimumSpacing) return;
+        _drag.Points.Add(point);
+    }
+
+    private async Task AddTextAnnotationAsync(Vector2 point)
+    {
+        // A real editor would open an inline text box; the built-in flow adds placeholder text the user then edits
+        // through the panel, which keeps the component free of a modal dialog.
+        var annotation = new TextAnnotation
+        {
+            Text = Strings.Text,
+            Position = point,
+            Style = _settings.ToTextStyle(),
+        };
+        await ApplyAndRenderAsync(d => d.AddAnnotation(annotation), Strings.Text);
+        _selectedId = annotation.Id;
+    }
+
+    /// <summary>
+    /// Text and step numbers are drawn as glyph outlines, which needs a font. Without one they would be added but
+    /// invisible, so say why instead of leaving the user to wonder.
+    /// </summary>
+    private void WarnIfTextCannotRender()
+    {
+        if (EffectiveTextRasterizer is null) ShowMessage(Strings.TextNeedsFont, isError: false);
+    }
+
+    /// <summary>
+    /// The rasteriser given to the session. The injected font rasteriser throws when asked to draw without a font, which
+    /// would fail every render containing text, so it is only used once a font has been registered; until then text is
+    /// skipped and <see cref="WarnIfTextCannotRender"/> explains why.
+    /// </summary>
+    private ITextRasterizer? EffectiveTextRasterizer => TextRasterizer ?? (FontRasterizer.HasFonts ? FontRasterizer : null);
+
+    private void UpdateCropRectangle(Vector2 point)
+    {
+        if (_session is null) return;
+        var bounds = new RectangleF(0, 0, _session.Preview?.Width ?? _session.SourceSize.Width, _session.Preview?.Height ?? _session.SourceSize.Height);
+        if (_cropHandle is { } handle && handle != CropHandle.Move)
+        {
+            var r = _cropStart;
+            var left = r.Left; var top = r.Top; var right = r.Right; var bottom = r.Bottom;
+            if (handle is CropHandle.TopLeft or CropHandle.Left or CropHandle.BottomLeft) left = point.X;
+            if (handle is CropHandle.TopRight or CropHandle.Right or CropHandle.BottomRight) right = point.X;
+            if (handle is CropHandle.TopLeft or CropHandle.Top or CropHandle.TopRight) top = point.Y;
+            if (handle is CropHandle.BottomLeft or CropHandle.Bottom or CropHandle.BottomRight) bottom = point.Y;
+            var rect = RectangleF.FromLTRB(MathF.Min(left, right), MathF.Min(top, bottom), MathF.Max(left, right), MathF.Max(top, bottom));
+            _cropRectangle = ApplyAspect(Clamp(rect, bounds));
+        }
+        else if (_cropHandle == CropHandle.Move && _drag is not null)
+        {
+            var delta = point - _drag.Start;
+            var moved = new RectangleF(_cropStart.X + delta.X, _cropStart.Y + delta.Y, _cropStart.Width, _cropStart.Height);
+            moved.X = Math.Clamp(moved.X, bounds.Left, Math.Max(bounds.Left, bounds.Right - moved.Width));
+            moved.Y = Math.Clamp(moved.Y, bounds.Top, Math.Max(bounds.Top, bounds.Bottom - moved.Height));
+            _cropRectangle = moved;
+        }
+        else if (_drag is not null)
+        {
+            _cropRectangle = ApplyAspect(Clamp(_drag.Rectangle, bounds));
+        }
+    }
+
+    private RectangleF ApplyAspect(RectangleF rect)
+    {
+        if (_cropAspect is not { } aspect || rect.Width <= 0 || rect.Height <= 0) return rect;
+        var target = aspect.Value;
+        var current = rect.Width / rect.Height;
+        if (current > target) rect.Width = rect.Height * (float)target;
+        else rect.Height = rect.Width / (float)target;
+        return rect;
+    }
+
+    private static RectangleF Clamp(RectangleF rect, RectangleF bounds)
+        => RectangleF.FromLTRB(
+            Math.Clamp(rect.Left, bounds.Left, bounds.Right),
+            Math.Clamp(rect.Top, bounds.Top, bounds.Bottom),
+            Math.Clamp(rect.Right, bounds.Left, bounds.Right),
+            Math.Clamp(rect.Bottom, bounds.Top, bounds.Bottom));
+
+    private async Task OnCropHandleDown(CropHandleArgs e)
+    {
+        _cropHandle = e.Handle;
+        _cropStart = _cropRectangle ?? default;
+        _drag = new ToolDrag { Start = e.Pointer.Point, Current = e.Pointer.Point };
+        await Task.CompletedTask;
+    }
+
+    private void OnZoomGesture(ZoomArgs e)
+    {
+        var next = Math.Clamp(_zoom * e.Factor, 0.05, 32);
+        // Keep the focal point stationary on screen.
+        var before = e.Focus * (float)_zoom;
+        var after = e.Focus * (float)next;
+        _pan += before - after;
+        _zoom = next;
+        StateHasChanged();
+    }
+
+    private async Task OnKeyPressed(KeyboardEventArgs e)
+    {
+        if (_session is null) return;
+        var ctrl = e.CtrlKey || e.MetaKey;
+        switch (e.Key)
+        {
+            case "z" or "Z" when ctrl && !e.ShiftKey:
+                Undo();
+                await RenderPreviewAsync();
+                break;
+            case "y" or "Y" when ctrl:
+            case "z" or "Z" when ctrl && e.ShiftKey:
+                Redo();
+                await RenderPreviewAsync();
+                break;
+            case "Delete" or "Backspace" when _selectedId is { } id:
+                await DeleteAnnotationAsync(id);
+                break;
+            case "Escape":
+                _selectedId = null;
+                if (_tool == EditorToolKind.Crop) _cropRectangle = null;
+                break;
+            case "ArrowLeft" or "ArrowRight" or "ArrowUp" or "ArrowDown" when _selectedId is { } moveId:
+            {
+                var step = e.ShiftKey ? 10f : 1f;
+                var delta = e.Key switch
+                {
+                    "ArrowLeft" => new Vector2(-step, 0),
+                    "ArrowRight" => new Vector2(step, 0),
+                    "ArrowUp" => new Vector2(0, -step),
+                    _ => new Vector2(0, step),
+                };
+                var annotation = _session.Document.FindAnnotation(moveId);
+                if (annotation is not null && !annotation.IsLocked)
+                    await ApplyAndRenderAsync(d => d.UpdateAnnotation(annotation.Translate(delta.X, delta.Y)), Strings.Select);
+                break;
+            }
+            case "+" or "=":
+                OnZoomGesture(new ZoomArgs(1.2, ViewCentre()));
+                break;
+            case "-" or "_":
+                OnZoomGesture(new ZoomArgs(1 / 1.2, ViewCentre()));
+                break;
+            case "0" when ctrl:
+                FitToWindow();
+                break;
+        }
+        StateHasChanged();
+    }
+
+    /// <summary>The image point at the centre of the visible area, used as the focus of non-pointer zooming.</summary>
+    private Vector2 ViewCentre()
+    {
+        var viewport = _viewport ?? (_session?.Preview is { } p ? new SizeF((float)(p.Width * _zoom), (float)(p.Height * _zoom)) : SizeF.Empty);
+        return (new Vector2(viewport.Width / 2, viewport.Height / 2) - _pan) / (float)_zoom;
+    }
+
+    // History labels are shown to the user, so they come from the localised strings rather than the enum names.
+    private string ToolLabel(EditorToolKind kind) => kind switch
+    {
+        EditorToolKind.Draw => Strings.Draw,
+        EditorToolKind.Line => Strings.Line,
+        EditorToolKind.Arrow => Strings.Arrow,
+        EditorToolKind.Rectangle => Strings.Rectangle,
+        EditorToolKind.Ellipse => Strings.Ellipse,
+        EditorToolKind.Highlight => Strings.Highlight,
+        EditorToolKind.Redact => Strings.Redact,
+        EditorToolKind.Text => Strings.Text,
+        EditorToolKind.Step => Strings.Step,
+        _ => kind.ToString(),
+    };
+
+    // ---- Public actions, also used by custom toolbars ----
+
+    /// <summary>The active tool.</summary>
+    public EditorToolKind Tool => _tool;
+
+    /// <summary>The current drawing settings.</summary>
+    public EditorToolSettings Settings => _settings;
+
+    /// <summary>The detected browser capabilities.</summary>
+    public ImageCapabilities? BrowserCapabilities => _capabilities;
+
+    /// <summary>Current zoom factor.</summary>
+    public double Zoom => _zoom;
+
+    /// <summary>True while an operation is running.</summary>
+    public bool IsBusy => _busy;
+
+    /// <summary>The id of the selected annotation, if any.</summary>
+    public Guid? SelectedAnnotationId => _selectedId;
+
+    /// <summary>Switches the active tool.</summary>
+    public void SetTool(EditorToolKind tool)
+    {
+        _tool = tool;
+        if (tool != EditorToolKind.Crop) _cropRectangle = null;
+        if (tool != EditorToolKind.Select) _selectedId = null;
+        StateHasChanged();
+    }
+
+    /// <summary>Updates the drawing settings.</summary>
+    public void SetSettings(EditorToolSettings settings)
+    {
+        _settings = settings ?? new EditorToolSettings();
+        StateHasChanged();
+    }
+
+    /// <summary>Sets the aspect ratio the crop tool enforces, or null for freeform.</summary>
+    public void SetCropAspect(AspectRatio? aspect)
+    {
+        _cropAspect = aspect;
+        if (_cropRectangle is { } r) _cropRectangle = ApplyAspect(r);
+        StateHasChanged();
+    }
+
+    /// <summary>Applies the pending crop rectangle to the document.</summary>
+    public async Task ApplyCropAsync()
+    {
+        if (_session is null || _cropRectangle is not { Width: > 1, Height: > 1 } rect) return;
+        // The rectangle is in preview coordinates; map it back to full resolution.
+        var scale = _session.UsesProxy ? 1 / _session.ProxyScale : 1.0;
+        var full = new Rectangle(
+            (int)Math.Round(rect.X * scale),
+            (int)Math.Round(rect.Y * scale),
+            Math.Max(1, (int)Math.Round(rect.Width * scale)),
+            Math.Max(1, (int)Math.Round(rect.Height * scale)));
+        _cropRectangle = null;
+        _tool = EditorToolKind.Select;
+        await ApplyAndRenderAsync(d => d.AddOperation(new CropOperation(full)), Strings.Crop);
+        FitToWindow();
+    }
+
+    /// <summary>Discards the pending crop rectangle.</summary>
+    public void CancelCrop()
+    {
+        _cropRectangle = null;
+        StateHasChanged();
+    }
+
+    /// <summary>Rotates the image by a multiple of 90 degrees.</summary>
+    public Task RotateAsync(int degrees) => ApplyAndRenderAsync(
+        d => d.AddOperation(OrientationOperation.FromRotation(degrees)),
+        degrees > 0 ? Strings.RotateRight : Strings.RotateLeft);
+
+    /// <summary>Mirrors the image.</summary>
+    public Task FlipAsync(bool horizontal) => ApplyAndRenderAsync(
+        d => d.AddOperation(horizontal ? OrientationOperation.FlipHorizontal : OrientationOperation.FlipVertical),
+        horizontal ? Strings.FlipHorizontal : Strings.FlipVertical);
+
+    /// <summary>Adds or updates an adjustment, replacing any existing one of the same type so sliders stay live.</summary>
+    public Task SetAdjustmentAsync<TOperation>(TOperation? operation, string label, bool transient = false) where TOperation : class, IImageOperation
+        => ApplyAndRenderAsync(d =>
+        {
+            var pipeline = d.Pipeline;
+            var index = -1;
+            for (var i = 0; i < pipeline.Count; i++)
+            {
+                if (pipeline[i] is TOperation) { index = i; break; }
+            }
+            if (operation is null || operation.IsIdentity)
+                return index >= 0 ? d.WithPipeline(pipeline.RemoveAt(index)) : d;
+            return d.WithPipeline(index >= 0 ? pipeline.Replace(index, operation) : pipeline.Add(operation));
+        }, label, transient);
+
+    /// <summary>Adds an arbitrary operation.</summary>
+    public Task AddOperationAsync(IImageOperation operation, string? label = null)
+        => ApplyAndRenderAsync(d => d.AddOperation(operation), label ?? operation.Name);
+
+    /// <summary>Adds an annotation.</summary>
+    public Task AddAnnotationAsync(Annotation annotation, string? label = null)
+        => ApplyAndRenderAsync(d => d.AddAnnotation(annotation), label ?? annotation.Kind);
+
+    /// <summary>Replaces an annotation, matched by id.</summary>
+    public Task UpdateAnnotationAsync(Annotation annotation, bool transient = false)
+        => ApplyAndRenderAsync(d => d.UpdateAnnotation(annotation), annotation.Kind, transient);
+
+    /// <summary>Removes an annotation.</summary>
+    public async Task DeleteAnnotationAsync(Guid id)
+    {
+        if (_selectedId == id) _selectedId = null;
+        await ApplyAndRenderAsync(d => d.RemoveAnnotation(id), Strings.Delete);
+    }
+
+    /// <summary>Selects an annotation, or clears the selection when null.</summary>
+    public void SelectAnnotation(Guid? id)
+    {
+        _selectedId = id;
+        StateHasChanged();
+    }
+
+    /// <summary>Undoes the last edit.</summary>
+    public void Undo()
+    {
+        _session?.Undo();
+        _selectedId = null;
+        _ = RenderAndNotifyAsync();
+    }
+
+    /// <summary>Redoes the last undone edit.</summary>
+    public void Redo()
+    {
+        _session?.Redo();
+        _selectedId = null;
+        _ = RenderAndNotifyAsync();
+    }
+
+    /// <summary>Jumps to an entry in the history, as the history panel does.</summary>
+    public Task GoToHistoryAsync(int index)
+    {
+        if (_session is null || index < 0 || index >= _session.History.Entries.Count) return Task.CompletedTask;
+        _session.History.GoTo(index);
+        _selectedId = null;
+        return RenderAndNotifyAsync();
+    }
+
+    /// <summary>Discards every edit.</summary>
+    public void Reset()
+    {
+        _session?.Reset();
+        _selectedId = null;
+        _cropRectangle = null;
+        _stepCounter = 0;
+        _ = RenderAndNotifyAsync();
+    }
+
+    private async Task RenderAndNotifyAsync()
+    {
+        await RenderPreviewAsync();
+        if (_session is not null) await OnDocumentChanged.InvokeAsync(_session.Document);
+        StateHasChanged();
+    }
+
+    /// <summary>Sets the zoom, keeping the point at the centre of the view where it is.</summary>
+    public void SetZoom(double zoom)
+    {
+        var next = Math.Clamp(zoom, 0.05, 32);
+        OnZoomGesture(new ZoomArgs(next / _zoom, ViewCentre()));
+    }
+
+    /// <summary>Zooms and pans so the whole image is visible and centred, never enlarging it past 100%.</summary>
+    public void FitToWindow()
+    {
+        // Measured after the next render, when the canvas and its container exist.
+        _fitPending = true;
+        StateHasChanged();
+    }
+
+    /// <summary>Renders the edit at full resolution and encodes it.</summary>
+    public async Task<EncodedImage?> ExportAsync(ImageExportOptions? options = null)
+    {
+        if (_session is null) return null;
+        EncodedImage? result = null;
+        await RunAsync(async () =>
+        {
+            using var full = await _session.RenderFullAsync();
+            result = await Exporter.EncodeAsync(full, options ?? ExportOptions);
+            await OnExported.InvokeAsync(result);
+        });
+        return result;
+    }
+
+    /// <summary>Renders, encodes and downloads the edit.</summary>
+    public async Task DownloadAsync(string fileName, ImageExportOptions? options = null)
+    {
+        var encoded = await ExportAsync(options);
+        if (encoded is not null) await RunAsync(() => Exporter.DownloadAsync(encoded, fileName).AsTask());
+    }
+
+    /// <summary>Copies the exported image to the clipboard as PNG, which is the only format browsers reliably accept.</summary>
+    public Task CopyToClipboardAsync() => RunAsync(async () =>
+    {
+        if (_session is null) return;
+        using var full = await _session.RenderFullAsync();
+        var encoded = await Exporter.EncodeAsync(full, ImageExportOptions.Png);
+        await Exporter.CopyToClipboardAsync(encoded);
+    });
+
+    private async Task RunAsync(Func<Task> action)
+    {
+        _busy = true;
+        _message = null;
+        StateHasChanged();
+        try
+        {
+            await action();
+        }
+        catch (Exception ex)
+        {
+            await ReportErrorAsync(ex);
+        }
+        finally
+        {
+            _busy = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task ReportErrorAsync(Exception ex)
+    {
+        if (OnError.HasDelegate)
+        {
+            await OnError.InvokeAsync(ex);
+            return;
+        }
+        ShowMessage(ex switch
+        {
+            ImageLimitExceededException => Strings.ImageTooLarge,
+            ImageDecodeException => Strings.UnsupportedFormat,
+            ImageCapabilityException c => c.Message,
+            ImageEncodeException => Strings.ExportFailed,
+            _ => Strings.LoadFailed,
+        }, isError: true);
+    }
+
+    private void ShowMessage(string message, bool isError)
+    {
+        _message = message;
+        _messageIsError = isError;
+        StateHasChanged();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        // Cancel but do not dispose: the token source belongs to the render that created it, which disposes it on
+        // the way out. Disposing it here would race that render.
+        CancelQuietly(Interlocked.Exchange(ref _renderCts, null));
+        _session?.Dispose();
+        _session = null;
+        await ValueTask.CompletedTask;
+    }
+}

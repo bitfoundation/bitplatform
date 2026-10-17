@@ -1,0 +1,81 @@
+﻿@* The docs navigation. A sticky column beside the content on wide screens and a drawer over it on
+   narrow ones - the switch is entirely in CSS, so the same markup and the same state serve both.
+
+   The index is grouped rather than flat. Twenty entries in one run is a list to be read from the
+   top, and a reader almost always arrives wanting one of them for a reason: to make something
+   spring, to make something leave, to make something follow the pointer. The groups say which is
+   which, and they come from NavItem itself, so a page is filed once. *@
+
+<nav id="nav-panel" class="nav-panel @(IsOpen ? "open" : null)" aria-label="Documentation">
+    <div class="nav-panel-search">
+        <Icon Path="@Icons.Search" />
+        <input type="search" placeholder="Filter pages" aria-label="Filter pages"
+               value="@_filter" @oninput="OnFilterInput" disabled="@Disabled" />
+    </div>
+
+    @foreach (var group in _visibleGroups)
+    {
+        <div class="nav-group">
+            @* The icon is the group's, not the page's: twenty rows of icons would be twenty things
+               to look past, but seven marks down the left of the panel give the eye somewhere to
+               land when it is looking for the right part of the docs rather than the right page. *@
+            <p class="nav-group-title" id="@GroupId(group.Category)">
+                <Icon Path="@group.Icon" />
+                @group.Category
+            </p>
+
+            <ul class="nav-panel-list" aria-labelledby="@GroupId(group.Category)">
+                @foreach (var item in group.Items)
+                {
+                    <li>
+                        @* Match.All throughout: every href is a distinct leaf route with nothing
+                           nested under it, and prefix matching would light up "Layout" the moment
+                           a "LayoutSomething" route existed. *@
+                        <NavLink href="@item.Href" Match="NavLinkMatch.All">
+                            @item.Title
+                        </NavLink>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+
+    @if (_visibleGroups.Length == 0)
+    {
+        <span class="nav-panel-empty" role="status">No page matches &ldquo;@_filter&rdquo;.</span>
+    }
+</nav>
+
+@code {
+    /// <summary>Whether the drawer is open. Ignored above the breakpoint, where the panel is always in place.</summary>
+    [Parameter] public bool IsOpen { get; set; }
+
+    /// <summary>Disables the filter box while the prerendered markup is still waiting for the runtime.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    private string _filter = "";
+    private (string Category, string Icon, NavItem[] Items)[] _visibleGroups = NavItem.Groups;
+
+    private static string GroupId(string category)
+        => $"nav-group-{category.ToLowerInvariant().Replace(' ', '-')}";
+
+    private void OnFilterInput(ChangeEventArgs e)
+    {
+        _filter = e.Value?.ToString() ?? "";
+
+        if (_filter.Trim() is not { Length: > 0 } term)
+        {
+            _visibleGroups = NavItem.Groups;
+            return;
+        }
+
+        // A group whose every page has been filtered out is dropped rather than left as a heading
+        // over nothing - which would read as "these exist but are hidden" instead of "no match".
+        _visibleGroups =
+        [
+            .. NavItem.Groups
+                .Select(group => (group.Category, group.Icon, Items: group.Items.Where(i => i.Matches(term)).ToArray()))
+                .Where(group => group.Items.Length > 0)
+        ];
+    }
+}

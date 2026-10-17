@@ -1,0 +1,354 @@
+﻿@page "/getting-started"
+@implements IAsyncDisposable
+@inject ImageExporter Exporter
+
+@* The first page of the docs: which package, how to register it, the one stylesheet, and the first
+   image - with that first-image snippet runnable right here against the generated sample, so the
+   page ends on something the reader has seen work rather than on something they have to trust. *@
+
+<PageTitle>Getting started - Bit.Bmage</PageTitle>
+
+<h1>Getting started</h1>
+
+<p class="page-intro">
+    Bmage is <strong>browser-side image processing for Blazor</strong>: load, transform, annotate and
+    export images on the user's device from strongly typed C#. Pick a package, register the
+    services, and an image is three calls away.
+</p>
+
+<div class="demo-section">
+    <h2>Pick a package</h2>
+    <p>Each package includes the ones below it, so install the top one you need.</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Packages">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Package</th><th scope="col">Use it when</th><th scope="col">Depends on</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>Bit.Bmage.Editor</code></th><td>You want the <code>BmageEditor</code> component</td><td><code>Bit.Bmage</code></td></tr>
+                <tr><th scope="row"><code>Bit.Bmage</code></th><td>You want browser codecs, loading and export, but your own UI</td><td><code>Bit.Bmage.Core</code></td></tr>
+                <tr><th scope="row"><code>Bit.Bmage.Core</code></th><td>You want the engine with no Blazor dependency at all</td><td>nothing</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <CodeSnippet Code="dotnet add package Bit.Bmage.Editor" Language="Shell" Expanded="true" />
+    <p>
+        All three target .NET 8, 9 and 10. Everything works on Blazor WebAssembly and on Interactive
+        Auto once interactive; Interactive Server works too, with pixel data crossing the circuit.
+        <a href="/hosting">Hosting models</a> covers each.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Register the services</h2>
+    <p>
+        In <code>Program.cs</code> of the project that runs in the browser. For a Blazor Web App using
+        WebAssembly or Auto render modes that is the client project - and the server project too when
+        it prerenders, or when any component uses Interactive Server.
+    </p>
+    <CodeSnippet Code="@RegisterSnippet" Language="C#" Expanded="true" />
+    <p>
+        This registers <code>ImageLoader</code>, <code>ImageExporter</code>,
+        <code>IImageCapabilityProvider</code> and <code>ImageProcessorFactory</code>. It does not
+        register <code>ImageProcessor</code> itself: in a browser the processor can only be built once
+        the browser's codec support has been probed, which is asynchronous - so you ask the factory
+        for one when you need the lower-level API.
+    </p>
+    <CodeSnippet Code="@FactorySnippet" Language="Razor" />
+    <p>
+        Services are scoped. In WebAssembly a scope lasts for the whole application; in Server there
+        is one per circuit, so browser state is never shared between users.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Add the stylesheet</h2>
+    <p>
+        Only <code>Bit.Bmage.Editor</code> needs one. Link it from <code>App.razor</code> in a Blazor
+        Web App, or from <code>wwwroot/index.html</code> in a standalone WebAssembly app. The browser
+        bridge script is imported on demand by the library - there is no script tag to add.
+    </p>
+    <CodeSnippet Code="@StylesheetSnippet" Language="HTML" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Your first image</h2>
+    <p>
+        Decode with the browser's codecs (honouring the phone's EXIF rotation), process the decoded
+        pixels, and encode - preferring WebP, falling back where it is unavailable.
+    </p>
+    <CodeSnippet Code="@FirstImageSnippet" Language="Razor" Expanded="true" />
+
+    <h3>Run it here</h3>
+    <p>
+        The same pipeline, run in your browser against a generated 1200 &times; 800 scene - no upload
+        involved.
+    </p>
+    <div class="sample-row">
+        <button type="button" class="btn btn-accent" disabled="@(_busy || IsHydrating)" @onclick="RunAsync">
+            <Icon Path="@Icons.Play" />
+            Run the snippet
+        </button>
+        @if (_busy)
+        {
+            <span class="working" role="status">Running&hellip;</span>
+        }
+    </div>
+    @if (_error is not null)
+    {
+        <div class="alert alert-error first-image-result" role="alert">@_error</div>
+    }
+    @if (_preview is not null && _encoded is not null)
+    {
+        <div class="preview-row first-image-result">
+            <img class="preview-image first-image" src="@_preview" alt="The generated sample scene, processed by the snippet" />
+            <div class="stat-grid first-image-stats" role="status">
+                <div class="stat">
+                    <span class="stat-label">Output</span>
+                    <span class="stat-value">@_width &times; @_height</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Format</span>
+                    <span class="stat-value">@_encoded.Format.ToString().ToUpperInvariant()</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Size</span>
+                    <span class="stat-value">@Display.Bytes(_encoded.Length)</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Took</span>
+                    <span class="stat-value">@_elapsed.TotalMilliseconds.ToString("0") ms</span>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Two things that are easy to miss</h2>
+    <p>
+        <strong>Dispose your images.</strong> An <code>ImageBuffer</code> holds pooled memory: a 4000
+        &times; 3000 image is 48 MB. <code>using</code> returns it to the pool immediately instead of
+        waiting for a collection. Buffers you receive from <code>LoadAsync</code>,
+        <code>ExecuteAsync</code> and <code>RenderFullAsync</code> are yours to dispose; buffers exposed
+        as properties, such as <code>ImageEditSession.Preview</code>, are not.
+    </p>
+    <p>
+        <strong>Prefer object URLs to data URLs.</strong> <code>CreateObjectUrlAsync</code> hands the
+        browser the bytes directly; base64 inflates them by a third and forces them through the DOM as
+        a string. Release object URLs with <code>ReleaseObjectUrlAsync</code>, or dispose the
+        exporter, which releases every URL it created.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>The full editor instead</h2>
+    <p>
+        If what you want is an editing UI rather than a pipeline, the editor is one component. It
+        fills its container, and a container with no height collapses to nothing - so give it one.
+    </p>
+    <CodeSnippet Code="@EditorSnippet" Language="Razor" Expanded="true" />
+    <p>
+        <a href="/editor">The editor</a> page has it running, with theming, localisation and the
+        full parameter reference.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>When things run</h2>
+    <p>
+        Browser features need a live browser. During prerendering there is not one yet, so call them
+        from <code>OnAfterRenderAsync</code> or an event handler rather than from
+        <code>OnInitializedAsync</code>.
+    </p>
+    <CodeSnippet Code="@WhenSnippet" Language="C#" Expanded="true" />
+    <p>
+        <code>IImageCapabilityProvider.GetAsync</code> is deliberately forgiving here: with no browser
+        reachable it returns the managed capability set with <code>Environment</code> set to
+        <code>Prerendering</code> rather than throwing, so a prerendered page still renders something
+        sensible and detects properly once interactive. Every page on this site is prerendered that way.
+    </p>
+</div>
+
+@code {
+    private string? _preview;
+    private EncodedImage? _encoded;
+    private int _width;
+    private int _height;
+    private TimeSpan _elapsed;
+    private bool _busy;
+    private string? _error;
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    private const string RegisterSnippet = """
+        using Bit.Bmage;   // AddBitBmageServices and AddBitBmageHeadlessServices live here
+
+        builder.Services.AddBitBmageServices();
+
+        // Or, with options:
+        builder.Services.AddBitBmageServices(options =>
+        {
+            // Refuse anything larger than this before decoding, to protect against decompression bombs.
+            options.Limits = ImageLimits.Default with { MaxPixels = 40_000_000 };
+
+            // Largest upload accepted from a file input.
+            options.MaxSourceBytes = 32 * 1024 * 1024;
+
+            // Longest edge used for interactive editing; larger images edit through a proxy.
+            options.MaxInteractiveDimension = 2048;
+        });
+        """;
+
+    private const string FactorySnippet = """
+        @inject ImageProcessorFactory ProcessorFactory
+
+        @code {
+            // Inside an event handler or OnAfterRenderAsync, never during prerendering.
+            async Task UseTheProcessor()
+            {
+                var processor = await ProcessorFactory.GetAsync();
+                // processor.ProcessAsync, ProcessBatchAsync, Identify, ...
+            }
+        }
+        """;
+
+    private const string StylesheetSnippet = """
+        <link rel="stylesheet" href="_content/Bit.Bmage.Editor/bit-bmage-editor.css" />
+        """;
+
+    private const string FirstImageSnippet = """
+        @page "/upload"
+        @inject ImageLoader Loader
+        @inject ImageExporter Exporter
+
+        <InputFile OnChange="OnChange" accept="image/*" />
+
+        @if (_preview is not null)
+        {
+            <img src="@_preview" alt="Processed preview" />
+            <p>@_size bytes</p>
+        }
+
+        @code {
+            private string? _preview;
+            private long _size;
+
+            private async Task OnChange(InputFileChangeEventArgs e)
+            {
+                // Decode with the browser's codecs, honouring the phone's EXIF rotation.
+                using var image = await Loader.LoadAsync(e.File);
+
+                // Process on the decoded pixels.
+                using var processed = await ImagePipeline.Create()
+                    .MaxSize(800, 800)
+                    .Sharpen(0.3f)
+                    .ExecuteAsync(image);
+
+                // Encode, preferring WebP but falling back where it is unavailable.
+                var encoded = await Exporter.EncodeWithFallbackAsync(
+                    processed,
+                    [ImageFormat.WebP, ImageFormat.Jpeg],
+                    new ImageExportOptions { Quality = 0.85 });
+
+                _size = encoded.Length;
+                _preview = await Exporter.CreateObjectUrlAsync(encoded);
+            }
+        }
+        """;
+
+    private const string EditorSnippet = """
+        @page "/edit"
+
+        <div style="height: 70vh">
+            <BmageEditor @ref="_editor" OnExported="OnExported" />
+        </div>
+
+        <button @onclick="Save">Save</button>
+
+        @code {
+            private BmageEditor? _editor;
+
+            private Task Save() => _editor!.DownloadAsync("edited",
+                new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 });
+
+            private void OnExported(EncodedImage image)
+            {
+                // Also called when the user exports from the editor's own panel.
+            }
+        }
+        """;
+
+    private const string WhenSnippet = """
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (!firstRender) return;
+            _capabilities = await Capabilities.GetAsync();
+            StateHasChanged();
+        }
+        """;
+
+    private async Task RunAsync()
+    {
+        _busy = true;
+        _error = null;
+        StateHasChanged();
+        // Let the busy state paint before the drawing and processing start.
+        await Task.Yield();
+
+        try
+        {
+            var started = System.Diagnostics.Stopwatch.StartNew();
+
+            // The scene stands in for LoadAsync(e.File): the rest is the snippet, line for line.
+            using var image = SampleImages.Landscape();
+
+            using var processed = await ImagePipeline.Create()
+                .MaxSize(800, 800)
+                .Sharpen(0.3f)
+                .ExecuteAsync(image);
+
+            var encoded = await Exporter.EncodeWithFallbackAsync(
+                processed,
+                [ImageFormat.WebP, ImageFormat.Jpeg],
+                new ImageExportOptions { Quality = 0.85 });
+
+            started.Stop();
+
+            await ReleasePreviewAsync();
+            _preview = await Exporter.CreateObjectUrlAsync(encoded);
+            _encoded = encoded;
+            _width = processed.Width;
+            _height = processed.Height;
+            _elapsed = started.Elapsed;
+        }
+        catch (Exception ex)
+        {
+            _error = $"The snippet failed: {ex.Message}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ReleasePreviewAsync()
+    {
+        if (_preview is null) return;
+        var url = _preview;
+        _preview = null;
+        await Exporter.ReleaseObjectUrlAsync(url);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            await ReleasePreviewAsync();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The page is going away with the URL it would release.
+        }
+    }
+}
