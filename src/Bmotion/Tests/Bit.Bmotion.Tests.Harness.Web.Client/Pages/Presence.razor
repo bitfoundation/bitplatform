@@ -1,0 +1,105 @@
+﻿@page "/presence"
+
+@* Exit animations: BmotionAnimatePresence (Sync and PopLayout), BmotionPresenceSwitch (Wait and Sync) and
+   BmotionPresenceGroup (keyed list, Sync and PopLayout). Every exit is 0.4s, long enough to observe the element
+   still in the DOM mid-exit. *@
+
+<HarnessHeader Title="Presence" Ready="Ready" OnLog="BindLog" />
+
+<h2>AnimatePresence</h2>
+<section class="row">
+    <button id="sync-toggle" @onclick="() => Change(() => _sync = !_sync)">toggle</button>
+    <BmotionAnimatePresence IsPresent="_sync" OnExitComplete='() => Log("sync:exited")'>
+        <Bmotion Initial="Bm.To(opacity: 0)"
+                 Animate="Bm.To(opacity: 1)"
+                 Exit="Bm.To(opacity: 0, x: 60)"
+                 Transition="Bm.Tween(0.4, BmEase.Linear)"
+                 OnAnimationComplete='_ => Log("sync:entered")'>
+            <div id="sync" class="small"></div>
+        </Bmotion>
+    </BmotionAnimatePresence>
+</section>
+
+<section class="row">
+    <button id="pop-toggle" @onclick="() => Change(() => _pop = !_pop)">toggle</button>
+    <div style="position: relative; display: flex; flex-direction: column; gap: 4px">
+        <BmotionAnimatePresence IsPresent="_pop" Mode="BmPresenceMode.PopLayout" OnExitComplete='() => Log("pop:exited")'>
+            <Bmotion Animate="Bm.To(opacity: 1)"
+                     Exit="Bm.To(opacity: 0)"
+                     Transition="Bm.Tween(0.4, BmEase.Linear)"
+                     OnAnimationStart='_ => Armed("pop")'>
+                <div id="pop" class="small"></div>
+            </Bmotion>
+        </BmotionAnimatePresence>
+        <div id="pop-sibling" class="small" style="background: #333"></div>
+    </div>
+</section>
+
+<h2>PresenceSwitch</h2>
+<section class="row">
+    <button id="switch-next" @onclick="() => Change(() => _page++)">next</button>
+    <div id="switch-wait">
+        <BmotionPresenceSwitch Item="_page" Context="p" OnExitComplete='() => Log("wait:exited")'>
+            <Bmotion Initial="Bm.To(opacity: 0)"
+                     Animate="Bm.To(opacity: 1)"
+                     Exit="Bm.To(opacity: 0)"
+                     Transition="Bm.Tween(0.4, BmEase.Linear)"
+                     OnAnimationStart='_ => Armed($"wait{p}")'>
+                <div class="page small" id="wait-@p">@p</div>
+            </Bmotion>
+        </BmotionPresenceSwitch>
+    </div>
+    <div id="switch-sync">
+        <BmotionPresenceSwitch Item="_page" Context="p" Mode="BmPresenceMode.Sync">
+            <Bmotion Initial="Bm.To(opacity: 0)"
+                     Animate="Bm.To(opacity: 1)"
+                     Exit="Bm.To(opacity: 0)"
+                     Transition="Bm.Tween(0.4, BmEase.Linear)"
+                     OnAnimationStart='_ => Armed($"sync{p}")'>
+                <div class="page small" id="sync-@p">@p</div>
+            </Bmotion>
+        </BmotionPresenceSwitch>
+    </div>
+</section>
+
+<h2>PresenceGroup</h2>
+<section>
+    <button id="group-add" @onclick="() => Change(() => _items.Add(++_next))">add</button>
+    <button id="group-remove-first" @onclick="() => Change(() => { if (_items.Count > 0) { _removed = _items[0]; _items.RemoveAt(0); } })">remove first</button>
+    <button id="group-readd" @onclick="() => Change(() => { if (_removed is int r && !_items.Contains(r)) _items.Insert(0, r); })">re-add</button>
+    <div class="list" id="group">
+        <BmotionPresenceGroup Items="_items" Context="item" OnExitComplete='() => Log("group:exited")'>
+            <Bmotion Initial="Bm.To(opacity: 0, x: -20)"
+                     Animate="Bm.To(opacity: 1, x: 0)"
+                     Exit="Bm.To(opacity: 0, x: 40)"
+                     Transition="Bm.Tween(0.4, BmEase.Linear)"
+                     OnAnimationComplete='_ => Log($"group:entered:{item}")'>
+                <div class="item" id="g-@item">@item</div>
+            </Bmotion>
+        </BmotionPresenceGroup>
+    </div>
+</section>
+
+<section>
+    <button id="popgroup-remove-first" @onclick="() => Change(() => { if (_popItems.Count > 0) _popItems.RemoveAt(0); })">remove first</button>
+    <div class="list" id="popgroup">
+        <BmotionPresenceGroup Items="_popItems" Context="item" Mode="BmPresenceMode.PopLayout" OnExitComplete='() => Log("popgroup:exited")'>
+            <Bmotion Animate="Bm.To(opacity: 1)"
+                     Exit="Bm.To(opacity: 0)"
+                     Transition="Bm.Tween(0.4, BmEase.Linear)"
+                     OnAnimationStart='_ => Armed($"pg{item}")'>
+                <div class="item" id="pg-@item">@item</div>
+            </Bmotion>
+        </BmotionPresenceGroup>
+    </div>
+</section>
+
+@code {
+    private bool _sync = true;
+    private bool _pop = true;
+    private int _page = 1;
+    private int _next = 3;
+    private int? _removed;
+    private readonly List<int> _items = [1, 2, 3];
+    private readonly List<int> _popItems = [1, 2, 3];
+}

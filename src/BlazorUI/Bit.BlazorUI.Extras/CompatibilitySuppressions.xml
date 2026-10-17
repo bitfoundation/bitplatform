@@ -612,6 +612,20 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFullCalendarChangeNotifier.get_RefusalReporter</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFullCalendarChangeNotifier.ReportRefusal(Bit.BlazorUI.BitFullCalendarChangeRefusal)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.GetCurrentTimeLineOffsetHours(System.Int32)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.Extras.dll</Right>
@@ -1032,6 +1046,20 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFullCalendarChangeNotifier.get_RefusalReporter</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFullCalendarChangeNotifier.ReportRefusal(Bit.BlazorUI.BitFullCalendarChangeRefusal)</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitFullCalendarHelpers.GetCurrentTimeLineOffsetHours(System.Int32)</Target>
     <Left>lib/net8.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net8.0/Bit.BlazorUI.Extras.dll</Right>
@@ -1446,6 +1474,20 @@
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitErrorBoundary.HasNotBeenSet(System.String)</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFullCalendarChangeNotifier.get_RefusalReporter</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.Extras.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.Extras.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFullCalendarChangeNotifier.ReportRefusal(Bit.BlazorUI.BitFullCalendarChangeRefusal)</Target>
     <Left>lib/net9.0/Bit.BlazorUI.Extras.dll</Left>
     <Right>lib/net9.0/Bit.BlazorUI.Extras.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

@@ -346,7 +346,7 @@ public class PrerenderTests
     }
 
     [TestMethod]
-    public void TakeOver_GestureRevertsToTheAnimateTarget()
+    public async Task TakeOver_GestureRevertsToTheAnimateTarget()
     {
         using var ctx = new BmotionTestContext();
         var state = ctx.AddBunitPersistentComponentState();
@@ -355,8 +355,8 @@ public class PrerenderTests
         UseInteractiveRender(ctx);
 
         var cut = RenderFadeUp(ctx, ps => ps.Add(p => p.WhileHover, Bm.To(scale: 1.1)));
-        cut.InvokeAsync(() => cut.Instance.OnPointerEnter()).GetAwaiter().GetResult();
-        cut.InvokeAsync(() => cut.Instance.OnPointerLeave()).GetAwaiter().GetResult();
+        await cut.InvokeAsync(() => cut.Instance.OnPointerEnter());
+        await cut.InvokeAsync(() => cut.Instance.OnPointerLeave());
 
         // The base the hover layer reverts to is the Animate target, as if it had been played.
         Assert.AreEqual("1", ctx.Engine.GetCurrentStyles("box")!["opacity"]);

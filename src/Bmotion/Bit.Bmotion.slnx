@@ -12,7 +12,12 @@
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
+    <Project Path="Tests/Bit.Bmotion.Tests.E2E/Bit.Bmotion.Tests.E2E.csproj" />
     <Project Path="Tests/Bit.Bmotion.Tests.Mcp/Bit.Bmotion.Tests.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/Tests/Harness/">
+    <Project Path="Tests/Bit.Bmotion.Tests.Harness.Web.Client/Bit.Bmotion.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Tests/Bit.Bmotion.Tests.Harness.Web/Bit.Bmotion.Tests.Harness.Web.csproj" />
   </Folder>
   <Project Path="Bit.Bmotion/Bit.Bmotion.csproj" />
 </Solution>

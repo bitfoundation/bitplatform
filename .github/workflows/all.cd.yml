@@ -53,10 +53,28 @@ jobs:
     with:
       prerelease_packages: ${{ inputs.prerelease_packages }}
 
+  blex_demo:
+    name: blex demo
+    if: inputs.server
+    uses: ./.github/workflows/blex.demo.cd.yml
+    secrets: inherit
+
   bmotion_demo:
     name: bmotion demo
     if: inputs.server
     uses: ./.github/workflows/bmotion.demo.cd.yml
+    secrets: inherit
+
+  bink_demo:
+    name: bink demo
+    if: inputs.server
+    uses: ./.github/workflows/bink.demo.cd.yml
+    secrets: inherit
+
+  bonboarding_demo:
+    name: bonboarding demo
+    if: inputs.server
+    uses: ./.github/workflows/bonboarding.demo.cd.yml
     secrets: inherit
 
   brouter_demo:

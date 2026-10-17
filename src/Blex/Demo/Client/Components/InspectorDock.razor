@@ -1,0 +1,169 @@
+﻿@using System.Text.Json
+@implements IDisposable
+@inject BlexManager Manager
+@inject ActionFeed Feed
+@inject BlexHistory History
+@inject ErrorLog Errors
+@inject DemoGuard Guard
+
+@*
+    The docs site is itself a Blex app, so this dock shows the real pipeline: every action you
+    dispatch anywhere on the site, the live global state tree, the undo stack and any isolated
+    pipeline error. Nothing here is mocked.
+*@
+<aside class="dock @(_open ? "dock--open" : null)">
+    <button type="button" class="dock__handle" @onclick="() => _open = !_open">
+        <span class="dock__handle-label">Inspector</span>
+        <span class="dock__handle-count">@Feed.TotalSeen</span>
+        <span class="dock__handle-caret">@(_open ? "▾" : "▴")</span>
+    </button>
+
+    @if (_open)
+    {
+        <div class="dock__body">
+            <div class="dock__tabs" role="tablist">
+                @foreach (var tab in Tabs)
+                {
+                    <button type="button"
+                            role="tab"
+                            class="dock__tab @(_tab == tab ? "dock__tab--active" : null)"
+                            @onclick="() => _tab = tab">
+                        @tab
+                        @if (tab == "Errors" && Errors.Errors.Count > 0)
+                        {
+                            <span class="dock__tab-badge">@Errors.Errors.Count</span>
+                        }
+                    </button>
+                }
+            </div>
+
+            <div class="dock__panel">
+                @switch (_tab)
+                {
+                    case "Actions":
+                        <div class="dock__toolbar">
+                            <span class="muted">@Feed.TotalSeen dispatched since load</span>
+                            <button type="button" class="btn btn-ghost btn-sm" @onclick="Feed.Clear">Clear</button>
+                        </div>
+                        @if (Feed.Entries.Count == 0)
+                        {
+                            <p class="dock__empty">No actions yet. Interact with a demo.</p>
+                        }
+                        else
+                        {
+                            <ol class="feed">
+                                @foreach (var entry in Feed.Entries)
+                                {
+                                    <li class="feed__row">
+                                        <span class="feed__seq">#@entry.Sequence</span>
+                                        <span class="feed__store">@entry.Store</span>
+                                        <span class="feed__action">@entry.Action</span>
+                                        @if (!string.IsNullOrEmpty(entry.Args))
+                                        {
+                                            <span class="feed__args">@entry.Args</span>
+                                        }
+                                        <span class="feed__time">@entry.At.ToLocalTime().ToString("HH:mm:ss")</span>
+                                    </li>
+                                }
+                            </ol>
+                        }
+                        break;
+
+                    case "State":
+                        <div class="dock__toolbar">
+                            <span class="muted">@Manager.Stores.Count stores · live global tree</span>
+                        </div>
+                        <pre class="dock__json"><code>@CodeHighlighter.Highlight(StateJson, "json")</code></pre>
+                        break;
+
+                    case "History":
+                        <div class="dock__toolbar">
+                            <button type="button" class="btn btn-sm" disabled="@(!History.CanUndo)" @onclick="History.Undo">
+                                Undo @History.NextUndoLabel
+                            </button>
+                            <button type="button" class="btn btn-sm" disabled="@(!History.CanRedo)" @onclick="History.Redo">
+                                Redo @History.NextRedoLabel
+                            </button>
+                            <button type="button" class="btn btn-ghost btn-sm" @onclick="History.Clear">Clear</button>
+                        </div>
+                        <dl class="stat-grid">
+                            <div><dt>Undo depth</dt><dd>@History.UndoCount</dd></div>
+                            <div><dt>Redo depth</dt><dd>@History.RedoCount</dd></div>
+                            <div><dt>Max entries</dt><dd>@History.MaxEntries</dd></div>
+                        </dl>
+                        <p class="muted small">
+                            Undo and redo restore every store at once and never record a new action,
+                            so stepping back does not pollute the history.
+                        </p>
+                        break;
+
+                    case "Errors":
+                        <div class="dock__toolbar">
+                            <span class="muted">options.OnError sink</span>
+                            <button type="button" class="btn btn-ghost btn-sm" @onclick="Errors.Clear">Clear</button>
+                        </div>
+                        @if (Errors.Errors.Count == 0)
+                        {
+                            <p class="dock__empty">No isolated errors. Blex would have written these to Console.Error without a handler.</p>
+                        }
+                        else
+                        {
+                            <ul class="err-list">
+                                @foreach (var err in Errors.Errors)
+                                {
+                                    <li>
+                                        <span class="err-list__source">@err.Source</span>
+                                        <span class="err-list__detail">@err.Detail</span>
+                                        <span class="err-list__msg">@err.Exception.Message</span>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                        break;
+                }
+            </div>
+
+            @if (Guard.IsReadOnly)
+            {
+                <div class="dock__banner">
+                    Read-only guard is ON - middleware is vetoing every action
+                    (@Guard.BlockedCount blocked).
+                    <button type="button" class="btn btn-sm" @onclick="() => Guard.IsReadOnly = false">Turn off</button>
+                </div>
+            }
+        </div>
+    }
+</aside>
+
+@code {
+    private static readonly string[] Tabs = ["Actions", "State", "History", "Errors"];
+    private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
+
+    private bool _open;
+    private string _tab = "Actions";
+    private IDisposable? _actions;
+
+    private string StateJson => Manager.CaptureGlobalState().ToJsonString(Indented);
+
+    protected override void OnInitialized()
+    {
+        _actions = Manager.Subscribe(_ => Refresh());
+        Manager.StateRestored += Refresh;
+        Feed.Changed += Refresh;
+        History.Changed += Refresh;
+        Errors.Changed += Refresh;
+        Guard.Changed += Refresh;
+    }
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        _actions?.Dispose();
+        Manager.StateRestored -= Refresh;
+        Feed.Changed -= Refresh;
+        History.Changed -= Refresh;
+        Errors.Changed -= Refresh;
+        Guard.Changed -= Refresh;
+    }
+}

@@ -43,7 +43,7 @@ public partial class McpProxyService : IAsyncDisposable
         - ZiggyCreatures/FusionCache: hybrid caching, L2 cache backplane, distributed locking, OpenTelemetry integration and cache factory configuration.
         - keycloak/keycloak: Keycloak and realm configuration.
         - microsoft/agent-framework: agent creation, multi agent orchestration, workflows, tools and function calling, MCP, A2A communication, memory and context, and provider integrations.
-        Do not ask it about the bit platform libraries themselves: BlazorUI, Bmotion, Butil, Bswup and Brouter each have
+        Do not ask it about the bit platform libraries themselves: BlazorUI, Bmotion, Bink, Bonboarding, Blex, Butil, Bswup and Brouter each have
         their own dedicated tools on this server, and those are written from the library rather than inferred from it.
         """;
 
@@ -51,7 +51,7 @@ public partial class McpProxyService : IAsyncDisposable
     /// Ends the description of every CodebaseMemory tool: an agent may also have a codebase-memory server of its
     /// own, which answers about its own project.
     /// </summary>
-    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites and the build time projects, and none of the bit libraries: BlazorUI, Bmotion, Brouter, Butil and Bswup each answer for themselves through their own tools on this server, so a question about a component, a theme, an animation, routing or the service worker goes to those rather than to a search here.";
+    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites, the build time projects and two bit libraries, Besql (src/Besql) and BlazorES2019 (src/BlazorES2019), but none of the other bit libraries: BlazorUI, Bmotion, Bink, Bonboarding, Blex, Brouter, Butil and Bswup each answer for themselves through their own tools on this server, so a question about a component, a theme, an animation, a drawing canvas, a product tour, state management, routing or the service worker goes to those rather than to a search here.";
 
     /// <summary>
     /// Every tool of this upstream takes a project argument naming the index to answer from, a deployment

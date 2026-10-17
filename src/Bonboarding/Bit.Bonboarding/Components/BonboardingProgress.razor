@@ -1,0 +1,58 @@
+﻿@namespace Bit.Bonboarding
+
+@* Progress indicator. Rendered by the default footer, and usable on its own from a custom one. *@
+
+@switch (Model.Options.Progress)
+{
+    case BonboardingProgressStyle.Text:
+        <span class="bit-bonboarding-progress-text" aria-hidden="true">@Model.ProgressText</span>
+        break;
+
+    case BonboardingProgressStyle.Dots:
+        <div class="bit-bonboarding-progress-dots"
+             role="group"
+             aria-label="@Model.Labels.ProgressLabel"
+             aria-describedby="@_progressTextId">
+            @for (var position = 1; position <= Model.Count; position++)
+            {
+                <span class="bit-bonboarding-dot" data-bonboarding-state="@StateFor(position)"></span>
+            }
+        </div>
+        <span class="bit-bonboarding-sr-only" id="@_progressTextId">@Model.ProgressText</span>
+        break;
+
+    case BonboardingProgressStyle.Bar:
+        <div class="bit-bonboarding-progress-bar"
+             role="progressbar"
+             aria-valuemin="1"
+             aria-valuemax="@Model.Count"
+             aria-valuenow="@Model.Position"
+             aria-valuetext="@Model.ProgressText"
+             aria-label="@Model.Labels.ProgressLabel">
+            <div class="bit-bonboarding-progress-bar-fill" style="@FillStyle"></div>
+        </div>
+        break;
+}
+
+@code {
+    private string _progressTextId = string.Empty;
+
+    /// <summary>The step being rendered.</summary>
+    [Parameter, EditorRequired] public required BonboardingStepRenderContext Model { get; set; }
+
+    protected override void OnParametersSet()
+        => _progressTextId = $"bit-bonboarding-progress-{Model.Session.Id}";
+
+    private string StateFor(int position)
+        => position == Model.Position ? "current" : position < Model.Position ? "done" : "todo";
+
+    private string FillStyle
+    {
+        get
+        {
+            // One step of one is a complete bar, not a division by zero.
+            var fraction = Model.Count <= 1 ? 1d : (Model.Position - 1d) / (Model.Count - 1d);
+            return "width:" + BonboardingCss.Number(Math.Clamp(fraction, 0, 1) * 100) + "%";
+        }
+    }
+}

@@ -1,0 +1,343 @@
+﻿@page "/devtools"
+@inherits BlexComponentBase
+@inject CounterStore Counter
+@inject SettingsStore Settings
+@inject BlexManager Manager
+
+<DocPage Href="devtools" Title="DevTools & time travel"
+         Lead="Every action streams into the Redux DevTools extension with its payload and the resulting state tree - and the slider rewinds your app.">
+
+    <h2>Getting connected</h2>
+    <ol>
+        <li>Install the <a href="https://github.com/reduxjs/redux-devtools" target="_blank" rel="noopener">Redux DevTools</a> browser extension.</li>
+        <li>Run the app with <code>&lt;BlexProvider&gt;</code> in place and <code>EnableDevTools</code> left at its default.</li>
+        <li>Open the browser devtools and switch to the <strong>Redux</strong> tab. The instance is named after <code>options.DevToolsName</code>.</li>
+        <li>Interact with the app. Every action arrives with its argument payload and the state that followed it.</li>
+        <li>Drag the slider, or use the jump buttons, to rewind the application live.</li>
+    </ol>
+
+    <CodeBlock Code="@Naming" FileName="Program.cs" />
+
+    <Callout Kind="Callout.CalloutKind.Tip" Title="This very page is connected">
+        <p style="margin-bottom:0">
+            If you have the extension installed, open it now and look for the instance named
+            <strong>Blex Docs</strong>. Then press the buttons below and jump around the timeline -
+            the demos on this site will rewind with it.
+        </p>
+    </Callout>
+
+    <DemoCard Title="Generate some history"
+              Description="Dispatch a few actions, then rewind them from the extension's timeline.">
+        <div class="row">
+            <button class="btn btn-primary" @onclick="Counter.Increment">counter/Increment</button>
+            <button class="btn" @onclick="() => Counter.SetStep(Counter.Step + 1)">counter/SetStep</button>
+            <button class="btn" @onclick="Settings.RotateToken">settings/RotateToken</button>
+            <button class="btn btn-ghost" @onclick="Counter.ResetState">counter/ResetState</button>
+        </div>
+        <div class="readout" style="margin-top:0.8rem">
+            <div class="readout__item">
+                <span class="readout__label">Count</span>
+                <span class="readout__value readout__value--accent">@Counter.Count</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Step</span>
+                <span class="readout__value">@Counter.Step</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">settings.Token (real value)</span>
+                <span class="readout__value" style="font-size:0.85rem">@Settings.Token</span>
+            </div>
+        </div>
+        <p class="small muted" style="margin-top:0.7rem;margin-bottom:0">
+            In the extension, that token reads <code>&lt;redacted&gt;</code> - this site registers
+            <code>options.RedactDevToolsKeys("Token")</code>.
+        </p>
+    </DemoCard>
+
+    <h2>What travels over the bridge</h2>
+    <p>
+        On connect, the manager sends the current tree as the initial state. After that, each
+        recorded action sends an action object and the resulting tree:
+    </p>
+    <CodeBlock Code="@Wire" Language="json" Title="What the extension receives" />
+    <p>
+        The state tree is keyed by store name - <code>counter</code>, <code>settings</code> and so on
+        - which is exactly what <code>BlexManager.CaptureGlobalState()</code> produces.
+    </p>
+
+    <h2>Messages Blex handles</h2>
+    <p>
+        Time-travel is driven by the extension sending messages back. <code>HandleDevToolsMessage</code>
+        interprets these:
+    </p>
+    <div class="table-scroll">
+        <table>
+            <thead><tr><th>Message</th><th>Effect</th></tr></thead>
+            <tbody>
+                <tr><td><code>JUMP_TO_STATE</code> / <code>JUMP_TO_ACTION</code></td><td>Applies the state the extension supplies - the slider and the jump buttons.</td></tr>
+                <tr><td><code>ROLLBACK</code></td><td>Reverts to the last committed snapshot, or to the state supplied with the message when nothing has been committed.</td></tr>
+                <tr><td><code>COMMIT</code></td><td>Takes the current state as the new baseline and re-initializes the monitor.</td></tr>
+                <tr><td><code>RESET</code></td><td>Restores the state captured when DevTools first connected, then re-initializes the monitor.</td></tr>
+                <tr><td><code>IMPORT_STATE</code></td><td>Applies the last computed state from an imported session.</td></tr>
+                <tr><td><code>PAUSE_RECORDING</code></td><td>Stops streaming actions to the monitor. The app keeps running: actions still apply, and still reach middleware and subscribers.</td></tr>
+                <tr><td><code>LOCK_CHANGES</code></td><td>Freezes the app - every action is vetoed until it is unlocked. Time-travel restores keep working, which is the point.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Applying a snapshot goes through <code>RestoreGlobalState</code>, so it never records new
+        actions - the timeline you are scrubbing does not grow while you scrub it. A store whose
+        slice fails to deserialize is reported to <a href="errors"><code>OnError</code></a> and
+        skipped; the rest still restore.
+    </p>
+
+    <h3>Pause and lock</h3>
+    <p>
+        The monitor's two recording controls are different in kind, and the difference matters when
+        you are hunting a bug. <strong>Pause recording</strong> is about the <em>timeline</em>: the
+        app carries on exactly as before, it just stops filling the monitor with noise while you set
+        up the state you actually want to inspect. <strong>Lock changes</strong> is about the
+        <em>app</em>: every action is refused, so nothing can move underneath you while you scrub.
+    </p>
+    <p>
+        Both are readable from the manager, so the UI can tell the user why its buttons appear dead:
+    </p>
+    <CodeBlock Code="@PauseLock" />
+
+    <DemoCard Title="What the monitor's buttons do here"
+              Description="Open the Redux DevTools panel and press Pause recording or Lock changes, then use the counter. This card reads the manager's own flags."
+              Source="@PauseLockSource" SourceLanguage="razor">
+        <div class="row">
+            <button class="btn btn-primary" @onclick="Counter.Increment">Increment</button>
+        </div>
+
+        <div class="readout" style="margin-top:0.8rem">
+            <div class="readout__item">
+                <span class="readout__label">counter/Count</span>
+                <span class="readout__value readout__value--accent">@Counter.Count</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">IsDevToolsPaused</span>
+                <span class="readout__value">@Manager.IsDevToolsPaused</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">AreChangesLocked</span>
+                <span class="readout__value">@Manager.AreChangesLocked</span>
+            </div>
+        </div>
+
+        <p class="small muted" style="margin-top:0.8rem;margin-bottom:0">
+            Paused, the counter still moves but the monitor stays quiet. Locked, the counter stops
+            moving - and the slider still works.
+        </p>
+    </DemoCard>
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Disconnecting always unlocks">
+        <p style="margin-bottom:0">
+            Closing the monitor, or tearing down a circuit, while "Lock changes" was on would
+            otherwise leave the application permanently frozen with no remaining way to unfreeze it.
+            Disconnecting the bridge clears both flags.
+        </p>
+    </Callout>
+
+    <h2>Redacting sensitive state</h2>
+    <p>
+        The state tree is handed to a browser extension. Anything in it is visible to that extension.
+        Blex gives you two hooks plus a shorthand.
+    </p>
+
+    <CodeBlock Code="@Sanitize" FileName="Program.cs" />
+
+    <ApiTable Rows="@SanitizerRows" />
+
+    <p>
+        <code>RedactDevToolsKeys</code> walks the whole tree - objects <em>and</em> arrays - replacing
+        matching keys with <code>&lt;redacted&gt;</code>, and it is applied to action payloads as well
+        as state, so an argument named <code>password</code> is redacted too.
+    </p>
+
+    <p>
+        It is additive, and it composes. Calling it a second time <em>widens</em> the redaction set
+        rather than replacing it, so a library and an app can each register their own secrets without
+        one silently unmasking the other's. A custom <code>DevToolsStateSanitizer</code> assigned
+        <em>before</em> the call still runs - redaction is applied on top of its output - which lets
+        you reshape the tree and redact it in the same pipeline.
+    </p>
+    <CodeBlock Code="@Compose" Title="Additive and composing" Compact="true" />
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="Assigning the sanitizer last wins">
+        <p style="margin-bottom:0">
+            The composition is one-directional: redaction wraps whatever sanitizer was already there.
+            Assigning <code>DevToolsStateSanitizer</code> <em>after</em> calling
+            <code>RedactDevToolsKeys</code> replaces redaction outright. Register redaction last.
+        </p>
+    </Callout>
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="Redaction and time-travel fight each other">
+        <p style="margin-bottom:0">
+            DevTools echoes the state it was <em>shown</em> back to the app when you jump. A redacted
+            value therefore comes back as the literal string <code>&lt;redacted&gt;</code> and
+            overwrites the real one. Redact only fields you never need to jump back through - or turn
+            DevTools off entirely in the environments where the data is real.
+        </p>
+    </Callout>
+
+    <Callout Kind="Callout.CalloutKind.Warning" Title="Sanitizers fail closed">
+        <p style="margin-bottom:0">
+            If your state sanitizer throws, Blex sends an <em>empty</em> tree rather than the
+            unsanitized one - a bug in redaction cannot leak what it was meant to hide. A throwing
+            action sanitizer yields <code>&lt;sanitizer-error&gt;</code>. Both are reported through
+            <code>OnError</code> with source <code>devtools</code>.
+        </p>
+    </Callout>
+
+    <h2>Turning it off</h2>
+    <p>
+        For production, disable the connection outright. Nothing is serialized and nothing is sent.
+    </p>
+    <CodeBlock Code="@Disable" Language="razor" />
+
+    <h2>Under the hood</h2>
+    <p>
+        The core package has no JS dependency - it only knows the <code>IBlexDevTools</code>
+        interface. <code>Bit.Blex.Blazor</code> supplies <code>BlexReduxDevToolsConnector</code>, which
+        loads a small ES module and talks to
+        <code>window.__REDUX_DEVTOOLS_EXTENSION__</code>.
+    </p>
+
+    <CodeBlock Code="@Interface" />
+
+    <ul>
+        <li>If the extension is not installed, <code>connect</code> returns <code>false</code> and everything becomes a no-op - no errors, no cost.</li>
+        <li>Interop calls are dispatched without blocking the dispatch pipeline, but their tasks are still observed so a transient failure cannot surface as an unobserved exception.</li>
+        <li>Disconnecting detaches only Blex's own subscription, rather than killing every DevTools instance on the page.</li>
+        <li>The bridge advertises exactly what it implements: <code>jump</code> and <code>export</code> yes; <code>dispatch</code>, <code>skip</code> and <code>reorder</code> no.</li>
+    </ul>
+
+    <h2>Connecting a different sink</h2>
+    <p>
+        <code>IBlexDevTools</code> is public, so the manager can feed anything - a server-side
+        session recorder, a test double, a custom monitor.
+    </p>
+    <CodeBlock Code="@CustomSink" />
+
+    <div class="readout" style="margin-top:1rem">
+        <div class="readout__item">
+            <span class="readout__label">Stores in this app's tree</span>
+            <span class="readout__value readout__value--accent">@Manager.Stores.Count</span>
+        </div>
+        <div class="readout__item">
+            <span class="readout__label">Names</span>
+            <span class="readout__value" style="font-size:0.85rem">@string.Join(", ", Manager.Stores.Select(s => s.Name))</span>
+        </div>
+    </div>
+
+</DocPage>
+
+@code {
+    protected override void OnInitialized() => Subscribe(Counter, Settings);
+
+    private static readonly IReadOnlyList<ApiTable.Row> SanitizerRows =
+    [
+        new("options.DevToolsName", "The instance name shown in the extension's dropdown. Default <code>\"Blex\"</code>."),
+        new("options.RedactDevToolsKeys(params string[])", "Shorthand: replaces the named keys, anywhere in the tree, with <code>\"&lt;redacted&gt;\"</code>. Applies to action payloads too."),
+        new("options.DevToolsStateSanitizer", "<code>Func&lt;JsonObject, JsonObject&gt;</code>. Full control over the tree before it is sent. Display only."),
+        new("options.DevToolsActionSanitizer", "<code>Func&lt;string, string&gt;</code>. Rewrites the action label - useful for stripping ids out of names."),
+    ];
+
+    private const string PauseLock = """
+        // Paused: actions apply and are observed, they are just not streamed to the monitor.
+        if (manager.IsDevToolsPaused)
+            _hint = "DevTools recording is paused.";
+
+        // Locked: every action is vetoed, exactly as a UseFilter returning false would.
+        // Restores are deliberately not gated, so the slider still moves.
+        if (manager.AreChangesLocked)
+            _hint = "The monitor has locked changes - unlock it to interact.";
+        """;
+
+    private const string PauseLockSource = """
+        @inject BlexManager Manager
+
+        <p>Paused: @Manager.IsDevToolsPaused &middot; Locked: @Manager.AreChangesLocked</p>
+
+        @* Nothing to wire up: both flags are set from the extension's own messages. *@
+        """;
+
+    private const string Naming = """
+        builder.Services.AddBitBlexServices(options =>
+        {
+            options.DevToolsName = "My App";   // shown in the extension's instance dropdown
+        });
+        """;
+
+    private const string Wire = """
+        // init, on connect
+        { "counter": { "Count": 0, "Step": 1 }, "settings": { "Accent": "violet" } }
+
+        // send, per action
+        action: { "type": "counter/SetStep", "payload": { "step": 5 } }
+        state:  { "counter": { "Count": 0, "Step": 5 }, "settings": { "Accent": "violet" } }
+        """;
+
+    private const string Sanitize = """
+        builder.Services.AddBitBlexServices(options =>
+        {
+            // Take full control of the state tree...
+            options.DevToolsStateSanitizer = state =>
+            {
+                var clone = (JsonObject)state.DeepClone();
+                if (clone["user"] is JsonObject user)
+                    user["email"] = "<hidden>";
+                return clone;
+            };
+
+            // ...and redact these keys anywhere in the tree (and in action payloads) on top of it.
+            // Register redaction last: it wraps the sanitizer above, but an assignment after this
+            // call would replace it.
+            options.RedactDevToolsKeys("token", "password", "ssn");
+
+            // The action label has its own hook.
+            options.DevToolsActionSanitizer = label => label.Replace(_userId, "<id>");
+        });
+        """;
+
+    private const string Compose = """
+        // A shared setup module redacts what it knows about...
+        options.RedactDevToolsKeys("token");
+
+        // ...and the app adds its own. The set widens; "token" stays redacted.
+        options.RedactDevToolsKeys("ssn", "dateOfBirth");
+        """;
+
+    private const string Disable = """
+        <BlexProvider EnableDevTools="@Env.IsDevelopment()">
+            <Router ... />
+        </BlexProvider>
+        """;
+
+    private const string Interface = """
+        public interface IBlexDevTools
+        {
+            void Init(JsonObject globalState);
+            void Send(string actionName, JsonObject globalState);
+            void Send(string actionName, JsonObject globalState, JsonObject? payload)
+                => Send(actionName, globalState);
+        }
+        """;
+
+    private const string CustomSink = """
+        public sealed class RecordingDevTools : IBlexDevTools
+        {
+            public List<(string Action, JsonObject State)> Frames { get; } = [];
+
+            public void Init(JsonObject state) => Frames.Add(("@@INIT", state));
+
+            public void Send(string action, JsonObject state) => Frames.Add((action, state));
+        }
+
+        manager.ConnectDevTools(new RecordingDevTools());
+        // ... and later
+        manager.DisconnectDevTools();
+        """;
+}

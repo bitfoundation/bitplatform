@@ -1,0 +1,156 @@
+﻿@* A reusable toolbar built entirely from real HTML controls, so it is keyboard and screen reader accessible.
+   The canvas itself never needs to handle these interactions. *@
+
+<div class="toolbar" role="toolbar" aria-label="Drawing tools">
+
+    @if (ShowTools)
+    {
+        <div class="toolbar-group" role="group" aria-label="Tool">
+            @foreach (ToolChoice choice in Tools)
+            {
+                <button type="button"
+                        class="btn @(IsToolActive(choice) ? "active" : null)"
+                        aria-pressed="@(IsToolActive(choice) ? "true" : "false")"
+                        title="@choice.Title"
+                        @onclick="() => SelectToolAsync(choice)">
+                    @choice.Label
+                </button>
+            }
+        </div>
+    }
+
+    @if (ShowColors)
+    {
+        <div class="toolbar-separator"></div>
+        <div class="toolbar-group" role="group" aria-label="Colour">
+            @foreach (string color in Palette)
+            {
+                <button type="button"
+                        class="swatch @(string.Equals(color, CurrentColor, StringComparison.OrdinalIgnoreCase) ? "active" : null)"
+                        style="background:@color"
+                        aria-label="@ColorName(color)"
+                        aria-pressed="@(string.Equals(color, CurrentColor, StringComparison.OrdinalIgnoreCase) ? "true" : "false")"
+                        @onclick="() => SetColorAsync(color)"></button>
+            }
+        </div>
+    }
+
+    @if (ShowWidth)
+    {
+        <div class="toolbar-separator"></div>
+        <label class="field">
+            Size
+            <input type="range" min="1" max="40" step="1" value="@((int)Width)"
+                   aria-label="Brush size"
+                   @onchange="OnWidthChanged" />
+            <span style="min-width:2ch">@((int)Width)</span>
+        </label>
+    }
+
+    @ChildContent
+
+    <div class="toolbar-spacer"></div>
+
+    @if (ShowHistory && Canvas is not null)
+    {
+        <div class="toolbar-group" role="group" aria-label="History">
+            <button type="button" class="btn" disabled="@(!Canvas.History.CanUndo)" @onclick="() => Canvas.Undo()"
+                    title="Undo (Ctrl+Z)">Undo</button>
+            <button type="button" class="btn" disabled="@(!Canvas.History.CanRedo)" @onclick="() => Canvas.Redo()"
+                    title="Redo (Ctrl+Shift+Z)">Redo</button>
+            <button type="button" class="btn danger" disabled="@(Canvas.CurrentDocument.IsEmpty)" @onclick="() => Canvas.Clear()">Clear</button>
+        </div>
+    }
+
+    @TrailingContent
+</div>
+
+@code {
+    /// <summary>A selectable tool with its label.</summary>
+    public sealed record ToolChoice(string Id, string Label, string Title, Func<IBinkTool> Create);
+
+    private IBinkTool? _instance;
+
+    [Parameter] public BinkCanvas? Canvas { get; set; }
+
+    [Parameter] public IReadOnlyList<ToolChoice> Tools { get; set; } = DefaultTools;
+
+    [Parameter] public string ActiveToolId { get; set; } = "draw";
+
+    [Parameter] public EventCallback<string> ActiveToolIdChanged { get; set; }
+
+    [Parameter] public EventCallback<IBinkTool> ToolSelected { get; set; }
+
+    [Parameter] public string CurrentColor { get; set; } = "#111827";
+
+    [Parameter] public EventCallback<string> CurrentColorChanged { get; set; }
+
+    [Parameter] public float Width { get; set; } = 4f;
+
+    [Parameter] public EventCallback<float> WidthChanged { get; set; }
+
+    [Parameter] public IReadOnlyList<string> Palette { get; set; } = DefaultPalette;
+
+    [Parameter] public bool ShowTools { get; set; } = true;
+
+    [Parameter] public bool ShowColors { get; set; } = true;
+
+    [Parameter] public bool ShowWidth { get; set; } = true;
+
+    [Parameter] public bool ShowHistory { get; set; } = true;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    [Parameter] public RenderFragment? TrailingContent { get; set; }
+
+    public static readonly IReadOnlyList<string> DefaultPalette =
+    [
+        "#111827", "#dc2626", "#ea580c", "#ca8a04", "#16a34a", "#2563eb", "#7c3aed", "#db2777"
+    ];
+
+    public static readonly IReadOnlyList<ToolChoice> DefaultTools =
+    [
+        new("draw", "Pen", "Freehand pen", () => new BinkDrawTool()),
+        new("eraser", "Eraser", "Eraser", () => new BinkEraserTool()),
+        new("select", "Select", "Select and move", () => new BinkSelectTool()),
+    ];
+
+    private bool IsToolActive(ToolChoice choice) => string.Equals(choice.Id, ActiveToolId, StringComparison.Ordinal);
+
+    private async Task SelectToolAsync(ToolChoice choice)
+    {
+        ActiveToolId = choice.Id;
+        _instance = choice.Create();
+        await ActiveToolIdChanged.InvokeAsync(choice.Id);
+        await ToolSelected.InvokeAsync(_instance);
+    }
+
+    private Task SetColorAsync(string color)
+    {
+        CurrentColor = color;
+        return CurrentColorChanged.InvokeAsync(color);
+    }
+
+    private Task OnWidthChanged(ChangeEventArgs e)
+    {
+        if (float.TryParse(e.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out float value))
+        {
+            Width = value;
+            return WidthChanged.InvokeAsync(value);
+        }
+        return Task.CompletedTask;
+    }
+
+    private static string ColorName(string hex) => hex switch
+    {
+        "#111827" => "Black",
+        "#dc2626" => "Red",
+        "#ea580c" => "Orange",
+        "#ca8a04" => "Yellow",
+        "#16a34a" => "Green",
+        "#2563eb" => "Blue",
+        "#7c3aed" => "Purple",
+        "#db2777" => "Pink",
+        _ => hex,
+    };
+}

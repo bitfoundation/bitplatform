@@ -25,12 +25,38 @@
     <Project Path="Besql/Demo/Bit.Besql.Demo.Client/Bit.Besql.Demo.Client.csproj" />
     <Project Path="Besql/Demo/Bit.Besql.Demo/Bit.Besql.Demo.csproj" />
   </Folder>
+  <Folder Name="/Blex/">
+    <File Path="Blex/README.md" />
+    <Project Path="Blex/Demo/Client/Bit.Blex.Demo.Client.csproj" />
+    <Project Path="Blex/Demo/Server/Bit.Blex.Demo.Server.csproj" />
+    <Project Path="Blex/Bit.Blex/Bit.Blex.csproj" />
+    <Project Path="Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj" />
+    <Project Path="Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj" />
+    <Project Path="Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj" />
+    <Project Path="Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj" />
+    <Project Path="Blex/Tests/Bit.Blex.Tests/Bit.Blex.Tests.csproj" />
+    <Project Path="Blex/Tests/Bit.Blex.Tests.Generators/Bit.Blex.Tests.Generators.csproj" />
+  </Folder>
   <Folder Name="/Bmotion/">
     <File Path="Bmotion/README.md" />
     <Project Path="Bmotion/Bit.Bmotion.Demo/Client/Bit.Bmotion.Demo.Client.csproj" />
     <Project Path="Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj" />
     <Project Path="Bmotion/Bit.Bmotion/Bit.Bmotion.csproj" />
     <Project Path="Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Bink/">
+    <File Path="Bink/README.md" />
+    <Project Path="Bink/Bit.Bink.Demo/Client/Bit.Bink.Demo.Client.csproj" />
+    <Project Path="Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj" />
+    <Project Path="Bink/Bit.Bink/Bit.Bink.csproj" />
+    <Project Path="Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Bonboarding/">
+    <File Path="Bonboarding/README.md" />
+    <Project Path="Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />
+    <Project Path="Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj" />
+    <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />
+    <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
   </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />

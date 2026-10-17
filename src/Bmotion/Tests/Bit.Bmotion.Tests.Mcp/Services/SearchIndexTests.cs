@@ -218,18 +218,23 @@ public class SearchIndexTests
 
     /// <summary>
     /// Every term is counted against every entry, so the work is terms x corpus. A pasted file as a
-    /// query has to be bounded rather than scanned in full.
+    /// query has to be bounded rather than scanned in full - asserted on what the bound does (terms
+    /// past the cap are never searched for) rather than on wall-clock time, which depends on the
+    /// machine, on whether the index was already built, and on whatever else the run is doing.
     /// </summary>
     [TestMethod]
     public async Task Search_APastedFileAsAQuery_IsBoundedRatherThanScannedInFull()
     {
-        var pasted = string.Join(' ', Enumerable.Range(0, 4_000).Select(i => $"token{i}"));
+        // Words that occur nowhere in the corpus, followed by one that occurs almost everywhere.
+        var filler = Enumerable.Range(0, 4_000).Select(i => $"zqxjv{i}").ToArray();
 
-        var started = System.Diagnostics.Stopwatch.StartNew();
+        var withinTheCap = await BmotionSearchIndex.SearchAsync(string.Join(' ', filler.Take(15).Append("spring")), 12);
+        var pastTheCap = await BmotionSearchIndex.SearchAsync(string.Join(' ', filler.Take(16).Append("spring")), 12);
+        var pastedFile = await BmotionSearchIndex.SearchAsync(string.Join(' ', filler.Append("spring")), 12);
 
-        await BmotionSearchIndex.SearchAsync(pasted, 12);
-
-        Assert.IsTrue(started.Elapsed < TimeSpan.FromSeconds(5), $"It took {started.Elapsed.TotalSeconds:0.0}s.");
+        Assert.AreNotEqual(0, withinTheCap.Length, "the sixteenth term is still searched for");
+        Assert.AreEqual(0, pastTheCap.Length, "a term past the cap must not be searched for at all");
+        Assert.AreEqual(0, pastedFile.Length, "a pasted file is cut at the same cap, not scanned in full");
     }
 
     [TestMethod]

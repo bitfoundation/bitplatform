@@ -1,0 +1,105 @@
+﻿@namespace Bit.Bonboarding
+
+@if (_session is not null && _step is not null && _options is not null && _renderContext is not null)
+{
+    <div class="@BonboardingCss.Classes("bit-bonboarding-root", Class)"
+         data-bonboarding-theme="@ThemeAttribute"
+         data-bonboarding-reduced-motion="@(_options.ReducedMotion ? "true" : "false")"
+         data-bonboarding-status="@_session.Status.ToString().ToLowerInvariant()"
+         dir="@DirectionAttribute"
+         style="@RootStyle">
+
+        @* ---- Visual layer: either a spotlight cut-out or a flat dim. ---- *@
+        @if (OverlayTemplate is not null)
+        {
+            @OverlayTemplate(_renderContext)
+        }
+        else if (ShowSpotlight)
+        {
+            <div class="bit-bonboarding-spotlight" style="@SpotlightStyle" aria-hidden="true"></div>
+        }
+        else if (_options.ShowOverlay)
+        {
+            <div class="bit-bonboarding-overlay" aria-hidden="true"></div>
+        }
+
+        @* ---- Interaction layer: separate from the visuals so a hole can be click-through. ---- *@
+        @if (_options.Interaction == BonboardingInteractionMode.Blocked)
+        {
+            <div class="bit-bonboarding-blocker" style="inset:0" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+        }
+        else if (_options.Interaction == BonboardingInteractionMode.TargetOnly)
+        {
+            if (SpotlightRect is { } hole)
+            {
+                <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Top, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+                <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Bottom, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+                <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Left, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+                <div class="bit-bonboarding-blocker" style="@BlockerStyle(BlockerSide.Right, hole)" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+            }
+            else
+            {
+                @* No target on screen (missing, hidden or not yet loaded): only the target was meant
+                   to be usable, so block the whole page rather than none of it. *@
+                <div class="bit-bonboarding-blocker" style="inset:0" @onclick="HandleOverlayClickAsync" aria-hidden="true"></div>
+            }
+        }
+
+        @* ---- The popover. The library owns the box so it can measure, place and focus it. ---- *@
+        <div @ref="_popoverElement"
+             class="@BonboardingCss.Classes(Unstyled ? null : "bit-bonboarding-popover", _options.PopoverClass, PopoverClass)"
+             role="dialog"
+             aria-modal="@(_options.Interaction == BonboardingInteractionMode.Blocked ? "true" : "false")"
+             aria-label="@AriaLabel"
+             aria-labelledby="@AriaLabelledBy"
+             aria-describedby="@AriaDescribedBy"
+             tabindex="-1"
+             data-bonboarding-placed="@(IsPlaced ? "true" : "false")"
+             data-bonboarding-side="@SideAttribute"
+             data-bonboarding-untitled="@(string.IsNullOrEmpty(_renderContext.Title) ? "true" : "false")"
+             style="@PopoverStyle">
+
+            @if (ShowArrow)
+            {
+                <div class="bit-bonboarding-arrow" style="@ArrowStyle" aria-hidden="true"></div>
+            }
+
+            @if (_session.IsWaiting)
+            {
+                @if (WaitingTemplate is not null)
+                {
+                    @WaitingTemplate(_renderContext)
+                }
+                else
+                {
+                    <div class="bit-bonboarding-waiting">
+                        <span class="bit-bonboarding-spinner" aria-hidden="true"></span>
+                        <span>@_options.Labels.WaitingAnnouncement</span>
+                    </div>
+                }
+            }
+            else if (_step.Template is not null)
+            {
+                @_step.Template(_renderContext)
+            }
+            else if (_session.Tour.Template is not null)
+            {
+                @_session.Tour.Template(_renderContext)
+            }
+            else if (ChildContent is not null)
+            {
+                @ChildContent(_renderContext)
+            }
+            else
+            {
+                <BonboardingPopoverContent Model="_renderContext"
+                                           TitleId="@_titleId"
+                                           DescriptionId="@_descriptionId" />
+            }
+        </div>
+    </div>
+}
+
+@* The live region lives outside the conditional block so announcements are not lost when the
+   tour ends, and so assistive technology never has to re-discover it mid-tour. *@
+<div class="bit-bonboarding-sr-only bit-bonboarding-live" role="status" aria-live="polite" aria-atomic="true">@_announcement</div>

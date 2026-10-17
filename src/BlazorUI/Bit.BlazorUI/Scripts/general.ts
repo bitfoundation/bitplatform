@@ -1,4 +1,4 @@
-﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '10.7.0-pre-01';
+﻿(BitBlazorUI as any).version = (window as any)['bit-blazorui version'] = '10.7.0-pre-02';
 
 // bit-trim: always
 // The one script every bundle keeps: the version stamp above, and what nearly every other script builds on. What used

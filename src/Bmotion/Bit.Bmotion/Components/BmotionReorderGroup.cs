@@ -166,8 +166,22 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
 
     // ── Drag session ──────────────────────────────────────────────────────────
 
-    private async Task HandleDragStartAsync(Entry entry)
+    // The drag start's measurement pass, and whether it has completed. Moves and the release can
+    // arrive while it is still measuring (always on Blazor Server, where every measurement is a round
+    // trip): a move before then has no positions to work with and is skipped - the next one catches
+    // up - and the release waits for it.
+    private Task _measuring = Task.CompletedTask;
+    private bool _measured;
+    // Bumped by every measurement pass, so an older pass still awaiting a round trip can tell that
+    // a newer drag session has replaced it and must not touch that session's state.
+    private int _dragSession;
+
+    private Task HandleDragStartAsync(Entry entry) => _measuring = MeasureDragSessionAsync(entry);
+
+    private async Task MeasureDragSessionAsync(Entry entry)
     {
+        int session = ++_dragSession;
+        _measured = false;
         _dragged = entry;
         _visualOrder = _entries.ToList();
         _origStart.Clear();
@@ -179,6 +193,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
         foreach (var e in _entries)
         {
             var rect = await Interop.GetBoundingRectAsync(e.Id);
+            if (session != _dragSession) return;
             if (rect is null || e.Ref is null) { _dragged = null; return; }
             var xy = e.Ref.GetCurrentXY();
             _origStart[e.Key] = (Horizontal ? rect.Left - xy.X : rect.Top - xy.Y);
@@ -192,6 +207,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
         if (sorted.Count > 1)
             _gap = Math.Max(0,
                 _origStart[sorted[1].Key] - (_origStart[sorted[0].Key] + _extent[sorted[0].Key]));
+        _measured = true;
 
         // Lift the dragged row above its siblings for the duration of the session.
         try
@@ -204,7 +220,7 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
 
     private void HandleDragMove(Entry entry)
     {
-        if (_dragged != entry || entry.Ref is null) return;
+        if (_dragged != entry || !_measured || entry.Ref is null) return;
 
         var xy = entry.Ref.GetCurrentXY();
         double offset = Horizontal ? xy.X : xy.Y;
@@ -235,7 +251,11 @@ public sealed class BmotionReorderGroup<TItem> : ComponentBase
 
     private async Task HandleDragEndAsync(Entry entry)
     {
-        if (_dragged != entry || entry.Ref is null) return;
+        await _measuring;
+        if (_dragged != entry || !_measured || entry.Ref is null) return;
+        // Catch the order up with where the row was released: on Blazor Server the moves that would
+        // have reordered it may all have arrived before the measurement did.
+        HandleDragMove(entry);
 
         // Settle the dragged row into its final slot, then commit the new order.
         int index = _visualOrder.IndexOf(entry);
