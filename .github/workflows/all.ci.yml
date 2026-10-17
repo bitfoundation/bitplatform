@@ -583,12 +583,19 @@ jobs:
         dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Bmage.Core
+      run: |
+        dotnet build src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj --output ./packages --configuration Release
+
     - name: Build and pack Bmage
       run: |
         dotnet build src/Bmage/Bit.Bmage/Bit.Bmage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet build src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj --output ./packages --configuration Release
         dotnet pack src/Bmage/Bit.Bmage/Bit.Bmage.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bmage.Editor
+      run: |
+        dotnet build src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj --output ./packages --configuration Release
 
     - name: Build and pack Bink

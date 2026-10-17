@@ -48,7 +48,7 @@ To drive a demo that is already running - `dotnet run` in another terminal, a pu
 point the suite at it; nothing is built or started then:
 
 ```powershell
-$env:BMAGE_E2E_HOST_URL = "http://127.0.0.1:5090"
+$env:BMAGE_E2E_HOST_URL = "http://127.0.0.1:5092"
 dotnet test --project Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj
 ```
 

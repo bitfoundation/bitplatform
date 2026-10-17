@@ -7,9 +7,9 @@ on:
       - 'main'
     paths:
       - 'src/BlazorUI/**'
-      - 'src/Bmage/**'
       - 'src/Bink/**'
       - 'src/Blex/**'
+      - 'src/Bmage/**'
       - 'src/Bmotion/**'
       - 'src/Bonboarding/**'
       - 'src/Brouter/**'

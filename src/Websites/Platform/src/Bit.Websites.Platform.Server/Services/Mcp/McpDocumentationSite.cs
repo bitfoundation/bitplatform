@@ -20,12 +20,12 @@ internal sealed partial class McpDocumentationSite : IDisposable
         ("bitBlazorUI", "src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj"),
         ("bitBink", "src/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj"),
         ("bitBlex", "src/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj"),
+        ("bitBmage", "src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj"),
         ("bitBonboarding", "src/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj"),
         ("bitBrouter", "src/Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj"),
         ("bitBswup", "src/Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj"),
         ("bitButil", "src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj"),
-        ("bitMotion", "src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj"),
-        ("bitBmage", "src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj")
+        ("bitMotion", "src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj")
     ];
 
     private static readonly TimeSpan buildTimeout = TimeSpan.FromMinutes(30);

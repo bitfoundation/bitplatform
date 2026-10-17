@@ -7,9 +7,14 @@
         <RootNamespace>Bit.Bmage.Editor</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
-        <PackageDescription>A themeable, accessible, touch-friendly Blazor image editor component built on bit Bmage: crop, rotate, adjust, filter, draw, annotate, redact, undo/redo and export.</PackageDescription>
+        <Description>A themeable, accessible, touch-friendly Blazor image editor component built on bit Bmage: crop, rotate, adjust, filter, draw, annotate, redact, undo/redo and export.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
         <PackageTags>Bit;Bmage;Blazor;image;editor;crop;annotation</PackageTags>
     </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
 
     <ItemGroup>
         <ProjectReference Include="..\Bit.Bmage\Bit.Bmage.csproj" />
