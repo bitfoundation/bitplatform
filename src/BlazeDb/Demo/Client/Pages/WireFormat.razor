@@ -1,0 +1,584 @@
+﻿@page "/serialization"
+
+<PageTitle>Wire format - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Persistence" IconName="binary" Title="See the bytes a row becomes"
+            Lead="Rows are encoded with a tagged, self-describing binary format: a varint tag carrying a field number and a wire type, then the payload. Property names never appear, unknown fields can be skipped, and nulls cost nothing at all.">
+    <span class="chip"><Icon Name="file" /> @_bytes.Length bytes for the row below</span>
+    <span class="chip"><Icon Name="layers" /> @_fields.Count fields on the wire</span>
+    <span class="chip"><Icon Name="check" /> Round-trip verified</span>
+</PageHeader>
+
+<Section Title="Build a row, watch it encode" IconName="play"
+         Lead="Every control here changes the row that is serialized with the generated writer. Nothing is simulated - the bytes below come from TodoEntry.Table.RowWriter.">
+    <div class="grid grid-sidebar">
+        <div class="flex-col gap-lg">
+            <Panel Title="The row" IconName="code">
+                <div class="form-row">
+                    <div class="field" style="flex:3 1 220px">
+                        <label class="field-label" for="w-title">Title - string</label>
+                        <input id="w-title" class="input" @bind="_title" @bind:event="oninput" @bind:after="Encode" />
+                    </div>
+                    <div class="field" style="flex:0 1 120px">
+                        <label class="field-label" for="w-effort">Effort - int</label>
+                        <input id="w-effort" class="input mono" type="number" @bind="_effort" @bind:after="Encode" />
+                    </div>
+                </div>
+
+                <div class="form-row mt-2">
+                    <div class="field" style="flex:2 1 200px">
+                        <label class="field-label" for="w-notes">Notes - string?</label>
+                        <input id="w-notes" class="input" disabled="@_notesNull" placeholder="(null)"
+                               @bind="_notes" @bind:event="oninput" @bind:after="Encode" />
+                        <label class="check mt-1">
+                            <input type="checkbox" @bind="_notesNull" @bind:after="Encode" /> null
+                        </label>
+                    </div>
+                    <div class="field" style="flex:0 1 130px">
+                        <label class="field-label" for="w-rating">Rating - int?</label>
+                        <input id="w-rating" class="input mono" type="number" min="1" max="5" disabled="@_ratingNull"
+                               @bind="_rating" @bind:after="Encode" />
+                        <label class="check mt-1">
+                            <input type="checkbox" @bind="_ratingNull" @bind:after="Encode" /> null
+                        </label>
+                    </div>
+                    <div class="field" style="flex:0 1 140px">
+                        <label class="field-label" for="w-tags">Tags - List&lt;string&gt;</label>
+                        <input id="w-tags" class="input mono" type="number" min="0" max="6" @bind="_tagCount" @bind:after="Encode" />
+                        <span class="field-hint">repeated field 14</span>
+                    </div>
+                    <div class="field" style="flex:0 1 140px">
+                        <label class="field-label" for="w-payload">Payload - byte[]</label>
+                        <input id="w-payload" class="input mono" type="number" min="0" max="16" @bind="_payloadSize" @bind:after="Encode" />
+                        <span class="field-hint">length-delimited blob</span>
+                    </div>
+                </div>
+            </Panel>
+
+            <Panel Title="Fields on the wire" IconName="layers" Flush="true">
+                <Actions>
+                    <span class="panel-sub mono">@_bytes.Length bytes total</span>
+                </Actions>
+                <ChildContent>
+                    <div class="table-wrap">
+                        <table class="data">
+                            <thead>
+                                <tr>
+                                    <th class="num">#</th>
+                                    <th>Property</th>
+                                    <th>Wire type</th>
+                                    <th class="num">Tag</th>
+                                    <th class="num">Payload</th>
+                                    <th class="num">Offset</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var field in _fields)
+                                {
+                                    <tr>
+                                        <td class="num mono strong">@field.Number</td>
+                                        <td class="mono">@PropertyName(field.Number)</td>
+                                        <td><span class="badge @WireTone(field.Wire)">@field.Wire</span></td>
+                                        <td class="num mono">@field.TagBytes B</td>
+                                        <td class="num mono">@field.PayloadBytes B</td>
+                                        <td class="num mono">@field.Offset</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </ChildContent>
+            </Panel>
+
+            <Panel Title="Hex dump" IconName="binary" Flush="true">
+                <Actions>
+                    <span class="panel-sub mono">@_bytes.Length bytes</span>
+                </Actions>
+                <ChildContent>
+                    <div class="hex">
+                        @foreach (var line in _hex)
+                        {
+                            <div class="hex-row">
+                                <span class="hex-off">@line.Offset</span>
+                                <span class="hex-bytes">@line.Bytes</span>
+                                <span class="hex-ascii">@line.Ascii</span>
+                            </div>
+                        }
+                    </div>
+                </ChildContent>
+            </Panel>
+        </div>
+
+        <div class="flex-col gap-lg">
+            <Panel Title="Round trip" IconName="refresh">
+                <p class="small mb-2">
+                    The same bytes read back through the generated reader.
+                </p>
+                <dl class="kv">
+                    <dt>Title</dt>
+                    <dd>@_decoded.Title</dd>
+                    <dt>Notes</dt>
+                    <dd>@(_decoded.Notes ?? "null")</dd>
+                    <dt>Rating</dt>
+                    <dd>@(_decoded.Rating?.ToString() ?? "null")</dd>
+                    <dt>Effort</dt>
+                    <dd>@_decoded.Effort</dd>
+                    <dt>Tags</dt>
+                    <dd>[@string.Join(", ", _decoded.Tags)]</dd>
+                    <dt>Payload</dt>
+                    <dd>@_decoded.Payload.Length bytes</dd>
+                    <dt>Duration</dt>
+                    <dd>@_decoded.Duration</dd>
+                    <dt>Transient</dt>
+                    <dd class="@(_decoded.Transient == "computed at runtime" ? "ok-text" : "err-text")">@_decoded.Transient</dd>
+                </dl>
+                <p class="tiny muted mt-2 mb-0">
+                    <code>Transient</code> carries <code>[BlazeDbIgnore]</code>, so it comes back as its field
+                    initialiser rather than the value that was written.
+                </p>
+            </Panel>
+
+            <Panel Title="Nulls are free" IconName="bolt">
+                <p class="small mb-2">
+                    A null value is not a marker byte - the field is simply absent.
+                </p>
+                <div class="table-wrap">
+                    <table class="data">
+                        <thead><tr><th>Row</th><th class="num">Bytes</th></tr></thead>
+                        <tbody>
+                            <tr><td>everything populated</td><td class="num mono">@_sizeFull B</td></tr>
+                            <tr><td>Notes and Rating null</td><td class="num mono">@_sizeNulls B</td></tr>
+                            <tr><td>no tags, no payload</td><td class="num mono">@_sizeMinimal B</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </Panel>
+
+            <Panel Title="Wire types" IconName="info" Flush="true">
+                <div class="table-wrap">
+                    <table class="data">
+                        <thead><tr><th>Name</th><th class="num">Id</th><th>Payload</th></tr></thead>
+                        <tbody>
+                            <tr><td class="mono">VarInt</td><td class="num mono">0</td><td>1–10 bytes, 7 bits each</td></tr>
+                            <tr><td class="mono">Fixed64</td><td class="num mono">1</td><td>exactly 8 bytes</td></tr>
+                            <tr><td class="mono">LengthDelimited</td><td class="num mono">2</td><td>varint length, then bytes</td></tr>
+                            <tr><td class="mono">Fixed32</td><td class="num mono">5</td><td>exactly 4 bytes</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+<Section Title="How a tag is built" IconName="code">
+    <div class="grid grid-2">
+        <CodeBlock Title="Tag encoding" Code="@TagSnippet" Language="text" />
+        <div class="flex-col gap-lg">
+            <Panel Title="Why field numbers, not names" IconName="key">
+                <p class="small">
+                    Names would cost bytes in every row and would tie the format to your identifiers.
+                    Numbers keep rows compact and let you rename a property freely - the persisted data
+                    does not notice.
+                </p>
+                <p class="small mb-0">
+                    The trade-off is that numbers are the contract. Without <code>[BlazeDbField]</code> they are
+                    assigned by declaration order, so inserting a property in the middle shifts every
+                    number after it and silently reinterprets existing data.
+                </p>
+            </Panel>
+            <Callout Tone="warn" Title="Pin your numbers before you ship.">
+                Add <code>[BlazeDbField(n)]</code> to every property once real data exists. After that you can
+                reorder, rename and delete properties safely - only the numbers matter.
+            </Callout>
+        </div>
+    </div>
+</Section>
+
+<Section Title="Schema evolution" IconName="history"
+         Lead="The reader loop skips any field number it does not recognise, which is what makes rolling upgrades survivable in both directions.">
+    <div class="grid grid-2">
+        <Panel Title="An older reader meets a newer writer" IconName="play">
+            <p class="small mb-2">
+                This appends a field number the current model has never heard of, then decodes with the
+                generated reader.
+            </p>
+            <button class="btn btn-sm btn-block" @onclick="RunForwardCompat">
+                <Icon Name="play" /> Append field 999 and decode
+            </button>
+            @if (_forwardResult is not null)
+            {
+                <div class="api-call mt-2">@_forwardResult</div>
+            }
+            <CodeBlock Class="mt-2" ShowHeader="false" Code="@ForwardSnippet" />
+        </Panel>
+
+        <div class="flex-col gap-lg">
+            <Panel Title="A newer reader meets an older writer" IconName="info">
+                <p class="small mb-0">
+                    The reverse case needs no machinery: a field that is absent leaves its local
+                    variable at its default, so a property added later reads back as
+                    <code>null</code>, <code>0</code> or an empty collection. Adding a property is
+                    always a compatible change.
+                </p>
+            </Panel>
+
+            <Panel Title="Truncated input is rejected" IconName="alert">
+                <p class="small mb-2">
+                    Skipping unknown fields is not the same as tolerating damage. A length prefix that
+                    overruns the buffer throws.
+                </p>
+                <button class="btn btn-sm btn-block" @onclick="RunTruncated">
+                    <Icon Name="play" /> Decode a truncated buffer
+                </button>
+                @if (_truncatedResult is not null)
+                {
+                    <div class="api-call mt-2">@_truncatedResult</div>
+                }
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+<Section Title="Keys and explicit numbering" IconName="key"
+         Lead="Keys are serialized separately from rows - the log needs a key on its own to record a delete.">
+    <div class="grid grid-2">
+        <Panel Title="Setting - [BlazeDbField(1)], [BlazeDbField(2)], [BlazeDbField(3)]" IconName="file" Flush="true">
+            <Actions>
+                <span class="panel-sub mono">@_settingBytes.Length bytes</span>
+            </Actions>
+            <ChildContent>
+                <div class="hex">
+                    @foreach (var line in _settingHex)
+                    {
+                        <div class="hex-row">
+                            <span class="hex-off">@line.Offset</span>
+                            <span class="hex-bytes">@line.Bytes</span>
+                            <span class="hex-ascii">@line.Ascii</span>
+                        </div>
+                    }
+                </div>
+                <div class="panel-body" style="border-top:1px solid var(--border)">
+                    <p class="small mb-0">
+                        The two strings are visible in the ASCII column because UTF-8 text is stored
+                        verbatim. Note what is <em>not</em> there: no <code>"Name"</code>, no
+                        <code>"Value"</code>, no type information.
+                    </p>
+                </div>
+            </ChildContent>
+        </Panel>
+
+        <div class="flex-col gap-lg">
+            <Panel Title="Key round trip" IconName="refresh">
+                <CodeBlock ShowHeader="false" Code="@KeySnippet" />
+                <dl class="kv mt-2">
+                    <dt>Guid key</dt>
+                    <dd>@_keyBytes bytes</dd>
+                    <dt>Round-tripped</dt>
+                    <dd class="@(_keyMatched ? "ok-text" : "err-text")">@(_keyMatched ? "identical" : "mismatch")</dd>
+                    <dt>string key</dt>
+                    <dd>@_stringKeyBytes bytes for "todos.sort"</dd>
+                </dl>
+            </Panel>
+
+            <Panel Title="The primitives" IconName="code">
+                <p class="small mb-2">
+                    <code>BlazeDbBufferWriter</code> and <code>BlazeDbBufferReader</code> are public, so a hand-written
+                    descriptor has exactly the same tools the generator uses.
+                </p>
+                <CodeBlock ShowHeader="false" Code="@PrimitivesSnippet" />
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+@code {
+    private sealed record FieldRow(int Number, BlazeDbWireType Wire, int TagBytes, int PayloadBytes, int Offset);
+
+    private sealed record HexLine(string Offset, string Bytes, string Ascii);
+
+    private static readonly string[] PropertyNames =
+    [
+        "", "Id", "Title", "Notes", "Done", "Category", "Priority", "CreatedAt", "Effort",
+        "Rating", "Cost", "Weight", "Duration", "DueAt", "Tags", "Scores", "Payload",
+    ];
+
+    private string _title = "Design the WAL record layout";
+    private string _notes = "Captured from the design review.";
+    private bool _notesNull;
+    private int _rating = 4;
+    private bool _ratingNull;
+    private int _effort = 90;
+    private int _tagCount = 2;
+    private int _payloadSize = 4;
+
+    private byte[] _bytes = [];
+    private List<FieldRow> _fields = [];
+    private List<HexLine> _hex = [];
+    private TodoEntry _decoded = new();
+
+    private int _sizeFull;
+    private int _sizeNulls;
+    private int _sizeMinimal;
+
+    private byte[] _settingBytes = [];
+    private List<HexLine> _settingHex = [];
+    private int _keyBytes;
+    private int _stringKeyBytes;
+    private bool _keyMatched;
+
+    private string? _forwardResult;
+    private string? _truncatedResult;
+
+    protected override void OnInitialized()
+    {
+        Encode();
+        EncodeSetting();
+        RoundTripKeys();
+    }
+
+    // -------------------------------------------------------------- encoding
+
+    private TodoEntry BuildRow() => new()
+    {
+        Id = new Guid("1f3c8b52-9d41-4a6e-8c07-5b2ad9e14f80"),
+        Title = _title,
+        Notes = _notesNull ? null : _notes,
+        Done = true,
+        Category = "engine",
+        Priority = Priority.High,
+        CreatedAt = new DateTime(2026, 8, 17, 9, 30, 0, DateTimeKind.Utc),
+        Effort = _effort,
+        Rating = _ratingNull ? null : _rating,
+        Cost = 128.75m,
+        Weight = 3.5,
+        Duration = TimeSpan.FromMinutes(_effort),
+        DueAt = new DateTimeOffset(2026, 8, 24, 0, 0, 0, TimeSpan.Zero),
+        Tags = Enumerable.Range(1, Math.Clamp(_tagCount, 0, 6)).Select(i => $"tag{i}").ToList(),
+        Scores = [88, 91],
+        Payload = Enumerable.Range(0, Math.Clamp(_payloadSize, 0, 16)).Select(i => (byte)(0xB0 + i)).ToArray(),
+        Transient = "this string is never written",
+    };
+
+    private void Encode()
+    {
+        var row = BuildRow();
+        _bytes = Serialize(row);
+        _fields = ParseFields(_bytes);
+        _hex = Dump(_bytes);
+        _decoded = Deserialize(_bytes);
+
+        _sizeFull = Serialize(Variant(nulls: false, empties: false)).Length;
+        _sizeNulls = Serialize(Variant(nulls: true, empties: false)).Length;
+        _sizeMinimal = Serialize(Variant(nulls: true, empties: true)).Length;
+    }
+
+    private TodoEntry Variant(bool nulls, bool empties)
+    {
+        var row = BuildRow();
+        if (nulls)
+        {
+            row.Notes = null;
+            row.Rating = null;
+            row.DueAt = null;
+        }
+        if (empties)
+        {
+            row.Tags = [];
+            row.Scores = [];
+            row.Payload = [];
+        }
+        return row;
+    }
+
+    private static byte[] Serialize(TodoEntry row)
+    {
+        var writer = new BlazeDbBufferWriter();
+        TodoEntry.Table.RowWriter(writer, row);
+        return writer.ToArray();
+    }
+
+    private static TodoEntry Deserialize(byte[] bytes)
+    {
+        var reader = new BlazeDbBufferReader(bytes);
+        return TodoEntry.Table.RowReader(ref reader);
+    }
+
+    /// <summary>Walks the buffer with the public reader, recording each tag it meets.</summary>
+    private static List<FieldRow> ParseFields(byte[] bytes)
+    {
+        var rows = new List<FieldRow>();
+        var reader = new BlazeDbBufferReader(bytes);
+
+        while (reader.Remaining > 0)
+        {
+            var start = reader.Position;
+            var (number, wire) = reader.ReadTag();
+            var afterTag = reader.Position;
+            reader.SkipField(wire);
+            rows.Add(new FieldRow(number, wire, afterTag - start, reader.Position - afterTag, start));
+        }
+
+        return rows;
+    }
+
+    private static List<HexLine> Dump(byte[] bytes)
+    {
+        var lines = new List<HexLine>();
+
+        for (var offset = 0; offset < bytes.Length; offset += 16)
+        {
+            var slice = bytes.Skip(offset).Take(16).ToArray();
+            var hex = string.Join(' ', slice.Select(b => b.ToString("x2"))).PadRight(47);
+            var ascii = new string(slice.Select(b => b is >= 0x20 and < 0x7f ? (char)b : '.').ToArray());
+            lines.Add(new HexLine(offset.ToString("x4"), hex, ascii));
+        }
+
+        return lines;
+    }
+
+    private void EncodeSetting()
+    {
+        var writer = new BlazeDbBufferWriter();
+        Setting.Table.RowWriter(writer, new Setting
+        {
+            Name = "todos.sort",
+            Value = "Newest",
+            UpdatedAt = new DateTime(2026, 8, 17, 9, 30, 0, DateTimeKind.Utc),
+        });
+
+        _settingBytes = writer.ToArray();
+        _settingHex = Dump(_settingBytes);
+    }
+
+    private void RoundTripKeys()
+    {
+        var key = new Guid("1f3c8b52-9d41-4a6e-8c07-5b2ad9e14f80");
+        var writer = new BlazeDbBufferWriter();
+        TodoEntry.Table.KeyWriter(writer, key);
+        var encoded = writer.ToArray();
+        _keyBytes = encoded.Length;
+
+        var reader = new BlazeDbBufferReader(encoded);
+        _keyMatched = TodoEntry.Table.KeyReader(ref reader) == key;
+
+        var stringWriter = new BlazeDbBufferWriter();
+        Setting.Table.KeyWriter(stringWriter, "todos.sort");
+        _stringKeyBytes = stringWriter.Length;
+    }
+
+    // ------------------------------------------------------------- scenarios
+
+    private void RunForwardCompat()
+    {
+        var row = BuildRow();
+
+        var writer = new BlazeDbBufferWriter();
+        TodoEntry.Table.RowWriter(writer, row);
+        var baseline = writer.Length;
+
+        // A field this build has never seen, exactly as a future version would write it.
+        writer.WriteTag(999, BlazeDbWireType.LengthDelimited);
+        writer.WriteString("a column added in a later release");
+        writer.WriteTag(1000, BlazeDbWireType.VarInt);
+        writer.WriteVarInt(42);
+
+        var extended = writer.ToArray();
+        var reader = new BlazeDbBufferReader(extended);
+        var decoded = TodoEntry.Table.RowReader(ref reader);
+
+        _forwardResult =
+            $"{baseline} bytes → {extended.Length} bytes with two unknown fields\n" +
+            $"RowReader succeeded: Title = \"{decoded.Title}\", Effort = {decoded.Effort}\n" +
+            $"reader.SkipField(wire) consumed fields 999 and 1000 and moved on";
+    }
+
+    private void RunTruncated()
+    {
+        // Tag for field 1 as length-delimited, a length of 16, then only two bytes.
+        var malformed = new byte[] { 0x0A, 0x10, 0x01, 0x02 };
+
+        try
+        {
+            var reader = new BlazeDbBufferReader(malformed);
+            var (number, wire) = reader.ReadTag();
+            var payload = reader.ReadBytes();
+            _truncatedResult = $"Unexpectedly read field {number} ({wire}) with {payload.Length} bytes.";
+        }
+        catch (InvalidDataException ex)
+        {
+            _truncatedResult =
+                "0a 10 01 02  - field 1, length-delimited, declares 16 bytes but supplies 2\n" +
+                $"InvalidDataException: {ex.Message}";
+        }
+    }
+
+    // --------------------------------------------------------------- display
+
+    private static string PropertyName(int number) =>
+        number > 0 && number < PropertyNames.Length ? PropertyNames[number] : $"unknown ({number})";
+
+    private static string WireTone(BlazeDbWireType wire) => wire switch
+    {
+        BlazeDbWireType.VarInt => "info",
+        BlazeDbWireType.Fixed64 => "accent",
+        BlazeDbWireType.Fixed32 => "accent",
+        _ => "ok",
+    };
+
+    private const string TagSnippet = """
+        tag = (fieldNumber << 3) | wireType     encoded as a varint
+
+        Title is field 2, length-delimited (2):
+            (2 << 3) | 2  =  0x12
+            0x12 0x1c "Design the WAL record layout"
+             tag  len  28 bytes of utf-8
+
+        Effort is field 8, varint (0):
+            (8 << 3) | 0  =  0x40
+            0x40 0xb4 0x01
+             tag  zig-zag varint for 90
+
+        Reading is the mirror image:
+            var (field, wire) = reader.ReadTag();
+            switch (field) { ... default: reader.SkipField(wire); }
+        """;
+
+    private const string ForwardSnippet = """
+        var writer = new BlazeDbBufferWriter();
+        TodoEntry.Table.RowWriter(writer, row);
+
+        // Pretend a newer build appended fields we know nothing about.
+        writer.WriteTag(999, BlazeDbWireType.LengthDelimited);
+        writer.WriteString("a column added in a later release");
+
+        var reader = new BlazeDbBufferReader(writer.WrittenSpan);
+        var decoded = TodoEntry.Table.RowReader(ref reader);
+        // Succeeds - the unknown tag is skipped by wire type alone.
+        """;
+
+    private const string KeySnippet = """
+        var writer = new BlazeDbBufferWriter();
+        TodoEntry.Table.KeyWriter(writer, key);
+
+        var reader = new BlazeDbBufferReader(writer.WrittenSpan);
+        var same = TodoEntry.Table.KeyReader(ref reader);
+        """;
+
+    private const string PrimitivesSnippet = """
+        // Writer
+        WriteVarInt / WriteVarUInt        WriteFixed32 / WriteFixed64
+        WriteBool / WriteSingle / WriteDouble / WriteDecimal
+        WriteString / WriteBytes / WriteGuid
+        WriteDateTime / WriteDateTimeOffset / WriteTimeSpan
+        WriteTag(fieldNumber, wireType)
+        WrittenSpan / WrittenMemory / ToArray() / Reset()
+
+        // Reader - a ref struct over a ReadOnlySpan<byte>
+        ReadVarInt / ReadVarUInt / ReadFixed32 / ReadFixed64
+        ReadBool / ReadSingle / ReadDouble / ReadDecimal
+        ReadString / ReadBytes / ReadGuid
+        ReadDateTime / ReadDateTimeOffset / ReadTimeSpan
+        ReadTag() / SkipField(wireType) / Position / Remaining
+        """;
+}

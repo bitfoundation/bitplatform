@@ -59,6 +59,14 @@ on:
         description: Bink solution
         type: boolean
         default: true
+      balette:
+        description: Balette solution
+        type: boolean
+        default: true
+      blazedb:
+        description: BlazeDb solution
+        type: boolean
+        default: true
       blex:
         description: Blex solution
         type: boolean
@@ -603,6 +611,31 @@ jobs:
         dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Balette
+      run: |
+        dotnet build src/Balette/Bit.Balette/Bit.Balette.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Balette/Bit.Balette/Bit.Balette.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb.Generators
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb.Browser
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb.EntityFrameworkCore
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj --output ./packages --configuration Release
+
     - name: Build and pack Blex
       run: |
         dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -700,6 +733,16 @@ jobs:
     name: bink
     if: ${{ inputs.bink }}
     uses: ./.github/workflows/bit.ci.Bink.yml
+
+  balette:
+    name: balette
+    if: ${{ inputs.balette }}
+    uses: ./.github/workflows/bit.ci.Balette.yml
+
+  blazedb:
+    name: blazedb
+    if: ${{ inputs.blazedb }}
+    uses: ./.github/workflows/bit.ci.BlazeDb.yml
 
   blex:
     name: blex

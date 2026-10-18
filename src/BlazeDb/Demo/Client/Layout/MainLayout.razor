@@ -1,0 +1,130 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject NavigationManager Nav
+@inject DemoDbService Db
+
+@* data-storage says where the demo database ended up once it is open (Opfs, LockedFallback or
+   UnavailableFallback; Opening until then), which is what the E2E suite waits for before it acts. *@
+<div class="shell @(_navOpen ? "nav-open" : null)" data-storage="@(Db.IsOpen ? Db.Mode : StorageMode.Opening)">
+    <aside class="sidebar">
+        <a class="brand" href="">
+            <span class="brand-mark">
+                <Icon Name="flame" Size="17" />
+            </span>
+            <span>
+                <span class="brand-name">BlazeDb</span>
+                <span class="brand-tag">Engine demo</span>
+            </span>
+        </a>
+
+        <NavMenu OnNavigate="CloseNav" />
+
+        <div class="sidebar-foot">
+            <span class="storage-pill">
+                <span class="dot @StorageDot"></span>
+                <span>@Db.StorageLabel</span>
+            </span>
+            <span class="tiny">Blazor WebAssembly · .NET 10 · no runtime reflection</span>
+        </div>
+    </aside>
+
+    <div class="scrim" @onclick="CloseNav"></div>
+
+    <div class="main">
+        <header class="topbar">
+            <button type="button" class="icon-btn nav-toggle" title="Menu" @onclick="ToggleNav">
+                <Icon Name="@(_navOpen ? "close" : "menu")" />
+            </button>
+
+            <nav class="crumbs">
+                <span>@(_current?.Group ?? "Start")</span>
+                <Icon Name="chevron" />
+                <span class="here">@(_current?.Title ?? "Not found")</span>
+            </nav>
+
+            <div class="topbar-spacer"></div>
+
+            <span class="chip" title="Rows currently held in memory in the demo database">
+                <Icon Name="database" />
+                @RowCountLabel
+            </span>
+
+            <ThemeToggle />
+        </header>
+
+        <main class="content">
+            @Body
+        </main>
+    </div>
+</div>
+
+@code {
+    private bool _navOpen;
+    private bool _disposed;
+    private NavItem? _current;
+
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += OnLocationChanged;
+        UpdateCurrent();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Opening here means every page finds the database ready.
+            await Db.GetDatabaseAsync();
+        }
+        catch (Exception)
+        {
+            // The sidebar reports the degraded state; individual pages surface details.
+            return;
+        }
+
+        // The row-count chip would otherwise only refresh on navigation. Every write reaches storage
+        // within a flush interval, and the trace fires on each storage call, so it is a cheap signal.
+        if (!_disposed && Db.Trace is not null)
+        {
+            Db.Trace.Changed += OnStorageActivity;
+        }
+    }
+
+    private void OnStorageActivity() => InvokeAsync(StateHasChanged);
+
+    private string StorageDot => Db.Mode switch
+    {
+        StorageMode.Opfs => "live",
+        StorageMode.LockedFallback => "warn",
+        StorageMode.UnavailableFallback => "warn",
+        _ => "",
+    };
+
+    private string RowCountLabel => Db.IsOpen
+        ? $"{Db.Todos.Count + Db.Settings.Count:N0} rows"
+        : "opening…";
+
+    private void UpdateCurrent() =>
+        _current = SiteMap.Find(Nav.ToBaseRelativePath(Nav.Uri));
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        UpdateCurrent();
+        _navOpen = false;
+        StateHasChanged();
+    }
+
+    private void ToggleNav() => _navOpen = !_navOpen;
+
+    private void CloseNav() => _navOpen = false;
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Nav.LocationChanged -= OnLocationChanged;
+        if (Db.Trace is not null)
+        {
+            Db.Trace.Changed -= OnStorageActivity;
+        }
+    }
+}

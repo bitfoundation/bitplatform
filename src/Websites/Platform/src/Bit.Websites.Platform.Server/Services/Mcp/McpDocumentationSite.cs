@@ -23,7 +23,9 @@ internal sealed partial class McpDocumentationSite : IDisposable
     [
         ("bitBlazorUI", ["src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj"]),
         ("bitBink", ["src/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj"]),
-        ("bitBlex", ["src/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj"]),
+        ("bitBalette", ["src/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj"]),
+        ("bitBlazeDb", ["src/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj"]),
+        ("bitBlex",["src/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj"]),
         ("bitBmage", ["src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj"]),
         ("bitBonboarding", ["src/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj"]),
         ("bitBrouter", ["src/Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj"]),

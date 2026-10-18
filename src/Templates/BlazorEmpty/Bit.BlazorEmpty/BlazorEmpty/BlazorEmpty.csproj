@@ -7,6 +7,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <NoDefaultLaunchSettingsFile Condition="'$(ExcludeLaunchSettings)' == 'True'">True</NoDefaultLaunchSettingsFile>
+    <BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>
   </PropertyGroup>
 
   <!--#if (UseWebAssembly) -->

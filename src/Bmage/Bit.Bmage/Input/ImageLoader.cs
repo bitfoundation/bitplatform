@@ -155,7 +155,7 @@ public sealed class ImageLoader
             Reference = DotNetObjectReference.Create(this);
         }
 
-        public DotNetObjectReference<PasteSubscription> Reference { get; }
+        internal DotNetObjectReference<PasteSubscription> Reference { get; }
 
         public int Id { get; set; }
 

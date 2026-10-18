@@ -1,0 +1,19 @@
+﻿@page "/not-found"
+@layout MainLayout
+
+<PageTitle>Not found - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="404" IconName="alert" Title="That page does not exist"
+            Lead="The link may be out of date. Everything the demo covers is listed below." />
+
+<div class="grid grid-2">
+    @foreach (var item in SiteMap.Items)
+    {
+        <a class="card" href="@item.Path">
+            <div class="card-icon"><Icon Name="@item.Icon" /></div>
+            <h3>@item.Title</h3>
+            <p>@item.Blurb</p>
+            <span class="card-arrow">Open <Icon Name="arrow-right" /></span>
+        </a>
+    }
+</div>
