@@ -291,6 +291,9 @@ _book
 /src/Balette/Bit.Balette/Scripts/**/*.js
 /src/Balette/Bit.Balette/wwwroot/**/*.js
 /src/Balette/Bit.Balette/wwwroot/**/*.css
+/src/BbScanner/Bit.BbScanner/Scripts/**/*.js
+/src/BbScanner/Bit.BbScanner/wwwroot/**/*.js
+/src/BbScanner/Bit.BbScanner/wwwroot/**/*.css
 /src/BlazeDb/Bit.BlazeDb.Browser/Scripts/**/*.js
 /src/BlazeDb/Bit.BlazeDb.Browser/wwwroot/**/*.js
 

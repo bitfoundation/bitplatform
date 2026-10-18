@@ -188,6 +188,11 @@ jobs:
     - name: dotnet pack Balette
       run: dotnet pack src/Balette/Bit.Balette/Bit.Balette.csproj --output . --configuration Release
 
+    - name: dotnet build BbScanner
+      run: dotnet build src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack BbScanner
+      run: dotnet pack src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output . --configuration Release
+
     - name: dotnet build BlazeDb
       run: dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazeDb
