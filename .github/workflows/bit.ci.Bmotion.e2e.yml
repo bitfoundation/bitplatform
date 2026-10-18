@@ -14,17 +14,19 @@ jobs:
   # library ships for where the runtime is what differs. See src/Utilities/Bmotion/Tests/Bit.Bmotion.Tests.E2E/README.md.
   e2e:
     name: Bmotion E2E - ${{ matrix.host }} (${{ matrix.framework }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
         include:
+        - { host: wasm, framework: net11.0 }
+        - { host: wasm-noprerender, framework: net11.0 }
+        - { host: server, framework: net11.0 }
+        - { host: server-noprerender, framework: net11.0 }
+        - { host: auto, framework: net11.0 }
+        - { host: auto-noprerender, framework: net11.0 }
         - { host: wasm, framework: net10.0 }
-        - { host: wasm-noprerender, framework: net10.0 }
         - { host: server, framework: net10.0 }
-        - { host: server-noprerender, framework: net10.0 }
-        - { host: auto, framework: net10.0 }
-        - { host: auto-noprerender, framework: net10.0 }
         - { host: wasm, framework: net9.0 }
         - { host: server, framework: net9.0 }
         - { host: wasm, framework: net8.0 }
@@ -36,10 +38,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -65,7 +72,7 @@ jobs:
       run: dotnet build src/Utilities/Bmotion/Tests/Bit.Bmotion.Tests.E2E/Bit.Bmotion.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Utilities/Bmotion/Tests/Bit.Bmotion.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Bmotion/Tests/Bit.Bmotion.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       env:
