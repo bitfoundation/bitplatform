@@ -20,6 +20,7 @@ jobs:
   e2e:
     name: Bsqlite E2E (Chromium)
     runs-on: ubuntu-24.04
+    timeout-minutes: 60
 
     steps:
 
