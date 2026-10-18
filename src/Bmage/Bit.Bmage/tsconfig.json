@@ -1,0 +1,20 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "target": "ES2020",
+        // The bundle is loaded by BrowserImageInterop via dynamic `import()` and its functions are called as
+        // named module exports, so the output MUST stay an ES module: `module: ESNext` + `rootDir`/`outDir`
+        // emits Scripts/bit-bmage.ts straight to wwwroot/bit-bmage.js with its `export`s intact.
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
+        "rootDir": "Scripts",
+        "outDir": "wwwroot",
+        "noImplicitThis": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "alwaysStrict": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [ "./Scripts/**/*.ts" ]
+}

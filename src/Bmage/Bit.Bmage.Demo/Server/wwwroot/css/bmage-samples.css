@@ -1,0 +1,1399 @@
+﻿/* Bit.Bmage Demo - page chrome and sample styles.
+
+   Everything a demo page draws inside the reading column: its title and lead, the section cards,
+   the controls a worked example is driven with, the previews and tables it reports back in, and
+   the code boxes. The tokens these are written against live in theme.css, and the shell around
+   them in app.css.
+
+   The line this file will not cross: it styles the frame around a sample and the controls that
+   drive it, never the pixels it produces. A preview is shown at its real colours on a checkerboard,
+   because transparency is part of the output and a page that hid it would be misreporting it. */
+
+/* ── Page title and lead ───────────────────────────────────────────────────── */
+
+/* Every page opens the same way: a title, then a paragraph of prose - not another frame. */
+.page-container > h1 {
+    font-family: var(--bmd-fnt-family-display);
+    font-size: var(--bmd-fnt-size-900);
+    font-weight: var(--bmd-fnt-weight-semibold);
+    line-height: var(--bmd-fnt-line-900);
+    letter-spacing: -0.03em;
+    margin-bottom: var(--bmd-sp-l);
+    overflow-wrap: anywhere;
+    text-wrap: balance;
+    color: var(--bmd-clr-fg-1);
+}
+
+/* The lead is set one step up the ramp from the body of the page, so a reader who only reads the
+   first paragraph still gets the whole answer to "what is this page for". */
+.page-intro {
+    line-height: var(--bmd-fnt-line-prose);
+    font-size: var(--bmd-fnt-size-500);
+    margin-bottom: var(--bmd-sp-4xl);
+    max-width: var(--bmd-layout-measure);
+    color: var(--bmd-clr-fg-3);
+}
+
+.page-intro strong {
+    font-weight: var(--bmd-fnt-weight-semibold);
+    color: var(--bmd-clr-fg-2);
+}
+
+@media (max-width: 47.9375rem) {
+    .page-container > h1 {
+        font-size: var(--bmd-fnt-size-800);
+        line-height: var(--bmd-fnt-line-800);
+    }
+
+    .page-intro {
+        font-size: var(--bmd-fnt-size-400);
+        margin-bottom: var(--bmd-sp-xxxl);
+    }
+}
+
+/* ── Section cards ─────────────────────────────────────────────────────────── */
+
+/* A hairline-bordered surface carrying Fluent's lightest elevation. On a documentation page the
+   same card repeats a dozen times, so anything heavier reads as noise long before it reads as
+   depth - but a flat card on a flat canvas leaves the page with no layers at all.
+
+   It is also a size container: the two-column workbench inside a section (.split) decides when to
+   stack from the width the section actually has, not from the window's - the nav panel and the
+   rail take a different share of the window at every breakpoint, and only the section knows what
+   is left. */
+.demo-section {
+    container-type: inline-size;
+    padding: var(--bmd-sp-xxxl);
+    margin-bottom: var(--bmd-sp-xxl);
+    /* Clear of the sticky header when the rail jumps to this section. */
+    scroll-margin-top: calc(var(--bmd-layout-header) + var(--bmd-layout-header-gap));
+    color: var(--bmd-clr-fg-2);
+    background-color: var(--bmd-clr-bg-1);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+    border-radius: var(--bmd-crn-large);
+    box-shadow: var(--bmd-shdw-2);
+}
+
+.demo-section:last-child {
+    margin-bottom: 0;
+}
+
+/* The heading sits over a hairline, so the eye can find the boundary between sections while
+   scrolling a long page instead of relying on whitespace alone. */
+.demo-section h2 {
+    position: relative;
+    font-family: var(--bmd-fnt-family-display);
+    font-size: var(--bmd-fnt-size-600);
+    font-weight: var(--bmd-fnt-weight-semibold);
+    line-height: var(--bmd-fnt-line-600);
+    letter-spacing: -0.02em;
+    padding-bottom: var(--bmd-sp-m);
+    margin-bottom: var(--bmd-sp-l);
+    scroll-margin-top: calc(var(--bmd-layout-header) + var(--bmd-layout-header-gap));
+    overflow-wrap: anywhere;
+    color: var(--bmd-clr-fg-1);
+    border-bottom: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+}
+
+/* Every section is addressable, so a reader can link a colleague at the one paragraph that
+   answers their question. The link is added to the heading by js/demo.js, which is also what
+   gives the heading the id the "on this page" rail points at - so a section is linkable for the
+   same reason it is listed, and the two can never disagree. */
+.heading-anchor {
+    position: absolute;
+    top: 0;
+    inset-inline-start: -1.5rem;
+    width: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: var(--bmd-fnt-line-600);
+    opacity: 0;
+    text-decoration: none;
+    color: var(--bmd-clr-fg-4);
+    transition: opacity var(--bmd-dur-faster) var(--bmd-crv-easy-ease),
+                color var(--bmd-dur-faster) var(--bmd-crv-easy-ease);
+}
+
+.demo-section h2:hover .heading-anchor,
+.heading-anchor:focus-visible {
+    opacity: 1;
+}
+
+.heading-anchor:hover {
+    color: var(--bmd-clr-brand-fg);
+}
+
+.heading-anchor:focus-visible {
+    outline: var(--bmd-strk-thick) solid var(--bmd-clr-stroke-focus);
+    outline-offset: var(--bmd-strk-thin);
+    border-radius: var(--bmd-crn-small);
+}
+
+.heading-anchor svg {
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+/* Below the width where the reading column has a margin to hang the anchor in, it would sit off
+   the edge of the card. */
+@media (max-width: 63.9375rem) {
+    .heading-anchor {
+        display: none;
+    }
+}
+
+.demo-section h3 {
+    font-family: var(--bmd-fnt-family-display);
+    font-size: var(--bmd-fnt-size-500);
+    font-weight: var(--bmd-fnt-weight-semibold);
+    line-height: var(--bmd-fnt-line-500);
+    letter-spacing: -0.01em;
+    margin: var(--bmd-sp-xxl) 0 var(--bmd-sp-s);
+    color: var(--bmd-clr-fg-1);
+}
+
+.demo-section h3:first-child {
+    margin-top: 0;
+}
+
+.demo-section p,
+.demo-section > ul,
+.demo-section > ol {
+    line-height: var(--bmd-fnt-line-prose);
+    font-size: var(--bmd-fnt-size-400);
+    margin-bottom: var(--bmd-sp-xl);
+    max-width: var(--bmd-layout-measure);
+    color: var(--bmd-clr-fg-2);
+}
+
+.demo-section > ul,
+.demo-section > ol {
+    padding-inline-start: var(--bmd-sp-xxl);
+}
+
+.demo-section li + li {
+    margin-top: var(--bmd-sp-xs);
+}
+
+.demo-section strong {
+    font-weight: var(--bmd-fnt-weight-semibold);
+    color: var(--bmd-clr-fg-1);
+}
+
+.demo-section em {
+    font-style: italic;
+}
+
+.demo-section a {
+    text-decoration: underline;
+}
+
+.demo-section a:focus-visible,
+.page-intro a:focus-visible {
+    outline: var(--bmd-strk-thick) solid var(--bmd-clr-stroke-focus);
+    outline-offset: var(--bmd-strk-thin);
+    border-radius: var(--bmd-crn-small);
+}
+
+/* An inline code span, wherever a page sets one in prose. */
+.page-intro code,
+.demo-section code {
+    display: inline;
+    font-size: 0.875em;
+    padding: 0.0625rem 0.25rem;
+    overflow-wrap: anywhere;
+    font-family: var(--bmd-fnt-family-mono);
+    color: var(--bmd-clr-fg-1);
+    background-color: var(--bmd-clr-bg-3);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+    border-radius: var(--bmd-crn-small);
+}
+
+@media (max-width: 47.9375rem) {
+    .demo-section {
+        padding: var(--bmd-sp-xl);
+    }
+}
+
+/* A note set apart from the prose around it: a caveat, a rule of thumb, the one thing to remember
+   from a section. The brand edge says "this is the important bit" without another colour. */
+.callout {
+    margin: 0 0 var(--bmd-sp-xl);
+    padding: var(--bmd-sp-m) var(--bmd-sp-l);
+    max-width: var(--bmd-layout-measure);
+    font-size: var(--bmd-fnt-size-300);
+    line-height: var(--bmd-fnt-line-prose);
+    color: var(--bmd-clr-fg-2);
+    background-color: var(--bmd-clr-brand-wash);
+    border-inline-start: var(--bmd-strk-thicker) solid var(--bmd-clr-brand-stroke);
+    border-radius: var(--bmd-crn-medium);
+}
+
+.demo-section .callout p {
+    margin: 0;
+    font-size: inherit;
+}
+
+/* ── Reference tables ──────────────────────────────────────────────────────── */
+
+/* A table wider than the column scrolls inside its own box rather than pushing the page sideways,
+   which at 320 pixels is the difference between a table and a broken layout. */
+.table-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    margin-bottom: var(--bmd-sp-xl);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+    border-radius: var(--bmd-crn-medium);
+}
+
+.table-scroll:focus-visible {
+    outline: var(--bmd-strk-thick) solid var(--bmd-clr-stroke-focus);
+    outline-offset: var(--bmd-strk-thin);
+}
+
+.table-scroll > table {
+    margin: 0;
+}
+
+table.ref,
+table.data {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--bmd-fnt-size-300);
+    line-height: var(--bmd-fnt-line-300);
+    color: var(--bmd-clr-fg-2);
+}
+
+table.ref th,
+table.ref td,
+table.data th,
+table.data td {
+    text-align: start;
+    vertical-align: top;
+    padding: var(--bmd-sp-s) var(--bmd-sp-m);
+    border-bottom: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+}
+
+table.ref tr:last-child > *,
+table.data tr:last-child > * {
+    border-bottom: none;
+}
+
+table.ref thead th,
+table.data thead th {
+    font-size: var(--bmd-fnt-size-200);
+    font-weight: var(--bmd-fnt-weight-semibold);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--bmd-clr-fg-3);
+    background-color: var(--bmd-clr-bg-2);
+}
+
+table.ref tbody th,
+table.data tbody th {
+    font-weight: var(--bmd-fnt-weight-semibold);
+    color: var(--bmd-clr-fg-1);
+}
+
+table.ref td code,
+table.ref th code {
+    white-space: nowrap;
+}
+
+table.data td.num,
+table.data th.num,
+table.ref td.num,
+table.ref th.num {
+    text-align: end;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ── Code boxes ────────────────────────────────────────────────────────────── */
+
+/* One frame around the toolbar and the code, rather than a button floating above a slab: the bar
+   is the code box's own header, so opening a snippet grows a panel instead of adding a second
+   thing to the page. */
+.code-snippet {
+    margin: 0 0 var(--bmd-sp-xl);
+    overflow: hidden;
+    background-color: var(--bmd-clr-bg-3);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+    border-radius: var(--bmd-crn-medium);
+}
+
+.code-snippet:last-child {
+    margin-bottom: 0;
+}
+
+.code-snippet-bar {
+    gap: var(--bmd-sp-s);
+    display: flex;
+    align-items: center;
+    padding: var(--bmd-sp-xs) var(--bmd-sp-s);
+}
+
+.code-snippet.open .code-snippet-bar {
+    border-bottom: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+}
+
+.code-toggle,
+.code-copy {
+    gap: var(--bmd-sp-xs);
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+    font-weight: var(--bmd-fnt-weight-semibold);
+    font-size: var(--bmd-fnt-size-200);
+    line-height: var(--bmd-fnt-line-300);
+    font-family: inherit;
+    padding: var(--bmd-sp-xs) var(--bmd-sp-s);
+    border: var(--bmd-strk-thin) solid transparent;
+    background: transparent;
+    color: var(--bmd-clr-fg-2);
+    border-radius: var(--bmd-crn-small);
+    transition: color var(--bmd-dur-faster) var(--bmd-crv-easy-ease),
+                background-color var(--bmd-dur-faster) var(--bmd-crv-easy-ease);
+}
+
+.code-toggle:hover,
+.code-copy:hover {
+    color: var(--bmd-clr-fg-1);
+    background-color: var(--bmd-clr-bg-3-hover);
+}
+
+.code-toggle[aria-expanded="true"] {
+    color: var(--bmd-clr-fg-1);
+}
+
+.code-toggle:focus-visible,
+.code-copy:focus-visible,
+.code-block:focus-visible {
+    outline: var(--bmd-strk-thick) solid var(--bmd-clr-stroke-focus);
+    outline-offset: calc(var(--bmd-strk-thick) * -1);
+}
+
+.code-toggle svg,
+.code-copy svg {
+    flex: none;
+    width: 0.875rem;
+    height: 0.875rem;
+}
+
+/* The chevron turns rather than being swapped for a different glyph, so the control reads as one
+   thing in two states instead of as two controls. */
+.code-toggle-icon {
+    display: inline-flex;
+    transition: transform var(--bmd-dur-faster) var(--bmd-crv-easy-ease);
+}
+
+.code-toggle[aria-expanded="true"] .code-toggle-icon {
+    transform: rotate(90deg);
+}
+
+/* The language, and the spring that pushes the copy button to the far end of the bar. */
+.code-lang {
+    flex: 1 1 auto;
+    text-align: end;
+    font-size: var(--bmd-fnt-size-200);
+    line-height: var(--bmd-fnt-line-200);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bmd-clr-fg-4);
+}
+
+.code-copy.copied {
+    color: var(--bmd-clr-brand-fg);
+}
+
+.code-block {
+    margin: 0;
+    width: 100%;
+    display: block;
+    overflow: auto;
+    direction: ltr;
+    white-space: pre;
+    line-height: 1.6;
+    font-size: var(--bmd-fnt-size-300);
+    max-height: 32rem;
+    font-family: var(--bmd-fnt-family-mono);
+    padding: var(--bmd-sp-l);
+    color: var(--bmd-clr-fg-1);
+    background-color: var(--bmd-clr-bg-3);
+}
+
+.code-block code {
+    display: block;
+    padding: 0;
+    border: none;
+    color: inherit;
+    background: none;
+    font-size: inherit;
+    line-height: inherit;
+    font-family: inherit;
+}
+
+.code-block::-webkit-scrollbar {
+    width: 0.5rem;
+}
+
+.code-block::-webkit-scrollbar:horizontal {
+    height: 0.5rem;
+}
+
+.code-block::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.code-block::-webkit-scrollbar-thumb {
+    border-radius: var(--bmd-crn-circular);
+    background-color: var(--bmd-clr-stroke-1);
+}
+
+.code-block::-webkit-scrollbar-thumb:hover {
+    background-color: var(--bmd-clr-stroke-accessible);
+}
+
+.code-block::-webkit-scrollbar-button {
+    display: none;
+}
+
+/* ── Syntax highlighting tokens ────────────────────────────────────────────── */
+
+.code-block .tok-com  { color: var(--bmd-tok-com); font-style: italic; }
+.code-block .tok-tag  { color: var(--bmd-tok-tag); }
+.code-block .tok-attr { color: var(--bmd-tok-attr); }
+.code-block .tok-str  { color: var(--bmd-tok-str); }
+.code-block .tok-key  { color: var(--bmd-tok-key); }
+.code-block .tok-type { color: var(--bmd-tok-type); }
+.code-block .tok-num  { color: var(--bmd-tok-num); }
+.code-block .tok-raz  { color: var(--bmd-tok-raz); }
+
+/* Each source line is its own block so highlighted and plain lines share uniform spacing. */
+.code-block .code-line {
+    display: block;
+}
+
+/* Lines where a Bmage component is used, so they stand out from the markup around them. */
+.code-block .hl-line {
+    display: block;
+    margin: 0 calc(var(--bmd-sp-l) * -1);
+    padding: 0 var(--bmd-sp-l);
+    background-color: var(--bmd-clr-brand-wash);
+    box-shadow: inset var(--bmd-strk-thicker) 0 0 var(--bmd-clr-brand-stroke);
+}
+
+/* A short, live readout set as code: the document behind the editor, the steps of a pipeline, the
+   snippet under a headless example. Plain text that changes as the reader works, so it is not
+   highlighted - and it wraps rather than scrolls, because it is read, not copied. */
+pre.code {
+    margin: 0;
+    padding: var(--bmd-sp-m) var(--bmd-sp-l);
+    overflow-x: auto;
+    direction: ltr;
+    font-family: var(--bmd-fnt-family-mono);
+    font-size: var(--bmd-fnt-size-200);
+    line-height: 1.6;
+    white-space: pre;
+    color: var(--bmd-clr-fg-1);
+    background-color: var(--bmd-clr-bg-3);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+    border-radius: var(--bmd-crn-medium);
+}
+
+/* ── Badges ────────────────────────────────────────────────────────────────── */
+
+.badge-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bmd-sp-s);
+}
+
+/* Fluent's outlined badge: quiet, sized to sit under a paragraph without competing with it. The
+   yes/no pair reports a probe result, so it carries the status colours rather than the brand. */
+.badge {
+    display: inline-block;
+    font-weight: var(--bmd-fnt-weight-semibold);
+    line-height: var(--bmd-fnt-line-200);
+    font-size: var(--bmd-fnt-size-200);
+    padding: var(--bmd-sp-xxs) var(--bmd-sp-s);
+    color: var(--bmd-clr-brand-fg);
+    background-color: var(--bmd-clr-brand-wash);
+    border: var(--bmd-strk-thin) solid transparent;
+    border-radius: var(--bmd-crn-circular);
+}
+
+.badge-yes {
+    color: var(--bmd-clr-success);
+    background-color: color-mix(in srgb, var(--bmd-clr-success) 14%, transparent);
+}
+
+.badge-no {
+    color: var(--bmd-clr-danger);
+    background-color: color-mix(in srgb, var(--bmd-clr-danger) 12%, transparent);
+}
+
+.badge-neutral {
+    color: var(--bmd-clr-fg-3);
+    background-color: var(--bmd-clr-bg-4);
+}
+
+/* ── Workbench layout ──────────────────────────────────────────────────────── */
+
+/* A worked example's two halves: the image on one side, the controls that shape it on the other.
+   It stacks when the section - not the window - is too narrow for both. */
+.split {
+    display: grid;
+    gap: var(--bmd-sp-xxl);
+    align-items: start;
+    grid-template-columns: minmax(0, 1fr) minmax(15rem, 18rem);
+}
+
+@container (max-width: 40rem) {
+    .split {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+/* A group of equal cards: the headless examples, the capability tables. */
+.grid {
+    display: grid;
+    gap: var(--bmd-sp-l);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
+}
+
+/* A card inside a section: the controls panel, one headless example, one capability table. One
+   surface step down from the section around it, the same relationship the section has to the page. */
+.card {
+    min-width: 0;
+    padding: var(--bmd-sp-l);
+    background-color: var(--bmd-clr-bg-2);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+    border-radius: var(--bmd-crn-large);
+}
+
+.demo-section .card-title,
+.card-title {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bmd-sp-s);
+    margin: 0 0 var(--bmd-sp-m);
+    font-size: var(--bmd-fnt-size-200);
+    font-weight: var(--bmd-fnt-weight-semibold);
+    line-height: var(--bmd-fnt-line-200);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bmd-clr-fg-3);
+}
+
+.demo-section .card p {
+    font-size: var(--bmd-fnt-size-300);
+    margin-bottom: var(--bmd-sp-m);
+}
+
+.card + .card {
+    margin-top: var(--bmd-sp-l);
+}
+
+.grid > .card + .card,
+.split > .card + .card {
+    margin-top: 0;
+}
+
+/* The row of buttons that brings in an image or acts on the result. */
+.btn-row,
+.sample-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bmd-sp-s);
+}
+
+.sample-row {
+    margin-top: var(--bmd-sp-m);
+}
+
+.demo-section .sample-row .small {
+    margin: 0;
+}
+
+.toolbar-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bmd-sp-s) var(--bmd-sp-l);
+    margin-bottom: var(--bmd-sp-l);
+}
+
+.toolbar-group {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bmd-sp-xs);
+}
+
+.toolbar-label {
+    margin-inline-end: var(--bmd-sp-xs);
+    font-size: var(--bmd-fnt-size-200);
+    font-weight: var(--bmd-fnt-weight-semibold);
+    color: var(--bmd-clr-fg-3);
+}
+
+.divider {
+    height: 0;
+    margin: var(--bmd-sp-l) 0;
+    border: none;
+    border-top: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+}
+
+/* ── Controls ──────────────────────────────────────────────────────────────── */
+
+/* Fluent's standard button at its control height: the neutral surface with a hairline, and the
+   brand fill only for the one action a panel exists to take. */
+.btn {
+    gap: var(--bmd-sp-xs);
+    display: inline-flex;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    min-height: 2rem;
+    padding: var(--bmd-sp-xs) var(--bmd-sp-m);
+    font-family: inherit;
+    font-size: var(--bmd-fnt-size-300);
+    font-weight: var(--bmd-fnt-weight-semibold);
+    line-height: var(--bmd-fnt-line-300);
+    text-decoration: none;
+    color: var(--bmd-clr-fg-1);
+    background-color: var(--bmd-clr-bg-1);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-1);
+    border-radius: var(--bmd-crn-medium);
+    transition: background-color var(--bmd-dur-faster) var(--bmd-crv-easy-ease),
+                border-color var(--bmd-dur-faster) var(--bmd-crv-easy-ease);
+}
+
+.btn:hover:not(:disabled) {
+    border-color: var(--bmd-clr-stroke-accessible);
+    background-color: var(--bmd-clr-bg-1-hover);
+}
+
+.btn:active:not(:disabled) {
+    background-color: var(--bmd-clr-bg-1-pressed);
+}
+
+.btn.btn-accent {
+    color: var(--bmd-clr-brand-fg-on-bg);
+    background-color: var(--bmd-clr-brand-bg);
+    border-color: transparent;
+}
+
+.btn.btn-accent:hover:not(:disabled) {
+    background-color: var(--bmd-clr-brand-bg-hover);
+}
+
+.btn.btn-accent:active:not(:disabled) {
+    background-color: var(--bmd-clr-brand-bg-pressed);
+}
+
+.btn:disabled {
+    cursor: default;
+    color: var(--bmd-clr-fg-disabled);
+    background-color: var(--bmd-clr-bg-disabled);
+    border-color: var(--bmd-clr-stroke-2);
+}
+
+.btn.btn-small {
+    min-height: 1.625rem;
+    padding: 0 var(--bmd-sp-s);
+    font-size: var(--bmd-fnt-size-200);
+}
+
+.btn.btn-block {
+    width: 100%;
+}
+
+.btn svg {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+}
+
+/* A toggle that is one of a set: a size to produce, a filter to apply, a theme. Its pressed state
+   is aria-pressed, which is both what a screen reader announces and what paints it - so the two
+   cannot disagree. */
+.chip-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bmd-sp-xs);
+}
+
+.chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 1.75rem;
+    cursor: pointer;
+    padding: 0 var(--bmd-sp-mnudge);
+    font-family: inherit;
+    font-size: var(--bmd-fnt-size-200);
+    font-weight: var(--bmd-fnt-weight-medium);
+    line-height: var(--bmd-fnt-line-200);
+    color: var(--bmd-clr-fg-1);
+    background-color: var(--bmd-clr-bg-1);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-1);
+    border-radius: var(--bmd-crn-circular);
+    transition: background-color var(--bmd-dur-faster) var(--bmd-crv-easy-ease),
+                border-color var(--bmd-dur-faster) var(--bmd-crv-easy-ease);
+}
+
+.chip:hover:not(:disabled) {
+    border-color: var(--bmd-clr-stroke-accessible);
+}
+
+button.chip[aria-pressed="true"] {
+    color: var(--bmd-clr-brand-accent-contrast);
+    background-color: var(--bmd-clr-brand-accent);
+    border-color: var(--bmd-clr-brand-accent);
+}
+
+.chip:disabled {
+    cursor: default;
+    color: var(--bmd-clr-fg-disabled);
+}
+
+/* A swatch reporting a colour rather than a control: the dominant colours of an upload. */
+span.chip {
+    cursor: default;
+    font-variant-numeric: tabular-nums;
+}
+
+.btn:focus-visible,
+.chip:focus-visible,
+.field input:focus-visible,
+.field select:focus-visible {
+    outline: var(--bmd-strk-thick) solid var(--bmd-clr-stroke-focus);
+    outline-offset: var(--bmd-strk-thin);
+}
+
+/* A labelled control in a panel. The label carries the current value at its far end, so a slider
+   reads as "Output size  256 px" without a second line. */
+.field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bmd-sp-xs);
+    margin-bottom: var(--bmd-sp-l);
+}
+
+.field:last-child {
+    margin-bottom: 0;
+}
+
+.field-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: var(--bmd-sp-s);
+    font-size: var(--bmd-fnt-size-200);
+    font-weight: var(--bmd-fnt-weight-semibold);
+    line-height: var(--bmd-fnt-line-200);
+    color: var(--bmd-clr-fg-2);
+}
+
+.field-value {
+    font-weight: var(--bmd-fnt-weight-regular);
+    font-variant-numeric: tabular-nums;
+    color: var(--bmd-clr-fg-1);
+}
+
+.field input[type="range"] {
+    width: 100%;
+    height: 1.5rem;
+    margin: 0;
+    accent-color: var(--bmd-clr-brand-accent);
+}
+
+.field input[type="checkbox"] {
+    width: 1rem;
+    height: 1rem;
+    margin: 0;
+    flex: none;
+    accent-color: var(--bmd-clr-brand-accent);
+}
+
+.field input[type="text"],
+.field select {
+    width: 100%;
+    height: 2rem;
+    padding: 0 var(--bmd-sp-s);
+    font: inherit;
+    font-size: var(--bmd-fnt-size-300);
+    color: var(--bmd-clr-fg-1);
+    background-color: var(--bmd-clr-bg-1);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-1);
+    border-bottom-color: var(--bmd-clr-stroke-accessible);
+    border-radius: var(--bmd-crn-medium);
+}
+
+.field-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--bmd-sp-s);
+}
+
+.field-inline .field-label {
+    margin: 0;
+}
+
+.field-hint {
+    font-size: var(--bmd-fnt-size-200);
+    line-height: var(--bmd-fnt-line-300);
+    color: var(--bmd-clr-fg-3);
+}
+
+/* ── Results ───────────────────────────────────────────────────────────────── */
+
+.stat-grid {
+    display: grid;
+    gap: var(--bmd-sp-m);
+    grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr));
+}
+
+.stat-grid .stat {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bmd-sp-xxs);
+    min-width: 0;
+}
+
+.stat-grid .stat-label {
+    font-size: var(--bmd-fnt-size-100);
+    font-weight: var(--bmd-fnt-weight-semibold);
+    line-height: var(--bmd-fnt-line-100);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--bmd-clr-fg-3);
+}
+
+.stat-grid .stat-value {
+    font-family: var(--bmd-fnt-family-display);
+    font-size: var(--bmd-fnt-size-500);
+    font-weight: var(--bmd-fnt-weight-semibold);
+    line-height: var(--bmd-fnt-line-500);
+    font-variant-numeric: tabular-nums;
+    overflow-wrap: anywhere;
+    color: var(--bmd-clr-fg-1);
+}
+
+.stat-value.good,
+.text-good {
+    color: var(--bmd-clr-success);
+}
+
+.stat-value.bad,
+.text-bad {
+    color: var(--bmd-clr-danger);
+}
+
+/* What a pipeline produced, at its real colours. The checkerboard is under every preview because
+   transparency is part of the output - a round avatar's corners, a rotated photo's wedges - and a
+   preview painted on white would report them as white. */
+.preview-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+    border-radius: var(--bmd-crn-medium);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+    background-color: #FFFFFF;
+    background-image:
+        linear-gradient(45deg, #E3E3E3 25%, transparent 25%),
+        linear-gradient(-45deg, #E3E3E3 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #E3E3E3 75%),
+        linear-gradient(-45deg, transparent 75%, #E3E3E3 75%);
+    background-size: 1rem 1rem;
+    background-position: 0 0, 0 0.5rem, 0.5rem -0.5rem, -0.5rem 0;
+}
+
+div.preview-image[aria-busy="true"] {
+    min-height: 8rem;
+}
+
+.preview-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--bmd-sp-xxl);
+}
+
+.preview-meta {
+    margin-top: var(--bmd-sp-s);
+}
+
+.thumb-grid {
+    display: grid;
+    gap: var(--bmd-sp-m);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 9rem), 1fr));
+}
+
+.thumb {
+    overflow: hidden;
+    background-color: var(--bmd-clr-bg-1);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+    border-radius: var(--bmd-crn-medium);
+}
+
+.thumb-meta {
+    padding: var(--bmd-sp-s);
+    font-size: var(--bmd-fnt-size-200);
+    line-height: var(--bmd-fnt-line-300);
+    color: var(--bmd-clr-fg-3);
+}
+
+.thumb-name {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: var(--bmd-fnt-weight-semibold);
+    color: var(--bmd-clr-fg-1);
+}
+
+.progress {
+    height: 0.375rem;
+    overflow: hidden;
+    background-color: var(--bmd-clr-bg-5);
+    border-radius: var(--bmd-crn-circular);
+}
+
+.progress-bar {
+    height: 100%;
+    background-color: var(--bmd-clr-brand-accent);
+    transition: width var(--bmd-dur-fast) var(--bmd-crv-easy-ease);
+}
+
+/* An outcome the reader has to see: a file that could not be read, a budget that cannot be met.
+   role="alert" on the element is what announces it; the colour only repeats it. */
+.alert {
+    margin-bottom: var(--bmd-sp-l);
+    padding: var(--bmd-sp-m) var(--bmd-sp-l);
+    font-size: var(--bmd-fnt-size-300);
+    line-height: var(--bmd-fnt-line-prose);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-1);
+    border-radius: var(--bmd-crn-medium);
+}
+
+.alert-error {
+    color: var(--bmd-clr-danger);
+    border-color: color-mix(in srgb, var(--bmd-clr-danger) 55%, transparent);
+    background-color: color-mix(in srgb, var(--bmd-clr-danger) 8%, transparent);
+}
+
+.alert-info {
+    color: var(--bmd-clr-fg-2);
+    border-color: color-mix(in srgb, var(--bmd-clr-brand-stroke) 55%, transparent);
+    background-color: var(--bmd-clr-brand-wash);
+}
+
+.muted {
+    color: var(--bmd-clr-fg-3);
+}
+
+.demo-section .small,
+.small {
+    font-size: var(--bmd-fnt-size-200);
+    line-height: var(--bmd-fnt-line-300);
+}
+
+.mono {
+    font-family: var(--bmd-fnt-family-mono);
+    font-size: var(--bmd-fnt-size-200);
+}
+
+/* Shown next to a result while it is being recomputed, so a slow run never looks like a frozen
+   page. It is a status, so the element carrying it is role="status". */
+.working {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--bmd-sp-snudge);
+    font-size: var(--bmd-fnt-size-200);
+    font-weight: var(--bmd-fnt-weight-regular);
+    letter-spacing: normal;
+    text-transform: none;
+    color: var(--bmd-clr-fg-3);
+}
+
+.working::before {
+    content: "";
+    width: 0.75rem;
+    height: 0.75rem;
+    border: var(--bmd-strk-thick) solid var(--bmd-clr-stroke-2);
+    border-top-color: var(--bmd-clr-brand-accent);
+    border-radius: var(--bmd-crn-circular);
+    animation: bmd-spin 0.8s linear infinite;
+}
+
+@keyframes bmd-spin {
+    to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .working::before {
+        animation-duration: 2.4s;
+    }
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* ── The editor's frame ────────────────────────────────────────────────────── */
+
+/* The editor fills its container, so the page gives it one. Never taller than the window under the
+   header, so the whole working surface - toolbar, canvas, panel - is on screen at once once it has
+   been scrolled to; and it scrolls to just under the header rather than under it. */
+.editor-frame {
+    height: clamp(24rem, calc(100dvh - var(--bmd-layout-header) - var(--bmd-sp-xxxl)), 40rem);
+    scroll-margin-top: calc(var(--bmd-layout-header) + var(--bmd-sp-l));
+}
+
+@media (max-width: 47.9375rem) {
+    /* Below the editor's own breakpoint its panel moves under the canvas, so the frame needs the
+       height of both. */
+    .editor-frame {
+        height: 46rem;
+    }
+}
+
+/* ── Page specifics ────────────────────────────────────────────────────────── */
+
+/* Avatar: the result is clipped to its shape as an app would show it - the exported pixels are
+   round on their own, this only keeps the square preview box from framing them as a square. */
+.avatar-frame {
+    overflow: hidden;
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+}
+
+.avatar-frame .avatar-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border: none;
+    border-radius: 0;
+}
+
+.avatar-source {
+    flex: 1 1 12rem;
+    min-width: 0;
+}
+
+/* Results under a drop zone: the progress row, the totals, the actions and the per-file table each
+   get the same breathing room from the thing above them. */
+.optimize-progress .progress {
+    flex: 1 1 8rem;
+}
+
+.results-stats,
+.results-actions,
+.results-table,
+.formats-results,
+.metadata-report,
+.perf-results,
+.metadata-warning,
+.first-image-result {
+    margin-top: var(--bmd-sp-l);
+}
+
+.results-actions + .table-scroll {
+    margin-top: var(--bmd-sp-l);
+}
+
+/* Product: every size shown whole, letterboxed on the stage colour, so a tall variant and a wide
+   one read as the same product at different sizes. */
+.thumb .thumb-image {
+    width: 100%;
+    height: 8rem;
+    object-fit: contain;
+    border: none;
+    border-radius: 0;
+}
+
+.thumb-save {
+    margin-top: var(--bmd-sp-snudge);
+}
+
+/* Social: tall presets (a story is 9:16) are held to the window, so the whole composition and its
+   controls stay in view together. */
+.social-preview {
+    max-height: 60vh;
+    margin-inline: auto;
+}
+
+.social-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--bmd-sp-s);
+    margin-top: var(--bmd-sp-m);
+}
+
+/* Headless: the source's facts sit beside it, and every example card shows its result whole. */
+.headless-source {
+    flex: 1 1 16rem;
+    min-width: 0;
+    margin-bottom: 0;
+}
+
+.headless-preview {
+    width: 100%;
+    max-height: 12.5rem;
+    object-fit: contain;
+}
+
+.demo-section .headless-description {
+    margin: var(--bmd-sp-s) 0 var(--bmd-sp-xs);
+}
+
+.card pre.code {
+    margin-top: var(--bmd-sp-s);
+    white-space: pre-wrap;
+}
+
+/* Pipelines: the playground's readouts. */
+.pipeline-preview {
+    max-height: 22rem;
+    margin-inline: auto;
+}
+
+.demo-section .playground-label {
+    margin-top: var(--bmd-sp-l);
+}
+
+.playground-stats {
+    margin-top: var(--bmd-sp-l);
+}
+
+/* Getting started: the snippet's output beside its numbers. */
+.first-image {
+    flex: 0 1 20rem;
+    min-width: 0;
+}
+
+.first-image-stats {
+    flex: 1 1 14rem;
+}
+
+/* Formats: an exporter's refusal is long - it names the format it was handed instead - so it wraps
+   under the badge rather than stretching the table. */
+.formats-error {
+    display: block;
+    margin-top: var(--bmd-sp-xs);
+    max-width: 32rem;
+}
+
+/* MCP server: the panels that call the demo's own /api/mcp endpoints. */
+.mcp-why .card p:last-of-type {
+    margin-bottom: var(--bmd-sp-s);
+}
+
+/* The client tabs are chips that carry a tab's selection rather than a toggle's pressed state. */
+.mcp-tabs {
+    margin: var(--bmd-sp-l) 0 var(--bmd-sp-s);
+}
+
+button.chip[aria-selected="true"] {
+    color: var(--bmd-clr-brand-accent-contrast);
+    background-color: var(--bmd-clr-brand-accent);
+    border-color: var(--bmd-clr-brand-accent);
+}
+
+/* Free text sent to a tool: a pipeline, a piece of code, a search. Monospace where it is code, so
+   what the reader types lines up the way it will in their editor. */
+.mcp-input {
+    width: 100%;
+    min-width: 0;
+    padding: var(--bmd-sp-s);
+    font: inherit;
+    font-size: var(--bmd-fnt-size-300);
+    color: var(--bmd-clr-fg-1);
+    background-color: var(--bmd-clr-bg-1);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-1);
+    border-bottom-color: var(--bmd-clr-stroke-accessible);
+    border-radius: var(--bmd-crn-medium);
+}
+
+.mcp-input:focus-visible {
+    outline: var(--bmd-strk-thick) solid var(--bmd-clr-stroke-focus);
+    outline-offset: var(--bmd-strk-thin);
+}
+
+textarea.mcp-input {
+    resize: vertical;
+    line-height: 1.55;
+    font-family: var(--bmd-fnt-family-mono);
+    font-size: var(--bmd-fnt-size-200);
+    white-space: pre;
+    overflow-x: auto;
+}
+
+.mcp-pipeline {
+    min-height: 6.5rem;
+}
+
+.mcp-code {
+    min-height: 16rem;
+}
+
+.mcp-presets {
+    margin-bottom: var(--bmd-sp-l);
+}
+
+.mcp-run-stats {
+    margin-bottom: var(--bmd-sp-l);
+}
+
+.mcp-operations {
+    margin-bottom: var(--bmd-sp-s);
+    white-space: pre-wrap;
+}
+
+.mcp-notes,
+.mcp-resources {
+    margin: 0 0 var(--bmd-sp-m);
+    padding-inline-start: var(--bmd-sp-l);
+    font-size: var(--bmd-fnt-size-300);
+}
+
+.mcp-notes li + li,
+.mcp-resources li + li {
+    margin-top: var(--bmd-sp-xs);
+}
+
+/* A resource's description quotes URIs such as bmage://source/Demo%2FClient%2F..., one unbreakable
+   word wider than a phone; it breaks anywhere rather than pushing the page sideways. */
+.mcp-resources li {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.demo-section .mcp-reading {
+    max-width: var(--bmd-layout-measure);
+    color: var(--bmd-clr-fg-2);
+}
+
+.mcp-results {
+    margin-top: var(--bmd-sp-l);
+}
+
+/* One finding per row, its severity on the leading edge so a list of them sorts itself by eye. */
+.mcp-findings {
+    list-style: none;
+    margin: var(--bmd-sp-l) 0 0;
+    padding: 0;
+    display: grid;
+    gap: var(--bmd-sp-s);
+}
+
+.mcp-finding {
+    display: flex;
+    flex-direction: column;
+    gap: var(--bmd-sp-xs);
+    min-width: 0;
+    padding: var(--bmd-sp-m) var(--bmd-sp-l);
+    font-size: var(--bmd-fnt-size-300);
+    background-color: var(--bmd-clr-bg-2);
+    border: var(--bmd-strk-thin) solid var(--bmd-clr-stroke-2);
+    border-inline-start: var(--bmd-strk-thicker) solid var(--bmd-clr-stroke-1);
+    border-radius: var(--bmd-crn-medium);
+}
+
+.mcp-finding.error {
+    border-inline-start-color: var(--bmd-clr-danger);
+}
+
+.mcp-finding.warning {
+    border-inline-start-color: color-mix(in srgb, var(--bmd-clr-danger) 50%, #E8A317);
+}
+
+.mcp-finding.suggestion {
+    border-inline-start-color: var(--bmd-clr-brand-stroke);
+}
+
+.mcp-finding-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--bmd-sp-s);
+}
+
+.mcp-finding-message {
+    color: var(--bmd-clr-fg-2);
+}
+
+.mcp-finding-fix {
+    color: var(--bmd-clr-fg-1);
+    font-weight: var(--bmd-fnt-weight-semibold);
+}
+
+.badge-warning {
+    color: color-mix(in srgb, var(--bmd-clr-danger) 50%, #E8A317);
+    background-color: color-mix(in srgb, color-mix(in srgb, var(--bmd-clr-danger) 50%, #E8A317) 14%, transparent);
+}
+
+.mcp-search {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--bmd-sp-s);
+    margin-bottom: var(--bmd-sp-l);
+}
+
+.mcp-search .mcp-input {
+    flex: 1 1 14rem;
+    width: auto;
+}
+
+.mcp-hits {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--bmd-sp-xs);
+}
+
+.mcp-hits li {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: var(--bmd-sp-xs) var(--bmd-sp-m);
+    min-width: 0;
+    padding: var(--bmd-sp-s) var(--bmd-sp-m);
+    background-color: var(--bmd-clr-bg-2);
+    border-radius: var(--bmd-crn-medium);
+}
+
+.mcp-hit-title {
+    font-weight: var(--bmd-fnt-weight-semibold);
+    color: var(--bmd-clr-fg-1);
+    overflow-wrap: anywhere;
+}
+
+/* The parameters stack in their cell; a tool with seven of them is a column, not a paragraph. */
+.mcp-params {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--bmd-sp-xxs);
+}
+
+table.ref.mcp-tools td code,
+table.ref.mcp-tools th code {
+    white-space: normal;
+    overflow-wrap: anywhere;
+}

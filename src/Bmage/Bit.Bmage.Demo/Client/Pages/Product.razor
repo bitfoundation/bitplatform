@@ -1,0 +1,435 @@
+﻿@page "/product"
+@implements IDisposable
+@inject ImageLoader Loader
+@inject ImageExporter Exporter
+@inject IImageCapabilityProvider Capabilities
+
+@* A catalogue's image set from one upload: the decoded source is kept and every size is a run of the
+   same pipeline shape against it, so the expensive part - the decode - happens once. Sizes larger
+   than the source are skipped and said to be, because upscaling a product photo invents detail. *@
+
+<PageTitle>Product images - Bit.Bmage</PageTitle>
+
+<h1>Product images</h1>
+
+<p class="page-intro">
+    A catalogue needs the same photo at half a dozen sizes, on a consistent background, cropped the
+    same way every time. One upload produces <strong>the whole set</strong> here, in a single pass,
+    before anything is sent anywhere.
+</p>
+
+<div class="demo-section">
+    <h2>Try it</h2>
+
+    @if (_error is not null)
+    {
+        <div class="alert alert-error" role="alert">@_error</div>
+    }
+
+    <div class="split">
+        <div>
+            @if (_source is null)
+            {
+                <BmageDropZone Label="Drop a product photo here" OnFilesSelected="OnFilesSelected" />
+                <div class="sample-row">
+                    <button type="button" class="btn" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a sample image</button>
+                </div>
+            }
+            else
+            {
+                @if (_busy)
+                {
+                    <p class="working" role="status">Producing @(_variants.Count + 1) of @_planned&hellip;</p>
+                }
+
+                <div class="thumb-grid">
+                    @foreach (var variant in _variants)
+                    {
+                        <div class="thumb" @key="variant.Version">
+                            <ImagePreview Image="variant.Image" Version="variant.Version" Alt="@($"Product image, {variant.Name}")"
+                                          Class="thumb-image" />
+                            <div class="thumb-meta">
+                                <div class="thumb-name">@variant.Name</div>
+                                <div>@variant.Image.Width &times; @variant.Image.Height &middot; @Display.Bytes(variant.Bytes)</div>
+                                <button type="button" class="btn btn-small thumb-save" @onclick="() => Download(variant)" aria-label="@($"Save {variant.Name}")">Save</button>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <div class="btn-row results-actions">
+                    <button type="button" class="btn btn-accent" disabled="@(_busy || _variants.Count == 0)" @onclick="DownloadAll">
+                        <Icon Path="@Icons.Download" />
+                        Download all @_variants.Count
+                    </button>
+                    <button type="button" class="btn" @onclick="Clear">Start over</button>
+                </div>
+                <p class="small muted preview-meta">
+                    @if (_variants.Count > 0)
+                    {
+                        <text>Total output @Display.Bytes(_variants.Sum(v => v.Bytes))@(_sourceBytes > 0 ? $" from a {Display.Bytes(_sourceBytes)} upload" : null).</text>
+                    }
+                    else if (!_busy && _sizes.Count == 0)
+                    {
+                        <text>Pick at least one size.</text>
+                    }
+                    @if (_skipped.Count > 0)
+                    {
+                        <text> Skipped @string.Join(", ", _skipped.OrderByDescending(s => s)) because the source is only @_source.Width &times; @_source.Height and upscaling would invent detail.</text>
+                    }
+                </p>
+            }
+        </div>
+
+        <div class="card">
+            <p class="card-title">Recipe</p>
+
+            <div class="field">
+                <label class="field-label" for="bg">Background</label>
+                <input id="bg" type="color" class="bmg-color" value="@_background.ToHex(false)" @onchange="OnBackgroundChanged" aria-describedby="bg-hint" />
+                <span class="field-hint" id="bg-hint">Applied behind transparent pixels and in the padding, so every tile matches.</span>
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="pad">Padding <span class="field-value">@_padding%</span></label>
+                <input id="pad" type="range" min="0" max="25" step="1" value="@_padding" @oninput="OnPaddingChanged" />
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="ratio">Shape</label>
+                <select id="ratio" class="bmg-select" @onchange="OnRatioChanged">
+                    <option value="square" selected="@(_shape == "square")">Square (1:1)</option>
+                    <option value="portrait" selected="@(_shape == "portrait")">Portrait (3:4)</option>
+                    <option value="landscape" selected="@(_shape == "landscape")">Landscape (4:3)</option>
+                </select>
+            </div>
+
+            <div class="field" role="group" aria-labelledby="sizes-label">
+                <span class="field-label" id="sizes-label">Sizes</span>
+                <div class="chip-row">
+                    @foreach (var size in AllSizes)
+                    {
+                        <button type="button" class="chip" aria-pressed="@(_sizes.Contains(size) ? "true" : "false")" @onclick="() => ToggleSize(size)">@size</button>
+                    }
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="pformat">Format</label>
+                <select id="pformat" class="bmg-select" disabled="@(_capabilities is null)" @onchange="OnFormatChanged">
+                    @foreach (var format in AvailableFormats)
+                    {
+                        <option value="@format" selected="@(_format == format)">@format.ToString().ToUpperInvariant()</option>
+                    }
+                </select>
+            </div>
+
+            <button type="button" class="btn btn-accent btn-block" disabled="@(_source is null || _busy)" @onclick="Generate">
+                @(_busy ? "Working…" : "Regenerate")
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>One source, many outputs</h2>
+    <p>
+        <code>Fit</code> rather than <code>Cover</code>: a product must never be cropped, so it is
+        scaled to fit the padded area and centred on an <code>ImageCanvas</code> filled with the
+        catalogue background. (<code>ResizeMode.Contain</code> pads too, but it fits to the full canvas
+        first - fine for a letterbox, wrong for a margin.) Each size is a separate run against pixels
+        that were decoded once, which is the expensive part.
+    </p>
+    <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
+</div>
+
+@code {
+    private sealed record Variant(string Name, int Size, ImageBuffer Image, EncodedImage Encoded, long Version)
+    {
+        public long Bytes => Encoded.Length;
+    }
+
+    private ImageBuffer? _source;
+    private readonly List<Variant> _variants = [];
+    private readonly HashSet<int> _sizes = [1024, 512, 256, 128];
+    private Rgba32 _background = Rgba32.White;
+    private int _padding = 6;
+    private string _shape = "square";
+    private ImageFormat _format = ImageFormat.WebP;
+    private readonly List<int> _skipped = [];
+    private long _sourceBytes;
+    private bool _busy;
+    private int _planned;
+    private string? _error;
+    private long _version;
+    private ImageCapabilities? _capabilities;
+    private readonly Debouncer _debounce = new(250);
+    // Identifies the newest run. A change while a run is producing variants starts a new run and the old one stops.
+    private int _run;
+
+    private static readonly int[] AllSizes = [2048, 1024, 512, 256, 128, 64];
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    // Until the probe has run, only the current choice is listed (and the list is disabled).
+    private IEnumerable<ImageFormat> AvailableFormats => _capabilities is null
+        ? [_format]
+        : new[] { ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Jpeg, ImageFormat.Png }.Where(_capabilities.CanEncode);
+
+    private const string Snippet = """
+        // Fit, never Cover: a product must never be cropped. It is scaled to fit the
+        // padded area and centred on a canvas of the catalogue background.
+        foreach (var size in sizes)
+        {
+            var inner = (int)(size * (1 - padding * 2));
+            using var fitted = await ImagePipeline.Create()
+                .AutoOrient()
+                .Resize(inner, inner, ResizeMode.Fit)
+                .Sharpen(0.25f)
+                .ExecuteAsync(decodedOnce);
+
+            using var canvas = ImageCanvas.Create(size, size, catalogueBackground);
+            canvas.DrawImage(fitted, new RectangleF(
+                (size - fitted.Width) / 2f, (size - fitted.Height) / 2f, fitted.Width, fitted.Height));
+
+            using var variant = canvas.Snapshot();
+            results.Add(await exporter.EncodeAsync(variant, exportOptions));
+        }
+        """;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || IsHydrating) return;
+        _capabilities = await Capabilities.GetAsync();
+        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Jpeg]);
+        StateHasChanged();
+    }
+
+    private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
+    {
+        if (files.Count == 0) return;
+        _error = null;
+        try
+        {
+            var image = await Loader.LoadAsync(files[0]);
+            await SetSourceAsync(image, files[0].Size);
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+        }
+    }
+
+    private async Task UseSample()
+    {
+        _error = null;
+        _busy = true;
+        StateHasChanged();
+        await Task.Yield();
+        await SetSourceAsync(SampleImages.Landscape(), 0);
+    }
+
+    private async Task SetSourceAsync(ImageBuffer image, long bytes)
+    {
+        _run++; // a run still producing variants was reading the old source
+        ClearVariants();
+        _source?.Dispose();
+        _source = image;
+        _sourceBytes = bytes;
+        await Generate();
+    }
+
+    private void ToggleSize(int size)
+    {
+        if (!_sizes.Remove(size)) _sizes.Add(size);
+        _debounce.Schedule(async _ => await Generate());
+    }
+
+    private void OnPaddingChanged(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var value)) return;
+        _padding = value;
+        _debounce.Schedule(async _ => await Generate());
+    }
+
+    private void OnBackgroundChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string hex && Rgba32.TryParseHex(hex, out var color))
+        {
+            _background = color;
+            _debounce.Schedule(async _ => await Generate());
+        }
+    }
+
+    private void OnRatioChanged(ChangeEventArgs e)
+    {
+        _shape = e.Value?.ToString() ?? "square";
+        _debounce.Schedule(async _ => await Generate());
+    }
+
+    private void OnFormatChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format))
+        {
+            _format = format;
+            _debounce.Schedule(async _ => await Generate());
+        }
+    }
+
+    private (int Width, int Height) Dimensions(int size) => _shape switch
+    {
+        "portrait" => (size * 3 / 4, size),
+        "landscape" => (size, size * 3 / 4),
+        _ => (size, size),
+    };
+
+    private async Task Generate()
+    {
+        if (_source is not { } source) return;
+        var run = ++_run;
+        _busy = true;
+        _error = null;
+        ClearVariants();
+        _skipped.Clear();
+
+        var exportOptions = new ImageExportOptions
+        {
+            Format = _format,
+            Quality = 0.85,
+            Metadata = MetadataPolicy.Remove,
+            Background = _background,
+        };
+
+        // Upscaling a product photo invents detail that is not there, and costs the most time of any variant. A
+        // catalogue pipeline should stop at the source resolution and say so.
+        var longestEdge = Math.Max(source.Width, source.Height);
+        var sizes = new List<int>();
+        foreach (var size in _sizes.OrderByDescending(s => s))
+        {
+            var (width, height) = Dimensions(size);
+            if (Math.Max(width, height) > longestEdge) _skipped.Add(size);
+            else sizes.Add(size);
+        }
+        _planned = sizes.Count;
+        StateHasChanged();
+
+        try
+        {
+            foreach (var size in sizes)
+            {
+                var (width, height) = Dimensions(size);
+                var inset = _padding / 100.0;
+                var innerW = Math.Max(1, (int)(width * (1 - inset * 2)));
+                var innerH = Math.Max(1, (int)(height * (1 - inset * 2)));
+
+                // Fit the product inside the padded area, then centre it on a full size canvas of the catalogue
+                // colour. Not a second Resize(Contain): Contain fits before it pads, so it would scale the
+                // product straight back up to the canvas edge and the padding would only survive on one axis.
+                using var fitted = await ImagePipeline.Create()
+                    .AutoOrient()
+                    .Resize(innerW, innerH, ResizeMode.Fit)
+                    .Sharpen(0.25f)
+                    .ExecuteAsync(source);
+
+                ImageBuffer image;
+                using (var canvas = ImageCanvas.Create(width, height, _background))
+                {
+                    canvas.DrawImage(fitted, new System.Drawing.RectangleF(
+                        (width - fitted.Width) / 2f, (height - fitted.Height) / 2f, fitted.Width, fitted.Height));
+                    image = canvas.Snapshot();
+                }
+
+                EncodedImage encoded;
+                try
+                {
+                    encoded = await Exporter.EncodeAsync(image, exportOptions);
+                }
+                catch
+                {
+                    image.Dispose();
+                    throw;
+                }
+                if (run != _run)
+                {
+                    image.Dispose();
+                    return;
+                }
+                _variants.Add(new Variant($"{width}×{height}", size, image, encoded, ++_version));
+                StateHasChanged();
+                await Task.Yield();
+            }
+        }
+        catch (Exception) when (run != _run)
+        {
+            // Superseded: the newer run reports its own outcome.
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+        }
+        finally
+        {
+            if (run == _run)
+            {
+                _busy = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    private async Task Download(Variant variant)
+    {
+        try
+        {
+            await Exporter.DownloadAsync(variant.Encoded, $"product-{variant.Image.Width}x{variant.Image.Height}");
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+        }
+    }
+
+    private async Task DownloadAll()
+    {
+        foreach (var variant in _variants.ToList())
+        {
+            await Download(variant);
+            // Browsers throttle rapid successive downloads; a short gap keeps them all.
+            await Task.Delay(250);
+        }
+    }
+
+    private void ClearVariants()
+    {
+        foreach (var variant in _variants) variant.Image.Dispose();
+        _variants.Clear();
+    }
+
+    private void Clear()
+    {
+        _run++;
+        ClearVariants();
+        _skipped.Clear();
+        _source?.Dispose();
+        _source = null;
+        _sourceBytes = 0;
+        _busy = false;
+        _error = null;
+    }
+
+    private static string Describe(Exception ex) => ex switch
+    {
+        ImageLimitExceededException => "That image is too large to process here.",
+        ImageDecodeException => "That file could not be read as an image.",
+        ImageCapabilityException c => c.Message,
+        _ => ex.Message,
+    };
+
+    public void Dispose()
+    {
+        _run++;
+        _debounce.Dispose();
+        ClearVariants();
+        _source?.Dispose();
+    }
+}
