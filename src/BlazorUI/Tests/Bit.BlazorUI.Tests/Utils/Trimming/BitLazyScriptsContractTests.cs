@@ -130,10 +130,12 @@ public sealed partial class BitLazyScriptsContractTests
     {
         // IJSRuntime.InvokeAsync and InvokeVoidAsync take the identifier straight to the page, which in lazy mode has not
         // imported its module yet: the packages call through InvokeVoid / Invoke / FastInvoke or InvokeScript(Void)Async.
+        // The markup too: a .razor file injecting IJSRuntime can make the same call in its @code block.
         var problems = new List<string>();
         foreach (var package in Packages)
         {
-            foreach (var file in Directory.EnumerateFiles(SourceFiles.GetDirectory(package), "*.cs", SearchOption.AllDirectories))
+            var directory = SourceFiles.GetDirectory(package);
+            foreach (var file in Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories).Concat(Directory.EnumerateFiles(directory, "*.razor", SearchOption.AllDirectories)))
             {
                 if (file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}") || file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}")) continue;
                 if (Path.GetFileName(file) is "IJSRuntimeExtensions.cs" or "IJSRuntimeFastExtensions.cs") continue;

@@ -641,8 +641,10 @@ public partial class BitTag : BitComponentBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // The script that keeps Delete and Backspace from navigating away is called by nothing: with the lazy scripts on
-        // (BitBlazorUIScripts), the tag is what loads it.
-        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI", "BitTag");
+        // (BitBlazorUIScripts), the tag is what loads it - once it dismisses on those keys, which is when its controls render
+        // the data-bit-tag-dsm the script acts on; a plain tag downloads nothing. Asked again on a later render, it is
+        // already loaded, and answered without a round trip.
+        if (_DismissesOnKey) await _js.EnsureScriptAsync("Bit.BlazorUI", "BitTag");
 
         await base.OnAfterRenderAsync(firstRender);
     }

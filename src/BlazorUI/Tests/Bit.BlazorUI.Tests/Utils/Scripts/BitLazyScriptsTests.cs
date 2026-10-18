@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -183,8 +185,6 @@ public sealed class BitLazyScriptsTests
 
     [TestMethod]
     [DataRow(typeof(BitNav<BitNavItem>), "BitNav")]
-    [DataRow(typeof(BitTag), "BitTag")]
-    [DataRow(typeof(BitTimeline<BitTimelineItem>), "Timelines")]
     [DataRow(typeof(BitButtonGroup<BitButtonGroupItem>), "BitButtonGroup")]
     public void AComponentShouldLoadTheScriptActingOnItsKeysAsItFirstRenders(Type component, string script)
     {
@@ -198,9 +198,58 @@ public sealed class BitLazyScriptsTests
             builder.CloseComponent();
         });
 
-        Assert.IsTrue(context.JSInterop.Invocations.Any(i => i.Identifier == "import" && Equals(i.Arguments[0], $"./_content/Bit.BlazorUI/scripts/modules/{script}.js")),
-                      $"{component.Name} did not load {script}: {string.Join(", ", context.JSInterop.Invocations.Select(i => i.Identifier))}");
+        Assert.IsTrue(Imported(context, script), $"{component.Name} did not load {script}: {Invocations(context)}");
     }
+
+    [TestMethod]
+    public void ATagShouldLoadItsKeysScriptOnceItDismissesOnThem()
+    {
+        BitBlazorUIScripts.UseLazyScripts();
+        using var context = new BunitContext();
+        context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // A tag nothing dismisses renders no data-bit-tag-dsm, which is all the script acts on.
+        var tag = context.Render<BitTag>();
+        Assert.IsFalse(Imported(context, "BitTag"), $"A tag that is not dismissible loaded its keys script: {Invocations(context)}");
+
+        tag.Render(parameters => parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { })));
+        Assert.IsTrue(Imported(context, "BitTag"), $"A dismissible tag did not load its keys script: {Invocations(context)}");
+    }
+
+    [TestMethod]
+    public void ATimelineShouldLoadItsKeysScriptOnceAnItemIsClickable()
+    {
+        BitBlazorUIScripts.UseLazyScripts();
+        using var context = new BunitContext();
+        context.JSInterop.Mode = JSRuntimeMode.Loose;
+
+        // A read-only timeline renders no bit-tln-btn, which is all the script acts on.
+        var timeline = context.Render<BitTimeline<BitTimelineItem>>(parameters => parameters.Add(p => p.Items, [new BitTimelineItem { PrimaryText = "One" }]));
+        Assert.IsFalse(Imported(context, "Timelines"), $"A read-only timeline loaded its keys script: {Invocations(context)}");
+
+        timeline.Render(parameters => parameters.Add(p => p.OnItemClick, (BitTimelineItem _) => { }));
+        Assert.IsTrue(Imported(context, "Timelines"), $"A clickable timeline did not load its keys script: {Invocations(context)}");
+    }
+
+    [TestMethod]
+    public void AScriptAComponentFailsToImportShouldNotFailItsRender()
+    {
+        BitBlazorUIScripts.UseLazyScripts();
+        using var context = new BunitContext();
+        context.JSInterop.Mode = JSRuntimeMode.Loose;
+        context.JSInterop.SetupVoid("import", _ => true).SetException(new JSException("Failed to fetch dynamically imported module"));
+
+        // Thrown out of OnAfterRenderAsync, a lost connection or a 404 during a deploy would end a Server circuit.
+        var tag = context.Render<BitTag>(parameters => parameters.Add(p => p.OnDismiss, EventCallback.Factory.Create<MouseEventArgs>(this, () => { })));
+
+        Assert.IsTrue(context.JSInterop.Invocations.Any(i => i.Identifier == "import"), $"The tag asked for no script: {Invocations(context)}");
+        Assert.IsNotNull(tag.Find(".bit-tag"));
+    }
+
+    private static bool Imported(BunitContext context, string script)
+        => context.JSInterop.Invocations.Any(i => i.Identifier == "import" && Equals(i.Arguments[0], $"./_content/Bit.BlazorUI/scripts/modules/{script}.js"));
+
+    private static string Invocations(BunitContext context) => string.Join(", ", context.JSInterop.Invocations.Select(i => i.Identifier));
 
     [TestMethod]
     public void InBundleModeAComponentShouldLoadNothing()

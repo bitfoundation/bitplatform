@@ -90,8 +90,8 @@
                     <code>bit.blazorui.material.css</code>, <code>bit.blazorui.cupertino.css</code>), which hold tokens
                     rather than components, the icon fonts, and Bit.BlazorUI.Assets. The build log says what came out:
                 </BitText>
-                <CodeBox>Bit.BlazorUI: Bit.BlazorUI/scripts/bit.blazorui.js -> 19 of 53 pieces, 377287 of 990599 bytes (-62%).
-Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> 6 of 88 pieces, 221789 of 1359262 bytes (-84%).
+                <CodeBox>Bit.BlazorUI: Bit.BlazorUI/scripts/bit.blazorui.js -> 19 of 53 pieces, 377,287 of 990,599 bytes (-62%).
+Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> 6 of 88 pieces, 221,789 of 1,359,262 bytes (-84%).
 Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothing this app can run loads it.</CodeBox>
             </DocSection>
 
@@ -271,6 +271,16 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                         A file the static web assets do not hold - a host page or a script outside the app's projects - is
                         named with a <code>&lt;BitBlazorUIScanFile&gt;</code> item (next section).
                     </BitText>
+                    <BitText Element="p">
+                        The app's own stylesheets are not read. So an app that names theming nowhere - no
+                        <code>bit-theme</code> attribute in its markup, no theming API in its code - is published without
+                        the theme's script, and without the <code>bit-theme="light"</code> that script writes on
+                        <code>&lt;html&gt;</code> as it loads. The page still paints the light theme, which the stylesheets
+                        put on a bare <code>:root</code>, but a rule of the app's own selecting
+                        <code>[bit-theme="light"]</code> matches nothing: write the attribute on <code>&lt;html&gt;</code>
+                        yourself, which keeps the script as well, or keep it with
+                        <code>&lt;BitBlazorUIAsset Include="BitTheme" /&gt;</code>.
+                    </BitText>
                 </DocSection>
 
                 <DocSection Level="3" Id="no-signal" Title="With nothing to go on">
@@ -312,7 +322,7 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                             </tr>
                             <tr>
                                 <th scope="row"><code>BitBlazorUIIcon</code></th>
-                                <td>A glyph of Bit.BlazorUI.Icons, with <code>BitBlazorUITrimIcons</code> on - the icon names that come from data.</td>
+                                <td>A glyph of Bit.BlazorUI.Icons, with <code>BitBlazorUITrimIcons</code> on - the icon names that come from data. With the switch off the stylesheet is published whole, and the publish says in a line of its own that the items kept nothing.</td>
                             </tr>
                             <tr>
                                 <th scope="row"><code>BitBlazorUIScanFile</code></th>
@@ -399,7 +409,7 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                     <ul>
                         <li><b>As the app starts</b>, Blazor imports each package's JavaScript initializer (<code>scripts/Bit.BlazorUI.lib.module.js</code>), which imports the package's boot module: the scripts that act on the page without being called - the theme, the claim of the Escape key, the arguments of the animation and transition events, the keys every component relies on, and the Extras' window-size variables. This runs before Blazor renders anything, on a statically rendered page too.</li>
                         <li><b>The first time a component calls into a script</b>, the library imports its module (<code>scripts/modules/Callouts.js</code>), which imports the scripts of its package it uses; a script of the Extras using the core's has those imported first. Each module is imported once per WebAssembly app, Server circuit or WebView page, concurrent first calls share one import, and a failed import - a dropped connection, a 404 during a deploy - is tried again on the next call.</li>
-                        <li><b>A component owning a script</b> that is called by nothing - the keyboard handling of <code>BitNav</code>, <code>BitNavBar</code>, <code>BitButtonGroup</code>, <code>BitTag</code>, <code>BitTimeline</code>, <code>BitAppShell</code>, <code>BitDataGrid</code> - loads it as it first renders.</li>
+                        <li><b>A component owning a script</b> that is called by nothing - the keyboard handling of <code>BitNav</code>, <code>BitNavBar</code>, <code>BitButtonGroup</code>, <code>BitTag</code>, <code>BitTimeline</code>, <code>BitAppShell</code>, <code>BitDataGrid</code> - loads it as it first renders what the script acts on: at once for most, once it is dismissible for a <code>BitTag</code> and once an item is clickable for a <code>BitTimeline</code>, so a plain tag or a read-only timeline downloads nothing. A script that fails to import (a lost connection, a 404 mid-deploy) costs the component those keys, never its render, and is imported again the next time it is asked for.</li>
                         <li><b>A clean-up call into a script the page never ran</b> - a dropdown disposed without ever opening - is skipped rather than downloading the script to release nothing.</li>
                         <li><b>A synchronous call</b> of WebAssembly imports its module before it runs.</li>
                     </ul>
@@ -532,7 +542,8 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                     WebAssembly SDK - and stands down everywhere else: a Razor class library asked for its publish
                     assets would trim against its own references, which are not the app's, and a MAUI hybrid head
                     packages its files at build. The client project of a Blazor Web App, published inside its server's
-                    publish, is left to the server, which reads the client's assembly among its references.
+                    publish, is left to the server, which reads the client's assembly among its references: the client
+                    trims nothing there, and says so in its build output.
                 </BitText>
                 <BitText Element="p">
                     So set the properties and items on the project you publish, not in a shared
@@ -643,7 +654,8 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                         <p class="trouble-fix">
                             The client's publish is part of the server's, which is the one that publishes the app's
                             static web assets: set the properties and items on the server project, which reads the
-                            client's assembly among its references.
+                            client's assembly among its references. The client says so at normal verbosity ("this
+                            WebAssembly client is published by the server hosting it").
                         </p>
                     </div>
                 </div>

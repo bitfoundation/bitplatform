@@ -270,8 +270,10 @@ internal static class BitScriptLoader
     /// </summary>
     private static BitLazyScriptPackage[]? RefreshPackages()
     {
+        // Nothing loaded since the last read is nothing new to read - packages found or not: a set of assemblies none of
+        // which embeds lazy scripts (packages of a version older than the core's) is not read again on every call.
         var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-        if (assemblies.Length == Volatile.Read(ref _assembliesSeen) && _packages.Length > 0) return null;
+        if (assemblies.Length == Volatile.Read(ref _assembliesSeen)) return null;
 
         lock (PackagesLock)
         {

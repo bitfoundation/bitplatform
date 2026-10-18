@@ -295,6 +295,12 @@ public sealed class TrimBitBlazorUIAssets : Task
         {
             Log.LogWarning(null, IconsWithoutPackageCode, null, null, 0, 0, 0, 0, "Bit.BlazorUI: <BitBlazorUIIcon> items are given, but this app does not reference Bit.BlazorUI.Icons.");
         }
+        else if (Icons.Length > 0 && TrimIcons is false)
+        {
+            // Not a warning: a csproj may well list the icons it reads from data once, and turn the icon trimming on for some
+            // publishes only. But said where a publish says what it did, since the items do nothing here.
+            Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: the <BitBlazorUIIcon> items keep nothing, since BitBlazorUITrimIcons is off and the icon stylesheet is published whole.");
+        }
         if (Log.HasLoggedErrors) return false;
 
         foreach (var unresolved in selection.UnresolvedIdentifiers)
@@ -475,10 +481,13 @@ public sealed class TrimBitBlazorUIAssets : Task
 
     private void Report(List<PackageAssets> packages, AssetSelection selection, List<AssetComposer.Output> outputs)
     {
+        // The sizes are formatted here, in the invariant culture: the logger would format them in the culture of the machine
+        // running the build, so one line would read differently on every build agent.
         foreach (var output in outputs)
         {
-            Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: {0} -> {1} of {2} pieces, {3:N0} of {4:N0} bytes ({5}).",
-                $"{output.PackageId}/{output.Bundle}", output.KeptPieces, output.AllPieces, output.TrimmedLength, output.FullLength,
+            Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: {0} -> {1} of {2} pieces, {3} of {4} bytes ({5}).",
+                $"{output.PackageId}/{output.Bundle}", output.KeptPieces, output.AllPieces,
+                output.TrimmedLength.ToString("N0", CultureInfo.InvariantCulture), output.FullLength.ToString("N0", CultureInfo.InvariantCulture),
                 output.FullLength == 0 ? "-" : $"-{Math.Round(100.0 * (output.FullLength - output.TrimmedLength) / output.FullLength, MidpointRounding.AwayFromZero).ToString(CultureInfo.InvariantCulture)}%");
         }
 

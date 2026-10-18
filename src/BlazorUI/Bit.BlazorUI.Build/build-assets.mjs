@@ -50,6 +50,10 @@
 // it calls already defined, and listeners added to one node at load keep the order their scripts load in (the manifest
 // lists each script's, as "window keydown capture").
 //
+// As lazy scripts each file is a module of its own, so what one script reads of another is what that one adds to the
+// namespace: a script using a declaration another file makes at its top level, outside the namespace - a global of the
+// page in the bundle, a binding of its own module as a lazy script - fails the build.
+//
 // The lazy scripts read one more comment, of what a script exports:
 //
 //   // bit-lazy: teardown Callouts.clear Utils.disposeFocusTrap ...
@@ -135,7 +139,14 @@ function buildScripts() {
         m.externals = refs.externals;
         m.loadTimeCalls = refs.loadTimeCalls;
         m.listeners = refs.listeners;
+        m.globals = refs.globals;
     }
+
+    // A script reads of another only what that one adds to the namespace: as lazy scripts each file is a module, whose
+    // top-level declarations are its own, so a name the bundle shares as a global of the page is undefined there.
+    const shared = modules.flatMap(m => [...new Map(m.globals.map(g => [g.name, g])).values()].map(g =>
+        `${m.file}(${g.line},${g.column}): uses '${g.name}', which ${g.owner} declares at its top level, outside the ${NAMESPACE} namespace: as a lazy script each file is a module of its own, which no other script can read a top-level declaration of. Declare it in the namespace, exported, for another script to use.`));
+    if (shared.length) throw new BuildError(shared.join('\nbuild-assets : error : '));
 
     // A file that runs code as it loads - a listener on the document, an install() - has to say when an app needs it,
     // because nothing calling into it is what keeps it otherwise: a delegated listener is reached through the markup
@@ -412,6 +423,7 @@ function collectReferences(ts, checker, sf, bySourceFile, caches) {
     const externals = new Set();
     const loadTimeCalls = [];
     const listeners = [];
+    const globals = [];
     const self = bySourceFile.get(sf);
 
     const symbolOf = node => resolveValueSymbol(ts, checker, node);
@@ -429,6 +441,10 @@ function collectReferences(ts, checker, sf, bySourceFile, caches) {
                 if (!emitsCode(ts, declaration)) continue;
                 deps.add(owner.name);
                 if (loadTime) loadDeps.add(owner.name);
+                if (isTopLevel(ts, declaration)) {
+                    const { line, character } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
+                    globals.push({ line: line + 1, column: character + 1, name: node.text, owner: owner.file });
+                }
             } else if (file.isDeclarationFile && !isLibraryDeclaration(file.fileName)) {
                 // Another package's namespace, as this one declares it to compile against it: kept by its path,
                 // and resolved against that package's own exports when an app is published.
@@ -499,7 +515,17 @@ function collectReferences(ts, checker, sf, bySourceFile, caches) {
     deps.delete(self.name);
     loadDeps.delete(self.name);
 
-    return { deps, loadDeps, externals, loadTimeCalls, listeners };
+    return { deps, loadDeps, externals, loadTimeCalls, listeners, globals };
+}
+
+// Whether a declaration stands at the top level of its file, outside the namespace: a global of the page in the bundle,
+// which every script of it can read, but a binding of its own module as a lazy script, which no other script can.
+function isTopLevel(ts, declaration) {
+    for (let node = declaration.parent; node; node = node.parent) {
+        if (ts.isModuleDeclaration(node)) return false;
+        if (ts.isSourceFile(node)) return true;
+    }
+    return false;
 }
 
 // The symbol of a value a name refers to, through an import alias; null for a type, a namespace (a container several

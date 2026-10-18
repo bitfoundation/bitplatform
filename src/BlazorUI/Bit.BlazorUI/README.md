@@ -54,7 +54,7 @@ When an app is published, `bit.blazorui.css` and `bit.blazorui.js` (and the bund
 
 - A standalone **Blazor WebAssembly** app gets it by default, off what the .NET trimmer kept - as does any project published with `PublishTrimmed`.
 - A **Blazor Web App** or **Blazor Server** app turns it on in the server project: `<BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>`. The publish then reads the app's assemblies for what it uses (`BitBlazorUIScan`: `TypeReferences`, the default, or the coarser `TypeNames`).
-- `BitBlazorUITrimScripts`, `BitBlazorUITrimStyles`, `BitBlazorUITrimVendorAssets` and `BitBlazorUITrimIcons` (off unless set) control each kind of file, and `<BitBlazorUIComponent Include="..." />`, `<BitBlazorUIAsset Include="..." />` and `<BitBlazorUIIcon Include="..." />` keep what the publish cannot see the app use.
+- `BitBlazorUITrimScripts`, `BitBlazorUITrimStyles` and `BitBlazorUITrimVendorAssets` (each defaulting to `BitBlazorUITrimAssets`) and `BitBlazorUITrimIcons` (off unless set) control each kind of file, and `<BitBlazorUIComponent Include="..." />`, `<BitBlazorUIAsset Include="..." />` and `<BitBlazorUIIcon Include="..." />` keep what the publish cannot see the app use.
 
 See https://blazorui.bitplatform.dev/trimming for the details.
 

@@ -5,13 +5,14 @@ namespace Bit.BlazorUI.Tests.Trimming;
 
 /// <summary>
 /// The trimming as an app gets it from nuget.org: the packages packed from this source tree into a feed of their own, and
-/// apps outside the repository referencing them - a Blazor WebAssembly app and a Blazor Web App's server - published with
+/// apps outside the repository referencing them - a Blazor WebAssembly app, a Blazor Web App's server, and a Blazor Web App
+/// whose server hosts a WebAssembly client - published with
 /// each SDK the packages support (.NET 8, 9 and 10; the targets differ between 8 and 9). This is what checks the package
 /// layout (buildTransitive\bit-assets, tasks\Bit.BlazorUI.Build.dll), the task loading from the package, and the SDK
 /// paths a ProjectReference never takes.
 /// </summary>
 /// <remarks>
-/// Opt-in (RUN_PACKAGE_TESTS=1): it packs four multi-targeted packages and publishes six apps, which restores the
+/// Opt-in (RUN_PACKAGE_TESTS=1): it packs four multi-targeted packages and publishes twelve apps, which restores the
 /// WebAssembly toolchain of each SDK from nuget.org. The packages go into the machine's NuGet cache under a version of
 /// their own (99.0.0-trimming.*), which <c>dotnet nuget locals global-packages --clear</c> takes back out.
 /// </remarks>
@@ -30,6 +31,9 @@ public sealed partial class PackageTrimmingTests
     [DataRow(8, "web-lazy")]
     [DataRow(9, "web-lazy")]
     [DataRow(10, "web-lazy")]
+    [DataRow(8, "web-hosted")]
+    [DataRow(9, "web-hosted")]
+    [DataRow(10, "web-hosted")]
     public void AnAppReferencingThePackagesShouldPublishTrimmedBundles(int sdkMajor, string shape)
     {
         if (Environment.GetEnvironmentVariable("RUN_PACKAGE_TESTS") != "1") Assert.Inconclusive("Set RUN_PACKAGE_TESTS=1 to pack the packages and publish apps referencing them.");
@@ -75,6 +79,15 @@ public sealed partial class PackageTrimmingTests
         published.AssertStylesAreThePiecesInOrder("Bit.BlazorUI");
 
         StringAssert.Contains(result.Output, "Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> ");
+
+        if (shape == "web-hosted")
+        {
+            // The server prerenders BitButton and its WebAssembly client renders BitDropdown (both asserted above): the
+            // server trims the app once, off the scan of its own assemblies with the client's among them, while the client -
+            // asked for its publish assets by the server - stands down rather than trim a copy nobody publishes.
+            Assert.AreEqual(1, Regex.Count(result.Output, @"Bit\.BlazorUI: Bit\.BlazorUI/styles/bit\.blazorui\.css -> "),
+                            $"The bundle was trimmed more than once - by the client as well as the server:\n{Tail(result.Output)}");
+        }
     }
 
     private static (string Feed, string Version) Pack()
@@ -100,16 +113,21 @@ public sealed partial class PackageTrimmingTests
         return (feed, version);
     }
 
-    // An app outside the repository, so neither the repository's global.json nor its Directory.Build files reach it.
+    // An app outside the repository, so neither the repository's global.json nor its Directory.Build files reach it. Returns
+    // the folder of the project to publish: the app's own, or - for a server hosting a WebAssembly client - the server's,
+    // beside the client's.
     private static string WriteApp(Version sdk, string shape, string feed, string version)
     {
         var tfm = $"net{sdk.Major}.0";
-        var app = Path.Combine(Path.GetTempPath(), "bit-blazorui-trimming", $"app-{shape}-{sdk.Major}");
-        if (Directory.Exists(app)) Directory.Delete(app, recursive: true);
+        var root = Path.Combine(Path.GetTempPath(), "bit-blazorui-trimming", $"app-{shape}-{sdk.Major}");
+        if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+        Directory.CreateDirectory(root);
+
+        var app = shape == "web-hosted" ? Path.Combine(root, "Server") : root;
         Directory.CreateDirectory(app);
 
-        File.WriteAllText(Path.Combine(app, "global.json"), $$"""{ "sdk": { "version": "{{sdk}}", "rollForward": "disable" } }""");
-        File.WriteAllText(Path.Combine(app, "nuget.config"), $$"""
+        File.WriteAllText(Path.Combine(root, "global.json"), $$"""{ "sdk": { "version": "{{sdk}}", "rollForward": "disable" } }""");
+        File.WriteAllText(Path.Combine(root, "nuget.config"), $$"""
             <?xml version="1.0" encoding="utf-8"?>
             <configuration>
               <!-- A key of its own: a source of the same name disabled in the machine's own NuGet.Config would stay disabled. -->
@@ -158,6 +176,72 @@ public sealed partial class PackageTrimmingTests
                 <body><div id="app"></div><script src="_framework/blazor.webassembly.js"></script><script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script></body></html>
                 """);
         }
+        else if (shape == "web-hosted")
+        {
+            // The two projects of the Blazor Web App template: the server, publishing the app and referencing the client,
+            // and the client, whose components run in WebAssembly - each referencing the packages, as the template's do.
+            File.WriteAllText(Path.Combine(app, "App.csproj"), $$"""
+                <Project Sdk="Microsoft.NET.Sdk.Web">
+                  <PropertyGroup>
+                    <TargetFramework>{{tfm}}</TargetFramework>
+                    <Nullable>enable</Nullable>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <ProjectReference Include="..\Client\Client.csproj" />
+                    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="{{sdk.Major}}.0.*" />
+                {{packages}}
+                  </ItemGroup>
+                </Project>
+                """);
+            File.WriteAllText(Path.Combine(app, "Program.cs"), """
+                using Bit.BlazorUI;
+
+                var builder = WebApplication.CreateBuilder(args);
+                builder.Services.AddRazorComponents().AddInteractiveWebAssemblyComponents();
+                builder.Services.AddBitBlazorUIServices();
+                var app = builder.Build();
+                app.UseStaticFiles();
+                app.UseAntiforgery();
+                app.MapRazorComponents<App.Main>().AddInteractiveWebAssemblyRenderMode().AddAdditionalAssemblies(typeof(Client.Picker).Assembly);
+                app.Run();
+                """);
+
+            var client = Path.Combine(root, "Client");
+            Directory.CreateDirectory(client);
+            File.WriteAllText(Path.Combine(client, "Client.csproj"), $$"""
+                <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+                  <PropertyGroup>
+                    <TargetFramework>{{tfm}}</TargetFramework>
+                    <Nullable>enable</Nullable>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+                    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+                  </PropertyGroup>
+                  <ItemGroup>
+                    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="{{sdk.Major}}.0.*" />
+                {{packages}}
+                  </ItemGroup>
+                </Project>
+                """);
+            File.WriteAllText(Path.Combine(client, "Program.cs"), """
+                using Bit.BlazorUI;
+                using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+
+                var builder = WebAssemblyHostBuilder.CreateDefault(args);
+                builder.Services.AddBitBlazorUIServices();
+                await builder.Build().RunAsync();
+                """);
+            File.WriteAllText(Path.Combine(client, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web\n@using Bit.BlazorUI\n");
+            File.WriteAllText(Path.Combine(client, "Picker.razor"), """
+                <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_items" />
+
+                @code {
+                    private readonly List<BitDropdownItem<string>> _items = [new() { Text = "One", Value = "1" }];
+                }
+                """);
+        }
         else
         {
             File.WriteAllText(Path.Combine(app, "App.csproj"), $$"""
@@ -189,14 +273,19 @@ public sealed partial class PackageTrimmingTests
         }
 
         File.WriteAllText(Path.Combine(app, "_Imports.razor"), "@using Microsoft.AspNetCore.Components.Web\n@using Bit.BlazorUI\n");
-        File.WriteAllText(Path.Combine(app, "Main.razor"), """
-            <BitButton>Save</BitButton>
-            <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_items" />
+        File.WriteAllText(Path.Combine(app, "Main.razor"), shape == "web-hosted"
+            ? """
+              <BitButton>Save</BitButton>
+              <Client.Picker @rendermode="RenderMode.InteractiveWebAssembly" />
+              """
+            : """
+              <BitButton>Save</BitButton>
+              <BitDropdown TItem="BitDropdownItem<string>" TValue="string" Items="_items" />
 
-            @code {
-                private readonly List<BitDropdownItem<string>> _items = [new() { Text = "One", Value = "1" }];
-            }
-            """);
+              @code {
+                  private readonly List<BitDropdownItem<string>> _items = [new() { Text = "One", Value = "1" }];
+              }
+              """);
 
         return app;
     }

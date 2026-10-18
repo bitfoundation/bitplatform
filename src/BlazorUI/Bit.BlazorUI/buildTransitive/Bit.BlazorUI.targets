@@ -176,6 +176,15 @@
         <BitBlazorUITrimIcons Condition="'$(BitBlazorUITrimIcons)' == ''">false</BitBlazorUITrimIcons>
         <BitBlazorUITrimVendorAssets Condition="'$(BitBlazorUITrimVendorAssets)' == ''">$(BitBlazorUITrimAssets)</BitBlazorUITrimVendorAssets>
 
+        <!-- Whether this WebAssembly project is the client of a Blazor Web App, being asked for its publish assets by the
+             server publishing them: the server trims the app, off the scan of its own assemblies - the client's among them -
+             and its own copies of the packages' bundles are the ones published, so a trimming of the client's here would be
+             work thrown away and a second, misleading line per bundle in the build output. The WebAssembly SDK makes that
+             request with these two global properties (StaticWebAssetsAdditionalPublishProperties, Microsoft.NET.Sdk.WebAssembly
+             .Browser.props, on 8, 9 and 10 alike), read here while only a global property can have set them: the second
+             is given a default inside a target, as the references are resolved. -->
+        <_BitBlazorUIPublishedByHost Condition="'$(_BitBlazorUIIsWebAssembly)' == 'true' and '$(BuildProjectReferences)' == 'false' and '$(ResolveAssemblyReferencesFindRelatedSatellites)' == 'true'">true</_BitBlazorUIPublishedByHost>
+
         <!-- Whether the csproj wrote the scan out, read while it is still unset: a scan asked for by name fails the
              publish when it cannot run, a defaulted one stands down quietly instead. The default itself is decided in
              _BitBlazorUIResolveAssetTrimming, along with the switches it follows. -->
@@ -465,7 +474,7 @@
             <_BitBlazorUIHasSignal Condition="'$(_BitBlazorUIUseTrimmedAssemblies)' == 'true' or '$(_BitBlazorUIScanMode)' != 'None' or '@(BitBlazorUIComponent)' != ''">true</_BitBlazorUIHasSignal>
 
             <_BitBlazorUIPublishTrimming>false</_BitBlazorUIPublishTrimming>
-            <_BitBlazorUIPublishTrimming Condition="'$(_BitBlazorUITrimAny)' == 'true' and '$(_BitBlazorUIHasSignal)' == 'true' and '$(_BitBlazorUIIsTrimmingHead)' == 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitBlazorUIPublishTrimming>
+            <_BitBlazorUIPublishTrimming Condition="'$(_BitBlazorUITrimAny)' == 'true' and '$(_BitBlazorUIHasSignal)' == 'true' and '$(_BitBlazorUIIsTrimmingHead)' == 'true' and '$(_BitBlazorUIPublishedByHost)' != 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitBlazorUIPublishTrimming>
 
             <!-- The two shapes of the scripts, each trimmed where the app has it: the bundles put back together, the modules
                  the app can no longer import left out - unless the csproj asked for every module by name. -->
@@ -486,6 +495,9 @@
 
         <Message Importance="normal" Condition="'$(PublishTrimmed)' == 'true' and '$(_BitBlazorUIHostsWebAssembly)' == 'true' and '$(_BitBlazorUIPublishTrimming)' == 'true'"
                  Text="Bit.BlazorUI: this publish is trimmed, but it hosts a WebAssembly client whose components the server's trimmed assemblies do not show, so &lt;BitBlazorUIScan&gt;$(BitBlazorUIScan)&lt;/BitBlazorUIScan&gt; answers what the app uses instead." />
+
+        <Message Importance="normal" Condition="'$(_BitBlazorUIPublishedByHost)' == 'true' and '$(_BitBlazorUITrimAny)' == 'true' and '$(DesignTimeBuild)' != 'true'"
+                 Text="Bit.BlazorUI: this WebAssembly client is published by the server hosting it, which trims the app's scripts and stylesheets - the client's components among them - so it is left to the server." />
 
         <Message Importance="normal" Condition="'$(_BitBlazorUITrimmingStoodDown)' == 'true'"
                  Text="Bit.BlazorUI: asset trimming is configured here but this project does not publish an app's static web assets - it is a class library or a hybrid head contributing to someone else's - so it is left to the project that does. Set &lt;BitBlazorUIScan&gt; and the &lt;BitBlazorUIComponent&gt;, &lt;BitBlazorUIAsset&gt; and &lt;BitBlazorUIIcon&gt; items on the project you publish rather than in a shared Directory.Build.props." />

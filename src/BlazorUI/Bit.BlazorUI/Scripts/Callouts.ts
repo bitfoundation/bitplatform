@@ -1947,139 +1947,143 @@
 // The page-level listeners every open callout needs, added as this script loads - so an app none of whose components
 // opens a callout is given none of them - in the order they have always been added in.
 
-// Scroll events arrive faster than the page is laid out, and every reposition measures each open
-// callout, so the paths that follow a scroll instead of dismissing on it coalesce their work into
-// one run per animation frame.
-let repositionFrame: number | null = null;
-const repositionOnNextFrame = () => {
-    if (repositionFrame != null) return;
+// Inside the namespace rather than at the top level of the file, where the two helpers below would be globals of the
+// page in the bundle - and a script of its own declaring the same name would fail to load.
+namespace BitBlazorUI {
+    // Scroll events arrive faster than the page is laid out, and every reposition measures each open
+    // callout, so the paths that follow a scroll instead of dismissing on it coalesce their work into
+    // one run per animation frame.
+    let repositionFrame: number | null = null;
+    const repositionOnNextFrame = () => {
+        if (repositionFrame != null) return;
 
-    repositionFrame = requestAnimationFrame(() => {
-        repositionFrame = null;
-        BitBlazorUI.Callouts.reposition();
-    });
-};
+        repositionFrame = requestAnimationFrame(() => {
+            repositionFrame = null;
+            BitBlazorUI.Callouts.reposition();
+        });
+    };
 
-window.addEventListener('scroll', (e: Event) => {
-    const currentCallout = BitBlazorUI.Callouts.current;
-    if (window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH && currentCallout.responsiveMode) return;
+    window.addEventListener('scroll', (e: Event) => {
+        const currentCallout = BitBlazorUI.Callouts.current;
+        if (window.innerWidth < BitBlazorUI.Utils.MAX_MOBILE_WIDTH && currentCallout.responsiveMode) return;
 
-    const target = e.target as HTMLElement;
-    if (target?.id && target.id == currentCallout.scrollContainerId) return;
+        const target = e.target as HTMLElement;
+        if (target?.id && target.id == currentCallout.scrollContainerId) return;
 
-    // A scroll that started inside one of the open callouts is the user reading it, not the page moving
-    // out from under it, so it must not dismiss it. The named scroll container above is the part a
-    // component measures and caps; anything else the content scrolls - a callout capped with a max height,
-    // a scrollable the consumer put in it - is covered here.
-    if (BitBlazorUI.Callouts.calloutContains(target)) return;
+        // A scroll that started inside one of the open callouts is the user reading it, not the page moving
+        // out from under it, so it must not dismiss it. The named scroll container above is the part a
+        // component measures and caps; anything else the content scrolls - a callout capped with a max height,
+        // a scrollable the consumer put in it - is covered here.
+        if (BitBlazorUI.Callouts.calloutContains(target)) return;
 
-    // A scroll of a container the components sit in that did not move them - a trigger in a sticky header of a
-    // scrolled container, which a focus() on it scrolls back to where the header sits in the flow - leaves the
-    // callouts pointing at what they were opened from, so there is nothing to dismiss them for.
-    if (BitBlazorUI.Callouts.anchorsStayed(e.target)) return;
+        // A scroll of a container the components sit in that did not move them - a trigger in a sticky header of a
+        // scrolled container, which a focus() on it scrolls back to where the header sits in the flow - leaves the
+        // callouts pointing at what they were opened from, so there is nothing to dismiss them for.
+        if (BitBlazorUI.Callouts.anchorsStayed(e.target)) return;
 
-    // On touch devices (notably iOS) focusing an input shows the virtual keyboard, which fires a
-    // scroll event as the browser brings the field into view. That should not dismiss an open
-    // callout while an editable element tied to that callout is focused.
-    const active = document.activeElement;
-    if (BitBlazorUI.Utils.isTouchDevice() && BitBlazorUI.Utils.isEditableElementFocused() && active) {
-        // The editable lives inside the callout (e.g. a dropdown's search box): the scroll is
-        // internal, so keep the callout open and leave it where it is.
-        if (BitBlazorUI.Callouts.calloutContains(active)) return;
+        // On touch devices (notably iOS) focusing an input shows the virtual keyboard, which fires a
+        // scroll event as the browser brings the field into view. That should not dismiss an open
+        // callout while an editable element tied to that callout is focused.
+        const active = document.activeElement;
+        if (BitBlazorUI.Utils.isTouchDevice() && BitBlazorUI.Utils.isEditableElementFocused() && active) {
+            // The editable lives inside the callout (e.g. a dropdown's search box): the scroll is
+            // internal, so keep the callout open and leave it where it is.
+            if (BitBlazorUI.Callouts.calloutContains(active)) return;
 
-        // The editable is the callout's anchor (e.g. the SearchBox input): the page itself was
-        // scrolled (commonly when the keyboard opens), moving the anchor. Keep the callout open
-        // and re-anchor it to the anchor's new position instead of dismissing it.
-        if (BitBlazorUI.Callouts.componentContains(active)) {
+            // The editable is the callout's anchor (e.g. the SearchBox input): the page itself was
+            // scrolled (commonly when the keyboard opens), moving the anchor. Keep the callout open
+            // and re-anchor it to the anchor's new position instead of dismissing it.
+            if (BitBlazorUI.Callouts.componentContains(active)) {
+                repositionOnNextFrame();
+                return;
+            }
+        }
+
+        // A callout that asked not to be dismissed by the page moving under it is re-anchored to its
+        // component instead, so that it follows what it points at rather than being left behind by it.
+        if (currentCallout.noScrollDismiss) {
             repositionOnNextFrame();
             return;
         }
-    }
 
-    // A callout that asked not to be dismissed by the page moving under it is re-anchored to its
-    // component instead, so that it follows what it points at rather than being left behind by it.
-    if (currentCallout.noScrollDismiss) {
-        repositionOnNextFrame();
-        return;
-    }
+        BitBlazorUI.Callouts.replaceCurrent();
+    }, true);
 
-    BitBlazorUI.Callouts.replaceCurrent();
-}, true);
+    window.addEventListener('resize', () => {
+        // A resize caused by the virtual keyboard (touch devices, notably iOS) should not dismiss an
+        // open callout whose focused editable belongs to the callout or is its anchor component;
+        // reposition it instead. Any other resize dismisses the callout as before.
+        // The screen is not measured for it, the way the scroll handler above has never measured it either:
+        // a landscape phone, a tablet, an unfolded foldable and a convertible in its tablet posture all raise a
+        // keyboard on a viewport far wider than a portrait phone's, and a width test there dismissed the callout
+        // out from under the very keyboard the focus inside it had just asked for. The primary pointer is what
+        // tells them from a touch-screen laptop, whose resizes are the window's own and still dismiss.
+        const active = document.activeElement;
+        if (BitBlazorUI.Utils.hasOnScreenKeyboard()
+            && BitBlazorUI.Utils.isEditableElementFocused()
+            && active
+            && (BitBlazorUI.Callouts.calloutContains(active)
+                || BitBlazorUI.Callouts.componentContains(active))) {
+            BitBlazorUI.Callouts.reposition();
+            return;
+        }
 
-window.addEventListener('resize', () => {
-    // A resize caused by the virtual keyboard (touch devices, notably iOS) should not dismiss an
-    // open callout whose focused editable belongs to the callout or is its anchor component;
-    // reposition it instead. Any other resize dismisses the callout as before.
-    // The screen is not measured for it, the way the scroll handler above has never measured it either:
-    // a landscape phone, a tablet, an unfolded foldable and a convertible in its tablet posture all raise a
-    // keyboard on a viewport far wider than a portrait phone's, and a width test there dismissed the callout
-    // out from under the very keyboard the focus inside it had just asked for. The primary pointer is what
-    // tells them from a touch-screen laptop, whose resizes are the window's own and still dismiss.
-    const active = document.activeElement;
-    if (BitBlazorUI.Utils.hasOnScreenKeyboard()
-        && BitBlazorUI.Utils.isEditableElementFocused()
-        && active
-        && (BitBlazorUI.Callouts.calloutContains(active)
-            || BitBlazorUI.Callouts.componentContains(active))) {
-        BitBlazorUI.Callouts.reposition();
-        return;
-    }
+        // See the scroll handler above: a callout that opted out of being dismissed by the page moving
+        // under it follows its component instead.
+        if (BitBlazorUI.Callouts.current.noScrollDismiss) {
+            BitBlazorUI.Callouts.reposition();
+            return;
+        }
 
-    // See the scroll handler above: a callout that opted out of being dismissed by the page moving
-    // under it follows its component instead.
-    if (BitBlazorUI.Callouts.current.noScrollDismiss) {
-        BitBlazorUI.Callouts.reposition();
-        return;
-    }
+        BitBlazorUI.Callouts.replaceCurrent();
+    }, true);
 
-    BitBlazorUI.Callouts.replaceCurrent();
-}, true);
-
-// The callouts that render no overlay of their own leave the page its own clicks, so nothing lies between
-// them and the page to hear that the user has gone elsewhere - the page itself tells them. The capture
-// phase is what a stopPropagation inside the page cannot take away, and the primary button is what a
-// dismissal is: a right-click is the contextmenu handler's below, and the middle one is the browser's.
-document.addEventListener('pointerdown', (e: PointerEvent) => {
-    if (e.button !== 0) return;
-
-    BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node);
-}, true);
-
-// A click on the overlay of a callout opened from inside another one, outside the callouts under it as well,
-// dismisses them all (see Callouts.dismissOnOverlayClick). On the window in the capture phase, ahead of Blazor's
-// own delegation, so that the overlay's handler does not dismiss the innermost callout a second time.
-window.addEventListener('click', (e: MouseEvent) => {
-    if (e.button !== 0) return;
-
-    if (BitBlazorUI.Callouts.dismissOnOverlayClick(e.target, e.clientX, e.clientY)) {
-        e.stopImmediatePropagation();
-        e.preventDefault();
-    }
-}, true);
-
-// A right-click dismisses the same callouts, except where the page took the click for itself - a handler
-// that opens a context menu of its own calls preventDefault on it - since that is the page moving its own
-// menu to the new point rather than the user leaving it. Whether the click was taken is only known once
-// the event has been dispatched, which is what the deferral is for: the handlers that take it, Blazor's
-// among them, all run before the task queued here does.
-document.addEventListener('contextmenu', (e: MouseEvent) => {
-    setTimeout(() => {
-        if (e.defaultPrevented) return;
+    // The callouts that render no overlay of their own leave the page its own clicks, so nothing lies between
+    // them and the page to hear that the user has gone elsewhere - the page itself tells them. The capture
+    // phase is what a stopPropagation inside the page cannot take away, and the primary button is what a
+    // dismissal is: a right-click is the contextmenu handler's below, and the middle one is the browser's.
+    document.addEventListener('pointerdown', (e: PointerEvent) => {
+        if (e.button !== 0) return;
 
         BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node);
-    });
-}, true);
+    }, true);
 
-// Keep an open callout aligned with the visible area when the visual viewport changes
-// (iOS keyboard show/hide, pinch-zoom). window 'resize' doesn't fire for these on iOS, so
-// listen to visualViewport directly. Reposition is a no-op when no callout is open.
-if (window.visualViewport) {
-    // Track the viewport live while it changes, throttled on both edges: the keyboard animates the page
-    // scroll/visual-viewport over a few hundred ms, and a throttle that dropped the last frame would leave the
-    // callout anchored to a mid-scroll position of its component rather than to the final, settled geometry.
-    const onVisualViewportChange = BitBlazorUI.Utils.throttle(() => BitBlazorUI.Callouts.reposition(), 16, { trailing: true });
-    window.visualViewport.addEventListener('resize', onVisualViewportChange);
-    window.visualViewport.addEventListener('scroll', onVisualViewportChange);
+    // A click on the overlay of a callout opened from inside another one, outside the callouts under it as well,
+    // dismisses them all (see Callouts.dismissOnOverlayClick). On the window in the capture phase, ahead of Blazor's
+    // own delegation, so that the overlay's handler does not dismiss the innermost callout a second time.
+    window.addEventListener('click', (e: MouseEvent) => {
+        if (e.button !== 0) return;
+
+        if (BitBlazorUI.Callouts.dismissOnOverlayClick(e.target, e.clientX, e.clientY)) {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+        }
+    }, true);
+
+    // A right-click dismisses the same callouts, except where the page took the click for itself - a handler
+    // that opens a context menu of its own calls preventDefault on it - since that is the page moving its own
+    // menu to the new point rather than the user leaving it. Whether the click was taken is only known once
+    // the event has been dispatched, which is what the deferral is for: the handlers that take it, Blazor's
+    // among them, all run before the task queued here does.
+    document.addEventListener('contextmenu', (e: MouseEvent) => {
+        setTimeout(() => {
+            if (e.defaultPrevented) return;
+
+            BitBlazorUI.Callouts.dismissOnOutsideInteraction(e.target as Node);
+        });
+    }, true);
+
+    // Keep an open callout aligned with the visible area when the visual viewport changes
+    // (iOS keyboard show/hide, pinch-zoom). window 'resize' doesn't fire for these on iOS, so
+    // listen to visualViewport directly. Reposition is a no-op when no callout is open.
+    if (window.visualViewport) {
+        // Track the viewport live while it changes, throttled on both edges: the keyboard animates the page
+        // scroll/visual-viewport over a few hundred ms, and a throttle that dropped the last frame would leave the
+        // callout anchored to a mid-scroll position of its component rather than to the final, settled geometry.
+        const onVisualViewportChange = BitBlazorUI.Utils.throttle(() => BitBlazorUI.Callouts.reposition(), 16, { trailing: true });
+        window.visualViewport.addEventListener('resize', onVisualViewportChange);
+        window.visualViewport.addEventListener('scroll', onVisualViewportChange);
+    }
 }
 
 // bit-lazy: teardown Callouts.clear Callouts.disposeKeyboard

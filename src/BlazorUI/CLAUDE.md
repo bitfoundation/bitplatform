@@ -93,13 +93,17 @@ it uses), a boot module importing the `always` and `markup` scripts, and the pac
 the first time an identifier of it is called (`BitScriptLoader`, off the `bit-lazy-scripts.json` each assembly embeds). So:
 
 - **A script's top level declares nothing another script reads** but the members of the `BitBlazorUI` namespace: as a
-  module, its own scope is its own. A boot script (`always`, `markup`) uses nothing of another package's namespace -
+  module, its own scope is its own, and `build-assets.mjs` fails on a script reading another file's top-level
+  declaration. What runs as a script loads goes inside a `namespace BitBlazorUI { }` block rather than at the bare top
+  level, where its helpers would be globals of the page in the bundle (the foot of `Callouts.ts`). A boot script (`always`, `markup`) uses nothing of another package's namespace -
   `build-assets.mjs` fails on one that does, since nothing would import that package first.
 - **Every call of the packages' code into a script goes through the loader** - `InvokeVoid`, `Invoke`, `FastInvoke*`, or
   the internal `InvokeScriptAsync` / `InvokeScriptVoidAsync` where a call must throw as `IJSRuntime.InvokeAsync` does -
   never `IJSRuntime.InvokeAsync("BitBlazorUI...")` itself, whose module would never have been imported.
 - **A script kept by `owners` that runs as it loads is loaded by its component**: in lazy mode nothing calls it, so the
-  component calls `_js.EnsureScriptAsync("<package>", "<script>")` as it first renders (BitNav, BitTag, BitDataGrid).
+  component calls `_js.EnsureScriptAsync("<package>", "<script>")` as it first renders the markup the script acts on
+  (BitNav, BitDataGrid on their first render; BitTag once it is dismissible, BitTimeline once an item is clickable). The
+  call is the owner type's own (the contract test reads its literals), and a failed import never fails the render.
 - **A function that only undoes what its script did** (a `dispose`, an `unregister`) says so in a
   `// bit-lazy: teardown Callouts.clear ...` comment of its script: the loader skips its call in a page that never ran the
   script, rather than download the script to release nothing. A function with an effect of its own (clearing a stored

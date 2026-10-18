@@ -186,7 +186,23 @@ public static class IJSRuntimeExtensions
     {
         if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
-        return BitScriptLoader.EnsureScript(jsRuntime, package, script);
+        var loading = BitScriptLoader.EnsureScript(jsRuntime, package, script);
+        return loading.IsCompletedSuccessfully ? ValueTask.CompletedTask : AwaitLoading(loading);
+
+        // A script that could not be imported - a connection lost, a 404 while a deploy is under way, an import past the
+        // interop timeout - costs the component the keys the script handles, never the render it is loaded from: thrown out
+        // of OnAfterRenderAsync, it would end a Server circuit. The failed import is forgotten (BitScriptLoader), so the next
+        // time the script is asked for it is imported again.
+        static async ValueTask AwaitLoading(ValueTask loading)
+        {
+            try
+            {
+                await loading;
+            }
+            catch (JSException) { }
+            catch (JSDisconnectedException) { }
+            catch (OperationCanceledException) { }
+        }
     }
 
 

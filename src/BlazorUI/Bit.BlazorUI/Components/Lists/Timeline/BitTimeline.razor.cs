@@ -261,14 +261,10 @@ public partial class BitTimeline<[DynamicallyAccessedMembers(DynamicallyAccessed
         StyleBuilder.Register(() => Styles?.Root);
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        // The script that keeps Space on an item from scrolling the page is called by nothing: with the lazy scripts on
-        // (BitBlazorUIScripts), the timeline is what loads it.
-        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI", "Timelines");
-
-        await base.OnAfterRenderAsync(firstRender);
-    }
+    // The script that keeps Space on a clickable item from scrolling the page is called by nothing: with the lazy scripts on
+    // (BitBlazorUIScripts), the timeline is what loads it - once an item of it is clickable, which is when the item renders
+    // the bit-tln-btn the script acts on (see _BitTimelineItem); a read-only timeline downloads nothing.
+    internal ValueTask EnsureItemKeysScriptAsync() => _js.EnsureScriptAsync("Bit.BlazorUI", "Timelines");
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTimelineParams))]
     protected override Task OnParametersSetAsync()

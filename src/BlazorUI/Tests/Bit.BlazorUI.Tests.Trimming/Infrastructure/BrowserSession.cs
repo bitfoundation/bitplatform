@@ -19,10 +19,14 @@ public sealed partial class BrowserSession : IAsyncDisposable
         _browser = browser;
         Page = page;
 
-        page.Console += (_, message) => { if (message.Type == "error") Errors.Add($"console: {message.Text}"); };
+        page.Console += (_, message) => { if (message.Type == "error" && IsFavicon(message.Location) is false && IsFavicon(message.Text) is false) Errors.Add($"console: {message.Text}"); };
         page.PageError += (_, error) => Errors.Add($"page: {error}");
-        page.Response += (_, response) => { if (response.Status >= 400) Errors.Add($"{response.Status}: {response.Url}"); };
+        page.Response += (_, response) => { if (response.Status >= 400 && IsFavicon(response.Url) is false) Errors.Add($"{response.Status}: {response.Url}"); };
     }
+
+    // The icon an engine asks every page for whether it names one or not: none of the host pages does, and the 404 it gets
+    // back (and the console line some engines log for it) says nothing about the trimming.
+    private static bool IsFavicon(string? text) => text?.Contains("/favicon.ico", StringComparison.OrdinalIgnoreCase) is true;
 
     /// <summary>The engines a trimmed app is run in: every one Playwright drives.</summary>
     public static IEnumerable<object[]> Engines => [["chromium"], ["firefox"], ["webkit"]];
@@ -85,11 +89,13 @@ public sealed partial class BrowserSession : IAsyncDisposable
         var prefixes = ChunkPrefixes(packages);
         var kept = packages.SelectMany(p => published.KeptStyles(p)).ToHashSet();
 
+        // A class is styled when any stylesheet naming its classes with its prefix was kept: a family split over several
+        // stylesheets shares one prefix, and the one kept need not be the first of them.
         var unstyled = classes.Select(c => ClassPrefix().Match(c))
                               .Where(m => m.Success && prefixes.ContainsKey(m.Groups["prefix"].Value))
-                              .Select(m => (Class: m.Value, Chunk: prefixes[m.Groups["prefix"].Value]))
-                              .Where(x => kept.Contains(x.Chunk) is false)
-                              .Select(x => $"{x.Class} ({x.Chunk})")
+                              .Select(m => (Class: m.Value, Chunks: prefixes[m.Groups["prefix"].Value]))
+                              .Where(x => x.Chunks.Any(kept.Contains) is false)
+                              .Select(x => $"{x.Class} ({string.Join(" or ", x.Chunks)})")
                               .Distinct()
                               .ToList();
 
@@ -97,10 +103,10 @@ public sealed partial class BrowserSession : IAsyncDisposable
     }
 
     // The class prefix each component stylesheet names its classes with (btn for BitButton): the one most of its class
-    // selectors start with.
-    private static Dictionary<string, string> ChunkPrefixes(IEnumerable<string> packages)
+    // selectors start with - and, for each prefix, every stylesheet it is the prefix of.
+    private static Dictionary<string, List<string>> ChunkPrefixes(IEnumerable<string> packages)
     {
-        var result = new Dictionary<string, string>(StringComparer.Ordinal);
+        var result = new Dictionary<string, List<string>>(StringComparer.Ordinal);
         foreach (var pieces in packages.Select(PublishResult.GetPieces))
         {
             foreach (var chunk in pieces.StyleChunks)
@@ -110,7 +116,10 @@ public sealed partial class BrowserSession : IAsyncDisposable
                                           .OrderByDescending(g => g.Count())
                                           .Select(g => g.Key)
                                           .FirstOrDefault();
-                if (prefix is not null) result.TryAdd(prefix, chunk.Name);
+                if (prefix is null) continue;
+
+                if (result.TryGetValue(prefix, out var chunks) is false) result[prefix] = chunks = [];
+                chunks.Add(chunk.Name);
             }
         }
         return result;

@@ -13,12 +13,12 @@ inline turns it off. `ReportRefusal` takes it as an optional `showNotice`, `true
 as before, and an assembly compiled against the earlier one has to be compiled again. **An app that sets
 `RefusalReporter` itself** takes the second argument: `(refusal, showNotice) => ...`.
 
-### A published WebAssembly app gets the scripts and stylesheets of the components it uses
+### A published WebAssembly app gets the scripts and stylesheets of the components it uses ([#13876](https://github.com/bitfoundation/bitplatform/issues/13876))
 
 The packages' bundles (`bit.blazorui.js`, `bit.blazorui.css` and its Fluent variants, the Extras' and the Legacy
 package's) are put back together at publish from only the pieces an app can use - the components ILLink kept, the
-scripts they call - and the vendored libraries nothing loads (pdf.js, quill, chart.js, marked, Leaflet, the flags) are
-left out of the publish. A standalone Blazor WebAssembly app gets this by default; a build, `dotnet run` and
+scripts they call - and the vendored libraries nothing loads (pdf.js, quill, chart.js, marked, Leaflet, OpenLayers, the
+flags) are left out of the publish. A standalone Blazor WebAssembly app gets this by default; a build, `dotnet run` and
 `dotnet watch` are unchanged. **An app that renders a component the code never names** (by reflection, through a
 `DynamicComponent` built from a type name), **uses a component's classes in markup of its own without the component**,
 **or calls `BitBlazorUI.*` from JavaScript the publish cannot read** (loaded from a CDN, built outside the app's

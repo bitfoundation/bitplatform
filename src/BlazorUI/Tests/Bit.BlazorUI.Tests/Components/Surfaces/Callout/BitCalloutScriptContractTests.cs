@@ -64,8 +64,9 @@ public class BitCalloutScriptContractTests
 
         // The overlay's own Blazor handler dismisses the innermost callout on the same click, so the listener that
         // dismisses the ones under it too has to run first and keep the click from reaching that handler: on the
-        // window, in the capture phase, added as the script loads.
-        var listener = Regex.Match(script, @"\nwindow\.addEventListener\('click',(?<body>.*?)\},\s*true\);", RegexOptions.Singleline);
+        // window, in the capture phase, added as the script loads: at the top level of the file, or of a namespace block of
+        // it (one level in), never inside a function.
+        var listener = Regex.Match(script, @"\n(?:    )?window\.addEventListener\('click',(?<body>.*?)\},\s*true\);", RegexOptions.Singleline);
         Assert.IsTrue(listener.Success, "The capture-phase click listener on the window was not found in Callouts.ts.");
         StringAssert.Contains(listener.Groups["body"].Value, "Callouts.dismissOnOverlayClick(");
         StringAssert.Contains(listener.Groups["body"].Value, "stopImmediatePropagation()");
