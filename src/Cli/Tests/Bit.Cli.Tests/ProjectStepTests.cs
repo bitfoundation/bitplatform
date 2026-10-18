@@ -113,6 +113,29 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public async Task Git_Should_LeaveNoAutomaticMaintenanceRunningInTheNewRepository()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["git"] = "git";
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var project = CreateFakeProject(host, "Contoso");
+
+        await new ProjectSteps(host.Services, project).GitAsync(_ => { }, CancellationToken.None);
+
+        var gitCalls = host.Runner.Calls.Where(c => c.FileName is "git" && c.Arguments.FirstOrDefault() is not "--version").ToArray();
+        Assert.IsTrue(gitCalls.Any(c => c.Arguments.FirstOrDefault() is "commit"), string.Join(Environment.NewLine, host.Runner.Calls.Select(c => c.CommandLine)));
+
+        foreach (var call in gitCalls)
+        {
+            var settings = Enumerable.Range(0, int.Parse(call.Environment?["GIT_CONFIG_COUNT"] ?? "0"))
+                .ToDictionary(i => call.Environment![$"GIT_CONFIG_KEY_{i}"]!, i => call.Environment![$"GIT_CONFIG_VALUE_{i}"]);
+
+            Assert.AreEqual("false", settings.GetValueOrDefault("maintenance.auto"), call.CommandLine);
+            Assert.AreEqual("0", settings.GetValueOrDefault("gc.auto"), call.CommandLine);
+        }
+    }
+
+    [TestMethod]
     public async Task Git_Should_StayOutOfAnExistingRepository()
     {
         if (await GitAvailableAsync() is false)
