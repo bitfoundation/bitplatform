@@ -593,7 +593,7 @@ and needs no thought, but only in the project that publishes trimmed.
 
 ## Samples and docs
 
-The `Bit.Butil.Demo` project in this repository is a full documentation site: one page per API,
+The `Demo` app in this repository is a full documentation site: one page per API,
 with runnable samples, an API reference table, and a browser-support matrix. Run it to try any of
 the above in your own browser.
 
@@ -622,7 +622,7 @@ There are seven tools, and no more: a tool description is paid for in every requ
 session, so a listing is not a tool of its own, a single-item lookup is not a tool when one that
 takes a set already resolves each member, and nothing restates the server's `instructions`, which
 the client has had in context since `initialize`. Start with `SearchButil`. See
-[McpController](Bit.Butil.Demo/Server/Controllers/McpController.cs).
+[McpController](Demo/Server/Controllers/McpController.cs).
 
 The site's own **`/mcp-server` page** is a working client for it: it handshakes with this server on
 load, lists its tools, and lets you call one and read both halves of the exchange - the JSON-RPC

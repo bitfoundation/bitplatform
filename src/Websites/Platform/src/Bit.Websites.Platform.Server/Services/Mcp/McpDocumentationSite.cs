@@ -14,18 +14,22 @@ internal sealed partial class McpDocumentationSite : IDisposable
     [GeneratedRegex(@"Now listening on:\s*(?<url>http://\S+)")]
     private static partial Regex ListeningRegex();
 
-    /// <summary>The libraries served per version, under the upstream names the proxy knows them by.</summary>
-    public static readonly (string UpstreamName, string ProjectPath)[] Projects =
+    /// <summary>
+    /// The libraries served per version, under the upstream names the proxy knows them by. A project that has
+    /// moved lists every path it has had, newest first: each release is built from its own worktree, where the
+    /// project still sits wherever it was when that release was tagged.
+    /// </summary>
+    public static readonly (string UpstreamName, string[] ProjectPaths)[] Projects =
     [
-        ("bitBlazorUI", "src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj"),
-        ("bitBink", "src/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj"),
-        ("bitBlex", "src/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj"),
-        ("bitBmage", "src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj"),
-        ("bitBonboarding", "src/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj"),
-        ("bitBrouter", "src/Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj"),
-        ("bitBswup", "src/Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj"),
-        ("bitButil", "src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj"),
-        ("bitMotion", "src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj")
+        ("bitBlazorUI", ["src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj"]),
+        ("bitBink", ["src/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj"]),
+        ("bitBlex", ["src/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj"]),
+        ("bitBmage", ["src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj"]),
+        ("bitBonboarding", ["src/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj"]),
+        ("bitBrouter", ["src/Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj"]),
+        ("bitBswup", ["src/Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj"]),
+        ("bitButil", ["src/Butil/Demo/Server/Bit.Butil.Demo.Server.csproj", "src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj"]),
+        ("bitMotion", ["src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj"])
     ];
 
     private static readonly TimeSpan buildTimeout = TimeSpan.FromMinutes(30);

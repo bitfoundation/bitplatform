@@ -190,7 +190,7 @@ public class McpServerFixture
 
         for (var i = 0; i < 10 && directory is not null; i++)
         {
-            var candidate = Path.Combine(directory, "Bit.Butil.Demo", "Server", "Bit.Butil.Demo.Server.csproj");
+            var candidate = Path.Combine(directory, "Demo", "Server", "Bit.Butil.Demo.Server.csproj");
             if (File.Exists(candidate)) return candidate;
 
             directory = Path.GetDirectoryName(directory);

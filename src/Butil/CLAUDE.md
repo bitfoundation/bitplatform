@@ -12,7 +12,7 @@ Strongly-typed C# wrappers over browser Web APIs for Blazor (WebAssembly, Server
 | `Bit.Butil/Scripts/*.ts` | One TypeScript file = one JS module = one `BitButil.<module>` namespace |
 | `Bit.Butil/build.mjs` | Assembles `wwwroot/bit-butil.js`, `wwwroot/modules/*.js` and the packed chunks + manifest (run by MSBuild; outputs are generated and git-ignored). `minify-options.mjs` beside it holds the esbuild settings the benchmarks measure with |
 | `Bit.Butil.Build/` | MSBuild task run in a consumer's publish: script scanning, trimming, bundling |
-| `Bit.Butil.Demo/` | The documentation site (Client) and its host (Server), which also hosts the MCP server at `/mcp` |
+| `Demo/` | The documentation site (Client) and its host (Server), which also hosts the MCP server at `/mcp` |
 | `Samples/` | Minimal hosting samples: `Samples.Core` (shared pages), `Samples.Web` (standalone WebAssembly), `Samples.Maui` (Hybrid) |
 | `tests/` | `Tests.E2E` (Playwright, against every host), `Tests.Hosting` (in-process HTTP against every render mode), `Tests.Harness.Web` (+ `.Client`) and `Tests.Harness.Hybrid` (the Blazor Web App and BlazorWebView hosts those two drive), `Tests.Mcp` (MSTest against the live MCP server), `Tests.Manual` (trimming/bundling console harness), `Tests.Benchmarks` (weight and interop-cost budgets), `Tests.PublishFixture` (the consumer app it publishes) |
 
@@ -86,12 +86,12 @@ generic type accompanying an existing non-generic one of the same name - those t
 
 Every feature has to be demonstrable, not merely documented. A new or extended API is not done until:
 
-- **`Bit.Butil.Demo/Client/Pages/<Api>Page.razor`** covers it: a `PageHeader` (category, lead, MDN link,
+- **`Demo/Client/Pages/<Api>Page.razor`** covers it: a `PageHeader` (category, lead, MDN link,
   `InjectAs`), one `DemoSection` per public member or coherent group of members - each with a runnable control,
   a `Code` snippet the reader can copy, and a `DemoConsole` for output - and an `ApiTable` row for every public
   member with its signature. Wrap calls in try/catch and report failures through the console, since most of these
   APIs fail by refusing rather than by throwing something meaningful.
-- **`Bit.Butil.Demo/Client/Docs/DocsNav.cs`** lists the page: title, slug (matching its `@page`), summary, page
+- **`Demo/Client/Docs/DocsNav.cs`** lists the page: title, slug (matching its `@page`), summary, page
   type, `ApiSupport`, `ApiNeeds`, and `Services` when the type names are not the title. That list is the single
   source of truth for the sidebar, the home grid, the browser-support matrix, the pager, the search index and the
   MCP capability catalog - a page missing from it is invisible everywhere except its own URL.
@@ -103,7 +103,7 @@ Every feature has to be demonstrable, not merely documented. A new or extended A
 
 ## MCP server
 
-The demo server hosts an MCP server (`Bit.Butil.Demo/Server/Controllers/McpController.cs`, seven tools, mirrored
+The demo server hosts an MCP server (`Demo/Server/Controllers/McpController.cs`, seven tools, mirrored
 as plain GETs under `/api/mcp/...`). Every feature must be reachable through it, which in practice means:
 
 - Its answers are **derived, not hand-written**: the API reference is reflected out of the shipped assembly with
@@ -111,7 +111,7 @@ as plain GETs under `/api/mcp/...`). Every feature must be reachable through it,
   reaches the tools by having XML documentation, a `DocsNav` entry, and a page that renders **outside the router
   and layout** (the tools render pages standalone - a page reading something from its surroundings breaks there).
 - New files under `Client/`, `Server/Components/` or `Samples/` are picked up by the `EmbeddedResource` globs in
-  `Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj`; a file outside them is a source the tools cannot serve.
+  `Demo/Server/Bit.Butil.Demo.Server.csproj`; a file outside them is a source the tools cannot serve.
 - Hand-maintained lists that reflection cannot reach - notably `_fastInvokeServices` in
   `Server/Services/ButilCapabilityCatalog.cs` - must be updated along with the feature.
 - **Do not add tools.** The surface is deliberately seven: a tool description is paid for in every request of

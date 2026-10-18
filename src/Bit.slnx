@@ -228,9 +228,9 @@
     <Project Path="Butil/Bit.Butil/Bit.Butil.csproj" />
     <Project Path="Butil/Bit.Butil.Build/Bit.Butil.Build.csproj" />
   </Folder>
-  <Folder Name="/Butil/Bit.Butil.Demo/">
-    <Project Path="Butil/Bit.Butil.Demo/Client/Bit.Butil.Demo.Client.csproj" />
-    <Project Path="Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj" />
+  <Folder Name="/Butil/Demo/">
+    <Project Path="Butil/Demo/Client/Bit.Butil.Demo.Client.csproj" />
+    <Project Path="Butil/Demo/Server/Bit.Butil.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Butil/Samples/">
     <Project Path="Butil/Samples/Bit.Butil.Samples.Core/Bit.Butil.Samples.Core.csproj" />

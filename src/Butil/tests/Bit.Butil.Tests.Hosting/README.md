@@ -4,7 +4,7 @@ In-process HTTP tests (`WebApplicationFactory`) against `Bit.Butil.Tests.Harness
 serves the `Bit.Butil.Samples.Core` pages in any render mode - on every target framework the library ships for.
 No browser: these assert what only a server response shows, and run in the regular CI job
 (`.github/workflows/bit.ci.Butil.yml`). The browser, hybrid and trimmed-publish coverage of the same host is
-`Bit.Butil.Tests.E2E`.
+`Bit.Butil.Tests.E2E`, run on demand by `.github/workflows/bit.ci.Butil.e2e.yml`.
 
 | Fixture | What it proves |
 | --- | --- |

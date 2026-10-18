@@ -13,9 +13,9 @@
     </Project>
     <Project Path="Samples/Bit.Butil.Samples.Web/Bit.Butil.Samples.Web.csproj" />
   </Folder>
-  <Folder Name="/Bit.Butil.Demo/">
-    <Project Path="Bit.Butil.Demo/Client/Bit.Butil.Demo.Client.csproj" />
-    <Project Path="Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj" />
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.Butil.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.Butil.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="tests/Bit.Butil.Tests.Benchmarks/Bit.Butil.Tests.Benchmarks.csproj" />

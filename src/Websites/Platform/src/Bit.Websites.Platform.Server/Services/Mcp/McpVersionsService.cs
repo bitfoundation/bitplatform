@@ -191,9 +191,11 @@ public partial class McpVersionsService : BackgroundService
         // serve that library's tools - it must not stop the release from being served at all, which is what
         // a site that cannot be built would do below.
         var released = McpDocumentationSite.Projects
-            .Select(documentation => (documentation.UpstreamName, ProjectFilePath: Path.Combine(worktreePath, documentation.ProjectPath.Replace('/', Path.DirectorySeparatorChar))))
-            .Where(documentation => File.Exists(documentation.ProjectFilePath))
-            .Select(documentation => new McpDocumentationSite(documentation.UpstreamName, name, documentation.ProjectFilePath,
+            .Select(documentation => (documentation.UpstreamName, ProjectFilePath: documentation.ProjectPaths
+                .Select(projectPath => Path.Combine(worktreePath, projectPath.Replace('/', Path.DirectorySeparatorChar)))
+                .FirstOrDefault(File.Exists)))
+            .Where(documentation => documentation.ProjectFilePath is not null)
+            .Select(documentation => new McpDocumentationSite(documentation.UpstreamName, name, documentation.ProjectFilePath!,
                                                               loggerFactory.CreateLogger<McpDocumentationSite>()))
             .ToArray();
 
