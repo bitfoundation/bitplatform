@@ -283,6 +283,9 @@ _book
 /src/Bink/Bit.Bink/wwwroot/**/*.js
 /src/Bink/Bit.Bink/wwwroot/**/*.css
 
+/src/Balette/Bit.Balette/Scripts/**/*.js
+/src/Balette/Bit.Balette/wwwroot/**/*.js
+/src/Balette/Bit.Balette/wwwroot/**/*.css
 /src/BlazeDb/Bit.BlazeDb.Browser/Scripts/**/*.js
 /src/BlazeDb/Bit.BlazeDb.Browser/wwwroot/**/*.js
 

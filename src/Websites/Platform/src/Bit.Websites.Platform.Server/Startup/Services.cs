@@ -169,7 +169,7 @@ public static class Services
                 Title = "bit platform",
                 Version = typeof(Services).Assembly.GetName().Version!.ToString()
             };
-            options.ServerInstructions = "Provides the tools of every MCP server the bit platform team develops against, including the bit BlazorUI, Bmotion, Bink, BlazeDb, Bonboarding, Blex, Bmage, Brouter, Butil and Bswup documentation servers, plus a source code index of the bitfoundation/bitplatform repository.";
+            options.ServerInstructions = "Provides the tools of every MCP server the bit platform team develops against, including the bit BlazorUI, Bmotion, Bink, Balette, BlazeDb, Bonboarding, Blex, Bmage, Brouter, Butil and Bswup documentation servers, plus a source code index of the bitfoundation/bitplatform repository.";
         })
             // Stateless: no session state is kept between requests, so the endpoint keeps working when the
             // site runs behind a load balancer without session affinity. Nothing is lost by it here, since

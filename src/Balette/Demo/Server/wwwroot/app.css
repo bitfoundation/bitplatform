@@ -1,0 +1,817 @@
+﻿/* The site's own look. The palette's comes from the library's stylesheet, linked before this one in
+   App.razor; this file only styles the pages around it, plus the few demo icons the commands name
+   through IconCss and the content of the detail pane, which is the demo's own template. */
+
+:root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-2: #f1f3f5;
+    --border: #dfe3e8;
+    --text: #1a1d21;
+    --text-muted: #616a75;
+    --accent: #4f46e5;
+    --accent-soft: #e0e7ff;
+    --danger: #dc2626;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 12px rgba(16, 24, 40, 0.06);
+    color-scheme: light dark;
+}
+
+/* The theme follows the system unless <html data-theme> says otherwise - the same two selectors the
+   library's stylesheet uses, so the site and the palette always agree on which one is showing. */
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bg: #14161a;
+        --surface: #1c1f24;
+        --surface-2: #24282e;
+        --border: #333940;
+        --text: #e8eaed;
+        --text-muted: #9aa4b0;
+        --accent: #818cf8;
+        --accent-soft: #2a2d5c;
+        --danger: #f87171;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+}
+
+:root[data-theme="dark"] {
+    --bg: #14161a;
+    --surface: #1c1f24;
+    --surface-2: #24282e;
+    --border: #333940;
+    --text: #e8eaed;
+    --text-muted: #9aa4b0;
+    --accent: #818cf8;
+    --accent-soft: #2a2d5c;
+    --danger: #f87171;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.3);
+    color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--text);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1 {
+    font-size: 1.6rem;
+    margin: 0 0 0.25rem;
+    letter-spacing: -0.01em;
+}
+
+h2 {
+    font-size: 1.05rem;
+    margin: 1.75rem 0 0.5rem;
+}
+
+h3 {
+    font-size: 0.95rem;
+    margin: 0 0 0.35rem;
+}
+
+p {
+    margin: 0 0 0.75rem;
+}
+
+ul {
+    margin: 0 0 0.75rem;
+    padding-left: 1.2rem;
+}
+
+li {
+    margin-bottom: 0.3rem;
+}
+
+code {
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.875em;
+    background: var(--surface-2);
+    padding: 0.1em 0.35em;
+    border-radius: 4px;
+}
+
+pre {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 0.85rem 1rem;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    margin: 0 0 1rem;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+}
+
+/* The same keycap as the library's own hints (.bit-balette-kbd), so a key written in a sentence and one
+   rendered by BaletteShortcutHint look alike. */
+kbd {
+    display: inline-block;
+    min-width: 1.5em;
+    padding: 0 0.35em;
+    border: 1px solid var(--border);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+    background: var(--surface);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.8em;
+    line-height: 1.6;
+    text-align: center;
+}
+
+a {
+    color: var(--accent);
+}
+
+/* ---- Layout ---------------------------------------------------------------------------------- */
+
+.app {
+    display: grid;
+    grid-template-columns: 232px 1fr;
+    min-height: 100vh;
+}
+
+.sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    padding: 1.25rem 0.85rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 650;
+    font-size: 1.05rem;
+    padding: 0 0.5rem 1rem;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    text-decoration: none;
+}
+
+.brand-mark {
+    width: 26px;
+    height: 26px;
+    flex: none;
+    color: var(--accent);
+}
+
+.nav-section {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding: 0.9rem 0.6rem 0.35rem;
+}
+
+.nav-link {
+    display: block;
+    padding: 0.4rem 0.6rem;
+    border-radius: 7px;
+    color: var(--text);
+    text-decoration: none;
+    font-size: 0.9rem;
+}
+
+.nav-link:hover {
+    background: var(--surface-2);
+}
+
+.nav-link.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 550;
+}
+
+.content {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* The palette is one keystroke away on every page, but a visitor who has not learnt the keystroke yet
+   needs something to click: the trigger and the mode buttons stay in view while the page scrolls. */
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 2rem;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+}
+
+.topbar .topbar-trigger {
+    flex: 1 1 260px;
+    max-width: 420px;
+}
+
+.topbar-modes {
+    display: flex;
+    gap: 0.35rem;
+}
+
+.topbar-modes .btn kbd {
+    min-width: 1.4em;
+}
+
+.main {
+    padding: 1.75rem 2rem 3rem;
+    max-width: 1180px;
+    width: 100%;
+}
+
+.page-intro {
+    color: var(--text-muted);
+    max-width: 72ch;
+    margin-bottom: 1.25rem;
+}
+
+/* ---- Panels and controls ---------------------------------------------------------------------- */
+
+.panel {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.padded,
+.panel.padded {
+    padding: 1rem 1.15rem;
+}
+
+.panel.padded > h2:first-child {
+    margin-top: 0;
+}
+
+.panel > table {
+    margin: 0;
+}
+
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.6rem;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+}
+
+.toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.toolbar-separator {
+    width: 1px;
+    align-self: stretch;
+    background: var(--border);
+    margin: 0.15rem 0.35rem;
+}
+
+.toolbar-spacer {
+    flex: 1;
+}
+
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0 0 1.25rem;
+}
+
+.stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+}
+
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    min-height: 34px;
+    padding: 0.3rem 0.65rem;
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    background: var(--surface);
+    color: var(--text);
+    font: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    white-space: nowrap;
+    text-decoration: none;
+}
+
+.btn:hover:not(:disabled) {
+    background: var(--surface-2);
+}
+
+.btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.btn:focus-visible,
+.swatch:focus-visible,
+.card:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 1px;
+}
+
+.btn.active {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+:root[data-theme="dark"] .btn.primary {
+    color: #0b0c10;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .btn.primary {
+        color: #0b0c10;
+    }
+}
+
+.btn.primary:hover:not(:disabled) {
+    background: var(--accent);
+    filter: brightness(1.08);
+}
+
+.btn.danger {
+    color: var(--danger);
+}
+
+.btn code {
+    background: var(--surface-2);
+}
+
+.swatch {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    padding: 0;
+    cursor: pointer;
+}
+
+.swatch.active {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+}
+
+.field {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+.field.grow {
+    flex: 1 1 260px;
+}
+
+.field input.grow {
+    flex: 1;
+    min-width: 0;
+}
+
+.try-box {
+    max-width: 420px;
+    margin-bottom: 1rem;
+}
+
+.try-box input {
+    flex: 1;
+}
+
+select,
+input[type="text"],
+input[type="number"] {
+    font: inherit;
+    font-size: 0.85rem;
+    padding: 0.3rem 0.45rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    color: var(--text);
+    min-height: 34px;
+}
+
+input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--accent);
+}
+
+.statusbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    padding: 0.45rem 0.7rem;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    font-size: 0.78rem;
+    color: var(--text-muted);
+}
+
+.statusbar strong {
+    color: var(--text);
+    font-weight: 600;
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.05rem 0.4rem;
+    border-radius: 999px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    font-size: 0.72rem;
+}
+
+.badge.on {
+    background: var(--accent-soft);
+    border-color: var(--accent);
+    color: var(--accent);
+}
+
+.muted {
+    color: var(--text-muted);
+}
+
+.small {
+    font-size: 0.8rem;
+}
+
+.grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.1rem;
+}
+
+a.card {
+    display: block;
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 120ms;
+}
+
+a.card:hover {
+    border-color: var(--accent);
+}
+
+.card p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.87rem;
+}
+
+.note {
+    border-left: 3px solid var(--accent);
+    background: var(--surface);
+    border-radius: 0 var(--radius) var(--radius) 0;
+    padding: 0.7rem 0.9rem;
+    font-size: 0.87rem;
+    color: var(--text-muted);
+    margin: 1rem 0;
+}
+
+.output {
+    max-height: 260px;
+    overflow: auto;
+    font-size: 0.75rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 0.85rem;
+    margin: 0 0 1rem;
+}
+
+th,
+td {
+    text-align: left;
+    padding: 0.4rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+}
+
+tbody tr:last-child td {
+    border-bottom: none;
+}
+
+th {
+    font-weight: 600;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+th.num,
+td.num {
+    text-align: right;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+td .btn {
+    min-height: 28px;
+    padding: 0.15rem 0.55rem;
+}
+
+/* Matched characters in the search lab: the same mark the palette draws. */
+td mark.bit-balette-mark {
+    background: var(--bit-balette-mark-bg);
+    color: inherit;
+    border-radius: 2px;
+    padding: 0 1px;
+    margin: 0 -1px;
+}
+
+.split {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+}
+
+/* ---- Page pieces ------------------------------------------------------------------------------ */
+
+.try-list li {
+    margin-bottom: 0.45rem;
+}
+
+.log {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 0.8rem;
+}
+
+.log li {
+    padding: 0.2rem 0;
+    margin: 0;
+    border-bottom: 1px dashed var(--border);
+}
+
+.counter {
+    font-size: 1.1rem;
+}
+
+.settings {
+    max-width: 560px;
+}
+
+.setting {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+}
+
+.setting:last-child {
+    border-bottom: none;
+}
+
+.setting > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.inline-hint {
+    margin-right: 0.6rem;
+}
+
+/* ---- Inside the palette: the icons the commands name through IconCss, and the detail template ---- */
+
+.demo-avatar {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #818cf8, #22d3ee);
+}
+
+.demo-plus::before {
+    content: "+";
+    font-style: normal;
+    font-weight: 700;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.demo-dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.demo-dot-red {
+    background: #ef4444;
+}
+
+.demo-dot-blue {
+    background: #3b82f6;
+}
+
+.demo-dot-green {
+    background: #22c55e;
+}
+
+.demo-dot-yellow {
+    background: #eab308;
+}
+
+.demo-dot-purple {
+    background: #a855f7;
+}
+
+.demo-detail h3 {
+    font-size: 1rem;
+    margin: 4px 0 8px;
+    color: var(--bit-balette-fg);
+}
+
+.demo-detail p {
+    margin: 0 0 8px;
+}
+
+.demo-detail-kind {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--bit-balette-fg-subtle);
+}
+
+.demo-detail-sub {
+    color: var(--bit-balette-fg-muted);
+}
+
+.demo-detail dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 12px;
+    margin: 8px 0;
+}
+
+.demo-detail dt {
+    color: var(--bit-balette-fg-subtle);
+    font-weight: 500;
+}
+
+.demo-detail dd {
+    margin: 0;
+}
+
+.demo-detail-id {
+    font-size: 11px;
+    color: var(--bit-balette-fg-subtle);
+    background: none;
+    padding: 0;
+}
+
+/* ---- Small screens ---------------------------------------------------------------------------- */
+
+@media (max-width: 900px) {
+    .app {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .topbar {
+        padding: 0.6rem 1rem;
+    }
+
+    .main {
+        padding: 1.25rem 1rem 2.5rem;
+    }
+
+    .split {
+        grid-template-columns: 1fr;
+    }
+
+    .panel {
+        overflow-x: auto;
+    }
+}
+
+/* The mode buttons keep their prefix and lose their label before they wrap under the trigger. */
+@media (max-width: 560px) {
+    .topbar-modes .btn span {
+        display: none;
+    }
+}
+
+#blazor-error-ui {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    display: none;
+    padding: 0.7rem 1.2rem;
+    background: #fee2e2;
+    color: #7f1d1d;
+    border-top: 1px solid #fca5a5;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    float: right;
+    font-weight: 700;
+}
+
+/* A keyboard user should not have to tab through every navigation link to reach the page. */
+.skip-link {
+    position: absolute;
+    left: -9999px;
+    top: 0;
+    z-index: 100;
+    padding: 0.6rem 1rem;
+    background: #111827;
+    color: #ffffff;
+    border-radius: 0 0 6px 0;
+}
+
+.skip-link:focus {
+    left: 0;
+}
+
+main:focus,
+h1:focus {
+    outline: none;
+}

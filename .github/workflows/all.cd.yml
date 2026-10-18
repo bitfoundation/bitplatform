@@ -77,6 +77,12 @@ jobs:
     uses: ./.github/workflows/bink.demo.cd.yml
     secrets: inherit
 
+  balette_demo:
+    name: balette demo
+    if: inputs.server
+    uses: ./.github/workflows/balette.demo.cd.yml
+    secrets: inherit
+
   blazedb_demo:
     name: blazedb demo
     if: inputs.server

@@ -1,0 +1,20 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.Balette.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.Balette.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Balette.Tests/Bit.Balette.Tests.csproj" />
+    <Project Path="Tests/Bit.Balette.Tests.Mcp/Bit.Balette.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.Balette.Benchmarks/Bit.Balette.Benchmarks.csproj" />
+  </Folder>
+  <Project Path="Bit.Balette/Bit.Balette.csproj" />
+</Solution>

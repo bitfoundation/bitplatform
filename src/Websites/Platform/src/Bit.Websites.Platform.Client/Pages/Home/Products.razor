@@ -203,6 +203,24 @@
         },
         new()
         {
+            Title = "Everything one keystroke away",
+            Subtitle = "bit Balette · Blazor-native command palette",
+            LinkUrl = Urls.Balette,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Balette is a Blazor-native, keyboard-first command palette with fzf-style fuzzy search, nested pages,
+                    prefix modes, async sources, recents, global shortcuts and sequences, prompts and multi-select, all in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>Palette.Register(
+    BaletteCmd.Navigate("Settings", "/settings").Shortcut("G S"),
+    BaletteCmd.Action("Toggle sidebar", Toggle).Shortcut("Mod+B"));</CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Data that stays in the browser",
             Subtitle = "bit BlazeDb · memory-first database for Blazor",
             LinkUrl = Urls.BlazeDb,

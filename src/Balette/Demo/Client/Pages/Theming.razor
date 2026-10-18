@@ -1,0 +1,210 @@
+﻿@page "/theming"
+@implements IDisposable
+@inject IBaletteService Palette
+@inject DemoState State
+
+<PageTitle>Theming and templates - bit Balette</PageTitle>
+
+<h1>Theming &amp; templates</h1>
+<p class="page-intro">
+    The default look is a set of CSS custom properties, so restyling the palette means overriding variables - on
+    <code>:root</code>, on the dialog, or inline through the component's <code>Style</code> - with no selectors to fight.
+    Past that, every part of a row and of the dialog can be replaced with a template, or the styles left out entirely.
+    The controls below restyle the palette this site is using.
+</p>
+
+<div class="panel">
+    <div class="toolbar" role="toolbar" aria-label="Site and palette theme">
+        <span class="field">Site</span>
+        <div class="toolbar-group" role="group" aria-label="Site theme">
+            @foreach (var theme in SiteThemes)
+            {
+                <button type="button" class="btn @(State.Theme == theme ? "active" : null)" aria-pressed="@(State.Theme == theme ? "true" : "false")"
+                        @onclick="() => State.SetThemeAsync(theme)">@Capitalize(theme)</button>
+            }
+        </div>
+        <div class="toolbar-separator"></div>
+        <span class="field">Palette</span>
+        <div class="toolbar-group" role="group" aria-label="Palette theme">
+            @foreach (var (value, label) in PaletteThemes)
+            {
+                <button type="button" class="btn @(State.PaletteTheme == value ? "active" : null)" aria-pressed="@(State.PaletteTheme == value ? "true" : "false")"
+                        @onclick="() => State.SetPaletteTheme(value)">@label</button>
+            }
+        </div>
+    </div>
+
+    <div class="toolbar" role="toolbar" aria-label="Palette tokens">
+        <span class="field">Accent</span>
+        <div class="toolbar-group">
+            @foreach (var (value, label) in Accents)
+            {
+                <button type="button" class="swatch @(State.Accent == value ? "active" : null)" title="@label" aria-label="@label"
+                        aria-pressed="@(State.Accent == value ? "true" : "false")"
+                        style="background:@(value ?? "#4f46e5")" @onclick="() => State.SetAccent(value)"></button>
+            }
+        </div>
+        <div class="toolbar-separator"></div>
+        <label class="field">
+            Width
+            <select value="@(State.Width?.ToString() ?? "")" @onchange="OnWidthChanged" aria-label="Palette width">
+                <option value="">Default</option>
+                <option value="560">560 px</option>
+                <option value="760">760 px</option>
+                <option value="1040">1040 px</option>
+            </select>
+        </label>
+        <label class="field">
+            Radius
+            <select value="@(State.Radius?.ToString() ?? "")" @onchange="OnRadiusChanged" aria-label="Palette corner radius">
+                <option value="">Default</option>
+                <option value="0">0 px</option>
+                <option value="6">6 px</option>
+                <option value="24">24 px</option>
+            </select>
+        </label>
+        <div class="toolbar-separator"></div>
+        <label class="field">
+            <input type="checkbox" checked="@State.ShowDetail" @onchange="() => State.SetShowDetail(!State.ShowDetail)" />
+            Detail pane
+        </label>
+        <label class="field">
+            <input type="checkbox" checked="@State.ShowFooter" @onchange="() => State.SetShowFooter(!State.ShowFooter)" />
+            Footer
+        </label>
+        <div class="toolbar-spacer"></div>
+        <button type="button" class="btn" @onclick="State.ResetPresentation">Reset</button>
+        <button type="button" class="btn primary" @onclick="() => Palette.OpenAsync()">Open the palette</button>
+    </div>
+
+    <div class="padded">
+        <p class="muted small">What the layout hands its palette right now:</p>
+        <pre class="output"><code>&lt;Balette Theme="@(State.PaletteTheme ?? "(follows the page)")"
+         Style="@(State.PaletteStyle ?? "(none)")"
+         DetailTemplate="@(State.ShowDetail ? "_detailPane" : "null")"
+         ShowFooter="@(State.ShowFooter ? "true" : "false")" /&gt;</code></pre>
+    </div>
+</div>
+
+<div class="note">
+    The site theme is <code>&lt;html data-theme&gt;</code>, which the library's stylesheet and this site's both follow -
+    <em>auto</em> leaves it to <code>prefers-color-scheme</code>. The palette's <code>Theme</code> parameter wins over the
+    page for the palette alone, for an app that wants a dark palette over a light page.
+</div>
+
+<h2>The tokens</h2>
+<p>The ones that change the look the most. Every one of them has a light and a dark value.</p>
+<table>
+    <thead>
+        <tr><th>Custom property</th><th>Light default</th><th>Controls</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>--bit-balette-accent</code></td><td><code>#4f46e5</code></td><td>Toggles that are on, checked rows, badges, the mode chip, the spinner</td></tr>
+        <tr><td><code>--bit-balette-accent-soft</code></td><td><code>rgba(79, 70, 229, .10)</code></td><td>Behind badges, the mode chip and checked boxes</td></tr>
+        <tr><td><code>--bit-balette-mark-bg</code></td><td><code>rgba(79, 70, 229, .18)</code></td><td>Highlighted matched characters</td></tr>
+        <tr><td><code>--bit-balette-bg</code> / <code>-bg-elevated</code></td><td><code>#ffffff</code> / <code>#f6f7f9</code></td><td>The dialog, and the detail pane and footer</td></tr>
+        <tr><td><code>--bit-balette-fg</code> / <code>-fg-muted</code></td><td><code>#111318</code> / <code>#6b7280</code></td><td>Titles, and subtitles and hints</td></tr>
+        <tr><td><code>--bit-balette-width</code></td><td><code>640px</code> (<code>920px</code> with a detail pane)</td><td>The dialog's width; it never exceeds the viewport</td></tr>
+        <tr><td><code>--bit-balette-max-height</code></td><td><code>min(70vh, 560px)</code></td><td>How tall the list may grow</td></tr>
+        <tr><td><code>--bit-balette-radius</code></td><td><code>14px</code></td><td>The dialog's corners</td></tr>
+        <tr><td><code>--bit-balette-row-height</code></td><td><code>44px</code></td><td>A row; set <code>RowHeight</code> to match when virtualizing</td></tr>
+        <tr><td><code>--bit-balette-font</code> / <code>-font-size</code></td><td>system UI, <code>14px</code></td><td>The type</td></tr>
+        <tr><td><code>--bit-balette-backdrop</code></td><td><code>rgba(17, 19, 24, .45)</code></td><td>The page behind the open dialog</td></tr>
+    </tbody>
+</table>
+<pre><code>@TokensExample</code></pre>
+
+<h2>Templates</h2>
+<p>
+    The detail pane on the right of this site's palette is a <code>DetailTemplate</code> in
+    <code>Layout/MainLayout.razor</code>; it shows the <code>Person</code> record a people row carries as
+    <code>Data</code>. The other parts are replaced the same way:
+</p>
+<table>
+    <thead>
+        <tr><th>Parameter</th><th>Receives</th><th>Replaces</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>ItemTemplate</code></td><td><code>BaletteItemContext</code></td><td>A row's content (the row element and its ARIA stay the library's)</td></tr>
+        <tr><td><code>IconTemplate</code></td><td><code>BaletteCommand</code></td><td>Just the icon</td></tr>
+        <tr><td><code>DetailTemplate</code></td><td><code>BaletteCommand</code></td><td>A preview pane for the active row</td></tr>
+        <tr><td><code>GroupHeaderTemplate</code></td><td>the group name</td><td>A group heading</td></tr>
+        <tr><td><code>EmptyTemplate</code> / <code>LoadingTemplate</code></td><td>the query / nothing</td><td>The empty and loading states</td></tr>
+        <tr><td><code>HeaderTemplate</code> / <code>FooterTemplate</code></td><td><code>BaletteStateContext</code></td><td>Above the input / the hint bar</td></tr>
+    </tbody>
+</table>
+<pre><code>@ItemTemplateExample</code></pre>
+
+<h2>Unstyled</h2>
+<p>
+    <code>Unstyled="true"</code> drops the library's classes from the dialog, and every rule in its stylesheet is scoped
+    to them, so what is left is bare, accessible markup to style from scratch. The structure stays addressable through
+    <code>data-balette</code> attributes - <code>dialog</code>, <code>input</code>, <code>list</code>,
+    <code>group-heading</code>, <code>item</code>, <code>breadcrumbs</code>, <code>footer</code>, <code>toast</code>,
+    <code>detail</code> - and a row's state through <code>data-active</code>, <code>data-checked</code>,
+    <code>data-disabled</code>, <code>data-destructive</code> and <code>data-kind</code>.
+</p>
+<pre><code>@UnstyledExample</code></pre>
+
+@code {
+    private static readonly string[] SiteThemes = ["auto", "light", "dark"];
+
+    private static readonly (string? Value, string Label)[] PaletteThemes = [(null, "Follows the page"), ("light", "Light"), ("dark", "Dark")];
+
+    private static readonly (string? Value, string Label)[] Accents =
+    [
+        (null, "Default indigo"),
+        ("#0d9488", "Teal"),
+        ("#db2777", "Pink"),
+        ("#ea580c", "Orange"),
+        ("#16a34a", "Green"),
+    ];
+
+    private const string TokensExample = """
+        /* app.css - after the library's stylesheet */
+        :root {
+            --bit-balette-accent: #0d9488;
+            --bit-balette-width: 760px;
+            --bit-balette-radius: 8px;
+        }
+
+        :root[data-theme="dark"] {
+            --bit-balette-accent: #2dd4bf;
+        }
+        """;
+
+    private const string ItemTemplateExample = """
+        <Balette>
+            <ItemTemplate>
+                @{ var command = context.Row.Command; }
+                <span class="my-row @(context.IsActive ? "active" : null)">
+                    <BaletteHighlightedText Text="@command.Title" Positions="@context.Row.Match!.TitlePositions" />
+                    @if (command.Shortcut is not null)
+                    {
+                        <BaletteShortcutHint Shortcut="command.Shortcut" IsMac="context.IsMac" />
+                    }
+                </span>
+            </ItemTemplate>
+        </Balette>
+        """;
+
+    private const string UnstyledExample = """
+        <Balette Unstyled="true" Class="my-palette" />
+
+        .my-palette [data-balette="item"][data-active] { background: Highlight; color: HighlightText; }
+        .my-palette [data-balette="item"][data-disabled] { opacity: .5; }
+        .my-palette [data-balette="group-heading"] { font-size: .75rem; text-transform: uppercase; }
+        """;
+
+    protected override void OnInitialized() => State.Changed += Refresh;
+
+    private void OnWidthChanged(ChangeEventArgs e) => State.SetWidth(int.TryParse(e.Value?.ToString(), out var width) ? width : null);
+
+    private void OnRadiusChanged(ChangeEventArgs e) => State.SetRadius(int.TryParse(e.Value?.ToString(), out var radius) ? radius : null);
+
+    private static string Capitalize(string s) => char.ToUpperInvariant(s[0]) + s[1..];
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => State.Changed -= Refresh;
+}

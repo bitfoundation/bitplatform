@@ -1,0 +1,19 @@
+﻿@namespace Bit.Balette
+
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    /// <summary>Group heading applied to all <see cref="BaletteItem"/> children.</summary>
+    [Parameter, EditorRequired] public string Heading { get; set; } = string.Empty;
+
+    /// <summary>Priority applied to children that don't set their own.</summary>
+    [Parameter] public int? Priority { get; set; }
+
+    /// <summary>Tags applied to all children (for mode scoping).</summary>
+    [Parameter] public string[]? Tags { get; set; }
+
+    /// <summary>The <see cref="BaletteItem"/>s of the group.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}
