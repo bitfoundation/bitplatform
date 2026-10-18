@@ -277,10 +277,10 @@ async function open({ databaseName, requiredBuild, vfs, limits, foreignKeys, onO
     // same handles the built-in function set does.
     for (const extension of extensions ?? []) {
         const imported = await import(extension.moduleUrl);
-        const register = imported[extension.registerExport ?? 'register'];
+        const exportName = extension.registerExport ?? 'register';
+        const register = Object.hasOwn(imported, exportName) ? imported[exportName] : undefined;
         if (typeof register !== 'function') {
-            throw new Error(
-                `'${extension.moduleUrl}' does not export a function named '${extension.registerExport ?? 'register'}'.`);
+            throw new Error(`'${extension.moduleUrl}' does not export a function named '${exportName}'.`);
         }
 
         await register({ module, sqlite3, db, databaseName });
@@ -724,11 +724,13 @@ function isSchemaChange(sql: unknown): boolean {
 
 // Every statement, not just the first: a batch is routinely `BEGIN; INSERT …; COMMIT;`, and looking
 // only at the leading keyword would call that a read. Leading comments and a leading common table
-// expression are skipped for the same reason: `WITH … INSERT INTO` is a write. Mirrors
-// BsqliteTableNames.LooksLikeWrite.
+// expression are skipped for the same reason: `WITH … INSERT INTO` is a write. A block comment is
+// spelled out rather than matched lazily: a lazy body can end at any `*/`, so a run of `*//*` that
+// never reaches a write backtracks through every way of splitting it - exponential in its length.
+// Mirrors BsqliteTableNames.LooksLikeWrite.
 function looksLikeWrite(sql: unknown): boolean {
     return typeof sql === 'string'
-        && /(?:^|;)\s*(?:--[^\n]*\n\s*|\/\*[\s\S]*?\*\/\s*)*(?:with\b[\s\S]*?)?\b(?:insert|update|delete|replace|create|drop|alter)\b/i.test(sql);
+        && /(?:^|;)\s*(?:--[^\n]*\n\s*|\/\*[^*]*\*+(?:[^/*][^*]*\*+)*\/\s*)*(?:with\b[\s\S]*?)?\b(?:insert|update|delete|replace|create|drop|alter)\b/i.test(sql);
 }
 
 // Table-level and deliberately coarse. Accepts the identifier quoting SQLite does ("t", `t`, [t]),

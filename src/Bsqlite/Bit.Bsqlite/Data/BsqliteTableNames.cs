@@ -79,13 +79,16 @@ public static partial class BsqliteTableNames
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex TableName();
 
+    // A block comment is spelled out (/\*[^*]*\*+(?:[^/*][^*]*\*+)*/) rather than matched lazily
+    // (/\*.*?\*/): a lazy body can end at any */, so a run of */ /* that never reaches a write
+    // backtracks through every way of splitting it - exponential in its length.
     [GeneratedRegex(
-        @"(?:^|;)\s*(?:--[^\n]*\n\s*|/\*.*?\*/\s*)*(?:with\b.*?)?\b(?:insert|update|delete|replace|create|drop|alter)\b",
+        @"(?:^|;)\s*(?:--[^\n]*\n\s*|/\*[^*]*\*+(?:[^/*][^*]*\*+)*/\s*)*(?:with\b.*?)?\b(?:insert|update|delete|replace|create|drop|alter)\b",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline)]
     private static partial Regex Write();
 
     [GeneratedRegex(
-        @"(?:^|;)\s*(?:--[^\n]*\n\s*|/\*.*?\*/\s*)*(?:create|drop|alter)\b",
+        @"(?:^|;)\s*(?:--[^\n]*\n\s*|/\*[^*]*\*+(?:[^/*][^*]*\*+)*/\s*)*(?:create|drop|alter)\b",
         RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline)]
     private static partial Regex SchemaChange();
 }

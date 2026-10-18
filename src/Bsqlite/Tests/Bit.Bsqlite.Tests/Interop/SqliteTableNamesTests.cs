@@ -60,6 +60,23 @@ public sealed class SqliteTableNamesTests
     [DataRow("WITH ids AS (SELECT 1 AS id) UPDATE product SET name = 'x' WHERE id IN (SELECT id FROM ids)", true)]
     [DataRow("WITH ids AS (SELECT 1 AS id) SELECT * FROM product WHERE id IN (SELECT id FROM ids)", false)]
     [DataRow("SELECT * FROM withdrawals", false)]
+    // Block comments whose bodies hold stars and slashes, and an unterminated one.
+    [DataRow("/** doc **/ DELETE FROM product", true)]
+    [DataRow("/* a * b / c */ /* x */ DELETE FROM product", true)]
+    [DataRow("/**/DELETE FROM product", true)]
+    [DataRow("/* unterminated DELETE FROM product", false)]
     public void DistinguishesWrites(string sql, bool write)
         => Assert.AreEqual(write, BsqliteTableNames.LooksLikeWrite(sql));
+
+    // A run of */ /* used to backtrack exponentially: at this length the old patterns ran for hours.
+    [TestMethod]
+    public void MatchesRepeatedCommentsInLinearTime()
+    {
+        var sql = "/*" + string.Concat(Enumerable.Repeat("*//*", 2_000));
+
+        var check = Task.Run(() => (BsqliteTableNames.LooksLikeWrite(sql), BsqliteTableNames.LooksLikeSchemaChange(sql)));
+
+        Assert.IsTrue(check.Wait(TimeSpan.FromSeconds(5)), "The write and schema-change patterns backtracked.");
+        Assert.AreEqual((false, false), check.Result);
+    }
 }
