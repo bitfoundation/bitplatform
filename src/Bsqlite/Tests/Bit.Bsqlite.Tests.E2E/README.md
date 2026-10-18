@@ -56,7 +56,8 @@ dotnet test --filter "FullyQualifiedName~.OpfsTests."
 dotnet test --filter "FullyQualifiedName~Persistence_survives_a_worker_restart"
 ```
 
-CI does the same in Release (`.github/workflows/bit.ci.Bsqlite.yml`):
+CI does the same in Release (`.github/workflows/bit.ci.Bsqlite.e2e.yml`), only when started by hand (Actions >
+"bit platform CI - Bsqlite E2E" > Run workflow), and uploads the test results (TRX) as an artifact:
 
 ```bash
 dotnet build src/Bsqlite/Bit.Bsqlite.Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release
@@ -64,6 +65,8 @@ dotnet build src/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.cspro
 pwsh src/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bsqlite-e2e.trx
 ```
+
+The pull-request pipeline, `bit.ci.Bsqlite.yml`, runs the build, unit, MCP server and JavaScript tests only.
 
 Without PowerShell 7, the browser can be installed with the Node.js runtime Playwright ships:
 `bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.
