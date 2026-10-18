@@ -59,6 +59,10 @@ builder.Services.AddBitBmageServices(options =>
 Services are registered as scoped. In WebAssembly that scope lasts for the whole application; in Server there is one
 scope per circuit, so browser state is never shared between users.
 
+`BmageEditor` does not need the registration. When the services are missing it builds them with the default options,
+once per browser connection, which is what an app that lazy loads Bit.Bmage.Core, Bit.Bmage and Bit.Bmage.Editor on
+WebAssembly needs: those assemblies are not there yet when `Program.cs` runs, so it cannot register them.
+
 ## Add the stylesheet
 
 Only needed for `Bit.Bmage.Editor`. Put it in `index.html` or `App.razor`:

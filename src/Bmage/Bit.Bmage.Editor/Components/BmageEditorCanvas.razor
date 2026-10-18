@@ -2,7 +2,7 @@
 @using System.Globalization
 @using Bit.Bmage.Editor.Tools
 @implements IAsyncDisposable
-@inject Interop.BrowserImageInterop Interop
+@inject IServiceProvider Services
 
 @*
     The interactive surface: paints the preview into a real canvas element and turns pointer, touch and wheel input
@@ -69,6 +69,9 @@
 </div>
 
 @code {
+    private Bit.Bmage.Interop.BrowserImageInterop? _interop;
+    private Bit.Bmage.Interop.BrowserImageInterop Interop => _interop ??= BitBmage.GetService<Bit.Bmage.Interop.BrowserImageInterop>(Services);
+
     private readonly string _id = $"bi-{Guid.NewGuid():N}";
     private ElementReference _hostElement;
     private ElementReference _canvasElement;

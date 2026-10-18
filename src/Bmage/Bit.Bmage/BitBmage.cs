@@ -1,16 +1,20 @@
-﻿using Bit.Bmage.Capabilities;
+﻿using System.Runtime.CompilerServices;
+using Bit.Bmage.Capabilities;
 using Bit.Bmage.Input;
 using Bit.Bmage.Interop;
 using Bit.Bmage.Output;
 using Bit.Bmage.Text;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.JSInterop;
 
 namespace Bit.Bmage;
 
 /// <summary>Registers Bmage with the dependency injection container.</summary>
 public static class BitBmage
 {
+    private static readonly ConditionalWeakTable<IJSRuntime, ServiceProvider> _unregisteredServices = new();
+
     /// <summary>
     /// Adds the Bmage services: capability detection, image loading, processing and export.
     /// </summary>
@@ -81,5 +85,14 @@ public static class BitBmage
         });
         services.TryAddSingleton<FontTextRasterizer>();
         return services;
+    }
+
+    internal static T GetService<T>(IServiceProvider services) where T : notnull
+    {
+        if (services.GetService<T>() is { } registered) return registered;
+
+        return _unregisteredServices.GetValue(services.GetRequiredService<IJSRuntime>(),
+                                              static jsRuntime => new ServiceCollection().AddSingleton(jsRuntime).AddBitBmageServices().BuildServiceProvider())
+                                    .GetRequiredService<T>();
     }
 }

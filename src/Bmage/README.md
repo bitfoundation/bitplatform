@@ -95,6 +95,9 @@ builder.Services.AddBitBmageServices();
 
 For server-side or console use, without any browser integration, register `AddBitBmageHeadlessServices()` instead.
 
+`BmageEditor` works without the registration too, so an app that lazy loads Bmage's assemblies on WebAssembly can leave
+it out: the editor builds what it needs the first time it renders.
+
 Add the stylesheet if you use the editor:
 
 ```html
