@@ -247,6 +247,14 @@ browser would find - rather than comparing byte counts. Each scenario also asser
 exactly the reachable ones under lazy scripts, and *none at all* in bundle mode, which is the half of the
 selection that only a publish exercises.
 
+And each one reads the lazy-scripts switch back out of what it published: the `BitButilLazyScriptsInitializer`
+module initializer in the app's assembly (from its metadata) and the `Bit.Butil.LazyScripts` option in its
+`runtimeconfig.json` must both be there under lazy scripts and both be gone otherwise. Every scenario
+publishes from the same `obj` folder with its properties on the command line, so the bundle scenario that
+follows the lazy ones is also lazy scripts turned off on an incremental publish - the case that used to skip
+`CoreCompile` as up to date and ship a bundle app still calling `BitButil.UseLazyScripts()` at startup, its
+JavaScript files all correct and every Butil call failing on a module `import()` that 404s.
+
 **Lazy scripts** ([`LazyScripts.cs`](LazyScripts.cs)). Against a recording `IJSRuntime`, with
 `BitButil.UseLazyScripts()` on: the first call into an API must `import()` that API's module - and only
 that one - before invoking it; later calls, and other services on the same runtime, must not import again;
@@ -435,8 +443,11 @@ assembly comes out at 32,256 bytes and 34 types.
   publish asset list is no longer being narrowed, so a bundle-mode app ships all 171 module files - that is
   `BitButilSelectPublishScriptAssets` not running, or running too late), *with no signal at all the full
   bundle is published* (the feature has started trimming against nothing, which would strip JavaScript from
-  every consumer who never opted in), and *fails the publish* (a name that means nothing is being accepted in
-  silence, which surfaces in a browser rather than in a build).
+  every consumer who never opted in), *fails the publish* (a name that means nothing is being accepted in
+  silence, which surfaces in a browser rather than in a build), and *compiles the lazy-scripts initializer in
+  only when lazy* (the generated `Bit.Butil.LazyScripts.g.cs` is being added to `@(Compile)` after
+  `_GenerateCompileDependencyCache` has hashed it - `BitButilGenerateLazyScriptsInitializer` has to run
+  before `BeforeCompile`).
 - **`script publishing: ... was not checked`** - a publish of the fixture failed for a reason the scenario
   did not ask for. The message carries the first error line; usually the fixture cannot find Bit.Butil's
   chunks or the MSBuild task, both of which it points at the source tree.
