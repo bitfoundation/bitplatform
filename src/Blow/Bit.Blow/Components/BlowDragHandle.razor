@@ -1,0 +1,25 @@
+﻿@namespace Bit.Blow
+@* Place inside a custom node to designate the area that initiates dragging. *@
+@* Set the node's UseCustomDragHandle = true so the node body no longer drags. *@
+
+<div class="bit-blow-drag-handle @Class" style="@Style"
+     @onpointerdown="OnPointerDown"
+     @onpointerdown:stopPropagation="true">
+    @ChildContent
+</div>
+
+@code {
+    [CascadingParameter] private BlowNodeContext NodeContext { get; set; } = default!;
+    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private void OnPointerDown(PointerEventArgs e)
+    {
+        // Outside a node template inside a canvas there is no node to drag; the area stays inert.
+        if (e.Button == 0 && Flow is not null && NodeContext is not null)
+            Flow.BeginNodeDrag(NodeContext.Node, e);
+    }
+}

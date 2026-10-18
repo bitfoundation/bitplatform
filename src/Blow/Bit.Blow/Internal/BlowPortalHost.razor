@@ -1,0 +1,34 @@
+﻿@namespace Bit.Blow
+@implements IDisposable
+
+@* Draws one BlowViewportPortal's content inside the canvas's viewport layer. Kept separate so the
+   portal can redraw just this when its content changes, without re-rendering the canvas. *@
+
+@Slot.Content
+
+@code {
+    /// <summary>The portal's content, and the hook the portal uses to ask for a redraw.</summary>
+    [Parameter, EditorRequired] public BlowPortalSlot Slot { get; set; } = default!;
+
+    private BlowPortalSlot? _subscribed;
+    private Action? _redraw;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_subscribed, Slot)) return;
+
+        Unsubscribe();
+        _redraw ??= StateHasChanged;
+        Slot.Changed = _redraw;
+        _subscribed = Slot;
+    }
+
+    public void Dispose() => Unsubscribe();
+
+    private void Unsubscribe()
+    {
+        // Only clear the hook if it is still ours; a newer host may already have taken the slot.
+        if (_subscribed is not null && ReferenceEquals(_subscribed.Changed, _redraw)) _subscribed.Changed = null;
+        _subscribed = null;
+    }
+}

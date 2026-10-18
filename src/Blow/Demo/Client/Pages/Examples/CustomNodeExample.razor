@@ -1,0 +1,70 @@
+﻿@page "/examples/custom-node"
+
+<PageTitle>Custom Node - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Custom Node"
+                 Summary="A custom 'text updater' node with its own markup, an input bound to node data, and explicitly placed handles. Edits flow through to a connected output.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <NodeTemplate Context="node">
+            @if (node.Type == "textUpdater" && node.Data is TextData data)
+            {
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="text-updater">
+                    <label>Text:</label>
+                    <input class="nodrag" value="@data.Text"
+                           @oninput="e => OnText(node, e.Value?.ToString())"
+                           @onpointerdown:stopPropagation="true" />
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" Id="a" />
+            }
+            else
+            {
+                <BlowDefaultNode Node="node" />
+            }
+        </NodeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .text-updater { padding: 4px 2px; font-size: 12px; text-align: left; }
+    .text-updater label { display:block; color:#555; margin-bottom:3px; }
+    .text-updater input { width: 130px; padding: 3px 6px; border:1px solid #ddd; border-radius:5px; }
+</style>
+
+@code {
+    public sealed class TextData { public string Text { get; set; } = ""; }
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "node-1", Type = "textUpdater", Position = new(0, 0), Data = new TextData { Text = "hello" }, Width = 170 },
+            new BlowNode { Id = "node-2", Type = "output", Label = "(empty)", Position = new(0, 160) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "node-1", Target = "node-2", SourceHandle = "a", Animated = true },
+        ];
+        Sync();
+    }
+
+    private void OnText(BlowNode node, string? value)
+    {
+        if (node.Data is TextData d) d.Text = value ?? "";
+        Sync();
+    }
+
+    private void Sync()
+    {
+        var src = _nodes.First(n => n.Id == "node-1").Data as TextData;
+        var output = _nodes.First(n => n.Id == "node-2");
+        output.Label = string.IsNullOrEmpty(src?.Text) ? "(empty)" : src!.Text;
+    }
+}

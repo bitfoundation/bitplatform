@@ -1,0 +1,52 @@
+﻿@page "/examples/use-on-selection-change"
+
+<PageTitle>Selection Change - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Selection Change"
+                 Summary="OnSelectionChange fires whenever the selected nodes or edges change. Click to select, Shift-click to add to the selection, or drag across the empty pane to box-select, and the current selection is listed.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                SelectionOnDrag="true" OnSelectionChange="OnSelectionChange">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+        <BlowPanel Position="top-right">
+            <div class="sel-panel">
+                <div><strong>selected nodes:</strong> @(_nodeIds.Count == 0 ? "-" : string.Join(", ", _nodeIds))</div>
+                <div><strong>selected edges:</strong> @(_edgeIds.Count == 0 ? "-" : string.Join(", ", _edgeIds))</div>
+            </div>
+        </BlowPanel>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .sel-panel { background:var(--bit-blow-surface); color:var(--bit-blow-text); border:1px solid var(--bit-blow-border); border-radius:8px; padding:8px 10px; font-size:12px; min-width:200px; box-shadow:0 2px 6px var(--bit-blow-shadow); }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private List<string> _nodeIds = [];
+    private List<string> _edgeIds = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(250, 20) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(150, 140) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(380, 140) },
+            new BlowNode { Id = "4", Type = "output", Label = "Node 4", Position = new(250, 260) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+        ];
+    }
+
+    private void OnSelectionChange(BlowSelectionChange change)
+    {
+        _nodeIds = change.Nodes.Select(n => n.Id).ToList();
+        _edgeIds = change.Edges.Select(e => e.Id).ToList();
+    }
+}

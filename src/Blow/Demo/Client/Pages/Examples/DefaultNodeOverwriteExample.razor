@@ -1,0 +1,56 @@
+﻿@page "/examples/default-node-overwrite"
+
+<PageTitle>Default Node Overwrite - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Default Node Overwrite"
+                 Summary="Replace the built-in 'default' node renderer with your own. Here every default node becomes a rounded card with an accent bar, while input/output keep their built-in look.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <NodeTemplate Context="node">
+            @if (node.Type == "default")
+            {
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="card-node">
+                    <span class="card-node__bar"></span>
+                    <span class="card-node__label">@node.Label</span>
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            }
+            else
+            {
+                <BlowDefaultNode Node="node" />
+            }
+        </NodeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .card-node { display:flex; align-items:center; gap:8px; padding:2px 4px; }
+    .card-node__bar { width:6px; height:24px; border-radius:3px; background:linear-gradient(#6366f1,#a855f7); }
+    .card-node__label { font-weight:600; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Input", Position = new(250, 20) },
+            new BlowNode { Id = "2", Label = "Custom default A", Position = new(150, 130) },
+            new BlowNode { Id = "3", Label = "Custom default B", Position = new(380, 130) },
+            new BlowNode { Id = "4", Type = "output", Label = "Output", Position = new(280, 250) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+        ];
+    }
+}

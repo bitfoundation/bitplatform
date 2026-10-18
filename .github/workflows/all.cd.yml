@@ -101,6 +101,12 @@ jobs:
     uses: ./.github/workflows/blazedb.demo.cd.yml
     secrets: inherit
 
+  blow_demo:
+    name: blow demo
+    if: inputs.server
+    uses: ./.github/workflows/blow.demo.cd.yml
+    secrets: inherit
+
   bonboarding_demo:
     name: bonboarding demo
     if: inputs.server

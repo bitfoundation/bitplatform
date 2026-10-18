@@ -1,0 +1,140 @@
+﻿@page "/examples/localization"
+
+<PageTitle>Localization - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Localization"
+                 Summary="Every string the canvas reads out or labels itself with comes from one AriaLabels object, so a flow can be translated without reimplementing its accessibility. Switch language, then Tab to a node and press Enter - the live region below shows what a screen reader would hear. The starting pan and zoom come from DefaultViewport.">
+    <Toolbar>
+        @foreach (var (code, name) in _languages)
+        {
+            <button class="btn btn-sm @(code == _language ? "btn-primary" : "btn-outline-secondary")"
+                    @onclick="@(() => _language = code)">
+                @name
+            </button>
+        }
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    AriaLabels="Labels"
+                    DefaultViewport="new BlowViewport(40, 20, 0.9)"
+                    aria-roledescription="@RoleDescription">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowPanel Anchor="BlowPanelPosition.BottomRight">
+                <div class="l10n-readout">
+                    <strong>Announced</strong>
+                    <div>@(_announced ?? "-")</div>
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .l10n-readout {
+        min-width: 220px;
+        padding: 6px 10px;
+        font-size: 12px;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _language = "en";
+    private string? _announced;
+
+    private readonly (string Code, string Name)[] _languages =
+    [
+        ("en", "English"),
+        ("de", "Deutsch"),
+        ("fa", "فارسی"),
+    ];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "start", Label = "Start", Position = new(60, 60) },
+            new BlowNode { Id = "review", Label = "Review", Position = new(60, 200) },
+        ];
+        _edges = [new BlowEdge { Id = "e", Source = "start", Target = "review", Label = "next" }];
+    }
+
+    // The canvas element's own attribute is passed straight through, so it is translated here.
+    private string RoleDescription => _language switch
+    {
+        "de" => "Diagramm",
+        "fa" => "نمودار",
+        _ => "diagram",
+    };
+
+    // The Func members are called rather than string-formatted, so a translation is free to
+    // reorder or drop the values it is handed - which positional format strings cannot do.
+    private BlowAriaLabels Labels => _language switch
+    {
+        "de" => Record(new BlowAriaLabels
+        {
+            NodeRoleDescription = "Knoten",
+            EdgeRoleDescription = "Kante",
+            NodeLabel = name => $"Knoten {name}",
+            EdgeLabel = (s, t) => $"Kante von {s} nach {t}",
+            NodeSelected = name => $"{name} ausgewählt",
+            NodeDeselected = name => $"{name} abgewählt",
+            EdgeSelected = (s, t) => $"Kante {s} nach {t} ausgewählt",
+            EdgeDeselected = (s, t) => $"Kante {s} nach {t} abgewählt",
+            NodeMoved = (name, p) => $"{name} verschoben nach {p}",
+            NodesMoved = count => $"{count} Knoten verschoben",
+            Deleted = (n, e) => $"{n} Knoten und {e} Kanten gelöscht",
+        }),
+
+        "fa" => Record(new BlowAriaLabels
+        {
+            NodeRoleDescription = "گره",
+            EdgeRoleDescription = "یال",
+            NodeLabel = name => $"گره {name}",
+            EdgeLabel = (s, t) => $"یال از {s} به {t}",
+            NodeSelected = name => $"{name} انتخاب شد",
+            NodeDeselected = name => $"انتخاب {name} برداشته شد",
+            EdgeSelected = (s, t) => $"یال {s} به {t} انتخاب شد",
+            EdgeDeselected = (s, t) => $"انتخاب یال {s} به {t} برداشته شد",
+            NodeMoved = (name, p) => $"{name} به {p} منتقل شد",
+            NodesMoved = count => $"{count} گره منتقل شد",
+            Deleted = (n, e) => $"{n} گره و {e} یال حذف شد",
+        }),
+
+        _ => Record(BlowAriaLabels.Default),
+    };
+
+    /// <summary>
+    /// Mirrors the announcements into the readout panel. Everything else is copied across as it
+    /// is - a member left out here would silently fall back to English.
+    /// </summary>
+    private BlowAriaLabels Record(BlowAriaLabels labels) => new()
+    {
+        NodeRoleDescription = labels.NodeRoleDescription,
+        EdgeRoleDescription = labels.EdgeRoleDescription,
+        NodeLabel = labels.NodeLabel,
+        EdgeLabel = labels.EdgeLabel,
+        NodeSelected = name => Show(labels.NodeSelected(name)),
+        NodeDeselected = name => Show(labels.NodeDeselected(name)),
+        EdgeSelected = (s, t) => Show(labels.EdgeSelected(s, t)),
+        EdgeDeselected = (s, t) => Show(labels.EdgeDeselected(s, t)),
+        NodeMoved = (name, p) => Show(labels.NodeMoved(name, p)),
+        NodesMoved = count => Show(labels.NodesMoved(count)),
+        Deleted = (n, e) => Show(labels.Deleted(n, e)),
+    };
+
+    private string Show(string message)
+    {
+        _announced = message;
+        return message;
+    }
+}

@@ -1,0 +1,33 @@
+﻿@page "/examples/a11y"
+
+<PageTitle>Accessibility - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Accessibility"
+                 Summary="Nodes are keyboard focusable with descriptive aria labels. Tab to a node, then use the arrow keys to move it (hold Shift for larger steps). Delete removes the selection.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DisableKeyboardA11y="false">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Input Node", Position = new(250, 25), AriaLabel = "Input node, top of the flow" },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(150, 150), AriaLabel = "Default node two" },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(380, 150), AriaLabel = "Default node three" },
+            new BlowNode { Id = "4", Type = "output", Label = "Output Node", Position = new(260, 280), AriaLabel = "Output node, end of the flow" },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+        ];
+    }
+}

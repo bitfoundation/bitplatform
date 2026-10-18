@@ -1,0 +1,37 @@
+﻿@page "/examples/default-edge-overwrite"
+
+<PageTitle>Default Edge Overwrite - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Default Edge Overwrite"
+                 Summary="DefaultEdgeOptions apply to every newly created edge. Here new connections are animated smooth-step edges with a closed arrow and a thicker indigo stroke.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeOptions="_options">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    private readonly BlowDefaultEdgeOptions _options = new()
+    {
+        Type = BlowEdgeType.SmoothStep,
+        Animated = true,
+        MarkerEnd = true,
+        MarkerType = BlowMarkerType.ArrowClosed,
+        StrokeWidth = 2.5,
+        Stroke = "#6366f1",
+    };
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Drag from my handle", Position = new(250, 20), Width = 200 },
+            new BlowNode { Id = "2", Label = "to here", Position = new(120, 170) },
+            new BlowNode { Id = "3", Label = "or here", Position = new(420, 170) },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+    }
+}

@@ -1,0 +1,160 @@
+﻿@page "/mcp-server"
+
+@* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
+   purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
+
+<PageTitle>MCP server - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>MCP server</h3>
+    <p class="text-muted">
+        This site hosts a Model Context Protocol server at <code>/mcp</code>, so an AI agent writing node-editor and
+        diagram code with Bit.Blow reads the library itself - its compiled API documentation, its guide, its stylesheet,
+        the canvas and these demo pages - instead of guessing at an API it half remembers, or borrowing one from React
+        Flow. Every tool is read-only.
+    </p>
+</div>
+
+<section class="mcp-panel">
+    <h4>Connect a client</h4>
+
+    <p>
+        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else. The same tools
+        are also served, version by version, through the bit platform's own server at
+        <code>https://bitplatform.dev/mcp</code>, next to the other bit libraries.
+    </p>
+
+    <pre class="mcp-output"><code>@ClientConfig</code></pre>
+</section>
+
+<section class="mcp-panel">
+    <h4>Tools</h4>
+
+    <table class="mcp-table">
+        <thead>
+            <tr><th>Tool</th><th>What it answers</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>SearchBlow</code></td>
+                <td>Everything at once - the guide, every public member, the setup guides, the theme, the stylesheet and the demo's pages and examples - each hit with the exact follow-up call.</td>
+            </tr>
+            <tr>
+                <td><code>GetBlowSetupGuide</code></td>
+                <td>The complete wiring for one render mode: server, wasm, auto, standalone-wasm or hybrid - the stylesheet link and the canvas height included.</td>
+            </tr>
+            <tr>
+                <td><code>GetBlowGuideSection</code></td>
+                <td>One section of the reference guide, or the index of sections.</td>
+            </tr>
+            <tr>
+                <td><code>GetBlowApi</code></td>
+                <td>One public type with every parameter, property and method, its real default and its documentation - or the index of types.</td>
+            </tr>
+            <tr>
+                <td><code>GetBlowTheme</code></td>
+                <td>The <code>--bit-blow-*</code> custom properties with their light and dark values and what each one paints - or one of them in full.</td>
+            </tr>
+            <tr>
+                <td><code>InspectBlowFlow</code></td>
+                <td>What the real canvas makes of a flow's nodes and edges - the problems it reports, its bounds and sub-flows, and optionally a layout - or a sample flow, to see the format.</td>
+            </tr>
+            <tr>
+                <td><code>GetBlowSourceFile</code></td>
+                <td>One demo or library file verbatim - every page and example here is a working flow - or the index of files.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>
+        The guide, the API, the theme, a sample flow and the sources are also exposed as <code>blow://</code>
+        resources, and three prompts - <code>add-blow-to-app</code>, <code>implement-blow-feature</code> and
+        <code>debug-blow-flow</code> - walk an agent through the common jobs in the right order.
+    </p>
+</section>
+
+<section class="mcp-panel">
+    <h4>The same tools over plain HTTP</h4>
+
+    <p>
+        Every tool is also a <code>GET</code> under <code>/api/mcp/...</code>: open one in a browser tab to read
+        exactly what an agent is handed.
+    </p>
+
+    <ul>
+        <li><a href="/api/mcp/SearchBlow?query=custom%20node%20handles" target="_blank" rel="noopener">/api/mcp/SearchBlow?query=custom node handles</a></li>
+        <li><a href="/api/mcp/GetBlowApi?typeName=BlowCanvas" target="_blank" rel="noopener">/api/mcp/GetBlowApi?typeName=BlowCanvas</a></li>
+        <li><a href="/api/mcp/GetBlowTheme" target="_blank" rel="noopener">/api/mcp/GetBlowTheme</a></li>
+        <li><a href="/api/mcp/InspectBlowFlow" target="_blank" rel="noopener">/api/mcp/InspectBlowFlow</a></li>
+        <li><a href="/api/mcp/GetBlowSourceFile?path=Demo/Client/Pages/CustomNodes.razor" target="_blank" rel="noopener">/api/mcp/GetBlowSourceFile?path=Demo/Client/Pages/CustomNodes.razor</a></li>
+    </ul>
+</section>
+
+@* The demo's stylesheet has no panel or table styles of its own - every other page is a canvas - so the
+   few this page needs live with it, built on the site's own --demo-* palette. *@
+<style>
+    .mcp-panel {
+        max-width: 960px;
+        margin-bottom: 1.1rem;
+        padding: 1rem 1.2rem;
+        border: 1px solid var(--demo-border);
+        border-radius: var(--demo-radius);
+        background: var(--demo-surface);
+        box-shadow: var(--demo-shadow);
+        line-height: 1.55;
+    }
+
+    .mcp-panel h4 {
+        margin: 0 0 0.6rem;
+        font-size: 1.05rem;
+    }
+
+    .mcp-panel p {
+        margin: 0.4rem 0;
+    }
+
+    .mcp-output {
+        margin: 0.6rem 0 0;
+        padding: 0.8rem 1rem;
+        overflow-x: auto;
+        border-radius: 8px;
+        background: #f1f2f4;
+        font-size: 0.85rem;
+    }
+
+    .mcp-output code {
+        color: var(--demo-text);
+    }
+
+    .mcp-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.9rem;
+    }
+
+    .mcp-table th,
+    .mcp-table td {
+        padding: 0.45rem 0.6rem;
+        border-bottom: 1px solid var(--demo-border);
+        text-align: left;
+        vertical-align: top;
+    }
+
+    .mcp-table td:first-child {
+        white-space: nowrap;
+    }
+</style>
+
+@code {
+    private const string ClientConfig = """
+        // .mcp.json (Claude Code, VS Code, and anything else reading this shape)
+        {
+          "mcpServers": {
+            "blow": {
+              "type": "http",
+              "url": "https://blow.bitplatform.dev/mcp"
+            }
+          }
+        }
+        """;
+}

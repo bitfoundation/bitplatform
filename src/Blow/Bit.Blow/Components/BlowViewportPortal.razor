@@ -1,0 +1,58 @@
+﻿@namespace Bit.Blow
+@implements IDisposable
+
+@* Renders its content inside the transformed viewport layer, so it pans/zooms with the flow.
+   Position children in flow coordinates (e.g. with absolute positioning / transforms). *@
+
+@code {
+    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private readonly object _key = new();
+
+    // The canvas renders a small host for the portal rather than the content itself. When this
+    // component's own parent re-renders - without the canvas re-rendering - the content changes,
+    // and only the host needs drawing again. Asking the whole canvas to re-render instead would
+    // loop: the canvas re-renders this component, which would ask again, and so on.
+    private readonly BlowPortalSlot _slot = new();
+    private RenderFragment? _host;
+    private bool _registered;
+
+    protected override void OnParametersSet()
+    {
+        // Outside a canvas there is no viewport to render into; render nothing rather than throw.
+        if (Flow is null) return;
+
+        _slot.Content = ChildContent;
+
+        if (ChildContent is null)
+        {
+            if (_registered) Flow.UnregisterViewportPortal(_key);
+            _registered = false;
+            return;
+        }
+
+        if (!_registered)
+        {
+            _host ??= builder =>
+            {
+                builder.OpenComponent<BlowPortalHost>(0);
+                builder.AddComponentParameter(1, nameof(BlowPortalHost.Slot), _slot);
+                builder.CloseComponent();
+            };
+            Flow.RegisterViewportPortal(_key, _host);
+            _registered = true;
+        }
+        else
+        {
+            _slot.Changed?.Invoke();
+        }
+    }
+
+    public void Dispose()
+    {
+        if (_registered) Flow?.UnregisterViewportPortal(_key);
+        _registered = false;
+    }
+}

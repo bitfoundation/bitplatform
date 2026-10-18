@@ -1,0 +1,49 @@
+﻿@page "/examples/interaction"
+
+<PageTitle>Interaction - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Interaction"
+                 Summary="Toggle the interaction options live and see how the flow responds - draggable nodes, selectable elements, zoom and pan behaviours.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_draggable" @onchange="e => _draggable = (bool)e.Value!" /> nodes draggable</label>
+        <label><input type="checkbox" checked="@_selectable" @onchange="e => _selectable = (bool)e.Value!" /> selectable</label>
+        <label><input type="checkbox" checked="@_zoomScroll" @onchange="e => _zoomScroll = (bool)e.Value!" /> zoom on scroll</label>
+        <label><input type="checkbox" checked="@_panDrag" @onchange="e => _panDrag = (bool)e.Value!" /> pan on drag</label>
+        <label><input type="checkbox" checked="@_zoomDbl" @onchange="e => _zoomDbl = (bool)e.Value!" /> zoom on dbl-click</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    NodesDraggable="_draggable"
+                    ElementsSelectable="_selectable"
+                    ZoomOnScroll="_zoomScroll"
+                    PanOnDrag="_panDrag"
+                    ZoomOnDoubleClick="_zoomDbl">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _draggable = true, _selectable = true, _zoomScroll = true, _panDrag = true, _zoomDbl = true;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(250, 20) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(150, 140) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(380, 140) },
+            new BlowNode { Id = "4", Type = "output", Label = "Node 4", Position = new(250, 260) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+        ];
+    }
+}

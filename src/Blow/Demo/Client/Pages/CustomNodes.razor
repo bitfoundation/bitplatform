@@ -1,0 +1,73 @@
+﻿@page "/custom-nodes"
+
+<PageTitle>Custom Nodes - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>Custom Nodes</h3>
+    <p class="text-muted">
+        Nodes rendered with a custom template. The "color" node has multiple labelled source handles.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="demo-canvas">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <NodeTemplate Context="node">
+            @if (node.Type == "color" && node.Data is ColorData data)
+            {
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
+                <div class="custom-node">
+                    <div class="custom-node__swatch" style="background:@data.Color"></div>
+                    <div class="custom-node__body">
+                        <strong>@node.Label</strong>
+                        <div class="custom-node__hex">@data.Color</div>
+                    </div>
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Id="a" Position="BlowPosition.Right" Style="top:35%" />
+                <BlowHandle Type="BlowHandleType.Source" Id="b" Position="BlowPosition.Right" Style="top:65%" />
+            }
+            else
+            {
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div>@node.Label</div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            }
+        </NodeTemplate>
+
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="24" Color="#eee" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</div>
+
+<style>
+    .custom-node { display:flex; align-items:center; gap:10px; padding:2px; }
+    .custom-node__swatch { width:28px; height:28px; border-radius:6px; border:1px solid rgba(0,0,0,0.15); }
+    .custom-node__body { text-align:left; }
+    .custom-node__hex { font-size:11px; color:#888; }
+</style>
+
+@code {
+    public record ColorData(string Color);
+
+    private List<BlowNode> _nodes = new();
+    private List<BlowEdge> _edges = new();
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "color", Label = "Crimson",  Position = new(80, 80),  Data = new ColorData("#dc2626"), Width = 180 },
+            new BlowNode { Id = "2", Type = "color", Label = "Emerald",  Position = new(80, 220), Data = new ColorData("#10b981"), Width = 180 },
+            new BlowNode { Id = "3",                 Label = "Mixer",    Position = new(400, 150) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", SourceHandle = "a", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3", SourceHandle = "b", Type = BlowEdgeType.SmoothStep },
+        ];
+    }
+}

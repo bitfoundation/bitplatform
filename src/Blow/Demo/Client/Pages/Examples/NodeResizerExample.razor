@@ -1,0 +1,38 @@
+﻿@page "/examples/node-resizer"
+
+<PageTitle>Node Resizer - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Node Resizer"
+                 Summary="Select a node to reveal its BlowNodeResizer controls, then drag a corner or edge to resize. One node keeps its aspect ratio.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <NodeTemplate Context="node">
+            <BlowNodeResizer MinWidth="80" MinHeight="50" KeepAspectRatio="@(node.Id == "2")" />
+            <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
+            <div class="rs-node">@node.Label</div>
+            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" />
+        </NodeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .rs-node { display:flex; align-items:center; justify-content:center; width:100%; height:100%; font-weight:600; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Label = "Resize me", Position = new(80, 60), Width = 160, Height = 70, Style = "background:#dbeafe;" },
+            new BlowNode { Id = "2", Label = "Keep ratio", Position = new(340, 120), Width = 120, Height = 120, Style = "background:#dcfce7;" },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Type = BlowEdgeType.SmoothStep } ];
+    }
+}

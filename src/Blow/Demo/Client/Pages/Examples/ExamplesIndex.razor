@@ -1,0 +1,53 @@
+﻿@page "/examples"
+@using Bit.Blow.Demo.Client.Examples
+
+<PageTitle>React Flow Examples - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>React Flow Examples</h3>
+    <p class="text-muted">
+        Blow ports of the official <a href="https://github.com/xyflow/xyflow/tree/main/examples/react" target="_blank" rel="noopener">React Flow examples</a>.
+        Each card links to a self-contained page demonstrating one feature. @ExampleCatalog.All.Count examples in total.
+    </p>
+</div>
+
+@foreach (var group in ExampleCatalog.Grouped())
+{
+    <section class="example-group">
+        <h4 class="example-group__title">@group.Key</h4>
+        <div class="example-grid">
+            @foreach (var ex in group)
+            {
+                <a class="example-card" href="examples/@ex.Route">
+                    <span class="example-card__title">@ex.Title</span>
+                    <span class="example-card__summary">@ex.Summary</span>
+                </a>
+            }
+        </div>
+    </section>
+}
+
+<style>
+    .example-group { margin-bottom: 1.6rem; }
+    .example-group__title {
+        margin: 0 0 0.7rem; font-size: 1.05rem; color: var(--demo-muted);
+        text-transform: uppercase; letter-spacing: 0.04em; font-size: 0.8rem;
+    }
+    .example-grid {
+        display: grid; gap: 0.75rem;
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    }
+    .example-card {
+        display: flex; flex-direction: column; gap: 0.3rem;
+        padding: 0.85rem 1rem; border: 1px solid var(--demo-border);
+        border-radius: var(--demo-radius); background: var(--demo-surface);
+        box-shadow: var(--demo-shadow); text-decoration: none; color: inherit;
+        transition: border-color 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+    }
+    .example-card:hover {
+        text-decoration: none; border-color: var(--demo-primary);
+        transform: translateY(-1px);
+    }
+    .example-card__title { font-weight: 600; color: var(--demo-text); }
+    .example-card__summary { font-size: 0.85rem; color: var(--demo-muted); line-height: 1.4; }
+</style>
