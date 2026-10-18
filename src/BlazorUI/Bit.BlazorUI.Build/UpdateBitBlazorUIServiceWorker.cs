@@ -44,9 +44,17 @@ public sealed class UpdateBitBlazorUIServiceWorker : Task
 
         var removed = new HashSet<string>(RemovedAssets.Select(UrlOf), StringComparer.OrdinalIgnoreCase);
         var trimmedHashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var asset in TrimmedAssets.Where(a => string.IsNullOrEmpty(a.GetMetadata("RelatedAsset")) && string.IsNullOrEmpty(a.GetMetadata("Integrity")) is false))
+        foreach (var asset in TrimmedAssets.Where(a => string.IsNullOrEmpty(a.GetMetadata("RelatedAsset"))))
         {
-            trimmedHashes[UrlOf(asset)] = "sha256-" + asset.GetMetadata("Integrity");
+            var integrity = asset.GetMetadata("Integrity");
+            if (string.IsNullOrEmpty(integrity))
+            {
+                using var sha = SHA256.Create();
+                using var stream = File.OpenRead(asset.GetMetadata("FullPath"));
+                integrity = Convert.ToBase64String(sha.ComputeHash(stream));
+            }
+
+            trimmedHashes[UrlOf(asset)] = "sha256-" + integrity;
         }
 
         var candidates = new List<ITaskItem>();
