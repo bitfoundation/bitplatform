@@ -56,11 +56,20 @@
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
+    <!-- What the core package's publish-time trimming reads of this one (see Bit.BlazorUI's
+         buildTransitive\Bit.BlazorUI.targets): the targets naming this package's pieces, and the pieces themselves. -->
+    <ItemGroup>
+        <None Include="buildTransitive\Bit.BlazorUI.Legacy.targets" Pack="true" PackagePath="buildTransitive\;build\" />
+    </ItemGroup>
+
+    <!-- How this package's pieces are written and packed, shared by the packages that have any. -->
+    <Import Project="..\Bit.BlazorUI.Build\Bit.BlazorUI.Assets.targets" />
+
     <Target Name="BeforeBuildTasks" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript;BuildCss" />
 
     <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <ItemGroup>
-            <Content Include="wwwroot\scripts\*.js;wwwroot\styles\*.css*" Exclude="@(Content);@(None)" />
+            <Content Include="wwwroot\scripts\*.js;wwwroot\scripts\modules\*.js;wwwroot\styles\*.css" Exclude="@(Content);@(None)" />
         </ItemGroup>
     </Target>
 
@@ -74,13 +83,21 @@
         <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles)" Outputs="wwwroot/scripts/bit.blazorui.legacy.js">
-        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
-        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/scripts/bit.blazorui.legacy.js --minify --outfile=wwwroot/scripts/bit.blazorui.legacy.js --allow-overwrite" StandardOutputImportance="high" StandardErrorImportance="high" />
+    <!-- build-assets.mjs writes the bundle from one piece per .ts file and keeps the pieces in obj\bit-assets for the
+         package (see Bit.BlazorUI's csproj); the stamp per configuration rebuilds it when the configuration changes. -->
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;@(BitAssetsScript)" Outputs="wwwroot/scripts/bit.blazorui.legacy.js;$(BaseIntermediateOutputPath)bit-assets\scripts.json;$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json;$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.legacy.js.stamp">
+        <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; scripts --package $(PackageId) --tsconfig tsconfig.json --bundle scripts/bit.blazorui.legacy.js --out $(BaseIntermediateOutputPath)bit-assets $(_BitAssetsMinify)" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <ItemGroup>
+            <_OtherConfigurationScriptStamps Include="$(BaseIntermediateOutputPath)*\bit.blazorui.legacy.js.stamp" Exclude="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.legacy.js.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_OtherConfigurationScriptStamps)" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)$(Configuration)" />
+        <Touch Files="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.legacy.js.stamp" AlwaysCreate="true" />
     </Target>
 
-    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.legacy.css">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.legacy.scss:wwwroot/styles/bit.blazorui.legacy.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <!-- The stylesheet is nothing but its components, compiled one by one so the publish-time trimming can keep a subset. -->
+    <Target Name="BuildCss" Inputs="@(ScssFiles);@(BitAssetsScript)" Outputs="wwwroot/styles/bit.blazorui.legacy.css;$(BaseIntermediateOutputPath)bit-assets\styles.json">
+        <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; styles --package $(PackageId) --components Styles/bit.blazorui.legacy.scss --out $(BaseIntermediateOutputPath)bit-assets --bundle Styles/bit.blazorui.legacy.scss=styles/bit.blazorui.legacy.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
     <ItemGroup>

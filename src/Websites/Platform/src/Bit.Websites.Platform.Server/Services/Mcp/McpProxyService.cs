@@ -43,7 +43,7 @@ public partial class McpProxyService : IAsyncDisposable
         - ZiggyCreatures/FusionCache: hybrid caching, L2 cache backplane, distributed locking, OpenTelemetry integration and cache factory configuration.
         - keycloak/keycloak: Keycloak and realm configuration.
         - microsoft/agent-framework: agent creation, multi agent orchestration, workflows, tools and function calling, MCP, A2A communication, memory and context, and provider integrations.
-        Do not ask it about the bit platform libraries themselves: BlazorUI, Bmotion, Bink, Bonboarding, Blex, Bmage, Bsqlite, Butil, Bswup and Brouter each have
+        Do not ask it about the bit platform libraries themselves: BlazorUI, Bmotion, Bink, Balette, Bonboarding, Blex, Bmage, Bsqlite, Butil, Bswup and Brouter each have
         their own dedicated tools on this server, and those are written from the library rather than inferred from it.
         """;
 
@@ -51,7 +51,7 @@ public partial class McpProxyService : IAsyncDisposable
     /// Ends the description of every CodebaseMemory tool: an agent may also have a codebase-memory server of its
     /// own, which answers about its own project.
     /// </summary>
-    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites, the build time projects and two bit libraries, Besql (src/Besql) and BlazorES2019 (src/BlazorES2019), but none of the other bit libraries: BlazorUI, Bmotion, Bink, Bonboarding, Blex, Bmage, Bsqlite, Brouter, Butil and Bswup each answer for themselves through their own tools on this server, so a question about a component, a theme, an animation, a drawing canvas, a product tour, state management, image processing, an EF Core database in the browser, routing or the service worker goes to those rather than to a search here.";
+    private const string bitPlatformSourceScope = "It reads the source code of the bitfoundation/bitplatform GitHub repository at the release this connection asked for (the v query of this endpoint, the newest release when it names none or one not served yet, as the server instructions say), never the caller's own workspace, not even a project created from a bit template. Of that repository it holds the bit Boilerplate project template, the bit platform websites, the build time projects and two bit libraries, Besql (src/Besql) and BlazorES2019 (src/BlazorES2019), but none of the other bit libraries: BlazorUI, Bmotion, Bink, Balette, Bonboarding, Blex, Bmage, Bsqlite, Brouter, Butil and Bswup each answer for themselves through their own tools on this server, so a question about a component, a theme, an animation, a drawing canvas, a command palette, a product tour, state management, image processing, an EF Core database in the browser, routing or the service worker goes to those rather than to a search here.";
 
     /// <summary>
     /// Every tool of this upstream takes a project argument naming the index to answer from, a deployment
@@ -67,7 +67,7 @@ public partial class McpProxyService : IAsyncDisposable
     private static readonly ExposedTool[] codebaseMemoryTools =
     [
         new("search_graph", "FindBitPlatformSymbols", $"Finds classes, methods, routes and other symbols by keywords (query) or by a regex over their names (name_pattern), returning the qualified names GetBitPlatformSymbolSource takes. Page with offset while has_more is true. {bitPlatformSourceScope}"),
-        new("search_code", "SearchBitPlatformCode", $"Greps for a text, or a regex with regex set, and returns the matches grouped by their enclosing method or class, with signatures and line numbers. The one to use for literal or non-code text; narrow it with file_pattern or path_filter. {bitPlatformSourceScope}"),
+        new("search_code", "SearchBitPlatformCode", $"Greps for a text, or a regex with regex set, and returns the matches grouped by their enclosing method or class, with signatures and line numbers. The one to use for literal or non-code text; narrow it with file_pattern or path_filter. It matches case-sensitively; for any case, set regex and start the pattern with (?i). {bitPlatformSourceScope}"),
         new("get_code_snippet", "GetBitPlatformSymbolSource", $"Returns the full source of one class, method or other symbol, addressed by a qualified name FindBitPlatformSymbols or SearchBitPlatformCode returned. A short name answers with candidates when it is ambiguous. {bitPlatformSourceScope}")
     ];
 

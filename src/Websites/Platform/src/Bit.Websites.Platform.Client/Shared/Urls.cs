@@ -26,6 +26,7 @@ public static class Urls
     public const string Bmage = "https://bmage.bitplatform.dev/";
     public const string Bsqlite = "https://bsqlite.bitplatform.dev/";
     public const string Bink = "https://bink.bitplatform.dev/";
+    public const string Balette = "https://balette.bitplatform.dev/";
     public const string Bonboarding = "https://bonboarding.bitplatform.dev/";
     public const string Blex = "https://blex.bitplatform.dev/";
 

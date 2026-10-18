@@ -688,6 +688,10 @@ public partial class BitButtonGroup<[DynamicallyAccessedMembers(DynamicallyAcces
     // could keep. The Items API knows its list before it renders and is corrected as its parameters are set.
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The script that moves the focus between the buttons on the arrow keys is called by nothing: with the lazy scripts
+        // on (BitBlazorUIScripts), the group is what loads it.
+        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI", "BitButtonGroup");
+
         if ((Options ?? ChildContent) is not null)
         {
             await SyncToggleKeysBack();

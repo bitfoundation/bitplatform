@@ -19,29 +19,31 @@ public sealed class BitFocusablesContractTests
     [TestMethod]
     public void EveryMemberTheExtrasDeclareShouldBeInTheCoreUtils()
     {
-        var core = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");
+        // The core namespace is spread over a file per feature (Utils.ts, Utils.Focus.ts, ...), each of which adds its
+        // members to the one BitBlazorUI.Utils.
+        var core = SourceFiles.ReadUtilsScripts();
         var declaration = SourceFiles.Read("Bit.BlazorUI.Extras", "Scripts", "BitBlazorUI.d.ts");
 
-        var utils = Regex.Match(declaration, @"class Utils \{(?<members>.*?)\n\s*\}", RegexOptions.Singleline);
+        var utils = Regex.Match(declaration, @"namespace BitBlazorUI\.Utils \{(?<members>.*?)\n\}", RegexOptions.Singleline);
 
-        Assert.IsTrue(utils.Success, "The Utils class was not found in BitBlazorUI.d.ts.");
+        Assert.IsTrue(utils.Success, "The Utils namespace was not found in BitBlazorUI.d.ts.");
 
-        var declared = Regex.Matches(utils.Groups["members"].Value, @"\bstatic\s+(?:readonly\s+)?(?<name>\w+)")
+        var declared = Regex.Matches(utils.Groups["members"].Value, @"\b(?:function|const|let)\s+(?<name>\w+)")
                             .Select(m => m.Groups["name"].Value)
                             .ToList();
 
         Assert.AreNotEqual(0, declared.Count, "BitBlazorUI.d.ts declares no member of Utils.");
 
-        var missing = declared.Where(name => Regex.IsMatch(core, $@"\bpublic\s+static\s+(?:readonly\s+)?{name}\b") is false).ToList();
+        var missing = declared.Where(name => Regex.IsMatch(core, $@"\bexport\s+(?:async\s+)?(?:function|const|let)\s+{name}\b") is false).ToList();
 
         Assert.AreEqual(0, missing.Count,
-            $"BitBlazorUI.d.ts declares members the core Utils has no public static member for: {string.Join(", ", missing)}");
+            $"BitBlazorUI.d.ts declares members the core Utils exports no function or value for: {string.Join(", ", missing)}");
     }
 
     [TestMethod]
     public void NoOtherScriptShouldDeclareAFocusableSelectorOfItsOwn()
     {
-        var shared = SourceFiles.GetPath("Bit.BlazorUI", "Scripts", "Utils.ts");
+        var shared = SourceFiles.GetPath("Bit.BlazorUI", "Scripts", "Utils.Focus.ts");
 
         // A list of what can hold the focus names the elements a tabindex makes focusable; no other selector does.
         var copies = new[] { "Bit.BlazorUI", "Bit.BlazorUI.Extras" }

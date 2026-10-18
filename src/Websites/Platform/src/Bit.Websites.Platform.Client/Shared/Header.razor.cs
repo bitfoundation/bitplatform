@@ -27,6 +27,7 @@ public partial class Header : IDisposable
             new("Bmage", "Blazor-native image processing", Urls.Bmage, External: true),
             new("Bsqlite", "SQLite and EF Core in the browser", Urls.Bsqlite, External: true),
             new("Bink", "Blazor-native drawing and ink", Urls.Bink, External: true),
+            new("Balette", "Blazor-native command palette", Urls.Balette, External: true),
             new("Bonboarding", "Blazor-native product tours", Urls.Bonboarding, External: true),
             new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
             new("BlazorUI", "Native Blazor UI components", Urls.BlazorUI, External: true),

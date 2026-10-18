@@ -50,8 +50,9 @@ not staleness — leave it, and say in the report that you left it and why.
 
 **Roslyn and MSBuild — never bump.** An analyzer, source generator, or MSBuild task loads inside the
 *consumer's* compiler, not ours. Referencing a `Microsoft.CodeAnalysis.*` newer than the oldest SDK we
-support makes it fail to load there (CS8032 / AD0001). Same for `Microsoft.Build.*` in a task
-assembly. These are floors for the oldest supported SDK:
+support makes it fail to load there (CS8032 / AD0001). Same for `Microsoft.Build.*` and
+`System.Reflection.Metadata` in a task assembly, which MSBuild supplies at run time. These are floors
+for the oldest supported SDK:
 
 | Package | Pinned | Where |
 |---|---|---|
@@ -60,7 +61,8 @@ assembly. These are floors for the oldest supported SDK:
 | `Microsoft.CodeAnalysis.Workspaces.Common` | 4.3.1 | `Bit.CodeAnalyzers` |
 | `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.Brouter.Generators`, `Bit.Blex.Generators` + their test projects, and `Bit.Blex.Demo.Server` (runs the Blex generator for its MCP server) (must match) |
 | `Microsoft.CodeAnalysis.CSharp` | 4.14.0 | `Bit.CodeAnalyzers` |
-| `Microsoft.Build.Utilities.Core` | 17.7.2 | `Bit.Butil.Build` |
+| `Microsoft.Build.Utilities.Core` | 17.7.2 | `Bit.Butil.Build`, `Bit.BlazorUI.Build` |
+| `System.Reflection.Metadata` | 1.6.0 | `Bit.BlazorUI.Build` |
 
 **TFM-conditioned floors — only the highest band moves.** A multi-targeted library pins the `.0` of
 each band it supports, because the pin *is* the consumer's minimum runtime. Raising 8.0.0 to 8.0.x
@@ -71,10 +73,11 @@ raises that minimum for no gain.
 ```
 
 Applies to `Bit.Besql` (JSInterop, Components.WebAssembly, EF Core Sqlite), `Bit.BlazorUI` /
-`.Extras` / `.Legacy` (Components.Web, Components.WebView), and the `BlazorEmpty` template.
+`.Assets` / `.Extras` / `.Legacy`, `Bit.Bswup` and `Bit.Butil` (Components.Web), and the
+`BlazorEmpty` template.
 
 The rule keys on the `.0` in a *shipped library*. A TFM-conditioned pin at a concrete patch —
-`Bit.BlazorUI.Tests` on Components.WebView `8.0.30` / `9.0.19` / `10.0.11` — is not a floor: nothing
+`Bit.BlazorUI.Tests` on Components.WebView `8.0.x` / `9.0.x` / `10.0.x` — is not a floor: nothing
 consumes a test project, so every band takes the newest patch of its own band. Likewise a lone
 `10.0.0` sitting among `10.0.11` siblings in `Directory.Packages.props` is staleness, not intent.
 
@@ -87,7 +90,7 @@ higher-numbered lines exist there.
 **TypeScript is held at 5.9.3 in the libraries.** 7.x is the Go rewrite
 (`microsoft/typescript-go`), not an incremental release. `Boilerplate.Client.Core` is the canary and
 is already on 7.0.2 — if a bump is wanted, move one library project, build it, and only then the
-rest. Do not move all nineteen at once.
+rest. Do not move all twenty at once.
 
 **Vitest is held at `^3`** in `src/Bmotion/Tests/bit-bmotion-js`, `src/Bswup/Tests/bit-bswup-js` and `src/Bsqlite/Tests/bit-bsqlite-js`.
 
@@ -150,7 +153,7 @@ versions ascending):
 
 - latest stable = last entry with no `-`
 - target = latest stable, **except** a package whose newest release is a prerelease with no stable
-  above it, which takes the prerelease. That is the whole `OpenTelemetry.*` 1.18.0-beta.1 family,
+  above it, which takes the prerelease. That is the `OpenTelemetry.*` packages on beta and rc,
   `Microsoft.Agents.AI.Hosting`, `Microsoft.SemanticKernel.Connectors.HuggingFace` and
   `Aspire.Hosting.Keycloak`.
 

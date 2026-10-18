@@ -1,6 +1,6 @@
 ---
 name: test-platform
-description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit, and check that its Aspire containers are reused from one run to the next and stopped once it sits idle. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
+description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit and runs the app, and check that its Aspire containers are reused from one run to the next and stopped once it sits idle, on Windows and inside the dev container. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
 ---
 
 # Test the platform
@@ -15,9 +15,10 @@ the test suite all live on it. How the machine is put together, and how to rebui
 
 Three rules for working on it:
 
-- **Docker Desktop stays running.** The demos' Redis is its `redis` container (restart always, port 6379), and
-  without it TodoApi dies at startup with "No redis server available", which shows up as a 502 at
-  todo-api.bitplatform.dev. Start Docker Desktop when it is off, never stop it, and never remove that container.
+- **Redis is the `Garnet` Windows service.** TodoApi needs a Redis on port 6379 and dies at startup without one
+  ("No redis server available"), which shows up as a 502 at todo-api.bitplatform.dev. The service starts at boot
+  with nobody signed in; when TodoApi fails, check that it runs and listens on 6379 before anything else. Docker
+  Desktop no longer serves the demos, only steps 5 and 6: start it when it is off.
 - **Memory is short.** The emulator alone takes over 3 GB. Run one heavy thing at a time - the emulator, an Aspire
   app, the dev container - and stop whatever you started once it isn't needed: the emulator if it was off, and any
   local app or `dotnet watch`. Never run `dotnet build-server shutdown`: other sessions build on this machine too.
@@ -64,7 +65,9 @@ answer, and repeat the plan back before starting:
    or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
    (`gh run list -R bitfoundation/bitplatform -w all.cd.yml -L 1`): it is often another branch than the one under test.
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
-7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org.
+7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
+   come from nuget.org at the template's version; when nuget.org's build of that version is older than the commit's
+   libraries, `-PrereleasePackages` takes them from the newest Prerelease nuget packages run instead.
 
 Start, change or skip nothing beyond the answers, and ask nothing more once they are in: the user is often away
 until the report. Then go in this order:
@@ -74,8 +77,8 @@ until the report. Then go in this order:
    (`gh run watch <run-id> -R bitfoundation/bitplatform --exit-status`) before anything that takes its packages.
 2. `APP_VERSION`, then All CI and All CD together, both with the chosen `prerelease_packages`. All CI's inputs name
    its jobs and all default to on; `-f <job>=false` leaves one out.
-3. While they run: step 6 in the background, and step 1 as CI jobs fail.
-4. Once CD is done: step 2, then steps 3 and 4.
+3. While they run: step 1 as CI jobs fail.
+4. Once CD is done: step 2, then steps 3 and 4, with step 6 in the background next to the web stages of step 3.
 5. Step 5 last, on its own.
 
 Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows that version everywhere: as
@@ -98,8 +101,8 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
 | `e2e [-Stage <stages>] [-Filter <filter>]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. |
 | `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. |
-| `devcontainer [-Sha <sha>] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
-| `aspire [-Sha <sha>] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
+| `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
+| `aspire [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
 
 ## 1. The CI run
 
@@ -163,8 +166,26 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    - In a fresh worktree, a library whose build runs `npm install`, such as Bswup, breaks when its target frameworks
      build in parallel: the installs race on `node_modules` (`ENOTEMPTY`), and the half-installed folder then fails
      every build with `tsc` exiting 9009. Delete `node_modules`, build one framework (`-f net10.0`), then the rest.
-   - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left. Never the `redis`
-     container, which the demos use, nor another project's containers.
+   - A job whose runner "received a shutdown signal" in the middle of a step ran the runner out of memory, and its log
+     says nothing more. To see what grew, have the step print `free -m` and the top processes by RSS every 30 seconds
+     from a background loop, and take a `dotnet-gcdump` of a `dotnet` process past a few GB, then kill it so the
+     failed-step upload still runs. `dotnet-gcdump` stops at ten million objects, so a heap that looks small next to
+     the process is a cut-off count, not native memory. The Boilerplate's test process is known to keep finished test
+     servers alive; look for the open issue before calling such growth new. One lucky pass of the job alone on a
+     runner proves nothing; compare a step's duration with an earlier run's instead.
+   - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left, never another
+     project's containers.
+   - A Prerelease nuget packages run signs the libraries with the release key, which no other build uses. A library
+     that grants its internals to another one under the repository's key alone builds everywhere else and fails
+     there with CS0281; it has to name both keys.
+   - A trimmed publish that crashes ILLink with a stack overflow on a new .NET points at one type the trimmer keeps
+     coming back to. Find it by trimming a console app that roots one suspect assembly, then one namespace, then one
+     type of it, with a root descriptor.
+   - A test that fails at random in CI on timing often fails here too when it runs on its own, since a single test
+     pays the cold start. Run it alone a few times before calling it CI-only.
+   - A Linux-only Chromium wait that times out needs evidence before a fix: have the test log every request the page
+     starts and finishes, run the job a few times on a branch of your own, and read what was still in flight. A
+     network idle that never comes with nothing in flight is Chromium's event, not the app.
 
 4. Fix the cause. A timeout grows only when what it waits for is legitimately slow, and a retry that hides a race is
    not a fix. Template changes follow `src/Templates/Boilerplate/Bit.Boilerplate/AGENTS.md`, `[mirror]` comments
@@ -176,6 +197,11 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    ask before pushing to anyone else's. A CI run on the pushed branch is the final proof:
    `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed job
    (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix.
+
+   A fix in a bit library - any `Bit.*` project other than the Boilerplate template, its tests, demos and samples
+   included - also gets an issue and a PR of its own, cut from develop when the fix applies there and from bit11
+   otherwise, so its owners review it; the commit on the run's branch only proves that it works. Fixes to the
+   Boilerplate and to the websites need nothing beyond the run's branch.
 
 This machine has four cores and serves the demos too, so a local build or test run never overlaps step 3.
 
@@ -198,6 +224,11 @@ version; a run at a new version that leaves an app out leaves that app behind, a
 **Web.** The deploy jobs mirror each bundle into `C:\inetpub\<site>` and restart its app pool, and the WebAssembly
 standalone apps go to Azure Static Web Apps. There is nothing to do but check.
 
+**A deploy job that finds no app pool of its name** deploys a demo whose IIS site was never made on this machine,
+usually a library demo added since the host was set up. Creating it changes the machine, so ask first; then add it
+the way the other library demos are set up and add it to the README's exports. Re-running the deploy job, or that
+demo's own CD, delivers it.
+
 **Android.** `android -CdRun <run>`. Every Android job uploads an artifact called `android-bundle`, and a re-run job
 adds another, so the helper tells them apart by package and takes the newest of each. The device is the one AVD,
 `pixel_7_-_api_36_0`. `adb` is not on `PATH`: platform-tools is under `C:\Program Files (x86)\Android\android-sdk`,
@@ -209,7 +240,10 @@ after uninstalling the app, which drops its data.
 **Windows.** `windows`. The apps are Velopack installs in `%LocalAppData%\<AppId>`: the Boilerplate's
 `AdminPanel.Client.Windows`, `SalesModule.Client.Windows` and `TodoSample.Client.Windows`. The nav-panel version
 button runs `ForceUpdate`: Velopack downloads the release from the app's feed and restarts into it. Every app starts
-WebView2 with `--remote-debugging-port=9222`, so the helper first closes any that is running.
+WebView2 with `--remote-debugging-port=9222`, so the helper first closes any that is running, and taps only once the
+WebView on that port is the app's own: an app that just updated restarts on its own and may hold the port. An app a
+release behind also updates itself when it starts, before it shows a page, which takes a few minutes; either way
+counts once its executable is at `APP_VERSION`.
 
 Then `versions -Sha <CD head sha> -CdRun <run>`. Anything still behind is a failed rollout: find the CD job that did not deliver -
 its log, the feed's `releases.win.json`, the Play upload - before testing anything.
@@ -234,7 +268,8 @@ Playwright and MSTest; no local server is involved. `RunTests.bat` defines its s
 webkit through the Playwright server on the mac (`PLAYWRIGHT_SERVER_ENDPOINT`), on Firefox locally, then the Android
 apps (CDP through `adb forward`, port 9223), the Windows apps (CDP on 9222) and the APIs with their database.
 
-Run `e2e` in the background. It builds once, gives each stage its own time limit (`-TimeoutMinutes`, 120 by
+Run `e2e` in the background. Its stages run from the suite's build output, so don't build the suite again, or
+change the branch it was built from, until it is done. It builds once, gives each stage its own time limit (`-TimeoutMinutes`, 120 by
 default), and keeps each stage's console log and TRX as `TestResults\<stage>-<time>.log` and `.trx` - the suite
 itself writes every stage to the same `TestResults.trx`, and a re-run must not replace the full run's evidence. Look in every few minutes; a test process that sits near 0% CPU
 for long is hung, not slow.
@@ -334,7 +369,7 @@ does not serve silently gets the newest one it does.
    `feat(release): v-X.Y.Z` commit on `develop` has its tag: an untagged release is answered by the previous one,
    without a word.
 2. **What it does serve.** `mcp -McpVersion X.Y.Z` for each. The library tools (`Search*`, `Get*` and `Inspect*` of BlazorUI,
-   Brouter, Butil, Bswup, Bmotion and - from the first release that ships them - Bink, Bonboarding, Blex, Bmage and Bsqlite) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
+   Brouter, Butil, Bswup, Bmotion and - from the first release that ships them - Bink, Balette, Bonboarding, Blex, Bmage and Bsqlite) and the source tools (`FindBitPlatformSymbols`, `GetBitPlatformSymbolSource`,
    `SearchBitPlatformCode`) must all be there. Only the five shared ones (`AskGitHubRepository`,
    `SendBitPlatformFeedback`, `microsoft_docs_*`) means no release is served at all, and the README's
    *PlatformWebsite's MCP* section says why that happens. The server version it reports is the website's own build,
@@ -353,7 +388,7 @@ does not serve silently gets the newest one it does.
 4. **The answers are good.** Put one real task to each library's `Search` tool, worded the way a developer would
    describe it - BlazorUI "a dropdown the user can also type into", Butil "copy text to the clipboard", Bmotion "fade
    a list item in", Brouter "a route parameter that must be a number", Bswup "show the download progress of the app's
-   update", Bink "a signature pad that exports a PNG", Bonboarding "a step that waits for a panel that loads later", Blex "a counter whose value survives a page reload", Bmage "shrink an uploaded photo under 200 KB without its location", Bsqlite "keep the database when OPFS is not available" - follow up with the `Get` tool it points to, and ask `SearchBitPlatformCode` about the Boilerplate. An
+   update", Bink "a signature pad that exports a PNG", Balette "a command that asks for a name before it runs", Bonboarding "a step that waits for a panel that loads later", Blex "a counter whose value survives a page reload", Bmage "shrink an uploaded photo under 200 KB without its location", Bsqlite "keep the database when OPFS is not available" - follow up with the `Get` tool it points to, and ask `SearchBitPlatformCode` about the Boilerplate. An
    answer must be on topic, specific and true to the version asked for; one that answers wrongly is a failure too.
 
 Like an E2E failure, an MCP problem is fixed in `src/Websites/Platform` or in the library's own MCP server, and goes
@@ -379,12 +414,26 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 - With `-Sha`, bit and the template come from that commit, as in CI: bit is packed into a feed the container mounts,
   and the project's `nuget.config` maps `Bit.Cli` to that feed alone, so a newer prerelease on nuget.org can't stand
   in for it. Without `-Sha`, it tests what nuget.org serves, which is what users get.
+- `-PrereleasePackages` puts the packages of the newest Prerelease nuget packages run into that feed too, bit's
+  aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
+  doesn't have compiles against them.
 - It's heavy: a few GB in Docker Desktop's VM and about ten minutes, most of them for the container's image and the
-  restore. Run it on its own, after the E2E suite, never next to it.
-- Done means every `bit setup` step passed and `bit doctor` exits with 0, with VS Code not needed inside a container.
-  Its memory warning describes Docker Desktop's VM, not this machine, and is expected.
+  restore, then about half an hour for the Aspire check below. Run it on its own, after the E2E suite, never next to
+  it.
+- Done means every `bit setup` step passed, `bit doctor` exits with 0, with VS Code not needed inside a container,
+  and the Aspire check below passes. `bit doctor`'s memory warning describes Docker Desktop's VM, not this machine,
+  and is expected.
 - The logs of `bit new`, of the container's start and of `bit doctor` stay in the folder the helper names. `-Keep`
   leaves the container up, to look inside it with the devcontainers CLI; bit's own logs are in its home folder there.
+
+A container that sets itself up can still fail to run the app. And the Aspire containers have to behave in there as
+step 6 shows they do on Windows: on Linux the keeper that stops them is a different process, started in a session of
+its own, and the containers run on the dev container's own Docker engine, not on Docker Desktop's. So run
+`devcontainer` with `-Keep`, and once `bit doctor` has passed, do step 6's check inside the container: three
+`dotnet run`s of the app host, each until the web app answers inside the container and each ended the way closing
+its terminal does, with the same bar for the second run's reuse, the idle stop and the third run's volumes. Then
+remove the kept container, its volumes and its image, the helper's folder, and with `-Sha` the worktree it added: a
+later run of the helper doesn't.
 
 A failure in bit or in the template is fixed like a CI failure, and the next `devcontainer -Sha` on the fix proves it;
 no CD is involved.
@@ -402,9 +451,16 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
   key covers changed between the runs, such as its image, environment or ports.
 - After the second run the containers keep running for the idle time, then stop. Stopped, not removed: the third run
   brings them back on the same volumes.
-- `-Sha` works as for `devcontainer`; the Bit packages come from nuget.org at the version the template asks for.
+- `-Sha` and `-PrereleasePackages` work as for `devcontainer`. With `-PrereleasePackages` the project restores into a
+  packages folder of its own, since this machine's cache may hold nuget.org's build of the same version; without it
+  the Bit packages come from nuget.org at the version the template asks for. The project's `global.json` asks for
+  the repository's SDK, which needs the workloads the template's clients build with (`wasm-tools`): an SDK that
+  Visual Studio installed brings only its own.
 - It takes about half an hour, most of it the idle wait, and a few GB of Docker Desktop's memory while the app runs.
-  Start it in the background early and go on with the other steps, but never next to `devcontainer`.
+  Start it in the background once the CD's deploy jobs are done, and never next to `devcontainer` or the Android
+  stage. Its containers hold that memory, and Docker Desktop's VM keeps it for a while after they stop: IIS sites
+  deployed next to them took minutes to start, and one never did ("Managed server didn't initialize after 120000
+  ms" in the Application log), which a CD reports as a failed health check.
 
 Two things are expected and are not failures. `dotnet test` and a `dotnet run` or `aspire start` re-create each
 other's containers, since the test host picks random ports and the ports are part of the lifecycle key. And a run
@@ -424,7 +480,7 @@ Lead with the verdict, then:
    event log lines) and what happens next.
 4. **MCP**: the served versions, their tool counts, the version check, and how good the answers were.
 5. **Dev container**: the commit or the nuget.org version tested, each `bit setup` step with its time, `bit doctor`'s
-   exit code, and per failure its cause and fix.
+   exit code, the Aspire check inside it as in item 6, and per failure its cause and fix.
 6. **Aspire containers**: the commit or the nuget.org version tested, how soon each run was up, whether the second run
    reused every container, how long after the last run they stopped, and per failure its cause and fix.
 7. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried

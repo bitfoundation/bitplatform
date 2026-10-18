@@ -168,3 +168,5 @@
         }
     }
 }
+
+// bit-lazy: teardown CircularTimePicker.dispose

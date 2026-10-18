@@ -64,5 +64,6 @@
         }
     }
 
+    // bit-trim: owners BitButtonGroup
     ButtonGroup.install();
 }

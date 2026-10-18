@@ -1,0 +1,212 @@
+﻿@page "/performance"
+@using System.Diagnostics
+@using System.Globalization
+@implements IDisposable
+@inject IBaletteService Palette
+@inject BaletteOptions Options
+@inject BaletteRanker Ranker
+@inject DemoState State
+
+<PageTitle>Large registry - bit Balette</PageTitle>
+
+<h1>Large registry</h1>
+<p class="page-intro">
+    Numbers measured here, in your browser, on this machine. Register a few thousand synthetic commands, open the
+    palette and type: every keystroke matches all of them. The table below times the same matcher and ranker the
+    palette runs, over the same registry, so you can see what a keystroke costs before you feel it.
+</p>
+
+<div class="panel">
+    <div class="toolbar" role="toolbar" aria-label="Registry controls">
+        <label class="field">
+            Commands
+            <select value="@_count" @onchange="OnCountChanged" disabled="@(_bulk is not null)" aria-label="Number of commands">
+                <option value="500">500</option>
+                <option value="2000">2,000</option>
+                <option value="10000">10,000</option>
+            </select>
+        </label>
+        <button type="button" class="btn primary" disabled="@_busy" @onclick="ToggleBulk">@(_bulk is null ? $"Register {_count:N0} commands" : "Unregister them")</button>
+        <button type="button" class="btn" disabled="@_busy" @onclick="MeasureAsync">Measure searches</button>
+        <div class="toolbar-separator"></div>
+        <label class="field">
+            <input type="checkbox" checked="@State.Virtualize" @onchange="() => State.SetVirtualize(!State.Virtualize)" />
+            Virtualize the list
+        </label>
+        <div class="toolbar-spacer"></div>
+        <button type="button" class="btn" @onclick='() => Palette.OpenAsync("cmd 1234")'>Open with "cmd 1234"</button>
+    </div>
+
+    <div class="statusbar" role="status">
+        <span>Registry: <strong>@Palette.Commands.Count.ToString("N0", CultureInfo.InvariantCulture)</strong> commands</span>
+        @if (_registration is { } registration)
+        {
+            <span>Last registration: <strong>@Ms(registration)</strong>, the palette's rebuild included</span>
+        }
+        @if (_busy)
+        {
+            <span><strong>Measuring…</strong></span>
+        }
+    </div>
+</div>
+
+@if (_results.Count > 0)
+{
+    <h2>Measurements</h2>
+    <table>
+        <thead>
+            <tr><th>Query</th><th class="num">Matched</th><th class="num">Match</th><th class="num">Rank</th><th class="num">Total</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var result in _results)
+            {
+                <tr>
+                    <td><code>@result.Query</code></td>
+                    <td class="num">@result.Matched.ToString("N0", CultureInfo.InvariantCulture)</td>
+                    <td class="num">@Ms(result.Match)</td>
+                    <td class="num">@Ms(result.Rank)</td>
+                    <td class="num"><strong>@Ms(result.Match + result.Rank)</strong></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="muted small">
+        The median of @Repetitions runs over @_measuredOver.ToString("N0", CultureInfo.InvariantCulture) root commands. The
+        ranking here sorts every match; the palette keeps only the best @Options.MaxResults, which is cheaper still.
+    </p>
+}
+
+<div class="note">
+    On WebAssembly, search and painting share the page's only thread. When a search takes longer than a frame (8 ms),
+    the palette lets the keystroke paint first and folds the keys typed meanwhile into one search, so the input never
+    lags behind the fingers. Only the best <code>MaxResults</code> rows are rendered, and <code>Virtualize</code>
+    renders just the visible ones when that limit is raised.
+</div>
+
+<h2>The registration</h2>
+<pre><code>@RegistrationExample</code></pre>
+<p>
+    The handle comes back from <code>Register</code>; this page disposes it when you leave, so the registry is back to its
+    usual size on every other page.
+</p>
+
+@code {
+    private const int Repetitions = 5;
+
+    private const string RegistrationExample = """
+        var many = Enumerable.Range(1, 2000).Select(i => BaletteCmd.New($"Command {i}")
+            .Id($"bulk:{i}")
+            .Group("Bulk")
+            .Subtitle($"Synthetic entry #{i}")
+            .Priority(BaletteCommandPriority.Lowest)
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"Ran command {i}")))
+            .Build());
+
+        _bulk = Palette.Register(many);   // ... and later: _bulk.Dispose();
+        """;
+
+    private static readonly string[] Queries = ["c12", "cmd 1234", "command", "synthetic 19", "^command 7", "zzz"];
+
+    private sealed record Measurement(string Query, int Matched, TimeSpan Match, TimeSpan Rank);
+
+    private readonly List<Measurement> _results = [];
+    private IDisposable? _bulk;
+    private int _count = 2000;
+    private int _measuredOver;
+    private TimeSpan? _registration;
+    private bool _busy;
+
+    protected override void OnInitialized() => Palette.CommandsChanged += Refresh;
+
+    private void OnCountChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value))
+        {
+            _count = value;
+        }
+    }
+
+    private void ToggleBulk()
+    {
+        var started = Stopwatch.GetTimestamp();
+        if (_bulk is not null)
+        {
+            _bulk.Dispose();
+            _bulk = null;
+        }
+        else
+        {
+            var count = _count;
+            var many = Enumerable.Range(1, count)
+                .Select(i => BaletteCmd.New($"Command {i}").Id($"bulk:{i}").Group("Bulk").Subtitle($"Synthetic entry #{i}")
+                    .Priority(BaletteCommandPriority.Lowest)
+                    .Handler(_ => Task.FromResult(BaletteCommandResult.Toast($"Ran command {i}")))
+                    .Build());
+            _bulk = Palette.Register(many);
+            State.Record($"Registered {count:N0} synthetic commands");
+        }
+
+        _registration = Stopwatch.GetElapsedTime(started);
+        _results.Clear();
+    }
+
+    private async Task MeasureAsync()
+    {
+        _busy = true;
+        _results.Clear();
+        StateHasChanged();
+
+        var candidates = Palette.Commands.Where(c => c.Parent is null).ToList();
+        _measuredOver = candidates.Count;
+        foreach (var query in Queries)
+        {
+            // WebAssembly runs on the page's only thread: yielding between queries lets the table fill in as it goes
+            // instead of the whole measurement showing as one freeze.
+            await Task.Delay(1);
+
+            var matchTimes = new List<TimeSpan>(Repetitions);
+            var rankTimes = new List<TimeSpan>(Repetitions);
+            var matched = 0;
+            for (var run = 0; run < Repetitions; run++)
+            {
+                var started = Stopwatch.GetTimestamp();
+                var matches = new List<BaletteMatch>();
+                foreach (var command in candidates)
+                {
+                    if (Options.Matcher.Match(command, query, Options.Weights) is { } match)
+                    {
+                        matches.Add(match);
+                    }
+                }
+
+                matchTimes.Add(Stopwatch.GetElapsedTime(started));
+
+                started = Stopwatch.GetTimestamp();
+                Ranker.Rank(matches, hasQuery: true, _ => 0);
+                rankTimes.Add(Stopwatch.GetElapsedTime(started));
+                matched = matches.Count;
+            }
+
+            _results.Add(new Measurement(query, matched, Median(matchTimes), Median(rankTimes)));
+            StateHasChanged();
+        }
+
+        _busy = false;
+    }
+
+    private static TimeSpan Median(List<TimeSpan> values)
+    {
+        values.Sort();
+        return values[values.Count / 2];
+    }
+
+    private static string Ms(TimeSpan value) => $"{value.TotalMilliseconds.ToString("0.00", CultureInfo.InvariantCulture)} ms";
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        Palette.CommandsChanged -= Refresh;
+        _bulk?.Dispose();
+    }
+}

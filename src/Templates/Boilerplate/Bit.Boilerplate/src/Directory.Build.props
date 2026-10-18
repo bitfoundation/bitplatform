@@ -43,8 +43,9 @@
         <StaticWebAssetFingerprintingEnabled>false</StaticWebAssetFingerprintingEnabled>
         <DefaultItemExcludes>$(DefaultItemExcludes);**/App_Data/**</DefaultItemExcludes>
 
-        <!-- Publish only the bit-butil.js modules the app uses. -->
+        <!-- Publish only the bit-butil.js modules and the bit BlazorUI scripts and styles the app uses. -->
         <BitButilTrimScripts>true</BitButilTrimScripts>
+        <BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>
     </PropertyGroup>
     <!--/+:msbuild-conditional:noEmit -->
 
