@@ -12,7 +12,7 @@ public partial class CodebaseMemoryCli
 {
     /// <summary>
     /// The parts of the repository that get indexed, and so the only code the source tools reach.
-    /// What is left out answers for itself elsewhere on this endpoint: BlazorUI, Bmotion, Bink, Balette, Bonboarding, Blex, Brouter,
+    /// What is left out answers for itself elsewhere on this endpoint: BlazorUI, Bmotion, Bink, Balette, Bonboarding, Blex, Bmage, Brouter,
     /// Butil and Bswup each have their own MCP server here, written for the library rather than grepped out of it.
     /// </summary>
     internal static readonly string[] IndexedPaths =

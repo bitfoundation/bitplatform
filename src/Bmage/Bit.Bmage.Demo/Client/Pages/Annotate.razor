@@ -1,0 +1,268 @@
+﻿@page "/annotate"
+@implements IAsyncDisposable
+@inject ImageLoader Loader
+@inject IImageCapabilityProvider Capabilities
+
+@* A bug report's screenshot: paste it in, point at the problem, black out what must not be shared.
+   The page is the editor component plus three things a host adds around it - a page-wide paste
+   listener, a clipboard button, and annotations placed from code - which is most of what a real
+   app's integration would look like. *@
+
+<PageTitle>Screenshot annotation - Bit.Bmage</PageTitle>
+
+<h1>Screenshot annotation</h1>
+
+<p class="page-intro">
+    Paste a screenshot, point at the problem, and black out anything that must not leave the
+    building. Annotations stay <strong>editable objects</strong> until you export, so nothing is
+    baked in until you say so.
+</p>
+
+<div class="demo-section">
+    <h2>Annotate a screenshot</h2>
+
+    @if (_error is not null)
+    {
+        <div class="alert alert-error" role="alert">@_error</div>
+    }
+    @if (!HasImage)
+    {
+        <div class="alert alert-info">
+            Press <strong>Ctrl+V</strong> (<strong>&#8984;V</strong> on a Mac) anywhere on this page to
+            bring in a screenshot, or drop an image on the editor below.
+        </div>
+    }
+
+    <div class="btn-row toolbar-row">
+        <button type="button" class="btn" disabled="@(_capabilities?.SupportsClipboardRead != true)" @onclick="PasteAsync"
+                title="Reads the clipboard directly; the browser asks for permission the first time">Paste from clipboard</button>
+        <button type="button" class="btn" disabled="@(HasImage || IsHydrating)" @onclick="UseSample">Use a sample image</button>
+        <button type="button" class="btn" disabled="@(!HasImage)" @onclick="AddSampleAnnotations">Add a worked example</button>
+        <button type="button" class="btn" disabled="@(!HasImage)" @onclick="Clear">Start over</button>
+    </div>
+
+    <div class="editor-frame">
+        <BmageEditor @ref="_editor"
+                     Image="_source"
+                     ExportOptions="ExportOptions"
+                     OnImageLoaded="OnEditorImageLoaded"
+                     OnError="OnEditorError" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Redaction that actually redacts</h2>
+    <p>
+        The redaction tool replaces the pixels underneath it, so the hidden content is genuinely gone
+        from the exported file rather than covered by a layer someone can move. Solid blocks are the
+        safe choice: a strong blur is usually irreversible in practice, but a solid rectangle removes
+        all doubt. Redactions are always drawn before other annotations, so an arrow you place on top
+        is never blurred away.
+    </p>
+    <div class="callout">
+        <p>
+            Redaction is about pixels; metadata is a separate leak. This page exports with
+            <code>MetadataPolicy.Remove</code> - see <a href="/metadata">Metadata and privacy</a>.
+        </p>
+    </div>
+    <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Pasting from anywhere on the page</h2>
+    <p>
+        <code>ListenForPasteAsync</code> listens for the browser's own paste event, which carries the
+        image with it - so <strong>Ctrl+V</strong> works without the clipboard permission prompt.
+        <code>LoadFromClipboardAsync</code>, behind the button, reads the clipboard directly; that
+        needs the permission, which is why the button is only enabled where the capability probe
+        found the API.
+    </p>
+    <CodeSnippet Code="@PasteSnippet" Language="Razor" />
+</div>
+
+@code {
+    private BmageEditor? _editor;
+    private ImageBuffer? _source;
+    private ImageCapabilities? _capabilities;
+    private IAsyncDisposable? _pasteListener;
+    private string? _error;
+
+    /// <summary>The editor owns the image once loaded, whether it came from here or from its own drop zone.</summary>
+    private bool HasImage => _editor?.Session is not null;
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    private static readonly ImageExportOptions ExportOptions = new()
+    {
+        Format = ImageFormat.Png,
+        Metadata = MetadataPolicy.Remove,
+    };
+
+    private const string Snippet = """
+        // Annotations are records, so building one is a value, not a mutation.
+        await editor.AddAnnotationAsync(new RedactionAnnotation
+        {
+            Rectangle = new RectangleF(40, 120, 320, 28),
+            Mode      = RedactionMode.Solid,   // Pixelate and Blur are also available
+        });
+
+        await editor.AddAnnotationAsync(new ArrowAnnotation
+        {
+            Start = new Vector2(500, 380),
+            End   = new Vector2(360, 220),
+            Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 6 } },
+        });
+
+        await editor.AddAnnotationAsync(new StepAnnotation
+        {
+            Center = new Vector2(340, 400),
+            Number = 1,
+        });
+        """;
+
+    private const string PasteSnippet = """
+        @implements IAsyncDisposable
+        @inject ImageLoader Loader
+
+        <BmageEditor @ref="_editor" />
+
+        @code {
+            private BmageEditor? _editor;
+            private IAsyncDisposable? _paste;
+
+            protected override async Task OnAfterRenderAsync(bool firstRender)
+            {
+                if (!firstRender) return;
+
+                // Ctrl+V anywhere on the page: the paste event carries the image,
+                // so no clipboard permission is needed.
+                _paste = await Loader.ListenForPasteAsync(
+                    image => _editor!.LoadImageAsync(image));
+            }
+
+            public async ValueTask DisposeAsync()
+            {
+                if (_paste is not null) await _paste.DisposeAsync();
+            }
+        }
+        """;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || IsHydrating) return;
+        _capabilities = await Capabilities.GetAsync();
+        _pasteListener = await Loader.ListenForPasteAsync(OnPastedAsync, ex =>
+        {
+            _error = Describe(ex);
+            StateHasChanged();
+            return Task.CompletedTask;
+        });
+        StateHasChanged();
+    }
+
+    private Task OnPastedAsync(ImageBuffer image)
+    {
+        _error = null;
+        SetSource(image);
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private async Task PasteAsync()
+    {
+        _error = null;
+        try
+        {
+            var image = await Loader.LoadFromClipboardAsync();
+            if (image is null)
+            {
+                _error = "There is no image on the clipboard.";
+                return;
+            }
+            SetSource(image);
+        }
+        catch (Exception ex)
+        {
+            _error = ex is ImageCapabilityException c ? c.Message : $"Could not read the clipboard: {ex.Message}";
+        }
+    }
+
+    private void UseSample() => SetSource(SampleImages.Landscape());
+
+    /// <summary>Hands a new image to the editor, which copies it, replacing whatever it was showing.</summary>
+    private void SetSource(ImageBuffer image)
+    {
+        _source?.Dispose();
+        _source = image;
+    }
+
+    /// <summary>
+    /// Places a realistic set of annotations so the page demonstrates the model without needing the user to draw.
+    /// Coordinates are relative to the image so the example fits whatever was pasted.
+    /// </summary>
+    private async Task AddSampleAnnotations()
+    {
+        if (_editor?.Session is not { } session) return;
+        var w = session.OutputSize.Width;
+        var h = session.OutputSize.Height;
+
+        await _editor.AddAnnotationAsync(new RedactionAnnotation
+        {
+            Rectangle = new System.Drawing.RectangleF(w * 0.06f, h * 0.10f, w * 0.34f, h * 0.06f),
+            Mode = RedactionMode.Solid,
+        }, "Redact");
+
+        await _editor.AddAnnotationAsync(new RectangleAnnotation
+        {
+            Rectangle = new System.Drawing.RectangleF(w * 0.52f, h * 0.30f, w * 0.36f, h * 0.22f),
+            Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = MathF.Max(3, w / 300f) } },
+        }, "Rectangle");
+
+        await _editor.AddAnnotationAsync(new ArrowAnnotation
+        {
+            Start = new Vector2(w * 0.30f, h * 0.78f),
+            End = new Vector2(w * 0.56f, h * 0.46f),
+            Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = MathF.Max(4, w / 220f) } },
+        }, "Arrow");
+
+        await _editor.AddAnnotationAsync(new StepAnnotation
+        {
+            Center = new Vector2(w * 0.26f, h * 0.82f),
+            Number = 1,
+            Radius = MathF.Max(14, w / 45f),
+        }, "Step");
+
+        await _editor.AddAnnotationAsync(new HighlightAnnotation
+        {
+            Rectangle = new System.Drawing.RectangleF(w * 0.06f, h * 0.60f, w * 0.30f, h * 0.05f),
+        }, "Highlight");
+    }
+
+    private void OnEditorError(Exception ex) => _error = Describe(ex);
+
+    // The editor can load an image through its own drop zone, so the page has to re-render to enable its buttons.
+    private void OnEditorImageLoaded(ImageBuffer image) => StateHasChanged();
+
+    private async Task Clear()
+    {
+        _source?.Dispose();
+        _source = null;
+        _error = null;
+        // Disposing the editor ends its session, which brings back its drop zone.
+        if (_editor is not null) await _editor.DisposeAsync();
+        StateHasChanged();
+    }
+
+    private static string Describe(Exception ex) => ex switch
+    {
+        ImageLimitExceededException => "That image is larger than this page allows.",
+        ImageDecodeException => "That could not be read as an image.",
+        _ => ex.Message,
+    };
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_pasteListener is not null) await _pasteListener.DisposeAsync();
+        _source?.Dispose();
+    }
+}

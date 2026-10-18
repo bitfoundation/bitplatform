@@ -21,6 +21,7 @@ internal sealed partial class McpDocumentationSite : IDisposable
         ("bitBink", "src/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj"),
         ("bitBalette", "src/Balette/Bit.Balette.Demo/Server/Bit.Balette.Demo.Server.csproj"),
         ("bitBlex", "src/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj"),
+        ("bitBmage", "src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj"),
         ("bitBonboarding", "src/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj"),
         ("bitBrouter", "src/Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj"),
         ("bitBswup", "src/Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj"),

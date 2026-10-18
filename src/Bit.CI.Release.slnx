@@ -37,6 +37,15 @@
     <Project Path="Blex/Tests/Bit.Blex.Tests/Bit.Blex.Tests.csproj" />
     <Project Path="Blex/Tests/Bit.Blex.Tests.Generators/Bit.Blex.Tests.Generators.csproj" />
   </Folder>
+  <Folder Name="/Bmage/">
+    <File Path="Bmage/README.md" />
+    <Project Path="Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj" />
+    <Project Path="Bmage/Bit.Bmage.Demo/Client/Bit.Bmage.Demo.Client.csproj" />
+    <Project Path="Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj" />
+    <Project Path="Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj" />
+    <Project Path="Bmage/Bit.Bmage/Bit.Bmage.csproj" />
+    <Project Path="Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
+  </Folder>
   <Folder Name="/Bmotion/">
     <File Path="Bmotion/README.md" />
     <Project Path="Bmotion/Bit.Bmotion.Demo/Client/Bit.Bmotion.Demo.Client.csproj" />

@@ -66,6 +66,22 @@
     <Project Path="Blex/Tests/Bit.Blex.Tests.Harness.Web.Client/Bit.Blex.Tests.Harness.Web.Client.csproj" />
     <Project Path="Blex/Tests/Bit.Blex.Tests.Harness.Hybrid/Bit.Blex.Tests.Harness.Hybrid.csproj" />
   </Folder>
+  <Folder Name="/Bmage/">
+    <File Path="Bmage/README.md" />
+    <Project Path="Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj" />
+    <Project Path="Bmage/Bit.Bmage/Bit.Bmage.csproj" />
+    <Project Path="Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj" />
+  </Folder>
+  <Folder Name="/Bmage/Bit.Bmage.Demo/">
+    <Project Path="Bmage/Bit.Bmage.Demo/Client/Bit.Bmage.Demo.Client.csproj" />
+    <Project Path="Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bmage/Tests/">
+    <Project Path="Bmage/Tests/Bit.Bmage.Benchmarks/Bit.Bmage.Benchmarks.csproj" />
+    <Project Path="Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
+    <Project Path="Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj" />
+    <Project Path="Bmage/Tests/Bit.Bmage.Tests.Mcp/Bit.Bmage.Tests.Mcp.csproj" />
+  </Folder>
   <Folder Name="/Bmotion/">
     <File Path="Bmotion/README.md" />
     <Project Path="Bmotion/Bit.Bmotion/Bit.Bmotion.csproj" />

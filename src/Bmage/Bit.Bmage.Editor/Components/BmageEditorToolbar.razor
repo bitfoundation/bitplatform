@@ -1,0 +1,116 @@
+﻿@using Bit.Bmage.Editor.Tools
+
+@*
+    The default toolbar. Purely a composition of the context's actions, so replacing it wholesale costs nothing:
+    every button here is one call a host can make itself.
+*@
+
+<div class="bmg-toolbar" role="toolbar" aria-label="@Context.Strings.ToolbarLabel" aria-orientation="horizontal">
+
+    <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.Tools">
+        @foreach (var (kind, label, icon) in Tools)
+        {
+            <button type="button"
+                    class="bmg-tool @(Context.Tool == kind ? "bmg-tool-active" : null)"
+                    title="@label"
+                    aria-label="@label"
+                    aria-pressed="@(Context.Tool == kind ? "true" : "false")"
+                    disabled="@(!Context.HasImage)"
+                    @onclick="() => Context.SetTool(kind)">
+                @((MarkupString)icon)
+            </button>
+        }
+    </div>
+
+    <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.Transform">
+        <button type="button" class="bmg-tool" title="@Context.Strings.RotateLeft" aria-label="@Context.Strings.RotateLeft"
+                disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="() => Context.RotateAsync(-90)">
+            @((MarkupString)Icons.RotateLeft)
+        </button>
+        <button type="button" class="bmg-tool" title="@Context.Strings.RotateRight" aria-label="@Context.Strings.RotateRight"
+                disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="() => Context.RotateAsync(90)">
+            @((MarkupString)Icons.RotateRight)
+        </button>
+        <button type="button" class="bmg-tool" title="@Context.Strings.FlipHorizontal" aria-label="@Context.Strings.FlipHorizontal"
+                disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="() => Context.FlipAsync(true)">
+            @((MarkupString)Icons.FlipHorizontal)
+        </button>
+        <button type="button" class="bmg-tool" title="@Context.Strings.FlipVertical" aria-label="@Context.Strings.FlipVertical"
+                disabled="@(!Context.HasImage || Context.IsBusy)" @onclick="() => Context.FlipAsync(false)">
+            @((MarkupString)Icons.FlipVertical)
+        </button>
+    </div>
+
+    <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.History">
+        <button type="button" class="bmg-tool" title="@Context.Strings.Undo" aria-label="@Context.Strings.Undo"
+                disabled="@(!Context.CanUndo)" @onclick="Context.Undo">
+            @((MarkupString)Icons.Undo)
+        </button>
+        <button type="button" class="bmg-tool" title="@Context.Strings.Redo" aria-label="@Context.Strings.Redo"
+                disabled="@(!Context.CanRedo)" @onclick="Context.Redo">
+            @((MarkupString)Icons.Redo)
+        </button>
+        <button type="button" class="bmg-tool" title="@Context.Strings.Reset" aria-label="@Context.Strings.Reset"
+                disabled="@(!Context.HasImage)" @onclick="Context.Reset">
+            @((MarkupString)Icons.Reset)
+        </button>
+    </div>
+
+    <div class="bmg-toolbar-spacer"></div>
+
+    <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.ZoomToFit">
+        <button type="button" class="bmg-tool" title="@Context.Strings.ZoomOut" aria-label="@Context.Strings.ZoomOut"
+                disabled="@(!Context.HasImage)" @onclick="() => Context.SetZoom(Context.Zoom / 1.25)">−</button>
+        <button type="button" class="bmg-tool bmg-zoom-value" title="@Context.Strings.ZoomToFit" aria-label="@Context.Strings.ZoomToFit"
+                disabled="@(!Context.HasImage)" @onclick="Context.FitToWindow">
+            @Context.Strings.FormatPercent(Context.Zoom)
+        </button>
+        <button type="button" class="bmg-tool" title="@Context.Strings.ZoomIn" aria-label="@Context.Strings.ZoomIn"
+                disabled="@(!Context.HasImage)" @onclick="() => Context.SetZoom(Context.Zoom * 1.25)">+</button>
+    </div>
+
+    @if (Context.Tool == EditorToolKind.Crop)
+    {
+        <div class="bmg-toolgroup" role="group" aria-label="@Context.Strings.Crop">
+            <button type="button" class="bmg-button bmg-button-primary" disabled="@Context.IsBusy" @onclick="Context.ApplyCropAsync">
+                @Context.Strings.ApplyCrop
+            </button>
+            <button type="button" class="bmg-button" @onclick="Context.CancelCrop">@Context.Strings.CancelCrop</button>
+        </div>
+    }
+
+    @if (ShowExport)
+    {
+        <button type="button" class="bmg-button bmg-button-primary" disabled="@(!Context.HasImage || Context.IsBusy)"
+                @onclick="() => Context.DownloadAsync(DownloadFileName)">
+            @Context.Strings.Download
+        </button>
+    }
+</div>
+
+@code {
+    /// <summary>The editor context supplying state and actions.</summary>
+    [Parameter, EditorRequired] public BmageEditorContext Context { get; set; } = default!;
+
+    /// <summary>Show the download button.</summary>
+    [Parameter] public bool ShowExport { get; set; } = true;
+
+    /// <summary>File name used by the download button.</summary>
+    [Parameter] public string DownloadFileName { get; set; } = "image";
+
+    private (EditorToolKind Kind, string Label, string Icon)[] Tools =>
+    [
+        (EditorToolKind.Select, Context.Strings.Select, Icons.Select),
+        (EditorToolKind.Pan, Context.Strings.Pan, Icons.Pan),
+        (EditorToolKind.Crop, Context.Strings.Crop, Icons.Crop),
+        (EditorToolKind.Draw, Context.Strings.Draw, Icons.Pen),
+        (EditorToolKind.Arrow, Context.Strings.Arrow, Icons.Arrow),
+        (EditorToolKind.Line, Context.Strings.Line, Icons.Line),
+        (EditorToolKind.Rectangle, Context.Strings.Rectangle, Icons.Rectangle),
+        (EditorToolKind.Ellipse, Context.Strings.Ellipse, Icons.Ellipse),
+        (EditorToolKind.Text, Context.Strings.Text, Icons.Text),
+        (EditorToolKind.Step, Context.Strings.Step, Icons.Step),
+        (EditorToolKind.Highlight, Context.Strings.Highlight, Icons.Highlight),
+        (EditorToolKind.Redact, Context.Strings.Redact, Icons.Redact),
+    ];
+}

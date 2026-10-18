@@ -1,0 +1,376 @@
+﻿@page "/metadata"
+@implements IDisposable
+@inject ImageLoader Loader
+@inject ImageExporter Exporter
+
+@* Metadata is where an image leaks the most about its owner and the least visibly, so the page
+   proves its claims rather than stating them: it exports the reader's photo (or a generated one
+   carrying a camera, a serial number and a location) under each of the three policies, decodes
+   every result again, and reports what actually survived in the bytes. *@
+
+<PageTitle>Metadata and privacy - Bit.Bmage</PageTitle>
+
+<h1>Metadata and privacy</h1>
+
+<p class="page-intro">
+    A photograph from a phone usually carries the location it was taken, the device's serial number
+    and the exact time. Pass the file through untouched and you have published all of that. Bmage
+    <strong>removes metadata by default</strong>; you have to ask for it to be kept.
+</p>
+
+<div class="demo-section">
+    <h2>See what survives</h2>
+    <p>
+        Drop a photo straight off a phone - or use a generated one that carries a camera, a serial
+        number and GPS coordinates. It is exported as a JPEG under each policy, and each export is
+        decoded again to read back what is really in it. Nothing is uploaded anywhere.
+    </p>
+
+    @if (_error is not null)
+    {
+        <div class="alert alert-error" role="alert">@_error</div>
+    }
+
+    <BmageDropZone Label="Drop a photo here to inspect its metadata" OnFilesSelected="OnFilesSelected" />
+    <div class="sample-row">
+        <button type="button" class="btn" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a photo with metadata</button>
+        @if (_busy)
+        {
+            <span class="working" role="status">Exporting under each policy&hellip;</span>
+        }
+    </div>
+
+    @if (_report is not null)
+    {
+        @if (_report.Original.Location is { } location)
+        {
+            <div class="alert alert-error metadata-warning" role="status">
+                This photo records where it was taken (@location). The default policy removes it on export.
+            </div>
+        }
+        else if (_report.Original.IsEmpty)
+        {
+            <div class="alert alert-info metadata-warning" role="status">
+                @_report.Name carries no EXIF metadata, so there is nothing for a policy to remove - try
+                a photo straight from a phone camera, or the generated one.
+            </div>
+        }
+
+        <div class="table-scroll metadata-report" tabindex="0" role="region" aria-label="Metadata by policy">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">Field</th>
+                        <th scope="col">In @_report.Name</th>
+                        <th scope="col"><code>Remove</code></th>
+                        <th scope="col"><code>StripSensitive</code></th>
+                        <th scope="col"><code>Preserve</code></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var field in Fields)
+                    {
+                        var original = field.Read(_report.Original);
+                        <tr>
+                            <th scope="row">@field.Label</th>
+                            <td>@(original ?? "—")</td>
+                            @foreach (var exported in _report.Exported)
+                            {
+                                var value = field.Read(exported);
+                                <td>
+                                    @if (original is null)
+                                    {
+                                        <span class="muted">—</span>
+                                    }
+                                    else if (value is null)
+                                    {
+                                        <span class="badge badge-neutral">removed</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge @(field.Sensitive ? "badge-no" : "badge-yes")">kept</span>
+                                    }
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="small muted">
+            Read back from the exported bytes, not predicted. A red <em>kept</em> is a field that can
+            identify a person or a place.
+        </p>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>The three policies</h2>
+    <CodeSnippet Code="@PolicySnippet" Language="C#" Expanded="true" />
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Metadata policies">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Policy</th><th scope="col">Keeps</th><th scope="col">Removes</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>Remove</code></th><td>nothing</td><td>EXIF, XMP, ICC profile, thumbnail</td></tr>
+                <tr><th scope="row"><code>StripSensitive</code></th><td>camera, lens, exposure, dates, copyright, description, ICC profile</td><td>GPS, serial numbers, owner name, user comments, maker notes, unique IDs, embedded thumbnail, XMP</td></tr>
+                <tr><th scope="row"><code>Preserve</code></th><td>everything the target format can carry</td><td>the embedded thumbnail, which would be stale</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        <code>StripSensitive</code> drops XMP entirely: XMP can carry location and device identifiers of
+        its own, and there is no reliable way to filter it field by field. All three policies reset the
+        stored orientation to normal and update the recorded dimensions, because the exported pixels
+        are already upright and already the new size - leaving a rotation flag on rotated pixels is how
+        images end up sideways twice.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Reading what is there</h2>
+    <CodeSnippet Code="@ReadSnippet" Language="C#" Expanded="true" />
+    <p>
+        The <a href="/headless">Headless API</a> page shows the pattern for warning users: read the
+        location, say it is there, and say what will happen to it.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Writing metadata</h2>
+    <CodeSnippet Code="@WriteSnippet" Language="C#" Expanded="true" />
+    <p>
+        <code>ExifValue.FromString</code> writes UTF-8. The EXIF specification calls the type ASCII, but
+        cameras and editors have written UTF-8 in these fields for years, and restricting to ASCII would
+        silently turn "&copy;" into "?" and mangle any name with an accent.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Orientation</h2>
+    <p>
+        Phones do not rotate pixels when you turn the device; they record a rotation flag. An image that
+        looks upright in a photo viewer appears sideways on a canvas unless that flag is applied. Bmage
+        applies it during decoding by default; with <code>AutoOrient = false</code> it is reported
+        instead, so you can decide.
+    </p>
+    <CodeSnippet Code="@OrientationSnippet" Language="C#" Expanded="true" />
+    <p>
+        The eight EXIF orientations form the dihedral group of the square, and
+        <code>OrientationMath</code> implements the algebra: <code>Then</code> composes two,
+        <code>Inverse</code> undoes one, <code>SwapsDimensions</code> says whether width and height
+        exchange, and <code>ToMatrix</code> gives the coordinate mapping.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>What each format can carry</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Metadata support by format">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Format</th><th scope="col">EXIF</th><th scope="col">ICC</th><th scope="col">XMP</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">JPEG</th><td>yes</td><td>yes</td><td>yes</td></tr>
+                <tr><th scope="row">PNG</th><td>yes (<code>eXIf</code>)</td><td>yes (<code>iCCP</code>)</td><td>yes (<code>iTXt</code>)</td></tr>
+                <tr><th scope="row">WebP</th><td>yes</td><td>yes</td><td>yes</td></tr>
+                <tr><th scope="row">AVIF</th><td>not written by this library</td><td>no</td><td>no</td></tr>
+                <tr><th scope="row">BMP, GIF</th><td>no</td><td>no</td><td>no</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Metadata is attached after encoding, by rewriting the container: the browser's encoders discard
+        it, so it is re-inserted in C# according to your policy. If a rewrite fails, the correctly
+        encoded image is returned without metadata rather than the whole export failing. Parsing is
+        defensive throughout - bad offsets, circular references and truncated data are ignored, never
+        thrown - because a corrupt EXIF block must never stop an image from loading.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>A checklist for user uploads</h2>
+    <ol>
+        <li>Leave the default <code>MetadataPolicy.Remove</code> unless you have a reason.</li>
+        <li>If you keep metadata for a gallery, use <code>StripSensitive</code>, not <code>Preserve</code>.</li>
+        <li>Tell users what is in their file before they publish it.</li>
+        <li>Leave <code>AutoOrient</code> on so the exported pixels match what the user saw.</li>
+        <li>Remember that redaction is about pixels, and metadata is a separate leak.</li>
+    </ol>
+</div>
+
+@code {
+    /// <summary>One row of the report: how to read a field, and whether it identifies a person or a place.</summary>
+    private sealed record Field(string Label, bool Sensitive, Func<ExifData, string?> Read);
+
+    /// <summary>The source's metadata and what each policy's export kept of it, in <see cref="Policies"/> order.</summary>
+    private sealed record Report(string Name, ExifData Original, ExifData[] Exported);
+
+    private static readonly MetadataPolicy[] Policies = [MetadataPolicy.Remove, MetadataPolicy.StripSensitive, MetadataPolicy.Preserve];
+
+    private static readonly Field[] Fields =
+    [
+        new("Camera", false, e => $"{e.Make} {e.Model}".Trim() is { Length: > 0 } c ? c : null),
+        new("Lens", false, e => e.LensModel),
+        new("ISO", false, e => e.Iso?.ToString()),
+        new("Taken", false, e => e.DateTaken?.ToString("yyyy-MM-dd HH:mm")),
+        new("Copyright", false, e => e.Copyright),
+        new("Serial number", true, e => e.Exif.Get(ExifTag.BodySerialNumber)?.GetString()),
+        new("Owner", true, e => e.Exif.Get(ExifTag.OwnerName)?.GetString()),
+        new("Location", true, e => e.Location?.ToString()),
+    ];
+
+    private Report? _report;
+    private bool _busy;
+    private string? _error;
+    private int _run;
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    private const string PolicySnippet = """
+        new ImageExportOptions { Metadata = MetadataPolicy.Remove }          // the default
+        new ImageExportOptions { Metadata = MetadataPolicy.StripSensitive }
+        new ImageExportOptions { Metadata = MetadataPolicy.Preserve }
+        """;
+
+    private const string ReadSnippet = """
+        using var image = await loader.LoadAsync(file);
+        var exif = image.Metadata?.Exif;
+
+        if (exif is not null)
+        {
+            Console.WriteLine($"{exif.Make} {exif.Model}");
+            Console.WriteLine($"Lens: {exif.LensModel}");
+            Console.WriteLine($"{exif.ExposureTime}s at f/{exif.FNumber}, ISO {exif.Iso}");
+            Console.WriteLine($"Taken {exif.DateTaken}");
+
+            if (exif.Location is { } location)
+                Console.WriteLine($"Location: {location.Latitude}, {location.Longitude}");
+        }
+
+        // Every tag stays reachable, typed accessor or not.
+        var artist = exif.Primary.Get(ExifTag.Artist)?.GetString();
+        var custom = exif.Exif.Get(0x9C9B)?.GetString();
+        """;
+
+    private const string WriteSnippet = """
+        var exif = new ExifData()
+            .WithPrimary(new ExifDirectory()
+                .With(ExifTag.Artist, ExifValue.FromString("Sam Rivera"))
+                .With(ExifTag.Copyright, ExifValue.FromString("© 2026 Sam Rivera")));
+
+        image.Metadata = new ImageMetadata(exif);
+
+        var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
+        {
+            Format = ImageFormat.Jpeg,
+            Metadata = MetadataPolicy.Preserve,
+        });
+        """;
+
+    private const string OrientationSnippet = """
+        await loader.LoadAsync(file);                                          // upright
+        await loader.LoadAsync(file, new DecodeOptions { AutoOrient = false }); // as stored
+
+        var orientation = image.Metadata!.Orientation;
+        if (orientation.SwapsDimensions()) { /* portrait photo stored as landscape */ }
+        """;
+
+    private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
+    {
+        if (files.Count == 0) return;
+        _error = null;
+        _busy = true;
+        try
+        {
+            var image = await Loader.LoadAsync(files[0], new DecodeOptions { FileName = files[0].Name });
+            await InspectAsync(image, files[0].Name);
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+            _busy = false;
+        }
+    }
+
+    private async Task UseSample()
+    {
+        _error = null;
+        _busy = true;
+        StateHasChanged();
+        await Task.Yield();
+
+        var image = SampleImages.Landscape(800, 533);
+        image.Metadata = new ImageMetadata(SampleExif());
+        await InspectAsync(image, "the generated photo");
+    }
+
+    /// <summary>Exports <paramref name="image"/> under every policy and reads each result back. Takes ownership of the image.</summary>
+    private async Task InspectAsync(ImageBuffer image, string name)
+    {
+        var run = ++_run;
+        try
+        {
+            var original = image.Metadata?.Exif ?? new ExifData();
+            var exported = new ExifData[Policies.Length];
+            for (var i = 0; i < Policies.Length; i++)
+            {
+                var encoded = await Exporter.EncodeAsync(image, new ImageExportOptions
+                {
+                    Format = ImageFormat.Jpeg,
+                    Quality = 0.85,
+                    Metadata = Policies[i],
+                });
+
+                // Decoded again from the exported bytes: the report is what the file contains, not
+                // what the policy is documented to do.
+                using var back = await Loader.LoadAsync(encoded.Data);
+                exported[i] = back.Metadata?.Exif ?? new ExifData();
+            }
+
+            if (run == _run) _report = new Report(name, original, exported);
+        }
+        catch (Exception ex) when (run == _run)
+        {
+            _error = Describe(ex);
+        }
+        finally
+        {
+            image.Dispose();
+            if (run == _run) _busy = false;
+            StateHasChanged();
+        }
+    }
+
+    /// <summary>
+    /// What a phone writes into a photo, give or take: who made the camera, how it was exposed, when,
+    /// the body's serial number, the owner's name, and where it was standing.
+    /// </summary>
+    private static ExifData SampleExif() => new ExifData()
+        .WithPrimary(new ExifDirectory()
+            .With(ExifTag.Make, ExifValue.FromString("Bmage"))
+            .With(ExifTag.Model, ExifValue.FromString("Demo Phone 15"))
+            .With(ExifTag.Copyright, ExifValue.FromString("© 2026 Sam Rivera")))
+        .WithExif(new ExifDirectory()
+            .With(ExifTag.DateTimeOriginal, ExifValue.FromString("2026:06:21 19:42:07"))
+            .With(ExifTag.Iso, ExifValue.FromShort(125))
+            .With(ExifTag.LensModel, ExifValue.FromString("Demo Phone 15 back camera 6.9mm f/1.8"))
+            .With(ExifTag.BodySerialNumber, ExifValue.FromString("DP15-0042-7731"))
+            .With(ExifTag.OwnerName, ExifValue.FromString("Sam Rivera")))
+        .WithGps(new ExifDirectory()
+            .With(ExifTag.GpsLatitudeRef, ExifValue.FromString("N"))
+            .With(ExifTag.GpsLatitude, ExifValue.FromRational((53, 1), (12, 1), (3720, 100)))
+            .With(ExifTag.GpsLongitudeRef, ExifValue.FromString("E"))
+            .With(ExifTag.GpsLongitude, ExifValue.FromRational((5, 1), (47, 1), (5280, 100))));
+
+    private static string Describe(Exception ex) => ex switch
+    {
+        ImageLimitExceededException => "That image is larger than this page allows.",
+        ImageDecodeException => "That file could not be read as an image.",
+        ImageCapabilityException c => c.Message,
+        _ => $"Something went wrong: {ex.Message}",
+    };
+
+    public void Dispose() => _run++;
+}
