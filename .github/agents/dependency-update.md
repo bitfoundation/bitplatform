@@ -260,9 +260,10 @@ EF Core package version. Likewise the `npx playwright@<version>` command in the 
 `Microsoft.Playwright.MSTest.v4`: a remote Playwright server of any other version refuses the client, and
 every test that runs on it fails at connect.
 
-`src/global.json` is `rollForward: disable` and tracks the newest SDK. The two template
-`global.json` files are `10.0.100` + `latestFeature` deliberately — they must accept any 10.0.x on a
-consumer's machine. Do not "update" them.
+`src/global.json` is `rollForward: disable` and tracks the newest SDK. While .NET 11 is a release
+candidate, the two template `global.json` files pin the same RC SDK, also `rollForward: disable`, and
+move with it. Once .NET 11 ships they go back to `11.0.100` + `latestFeature`, so they accept any
+11.0.x on a consumer's machine.
 
 ### Container images
 
