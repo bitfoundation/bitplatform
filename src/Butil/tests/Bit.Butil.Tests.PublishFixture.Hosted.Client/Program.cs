@@ -1,4 +1,4 @@
-using Bit.Butil;
+﻿using Bit.Butil;
 using ButilTests.PublishFixture.Hosted.Client;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
