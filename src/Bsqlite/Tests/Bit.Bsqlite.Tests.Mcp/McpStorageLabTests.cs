@@ -222,6 +222,19 @@ public class McpStorageLabTests
     }
 
     [TestMethod]
+    public async Task A_name_with_a_line_break_is_refused_before_it_reaches_the_log()
+    {
+        var database = await PlanAsync(new() { ["databaseName"] = "app.db\nWarning: forged" });
+        var binding = await PlanAsync(new() { ["existingBinding"] = "opfs\r\nWarning: forged" });
+
+        Assert.IsFalse(database.Opens);
+        Assert.Contains("databaseName contains a control character", database.Error!);
+        Assert.IsEmpty(database.Log);
+        Assert.Contains("existingBinding contains a control character", binding.Error!);
+        Assert.IsEmpty(binding.Log);
+    }
+
+    [TestMethod]
     public async Task The_configuration_is_the_csharp_that_produces_the_plan()
     {
         var plan = await PlanAsync(new() { ["candidates"] = "opfs, indexeddb, in-memory", ["allowNonPersistentFallback"] = true, ["databaseName"] = "orders.db" });

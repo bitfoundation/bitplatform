@@ -469,7 +469,13 @@ public static class BsqliteStorageLab
 
         if (binding?.Length > MaxNameLength) return $"existingBinding is longer than a provider name can usefully be ({MaxNameLength} characters).";
 
-        return database.Length > 256 ? "databaseName is longer than 256 characters." : null;
+        // Both reach the library's log lines, which this tool reports back: a line break in either would forge
+        // lines the library never wrote. The candidate lists cannot carry one - Names splits on it.
+        if (binding?.Any(char.IsControl) is true) return "existingBinding contains a control character, which no provider name has.";
+
+        if (database.Length > 256) return "databaseName is longer than 256 characters.";
+
+        return database.Any(char.IsControl) ? "databaseName contains a control character, which no database name should." : null;
     }
 
     /// <summary>A list of provider names as a caller writes one: "opfs, indexeddb", "opfs indexeddb" or "opfs;indexeddb".</summary>
