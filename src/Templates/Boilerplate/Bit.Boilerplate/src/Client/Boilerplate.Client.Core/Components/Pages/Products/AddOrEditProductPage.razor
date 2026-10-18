@@ -69,13 +69,14 @@
 
                     <BitFileUpload @ref="fileUploadRef"
                                    AutoReset
-                                   AutoUpload
+                                   ShowPreview
                                    HideFileView
                                    Accept="image/*"
                                    Style="max-width:unset;"
                                    MaxSize="1024 * 1024 * 10"
                                    AllowedExtensions="@(["image/*"])"
                                    UploadUrlProvider="GetUploadUrl"
+                                   OnFilesChange="WrapHandled((BitFileInfo[] files) => HandleOnFilesChange(files))"
                                    OnUploading="() => isManagingFile = true"
                                    OnInvalid="HandleOnInvalid"
                                    OnUploadFailed="HandleOnUploadFailed"

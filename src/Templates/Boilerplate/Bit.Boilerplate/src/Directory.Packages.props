@@ -9,6 +9,7 @@
         <PackageVersion Include="Bit.BlazorUI.Icons" Version="10.7.0-pre-02" />
         <PackageVersion Include="Bit.BlazorUI.Assets" Version="10.7.0-pre-02" />
         <PackageVersion Include="Bit.BlazorUI.Extras" Version="10.7.0-pre-02" />
+        <PackageVersion Include="Bit.Bmage.Editor" Version="10.7.0-pre-02" />
         <PackageVersion Include="Bit.Bswup" Version="10.7.0-pre-02" />
         <PackageVersion Include="Bit.Minifier" Version="10.7.0-pre-02" />
         <PackageVersion Include="Bit.CodeAnalyzers" Version="10.7.0-pre-02" />

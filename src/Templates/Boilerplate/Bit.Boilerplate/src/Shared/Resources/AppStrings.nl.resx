@@ -2213,4 +2213,34 @@ Na het bereiken van {0} zullen extra aanmeldingen verminderde functies hebben.</
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>We hebben een code naar {0} en {1} gestuurd.</value>
   </data>
+    <data name="EditImage" xml:space="preserve">
+    <value>Afbeelding bewerken</value>
+  </data>
+    <data name="Crop" xml:space="preserve">
+    <value>Bijsnijden</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>Bijsnijden toepassen</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>Linksom draaien</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>Rechtsom draaien</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>Ongedaan maken</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>Opnieuw</value>
+  </data>
+    <data name="ImageEditorCropHint" xml:space="preserve">
+    <value>Sleep over de afbeelding om het deel te markeren dat u wilt behouden.</value>
+  </data>
+    <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
+    <value>Deze afbeelding kan hier niet worden geopend om te bewerken. U kunt hem nog steeds ongewijzigd uploaden.</value>
+  </data>
+    <data name="UploadImageAsIs" xml:space="preserve">
+    <value>Ongewijzigd uploaden</value>
+  </data>
 </root>
