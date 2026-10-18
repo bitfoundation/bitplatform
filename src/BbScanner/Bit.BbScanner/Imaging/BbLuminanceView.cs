@@ -108,23 +108,12 @@ public readonly struct BbLuminanceView
     }
 
     /// <summary>Returns the sub-region described by a normalized <see cref="BbScanRegion"/>.</summary>
-    /// <param name="region">Region in normalized coordinates.</param>
+    /// <param name="region">Region in normalized coordinates, resolved against this window's size.</param>
     public BbLuminanceView Crop(BbScanRegion region)
     {
-        if (region.IsFull)
-        {
-            return this;
-        }
-
-        region = region.Normalized();
-
         // A region whose edge sits exactly on the far side of the frame, or one with no area,
-        // still has to yield a window inside the buffer: the pipeline treats "nothing to scan"
-        // as a frame with no symbol, never as an exception.
-        var x = Math.Clamp((int)(region.X * Width), 0, Math.Max(0, Width - 1));
-        var y = Math.Clamp((int)(region.Y * Height), 0, Math.Max(0, Height - 1));
-        var w = Math.Clamp((int)(region.Width * Width), 1, Math.Max(1, Width - x));
-        var h = Math.Clamp((int)(region.Height * Height), 1, Math.Max(1, Height - y));
-        return Crop(x, y, w, h);
+        // still yields a window inside the buffer.
+        var (x, y, w, h) = region.ToPixels(Width, Height);
+        return x == 0 && y == 0 && w == Width && h == Height ? this : Crop(x, y, w, h);
     }
 }

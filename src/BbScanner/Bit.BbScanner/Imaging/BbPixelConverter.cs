@@ -103,6 +103,10 @@ public static class BbPixelConverter
     /// <param name="height">Source height in pixels.</param>
     /// <param name="format">Source pixel layout.</param>
     /// <param name="step">Subsampling factor; 1 means no downsampling.</param>
+    /// <param name="sourceStride">
+    /// Source row stride in bytes, or 0 to derive it from the width. A stride wider than the row
+    /// converts a window of a larger image without copying it out first.
+    /// </param>
     /// <returns>The dimensions of the produced grayscale image.</returns>
     public static (int Width, int Height) ToGrayscaleDownsampled(
         ReadOnlySpan<byte> source,
@@ -110,17 +114,18 @@ public static class BbPixelConverter
         int width,
         int height,
         BbPixelFormat format,
-        int step)
+        int step,
+        int sourceStride = 0)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(step, 1);
         if (step == 1)
         {
-            ToGrayscale(source, destination, width, height, format);
+            ToGrayscale(source, destination, width, height, format, sourceStride);
             return (width, height);
         }
 
         var bpp = BytesPerPixel(format);
-        var stride = width * bpp;
+        var stride = sourceStride > 0 ? sourceStride : width * bpp;
         var outWidth = width / step;
         var outHeight = height / step;
 
@@ -138,7 +143,7 @@ public static class BbPixelConverter
 
         for (var y = 0; y < outHeight; y++)
         {
-            var row = source.Slice(y * step * stride, stride);
+            var row = source.Slice(y * step * stride, width * bpp);
             var target = destination.Slice(y * outWidth, outWidth);
             if (format == BbPixelFormat.Gray8)
             {

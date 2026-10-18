@@ -22,6 +22,16 @@ public static class BbScannerDecodeLab
 
     private const int MaxRawBytes = 64;
 
+    /// <summary>
+    /// The largest frame the lab renders, after framing and rotation. The payload and module size limits alone do not
+    /// bound it - a thousand character Code 128 at twelve pixels a module is 130,000 pixels wide - and every transform
+    /// and both decodes scale with it, so without this one anonymous request could hold the server for minutes.
+    /// Four megapixels holds the largest QR code, version 40, at ten pixels a module upright or seven rotated 45 degrees.
+    /// </summary>
+    private const int MaxFramePixels = 4 * 1024 * 1024;
+
+    private const int MaxFrameEdge = 4096;
+
     private static readonly PropertyInfo[] _metadataProperties = typeof(BbBarcodeResultMetadata).GetProperties(BindingFlags.Public | BindingFlags.Instance);
 
     public static BbScannerDecodeReportDto Inspect(string? format, string? text, int moduleSize, double rotation, double blur)
@@ -51,47 +61,57 @@ public static class BbScannerDecodeLab
         rotation = double.IsFinite(rotation) ? Math.Clamp(rotation, -360, 360) : 0;
         blur = double.IsFinite(blur) ? Math.Clamp(blur, 0, 5) : 0;
 
-        BbLuminanceBuffer symbol;
+        BbBitMatrix? matrix;
+        bool[]? modules;
         try
         {
             payload = Complete(symbology, payload);
-            symbol = Render(symbology, payload, moduleSize);
+            (matrix, modules) = Encode(symbology, payload);
         }
         catch (ArgumentException ex)
         {
             return Failed(dto.Name, payload, ex.Message);
         }
 
-        using (symbol)
+        // The size is worked out from the encoded modules before a single pixel is allocated.
+        var (symbolWidth, symbolHeight) = SymbolSize(matrix, modules, moduleSize);
+        var (frameWidth, frameHeight) = (Math.Max(640, symbolWidth + 80), Math.Max(480, symbolHeight + 80));
+        var (outputWidth, outputHeight) = RotatedSize(frameWidth, frameHeight, rotation);
+        if (outputWidth > MaxFrameEdge || outputHeight > MaxFrameEdge || (long)outputWidth * outputHeight > MaxFramePixels)
         {
-            // A camera frame rather than a tightly cropped symbol: the detectors look for a symbol, so the lab gives
-            // them one to find, with background around it as a real frame has.
-            using var framed = ImageTransforms.Frame(symbol, Math.Max(640, symbol.Width + 80), Math.Max(480, symbol.Height + 80));
-            using var rotated = rotation == 0 ? null : ImageTransforms.Rotate(framed, rotation);
-            using var blurred = blur == 0 ? null : ImageTransforms.Blur(rotated ?? framed, blur);
-            var frame = blurred ?? rotated ?? framed;
-
-            var live = new BbScannerOptions { Formats = symbology, DuplicateSuppressionWindow = TimeSpan.Zero };
-
-            var still = BbScannerOptions.ForStillImages();
-            still.Formats = symbology;
-
-            BbScannerDecodeAttemptDto[] attempts = [Decode(frame, live, "live", payload), Decode(frame, still, "still", payload)];
-
-            return new BbScannerDecodeReportDto
-            {
-                Format = dto.Name,
-                Text = payload,
-                Encoded = true,
-                FrameWidth = frame.Width,
-                FrameHeight = frame.Height,
-                ModuleSize = moduleSize,
-                Rotation = rotation,
-                Blur = blur,
-                Attempts = attempts,
-                Notes = Notes(dto, symbology, payload, rotation, attempts)
-            };
+            matrix?.Dispose();
+            return TooLarge(dto.Name, payload, moduleSize, outputWidth, outputHeight);
         }
+
+        using var symbol = Render(matrix, modules, moduleSize);
+
+        // A camera frame rather than a tightly cropped symbol: the detectors look for a symbol, so the lab gives
+        // them one to find, with background around it as a real frame has.
+        using var framed = ImageTransforms.Frame(symbol, frameWidth, frameHeight);
+        using var rotated = rotation == 0 ? null : ImageTransforms.Rotate(framed, rotation);
+        using var blurred = blur == 0 ? null : ImageTransforms.Blur(rotated ?? framed, blur);
+        var frame = blurred ?? rotated ?? framed;
+
+        var live = new BbScannerOptions { Formats = symbology, DuplicateSuppressionWindow = TimeSpan.Zero };
+
+        var still = BbScannerOptions.ForStillImages();
+        still.Formats = symbology;
+
+        BbScannerDecodeAttemptDto[] attempts = [Decode(frame, live, "live", payload), Decode(frame, still, "still", payload)];
+
+        return new BbScannerDecodeReportDto
+        {
+            Format = dto.Name,
+            Text = payload,
+            Encoded = true,
+            FrameWidth = frame.Width,
+            FrameHeight = frame.Height,
+            ModuleSize = moduleSize,
+            Rotation = rotation,
+            Blur = blur,
+            Attempts = attempts,
+            Notes = Notes(dto, symbology, payload, rotation, attempts)
+        };
     }
 
     private static BbScannerDecodeReportDto Failed(string format, string text, string error) => new()
@@ -101,6 +121,17 @@ public static class BbScannerDecodeLab
         Encoded = false,
         Error = error,
         Notes = ["The payload could not be encoded, so nothing was decoded. The error is the encoder's: change the payload, not the scanner."]
+    };
+
+    private static BbScannerDecodeReportDto TooLarge(string format, string text, int moduleSize, int width, int height) => new()
+    {
+        Format = format,
+        Text = text.Length > 40 ? text[..40] + "..." : text,
+        Encoded = false,
+        Error = $"At {moduleSize} pixels a module the frame would be {width}x{height} pixels; the lab renders at most " +
+                $"{MaxFrameEdge} pixels a side and {MaxFramePixels / (1024 * 1024)} megapixels.",
+        Notes = ["Nothing was rendered or decoded. Lower moduleSize, shorten the payload, or rotate by a multiple of 90 degrees, " +
+                 "which keeps the frame from growing to hold the rotated symbol."]
     };
 
     /// <summary>
@@ -120,33 +151,49 @@ public static class BbScannerDecodeLab
         };
     }
 
-    private static BbLuminanceBuffer Render(BbBarcodeFormat format, string payload, int moduleSize)
+    private static (BbBitMatrix? Matrix, bool[]? Modules) Encode(BbBarcodeFormat format, string payload) => format switch
     {
-        if (format is BbBarcodeFormat.QrCode or BbBarcodeFormat.DataMatrix or BbBarcodeFormat.Pdf417)
-        {
-            using var matrix = format switch
-            {
-                BbBarcodeFormat.QrCode => QrEncoder.Encode(payload, BbQrErrorCorrectionLevel.M, maskPattern: 2),
-                BbBarcodeFormat.DataMatrix => DataMatrixEncoder.Encode(payload),
-                _ => Pdf417Encoder.Encode(payload, rowHeightModules: 4),
-            };
+        BbBarcodeFormat.QrCode => (QrEncoder.Encode(payload, BbQrErrorCorrectionLevel.M, maskPattern: 2), null),
+        BbBarcodeFormat.DataMatrix => (DataMatrixEncoder.Encode(payload), null),
+        BbBarcodeFormat.Pdf417 => (Pdf417Encoder.Encode(payload, rowHeightModules: 4), null),
+        BbBarcodeFormat.Code128 => (null, LinearEncoders.Code128(payload)),
+        BbBarcodeFormat.Code39 => (null, LinearEncoders.Code39(payload)),
+        BbBarcodeFormat.Ean13 => (null, LinearEncoders.Ean13(payload)),
+        BbBarcodeFormat.Ean8 => (null, LinearEncoders.Ean8(payload)),
+        BbBarcodeFormat.UpcA => (null, LinearEncoders.UpcA(payload)),
+        BbBarcodeFormat.UpcE => (null, LinearEncoders.UpcE(payload)),
+        BbBarcodeFormat.Itf => (null, LinearEncoders.Itf(payload)),
+        _ => throw new ArgumentException($"The lab has no encoder for {format}.", nameof(format)),
+    };
 
-            return SyntheticImage.FromMatrix(matrix, scale: moduleSize);
+    // The quiet zones and the linear height match the defaults Render draws with.
+    private static (int Width, int Height) SymbolSize(BbBitMatrix? matrix, bool[]? modules, int moduleSize) => matrix is not null
+        ? ((matrix.Width + 8) * moduleSize, (matrix.Height + 8) * moduleSize)
+        : ((modules!.Length + 24) * moduleSize, LinearHeight(moduleSize));
+
+    private static int LinearHeight(int moduleSize) => Math.Max(60, moduleSize * 30);
+
+    /// <summary>The size <see cref="ImageTransforms.Rotate"/> gives a frame so that the whole rotated frame fits.</summary>
+    private static (int Width, int Height) RotatedSize(int width, int height, double degrees)
+    {
+        if (degrees == 0) return (width, height);
+
+        var radians = degrees * Math.PI / 180.0;
+        var (cos, sin) = (Math.Abs(Math.Cos(radians)), Math.Abs(Math.Sin(radians)));
+        return ((int)Math.Ceiling((width * cos) + (height * sin)), (int)Math.Ceiling((width * sin) + (height * cos)));
+    }
+
+    private static BbLuminanceBuffer Render(BbBitMatrix? matrix, bool[]? modules, int moduleSize)
+    {
+        if (matrix is not null)
+        {
+            using (matrix)
+            {
+                return SyntheticImage.FromMatrix(matrix, scale: moduleSize);
+            }
         }
 
-        var modules = format switch
-        {
-            BbBarcodeFormat.Code128 => LinearEncoders.Code128(payload),
-            BbBarcodeFormat.Code39 => LinearEncoders.Code39(payload),
-            BbBarcodeFormat.Ean13 => LinearEncoders.Ean13(payload),
-            BbBarcodeFormat.Ean8 => LinearEncoders.Ean8(payload),
-            BbBarcodeFormat.UpcA => LinearEncoders.UpcA(payload),
-            BbBarcodeFormat.UpcE => LinearEncoders.UpcE(payload),
-            BbBarcodeFormat.Itf => LinearEncoders.Itf(payload),
-            _ => throw new ArgumentException($"The lab has no encoder for {format}.", nameof(format)),
-        };
-
-        return SyntheticImage.FromLinear(modules, scale: moduleSize, height: Math.Max(60, moduleSize * 30));
+        return SyntheticImage.FromLinear(modules!, scale: moduleSize, height: LinearHeight(moduleSize));
     }
 
     private static BbScannerDecodeAttemptDto Decode(BbLuminanceBuffer frame, BbScannerOptions options, string name, string payload)

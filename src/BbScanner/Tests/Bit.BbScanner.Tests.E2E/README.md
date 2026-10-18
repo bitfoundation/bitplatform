@@ -46,7 +46,9 @@ dotnet test --filter "FullyQualifiedName~.ScannerInterfaceTests."
 dotnet test --filter "FullyQualifiedName~DecodesEverySymbologyInTheClip"
 ```
 
-CI does the same in Release (`.github/workflows/bit.ci.BbScanner.yml`):
+CI runs the suite in `.github/workflows/bit.ci.BbScanner.e2e.yml`, which only runs when started by hand (Actions >
+"bit platform CI - BbScanner E2E" > Run workflow). The pull-request pipeline, `bit.ci.BbScanner.yml`, runs the build,
+decoder, component and MCP tests only. The E2E workflow does the same as above, in Release:
 
 ```bash
 dotnet build src/BbScanner/Bit.BbScanner.Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release

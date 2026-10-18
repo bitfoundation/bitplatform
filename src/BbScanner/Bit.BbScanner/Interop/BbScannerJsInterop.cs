@@ -108,16 +108,24 @@ internal static partial class BbScannerJsInterop
     [JSImport("dispose", ModuleName)]
     internal static partial void DisposeSession(string sessionId);
 
+    [JSImport("isTrackEnded", ModuleName)]
+    internal static partial bool IsTrackEnded(string sessionId);
+
     [JSImport("prepareImageFromInput", ModuleName)]
     internal static partial Task<int> PrepareImageFromInputAsync(
         string sessionId,
         string inputElementId,
+        int requestId,
         int maxDimension);
 
     [JSImport("readPrepared", ModuleName)]
     internal static partial int ReadPrepared(
         string sessionId,
+        int requestId,
         [JSMarshalAs<JSType.MemoryView>] Span<byte> buffer);
+
+    [JSImport("releasePrepared", ModuleName)]
+    internal static partial void ReleasePrepared(string sessionId, int requestId);
 
     [JSImport("click", ModuleName)]
     internal static partial void Click(string elementId);

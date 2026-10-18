@@ -4,8 +4,9 @@
 // jobs left here are the ones the browser will not let managed code do at all, which are opening
 // a camera, keeping a <video> element fed, and copying the pixels of the latest frame.
 //
-// The pixel copy writes straight into a .NET owned buffer through a MemoryView, so a frame
-// crosses the boundary once, with no intermediate array, no JSON and no base64.
+// A frame is read back into one array the session keeps for its whole life, and copied from
+// there into a .NET owned buffer through a MemoryView: no JSON, no base64, and no allocation per
+// frame, so continuous scanning leaves the JavaScript heap as it found it.
 
 // ---- Contracts shared with the C# interop ----------------------------------------------------------------
 
@@ -72,12 +73,24 @@ type ScanCanvas = HTMLCanvasElement | OffscreenCanvas;
 
 type ScanContext = CanvasRenderingContext2D | OffscreenCanvasRenderingContext2D;
 
+// The GPU frame path: the video is drawn into a WebGL canvas and read back with readPixels, which, unlike the 2D
+// canvas's getImageData, writes into an array the caller supplies.
+interface GlReadback {
+    canvas: ScanCanvas;
+    gl: WebGLRenderingContext;
+    texture: WebGLTexture;
+    pixels: Uint8Array;
+    width: number;
+    height: number;
+}
+
 interface Session {
     id: string;
     generation: number;
     stream: MediaStream | null;
     track: MediaStreamTrack | null;
     video: HTMLVideoElement | null;
+    readback: GlReadback | null;
     canvas: ScanCanvas | null;
     ctx: ScanContext | null;
     canvasWidth: number;
@@ -93,7 +106,9 @@ interface Session {
     viewHeight: number;
     videoSizeVersion: number;
     viewSizeVersion: number;
-    prepared: Uint8ClampedArray | null;
+    // Still images waiting to be read, keyed by the request that prepared them: two selections in flight at once
+    // must never hand each other's pixels over.
+    prepared: Map<number, Uint8ClampedArray>;
 }
 
 const state = {
@@ -115,6 +130,7 @@ function getSession(id: string): Session {
             stream: null,
             track: null,
             video: null,
+            readback: null,
             canvas: null,
             ctx: null,
             canvasWidth: 0,
@@ -130,7 +146,7 @@ function getSession(id: string): Session {
             viewHeight: 0,
             videoSizeVersion: 0,
             viewSizeVersion: 0,
-            prepared: null,
+            prepared: new Map<number, Uint8ClampedArray>(),
         };
         state.sessions.set(id, session);
     }
@@ -205,11 +221,146 @@ function getReadbackContext(canvas: ScanCanvas): ScanContext | null {
     return canvas.getContext('2d', { willReadFrequently: true, alpha: false }) as ScanContext | null;
 }
 
+// The texture coordinate runs bottom to top while readPixels returns the bottom row first, so the two flips cancel
+// and the array comes out top row first, the way the decoder reads it, without a flip pass on either side.
+const READBACK_VERTEX_SHADER =
+    'attribute vec2 p;varying vec2 t;void main(){t=p*0.5+0.5;gl_Position=vec4(p,0.0,1.0);}';
+
+// mediump cannot address every texel of a wide frame on some mobile GPUs, so highp is used wherever it exists.
+const READBACK_FRAGMENT_SHADER =
+    '#ifdef GL_FRAGMENT_PRECISION_HIGH\nprecision highp float;\n#else\nprecision mediump float;\n#endif\n'
+    + 'uniform sampler2D s;varying vec2 t;void main(){gl_FragColor=texture2D(s,t);}';
+
+function compileShader(gl: WebGLRenderingContext, type: number, source: string): WebGLShader | null {
+    const shader = gl.createShader(type);
+    if (!shader) {
+        return null;
+    }
+
+    gl.shaderSource(shader, source);
+    gl.compileShader(shader);
+    return gl.getShaderParameter(shader, gl.COMPILE_STATUS) ? shader : null;
+}
+
+function loseContext(gl: WebGLRenderingContext): void {
+    // Browsers cap the number of live WebGL contexts per page, so one that is finished with is given back now
+    // rather than whenever the collector notices it.
+    const extension = gl.getExtension('WEBGL_lose_context');
+    if (extension) {
+        extension.loseContext();
+    }
+}
+
+function createReadback(width: number, height: number): GlReadback | null {
+    const canvas = createCanvas(width, height);
+    let gl: WebGLRenderingContext | null = null;
+    try {
+        gl = canvas.getContext('webgl', {
+            alpha: false,
+            antialias: false,
+            depth: false,
+            stencil: false,
+            premultipliedAlpha: false,
+            preserveDrawingBuffer: false,
+        }) as WebGLRenderingContext | null;
+    } catch {
+        gl = null;
+    }
+
+    if (!gl) {
+        return null;
+    }
+
+    const vertex = compileShader(gl, gl.VERTEX_SHADER, READBACK_VERTEX_SHADER);
+    const fragment = compileShader(gl, gl.FRAGMENT_SHADER, READBACK_FRAGMENT_SHADER);
+    const program = gl.createProgram();
+    const quad = gl.createBuffer();
+    const texture = gl.createTexture();
+    if (!vertex || !fragment || !program || !quad || !texture) {
+        loseContext(gl);
+        return null;
+    }
+
+    gl.attachShader(program, vertex);
+    gl.attachShader(program, fragment);
+    gl.linkProgram(program);
+    if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+        loseContext(gl);
+        return null;
+    }
+
+    gl.useProgram(program);
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+    const position = gl.getAttribLocation(program, 'p');
+    gl.enableVertexAttribArray(position);
+    gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
+    // A camera frame is rarely a power of two on either side, which WebGL 1 only samples with edge clamping and
+    // without mipmaps.
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    gl.viewport(0, 0, width, height);
+
+    return { canvas, gl, texture, pixels: new Uint8Array(width * height * 4), width, height };
+}
+
+function releaseReadback(session: Session): void {
+    if (session.readback) {
+        loseContext(session.readback.gl);
+        session.readback = null;
+    }
+}
+
+/** Draws the current video frame through WebGL into the readback's own array. Returns false if the GPU path failed. */
+function readWithGl(readback: GlReadback, video: HTMLVideoElement): boolean {
+    const gl = readback.gl;
+    if (gl.isContextLost()) {
+        return false;
+    }
+
+    try {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, video);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        gl.readPixels(0, 0, readback.width, readback.height, gl.RGBA, gl.UNSIGNED_BYTE, readback.pixels);
+    } catch {
+        return false;
+    }
+
+    return gl.getError() === gl.NO_ERROR;
+}
+
 function ensureCanvas(session: Session, width: number, height: number): void {
-    if (session.canvas && session.canvasWidth === width && session.canvasHeight === height) {
+    if ((session.readback || session.canvas) && session.canvasWidth === width && session.canvasHeight === height) {
         return;
     }
 
+    releaseReadback(session);
+    session.canvas = null;
+    session.ctx = null;
+    session.canvasWidth = width;
+    session.canvasHeight = height;
+
+    // WebGL is preferred because it reads a frame back without allocating; the 2D canvas is the fallback where
+    // WebGL is missing, blocked, or (as on some headless hosts) has no GPU behind it.
+    session.readback = createReadback(width, height);
+    if (!session.readback) {
+        ensure2dCanvas(session);
+    }
+}
+
+function ensure2dCanvas(session: Session): void {
+    if (session.ctx) {
+        return;
+    }
+
+    const width = session.canvasWidth;
+    const height = session.canvasHeight;
     session.canvas = createCanvas(width, height);
 
     if (session.canvas.width !== width) {
@@ -221,8 +372,6 @@ function ensureCanvas(session: Session, width: number, height: number): void {
     }
 
     session.ctx = getReadbackContext(session.canvas);
-    session.canvasWidth = width;
-    session.canvasHeight = height;
 }
 
 function scheduleFrameCallback(session: Session): void {
@@ -358,7 +507,8 @@ export async function start(sessionId: string, videoElementId: string, deviceId:
 
     const video = document.getElementById(videoElementId) as HTMLVideoElement | null;
     if (!video) {
-        throw new Error('NotFoundError: the scanner video element is not in the document.');
+        // Not NotFoundError: that is getUserMedia's name for a missing camera, and this is a page problem.
+        throw new Error('InvalidStateError: the scanner video element is not in the document.');
     }
 
     const videoConstraints: MediaTrackConstraints = {};
@@ -487,11 +637,11 @@ export function configure(sessionId: string, width: number, height: number): voi
  */
 export function grabFrame(sessionId: string, buffer: MemoryViewLike): number {
     const session = state.sessions.get(sessionId);
-    if (!session || !session.video || !session.ctx) {
+    if (!session || !session.video || (!session.readback && !session.ctx)) {
         return 0;
     }
 
-    if (session.trackEnded || (session.track && session.track.readyState === 'ended')) {
+    if (isEnded(session)) {
         return FRAME_TRACK_ENDED;
     }
 
@@ -510,15 +660,41 @@ export function grabFrame(sessionId: string, buffer: MemoryViewLike): number {
         return FRAME_BUFFER_TOO_SMALL;
     }
 
-    session.ctx.drawImage(session.video, 0, 0, width, height);
-    const data = session.ctx.getImageData(0, 0, width, height).data;
-    buffer.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+    if (session.readback && !readWithGl(session.readback, session.video)) {
+        // The context was lost or the driver refused the upload. The 2D canvas allocates a frame's worth on every
+        // read, but it always works, and a scanner that keeps reading beats one that stops.
+        releaseReadback(session);
+        ensure2dCanvas(session);
+    }
+
+    if (session.readback) {
+        buffer.set(session.readback.pixels);
+    } else if (session.ctx) {
+        session.ctx.drawImage(session.video, 0, 0, width, height);
+        const data = session.ctx.getImageData(0, 0, width, height).data;
+        buffer.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
+    } else {
+        return 0;
+    }
 
     if (session.usesFrameCallback) {
         session.hasNewFrame = false;
     }
 
-    return data.byteLength;
+    return required;
+}
+
+function isEnded(session: Session): boolean {
+    return session.trackEnded || (!!session.track && session.track.readyState === 'ended');
+}
+
+/**
+ * Reports whether the camera track has ended. A paused scanner grabs no frames, so it asks this instead to notice
+ * a camera that was unplugged or revoked while it was paused.
+ */
+export function isTrackEnded(sessionId: string): boolean {
+    const session = state.sessions.get(sessionId);
+    return !!session && isEnded(session);
 }
 
 /** Turns the torch on or off. Returns whether the request was accepted. */
@@ -577,7 +753,8 @@ export function dispose(sessionId: string): void {
     }
 
     releaseStream(session);
-    session.prepared = null;
+    releaseReadback(session);
+    session.prepared.clear();
     session.canvas = null;
     session.ctx = null;
     session.video = null;
@@ -586,10 +763,11 @@ export function dispose(sessionId: string): void {
 
 /**
  * Decodes the first file selected in the given <input type="file"> into a pixel buffer held on
- * the JS side, scaled so that neither edge exceeds maxDimension.
+ * the JS side under requestId, scaled so that neither edge exceeds maxDimension.
  * Returns the dimensions packed as (width << 16) | height, or 0 when there is nothing to read.
  */
-export async function prepareImageFromInput(sessionId: string, inputElementId: string, maxDimension: number): Promise<number> {
+export async function prepareImageFromInput(sessionId: string, inputElementId: string, requestId: number,
+                                            maxDimension: number): Promise<number> {
     const input = document.getElementById(inputElementId) as HTMLInputElement | null;
     if (!input || !input.files || input.files.length === 0) {
         return 0;
@@ -605,7 +783,7 @@ export async function prepareImageFromInput(sessionId: string, inputElementId: s
         // still works.
     }
 
-    return await prepareImageFromBlob(sessionId, file, maxDimension);
+    return await prepareImageFromBlob(sessionId, requestId, file, maxDimension);
 }
 
 async function decodeBitmap(blob: Blob): Promise<ImageBitmap> {
@@ -623,11 +801,17 @@ async function decodeBitmap(blob: Blob): Promise<ImageBitmap> {
 }
 
 /** Decodes an image blob the same way as prepareImageFromInput. */
-export async function prepareImageFromBlob(sessionId: string, blob: Blob, maxDimension: number): Promise<number> {
+export async function prepareImageFromBlob(sessionId: string, requestId: number, blob: Blob, maxDimension: number): Promise<number> {
     const session = getSession(sessionId);
     const bitmap = await decodeBitmap(blob);
 
     try {
+        // A session disposed while the image was decoding wants nothing back, and storing into it would keep the
+        // pixels alive with nobody left to read them.
+        if (state.sessions.get(sessionId) !== session) {
+            return 0;
+        }
+
         let width = bitmap.width;
         let height = bitmap.height;
         if (!width || !height) {
@@ -653,8 +837,12 @@ export async function prepareImageFromBlob(sessionId: string, blob: Blob, maxDim
             return 0;
         }
 
+        // The canvas has no alpha channel and starts out opaque black, so a transparent image - the usual output of
+        // a code generator - would be composited over black and its dark modules lost against it. Paper is white.
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, width, height);
         ctx.drawImage(bitmap, 0, 0, width, height);
-        session.prepared = ctx.getImageData(0, 0, width, height).data;
+        session.prepared.set(requestId, ctx.getImageData(0, 0, width, height).data);
 
         return (width << 16) | height;
     } finally {
@@ -662,18 +850,17 @@ export async function prepareImageFromBlob(sessionId: string, blob: Blob, maxDim
     }
 }
 
-/** Copies the image prepared by prepareImage* into a .NET buffer. Returns bytes written. */
-export function readPrepared(sessionId: string, buffer: MemoryViewLike): number {
+/** Copies the image prepared under requestId into a .NET buffer. Returns bytes written. */
+export function readPrepared(sessionId: string, requestId: number, buffer: MemoryViewLike): number {
     const session = state.sessions.get(sessionId);
-    if (!session || !session.prepared) {
+    const data = session ? session.prepared.get(requestId) : undefined;
+    if (!session || !data) {
         return 0;
     }
 
-    const data = session.prepared;
-
     // Released either way: a full resolution image is megabytes, and holding one alive because
     // the caller mis-sized its buffer would be a leak for the life of the session.
-    session.prepared = null;
+    session.prepared.delete(requestId);
 
     if (buffer.length < data.byteLength) {
         return FRAME_BUFFER_TOO_SMALL;
@@ -681,6 +868,14 @@ export function readPrepared(sessionId: string, buffer: MemoryViewLike): number 
 
     buffer.set(new Uint8Array(data.buffer, data.byteOffset, data.byteLength));
     return data.byteLength;
+}
+
+/** Forgets an image prepared under requestId without reading it, for a request a newer one superseded. */
+export function releasePrepared(sessionId: string, requestId: number): void {
+    const session = state.sessions.get(sessionId);
+    if (session) {
+        session.prepared.delete(requestId);
+    }
 }
 
 /** Reports whether the page is in a context where the camera API is reachable at all. */

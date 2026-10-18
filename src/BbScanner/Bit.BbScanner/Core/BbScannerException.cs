@@ -48,6 +48,9 @@ public sealed class BbScannerException : Exception
             BbScannerErrorKind.CameraUnavailable => "The camera could not be opened; another application may be using it.",
             BbScannerErrorKind.ConstraintsUnsatisfied => "No camera can satisfy the requested constraints.",
             BbScannerErrorKind.NotSupported => "This browser does not expose a camera API to the page.",
+            // Not a camera problem at all: the page, or the scanner's own video element, was not there to play
+            // into. Anything camera shaped would send the user looking for a fault their device does not have.
+            _ when message.Contains("InvalidStateError", StringComparison.Ordinal) => "The scanner is not attached to the page, so the camera has nowhere to play.",
             _ => "The camera could not be started.",
         };
 

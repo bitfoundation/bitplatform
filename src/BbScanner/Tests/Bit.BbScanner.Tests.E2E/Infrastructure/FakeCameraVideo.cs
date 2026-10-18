@@ -40,7 +40,9 @@ public static class FakeCameraVideo
     {
         using var qr = SyntheticImage.FromMatrix(QrEncoder.Encode(QrPayload, BbQrErrorCorrectionLevel.M, 2), scale: 6);
         using var dm = SyntheticImage.FromMatrix(DataMatrixEncoder.Encode(DataMatrixPayload), scale: 8);
-        using var c128 = SyntheticImage.FromLinear(LinearEncoders.Code128(Code128Payload), scale: 3, height: 120);
+        // The demo's scan region is a centred square of 70 % of the 480 pixel edge, 336 pixels a side; at three
+        // pixels a module this Code 128's bars alone are 336 pixels wide and leave no quiet zone inside it.
+        using var c128 = SyntheticImage.FromLinear(LinearEncoders.Code128(Code128Payload), scale: 2, height: 120);
         using var ean = SyntheticImage.FromLinear(LinearEncoders.Ean13(Ean13Payload), scale: 3, height: 120);
 
         using var stream = File.Create(path);

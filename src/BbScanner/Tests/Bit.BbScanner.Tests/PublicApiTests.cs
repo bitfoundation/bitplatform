@@ -151,6 +151,39 @@ public class PublicApiTests
     }
 
     [TestMethod]
+    public void TwoSymbolsInViewAreEachReportedOnceHoweverTheFramesAlternate()
+    {
+        var filter = new BbDuplicateFilter(TimeSpan.FromSeconds(2));
+
+        // A label with two codes decodes one or the other depending on the noise in each frame.
+        Assert.IsTrue(filter.ShouldReport("LABEL-128", BbBarcodeFormat.Code128, 0));
+        Assert.IsTrue(filter.ShouldReport("4006381333931", BbBarcodeFormat.Ean13, 66));
+
+        for (var t = 133L; t < 5_000; t += 66)
+        {
+            var code128 = (t / 66) % 2 == 0;
+            Assert.IsFalse(code128
+                ? filter.ShouldReport("LABEL-128", BbBarcodeFormat.Code128, t)
+                : filter.ShouldReport("4006381333931", BbBarcodeFormat.Ean13, t));
+        }
+    }
+
+    [TestMethod]
+    public void TheFilterForgetsTheSymbolSeenLongestAgoOnceItIsFull()
+    {
+        var filter = new BbDuplicateFilter(TimeSpan.FromMinutes(1));
+
+        for (var i = 0; i < 64; i++)
+        {
+            Assert.IsTrue(filter.ShouldReport($"ITEM-{i}", BbBarcodeFormat.Code128, i));
+        }
+
+        // The most recent ones are still suppressed; the first ones were forgotten to make room.
+        Assert.IsFalse(filter.ShouldReport("ITEM-63", BbBarcodeFormat.Code128, 100));
+        Assert.IsTrue(filter.ShouldReport("ITEM-0", BbBarcodeFormat.Code128, 101));
+    }
+
+    [TestMethod]
     public void AZeroWindowReportsEveryFrame()
     {
         var filter = new BbDuplicateFilter(TimeSpan.Zero);
@@ -263,7 +296,8 @@ public class PublicApiTests
         decoder.Decode(frame.View, suppressDuplicates: false);
         var diagnostics = decoder.LastFrame;
 
-        Assert.AreEqual(320, diagnostics.DecodedWidth);
+        // Half the shorter edge, square: 240 by 240 of a 640 by 480 frame.
+        Assert.AreEqual(240, diagnostics.DecodedWidth);
         Assert.AreEqual(240, diagnostics.DecodedHeight);
         Assert.IsTrue(diagnostics.Total > TimeSpan.Zero);
         Assert.IsTrue(diagnostics.EquivalentFramesPerSecond > 0);
@@ -405,6 +439,7 @@ public class PublicApiTests
             ("NotReadableError: could not start", BbScannerErrorKind.CameraUnavailable),
             ("OverconstrainedError: deviceId", BbScannerErrorKind.ConstraintsUnsatisfied),
             ("NotSupportedError", BbScannerErrorKind.NotSupported),
+            ("InvalidStateError: the scanner video element is not in the document.", BbScannerErrorKind.Unknown),
             ("something else entirely", BbScannerErrorKind.Unknown),
         };
 
@@ -417,5 +452,16 @@ public class PublicApiTests
         }
 
         Assert.ThrowsExactly<ArgumentNullException>(() => BbScannerException.FromBrowserError(null!));
+    }
+
+    [TestMethod]
+    public void AMissingVideoElementIsNotReportedAsAMissingCamera()
+    {
+        var exception = BbScannerException.FromBrowserError(
+            new InvalidOperationException("InvalidStateError: the scanner video element is not in the document."));
+
+        Assert.AreNotEqual(BbScannerErrorKind.NoCamera, exception.Kind);
+        Assert.DoesNotContain("camera matching", exception.Message);
+        Assert.Contains("page", exception.Message);
     }
 }

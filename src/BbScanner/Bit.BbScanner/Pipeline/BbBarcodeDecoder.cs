@@ -110,7 +110,7 @@ public sealed class BbBarcodeDecoder : IDisposable
     /// <summary>Number of frames that produced a result, before duplicate suppression.</summary>
     public long FramesWithSymbol { get; private set; }
 
-    /// <summary>Forgets the last reported value so that scanning it again reports immediately.</summary>
+    /// <summary>Forgets the reported values so that scanning one again reports immediately.</summary>
     public void ResetDuplicateFilter() => _duplicateFilter.Reset();
 
     /// <summary>
@@ -133,16 +133,23 @@ public sealed class BbBarcodeDecoder : IDisposable
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(height);
 
+        if (width < 8 || height < 8)
+        {
+            throw new ArgumentException("The frame is too small to decode.", nameof(pixels));
+        }
+
         var start = Stopwatch.GetTimestamp();
 
-        var step = _options.DownsampleFactor;
-        var targetWidth = width / step;
-        var targetHeight = height / step;
-        if (targetWidth < 8 || targetHeight < 8)
-        {
-            throw new ArgumentException(
-                "The frame is too small to decode after downsampling.", nameof(pixels));
-        }
+        // The region is cut out before the conversion rather than after it: converting is the one
+        // stage that touches every pixel, so a region a quarter of the frame makes it a quarter of
+        // the work too.
+        var (cropX, cropY, cropWidth, cropHeight) = _options.Region.ToPixels(width, height);
+
+        // A factor the frame, or the region, is too small for would leave nothing to decode, so
+        // it is lowered to the largest one that still leaves eight pixels a side.
+        var step = Math.Clamp(Math.Min(cropWidth, cropHeight) / 8, 1, _options.DownsampleFactor);
+        var targetWidth = cropWidth / step;
+        var targetHeight = cropHeight / step;
 
         if (_grayscale is null)
         {
@@ -153,11 +160,19 @@ public sealed class BbBarcodeDecoder : IDisposable
             _grayscale.Resize(targetWidth, targetHeight);
         }
 
-        BbPixelConverter.ToGrayscaleDownsampled(pixels, _grayscale.Pixels, width, height, format, step);
+        var bpp = BbPixelConverter.BytesPerPixel(format);
+        var stride = width * bpp;
+        BbPixelConverter.ToGrayscaleDownsampled(
+            pixels[((cropY * stride) + (cropX * bpp))..],
+            _grayscale.Pixels,
+            cropWidth,
+            cropHeight,
+            format,
+            step,
+            stride);
         var afterGrayscale = Stopwatch.GetTimestamp();
 
-        var result = DecodeCore(_grayscale.View, start, afterGrayscale, width, height, step, suppressDuplicates);
-        return result;
+        return DecodeCore(_grayscale.View, cropX, cropY, step, start, afterGrayscale, width, height, suppressDuplicates);
     }
 
     /// <summary>
@@ -170,24 +185,28 @@ public sealed class BbBarcodeDecoder : IDisposable
         ObjectDisposedException.ThrowIf(_disposed, this);
 
         var start = Stopwatch.GetTimestamp();
-        return DecodeCore(view, start, start, view.Width, view.Height, 1, suppressDuplicates);
+        var (x, y, width, height) = _options.Region.ToPixels(view.Width, view.Height);
+        var cropped = x == 0 && y == 0 && width == view.Width && height == view.Height ? view : view.Crop(x, y, width, height);
+        return DecodeCore(cropped, x, y, 1, start, start, view.Width, view.Height, suppressDuplicates);
     }
 
+    /// <summary>
+    /// Decodes the searched region, already cropped and downsampled into <paramref name="view"/>,
+    /// whose top-left corner sits at <paramref name="offsetX"/>, <paramref name="offsetY"/> of the
+    /// caller's frame and whose every pixel spans <paramref name="step"/> frame pixels.
+    /// </summary>
     private BbBarcodeResult? DecodeCore(
-        in BbLuminanceView source,
+        in BbLuminanceView view,
+        int offsetX,
+        int offsetY,
+        int step,
         long start,
         long afterGrayscale,
         int frameWidth,
         int frameHeight,
-        int step,
         bool suppressDuplicates)
     {
         FramesDecoded++;
-
-        var region = _options.Region;
-        var view = region.IsFull ? source : source.Crop(region);
-        var offsetX = ((view.Offset - source.Offset) % source.Stride) * step;
-        var offsetY = ((view.Offset - source.Offset) / source.Stride) * step;
 
         var binarizeTicks = 0L;
         var matrixTicks = 0L;

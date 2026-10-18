@@ -17,7 +17,7 @@
            autoplay
            aria-hidden="true"></video>
 
-    @if (ShowMask && !_region.IsFull)
+    @if (ShowMask && !FrameRegion().IsFull)
     {
         <div class="bit-bbscanner__mask" style="clip-path: @MaskClipPath()"></div>
     }
@@ -49,16 +49,16 @@
         </div>
     }
 
-    @if (_message is not null)
+    @if (DisplayedMessage is { } message)
     {
-        <div class="bit-bbscanner__message @(_status == BbScannerStatus.Faulted ? "bit-bbscanner__message--error" : null)">
+        <div class="bit-bbscanner__message @(_notice is null && _status == BbScannerStatus.Faulted ? "bit-bbscanner__message--error" : null)">
             @if (MessageTemplate is not null)
             {
-                @MessageTemplate(_message!)
+                @MessageTemplate(message)
             }
             else
             {
-                @_message
+                @message
             }
         </div>
     }

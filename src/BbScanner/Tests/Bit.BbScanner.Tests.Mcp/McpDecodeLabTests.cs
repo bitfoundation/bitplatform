@@ -116,6 +116,34 @@ public class McpDecodeLabTests
         Assert.AreEqual(5, report.Blur);
     }
 
+    [TestMethod]
+    public async Task A_frame_too_large_to_render_is_refused_before_anything_is_drawn()
+    {
+        var started = DateTime.UtcNow;
+        var report = await InspectAsync(new()
+        {
+            ["format"] = "Code128",
+            ["text"] = new string('A', 1_000),
+            ["moduleSize"] = 12,
+            ["rotation"] = 10,
+            ["blur"] = 5
+        });
+
+        Assert.IsFalse(report.Encoded);
+        Assert.IsNull(report.Attempts);
+        Assert.Contains("megapixels", report.Error!);
+        Assert.IsLessThan(TimeSpan.FromSeconds(5), DateTime.UtcNow - started, "The refusal must not render the frame it refuses.");
+    }
+
+    [TestMethod]
+    public async Task The_largest_qr_code_still_renders_at_a_module_size_that_fits()
+    {
+        var report = await InspectAsync(new() { ["format"] = "QrCode", ["text"] = new string('7', 1_000), ["moduleSize"] = 4 });
+
+        Assert.IsTrue(report.Encoded, report.Error);
+        Assert.IsTrue(report.Attempts!.Any(attempt => attempt.Decoded));
+    }
+
     internal static Task<BbScannerDecodeReportDto> InspectAsync(Dictionary<string, object?> arguments)
         => McpCall.StructuredAsync<BbScannerDecodeReportDto>("InspectBbScannerSymbol", arguments);
 }

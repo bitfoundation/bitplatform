@@ -332,8 +332,10 @@ a mirrored front camera and for cropping under `Fill`.
 `Region` restricts every stage of the pipeline to part of the frame, in normalized coordinates that do not depend
 on the resolution the camera negotiated. `BbScanRegion.CenteredSquare(0.7)` - a centred square covering 70 % of
 the shorter edge - is the usual choice for an aiming interface; `ShowMask` dims everything outside it and the
-reticle frames it. Restricting the region reduces the work of every frame proportionally. Still images scanned
-through the file picker are always searched in full.
+reticle frames it. The square stays square in pixels on any camera: it carries `KeepSquare`, and is fitted to each
+frame's aspect ratio (`ForFrame`), so on a 1280×720 camera it searches 504×504 pixels. Restricting the region
+reduces the work of every frame proportionally, from the grayscale conversion on. Still images scanned through the
+file picker are always searched in full.
 
 ### Camera, torch and zoom
 
@@ -351,7 +353,9 @@ browser accepted the request.
 
 With `EnableFileScanning` on, the control bar offers a *Scan image* button, and `OpenFilePickerAsync` opens the same
 hidden file input from a button of your own. Large photographs are scaled down in the browser before they cross
-into managed code: a twelve megapixel image carries no more barcode detail than a two megapixel one.
+into managed code: a twelve megapixel image carries no more barcode detail than a two megapixel one. A transparent
+image is read as if printed on white, which is what a code generator's PNG means. The outcome - "No barcode found",
+or a file that is not an image - is shown for a few seconds without replacing the scanner's own status message.
 
 `DecodeImage` decodes pixels the application already has - from a canvas, an upload or a generated buffer - with
 the scanner's symbologies and options. Both paths use the still image tuning, which flips the latency trade-offs a
@@ -360,9 +364,14 @@ live frame makes: more scan lines, the exhaustive detector path, every ten degre
 ### Duplicates and the lifecycle
 
 The camera produces the same symbol in frame after frame, so an identical value from the same symbology is
-suppressed for `DuplicateSuppressionWindow` (two seconds by default) after it was reported. Set it to
-`TimeSpan.Zero` to report every frame that decodes. `Resume` and `StartAsync` reset the filter, so the symbol that
-was in view when scanning paused is reported again.
+suppressed for `DuplicateSuppressionWindow` (two seconds by default) after it was reported, and for as long as it
+stays in view. Every symbol seen within the window is remembered, so two codes in view at once are each reported
+once, however the frames alternate between them. Set it to `TimeSpan.Zero` to report every frame that decodes.
+`Resume` and `StartAsync` reset the filter, so the symbol that was in view when scanning paused is reported again.
+
+The highlight follows a symbol while it stays in view, and goes away a moment after it leaves. A frame the decoder
+fails on is skipped rather than ending the session; only a decoder that fails frame after frame faults the scanner.
+Options that fail `Validate` are reported as a fault before the camera is opened.
 
 `Status` moves through `Idle`, `Starting`, `Scanning`, `Paused`, `Stopped` and `Faulted`; `OnStatusChanged` reports
 each change, and the root element carries it as `data-status`.

@@ -183,6 +183,44 @@ public class ImagingTests
         var region = BbScanRegion.CenteredSquare(0.5);
         Assert.AreEqual(0.25, region.X, 1e-6);
         Assert.AreEqual(0.5, region.Width, 1e-6);
+        Assert.IsTrue(region.KeepSquare);
+        Assert.IsFalse(region.IsFull);
+    }
+
+    [TestMethod]
+    [DataRow(1280, 720)]
+    [DataRow(720, 1280)]
+    [DataRow(640, 640)]
+    [DataRow(2560, 480)]
+    public void CenteredSquareIsSquareInThePixelsOfAnyFrame(int width, int height)
+    {
+        var region = BbScanRegion.CenteredSquare(0.7).ForFrame(width, height);
+        var side = 0.7 * Math.Min(width, height);
+
+        Assert.AreEqual(side, region.Width * width, 1e-6);
+        Assert.AreEqual(side, region.Height * height, 1e-6);
+        Assert.AreEqual(0.5, region.X + (region.Width / 2), 1e-6, "The square stays centred.");
+        Assert.AreEqual(0.5, region.Y + (region.Height / 2), 1e-6, "The square stays centred.");
+        Assert.IsFalse(region.KeepSquare, "A region resolved for a frame is a plain rectangle.");
+    }
+
+    [TestMethod]
+    public void ARegionThatIsNotSquareIgnoresTheFrameShape()
+    {
+        var region = new BbScanRegion(0.1, 0.2, 0.8, 0.6);
+
+        Assert.AreEqual(region, region.ForFrame(1280, 720));
+        Assert.IsTrue(BbScanRegion.CenteredSquare(1).ForFrame(500, 500).IsFull);
+    }
+
+    [TestMethod]
+    public void CroppingByASquareRegionYieldsASquareWindow()
+    {
+        var view = new BbLuminanceView(new byte[1280 * 720], 1280, 720);
+        var cropped = view.Crop(BbScanRegion.CenteredSquare(0.7));
+
+        Assert.AreEqual(504, cropped.Width);
+        Assert.AreEqual(504, cropped.Height);
     }
 
     [TestMethod]

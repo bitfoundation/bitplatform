@@ -36,6 +36,8 @@ public sealed class BbScannerOptions
     /// <summary>
     /// Subsampling applied while converting a frame to grayscale. A value of 2 quarters the
     /// number of pixels every later stage touches, at the cost of the smallest readable symbol.
+    /// A frame or region too small for the factor is decoded at the largest factor that still
+    /// leaves it eight pixels a side.
     /// </summary>
     public int DownsampleFactor { get; set; } = 1;
 

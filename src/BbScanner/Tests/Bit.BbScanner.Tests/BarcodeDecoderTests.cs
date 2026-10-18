@@ -134,6 +134,46 @@ public class BarcodeDecoderTests
     }
 
     [TestMethod]
+    public void APackedFrameIsCroppedToTheRegionBeforeItIsConverted()
+    {
+        using var qr = SyntheticImage.FromMatrix(QrEncoder.Encode("CROPPED FIRST"), scale: 4);
+        using var frame = ImageTransforms.Frame(qr, 1280, 720);
+        var rgba = ImageTransforms.ToRgba(frame, tint: false);
+
+        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        {
+            Formats = BbBarcodeFormat.QrCode,
+            Region = BbScanRegion.CenteredSquare(0.5),
+            DuplicateSuppressionWindow = TimeSpan.Zero,
+        });
+
+        var result = decoder.Decode(rgba, frame.Width, frame.Height, BbPixelFormat.Rgba32);
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("CROPPED FIRST", result.Text);
+
+        // Only the region was converted, and its corners still come back in whole frame coordinates.
+        Assert.AreEqual(360, decoder.LastFrame.DecodedWidth);
+        Assert.AreEqual(360, decoder.LastFrame.DecodedHeight);
+        Assert.AreEqual(frame.Width / 2.0, result.BoundingBox.X + (result.BoundingBox.Width / 2), 8);
+        Assert.AreEqual(frame.Height / 2.0, result.BoundingBox.Y + (result.BoundingBox.Height / 2), 8);
+    }
+
+    [TestMethod]
+    public void ADownsampleFactorTooLargeForTheFrameIsLoweredRatherThanThrown()
+    {
+        // 60 / 8 leaves seven pixels a side, which used to be an exception on every frame.
+        var gray = new byte[60 * 60];
+        gray.AsSpan().Fill(255);
+
+        using var decoder = new BbBarcodeDecoder(new BbScannerOptions { DownsampleFactor = 8 });
+
+        Assert.IsNull(decoder.Decode(gray, 60, 60, BbPixelFormat.Gray8));
+        Assert.IsTrue(decoder.LastFrame.DecodedWidth >= 8, $"Decoded {decoder.LastFrame.DecodedWidth} pixels wide.");
+        Assert.IsTrue(decoder.LastFrame.DecodedHeight >= 8, $"Decoded {decoder.LastFrame.DecodedHeight} pixels high.");
+    }
+
+    [TestMethod]
     public void ReportsDiagnosticsForEveryFrame()
     {
         using var decoder = new BbBarcodeDecoder();
