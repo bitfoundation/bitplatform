@@ -1,0 +1,179 @@
+﻿@namespace Bit.Balette
+@implements IDisposable
+
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    private string? _registeredId;
+    private string? _signature;
+
+    [CascadingParameter] private Balette? Palette { get; set; }
+
+    [CascadingParameter] private BaletteGroup? Group { get; set; }
+
+    [CascadingParameter] private BaletteItem? ParentItem { get; set; }
+
+    /// <summary>Stable id. Defaults to a slug of <see cref="Title"/>.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>The label. Searched with the highest weight and highlighted.</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+
+    /// <summary>A secondary label next to the title. Searched and highlighted.</summary>
+    [Parameter] public string? Subtitle { get; set; }
+
+    /// <summary>Longer text for the detail pane. Searched with a low weight.</summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>Comma or space separated keywords.</summary>
+    [Parameter] public string? Keywords { get; set; }
+
+    /// <summary>Shortcut, e.g. <c>Mod+Shift+D</c> or <c>G I</c>.</summary>
+    [Parameter] public string? Shortcut { get; set; }
+
+    /// <summary>Whether <see cref="Shortcut"/> also fires while the palette is closed. Default true.</summary>
+    [Parameter] public bool GlobalShortcut { get; set; } = true;
+
+    /// <summary>An icon rendered before the title.</summary>
+    [Parameter] public RenderFragment? Icon { get; set; }
+
+    /// <summary>A CSS class for an icon element, e.g. <c>bi bi-house</c>.</summary>
+    [Parameter] public string? IconCss { get; set; }
+
+    /// <summary>Navigation target (used when <see cref="OnExecute"/> is not set).</summary>
+    [Parameter] public string? Href { get; set; }
+
+    /// <summary>Open <see cref="Href"/> in a new tab.</summary>
+    [Parameter] public bool NewTab { get; set; }
+
+    /// <summary>Invoked when the item is selected. The palette closes afterwards unless <see cref="KeepOpen"/> is set.</summary>
+    [Parameter] public EventCallback<BaletteCommandContext> OnExecute { get; set; }
+
+    /// <summary>Keep the palette open after <see cref="OnExecute"/>.</summary>
+    [Parameter] public bool KeepOpen { get; set; }
+
+    /// <summary>A ranking nudge; see <see cref="BaletteCommandPriority"/>. Defaults to the group's priority.</summary>
+    [Parameter] public int? Priority { get; set; }
+
+    /// <summary>Listed but not runnable.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the item is disabled; shown instead of the subtitle and when it is selected.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
+    /// <summary>Styled as dangerous. With <see cref="ConfirmMessage"/>, <c>Enter</c> has to be pressed twice.</summary>
+    [Parameter] public bool Destructive { get; set; }
+
+    /// <summary>Asks for a second <c>Enter</c> before running, showing this message.</summary>
+    [Parameter] public string? ConfirmMessage { get; set; }
+
+    /// <summary>A small pill at the end of the row, e.g. "New" or "Beta".</summary>
+    [Parameter] public string? Badge { get; set; }
+
+    /// <summary>The current value of a setting, e.g. "Dark".</summary>
+    [Parameter] public string? Value { get; set; }
+
+    /// <summary>The state of a toggle; renders a switch.</summary>
+    [Parameter] public bool? Checked { get; set; }
+
+    /// <summary>The semantic kind; picks the default icon. Inferred when not set.</summary>
+    [Parameter] public BaletteCommandKind? Kind { get; set; }
+
+    /// <summary>Free-form labels that modes can scope to; combined with the group's.</summary>
+    [Parameter] public string[]? Tags { get; set; }
+
+    /// <summary>Listed whatever the query, e.g. for a "couldn't find it?" row.</summary>
+    [Parameter] public bool AlwaysShow { get; set; }
+
+    /// <summary>Placeholder for the nested page when this item has child items.</summary>
+    [Parameter] public string? ChildrenPlaceholder { get; set; }
+
+    /// <summary>Allow checking several children before applying with Ctrl+Enter (calls <see cref="OnExecute"/> with the selection).</summary>
+    [Parameter] public bool MultiSelect { get; set; }
+
+    /// <summary>Nested <see cref="BaletteItem"/>s turn this item into a page.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The effective command id (available after parameters are set).</summary>
+    public string CommandId => _registeredId ?? Id ?? BaletteCommandIdGenerator.FromTitle(Title, Group?.Heading, ParentItem?.CommandId);
+
+    protected override void OnParametersSet()
+    {
+        if (Palette is null)
+        {
+            throw new InvalidOperationException($"{nameof(BaletteItem)} must be placed inside a {nameof(Balette)}.");
+        }
+
+        var signature = string.Join('\u001f', Id, Title, Subtitle, Description, Keywords, Shortcut, GlobalShortcut, IconCss, Href, NewTab,
+            OnExecute.HasDelegate, KeepOpen, Priority, Disabled, DisabledReason, Destructive, ConfirmMessage, Badge, Value, Checked, Kind,
+            Tags is null ? null : string.Join(',', Tags), AlwaysShow, ChildrenPlaceholder, MultiSelect, ChildContent is not null, Icon is not null,
+            Group?.Heading, Group?.Priority, ParentItem?.CommandId);
+        if (signature == _signature)
+        {
+            return;
+        }
+
+        _signature = signature;
+
+        var b = new BaletteCommandBuilder(Title)
+            .Subtitle(Subtitle)
+            .Description(Description)
+            .Group(Group?.Heading)
+            .Parent(ParentItem?.CommandId)
+            .Priority(Priority ?? Group?.Priority ?? BaletteCommandPriority.Normal)
+            .Disabled(Disabled, DisabledReason)
+            .Badge(Badge)
+            .AlwaysShow(AlwaysShow)
+            .ChildrenPlaceholder(ChildrenPlaceholder)
+            .MultiSelect(MultiSelect);
+
+        if (Id is not null) b.Id(Id);
+        if (Value is not null) b.Value(Value);
+        if (!string.IsNullOrWhiteSpace(Keywords)) b.Keywords(Keywords.Split([',', ' '], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+        if (Shortcut is not null) b.Shortcut(Shortcut, GlobalShortcut);
+        if (Icon is not null) b.Icon(Icon);
+        if (IconCss is not null) b.Icon(IconCss);
+        if (Checked is not null) b.Checked(Checked);
+        if (Destructive) b.Destructive(ConfirmMessage); else if (ConfirmMessage is not null) b.Confirm(ConfirmMessage);
+        var tags = (Tags ?? []).Concat(Group?.Tags ?? []).ToArray();
+        if (tags.Length > 0) b.Tags(tags);
+
+        if (OnExecute.HasDelegate)
+        {
+            var keepOpen = KeepOpen;
+            var callback = OnExecute;
+            b.Handler(async ctx =>
+            {
+                await callback.InvokeAsync(ctx);
+                return keepOpen ? BaletteCommandResult.KeepOpen : BaletteCommandResult.Close;
+            });
+        }
+        else if (Href is not null)
+        {
+            b.Href(Href, newTab: NewTab);
+        }
+
+        if (Kind is { } kind) b.Kind(kind);
+        else if (ChildContent is not null) b.Kind(BaletteCommandKind.Page);
+
+        var command = b.Build();
+        if (_registeredId is not null && _registeredId != command.Id)
+        {
+            Palette.RemoveDeclarative(_registeredId);
+        }
+
+        _registeredId = command.Id;
+        Palette.AddDeclarative(command);
+    }
+
+    /// <summary>Removes the item from the palette.</summary>
+    public void Dispose()
+    {
+        if (_registeredId is not null)
+        {
+            Palette?.RemoveDeclarative(_registeredId);
+        }
+    }
+}

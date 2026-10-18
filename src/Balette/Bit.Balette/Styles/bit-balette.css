@@ -1,0 +1,456 @@
+﻿/*!
+ * Bit.Balette default theme.
+ *
+ * The design tokens are custom properties on :root, so the trigger button and the shortcut hints that
+ * live outside the dialog share them with it. Override any of them on :root, on
+ * dialog[data-balette="dialog"], or inline through the Style parameter:
+ *
+ *   :root { --bit-balette-accent: #6d28d9; --bit-balette-width: 760px; }
+ *
+ * The theme follows prefers-color-scheme, <html data-theme="light|dark">, or the component's Theme
+ * parameter (data-theme on the dialog). Every component rule is scoped to .bit-balette-dialog, so
+ * Unstyled="true" renders bare markup that can be styled from scratch through the data-balette
+ * attributes. No external CSS framework is used or assumed.
+ */
+
+:root {
+    /* Layout */
+    --bit-balette-width: 640px;
+    --bit-balette-max-height: min(70vh, 560px);
+    --bit-balette-radius: 14px;
+    --bit-balette-row-height: 44px;
+    --bit-balette-gap: 8px;
+    --bit-balette-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --bit-balette-font-size: 14px;
+    --bit-balette-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --bit-balette-z: 1000;
+
+    /* Light palette */
+    --bit-balette-bg: #ffffff;
+    --bit-balette-bg-elevated: #f6f7f9;
+    --bit-balette-fg: #111318;
+    --bit-balette-fg-muted: #6b7280;
+    --bit-balette-fg-subtle: #9ca3af;
+    --bit-balette-border: rgba(17, 19, 24, 0.08);
+    --bit-balette-accent: #4f46e5;
+    --bit-balette-accent-fg: #ffffff;
+    --bit-balette-accent-soft: rgba(79, 70, 229, 0.10);
+    --bit-balette-active-bg: rgba(17, 19, 24, 0.06);
+    --bit-balette-danger: #dc2626;
+    --bit-balette-danger-soft: rgba(220, 38, 38, 0.10);
+    --bit-balette-mark-bg: rgba(79, 70, 229, 0.18);
+    --bit-balette-kbd-bg: #f3f4f6;
+    --bit-balette-kbd-fg: #374151;
+    --bit-balette-kbd-border: rgba(17, 19, 24, 0.12);
+    --bit-balette-backdrop: rgba(17, 19, 24, 0.45);
+    --bit-balette-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    --bit-balette-scrollbar: rgba(17, 19, 24, 0.2);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+        --bit-balette-bg: #17181c;
+        --bit-balette-bg-elevated: #1f2126;
+        --bit-balette-fg: #f3f4f6;
+        --bit-balette-fg-muted: #a1a1aa;
+        --bit-balette-fg-subtle: #71717a;
+        --bit-balette-border: rgba(255, 255, 255, 0.08);
+        --bit-balette-accent: #818cf8;
+        --bit-balette-accent-fg: #0b0c10;
+        --bit-balette-accent-soft: rgba(129, 140, 248, 0.16);
+        --bit-balette-active-bg: rgba(255, 255, 255, 0.07);
+        --bit-balette-danger: #f87171;
+        --bit-balette-danger-soft: rgba(248, 113, 113, 0.14);
+        --bit-balette-mark-bg: rgba(129, 140, 248, 0.28);
+        --bit-balette-kbd-bg: #26282e;
+        --bit-balette-kbd-fg: #d4d4d8;
+        --bit-balette-kbd-border: rgba(255, 255, 255, 0.12);
+        --bit-balette-backdrop: rgba(0, 0, 0, 0.6);
+        --bit-balette-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+        --bit-balette-scrollbar: rgba(255, 255, 255, 0.2);
+    }
+}
+
+:root[data-theme="dark"],
+dialog[data-balette="dialog"][data-theme="dark"] {
+    --bit-balette-bg: #17181c;
+    --bit-balette-bg-elevated: #1f2126;
+    --bit-balette-fg: #f3f4f6;
+    --bit-balette-fg-muted: #a1a1aa;
+    --bit-balette-fg-subtle: #71717a;
+    --bit-balette-border: rgba(255, 255, 255, 0.08);
+    --bit-balette-accent: #818cf8;
+    --bit-balette-accent-fg: #0b0c10;
+    --bit-balette-accent-soft: rgba(129, 140, 248, 0.16);
+    --bit-balette-active-bg: rgba(255, 255, 255, 0.07);
+    --bit-balette-danger: #f87171;
+    --bit-balette-danger-soft: rgba(248, 113, 113, 0.14);
+    --bit-balette-mark-bg: rgba(129, 140, 248, 0.28);
+    --bit-balette-kbd-bg: #26282e;
+    --bit-balette-kbd-fg: #d4d4d8;
+    --bit-balette-kbd-border: rgba(255, 255, 255, 0.12);
+    --bit-balette-backdrop: rgba(0, 0, 0, 0.6);
+    --bit-balette-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.06);
+    --bit-balette-scrollbar: rgba(255, 255, 255, 0.2);
+}
+
+dialog[data-balette="dialog"][data-theme="light"] {
+    --bit-balette-bg: #ffffff;
+    --bit-balette-bg-elevated: #f6f7f9;
+    --bit-balette-fg: #111318;
+    --bit-balette-fg-muted: #6b7280;
+    --bit-balette-fg-subtle: #9ca3af;
+    --bit-balette-border: rgba(17, 19, 24, 0.08);
+    --bit-balette-accent: #4f46e5;
+    --bit-balette-accent-fg: #ffffff;
+    --bit-balette-accent-soft: rgba(79, 70, 229, 0.10);
+    --bit-balette-active-bg: rgba(17, 19, 24, 0.06);
+    --bit-balette-danger: #dc2626;
+    --bit-balette-danger-soft: rgba(220, 38, 38, 0.10);
+    --bit-balette-mark-bg: rgba(79, 70, 229, 0.18);
+    --bit-balette-kbd-bg: #f3f4f6;
+    --bit-balette-kbd-fg: #374151;
+    --bit-balette-kbd-border: rgba(17, 19, 24, 0.12);
+    --bit-balette-backdrop: rgba(17, 19, 24, 0.45);
+    --bit-balette-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.04);
+    --bit-balette-scrollbar: rgba(17, 19, 24, 0.2);
+}
+
+/* ---------- Dialog shell ---------- */
+
+.bit-balette-dialog {
+    position: fixed;
+    inset: 0;
+    margin: 0 auto;
+    top: 12vh;
+    width: min(var(--bit-balette-width), calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    padding: 0;
+    border: 0;
+    border-radius: var(--bit-balette-radius);
+    background: var(--bit-balette-bg);
+    color: var(--bit-balette-fg);
+    box-shadow: var(--bit-balette-shadow);
+    font-family: var(--bit-balette-font);
+    font-size: var(--bit-balette-font-size);
+    line-height: 1.4;
+    overflow: hidden;
+    z-index: var(--bit-balette-z);
+    height: fit-content;
+    max-height: calc(100vh - 24vh);
+}
+
+.bit-balette-dialog[data-has-detail="true"] {
+    --bit-balette-width: 920px;
+}
+
+.bit-balette-dialog::backdrop {
+    background: var(--bit-balette-backdrop, rgba(17, 19, 24, 0.45)); /* ::backdrop does not inherit custom properties in older browsers */
+    -webkit-backdrop-filter: blur(2px);
+    backdrop-filter: blur(2px);
+}
+
+.bit-balette-dialog[open] {
+    animation: bit-balette-pop 140ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.bit-balette-dialog[open]::backdrop {
+    animation: bit-balette-fade 140ms ease-out;
+}
+
+@keyframes bit-balette-pop {
+    from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+}
+
+@keyframes bit-balette-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .bit-balette-dialog[open], .bit-balette-dialog[open]::backdrop { animation: none; }
+    .bit-balette-dialog .bit-balette-spinner { animation-duration: 1.5s; }
+}
+
+html.bit-balette-scroll-lock { overflow: hidden; }
+
+.bit-balette-dialog .bit-balette-root { display: flex; min-height: 0; }
+.bit-balette-dialog .bit-balette-main { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; max-height: var(--bit-balette-max-height); }
+
+/* ---------- Header ---------- */
+
+.bit-balette-dialog .bit-balette-header { display: flex; flex-direction: column; flex: none; border-bottom: 1px solid var(--bit-balette-border); }
+
+.bit-balette-dialog .bit-balette-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px 0;
+    flex-wrap: wrap;
+}
+
+.bit-balette-dialog .bit-balette-crumb {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 22px;
+    padding: 0 8px;
+    border-radius: 6px;
+    background: var(--bit-balette-bg-elevated);
+    color: var(--bit-balette-fg-muted);
+    font-size: 12px;
+    font-weight: 500;
+    border: 0;
+    font-family: inherit;
+}
+
+.bit-balette-dialog .bit-balette-crumb-home { cursor: pointer; padding: 0 6px; }
+.bit-balette-dialog .bit-balette-crumb-home:hover { color: var(--bit-balette-fg); }
+.bit-balette-dialog .bit-balette-mode-chip { background: var(--bit-balette-accent-soft); color: var(--bit-balette-accent); }
+
+.bit-balette-dialog .bit-balette-input-row { display: flex; align-items: center; gap: 10px; padding: 0 14px; height: 56px; }
+.bit-balette-dialog .bit-balette-input-icon { display: inline-flex; color: var(--bit-balette-fg-muted); flex: none; width: 18px; justify-content: center; }
+
+.bit-balette-dialog .bit-balette-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 100%;
+    border: 0;
+    outline: 0;
+    background: transparent;
+    color: var(--bit-balette-fg);
+    font: inherit;
+    font-size: 16px;
+}
+
+.bit-balette-dialog .bit-balette-input::placeholder { color: var(--bit-balette-fg-subtle); }
+
+.bit-balette-dialog .bit-balette-selected-count { font-size: 12px; color: var(--bit-balette-accent); font-weight: 600; white-space: nowrap; }
+
+.bit-balette-dialog .bit-balette-close {
+    display: inline-flex;
+    align-items: center;
+    border: 0;
+    background: transparent;
+    padding: 0;
+    cursor: pointer;
+    color: inherit;
+    font: inherit;
+}
+
+/* ---------- List ---------- */
+
+.bit-balette-dialog .bit-balette-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: var(--bit-balette-gap);
+    scroll-padding-block: 40px 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bit-balette-scrollbar) transparent;
+}
+
+.bit-balette-dialog .bit-balette-group-heading {
+    position: sticky;
+    top: calc(-1 * var(--bit-balette-gap));
+    z-index: 1;
+    padding: 10px 10px 6px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--bit-balette-fg-subtle);
+    background: var(--bit-balette-bg);
+}
+
+.bit-balette-dialog .bit-balette-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: var(--bit-balette-row-height);
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    color: var(--bit-balette-fg);
+    scroll-margin-block: 36px 4px;
+}
+
+.bit-balette-dialog .bit-balette-item[data-active="true"] { background: var(--bit-balette-active-bg); }
+.bit-balette-dialog .bit-balette-item[data-active="true"] .bit-balette-item-icon { color: var(--bit-balette-fg); }
+.bit-balette-dialog .bit-balette-item[data-disabled="true"] { opacity: 0.5; cursor: not-allowed; }
+.bit-balette-dialog .bit-balette-item[data-destructive="true"] { color: var(--bit-balette-danger); }
+.bit-balette-dialog .bit-balette-item[data-destructive="true"] .bit-balette-item-icon { color: var(--bit-balette-danger); }
+.bit-balette-dialog .bit-balette-item[data-destructive="true"][data-active="true"] { background: var(--bit-balette-danger-soft); }
+.bit-balette-dialog .bit-balette-item[data-confirming="true"] { outline: 2px solid var(--bit-balette-danger); outline-offset: -2px; }
+.bit-balette-dialog .bit-balette-item[data-checked="true"] .bit-balette-check { color: var(--bit-balette-accent); }
+
+.bit-balette-dialog .bit-balette-check { display: inline-flex; width: 16px; height: 16px; flex: none; border: 1.5px solid var(--bit-balette-fg-subtle); border-radius: 4px; align-items: center; justify-content: center; }
+.bit-balette-dialog .bit-balette-item[data-checked="true"] .bit-balette-check { border-color: var(--bit-balette-accent); background: var(--bit-balette-accent-soft); }
+
+.bit-balette-dialog .bit-balette-item-icon { display: inline-flex; flex: none; width: 18px; height: 18px; align-items: center; justify-content: center; color: var(--bit-balette-fg-muted); }
+.bit-balette-dialog .bit-balette-item-icon i { font-size: 16px; }
+
+.bit-balette-dialog .bit-balette-item-body { display: flex; flex-direction: column; min-width: 0; flex: 1 1 auto; }
+.bit-balette-dialog .bit-balette-item-title { display: flex; align-items: center; gap: 8px; min-width: 0; white-space: nowrap; overflow: hidden; font-weight: 500; }
+.bit-balette-dialog .bit-balette-item-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.bit-balette-dialog .bit-balette-item-subtitle { font-size: 12px; color: var(--bit-balette-fg-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bit-balette-dialog .bit-balette-keyword-hit::before { content: "↳ "; opacity: 0.6; }
+.bit-balette-dialog .bit-balette-confirm-label { color: var(--bit-balette-danger); font-weight: 600; }
+
+.bit-balette-dialog .bit-balette-mark { background: var(--bit-balette-mark-bg); color: inherit; border-radius: 2px; padding: 0 1px; margin: 0 -1px; }
+
+.bit-balette-dialog .bit-balette-badge {
+    display: inline-flex;
+    align-items: center;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    background: var(--bit-balette-accent-soft);
+    color: var(--bit-balette-accent);
+    flex: none;
+}
+
+.bit-balette-dialog .bit-balette-pin { display: inline-flex; color: var(--bit-balette-fg-subtle); flex: none; }
+.bit-balette-dialog .bit-balette-pin .bit-balette-svg { width: 12px; height: 12px; }
+
+.bit-balette-dialog .bit-balette-item-trailing { display: inline-flex; align-items: center; gap: 8px; flex: none; color: var(--bit-balette-fg-muted); }
+.bit-balette-dialog .bit-balette-value { font-size: 12px; color: var(--bit-balette-fg-muted); }
+.bit-balette-dialog .bit-balette-chevron { display: inline-flex; color: var(--bit-balette-fg-subtle); }
+
+.bit-balette-dialog .bit-balette-toggle { position: relative; width: 28px; height: 16px; border-radius: 999px; background: var(--bit-balette-kbd-border); transition: background 120ms; }
+.bit-balette-dialog .bit-balette-toggle::after { content: ""; position: absolute; top: 2px; left: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; transition: transform 120ms; }
+.bit-balette-dialog .bit-balette-toggle[data-on="true"] { background: var(--bit-balette-accent); }
+.bit-balette-dialog .bit-balette-toggle[data-on="true"]::after { transform: translateX(12px); }
+
+/* ---------- Shortcut / kbd ---------- */
+
+.bit-balette-shortcut { display: inline-flex; align-items: center; gap: 3px; }
+.bit-balette-shortcut-then { font-size: 10px; color: var(--bit-balette-fg-subtle); margin: 0 2px; }
+
+.bit-balette-kbd {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 5px;
+    background: var(--bit-balette-kbd-bg);
+    color: var(--bit-balette-kbd-fg);
+    border: 1px solid var(--bit-balette-kbd-border);
+    border-bottom-width: 2px;
+    font-family: var(--bit-balette-font);
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1;
+}
+
+/* ---------- Empty / loading / prompt ---------- */
+
+.bit-balette-dialog .bit-balette-empty { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 40px 16px; color: var(--bit-balette-fg-muted); text-align: center; }
+.bit-balette-dialog .bit-balette-empty .bit-balette-svg { width: 28px; height: 28px; opacity: 0.5; margin-bottom: 4px; }
+.bit-balette-dialog .bit-balette-empty p { margin: 0; }
+.bit-balette-dialog .bit-balette-empty-title { color: var(--bit-balette-fg); font-weight: 500; }
+.bit-balette-dialog .bit-balette-empty-hint { font-size: 12px; }
+
+.bit-balette-dialog .bit-balette-prompt { padding: 28px 16px; text-align: center; color: var(--bit-balette-fg-muted); }
+.bit-balette-dialog .bit-balette-prompt-title { margin: 0 0 8px; color: var(--bit-balette-fg); font-weight: 500; }
+.bit-balette-dialog .bit-balette-prompt-hint { margin: 0; font-size: 12px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.bit-balette-dialog .bit-balette-sep { opacity: 0.5; }
+
+.bit-balette-dialog .bit-balette-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--bit-balette-border);
+    border-top-color: var(--bit-balette-accent);
+    border-radius: 50%;
+    animation: bit-balette-spin 700ms linear infinite;
+}
+
+@keyframes bit-balette-spin { to { transform: rotate(360deg); } }
+
+/* ---------- Footer ---------- */
+
+.bit-balette-dialog .bit-balette-footer {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 14px;
+    height: 40px;
+    padding: 0 14px;
+    border-top: 1px solid var(--bit-balette-border);
+    background: var(--bit-balette-bg-elevated);
+    color: var(--bit-balette-fg-muted);
+    font-size: 12px;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.bit-balette-dialog .bit-balette-hint { display: inline-flex; align-items: center; gap: 5px; min-width: 0; overflow: hidden; }
+.bit-balette-dialog .bit-balette-hint-right { margin-left: auto; flex: none; padding-left: 8px; }
+.bit-balette-dialog .bit-balette-toast { color: var(--bit-balette-fg); font-weight: 500; overflow: hidden; text-overflow: ellipsis; }
+.bit-balette-dialog .bit-balette-toast-confirm { color: var(--bit-balette-danger); }
+
+/* ---------- Detail pane ---------- */
+
+.bit-balette-dialog .bit-balette-detail {
+    flex: 0 0 40%;
+    max-height: var(--bit-balette-max-height);
+    overflow: auto;
+    border-left: 1px solid var(--bit-balette-border);
+    padding: 16px;
+    background: var(--bit-balette-bg-elevated);
+    color: var(--bit-balette-fg-muted);
+    font-size: 13px;
+}
+
+/* ---------- Trigger button ---------- */
+
+.bit-balette-trigger {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 10px 0 12px;
+    border-radius: 8px;
+    border: 1px solid var(--bit-balette-kbd-border, rgba(0, 0, 0, 0.12));
+    background: var(--bit-balette-kbd-bg, #f3f4f6);
+    color: var(--bit-balette-fg-muted, #6b7280);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+}
+
+.bit-balette-trigger:hover { color: var(--bit-balette-fg, #111); }
+.bit-balette-trigger-label { flex: 1 1 auto; text-align: left; }
+.bit-balette-trigger-shortcut { margin-left: 8px; }
+
+/* ---------- Utilities ---------- */
+
+.bit-balette-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.bit-balette-svg { flex: none; }
+
+/* ---------- Mobile ---------- */
+
+@media (max-width: 640px) {
+    .bit-balette-dialog {
+        top: 0;
+        width: 100vw;
+        max-width: 100vw;
+        height: 100dvh;
+        max-height: 100dvh;
+        border-radius: 0;
+    }
+    .bit-balette-dialog .bit-balette-main { max-height: 100dvh; height: 100dvh; }
+    .bit-balette-dialog .bit-balette-root { flex-direction: column; }
+    .bit-balette-dialog .bit-balette-detail { display: none; }
+    .bit-balette-dialog .bit-balette-footer .bit-balette-hint:not(.bit-balette-hint-right) { display: none; }
+    .bit-balette-dialog .bit-balette-item-trailing .bit-balette-shortcut { display: none; }
+}
