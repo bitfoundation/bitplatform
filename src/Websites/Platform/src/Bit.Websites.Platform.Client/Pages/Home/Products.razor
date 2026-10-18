@@ -186,6 +186,25 @@
         },
         new()
         {
+            Title = "SQLite and EF Core, in the browser tab",
+            Subtitle = "bit Bsqlite · EF Core on SQLite for Blazor",
+            LinkUrl = Urls.Bsqlite,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bsqlite runs SQLite and the stock EF Core provider in a worker in the user's browser, over OPFS, IndexedDB
+                    or Cache Storage, with the same entities and migrations as the server and live queries across tabs.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>builder.Services.AddBitBsqliteServices(sqlite => sqlite
+    .AddStorageProvider&lt;BsqliteOpfsStorageProvider&gt;()
+    .UseStorage(s => s.Prefer("opfs"))
+    .AddDatabase("app.db"));</CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Ink that feels like paper",
             Subtitle = "bit Bink · Blazor-native drawing and ink",
             LinkUrl = Urls.Bink,
