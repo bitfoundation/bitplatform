@@ -39,25 +39,39 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
         // The engine's transactions are ambient - while one is open every table write on the
         // database joins it - so a save made inside a transaction this context opened, or one the
         // application opened on the engine directly, becomes part of it instead of failing as a
-        // nested one. It is still atomic; the boundary is just the outer scope's, which is what the
-        // caller asked for - so a save that fails part-way inside an outer transaction leaves the
-        // entries it had already applied in that transaction, for the outer rollback to undo, exactly
-        // as a relational provider leaves the statements it had already executed. A transaction
-        // another context opened is a different matter: joining it
+        // nested one. It is still atomic: the save runs behind a savepoint, so one that fails
+        // part-way takes back the entries it had already applied and leaves the outer transaction
+        // as it found it, as a relational provider does with the savepoint it sets around each
+        // SaveChanges. A transaction another context opened is a different matter: joining it
         // would report this save as done while leaving its fate to that context's commit or
         // rollback, with this tracker none the wiser. That is refused.
         var database = _tables.Database;
-        var joins = database.HasActiveTransaction;
-        if (joins && database.ActiveTransactionOwner is { } owner && !ReferenceEquals(owner, _transactions))
+        var outer = database.ActiveTransaction;
+        if (outer is not null && database.ActiveTransactionOwner is { } owner && !ReferenceEquals(owner, _transactions))
         {
             throw new InvalidOperationException(
                 "Another DbContext on the same BlazeDb store has a transaction open. A save cannot join " +
                 "it: the engine allows one transaction at a time, so commit or dispose that one first.");
         }
 
-        using var transaction = joins ? null : database.BeginTransaction();
-        var count = 0;
+        using var transaction = outer is null ? database.BeginTransaction() : null;
+        var savepoint = outer?.Savepoint() ?? 0;
+        try
+        {
+            var count = Apply(entries);
+            transaction?.Commit();
+            return count;
+        }
+        catch when (outer is not null)
+        {
+            outer.RollbackTo(savepoint);
+            throw;
+        }
+    }
 
+    private int Apply(IList<IUpdateEntry> entries)
+    {
+        var count = 0;
         foreach (var entry in entries)
         {
             var binding = _tables.GetBinding(entry.EntityType);
@@ -107,8 +121,6 @@ internal sealed class BlazeDbEfCoreDatabase : IDatabase
             }
             count++;
         }
-
-        transaction?.Commit();
         return count;
     }
 

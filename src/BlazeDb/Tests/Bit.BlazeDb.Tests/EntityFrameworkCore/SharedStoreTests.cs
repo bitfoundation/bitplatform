@@ -448,4 +448,192 @@ public class SharedStoreTests
         Assert.AreEqual(1, next.SaveChanges());
         Assert.AreEqual("Ada", engine.GetTable(Person.Table).Get(1)!.Name);
     }
+
+    [TestMethod]
+    public void A_Detached_Entity_Updates_Its_Row_Even_When_An_Indexed_Value_Changed()
+    {
+        // The disconnected-update pattern: the entity is a new object, so its original values are
+        // its own current ones and say nothing about what the City index holds.
+        var options = IsolatedOptions();
+        using (var seed = new PeopleContext(options))
+        {
+            seed.People.Add(Ada());
+            seed.SaveChanges();
+        }
+
+        using (var context = new PeopleContext(options))
+        {
+            context.Update(new Person { Id = 1, Name = "Ada", City = "Paris", Age = 36 });
+            Assert.AreEqual(1, context.SaveChanges());
+        }
+
+        using (var context = new PeopleContext(options))
+        {
+            var attached = new Person { Id = 1, Name = "Ada", City = "Paris", Age = 36 };
+            context.Attach(attached);
+            attached.City = "Berlin";
+            Assert.AreEqual(1, context.SaveChanges());
+        }
+
+        using (var check = new PeopleContext(options))
+        {
+            Assert.AreEqual("Berlin", check.People.Single(p => p.City == "Berlin").City);
+            Assert.IsEmpty(check.People.Where(p => p.City == "London" || p.City == "Paris").ToList());
+            var table = check.Database.GetBlazeDb().GetTable(Person.Table);
+            Assert.IsEmpty(table.Lookup(Person.Indexes.City, "London"));
+            Assert.IsEmpty(table.Lookup(Person.Indexes.City, "Paris"));
+            Assert.ContainsSingle(table.Lookup(Person.Indexes.City, "Berlin"));
+        }
+
+        using (var context = new PeopleContext(options))
+        {
+            context.People.Remove(new Person { Id = 1 });
+            Assert.AreEqual(1, context.SaveChanges());
+        }
+
+        using var empty = new PeopleContext(options);
+        Assert.IsEmpty(empty.People.ToList());
+        Assert.IsEmpty(empty.Database.GetBlazeDb().GetTable(Person.Table).Lookup(Person.Indexes.City, "Berlin"));
+    }
+
+    [TestMethod]
+    public void Deleting_A_Row_Another_Context_Deleted_Is_A_Concurrency_Error()
+    {
+        var options = IsolatedOptions();
+        using var seed = new PeopleContext(options);
+        seed.People.Add(Ada());
+        seed.SaveChanges();
+
+        using var a = new PeopleContext(options);
+        using var b = new PeopleContext(options);
+        var fromA = a.People.Single();
+        b.People.Remove(b.People.Single());
+        b.SaveChanges();
+
+        a.People.Remove(fromA);
+        var ex = Assert.ThrowsExactly<DbUpdateConcurrencyException>(() => a.SaveChanges());
+        Assert.IsExactInstanceOfType<KeyNotFoundException>(ex.InnerException);
+    }
+
+    [TestMethod]
+    public void A_Save_That_Fails_Inside_A_Transaction_Leaves_None_Of_Its_Writes_In_It()
+    {
+        using var context = new PeopleContext(IsolatedOptions());
+        context.People.Add(new Person { Id = 1, Name = "Ada", City = "London", Age = 36, Email = "ada@x" });
+        context.SaveChanges();
+        var table = context.Database.GetBlazeDb().GetTable(Person.Table);
+
+        using (var transaction = context.Database.BeginTransaction())
+        {
+            context.People.Add(new Person { Id = 2, Name = "Grace", City = "NYC", Age = 45 });
+            var clash = new Person { Id = 3, Name = "Alan", City = "London", Age = 41, Email = "ada@x" };
+            context.People.Add(clash);
+            Assert.ThrowsExactly<DbUpdateException>(() => context.SaveChanges());
+
+            // The transaction is as it was before the save, and still open.
+            Assert.IsNull(table.Get(2));
+            Assert.IsNull(table.Get(3));
+
+            clash.Email = "alan@x";
+            Assert.AreEqual(2, context.SaveChanges());
+            transaction.Commit();
+        }
+
+        Assert.AreSequenceEqual([1, 2, 3], table.Scan().Select(p => p.Id).Order());
+    }
+
+    [TestMethod]
+    public async Task A_Synchronous_Open_That_Cannot_Wait_Is_Finished_By_EnsureCreatedAsync_Not_Repeated()
+    {
+        var storage = new SlowOpenStorage();
+        var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb(storage).Options;
+        using var context = new PeopleContext(options);
+
+        // A thread with a synchronization context cannot wait for asynchronous storage.
+        var previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        try
+        {
+            var ex = Assert.ThrowsExactly<InvalidOperationException>(() => context.People.ToList());
+            Assert.Contains("EnsureCreatedAsync", ex.Message);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+
+        storage.Release();
+        Assert.IsTrue(await context.Database.EnsureCreatedAsync());
+        Assert.AreEqual(1, storage.ManifestReads); // One open, one engine, one flusher on the storage.
+        Assert.IsEmpty(context.People.ToList());
+
+        await context.Database.EnsureDeletedAsync();
+    }
+
+    [TestMethod]
+    public async Task EnsureDeleted_On_A_Thread_That_Cannot_Wait_Refuses_Before_Touching_The_Store()
+    {
+        var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb(new BlazeDbInMemoryStorage()).Options;
+        using var context = new PeopleContext(options);
+        context.Database.EnsureCreated();
+        var engine = context.Database.GetBlazeDb();
+
+        var previous = SynchronizationContext.Current;
+        SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+        try
+        {
+            var ex = Assert.ThrowsExactly<InvalidOperationException>(() => context.Database.EnsureDeleted());
+            Assert.Contains("EnsureDeletedAsync", ex.Message);
+        }
+        finally
+        {
+            SynchronizationContext.SetSynchronizationContext(previous);
+        }
+
+        Assert.AreSame(engine, context.Database.GetBlazeDb());
+        Assert.IsTrue(await context.Database.EnsureDeletedAsync());
+    }
+
+    [TestMethod]
+    public void A_Context_Whose_Reopen_Failed_Does_Not_Fall_Back_To_The_Released_Engine()
+    {
+        var storage = new FailingReadStorage();
+        var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb(storage).Options;
+        using var a = new PeopleContext(options);
+        a.People.Add(Ada());
+        a.SaveChanges();
+
+        using (var b = new PeopleContext(options))
+        {
+            Assert.IsTrue(b.Database.EnsureDeleted());
+        }
+
+        storage.FailReads = true;
+        Assert.ThrowsExactly<IOException>(() => a.People.ToList());
+
+        // Not the engine B released, still holding Ada: the store was deleted, so it opens empty.
+        storage.FailReads = false;
+        Assert.IsEmpty(a.People.ToList());
+        a.Database.EnsureDeleted();
+    }
+
+    /// <summary>A backend whose reads can be made to fail, to make an open throw.</summary>
+    private sealed class FailingReadStorage : IBlazeDbStorage
+    {
+        private readonly BlazeDbInMemoryStorage _inner = new();
+
+        public bool FailReads { get; set; }
+
+        public ValueTask<byte[]?> ReadAsync(string name, CancellationToken cancellationToken = default) =>
+            FailReads ? throw new IOException("The storage is unavailable.") : _inner.ReadAsync(name, cancellationToken);
+
+        public ValueTask WriteAtomicAsync(string name, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default) =>
+            _inner.WriteAtomicAsync(name, data, cancellationToken);
+
+        public ValueTask AppendAsync(string name, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default) =>
+            _inner.AppendAsync(name, data, cancellationToken);
+
+        public ValueTask DeleteAsync(string name, CancellationToken cancellationToken = default) =>
+            _inner.DeleteAsync(name, cancellationToken);
+    }
 }

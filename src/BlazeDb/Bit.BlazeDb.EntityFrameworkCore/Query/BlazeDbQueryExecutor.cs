@@ -25,6 +25,7 @@ internal sealed class BlazeDbQueryExecutor
 
     public object? Execute(Expression query, DbContext context)
     {
+        query = BlazeDbQueryRootInliner.Inline(query);
         query = BlazeDbQueryPreparer.Prepare(query, out var trackingOverride);
 
         var root = BlazeDbQueryPreparer.FindRoot(query);

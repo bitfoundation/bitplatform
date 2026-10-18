@@ -24,6 +24,8 @@ public sealed class BlazeDbOrderedIndexDefinition<TRow, TIndexKey> : BlazeDbInde
 
     public IComparer<TIndexKey> Comparer { get; }
 
+    internal override bool HasDefaultComparer => Equals(Comparer, DefaultComparer());
+
     /// <summary>
     /// <see cref="Comparer{T}.Default"/>, except for strings, which it compares by the current
     /// culture. An index has to answer the same question on every machine that opens the database,

@@ -52,7 +52,32 @@ internal sealed class BlazeDbDatabaseCreator : IDatabaseCreator
             ? Task.FromCanceled<bool>(cancellationToken)
             : Task.FromResult(CanConnect());
 
-    public bool EnsureDeleted() => EnsureDeletedAsync().GetAwaiter().GetResult();
+    /// <summary>
+    /// Deletes synchronously where that is possible. Closing a persistent store stops its flusher,
+    /// flushes and deletes files, all of it asynchronous I/O; where the thread cannot wait for that
+    /// (see <see cref="BlazeDbEngineCache.CanBlock"/>) the call is refused before anything is
+    /// touched, rather than failing part-way with the engine already released.
+    /// </summary>
+    public bool EnsureDeleted()
+    {
+        if (!BlazeDbEngineCache.CanBlock && Extension() is { OwnsEngine: true, Storage: not null })
+        {
+            throw new InvalidOperationException(
+                "Deleting a persistent BlazeDb store needs asynchronous I/O, which this thread cannot " +
+                "wait for. Call await context.Database.EnsureDeletedAsync() instead.");
+        }
+
+        var deleting = EnsureDeletedAsync();
+        if (!deleting.IsCompleted && !BlazeDbEngineCache.CanBlock)
+        {
+            // An in-memory store closes synchronously unless an open is in flight on it; this
+            // delete then completes on its own once that open has finished.
+            throw new InvalidOperationException(
+                "This BlazeDb store is still being opened, so it cannot be deleted synchronously on this " +
+                "thread. Call await context.Database.EnsureDeletedAsync() instead.");
+        }
+        return deleting.GetAwaiter().GetResult();
+    }
 
     public async Task<bool> EnsureDeletedAsync(CancellationToken cancellationToken = default)
     {

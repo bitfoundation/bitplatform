@@ -19,7 +19,8 @@ internal sealed class BlazeDbTableBinding<TKey, TRow> : IBlazeDbTableBinding
                 i.Members,
                 Ordered: i.GetType().GetGenericTypeDefinition() == typeof(BlazeDbOrderedIndexDefinition<,>),
                 KeyType: i.GetType().GetGenericArguments()[1],
-                Definition: i))
+                Definition: i,
+                DefaultComparer: i.HasDefaultComparer))
             .ToArray();
     }
 
@@ -45,6 +46,14 @@ internal sealed class BlazeDbTableBinding<TKey, TRow> : IBlazeDbTableBinding
     public void UpdateInPlace(object row, object previousValues) =>
         _table.UpdateInPlace((TRow)row, (TRow)previousValues);
 
-    public void Delete(object row, object previousValues) =>
-        _table.DeleteInPlace(_table.Descriptor.KeySelector((TRow)row), (TRow)previousValues);
+    public void Delete(object row, object previousValues)
+    {
+        var key = _table.Descriptor.KeySelector((TRow)row);
+        if (!_table.DeleteInPlace(key, (TRow)previousValues, (TRow)row))
+        {
+            // Nothing to delete means someone else already did: the same "0 rows affected" an
+            // update of a vanished row reports, and for the same reason.
+            throw new KeyNotFoundException($"Table '{TableName}' has no row with key '{key}'.");
+        }
+    }
 }

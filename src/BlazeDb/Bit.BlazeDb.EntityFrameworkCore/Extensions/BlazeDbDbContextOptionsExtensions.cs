@@ -82,11 +82,10 @@ public static class BlazeDbDbContextOptionsExtensions
     /// <inheritdoc cref="UseBlazeDb(DbContextOptionsBuilder, Action{Bit.BlazeDb.BlazeDbDatabaseOptions})"/>
     public static DbContextOptionsBuilder<TContext> UseBlazeDb<TContext>(
         this DbContextOptionsBuilder<TContext> optionsBuilder, Action<Bit.BlazeDb.BlazeDbDatabaseOptions> configure)
-        where TContext : DbContext
-    {
-        UseBlazeDb(optionsBuilder, typeof(TContext).FullName ?? typeof(TContext).Name);
-        return (DbContextOptionsBuilder<TContext>)UseBlazeDb((DbContextOptionsBuilder)optionsBuilder, configure);
-    }
+        where TContext : DbContext =>
+        // The options of a typed builder carry TContext, so the non-generic overload's default name
+        // is the same one - and, like it, applies only when no store has been chosen yet.
+        (DbContextOptionsBuilder<TContext>)UseBlazeDb((DbContextOptionsBuilder)optionsBuilder, configure);
 
     /// <summary><see cref="UseBlazeDb(DbContextOptionsBuilder, IBlazeDbStorage)"/> plus engine settings.</summary>
     public static DbContextOptionsBuilder UseBlazeDb(

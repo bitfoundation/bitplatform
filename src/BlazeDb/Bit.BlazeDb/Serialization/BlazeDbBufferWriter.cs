@@ -140,6 +140,8 @@ public sealed class BlazeDbBufferWriter
 
     public void WriteTimeSpan(TimeSpan value) => WriteFixed64((ulong)value.Ticks);
 
+    // Shifted as an unsigned 64-bit value: field numbers run to 2^29 - 1, and shifting those in an
+    // int would overflow into the sign bit and encode a different field.
     public void WriteTag(int fieldNumber, BlazeDbWireType wireType) =>
-        WriteVarUInt((ulong)((fieldNumber << 3) | (int)wireType));
+        WriteVarUInt(((ulong)(uint)fieldNumber << 3) | (uint)wireType);
 }

@@ -534,6 +534,92 @@ public class DurabilityTests
         }
     }
 
+    [TestMethod]
+    public async Task A_Leftover_Log_From_An_Earlier_Database_Is_Never_Replayed_Into_A_New_One()
+    {
+        // An earlier database's logs, of the first and second generations, as a delete that could not
+        // remove them all - a backend that cannot list its files - leaves them.
+        var earlier = new BlazeDbInMemoryStorage();
+        await using (var db = await OpenAsync(earlier))
+        {
+            db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Old one", 1));
+            await db.FlushAsync();
+            var firstLog = earlier.GetFile("wal-1.blz")!;
+            await db.CheckpointAsync();
+            db.GetTable(PersonTable.Descriptor).Insert(new Person(2, "Old two", 2));
+            await db.FlushAsync();
+            earlier.SetFile("wal-1.blz", firstLog);
+        }
+
+        var storage = new BlazeDbInMemoryStorage();
+        storage.SetFile("wal-1.blz", earlier.GetFile("wal-1.blz")!);
+        storage.SetFile("wal-2.blz", earlier.GetFile("wal-2.blz")!);
+
+        await using (var db = await OpenAsync(storage))
+        {
+            var people = db.GetTable(PersonTable.Descriptor);
+            people.Insert(new Person(10, "New one", 10));
+            await db.FlushAsync();
+            await db.CheckpointAsync();
+            people.Insert(new Person(20, "New two", 20));
+        }
+
+        await using var reopened = await OpenAsync(storage);
+        Assert.AreSequenceEqual([10, 20], reopened.GetTable(PersonTable.Descriptor).Scan().Select(p => p.Id).Order());
+    }
+
+    [TestMethod]
+    public async Task A_Checkpoint_Whose_Cleanup_Fails_Still_Succeeds_And_Is_Announced()
+    {
+        var storage = new UndeletableStorage();
+        var announced = new List<ulong>();
+        await using var db = await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions
+        {
+            Storage = storage,
+            FlushInterval = Never,
+            OnCheckpoint = announced.Add,
+        }.AddTable(PersonTable.Descriptor));
+
+        db.GetTable(PersonTable.Descriptor).Insert(new Person(1, "Ada", 36));
+        await db.FlushAsync();
+        storage.Undeletable = "wal-1.blz";
+
+        // The new generation is durable; the old log merely could not be removed.
+        await db.CheckpointAsync();
+        Assert.AreSequenceEqual([2UL], announced);
+        Assert.IsNull(db.LastBackgroundError);
+        Assert.IsNotNull(storage.Inner.GetFile("wal-1.blz"));
+
+        // The removal is tried again at the next checkpoint.
+        storage.Undeletable = null;
+        await db.CheckpointAsync();
+        Assert.AreSequenceEqual([2UL, 3UL], announced);
+        Assert.IsNull(storage.Inner.GetFile("wal-1.blz"));
+        Assert.IsNull(storage.Inner.GetFile("wal-2.blz"));
+    }
+
+    /// <summary>A backend that refuses to delete one file.</summary>
+    private sealed class UndeletableStorage : IBlazeDbStorage
+    {
+        public BlazeDbInMemoryStorage Inner { get; } = new();
+
+        public string? Undeletable { get; set; }
+
+        public ValueTask<byte[]?> ReadAsync(string name, CancellationToken cancellationToken = default) =>
+            Inner.ReadAsync(name, cancellationToken);
+
+        public ValueTask WriteAtomicAsync(string name, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default) =>
+            Inner.WriteAtomicAsync(name, data, cancellationToken);
+
+        public ValueTask AppendAsync(string name, ReadOnlyMemory<byte> data, CancellationToken cancellationToken = default) =>
+            Inner.AppendAsync(name, data, cancellationToken);
+
+        public ValueTask DeleteAsync(string name, CancellationToken cancellationToken = default) =>
+            name == Undeletable
+                ? throw new IOException($"'{name}' is in use.")
+                : Inner.DeleteAsync(name, cancellationToken);
+    }
+
     /// <summary>A backend that cannot list its files, so a delete has to go by what the manifest names.</summary>
     private sealed class OpaqueStorage(BlazeDbInMemoryStorage inner) : IBlazeDbStorage
     {

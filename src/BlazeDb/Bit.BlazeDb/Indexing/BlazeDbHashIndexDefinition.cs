@@ -23,5 +23,9 @@ public sealed class BlazeDbHashIndexDefinition<TRow, TIndexKey> : BlazeDbIndexDe
 
     public IEqualityComparer<TIndexKey> Comparer { get; }
 
+    internal override bool HasDefaultComparer =>
+        Equals(Comparer, EqualityComparer<TIndexKey>.Default) ||
+        (typeof(TIndexKey) == typeof(string) && Equals(Comparer, StringComparer.Ordinal));
+
     internal override IBlazeDbIndexStore<TRow> CreateStore() => new BlazeDbHashIndexStore<TRow, TIndexKey>(this);
 }

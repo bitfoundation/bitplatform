@@ -36,5 +36,12 @@ public abstract class BlazeDbIndexDefinition<TRow>
     /// </summary>
     public bool IsUnique { get; }
 
+    /// <summary>
+    /// Whether the index compares keys the way the type itself does - by default equality and order
+    /// (ordinal for strings) - rather than through a comparer of the definer's choosing. A query
+    /// layer can only treat a lookup as the answer to <c>==</c> or <c>&lt;</c> when it is.
+    /// </summary>
+    internal abstract bool HasDefaultComparer { get; }
+
     internal abstract IBlazeDbIndexStore<TRow> CreateStore();
 }

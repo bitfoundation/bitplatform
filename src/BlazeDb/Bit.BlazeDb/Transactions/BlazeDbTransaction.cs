@@ -20,6 +20,27 @@ public sealed class BlazeDbTransaction : IDisposable
     internal void Record(IBlazeDbTxnOp op) => _ops.Add(op);
 
     /// <summary>
+    /// A point the transaction can later be rolled back to with <see cref="RollbackTo"/>, undoing
+    /// only the writes recorded after it. The EF Core provider takes one around each save that joins
+    /// an open transaction, so a save that fails part-way leaves none of its writes behind.
+    /// </summary>
+    internal int Savepoint()
+    {
+        EnsureActive();
+        return _ops.Count;
+    }
+
+    /// <summary>Undoes the writes recorded since <paramref name="savepoint"/>; the transaction stays open.</summary>
+    internal void RollbackTo(int savepoint)
+    {
+        EnsureActive();
+        _db.RollbackTransactionTo(this, savepoint);
+    }
+
+    /// <summary>Forgets the writes from <paramref name="savepoint"/> on, once they have been reverted.</summary>
+    internal void Truncate(int savepoint) => _ops.RemoveRange(savepoint, _ops.Count - savepoint);
+
+    /// <summary>
     /// Commits the batch. If the commit cannot be journaled, every write is undone and the exception
     /// propagates; either way the transaction is over, so disposing it afterwards does nothing.
     /// </summary>

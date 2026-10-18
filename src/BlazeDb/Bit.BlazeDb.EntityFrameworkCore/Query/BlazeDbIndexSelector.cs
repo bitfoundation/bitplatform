@@ -11,7 +11,9 @@ namespace Bit.BlazeDb.EntityFrameworkCore.Query;
 /// scan instead of touching every row. Preference runs primary-key equality (or membership) first,
 /// then compound equality (most selective index), then single-property equality or membership, then a range, and
 /// finally an ordering that an ordered index can serve for free. Anything not turned into a source
-/// stays a residual filter.
+/// stays a residual filter - and so does a test the source answers only approximately: one against
+/// an index with a comparer of its own, or over floating-point values, where NaN is equal to itself
+/// and smallest of all to an index but to no C# operator (see <see cref="BlazeDbIndex.Exact"/>).
 /// </summary>
 internal static class BlazeDbIndexSelector
 {
@@ -78,7 +80,12 @@ internal static class BlazeDbIndexSelector
                 {
                     continue;
                 }
-                used.Add(i);
+                // The key dictionary compares by default equality, which only a floating-point key
+                // can tell apart from ==: a NaN key finds the row whose key is NaN.
+                if (!BlazeDbIndex.HasFloatingPoint(binding.KeyType))
+                {
+                    used.Add(i);
+                }
                 return true;
             }
         }
@@ -126,9 +133,12 @@ internal static class BlazeDbIndexSelector
             }
 
             plan.UseEquality(index, key);
-            foreach (var (i, _) in matched)
+            if (index.Exact)
             {
-                used.Add(i);
+                foreach (var (i, _) in matched)
+                {
+                    used.Add(i);
+                }
             }
             return true;
         }
@@ -155,8 +165,10 @@ internal static class BlazeDbIndexSelector
                 {
                     continue;
                 }
-                var index = Single(binding, comparison.Member, ordered: false)
-                            ?? Single(binding, comparison.Member, ordered: true);
+                // A membership list is a lookup per value, and two values a comparer of the index's
+                // own counts as one ("A" and "a", ignoring case) would bring the same rows back twice.
+                var index = Single(binding, comparison.Member, ordered: false, defaultComparerOnly: membership)
+                            ?? Single(binding, comparison.Member, ordered: true, defaultComparerOnly: membership);
                 if (index is null)
                 {
                     continue;
@@ -175,7 +187,10 @@ internal static class BlazeDbIndexSelector
                 {
                     continue;
                 }
-                used.Add(i);
+                if (index.Exact)
+                {
+                    used.Add(i);
+                }
                 return true;
             }
         }
@@ -191,8 +206,10 @@ internal static class BlazeDbIndexSelector
     {
         foreach (var group in comparisons.Where(c => c.Comparison!.IsRange).GroupBy(c => c.Comparison!.Member))
         {
+            // An index ordered by a comparer of its own holds the range's rows somewhere other than
+            // between its bounds, so it cannot even narrow the search.
             var index = Single(binding, group.Key, ordered: true);
-            if (index is null)
+            if (index is not { DefaultComparer: true })
             {
                 continue;
             }
@@ -221,8 +238,9 @@ internal static class BlazeDbIndexSelector
                 }
 
                 // The engine's ranges are inclusive at both ends, so a strict comparison keeps its
-                // conjunct as a residual filter that trims the boundary rows.
-                if (comparison.Operator is ExpressionType.GreaterThanOrEqual or ExpressionType.LessThanOrEqual)
+                // conjunct as a residual filter that trims the boundary rows. So does any comparison
+                // over floating-point values, whose NaNs sort below the lower end of an open range.
+                if (index.Exact && comparison.Operator is ExpressionType.GreaterThanOrEqual or ExpressionType.LessThanOrEqual)
                 {
                     usedHere.Add(i);
                 }
@@ -269,8 +287,9 @@ internal static class BlazeDbIndexSelector
             return false;
         }
 
+        // Walking an index answers an ordering only in the order the type itself sorts in.
         var index = Single(binding, member.Member.Name, ordered: true);
-        if (index is null)
+        if (index is not { DefaultComparer: true })
         {
             return false;
         }
@@ -279,7 +298,8 @@ internal static class BlazeDbIndexSelector
         return true;
     }
 
-    private static BlazeDbIndex? Single(IBlazeDbTableBinding binding, string member, bool ordered) =>
+    private static BlazeDbIndex? Single(IBlazeDbTableBinding binding, string member, bool ordered, bool defaultComparerOnly = false) =>
         binding.Indexes.FirstOrDefault(i =>
-            i.Ordered == ordered && i.Members.Count == 1 && i.Members[0] == member);
+            i.Ordered == ordered && i.Members.Count == 1 && i.Members[0] == member &&
+            (i.DefaultComparer || !defaultComparerOnly));
 }

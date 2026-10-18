@@ -246,6 +246,61 @@ public class InPlaceWriteTests
     }
 
     [TestMethod]
+    public async Task A_Detached_Instance_Is_Written_Against_The_Values_The_Table_Holds()
+    {
+        // An object that is not the table's - attached by key from outside - has no record of what
+        // the indexes were built from; its "previous values" are its own. The held row still has them.
+        var (db, accounts) = await OpenAsync();
+        await using var owned = db;
+        accounts.Insert(Make(1, tenant: 1));
+
+        var detached = Make(1, tenant: 2);
+        accounts.UpdateInPlace(detached, Snapshot(detached));
+
+        Assert.AreSame(detached, accounts.Get(1));
+        Assert.IsEmpty(accounts.Lookup(Account.Indexes.TenantId, 1));
+        Assert.AreSame(detached, accounts.Lookup(Account.Indexes.TenantId, 2).Single());
+
+        var deleting = Make(1, tenant: 9);
+        Assert.IsTrue(accounts.DeleteInPlace(1, Snapshot(deleting), deleting));
+        Assert.AreEqual(0, accounts.Count);
+        Assert.IsEmpty(accounts.Lookup(Account.Indexes.TenantId, 2));
+    }
+
+    [TestMethod]
+    public async Task A_Detached_Instance_Is_Refused_When_The_Held_Row_Was_Itself_Changed_In_Place()
+    {
+        var (db, accounts) = await OpenAsync();
+        await using var owned = db;
+        accounts.Insert(Make(1, tenant: 1));
+        accounts.Get(1)!.TenantId = 5; // Changed through the held instance, never written.
+
+        var detached = Make(1, tenant: 2);
+        Assert.ThrowsExactly<BlazeDbStaleRowException>(() => accounts.UpdateInPlace(detached, Snapshot(detached)));
+        Assert.ContainsSingle(accounts.Lookup(Account.Indexes.TenantId, 1));
+    }
+
+    [TestMethod]
+    public async Task Rolling_Back_To_A_Savepoint_Undoes_Only_The_Later_Writes()
+    {
+        var (db, accounts) = await OpenAsync();
+        await using var owned = db;
+
+        using var transaction = db.BeginTransaction();
+        accounts.Insert(Make(1));
+        var savepoint = transaction.Savepoint();
+        accounts.Insert(Make(2));
+        accounts.Delete(1);
+
+        transaction.RollbackTo(savepoint);
+        Assert.AreSequenceEqual([1], accounts.Scan().Select(a => a.Id));
+
+        accounts.Insert(Make(3));
+        transaction.Commit();
+        Assert.AreSequenceEqual([1, 3], accounts.Scan().Select(a => a.Id).Order());
+    }
+
+    [TestMethod]
     public void Index_Definitions_Name_The_Members_They_Cover()
     {
         Assert.AreSequenceEqual(["TenantId"], Account.Indexes.TenantId.Members);

@@ -266,4 +266,37 @@ public class SaveChangesTests
         Assert.AreEqual(new DateTimeOffset(2026, 1, 2, 3, 4, 5, TimeSpan.FromHours(2)), reloaded.DueAt);
         Assert.IsEmpty(fresh.Notes.Where(n => n.Bucket == null).ToList());
     }
+
+    [TestMethod]
+    public async Task A_Collection_Or_Blob_Changed_In_Place_Is_Saved_And_Survives_A_Restart()
+    {
+        // Nothing else about the note changes, so only comparing the collections by their contents -
+        // against a snapshot that is a copy, not the same list - shows the change tracker the edit.
+        var storage = new Bit.BlazeDb.Storage.BlazeDbInMemoryStorage();
+        var options = new DbContextOptionsBuilder<PeopleContext>().UseBlazeDb(storage).Options;
+        using (var context = new PeopleContext(options))
+        {
+            context.Notes.Add(new Note { Id = 1, Tags = ["a", "b"], Scores = [1, 2], Payload = [1, 2] });
+            context.SaveChanges();
+
+            var note = context.Notes.Single();
+            note.Tags.Add("c");
+            Assert.AreEqual(1, context.SaveChanges());
+
+            note.Scores[0] = 9;
+            note.Payload[1] = 7;
+            Assert.AreEqual(1, context.SaveChanges());
+            Assert.AreEqual(0, context.SaveChanges());
+
+            await context.Database.GetBlazeDb().FlushAsync();
+            await context.Database.GetService<BlazeDbEngineCache>().ReleaseAsync(storage);
+        }
+
+        using var reopened = new PeopleContext(options);
+        var reloaded = reopened.Notes.Single();
+        Assert.AreSequenceEqual(["a", "b", "c"], reloaded.Tags);
+        Assert.AreSequenceEqual([9, 2], reloaded.Scores);
+        Assert.AreSequenceEqual(new byte[] { 1, 7 }, reloaded.Payload);
+        await reopened.Database.EnsureDeletedAsync();
+    }
 }

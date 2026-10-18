@@ -12,6 +12,24 @@ public class DbContextApiTests
             .Options;
 
     [TestMethod]
+    public void Engine_Settings_Keep_A_Store_Name_Chosen_Before_Them()
+    {
+        static string? NameOf(DbContextOptions options) =>
+            options.FindExtension<Bit.BlazeDb.EntityFrameworkCore.Infrastructure.BlazeDbOptionsExtension>()!.DatabaseName;
+
+        var named = new DbContextOptionsBuilder<PeopleContext>()
+            .UseBlazeDb("shared")
+            .UseBlazeDb(o => o.FlushInterval = TimeSpan.FromSeconds(1))
+            .Options;
+        Assert.AreEqual("shared", NameOf(named));
+
+        var defaulted = new DbContextOptionsBuilder<PeopleContext>()
+            .UseBlazeDb(o => o.FlushInterval = TimeSpan.FromSeconds(1))
+            .Options;
+        Assert.AreEqual(typeof(PeopleContext).FullName, NameOf(defaulted));
+    }
+
+    [TestMethod]
     public void AddDbContext_Resolves_A_Working_Context()
     {
         var name = "di-" + Guid.NewGuid().ToString("N");

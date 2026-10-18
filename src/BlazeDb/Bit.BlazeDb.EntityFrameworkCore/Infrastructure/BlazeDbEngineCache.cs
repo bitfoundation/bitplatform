@@ -54,9 +54,10 @@ internal sealed class BlazeDbEngineCache
             var slot = SlotFor(key);
             if (!slot.Gate.Wait(0))
             {
-                // Someone else is opening this store. On a thread with a synchronization context -
-                // the browser's only thread - waiting here would wait for a continuation that can
-                // only run on this thread, so the caller is told how to start asynchronously instead.
+                // Someone else is opening this store. Where this thread cannot block - the browser's
+                // only thread, or one with a synchronization context - waiting here would wait for a
+                // continuation that can only run on this thread, so the caller is told how to start
+                // asynchronously instead.
                 ThrowIfCannotBlock();
                 slot.Gate.Wait();
             }
@@ -68,7 +69,7 @@ internal sealed class BlazeDbEngineCache
                 }
                 if (slot.Database is null)
                 {
-                    slot.Database = Open(extension, model);
+                    slot.Database = Open(slot, extension, model);
                     created = true;
                 }
                 else
@@ -106,8 +107,25 @@ internal sealed class BlazeDbEngineCache
                 }
                 if (slot.Database is null)
                 {
-                    slot.Database = await OpenAsync(extension, model, cancellationToken).ConfigureAwait(false);
-                    return (slot.Database, true);
+                    // An open a synchronous caller had to leave running is finished here rather than
+                    // started a second time. The open itself is not tied to this caller's token: a
+                    // cancelled wait leaves it running for the next caller to pick up, instead of
+                    // abandoning it half way through recovery.
+                    var open = slot.PendingOpen ??= OpenAsync(extension, model, CancellationToken.None).AsTask();
+                    BlazeDbDatabase database;
+                    try
+                    {
+                        database = await open.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    }
+                    catch when (open.IsFaulted || open.IsCanceled)
+                    {
+                        slot.PendingOpen = null; // The open failed; the next caller starts afresh.
+                        throw;
+                    }
+                    slot.PendingOpen = null;
+                    slot.Database = database;
+                    EnsureTables(database, model);
+                    return (database, true);
                 }
                 EnsureTables(slot.Database, model);
                 return (slot.Database, false);
@@ -142,6 +160,21 @@ internal sealed class BlazeDbEngineCache
                 slot.Removed = true;
             }
             Interlocked.Increment(ref _version);
+            if (slot.PendingOpen is { } pending)
+            {
+                // An open a synchronous caller left running is still an engine on this storage, with
+                // a flusher of its own; it has to be finished and closed like any other.
+                slot.PendingOpen = null;
+                try
+                {
+                    slot.Database = await pending.ConfigureAwait(false);
+                }
+                catch
+                {
+                    // It never opened, so there is nothing to close. The failure belongs to the
+                    // caller that started it, which has already been told to retry asynchronously.
+                }
+            }
             if (slot.Database is { } database)
             {
                 slot.Database = null;
@@ -166,9 +199,17 @@ internal sealed class BlazeDbEngineCache
         }
     }
 
+    /// <summary>
+    /// Whether the current thread may wait synchronously for asynchronous work. Not in the browser,
+    /// where there is one thread and a wait that blocks it fails outright ("Cannot wait on
+    /// monitors") or would wait forever for I/O that resolves on that same thread; and not under a
+    /// synchronization context, whose continuations need the very thread that would be blocked.
+    /// </summary>
+    internal static bool CanBlock => !OperatingSystem.IsBrowser() && SynchronizationContext.Current is null;
+
     private static void ThrowIfCannotBlock()
     {
-        if (SynchronizationContext.Current is not null)
+        if (!CanBlock)
         {
             throw new InvalidOperationException(
                 "This BlazeDb store is being opened asynchronously. Await " +
@@ -176,22 +217,33 @@ internal sealed class BlazeDbEngineCache
         }
     }
 
-    private static BlazeDbDatabase Open(BlazeDbOptionsExtension extension, IModel model)
+    /// <summary>
+    /// Opens synchronously, or as far as the thread allows. Storage whose reads complete at once -
+    /// in memory - opens right here. Anything else is waited for only where waiting is possible;
+    /// elsewhere the open keeps running in the slot, where the next caller - the
+    /// <c>EnsureCreatedAsync</c> the exception asks for - finishes it rather than starting another
+    /// on the same storage, and a release closes it.
+    /// </summary>
+    private static BlazeDbDatabase Open(Slot slot, BlazeDbOptionsExtension extension, IModel model)
     {
-        var open = OpenAsync(extension, model, CancellationToken.None);
-        if (open.IsCompletedSuccessfully)
-        {
-            return open.Result;
-        }
-
-        if (SynchronizationContext.Current is not null)
+        var open = slot.PendingOpen ??= OpenAsync(extension, model, CancellationToken.None).AsTask();
+        if (!open.IsCompleted && !CanBlock)
         {
             throw new InvalidOperationException(
                 "Opening this BlazeDb storage requires an asynchronous start. Call " +
                 "await context.Database.EnsureCreatedAsync() before the first synchronous query.");
         }
 
-        return open.AsTask().GetAwaiter().GetResult();
+        try
+        {
+            var database = open.GetAwaiter().GetResult();
+            EnsureTables(database, model);
+            return database;
+        }
+        finally
+        {
+            slot.PendingOpen = null;
+        }
     }
 
     private static ValueTask<BlazeDbDatabase> OpenAsync(
@@ -227,6 +279,10 @@ internal sealed class BlazeDbEngineCache
     {
         public readonly SemaphoreSlim Gate = new(1, 1);
         public BlazeDbDatabase? Database;
+
+        /// <summary>An open a synchronous caller could not wait for, left for the next caller to finish.</summary>
+        public Task<BlazeDbDatabase>? PendingOpen;
+
         public bool Removed;
     }
 }

@@ -368,4 +368,53 @@ public class QueryTests
 
         Assert.Contains("DbSet", error.Message);
     }
+
+    private static readonly Func<PeopleContext, int, Person?> PersonById =
+        EF.CompileQuery((PeopleContext context, int id) => context.People.SingleOrDefault(p => p.Id == id));
+
+    private static readonly Func<PeopleContext, string, IEnumerable<Person>> PeopleIn =
+        EF.CompileQuery((PeopleContext context, string city) => context.People.Where(p => p.City == city).OrderBy(p => p.Id));
+
+    private static readonly Func<PeopleContext, int, Task<Person?>> PersonByIdAsync =
+        EF.CompileAsyncQuery((PeopleContext context, int id) => context.People.SingleOrDefault(p => p.Id == id));
+
+    private static readonly Func<PeopleContext, int, IAsyncEnumerable<Person>> PeopleOlderThan =
+        EF.CompileAsyncQuery((PeopleContext context, int age) => context.People.Where(p => p.Age > age));
+
+    private static readonly Func<PeopleContext, int, int> PeopleWithOrdersAbove =
+        EF.CompileQuery((PeopleContext context, int total) =>
+            context.People.Count(p => context.Orders.Any(o => o.PersonId == p.Id && o.Total > total)));
+
+    [TestMethod]
+    public async Task Compiled_Queries_Bind_Each_Calls_Arguments_And_Context()
+    {
+        using var test = Seeded();
+        test.Orders.Insert(new Order { Id = 1, PersonId = 2, Total = 50 });
+        test.Orders.Insert(new Order { Id = 2, PersonId = 3, Total = 5 });
+        using var context = test.CreateContext();
+
+        Assert.AreEqual("Ada", PersonById(context, 1)!.Name);
+        Assert.AreEqual("Grace", PersonById(context, 2)!.Name);
+        Assert.IsNull(PersonById(context, 99));
+        Assert.AreSequenceEqual([1, 3, 5], PeopleIn(context, "London").Select(p => p.Id).ToList());
+        Assert.AreSequenceEqual([4], PeopleIn(context, "Austin").Select(p => p.Id).ToList());
+        Assert.AreEqual("Alan", (await PersonByIdAsync(context, 3))!.Name);
+
+        var older = new List<int>();
+        await foreach (var person in PeopleOlderThan(context, 44))
+        {
+            older.Add(person.Id);
+        }
+        Assert.AreSequenceEqual([2, 4, 5], older.Order());
+        Assert.AreEqual(1, PeopleWithOrdersAbove(context, 10));
+        Assert.AreEqual(2, PeopleWithOrdersAbove(context, 1));
+
+        // The delegate is reused for every context with this model; each call runs on its own.
+        using var other = TestDatabase.Open();
+        other.People.Insert(new Person { Id = 1, Name = "Someone else", City = "Oslo", Age = 30 });
+        using var otherContext = other.CreateContext();
+        Assert.AreEqual("Someone else", PersonById(otherContext, 1)!.Name);
+        Assert.AreSame(otherContext.People.Local.Single(), PersonById(otherContext, 1));
+        Assert.AreEqual("Ada", PersonById(context, 1)!.Name);
+    }
 }

@@ -81,11 +81,27 @@ internal sealed class BlazeDbQueryCompiler : IQueryCompiler
         }
     }
 
-    public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query) =>
-        _ => Execute<TResult>(query);
+    // EF.CompileQuery: the delegate is built once, from the first context the query runs against,
+    // and then reused for every context sharing the model - so it runs on the QueryContext's context
+    // and compiler, with that execution's arguments bound in (see BlazeDbCompiledQueryBinder).
+    public Func<QueryContext, TResult> CreateCompiledQuery<TResult>(Expression query)
+    {
+        var compiledFor = Context;
+        return queryContext => For(queryContext).Execute<TResult>(
+            BlazeDbCompiledQueryBinder.Bind(query, compiledFor, queryContext));
+    }
 
-    public Func<QueryContext, TResult> CreateCompiledAsyncQuery<TResult>(Expression query) =>
-        _ => ExecuteAsync<TResult>(query);
+    public Func<QueryContext, TResult> CreateCompiledAsyncQuery<TResult>(Expression query)
+    {
+        var compiledFor = Context;
+        return queryContext => For(queryContext).ExecuteAsync<TResult>(
+            BlazeDbCompiledQueryBinder.Bind(query, compiledFor, queryContext), queryContext.CancellationToken);
+    }
+
+    private BlazeDbQueryCompiler For(QueryContext queryContext) =>
+        ReferenceEquals(queryContext.Context, Context)
+            ? this
+            : (BlazeDbQueryCompiler)queryContext.Context.GetService<IQueryCompiler>();
 
     /// <summary>
     /// Ahead-of-time query precompilation emits the code EF's pipeline would have generated, and

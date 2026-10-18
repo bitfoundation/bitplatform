@@ -36,6 +36,20 @@ public class SerializationTests
     }
 
     [TestMethod]
+    [DataRow(1)]
+    [DataRow(268_435_455)] // 2^28 - 1, the last number whose tag fits in an int's positive range
+    [DataRow(300_000_000)]
+    [DataRow(536_870_911)] // 2^29 - 1, the largest field number the generator accepts
+    public void Tags_Roundtrip_Across_The_Whole_Field_Number_Range(int fieldNumber)
+    {
+        var writer = new BlazeDbBufferWriter();
+        writer.WriteTag(fieldNumber, BlazeDbWireType.LengthDelimited);
+        var reader = new BlazeDbBufferReader(writer.WrittenSpan);
+        Assert.AreEqual((fieldNumber, BlazeDbWireType.LengthDelimited), reader.ReadTag());
+        Assert.AreEqual(0, reader.Remaining);
+    }
+
+    [TestMethod]
     public void All_Primitive_Types_Roundtrip()
     {
         var guid = Guid.NewGuid();

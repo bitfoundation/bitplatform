@@ -36,12 +36,17 @@ internal interface IBlazeDbTableBinding
     void Insert(object row);
 
     /// <summary>
-    /// Applies an update where <paramref name="row"/> is the instance the table already holds and
-    /// has been mutated in place. <paramref name="previousValues"/> carries the values the indexes
-    /// were built from, without which stale index entries would be left behind.
+    /// Applies an update where <paramref name="row"/> is normally the instance the table already
+    /// holds, mutated in place. <paramref name="previousValues"/> carries the values the indexes
+    /// were built from, without which stale index entries would be left behind. A detached
+    /// <paramref name="row"/> - attached by key, so its original values are only its own - replaces
+    /// the held instance instead.
     /// </summary>
     void UpdateInPlace(object row, object previousValues);
 
-    /// <summary>Deletes a row, using <paramref name="previousValues"/> to retract index entries.</summary>
+    /// <summary>
+    /// Deletes a row, using <paramref name="previousValues"/> to retract index entries. Throws
+    /// <see cref="KeyNotFoundException"/> when the row is already gone.
+    /// </summary>
     void Delete(object row, object previousValues);
 }

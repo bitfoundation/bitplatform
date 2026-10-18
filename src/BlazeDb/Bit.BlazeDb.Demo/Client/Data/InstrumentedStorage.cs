@@ -7,11 +7,13 @@ public sealed record StorageOp(int Seq, string Operation, string File, int Bytes
 
 /// <summary>
 /// A decorator over any <see cref="IBlazeDbStorage"/> that records every call the engine
-/// makes. This is the whole storage contract - four methods, plus the optional quota
-/// estimate that is passed straight through - so writing one is
-/// all it takes to put BlazeDb on a new backend.
+/// makes. This is the whole storage contract - four methods, plus the optional capabilities
+/// (the quota estimate, how appends are written, listing files) that are passed straight
+/// through - so writing one is all it takes to put BlazeDb on a new backend. A decorator has to
+/// forward those as well: the engine reads them off the outermost storage, so one left out here
+/// would hide the wrapped backend's behavior from it.
 /// </summary>
-public sealed class InstrumentedStorage(IBlazeDbStorage inner, int capacity = 500) : IBlazeDbQuotaAwareStorage
+public sealed class InstrumentedStorage(IBlazeDbStorage inner, int capacity = 500) : IBlazeDbQuotaAwareStorage, IBlazeDbEnumerableStorage
 {
     private readonly List<StorageOp> _ops = [];
     private int _seq;
@@ -73,6 +75,18 @@ public sealed class InstrumentedStorage(IBlazeDbStorage inner, int capacity = 50
     /// <summary>The origin's estimate when the wrapped backend can report one; not traced, since the engine treats it as advisory.</summary>
     public ValueTask<BlazeDbStorageQuota?> GetQuotaAsync(CancellationToken cancellationToken = default) =>
         Inner is IBlazeDbQuotaAwareStorage quotaAware ? quotaAware.GetQuotaAsync(cancellationToken) : default;
+
+    /// <summary>
+    /// Whether the wrapped backend rewrites the whole file to append - OPFS and IndexedDB do - so the
+    /// engine's quota check charges the log twice over, as it would without this decorator.
+    /// </summary>
+    public bool AppendRewritesWholeFile => Inner is IBlazeDbQuotaAwareStorage { AppendRewritesWholeFile: true };
+
+    /// <summary>The wrapped backend's files when it can list them, so a delete removes them all.</summary>
+    public ValueTask<IReadOnlyCollection<string>> ListAsync(CancellationToken cancellationToken = default) =>
+        Inner is IBlazeDbEnumerableStorage enumerable
+            ? enumerable.ListAsync(cancellationToken)
+            : throw new NotSupportedException("The storage behind this InstrumentedStorage cannot list its files.");
 
     private void Record(string operation, string name, int bytes, Stopwatch sw)
     {

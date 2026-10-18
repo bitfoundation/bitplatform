@@ -446,7 +446,9 @@ When the storage backend is asynchronous (OPFS in the browser), call
 `await context.Database.EnsureCreatedAsync()` once before the first synchronous query.
 In-memory stores open synchronously and need no extra step. `EnsureCreated` returns `true` for
 the call that opened the store and `false` after that, so `if (EnsureCreated()) Seed();` works
-as it does with other providers. `EnsureDeleted` removes the store's files as well as closing it.
+as it does with other providers. `EnsureDeleted` removes the store's files as well as closing it;
+for a persistent store in the browser, or under a synchronization context, use
+`EnsureDeletedAsync` - the synchronous call refuses there rather than block the only thread.
 
 ### What follows from memory-first
 
@@ -466,15 +468,17 @@ from anything EF does:
   A duplicate key or unique-index violation fails the save with `DbUpdateException` (the engine's
   exception is the `InnerException`); the whole save is rolled back. When the save runs inside a
   transaction you opened - `Database.BeginTransaction()` or one on the engine itself - it joins that
-  transaction, so a failure part-way leaves the entries already applied in it for your rollback to
-  undo, as with a relational provider.
+  transaction behind a savepoint, so a failure part-way takes back what that save had applied and
+  leaves the transaction as it was before the save, as a relational provider does.
 - **Two contexts on one store track the same objects.** Each keeps its own original values, so if
   both load a row and both save it, the second save describes a state the row has moved past and
   fails with `DbUpdateConcurrencyException`; reload and retry, as with any provider. Updating or
-  deleting a row another context has since deleted is a `DbUpdateConcurrencyException` too. A save
-  cannot join a transaction another context has open. And after a rollback, the entities whose
-  saves were undone are detached - the objects still hold the undone values, and the next query
-  loads the rows as the database actually has them.
+  deleting a row another context has since deleted is a `DbUpdateConcurrencyException` too. A
+  detached entity - `context.Update(dto)`, or `Attach` and then a change - is a different object
+  from the row the store holds, so it replaces that row by key, last writer wins, as an `UPDATE ...
+  WHERE Id = @id` would. A save cannot join a transaction another context has open. And after a
+  rollback, the entities whose saves were undone are detached - the objects still hold the undone
+  values, and the next query loads the rows as the database actually has them.
 
 The model comes from the same attributes the engine uses: `[BlazeDbKey]` names the primary key whatever it
 is called, and `[BlazeDbIgnore]` keeps a property out of the entity type as well as out of the row bytes.
@@ -492,7 +496,10 @@ p.Id))`, a `join` between two sets); those are read as scans of their tables. Tw
 an `OrderBy` on a string property that an ordered index answers comes back in ordinal order, since
 that is how the index sorts, where LINQ to Objects would use the current culture; and `Include` is
 refused, because BlazeDb rows have no navigations - relationships are modelled as key properties
-and queried against the other table directly.
+and queried against the other table directly. An index can narrow a query without settling it: a
+comparison on a `double` or `float` stays a filter after the lookup (an index files NaN as equal to
+itself and below every number, which no C# operator does), and so does one against an index declared
+with a comparer of its own, which is not used for ranges or ordering at all.
 
 ### Compiled queries
 
@@ -502,7 +509,9 @@ each execution captures, so repeating a query does not compile anything; the exp
 chooses the plan is repeated each time and is a few microseconds. Operators left to LINQ to Objects
 (a `Select`, a `GroupBy`) are evaluated by `System.Linq`'s own enumerable query provider, which does
 compile them per execution - keep the heavy lifting in the `Where`/`OrderBy`/`Skip`/`Take` prefix
-the plan absorbs when a query is hot.
+the plan absorbs when a query is hot. `EF.CompileQuery` and `EF.CompileAsyncQuery` work as with any
+provider, and run through the same path: each call binds its arguments and context into the query
+and translates it as above.
 
 The demo site walks through all of this against a live database at `/efcore`.
 

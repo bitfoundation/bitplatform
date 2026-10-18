@@ -199,7 +199,7 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
     /// <summary>
     /// Removes a row; returns false if the key does not exist. If the held instance was mutated in
     /// place since it was written, the delete is refused for the same reason as <see cref="Update"/>;
-    /// use <see cref="DeleteInPlace"/> then.
+    /// use <see cref="DeleteInPlace(TKey, TRow)"/> then.
     /// </summary>
     public bool Delete(TKey key)
     {
@@ -220,14 +220,17 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
     // Callers normally hand the table a new row object, so the entry it still holds describes the
     // values its indexes were built from. A caller that instead mutates the stored instance -
     // which is what an EF Core change tracker does, since queries hand back the live row - leaves
-    // the table unable to work out which index entries to retract. These two methods take that
+    // the table unable to work out which index entries to retract. These methods take that
     // earlier state explicitly. Everything downstream (index maintenance, undo, WAL records) is
     // the ordinary path.
 
     /// <summary>
     /// Records an update to a row that was mutated in place. <paramref name="previousValues"/> must
     /// hold the values the row had when the table last indexed it; passing the mutated instance
-    /// would leave stale index entries behind.
+    /// would leave stale index entries behind. When <paramref name="row"/> is not the instance the
+    /// table holds - a detached object written back by key - and <paramref name="previousValues"/>
+    /// do not match, the held instance's own values are used instead, provided it was not itself
+    /// mutated in place.
     /// </summary>
     public void UpdateInPlace(TRow row, TRow previousValues)
     {
@@ -250,13 +253,13 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
             // table holds - a change tracker keeps its identity, and a corrected retry with the same
             // previousValues still finds the index entries - while the indexes go on describing the
             // pre-mutation values until a write moves them.
-            EnsurePreviousValuesMatch(previousValues, old.Seq);
+            var indexed = IndexedValues(row, previousValues, old);
             ValidateUnique(row, old.Seq);
 
             // Point the entry at the pre-mutation values so the write's index maintenance retracts
             // the entries that actually exist (and so a rollback restores them).
-            _rows[key] = new Entry(previousValues, old.Seq);
-            _db.ApplyWrite(new SetOp(this, key, row, hadOld: true, previousValues, old.Seq));
+            _rows[key] = new Entry(indexed, old.Seq);
+            _db.ApplyWrite(new SetOp(this, key, row, hadOld: true, indexed, old.Seq));
         }
     }
 
@@ -264,7 +267,14 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
     /// Removes a row that was mutated in place, using <paramref name="previousValues"/> to find the
     /// index entries to retract. Returns false if the key does not exist.
     /// </summary>
-    public bool DeleteInPlace(TKey key, TRow previousValues)
+    public bool DeleteInPlace(TKey key, TRow previousValues) => DeleteInPlace(key, previousValues, instance: previousValues);
+
+    /// <summary>
+    /// <see cref="DeleteInPlace(TKey, TRow)"/> for a caller that also knows which object it is
+    /// deleting - the EF Core provider, whose entity may be a detached one rather than the instance
+    /// the table holds. See <see cref="UpdateInPlace"/> for what that changes.
+    /// </summary>
+    internal bool DeleteInPlace(TKey key, TRow previousValues, TRow instance)
     {
         _db.EnsureWritable();
         lock (_db.SyncRoot)
@@ -273,29 +283,53 @@ public sealed class BlazeDbTable<TKey, TRow> : IBlazeDbTableInternal
             {
                 return false;
             }
-            EnsurePreviousValuesMatch(previousValues, old.Seq);
-            _rows[key] = new Entry(previousValues, old.Seq);
-            _db.ApplyWrite(new DeleteOp(this, key, previousValues, old.Seq));
+            var indexed = IndexedValues(instance, previousValues, old);
+            _rows[key] = new Entry(indexed, old.Seq);
+            _db.ApplyWrite(new DeleteOp(this, key, indexed, old.Seq));
             return true;
         }
     }
 
     /// <summary>
-    /// Refuses an in-place write whose <c>previousValues</c> are not what the indexes were built
-    /// from. Retracting an entry that is not there leaves the row indexed under a value it no longer
-    /// carries and adds a second entry under the value it does, so the same row comes back twice from
-    /// one lookup - silent, and impossible to explain later. The caller's state is the stale thing
-    /// here, so it is told so rather than the table quietly going wrong.
+    /// The values the held row's index entries were built from, for an in-place write to retract.
+    /// <para>
+    /// <paramref name="previousValues"/> normally are those values. When they are not, it depends on
+    /// whose object is being written. If it is the instance the table holds, its indexed values have
+    /// moved on since the caller's snapshot was taken - another change tracker sharing the row saved
+    /// it in between - and the write is refused: retracting an entry that is not there leaves the
+    /// row indexed under a value it no longer carries and adds a second entry under the value it
+    /// does, so the same row comes back twice from one lookup. If it is a different object - written
+    /// back by key, the way an EF Core context attaches a detached entity, whose "original values"
+    /// are only its own current ones - the caller never knew what was indexed, and the held instance
+    /// still carries exactly that unless it was itself mutated in place. Only then is the caller
+    /// told its state is stale.
+    /// </para>
     /// </summary>
-    private void EnsurePreviousValuesMatch(TRow previousValues, long seq)
+    private TRow IndexedValues(TRow instance, TRow previousValues, Entry held)
+    {
+        var mismatch = FirstMismatchedIndex(previousValues, held.Seq);
+        if (mismatch is null)
+        {
+            return previousValues;
+        }
+        if (!ReferenceEquals(instance, held.Row) && FirstMismatchedIndex(held.Row, held.Seq) is null)
+        {
+            return held.Row;
+        }
+        throw new BlazeDbStaleRowException(Name, mismatch);
+    }
+
+    /// <summary>The name of the first index whose entry for <paramref name="seq"/> the values do not describe, or null.</summary>
+    private string? FirstMismatchedIndex(TRow values, long seq)
     {
         foreach (var store in _indexStores)
         {
-            if (!store.EntryMatches(previousValues, seq))
+            if (!store.EntryMatches(values, seq))
             {
-                throw new BlazeDbStaleRowException(Name, ((BlazeDbIndexDefinition<TRow>)store.Definition).Name);
+                return ((BlazeDbIndexDefinition<TRow>)store.Definition).Name;
             }
         }
+        return null;
     }
 
     // ---- Raw mutation primitives (index-maintaining; used by ops, replay and snapshot load) ----

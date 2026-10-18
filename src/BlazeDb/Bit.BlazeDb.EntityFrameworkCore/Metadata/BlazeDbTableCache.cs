@@ -43,13 +43,19 @@ internal sealed class BlazeDbTableCache : IBlazeDbTableCache, IDisposable
             }
 
             var extension = Extension();
-            _version = _cache.Version;
-            _database = _cache.GetOrCreate(extension, _model, out _);
-            _bindings = Bindings.GetOrCreateValue(_database);
+            // The version is read before the lookup, so a release racing it is noticed next time,
+            // and recorded only after, so a lookup that throws leaves no engine to be trusted: the
+            // next access tries again instead of matching the version and returning the old engine,
+            // which by then may well be the disposed one this check exists to catch.
+            var version = _cache.Version;
+            var database = _cache.GetOrCreate(extension, _model, out _);
+            _bindings = Bindings.GetOrCreateValue(database);
             // So indexed queries from other contexts on this engine can see this one's pending
             // modifications; see BlazeDbContextRegistry.
-            BlazeDbContextRegistry.For(_database).Register(_currentContext.Context);
-            return _database;
+            BlazeDbContextRegistry.For(database).Register(_currentContext.Context);
+            _database = database;
+            _version = version;
+            return database;
         }
     }
 

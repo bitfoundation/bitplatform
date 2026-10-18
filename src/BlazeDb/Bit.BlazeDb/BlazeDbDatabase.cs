@@ -231,6 +231,9 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
 
     internal bool HasActiveTransaction => _activeTransaction is not null;
 
+    /// <summary>The open transaction every write currently joins, or null.</summary>
+    internal BlazeDbTransaction? ActiveTransaction => _activeTransaction;
+
     /// <summary>What was passed to <see cref="BeginTransaction(object?)"/>, or null for one the application opened itself.</summary>
     internal object? ActiveTransactionOwner { get; private set; }
 
@@ -365,9 +368,24 @@ public sealed class BlazeDbDatabase : IAsyncDisposable
         }
     }
 
-    private static void RevertOps(IReadOnlyList<IBlazeDbTxnOp> ops)
+    internal void RollbackTransactionTo(BlazeDbTransaction transaction, int savepoint)
     {
-        for (var i = ops.Count - 1; i >= 0; i--)
+        VerifyActive(transaction);
+        lock (SyncRoot)
+        {
+            var ops = transaction.Ops;
+            if ((uint)savepoint > (uint)ops.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(savepoint));
+            }
+            RevertOps(ops, savepoint);
+            transaction.Truncate(savepoint);
+        }
+    }
+
+    private static void RevertOps(IReadOnlyList<IBlazeDbTxnOp> ops, int downTo = 0)
+    {
+        for (var i = ops.Count - 1; i >= downTo; i--)
         {
             ops[i].Revert();
         }

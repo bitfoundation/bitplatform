@@ -68,6 +68,9 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
     // off before the retry appends behind it. See RepairWalAsync.
     private bool _walNeedsRepair;
 
+    // Files of superseded generations whose deletion failed; retried at each checkpoint. Guarded by _ioLock.
+    private readonly List<string> _staleFiles = [];
+
     private BlazeDbStorageQuota? _lastQuota;
     private bool _quotaPressureReported;
     private long _bytesSinceQuotaCheck;
@@ -413,6 +416,27 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
         _walNeedsRepair = false;
     }
 
+    /// <summary>
+    /// Removes superseded generations' files, keeping the names of any that could not be removed for
+    /// the next attempt. Never throws: what is left behind is unreferenced and only costs space.
+    /// Called under <see cref="_ioLock"/>.
+    /// </summary>
+    private async ValueTask DeleteStaleFilesAsync()
+    {
+        for (var i = _staleFiles.Count - 1; i >= 0; i--)
+        {
+            try
+            {
+                await _storage.DeleteAsync(_staleFiles[i], CancellationToken.None).ConfigureAwait(false);
+                _staleFiles.RemoveAt(i);
+            }
+            catch
+            {
+                // Kept for the next checkpoint.
+            }
+        }
+    }
+
     /// <summary>Best-effort cleanup of a half-written generation; never masks the original error.</summary>
     private async ValueTask TryDeleteAsync(string name)
     {
@@ -456,6 +480,11 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             try
             {
                 await _storage.WriteAtomicAsync(newSnapshotFile, snapshotBytes, ct).ConfigureAwait(false);
+                // The new generation's log has to start empty, and nothing guarantees that no file
+                // by its name is left over - from a cleanup that failed, or from an earlier database
+                // on the same backend that a delete could not completely remove. Appending behind
+                // one would make the next open replay its records into this database.
+                await _storage.DeleteAsync(newWalFile, ct).ConfigureAwait(false);
                 await _storage.WriteAtomicAsync(
                     ManifestFile,
                     BuildManifest(newGeneration, newSnapshotFile, newWalFile, snapshotLsn),
@@ -486,30 +515,24 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             _walNeedsRepair = false; // The new generation's log is a fresh file with nothing to trim.
             _quotaPressureReported = false; // Compaction freed space; the next refusal is a new episode.
 
-            try
+            // The checkpoint is in place - the manifest names the new generation - so removing the
+            // previous one is cleanup, and a failure there must not read as a failed checkpoint: not
+            // to the flusher, which would report it as lagging durability, nor to the quota path,
+            // which would call it "out of space", nor to replicas, which would never hear of the new
+            // generation. The files are unreferenced, and no later generation can mistake them for
+            // its own (see above), so whatever cannot be removed now is retried at the next checkpoint.
+            _staleFiles.Add(oldWalFile);
+            if (oldSnapshotFile.Length > 0)
             {
-                await _storage.DeleteAsync(oldWalFile, ct).ConfigureAwait(false);
-                if (oldSnapshotFile.Length > 0)
-                {
-                    await _storage.DeleteAsync(oldSnapshotFile, ct).ConfigureAwait(false);
-                }
+                _staleFiles.Add(oldSnapshotFile);
             }
-            catch (Exception ex) when (ex is not OperationCanceledException and not BlazeDbException)
-            {
-                // The checkpoint is in place - the manifest names the new generation - so this is
-                // a cleanup failure, not a checkpoint failure, and above all not a quota problem:
-                // the quota path swallows storage errors from a checkpoint it asked for and reports
-                // "out of space", which would be the wrong diagnosis here. The files it could not
-                // remove are unreferenced and harmless.
-                throw new BlazeDbException(
-                    $"Checkpoint {newGeneration} is durable, but the previous generation's files could not be deleted.", ex);
-            }
+            await DeleteStaleFilesAsync().ConfigureAwait(false);
 
-            // Announced only once the new generation is durable and the old one is gone, so a
-            // replica that reloads on this signal cannot land on a half-published generation. The
-            // checkpoint itself has succeeded by now, so a failing announcement is reported as its
-            // own error rather than as a failed checkpoint - a caller (or the flusher) must not redo
-            // a checkpoint that is already in place.
+            // Announced only once the new generation is durable, so a replica that reloads on this
+            // signal cannot land on a half-published generation. The checkpoint itself has
+            // succeeded by now, so a failing announcement is reported as its own error rather than
+            // as a failed checkpoint - a caller (or the flusher) must not redo a checkpoint that is
+            // already in place.
             try
             {
                 _options.OnCheckpoint?.Invoke(newGeneration);
@@ -597,6 +620,10 @@ internal sealed class BlazeDbWalManager : IAsyncDisposable
             ApplyGeneration(new LoadedGeneration(new ManifestInfo(1, "", "wal-1.blz", 0), null, null));
             if (!_options.ReadOnly)
             {
+                // No manifest means no database, whatever else the backend holds: a writer writes the
+                // manifest before its first append, so a first-generation log already sitting here
+                // belongs to one that was deleted only in part, and must not be appended to.
+                await _storage.DeleteAsync(_walFile, ct).ConfigureAwait(false);
                 await _storage.WriteAtomicAsync(
                     ManifestFile, BuildManifest(_generation, _snapshotFile, _walFile, _snapshotLsn), ct).ConfigureAwait(false);
             }
