@@ -83,6 +83,12 @@ jobs:
     uses: ./.github/workflows/balette.demo.cd.yml
     secrets: inherit
 
+  blazedb_demo:
+    name: blazedb demo
+    if: inputs.server
+    uses: ./.github/workflows/blazedb.demo.cd.yml
+    secrets: inherit
+
   bonboarding_demo:
     name: bonboarding demo
     if: inputs.server

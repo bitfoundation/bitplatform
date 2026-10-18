@@ -1,0 +1,736 @@
+﻿@page "/efcore"
+@inject DemoDbService Db
+
+<PageTitle>EF Core - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Engine" IconName="layers" Title="The same engine, reached through LINQ"
+            Lead="The EF Core provider is a translation layer, not a second database. AddDbContext and UseBlazeDb are the whole setup: tables come from your DbSets, LINQ becomes a query plan, and SaveChanges is one engine transaction. The rows you get back are the objects the table already holds.">
+    <span class="chip"><Icon Name="bolt" /> No SQL, no materialisation</span>
+    <span class="chip"><Icon Name="txn" /> SaveChanges is a memory commit</span>
+    <span class="chip"><Icon Name="close" /> No Include, no navigations</span>
+</PageHeader>
+
+<Section Title="The usual EF Core setup" IconName="code"
+         Lead="A DbContext, a UseBlazeDb call, and AddDbContext (or OnConfiguring). There is no OpenAsync and no AddTable: entity types on the context are the model.">
+    <div class="grid grid-2">
+        <CodeBlock Title="AppContext.cs" Code="@ContextSnippet" />
+        <CodeBlock Title="Program.cs" Code="@UseSnippet" />
+    </div>
+    <Callout Tone="accent" Title="The model is the [BlazeDbTable] type.">
+        The source generator's descriptor is what the provider binds to. <code>[BlazeDbKey]</code>
+        is the primary key whatever it is called, and <code>[BlazeDbIgnore]</code> keeps a property
+        out of the entity type as well as out of the row bytes. Hand-written descriptors use
+        <code>entity.UseBlazeDbTable(descriptor)</code>. Persistence is <code>UseBlazeDb(storage)</code>,
+        the same slot a connection string occupies on a relational provider.
+    </Callout>
+</Section>
+
+<Section Title="How EF Core concepts land on the engine" IconName="schema">
+    <Panel Flush="true">
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr><th>EF Core</th><th>BlazeDb</th><th>Notes</th></tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="mono">DbContext</td>
+                        <td class="mono">BlazeDbDatabase</td>
+                        <td class="small muted">one instance, one write lock, tables from the model</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">DbSet&lt;T&gt;</td>
+                        <td class="mono">BlazeDbTable&lt;TKey, TRow&gt;</td>
+                        <td class="small muted">entity type to generated descriptor</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">SaveChanges</td>
+                        <td class="mono">BeginTransaction / Commit</td>
+                        <td class="small muted">change-tracker entries become one atomic batch</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">Find(key)</td>
+                        <td class="mono">table.Get(key)</td>
+                        <td class="small muted">already O(1) with no materialisation step</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">Where(x =&gt; x.Done)</td>
+                        <td class="mono">UseIndex(hash index)</td>
+                        <td class="small muted">equality on an indexed member becomes a lookup</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">Where(x =&gt; x.At &gt;= a)</td>
+                        <td class="mono">UseIndex(ordered index)</td>
+                        <td class="small muted">comparisons become a range scan</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">OrderBy / Skip / Take</td>
+                        <td class="mono">OrderBy / Skip / Take</td>
+                        <td class="small muted">already a 1:1 mapping on the plan</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">Select / GroupBy / aggregates</td>
+                        <td>LINQ to Objects</td>
+                        <td class="small muted">runs over the rows the plan returned, at no extra cost</td>
+                    </tr>
+                    <tr>
+                        <td class="mono">Include / navigations</td>
+                        <td>-</td>
+                        <td class="small muted">not supported: rows are flat, relationships are key properties</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </Panel>
+</Section>
+
+@if (!Db.IsOpen)
+{
+    <Panel><div class="empty">Opening the database…</div></Panel>
+}
+else
+{
+    <Section Title="LINQ against this tab's database" IconName="query"
+             Lead="Each sample is a real DbContext query over the todos table this site opened on start. The LINQ on the right is what ran; the note under it is the plan the translator produced.">
+        <div class="grid grid-sidebar">
+            <div class="flex-col gap-lg">
+                <Panel Title="Samples" IconName="list">
+                    <div class="chip-row">
+                        @foreach (var sample in Samples)
+                        {
+                            <button type="button" class="chip @(_sample == sample.Kind ? "on" : null)"
+                                    @onclick="() => RunSample(sample.Kind)">
+                                @sample.Label
+                            </button>
+                        }
+                    </div>
+                </Panel>
+
+                <Panel Title="Result" IconName="play" Flush="true">
+                    <Actions>
+                        <span class="panel-sub mono">@_querySummary</span>
+                    </Actions>
+                    <ChildContent>
+                        @if (_queryLines.Count > 0)
+                        {
+                            <div class="log">
+                                @foreach (var line in _queryLines)
+                                {
+                                    <div class="log-row"><span class="log-name">@line</span></div>
+                                }
+                            </div>
+                        }
+                        else if (_queryRows.Count == 0)
+                        {
+                            <div class="empty"><Icon Name="search" /><div>No rows matched.</div></div>
+                        }
+                        else
+                        {
+                            <div class="table-wrap">
+                                <table class="data">
+                                    <thead>
+                                        <tr>
+                                            <th>Title</th>
+                                            <th>Category</th>
+                                            <th>Priority</th>
+                                            <th class="num">Effort</th>
+                                            <th>Created</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var row in _queryRows)
+                                        {
+                                            <tr>
+                                                <td class="strong">@row.Title</td>
+                                                <td class="mono">@(row.Category ?? "null")</td>
+                                                <td><span class="prio @row.Priority">@row.Priority</span></td>
+                                                <td class="num mono">@row.Effort</td>
+                                                <td class="mono tiny">@row.CreatedAt.ToLocalTime().ToString("MMM d HH:mm")</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
+                    </ChildContent>
+                </Panel>
+            </div>
+
+            <div class="flex-col gap-lg">
+                <Panel Title="Generated call" IconName="code">
+                    <CodeBlock Code="@_queryCode" ShowHeader="false" Wrap="true" />
+                </Panel>
+                <Panel Title="What the translator did" IconName="layers">
+                    <dl class="kv">
+                        <dt>Source</dt>
+                        <dd>@_querySource</dd>
+                        <dt>Remainder</dt>
+                        <dd>@_queryRemainder</dd>
+                        <dt>Tracked</dt>
+                        <dd>@_trackedCount</dd>
+                        <dt>Elapsed</dt>
+                        <dd>@_queryElapsed</dd>
+                    </dl>
+                    <p class="small muted mb-0 mt-2">@_queryNote</p>
+                </Panel>
+            </div>
+        </div>
+    </Section>
+}
+
+<Section Title="SaveChanges is a memory operation" IconName="txn"
+         Lead="Each run opens a throwaway database so the demo todos stay untouched. The trace is what the provider actually did, including the parts that surprise people coming from a relational provider.">
+    <div class="grid grid-sidebar">
+        <div class="flex-col gap-lg">
+            <Panel Title="Scenarios" IconName="list">
+                <div class="flex-col">
+                    @foreach (var scenario in TrackScenarios)
+                    {
+                        <button type="button" class="btn btn-sm btn-block @(_trackKind == scenario.Kind ? "btn-primary" : null)"
+                                style="justify-content:flex-start"
+                                disabled="@_running"
+                                @onclick="() => RunTrackAsync(scenario.Kind)">
+                            <Icon Name="@scenario.Icon" />
+                            @scenario.Title
+                        </button>
+                    }
+                </div>
+            </Panel>
+
+            @if (CurrentTrack is { } current)
+            {
+                <CodeBlock Title="@($"Scenario: {current.Title}")" Code="@current.Code" />
+                <Callout Tone="@current.Tone" Title="@current.Takeaway"></Callout>
+            }
+        </div>
+
+        <div class="flex-col gap-lg">
+            <Panel Title="Trace" IconName="history" Flush="true">
+                <Actions>
+                    @if (_running)
+                    {
+                        <span class="spinner"></span>
+                    }
+                </Actions>
+                <ChildContent>
+                    <ScenarioSteps Steps="_log.Steps" EmptyText="Pick a scenario on the left." />
+                </ChildContent>
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+<Section Title="Where the translation stops" IconName="query"
+         Lead="The translator consumes the longest prefix of the operator chain that fits the plan - filters, then ordering, then paging, in that order - and chooses an index from the predicates and the sort.">
+    <div class="grid grid-2">
+        <Panel Title="Absorbed into the plan" IconName="check">
+            <ul class="ticks">
+                <li><code>Where</code> equalities on a key or hash index, including <code>ids.Contains(e.Id)</code> and <code>e.Category == null</code>.</li>
+                <li><code>Where</code> ranges on an ordered index, with residual filters for exclusive bounds.</li>
+                <li>A compound index when several equalities match its members.</li>
+                <li><code>OrderBy</code> on an ordered index, which then supplies the order instead of sorting.</li>
+                <li><code>Skip</code> and <code>Take</code>, including consecutive ones of the same kind.</li>
+                <li><code>Find</code> and a primary-key equality, which read the key dictionary.</li>
+            </ul>
+        </Panel>
+        <Panel Title="Left as LINQ to Objects" IconName="cpu">
+            <ul class="ticks">
+                <li>Projections, grouping, aggregates, joins and subqueries - including ones over another <code>DbSet</code>, which is read as a scan.</li>
+                <li>A <code>Where</code> after a <code>Take</code> - that is not the same as filtering first.</li>
+                <li>A <code>Skip</code> after a <code>Take</code>, which reorders paging.</li>
+                <li>Anything else the plan cannot name. No query is rejected for being untranslatable.</li>
+            </ul>
+        </Panel>
+    </div>
+    <Callout Tone="info" Title="In a relational provider that fallback is a disaster." Class="mt-2">
+        It means pulling rows over a wire and filtering client-side. Here the rows are already
+        managed objects in the same heap, so the worst case is a delegate over an in-memory
+        sequence - which is what the fast path is too, minus the index.
+        <a href="queries">See the primitives the plan maps onto →</a>
+    </Callout>
+</Section>
+
+<Section Title="Include is refused on purpose" IconName="alert"
+         Lead="BlazeDb rows have no navigations. Relationships are modelled as key properties and queried against the other table directly.">
+    <div class="grid grid-2">
+        <Panel Title="Trigger it" IconName="play">
+            <p class="small">
+                This calls <code>context.Todos.Include("Anything")</code> against the live database
+                and prints the exception the provider actually throws.
+            </p>
+            <button type="button" class="btn btn-primary" @onclick="RunInclude">
+                <Icon Name="play" /> Run Include
+            </button>
+            @if (_includeError is not null)
+            {
+                <div class="api-call mt-2">@_includeError</div>
+            }
+        </Panel>
+        <CodeBlock Title="Query the related table yourself" Code="@RelatedSnippet" />
+    </div>
+</Section>
+
+@code {
+    private enum QueryKind { All, Open, ByCategory, EffortRange, Newest, GroupBy, Find, Count }
+
+    private enum TrackKind { LiveRow, MutateBeforeSave, IndexMove, Delete, AtomicTwoTables, FailedSave, NoTracking }
+
+    private sealed record Sample(QueryKind Kind, string Label);
+
+    private sealed record TrackScenario(TrackKind Kind, string Title, string Icon, string Tone, string Takeaway, string Code);
+
+    private static readonly Sample[] Samples =
+    [
+        new(QueryKind.All, "DbSet"),
+        new(QueryKind.Open, "Where !Done"),
+        new(QueryKind.ByCategory, "Where Category"),
+        new(QueryKind.EffortRange, "Where Effort ≥ 60"),
+        new(QueryKind.Newest, "OrderBy Take"),
+        new(QueryKind.GroupBy, "GroupBy"),
+        new(QueryKind.Find, "Find"),
+        new(QueryKind.Count, "Count"),
+    ];
+
+    private static readonly TrackScenario[] TrackScenarios =
+    [
+        new(TrackKind.LiveRow, "A query returns the live row", "database", "accent",
+            "There is no copy and no snapshot. ReferenceEquals with table.Get is true.",
+            LiveRowSnippet),
+        new(TrackKind.MutateBeforeSave, "Mutation is visible before SaveChanges", "bolt", "warn",
+            "The entity is the row, so memory has already moved. SaveChanges is what journals it.",
+            MutateSnippet),
+        new(TrackKind.IndexMove, "SaveChanges moves index entries", "index", "ok",
+            "Without the change tracker's originals the old bucket would still claim the row.",
+            IndexMoveSnippet),
+        new(TrackKind.Delete, "Delete removes the row and its indexes", "trash", "ok",
+            "The entity is Detached afterwards; lookups on the old values are empty.",
+            DeleteSnippet),
+        new(TrackKind.AtomicTwoTables, "Two tables, one transaction", "layers", "ok",
+            "SaveChanges spanning Todos and Settings is a single engine commit.",
+            TwoTablesSnippet),
+        new(TrackKind.FailedSave, "A failing save rolls everything back", "alert", "err",
+            "The second insert hits a duplicate key; the first insert is undone with it.",
+            FailedSaveSnippet),
+        new(TrackKind.NoTracking, "AsNoTracking still returns the live row", "search", "warn",
+            "No-tracking skips the change tracker, not a copy. Mutating the result still mutates memory.",
+            NoTrackingSnippet),
+    ];
+
+    private QueryKind _sample = QueryKind.Open;
+    private List<TodoEntry> _queryRows = [];
+    private List<string> _queryLines = [];
+    private string _queryCode = "";
+    private string _querySource = "";
+    private string _queryRemainder = "none";
+    private string _queryNote = "";
+    private string _querySummary = "";
+    private string _queryElapsed = "-";
+    private int _trackedCount;
+
+    private TrackKind? _trackKind;
+    private bool _running;
+    private readonly ScenarioLog _log = new();
+    private string? _includeError;
+
+    private TrackScenario? CurrentTrack =>
+        _trackKind is { } kind ? TrackScenarios.First(s => s.Kind == kind) : null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Db.GetDatabaseAsync();
+        if (Db.IsOpen)
+        {
+            RunSample(QueryKind.Open);
+        }
+    }
+
+    private static DemoDbContext CreateContext(BlazeDbDatabase? database = null)
+    {
+        var builder = new DbContextOptionsBuilder<DemoDbContext>();
+        if (database is not null)
+        {
+            builder.UseBlazeDb(database);
+        }
+        else
+        {
+            builder.UseBlazeDb("ef-demo-" + Guid.NewGuid().ToString("N"));
+        }
+
+        return new DemoDbContext(builder.Options);
+    }
+
+    private void RunSample(QueryKind kind)
+    {
+        _sample = kind;
+        _queryRows = [];
+        _queryLines = [];
+
+        using var context = CreateContext(Db.Db);
+        var sw = Stopwatch.StartNew();
+
+        switch (kind)
+        {
+            case QueryKind.All:
+                _queryCode = "context.Todos.ToList()";
+                _querySource = "scan";
+                _queryRemainder = "none";
+                _queryNote = "A bare set is a full table scan. Fine here: the rows are already in memory.";
+                _queryRows = context.Todos.ToList();
+                _querySummary = $"{_queryRows.Count} rows";
+                break;
+
+            case QueryKind.Open:
+                _queryCode = "context.Todos.Where(t => !t.Done).ToList()";
+                _querySource = "hash - Done = false";
+                _queryRemainder = "none";
+                _queryNote = "A negated bool is the same as == false, so the Done index answers the whole predicate.";
+                _queryRows = context.Todos.Where(t => !t.Done).ToList();
+                _querySummary = $"{_queryRows.Count} open";
+                break;
+
+            case QueryKind.ByCategory:
+                _queryCode = "context.Todos.Where(t => t.Category == \"engine\").ToList()";
+                _querySource = "hash - Category = engine";
+                _queryRemainder = "none";
+                _queryNote = "Equality on an indexed member is a lookup, not a scan plus a filter.";
+                _queryRows = context.Todos.Where(t => t.Category == "engine").ToList();
+                _querySummary = $"{_queryRows.Count} in engine";
+                break;
+
+            case QueryKind.EffortRange:
+                _queryCode = "context.Todos.Where(t => t.Effort >= 60).OrderBy(t => t.Effort).ToList()";
+                _querySource = "ordered - Effort ≥ 60, ascending";
+                _queryRemainder = "none";
+                _queryNote = "The range and the OrderBy share the Effort index, so nothing is sorted afterwards.";
+                _queryRows = context.Todos.Where(t => t.Effort >= 60).OrderBy(t => t.Effort).ToList();
+                _querySummary = $"{_queryRows.Count} rows";
+                break;
+
+            case QueryKind.Newest:
+                _queryCode = """
+                    context.Todos
+                        .OrderByDescending(t => t.CreatedAt)
+                        .Take(5)
+                        .ToList()
+                    """;
+                _querySource = "ordered - CreatedAt descending";
+                _queryRemainder = "none";
+                _queryNote = "OrderBy and Take are both plan operators. The index already yields newest-first.";
+                _queryRows = context.Todos.OrderByDescending(t => t.CreatedAt).Take(5).ToList();
+                _querySummary = $"{_queryRows.Count} newest";
+                break;
+
+            case QueryKind.GroupBy:
+                _queryCode = """
+                    context.Todos
+                        .GroupBy(t => t.Category)
+                        .Select(g => new { Category = g.Key, Count = g.Count() })
+                        .OrderBy(x => x.Category)
+                        .ToList()
+                    """;
+                _querySource = "scan";
+                _queryRemainder = "GroupBy / Select / OrderBy";
+                _queryNote = "GroupBy has no plan equivalent, so it runs as LINQ to Objects over the scan.";
+                _queryLines = context.Todos
+                    .GroupBy(t => t.Category)
+                    .Select(g => $"{g.Key ?? "null"} · {g.Count()}")
+                    .OrderBy(x => x)
+                    .ToList();
+                _querySummary = $"{_queryLines.Count} groups";
+                break;
+
+            case QueryKind.Find:
+                var probe = context.Todos.AsNoTracking().FirstOrDefault();
+                if (probe is null)
+                {
+                    _queryCode = "context.Todos.Find(id)";
+                    _querySource = "primary key dictionary";
+                    _queryRemainder = "none";
+                    _queryNote = "The todos table is empty, so there is no key to Find.";
+                    _querySummary = "no rows";
+                    break;
+                }
+
+                _queryCode = $"context.Todos.Find(id)\n// id = {probe.Id:N}";
+                _querySource = "primary key dictionary";
+                _queryRemainder = "none";
+                _queryNote = "Find is a point get. EF spells the key as EF.Property, which still lands on table.Get.";
+                var found = context.Todos.Find(probe.Id);
+                _queryRows = found is null ? [] : [found];
+                _querySummary = found is null ? "null" : "1 row";
+                break;
+
+            case QueryKind.Count:
+                _queryCode = "context.Todos.Count(t => !t.Done)";
+                _querySource = "hash - Done = false";
+                _queryRemainder = "none";
+                _queryNote = "Count does not track the rows it reads. The Done index answers it without materialising them.";
+                var open = context.Todos.Count(t => !t.Done);
+                _queryLines = [$"{open} open todos"];
+                _querySummary = $"{open} counted";
+                break;
+        }
+
+        _trackedCount = context.ChangeTracker.Entries().Count();
+        _queryElapsed = DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds);
+    }
+
+    private void RunInclude()
+    {
+        if (!Db.IsOpen)
+        {
+            return;
+        }
+
+        using var context = CreateContext(Db.Db);
+        try
+        {
+            _ = context.Todos.Include("Anything").ToList();
+            _includeError = "No exception - unexpected.";
+        }
+        catch (NotSupportedException ex)
+        {
+            _includeError = $"NotSupportedException\n{ex.Message}";
+        }
+    }
+
+    private Task RunTrackAsync(TrackKind kind)
+    {
+        _trackKind = kind;
+        _running = true;
+        _log.Clear();
+
+        try
+        {
+            using var context = CreateContext();
+            context.Todos.Add(Row("Design the WAL record layout", category: "engine"));
+            context.Todos.Add(Row("Wire OPFS handles", done: true, category: "browser"));
+            context.Todos.Add(Row("Write the getting-started guide", category: "docs"));
+            context.Settings.Add(new Setting
+            {
+                Name = "theme",
+                Value = "dark",
+                UpdatedAt = DateTime.UtcNow,
+            });
+            context.SaveChanges();
+
+            var todos = context.Database.GetBlazeDb().GetTable(TodoEntry.Table);
+            switch (kind)
+            {
+                case TrackKind.LiveRow:
+                    TrackLiveRow(context, todos);
+                    break;
+                case TrackKind.MutateBeforeSave:
+                    TrackMutate(context, todos);
+                    break;
+                case TrackKind.IndexMove:
+                    TrackIndexMove(context, todos);
+                    break;
+                case TrackKind.Delete:
+                    TrackDelete(context, todos);
+                    break;
+                case TrackKind.AtomicTwoTables:
+                    TrackTwoTables(context);
+                    break;
+                case TrackKind.FailedSave:
+                    TrackFailedSave(context, todos);
+                    break;
+                case TrackKind.NoTracking:
+                    TrackNoTracking(context, todos);
+                    break;
+            }
+        }
+        finally
+        {
+            _running = false;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private void TrackLiveRow(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos)
+    {
+        var entity = context.Todos.First(t => t.Category == "engine");
+        var stored = todos.Get(entity.Id);
+        _log.Run("Query a row", "var entity = context.Todos.First(t => t.Category == \"engine\")");
+        _log.Add("Compare with the table",
+            $"ReferenceEquals(entity, todos.Get(id)) → {ReferenceEquals(entity, stored)}",
+            "The provider did not materialise a copy. It handed back the instance the table holds.");
+        _log.Ok("Tracked as Unchanged",
+            $"context.Entry(entity).State → {context.Entry(entity).State}");
+    }
+
+    private void TrackMutate(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos)
+    {
+        var entity = context.Todos.First(t => !t.Done);
+        _log.Run("Load an open todo", $"entity.Title → \"{entity.Title}\"");
+        entity.Done = true;
+        _log.Add("Mutate the entity", "entity.Done = true",
+            $"todos.Get(id).Done → {todos.Get(entity.Id)!.Done}  — memory has already moved.");
+        _log.Add("Change tracker",
+            $"State → {context.Entry(entity).State}",
+            "Modified, because the property snapshot no longer matches.");
+        var saved = context.SaveChanges();
+        _log.Ok("SaveChanges()",
+            $"saved {saved}  State → {context.Entry(entity).State}",
+            "One transaction, one WAL record. The Done index now lists this row under true.");
+    }
+
+    private void TrackIndexMove(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos)
+    {
+        var entity = context.Todos.First(t => t.Category == "engine");
+        var id = entity.Id;
+        _log.Run("Before",
+            $"Lookup(Category, \"engine\") → {todos.CountBy(TodoEntry.Indexes.Category, "engine")}");
+        entity.Category = "docs";
+        _log.Add("entity.Category = \"docs\"",
+            $"Lookup(Category, \"engine\") → {todos.CountBy(TodoEntry.Indexes.Category, "engine")}",
+            "The row object changed; the Category index still points at engine until SaveChanges.");
+        context.SaveChanges();
+        _log.Ok("After SaveChanges",
+            $"engine → {todos.CountBy(TodoEntry.Indexes.Category, "engine")}   docs → {todos.CountBy(TodoEntry.Indexes.Category, "docs")}",
+            $"The row {id:N} moved buckets. UpdateInPlace used the tracker's original values to retract the old entry.");
+    }
+
+    private void TrackDelete(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos)
+    {
+        var entity = context.Todos.First(t => t.Category == "docs");
+        var id = entity.Id;
+        context.Todos.Remove(entity);
+        _log.Run("Remove", $"context.Todos.Remove(entity)  State → {context.Entry(entity).State}");
+        context.SaveChanges();
+        _log.Ok("Gone from the table and its indexes",
+            $"todos.Get(id) → {(todos.Get(id) is null ? "null" : "still there")}   Lookup(Category, \"docs\") → {todos.CountBy(TodoEntry.Indexes.Category, "docs")}",
+            $"State → {context.Entry(entity).State}");
+    }
+
+    private void TrackTwoTables(DemoDbContext context)
+    {
+        context.Todos.Add(Row("A new todo from EF Core", category: "docs"));
+        context.Settings.Add(new Setting { Name = "efcore.demo", Value = "1", UpdatedAt = DateTime.UtcNow });
+        _log.Run("Stage two tables", "context.Todos.Add(...)  context.Settings.Add(...)");
+        var saved = context.SaveChanges();
+        _log.Ok("One commit",
+            $"SaveChanges() → {saved}",
+            "Both writes share a single engine transaction. A crash after this would replay both or neither.");
+    }
+
+    private void TrackFailedSave(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos)
+    {
+        var existing = todos.Scan().First();
+        var before = todos.Count;
+        context.Todos.Add(Row("would have been inserted", category: "bench"));
+        context.Todos.Add(Row("duplicate key", category: "bench", id: existing.Id));
+        _log.Run("Two adds, the second reuses an existing key",
+            $"existing id = {existing.Id:N}");
+        try
+        {
+            context.SaveChanges();
+            _log.Error("No exception", "unexpected");
+        }
+        catch (BlazeDbDuplicateKeyException ex)
+        {
+            _log.Error("SaveChanges threw",
+                $"{ex.GetType().Name}(table: \"{ex.TableName}\")",
+                ex.Message);
+        }
+
+        _log.Ok("Nothing stuck",
+            $"todos.Count → {todos.Count} (was {before})",
+            "The first insert was applied and then undone when the duplicate key failed.");
+    }
+
+    private void TrackNoTracking(DemoDbContext context, BlazeDbTable<Guid, TodoEntry> todos)
+    {
+        var entity = context.Todos.AsNoTracking().First(t => t.Category == "engine");
+        _log.Run("AsNoTracking query",
+            $"ChangeTracker.Entries().Count() → {context.ChangeTracker.Entries().Count()}",
+            "The tracker is empty, which is what no-tracking promises.");
+        _log.Add("Still the live row",
+            $"ReferenceEquals(entity, todos.Get(id)) → {ReferenceEquals(entity, todos.Get(entity.Id))}",
+            "Skipping the tracker does not copy the object. There is no copy to make.");
+        entity.Title = "mutated without tracking";
+        _log.Ok("Memory moved anyway",
+            $"todos.Get(id).Title → \"{todos.Get(entity.Id)!.Title}\"",
+            "SaveChanges would not see this. The title has still changed for every other reader in this process.");
+    }
+
+    private static TodoEntry Row(string title, bool done = false, string? category = "engine", Guid? id = null) => new()
+    {
+        Id = id ?? Guid.NewGuid(),
+        Title = title,
+        Done = done,
+        Category = category,
+        CreatedAt = DateTime.UtcNow,
+        Effort = 40,
+    };
+
+    private const string ContextSnippet = """
+        public sealed class AppContext(DbContextOptions<AppContext> options) : DbContext(options)
+        {
+            public DbSet<TodoItem> Todos => Set<TodoItem>();
+        }
+        """;
+
+    private const string UseSnippet = """
+        builder.Services.AddDbContext<AppContext>(options =>
+            options.UseBlazeDb());          // in-memory
+            // options.UseBlazeDb(storage); // OPFS, files, …
+
+        var open = context.Todos
+            .Where(t => !t.Done)
+            .OrderByDescending(t => t.CreatedAt)
+            .Take(20)
+            .ToList();
+        """;
+
+    private const string RelatedSnippet = """
+        // There is no Person.Orders navigation. Query the other table
+        // with the key you already have.
+        var person = context.People.Find(id);
+        var orders = context.Orders.Where(o => o.PersonId == person.Id).ToList();
+        """;
+
+    private const string LiveRowSnippet = """
+        var entity = context.Todos.First(t => t.Category == "engine");
+        ReferenceEquals(entity, todos.Get(entity.Id)); // true
+        """;
+
+    private const string MutateSnippet = """
+        var entity = context.Todos.First(t => !t.Done);
+        entity.Done = true;
+        // todos.Get(entity.Id).Done is already true
+        context.SaveChanges(); // journals it, moves the Done index
+        """;
+
+    private const string IndexMoveSnippet = """
+        var entity = context.Todos.First(t => t.Category == "engine");
+        entity.Category = "docs";
+        context.SaveChanges();
+        // Lookup(Category, "engine") no longer contains the row
+        """;
+
+    private const string DeleteSnippet = """
+        var entity = context.Todos.First(t => t.Category == "docs");
+        context.Todos.Remove(entity);
+        context.SaveChanges();
+        """;
+
+    private const string TwoTablesSnippet = """
+        context.Todos.Add(new TodoEntry { ... });
+        context.Settings.Add(new Setting { Name = "efcore.demo", Value = "1" });
+        context.SaveChanges(); // one engine transaction
+        """;
+
+    private const string FailedSaveSnippet = """
+        context.Todos.Add(newRow);
+        context.Todos.Add(new TodoEntry { Id = existing.Id, ... });
+        context.SaveChanges(); // throws; newRow is not kept
+        """;
+
+    private const string NoTrackingSnippet = """
+        var entity = context.Todos.AsNoTracking().First();
+        // tracker is empty, but entity is still the table's instance
+        entity.Title = "mutated without tracking";
+        """;
+}

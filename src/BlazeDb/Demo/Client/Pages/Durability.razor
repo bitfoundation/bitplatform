@@ -1,0 +1,902 @@
+﻿@page "/durability"
+@implements IAsyncDisposable
+
+<PageTitle>Durability &amp; recovery - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Persistence" IconName="shield" Title="Crash it on purpose"
+            Lead="This page drives a private database whose storage is a byte dictionary you can vandalise. Flush it, snapshot it, abandon it mid-flight, tear the tail off the log, corrupt a checksum - then reopen and see exactly what survived.">
+    <span class="chip"><Icon Name="file" /> @_files.Count files</span>
+    <span class="chip"><Icon Name="database" /> @(_table?.Count ?? 0) rows in memory</span>
+    <span class="chip"><Icon Name="disk" /> @DemoSandbox.Bytes(_totalBytes) on "disk"</span>
+</PageHeader>
+
+<Section Title="How a write becomes durable" IconName="arrow-down">
+    <div class="grid grid-4">
+        <Panel Title="1 · Memory" IconName="database">
+            <p class="small mb-0">
+                The row store and every index are updated synchronously. Your call has already
+                returned by the time anything else happens.
+            </p>
+        </Panel>
+        <Panel Title="2 · Log record" IconName="file">
+            <p class="small mb-0">
+                A set-or-delete record with a CRC is buffered. A commit closes the batch.
+            </p>
+        </Panel>
+        <Panel Title="3 · Append" IconName="download">
+            <p class="small mb-0">
+                A background loop appends buffered records to <code>wal-N.blz</code> every
+                <code>FlushInterval</code>. <code>FlushAsync</code> does it now.
+            </p>
+        </Panel>
+        <Panel Title="4 · Checkpoint" IconName="layers">
+            <p class="small mb-0">
+                Once the log passes <code>CheckpointWalSize</code>, a full snapshot is written, the
+                manifest is swapped atomically and the old log is deleted.
+            </p>
+        </Panel>
+    </div>
+</Section>
+
+<Section Title="The sandbox" IconName="cpu"
+         Lead="Options are read when a database is opened, so changing either one reopens the database over the same storage - which is itself a recovery.">
+    <Panel Title="Options" IconName="code">
+        <Actions>
+            <span class="panel-sub mono">@_optionsCode</span>
+        </Actions>
+        <ChildContent>
+            <div class="form-row">
+                <div class="field">
+                    <label class="field-label" for="d-flush">FlushInterval</label>
+                    <select id="d-flush" class="select" @bind="_flushChoice" @bind:after="ReopenAsync">
+                        <option value="never">never (1 hour - explicit flushes only)</option>
+                        <option value="fast">20 ms</option>
+                        <option value="default">100 ms (the default)</option>
+                        <option value="slow">1 second</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label class="field-label" for="d-ckpt">CheckpointWalSize</label>
+                    <select id="d-ckpt" class="select" @bind="_checkpointChoice" @bind:after="ReopenAsync">
+                        <option value="never">disabled (long.MaxValue)</option>
+                        <option value="tiny">2 KB - checkpoints constantly</option>
+                        <option value="small">32 KB</option>
+                        <option value="default">4 MB (the default)</option>
+                    </select>
+                </div>
+            </div>
+        </ChildContent>
+    </Panel>
+
+    <div class="grid grid-sidebar mt-2">
+        <div class="flex-col gap-lg">
+            <Panel Title="Normal operation" IconName="play">
+                <div class="grid grid-2">
+                    <button class="btn btn-sm" disabled="@_busy" @onclick="() => InsertRowsAsync(20)">
+                        <Icon Name="plus" /> Insert 20 rows
+                    </button>
+                    <button class="btn btn-sm" disabled="@_busy" @onclick="() => InsertRowsAsync(400)">
+                        <Icon Name="plus" /> Insert 400 rows
+                    </button>
+                    <button class="btn btn-sm" disabled="@_busy" @onclick="FlushAsync">
+                        <Icon Name="download" /> FlushAsync
+                    </button>
+                    <button class="btn btn-sm" disabled="@_busy" @onclick="CheckpointAsync">
+                        <Icon Name="layers" /> CheckpointAsync
+                    </button>
+                    <button class="btn btn-sm" disabled="@_busy" @onclick="WaitForAutoCheckpointAsync">
+                        <Icon Name="clock" /> Fill until it self-checkpoints
+                    </button>
+                    <button class="btn btn-sm" disabled="@_busy" @onclick="CleanCloseAsync">
+                        <Icon Name="check" /> Clean close, then reopen
+                    </button>
+                </div>
+            </Panel>
+
+            <Panel Title="Failure injection" IconName="alert">
+                <div class="grid grid-2">
+                    <button class="btn btn-sm btn-danger" disabled="@_busy" @onclick="CrashAsync">
+                        <Icon Name="bolt" /> Crash and reopen
+                    </button>
+                    <button class="btn btn-sm btn-danger" disabled="@_busy" @onclick="LoseUnflushedAsync">
+                        <Icon Name="close" /> Lose unflushed writes
+                    </button>
+                    <button class="btn btn-sm btn-danger" disabled="@_busy" @onclick="TearWalAsync">
+                        <Icon Name="file" /> Tear the log tail
+                    </button>
+                    <button class="btn btn-sm btn-danger" disabled="@_busy" @onclick="CorruptRecordAsync">
+                        <Icon Name="binary" /> Corrupt the last record
+                    </button>
+                    <button class="btn btn-sm btn-danger" disabled="@_busy" @onclick="CorruptManifestAsync">
+                        <Icon Name="key" /> Corrupt the manifest
+                    </button>
+                    <button class="btn btn-sm" disabled="@_busy" @onclick="ResetAsync">
+                        <Icon Name="refresh" /> Start over
+                    </button>
+                </div>
+                <p class="tiny muted mt-2 mb-0">
+                    “Crash” abandons the <code>BlazeDbDatabase</code> instance - whatever it had not flushed is
+                    gone and it never touches storage again - then opens a new one over the same bytes,
+                    exactly what closing a tab does.
+                </p>
+            </Panel>
+
+            <Panel Title="Trace" IconName="history" Flush="true">
+                <ScenarioSteps Steps="_log.Steps" EmptyText="Insert some rows, then try to break something." />
+            </Panel>
+        </div>
+
+        <div class="flex-col gap-lg">
+            <Panel Title="Storage contents" IconName="disk" Flush="true">
+                <Actions>
+                    <span class="panel-sub mono">@DemoSandbox.Bytes(_totalBytes)</span>
+                </Actions>
+                <ChildContent>
+                    @if (_files.Count == 0)
+                    {
+                        <div class="empty">
+                            <Icon Name="file" />
+                            <div>Nothing on storage.</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="table-wrap">
+                            <table class="data">
+                                <thead>
+                                    <tr><th>File</th><th>Role</th><th class="num">Size</th></tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var file in _files)
+                                    {
+                                        <tr>
+                                            <td class="mono strong">@file.Name</td>
+                                            <td><span class="badge @file.Tone">@file.Role</span></td>
+                                            <td class="num mono">@DemoSandbox.Bytes(file.Bytes)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </ChildContent>
+            </Panel>
+
+            <Panel Title="State" IconName="database">
+                <dl class="kv">
+                    <dt>Rows in memory</dt>
+                    <dd>@(_table?.Count.ToString("N0") ?? "-")</dd>
+                    <dt>Log size</dt>
+                    <dd>@DemoSandbox.Bytes(_walBytes)</dd>
+                    <dt>Snapshot size</dt>
+                    <dd>@(_snapshotBytes == 0 ? "none yet" : DemoSandbox.Bytes(_snapshotBytes))</dd>
+                    <dt>Times opened</dt>
+                    <dd>@_generation</dd>
+                    <dt>Last recovery</dt>
+                    <dd>@_lastRecovery</dd>
+                </dl>
+            </Panel>
+
+            <Panel Title="File roles" IconName="info">
+                <dl class="kv">
+                    <dt>manifest.blz</dt>
+                    <dd class="small">Names the newest valid snapshot and its log sequence number. Replaced atomically.</dd>
+                    <dt>snapshot-N.blz</dt>
+                    <dd class="small">A complete image of every table at one point in time.</dd>
+                    <dt>wal-N.blz</dt>
+                    <dd class="small">Append-only records written since that snapshot, each with a CRC.</dd>
+                </dl>
+            </Panel>
+        </div>
+    </div>
+</Section>
+
+<Section Title="What recovery actually does" IconName="refresh">
+    <div class="grid grid-2">
+        <CodeBlock Title="Recovery, in order" Code="@RecoverySnippet" Language="text" />
+        <div class="flex-col gap-lg">
+            <Callout Tone="ok" Title="A torn tail is expected, not exceptional.">
+                A process can die mid-append, leaving a partial record. Replay stops at the last record
+                whose checksum verifies and truncates the rest. Everything committed before that point
+                is intact.
+            </Callout>
+            <Callout Tone="err" Title="A corrupt manifest or snapshot is fatal.">
+                Those are read through an atomic write, so a bad checksum means the bytes were damaged
+                rather than merely incomplete. <code>OpenAsync</code> throws
+                <code>BlazeDbCorruptDatabaseException</code> instead of silently losing data.
+            </Callout>
+            <Callout Tone="info" Title="Durability lag is a number you choose.">
+                With the default 100 ms interval, a crash can cost at most the last 100 ms of writes.
+                Call <code>FlushAsync</code> at moments that matter and the window closes to zero.
+            </Callout>
+        </div>
+    </div>
+</Section>
+
+@code {
+    private sealed record FileRow(string Name, string Role, string Tone, int Bytes);
+
+    private BlazeDbInMemoryStorage _storage = new();
+    private BlazeDbDatabase? _db;
+    private BlazeDbTable<Guid, TodoEntry>? _table;
+    private readonly ScenarioLog _log = new();
+
+    private string _flushChoice = "never";
+    private string _checkpointChoice = "never";
+    private bool _busy;
+    private int _generation = 1;
+    private int _nextRow = 1;
+    private string _lastRecovery = "opened empty";
+    private string _optionsCode = "";
+
+    private List<FileRow> _files = [];
+    private long _totalBytes;
+    private long _walBytes;
+    private long _snapshotBytes;
+
+    private TimeSpan FlushInterval => _flushChoice switch
+    {
+        "fast" => TimeSpan.FromMilliseconds(20),
+        "default" => TimeSpan.FromMilliseconds(100),
+        "slow" => TimeSpan.FromSeconds(1),
+        _ => TimeSpan.FromHours(1),
+    };
+
+    private long CheckpointWalSize => _checkpointChoice switch
+    {
+        "tiny" => 2 * 1024,
+        "small" => 32 * 1024,
+        "default" => 4 * 1024 * 1024,
+        _ => long.MaxValue,
+    };
+
+    protected override async Task OnInitializedAsync() => await OpenAsync("opened empty");
+
+    // ------------------------------------------------------------- lifecycle
+
+    private async Task OpenAsync(string recoveryNote)
+    {
+        _db = await DemoSandbox.OpenAsync(_storage, FlushInterval, CheckpointWalSize);
+        _table = _db.GetTable(TodoEntry.Table);
+        _lastRecovery = recoveryNote;
+        _optionsCode = $"FlushInterval = {FlushLabel()}, CheckpointWalSize = {CheckpointLabel()}";
+        Refresh();
+    }
+
+    /// <summary>
+    /// Abandons the running instance the way a closed tab would: whatever it has not flushed is
+    /// lost, and it never touches storage again. The bytes on storage are copied first and the copy
+    /// becomes the storage the next open reads from, so the abandoned instance's own shutdown flush
+    /// - and its background loop, which would otherwise keep running - cannot reach it.
+    /// </summary>
+    private async Task SimulateCrashAsync()
+    {
+        var crashed = _db;
+        _db = null;
+        _table = null;
+        _storage = _storage.Clone();
+
+        if (crashed is not null)
+        {
+            try
+            {
+                await crashed.DisposeAsync();
+            }
+            catch
+            {
+                // Its storage is being discarded; nothing it does now matters.
+            }
+        }
+    }
+
+    private string FlushLabel() => _flushChoice switch
+    {
+        "fast" => "20 ms",
+        "default" => "100 ms",
+        "slow" => "1 s",
+        _ => "1 hour",
+    };
+
+    private string CheckpointLabel() => _checkpointChoice switch
+    {
+        "tiny" => "2 KB",
+        "small" => "32 KB",
+        "default" => "4 MB",
+        _ => "long.MaxValue",
+    };
+
+    private async Task ReopenAsync()
+    {
+        _busy = true;
+        try
+        {
+            if (_db is not null)
+            {
+                await _db.DisposeAsync();
+            }
+
+            _generation++;
+            await OpenAsync("reopened after an options change");
+            _log.Ok(
+                "Reopened with new options",
+                $"await BlazeDbDatabase.OpenAsync(new BlazeDbDatabaseOptions {{ Storage = storage, FlushInterval = {FlushLabel()}, CheckpointWalSize = {CheckpointLabel()} }} …)",
+                $"Recovered {_table?.Count ?? 0} rows from the snapshot and log.");
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            await RecoverFromCorruptionAsync(ex);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ResetAsync()
+    {
+        _busy = true;
+        try
+        {
+            if (_db is not null)
+            {
+                await _db.DisposeAsync();
+                _db = null;
+            }
+
+            _storage = new BlazeDbInMemoryStorage();
+            _nextRow = 1;
+            _generation = 1;
+            _log.Clear();
+            await OpenAsync("opened empty");
+            _log.Add("Fresh storage", "new BlazeDbInMemoryStorage()", "Opening over empty storage writes a manifest that names an empty log; nothing else exists yet.");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    // ------------------------------------------------------- normal operation
+
+    private async Task InsertRowsAsync(int count)
+    {
+        if (_db is null || _table is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var sw = Stopwatch.StartNew();
+
+            using (var txn = _db.BeginTransaction())
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    _table.Insert(new TodoEntry
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"durable row {_nextRow++}",
+                        Category = "engine",
+                        Priority = Priority.Normal,
+                        CreatedAt = DateTime.UtcNow,
+                        Effort = _nextRow % 90,
+                        Notes = "padding so the log grows at a realistic rate",
+                    });
+                }
+                txn.Commit();
+            }
+
+            var beforeFiles = _storage.FileNames.Count;
+            Refresh();
+
+            _log.Ok(
+                $"Inserted {count} rows in one transaction",
+                $"todos.Count → {_table.Count}",
+                _storage.FileNames.Count == beforeFiles && _walBytes == 0
+                    ? $"Committed to memory in {DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)}. Nothing on disk yet - that is the background flusher's job."
+                    : $"Committed in {DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)}; the log is now {DemoSandbox.Bytes(_walBytes)}.");
+
+            if (FlushInterval < TimeSpan.FromSeconds(2))
+            {
+                await Task.Delay(FlushInterval + TimeSpan.FromMilliseconds(120));
+                Refresh();
+                _log.Add("Background flusher ran", $"log is now {DemoSandbox.Bytes(_walBytes)}",
+                    "No await in your write path - the loop caught up on its own.");
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task FlushAsync()
+    {
+        if (_db is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var before = _walBytes;
+            var sw = Stopwatch.StartNew();
+            await _db.FlushAsync();
+            Refresh();
+
+            _log.Ok(
+                "Explicit flush",
+                "await db.FlushAsync()",
+                $"Log went from {DemoSandbox.Bytes(before)} to {DemoSandbox.Bytes(_walBytes)} in {DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)}. Everything committed so far is now recoverable.");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CheckpointAsync()
+    {
+        if (_db is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var walBefore = _walBytes;
+            var sw = Stopwatch.StartNew();
+            await _db.CheckpointAsync();
+            Refresh();
+
+            _log.Ok(
+                "Checkpoint",
+                "await db.CheckpointAsync()",
+                $"Snapshot is {DemoSandbox.Bytes(_snapshotBytes)}; the {DemoSandbox.Bytes(walBefore)} log was replaced by a fresh one. Took {DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)}.");
+        }
+        catch (InvalidOperationException ex)
+        {
+            _log.Error("CheckpointAsync refused", "InvalidOperationException", ex.Message);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task WaitForAutoCheckpointAsync()
+    {
+        if (_db is null || _table is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            if (_checkpointChoice == "never" || FlushInterval > TimeSpan.FromSeconds(1))
+            {
+                _flushChoice = "fast";
+                _checkpointChoice = "tiny";
+                await _db.DisposeAsync();
+                _generation++;
+                await OpenAsync("reopened for the auto-checkpoint demo");
+                _log.Add("Switched options", "FlushInterval = 20 ms, CheckpointWalSize = 2 KB",
+                    "Small thresholds so the behaviour is visible in a second or two.");
+            }
+
+            var snapshotsBefore = _storage.FileNames.Count(f => f.StartsWith("snapshot-"));
+
+            using (var txn = _db.BeginTransaction())
+            {
+                for (var i = 0; i < 600; i++)
+                {
+                    _table.Insert(new TodoEntry
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"durable row {_nextRow++}",
+                        Notes = "a reasonably long note so each record carries real weight in the log",
+                        Category = "engine",
+                        CreatedAt = DateTime.UtcNow,
+                        Effort = _nextRow % 90,
+                    });
+                }
+                txn.Commit();
+            }
+
+            _log.Run("Wrote 600 rows", "the log will cross 2 KB almost immediately");
+
+            var deadline = DateTime.UtcNow.AddSeconds(5);
+            while (DateTime.UtcNow < deadline)
+            {
+                await Task.Delay(100);
+                Refresh();
+                if (_storage.FileNames.Count(f => f.StartsWith("snapshot-")) > snapshotsBefore)
+                {
+                    break;
+                }
+            }
+
+            Refresh();
+            var snapshots = _storage.FileNames.Where(f => f.StartsWith("snapshot-")).OrderBy(f => f).ToList();
+
+            if (snapshots.Count > snapshotsBefore)
+            {
+                _log.Ok(
+                    "The engine checkpointed itself",
+                    string.Join(", ", snapshots),
+                    "No application code asked for it - the flush loop noticed the log had outgrown CheckpointWalSize.");
+            }
+            else
+            {
+                _log.Add("No snapshot yet", "still flushing", "Try inserting more rows.");
+            }
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CleanCloseAsync()
+    {
+        if (_db is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var before = _table?.Count ?? 0;
+            await _db.DisposeAsync();
+            _log.Add("Clean shutdown", "await db.DisposeAsync()", "Cancels the flush loop and performs one final flush.");
+
+            _generation++;
+            await OpenAsync("reopened after a clean shutdown");
+            _log.Ok(
+                "Reopened",
+                $"todos.Count → {_table?.Count ?? 0}",
+                (_table?.Count ?? 0) == before
+                    ? "Every row came back. A clean close never loses a committed write."
+                    : $"Expected {before} rows.");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    // ------------------------------------------------------ failure injection
+
+    private async Task CrashAsync()
+    {
+        if (_db is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            var before = _table?.Count ?? 0;
+            await _db.FlushAsync();
+            _log.Add("Flushed, then abandoned the instance", "its storage is swapped out first, so nothing it does from now on reaches these bytes");
+
+            _generation++;
+            await SimulateCrashAsync();
+            await OpenAsync("recovered from an abandoned instance");
+
+            _log.Ok(
+                "Reopened over the same bytes",
+                $"{before} rows before → {_table?.Count ?? 0} rows recovered",
+                "The snapshot was loaded and the log replayed from its sequence number.");
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            await RecoverFromCorruptionAsync(ex);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task LoseUnflushedAsync()
+    {
+        if (_db is null || _table is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            _flushChoice = "never";
+            await _db.DisposeAsync();
+            _generation++;
+            await OpenAsync("reopened with background flushing disabled");
+
+            var baseline = _table!.Count;
+            await _db!.FlushAsync();
+            _log.Add("Baseline flushed", $"{baseline} rows are durable");
+
+            using (var txn = _db.BeginTransaction())
+            {
+                for (var i = 0; i < 10; i++)
+                {
+                    _table.Insert(new TodoEntry
+                    {
+                        Id = Guid.NewGuid(),
+                        Title = $"never flushed {_nextRow++}",
+                        CreatedAt = DateTime.UtcNow,
+                    });
+                }
+                txn.Commit();
+            }
+
+            _log.Run("Committed 10 more rows without flushing", $"todos.Count → {_table.Count}",
+                "Committed in memory, buffered for the log, but the flusher is set to one hour.");
+
+            _generation++;
+            await SimulateCrashAsync();
+            await OpenAsync("recovered without the unflushed tail");
+
+            _log.Error(
+                "The unflushed batch is gone",
+                $"{baseline + 10} rows in memory → {_table?.Count ?? 0} rows recovered",
+                "This is the durability window. Shrink FlushInterval, or call FlushAsync when a write matters.");
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            await RecoverFromCorruptionAsync(ex);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task TearWalAsync()
+    {
+        if (_db is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            await _db.FlushAsync();
+            var before = _table?.Count ?? 0;
+            var wal = NewestWal();
+
+            if (wal is null)
+            {
+                _log.Error("No log file yet", "flush something first");
+                return;
+            }
+
+            var bytes = _storage.GetFile(wal)!;
+            // A complete 16-byte record header (length 4096, a sequence number, a checksum) followed
+            // by only four bytes of the payload it announces - what a crash mid-append leaves behind.
+            byte[] tail =
+            [
+                0x00, 0x10, 0x00, 0x00,
+                0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F,
+                0xAA, 0xBB, 0xCC, 0xDD,
+                0x01, 0x02, 0x03, 0x04,
+            ];
+            var torn = bytes.Concat(tail).ToArray();
+            _storage.SetFile(wal, torn);
+
+            _log.Add(
+                $"Appended {tail.Length} junk bytes to the log tail",
+                $"{wal}: {DemoSandbox.Bytes(bytes.Length)} → {DemoSandbox.Bytes(torn.Length)}",
+                "A record header that promises a payload the file does not contain.");
+
+            _generation++;
+            await SimulateCrashAsync();
+            await OpenAsync("recovered past a torn tail");
+
+            _log.Ok(
+                "Recovery ignored the partial record",
+                $"{before} rows before → {_table?.Count ?? 0} rows recovered",
+                "Replay stopped at the last record with a valid checksum and truncated the rest.");
+
+            _table!.Insert(new TodoEntry
+            {
+                Id = Guid.NewGuid(),
+                Title = $"written after the tear {_nextRow++}",
+                CreatedAt = DateTime.UtcNow,
+            });
+            await _db!.FlushAsync();
+            Refresh();
+
+            _log.Ok("The database is fully usable", $"todos.Count → {_table.Count}",
+                "New writes append after the truncation point.");
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            await RecoverFromCorruptionAsync(ex);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CorruptRecordAsync()
+    {
+        if (_db is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            await _db.FlushAsync();
+            var before = _table?.Count ?? 0;
+            var wal = NewestWal();
+
+            if (wal is null)
+            {
+                _log.Error("No log file yet", "flush something first");
+                return;
+            }
+
+            var bytes = _storage.GetFile(wal)!;
+            if (bytes.Length == 0)
+            {
+                _log.Error("The log is empty", "insert some rows and flush first");
+                return;
+            }
+            bytes[^1] ^= 0xFF;
+            _storage.SetFile(wal, bytes);
+
+            _log.Add("Flipped the last byte of the log", $"{wal}[^1] ^= 0xFF", "The final record's CRC no longer matches.");
+
+            _generation++;
+            await SimulateCrashAsync();
+            await OpenAsync("recovered up to the last valid record");
+
+            _log.Ok(
+                "Replay stopped at the damage",
+                $"{before} rows before → {_table?.Count ?? 0} rows recovered",
+                "Records before the bad checksum were applied; the damaged one and anything after it were discarded.");
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            await RecoverFromCorruptionAsync(ex);
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task CorruptManifestAsync()
+    {
+        if (_db is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        try
+        {
+            await _db.CheckpointAsync();
+            Refresh();
+
+            var manifest = _storage.GetFile("manifest.blz");
+            if (manifest is null)
+            {
+                _log.Error("No manifest yet", "checkpoint first");
+                return;
+            }
+
+            manifest[^1] ^= 0xFF;
+            _storage.SetFile("manifest.blz", manifest);
+            _log.Add("Damaged the manifest", "manifest.blz[^1] ^= 0xFF", "The manifest is written atomically, so this cannot happen by accident.");
+
+            _generation++;
+            await SimulateCrashAsync();
+            await OpenAsync("this should not be reached");
+            _log.Error("Open succeeded", "unexpected - corruption went undetected");
+        }
+        catch (BlazeDbCorruptDatabaseException ex)
+        {
+            _log.Error(
+                "OpenAsync refused to open the database",
+                $"BlazeDbCorruptDatabaseException: {ex.Message}",
+                "The engine will not guess at damaged bytes. Recovering means restoring a backup or starting fresh.");
+
+            _storage = new BlazeDbInMemoryStorage();
+            _nextRow = 1;
+            await OpenAsync("started fresh after unrecoverable corruption");
+            _log.Add("Started fresh", "new BlazeDbInMemoryStorage()", "The sandbox is reusable again.");
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RecoverFromCorruptionAsync(BlazeDbCorruptDatabaseException ex)
+    {
+        _log.Error("BlazeDbCorruptDatabaseException", ex.Message, "Falling back to fresh storage so the sandbox stays usable.");
+        _storage = new BlazeDbInMemoryStorage();
+        _nextRow = 1;
+        await OpenAsync("started fresh after unrecoverable corruption");
+    }
+
+    // --------------------------------------------------------------- helpers
+
+    private string? NewestWal() => _storage.FileNames
+        .Where(f => f.StartsWith("wal-"))
+        .OrderByDescending(FileIndex)
+        .FirstOrDefault();
+
+    /// <summary>Extracts the generation number from <c>wal-12.blz</c>.</summary>
+    private static int FileIndex(string name)
+    {
+        var start = name.IndexOf('-') + 1;
+        var end = name.IndexOf('.', start);
+        return start > 0 && end > start && int.TryParse(name[start..end], out var value) ? value : 0;
+    }
+
+    private void Refresh()
+    {
+        _files = _storage.FileNames
+            .OrderBy(f => f, StringComparer.Ordinal)
+            .Select(f =>
+            {
+                var bytes = _storage.GetFile(f)?.Length ?? 0;
+                var (role, tone) = f switch
+                {
+                    "manifest.blz" => ("manifest", "info"),
+                    var n when n.StartsWith("snapshot-") => ("snapshot", "accent"),
+                    var n when n.StartsWith("wal-") => ("write-ahead log", "ok"),
+                    _ => ("file", ""),
+                };
+                return new FileRow(f, role, tone, bytes);
+            })
+            .ToList();
+
+        _totalBytes = _files.Sum(f => (long)f.Bytes);
+        _walBytes = _files.Where(f => f.Name.StartsWith("wal-")).Sum(f => (long)f.Bytes);
+        _snapshotBytes = _files.Where(f => f.Name.StartsWith("snapshot-")).Sum(f => (long)f.Bytes);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_db is not null)
+        {
+            await _db.DisposeAsync();
+            _db = null;
+        }
+    }
+
+    private const string RecoverySnippet = """
+        1. Read manifest.blz
+             missing        -> brand new database, start empty
+             bad checksum   -> throw BlazeDbCorruptDatabaseException
+
+        2. Load the snapshot the manifest names
+             missing        -> throw BlazeDbCorruptDatabaseException
+             bad checksum   -> throw BlazeDbCorruptDatabaseException
+             ok             -> rebuild every table and index in memory
+
+        3. Replay wal-N.blz from the snapshot's sequence number
+             for each record:
+               verify CRC   -> apply set or delete
+               bad CRC or short read -> stop, truncate the remainder
+
+        4. Start the background flush loop and hand back the BlazeDbDatabase
+        """;
+}

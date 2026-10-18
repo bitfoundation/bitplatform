@@ -1,0 +1,919 @@
+﻿@page "/todos"
+@inject DemoDbService Db
+
+<PageTitle>Live data - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Start" IconName="list" Title="A working app on the real engine"
+            Lead="Every list, count and filter below is served by BlazeDb primitives against rows held in this tab's memory. The panel on the right shows the exact code producing what you see.">
+    <span class="chip"><Icon Name="database" /> @(_todos?.Count ?? 0) rows</span>
+    <span class="chip"><Icon Name="disk" /> @Db.StorageLabel</span>
+    @if (Db.IsPersistent)
+    {
+        <span class="chip on"><Icon Name="shield" /> Survives reload</span>
+    }
+</PageHeader>
+
+@if (_error is not null)
+{
+    <Callout Tone="err" Title="The database could not be opened.">@_error</Callout>
+}
+else if (_todos is null)
+{
+    <Panel><div class="empty"><div class="spinner" style="margin:0 auto 0.6rem"></div>Opening the database…</div></Panel>
+}
+else
+{
+    <div class="stats mb-3">
+        <StatTile Label="Total" IconName="database" Value="@_todos.Count.ToString("N0")" Note="table.Count" />
+        <StatTile Label="Open" IconName="clock" Tone="accent" Value="@_openCount.ToString("N0")"
+                  Note="CountBy(Done, false)" />
+        <StatTile Label="Done" IconName="check" Tone="ok" Value="@_doneCount.ToString("N0")"
+                  Note="CountBy(Done, true)" />
+        <StatTile Label="Matching filters" IconName="filter" Value="@_matchTotal.ToString("N0")"
+                  Note="@($"page {_page + 1} of {Math.Max(1, (_matchTotal + PageSize - 1) / PageSize)}")" />
+        <StatTile Label="Last operation" IconName="bolt" Value="@_lastOpTime" Note="@_lastOp" />
+    </div>
+
+    <Panel Title="Add a row" IconName="plus" Sub="table.Insert(row)">
+        <div class="form-row">
+            <div class="field" style="flex: 3 1 240px">
+                <label class="field-label" for="new-title">Title</label>
+                <input id="new-title" class="input" placeholder="What needs doing?" @bind="_newTitle"
+                       @bind:event="oninput" @onkeydown="OnAddKey" />
+            </div>
+            <div class="field">
+                <label class="field-label" for="new-cat">Category</label>
+                <select id="new-cat" class="select" @bind="_newCategory">
+                    <option value="">(null - not indexed)</option>
+                    @foreach (var c in DemoData.Categories)
+                    {
+                        <option value="@c">@c</option>
+                    }
+                </select>
+            </div>
+            <div class="field">
+                <label class="field-label" for="new-prio">Priority</label>
+                <select id="new-prio" class="select" @bind="_newPriority">
+                    @foreach (var p in Enum.GetValues<Priority>())
+                    {
+                        <option value="@p">@p</option>
+                    }
+                </select>
+            </div>
+            <div class="field" style="flex: 0 1 110px">
+                <label class="field-label" for="new-effort">Effort</label>
+                <input id="new-effort" class="input mono" type="number" min="0" max="600" @bind="_newEffort" />
+            </div>
+            <button class="btn btn-primary" disabled="@string.IsNullOrWhiteSpace(_newTitle)" @onclick="Add">
+                <Icon Name="plus" /> Insert
+            </button>
+        </div>
+
+        @if (_showMore)
+        {
+            <div class="form-row mt-2">
+                <div class="field" style="flex: 0 1 120px">
+                    <label class="field-label" for="new-rating">Rating</label>
+                    <input id="new-rating" class="input mono" type="number" min="1" max="5" @bind="_newRating" />
+                    <span class="field-hint">int? - null when blank</span>
+                </div>
+                <div class="field" style="flex: 0 1 160px">
+                    <label class="field-label" for="new-due">Due</label>
+                    <input id="new-due" class="input mono" type="date" @bind="_newDue" />
+                    <span class="field-hint">DateTimeOffset?</span>
+                </div>
+                <div class="field" style="flex: 2 1 200px">
+                    <label class="field-label" for="new-tags">Tags</label>
+                    <input id="new-tags" class="input" placeholder="wal, format" @bind="_newTags" />
+                    <span class="field-hint">List&lt;string&gt;, comma separated</span>
+                </div>
+                <div class="field" style="flex: 0 1 130px">
+                    <label class="field-label" for="new-cost">Cost</label>
+                    <input id="new-cost" class="input mono" type="number" step="0.01" @bind="_newCost" />
+                    <span class="field-hint">decimal</span>
+                </div>
+            </div>
+        }
+
+        <div class="toolbar mt-2">
+            <button class="btn btn-ghost btn-sm" @onclick="() => _showMore = !_showMore">
+                <Icon Name="@(_showMore ? "close" : "layers")" />
+                @(_showMore ? "Fewer fields" : "More fields (nullable, collections, decimal)")
+            </button>
+            @if (_addError is not null)
+            {
+                <span class="badge err">@_addError</span>
+            }
+        </div>
+    </Panel>
+
+    <div class="grid grid-sidebar mt-3">
+        <div>
+            <Panel Flush="true" Title="Rows" IconName="list">
+                <Actions>
+                    <span class="panel-sub mono">@_matchTotal matched</span>
+                </Actions>
+                <ChildContent>
+                    <div class="panel-head" style="border-bottom:1px solid var(--border); background:transparent; flex-wrap:wrap; gap:0.5rem">
+                        <div class="seg">
+                            @foreach (var s in new[] { StatusFilter.All, StatusFilter.Open, StatusFilter.Done })
+                            {
+                                var value = s;
+                                <button class="@(_status == value ? "on" : null)" @onclick="() => SetStatus(value)">@value</button>
+                            }
+                        </div>
+
+                        <select class="select" style="width:auto" @bind="_category" @bind:after="OnFilterChanged">
+                            <option value="">All categories</option>
+                            @foreach (var c in DemoData.Categories)
+                            {
+                                <option value="@c">@c (@_todos.CountBy(TodoEntry.Indexes.Category, c))</option>
+                            }
+                        </select>
+
+                        <select class="select" style="width:auto" @bind="_priorityText" @bind:after="OnFilterChanged">
+                            <option value="">Any priority</option>
+                            @foreach (var p in Enum.GetValues<Priority>())
+                            {
+                                <option value="@p">@p (@_todos.CountBy(TodoEntry.Indexes.ByPriority, p))</option>
+                            }
+                        </select>
+
+                        <select class="select" style="width:auto" @bind="_sort" @bind:after="OnFilterChanged">
+                            <option value="@SortMode.Newest">Newest first</option>
+                            <option value="@SortMode.Oldest">Oldest first</option>
+                            <option value="@SortMode.Effort">Highest effort</option>
+                            <option value="@SortMode.Title">Title A→Z</option>
+                        </select>
+
+                        <div class="field" style="flex:1 1 150px; min-width:140px">
+                            <input class="input" placeholder="Filter titles…" @bind="_search"
+                                   @bind:event="oninput" @bind:after="OnFilterChanged" />
+                        </div>
+                    </div>
+
+                    @if (_uncategorized > 0)
+                    {
+                        <div class="panel-body" style="padding-bottom:0">
+                            <Callout Tone="info" Title="@($"{_uncategorized} rows have a null Category.")">
+                                Null index values are never added to a secondary index, so those rows
+                                appear under “All categories” but never in a category lookup.
+                            </Callout>
+                        </div>
+                    }
+
+                    @if (_visible.Count == 0)
+                    {
+                        <div class="empty">
+                            <Icon Name="search" />
+                            <div>No rows match this combination of filters.</div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="rows">
+                            @foreach (var todo in _visible)
+                            {
+                                @if (_editing == todo.Id)
+                                {
+                                    <div class="row-item" style="align-items:flex-start; flex-wrap:wrap">
+                                        <div class="row-main">
+                                            <div class="form-row">
+                                                <div class="field" style="flex:3 1 200px">
+                                                    <input class="input" @bind="_editTitle" />
+                                                </div>
+                                                <div class="field" style="flex:0 1 130px">
+                                                    <select class="select" @bind="_editCategory">
+                                                        <option value="">(null)</option>
+                                                        @foreach (var c in DemoData.Categories)
+                                                        {
+                                                            <option value="@c">@c</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="field" style="flex:0 1 120px">
+                                                    <select class="select" @bind="_editPriority">
+                                                        @foreach (var p in Enum.GetValues<Priority>())
+                                                        {
+                                                            <option value="@p">@p</option>
+                                                        }
+                                                    </select>
+                                                </div>
+                                                <div class="field" style="flex:0 1 90px">
+                                                    <input class="input mono" type="number" @bind="_editEffort" />
+                                                </div>
+                                                <button class="btn btn-primary btn-sm" @onclick="() => SaveEdit(todo)">
+                                                    <Icon Name="check" /> Update
+                                                </button>
+                                                <button class="btn btn-ghost btn-sm" @onclick="() => _editing = null">Cancel</button>
+                                            </div>
+                                            <div class="tiny muted mt-1 mono">
+                                                table.Update(row) - rewrites the row and every index entry that changed
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="row-item @(todo.Done ? "done" : null)">
+                                        <label class="check" title="Toggle Done - table.Update(row)">
+                                            <input type="checkbox" checked="@todo.Done" @onchange="() => Toggle(todo)" />
+                                        </label>
+                                        <div class="row-main">
+                                            <div class="row-title">@todo.Title</div>
+                                            <div class="row-meta">
+                                                <span class="prio @todo.Priority">@todo.Priority</span>
+                                                @if (todo.Category is null)
+                                                {
+                                                    <span class="badge">null category</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge accent">@todo.Category</span>
+                                                }
+                                                <span class="mono">@todo.Effort min</span>
+                                                @if (todo.Rating is { } rating)
+                                                {
+                                                    <span title="Rating">@Stars(rating)</span>
+                                                }
+                                                <span>@todo.CreatedAt.ToLocalTime().ToString("MMM d, HH:mm")</span>
+                                                @foreach (var tag in todo.Tags)
+                                                {
+                                                    <span class="badge mono">#@tag</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="row-actions">
+                                            <button class="icon-btn" title="Edit" @onclick="() => BeginEdit(todo)">
+                                                <Icon Name="code" />
+                                            </button>
+                                            <button class="icon-btn" title="Copy key" @onclick="() => _keyInput = todo.Id.ToString()">
+                                                <Icon Name="key" />
+                                            </button>
+                                            <button class="icon-btn" title="Delete" @onclick="() => Delete(todo)">
+                                                <Icon Name="trash" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                        @if (_matchTotal > PageSize)
+                        {
+                            <div class="panel-head" style="border-bottom:0; border-top:1px solid var(--border); background:transparent">
+                                <span class="panel-sub mono">
+                                    Skip(@(_page * PageSize)).Take(@PageSize)
+                                </span>
+                                <div class="panel-actions">
+                                    <button class="btn btn-sm" disabled="@(_page == 0)" @onclick="() => SetPage(_page - 1)">Previous</button>
+                                    <span class="tiny muted mono">@(_page + 1) / @PageCount</span>
+                                    <button class="btn btn-sm" disabled="@(_page + 1 >= PageCount)" @onclick="() => SetPage(_page + 1)">Next</button>
+                                </div>
+                            </div>
+                        }
+                    }
+                </ChildContent>
+            </Panel>
+        </div>
+
+        <div class="flex-col gap-lg">
+            <Panel Title="The query behind this view" IconName="query" Sub="@(_isIndexOrdered ? "index-ordered" : "sorted in memory")">
+                <CodeBlock Code="@_queryCode" ShowHeader="false" Wrap="true" />
+                <dl class="kv mt-2">
+                    <dt>Source</dt>
+                    <dd>@_sourceLabel</dd>
+                    <dt>IsIndexOrdered</dt>
+                    <dd>@_isIndexOrdered.ToString().ToLowerInvariant()</dd>
+                    <dt>Matched</dt>
+                    <dd>@_matchTotal.ToString("N0") of @_todos.Count.ToString("N0")</dd>
+                    <dt>Elapsed</dt>
+                    <dd>@_lastQueryTime</dd>
+                </dl>
+            </Panel>
+
+            <Panel Title="Key lookups" IconName="key" Sub="Get · TryGet · Contains">
+                <div class="field">
+                    <input class="input mono" placeholder="paste a row key (Guid)" @bind="_keyInput" />
+                    <span class="field-hint">Use the key button on any row to fill this in.</span>
+                </div>
+                <div class="toolbar mt-2">
+                    <button class="btn btn-sm" @onclick="RunGet">Get</button>
+                    <button class="btn btn-sm" @onclick="RunTryGet">TryGet</button>
+                    <button class="btn btn-sm" @onclick="RunContains">Contains</button>
+                </div>
+                @if (_keyResult is not null)
+                {
+                    <div class="api-call mt-2">@_keyResult</div>
+                }
+            </Panel>
+
+            <Panel Title="Bulk and durability" IconName="shield" Sub="transactions, flush, checkpoint">
+                <div class="flex-col">
+                    <button class="btn btn-sm btn-block" @onclick="SeedMore">
+                        <Icon Name="plus" /> Insert 25 rows in one transaction
+                    </button>
+                    <button class="btn btn-sm btn-block" @onclick="UpsertPinned">
+                        <Icon Name="refresh" /> Upsert a fixed row (idempotent)
+                    </button>
+                    <button class="btn btn-sm btn-block" @onclick="DeleteDone">
+                        <Icon Name="trash" /> Delete every done row
+                    </button>
+                    <button class="btn btn-sm btn-block" @onclick="FlushNow">
+                        <Icon Name="download" /> FlushAsync - force durability
+                    </button>
+                    <button class="btn btn-sm btn-block" @onclick="CheckpointNow">
+                        <Icon Name="layers" /> CheckpointAsync - snapshot &amp; truncate WAL
+                    </button>
+                    <button class="btn btn-sm btn-block btn-danger" @onclick="ClearAll">
+                        <Icon Name="close" /> Delete all rows
+                    </button>
+                </div>
+                @if (_maintenance is not null)
+                {
+                    <div class="api-call mt-2">@_maintenance</div>
+                }
+            </Panel>
+
+            <Panel Title="View preferences" IconName="database" Sub="a second table, string keys">
+                <p class="small">
+                    The status filter and sort order you pick are written to the
+                    <code>settings</code> table with <code>Upsert</code> and read back with
+                    <code>Get</code> on load - so they survive a reload alongside your rows.
+                </p>
+                <dl class="kv">
+                    @foreach (var setting in _todosSettings)
+                    {
+                        <dt>@setting.Name</dt>
+                        <dd>@setting.Value</dd>
+                    }
+                </dl>
+            </Panel>
+        </div>
+    </div>
+}
+
+@code {
+    private const int PageSize = 8;
+    private static readonly Guid PinnedId = new("00000000-0000-0000-0000-00000000beef");
+
+    private enum StatusFilter { All, Open, Done }
+
+    private enum SortMode { Newest, Oldest, Effort, Title }
+
+    private BlazeDbDatabase? _db;
+    private BlazeDbTable<Guid, TodoEntry>? _todos;
+    private string? _error;
+
+    // filters
+    private StatusFilter _status = StatusFilter.All;
+    private string _category = "";
+    private string _priorityText = "";
+    private SortMode _sort = SortMode.Newest;
+    private string _search = "";
+    private int _page;
+
+    // add form
+    private string _newTitle = "";
+    private string _newCategory = "engine";
+    private Priority _newPriority = Priority.Normal;
+    private int _newEffort = 45;
+    private int? _newRating;
+    private DateTime? _newDue;
+    private string _newTags = "";
+    private decimal _newCost;
+    private bool _showMore;
+    private string? _addError;
+
+    // inline edit
+    private Guid? _editing;
+    private string _editTitle = "";
+    private string _editCategory = "";
+    private Priority _editPriority;
+    private int _editEffort;
+
+    // results
+    private List<TodoEntry> _visible = [];
+    private int _matchTotal;
+    private int _openCount;
+    private int _doneCount;
+    private int _uncategorized;
+    private bool _isIndexOrdered;
+    private string _queryCode = "";
+    private string _sourceLabel = "";
+    private string _lastQueryTime = "-";
+    private string _lastOp = "none yet";
+    private string _lastOpTime = "-";
+    private string? _keyResult;
+    private string _keyInput = "";
+    private string? _maintenance;
+    private List<Setting> _todosSettings = [];
+
+    private int PageCount => Math.Max(1, (_matchTotal + PageSize - 1) / PageSize);
+
+    private Priority? SelectedPriority =>
+        string.IsNullOrEmpty(_priorityText) ? null : Enum.Parse<Priority>(_priorityText);
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            _db = await Db.GetDatabaseAsync();
+            _todos = Db.Todos;
+            LoadPreferences();
+            Refresh();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+
+    // ------------------------------------------------------------- querying
+
+    private void Refresh()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+
+        _openCount = _todos.CountBy(TodoEntry.Indexes.Done, false);
+        _doneCount = _todos.CountBy(TodoEntry.Indexes.Done, true);
+        _uncategorized = _todos.Count - DemoData.Categories.Sum(c => _todos.CountBy(TodoEntry.Indexes.Category, c));
+
+        var lines = new List<string> { "BlazeDbQuery<Guid, TodoEntry>.From(todos)" };
+
+        // 1. Source - the most selective index available wins.
+        var query = BlazeDbQuery<Guid, TodoEntry>.From(_todos);
+        var statusHandled = false;
+        var categoryHandled = false;
+        var priorityHandled = false;
+        var orderedSource = false;
+
+        if (!string.IsNullOrEmpty(_category))
+        {
+            query = query.UseIndex(TodoEntry.Indexes.Category, _category);
+            lines.Add($"    .UseIndex(TodoEntry.Indexes.Category, \"{_category}\")");
+            _sourceLabel = "hash index - Category";
+            categoryHandled = true;
+        }
+        else if (SelectedPriority is { } priority)
+        {
+            query = query.UseIndex(TodoEntry.Indexes.ByPriority, priority);
+            lines.Add($"    .UseIndex(TodoEntry.Indexes.ByPriority, Priority.{priority})");
+            _sourceLabel = "hash index - ByPriority (custom name)";
+            priorityHandled = true;
+        }
+        else if (_status != StatusFilter.All)
+        {
+            var done = _status == StatusFilter.Done;
+            query = query.UseIndex(TodoEntry.Indexes.Done, done);
+            lines.Add($"    .UseIndex(TodoEntry.Indexes.Done, {done.ToString().ToLowerInvariant()})");
+            _sourceLabel = "hash index - Done";
+            statusHandled = true;
+        }
+        else if (_sort is SortMode.Newest or SortMode.Oldest)
+        {
+            var descending = _sort == SortMode.Newest;
+            query = query.UseIndex(
+                TodoEntry.Indexes.CreatedAt,
+                BlazeDbBound<DateTime>.Unbounded,
+                BlazeDbBound<DateTime>.Unbounded,
+                descending);
+            lines.Add("    .UseIndex(TodoEntry.Indexes.CreatedAt,");
+            lines.Add($"              BlazeDbBound<DateTime>.Unbounded, BlazeDbBound<DateTime>.Unbounded, descending: {descending.ToString().ToLowerInvariant()})");
+            _sourceLabel = "ordered index - CreatedAt";
+            orderedSource = true;
+        }
+        else if (_sort == SortMode.Effort)
+        {
+            query = query.UseIndex(TodoEntry.Indexes.Effort, BlazeDbBound<int>.Unbounded, BlazeDbBound<int>.Unbounded, descending: true);
+            lines.Add("    .UseIndex(TodoEntry.Indexes.Effort,");
+            lines.Add("              BlazeDbBound<int>.Unbounded, BlazeDbBound<int>.Unbounded, descending: true)");
+            _sourceLabel = "ordered index - Effort";
+            orderedSource = true;
+        }
+        else
+        {
+            _sourceLabel = "full scan - Scan()";
+        }
+
+        // 2. Residual predicates for filters the source did not cover.
+        if (!statusHandled && _status != StatusFilter.All)
+        {
+            var done = _status == StatusFilter.Done;
+            query = query.Where(t => t.Done == done);
+            lines.Add($"    .Where(t => t.Done == {done.ToString().ToLowerInvariant()})");
+        }
+
+        if (!categoryHandled && !string.IsNullOrEmpty(_category))
+        {
+            var category = _category;
+            query = query.Where(t => t.Category == category);
+            lines.Add($"    .Where(t => t.Category == \"{category}\")");
+        }
+
+        if (!priorityHandled && SelectedPriority is { } residualPriority)
+        {
+            query = query.Where(t => t.Priority == residualPriority);
+            lines.Add($"    .Where(t => t.Priority == Priority.{residualPriority})");
+        }
+
+        if (!string.IsNullOrWhiteSpace(_search))
+        {
+            var needle = _search.Trim();
+            query = query.Where(t => t.Title.Contains(needle, StringComparison.OrdinalIgnoreCase));
+            lines.Add($"    .Where(t => t.Title.Contains(\"{needle}\", StringComparison.OrdinalIgnoreCase))");
+        }
+
+        // 3. Ordering - only needed when the source is not already ordered.
+        if (!orderedSource)
+        {
+            switch (_sort)
+            {
+                case SortMode.Newest:
+                    query = query.OrderBy(t => t.CreatedAt, descending: true);
+                    lines.Add("    .OrderBy(t => t.CreatedAt, descending: true)");
+                    break;
+                case SortMode.Oldest:
+                    query = query.OrderBy(t => t.CreatedAt);
+                    lines.Add("    .OrderBy(t => t.CreatedAt)");
+                    break;
+                case SortMode.Effort:
+                    query = query.OrderBy(t => t.Effort, descending: true);
+                    lines.Add("    .OrderBy(t => t.Effort, descending: true)");
+                    break;
+                case SortMode.Title:
+                    query = query.OrderBy(t => t.Title);
+                    lines.Add("    .OrderBy(t => t.Title)");
+                    break;
+            }
+        }
+
+        _matchTotal = query.Count();
+        _isIndexOrdered = query.IsIndexOrdered;
+
+        if (_page >= PageCount)
+        {
+            _page = PageCount - 1;
+        }
+
+        // 4. Paging, then materialise.
+        var paged = query.Skip(_page * PageSize).Take(PageSize);
+        if (_page > 0)
+        {
+            lines.Add($"    .Skip({_page * PageSize})");
+        }
+        lines.Add($"    .Take({PageSize})");
+        lines.Add("    .ToList();");
+
+        _visible = paged.ToList();
+        _queryCode = string.Join('\n', lines);
+        _lastQueryTime = DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds);
+
+        _todosSettings = Db.Settings.Scan().OrderBy(s => s.Name).ToList();
+    }
+
+    private void OnFilterChanged()
+    {
+        _page = 0;
+        SavePreferences();
+        Refresh();
+    }
+
+    private void SetStatus(StatusFilter status)
+    {
+        _status = status;
+        OnFilterChanged();
+    }
+
+    private void SetPage(int page)
+    {
+        _page = Math.Clamp(page, 0, PageCount - 1);
+        Refresh();
+    }
+
+    // ------------------------------------------------------------ mutations
+
+    private void Add()
+    {
+        if (_todos is null || string.IsNullOrWhiteSpace(_newTitle))
+        {
+            return;
+        }
+
+        _addError = null;
+        var sw = Stopwatch.StartNew();
+
+        try
+        {
+            _todos.Insert(new TodoEntry
+            {
+                Id = Guid.NewGuid(),
+                Title = _newTitle.Trim(),
+                Category = string.IsNullOrEmpty(_newCategory) ? null : _newCategory,
+                Priority = _newPriority,
+                CreatedAt = DateTime.UtcNow,
+                Effort = _newEffort,
+                Rating = _newRating,
+                Cost = _newCost,
+                Duration = TimeSpan.FromMinutes(_newEffort),
+                DueAt = _newDue is { } due ? new DateTimeOffset(due, TimeSpan.Zero) : null,
+                Tags = _newTags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToList(),
+                Scores = [],
+                Payload = [0xB1, 0xA2, 0xE0],
+            });
+
+            Track("todos.Insert(row)", sw);
+            _newTitle = "";
+            _newTags = "";
+            _page = 0;
+            Refresh();
+        }
+        catch (BlazeDbDuplicateKeyException ex)
+        {
+            _addError = $"BlazeDbDuplicateKeyException on key {ex.Key}";
+        }
+    }
+
+    private void OnAddKey(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            Add();
+        }
+    }
+
+    private void Toggle(TodoEntry todo)
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+        var updated = todo.Clone();
+        updated.Done = !todo.Done;
+        _todos.Update(updated);
+        Track("todos.Update(row) - Done flipped, hash index rebucketed", sw);
+        Refresh();
+    }
+
+    private void BeginEdit(TodoEntry todo)
+    {
+        _editing = todo.Id;
+        _editTitle = todo.Title;
+        _editCategory = todo.Category ?? "";
+        _editPriority = todo.Priority;
+        _editEffort = todo.Effort;
+    }
+
+    private void SaveEdit(TodoEntry todo)
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+        var updated = todo.Clone();
+        updated.Title = string.IsNullOrWhiteSpace(_editTitle) ? todo.Title : _editTitle.Trim();
+        updated.Category = string.IsNullOrEmpty(_editCategory) ? null : _editCategory;
+        updated.Priority = _editPriority;
+        updated.Effort = _editEffort;
+        updated.Duration = TimeSpan.FromMinutes(_editEffort);
+
+        _todos.Update(updated);
+        Track("todos.Update(row)", sw);
+        _editing = null;
+        Refresh();
+    }
+
+    private void Delete(TodoEntry todo)
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+        var removed = _todos.Delete(todo.Id);
+        Track($"todos.Delete(key) → {removed.ToString().ToLowerInvariant()}", sw);
+        Refresh();
+    }
+
+    private void SeedMore()
+    {
+        if (_db is null || _todos is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+        var inserted = DemoData.Seed(_db, _todos, count: 25, seed: Random.Shared.Next());
+        _maintenance = $"BeginTransaction → {inserted} × Insert → Commit\n{DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)} total";
+        Track($"{inserted} inserts in one transaction", sw);
+        Refresh();
+    }
+
+    private void UpsertPinned()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+        var existed = _todos.Contains(PinnedId);
+
+        _todos.Upsert(new TodoEntry
+        {
+            Id = PinnedId,
+            Title = "Pinned row written by Upsert",
+            Category = "engine",
+            Priority = Priority.High,
+            CreatedAt = DateTime.UtcNow,
+            Effort = 5,
+            Tags = ["upsert"],
+        });
+
+        _maintenance = existed
+            ? "todos.Upsert(row) - key already present, row replaced, count unchanged"
+            : "todos.Upsert(row) - key absent, row inserted";
+        Track("todos.Upsert(row)", sw);
+        Refresh();
+    }
+
+    private void DeleteDone()
+    {
+        if (_db is null || _todos is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+        var keys = _todos.Lookup(TodoEntry.Indexes.Done, true).Select(t => t.Id).ToList();
+
+        using (var txn = _db.BeginTransaction())
+        {
+            foreach (var key in keys)
+            {
+                _todos.Delete(key);
+            }
+            txn.Commit();
+        }
+
+        _maintenance = $"Lookup(Done, true) → {keys.Count} keys\nBeginTransaction → Delete × {keys.Count} → Commit";
+        Track($"{keys.Count} deletes in one transaction", sw);
+        Refresh();
+    }
+
+    private void ClearAll()
+    {
+        if (_db is null || _todos is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+        var keys = _todos.Scan().Select(t => t.Id).ToList();
+
+        using (var txn = _db.BeginTransaction())
+        {
+            foreach (var key in keys)
+            {
+                _todos.Delete(key);
+            }
+            txn.Commit();
+        }
+
+        _maintenance = $"Scan() → {keys.Count} keys, deleted atomically in one transaction";
+        Track($"cleared {keys.Count} rows", sw);
+        Refresh();
+    }
+
+    private async Task FlushNow()
+    {
+        if (_db is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+        await _db.FlushAsync();
+        _maintenance = Db.IsPersistent
+            ? $"await db.FlushAsync() - WAL durable in {DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)}"
+            : "await db.FlushAsync() - no-op storage in this session, but the call is identical";
+        Track("db.FlushAsync()", sw);
+    }
+
+    private async Task CheckpointNow()
+    {
+        if (_db is null)
+        {
+            return;
+        }
+
+        var sw = Stopwatch.StartNew();
+        try
+        {
+            await _db.CheckpointAsync();
+            _maintenance = $"await db.CheckpointAsync() - snapshot written, WAL truncated in {DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds)}";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _maintenance = $"InvalidOperationException: {ex.Message}";
+        }
+        Track("db.CheckpointAsync()", sw);
+    }
+
+    // ------------------------------------------------------------- lookups
+
+    private void RunGet()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        if (!Guid.TryParse(_keyInput, out var key))
+        {
+            _keyResult = "That is not a Guid.";
+            return;
+        }
+
+        var row = _todos.Get(key);
+        _keyResult = row is null
+            ? $"todos.Get(key) → null\n(no row with that key; Get never throws)"
+            : $"todos.Get(key) → \"{row.Title}\"\nDone={row.Done}  Priority={row.Priority}  Effort={row.Effort}";
+    }
+
+    private void RunTryGet()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        if (!Guid.TryParse(_keyInput, out var key))
+        {
+            _keyResult = "That is not a Guid.";
+            return;
+        }
+
+        _keyResult = _todos.TryGet(key, out var row)
+            ? $"todos.TryGet(key, out row) → true\nrow.Title = \"{row.Title}\""
+            : "todos.TryGet(key, out row) → false\nrow is default (null for a class)";
+    }
+
+    private void RunContains()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        if (!Guid.TryParse(_keyInput, out var key))
+        {
+            _keyResult = "That is not a Guid.";
+            return;
+        }
+
+        _keyResult = $"todos.Contains(key) → {_todos.Contains(key).ToString().ToLowerInvariant()}";
+    }
+
+    // ---------------------------------------------------------- preferences
+
+    private void LoadPreferences()
+    {
+        if (Enum.TryParse<StatusFilter>(Db.GetSetting("todos.status", nameof(StatusFilter.All)), out var status))
+        {
+            _status = status;
+        }
+
+        if (Enum.TryParse<SortMode>(Db.GetSetting("todos.sort", nameof(SortMode.Newest)), out var sort))
+        {
+            _sort = sort;
+        }
+
+        _category = Db.GetSetting("todos.category", "");
+    }
+
+    private void SavePreferences()
+    {
+        Db.SetSetting("todos.status", _status.ToString());
+        Db.SetSetting("todos.sort", _sort.ToString());
+        Db.SetSetting("todos.category", _category);
+    }
+
+    private void Track(string operation, Stopwatch sw)
+    {
+        _lastOp = operation;
+        _lastOpTime = DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds);
+    }
+
+    private static string Stars(int rating) => new string('★', rating) + new string('·', 5 - rating);
+}
