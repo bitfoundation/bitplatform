@@ -45,7 +45,7 @@ dotnet test --filter "FullyQualifiedName~.BrowserModuleTests."
 dotnet test --filter "FullyQualifiedName~survives_a_reload"
 ```
 
-CI does the same in Release (`.github/workflows/bit.ci.BlazeDb.yml`):
+CI does the same in Release in `.github/workflows/bit.ci.BlazeDb.e2e.yml`, which only runs when started by hand (Actions > "bit platform CI - BlazeDb E2E" > Run workflow). The pull-request pipeline, `bit.ci.BlazeDb.yml`, runs the build, engine, EF Core provider and MCP tests only:
 
 ```bash
 dotnet build src/BlazeDb/Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release
