@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Separate from Bit.Balette.Tests because the subject is the demo's ASP.NET Core host, which only
+         exists on net10.0, while the library's own tests multi-target back to net8.0. -->
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <!-- A ProjectReference to a Web SDK project leaves OutputType at Library, and the MSTest
+             runner needs an entry point of its own. -->
+        <OutputType>Exe</OutputType>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.5.1" />
+        <!-- Boots the demo server's real Program.cs in memory, so the MCP server under test is the
+             one the app actually maps at /mcp rather than a re-registration of its pieces. -->
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.13" />
+        <!-- The MCP client half of the SDK: the tests speak the protocol over the wire, the way a
+             real client does, instead of calling the tool methods directly. -->
+        <PackageReference Include="ModelContextProtocol" Version="2.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Demo\Server\Bit.Balette.Demo.Server.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Balette" />
+    </ItemGroup>
+
+</Project>

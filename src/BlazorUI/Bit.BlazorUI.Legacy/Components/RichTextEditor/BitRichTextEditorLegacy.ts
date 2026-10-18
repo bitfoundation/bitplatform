@@ -133,3 +133,5 @@
         config: unknown;
     }
 }
+
+// bit-lazy: teardown Legacy.RichTextEditor.dispose

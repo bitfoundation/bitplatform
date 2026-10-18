@@ -9,6 +9,7 @@
         <PublishReadyToRun>true</PublishReadyToRun>
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
         <UserSecretsId>fcf350f4-eef5-430b-a5cb-144713a68932</UserSecretsId>
+        <BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>
     </PropertyGroup>
 
     <ItemGroup>

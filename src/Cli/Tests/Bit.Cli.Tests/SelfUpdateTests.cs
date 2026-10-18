@@ -8,12 +8,12 @@ namespace Bit.Cli.Tests;
 public class SelfUpdateTests
 {
     [TestMethod]
-    [DataRow("10.7.0", "10.6.2", 1)]
-    [DataRow("10.10.0", "10.9.3", 1)]
-    [DataRow("10.7.0", "10.7.0-pre-02", 1)]
-    [DataRow("10.7.0-pre-02", "10.7.0-pre-02", 1)]
-    [DataRow("10.6.2", "10.6.2", 0)]
-    [DataRow("10.6", "10.6.0", 0)]
+    [DataRow("1.7.0", "1.6.2", 1)]
+    [DataRow("1.10.0", "1.9.3", 1)]
+    [DataRow("1.7.0", "1.7.0-pre-01", 1)]
+    [DataRow("1.7.0-pre-02", "1.7.0-pre-01", 1)]
+    [DataRow("1.6.2", "1.6.2", 0)]
+    [DataRow("1.6", "1.6.0", 0)]
     public void Versions_Should_CompareTheWayNuGetDoes(string left, string right, int expected)
     {
         Assert.AreEqual(expected, Math.Sign(SelfUpdate.CompareVersions(left, right)));
@@ -27,12 +27,12 @@ public class SelfUpdateTests
         {
             searchResult = new object[]
             {
-                new { sourceName = "nuget.org", packages = new object[] { new { id = "bit.cli", version = "10.7.0" }, new { id = "Bit.Cli", version = "10.7.0; rm -rf ~" }, new { id = "Bit.Boilerplate", version = "11.0.0" } } },
+                new { sourceName = "nuget.org", packages = new object[] { new { id = "bit.cli", version = "1.7.0" }, new { id = "Bit.Cli", version = "1.7.0; rm -rf ~" }, new { id = "Bit.Boilerplate", version = "11.0.0" } } },
                 new { sourceName = "offline" }
             }
         });
 
-        CollectionAssert.AreEqual(new[] { "10.7.0" }, SelfUpdate.ParseVersions(output).ToArray());
+        CollectionAssert.AreEqual(new[] { "1.7.0" }, SelfUpdate.ParseVersions(output).ToArray());
         Assert.IsEmpty(SelfUpdate.ParseVersions("error: Unable to load the service index for source https://api.nuget.org/v3/index.json."));
     }
 
@@ -40,12 +40,12 @@ public class SelfUpdateTests
     public async Task TheNewestVersion_Should_ComeFromEveryNuGetSourceAndMatchTheChannel()
     {
         using var host = new TestHost(HostOs.Linux);
-        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "10.6.2", "10.7.0", "10.8.0-pre-01" }), ("mirror", new[] { "10.6.3" })));
+        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "1.6.2", "1.7.0", "1.8.0-pre-01" }), ("mirror", new[] { "1.6.3" })));
 
-        Assert.AreEqual("10.7.0", await Official(host).LatestVersionAsync(CancellationToken.None));
+        Assert.AreEqual("1.7.0", await Official(host).LatestVersionAsync(CancellationToken.None));
         CollectionAssert.AreEqual(new[] { "package", "search", "Bit.Cli", "--exact-match", "--format", "json" }, host.Runner.Calls.Single().Arguments.ToArray());
 
-        Assert.AreEqual("10.8.0-pre-01", await Official(host, "10.7.0-pre-02").LatestVersionAsync(CancellationToken.None));
+        Assert.AreEqual("1.8.0-pre-01", await Official(host, "1.7.0-pre-01").LatestVersionAsync(CancellationToken.None));
         CollectionAssert.Contains(host.Runner.Calls.Last().Arguments.ToList(), "--prerelease");
     }
 
@@ -57,8 +57,8 @@ public class SelfUpdateTests
         using var host = new TestHost(os);
         host.AllToolsInstalled();
         host.Services.SelfUpdate = Official(host);
-        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "10.6.2", "10.7.0" })));
-        var copy = Path.Combine(host.Environment.BitDirectory, "cli", "10.7.0");
+        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "1.6.2", "1.7.0" })));
+        var copy = Path.Combine(host.Environment.BitDirectory, "cli", "1.7.0");
         host.Runner.On("dotnet", "tool install", _ =>
         {
             Directory.CreateDirectory(copy);
@@ -69,19 +69,19 @@ public class SelfUpdateTests
 
         Assert.AreEqual(7, await host.RunAsync("new", "Contoso", "--redis", "--yes"), host.Output);
 
-        StringAssert.Contains(host.Output, "bit 10.7.0 is out: this run continues with it");
-        CollectionAssert.AreEqual(new[] { "tool", "install", "Bit.Cli", "--version", "10.7.0", "--tool-path", copy }, host.Runner.Calls.Single(c => c.Arguments is ["tool", "install", ..]).Arguments.ToArray());
+        StringAssert.Contains(host.Output, "bit 1.7.0 is out: this run continues with it");
+        CollectionAssert.AreEqual(new[] { "tool", "install", "Bit.Cli", "--version", "1.7.0", "--tool-path", copy }, host.Runner.Calls.Single(c => c.Arguments is ["tool", "install", ..]).Arguments.ToArray());
 
         var handOff = host.Runner.Calls.Single(c => c.FileName == Path.Combine(copy, executable));
         Assert.IsTrue(handOff.Interactive);
         CollectionAssert.AreEqual(new[] { "new", "Contoso", "--redis", "--yes" }, handOff.Arguments.ToArray());
-        Assert.AreEqual("10.6.2", handOff.Environment![SelfUpdate.HandedOffVariable]);
+        Assert.AreEqual("1.6.2", handOff.Environment![SelfUpdate.HandedOffVariable]);
         Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "dotnet" && c.Arguments.FirstOrDefault() is "new"), host.Output);
 
         var update = host.Runner.Detached.Single();
         Assert.AreEqual(updater, update.FileName);
         StringAssert.Contains(update.Arguments[^1], $"{Environment.ProcessId}");
-        StringAssert.Contains(update.Arguments[^1], "tool update --global Bit.Cli --version 10.7.0");
+        StringAssert.Contains(update.Arguments[^1], "tool update --global Bit.Cli --version 1.7.0");
     }
 
     [TestMethod]
@@ -90,12 +90,12 @@ public class SelfUpdateTests
         using var host = new TestHost(HostOs.Linux);
         host.AllToolsInstalled();
         host.Services.SelfUpdate = Official(host);
-        var pinned = Directory.CreateDirectory(Path.Combine(host.Environment.BitDirectory, "cli", "10.5.0")).FullName;
+        var pinned = Directory.CreateDirectory(Path.Combine(host.Environment.BitDirectory, "cli", "1.5.0")).FullName;
         File.WriteAllText(Path.Combine(pinned, "bit"), "");
-        var stale = Directory.CreateDirectory(Path.Combine(host.Environment.BitDirectory, "cli", "10.6.2")).FullName;
+        var stale = Directory.CreateDirectory(Path.Combine(host.Environment.BitDirectory, "cli", "1.6.2")).FullName;
         host.Runner.On("bit", "", 0);
 
-        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--template-version", "10.5.0", "--yes"), host.Output);
+        Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--template-version", "1.5.0", "--yes"), host.Output);
 
         Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName == Path.Combine(pinned, "bit")), host.Output);
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["package", "search", ..] or ["tool", "install", ..]));
@@ -110,15 +110,15 @@ public class SelfUpdateTests
         using var host = new TestHost(HostOs.Linux, prompter: prompter);
         host.AllToolsInstalled();
         host.Services.SelfUpdate = Official(host);
-        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "10.7.0" })));
+        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "1.7.0" })));
         host.Runner.On("dotnet", "tool install", 1, "error NU1101: Unable to find package Bit.Cli.");
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso"), host.Output);
 
-        StringAssert.Contains(host.Output, "Couldn't get bit 10.7.0, so bit 10.6.2 goes on.");
+        StringAssert.Contains(host.Output, "Couldn't get bit 1.7.0, so bit 1.6.2 goes on.");
         Assert.IsNotNull(prompter.Find("Create it?"));
         Assert.IsEmpty(host.Runner.Detached);
-        Assert.IsFalse(Directory.Exists(Path.Combine(host.Environment.BitDirectory, "cli", "10.7.0")));
+        Assert.IsFalse(Directory.Exists(Path.Combine(host.Environment.BitDirectory, "cli", "1.7.0")));
     }
 
     [TestMethod]
@@ -127,11 +127,11 @@ public class SelfUpdateTests
         using var host = new TestHost(HostOs.Linux);
         host.AllToolsInstalled();
         host.Services.SelfUpdate = Official(host);
-        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "10.7.0" })));
+        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "1.7.0" })));
 
         Assert.AreEqual(0, await host.RunAsync("new", "Contoso", "--dry-run", "--yes"), host.Output);
 
-        StringAssert.Contains(host.Output, "Without --dry-run, bit 10.7.0 would create it.");
+        StringAssert.Contains(host.Output, "Without --dry-run, bit 1.7.0 would create it.");
         Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments is ["tool", "install", ..]));
         Assert.IsEmpty(host.Runner.Detached);
     }
@@ -139,11 +139,11 @@ public class SelfUpdateTests
     [TestMethod]
     public async Task BuildsFromSourceCiAndOptOuts_Should_NeverLookForANewerBit()
     {
-        await AssertStaysAsync(h => new SelfUpdate(h.Services) { CurrentVersion = "10.6.2", IsOfficialBuild = false, InstallMethod = "tool" });
+        await AssertStaysAsync(h => new SelfUpdate(h.Services) { CurrentVersion = "1.6.2", IsOfficialBuild = false, InstallMethod = "tool" });
         await AssertStaysAsync(h => Official(h, install: "dnx"));
         await AssertStaysAsync(h => Official(h), new() { ["GITHUB_ACTIONS"] = "true" });
         await AssertStaysAsync(h => Official(h), new() { [SelfUpdate.OptOutVariable] = "1" });
-        await AssertStaysAsync(h => Official(h), new() { [SelfUpdate.HandedOffVariable] = "10.6.1" });
+        await AssertStaysAsync(h => Official(h), new() { [SelfUpdate.HandedOffVariable] = "1.6.1" });
         await AssertStaysAsync(h => Official(h), extra: "--no-update");
         await AssertStaysAsync(h => Official(h), extra: ["--template-package", "Bit.Boilerplate.0.0.0.nupkg"]);
     }
@@ -153,15 +153,15 @@ public class SelfUpdateTests
     {
         using var host = new TestHost(HostOs.Linux);
         host.Services.SelfUpdate = Official(host);
-        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "10.7.0" })));
+        host.Runner.On("dotnet", "package search", 0, Search(("nuget.org", new[] { "1.7.0" })));
 
         Assert.AreEqual(0, await host.RunAsync("update"), host.Output);
 
-        StringAssert.Contains(host.Output, "bit 10.7.0 replaces 10.6.2 as soon as this command ends.");
-        StringAssert.Contains(host.Runner.Detached.Single().Arguments[^1], "tool update --global Bit.Cli --version 10.7.0");
+        StringAssert.Contains(host.Output, "bit 1.7.0 replaces 1.6.2 as soon as this command ends.");
+        StringAssert.Contains(host.Runner.Detached.Single().Arguments[^1], "tool update --global Bit.Cli --version 1.7.0");
 
         using var source = new TestHost(HostOs.Linux);
-        source.Services.SelfUpdate = new SelfUpdate(source.Services) { CurrentVersion = "10.6.2", IsOfficialBuild = false, InstallMethod = "local" };
+        source.Services.SelfUpdate = new SelfUpdate(source.Services) { CurrentVersion = "1.6.2", IsOfficialBuild = false, InstallMethod = "local" };
 
         Assert.AreEqual(0, await source.RunAsync("update"), source.Output);
 
@@ -183,7 +183,7 @@ public class SelfUpdateTests
         Assert.IsFalse(host.Output.Contains("99.0.0", StringComparison.Ordinal), host.Output);
     }
 
-    private static SelfUpdate Official(TestHost host, string version = "10.6.2", string install = "tool")
+    private static SelfUpdate Official(TestHost host, string version = "1.6.2", string install = "tool")
     {
         return new SelfUpdate(host.Services) { CurrentVersion = version, IsOfficialBuild = true, InstallMethod = install };
     }

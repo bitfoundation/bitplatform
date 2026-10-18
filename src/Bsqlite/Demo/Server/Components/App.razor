@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    @* No static <title> here: every page supplies its own through <PageTitle>, and with prerendering
+       the HeadOutlet emits a real <title> element into this head. *@
+    <meta name="description" content="bit Bsqlite (Bit.Bsqlite) - EF Core on SQLite, inside the browser tab. The same entities and migrations on the client as on the server, over OPFS, IndexedDB, Cache Storage, or memory." />
+    <meta name="color-scheme" content="light dark" />
+    <base href="/" />
+    <ResourcePreloader />
+
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230f766e'/%3E%3Cellipse cx='16' cy='9' rx='9' ry='3.6' fill='none' stroke='%23fff' stroke-width='2.2'/%3E%3Cpath d='M7 9v14c0 2 4 3.6 9 3.6s9-1.6 9-3.6V9' fill='none' stroke='%23fff' stroke-width='2.2'/%3E%3Cpath d='M7 16c0 2 4 3.6 9 3.6s9-1.6 9-3.6' fill='none' stroke='%23fff' stroke-width='2.2'/%3E%3C/svg%3E" />
+
+    @* Runs before first paint so the shell never flashes the wrong theme. The stored value is a
+       *preference* ("system" | "light" | "dark"); what lands on <html> is always the resolved one,
+       which is why the stylesheet needs a single [data-theme="dark"] block and no duplicated
+       prefers-color-scheme table. js/demo.js reads and writes the preference through it. *@
+    <script>
+        (function () {
+            var KEY = "bsqlite.theme";
+            var media = window.matchMedia("(prefers-color-scheme: dark)");
+
+            function preference() {
+                try {
+                    var stored = localStorage.getItem(KEY);
+                    return stored === "light" || stored === "dark" ? stored : "system";
+                } catch (e) {
+                    return "system"; // storage blocked: the system theme wins
+                }
+            }
+
+            function apply() {
+                var wanted = preference();
+                var resolved = wanted === "system" ? (media.matches ? "dark" : "light") : wanted;
+                document.documentElement.setAttribute("data-theme", resolved);
+                return resolved;
+            }
+
+            apply();
+            media.addEventListener("change", function () {
+                if (preference() === "system") { apply(); }
+            });
+
+            window.__bsqliteTheme = { key: KEY, preference: preference, apply: apply };
+        })();
+    </script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" />
+
+    <link rel="stylesheet" href="@Assets["css/tokens.css"]" />
+    <link rel="stylesheet" href="@Assets["css/base.css"]" />
+    <link rel="stylesheet" href="@Assets["css/components.css"]" />
+    <link rel="stylesheet" href="@Assets["css/landing.css"]" />
+    <ImportMap />
+
+    @* Same render mode as the app itself, so <PageTitle> keeps working after hydration. *@
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* Prerendered on the server, then hydrated by the WebAssembly runtime. Every database this site opens
+       lives in the browser - OPFS, IndexedDB, Cache Storage or memory - so none of it can open during the
+       prerender pass: each page is readable straight from the served HTML, and its data loads once the
+       runtime is interactive (Components/SessionLifecycle.razor). InteractiveWebAssembly rather than Auto or
+       Server for the same reason: the worker that owns the database has to run in the user's tab. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&#128473;</span>
+    </div>
+
+    @* Loaded before the Blazor script so window.bsqliteDemo exists by the time the app boots. The library's
+       own modules (the worker host, the engine, the VFSes) are imported on demand and need no tag. *@
+    <script src="@Assets["js/demo.js"]"></script>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

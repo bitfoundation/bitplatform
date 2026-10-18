@@ -435,14 +435,15 @@ public class BitComponentBaseTests : BunitTestContext
     [TestMethod]
     public void TheRefusalOfAnOvertakenArrowShouldBeTheSameTextInTheScriptAndInDotNet()
     {
-        var utils = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.ts");
+        var keys = SourceFiles.Read("Bit.BlazorUI", "Scripts", "Utils.Keys.ts");
 
-        StringAssert.Contains(utils, $"ARROW_KEY_OVERTAKEN = '{ArrowKeyOvertaken}'");
+        StringAssert.Contains(keys, $"ARROW_KEY_OVERTAKEN = '{ArrowKeyOvertaken}'");
 
-        // The script follows the keys and the presses that take the focus away from the start of their dispatch.
-        var general = SourceFiles.Read("Bit.BlazorUI", "Scripts", "general.ts");
-        StringAssert.Contains(general, "document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);");
-        StringAssert.Contains(general, "document.documentElement.addEventListener('pointerdown', (e: PointerEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);");
+        // The script follows the keys and the presses that take the focus away from the start of their dispatch, as it
+        // loads - which every bundle does, trimmed or not: the arrow keys of every component rely on it.
+        StringAssert.Contains(keys, "document.documentElement.addEventListener('keydown', (e: KeyboardEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);");
+        StringAssert.Contains(keys, "document.documentElement.addEventListener('pointerdown', (e: PointerEvent) => BitBlazorUI.Utils.trackArrowKey(e), true);");
+        StringAssert.Contains(keys, "// bit-trim: always");
     }
 
     private static readonly PropertyInfo RootElementProperty = typeof(BitComponentBase).GetProperty(nameof(BitComponentBase.RootElement))!;

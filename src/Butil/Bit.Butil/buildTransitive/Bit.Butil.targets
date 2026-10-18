@@ -217,7 +217,13 @@
          loads. Both say the same thing; the initializer is what makes the switch hold on every host. -->
     <!-- Skipped for a project pinned to a C# version without module initializers (older than 9); such a
          project keeps the runtime-configuration switch only. -->
-    <Target Name="BitButilGenerateLazyScriptsInitializer" BeforeTargets="CoreCompile"
+    <!-- Before BeforeCompile, not just before CoreCompile: _GenerateCompileDependencyCache runs between the
+         two and hashes @(Compile) into the CoreCompileInputs.cache that decides whether CoreCompile is up to
+         date. Added any later, the file never counts towards that hash, so turning the property off through
+         a global property (-p:, an environment variable) from the same obj folder left CoreCompile skipped
+         and the stale initializer compiled in - a lazy-scripts app with its modules no longer published.
+         CoreCompile stays in the list for anything that calls it directly, as the SDK's own generators do. -->
+    <Target Name="BitButilGenerateLazyScriptsInitializer" BeforeTargets="BeforeCompile;CoreCompile"
             Condition="'$(BitButilLazyScripts)' == 'true' and '$(Language)' == 'C#' and '$(DesignTimeBuild)' != 'true' and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(LangVersion)', '^[1-8](\.\d+)?$'))">
         <PropertyGroup>
             <_BitButilLazyScriptsInitializer>$(IntermediateOutputPath)Bit.Butil.LazyScripts.g.cs</_BitButilLazyScriptsInitializer>

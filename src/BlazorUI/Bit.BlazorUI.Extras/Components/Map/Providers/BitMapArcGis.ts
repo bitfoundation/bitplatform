@@ -4,6 +4,9 @@
      * ArcGIS Maps SDK for JavaScript 5.0 provider. Loads the SDK as an ES module via the
      * <c>$arcgis.import()</c> helper exposed by the CDN, then drives a simple MapView.
      */
+    // bit-trim: owners BitArcGisMapProvider
+    // Called through the JsObjectName of its provider, which BitMap puts together into the identifier it calls (see
+    // BitMapJsRuntimeExtensions), so no interop identifier names this script: the provider type an app passes keeps it.
     export class BitMapArcGis {
         private static _esriPromise: Promise<any> | null = null;
 
@@ -887,3 +890,5 @@
         }
     }
 }
+
+// bit-lazy: teardown BitMapArcGis.dispose

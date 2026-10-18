@@ -1,0 +1,46 @@
+﻿<Project>
+
+    <!-- The .NET 9+ SDK half of the publish-time asset trimming (see Bit.BlazorUI.targets): defines the trimmed bundles
+         with content fingerprinting and gives them endpoints. Kept in its own file, imported only on those SDKs, because
+         the tasks and parameters used here do not exist on the .NET 8 SDK and MSBuild rejects them even under a false
+         condition. -->
+
+    <UsingTask TaskName="Bit.BlazorUI.Build.RelabelBitBlazorUIEndpoints" AssemblyFile="$(BitBlazorUIBuildTasksAssembly)" Condition="'$(_BitBlazorUITasksFromSource)' != 'true'" />
+    <UsingTask TaskName="Bit.BlazorUI.Build.RelabelBitBlazorUIEndpoints" AssemblyFile="$(BitBlazorUIBuildTasksAssembly)" TaskFactory="TaskHostFactory" Condition="'$(_BitBlazorUITasksFromSource)' == 'true'" />
+
+    <Target Name="_BitBlazorUIDefineTrimmedAssetsWithEndpoints" AfterTargets="_BitBlazorUIAssembleTrimmedAssets"
+            Condition="'@(_BitBlazorUITrimmedCandidate)' != ''">
+
+        <DefineStaticWebAssets CandidateAssets="@(_BitBlazorUITrimmedCandidate)"
+                               FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+                               FingerprintPatterns="@(StaticWebAssetFingerprintPattern)">
+            <Output TaskParameter="Assets" ItemName="_BitBlazorUITrimmedAsset" />
+        </DefineStaticWebAssets>
+
+        <DefineStaticWebAssetEndpoints CandidateAssets="@(_BitBlazorUITrimmedAsset)"
+                                       ExistingEndpoints="@(StaticWebAssetEndpoint)"
+                                       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+            <Output TaskParameter="Endpoints" ItemName="_BitBlazorUITrimmedEndpoint" />
+        </DefineStaticWebAssetEndpoints>
+
+    </Target>
+
+    <!-- Restores the "_content/<package>/..." labels the trimmed bundles' endpoints are given bare (see
+         RelabelBitBlazorUIEndpoints for why), once the compressed copies - and their labels - have been derived. -->
+    <Target Name="BitBlazorUIRestoreTrimmedAssetLabels" BeforeTargets="GenerateStaticWebAssetsPublishManifest"
+            Condition="'$(_BitBlazorUIPublishTrimming)' == 'true' and '@(_BitBlazorUITrimmedAsset)' != ''">
+
+        <RelabelBitBlazorUIEndpoints Endpoints="@(StaticWebAssetEndpoint)" Assets="@(_BitBlazorUITrimmedAsset)">
+            <Output TaskParameter="Replaced" ItemName="_BitBlazorUIRelabelledOriginal" />
+            <Output TaskParameter="Relabelled" ItemName="_BitBlazorUIRelabelled" />
+        </RelabelBitBlazorUIEndpoints>
+
+        <ItemGroup>
+            <StaticWebAssetEndpoint Remove="@(_BitBlazorUIRelabelledOriginal)" />
+            <StaticWebAssetEndpoint Include="@(_BitBlazorUIRelabelled)" />
+            <_BitBlazorUIRelabelledOriginal Remove="@(_BitBlazorUIRelabelledOriginal)" />
+            <_BitBlazorUIRelabelled Remove="@(_BitBlazorUIRelabelled)" />
+        </ItemGroup>
+    </Target>
+
+</Project>

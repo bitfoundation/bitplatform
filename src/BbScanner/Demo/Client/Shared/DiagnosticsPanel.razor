@@ -1,0 +1,71 @@
+﻿@*
+    Live pipeline timings. The stacked bar makes the split between the stages obvious, which is
+    what tells you whether to lower the processing size, narrow the region or drop a symbology.
+*@
+
+<div class="card">
+    <h3 style="margin-block-start:0;">Frame diagnostics</h3>
+
+    <div class="stat-grid">
+        <div class="stat">
+            <div class="stat__label">Frame</div>
+            <div class="stat__value">@Diagnostics.Total.TotalMilliseconds.ToString("0.00") ms</div>
+        </div>
+        <div class="stat">
+            <div class="stat__label">Headroom</div>
+            <div class="stat__value">@Diagnostics.EquivalentFramesPerSecond.ToString("0") fps</div>
+        </div>
+        <div class="stat">
+            <div class="stat__label">Decoded size</div>
+            <div class="stat__value">@Diagnostics.DecodedWidth×@Diagnostics.DecodedHeight</div>
+        </div>
+        <div class="stat">
+            <div class="stat__label">Scan lines</div>
+            <div class="stat__value">@Diagnostics.RowsScanned</div>
+        </div>
+    </div>
+
+    <div style="margin-block-start:1rem;">
+        <div class="bar" role="img" aria-label="Time split between pipeline stages">
+            <div class="bar__segment" style="background:#4f8cff;width:@Percent(Diagnostics.Grayscale)%"></div>
+            <div class="bar__segment" style="background:#9d7bff;width:@Percent(Diagnostics.Binarize)%"></div>
+            <div class="bar__segment" style="background:#35c77c;width:@Percent(Diagnostics.Matrix)%"></div>
+            <div class="bar__segment" style="background:#e6b800;width:@Percent(Diagnostics.Linear)%"></div>
+        </div>
+        <div class="legend">
+            <span><span class="legend__swatch" style="background:#4f8cff"></span>Grayscale @Ms(Diagnostics.Grayscale)</span>
+            <span><span class="legend__swatch" style="background:#9d7bff"></span>Binarise @Ms(Diagnostics.Binarize)</span>
+            <span><span class="legend__swatch" style="background:#35c77c"></span>Matrix @Ms(Diagnostics.Matrix)</span>
+            <span><span class="legend__swatch" style="background:#e6b800"></span>Linear @Ms(Diagnostics.Linear)</span>
+        </div>
+    </div>
+
+    @if (FramesDecoded > 0)
+    {
+        <p class="field__hint" style="margin-block-start:0.75rem;">
+            @FramesDecoded frames decoded, @FramesWithSymbol contained a symbol.
+        </p>
+    }
+</div>
+
+@code {
+    /// <summary>The most recent frame timings.</summary>
+    [Parameter]
+    public BbScanDiagnostics Diagnostics { get; set; }
+
+    /// <summary>Total frames processed by the scanner.</summary>
+    [Parameter]
+    public long FramesDecoded { get; set; }
+
+    /// <summary>How many of those frames contained a symbol.</summary>
+    [Parameter]
+    public long FramesWithSymbol { get; set; }
+
+    private string Percent(TimeSpan part)
+    {
+        var total = Diagnostics.Total.TotalMilliseconds;
+        return total <= 0 ? "0" : (part.TotalMilliseconds / total * 100).ToString("0.##");
+    }
+
+    private static string Ms(TimeSpan value) => $"{value.TotalMilliseconds:0.00} ms";
+}

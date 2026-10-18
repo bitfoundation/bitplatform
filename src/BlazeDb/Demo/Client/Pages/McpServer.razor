@@ -1,0 +1,85 @@
+﻿@page "/mcp-server"
+
+@* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
+   purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
+
+<PageTitle>MCP server - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Reference" IconName="cpu" Title="An MCP server for AI agents"
+            Lead="This site hosts a Model Context Protocol server at /mcp, so an AI agent writing database code with Bit.BlazeDb reads the library itself - its compiled API documentation, its guide, its source generator and these demo pages - instead of guessing at an API it half remembers. Every tool is read-only." />
+
+<Section Title="Connect a client" IconName="code"
+         Lead="The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else. The same tools are also served, version by version, through the bit platform's own server at https://bitplatform.dev/mcp, next to the other bit libraries.">
+    <CodeBlock Title=".mcp.json" Language="text" Code="@ClientConfig" />
+</Section>
+
+<Section Title="Tools" IconName="list">
+    <Panel Flush="true">
+        <div class="table-wrap">
+            <table class="data">
+                <thead>
+                    <tr><th>Tool</th><th>What it answers</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var (tool, answer) in Tools)
+                    {
+                        <tr>
+                            <td class="mono strong">@tool</td>
+                            <td>@answer</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </Panel>
+    <Callout Tone="info" Title="Resources and prompts too.">
+        The guide, the API, the diagnostics and the sources are also exposed as <code>blazedb://</code>
+        resources, and three prompts - <code>add-blazedb-to-app</code>, <code>implement-blazedb-feature</code>
+        and <code>debug-blazedb-database</code> - walk an agent through the common jobs in the right order.
+    </Callout>
+</Section>
+
+<Section Title="The same tools over plain HTTP" IconName="query"
+         Lead="Every tool is also a GET under /api/mcp/...: open one in a browser tab to read exactly what an agent is handed.">
+    <Panel>
+        <ul class="ticks">
+            @foreach (var (label, href) in Links)
+            {
+                <li><a href="@href" target="_blank" rel="noopener">@label</a></li>
+            }
+        </ul>
+    </Panel>
+</Section>
+
+@code {
+    private const string ClientConfig = """
+        {
+          "mcpServers": {
+            "blazedb": {
+              "type": "http",
+              "url": "https://blazedb.bitplatform.dev/mcp"
+            }
+          }
+        }
+        """;
+
+    private static readonly (string Tool, string Answer)[] Tools =
+    [
+        ("SearchBlazeDb", "Everything at once - the guide, every public member, the generator's diagnostics, the setup guides and the demo sources - each hit with the exact follow-up call."),
+        ("GetBlazeDbSetupGuide", "The complete wiring for one hosting model: wasm, standalone-wasm, auto, server, hybrid or desktop."),
+        ("GetBlazeDbGuideSection", "One section of the reference guide, or the index of sections."),
+        ("GetBlazeDbApi", "One public type of any of the four packages with every property and method, its real default and its documentation - or the index of types."),
+        ("GetBlazeDbDiagnostics", "One BLZ diagnostic of the source generator with its cause, a rejected table type and the fix - or the table of all of them."),
+        ("InspectBlazeDbTable", "What the real source generator makes of a [BlazeDbTable] class: its diagnostics, the key, every field number and wire type, the indexes and the generated members."),
+        ("GetBlazeDbSourceFile", "One demo file verbatim - every page here drives a real database - or the index of files."),
+    ];
+
+    private static readonly (string Label, string Href)[] Links =
+    [
+        ("/api/mcp/SearchBlazeDb?query=persist to opfs", "/api/mcp/SearchBlazeDb?query=persist%20to%20opfs"),
+        ("/api/mcp/GetBlazeDbApi?typeName=BlazeDbTable", "/api/mcp/GetBlazeDbApi?typeName=BlazeDbTable"),
+        ("/api/mcp/GetBlazeDbDiagnostics?code=BLZ013", "/api/mcp/GetBlazeDbDiagnostics?code=BLZ013"),
+        ("/api/mcp/GetBlazeDbSetupGuide?hostingModel=wasm", "/api/mcp/GetBlazeDbSetupGuide?hostingModel=wasm"),
+        ("/api/mcp/GetBlazeDbSourceFile?path=Demo/Client/Data/DemoModels.cs", "/api/mcp/GetBlazeDbSourceFile?path=Demo/Client/Data/DemoModels.cs"),
+    ];
+}

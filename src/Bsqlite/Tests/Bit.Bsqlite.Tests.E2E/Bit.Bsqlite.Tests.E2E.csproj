@@ -1,0 +1,53 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+
+        <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner. EnableMSTestRunner
+             builds that test host into the assembly itself, and it only generates the entry point for
+             an executable project. -->
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Playwright itself, without a per-framework integration package: the suite manages the
+             browser, the contexts, the asset host and the demo host from its own infrastructure. -->
+        <PackageReference Include="Microsoft.Playwright" Version="1.63.0" />
+        <PackageReference Include="MSTest" Version="4.5.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Infrastructure/AssetHost serves the libraries' wwwroot folders with Kestrel, the way a Blazor
+             application maps them under _content/. -->
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Built, not referenced: what the suite tests is the JavaScript the libraries compile into their
+             wwwroot (and the wa-sqlite engine and VFSes their restore vendors next to it), which the asset
+             host serves straight from those folders. Building them here keeps a test run from serving
+             modules a TypeScript change has already made stale. -->
+        <ProjectReference Include="..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.Opfs\Bit.Bsqlite.Storage.Opfs.csproj" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.IndexedDb\Bit.Bsqlite.Storage.IndexedDb.csproj" ReferenceOutputAssembly="false" />
+        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.CacheStorage\Bit.Bsqlite.Storage.CacheStorage.csproj" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+    <!-- Deliberately no ProjectReference to the demo. The suite boots Bit.Bsqlite.Demo.Server from its build
+         output as a separate process (Infrastructure/DemoHost.cs), so build the demo server first, in the
+         configuration the tests run in. A reference would also make this project build the WebAssembly
+         client a second time, into the same obj folders, on every test build. -->
+
+    <ItemGroup>
+        <!-- The pages the asset host serves at its root: the tests drive the library through them. -->
+        <None Include="TestPages\**\*" CopyToOutputDirectory="PreserveNewest" />
+    </ItemGroup>
+
+</Project>

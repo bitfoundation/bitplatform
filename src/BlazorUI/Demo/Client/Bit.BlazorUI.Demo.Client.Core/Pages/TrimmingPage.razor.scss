@@ -1,0 +1,111 @@
+﻿@import '../Styles/abstracts/_docs.scss';
+
+// The page is a reference, read for the one row a reader came for: real tables, since every one of them answers
+// "given this, what is that", and the docs layer gives a bare <table> no borders of its own.
+.tr-table-wrap {
+    // A table of three columns of prose does not fit a phone; it scrolls inside its own box rather than the page.
+    overflow-x: auto;
+
+    @include doc-scrollbar(6px);
+}
+
+.tr-table {
+    width: 100%;
+    text-align: start;
+    border-collapse: collapse;
+    font-size: $bit-typography-fs-xs;
+
+    @include doc-surface;
+
+    th, td {
+        text-align: start;
+        line-height: 1.6;
+        vertical-align: top;
+        padding: $doc-space-2xs $doc-space-sm;
+    }
+
+    thead th {
+        color: $bit-color-foreground-tertiary;
+        font-size: $bit-typography-fs-2xs;
+        font-weight: $bit-typography-fw-semibold;
+        letter-spacing: rem2(1px);
+        text-transform: uppercase;
+        border-bottom: rem2(1px) solid $bit-color-border-secondary;
+    }
+
+    // The left column is the thing being looked up - a property, a hosting model - so it is set in the foreground
+    // color, and holds its line rather than wrapping away from the row it labels.
+    tbody th {
+        white-space: nowrap;
+        color: $bit-color-foreground-primary;
+        font-weight: $bit-typography-fw-semibold;
+    }
+
+    tbody td {
+        min-width: rem2(160px);
+        color: $bit-color-foreground-secondary;
+    }
+
+    tbody tr + tr th,
+    tbody tr + tr td {
+        border-top: rem2(1px) solid $bit-color-border-secondary;
+    }
+
+    @include xs {
+        tbody th {
+            white-space: normal;
+        }
+    }
+
+    code {
+        @include doc-code-inline;
+    }
+}
+
+
+// Symptom, then cause and fix: hairline-separated rows in one surface, scanned for the reader's own line - the
+// Getting started page's list, so a reader arriving from there does not notice they have changed page.
+.trouble-list {
+    overflow: hidden;
+
+    @include doc-surface;
+}
+
+.trouble {
+    display: flex;
+    gap: rem2(4px);
+    flex-flow: column nowrap;
+    padding: $doc-space-sm;
+
+    & + & {
+        border-top: rem2(1px) solid $bit-color-border-secondary;
+    }
+}
+
+.trouble-symptom {
+    margin: 0;
+    line-height: 1.5;
+    font-size: $bit-typography-fs-sm;
+    font-weight: $bit-typography-fw-semibold;
+    color: $bit-color-foreground-primary;
+
+    code {
+        @include doc-code-inline;
+    }
+}
+
+.trouble-fix {
+    margin: 0;
+    line-height: 1.6;
+    font-size: $bit-typography-fs-xs;
+    color: $bit-color-foreground-secondary;
+
+    code {
+        @include doc-code-inline;
+    }
+}
+
+// A reference's samples are short and many; capping them keeps a section's prose and its code in view together.
+.tr-doc ::deep .code-box-content {
+    max-height: rem2(420px);
+}

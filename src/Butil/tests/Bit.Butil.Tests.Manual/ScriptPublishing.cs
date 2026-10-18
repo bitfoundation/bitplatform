@@ -1,4 +1,7 @@
 ﻿using System.Diagnostics;
+using System.Reflection.Metadata;
+using System.Reflection.PortableExecutable;
+using System.Text.Json;
 using Bit.Butil.Build;
 
 namespace ButilTests.Manual;
@@ -124,6 +127,9 @@ internal static class ScriptPublishing
             ["BitButilLazyScripts=true", "BitButilScriptScan=TypeReferences"],
             Modules: Scanned),
 
+        // Kept straight after the lazy ones, and bundle-shaped: every scenario publishes from the same obj
+        // folder, so this is also lazy scripts turned off through a -p: on an incremental publish - the case
+        // that used to leave the lazy-scripts initializer compiled into a bundle app (see CheckLazyScriptsSwitch).
         // Turning the feature off has to survive being given something to trim against.
         new("BitButilTrimScripts=false publishes the full bundle whatever else is set",
             ["BitButilTrimScripts=false", "BitButilScriptScan=TypeReferences", "FixtureScriptModules=Cookie"],
@@ -202,6 +208,7 @@ internal static class ScriptPublishing
 
             CheckBundle(checks, candidate, Path.Combine(output, ContentPath, "bit-butil.js"), expectedBundle, manifest);
             CheckModules(checks, candidate, Path.Combine(output, ContentPath, "modules"), manifest);
+            CheckLazyScriptsSwitch(checks, candidate, output);
         }
 
         CheckReferencedPublishStage(checks, fixtureProject);
@@ -313,6 +320,55 @@ internal static class ScriptPublishing
         // A module file the manifest does not know is a name this check would silently pass over.
         var unknown = present.Where(module => manifest.Dependencies.ContainsKey(module) is false).ToArray();
         checks.That(unknown.Length == 0, $"{scenario.Name} (every published module file is a real module)", $"[{string.Join(", ", unknown)}] is not in the manifest");
+    }
+
+    /// <summary>
+    /// Both halves of the lazy-scripts switch say what the scenario asked for: the module initializer compiled
+    /// into the app, and the runtime-configuration option beside it.
+    /// </summary>
+    /// <remarks>
+    /// The JavaScript checks cannot see this. A bundle publish still carrying the initializer of an earlier
+    /// lazy one ships exactly the right files, and then calls BitButil.UseLazyScripts() at startup and
+    /// <c>import()</c>s module files the publish no longer has. That is what an incremental publish did when the
+    /// property was turned off through a -p:, the way every scenario here sets it: the generated file joined
+    /// @(Compile) after the hash that decides whether CoreCompile is up to date, so dropping it changed nothing
+    /// CoreCompile looked at. Read from the published assembly's metadata rather than by loading it, since this
+    /// process has its own copy of Bit.Butil loaded already.
+    /// </remarks>
+    private static void CheckLazyScriptsSwitch(ScriptBundling.Checks checks, Scenario scenario, string output)
+    {
+        var lazy = scenario.Properties.Contains("BitButilLazyScripts=true", StringComparer.OrdinalIgnoreCase);
+        var assemblyPath = Path.Combine(output, Path.ChangeExtension(FixtureProject, ".dll"));
+        var runtimeConfigPath = Path.Combine(output, Path.ChangeExtension(FixtureProject, ".runtimeconfig.json"));
+
+        if (File.Exists(assemblyPath) is false || File.Exists(runtimeConfigPath) is false)
+        {
+            checks.That(false, $"{scenario.Name} (lazy-scripts switch) was not checked", $"{Path.GetFileName(assemblyPath)} or its runtimeconfig.json was not published");
+            return;
+        }
+
+        bool initializer;
+        using (var reader = new PEReader(File.OpenRead(assemblyPath)))
+        {
+            var metadata = reader.GetMetadataReader();
+            initializer = metadata.TypeDefinitions.Any(handle => metadata.StringComparer.Equals(metadata.GetTypeDefinition(handle).Name, "BitButilLazyScriptsInitializer"));
+        }
+
+        checks.That(initializer == lazy, $"{scenario.Name} (and compiles the lazy-scripts initializer in only when lazy)",
+            lazy
+                ? "BitButilLazyScriptsInitializer is not in the published assembly, so a .NET 8 WebAssembly app would never turn lazy scripts on"
+                : "BitButilLazyScriptsInitializer is still compiled into the published assembly, so the app turns lazy scripts on at startup and import()s module files this publish does not carry - CoreCompile was skipped as up to date");
+
+        using var runtimeConfig = JsonDocument.Parse(File.ReadAllText(runtimeConfigPath));
+        var option = runtimeConfig.RootElement.TryGetProperty("runtimeOptions", out var options)
+            && options.TryGetProperty("configProperties", out var properties)
+            && properties.TryGetProperty("Bit.Butil.LazyScripts", out var value)
+            && value.ValueKind == JsonValueKind.True;
+
+        checks.That(option == lazy, $"{scenario.Name} (and sets the Bit.Butil.LazyScripts runtime option only when lazy)",
+            lazy
+                ? "the runtimeconfig.json has no Bit.Butil.LazyScripts option, so the runtime half of the switch is off"
+                : "the runtimeconfig.json still sets Bit.Butil.LazyScripts, so the app loads per module from files this publish does not carry");
     }
 
     /// <summary>

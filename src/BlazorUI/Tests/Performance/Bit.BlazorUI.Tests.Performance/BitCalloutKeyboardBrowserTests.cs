@@ -201,7 +201,7 @@ public class BitCalloutKeyboardBrowserTests : PerformanceTestBase
     /// <summary>
     /// Replaces window.visualViewport before any page script runs, so that the keyboard can be raised without
     /// touching the layout viewport - which is what iOS does, and what no Playwright API can ask a browser for.
-    /// general.ts reads window.visualViewport once at load to subscribe, and Utils.getViewport() reads it on
+    /// Callouts.ts reads window.visualViewport once at load to subscribe, and Utils.getViewport() reads it on
     /// every measurement, so the stub is all either of them ever sees.
     /// </summary>
     private Task StubTheVisualViewport() => StubTheVisualViewport(Page);

@@ -1,0 +1,31 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="bit BbScanner (Bit.BbScanner) - a dependency-free barcode scanner for Blazor: QR Code, Data Matrix, Code 128, Code 39, EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images, with the decoding written in C#." />
+    <base href="/" />
+    <ResourcePreloader />
+    @* The scanner stylesheet (_content/Bit.BbScanner/bit-bbscanner.css) is not linked here: Bit.BbScanner's JS
+       initializer adds it to the page by itself. *@
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* InteractiveWebAssembly rather than Auto or Server: BbScanner reads camera frames through
+       [JSImport] memory views, which exist only on WebAssembly - under Server rendering it reports
+       NotSupported. The pages are still prerendered, so the first response carries them. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&#128473;</span>
+    </div>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

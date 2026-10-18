@@ -51,6 +51,8 @@ public partial class MainLayout : IAsyncDisposable
     {
         await base.OnInitializedAsync();
 
+        SetCurrentDir();
+
         try
         {
             var inPrerenderSession = RendererInfo.IsInteractive is false;
@@ -104,7 +106,6 @@ public partial class MainLayout : IAsyncDisposable
 
             await SetCurrentUser(AuthenticationStateTask);
 
-            SetCurrentDir();
             currentTheme = await themeService.GetCurrentTheme();
 
             await bitExtraServices.AddRootCssClasses();

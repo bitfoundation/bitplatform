@@ -919,3 +919,5 @@
         // #endregion
     }
 }
+
+// bit-lazy: teardown Swiper.dispose

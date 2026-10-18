@@ -845,3 +845,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Virtualize.dispose

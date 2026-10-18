@@ -1899,3 +1899,5 @@
         }
     }
 }
+
+// bit-lazy: teardown PdfViewer.disposeDropZone PdfViewer.disposeFocusTracker PdfViewer.disposeFullscreenSpy PdfViewer.disposeKeyboard PdfViewer.disposeScrollSpy PdfViewer.disposeThumbSpy
