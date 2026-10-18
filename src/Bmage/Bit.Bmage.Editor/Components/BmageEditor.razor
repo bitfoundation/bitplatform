@@ -89,11 +89,6 @@
 </div>
 
 @code {
-    private ImageLoader? _loader;
-    private ImageExporter? _exporter;
-    private IImageCapabilityProvider? _capabilityProvider;
-    private Bit.Bmage.Text.FontTextRasterizer? _fontRasterizer;
-    private BitBmageOptions? _options;
     private ImageEditSession? _session;
     private BmageEditorCanvas? _canvas;
     private ImageCapabilities? _capabilities;
@@ -193,11 +188,11 @@
     /// <summary>Raised when an operation fails. When not handled, the error is shown in the editor.</summary>
     [Parameter] public EventCallback<Exception> OnError { get; set; }
 
-    private ImageLoader Loader => _loader ??= BitBmage.GetService<ImageLoader>(Services);
-    private ImageExporter Exporter => _exporter ??= BitBmage.GetService<ImageExporter>(Services);
-    private IImageCapabilityProvider Capabilities => _capabilityProvider ??= BitBmage.GetService<IImageCapabilityProvider>(Services);
-    private Bit.Bmage.Text.FontTextRasterizer FontRasterizer => _fontRasterizer ??= BitBmage.GetService<Bit.Bmage.Text.FontTextRasterizer>(Services);
-    private BitBmageOptions Options => _options ??= BitBmage.GetService<BitBmageOptions>(Services);
+    private ImageLoader Loader => field ??= BitBmage.GetService<ImageLoader>(Services);
+    private ImageExporter Exporter => field ??= BitBmage.GetService<ImageExporter>(Services);
+    private IImageCapabilityProvider Capabilities => field ??= BitBmage.GetService<IImageCapabilityProvider>(Services);
+    private Bit.Bmage.Text.FontTextRasterizer FontRasterizer => field ??= BitBmage.GetService<Bit.Bmage.Text.FontTextRasterizer>(Services);
+    private BitBmageOptions Options => field ??= BitBmage.GetService<BitBmageOptions>(Services);
 
     /// <summary>The live editing session, or null when no image is loaded.</summary>
     public ImageEditSession? Session => _session;

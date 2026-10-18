@@ -69,8 +69,7 @@
 </div>
 
 @code {
-    private Bit.Bmage.Interop.BrowserImageInterop? _interop;
-    private Bit.Bmage.Interop.BrowserImageInterop Interop => _interop ??= BitBmage.GetService<Bit.Bmage.Interop.BrowserImageInterop>(Services);
+    private Bit.Bmage.Interop.BrowserImageInterop Interop => field ??= BitBmage.GetService<Bit.Bmage.Interop.BrowserImageInterop>(Services);
 
     private readonly string _id = $"bi-{Guid.NewGuid():N}";
     private ElementReference _hostElement;
