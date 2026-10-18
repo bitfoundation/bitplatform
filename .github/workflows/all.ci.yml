@@ -56,7 +56,7 @@ on:
         type: boolean
         default: true
       bsqlite:
-        description: Bsqlite solution
+        description: Bsqlite and Besql solutions
         type: boolean
         default: true
       bink:
@@ -85,10 +85,6 @@ on:
         default: true
       bonboarding:
         description: Bonboarding solution
-        type: boolean
-        default: true
-      besql:
-        description: Besql solution
         type: boolean
         default: true
       blazores2019:
@@ -818,7 +814,7 @@ jobs:
 
   besql:
     name: besql
-    if: ${{ inputs.besql }}
+    if: ${{ inputs.bsqlite }}
     uses: ./.github/workflows/bit.ci.Besql.yml
 
   blazores2019:
