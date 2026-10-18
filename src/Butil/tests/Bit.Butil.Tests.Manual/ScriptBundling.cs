@@ -718,9 +718,10 @@ internal static class ScriptBundling
             $"the targets read '{chunksDirectory}' and the package ships them to [{string.Join(", ", packed.SelectMany(entry => PackageFolders(entry.PackagePath)))}]");
 
         // The task is packed through the item its own project's GetTargetPath hands back, so the pack entry
-        // names no file - only the folder it lands in can be compared with the path the targets load from.
+        // names the file through that item's metadata, or only the folder it lands in.
         checks.That(packed.Any(entry => entry.Include.Contains("ButilBuildTaskAssembly", StringComparison.OrdinalIgnoreCase)
-                && PackageFolders(entry.PackagePath).Any(folder => tasksAssembly == folder + "/" + Path.GetFileName(tasksAssembly))),
+                && PackageFolders(entry.PackagePath).Any(path => tasksAssembly == path + "/" + Path.GetFileName(tasksAssembly)
+                    || tasksAssembly == Regex.Replace(path, @"%\([^)]*\.filename\)%\([^)]*\.extension\)$", Path.GetFileName(tasksAssembly)))),
             "the MSBuild task is packed into the folder the consumer-side targets load it from",
             $"the targets load '{tasksAssembly}'");
 
