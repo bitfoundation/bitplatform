@@ -27,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.BbScanner.Demo\Server\Bit.BbScanner.Demo.Server.csproj" />
+        <ProjectReference Include="..\..\Demo\Server\Bit.BbScanner.Demo.Server.csproj" />
     </ItemGroup>
 
     <ItemGroup>

@@ -39,7 +39,7 @@ jobs:
 
     - name: Build the demo and the E2E suite
       run: |
-        dotnet build src/BbScanner/Bit.BbScanner.Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release
+        dotnet build src/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release
         dotnet build src/BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium

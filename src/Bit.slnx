@@ -117,9 +117,9 @@
     <File Path="BbScanner/README.md" />
     <Project Path="BbScanner/Bit.BbScanner/Bit.BbScanner.csproj" />
   </Folder>
-  <Folder Name="/BbScanner/Bit.BbScanner.Demo/">
-    <Project Path="BbScanner/Bit.BbScanner.Demo/Client/Bit.BbScanner.Demo.Client.csproj" />
-    <Project Path="BbScanner/Bit.BbScanner.Demo/Server/Bit.BbScanner.Demo.Server.csproj" />
+  <Folder Name="/BbScanner/Demo/">
+    <Project Path="BbScanner/Demo/Client/Bit.BbScanner.Demo.Client.csproj" />
+    <Project Path="BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/BbScanner/Tests/">
     <Project Path="BbScanner/Tests/Bit.BbScanner.TestKit/Bit.BbScanner.TestKit.csproj" />

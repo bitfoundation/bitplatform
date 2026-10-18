@@ -661,8 +661,8 @@ bar.
 
 ```text
 Bit.BbScanner                     the library
-Bit.BbScanner.Demo/Client         the demo's pages, run on WebAssembly
-Bit.BbScanner.Demo/Server         the demo's host, and the MCP server
+Demo/Client                       the demo's pages, run on WebAssembly
+Demo/Server                       the demo's host, and the MCP server
 Tests/Bit.BbScanner.TestKit       encoders and image helpers, shared by the tests, the benchmarks and the demo
 Tests/Bit.BbScanner.Tests         unit, round-trip and image robustness tests
 Tests/Bit.BbScanner.Tests.Mcp     the MCP server, over the wire
@@ -679,7 +679,7 @@ From `src/BbScanner` (inside `src`, so `src/global.json` selects the Microsoft.T
 ```bash
 dotnet build Bit.BbScanner.slnx
 cd Tests/Bit.BbScanner.Tests && dotnet test
-dotnet run --project Bit.BbScanner.Demo/Server
+dotnet run --project Demo/Server
 ```
 
 What the tests cover:

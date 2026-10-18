@@ -33,7 +33,7 @@ From `src/BbScanner` (inside `src`, so `src/global.json` selects the Microsoft.T
 
 ```bash
 # The suite runs the demo server's build output: build it first, in the configuration the tests run in.
-dotnet build Bit.BbScanner.Demo/Server/Bit.BbScanner.Demo.Server.csproj
+dotnet build Demo/Server/Bit.BbScanner.Demo.Server.csproj
 dotnet build Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -51,7 +51,7 @@ CI runs the suite in `.github/workflows/bit.ci.BbScanner.e2e.yml`, which only ru
 decoder, component and MCP tests only. The E2E workflow does the same as above, in Release:
 
 ```bash
-dotnet build src/BbScanner/Bit.BbScanner.Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release
+dotnet build src/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release
 dotnet build src/BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj -c Release
 pwsh src/BbScanner/Tests/Bit.BbScanner.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/BbScanner/Tests/Bit.BbScanner.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bbscanner-e2e.trx
