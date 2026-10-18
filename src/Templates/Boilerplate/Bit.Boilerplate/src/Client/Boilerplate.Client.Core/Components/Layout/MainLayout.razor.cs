@@ -51,8 +51,6 @@ public partial class MainLayout : IAsyncDisposable
     {
         await base.OnInitializedAsync();
 
-        // Set before anything awaited: components read it on their first render, and SetCurrentUser below throws
-        // when its request gets cancelled or fails, which would leave an RTL culture laid out left to right.
         SetCurrentDir();
 
         try
