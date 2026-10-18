@@ -15,9 +15,10 @@ the test suite all live on it. How the machine is put together, and how to rebui
 
 Three rules for working on it:
 
-- **Docker Desktop stays running.** The demos' Redis is its `redis` container (restart always, port 6379), and
-  without it TodoApi dies at startup with "No redis server available", which shows up as a 502 at
-  todo-api.bitplatform.dev. Start Docker Desktop when it is off, never stop it, and never remove that container.
+- **Redis is the `Garnet` Windows service.** TodoApi needs a Redis on port 6379 and dies at startup without one
+  ("No redis server available"), which shows up as a 502 at todo-api.bitplatform.dev. The service starts at boot
+  with nobody signed in; when TodoApi fails, check that it runs and listens on 6379 before anything else. Docker
+  Desktop no longer serves the demos, only steps 5 and 6: start it when it is off.
 - **Memory is short.** The emulator alone takes over 3 GB. Run one heavy thing at a time - the emulator, an Aspire
   app, the dev container - and stop whatever you started once it isn't needed: the emulator if it was off, and any
   local app or `dotnet watch`. Never run `dotnet build-server shutdown`: other sessions build on this machine too.
@@ -172,8 +173,19 @@ websites - is checked. Every command prints what it checked and exits non-zero o
      the process is a cut-off count, not native memory. The Boilerplate's test process is known to keep finished test
      servers alive; look for the open issue before calling such growth new. One lucky pass of the job alone on a
      runner proves nothing; compare a step's duration with an earlier run's instead.
-   - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left. Never the `redis`
-     container, which the demos use, nor another project's containers.
+   - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left, never another
+     project's containers.
+   - A Prerelease nuget packages run signs the libraries with the release key, which no other build uses. A library
+     that grants its internals to another one under the repository's key alone builds everywhere else and fails
+     there with CS0281; it has to name both keys.
+   - A trimmed publish that crashes ILLink with a stack overflow on a new .NET points at one type the trimmer keeps
+     coming back to. Find it by trimming a console app that roots one suspect assembly, then one namespace, then one
+     type of it, with a root descriptor.
+   - A test that fails at random in CI on timing often fails here too when it runs on its own, since a single test
+     pays the cold start. Run it alone a few times before calling it CI-only.
+   - A Linux-only Chromium wait that times out needs evidence before a fix: have the test log every request the page
+     starts and finishes, run the job a few times on a branch of your own, and read what was still in flight. A
+     network idle that never comes with nothing in flight is Chromium's event, not the app.
 
 4. Fix the cause. A timeout grows only when what it waits for is legitimately slow, and a retry that hides a race is
    not a fix. Template changes follow `src/Templates/Boilerplate/Bit.Boilerplate/AGENTS.md`, `[mirror]` comments
@@ -211,6 +223,11 @@ version; a run at a new version that leaves an app out leaves that app behind, a
 
 **Web.** The deploy jobs mirror each bundle into `C:\inetpub\<site>` and restart its app pool, and the WebAssembly
 standalone apps go to Azure Static Web Apps. There is nothing to do but check.
+
+**A deploy job that finds no app pool of its name** deploys a demo whose IIS site was never made on this machine,
+usually a library demo added since the host was set up. Creating it changes the machine, so ask first; then add it
+the way the other library demos are set up and add it to the README's exports. Re-running the deploy job, or that
+demo's own CD, delivers it.
 
 **Android.** `android -CdRun <run>`. Every Android job uploads an artifact called `android-bundle`, and a re-run job
 adds another, so the helper tells them apart by package and takes the newest of each. The device is the one AVD,
@@ -251,7 +268,8 @@ Playwright and MSTest; no local server is involved. `RunTests.bat` defines its s
 webkit through the Playwright server on the mac (`PLAYWRIGHT_SERVER_ENDPOINT`), on Firefox locally, then the Android
 apps (CDP through `adb forward`, port 9223), the Windows apps (CDP on 9222) and the APIs with their database.
 
-Run `e2e` in the background. It builds once, gives each stage its own time limit (`-TimeoutMinutes`, 120 by
+Run `e2e` in the background. Its stages run from the suite's build output, so don't build the suite again, or
+change the branch it was built from, until it is done. It builds once, gives each stage its own time limit (`-TimeoutMinutes`, 120 by
 default), and keeps each stage's console log and TRX as `TestResults\<stage>-<time>.log` and `.trx` - the suite
 itself writes every stage to the same `TestResults.trx`, and a re-run must not replace the full run's evidence. Look in every few minutes; a test process that sits near 0% CPU
 for long is hung, not slow.
