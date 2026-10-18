@@ -33,6 +33,7 @@
     <Project Path="Tests/Bit.BlazorUI.Tests/Bit.BlazorUI.Tests.csproj" />
     <Project Path="Tests/Bit.BlazorUI.Tests.Mcp/Bit.BlazorUI.Tests.Mcp.csproj" />
     <Project Path="Tests/Bit.BlazorUI.Tests.Consumer/Bit.BlazorUI.Tests.Consumer.csproj" />
+    <Project Path="Tests/Bit.BlazorUI.Tests.Trimming/Bit.BlazorUI.Tests.Trimming.csproj" />
   </Folder>
   <Folder Name="/Tests/E2E/">
     <File Path="Tests/E2E/README.md" />
@@ -47,6 +48,7 @@
     <Project Path="Tests/Performance/Bit.BlazorUI.Tests.Performance/Bit.BlazorUI.Tests.Performance.csproj" />
   </Folder>
   <Project Path="Bit.BlazorUI.Assets/Bit.BlazorUI.Assets.csproj" />
+  <Project Path="Bit.BlazorUI.Build/Bit.BlazorUI.Build.csproj" />
   <Project Path="Bit.BlazorUI.Extras/Bit.BlazorUI.Extras.csproj" />
   <Project Path="Bit.BlazorUI.Icons/Bit.BlazorUI.Icons.csproj" />
   <Project Path="Bit.BlazorUI.Legacy/Bit.BlazorUI.Legacy.csproj" />

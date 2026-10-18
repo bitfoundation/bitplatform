@@ -737,3 +737,5 @@
         }
     }
 }
+
+// bit-lazy: teardown PullToRefresh.dispose

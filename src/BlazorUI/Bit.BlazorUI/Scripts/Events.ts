@@ -135,3 +135,9 @@
         }
     }
 }
+
+// bit-trim: markup onanimation ontransition
+// Kept wherever a component or the app listens for an animation or a transition event (@onanimationend and the
+// rest of Events.EventHandlers), whose names are what the compiled markup says. Registered as the page loads, ahead of
+// the start of Blazor (see init).
+BitBlazorUI.Events.init();

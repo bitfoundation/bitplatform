@@ -41,6 +41,9 @@
         } catch { /* ignore */ }
     }
 
+    // bit-trim: owners BitLeafletMapProvider
+    // Called through the JsObjectName of its provider, which BitMap puts together into the identifier it calls (see
+    // BitMapJsRuntimeExtensions), so no interop identifier names this script: the provider type an app passes keeps it.
     export class BitMapLeaflet {
         /**
          * Leaflet pans and zooms from the keyboard while its container - the canvas - has the focus, so
@@ -717,3 +720,5 @@
         }
     }
 }
+
+// bit-lazy: teardown BitMapLeaflet.dispose

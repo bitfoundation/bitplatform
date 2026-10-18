@@ -335,3 +335,5 @@
         onPointerDown: (e: PointerEvent) => void;
     }
 }
+
+// bit-lazy: teardown SnackBars.dispose SnackBars.unregisterHotkey SnackBars.unregisterSwipe

@@ -366,6 +366,10 @@ public partial class BitNavBar<[DynamicallyAccessedMembers(DynamicallyAccessedMe
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // What the script does on the arrow keys it does as it loads, called by nothing: with the lazy scripts on
+        // (BitBlazorUIScripts), the bar loads it before anything else of it is called.
+        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI", "BitNavBar");
+
         // The order is recovered before the match runs, so the item that wins a tie between two options
         // pointing at the same URL is the one that comes first in the markup.
         await ReorderOptionsByDomOrder();

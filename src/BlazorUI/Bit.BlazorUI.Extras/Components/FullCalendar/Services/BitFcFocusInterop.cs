@@ -17,7 +17,7 @@ internal static class BitFcFocusInterop
     {
         try
         {
-            return await js.InvokeAsync<bool>("BitBlazorUI.FullCalendar.focusElement", cancellationToken, elementId);
+            return await js.InvokeScriptAsync<bool>("BitBlazorUI.FullCalendar.focusElement", cancellationToken, elementId);
         }
         catch (JSDisconnectedException)
         {

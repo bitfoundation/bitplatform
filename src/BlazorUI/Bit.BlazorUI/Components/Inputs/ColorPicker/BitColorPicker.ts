@@ -159,3 +159,5 @@
         }
     }
 }
+
+// bit-lazy: teardown ColorPicker.dispose

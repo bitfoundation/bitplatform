@@ -475,8 +475,58 @@ bit new MyBitProject</CodeBox>
                 </BitAccordion>
             </DocSection>
 
+            <DocSection Id="trimming" Title="Trimming and lazy scripts"
+                        Description="In production an app downloads the css and js of the components it uses, and nothing else. The tags from step 4 stay exactly as they are.">
+
+                <BitText Element="p">
+                    The stylesheets and scripts of the packages are built from one piece per component and per
+                    script. When an app is <b>published</b>, each bundle is put back together from only the pieces the
+                    app can use - under the same name and URL, so the <code>&lt;link&gt;</code> and
+                    <code>&lt;script&gt;</code> tags, <code>@@Assets[""]</code> and the cache busting above all keep
+                    working. A build, <code>dotnet run</code> and <code>dotnet watch</code> are never touched: what
+                    you develop against is always the full bundles.
+                </BitText>
+
+                <table class="gs-table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Your app</th>
+                            <th scope="col">What to do</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th scope="row">Standalone WebAssembly</th>
+                            <td>Nothing: it is on by default, and works off what the .NET trimmer kept - as in any project published with <code>PublishTrimmed</code>.</td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Blazor Web App, Blazor Server</th>
+                            <td>Turn it on in the server project: <code>&lt;BitBlazorUITrimAssets&gt;true&lt;/BitBlazorUITrimAssets&gt;</code></td>
+                        </tr>
+                        <tr>
+                            <th scope="row">Blazor Hybrid (MAUI)</th>
+                            <td>Not trimmed: the files are read from the device, never downloaded.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <BitText Element="p">
+                    Or go further with lazy scripts - <code>&lt;BitBlazorUILazyScripts&gt;true&lt;/BitBlazorUILazyScripts&gt;</code>
+                    and no <code>&lt;script&gt;</code> tag of the packages at all: each page then downloads the scripts
+                    of the components it renders, the first time it uses them. The
+                    <BitLink Href="/trimming">trimming page</BitLink> has every switch, how the publish knows what an
+                    app uses, how to name what it cannot see, and what to look for when something goes missing.
+                </BitText>
+
+                <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+                    <BitButton Href="/trimming" Variant="BitVariant.Outline" IconName="@BitIconName.Download">
+                        Trimming and lazy scripts
+                    </BitButton>
+                </BitStack>
+            </DocSection>
+
             <DocSection Id="troubleshooting" Title="Troubleshooting"
-                        Description="Nearly everything that goes wrong in the first hour is one of these seven, and each of them points back at the step it came from.">
+                        Description="Nearly everything that goes wrong in the first hour is one of these eight, and each of them points back at the step it came from.">
 
                 @* Symptom first, because the symptom is what the reader arrives with. Hairline-separated
                    rows rather than cards: this is a table someone scans for their own line, not a set of
@@ -545,6 +595,16 @@ bit new MyBitProject</CodeBox>
                             <BitLink Href="/getting-started#cache-busting">cache busting</BitLink> exists to
                             prevent, and it is the one step that is much easier to add before the first
                             deployment than after it.
+                        </p>
+                    </div>
+                    <div class="trouble">
+                        <p class="trouble-symptom">A component looks unstyled, or "BitBlazorUI.x is undefined", only in the published app</p>
+                        <p class="trouble-fix">
+                            The publish <BitLink Href="/trimming">trimmed</BitLink> away something
+                            it could not see the app use - a component rendered by reflection, a script called from
+                            JavaScript loaded from elsewhere. Name it with <code>&lt;BitBlazorUIComponent&gt;</code> or
+                            <code>&lt;BitBlazorUIAsset&gt;</code>, or publish with
+                            <code>-p:BitBlazorUITrimAssets=false</code> to confirm that is what it is.
                         </p>
                     </div>
                 </div>

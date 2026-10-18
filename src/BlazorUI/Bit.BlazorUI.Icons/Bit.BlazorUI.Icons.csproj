@@ -20,11 +20,20 @@
         <ScssFiles Include="**\*.scss" />
     </ItemGroup>
 
+    <!-- What the core package's publish-time trimming reads of this one when an app turns BitBlazorUITrimIcons on (see
+         Bit.BlazorUI's buildTransitive\Bit.BlazorUI.targets): the targets naming the glyphs, and the glyphs themselves. -->
+    <ItemGroup>
+        <None Include="buildTransitive\Bit.BlazorUI.Icons.targets" Pack="true" PackagePath="buildTransitive\;build\" />
+    </ItemGroup>
+
+    <!-- How this package's pieces are written and packed, shared by the packages that have any. -->
+    <Import Project="..\Bit.BlazorUI.Build\Bit.BlazorUI.Assets.targets" />
+
     <Target Name="BeforeBuildTasks" DependsOnTargets="InstallNodejsDependencies;BuildCss" />
 
     <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <ItemGroup>
-            <Content Include="wwwroot\styles\*.css*" Exclude="@(Content);@(None)" />
+            <Content Include="wwwroot\styles\*.css" Exclude="@(Content);@(None)" />
         </ItemGroup>
     </Target>
 
@@ -41,8 +50,9 @@
         <Exec Condition=" '$(CI)' != 'true' " Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
-    <Target Name="BuildCss" Inputs="@(ScssFiles)" Outputs="wwwroot/styles/bit.blazorui.icons.css">
-        <Exec Command="node_modules/.bin/sass Styles/bit.blazorui.icons.scss:wwwroot/styles/bit.blazorui.icons.css --style compressed --load-path=. --silence-deprecation=import" StandardOutputImportance="high" StandardErrorImportance="high" LogStandardErrorAsError="true" />
+    <!-- The stylesheet, and beside it its glyph rules one by one, which the publish-time trimming keeps a subset of. -->
+    <Target Name="BuildCss" Inputs="@(ScssFiles);@(BitAssetsScript)" Outputs="wwwroot/styles/bit.blazorui.icons.css;$(BaseIntermediateOutputPath)bit-assets\styles.json">
+        <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; styles --package $(PackageId) --out $(BaseIntermediateOutputPath)bit-assets --icons Styles/bit.blazorui.icons.scss=styles/bit.blazorui.icons.css" StandardOutputImportance="high" StandardErrorImportance="high" />
     </Target>
 
     <ItemGroup>
