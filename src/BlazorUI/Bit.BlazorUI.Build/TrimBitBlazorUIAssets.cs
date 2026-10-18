@@ -567,19 +567,19 @@ public sealed class TrimBitBlazorUIAssets : Task
         return Log.HasLoggedErrors is false;
     }
 
-    private static readonly string[] CopiedMetadata =
+    internal static readonly string[] CopiedMetadata =
     [
         "SourceId", "SourceType", "BasePath", "RelativePath", "AssetMode", "AssetRole", "AssetMergeSource",
         "AssetMergeBehavior", "RelatedAsset", "AssetTraitName", "AssetTraitValue",
     ];
 
     // Endpoints are keyed by the file they serve (their AssetFile), which is what an item removing them matches on.
-    private static ITaskItem WithAssetFile(ITaskItem asset)
+    internal static ITaskItem WithAssetFile(ITaskItem asset)
     {
         var item = new TaskItem(asset);
         item.SetMetadata("AssetFile", asset.GetMetadata("FullPath"));
         return item;
     }
 
-    private static string Normalize(string path) => path.Replace('\\', '/');
+    internal static string Normalize(string path) => path.Replace('\\', '/');
 }

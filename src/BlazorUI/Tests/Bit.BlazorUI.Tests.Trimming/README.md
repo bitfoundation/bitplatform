@@ -13,6 +13,9 @@ pieces the packages' builds wrote (`obj/bit-assets`), which a trimmed bundle is 
   of which also runs the trimmed app in Chromium, Firefox and WebKit.
 - `Bit.BlazorUI.Tests.Consumer` - a Blazor WebAssembly app, trimmed by default off what ILLink kept.
   `WebAssemblyTrimmingTests`, one of which also runs the trimmed app in Chromium, Firefox and WebKit.
+- `Bit.BlazorUI.Tests.Trimming.Hosted` - a Blazor Web App's server hosting `Bit.BlazorUI.Tests.Trimming.Hosted.Client`, a
+  WebAssembly client with a service worker. `HostedAppTrimmingTests` checks that the client's service worker asset
+  manifest, which the server rewrites after trimming, lists only what the publish serves, with its hash.
 
 `LazyScriptsTrimmingTests` publishes both apps with `BitBlazorUILazyScripts`: one module per script and the boot modules
 instead of the bundles, trimmed to what the app can reach, and - with `RUN_BROWSER_TESTS=1` - runs them (the WebAssembly

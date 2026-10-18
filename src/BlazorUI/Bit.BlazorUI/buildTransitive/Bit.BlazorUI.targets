@@ -202,7 +202,7 @@
              because MSBuild reads a target's own Condition before it builds that target's DependsOnTargets. The shape of
              the scripts is chosen ahead of the trimming, which only ever narrows what is left (on the .NET 8 SDK, the one
              stage there is; on 9 and later it has run already, see below). -->
-        <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);_BitBlazorUIResolveAssetTrimming;BitBlazorUISelectPublishScriptAssets;BitBlazorUITrimAssets</ResolvePublishStaticWebAssetsDependsOn>
+        <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);_BitBlazorUIResolveAssetTrimming;BitBlazorUISelectPublishScriptAssets;BitBlazorUITrimAssets;BitBlazorUIUpdateServiceWorker</ResolvePublishStaticWebAssetsDependsOn>
 
         <!-- On the .NET 9 SDK and later, the publish lists the JavaScript initializers Blazor imports as it starts before
              the stage above, right after it gathered the assets of every source (ResolveCorePublishStaticWebAssets): an
@@ -275,6 +275,8 @@
          while it is being rebuilt. The package's copy never changes, and loads in-process. -->
     <UsingTask TaskName="Bit.BlazorUI.Build.TrimBitBlazorUIAssets" AssemblyFile="$(BitBlazorUIBuildTasksAssembly)" Condition="'$(_BitBlazorUITasksFromSource)' != 'true'" />
     <UsingTask TaskName="Bit.BlazorUI.Build.TrimBitBlazorUIAssets" AssemblyFile="$(BitBlazorUIBuildTasksAssembly)" TaskFactory="TaskHostFactory" Condition="'$(_BitBlazorUITasksFromSource)' == 'true'" />
+    <UsingTask TaskName="Bit.BlazorUI.Build.UpdateBitBlazorUIServiceWorker" AssemblyFile="$(BitBlazorUIBuildTasksAssembly)" Condition="'$(_BitBlazorUITasksFromSource)' != 'true'" />
+    <UsingTask TaskName="Bit.BlazorUI.Build.UpdateBitBlazorUIServiceWorker" AssemblyFile="$(BitBlazorUIBuildTasksAssembly)" TaskFactory="TaskHostFactory" Condition="'$(_BitBlazorUITasksFromSource)' == 'true'" />
 
     <!--
     Drops the shape of the scripts the app does not use from its static web assets: a bundle-mode app carries none of the
@@ -589,6 +591,7 @@
         <ItemGroup Condition="'@(_BitBlazorUIRemovedAsset)' != ''">
             <StaticWebAssetEndpoint Remove="@(_BitBlazorUIRemovedAsset)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" Condition="'@(StaticWebAssetEndpoint)' != ''" />
             <StaticWebAsset Remove="@(_BitBlazorUIRemovedAsset)" />
+            <_BitBlazorUIServiceWorkerDropped Include="@(_BitBlazorUIRemovedAsset)" />
             <_BitBlazorUIRemovedAsset Remove="@(_BitBlazorUIRemovedAsset)" />
         </ItemGroup>
 
@@ -604,6 +607,44 @@
             <_BitBlazorUITrimmedCandidate Remove="@(_BitBlazorUITrimmedCandidate)" />
             <_BitBlazorUIStaleAsset Remove="@(_BitBlazorUIStaleAsset)" />
             <_BitBlazorUITrimmedEndpoint Remove="@(_BitBlazorUITrimmedEndpoint)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_BitBlazorUIRewriteServiceWorker" DependsOnTargets="BitBlazorUITrimAssets" Condition="'$(_BitBlazorUIPublishTrimming)' == 'true'">
+        <UpdateBitBlazorUIServiceWorker StaticWebAssets="@(StaticWebAsset)"
+                                        RemovedAssets="@(_BitBlazorUIServiceWorkerDropped)"
+                                        TrimmedAssets="@(_BitBlazorUITrimmedAsset)"
+                                        OutputDirectory="$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'bit-blazorui-service-worker'))">
+            <Output TaskParameter="CandidateAssets" ItemName="_BitBlazorUIServiceWorkerCandidate" />
+            <Output TaskParameter="StaleAssets" ItemName="_BitBlazorUIServiceWorkerStale" />
+        </UpdateBitBlazorUIServiceWorker>
+
+        <ItemGroup>
+            <_BitBlazorUIServiceWorkerDropped Remove="@(_BitBlazorUIServiceWorkerDropped)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_BitBlazorUIDefineServiceWorker" AfterTargets="_BitBlazorUIRewriteServiceWorker"
+            Condition="'$(_BitBlazorUISdkHasEndpoints)' != 'true' and '@(_BitBlazorUIServiceWorkerCandidate)' != ''">
+        <DefineStaticWebAssets CandidateAssets="@(_BitBlazorUIServiceWorkerCandidate)">
+            <Output TaskParameter="Assets" ItemName="_BitBlazorUIServiceWorkerAsset" />
+        </DefineStaticWebAssets>
+    </Target>
+
+    <Target Name="BitBlazorUIUpdateServiceWorker" DependsOnTargets="_BitBlazorUIRewriteServiceWorker" Condition="'$(_BitBlazorUIPublishTrimming)' == 'true'">
+        <ItemGroup Condition="'@(_BitBlazorUIServiceWorkerAsset)' != ''">
+            <StaticWebAssetEndpoint Remove="@(_BitBlazorUIServiceWorkerStale)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" Condition="'@(StaticWebAssetEndpoint)' != ''" />
+            <StaticWebAsset Remove="@(_BitBlazorUIServiceWorkerStale)" />
+            <StaticWebAsset Include="@(_BitBlazorUIServiceWorkerAsset)" />
+            <StaticWebAssetEndpoint Include="@(_BitBlazorUIServiceWorkerEndpoint)" />
+            <FileWrites Include="@(_BitBlazorUIServiceWorkerCandidate)" />
+        </ItemGroup>
+
+        <ItemGroup>
+            <_BitBlazorUIServiceWorkerCandidate Remove="@(_BitBlazorUIServiceWorkerCandidate)" />
+            <_BitBlazorUIServiceWorkerStale Remove="@(_BitBlazorUIServiceWorkerStale)" />
+            <_BitBlazorUIServiceWorkerAsset Remove="@(_BitBlazorUIServiceWorkerAsset)" />
+            <_BitBlazorUIServiceWorkerEndpoint Remove="@(_BitBlazorUIServiceWorkerEndpoint)" />
         </ItemGroup>
     </Target>
 

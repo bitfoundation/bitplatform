@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <InvariantGlobalization>true</InvariantGlobalization>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.BlazorUI.Tests.Trimming.Hosted.Client\Bit.BlazorUI.Tests.Trimming.Hosted.Client.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+    </ItemGroup>
+
+    <Import Project="..\..\Bit.BlazorUI\buildTransitive\Bit.BlazorUI.targets" />
+    <Import Project="..\..\Bit.BlazorUI.Extras\buildTransitive\Bit.BlazorUI.Extras.targets" />
+
+</Project>

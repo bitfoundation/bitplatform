@@ -529,7 +529,7 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                     <li>The trimmed bundle keeps the package asset's base and relative path, so it is served where the full one was and the tags stay as they are.</li>
                     <li>Its fingerprint and integrity are computed from the trimmed content, and its compressed <code>.br</code> / <code>.gz</code> copies are derived from it - the full bundle's leave with it.</li>
                     <li>On .NET 9 and later its endpoints carry the label <code>_content/Bit.BlazorUI/...</code>, so <code>@@Assets["_content/Bit.BlazorUI/scripts/bit.blazorui.js"]</code> and <code>&lt;ImportMap /&gt;</code> resolve to the trimmed file; the publish fails rather than leave a lookup pointing nowhere.</li>
-                    <li>Service-worker asset manifests are computed after the swap, so an offline-capable app caches the trimmed files.</li>
+                    <li>A standalone WebAssembly app computes its service-worker asset manifest after the swap. A Blazor Web App's client writes its own before the server trims, so the server rewrites it: the files the publish leaves out drop off the list, the trimmed bundles' hashes replace the full ones', and a new manifest version in the service worker script makes an installed app update to the trimmed files.</li>
                     <li>The cache busting of <BitLink Href="/getting-started#cache-busting">Getting started</BitLink> works unchanged.</li>
                 </ul>
             </DocSection>

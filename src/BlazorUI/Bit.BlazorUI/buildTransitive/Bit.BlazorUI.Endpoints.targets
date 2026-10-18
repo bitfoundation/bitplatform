@@ -25,6 +25,21 @@
 
     </Target>
 
+    <Target Name="_BitBlazorUIDefineServiceWorkerWithEndpoints" AfterTargets="_BitBlazorUIRewriteServiceWorker"
+            Condition="'@(_BitBlazorUIServiceWorkerCandidate)' != ''">
+
+        <DefineStaticWebAssets CandidateAssets="@(_BitBlazorUIServiceWorkerCandidate)">
+            <Output TaskParameter="Assets" ItemName="_BitBlazorUIServiceWorkerAsset" />
+        </DefineStaticWebAssets>
+
+        <DefineStaticWebAssetEndpoints CandidateAssets="@(_BitBlazorUIServiceWorkerAsset)"
+                                       ExistingEndpoints="@(StaticWebAssetEndpoint)"
+                                       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+            <Output TaskParameter="Endpoints" ItemName="_BitBlazorUIServiceWorkerEndpoint" />
+        </DefineStaticWebAssetEndpoints>
+
+    </Target>
+
     <!-- Restores the "_content/<package>/..." labels the trimmed bundles' endpoints are given bare (see
          RelabelBitBlazorUIEndpoints for why), once the compressed copies - and their labels - have been derived. -->
     <Target Name="BitBlazorUIRestoreTrimmedAssetLabels" BeforeTargets="GenerateStaticWebAssetsPublishManifest"
