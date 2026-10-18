@@ -685,7 +685,7 @@ function Invoke-E2EStages {
 
         # Into a file: a warm build's warnings run to hundreds of lines.
         Write-Host 'Building Boilerplate.Tests.E2E...'
-        dotnet build --nologo -v q > (Join-Path $results 'build.log')
+        dotnet build --nologo -v q -p:UseSharedCompilation=false > (Join-Path $results 'build.log')
 
         if ($LASTEXITCODE -ne 0) {
             Select-String -Path (Join-Path $results 'build.log') -Pattern ': error ' | ForEach-Object Line | Select-Object -Unique | Write-Host
@@ -1236,7 +1236,7 @@ function Invoke-AspireTest {
         $idleMinutes = Get-IdleMinutes $appHost
 
         Write-Host 'Building the app host...'
-        dotnet build $appHost -nologo -v q > (Join-Path $lab 'build.log')
+        dotnet build $appHost -nologo -v q -p:UseSharedCompilation=false > (Join-Path $lab 'build.log')
 
         if ($LASTEXITCODE -ne 0) {
             throw "The project doesn't build; see $(Join-Path $lab 'build.log')."
