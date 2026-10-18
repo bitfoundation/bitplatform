@@ -53,8 +53,8 @@
   </Folder>
   <Folder Name="/BlazeDb/">
     <File Path="BlazeDb/README.md" />
-    <Project Path="BlazeDb/Bit.BlazeDb.Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
-    <Project Path="BlazeDb/Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
+    <Project Path="BlazeDb/Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
+    <Project Path="BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
     <Project Path="BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj" />
     <Project Path="BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj" />
     <Project Path="BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj" />

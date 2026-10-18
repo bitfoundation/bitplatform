@@ -8,7 +8,7 @@ public static class RepoLayout
 {
     public const string DemoServerName = "Bit.BlazeDb.Demo.Server";
 
-    public static string DemoServerProject() => FindUpward(Path.Combine("Bit.BlazeDb.Demo", "Server", $"{DemoServerName}.csproj"));
+    public static string DemoServerProject() => FindUpward(Path.Combine("Demo", "Server", $"{DemoServerName}.csproj"));
 
     public static string DemoServerAssembly(string configuration) =>
         Path.Combine(Path.GetDirectoryName(DemoServerProject())!, "bin", configuration, "net10.0", $"{DemoServerName}.dll");

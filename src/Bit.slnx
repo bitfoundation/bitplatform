@@ -104,9 +104,9 @@
     <Project Path="BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj" />
     <Project Path="BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj" />
   </Folder>
-  <Folder Name="/BlazeDb/Bit.BlazeDb.Demo/">
-    <Project Path="BlazeDb/Bit.BlazeDb.Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
-    <Project Path="BlazeDb/Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
+  <Folder Name="/BlazeDb/Demo/">
+    <Project Path="BlazeDb/Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
+    <Project Path="BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/BlazeDb/Tests/">
     <Project Path="BlazeDb/Tests/Bit.BlazeDb.Tests/Bit.BlazeDb.Tests.csproj" />

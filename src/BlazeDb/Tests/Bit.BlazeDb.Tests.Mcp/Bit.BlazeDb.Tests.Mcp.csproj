@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.BlazeDb.Demo\Server\Bit.BlazeDb.Demo.Server.csproj" />
+        <ProjectReference Include="..\..\Demo\Server\Bit.BlazeDb.Demo.Server.csproj" />
         <!-- The models under Models\ are compiled by the real generator as well as handed to InspectBlazeDbTable,
              so the inspector's report can be held against the descriptors a build actually produces. -->
         <ProjectReference Include="..\..\Bit.BlazeDb.Generators\Bit.BlazeDb.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />

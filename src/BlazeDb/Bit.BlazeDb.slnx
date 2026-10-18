@@ -6,9 +6,9 @@
     <File Path="../global.json" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Bit.BlazeDb.Demo/">
-    <Project Path="Bit.BlazeDb.Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
-    <Project Path="Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.BlazeDb.Tests/Bit.BlazeDb.Tests.csproj" />

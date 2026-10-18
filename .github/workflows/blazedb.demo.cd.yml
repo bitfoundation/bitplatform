@@ -33,7 +33,7 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools
 
     - name: Publish
-      run: dotnet publish src/BlazeDb/Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
+      run: dotnet publish src/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true
 
     # Server-owned; C:\inetpub keeps its own copies.
     - name: Strip server-owned files from bundle

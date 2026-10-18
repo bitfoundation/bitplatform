@@ -1,7 +1,7 @@
 ﻿# Bit.BlazeDb.Tests.Mcp
 
 Tests for the **MCP server** the BlazeDb demo hosts at `/mcp`
-(`Bit.BlazeDb.Demo/Server/Controllers/McpController.cs` and the services behind it).
+(`Demo/Server/Controllers/McpController.cs` and the services behind it).
 
 ```bash
 cd src/BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp

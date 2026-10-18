@@ -32,7 +32,7 @@ From `src/BlazeDb` (inside `src`, so `src/global.json` selects the Microsoft.Tes
 
 ```bash
 # The suite runs the demo server's build output: build it first, in the configuration the tests run in.
-dotnet build Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj
+dotnet build Demo/Server/Bit.BlazeDb.Demo.Server.csproj
 dotnet build Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -48,7 +48,7 @@ dotnet test --filter "FullyQualifiedName~survives_a_reload"
 CI does the same in Release in `.github/workflows/bit.ci.BlazeDb.e2e.yml`, which only runs when started by hand (Actions > "bit platform CI - BlazeDb E2E" > Run workflow). The pull-request pipeline, `bit.ci.BlazeDb.yml`, runs the build, engine, EF Core provider and MCP tests only:
 
 ```bash
-dotnet build src/BlazeDb/Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release
+dotnet build src/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release
 dotnet build src/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj -c Release
 pwsh src/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename blazedb-e2e.trx

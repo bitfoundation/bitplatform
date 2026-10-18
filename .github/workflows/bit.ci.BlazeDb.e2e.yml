@@ -38,7 +38,7 @@ jobs:
 
     - name: Build the demo and the E2E suite
       run: |
-        dotnet build src/BlazeDb/Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release
+        dotnet build src/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c Release
         dotnet build src/BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium

@@ -28,7 +28,7 @@ public sealed class DemoHost : IAsyncDisposable
         if (File.Exists(assembly) is false)
             throw new FileNotFoundException(
                 $"The demo server has not been built in the {E2EEnvironment.Configuration} configuration. Build it first with " +
-                $"'dotnet build src/BlazeDb/Bit.BlazeDb.Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c {E2EEnvironment.Configuration}'", assembly);
+                $"'dotnet build src/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj -c {E2EEnvironment.Configuration}'", assembly);
 
         // localhost rather than 127.0.0.1: OPFS, Web Locks and WebCrypto exist only in a secure context, and a
         // browser treats http://localhost as one but not every loopback address spelled as an IP.
