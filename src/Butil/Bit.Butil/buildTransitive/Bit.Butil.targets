@@ -187,7 +187,7 @@
              while it is still unset. Listed here, it has run by the time either target is reached. -->
         <!-- BitButilSelectPublishScriptAssets first of the four: it drops the shape of the JavaScript this app
              does not use, and the two trimming targets after it only ever narrow what is left. -->
-        <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);_BitButilResolveScriptTrimming;BitButilSelectPublishScriptAssets;BitButilTrimScriptBundle;BitButilTrimScriptModules</ResolvePublishStaticWebAssetsDependsOn>
+        <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);_BitButilResolveScriptTrimming;BitButilSelectPublishScriptAssets;BitButilTrimScriptBundle;BitButilTrimScriptModules;BitButilUpdateServiceWorker</ResolvePublishStaticWebAssetsDependsOn>
 
         <!-- Same appending trick, for the stage that gathers the assets themselves (see
              BitButilSelectScriptAssets). The SDK collects them from three places in a fixed order - the
@@ -239,6 +239,7 @@
     </Target>
 
     <UsingTask TaskName="Bit.Butil.Build.TrimButilScripts" AssemblyFile="$(BitButilBuildTasksAssembly)" />
+    <UsingTask TaskName="Bit.Butil.Build.UpdateButilServiceWorker" AssemblyFile="$(BitButilBuildTasksAssembly)" />
 
     <!--
     Drops the shape of the JavaScript the app does not use from its static web assets, so a bundle-mode app
@@ -633,6 +634,7 @@
             <StaticWebAsset Remove="@(_BitButilStaleAsset)" />
             <StaticWebAsset Include="@(_BitButilTrimmedBundleAsset)" />
             <StaticWebAssetEndpoint Include="@(_BitButilTrimmedBundleEndpoint)" />
+            <_BitButilServiceWorkerTrimmed Include="@(_BitButilTrimmedBundleAsset)" />
             <FileWrites Include="$(_BitButilTrimmedBundle)" />
         </ItemGroup>
 
@@ -703,6 +705,7 @@
             </_BitButilRemovedModuleEndpointKey>
 
             <StaticWebAsset Remove="@(_BitButilRemovedModule)" />
+            <_BitButilServiceWorkerDropped Include="@(_BitButilRemovedModule)" />
             <StaticWebAssetEndpoint Remove="@(_BitButilRemovedModuleEndpointKey)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" Condition="'@(StaticWebAssetEndpoint)' != ''" />
         </ItemGroup>
 
@@ -713,6 +716,45 @@
             <_BitButilModuleCandidate Remove="@(_BitButilModuleCandidate)" />
             <_BitButilRemovedModule Remove="@(_BitButilRemovedModule)" />
             <_BitButilRemovedModuleEndpointKey Remove="@(_BitButilRemovedModuleEndpointKey)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_BitButilRewriteServiceWorker" DependsOnTargets="BitButilTrimScriptBundle;BitButilTrimScriptModules" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
+        <UpdateButilServiceWorker StaticWebAssets="@(StaticWebAsset)"
+                                  RemovedAssets="@(_BitButilServiceWorkerDropped)"
+                                  TrimmedAssets="@(_BitButilServiceWorkerTrimmed)"
+                                  OutputDirectory="$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'bit-butil-service-worker'))">
+            <Output TaskParameter="CandidateAssets" ItemName="_BitButilServiceWorkerCandidate" />
+            <Output TaskParameter="StaleAssets" ItemName="_BitButilServiceWorkerStale" />
+        </UpdateButilServiceWorker>
+
+        <ItemGroup>
+            <_BitButilServiceWorkerDropped Remove="@(_BitButilServiceWorkerDropped)" />
+            <_BitButilServiceWorkerTrimmed Remove="@(_BitButilServiceWorkerTrimmed)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="_BitButilDefineServiceWorker" AfterTargets="_BitButilRewriteServiceWorker"
+            Condition="'$(_BitButilSdkHasEndpoints)' != 'true' and '@(_BitButilServiceWorkerCandidate)' != ''">
+        <DefineStaticWebAssets CandidateAssets="@(_BitButilServiceWorkerCandidate)">
+            <Output TaskParameter="Assets" ItemName="_BitButilServiceWorkerAsset" />
+        </DefineStaticWebAssets>
+    </Target>
+
+    <Target Name="BitButilUpdateServiceWorker" DependsOnTargets="_BitButilRewriteServiceWorker" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
+        <ItemGroup Condition="'@(_BitButilServiceWorkerAsset)' != ''">
+            <StaticWebAssetEndpoint Remove="@(_BitButilServiceWorkerStale)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" Condition="'@(StaticWebAssetEndpoint)' != ''" />
+            <StaticWebAsset Remove="@(_BitButilServiceWorkerStale)" />
+            <StaticWebAsset Include="@(_BitButilServiceWorkerAsset)" />
+            <StaticWebAssetEndpoint Include="@(_BitButilServiceWorkerEndpoint)" />
+            <FileWrites Include="@(_BitButilServiceWorkerCandidate)" />
+        </ItemGroup>
+
+        <ItemGroup>
+            <_BitButilServiceWorkerCandidate Remove="@(_BitButilServiceWorkerCandidate)" />
+            <_BitButilServiceWorkerStale Remove="@(_BitButilServiceWorkerStale)" />
+            <_BitButilServiceWorkerAsset Remove="@(_BitButilServiceWorkerAsset)" />
+            <_BitButilServiceWorkerEndpoint Remove="@(_BitButilServiceWorkerEndpoint)" />
         </ItemGroup>
     </Target>
 

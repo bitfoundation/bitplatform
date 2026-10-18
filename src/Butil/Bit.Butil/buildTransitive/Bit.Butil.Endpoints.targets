@@ -22,6 +22,17 @@
 
     </Target>
 
+    <Target Name="_BitButilDefineServiceWorkerWithEndpoints" AfterTargets="_BitButilRewriteServiceWorker"
+            Condition="'@(_BitButilServiceWorkerCandidate)' != ''">
+        <DefineStaticWebAssets CandidateAssets="@(_BitButilServiceWorkerCandidate)">
+            <Output TaskParameter="Assets" ItemName="_BitButilServiceWorkerAsset" />
+        </DefineStaticWebAssets>
+        <DefineStaticWebAssetEndpoints CandidateAssets="@(_BitButilServiceWorkerAsset)"
+                                       ExistingEndpoints="@(StaticWebAssetEndpoint)"
+                                       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+            <Output TaskParameter="Endpoints" ItemName="_BitButilServiceWorkerEndpoint" />
+        </DefineStaticWebAssetEndpoints>
+    </Target>
     <!--
     Restores the label a consumer's lookups go through.
 

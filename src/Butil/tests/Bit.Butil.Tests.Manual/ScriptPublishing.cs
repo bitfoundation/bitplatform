@@ -1,4 +1,6 @@
 ﻿using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text.Json;
 using Bit.Butil.Build;
 
 namespace ButilTests.Manual;
@@ -205,6 +207,7 @@ internal static class ScriptPublishing
         }
 
         CheckReferencedPublishStage(checks, fixtureProject);
+        CheckServiceWorkerManifest(checks, Path.Combine(butilRoot!, "..", "tests", "Bit.Butil.Tests.PublishFixture.Hosted", "Bit.Butil.Tests.PublishFixture.Hosted.csproj"), Path.Combine(workspace, "publish-hosted"));
 
         return (checks.Passed, checks.Failed);
     }
@@ -375,6 +378,39 @@ internal static class ScriptPublishing
         log = standardOutput.Result + standardError.Result;
         exitCode = process.ExitCode;
         return true;
+    }
+
+    private static void CheckServiceWorkerManifest(ScriptBundling.Checks checks, string project, string output)
+    {
+        const string what = "a Blazor Web App's service worker lists what the trimmed publish serves, bit-butil.js with its own hash";
+
+        if (Run(["publish", project, "-c", "Debug", "--nologo", "-v", "quiet", "-tl:off", "-o", output], out var log, out var exitCode) is false || exitCode != 0)
+        {
+            checks.That(false, what, $"the publish failed: {FirstError(log)}");
+            return;
+        }
+
+        var webRoot = Path.Combine(output, "wwwroot");
+        var text = File.ReadAllText(Path.Combine(webRoot, "service-worker-assets.js"));
+        using var manifest = JsonDocument.Parse(text[text.IndexOf('{')..(text.LastIndexOf('}') + 1)]);
+
+        var wrong = new List<string>();
+        var urls = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var asset in manifest.RootElement.GetProperty("assets").EnumerateArray())
+        {
+            var url = asset.GetProperty("url").GetString()!;
+            urls.Add(url);
+            var path = Path.Combine(webRoot, url.Replace('/', Path.DirectorySeparatorChar));
+            if (File.Exists(path) is false) wrong.Add($"{url} is listed but not published");
+            else if ("sha256-" + Convert.ToBase64String(SHA256.HashData(File.ReadAllBytes(path))) != asset.GetProperty("hash").GetString()) wrong.Add($"{url} is listed with another file's hash");
+        }
+
+        if (urls.Contains("_content/Bit.Butil/bit-butil.js") is false) wrong.Add("bit-butil.js is not listed at all");
+
+        var version = manifest.RootElement.GetProperty("version").GetString();
+        if (File.ReadAllText(Path.Combine(webRoot, "service-worker.js")).Contains($"Manifest version: {version}", StringComparison.Ordinal) is false) wrong.Add("service-worker.js does not carry the manifest's version");
+
+        checks.That(wrong.Count == 0, what, string.Join("; ", wrong));
     }
 
     private static bool Publish(ScriptBundling.Checks checks, string project, string output, Scenario scenario, out string log)

@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>ButilTests.PublishFixture.Hosted</RootNamespace>
+        <InvariantGlobalization>true</InvariantGlobalization>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Butil.Tests.PublishFixture.Hosted.Client\Bit.Butil.Tests.PublishFixture.Hosted.Client.csproj" />
+        <ProjectReference Include="..\..\Bit.Butil\Bit.Butil.csproj" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <BitButilChunksDirectory>$(MSBuildThisFileDirectory)..\..\Bit.Butil\obj\butil-js\chunks\</BitButilChunksDirectory>
+        <BitButilBuildTasksAssembly>$(MSBuildThisFileDirectory)..\..\Bit.Butil.Build\bin\$(Configuration)\netstandard2.0\Bit.Butil.Build.dll</BitButilBuildTasksAssembly>
+        <BitButilTrimScripts Condition="'$(BitButilTrimScripts)' == ''">true</BitButilTrimScripts>
+    </PropertyGroup>
+
+    <Import Project="..\..\Bit.Butil\buildTransitive\Bit.Butil.targets" />
+
+</Project>
