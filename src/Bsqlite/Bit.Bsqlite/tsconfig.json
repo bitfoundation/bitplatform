@@ -1,0 +1,23 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        // ES2022 for top-level await and native #private fields: the host and worker modules await their
+        // versioned imports at load, and every browser that can run the worker (module workers, OPFS, Web
+        // Locks) already runs ES2022.
+        "target": "ES2022",
+        // Every module is loaded through `import()` - by the interop, by the host, by the worker and by the
+        // storage packages - and its functions are called as named exports, so the output MUST stay an ES
+        // module: `module: ESNext` with `rootDir`/`outDir` emits each Scripts/*.ts straight to wwwroot/*.js
+        // with its `export`s and its relative `import()` specifiers intact.
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
+        "rootDir": "Scripts",
+        "outDir": "wwwroot",
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [ "./Scripts/**/*.ts" ]
+}

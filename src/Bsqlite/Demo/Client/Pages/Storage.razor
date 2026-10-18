@@ -1,0 +1,305 @@
+﻿@page "/storage"
+@inject BrowserDatabase Database
+@inject IJSRuntime Js
+
+<SessionLifecycle OnReady="LoadAsync" OnTearDown="NoopAsync" />
+
+<PageHeader Kicker="Platform · Storage" Title="Choosing where the file lives">
+    Storage is a public contract, not an implementation detail: OPFS, IndexedDB, Cache Storage and
+    in-memory are interchangeable providers behind the same interface. Selection prefers the order
+    you configure, but existing data outranks preference - a database created on IndexedDB does not
+    silently vanish the day OPFS becomes available.
+</PageHeader>
+
+@if (_error is not null)
+{
+    <p class="error">@_error</p>
+}
+
+<div class="stack-lg">
+    <DemoCard Step="Configure"
+              Title="Preference order, and what counts as acceptable"
+              CodeTitle="Program.cs"
+              Code="@Snippets.Storage.Selection">
+        <Description>
+            <span>
+                Every registered provider is a candidate. <code>AllowNonPersistentFallback()</code>
+                is what makes in-memory acceptable at all - without it, an origin with no persistent
+                backend fails to open rather than quietly losing data on reload.
+            </span>
+        </Description>
+        <Try>
+            <span>
+                The session bar above is this API in action:
+                <strong>Move data</strong> migrates the image, <strong>Start empty</strong>
+                binds a fresh file without copying.
+            </span>
+        </Try>
+        <Extra>
+            <CodeBlock Title="Migrating an existing database" Language="csharp"
+                       Code="@Snippets.Storage.Migrate" Open="false" />
+        </Extra>
+    </DemoCard>
+
+    <DemoCard Step="Inspect"
+              Title="Why this session landed where it did"
+              CodeTitle="BsqliteStorageResolution"
+              Code="@Snippets.Storage.Resolution">
+        <Description>
+            A resolution is a record of the whole decision, not just its outcome: every candidate,
+            its probe, and the reason it was passed over. That is what makes a support question
+            answerable without reproducing the user's browser.
+        </Description>
+        <ChildContent>
+            @if (_resolution is not null)
+            {
+                <p>
+                    Chosen backend: <span class="pill">@_resolution.Provider.Name</span>
+                    @if (_resolution.IsFirstChoice)
+                    {
+                        <span> - first choice in the configured order.</span>
+                    }
+                    else
+                    {
+                        <span> - a fallback; see the attempt table.</span>
+                    }
+                    @if (_resolution.WasDecidedByExistingData)
+                    {
+                        <span> The file was already bound here, so preference did not move it.</span>
+                    }
+                </p>
+                @if (_resolution.BetterProviderAvailable is { } better)
+                {
+                    <p class="warn">
+                        @better.Name is available and ranked higher, but the data lives here.
+                        <code>BsqliteStorageMigrationMode.AutomaticOnOpen</code> would copy, check the
+                        image, then flip the binding. This demo uses the default,
+                        <code>KeepExisting</code>.
+                    </p>
+                }
+                <p>
+                    Sticky binding in <code>localStorage</code>:
+                    <code>@(_binding ?? "(none - first create on this origin)")</code>
+                </p>
+                <div class="scroll-x">
+                    <table>
+                        <thead>
+                        <tr><th>Provider</th><th>Status</th><th>Explanation</th></tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var attempt in _resolution.Attempts)
+                        {
+                            <tr>
+                                <td><code>@attempt.ProviderName</code></td>
+                                <td>@attempt.Status</td>
+                                <td>@(attempt.Explanation ?? attempt.Probe?.UnavailableReason ?? "-")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </ChildContent>
+    </DemoCard>
+
+    <DemoCard Step="Capabilities"
+              Title="What this backend can honour"
+              CodeTitle="Provider capabilities"
+              Code="@Snippets.Storage.Capabilities">
+        <Description>
+            <span>
+                The core enforces these flags; it never special-cases OPFS against IndexedDB in
+                SQL. A backend that cannot honour <code>ATTACH</code> or
+                <code>PRAGMA page_size</code> fails in <code>BsqliteFeatureGuards</code> instead of
+                corrupting the file - see <a href="limits">Limits</a>.
+            </span>
+        </Description>
+        <ChildContent>
+            @if (_caps is not null)
+            {
+                <div class="scroll-x">
+                    <table>
+                        <tbody>
+                        <tr><th>Engine build</th><td>@_caps.RequiredBuild</td></tr>
+                        <tr><th>Survives reload</th><td>@SampleFormat.YesNo(_caps.IsPersistent)</td></tr>
+                        <tr><th>Multiple connections</th><td>@SampleFormat.YesNo(_caps.SupportsMultipleConnections)</td></tr>
+                        <tr><th>Concurrent reads</th><td>@SampleFormat.YesNo(_caps.SupportsConcurrentReads)</td></tr>
+                        <tr><th>Relaxed durability</th><td>@SampleFormat.YesNo(_caps.SupportsRelaxedDurability)</td></tr>
+                        <tr><th>Multi-database transactions</th><td>@SampleFormat.YesNo(_caps.SupportsMultiDatabaseTransactions)</td></tr>
+                        <tr><th>Can change page size</th><td>@SampleFormat.YesNo(_caps.CanChangePageSize)</td></tr>
+                        <tr><th>Contexts</th><td>@_caps.SupportedContexts</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </ChildContent>
+    </DemoCard>
+
+    <DemoCard Step="Probe"
+              Title="Ask every backend what it can do here"
+              CodeTitle="Probing providers"
+              Code="@Snippets.Storage.Probe">
+        <Description>
+            A probe reports availability, quota when the browser will say, and the raw environment
+            facts behind the verdict. Unavailable is a result, never an exception, so selection can
+            continue and still explain itself afterwards.
+        </Description>
+        <Try>
+            <span>Probe now, then compare the numbers after importing a larger database on Admin.</span>
+        </Try>
+        <ChildContent>
+            <button type="button" class="secondary" @onclick="ProbeAllAsync" disabled="@_busy">Probe now</button>
+            @if (_probes.Count > 0)
+            {
+                <div class="scroll-x">
+                    <table>
+                        <thead>
+                        <tr><th>Provider</th><th>Available</th><th>Usage / quota</th><th>Why / environment</th></tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var row in _probes)
+                        {
+                            <tr>
+                                <td><code>@row.Name</code></td>
+                                <td>@SampleFormat.YesNo(row.Probe.IsAvailable)</td>
+                                <td>
+                                    @SampleFormat.Bytes(row.Probe.UsageBytes)
+                                    /
+                                    @SampleFormat.Bytes(row.Probe.QuotaBytes)
+                                </td>
+                                <td>
+                                    @if (!row.Probe.IsAvailable)
+                                    {
+                                        @row.Probe.UnavailableReason
+                                    }
+                                    else if (row.Probe.Environment.Count == 0)
+                                    {
+                                        <span>-</span>
+                                    }
+                                    else
+                                    {
+                                        @string.Join(", ", row.Probe.Environment.Select(kv => $"{kv.Key}={kv.Value}"))
+                                    }
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </ChildContent>
+    </DemoCard>
+
+    <DemoCard Step="Permission"
+              Title="Ask the browser not to evict you"
+              CodeTitle="Persistent storage"
+              Code="@Snippets.Storage.Persistence">
+        <Description>
+            Persistent storage is granted per origin, not per backend. Without it, any of the
+            persistent backends may be cleared under storage pressure - which is a product
+            decision, so the library exposes the call rather than making it for you.
+        </Description>
+        <ChildContent>
+            <p>
+                Currently:
+                <strong>@(_persisted is null ? "not requested yet" : _persisted.Value ? "granted" : "denied")</strong>
+            </p>
+            <button type="button" class="secondary" @onclick="RequestPersistenceAsync" disabled="@_busy">
+                Request persistent storage
+            </button>
+        </ChildContent>
+    </DemoCard>
+
+    <section class="card">
+        <h2>The four backends</h2>
+        <div class="scroll-x">
+            <table>
+                <thead><tr><th>Provider</th><th>Character</th></tr></thead>
+                <tbody>
+                @foreach (var provider in Database.Providers)
+                {
+                    <tr>
+                        <td>
+                            <span class="storage-dot" data-name="@provider.Name"></span>
+                            <strong>@SampleStorage.Title(provider.Name)</strong>
+                            <span class="mono"> @provider.Name</span>
+                        </td>
+                        <td>@SampleStorage.Blurb(provider.Name)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+@code {
+    private BsqliteStorageResolution? _resolution;
+    private BsqliteStorageCapabilities? _caps;
+    private string? _binding;
+    private bool? _persisted;
+    private string? _error;
+    private bool _busy;
+    private readonly List<(string Name, BsqliteProbeResult Probe)> _probes = [];
+
+    private static Task NoopAsync() => Task.CompletedTask;
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            var session = await Database.EnsureSessionAsync();
+            _resolution = session.Resolution;
+            _caps = session.Resolution.Provider.Capabilities;
+            _binding = await Database.Bindings.GetProviderNameAsync(BrowserDatabase.DatabaseName);
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+    }
+
+    private async Task RequestPersistenceAsync()
+    {
+        _busy = true;
+        _error = null;
+        try
+        {
+            _persisted = await BsqlitePersistence.RequestAsync(Js);
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ProbeAllAsync()
+    {
+        _busy = true;
+        _error = null;
+        _probes.Clear();
+        try
+        {
+            foreach (var provider in Database.Providers)
+            {
+                var probe = await provider.ProbeAsync();
+                _probes.Add((provider.Name, probe));
+            }
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}
