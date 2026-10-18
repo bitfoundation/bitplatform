@@ -1,0 +1,36 @@
+﻿@page "/examples/default-nodes"
+
+<PageTitle>Default Nodes - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Default Nodes"
+                 Summary="The three built-in node types: an input node (source handle only), a default node (both) and an output node (target handle only).">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="24" Color="#eee" />
+        <BlowControls />
+        <BlowMiniMap />
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input",   Label = "Input Node",   Position = new(250, 25) },
+            new BlowNode { Id = "2", Type = "default", Label = "Default Node", Position = new(150, 125) },
+            new BlowNode { Id = "3", Type = "default", Label = "Default Node", Position = new(350, 125) },
+            new BlowNode { Id = "4", Type = "output",  Label = "Output Node",  Position = new(250, 250) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Animated = true },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4" },
+        ];
+    }
+}

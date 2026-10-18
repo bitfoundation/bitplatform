@@ -1,0 +1,111 @@
+﻿@page "/examples/align-distribute"
+<PageTitle>Align &amp; Distribute - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Align &amp; Distribute"
+                 Summary="Select two or more nodes - shift-drag a box round them, or shift-click them one at a time - and line them up or space them out. This is the tidy-up pass every drawing tool has, and it writes nothing but Node.Position, so it composes with undo, extents and sub-flows.">
+    <Toolbar>
+        <span class="group-label">Align</span>
+        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Left)" title="Align left edges">⇤</button>
+        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.CenterX)" title="Centre horizontally">⇹</button>
+        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Right)" title="Align right edges">⇥</button>
+        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Top)" title="Align top edges">⤒</button>
+        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.CenterY)" title="Centre vertically">⇳</button>
+        <button class="btn" disabled="@TooFew" @onclick="() => Align(BlowAlignEdge.Bottom)" title="Align bottom edges">⤓</button>
+
+        <span class="group-label">Distribute</span>
+        <button class="btn" disabled="@(_selected < 3)" @onclick="() => Distribute(true)">Horizontally</button>
+        <button class="btn" disabled="@(_selected < 3)" @onclick="() => Distribute(false)">Vertically</button>
+
+        <span class="group-label">Gap</span>
+        <button class="btn" disabled="@TooFew" @onclick="() => Pack(true)">Pack 24px →</button>
+        <button class="btn" disabled="@TooFew" @onclick="() => Pack(false)">Pack 24px ↓</button>
+
+        <button class="btn" @onclick="SelectAll">Select all</button>
+        <button class="btn" @onclick="Scatter">Scatter</button>
+
+        <span class="selection-count">@_selected selected</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    SelectionOnDrag="false"
+                    OnSelectionChange="OnSelectionChange"
+                    FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="24" />
+            <BlowControls />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <div class="hint">
+                    Distribute keeps the two outermost nodes where they are and evens out the gaps
+                    between everything else. Pack ignores the span and lays them out from the first
+                    node at a fixed gap.
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; margin-left: .75rem; }
+    .group-label:first-child { margin-left: 0; }
+    .selection-count { margin-left: auto; font-size: 12px; color: #6b7280; }
+    .hint {
+        max-width: 240px;
+        padding: 6px 10px;
+        font-size: 11px;
+        line-height: 1.45;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+</style>
+
+@code {
+    private BlowCanvas _flow = default!;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _selected;
+
+    private bool TooFew => _selected < 2;
+
+    protected override void OnInitialized() => Scatter();
+
+    private void Scatter()
+    {
+        // Deliberately ragged, and deliberately different sizes, so aligning by edge and by
+        // centre are visibly different operations rather than the same line twice.
+        _nodes =
+        [
+            new BlowNode { Id = "a", Label = "Ingest",   Position = new(40, 40),   Width = 160, Height = 56, Selected = true },
+            new BlowNode { Id = "b", Label = "Validate", Position = new(230, 130), Width = 120, Height = 80, Selected = true },
+            new BlowNode { Id = "c", Label = "Transform",Position = new(420, 70),  Width = 200, Height = 48, Selected = true },
+            new BlowNode { Id = "d", Label = "Score",    Position = new(660, 165), Width = 130, Height = 64, Selected = true },
+            new BlowNode { Id = "e", Label = "Publish",  Position = new(300, 320), Width = 150, Height = 56 },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "a-b", Source = "a", Target = "b" },
+            new BlowEdge { Id = "b-c", Source = "b", Target = "c" },
+            new BlowEdge { Id = "c-d", Source = "c", Target = "d" },
+            new BlowEdge { Id = "b-e", Source = "b", Target = "e" },
+        ];
+
+        _selected = _nodes.Count(n => n.Selected);
+    }
+
+    private void OnSelectionChange(BlowSelectionChange change) => _selected = change.Nodes.Count;
+
+    private Task Align(BlowAlignEdge edge) => _flow.AlignSelectionAsync(edge);
+
+    private Task Distribute(bool horizontal) => _flow.DistributeSelectionAsync(horizontal);
+
+    private Task Pack(bool horizontal) => _flow.DistributeSelectionAsync(horizontal, gap: 24);
+
+    private void SelectAll()
+    {
+        foreach (var n in _nodes) n.Selected = true;
+        _selected = _nodes.Count;
+    }
+}

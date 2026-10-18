@@ -1,0 +1,48 @@
+﻿@page "/examples/custom-minimap-node"
+
+<PageTitle>Custom MiniMap Node - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Custom MiniMap Node"
+                 Summary="Color the minimap nodes by type and outline the selected node, using the BlowMiniMap's NodeColorFunc and NodeStrokeColorFunc. Select a node to see its minimap outline.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+        <BlowMiniMap Width="240" Height="180"
+                 NodeColorFunc="NodeColor"
+                 NodeStrokeColorFunc="NodeStroke"
+                 NodeStrokeWidth="3"
+                 BorderRadius="6" />
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Input", Position = new(250, 20) },
+            new BlowNode { Id = "2", Label = "Default A", Position = new(120, 140) },
+            new BlowNode { Id = "3", Label = "Default B", Position = new(380, 140) },
+            new BlowNode { Id = "4", Type = "output", Label = "Output", Position = new(250, 260) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4" },
+        ];
+    }
+
+    private string NodeColor(BlowNode n) => n.Type switch
+    {
+        "input" => "#16a34a",
+        "output" => "#6366f1",
+        _ => "#fbbf24",
+    };
+
+    private string NodeStroke(BlowNode n) => n.Selected ? "#111827" : "transparent";
+}

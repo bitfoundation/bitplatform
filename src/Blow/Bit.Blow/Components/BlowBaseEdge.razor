@@ -1,0 +1,41 @@
+﻿@namespace Bit.Blow
+@* The standard edge rendering primitive: a wide invisible interaction path, the visible
+   stroked path with optional markers, and an optional label. Use inside an EdgeTemplate
+   to build custom edges while keeping default interaction/appearance. *@
+
+<path class="bit-blow-edge-interaction" d="@Path" fill="none" stroke="transparent" stroke-width="@Inv(InteractionWidth)" />
+
+<path class="bit-blow-edge-path @Class"
+      d="@Path"
+      fill="none"
+      stroke="@Stroke"
+      stroke-width="@Inv(StrokeWidth)"
+      marker-start="@MarkerStart"
+      marker-end="@MarkerEnd" />
+
+@if (!string.IsNullOrEmpty(Label))
+{
+    <BlowEdgeText X="LabelX" Y="LabelY" Label="@Label" />
+}
+
+@code {
+    /// <summary>SVG path data for the edge.</summary>
+    [Parameter, EditorRequired] public string Path { get; set; } = string.Empty;
+
+    [Parameter] public string Stroke { get; set; } = "var(--bit-blow-edge-stroke)";
+    [Parameter] public double StrokeWidth { get; set; } = 1.5;
+
+    /// <summary>Full marker url, e.g. <c>url(#id)</c>; null for none.</summary>
+    [Parameter] public string? MarkerStart { get; set; }
+    [Parameter] public string? MarkerEnd { get; set; }
+
+    [Parameter] public double InteractionWidth { get; set; } = 14;
+
+    [Parameter] public string? Label { get; set; }
+    [Parameter] public double LabelX { get; set; }
+    [Parameter] public double LabelY { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+
+    private static string Inv(double v) => v.ToString(CultureInfo.InvariantCulture);
+}

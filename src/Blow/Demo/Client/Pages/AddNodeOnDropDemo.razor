@@ -1,0 +1,89 @@
+﻿@page "/add-node-on-drop"
+
+<PageTitle>Add Node on Edge Drop - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>Add Node on Edge Drop</h3>
+    <p class="text-muted">
+        Demonstrates the enriched <code>OnConnectEnd</code> callback. Its <code>BlowConnectEndInfo</code> payload
+        carries the originating handle, the drop position in flow coordinates, whether the drop landed on a
+        valid handle, and whether the gesture really was a drop (<code>IsDropped</code>) of a new connection
+        rather than a reconnect (<code>IsReconnect</code>). Drag a connection into empty space to spawn a new,
+        already-connected node where you released - downstream from a source handle, upstream from a target
+        handle; drop on a handle to connect normally.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="example-toolbar">
+    <button class="btn btn-sm" @onclick="Reset">Reset</button>
+    <span class="text-muted">@_nodes.Count nodes · @_edges.Count edges · last drop: @_lastDrop</span>
+</div>
+
+<div class="demo-canvas" style="height: calc(100vh - 250px);">
+    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                OnConnectEnd="OnConnectEnd">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+        <BlowMiniMap />
+    </BlowCanvas>
+</div>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _id;
+    private string _lastDrop = "-";
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _id = 1;
+        _nodes = [ new BlowNode { Id = "1", Type = "input", Label = "Drag my handle to empty space", Position = new(180, 40), Width = 240 } ];
+        _edges = [];
+        _lastDrop = "-";
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private void OnConnectEnd(BlowConnectEndInfo info)
+    {
+        if (info.IsValid)
+        {
+            _lastDrop = info.IsReconnect ? "edge reconnected" : "connected to a handle";
+            return;
+        }
+
+        // A click on a handle, Escape, a cancelled pointer and an existing edge's end let go of
+        // all end here too; only a new connection dragged out and dropped spawns a node.
+        if (!info.IsDropped || info.IsReconnect)
+        {
+            _lastDrop = "cancelled - nothing added";
+            return;
+        }
+
+        _id++;
+        var id = _id.ToString();
+        var start = info.Start;
+
+        // From a target handle the new node is upstream: it feeds the start node, so the edge
+        // runs new -> start and the new node's source handle (bottom) lands on the drop point.
+        // From a source handle it is downstream, with its target handle (top) there instead.
+        var fromTarget = start.HandleType == BlowHandleType.Target;
+        _nodes.Add(new BlowNode
+        {
+            Id = id,
+            Label = $"Node {id}",
+            Position = new(
+                info.FlowPosition.X - BlowNode.DefaultWidth / 2,
+                fromTarget ? info.FlowPosition.Y - BlowNode.DefaultHeight : info.FlowPosition.Y),
+        });
+        _edges.Add(fromTarget
+            ? new BlowEdge { Id = $"e{id}-{start.NodeId}", Source = id, Target = start.NodeId, TargetHandle = start.HandleId, Animated = true }
+            : new BlowEdge { Id = $"e{start.NodeId}-{id}", Source = start.NodeId, SourceHandle = start.HandleId, Target = id, Animated = true });
+        _lastDrop = $"spawned node {id} at ({info.FlowPosition.X:0}, {info.FlowPosition.Y:0})";
+        _flow?.Refresh(remeasure: true);
+    }
+}

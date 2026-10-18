@@ -1,0 +1,65 @@
+﻿@page "/examples/click-distance"
+
+<PageTitle>Click Distance - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Click Distance"
+                 Summary="NodeClickDistance and PaneClickDistance set how far the pointer may travel between press and release and still count as a click. Press a node or the empty pane, move a little, and let go: within the distance OnNodeClick / OnPaneClick still fire; past it the gesture was a drag or a pan, and the click is suppressed.">
+    <Toolbar>
+        <label>node click distance:
+            <input type="range" min="0" max="60" step="1" value="@_nodeDistance"
+                   @oninput="e => _nodeDistance = int.Parse(e.Value!.ToString()!)" />
+            @_nodeDistance px
+        </label>
+        <label>pane click distance:
+            <input type="range" min="0" max="60" step="1" value="@_paneDistance"
+                   @oninput="e => _paneDistance = int.Parse(e.Value!.ToString()!)" />
+            @_paneDistance px
+        </label>
+        <span class="text-muted">
+            node clicks: <strong>@_nodeClicks</strong> · pane clicks: <strong>@_paneClicks</strong> · last: @_last
+        </span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    NodeClickDistance="_nodeDistance"
+                    PaneClickDistance="_paneDistance"
+                    OnNodeClick="OnNodeClick"
+                    OnPaneClick="OnPaneClick">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _nodeDistance = 20;
+    private int _paneDistance = 20;
+    private int _nodeClicks;
+    private int _paneClicks;
+    private string _last = "-";
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Label = "Nudge me a little, then a lot", Position = new(120, 60), Width = 240 },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(200, 200) },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+    }
+
+    // Neither fires for a gesture that travelled past its click distance.
+    private void OnNodeClick(BlowNode node)
+    {
+        _nodeClicks++;
+        _last = $"click on node {node.Id}";
+    }
+
+    private void OnPaneClick(MouseEventArgs e)
+    {
+        _paneClicks++;
+        _last = "click on the pane";
+    }
+}

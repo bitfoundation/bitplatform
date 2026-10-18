@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="bit Blow (Bit.Blow) - a Blazor-native library for node-based UIs, editors, flow charts and diagrams, a Blazor counterpart to React Flow, with interaction, layout and geometry written in C#." />
+    <base href="/" />
+    <ResourcePreloader />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    @* The library's stylesheet. Unlike its script, it is not loaded on demand: without it the canvas,
+       its nodes and its add-ons render unstyled. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.Blow/bit-blow.css"]" />
+    <link rel="stylesheet" href="@Assets["Bit.Blow.Demo.Server.styles.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/png" href="favicon.png" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* InteractiveWebAssembly rather than Auto or Server: every pointer move of a drag, a pan or a
+       connection is handled in C#, and on WebAssembly none of them waits on a network round trip.
+       The pages are still prerendered, so the first response carries them. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&#128473;</span>
+    </div>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

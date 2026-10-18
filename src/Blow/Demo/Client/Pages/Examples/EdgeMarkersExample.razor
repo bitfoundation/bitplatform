@@ -1,0 +1,95 @@
+﻿@page "/examples/edge-markers"
+
+<PageTitle>Edge Markers - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Edge Markers"
+                 Summary="Arrowheads are configured per edge: open or closed, in any colour and at any size. Edges asking for the same arrowhead share a single SVG definition, so a large graph declares one marker per style rather than one per edge.">
+    <Toolbar>
+        <label>
+            Size
+            <input type="range" min="6" max="24" step="1" value="@_size"
+                   @oninput="@(e => SetSize(e.Value))" />
+            <span class="marker-size">@_size px</span>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .marker-size { display: inline-block; min-width: 3.5rem; text-align: right; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private double _size = 12;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "src", Label = "Source", Position = new(40, 160), SourcePosition = BlowPosition.Right },
+            new BlowNode { Id = "open", Label = "Open arrow", Position = new(360, 40), TargetPosition = BlowPosition.Left },
+            new BlowNode { Id = "closed", Label = "Closed arrow", Position = new(360, 130), TargetPosition = BlowPosition.Left },
+            new BlowNode { Id = "colored", Label = "Coloured head", Position = new(360, 220), TargetPosition = BlowPosition.Left },
+            new BlowNode { Id = "both", Label = "Both ends", Position = new(360, 310), TargetPosition = BlowPosition.Left },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e-open", Source = "src", Target = "open" },
+
+            new BlowEdge
+            {
+                Id = "e-closed",
+                Source = "src",
+                Target = "closed",
+                MarkerType = BlowMarkerType.ArrowClosed,
+            },
+
+            // A marker colour that differs from the line: the head stands out from the stroke.
+            new BlowEdge
+            {
+                Id = "e-colored",
+                Source = "src",
+                Target = "colored",
+                Stroke = "#94a3b8",
+                MarkerType = BlowMarkerType.ArrowClosed,
+                MarkerColor = "#e11d48",
+            },
+
+            new BlowEdge
+            {
+                Id = "e-both",
+                Source = "src",
+                Target = "both",
+                Stroke = "#0ea5e9",
+                MarkerStart = true,
+                MarkerEnd = true,
+                MarkerType = BlowMarkerType.ArrowClosed,
+            },
+        ];
+
+        ApplySize();
+    }
+
+    private void SetSize(object? raw)
+    {
+        if (double.TryParse(raw?.ToString(), out var value))
+        {
+            _size = value;
+            ApplySize();
+        }
+    }
+
+    // Leaving MarkerHeight null makes it follow the width, keeping the head square.
+    private void ApplySize()
+    {
+        foreach (var edge in _edges) edge.MarkerWidth = _size;
+    }
+}

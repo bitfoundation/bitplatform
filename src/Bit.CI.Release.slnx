@@ -60,6 +60,13 @@
     <Project Path="Bink/Bit.Bink/Bit.Bink.csproj" />
     <Project Path="Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
   </Folder>
+  <Folder Name="/Blow/">
+    <File Path="Blow/README.md" />
+    <Project Path="Blow/Demo/Client/Bit.Blow.Demo.Client.csproj" />
+    <Project Path="Blow/Demo/Server/Bit.Blow.Demo.Server.csproj" />
+    <Project Path="Blow/Bit.Blow/Bit.Blow.csproj" />
+    <Project Path="Blow/Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj" />
+  </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />

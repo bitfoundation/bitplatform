@@ -1,0 +1,636 @@
+﻿/* Bit.Blow core styles */
+
+.bit-blow {
+    --bit-blow-bg: #fafafa;
+    --bit-blow-node-bg: #ffffff;
+    --bit-blow-node-border: #1a192b;
+    --bit-blow-node-input-border: #0041d0;
+    --bit-blow-node-output-border: #ff0072;
+    --bit-blow-node-color: #222;
+    --bit-blow-node-selected: #2563eb;
+    --bit-blow-edge-stroke: #b1b1b7;
+    --bit-blow-edge-selected: #2563eb;
+    --bit-blow-connection-stroke: #2563eb;
+    --bit-blow-handle-bg: #1a192b;
+    --bit-blow-handle-valid: #22c55e;
+    --bit-blow-handle-invalid: #ef4444;
+
+    /* The add-ons - controls, minimap, toolbars, labels, the attribution badge - are chrome
+       drawn over the flow rather than part of the graph, and they all share one palette. Naming
+       it here is what lets a colour mode restyle the whole component and not just its canvas. */
+    --bit-blow-surface: #ffffff;
+    --bit-blow-surface-hover: #f4f4f4;
+    --bit-blow-surface-muted: #f4f4f5;
+    --bit-blow-surface-muted-hover: #e4e4e7;
+    --bit-blow-surface-translucent: rgba(255, 255, 255, 0.9);
+    --bit-blow-border: #e2e2e2;
+    --bit-blow-border-subtle: #eeeeee;
+    --bit-blow-text: #333333;
+    --bit-blow-text-muted: #6b7280;
+    --bit-blow-shadow: rgba(0, 0, 0, 0.15);
+    --bit-blow-group-bg: rgba(120, 120, 160, 0.08);
+    --bit-blow-group-border: #9aa0b5;
+    --bit-blow-background-pattern: #aaaaaa;
+    --bit-blow-minimap-node: #e2e2e2;
+    --bit-blow-minimap-mask: rgba(120, 120, 120, 0.25);
+
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--bit-blow-bg);
+    touch-action: none;
+    user-select: none;
+    outline: none;
+    cursor: grab;
+}
+
+.bit-blow:active {
+    cursor: grabbing;
+}
+
+/* The pane is focusable (it takes the keyboard shortcuts), so a keyboard user needs to see when
+   it has focus. Inset, since the pane clips whatever is drawn outside it. */
+.bit-blow:focus-visible {
+    outline: 2px solid var(--bit-blow-node-selected);
+    outline-offset: -2px;
+}
+
+.bit-blow-viewport {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+}
+
+.bit-blow-edges {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: visible;
+}
+
+.bit-blow-edges .bit-blow-edge {
+    pointer-events: stroke;
+    cursor: pointer;
+}
+
+.bit-blow-edge-path {
+    transition: stroke 0.1s ease;
+}
+
+.bit-blow-edge.selected .bit-blow-edge-path {
+    stroke: var(--bit-blow-edge-selected) !important;
+}
+
+.bit-blow-edge.animated .bit-blow-edge-path {
+    stroke-dasharray: 6 4;
+    animation: bit-blow-dash 0.6s linear infinite;
+}
+
+@keyframes bit-blow-dash {
+    to { stroke-dashoffset: -10; }
+}
+
+.bit-blow-edge-label-bg {
+    fill: var(--bit-blow-surface);
+    fill-opacity: 0.85;
+}
+
+/* An edge only takes the pointer on its stroke, which the label would inherit - leaving just the
+   plate's hairline outline clickable and letting a click between the letters fall through to the
+   pane. The label is a solid target instead. */
+.bit-blow-edges .bit-blow-edge-text {
+    pointer-events: all;
+}
+
+.bit-blow-edge-label {
+    font: 11px/1 sans-serif;
+    fill: var(--bit-blow-text);
+}
+
+/* Nodes */
+.bit-blow-node {
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    min-width: 80px;
+    padding: 10px 14px;
+    border: 1px solid var(--bit-blow-node-border);
+    border-radius: 6px;
+    background: var(--bit-blow-node-bg);
+    color: var(--bit-blow-node-color);
+    font: 12px/1.4 sans-serif;
+    text-align: center;
+    cursor: grab;
+    box-shadow: 0 1px 2px var(--bit-blow-shadow);
+}
+
+.bit-blow-node:active {
+    cursor: grabbing;
+}
+
+.bit-blow-node.selected {
+    border-color: var(--bit-blow-node-selected);
+    box-shadow: 0 0 0 2px var(--bit-blow-node-selected);
+}
+
+.bit-blow-node-input {
+    border-color: var(--bit-blow-node-input-border);
+}
+
+.bit-blow-node-output {
+    border-color: var(--bit-blow-node-output-border);
+}
+
+.bit-blow-node-label {
+    pointer-events: none;
+}
+
+/* Handles */
+.bit-blow-handle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--bit-blow-handle-bg);
+    border: 1px solid var(--bit-blow-surface);
+    /* Above a NodeResizer's controls, which run along the same sides. */
+    z-index: 11;
+}
+
+.bit-blow-handle.connectable {
+    cursor: crosshair;
+}
+
+.bit-blow-handle-top    { top: 0;    left: 50%; transform: translate(-50%, -50%); }
+.bit-blow-handle-bottom { bottom: 0; left: 50%; transform: translate(-50%, 50%); }
+.bit-blow-handle-left   { left: 0;   top: 50%;  transform: translate(-50%, -50%); }
+.bit-blow-handle-right  { right: 0;  top: 50%;  transform: translate(50%, -50%); }
+
+.bit-blow-handle.connectable:hover,
+.bit-blow-handle-valid {
+    background: var(--bit-blow-handle-valid);
+}
+
+/* Controls */
+.bit-blow-controls {
+    position: absolute;
+    z-index: 5;
+    display: flex;
+    flex-direction: column;
+    margin: 15px;
+    box-shadow: 0 1px 4px var(--bit-blow-shadow);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.bit-blow-controls-top-left      { top: 0; left: 0; }
+.bit-blow-controls-top-right     { top: 0; right: 0; }
+.bit-blow-controls-bottom-left   { bottom: 0; left: 0; }
+.bit-blow-controls-bottom-right  { bottom: 0; right: 0; }
+.bit-blow-controls-top-center    { top: 0; left: 50%; transform: translateX(-50%); }
+.bit-blow-controls-bottom-center { bottom: 0; left: 50%; transform: translateX(-50%); }
+
+.bit-blow-controls-button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+.bit-blow-controls.horizontal {
+    flex-direction: row;
+}
+
+.bit-blow-controls-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-bottom: 1px solid var(--bit-blow-border-subtle);
+    background: var(--bit-blow-surface);
+    color: var(--bit-blow-text);
+    cursor: pointer;
+}
+
+.bit-blow-controls.horizontal .bit-blow-controls-button {
+    border-bottom: none;
+    border-right: 1px solid var(--bit-blow-border-subtle);
+}
+
+.bit-blow-controls-button:hover {
+    background: var(--bit-blow-surface-hover);
+}
+
+/* MiniMap */
+.bit-blow-minimap {
+    position: absolute;
+    z-index: 5;
+    /* The pointer is mapped onto the graph through the minimap's Width and Height, so those have to be the
+       size it is drawn at: under a page-wide 'box-sizing: border-box' (Bootstrap's, for one) the border
+       would eat into them and every click would land short of where it was aimed. */
+    box-sizing: content-box;
+    margin: 15px;
+    background: var(--bit-blow-surface-translucent);
+    border: 1px solid var(--bit-blow-border);
+    border-radius: 4px;
+}
+
+.bit-blow-minimap-top-left      { top: 0; left: 0; }
+.bit-blow-minimap-top-right     { top: 0; right: 0; }
+.bit-blow-minimap-bottom-left   { bottom: 0; left: 0; }
+.bit-blow-minimap-bottom-right  { bottom: 0; right: 0; }
+.bit-blow-minimap-top-center    { top: 0; left: 50%; transform: translateX(-50%); }
+.bit-blow-minimap-bottom-center { bottom: 0; left: 50%; transform: translateX(-50%); }
+
+/* Children never take the pointer: handlers live on the <svg> root so offsetX/offsetY
+   stay relative to the minimap itself rather than whichever shape was hit. */
+.bit-blow-minimap > * {
+    pointer-events: none;
+}
+
+.bit-blow-minimap-node {
+    stroke: var(--bit-blow-surface);
+    stroke-width: 1;
+}
+
+.bit-blow-minimap-node.selected {
+    fill: var(--bit-blow-node-selected);
+}
+
+/* Panels */
+.bit-blow-panel {
+    position: absolute;
+    z-index: 5;
+    margin: 15px;
+}
+
+.bit-blow-panel-top-left     { top: 0; left: 0; }
+.bit-blow-panel-top-right    { top: 0; right: 0; }
+.bit-blow-panel-bottom-left  { bottom: 0; left: 0; }
+.bit-blow-panel-bottom-right { bottom: 0; right: 0; }
+.bit-blow-panel-top-center   { top: 0; left: 50%; transform: translateX(-50%); }
+.bit-blow-panel-bottom-center{ bottom: 0; left: 50%; transform: translateX(-50%); }
+
+/* Group / sub-flow container nodes */
+.bit-blow-node-group {
+    background: var(--bit-blow-group-bg);
+    border: 1px dashed var(--bit-blow-group-border);
+    border-radius: 8px;
+    padding: 0;
+    box-shadow: none;
+    cursor: grab;
+}
+
+.bit-blow-node-group .bit-blow-node-label {
+    position: absolute;
+    top: 6px;
+    left: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--bit-blow-text-muted);
+}
+
+/* Node resizer */
+.bit-blow-resize-handle {
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    border: 1px solid var(--bit-blow-surface);
+    border-radius: 1px;
+    z-index: 10;
+}
+
+.bit-blow-resize-handle.top-left     { top: 0; left: 0;     transform: translate(-50%, -50%); cursor: nwse-resize; }
+.bit-blow-resize-handle.top-right    { top: 0; right: 0;    transform: translate(50%, -50%);  cursor: nesw-resize; }
+.bit-blow-resize-handle.bottom-left  { bottom: 0; left: 0;  transform: translate(-50%, 50%);  cursor: nesw-resize; }
+.bit-blow-resize-handle.bottom-right { bottom: 0; right: 0; transform: translate(50%, 50%);   cursor: nwse-resize; }
+.bit-blow-resize-handle.top    { top: 0;    left: 50%; transform: translate(-50%, -50%); cursor: ns-resize; }
+.bit-blow-resize-handle.bottom { bottom: 0; left: 50%; transform: translate(-50%, 50%);  cursor: ns-resize; }
+.bit-blow-resize-handle.left   { left: 0;   top: 50%;  transform: translate(-50%, -50%); cursor: ew-resize; }
+.bit-blow-resize-handle.right  { right: 0;  top: 50%;  transform: translate(50%, -50%);  cursor: ew-resize; }
+
+/* NodeResizer's sides: invisible full-length strips, grabbed anywhere along the edge. They sit
+   under the connection handles (z-index 11), which share the middle of each side. */
+.bit-blow-resize-strip {
+    position: absolute;
+    z-index: 9;
+    background: transparent;
+}
+
+.bit-blow-resize-strip.top    { top: 0;    left: 0; width: 100%; height: 8px; transform: translateY(-50%); cursor: ns-resize; }
+.bit-blow-resize-strip.bottom { bottom: 0; left: 0; width: 100%; height: 8px; transform: translateY(50%);  cursor: ns-resize; }
+.bit-blow-resize-strip.left   { left: 0;   top: 0;  height: 100%; width: 8px; transform: translateX(-50%); cursor: ew-resize; }
+.bit-blow-resize-strip.right  { right: 0;  top: 0;  height: 100%; width: 8px; transform: translateX(50%);  cursor: ew-resize; }
+
+.bit-blow-resize-line {
+    position: absolute;
+    border: 0 solid var(--bit-blow-node-selected);
+    pointer-events: none;
+}
+
+.bit-blow-resize-line.top    { top: 0; left: 0; width: 100%; border-top-width: 1px; }
+.bit-blow-resize-line.bottom { bottom: 0; left: 0; width: 100%; border-bottom-width: 1px; }
+.bit-blow-resize-line.left   { top: 0; left: 0; height: 100%; border-left-width: 1px; }
+.bit-blow-resize-line.right  { top: 0; right: 0; height: 100%; border-right-width: 1px; }
+
+/* Node toolbar */
+.bit-blow-node-toolbar {
+    z-index: 11;
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--bit-blow-surface);
+    border: 1px solid var(--bit-blow-border);
+    border-radius: 6px;
+    box-shadow: 0 2px 6px var(--bit-blow-shadow);
+    white-space: nowrap;
+}
+
+.bit-blow-node-toolbar button {
+    border: none;
+    background: var(--bit-blow-surface-muted);
+    color: var(--bit-blow-text);
+    border-radius: 4px;
+    padding: 3px 8px;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.bit-blow-node-toolbar button:hover {
+    background: var(--bit-blow-surface-muted-hover);
+}
+
+/* A handle that cannot accept the connection currently being dragged. */
+.bit-blow-handle-invalid,
+.bit-blow-handle-invalid:hover {
+    background: var(--bit-blow-handle-invalid);
+}
+
+/* The handle the connection is being dragged out of. It is neither a valid target nor a
+   rejected one - it is where the gesture came from - so it keeps its own look. */
+.bit-blow-handle-connectingfrom,
+.bit-blow-handle-connectingfrom:hover {
+    background: var(--bit-blow-connection-stroke);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--bit-blow-connection-stroke) 30%, transparent);
+}
+
+/* Screen-reader-only live region: present in the a11y tree, invisible on screen. */
+.bit-blow-a11y-live {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    border: 0;
+    clip-path: inset(50%);
+}
+
+/* Keyboard focus rings for nodes and edges. */
+.bit-blow-node:focus-visible {
+    outline: 2px solid var(--bit-blow-node-selected);
+    outline-offset: 2px;
+}
+
+.bit-blow-edge:focus-visible {
+    outline: none;
+}
+
+.bit-blow-edge:focus-visible .bit-blow-edge-path {
+    stroke: var(--bit-blow-edge-selected);
+    stroke-dasharray: 4 3;
+}
+
+/* Node interaction state. */
+.bit-blow-node.dragging {
+    cursor: grabbing;
+}
+
+.bit-blow-node.undraggable,
+.bit-blow-node.undraggable:active {
+    cursor: default;
+}
+
+/* Box selection rectangle (rendered in the viewport layer, flow units). */
+.bit-blow-selection {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: color-mix(in srgb, var(--bit-blow-node-selected) 12%, transparent);
+    border: 1px solid var(--bit-blow-node-selected);
+    pointer-events: none;
+    /* Above selected nodes, which the canvas lifts to 1000, so the tint reads the same over all. */
+    z-index: 1003;
+}
+
+/* Alignment guides shown while a node is dragged into line with its neighbours.
+   Drawn inside the transformed viewport layer, so position and length are in flow units;
+   the canvas divides the thickness by the zoom to keep it a hairline on screen. */
+.bit-blow-guide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1002; /* above a dragged node, which the canvas lifts to 1001 */
+    pointer-events: none;
+}
+
+/* Edge reconnection anchors (shown on selected, reconnectable edges).
+   The visible dot is deliberately small; the invisible circle drawn underneath it is what the
+   pointer has to hit, sized from the canvas's ReconnectRadius. */
+.bit-blow-edge-reconnect {
+    fill: var(--bit-blow-surface);
+    stroke: var(--bit-blow-edge-selected);
+    stroke-width: 1.5;
+    vector-effect: non-scaling-stroke;
+    pointer-events: none;
+}
+
+.bit-blow-edge-reconnect-hit {
+    fill: transparent;
+    stroke: none;
+    cursor: crosshair;
+    pointer-events: all;
+}
+
+.bit-blow-edge-reconnect-hit:hover + .bit-blow-edge-reconnect {
+    fill: var(--bit-blow-edge-selected);
+}
+
+/* Interactive minimap. */
+.bit-blow-minimap.pannable {
+    cursor: pointer;
+}
+
+/* Custom drag handle inside a node. */
+.bit-blow-drag-handle {
+    cursor: grab;
+}
+
+.bit-blow-drag-handle:active {
+    cursor: grabbing;
+}
+
+/* HTML edge label overlay (non-transformed, constant screen size). */
+.bit-blow-edge-labels {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 4;
+}
+
+.bit-blow-edge-label-html {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: all;
+}
+
+/* Dark color mode. Applied explicitly (.bit-blow-dark) or via OS preference
+   (.bit-blow-system + prefers-color-scheme).
+
+   The palette is written once, on the flow root, as a second set of properties; the two rules
+   below are pure plumbing that copies it over the light one. CSS has no way to share a block of
+   declarations between a class and a media query, and duplicating twenty colours in two places
+   is exactly how a theme drifts out of step with itself. */
+.bit-blow {
+    --bit-blow-dark-bg: #1a1a1a;
+    --bit-blow-dark-node-bg: #2b2b2b;
+    --bit-blow-dark-node-border: #555555;
+    --bit-blow-dark-node-input-border: #4d8bff;
+    --bit-blow-dark-node-output-border: #ff6aa8;
+    --bit-blow-dark-node-color: #e6e6e6;
+    --bit-blow-dark-accent: #60a5fa;
+    --bit-blow-dark-edge-stroke: #6b6b6b;
+    --bit-blow-dark-handle-bg: #cbd5e1;
+    --bit-blow-dark-surface: #2b2b2b;
+    --bit-blow-dark-surface-hover: #3a3a3a;
+    --bit-blow-dark-surface-muted: #3a3a3a;
+    --bit-blow-dark-surface-muted-hover: #4a4a4a;
+    --bit-blow-dark-surface-translucent: rgba(32, 32, 32, 0.9);
+    --bit-blow-dark-border: #454545;
+    --bit-blow-dark-border-subtle: #383838;
+    --bit-blow-dark-text: #e6e6e6;
+    --bit-blow-dark-text-muted: #9ca3af;
+    --bit-blow-dark-shadow: rgba(0, 0, 0, 0.5);
+    --bit-blow-dark-group-bg: rgba(160, 170, 210, 0.07);
+    --bit-blow-dark-group-border: #5b6070;
+    --bit-blow-dark-background-pattern: #4a4a4a;
+    --bit-blow-dark-minimap-node: #4a4a4a;
+    --bit-blow-dark-minimap-mask: rgba(0, 0, 0, 0.45);
+}
+
+/* Two classes, so the colour mode outranks a later stylesheet that sets the light palette on
+   .bit-blow - otherwise a single override would quietly switch dark mode off. */
+.bit-blow.bit-blow-dark {
+    --bit-blow-bg: var(--bit-blow-dark-bg);
+    --bit-blow-node-bg: var(--bit-blow-dark-node-bg);
+    --bit-blow-node-border: var(--bit-blow-dark-node-border);
+    --bit-blow-node-color: var(--bit-blow-dark-node-color);
+    --bit-blow-node-selected: var(--bit-blow-dark-accent);
+    --bit-blow-edge-stroke: var(--bit-blow-dark-edge-stroke);
+    --bit-blow-edge-selected: var(--bit-blow-dark-accent);
+    --bit-blow-connection-stroke: var(--bit-blow-dark-accent);
+    --bit-blow-handle-bg: var(--bit-blow-dark-handle-bg);
+    --bit-blow-node-input-border: var(--bit-blow-dark-node-input-border);
+    --bit-blow-node-output-border: var(--bit-blow-dark-node-output-border);
+    --bit-blow-surface: var(--bit-blow-dark-surface);
+    --bit-blow-surface-hover: var(--bit-blow-dark-surface-hover);
+    --bit-blow-surface-muted: var(--bit-blow-dark-surface-muted);
+    --bit-blow-surface-muted-hover: var(--bit-blow-dark-surface-muted-hover);
+    --bit-blow-surface-translucent: var(--bit-blow-dark-surface-translucent);
+    --bit-blow-border: var(--bit-blow-dark-border);
+    --bit-blow-border-subtle: var(--bit-blow-dark-border-subtle);
+    --bit-blow-text: var(--bit-blow-dark-text);
+    --bit-blow-text-muted: var(--bit-blow-dark-text-muted);
+    --bit-blow-shadow: var(--bit-blow-dark-shadow);
+    --bit-blow-group-bg: var(--bit-blow-dark-group-bg);
+    --bit-blow-group-border: var(--bit-blow-dark-group-border);
+    --bit-blow-background-pattern: var(--bit-blow-dark-background-pattern);
+    --bit-blow-minimap-node: var(--bit-blow-dark-minimap-node);
+    --bit-blow-minimap-mask: var(--bit-blow-dark-minimap-mask);
+    color: var(--bit-blow-node-color);
+    color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+    .bit-blow.bit-blow-system {
+        --bit-blow-bg: var(--bit-blow-dark-bg);
+        --bit-blow-node-bg: var(--bit-blow-dark-node-bg);
+        --bit-blow-node-border: var(--bit-blow-dark-node-border);
+        --bit-blow-node-color: var(--bit-blow-dark-node-color);
+        --bit-blow-node-selected: var(--bit-blow-dark-accent);
+        --bit-blow-edge-stroke: var(--bit-blow-dark-edge-stroke);
+        --bit-blow-edge-selected: var(--bit-blow-dark-accent);
+        --bit-blow-connection-stroke: var(--bit-blow-dark-accent);
+        --bit-blow-handle-bg: var(--bit-blow-dark-handle-bg);
+        --bit-blow-node-input-border: var(--bit-blow-dark-node-input-border);
+        --bit-blow-node-output-border: var(--bit-blow-dark-node-output-border);
+        --bit-blow-surface: var(--bit-blow-dark-surface);
+        --bit-blow-surface-hover: var(--bit-blow-dark-surface-hover);
+        --bit-blow-surface-muted: var(--bit-blow-dark-surface-muted);
+        --bit-blow-surface-muted-hover: var(--bit-blow-dark-surface-muted-hover);
+        --bit-blow-surface-translucent: var(--bit-blow-dark-surface-translucent);
+        --bit-blow-border: var(--bit-blow-dark-border);
+        --bit-blow-border-subtle: var(--bit-blow-dark-border-subtle);
+        --bit-blow-text: var(--bit-blow-dark-text);
+        --bit-blow-text-muted: var(--bit-blow-dark-text-muted);
+        --bit-blow-shadow: var(--bit-blow-dark-shadow);
+        --bit-blow-group-bg: var(--bit-blow-dark-group-bg);
+        --bit-blow-group-border: var(--bit-blow-dark-group-border);
+        --bit-blow-background-pattern: var(--bit-blow-dark-background-pattern);
+        --bit-blow-minimap-node: var(--bit-blow-dark-minimap-node);
+        --bit-blow-minimap-mask: var(--bit-blow-dark-minimap-mask);
+        color: var(--bit-blow-node-color);
+        color-scheme: dark;
+    }
+}
+
+/* Attribution badge. */
+/* Kept within the 15px panels are inset by, so a minimap or panel in the same corner does not
+   sit on top of it. */
+.bit-blow-attribution {
+    position: absolute;
+    z-index: 6;
+    margin: 0;
+    padding: 1px 4px;
+    font-size: 10px;
+    line-height: 12px;
+    color: var(--bit-blow-text-muted);
+    background: var(--bit-blow-surface-translucent);
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.bit-blow-attribution-top-left      { top: 0; left: 0; }
+.bit-blow-attribution-top-right     { top: 0; right: 0; }
+.bit-blow-attribution-bottom-left   { bottom: 0; left: 0; }
+.bit-blow-attribution-bottom-right  { bottom: 0; right: 0; }
+.bit-blow-attribution-top-center    { top: 0; left: 50%; transform: translateX(-50%); }
+.bit-blow-attribution-bottom-center { bottom: 0; left: 50%; transform: translateX(-50%); }
+
+.bit-blow-attribution:hover {
+    color: var(--bit-blow-text);
+}
+
+/* Edge toolbar (used inside an HTML edge-label overlay). */
+.bit-blow-edge-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+    background: var(--bit-blow-surface);
+    color: var(--bit-blow-text);
+    border: 1px solid var(--bit-blow-border);
+    border-radius: 6px;
+    box-shadow: 0 1px 3px var(--bit-blow-shadow);
+}

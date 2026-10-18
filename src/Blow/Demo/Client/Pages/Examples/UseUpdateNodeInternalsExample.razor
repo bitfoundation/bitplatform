@@ -1,0 +1,76 @@
+﻿@page "/examples/use-update-node-internals"
+@using System.Globalization
+
+<PageTitle>Update Node Internals - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Update Node Internals"
+                 Summary="When a node's handles change side or count, the canvas must re-measure so edges stay attached. Flip the handle side and the connected edge re-anchors after the internals update.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="FlipSide">Flip handle side (@_side)</button>
+        <button class="btn btn-sm" @onclick="AddHandle">Add handle</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                @if (node.Id == "dyn")
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="uni-node">@node.Label</div>
+                    @for (var i = 0; i < _handles; i++)
+                    {
+                        // Invariant: in a culture with a decimal comma, 33,33% is not CSS.
+                        var offset = (i + 1) * 100.0 / (_handles + 1);
+                        var style = _side is BlowPosition.Left or BlowPosition.Right
+                            ? string.Create(CultureInfo.InvariantCulture, $"top:{offset}%")
+                            : string.Create(CultureInfo.InvariantCulture, $"left:{offset}%");
+                        <BlowHandle Type="BlowHandleType.Source" Position="_side" Id="@($"s{i}")" Style="@style" />
+                    }
+                }
+                else
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="uni-node">@node.Label</div>
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .uni-node { padding:12px 18px; font-weight:600; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowPosition _side = BlowPosition.Right;
+    private int _handles = 1;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "dyn", Label = "Dynamic", Position = new(80, 120), Height = 80 },
+            new BlowNode { Id = "t0", Label = "Target", Position = new(360, 120) },
+        ];
+        _edges = [ new BlowEdge { Id = "e0", Source = "dyn", SourceHandle = "s0", Target = "t0" } ];
+    }
+
+    private void FlipSide()
+    {
+        _side = _side == BlowPosition.Right ? BlowPosition.Bottom : BlowPosition.Right;
+        // Changing handle geometry requires re-measuring node internals.
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private void AddHandle()
+    {
+        _handles++;
+        _flow?.Refresh(remeasure: true);
+    }
+}

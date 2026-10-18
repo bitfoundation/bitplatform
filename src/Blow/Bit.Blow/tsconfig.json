@@ -1,0 +1,21 @@
+﻿{
+    "compileOnSave": true,
+    "compilerOptions": {
+        "allowJs": true,
+        "target": "ES2019",
+        // bit-blow.js is loaded by the C# interop through a dynamic `import()` and its
+        // functions are called as named module exports, so the output must stay an ES module:
+        // `module: ESNext` with `rootDir`/`outDir` emits Scripts/bit-blow.ts straight to
+        // wwwroot/bit-blow.js with its `export`s preserved.
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
+        "rootDir": "Scripts",
+        "outDir": "wwwroot",
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [ "./Scripts/**/*.ts" ]
+}

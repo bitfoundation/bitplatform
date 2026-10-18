@@ -1,0 +1,111 @@
+﻿@page "/examples/color-mode"
+@inject IJSRuntime JS
+
+<PageTitle>Color Mode - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Color Mode"
+                 Summary="Switch between light, dark and system colour themes. Every part of the component follows - not only the canvas and its nodes, but the control bar, the minimap, node toolbars, edge labels and the attribution badge, all of which take their colours from the same set of CSS custom properties.">
+    <Toolbar>
+        <label>theme:
+            <select @onchange="e => _mode = Enum.Parse<BlowColorMode>(e.Value!.ToString()!)">
+                <option value="Light">Light</option>
+                <option value="Dark">Dark</option>
+                <option value="System">System</option>
+            </select>
+        </label>
+        <label>
+            <input type="checkbox" @bind="_teal" /> Override the accent
+        </label>
+        <span class="note">Select a node to see its toolbar; the whole surface is themed.</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ColorMode="_mode"
+                    Class="@(_teal ? "teal-accent" : null)">
+            <NodeTemplate Context="node">
+                <BlowNodeToolbar Position="BlowPosition.Top">
+                    <button @onclick="@(() => Rename(node))">Rename</button>
+                    <button @onclick="@(() => Delete(node))">Delete</button>
+                </BlowNodeToolbar>
+                @if (node.Type != "input")
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                }
+                <div>@node.Label</div>
+                @if (node.Type != "output")
+                {
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls ShowInteractive="true" />
+                <BlowMiniMap />
+                <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                    <div class="hint">
+                        Every colour is a <code>--bit-blow-*</code> custom property, so a theme is a
+                        handful of overrides rather than a fork of the stylesheet.
+                    </div>
+                </BlowPanel>
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    /* Overriding one property retints the selection, the edges, the connection line and the
+       focus rings together, because they all read the same value. */
+    .bit-blow.teal-accent {
+        --bit-blow-node-selected: #0d9488;
+        --bit-blow-edge-selected: #0d9488;
+        --bit-blow-connection-stroke: #0d9488;
+    }
+
+    .note { margin-left: auto; font-size: 11px; color: #6b7280; }
+    .hint {
+        max-width: 220px;
+        padding: 6px 10px;
+        font-size: 11px;
+        line-height: 1.5;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowColorMode _mode = BlowColorMode.Light;
+    private bool _teal;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(250, 20) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(150, 140) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(380, 140) },
+            new BlowNode { Id = "4", Type = "output", Label = "Node 4", Position = new(250, 260) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Animated = true },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+        ];
+    }
+
+    private async Task Rename(BlowNode node)
+    {
+        var name = await JS.InvokeAsync<string?>("prompt", "Rename node", node.Label ?? string.Empty);
+        if (string.IsNullOrWhiteSpace(name)) return;
+
+        node.Label = name.Trim();
+        // A longer or shorter label changes the node's size, and the edges anchored to it.
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private Task Delete(BlowNode node) => _flow?.DeleteElementsAsync([node]) ?? Task.CompletedTask;
+}

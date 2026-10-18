@@ -1,0 +1,88 @@
+﻿@namespace Bit.Blow
+@if (IsVisible)
+{
+    @* Edge lines *@
+    <div class="bit-blow-resize-line top" style="@LineStyle"></div>
+    <div class="bit-blow-resize-line right" style="@LineStyle"></div>
+    <div class="bit-blow-resize-line bottom" style="@LineStyle"></div>
+    <div class="bit-blow-resize-line left" style="@LineStyle"></div>
+
+    @* The sides are grabbed along their whole length by invisible strips, as in React Flow,
+       rather than by a square at each midpoint: that is exactly where a node's connection
+       handles sit, and a square there would turn every attempt to connect into a resize. *@
+    @if (ShowEdgeControls)
+    {
+        @foreach (var (dir, cssClass) in _sides)
+        {
+            <div class="bit-blow-resize-strip @cssClass"
+                 @onpointerdown="@(e => OnDown(e, dir))"
+                 @onpointerdown:stopPropagation="true">
+            </div>
+        }
+    }
+
+    @foreach (var (dir, cssClass) in _corners)
+    {
+        <div class="bit-blow-resize-handle @cssClass"
+             style="@HandleStyle"
+             @onpointerdown="@(e => OnDown(e, dir))"
+             @onpointerdown:stopPropagation="true">
+        </div>
+    }
+}
+
+@code {
+    [CascadingParameter] private BlowNodeContext NodeContext { get; set; } = default!;
+    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+
+    /// <summary>Show the controls. When null, controls appear only while the node is selected.</summary>
+    [Parameter] public bool? Visible { get; set; }
+
+    [Parameter] public double MinWidth { get; set; } = 40;
+    [Parameter] public double MinHeight { get; set; } = 30;
+
+    /// <summary>Upper bound for the node's width while resizing.</summary>
+    [Parameter] public double MaxWidth { get; set; } = double.MaxValue;
+
+    /// <summary>Upper bound for the node's height while resizing.</summary>
+    [Parameter] public double MaxHeight { get; set; } = double.MaxValue;
+
+    [Parameter] public bool KeepAspectRatio { get; set; }
+
+    /// <summary>Accent color for the resize controls.</summary>
+    [Parameter] public string Color { get; set; } = "var(--bit-blow-node-selected)";
+
+    /// <summary>Render edge controls in addition to the four corner controls.</summary>
+    [Parameter] public bool ShowEdgeControls { get; set; } = true;
+
+    /// <summary>False outside a node template inside a canvas, where there is nothing to resize.</summary>
+    private bool Attached => Flow is not null && NodeContext is not null;
+
+    private bool IsVisible => Attached && (Visible ?? NodeContext.Node.Selected);
+
+    private string HandleStyle => $"background:{Color};";
+    private string LineStyle => $"border-color:{Color};";
+
+    private static readonly (BlowResizeDirection, string)[] _corners =
+    [
+        (BlowResizeDirection.TopLeft, "top-left"),
+        (BlowResizeDirection.TopRight, "top-right"),
+        (BlowResizeDirection.BottomLeft, "bottom-left"),
+        (BlowResizeDirection.BottomRight, "bottom-right"),
+    ];
+
+    private static readonly (BlowResizeDirection, string)[] _sides =
+    [
+        (BlowResizeDirection.Top, "top"),
+        (BlowResizeDirection.Right, "right"),
+        (BlowResizeDirection.Bottom, "bottom"),
+        (BlowResizeDirection.Left, "left"),
+    ];
+
+    private void OnDown(PointerEventArgs e, BlowResizeDirection dir)
+    {
+        if (!Attached || e.Button != 0) return;
+        Flow.StartResize(NodeContext.Node.Id, dir, e.ClientX, e.ClientY,
+            MinWidth, MinHeight, KeepAspectRatio, MaxWidth, MaxHeight, e.PointerId);
+    }
+}

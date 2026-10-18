@@ -1,0 +1,84 @@
+﻿@page "/examples/delete-protection"
+
+<PageTitle>Delete Protection - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Delete Protection"
+                 Summary="Nodes and edges carry Deletable and Selectable flags. Select everything (Ctrl+A) and press Delete: the locked node survives, the read-only node never even selects, and edges dangling off a deleted node are still cleaned up.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="Reset">Reset</button>
+        <span class="text-muted">Ctrl+A selects all · Delete removes · Escape clears</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    OnDelete="OnDelete">
+            <NodeTemplate Context="node">
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="prot-node">
+                    <strong>@node.Label</strong>
+                    <div class="prot-flags">
+                        @(node.Deletable ? "deletable" : "locked") ·
+                        @(node.Selectable ? "selectable" : "read-only")
+                    </div>
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                    <div class="prot-log">
+                        <strong>Last deletion</strong>
+                        <div>@_log</div>
+                    </div>
+                </BlowPanel>
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .prot-node { padding: 4px 2px; }
+    .prot-flags { margin-top: 4px; font-size: 10px; color: #6b7280; }
+    .prot-log { min-width: 180px; padding: 8px 10px; font-size: 12px; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _log = "nothing deleted yet";
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "free",   Label = "Free",      Position = new(40, 20) },
+            new BlowNode { Id = "locked", Label = "Locked",    Position = new(240, 20), Deletable = false },
+            new BlowNode { Id = "ro",     Label = "Read-only", Position = new(40, 180), Selectable = false },
+            new BlowNode { Id = "child",  Label = "Child",     Position = new(240, 180) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1", Source = "free", Target = "child", Label = "cascades" },
+            new BlowEdge { Id = "e2", Source = "locked", Target = "child" },
+            // A pinned edge: selecting and pressing Delete leaves it alone.
+            new BlowEdge { Id = "e3", Source = "ro", Target = "child", Label = "pinned", Deletable = false },
+        ];
+
+        _log = "nothing deleted yet";
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private void OnDelete(BlowSelectionChange removed)
+    {
+        var nodes = removed.Nodes.Count == 0 ? "none" : string.Join(", ", removed.Nodes.Select(n => n.Id));
+        var edges = removed.Edges.Count == 0 ? "none" : string.Join(", ", removed.Edges.Select(e => e.Id));
+        _log = $"nodes: {nodes} - edges: {edges}";
+    }
+}

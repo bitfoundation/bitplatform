@@ -1,0 +1,86 @@
+﻿@page "/examples/save-restore"
+@inject IJSRuntime JS
+
+<PageTitle>Save & Restore - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Save & Restore"
+                 Summary="Persist the flow (nodes, edges and viewport) to the browser's local storage and reload it later. Move some nodes, Save, change things, then Restore.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="Save">Save</button>
+        <button class="btn btn-sm" @onclick="Restore">Restore</button>
+        <button class="btn btn-sm" @onclick="AddNode">Add node</button>
+        <span class="text-muted">@_status</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private const string StorageKey = "bit-blow-save-restore";
+
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _status = "";
+    private int _id = 2;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(120, 40) },
+            new BlowNode { Id = "2", Type = "output", Label = "Node 2", Position = new(120, 200) },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+    }
+
+    private record SavedEdge(string Id, string Source, string Target, string? SourceHandle, string? TargetHandle, string Type, string? Label, bool Animated);
+    private record SavedNode(string Id, string Type, string? Label, double X, double Y, double? Width, double? Height, string? Style);
+    private record SavedFlow(List<SavedNode> Nodes, List<SavedEdge> Edges, double Vx, double Vy, double Vz);
+
+    private async Task Save()
+    {
+        var snap = _flow?.ToObject();
+        if (snap is null) return;
+        var dto = new SavedFlow(
+            snap.Nodes.Select(n => new SavedNode(n.Id, n.Type, n.Label, n.Position.X, n.Position.Y, n.Width, n.Height, n.Style)).ToList(),
+            snap.Edges.Select(e => new SavedEdge(e.Id, e.Source, e.Target, e.SourceHandle, e.TargetHandle, e.Type.ToString(), e.Label, e.Animated)).ToList(),
+            snap.Viewport.X, snap.Viewport.Y, snap.Viewport.Zoom);
+        var json = System.Text.Json.JsonSerializer.Serialize(dto);
+        await JS.InvokeVoidAsync("localStorage.setItem", StorageKey, json);
+        _status = $"saved {dto.Nodes.Count} nodes at {DateTime.Now:HH:mm:ss}";
+    }
+
+    private async Task Restore()
+    {
+        var json = await JS.InvokeAsync<string?>("localStorage.getItem", StorageKey);
+        if (string.IsNullOrEmpty(json)) { _status = "nothing saved yet"; return; }
+
+        var dto = System.Text.Json.JsonSerializer.Deserialize<SavedFlow>(json);
+        if (dto is null) return;
+
+        var snapshot = new BlowSnapshot(
+            dto.Nodes.Select(n => new BlowNode { Id = n.Id, Type = n.Type, Label = n.Label, Position = new(n.X, n.Y), Width = n.Width, Height = n.Height, Style = n.Style }).ToList(),
+            dto.Edges.Select(e => new BlowEdge { Id = e.Id, Source = e.Source, Target = e.Target, SourceHandle = e.SourceHandle, TargetHandle = e.TargetHandle, Type = Enum.Parse<BlowEdgeType>(e.Type), Label = e.Label, Animated = e.Animated }).ToList(),
+            new BlowViewport(dto.Vx, dto.Vy, dto.Vz));
+
+        // RestoreAsync swaps the graph into the bound lists in place, so _nodes/_edges keep
+        // pointing at the live collections and the viewport comes back with it.
+        if (_flow is not null) await _flow.RestoreAsync(snapshot);
+
+        // The restored graph may hold nodes added after the one the counter last handed out;
+        // carry on from the highest id in it, or the next Add would reuse an id already taken.
+        _id = snapshot.Nodes.Select(n => int.TryParse(n.Id, out var id) ? id : 0).DefaultIfEmpty(0).Max();
+        _status = "restored";
+    }
+
+    private void AddNode()
+    {
+        _id++;
+        _flow?.AddNodes(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 360), Random.Shared.Next(40, 280)) });
+    }
+}

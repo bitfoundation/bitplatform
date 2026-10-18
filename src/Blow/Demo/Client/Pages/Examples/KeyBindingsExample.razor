@@ -1,0 +1,100 @@
+﻿@page "/examples/key-bindings"
+
+<PageTitle>Key Bindings - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Key Bindings"
+                 Summary="Which keys the canvas claims is configurable. A flow embedded in a long page usually should not swallow Backspace or hijack the scroll wheel - narrow the delete keys and require a modifier to zoom, and the page behaves normally again.">
+    <Toolbar>
+        <label>
+            Delete keys
+            <select @bind="_deleteKeys">
+                <option value="both">Delete + Backspace</option>
+                <option value="delete">Delete only</option>
+                <option value="none">Disabled</option>
+            </select>
+        </label>
+        <label>
+            Zoom needs
+            <select @bind="_zoomKey">
+                <option value="">nothing (plain wheel)</option>
+                <option value="Control">Ctrl</option>
+                <option value="Meta">Cmd / Meta</option>
+                <option value="Alt">Alt</option>
+            </select>
+        </label>
+        <label>
+            Multi-select
+            <select @bind="_multiKey">
+                <option value="Shift">Shift</option>
+                <option value="Control">Ctrl</option>
+                <option value="Alt">Alt</option>
+                <option value="Meta">Cmd / Meta</option>
+            </select>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes"
+                    Edges="_edges"
+                    DeleteKeyEnabled="DeleteEnabled"
+                    DeleteKeys="DeleteKeys"
+                    ZoomActivationKey="ZoomActivationKey"
+                    MultiSelectionKey="MultiSelectionKey"
+                    FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <div class="keys-hint">
+                    Click the canvas to focus it, select a node, then try the keys.
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .keys-hint {
+        max-width: 220px;
+        padding: 6px 10px;
+        font-size: 11px;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _deleteKeys = "delete";
+    private string _zoomKey = "Control";
+    private string _multiKey = "Shift";
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "One", Position = new(60, 40) },
+            new BlowNode { Id = "2", Label = "Two", Position = new(60, 160) },
+            new BlowNode { Id = "3", Type = "output", Label = "Three", Position = new(60, 280) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e2", Source = "2", Target = "3" },
+        ];
+    }
+
+    private bool DeleteEnabled => _deleteKeys != "none";
+
+    private IReadOnlyList<string> DeleteKeys => _deleteKeys switch
+    {
+        "delete" => ["Delete"],
+        _ => ["Delete", "Backspace"],
+    };
+
+    private BlowModifierKey? ZoomActivationKey =>
+        string.IsNullOrEmpty(_zoomKey) ? null : Enum.Parse<BlowModifierKey>(_zoomKey);
+
+    private BlowModifierKey MultiSelectionKey => Enum.Parse<BlowModifierKey>(_multiKey);
+}

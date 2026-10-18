@@ -1,0 +1,58 @@
+﻿@page "/examples/editable-node"
+
+<PageTitle>Editable Node - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Editable Node"
+                 Summary="Nodes can host real form controls. Type in a field and use Backspace freely - the flow detects that focus is inside an editable element and leaves the graph alone. To delete a node, click its grip - that selects it and takes focus out of the fields - then press Delete, and it is removed as usual.">
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="edit-node">
+                    <BlowDragHandle Class="edit-grip">⠿ @node.Id</BlowDragHandle>
+                    <input class="edit-input"
+                           value="@node.Label"
+                           @oninput="@(e => node.Label = e.Value?.ToString())" />
+                    <textarea class="edit-notes"
+                              placeholder="notes…"
+                              @oninput="@(e => SetNotes(node, e.Value?.ToString()))">@Notes(node)</textarea>
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="24" Color="#e5e7eb" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .edit-node { display: flex; flex-direction: column; gap: 6px; width: 190px; padding: 2px; text-align: left; }
+    .edit-grip { padding: 2px 4px; font-size: 10px; color: #9ca3af; border-radius: 4px; background: #f9fafb; }
+    .edit-input { width: 100%; padding: 4px 6px; font: inherit; border: 1px solid #d1d5db; border-radius: 4px; }
+    .edit-notes { width: 100%; height: 48px; padding: 4px 6px; font: inherit; resize: none; border: 1px solid #d1d5db; border-radius: 4px; }
+</style>
+
+@code {
+    private readonly Dictionary<string, string> _notes = [];
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        // UseCustomDragHandle keeps the text fields usable: only the grip starts a drag.
+        _nodes =
+        [
+            new BlowNode { Id = "1", Label = "Collect input", Position = new(0, 0), UseCustomDragHandle = true },
+            new BlowNode { Id = "2", Label = "Transform", Position = new(280, 60), UseCustomDragHandle = true },
+        ];
+
+        _edges = [new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Animated = true }];
+    }
+
+    private string Notes(BlowNode node) => _notes.GetValueOrDefault(node.Id, string.Empty);
+
+    private void SetNotes(BlowNode node, string? value) => _notes[node.Id] = value ?? string.Empty;
+}

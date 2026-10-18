@@ -1,0 +1,70 @@
+﻿@namespace Bit.Blow.Demo.Client.Layout
+@inherits LayoutComponentBase
+@using Bit.Blow.Demo.Client.Examples
+
+@* Dedicated shell for the React Flow examples gallery. It is a self-contained
+   section with its own sidebar listing every example, kept separate from the
+   main demo navigation. *@
+
+@* data-interactive turns true once the page runs in the browser. Prerendered markup is on screen
+   long before its event handlers are, which is what the E2E suite waits out with it. *@
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    <aside class="sidebar">
+        <div class="nav-top">
+            <a class="brand" href="examples">
+                <span class="brand-mark">@((MarkupString)LogoSvg)</span>
+                <span class="brand-text">Examples</span>
+            </a>
+            <button class="nav-toggle" title="Toggle navigation" @onclick="ToggleNav">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+
+        <nav class="@NavCssClass">
+            <NavLink class="ex-link ex-link--all" href="examples" Match="NavLinkMatch.All" @onclick="CollapseNav">
+                <span class="nav-icon">✺</span> All examples
+            </NavLink>
+
+            @foreach (var group in ExampleCatalog.Grouped())
+            {
+                <div class="ex-group">@group.Key</div>
+                @foreach (var ex in group)
+                {
+                    <NavLink class="ex-link ex-sublink" href="@($"examples/{ex.Route}")" @onclick="CollapseNav">
+                        @ex.Title
+                    </NavLink>
+                }
+            }
+        </nav>
+    </aside>
+
+    <main class="main">
+        <header class="top-row">
+            <a href="">← Back to demos</a>
+            <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Blow" target="_blank" rel="noopener">GitHub</a>
+        </header>
+
+        <article class="content">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    private bool _collapsed = true;
+
+    private string NavCssClass => _collapsed ? "ex-nav collapse" : "ex-nav";
+
+    private void ToggleNav() => _collapsed = !_collapsed;
+
+    private void CollapseNav() => _collapsed = true;
+
+    private const string LogoSvg =
+        "<svg width='22' height='22' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>" +
+        "<rect x='2' y='3' width='7' height='5' rx='1.5' fill='#a5b4fc'/>" +
+        "<rect x='15' y='16' width='7' height='5' rx='1.5' fill='#818cf8'/>" +
+        "<rect x='15' y='3' width='7' height='5' rx='1.5' fill='#c7d2fe'/>" +
+        "<path d='M9 5.5h2.5a2 2 0 0 1 2 2v9a2 2 0 0 0 2 2H15' stroke='#e0e7ff' stroke-width='1.5' fill='none'/>" +
+        "<path d='M9 5.5h9' stroke='#e0e7ff' stroke-width='1.5'/>" +
+        "</svg>";
+}

@@ -1,0 +1,83 @@
+﻿@namespace Bit.Blow
+@if (IsVisible)
+{
+    <div class="bit-blow-node-toolbar @Class"
+         style="@PositionStyle @Style"
+         @onpointerdown:stopPropagation="true">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [CascadingParameter] private BlowNodeContext NodeContext { get; set; } = default!;
+    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+
+    /// <summary>Show the toolbar. When null, it appears only while the node is selected.</summary>
+    [Parameter] public bool? Visible { get; set; }
+
+    /// <summary>Side of the node to anchor to: Top (default), Bottom, Left or Right.</summary>
+    [Parameter] public BlowPosition Position { get; set; } = BlowPosition.Top;
+
+    /// <summary>
+    /// Where along that side the toolbar sits. <see cref="BlowToolbarAlign.Center"/> (the default)
+    /// centres it; Start and End push it to the leading or trailing corner, which is what keeps a
+    /// wide toolbar over a narrow node from hanging off both sides at once. Mirrors React Flow's
+    /// <c>NodeToolbar align</c>.
+    /// </summary>
+    [Parameter] public BlowToolbarAlign Align { get; set; } = BlowToolbarAlign.Center;
+
+    /// <summary>Gap between the node and the toolbar in screen pixels.</summary>
+    [Parameter] public double Offset { get; set; } = 8;
+
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// False outside a node template inside a canvas: there is then no node to anchor to, and the
+    /// toolbar renders nothing rather than bringing the page down with a null reference.
+    /// </summary>
+    private bool Attached => Flow is not null && NodeContext is not null;
+
+    private bool IsVisible => Attached && (Visible ?? NodeContext.Node.Selected);
+
+    // Counter-scale by 1/zoom so the toolbar keeps a constant on-screen size.
+    private double Scale => Flow is { } flow && flow.Viewport.Zoom > 0 ? 1.0 / flow.Viewport.Zoom : 1;
+
+    private string PositionStyle
+    {
+        get
+        {
+            var s = Inv(Scale);
+
+            // The toolbar lives inside the zoomed viewport, so a translation is in flow units;
+            // dividing by the zoom is what makes the gap the promised number of screen pixels.
+            var off = Inv(Offset * Scale);
+
+            // Along the anchored side the toolbar is placed by an anchor point on the node and a
+            // matching shift of the toolbar's own width/height, so Start lines their leading edges
+            // up, End their trailing ones, and Center their midpoints. The counter-scale has to
+            // pivot on that same edge, or shrinking the toolbar pulls the aligned edge off it.
+            var (anchor, shift, alongX, alongY) = Align switch
+            {
+                BlowToolbarAlign.Start => ("0", "0", "left", "top"),
+                BlowToolbarAlign.End => ("100%", "-100%", "right", "bottom"),
+                _ => ("50%", "-50%", "center", "center"),
+            };
+
+            return Position switch
+            {
+                BlowPosition.Bottom =>
+                    $"position:absolute;left:{anchor};top:100%;transform-origin:{alongX} top;transform:translate({shift},{off}px) scale({s});",
+                BlowPosition.Left =>
+                    $"position:absolute;top:{anchor};left:0;transform-origin:right {alongY};transform:translate(calc(-100% - {off}px),{shift}) scale({s});",
+                BlowPosition.Right =>
+                    $"position:absolute;top:{anchor};left:100%;transform-origin:left {alongY};transform:translate({off}px,{shift}) scale({s});",
+                _ => // Top
+                    $"position:absolute;left:{anchor};top:0;transform-origin:{alongX} bottom;transform:translate({shift},calc(-100% - {off}px)) scale({s});",
+            };
+        }
+    }
+
+    private static string Inv(double v) => v.ToString(CultureInfo.InvariantCulture);
+}

@@ -203,6 +203,26 @@
         },
         new()
         {
+            Title = "Diagrams that connect",
+            Subtitle = "bit Blow · Blazor-native node-based editors",
+            LinkUrl = Urls.Blow,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Blow is a Blazor-native library for node-based editors, flow charts and diagrams - a Blazor counterpart
+                    to React Flow - with draggable, resizable and connectable nodes, sub-flows, auto-layout, undo/redo and full
+                    keyboard accessibility, all in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BlowCanvas Nodes="nodes" Edges="edges" FitViewOnInit="true">
+    &lt;BlowBackground />
+    &lt;BlowControls />
+&lt;/BlowCanvas></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Onboarding that guides",
             Subtitle = "bit Bonboarding · Blazor-native product tours",
             LinkUrl = Urls.Bonboarding,

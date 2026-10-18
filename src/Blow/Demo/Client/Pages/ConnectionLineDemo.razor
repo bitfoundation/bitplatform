@@ -1,0 +1,95 @@
+﻿@page "/connection-line"
+
+<PageTitle>Custom Connection Lines - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>Custom Connection Lines &amp; Live Connection State</h3>
+    <p class="text-muted">
+        Showcases three new APIs working together: <code>ConnectionLineTemplate</code> draws the in-progress
+        line, <code>OnConnectionChange</code> reports the live <code>BlowConnectionLineContext</code> every frame,
+        and pressing <kbd>Esc</kbd> while dragging cancels the connection. The end dot turns green only over a
+        valid target (locked nodes reject connections via <code>IsValidConnection</code>).
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="demo-canvas">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                IsValidConnection="IsValid"
+                OnConnectionChange="c => { _conn = c; StateHasChanged(); }">
+        <ConnectionLineTemplate Context="c">
+            <defs>
+                <linearGradient id="demo-conn-grad" gradientUnits="userSpaceOnUse"
+                                x1="@Inv(c.From.X)" y1="@Inv(c.From.Y)" x2="@Inv(c.To.X)" y2="@Inv(c.To.Y)">
+                    <stop offset="0%" stop-color="#6366f1" />
+                    <stop offset="100%" stop-color="@(c.IsValid ? "#16a34a" : "#a855f7")" />
+                </linearGradient>
+            </defs>
+            <path d="@LinePath(c)" fill="none" stroke="url(#demo-conn-grad)" stroke-width="2.5" stroke-dasharray="8 5">
+                <animate attributeName="stroke-dashoffset" from="13" to="0" dur="0.5s" repeatCount="indefinite" />
+            </path>
+            <circle cx="@Inv(c.To.X)" cy="@Inv(c.To.Y)" r="6"
+                    fill="@(c.IsValid ? "#16a34a" : "#6366f1")" stroke="#fff" stroke-width="2" />
+        </ConnectionLineTemplate>
+
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowPanel Position="top-right">
+                <div class="conn-state">
+                    <div class="conn-state__title">Connection state</div>
+                    @if (_conn is null)
+                    {
+                        <div class="text-muted">idle - drag from a handle</div>
+                    }
+                    else
+                    {
+                        <div><b>from</b> @_conn.FromNode / @_conn.FromHandleType</div>
+                        <div><b>to</b> (@_conn.To.X.ToString("0"), @_conn.To.Y.ToString("0"))</div>
+                        <div><b>valid target</b>
+                            <span class="@(_conn.IsValid ? "ok" : "no")">@(_conn.IsValid ? "yes" : "no")</span>
+                        </div>
+                    }
+                </div>
+            </BlowPanel>
+        </ChildContent>
+    </BlowCanvas>
+</div>
+
+<style>
+    .conn-state { background:var(--bit-blow-surface); color:var(--bit-blow-text); border:1px solid var(--bit-blow-border); border-radius:8px; padding:10px 12px; font-size:12px; min-width:200px; box-shadow:0 2px 6px var(--bit-blow-shadow); }
+    .conn-state__title { font-weight:700; margin-bottom:6px; }
+    .conn-state .ok { color:#16a34a; font-weight:700; }
+    .conn-state .no { color:#dc2626; font-weight:700; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowConnectionLineContext? _conn;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Drag from here", Position = new(220, 30), Width = 160 },
+            new BlowNode { Id = "2", Label = "Open target", Position = new(80, 200) },
+            new BlowNode { Id = "3", Label = "Open target", Position = new(280, 200) },
+            new BlowNode { Id = "locked", Label = "🔒 Locked", Position = new(470, 200), Data = "locked" },
+        ];
+        _edges = [];
+    }
+
+    // Locked nodes reject incoming connections.
+    private bool IsValid(BlowConnection c)
+    {
+        var target = _nodes.FirstOrDefault(n => n.Id == c.Target);
+        return target?.Data as string != "locked";
+    }
+
+    private string LinePath(BlowConnectionLineContext c) =>
+        BlowEdgePath.Compute(BlowEdgeType.Bezier, c.From.X, c.From.Y, c.FromPosition, c.To.X, c.To.Y, c.ToPosition).Path;
+
+    private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}

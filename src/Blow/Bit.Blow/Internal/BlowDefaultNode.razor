@@ -1,0 +1,25 @@
+﻿@namespace Bit.Blow
+@* Built-in node content for the "default", "input", "output" and "group" node types. *@
+
+@if (Node.Type == "group")
+{
+    <div class="bit-blow-node-label">@Node.Label</div>
+}
+else
+{
+    @if (Node.Type != "input")
+    {
+        <BlowHandle Type="BlowHandleType.Target" Position="Node.TargetPosition" />
+    }
+
+    <div class="bit-blow-node-label">@(Node.Label ?? Node.Id)</div>
+
+    @if (Node.Type != "output")
+    {
+        <BlowHandle Type="BlowHandleType.Source" Position="Node.SourcePosition" />
+    }
+}
+
+@code {
+    [Parameter, EditorRequired] public BlowNode Node { get; set; } = default!;
+}

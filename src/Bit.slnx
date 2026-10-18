@@ -113,6 +113,19 @@
     <Project Path="Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj" />
     <Project Path="Bink/Tests/Bit.Bink.Benchmarks/Bit.Bink.Benchmarks.csproj" />
   </Folder>
+  <Folder Name="/Blow/">
+    <File Path="Blow/README.md" />
+    <Project Path="Blow/Bit.Blow/Bit.Blow.csproj" />
+  </Folder>
+  <Folder Name="/Blow/Demo/">
+    <Project Path="Blow/Demo/Client/Bit.Blow.Demo.Client.csproj" />
+    <Project Path="Blow/Demo/Server/Bit.Blow.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Blow/Tests/">
+    <Project Path="Blow/Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj" />
+    <Project Path="Blow/Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj" />
+    <Project Path="Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj" />
+  </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />

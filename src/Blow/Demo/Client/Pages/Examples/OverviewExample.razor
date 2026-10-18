@@ -1,0 +1,55 @@
+﻿@page "/examples/overview"
+
+<PageTitle>Overview - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Overview"
+                 Summary="A larger graph combining node types, several edge types (animated, labelled, smooth-step), a background, controls and a minimap."
+                 Height="calc(100vh - 230px)">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" MinZoom="0.2" MaxZoom="4">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+        <BlowMiniMap NodeColorFunc="NodeColor" />
+        <BlowPanel Position="top-left">
+            <strong>bit Blow Overview</strong>
+        </BlowPanel>
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Input", Position = new(0, 0) },
+            new BlowNode { Id = "2", Label = "Default", Position = new(-120, 120) },
+            new BlowNode { Id = "3", Label = "Default", Position = new(120, 120) },
+            new BlowNode { Id = "4", Label = "Process", Position = new(0, 240), Style = "background:#dbeafe;border-color:#60a5fa;" },
+            new BlowNode { Id = "5", Label = "Decision", Position = new(-180, 360) },
+            new BlowNode { Id = "6", Label = "Step", Position = new(180, 360) },
+            new BlowNode { Id = "7", Type = "output", Label = "Output A", Position = new(-180, 480) },
+            new BlowNode { Id = "8", Type = "output", Label = "Output B", Position = new(180, 480) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Animated = true },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Animated = true },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e4-5", Source = "4", Target = "5", Label = "yes", Type = BlowEdgeType.Step },
+            new BlowEdge { Id = "e4-6", Source = "4", Target = "6", Label = "no", Type = BlowEdgeType.Step },
+            new BlowEdge { Id = "e5-7", Source = "5", Target = "7" },
+            new BlowEdge { Id = "e6-8", Source = "6", Target = "8", Type = BlowEdgeType.Straight },
+        ];
+    }
+
+    private string NodeColor(BlowNode n) => n.Type switch
+    {
+        "input" => "#6ede87",
+        "output" => "#6865f0",
+        _ => "#ddd",
+    };
+}

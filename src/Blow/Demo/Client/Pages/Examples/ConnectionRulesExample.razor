@@ -1,0 +1,83 @@
+﻿@page "/examples/connection-rules"
+
+<PageTitle>Connection Rules - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Connection Rules"
+                 Summary="The canvas rejects connections that would duplicate an existing edge, touch a node that opted out of connecting, or loop a node back to itself - unless you allow it. Toggle the rules and watch which handles light up green while you drag.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_preventDuplicates" @onchange="@(e => _preventDuplicates = (bool)e.Value!)" /> Prevent duplicate edges</label>
+        <label><input type="checkbox" checked="@_allowSelf" @onchange="@(e => _allowSelf = (bool)e.Value!)" /> Allow self-connections</label>
+        <button class="btn btn-sm btn-primary" @onclick="Reset">Reset edges</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    PreventDuplicateEdges="_preventDuplicates"
+                    AllowSelfConnections="_allowSelf"
+                    ConnectionRadius="30"
+                    OnConnect="OnConnect">
+            <NodeTemplate Context="node">
+                <BlowHandle Type="BlowHandleType.Target" Id="in" Position="BlowPosition.Left" />
+                <div class="rule-node">
+                    <strong>@node.Label</strong>
+                    @if (!node.Connectable)
+                    {
+                        <div class="rule-flag">not connectable</div>
+                    }
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Id="out" Position="BlowPosition.Right" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                    <div class="rule-log">
+                        <strong>Edges (@_edges.Count)</strong>
+                        @foreach (var edge in _edges)
+                        {
+                            <div>@edge.Source → @edge.Target</div>
+                        }
+                    </div>
+                </BlowPanel>
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .rule-node { padding: 4px 2px; }
+    .rule-flag { margin-top: 4px; font-size: 10px; color: #b91c1c; }
+    .rule-log { min-width: 150px; padding: 8px 10px; font-size: 12px; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private bool _preventDuplicates = true;
+    private bool _allowSelf;
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "a", Label = "A", Position = new(0, 40) },
+            new BlowNode { Id = "b", Label = "B", Position = new(240, 40) },
+            new BlowNode { Id = "locked", Label = "Locked", Position = new(120, 190), Connectable = false },
+        ];
+
+        Reset();
+    }
+
+    private void Reset()
+    {
+        _edges.Clear();
+        _edges.Add(new BlowEdge { Id = "a-b", Source = "a", Target = "b", SourceHandle = "out", TargetHandle = "in" });
+        _flow?.Refresh(remeasure: false);
+    }
+
+    private void OnConnect(BlowConnection connection) => StateHasChanged();
+}

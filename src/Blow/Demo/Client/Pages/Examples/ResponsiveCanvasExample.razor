@@ -1,0 +1,81 @@
+﻿@page "/examples/responsive-canvas"
+
+<PageTitle>Responsive Canvas - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Responsive Canvas"
+                 Summary="The flow watches its own container and its nodes for size changes, so resizing the canvas or growing a node's content keeps hit-testing, edge anchors and the minimap correct without any work on your part. Drive the viewport from your own state at the same time.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="@(() => Resize(-120))">Narrower</button>
+        <button class="btn btn-sm btn-primary" @onclick="@(() => Resize(120))">Wider</button>
+        <button class="btn btn-sm btn-primary" @onclick="GrowNode">Grow node content</button>
+        <button class="btn btn-sm btn-primary" @onclick="Center">Recenter viewport</button>
+        <span class="text-muted">Canvas width: @_width px</span>
+    </Toolbar>
+    <ChildContent>
+        <div style="@($"width:{_width}px;max-width:100%;height:100%;")">
+            <BlowCanvas Nodes="_nodes"
+                        Edges="_edges"
+                        Viewport="_viewport"
+                        OnViewportChanged="@(vp => _viewport = vp)">
+                <NodeTemplate Context="node">
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="resp-node">
+                        <strong>@node.Label</strong>
+                        @if (node.Id == "grow")
+                        {
+                            @foreach (var line in Enumerable.Range(0, _lines))
+                            {
+                                <div class="resp-line">line @(line + 1)</div>
+                            }
+                        }
+                    </div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                </NodeTemplate>
+                <ChildContent>
+                    <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                    <BlowControls />
+                    <BlowMiniMap Pannable="true" />
+                    <BlowPanel Anchor="BlowPanelPosition.TopLeft">
+                        <div class="resp-readout">
+                            viewport x @_viewport.X.ToString("0") · y @_viewport.Y.ToString("0")
+                            · zoom @_viewport.Zoom.ToString("0.00")
+                        </div>
+                    </BlowPanel>
+                </ChildContent>
+            </BlowCanvas>
+        </div>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .resp-node { padding: 2px; text-align: left; }
+    .resp-line { font-size: 11px; color: #6b7280; }
+    .resp-readout { padding: 6px 10px; font-size: 12px; font-variant-numeric: tabular-nums; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+</style>
+
+@code {
+    private int _width = 720;
+    private int _lines = 1;
+    private BlowViewport _viewport = new(60, 40, 1);
+
+    private readonly List<BlowNode> _nodes =
+    [
+        new() { Id = "start", Label = "Start", Position = new(40, 20) },
+        new() { Id = "grow", Label = "Growing node", Position = new(40, 150) },
+        new() { Id = "end", Label = "End", Position = new(280, 300) },
+    ];
+
+    private readonly List<BlowEdge> _edges =
+    [
+        new() { Id = "e1", Source = "start", Target = "grow" },
+        new() { Id = "e2", Source = "grow", Target = "end", Animated = true },
+    ];
+
+    private void Resize(int delta) => _width = Math.Clamp(_width + delta, 320, 1200);
+
+    // The node has no explicit height, so adding lines changes its measured size. The
+    // ResizeObserver notices and the edge anchored to its bottom handle follows.
+    private void GrowNode() => _lines = _lines >= 6 ? 1 : _lines + 1;
+
+    private void Center() => _viewport = new BlowViewport(60, 40, 1);
+}

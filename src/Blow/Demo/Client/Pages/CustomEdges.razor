@@ -1,0 +1,83 @@
+﻿@page "/custom-edges"
+
+<PageTitle>Custom Edges - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>Custom Edges, BlowBaseEdge &amp; Edge Toolbar</h3>
+    <p class="text-muted">
+        Edges are drawn with a custom <strong>EdgeTemplate</strong> built on <strong>BlowBaseEdge</strong> +
+        <strong>BlowEdgeText</strong> (colored by edge data). Selecting an edge reveals an
+        <strong>BlowEdgeToolbar</strong> (HTML overlay) to recolor or delete it. The connection line uses a
+        smooth-step path.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="demo-canvas" style="height: calc(100vh - 240px);">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                ConnectionLineType="BlowEdgeType.SmoothStep"
+                DefaultEdgeType="BlowEdgeType.SmoothStep">
+        <EdgeTemplate Context="ctx">
+            <BlowBaseEdge Path="@ctx.Geometry.Path"
+                      Stroke="@((ctx.Edge.Data as string) ?? "var(--bit-blow-edge-stroke)")"
+                      StrokeWidth="@(ctx.Edge.Selected ? 3 : 2)"
+                      Label="@ctx.Edge.Label"
+                      LabelX="@ctx.Geometry.LabelX"
+                      LabelY="@ctx.Geometry.LabelY" />
+        </EdgeTemplate>
+
+        <EdgeLabelTemplate Context="ctx">
+            @if (ctx.Edge.Selected)
+            {
+                <BlowEdgeToolbar>
+                    <button class="btn-mini" @onclick="() => Recolor(ctx.Edge)">🎨</button>
+                    <button class="btn-mini danger" @onclick="() => Remove(ctx.Edge)">×</button>
+                </BlowEdgeToolbar>
+            }
+        </EdgeLabelTemplate>
+
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+            <BlowControls />
+            <BlowMiniMap />
+        </ChildContent>
+    </BlowCanvas>
+</div>
+
+<style>
+    .btn-mini { border:1px solid #ddd; background:#fff; border-radius:4px; cursor:pointer; padding:1px 6px; font-size:13px; }
+    .btn-mini.danger { background:#fee2e2; color:#b91c1c; border-color:#fca5a5; }
+    .btn-mini:hover { background:#f3f4f6; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = new();
+    private List<BlowEdge> _edges = new();
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input",  Label = "Start",  Position = new(240, 20) },
+            new BlowNode { Id = "2",                  Label = "Branch", Position = new(100, 160) },
+            new BlowNode { Id = "3",                  Label = "Branch", Position = new(400, 160) },
+            new BlowNode { Id = "4", Type = "output", Label = "End",    Position = new(250, 300) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "yes", Data = "#16a34a" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Label = "no",  Data = "#dc2626" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "done", Data = "#2563eb" },
+        ];
+    }
+
+    private void Recolor(BlowEdge edge)
+    {
+        var colors = new[] { "#16a34a", "#dc2626", "#2563eb", "#9333ea", "#ea580c" };
+        edge.Data = colors[Random.Shared.Next(colors.Length)];
+    }
+
+    private void Remove(BlowEdge edge) => _edges.RemoveAll(e => e.Id == edge.Id);
+}

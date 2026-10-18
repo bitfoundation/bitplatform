@@ -1,0 +1,69 @@
+﻿@page "/"
+
+<PageTitle>Basic - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>Basic Flow</h3>
+    <p class="text-muted">
+        Drag nodes, drag from a handle to another node to connect, scroll to zoom, drag the background to pan.
+        Click a node/edge to select, press <kbd>Delete</kbd> to remove. Hold <kbd>Shift</kbd> for multi-select,
+        or <kbd>Shift</kbd>-drag the background to box-select. See the <strong>Interactions</strong> page for more.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="demo-canvas">
+    <BlowCanvas Nodes="_nodes"
+                Edges="_edges"
+                FitViewOnInit="true"
+                OnConnect="OnConnect">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+        <BlowControls />
+        <BlowMiniMap />
+        <BlowPanel Position="top-right">
+            <button class="btn btn-sm btn-primary" @onclick="AddNode">Add node</button>
+        </BlowPanel>
+    </BlowCanvas>
+</div>
+
+@code {
+    private List<BlowNode> _nodes = new();
+    private List<BlowEdge> _edges = new();
+    private int _counter = 4;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input",  Label = "Input Node",  Position = new(250, 25) },
+            new BlowNode { Id = "2",                  Label = "Default Node", Position = new(150, 150) },
+            new BlowNode { Id = "3",                  Label = "Another Node", Position = new(400, 150) },
+            new BlowNode { Id = "4", Type = "output", Label = "Output Node",  Position = new(280, 300) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Animated = true },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "edge label" },
+        ];
+    }
+
+    private void AddNode()
+    {
+        _counter++;
+        _nodes.Add(new BlowNode
+        {
+            Id = _counter.ToString(),
+            Label = $"Node {_counter}",
+            Position = new(Random.Shared.Next(50, 450), Random.Shared.Next(50, 350)),
+        });
+    }
+
+    private void OnConnect(BlowConnection c)
+    {
+        // The edge is already added by the canvas; hook here for side effects.
+        Console.WriteLine($"Connected {c.Source} -> {c.Target}");
+    }
+}

@@ -1,0 +1,62 @@
+﻿@page "/examples/handle-positions"
+
+<PageTitle>Handle Positions - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Handle Positions"
+                 Summary="Built-in nodes place their handles wherever you tell them to. Set SourcePosition/TargetPosition on the node and the default renderer moves the handles - no custom template needed.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="@(() => SetDirection(false))">Top to bottom</button>
+        <button class="btn btn-sm btn-primary" @onclick="@(() => SetDirection(true))">Left to right</button>
+        <span class="text-muted">Current: @(_horizontal ? "left to right" : "top to bottom")</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private bool _horizontal;
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input",  Label = "Input",   Position = new(0, 120) },
+            new BlowNode { Id = "2",                  Label = "Process", Position = new(220, 40) },
+            new BlowNode { Id = "3",                  Label = "Review",  Position = new(220, 200) },
+            new BlowNode { Id = "4", Type = "output", Label = "Output",  Position = new(440, 120) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Type = BlowEdgeType.SmoothStep },
+        ];
+
+        SetDirection(true);
+    }
+
+    private void SetDirection(bool horizontal)
+    {
+        _horizontal = horizontal;
+
+        foreach (var node in _nodes)
+        {
+            node.SourcePosition = horizontal ? BlowPosition.Right : BlowPosition.Bottom;
+            node.TargetPosition = horizontal ? BlowPosition.Left : BlowPosition.Top;
+        }
+
+        // Handles moved, so the edge anchors need re-measuring.
+        _flow?.Refresh(remeasure: true);
+    }
+}

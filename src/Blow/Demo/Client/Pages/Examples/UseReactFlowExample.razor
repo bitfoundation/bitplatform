@@ -1,0 +1,70 @@
+﻿@page "/examples/use-reactflow"
+
+<PageTitle>Use Flow API - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Use Flow API"
+                 Summary="Call the imperative flow API through a captured reference (the equivalent of React Flow's useReactFlow hook): zoom, fit, add nodes/edges, delete the selection and snapshot the state.">
+    <Toolbar>
+        <button class="btn btn-sm" @onclick="@(() => _flow?.ZoomIn())">Zoom in</button>
+        <button class="btn btn-sm" @onclick="@(() => _flow?.ZoomOut())">Zoom out</button>
+        <button class="btn btn-sm" @onclick="@(() => _flow?.FitView())">Fit view</button>
+        <button class="btn btn-sm btn-primary" @onclick="AddRandom">Add node</button>
+        <button class="btn btn-sm" @onclick="DeleteSelected">Delete selected</button>
+        <button class="btn btn-sm" @onclick="Snapshot">Snapshot</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+            @if (_snapshot is not null)
+            {
+                <BlowPanel Position="top-right">
+                    <div class="snap">@_snapshot</div>
+                </BlowPanel>
+            }
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .snap { background:#111827; color:#a5b4fc; font-family:monospace; font-size:11px; padding:8px 10px; border-radius:8px; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _id = 2;
+    private string? _snapshot;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(200, 40) },
+            new BlowNode { Id = "2", Type = "output", Label = "Node 2", Position = new(200, 180) },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+    }
+
+    private void AddRandom()
+    {
+        _id++;
+        _flow?.AddNodes(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(20, 420), Random.Shared.Next(20, 280)) });
+    }
+
+    private async Task DeleteSelected()
+    {
+        if (_flow is null) return;
+        var selected = _nodes.Where(n => n.Selected).ToList();
+        if (selected.Count > 0) await _flow.DeleteElementsAsync(selected);
+    }
+
+    private void Snapshot()
+    {
+        var snap = _flow?.ToObject();
+        if (snap is not null)
+            _snapshot = $"{snap.Nodes.Count} nodes · {snap.Edges.Count} edges · zoom {snap.Viewport.Zoom:0.00}";
+    }
+}

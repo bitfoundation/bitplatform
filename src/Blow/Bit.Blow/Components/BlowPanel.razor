@@ -1,0 +1,27 @@
+﻿@namespace Bit.Blow
+<div class="bit-blow-panel bit-blow-panel-@PositionClass @Class" style="@Style"
+     @onpointerdown:stopPropagation="true"
+     @onclick:stopPropagation="true"
+     @ondblclick:stopPropagation="true"
+     @onwheel:stopPropagation="true"
+     @oncontextmenu:stopPropagation="true">
+    @ChildContent
+</div>
+
+@code {
+    /// <summary>
+    /// Anchor position as a string, e.g. "top-left", "top-right", "bottom-left", "bottom-right",
+    /// "top-center", "bottom-center". Prefer the typed <see cref="Anchor"/> parameter.
+    /// </summary>
+    [Parameter] public string Position { get; set; } = "top-left";
+
+    /// <summary>Typed anchor position. When set it takes precedence over <see cref="Position"/>.</summary>
+    [Parameter] public BlowPanelPosition? Anchor { get; set; }
+
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string PositionClass =>
+        BlowPanelPositionClass.For(Anchor ?? BlowPanelPositionClass.Parse(Position));
+}

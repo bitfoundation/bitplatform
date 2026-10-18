@@ -1,0 +1,161 @@
+﻿@page "/interactions"
+
+<PageTitle>Interactions - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>Interactions Playground</h3>
+    <p class="text-muted">
+        Toggle behaviours on the left and watch the event log. <strong>Shift-drag</strong> the background
+        to box-select, select an edge to drag its endpoints (<strong>reconnect</strong>), and use the
+        imperative API buttons. Arrow keys nudge selected nodes.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="demo-canvas" style="height: calc(100vh - 240px);">
+    <BlowCanvas @ref="_flow"
+                Nodes="_nodes"
+                Edges="_edges"
+                FitViewOnInit="true"
+                SnapToGrid="_snapToGrid"
+                SnapGridX="20" SnapGridY="20"
+                ConnectOnClick="_connectOnClick"
+                SelectionOnDrag="_selectionOnDrag"
+                PanOnScroll="_panOnScroll"
+                ZoomOnDoubleClick="_zoomOnDoubleClick"
+                OnlyRenderVisibleElements="_cullOffscreen"
+                OnConnect="OnConnect"
+                OnConnectStart="@(_ => Log("connect: start"))"
+                OnConnectEnd="@(() => Log("connect: end"))"
+                OnReconnect="OnReconnect"
+                OnSelectionChange="OnSelectionChange"
+                OnNodeDoubleClick="@(e => Log($"dblclick node {e.Node.Id}"))"
+                OnNodeContextMenu="@(e => Log($"context menu on node {e.Node.Id}"))"
+                OnNodeDragStop="@(n => Log($"drag stop {n.Id} @ {n.Position}"))">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+        <BlowControls />
+        <BlowMiniMap Pannable="true" />
+
+        <BlowPanel Position="top-left">
+            <div class="toolbar">
+                <label><input type="checkbox" @bind="_snapToGrid" /> Snap to grid</label>
+                <label><input type="checkbox" @bind="_connectOnClick" /> Connect on click</label>
+                <label><input type="checkbox" @bind="_selectionOnDrag" /> Selection on drag</label>
+                <label><input type="checkbox" @bind="_panOnScroll" /> Pan on scroll</label>
+                <label><input type="checkbox" @bind="_zoomOnDoubleClick" /> Zoom on double-click</label>
+                <label><input type="checkbox" @bind="_cullOffscreen" /> Cull off-screen</label>
+            </div>
+        </BlowPanel>
+
+        <BlowPanel Position="top-right">
+            <div class="toolbar">
+                <button class="btn btn-sm btn-primary" @onclick="AddNode">Add node</button>
+                <button class="btn btn-sm" @onclick="DeleteSelected">Delete selected</button>
+                <button class="btn btn-sm" @onclick="() => _flow?.FitView()">Fit view</button>
+                <button class="btn btn-sm" @onclick="() => _flow?.ZoomTo(1.5)">Zoom 1.5×</button>
+                <button class="btn btn-sm" @onclick="Export">Export</button>
+            </div>
+        </BlowPanel>
+
+        @* Bottom-centre: the corners below are taken by the controls and the minimap. *@
+        <BlowPanel Position="bottom-center">
+            <div class="event-log">
+                <div class="event-log__title">Event log &middot; selected: @_selectedCount</div>
+                @foreach (var line in _log)
+                {
+                    <div class="event-log__line">@line</div>
+                }
+            </div>
+        </BlowPanel>
+    </BlowCanvas>
+</div>
+
+<style>
+    .toolbar { display:flex; flex-direction:column; gap:4px; font-size:13px; }
+    .toolbar label { display:flex; align-items:center; gap:6px; white-space:nowrap; }
+    .toolbar button { width:100%; }
+    .event-log { width:230px; max-height:200px; overflow:auto; font-size:12px; font-family:monospace; }
+    .event-log__title { font-weight:600; margin-bottom:4px; font-family:inherit; }
+    .event-log__line { color:#444; padding:1px 0; border-top:1px solid #f0f0f0; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = new();
+    private List<BlowEdge> _edges = new();
+    private int _counter = 4;
+
+    private bool _snapToGrid;
+    private bool _connectOnClick;
+    private bool _selectionOnDrag;
+    private bool _panOnScroll;
+    private bool _zoomOnDoubleClick = true;
+    private bool _cullOffscreen;
+
+    private int _selectedCount;
+    private readonly List<string> _log = new();
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input",  Label = "Input",  Position = new(250, 20) },
+            new BlowNode { Id = "2",                  Label = "Node 2", Position = new(120, 140) },
+            new BlowNode { Id = "3",                  Label = "Node 3", Position = new(400, 140) },
+            new BlowNode { Id = "4", Type = "output", Label = "Output", Position = new(260, 280) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Animated = true },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", MarkerStart = true, MarkerType = BlowMarkerType.ArrowClosed },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "reconnect me", Type = BlowEdgeType.SmoothStep },
+        ];
+    }
+
+    private void OnConnect(BlowConnection c) => Log($"connected {c.Source} → {c.Target}");
+
+    private void OnReconnect(BlowEdgeReconnect r) => Log($"reconnected {r.Edge.Id}: {r.Connection.Source} → {r.Connection.Target}");
+
+    private void OnSelectionChange(BlowSelectionChange s)
+    {
+        _selectedCount = s.Nodes.Count + s.Edges.Count;
+        Log($"selection: {s.Nodes.Count} node(s), {s.Edges.Count} edge(s)");
+    }
+
+    private void AddNode()
+    {
+        _counter++;
+        _flow?.AddNodes(new BlowNode
+        {
+            Id = _counter.ToString(),
+            Label = $"Node {_counter}",
+            Position = new(Random.Shared.Next(40, 460), Random.Shared.Next(40, 320)),
+        });
+        Log($"added node {_counter}");
+    }
+
+    private async Task DeleteSelected()
+    {
+        if (_flow is null) return;
+        var nodes = _nodes.Where(n => n.Selected).ToList();
+        var edges = _edges.Where(e => e.Selected).ToList();
+        await _flow.DeleteElementsAsync(nodes, edges);
+        Log($"deleted {nodes.Count} node(s), {edges.Count} edge(s)");
+    }
+
+    private void Export()
+    {
+        var snap = _flow?.ToObject();
+        if (snap is null) return;
+        Log($"export: {snap.Nodes.Count} nodes, {snap.Edges.Count} edges, zoom {snap.Viewport.Zoom:0.00}");
+    }
+
+    private void Log(string message)
+    {
+        _log.Insert(0, message);
+        if (_log.Count > 10) _log.RemoveAt(_log.Count - 1);
+        StateHasChanged();
+    }
+}

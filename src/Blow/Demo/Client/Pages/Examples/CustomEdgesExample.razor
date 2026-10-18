@@ -1,0 +1,48 @@
+﻿@page "/examples/custom-edges"
+
+<PageTitle>Custom Edges - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Custom Edges"
+                 Summary="A custom EdgeTemplate built on BlowBaseEdge: the stroke color and width come from each edge's data, and selected edges thicken. Connection lines use the same smooth-step style.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                DefaultEdgeType="BlowEdgeType.SmoothStep" ConnectionLineType="BlowEdgeType.SmoothStep">
+        <EdgeTemplate Context="ctx">
+            <BlowBaseEdge Path="@ctx.Geometry.Path"
+                      Stroke="@(EdgeColor(ctx.Edge))"
+                      StrokeWidth="@(ctx.Edge.Selected ? 4 : 2)"
+                      Label="@ctx.Edge.Label"
+                      LabelX="@ctx.Geometry.LabelX"
+                      LabelY="@ctx.Geometry.LabelY" />
+        </EdgeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Start", Position = new(250, 10) },
+            new BlowNode { Id = "2", Label = "Path A", Position = new(80, 160) },
+            new BlowNode { Id = "3", Label = "Path B", Position = new(420, 160) },
+            new BlowNode { Id = "4", Type = "output", Label = "End", Position = new(250, 310) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "warm", Data = "#ef4444" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Label = "cool", Data = "#3b82f6" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Label = "ok", Data = "#22c55e" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Label = "ok", Data = "#22c55e" },
+        ];
+    }
+
+    private string EdgeColor(BlowEdge e) => (e.Data as string) ?? "var(--bit-blow-edge-stroke)";
+}

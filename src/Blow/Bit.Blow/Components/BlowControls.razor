@@ -1,0 +1,145 @@
+﻿@namespace Bit.Blow
+<div class="bit-blow-controls bit-blow-controls-@PositionClass @(Orientation == BlowControlsOrientation.Horizontal ? "horizontal" : null) @Class"
+     style="@Style"
+     role="toolbar"
+     aria-label="@AriaLabel"
+     @onpointerdown:stopPropagation="true"
+     @onwheel:stopPropagation="true"
+     @onclick:stopPropagation="true"
+     @ondblclick:stopPropagation="true"
+     @oncontextmenu:stopPropagation="true">
+    @if (ShowZoom)
+    {
+        <button type="button" class="bit-blow-controls-button" title="Zoom in" aria-label="Zoom in"
+                disabled="@(!Attached || AtMaxZoom)" @onclick="ZoomInAsync">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        </button>
+        <button type="button" class="bit-blow-controls-button" title="Zoom out" aria-label="Zoom out"
+                disabled="@(!Attached || AtMinZoom)" @onclick="ZoomOutAsync">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M5 12h14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        </button>
+    }
+    @if (ShowFitView)
+    {
+        <button type="button" class="bit-blow-controls-button" title="Fit view" aria-label="Fit view"
+                disabled="@(!Attached)" @onclick="FitViewAsync">
+            <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M4 9V5a1 1 0 0 1 1-1h4M15 4h4a1 1 0 0 1 1 1v4M20 15v4a1 1 0 0 1-1 1h-4M9 20H5a1 1 0 0 1-1-1v-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+        </button>
+    }
+    @if (ShowInteractive)
+    {
+        <button type="button" class="bit-blow-controls-button"
+                title="@InteractiveTitle" aria-label="Lock interaction"
+                aria-pressed="@((!Interactive).ToString().ToLowerInvariant())"
+                @onclick="ToggleInteractiveAsync">
+            @if (Interactive)
+            {
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 9.9-1M5 11h14v9H5z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            }
+            else
+            {
+                <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v9H5z" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            }
+        </button>
+    }
+    @ChildContent
+</div>
+
+@code {
+    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+
+    [Parameter] public BlowControlsOrientation Orientation { get; set; } = BlowControlsOrientation.Vertical;
+
+    /// <summary>Corner the control bar is anchored to. Defaults to bottom-left.</summary>
+    [Parameter] public BlowPanelPosition Position { get; set; } = BlowPanelPosition.BottomLeft;
+
+    /// <summary>Show the zoom in / zoom out buttons.</summary>
+    [Parameter] public bool ShowZoom { get; set; } = true;
+
+    /// <summary>Show the fit-view button.</summary>
+    [Parameter] public bool ShowFitView { get; set; } = true;
+
+    /// <summary>
+    /// Show the lock button. It only reports the toggle through <see cref="InteractiveChanged"/> -
+    /// bind the flow's interaction parameters to it to actually lock the canvas.
+    /// Off by default so it doesn't appear in flows that never intended to be lockable.
+    /// </summary>
+    [Parameter] public bool ShowInteractive { get; set; }
+
+    /// <summary>Current interactive state driving the lock button. Two-way bindable.</summary>
+    [Parameter] public bool Interactive { get; set; } = true;
+
+    [Parameter] public EventCallback<bool> InteractiveChanged { get; set; }
+
+    /// <summary>Raised alongside the built-in zoom-in behaviour.</summary>
+    [Parameter] public EventCallback OnZoomIn { get; set; }
+
+    /// <summary>Raised alongside the built-in zoom-out behaviour.</summary>
+    [Parameter] public EventCallback OnZoomOut { get; set; }
+
+    /// <summary>Raised alongside the built-in fit-view behaviour.</summary>
+    [Parameter] public EventCallback OnFitView { get; set; }
+
+    /// <summary>
+    /// Options the fit-view button fits with - padding, a zoom range, a subset of nodes, or a
+    /// duration to ease over. When null the canvas's own default fit is used.
+    /// Mirrors React Flow's <c>fitViewOptions</c> on <c>BlowControls</c>.
+    /// </summary>
+    [Parameter] public BlowFitViewOptions? FitViewOptions { get; set; }
+
+    [Parameter] public string AriaLabel { get; set; } = "Flow controls";
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+
+    /// <summary>Extra control buttons appended after the built-ins.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string PositionClass => BlowPanelPositionClass.For(Position);
+    // The tooltip says what a click will do. The accessible name stays fixed: it is a toggle, and
+    // a screen reader already announces whether it is pressed - "Unlock interaction, pressed"
+    // would contradict itself.
+    private string InteractiveTitle => Interactive ? "Lock interaction" : "Unlock interaction";
+
+    /// <summary>
+    /// False when the bar was placed outside a <c>BlowCanvas</c>, so there is nothing for it to
+    /// drive. It still renders - a disabled toolbar is a far better outcome than bringing the
+    /// page down with a null reference - but its buttons do nothing.
+    /// </summary>
+    private bool Attached => Flow is not null;
+
+    private bool AtMinZoom => Flow.Viewport.Zoom <= Flow.MinZoom + 1e-6;
+    private bool AtMaxZoom => Flow.Viewport.Zoom >= Flow.MaxZoom - 1e-6;
+
+    private async Task ZoomInAsync()
+    {
+        if (!Attached) return;
+        Flow.ZoomIn();
+        await OnZoomIn.InvokeAsync();
+    }
+
+    private async Task ZoomOutAsync()
+    {
+        if (!Attached) return;
+        Flow.ZoomOut();
+        await OnZoomOut.InvokeAsync();
+    }
+
+    private async Task FitViewAsync()
+    {
+        if (!Attached) return;
+
+        // The canvas exposes the option-taking overload on itself rather than through the
+        // cascaded contract, so ask for it only when there is something to ask for.
+        // FitViewAsync rather than FitView, so a Duration in the options eases there as promised.
+        if (FitViewOptions is { } options && Flow is BlowCanvas canvas) await canvas.FitViewAsync(options);
+        else Flow.FitView();
+
+        await OnFitView.InvokeAsync();
+    }
+
+    private async Task ToggleInteractiveAsync()
+    {
+        Interactive = !Interactive;
+        await InteractiveChanged.InvokeAsync(Interactive);
+    }
+}

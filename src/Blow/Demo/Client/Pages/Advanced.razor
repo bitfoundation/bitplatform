@@ -1,0 +1,91 @@
+﻿@page "/advanced"
+
+<PageTitle>Groups &amp; Resizing - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>Groups, Resizing, Toolbars &amp; Validation</h3>
+    <p class="text-muted">
+        The dashed box is a <strong>group</strong> - drag it and its children move with it.
+        Select the blue node to <strong>resize</strong> it and use its <strong>toolbar</strong>.
+        Connections are <strong>validated</strong>: you can only connect <em>into</em> the "Sink" node.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="demo-canvas" style="height: calc(100vh - 250px);">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" IsValidConnection="ValidateConnection">
+        <NodeTemplate Context="node">
+            @if (node.Type == "resizable")
+            {
+                <BlowNodeResizer MinWidth="100" MinHeight="50" />
+                <BlowNodeToolbar Position="BlowPosition.Top">
+                    <button class="btn btn-sm" @onclick="() => Recolor(node)">🎨 Recolor</button>
+                    <button class="btn btn-sm" @onclick="() => Remove(node)">🗑 Delete</button>
+                </BlowNodeToolbar>
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;font-weight:600;">
+                    @node.Label
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" />
+            }
+            else
+            {
+                <BlowDefaultNode Node="node" />
+            }
+        </NodeTemplate>
+
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Cross" Gap="24" />
+            <BlowControls />
+            <BlowMiniMap />
+        </ChildContent>
+    </BlowCanvas>
+</div>
+
+@code {
+    private List<BlowNode> _nodes = new();
+    private List<BlowEdge> _edges = new();
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            // A group container with two children positioned relative to it.
+            new BlowNode { Id = "group1", Type = "group", Label = "Group A", Position = new(40, 40),  Width = 260, Height = 180 },
+            new BlowNode { Id = "c1", ParentId = "group1", Label = "Child 1", Position = new(30, 50) },
+            new BlowNode { Id = "c2", ParentId = "group1", Label = "Child 2", Position = new(30, 110) },
+
+            // A resizable node with a toolbar.
+            new BlowNode { Id = "r1", Type = "resizable", Label = "Resize me", Position = new(400, 60),
+                       Width = 160, Height = 80, Data = new NodeStyle("#dbeafe"), Style = "background:#dbeafe;" },
+
+            // The only valid connection target.
+            new BlowNode { Id = "sink", Type = "output", Label = "Sink", Position = new(440, 280) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e-c1-r1", Source = "c1", Target = "r1", Type = BlowEdgeType.SmoothStep },
+        ];
+    }
+
+    public record NodeStyle(string Background);
+
+    // Only connections that end at the "sink" node are allowed.
+    private bool ValidateConnection(BlowConnection c) => c.Target == "sink";
+
+    private void Recolor(BlowNode node)
+    {
+        var colors = new[] { "#dbeafe", "#dcfce7", "#fee2e2", "#fef9c3", "#f3e8ff" };
+        var next = colors[Random.Shared.Next(colors.Length)];
+        node.Data = new NodeStyle(next);
+        node.Style = $"background:{next};";
+    }
+
+    private void Remove(BlowNode node)
+    {
+        _nodes.Remove(node);
+        _edges.RemoveAll(e => e.Source == node.Id || e.Target == node.Id);
+    }
+}

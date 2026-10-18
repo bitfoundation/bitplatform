@@ -1,0 +1,68 @@
+﻿@page "/examples/provider"
+
+<PageTitle>Provider - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Provider"
+                 Summary="A sidebar outside the canvas drives the flow through a shared reference - the Blazor equivalent of wrapping a flow in ReactFlowProvider so sibling components can call the flow API.">
+    <div class="provider">
+        <aside class="provider__sidebar">
+            <h4>Controls</h4>
+            <button class="btn btn-sm btn-primary" @onclick="AddNode">Add node</button>
+            <button class="btn btn-sm" @onclick="@(() => _flow?.FitView())">Fit view</button>
+            <button class="btn btn-sm" @onclick="ConnectLast">Connect last two</button>
+            <p class="text-muted">@_nodes.Count nodes · @_edges.Count edges</p>
+        </aside>
+        <div class="provider__canvas">
+            <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </BlowCanvas>
+        </div>
+    </div>
+</ExampleScaffold>
+
+<style>
+    .provider { display:flex; height:100%; }
+    .provider__sidebar { width:180px; padding:14px; border-right:1px solid var(--demo-border); background:#fafafa; display:flex; flex-direction:column; gap:8px; }
+    .provider__sidebar h4 { margin:0 0 4px; }
+    .provider__canvas { flex:1; position:relative; }
+
+    /* On a phone a fixed-width sidebar leaves the canvas a sliver: stack it above instead. */
+    @@media (max-width: 640px) {
+        .provider { flex-direction:column; }
+        .provider__sidebar { width:auto; flex-direction:row; flex-wrap:wrap; align-items:center; padding:10px; border-right:0; border-bottom:1px solid var(--demo-border); }
+        .provider__sidebar h4, .provider__sidebar p { flex-basis:100%; margin:0; }
+        .provider__canvas { min-height:0; }
+    }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _id = 1;
+
+    protected override void OnInitialized()
+    {
+        _nodes = [ new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(120, 40) } ];
+    }
+
+    private void AddNode()
+    {
+        _id++;
+        _flow?.AddNodes(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 360), Random.Shared.Next(60, 300)) });
+    }
+
+    private void ConnectLast()
+    {
+        if (_nodes.Count < 2) return;
+        var a = _nodes[^2];
+        var b = _nodes[^1];
+        var id = $"e{a.Id}-{b.Id}";
+
+        // Pressing it twice must not add a second edge under the same id: the canvas would only
+        // ever draw one of them.
+        if (_edges.Any(e => e.Id == id || (e.Source == a.Id && e.Target == b.Id))) return;
+        _flow?.AddEdges(new BlowEdge { Id = id, Source = a.Id, Target = b.Id });
+    }
+}

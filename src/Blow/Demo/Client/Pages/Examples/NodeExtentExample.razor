@@ -1,0 +1,101 @@
+﻿@page "/examples/node-extent"
+
+<PageTitle>Node Extents - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Node Extents"
+                 Summary="Three ways to constrain where a node can go: a rectangle of its own, its parent's bounds, or no constraint at all but with the parent growing to keep the child enclosed. Drag each node and watch how it behaves at the boundary.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="Reset">Reset positions</button>
+        <span class="text-muted">Dashed outline = the allowed area</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                @if (node.Type == "group")
+                {
+                    <div class="ext-group-label">@node.Label</div>
+                }
+                else
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                    <div class="ext-node">@node.Label</div>
+                    <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+                @* The free node's extent has no visual of its own, so draw it in the viewport layer. *@
+                <BlowViewportPortal>
+                    <div class="ext-bounds"></div>
+                </BlowViewportPortal>
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .ext-node { padding: 2px; font-size: 12px; }
+    .ext-group-label { position: absolute; top: 6px; left: 10px; font-size: 11px; font-weight: 600; color: #6b7280; }
+    .ext-bounds {
+        position: absolute;
+        left: 0; top: 0;
+        width: 360px; height: 200px;
+        border: 1px dashed #f59e0b;
+        border-radius: 4px;
+        pointer-events: none;
+    }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private readonly List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _nodes =
+        [
+            // Constrained to its own rectangle, matching the dashed overlay above.
+            new BlowNode
+            {
+                Id = "bounded",
+                Label = "Bounded",
+                Position = new(20, 20),
+                Width = 120,
+                Height = 44,
+                Extent = new BlowRect(0, 0, 360, 200),
+            },
+
+            // A group whose child cannot leave it.
+            new BlowNode { Id = "pinnedGroup", Type = "group", Label = "extent: parent", Position = new(430, 0), Width = 260, Height = 200 },
+            new BlowNode
+            {
+                Id = "pinned",
+                Label = "Pinned inside",
+                ParentId = "pinnedGroup",
+                Position = new(30, 40),
+                Width = 140,
+                Height = 44,
+                ExtentParent = true,
+            },
+
+            // A group that grows to keep its child enclosed.
+            new BlowNode { Id = "growGroup", Type = "group", Label = "expandParent", Position = new(430, 260), Width = 260, Height = 180 },
+            new BlowNode
+            {
+                Id = "grower",
+                Label = "Push the edges",
+                ParentId = "growGroup",
+                Position = new(30, 40),
+                Width = 150,
+                Height = 44,
+                ExpandParent = true,
+            },
+        ];
+
+        _flow?.Refresh(remeasure: true);
+    }
+}

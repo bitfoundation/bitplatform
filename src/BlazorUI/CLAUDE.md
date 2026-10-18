@@ -7,7 +7,7 @@ Guidance for the bit BlazorUI component library and its demo app. Coding style c
 
 **`src/BlazorUI` is the edit boundary, and it holds for every task.** The library, Extras, Legacy,
 Icons, Assets, the source generators, the demo app and the tests are all inside it, so the work belongs
-here. Every sibling under `src/` - `Templates` (the Boilerplate), `Butil`, `Bswup`, `Besql`, `Bmotion`, `Bink`,
+here. Every sibling under `src/` - `Templates` (the Boilerplate), `Butil`, `Bswup`, `Besql`, `Bmotion`, `Bink`, `Blow`,
 `Bonboarding`, `Blex`, `Bmage`, `Brouter`, `Websites`, `CodeAnalyzers`, the rest - and the repo root are off limits, no matter what a
 change in here does to them.
 

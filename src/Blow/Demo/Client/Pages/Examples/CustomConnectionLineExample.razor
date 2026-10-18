@@ -1,0 +1,50 @@
+﻿@page "/examples/custom-connection-line"
+
+<PageTitle>Custom Connection Line - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Custom Connection Line"
+                 Summary="Customize the line drawn while creating a connection. Drag from a handle: the line is a dashed gradient stroke, indigo at the handle and pink at the pointer, with a moving end dot - and both turn green over a valid target.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <ConnectionLineTemplate Context="c">
+            <g>
+                @* userSpaceOnUse pins the gradient to the line's own ends, so it always runs from
+                   the handle to the pointer whichever way the line is drawn. *@
+                <defs>
+                    <linearGradient id="ccl-gradient" gradientUnits="userSpaceOnUse"
+                                    x1="@Inv(c.From.X)" y1="@Inv(c.From.Y)" x2="@Inv(c.To.X)" y2="@Inv(c.To.Y)">
+                        <stop offset="0%" stop-color="#6366f1" />
+                        <stop offset="100%" stop-color="@(c.IsValid ? "#16a34a" : "#ec4899")" />
+                    </linearGradient>
+                </defs>
+                <path d="@LinePath(c)" fill="none" stroke="url(#ccl-gradient)" stroke-width="2" stroke-dasharray="6 4" />
+                <circle cx="@Inv(c.To.X)" cy="@Inv(c.To.Y)" r="5"
+                        fill="@(c.IsValid ? "#16a34a" : "#6366f1")" stroke="#fff" stroke-width="1.5" />
+            </g>
+        </ConnectionLineTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Drag from here", Position = new(120, 40), Width = 160 },
+            new BlowNode { Id = "2", Label = "Node B", Position = new(80, 220) },
+            new BlowNode { Id = "3", Label = "Node C", Position = new(320, 220) },
+        ];
+        _edges = [];
+    }
+
+    private string LinePath(BlowConnectionLineContext c) =>
+        BlowEdgePath.Compute(BlowEdgeType.Bezier, c.From.X, c.From.Y, c.FromPosition, c.To.X, c.To.Y, c.ToPosition).Path;
+
+    private static string Inv(double v) => v.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}

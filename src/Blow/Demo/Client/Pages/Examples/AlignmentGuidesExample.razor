@@ -1,0 +1,81 @@
+﻿@page "/examples/alignment-guides"
+
+<PageTitle>Alignment Guides - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Alignment Guides"
+                 Summary="Drag a node near another and it clicks into line with it - by left edge, centre or right edge, and the same three on the other axis. A thin guide shows what it lined up with. The snap distance is measured on screen, so it feels the same however far you have zoomed in.">
+    <Toolbar>
+        <label>
+            <input type="checkbox" @bind="_guides" /> Alignment guides
+        </label>
+        <label>
+            <input type="checkbox" @bind="_grid" /> Snap to grid
+        </label>
+        <label>
+            Distance
+            <input type="range" min="0" max="20" step="1" value="@_distance"
+                   @oninput="@(e => SetDistance(e.Value))" />
+            <span class="guide-distance">@_distance px</span>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes"
+                    Edges="_edges"
+                    SnapToGuides="_guides"
+                    GuideDistance="_distance"
+                    SnapToGrid="_grid"
+                    SnapGridX="20"
+                    SnapGridY="20"
+                    FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="20" Color="#eee" />
+            <BlowControls />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <div class="guide-hint">
+                    Guides win on whichever axis they find an alignment; the grid keeps the other.
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .guide-distance { display: inline-block; min-width: 3.5rem; text-align: right; }
+    .guide-hint {
+        max-width: 220px;
+        padding: 6px 10px;
+        font-size: 11px;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _guides = true;
+    private bool _grid;
+    private double _distance = 6;
+
+    protected override void OnInitialized()
+    {
+        // Deliberately different sizes, so edge-to-edge and centre-to-centre alignments are
+        // visibly different things rather than the same line twice.
+        _nodes =
+        [
+            new BlowNode { Id = "a", Label = "Anchor", Position = new(80, 60), Width = 200, Height = 60 },
+            new BlowNode { Id = "b", Label = "Small", Position = new(360, 200), Width = 100, Height = 40 },
+            new BlowNode { Id = "c", Label = "Tall", Position = new(120, 260), Width = 140, Height = 120 },
+            new BlowNode { Id = "d", Label = "Drag me", Position = new(400, 380), Width = 140, Height = 60 },
+        ];
+
+        _edges = [new BlowEdge { Id = "e", Source = "a", Target = "d" }];
+    }
+
+    private void SetDistance(object? raw)
+    {
+        if (double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value))
+            _distance = value;
+    }
+}

@@ -1,0 +1,48 @@
+﻿@page "/examples/use-connection"
+
+<PageTitle>Use Connection - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Use Connection"
+                 Summary="Observe the in-progress connection live via OnConnectionChange (the equivalent of React Flow's useConnection hook). Start dragging from a handle to watch the panel update.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnConnectionChange="OnConnectionChange">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+        <BlowPanel Position="top-right">
+            <div class="conn-panel">
+                @if (_conn is null)
+                {
+                    <span class="text-muted">no active connection</span>
+                }
+                else
+                {
+                    <div><strong>from:</strong> @_conn.FromNode (@_conn.FromHandleType)</div>
+                    <div><strong>to:</strong> @($"({_conn.To.X:0}, {_conn.To.Y:0})")</div>
+                    <div><strong>valid target:</strong> @(_conn.IsValid ? "yes" : "no")</div>
+                }
+            </div>
+        </BlowPanel>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .conn-panel { background:var(--bit-blow-surface); color:var(--bit-blow-text); border:1px solid var(--bit-blow-border); border-radius:8px; padding:8px 10px; font-size:12px; min-width:180px; box-shadow:0 2px 6px var(--bit-blow-shadow); }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowConnectionLineContext? _conn;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Drag from here", Position = new(120, 40), Width = 160 },
+            new BlowNode { Id = "2", Label = "Node B", Position = new(80, 220) },
+            new BlowNode { Id = "3", Label = "Node C", Position = new(320, 220) },
+        ];
+        _edges = [];
+    }
+
+    private void OnConnectionChange(BlowConnectionLineContext? c) => _conn = c;
+}

@@ -1,0 +1,69 @@
+﻿@page "/examples/auto-pan"
+
+<PageTitle>Auto Pan &amp; Pinch - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Auto Pan &amp; Pinch"
+                 Summary="Drag a node (or a connection) toward the edge of the canvas and hold it there: the viewport scrolls to follow, so you can move things well beyond the visible area. On a touch device, two fingers pinch to zoom about the midpoint between them.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_autoPan" @onchange="@(e => _autoPan = (bool)e.Value!)" /> Auto-pan</label>
+        <label><input type="checkbox" checked="@_pinch" @onchange="@(e => _pinch = (bool)e.Value!)" /> Pinch to zoom</label>
+        <label>Speed @_speed.ToString("0")
+            <input type="range" min="4" max="40" step="2" value="@_speed"
+                   @oninput="@(e => _speed = ToDouble(e.Value, 15))" />
+        </label>
+        <label>Margin @_margin.ToString("0")
+            <input type="range" min="10" max="90" step="5" value="@_margin"
+                   @oninput="@(e => _margin = ToDouble(e.Value, 30))" />
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    AutoPanOnNodeDrag="_autoPan"
+                    AutoPanOnConnect="_autoPan"
+                    AutoPanSpeed="_speed"
+                    AutoPanMargin="_margin"
+                    ZoomOnPinch="_pinch"
+                    OnViewportChanged="@(vp => _viewport = vp)">
+            <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="40" Color="#e5e7eb" />
+            <BlowControls />
+            <BlowMiniMap Pannable="true" Zoomable="true" />
+            <BlowPanel Anchor="BlowPanelPosition.TopLeft">
+                <div class="pan-readout">
+                    x @_viewport.X.ToString("0") · y @_viewport.Y.ToString("0") · zoom @_viewport.Zoom.ToString("0.00")
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .pan-readout { padding: 6px 10px; font-size: 12px; font-variant-numeric: tabular-nums; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+</style>
+
+@code {
+    private bool _autoPan = true;
+    private bool _pinch = true;
+    private double _speed = 15;
+    private double _margin = 30;
+    private BlowViewport _viewport = BlowViewport.Identity;
+
+    private readonly List<BlowNode> _nodes =
+    [
+        new() { Id = "1", Type = "input", Label = "Drag me to the edge", Position = new(0, 0), Width = 180 },
+        new() { Id = "2", Label = "Node 2", Position = new(60, 140) },
+        new() { Id = "3", Label = "Node 3", Position = new(260, 220) },
+    ];
+
+    private readonly List<BlowEdge> _edges =
+    [
+        new() { Id = "e1-2", Source = "1", Target = "2" },
+        new() { Id = "e2-3", Source = "2", Target = "3", Animated = true },
+    ];
+
+    private static double ToDouble(object? value, double fallback) =>
+        double.TryParse(value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : fallback;
+}

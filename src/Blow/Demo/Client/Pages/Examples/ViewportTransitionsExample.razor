@@ -1,0 +1,117 @@
+﻿@page "/examples/viewport-transitions"
+
+<PageTitle>Viewport Transitions - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Viewport Transitions"
+                 Summary="Every viewport helper has an async twin that takes a duration. Jumping between two far-apart parts of a graph loses the reader; a short eased transition tells them which way they travelled. Grabbing the pane mid-flight abandons the transition rather than fighting it.">
+    <Toolbar>
+        <label>
+            Duration
+            <input type="range" min="0" max="1500" step="100" value="@_duration"
+                   @oninput="@(e => SetDuration(e.Value))" />
+            <span class="duration">@(_duration == 0 ? "instant" : $"{_duration} ms")</span>
+        </label>
+        <button class="btn" @onclick="FlyToStart">Fly to Start</button>
+        <button class="btn" @onclick="FlyToFinish">Fly to Finish</button>
+        <button class="btn" @onclick="FitAll">Fit all</button>
+        <button class="btn" @onclick="ZoomInSlowly">Zoom to 200%</button>
+        <span class="state">@_state</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    MinZoom="0.1"
+                    OnMoveStart="OnMoveStart"
+                    OnMoveEnd="OnMoveEnd"
+                    FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="24" />
+            <BlowControls />
+            <BlowMiniMap Pannable="true" />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <div class="hint">
+                    Start a long transition, then drag the pane: the drag wins outright, because a
+                    transition that kept easing towards its old target would fight the pointer.
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .duration { display: inline-block; min-width: 5rem; text-align: right; }
+    .state { margin-left: auto; font-size: 12px; color: #6b7280; }
+    .hint {
+        max-width: 230px;
+        padding: 6px 10px;
+        font-size: 11px;
+        line-height: 1.45;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+</style>
+
+@code {
+    private BlowCanvas _flow = default!;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _duration = 600;
+    private string _state = "settled";
+
+    protected override void OnInitialized()
+    {
+        // Spread far enough apart that fitting them all zooms right out, so travelling between
+        // the two ends is a real journey rather than a nudge.
+        _nodes =
+        [
+            new BlowNode { Id = "start", Label = "Start", Position = new(0, 0), Width = 160, Height = 56 },
+            new BlowNode { Id = "mid-a", Label = "Fan out", Position = new(700, -220), Width = 160, Height = 56 },
+            new BlowNode { Id = "mid-b", Label = "Fan out", Position = new(700, 240), Width = 160, Height = 56 },
+            new BlowNode { Id = "join", Label = "Join", Position = new(1400, 10), Width = 160, Height = 56 },
+            new BlowNode { Id = "finish", Label = "Finish", Position = new(2100, 10), Width = 160, Height = 56 },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "s-a", Source = "start", Target = "mid-a", Animated = true },
+            new BlowEdge { Id = "s-b", Source = "start", Target = "mid-b", Animated = true },
+            new BlowEdge { Id = "a-j", Source = "mid-a", Target = "join" },
+            new BlowEdge { Id = "b-j", Source = "mid-b", Target = "join" },
+            new BlowEdge { Id = "j-f", Source = "join", Target = "finish" },
+        ];
+    }
+
+    private void SetDuration(object? raw)
+    {
+        if (int.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value))
+            _duration = value;
+    }
+
+    private void OnMoveStart(BlowViewport _) => SetState("moving");
+
+    private void OnMoveEnd(BlowViewport _) => SetState("settled");
+
+    private void SetState(string state)
+    {
+        _state = state;
+        StateHasChanged();
+    }
+
+    private Task FlyToStart() => FlyTo("start");
+
+    private Task FlyToFinish() => FlyTo("finish");
+
+    private async Task FlyTo(string nodeId)
+    {
+        if (_flow.GetNode(nodeId) is not { } node) return;
+
+        var rect = node.GetRect();
+        await _flow.SetCenterAsync(rect.X + rect.Width / 2, rect.Y + rect.Height / 2, 1.2, _duration);
+    }
+
+    private Task FitAll() => _flow.FitViewAsync(new BlowFitViewOptions { Padding = 0.15, Duration = _duration });
+
+    private Task ZoomInSlowly() => _flow.ZoomToAsync(2, _duration);
+}

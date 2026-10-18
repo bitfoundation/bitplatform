@@ -1,0 +1,314 @@
+﻿@namespace Bit.Blow
+<svg class="bit-blow-minimap bit-blow-minimap-@PositionClass @(Pannable ? "pannable" : null) @(Zoomable ? "zoomable" : null) @Class"
+     width="@Width" height="@Height" viewBox="@ViewBox"
+     style="@StyleString"
+     role="img"
+     aria-label="@AriaLabel"
+     @ref="_self"
+     @onpointerdown="OnPointerDown"
+     @onpointerdown:stopPropagation="true"
+     @onpointermove="OnPointerMove"
+     @onpointerup="OnPointerUp"
+     @onpointerleave="OnPointerUp"
+     @onpointercancel="OnPointerUp"
+     @onwheel="OnWheel"
+     @onwheel:stopPropagation="true"
+     @onwheel:preventDefault="Zoomable"
+     @onclick:stopPropagation="true"
+     @ondblclick:stopPropagation="true"
+     @oncontextmenu:stopPropagation="true">
+    @foreach (var node in Nodes)
+    {
+        if (node.Hidden) continue;
+        var r = node.GetRect();
+        @if (NodeTemplate is not null)
+        {
+            <g transform="@($"translate({Inv(r.X)},{Inv(r.Y)})")">
+                @NodeTemplate(node)
+            </g>
+        }
+        else
+        {
+            <rect class="bit-blow-minimap-node @(node.Selected ? "selected" : null) @NodeClassFunc?.Invoke(node)"
+                  x="@Inv(r.X)" y="@Inv(r.Y)"
+                  width="@Inv(r.Width)" height="@Inv(r.Height)"
+                  rx="@Inv(BorderRadius)"
+                  fill="@(NodeColorFunc?.Invoke(node) ?? NodeColor)"
+                  stroke="@(NodeStrokeColorFunc?.Invoke(node) ?? NodeStrokeColor)"
+                  stroke-width="@Inv(NodeStrokeWidth)" />
+        }
+    }
+    <path class="bit-blow-minimap-mask"
+          d="@MaskPath"
+          fill="@MaskColor"
+          stroke="@MaskStrokeColor"
+          stroke-width="@Inv(MaskStrokeWidth)"
+          fill-rule="evenodd" />
+</svg>
+
+@code {
+    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+
+    [Parameter] public int Width { get; set; } = 200;
+    [Parameter] public int Height { get; set; } = 150;
+    /// <summary>Default node fill. Defaults to the theme's minimap colour, so it follows the colour mode.</summary>
+    [Parameter] public string NodeColor { get; set; } = "var(--bit-blow-minimap-node)";
+
+    /// <summary>Fill of the area outside the visible viewport. Defaults to the theme's mask colour.</summary>
+    [Parameter] public string MaskColor { get; set; } = "var(--bit-blow-minimap-mask)";
+
+    /// <summary>Default node outline color.</summary>
+    [Parameter] public string NodeStrokeColor { get; set; } = "transparent";
+
+    /// <summary>Default node outline width (in flow units).</summary>
+    [Parameter] public double NodeStrokeWidth { get; set; } = 2;
+
+    /// <summary>Corner radius of the default node rectangles.</summary>
+    [Parameter] public double BorderRadius { get; set; } = 2;
+
+    /// <summary>Per-node fill color. Overrides <see cref="NodeColor"/> when provided.</summary>
+    [Parameter] public Func<BlowNode, string>? NodeColorFunc { get; set; }
+
+    /// <summary>Per-node outline color. Overrides <see cref="NodeStrokeColor"/> when provided.</summary>
+    [Parameter] public Func<BlowNode, string>? NodeStrokeColorFunc { get; set; }
+
+    /// <summary>Per-node extra CSS class for the minimap rectangle.</summary>
+    [Parameter] public Func<BlowNode, string?>? NodeClassFunc { get; set; }
+
+    /// <summary>Optional SVG template for each minimap node, rendered translated to the node origin.</summary>
+    [Parameter] public RenderFragment<BlowNode>? NodeTemplate { get; set; }
+
+    /// <summary>When true, clicking or dragging on the minimap pans the main viewport.</summary>
+    [Parameter] public bool Pannable { get; set; } = true;
+
+    /// <summary>When true, scrolling over the minimap zooms the main viewport.</summary>
+    [Parameter] public bool Zoomable { get; set; }
+
+    /// <summary>Percentage the viewport zooms by per wheel notch when <see cref="Zoomable"/> is on.</summary>
+    [Parameter] public double ZoomStep { get; set; } = 10;
+
+    /// <summary>Corner the minimap is anchored to. Defaults to bottom-right.</summary>
+    [Parameter] public BlowPanelPosition Position { get; set; } = BlowPanelPosition.BottomRight;
+
+    /// <summary>Outline color of the viewport mask.</summary>
+    [Parameter] public string MaskStrokeColor { get; set; } = "transparent";
+
+    /// <summary>Outline width of the viewport mask, in flow units.</summary>
+    [Parameter] public double MaskStrokeWidth { get; set; } = 1;
+
+    /// <summary>Background color of the minimap surface. Falls back to the stylesheet when null.</summary>
+    [Parameter] public string? BgColor { get; set; }
+
+    /// <summary>Raised when a minimap node is clicked.</summary>
+    [Parameter] public EventCallback<BlowNode> OnNodeClick { get; set; }
+
+    [Parameter] public string AriaLabel { get; set; } = "Mini map";
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public string? Style { get; set; }
+
+    private BlowRect _bounds;
+    private bool _panning;
+    private ElementReference _self;
+
+    /// <summary>
+    /// False when the minimap was placed outside a <c>BlowCanvas</c>. It still renders - an empty
+    /// frame beats bringing the page down with a null reference - but shows nothing and does nothing.
+    /// </summary>
+    private bool Attached => Flow is not null;
+
+    /// <summary>The nodes to draw; empty when there is no canvas to read them from.</summary>
+    private IReadOnlyList<BlowNode> Nodes => Attached ? Flow.CurrentNodes : [];
+
+    private string PositionClass => BlowPanelPositionClass.For(Position);
+
+    private string? StyleString =>
+        BgColor is null ? Style : "background:" + BgColor + ";" + Style;
+
+    private string ViewBox => string.Create(CultureInfo.InvariantCulture,
+        $"{_bounds.X} {_bounds.Y} {_bounds.Width} {_bounds.Height}");
+
+    // The frame is held still while the user is steering with it. The bounds include the
+    // viewport, so recomputing them as the drag moves the viewport would move the frame under the
+    // pointer, the same pixel would then map further out, and the view would run away.
+    protected override void OnParametersSet()
+    {
+        if (!_panning) _bounds = ComputeBounds();
+    }
+
+    private BlowRect ComputeBounds()
+    {
+        // Union of all node rects, padded; falls back to the visible viewport area.
+        double minX = double.MaxValue, minY = double.MaxValue, maxX = double.MinValue, maxY = double.MinValue;
+        bool any = false;
+        foreach (var n in Nodes)
+        {
+            if (n.Hidden) continue;
+            any = true;
+            var r = n.GetRect();
+            minX = Math.Min(minX, r.X);
+            minY = Math.Min(minY, r.Y);
+            maxX = Math.Max(maxX, r.Right);
+            maxY = Math.Max(maxY, r.Bottom);
+        }
+
+        if (!any)
+            return new BlowRect(0, 0, Width, Height);
+
+        // Include the current viewport rectangle so the mask is always visible.
+        var vp = VisibleRect();
+        minX = Math.Min(minX, vp.X);
+        minY = Math.Min(minY, vp.Y);
+        maxX = Math.Max(maxX, vp.Right);
+        maxY = Math.Max(maxY, vp.Bottom);
+
+        var w = maxX - minX;
+        var h = maxY - minY;
+        var pad = Math.Max(w, h) * 0.1 + 10;
+        return FitAspect(new BlowRect(minX - pad, minY - pad, w + pad * 2, h + pad * 2));
+    }
+
+    /// <summary>
+    /// Grows the view box on whichever axis is short so its aspect ratio matches the minimap
+    /// element's. Without this the SVG's own <c>preserveAspectRatio</c> letterboxes the content,
+    /// which both wastes half the minimap and - because the letterbox is invisible to C# - makes
+    /// every pointer position mapped back into flow space wrong by the size of the bars.
+    /// </summary>
+    private BlowRect FitAspect(BlowRect bounds)
+    {
+        if (Width <= 0 || Height <= 0 || bounds.Width <= 0 || bounds.Height <= 0) return bounds;
+
+        var target = (double)Width / Height;
+        var current = bounds.Width / bounds.Height;
+        if (Math.Abs(target - current) < 1e-9) return bounds;
+
+        if (current < target)
+        {
+            var w = bounds.Height * target;
+            return new BlowRect(bounds.X - (w - bounds.Width) / 2, bounds.Y, w, bounds.Height);
+        }
+
+        var h = bounds.Width / target;
+        return new BlowRect(bounds.X, bounds.Y - (h - bounds.Height) / 2, bounds.Width, h);
+    }
+
+    /// <summary>
+    /// Maps a minimap-local pixel to the flow point drawn there. Linear because
+    /// <see cref="FitAspect"/> has already made the view box match the element's shape.
+    /// </summary>
+    private BlowXYPosition ToFlow(double offsetX, double offsetY) => new(
+        _bounds.X + offsetX * (_bounds.Width / Width),
+        _bounds.Y + offsetY * (_bounds.Height / Height));
+
+    private BlowRect VisibleRect()
+    {
+        if (!Attached) return new BlowRect(0, 0, Width, Height);
+
+        var vp = Flow.Viewport;
+        var pane = Flow.PaneSize;
+        var topLeft = vp.ScreenToFlow(0, 0);
+        return new BlowRect(topLeft.X, topLeft.Y, pane.Width / vp.Zoom, pane.Height / vp.Zoom);
+    }
+
+    private string MaskPath
+    {
+        get
+        {
+            var b = _bounds;
+            var v = VisibleRect();
+            // Outer rect (clockwise) + inner viewport rect (counter-clockwise) => mask everything except viewport.
+            return string.Create(CultureInfo.InvariantCulture,
+                $"M{b.X},{b.Y}h{b.Width}v{b.Height}h{-b.Width}z " +
+                $"M{v.X},{v.Y}v{v.Height}h{v.Width}v{-v.Height}z");
+        }
+    }
+
+    private static string Inv(double v) => v.ToString(CultureInfo.InvariantCulture);
+
+    private async Task OnPointerDown(PointerEventArgs e)
+    {
+        if (!Attached || e.Button != 0) return;
+
+        if (Pannable)
+        {
+            _panning = true;
+
+            // Capture the pointer so a drag that wanders off the minimap keeps steering the
+            // viewport, rather than stopping dead at the minimap's border.
+            Flow.CapturePointer(_self, e.PointerId);
+            PanTo(e.OffsetX, e.OffsetY);
+        }
+
+        if (OnNodeClick.HasDelegate && NodeAt(e.OffsetX, e.OffsetY) is { } hit)
+            await OnNodeClick.InvokeAsync(hit);
+    }
+
+    private void OnPointerMove(PointerEventArgs e)
+    {
+        if (_panning) PanTo(e.OffsetX, e.OffsetY);
+    }
+
+    private void OnPointerUp(PointerEventArgs e)
+    {
+        if (!_panning) return;
+        _panning = false;
+        _bounds = ComputeBounds();
+    }
+
+    private void OnWheel(WheelEventArgs e)
+    {
+        if (!Attached || !Zoomable || e.DeltaY == 0) return;
+
+        // One notch of a mouse wheel zooms by ZoomStep percent; the small deltas a trackpad
+        // sends zoom by the matching fraction of that, rather than a full step each.
+        var notches = e.DeltaMode switch
+        {
+            1 => e.DeltaY / 3,  // lines
+            2 => e.DeltaY,      // pages
+            _ => e.DeltaY / 100 // pixels
+        };
+        var step = 1 + Math.Max(0, ZoomStep) / 100.0;
+        var factor = Math.Pow(step, -Math.Clamp(notches, -1, 1));
+
+        // Clamped first, so that at a zoom limit the view stays put instead of the focus point
+        // being scaled anyway and the view sliding sideways on every notch.
+        var vp = Flow.Viewport;
+        var newZoom = Math.Clamp(vp.Zoom * factor, Flow.MinZoom, Flow.MaxZoom);
+        if (Math.Abs(newZoom - vp.Zoom) < 1e-9) return;
+
+        // Zoom about the pane centre and go through SetViewport so TranslateExtent is respected.
+        var pane = Flow.PaneSize;
+        var cx = pane.Width / 2;
+        var cy = pane.Height / 2;
+        var focus = vp.ScreenToFlow(cx, cy);
+        Flow.SetViewport(new BlowViewport(cx - focus.X * newZoom, cy - focus.Y * newZoom, newZoom));
+    }
+
+    /// <summary>Maps a minimap-local pixel to the topmost node under it, or null.</summary>
+    private BlowNode? NodeAt(double offsetX, double offsetY)
+    {
+        if (Width <= 0 || Height <= 0) return null;
+        var p = ToFlow(offsetX, offsetY);
+
+        BlowNode? found = null;
+        foreach (var n in Nodes)
+        {
+            if (n.Hidden) continue;
+            var r = n.GetRect();
+            if (p.X >= r.Left && p.X <= r.Right && p.Y >= r.Top && p.Y <= r.Bottom) found = n;
+        }
+        return found;
+    }
+
+    /// <summary>Centers the main viewport on the flow point under the given minimap-local pixel.</summary>
+    private void PanTo(double offsetX, double offsetY)
+    {
+        if (!Attached || Width <= 0 || Height <= 0) return;
+        var p = ToFlow(offsetX, offsetY);
+
+        var vp = Flow.Viewport;
+        var pane = Flow.PaneSize;
+        var x = pane.Width / 2 - p.X * vp.Zoom;
+        var y = pane.Height / 2 - p.Y * vp.Zoom;
+        Flow.SetViewport(new BlowViewport(x, y, vp.Zoom));
+    }
+}

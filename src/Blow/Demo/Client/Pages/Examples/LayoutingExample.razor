@@ -1,0 +1,111 @@
+﻿@page "/examples/layouting"
+<PageTitle>Layouting - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Layouting"
+                 Summary="Arrange the graph automatically with the layouts that ship in the box - no JavaScript layout engine needed. The layered layout orders each layer to keep edges from crossing, packs layers by their own thickness so tall nodes never overlap the next row, and points the handles along the flow. Grid and circle are there for tidying up and for showing a set of peers.">
+    <Toolbar>
+        @foreach (var (key, label) in _layouts)
+        {
+            <button class="btn btn-sm @(key == _current ? "btn-primary" : "btn-outline-secondary")"
+                    @onclick="@(() => Relayout(key))">
+                @label
+            </button>
+        }
+        <span class="lay-sep"></span>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="AddBranch">Add branch</button>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="Reset">Reset</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .lay-sep { display: inline-block; width: 1rem; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _current = "tb";
+    private int _next = 8;
+
+    private readonly (string Key, string Label)[] _layouts =
+    [
+        ("tb", "Top to bottom"),
+        ("lr", "Left to right"),
+        ("bt", "Bottom to top"),
+        ("grid", "Grid"),
+        ("circle", "Circle"),
+    ];
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _next = 8;
+        _nodes = Enumerable.Range(1, 7)
+            .Select(i => new BlowNode { Id = i.ToString(), Label = $"Node {i}", Width = 120, Height = 44 })
+            .ToList();
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e2-5", Source = "2", Target = "5", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e3-6", Source = "3", Target = "6", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e3-7", Source = "3", Target = "7", Type = BlowEdgeType.SmoothStep },
+        ];
+        Relayout(_current);
+    }
+
+    private void AddBranch()
+    {
+        var parent = _nodes[Random.Shared.Next(_nodes.Count)];
+        var id = (_next++).ToString();
+
+        _nodes.Add(new BlowNode { Id = id, Label = $"Node {id}", Width = 120, Height = 44 });
+        _edges.Add(new BlowEdge { Id = $"e{parent.Id}-{id}", Source = parent.Id, Target = id, Type = BlowEdgeType.SmoothStep });
+
+        Relayout(_current);
+    }
+
+    private void Relayout(string key)
+    {
+        _current = key;
+
+        switch (key)
+        {
+            case "grid":
+                BlowLayout.Grid(_nodes, new BlowGridLayoutOptions { ColumnGap = 50, RowGap = 50 });
+                break;
+
+            case "circle":
+                BlowLayout.Circle(_nodes, new BlowCircleLayoutOptions { NodeGap = 40 });
+                break;
+
+            default:
+                BlowLayout.Layered(_nodes, _edges, new BlowLayeredLayoutOptions
+                {
+                    Direction = key switch
+                    {
+                        "lr" => BlowLayoutDirection.LeftToRight,
+                        "bt" => BlowLayoutDirection.BottomToTop,
+                        _ => BlowLayoutDirection.TopToBottom,
+                    },
+                    LayerGap = 90,
+                    NodeGap = 40,
+                });
+                break;
+        }
+
+        // Handle sides may have moved with the direction, so the anchors need re-measuring.
+        _flow?.UpdateNodeInternals();
+        _flow?.FitView();
+    }
+}

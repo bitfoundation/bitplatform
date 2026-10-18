@@ -1,0 +1,71 @@
+﻿@page "/examples/keyboard-a11y"
+
+<PageTitle>Keyboard Accessibility - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Keyboard Accessibility"
+                 Summary="Nodes and edges are both in the tab order. Tab to one, press Enter or Space to select it (Shift to add to the selection), move a selection with the arrow keys, press Escape to clear it and Delete to remove it. Every change is announced through an aria-live region.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_edgesFocusable" @onchange="@(e => _edgesFocusable = (bool)e.Value!)" /> Edges focusable</label>
+        <button class="btn btn-sm btn-primary" @onclick="Reset">Reset</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    EdgesFocusable="_edgesFocusable"
+                    AriaLabel="Approval workflow"
+                    OnSelectionChange="OnSelectionChange">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <div class="a11y-readout">
+                    <strong>Selection</strong>
+                    <div>@_selection</div>
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .a11y-readout { min-width: 170px; padding: 8px 10px; font-size: 12px; background: var(--bit-blow-surface); color: var(--bit-blow-text); border: 1px solid var(--bit-blow-border); border-radius: 6px; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private bool _edgesFocusable = true;
+    private string _selection = "nothing selected";
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input",  Label = "Submitted", Position = new(40, 0) },
+            new BlowNode { Id = "2",                  Label = "In review", Position = new(0, 130), AriaLabel = "In review, awaiting approval" },
+            new BlowNode { Id = "3", Type = "output", Label = "Approved",  Position = new(200, 260) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "submit" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Label = "approve" },
+        ];
+
+        _selection = "nothing selected";
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private void OnSelectionChange(BlowSelectionChange change)
+    {
+        var parts = change.Nodes.Select(n => n.Label ?? n.Id)
+            .Concat(change.Edges.Select(e => e.Label ?? e.Id))
+            .ToList();
+        _selection = parts.Count == 0 ? "nothing selected" : string.Join(", ", parts);
+    }
+}

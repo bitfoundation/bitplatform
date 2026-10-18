@@ -1,0 +1,41 @@
+﻿@page "/examples/touch-device"
+
+<PageTitle>Touch Device - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Touch Device"
+                 Summary="All interactions are built on pointer events, so dragging nodes, panning, pinch-zooming and connecting handles work with touch as well as mouse. A touchscreen has no Shift key to hold for a box selection, so turn on 'Drag to select' and a one-finger drag on the empty pane draws the box instead of panning. Try it on a touchscreen or with device emulation.">
+    <Toolbar>
+        <label><input type="checkbox" @bind="_selectionOnDrag" /> Drag to select</label>
+        <span class="text-muted">@(_selectionOnDrag ? "a drag on the pane draws a selection box" : "a drag on the pane pans")</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" SelectionOnDrag="_selectionOnDrag">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _selectionOnDrag;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Tap & drag me", Position = new(220, 30), Width = 160 },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(120, 170) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(360, 170) },
+            new BlowNode { Id = "4", Type = "output", Label = "Node 4", Position = new(240, 300) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+        ];
+    }
+}

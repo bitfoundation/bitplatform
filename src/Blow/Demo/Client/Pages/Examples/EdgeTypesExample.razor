@@ -1,0 +1,56 @@
+﻿@page "/examples/edge-types"
+
+<PageTitle>Edge Types - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Edge Types"
+                 Summary="Pick the default edge type for new connections, and toggle animation and markers. Drag between handles to create edges using the current settings.">
+    <Toolbar>
+        <label>type:
+            <select @onchange="e => _type = Enum.Parse<BlowEdgeType>(e.Value!.ToString()!)">
+                @foreach (var t in Enum.GetValues<BlowEdgeType>())
+                {
+                    <option value="@t">@t</option>
+                }
+            </select>
+        </label>
+        <label><input type="checkbox" @onchange="e => _animated = (bool)e.Value!" /> animated</label>
+        <label><input type="checkbox" checked="@_markers" @onchange="e => _markers = (bool)e.Value!" /> markers</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    DefaultEdgeType="_type"
+                    ConnectionLineType="_type"
+                    DefaultEdgeOptions="_options">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowEdgeType _type = BlowEdgeType.Bezier;
+    private bool _animated;
+    private bool _markers = true;
+
+    private BlowDefaultEdgeOptions _options => new() { Animated = _animated, MarkerEnd = _markers };
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Source", Position = new(250, 20) },
+            new BlowNode { Id = "2", Label = "A", Position = new(120, 150) },
+            new BlowNode { Id = "3", Label = "B", Position = new(380, 150) },
+            new BlowNode { Id = "4", Type = "output", Label = "Target", Position = new(250, 290) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Type = BlowEdgeType.Bezier },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4", Type = BlowEdgeType.Step },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Type = BlowEdgeType.Straight },
+        ];
+    }
+}

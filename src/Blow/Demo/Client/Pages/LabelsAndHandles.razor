@@ -1,0 +1,88 @@
+﻿@page "/labels-handles"
+
+<PageTitle>Labels &amp; Drag Handles - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>HTML Edge Labels &amp; Drag Handles</h3>
+    <p class="text-muted">
+        Edges use <strong>HTML labels</strong> (interactive buttons rendered in a non-transformed overlay,
+        so they stay a constant size). The purple nodes can only be dragged by their <strong>⠿ handle</strong>
+        - clicking the body just selects.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="demo-canvas" style="height: calc(100vh - 240px);">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <NodeTemplate Context="node">
+            @if (node.Type == "panel")
+            {
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="panel-node">
+                    <BlowDragHandle Class="panel-node__grip">⠿</BlowDragHandle>
+                    <div class="panel-node__title">@node.Label</div>
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            }
+            else
+            {
+                <BlowDefaultNode Node="node" />
+            }
+        </NodeTemplate>
+
+        <EdgeLabelTemplate Context="ctx">
+            <div class="edge-label">
+                <span>@(ctx.Edge.Label ?? ctx.Edge.Id)</span>
+                <button class="edge-label__btn" title="Delete edge" @onclick="() => RemoveEdge(ctx.Edge)">×</button>
+            </div>
+        </EdgeLabelTemplate>
+
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+            <BlowControls />
+            <BlowMiniMap />
+        </ChildContent>
+    </BlowCanvas>
+</div>
+
+<style>
+    .panel-node { display:flex; align-items:center; gap:8px; padding:2px 4px; }
+    .panel-node__grip { font-size:16px; color:#7c3aed; user-select:none; }
+    .panel-node__title { font-weight:600; }
+    .bit-blow-node-panel { background:#f5f3ff; border-color:#7c3aed; }
+
+    .edge-label {
+        display:flex; align-items:center; gap:6px;
+        background:#fff; border:1px solid #ddd; border-radius:6px;
+        padding:2px 6px; font-size:12px; box-shadow:0 1px 3px rgba(0,0,0,0.12);
+    }
+    .edge-label__btn {
+        border:none; background:#fee2e2; color:#b91c1c; border-radius:4px;
+        width:18px; height:18px; line-height:1; cursor:pointer; padding:0;
+    }
+    .edge-label__btn:hover { background:#fecaca; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = new();
+    private List<BlowEdge> _edges = new();
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "panel", Label = "Source",  Position = new(120, 40),  UseCustomDragHandle = true, Width = 160 },
+            new BlowNode { Id = "2", Type = "panel", Label = "Process", Position = new(120, 200), UseCustomDragHandle = true, Width = 160 },
+            new BlowNode { Id = "3",                 Label = "Plain (drag anywhere)", Position = new(380, 120), Width = 180 },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "validate", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Label = "emit",     MarkerType = BlowMarkerType.ArrowClosed },
+        ];
+    }
+
+    private void RemoveEdge(BlowEdge edge) => _edges.RemoveAll(e => e.Id == edge.Id);
+}

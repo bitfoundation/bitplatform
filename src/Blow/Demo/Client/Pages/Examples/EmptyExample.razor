@@ -1,0 +1,44 @@
+﻿@page "/examples/empty"
+
+<PageTitle>Empty - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Empty"
+                 Summary="An empty canvas. Use the buttons to add nodes at runtime, then connect them.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="AddNode">Add node</button>
+        <button class="btn btn-sm" @onclick="Reset">Clear</button>
+        <span class="text-muted">@_nodes.Count node(s)</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _id;
+
+    private void AddNode()
+    {
+        _id++;
+        _nodes.Add(new BlowNode
+        {
+            Id = _id.ToString(),
+            Label = $"Node {_id}",
+            Position = new(Random.Shared.Next(0, 400), Random.Shared.Next(0, 300)),
+        });
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private void Reset()
+    {
+        _nodes.Clear();
+        _edges.Clear();
+        _id = 0;
+    }
+}

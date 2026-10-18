@@ -1,0 +1,49 @@
+﻿@page "/edge-types"
+
+<PageTitle>Edge Types - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>Edge Types &amp; Markers</h3>
+    <p class="text-muted">
+        Four of the five built-in edge path algorithms: bezier, straight, step and smoothstep.
+        The last two show <strong>arrow markers</strong> - a closed arrowhead and a double-ended edge.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="demo-canvas">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeType="BlowEdgeType.SmoothStep">
+        <BlowBackground />
+        <BlowControls />
+        <BlowMiniMap />
+    </BlowCanvas>
+</div>
+
+@code {
+    private List<BlowNode> _nodes = new();
+    private List<BlowEdge> _edges = new();
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "a1", Label = "A", Position = new(40, 40) },
+            new BlowNode { Id = "a2", Label = "B", Position = new(320, 40) },
+            new BlowNode { Id = "b1", Label = "C", Position = new(40, 160) },
+            new BlowNode { Id = "b2", Label = "D", Position = new(320, 160) },
+            new BlowNode { Id = "c1", Label = "E", Position = new(40, 280) },
+            new BlowNode { Id = "c2", Label = "F", Position = new(320, 280) },
+            new BlowNode { Id = "d1", Label = "G", Position = new(40, 400) },
+            new BlowNode { Id = "d2", Label = "H", Position = new(320, 400) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e-bezier",     Source = "a1", Target = "a2", Type = BlowEdgeType.Bezier,     Label = "bezier" },
+            new BlowEdge { Id = "e-straight",   Source = "b1", Target = "b2", Type = BlowEdgeType.Straight,   Label = "straight" },
+            new BlowEdge { Id = "e-step",       Source = "c1", Target = "c2", Type = BlowEdgeType.Step,       Label = "closed marker", MarkerType = BlowMarkerType.ArrowClosed },
+            new BlowEdge { Id = "e-smoothstep", Source = "d1", Target = "d2", Type = BlowEdgeType.SmoothStep, Label = "double-ended", Animated = true, MarkerStart = true },
+        ];
+    }
+}

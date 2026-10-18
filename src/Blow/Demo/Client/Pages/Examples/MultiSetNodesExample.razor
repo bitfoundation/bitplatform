@@ -1,0 +1,47 @@
+﻿@page "/examples/multi-set-nodes"
+
+<PageTitle>Multi setNodes - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Multi setNodes"
+                 Summary="Apply several independent updates to the node list within a single handler. All mutations are coalesced into one render, mirroring multiple setNodes calls in React.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="ShuffleAndRecolor">Shuffle + recolor (one tick)</button>
+        <button class="btn btn-sm" @onclick="Reset">Reset</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private static readonly string[] Colors = ["#dbeafe", "#dcfce7", "#fee2e2", "#fef9c3", "#f3e8ff"];
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _nodes = Enumerable.Range(1, 5)
+            .Select(i => new BlowNode { Id = i.ToString(), Label = $"Node {i}", Position = new(i * 90, 120), Style = "background:#fff;" })
+            .ToList();
+        _edges = [];
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private void ShuffleAndRecolor()
+    {
+        // Multiple successive "set" operations applied before a single re-render.
+        foreach (var n in _nodes)
+            n.Position = new(Random.Shared.Next(20, 460), Random.Shared.Next(20, 260));
+        foreach (var n in _nodes)
+            n.Style = $"background:{Colors[Random.Shared.Next(Colors.Length)]};";
+        foreach (var n in _nodes)
+            n.Label = $"{n.Id}·{Random.Shared.Next(100)}";
+        _flow?.Refresh(remeasure: true);
+    }
+}

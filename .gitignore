@@ -283,6 +283,10 @@ _book
 /src/Bink/Bit.Bink/wwwroot/**/*.js
 /src/Bink/Bit.Bink/wwwroot/**/*.css
 
+/src/Blow/Bit.Blow/Scripts/**/*.js
+/src/Blow/Bit.Blow/wwwroot/**/*.js
+/src/Blow/Bit.Blow/wwwroot/**/*.css
+
 /src/Blex/Bit.Blex.Blazor/Scripts/**/*.js
 /src/Blex/Bit.Blex.Blazor/wwwroot/**/*.js
 

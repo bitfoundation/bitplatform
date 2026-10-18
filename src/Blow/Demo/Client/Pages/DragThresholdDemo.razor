@@ -1,0 +1,65 @@
+﻿@page "/drag-threshold"
+
+<PageTitle>Node Drag Threshold - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>Node Drag Threshold</h3>
+    <p class="text-muted">
+        The new <code>NodeDragThreshold</code> parameter sets how far (in screen pixels) the pointer must travel
+        before a node actually starts moving. Below the threshold the gesture counts as a click, so the node
+        selects but stays put - handy for preventing accidental nudges. Increase the threshold and try a small
+        drag versus a deliberate one. The log records whether each gesture moved a node.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="example-toolbar">
+    <label>threshold:
+        <input type="range" min="0" max="80" step="1" value="@_threshold"
+               @oninput="e => _threshold = double.Parse(e.Value!.ToString()!)" />
+        <strong>@_threshold px</strong>
+    </label>
+    <span class="text-muted">last gesture: @_lastGesture</span>
+</div>
+
+<div class="demo-canvas" style="height: calc(100vh - 250px);">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                NodeDragThreshold="_threshold"
+                OnNodeDragStart="n => _dragStart = n.Position"
+                OnNodeDragStop="OnDragStop">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+    </BlowCanvas>
+</div>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private double _threshold = 40;
+    private BlowXYPosition _dragStart;
+    private string _lastGesture = "-";
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Drag me a little, then a lot", Position = new(200, 40), Width = 230 },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(160, 200) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(360, 200) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+        ];
+    }
+
+    private void OnDragStop(BlowNode n)
+    {
+        var moved = Math.Abs(n.Position.X - _dragStart.X) > 0.01 || Math.Abs(n.Position.Y - _dragStart.Y) > 0.01;
+        _lastGesture = moved
+            ? $"moved node {n.Id} (past {_threshold}px threshold)"
+            : $"click on node {n.Id} (under threshold - not moved)";
+    }
+}

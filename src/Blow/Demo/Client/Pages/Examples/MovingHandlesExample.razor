@@ -1,0 +1,78 @@
+﻿@page "/examples/moving-handles"
+@using System.Globalization
+
+<PageTitle>Moving Handles - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Moving Handles"
+                 Summary="Add or remove handles on a node at runtime. After the handle layout changes, the canvas re-measures so connected edges snap to the correct anchors.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="AddHandle">Add handle</button>
+        <button class="btn btn-sm" @onclick="RemoveHandle">Remove handle</button>
+        <span class="text-muted">@_handleCount source handle(s)</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                @if (node.Id == "src")
+                {
+                    <div class="mh-node">@node.Label</div>
+                    @for (var i = 0; i < _handleCount; i++)
+                    {
+                        // Invariant: in a culture with a decimal comma, 33,33% is not CSS.
+                        var top = string.Create(CultureInfo.InvariantCulture, $"top:{(i + 1) * 100.0 / (_handleCount + 1)}%");
+                        <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="@($"h{i}")" Style="@top" />
+                    }
+                }
+                else
+                {
+                    <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" />
+                    <div class="mh-node">@node.Label</div>
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .mh-node { padding: 12px 16px; font-weight: 600; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _handleCount = 2;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "src", Label = "Source", Position = new(60, 100), Height = 120 },
+            new BlowNode { Id = "a", Label = "A", Position = new(360, 40) },
+            new BlowNode { Id = "b", Label = "B", Position = new(360, 180) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e0", Source = "src", SourceHandle = "h0", Target = "a" },
+            new BlowEdge { Id = "e1", Source = "src", SourceHandle = "h1", Target = "b" },
+        ];
+    }
+
+    private void AddHandle()
+    {
+        _handleCount++;
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private void RemoveHandle()
+    {
+        if (_handleCount <= 1) return;
+        _handleCount--;
+        _edges.RemoveAll(e => e.SourceHandle == $"h{_handleCount}");
+        _flow?.Refresh(remeasure: true);
+    }
+}

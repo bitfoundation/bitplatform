@@ -1,0 +1,54 @@
+﻿@page "/examples/validation"
+
+<PageTitle>Validation - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Validation"
+                 Summary="Connections are validated while dragging. Here you may only connect handle 'A' to handle 'B'. While you drag, the valid target handle lights up green and the invalid one red, and an invalid target won't accept the drop.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" IsValidConnection="IsValid">
+        <NodeTemplate Context="node">
+            @if (node.Id == "A")
+            {
+                <div class="vnode">@node.Label</div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="a" />
+            }
+            else
+            {
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" Id="b" Class="@(node.Id == "B" ? "handle-ok" : "handle-no")" />
+                <div class="vnode">@node.Label</div>
+            }
+        </NodeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .vnode { padding: 6px 10px; font-weight: 600; }
+    /* A pale hint at rest, set through the handle's own colour token rather than a background
+       with !important: that way the canvas's live valid/invalid colours still take over while
+       a connection is being dragged, instead of being painted over. */
+    .handle-ok, .handle-no { width: 12px; height: 12px; }
+    .handle-ok { --bit-blow-handle-bg: #86efac; }
+    .handle-no { --bit-blow-handle-bg: #fca5a5; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "A", Label = "A (source)", Position = new(60, 140) },
+            new BlowNode { Id = "B", Label = "B - valid target", Position = new(340, 60) },
+            new BlowNode { Id = "C", Label = "C - invalid target", Position = new(340, 220) },
+        ];
+        _edges = [];
+    }
+
+    // Only A's handle "a" connecting to handle "b" on node "B" is valid.
+    private bool IsValid(BlowConnection c) => c.TargetHandle == "b" && c.Target == "B";
+}

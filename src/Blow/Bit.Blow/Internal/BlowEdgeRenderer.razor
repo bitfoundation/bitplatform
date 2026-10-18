@@ -1,0 +1,98 @@
+﻿@namespace Bit.Blow
+<g class="bit-blow-edge @(Edge.Selected ? "selected" : null) @(Edge.Animated ? "animated" : null) @Edge.Class"
+   data-id="@Edge.Id"
+   role="group"
+   aria-roledescription="@AriaLabels.EdgeRoleDescription"
+   tabindex="@TabIndex"
+   aria-label="@AriaLabel"
+   @onkeydown="OnKeyDown"
+   @onpointerdown="OnPointerDown"
+   @onpointerdown:stopPropagation="true"
+   @onclick="OnClick"
+   @onclick:stopPropagation="true"
+   @ondblclick="OnDoubleClick"
+   @ondblclick:stopPropagation="true"
+   @oncontextmenu="OnContextMenu"
+   @oncontextmenu:stopPropagation="true"
+   @oncontextmenu:preventDefault="@OnContextMenu.HasDelegate"
+   @onmouseenter="OnMouseEnter"
+   @onmousemove="MouseMoveHandler"
+   @onmouseleave="OnMouseLeave">
+
+    @* Invisible wide path to make the edge easy to click. *@
+    <path class="bit-blow-edge-interaction" d="@Geometry.Path" fill="none" stroke="transparent"
+          stroke-width="@Inv(Edge.InteractionWidth)" />
+
+    @if (Template is not null)
+    {
+        @Template(Context)
+    }
+    else
+    {
+        <path class="bit-blow-edge-path"
+              d="@Geometry.Path"
+              fill="none"
+              stroke="@(Edge.Stroke ?? "var(--bit-blow-edge-stroke)")"
+              stroke-width="@Inv(Edge.StrokeWidth)"
+              style="@Edge.Style"
+              marker-start="@Context.MarkerStartUrl"
+              marker-end="@Context.MarkerEndUrl" />
+
+        @if (!SuppressLabel && !string.IsNullOrEmpty(Edge.Label))
+        {
+            <BlowEdgeText X="Geometry.LabelX" Y="Geometry.LabelY"
+                      Label="@Edge.Label"
+                      ShowBg="Edge.LabelShowBg"
+                      Style="@Edge.LabelStyle"
+                      BgStyle="@Edge.LabelBgStyle"
+                      PaddingX="Edge.LabelBgPaddingX"
+                      PaddingY="Edge.LabelBgPaddingY"
+                      BorderRadius="Edge.LabelBgBorderRadius" />
+        }
+    }
+</g>
+
+@code {
+    [Parameter, EditorRequired] public BlowEdge Edge { get; set; } = default!;
+    [Parameter, EditorRequired] public BlowEdgeContext Context { get; set; } = default!;
+    [Parameter] public RenderFragment<BlowEdgeContext>? Template { get; set; }
+    [Parameter] public bool SuppressLabel { get; set; }
+
+    /// <summary>When false, suppresses the edge's tab order (set by the canvas a11y flag).</summary>
+    [Parameter] public bool Focusable { get; set; } = true;
+
+    /// <summary>The canvas's accessible-name strings, so a localized flow labels its edges too.</summary>
+    [Parameter] public BlowAriaLabels AriaLabels { get; set; } = BlowAriaLabels.Default;
+
+    /// <summary>Raised when the edge is activated from the keyboard; the flag is "additive".</summary>
+    [Parameter] public EventCallback<bool> OnActivate { get; set; }
+
+    [Parameter] public EventCallback<PointerEventArgs> OnSelect { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnDoubleClick { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnContextMenu { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnMouseEnter { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnMouseMove { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnMouseLeave { get; set; }
+
+    private BlowPathResult Geometry => Context.Geometry;
+
+    private static string Inv(double v) => v.ToString(CultureInfo.InvariantCulture);
+
+    private string AriaLabel => string.IsNullOrEmpty(Edge.Label)
+        ? AriaLabels.EdgeLabel(Edge.Source, Edge.Target)
+        : Edge.Label;
+
+    private string? TabIndex => Focusable && Edge.Focusable ? "0" : null;
+
+    // Only attach the high-frequency move listener when someone is listening for it;
+    // an empty EventCallback makes the renderer omit the attribute entirely.
+    private EventCallback<MouseEventArgs> MouseMoveHandler =>
+        OnMouseMove.HasDelegate ? OnMouseMove : default;
+
+    private Task OnPointerDown(PointerEventArgs e) => OnSelect.InvokeAsync(e);
+
+    /// <summary>Enter/Space toggles selection, matching how a focused node is activated.</summary>
+    private Task OnKeyDown(KeyboardEventArgs e) =>
+        e.Key is "Enter" or " " ? OnActivate.InvokeAsync(e.ShiftKey) : Task.CompletedTask;
+}

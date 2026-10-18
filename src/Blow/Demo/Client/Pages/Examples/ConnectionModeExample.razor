@@ -1,0 +1,50 @@
+﻿@page "/examples/connection-mode"
+
+<PageTitle>Connection Mode - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Connection Mode"
+                 Summary="Strict mode only allows source→target connections. Loose mode lets any handle connect to any other handle. Toggle the mode and try connecting handles of the same type.">
+    <Toolbar>
+        <label>mode:
+            <select @onchange="e => _mode = Enum.Parse<BlowConnectionMode>(e.Value!.ToString()!)">
+                <option value="Strict">Strict</option>
+                <option value="Loose">Loose</option>
+            </select>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="_mode">
+            <NodeTemplate Context="node">
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" Id="t" />
+                <div class="vnode">@node.Label</div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="s" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .vnode { padding: 6px 14px; font-weight: 600; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowConnectionMode _mode = BlowConnectionMode.Strict;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Label = "Node 1", Position = new(80, 60) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(340, 60) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(80, 200) },
+            new BlowNode { Id = "4", Label = "Node 4", Position = new(340, 200) },
+        ];
+        _edges = [];
+    }
+}

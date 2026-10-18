@@ -158,6 +158,11 @@ jobs:
     - name: dotnet pack Bink
       run: dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output . --configuration Release
 
+    - name: dotnet build Blow
+      run: dotnet build src/Blow/Bit.Blow/Bit.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Blow
+      run: dotnet pack src/Blow/Bit.Blow/Bit.Blow.csproj --output . --configuration Release
+
     - name: dotnet build Blex
       run: dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blex

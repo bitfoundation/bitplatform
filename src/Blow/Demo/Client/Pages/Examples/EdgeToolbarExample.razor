@@ -1,0 +1,68 @@
+﻿@page "/examples/edge-toolbar"
+
+<PageTitle>Edge Toolbar - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Edge Toolbar"
+                 Summary="Selecting an edge reveals an BlowEdgeToolbar anchored at its midpoint (constant screen size). Use it to relabel, recolor or delete the edge.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeType="BlowEdgeType.SmoothStep">
+        <EdgeTemplate Context="ctx">
+            <BlowBaseEdge Path="@ctx.Geometry.Path"
+                      Stroke="@((ctx.Edge.Data as string) ?? "var(--bit-blow-edge-stroke)")"
+                      StrokeWidth="@(ctx.Edge.Selected ? 3 : 1.5)"
+                      Label="@ctx.Edge.Label"
+                      LabelX="@ctx.Geometry.LabelX"
+                      LabelY="@ctx.Geometry.LabelY" />
+        </EdgeTemplate>
+        <EdgeLabelTemplate Context="ctx">
+            @if (ctx.Edge.Selected)
+            {
+                <BlowEdgeToolbar>
+                    <button class="btn-mini" @onclick="() => Relabel(ctx.Edge)">✎</button>
+                    <button class="btn-mini" @onclick="() => Recolor(ctx.Edge)">🎨</button>
+                    <button class="btn-mini danger" @onclick="() => Remove(ctx.Edge)">×</button>
+                </BlowEdgeToolbar>
+            }
+        </EdgeLabelTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .btn-mini { border:1px solid #ddd; background:#fff; border-radius:4px; cursor:pointer; padding:1px 6px; font-size:13px; }
+    .btn-mini.danger { background:#fee2e2; color:#b91c1c; border-color:#fca5a5; }
+    .btn-mini:hover { background:#f3f4f6; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _n;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Start", Position = new(240, 20) },
+            new BlowNode { Id = "2", Label = "Middle", Position = new(240, 150) },
+            new BlowNode { Id = "3", Type = "output", Label = "End", Position = new(240, 290) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "step 1", Data = "#2563eb" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Label = "step 2", Data = "#16a34a" },
+        ];
+    }
+
+    private void Relabel(BlowEdge edge) => edge.Label = $"label {++_n}";
+
+    private void Recolor(BlowEdge edge)
+    {
+        var colors = new[] { "#16a34a", "#dc2626", "#2563eb", "#9333ea", "#ea580c" };
+        edge.Data = colors[Random.Shared.Next(colors.Length)];
+    }
+
+    private void Remove(BlowEdge edge) => _edges.RemoveAll(e => e.Id == edge.Id);
+}

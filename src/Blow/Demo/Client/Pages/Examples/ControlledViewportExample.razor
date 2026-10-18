@@ -1,0 +1,53 @@
+﻿@page "/examples/controlled-viewport"
+
+<PageTitle>Controlled Viewport - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Controlled Viewport"
+                 Summary="Drive the viewport from your own state. The canvas's Viewport parameter is bound to a field that OnViewportChanged keeps up to date as you pan and zoom; Reset and Center write that field directly and the canvas follows. Fit goes through the imperative API, which reports back through the same callback.">
+    <Toolbar>
+        <span class="text-muted">x: @_vp.X.ToString("0") · y: @_vp.Y.ToString("0") · zoom: @_vp.Zoom.ToString("0.00")</span>
+        <button class="btn btn-sm" @onclick="@(() => _vp = new BlowViewport(0, 0, 1))">Reset</button>
+        <button class="btn btn-sm" @onclick="CenterOrigin">Center origin</button>
+        <button class="btn btn-sm" @onclick="@(() => _flow?.FitView())">Fit</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    Viewport="_vp"
+                    OnViewportChanged="v => _vp = v">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowViewport _vp = BlowViewport.Identity;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(0, 0) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(150, 120) },
+            new BlowNode { Id = "3", Type = "output", Label = "Node 3", Position = new(-50, 220) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3" },
+        ];
+    }
+
+    // Putting flow point (0, 0) in the middle of the pane at 1.5x is just arithmetic on the
+    // pane size: the viewport is the translation of the flow origin, in screen pixels.
+    private void CenterOrigin()
+    {
+        if (_flow is null) return;
+        var pane = _flow.PaneSize;
+        _vp = new BlowViewport(pane.Width / 2, pane.Height / 2, 1.5);
+    }
+}

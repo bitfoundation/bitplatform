@@ -1,0 +1,66 @@
+﻿@page "/examples/node-toolbar"
+
+<PageTitle>Node Toolbar - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Node Toolbar"
+                 Summary="A BlowNodeToolbar anchored to the selected node stays a constant screen size while zooming. Select a node to recolor or delete it; change the toolbar position.">
+    <Toolbar>
+        <label>position:
+            <select @onchange="e => _position = Enum.Parse<BlowPosition>(e.Value!.ToString()!)">
+                <option value="Top">Top</option>
+                <option value="Bottom">Bottom</option>
+                <option value="Left">Left</option>
+                <option value="Right">Right</option>
+            </select>
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <NodeTemplate Context="node">
+                <BlowNodeToolbar Position="_position">
+                    <button class="btn btn-sm" @onclick="() => Recolor(node)">🎨</button>
+                    <button class="btn btn-sm" @onclick="() => Remove(node)">🗑</button>
+                </BlowNodeToolbar>
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="tb-node">@node.Label</div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .tb-node { padding:10px 16px; font-weight:600; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowPosition _position = BlowPosition.Top;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Label = "Select me", Position = new(160, 60), Style = "background:#fef9c3;" },
+            new BlowNode { Id = "2", Label = "Or me", Position = new(220, 200), Style = "background:#dbeafe;" },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+    }
+
+    private void Recolor(BlowNode node)
+    {
+        var colors = new[] { "#dbeafe", "#dcfce7", "#fee2e2", "#fef9c3", "#f3e8ff" };
+        node.Style = $"background:{colors[Random.Shared.Next(colors.Length)]};";
+    }
+
+    private void Remove(BlowNode node)
+    {
+        _nodes.Remove(node);
+        _edges.RemoveAll(e => e.Source == node.Id || e.Target == node.Id);
+    }
+}

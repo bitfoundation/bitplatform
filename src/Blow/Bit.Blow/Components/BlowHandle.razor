@@ -1,0 +1,178 @@
+﻿@namespace Bit.Blow
+@implements IDisposable
+
+<div class="bit-blow-handle bit-blow-handle-@PositionClass @TypeClass @(CanStart || CanEnd ? "connectable" : null) @StateClass @Class"
+     data-id="@(Attached ? NodeId : null)"
+     data-handle-id="@(Id ?? string.Empty)"
+     data-handle-type="@TypeClass"
+     data-handle-pos="@PositionClass"
+     data-connectable-end="@(CanEnd ? null : "false")"
+     style="@Style"
+     @onpointerdown="OnPointerDown"
+     @onpointerdown:stopPropagation="true"
+     @onpointerup="OnPointerUp"
+     @onpointerup:stopPropagation="true"
+     @onpointerenter="OnPointerEnter"
+     @onpointerleave="OnPointerLeave">
+</div>
+
+@code {
+    [CascadingParameter] private BlowNodeContext NodeContext { get; set; } = default!;
+    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+
+    /// <summary>Whether this handle is a connection source or target.</summary>
+    [Parameter] public BlowHandleType Type { get; set; } = BlowHandleType.Source;
+
+    /// <summary>Which side of the node the handle is anchored to.</summary>
+    [Parameter] public BlowPosition Position { get; set; } = BlowPosition.Bottom;
+
+    /// <summary>Optional handle id, required when a node has multiple handles of the same type.</summary>
+    [Parameter] public string? Id { get; set; }
+
+    /// <summary>When false the handle can neither start nor accept connections.</summary>
+    [Parameter] public bool IsConnectable { get; set; } = true;
+
+    /// <summary>When false a connection cannot be <em>started</em> from this handle.</summary>
+    [Parameter] public bool IsConnectableStart { get; set; } = true;
+
+    /// <summary>When false a connection cannot be <em>dropped on</em> this handle.</summary>
+    [Parameter] public bool IsConnectableEnd { get; set; } = true;
+
+    /// <summary>Raised when a connection involving this handle is completed.</summary>
+    [Parameter] public EventCallback<BlowConnection> OnConnect { get; set; }
+
+    /// <summary>
+    /// Extra validation for connections touching this handle, on top of the canvas-wide
+    /// <c>IsValidConnection</c>. Return false to reject. Both ends of a prospective connection
+    /// get a say, so a rule can live on whichever handle it belongs to.
+    /// </summary>
+    [Parameter] public Func<BlowConnection, bool>? IsValidConnection { get; set; }
+
+    /// <summary>Extra CSS classes for the handle element, after the built-in ones.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Inline style for the handle element. Its position on the node comes from the stylesheet, by side.</summary>
+    [Parameter] public string? Style { get; set; }
+
+    /// <summary>
+    /// False when the handle was placed outside a node template, so there is no node for it to
+    /// belong to and no canvas to talk to. It still renders - an inert dot is a far better
+    /// outcome than bringing the page down with a null reference - but does nothing.
+    /// </summary>
+    private bool Attached => Flow is not null && NodeContext is not null;
+
+    private BlowNode Node => NodeContext.Node;
+    private string NodeId => Node.Id;
+    private string PositionClass => Position.ToString().ToLowerInvariant();
+    private string TypeClass => Type.ToString().ToLowerInvariant();
+
+    /// <summary>The handle only participates when the node and the canvas both allow connecting.</summary>
+    private bool Enabled => Attached && IsConnectable && Node.Connectable && Flow.NodesConnectable;
+
+    private bool CanStart => Enabled && IsConnectableStart;
+    private bool CanEnd => Enabled && IsConnectableEnd;
+
+    private string StateClass
+    {
+        get
+        {
+            if (!Attached || !Flow.IsConnecting) return string.Empty;
+
+            // The handle the drag came out of is not somewhere that drag can land, so asking
+            // whether it is a valid target answers "no" - and marking it rejected would paint the
+            // one handle the user is actually using as the one thing they may not do.
+            if (Flow.IsConnectionSource(NodeId, Id, Type))
+                return "bit-blow-handle-connectingfrom";
+
+            if (CanEnd && Flow.IsValidConnectionTarget(NodeId, Id, Type))
+                return "bit-blow-handle-valid";
+
+            return "bit-blow-handle-invalid";
+        }
+    }
+
+    private void OnPointerDown(PointerEventArgs e)
+    {
+        if (!Attached || e.Button != 0) return;
+
+        // In click-to-connect mode, a second handle click completes the pending connection.
+        if (Flow.ConnectOnClick && Flow.IsConnecting)
+        {
+            if (CanEnd) Complete();
+            return;
+        }
+
+        if (CanStart) Flow.StartConnection(NodeId, Id, Type, Position, e.PointerId, e.ClientX, e.ClientY);
+    }
+
+    private void OnPointerUp(PointerEventArgs e)
+    {
+        // In click-to-connect mode, completion happens on the next handle's pointer-down.
+        if (!Attached || Flow.ConnectOnClick || !CanEnd) return;
+        Complete();
+    }
+
+    // The canvas raises OnConnect for both handles a connection joins (it owns the pointer for
+    // the whole gesture, so a handle never sees the release that completed the drag). Completing
+    // here therefore only has to hand the canvas the decision.
+    private void Complete() => Flow.CompleteConnection(NodeId, Id, Type);
+
+    // ---- registration ----
+    //
+    // Only handles that actually carry a rule or a callback register, so the canvas's lookup
+    // stays empty for the ordinary case.
+
+    private string? _registeredKey;
+
+    protected override void OnParametersSet()
+    {
+        // A handle placed outside a node template has nothing to register with. Rendering it
+        // as an inert dot beats bringing the page down with a null reference.
+        if (Flow is null || NodeContext is null) return;
+
+        var wanted = IsValidConnection is not null || OnConnect.HasDelegate
+            ? BlowHandleRegistration.Key(NodeId, Type, Id)
+            : null;
+
+        // The identity of a handle changes when its node, type or id does; drop the old entry
+        // before claiming the new one so a renamed handle doesn't leave a stale rule behind.
+        if (_registeredKey is { } previous && previous != wanted)
+        {
+            if (_registration is not null) Flow.UnregisterHandle(previous, _registration);
+            _registeredKey = null;
+            _registration = null;
+        }
+
+        if (wanted is null) return;
+
+        _registeredKey = wanted;
+        _registration = new BlowHandleRegistration
+        {
+            IsValidConnection = IsValidConnection,
+            OnConnect = OnConnect,
+        };
+        Flow.RegisterHandle(wanted, _registration);
+    }
+
+    private BlowHandleRegistration? _registration;
+
+    public void Dispose()
+    {
+        // A template that swaps one handle for another with the same identity registers the new
+        // one before the old one is disposed; only take the entry down if it is still ours.
+        if (_registeredKey is { } key && _registration is not null)
+            Flow?.UnregisterHandle(key, _registration);
+        _registeredKey = null;
+        _registration = null;
+    }
+
+    private void OnPointerEnter(PointerEventArgs e)
+    {
+        if (Attached && Flow.IsConnecting && CanEnd) Flow.SetConnectionHover(NodeId, Id, Type, true);
+    }
+
+    private void OnPointerLeave(PointerEventArgs e)
+    {
+        if (Attached && Flow.IsConnecting) Flow.SetConnectionHover(NodeId, Id, Type, false);
+    }
+}

@@ -59,6 +59,10 @@ on:
         description: Bink solution
         type: boolean
         default: true
+      blow:
+        description: Blow solution
+        type: boolean
+        default: true
       blex:
         description: Blex solution
         type: boolean
@@ -603,6 +607,11 @@ jobs:
         dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Blow
+      run: |
+        dotnet build src/Blow/Bit.Blow/Bit.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blow/Bit.Blow/Bit.Blow.csproj --output ./packages --configuration Release
+
     - name: Build and pack Blex
       run: |
         dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -700,6 +709,11 @@ jobs:
     name: bink
     if: ${{ inputs.bink }}
     uses: ./.github/workflows/bit.ci.Bink.yml
+
+  blow:
+    name: blow
+    if: ${{ inputs.blow }}
+    uses: ./.github/workflows/bit.ci.Blow.yml
 
   blex:
     name: blex
