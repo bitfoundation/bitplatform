@@ -154,6 +154,65 @@ public sealed class LiveQueryTests
         Assert.IsFalse(await enumerator.MoveNextAsync());
     }
 
+    /// <summary>
+    /// The consumer was busy with an item - rendering it, say - when the query was disposed. Coming
+    /// back for the next one must end the stream, not register a waiter nobody will ever complete.
+    /// </summary>
+    [TestMethod]
+    public async Task WithCancellation_EndsWhenDisposedWhileTheConsumerWasBusy()
+    {
+        var transport = new RemoteWriteTransport();
+        await using var connection = new BsqliteConnection(transport, "live-dispose.db");
+        await connection.OpenAsync(Ct);
+
+        var live = new BsqliteLiveQuery<int>(connection, _ => Task.FromResult(1), ["product"]);
+
+#pragma warning disable xUnit1051 // No token on purpose: disposal alone has to end the stream.
+        await using var enumerator = live.WithCancellation(CancellationToken.None).GetAsyncEnumerator();
+#pragma warning restore xUnit1051
+        Assert.IsTrue(await enumerator.MoveNextAsync());
+
+        await live.DisposeAsync();
+
+        var next = enumerator.MoveNextAsync().AsTask();
+        Assert.AreSame(next, await Task.WhenAny(next, Task.Delay(TimeSpan.FromSeconds(5), Ct)), "The stream hung.");
+        Assert.IsFalse(await next);
+    }
+
+    /// <summary>
+    /// An explicit refresh and one a write set off must not run the query at the same time: an EF
+    /// query shares a context that allows one operation at a time, and two runs finishing out of
+    /// order would publish the older result last.
+    /// </summary>
+    [TestMethod]
+    public async Task Refreshes_NeverOverlap()
+    {
+        var transport = new RemoteWriteTransport();
+        await using var connection = new BsqliteConnection(transport, "live-overlap.db");
+        await connection.OpenAsync(Ct);
+
+        var running = 0;
+        var overlapped = false;
+        var runs = 0;
+        await using var live = new BsqliteLiveQuery<int>(
+            connection,
+            async _ =>
+            {
+                overlapped |= Interlocked.Increment(ref running) > 1;
+                await Task.Delay(20);
+                Interlocked.Decrement(ref running);
+                return Interlocked.Increment(ref runs);
+            },
+            ["product"]);
+
+        var explicitRuns = Enumerable.Range(0, 5).Select(_ => live.RefreshAsync(Ct)).ToList();
+        transport.ReportRemoteWrite("product");
+        await Task.WhenAll(explicitRuns);
+        await WaitUntilAsync(() => live.Current == 6);
+
+        Assert.IsFalse(overlapped);
+    }
+
     /// <summary>A transport that can be told to speak for another tab.</summary>
     private sealed class RemoteWriteTransport : IBsqliteTransport
     {

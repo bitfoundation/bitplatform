@@ -6,7 +6,6 @@
 // demo exists to show.
 
 using Bit.Bsqlite.Demo.Data;
-using Bit.Bsqlite.Demo.Domain;
 using Bit.Bsqlite.Demo.Server.Components;
 using Bit.Bsqlite.Demo.Server.Controllers;
 using Bit.Bsqlite.Demo.Server.Services;
@@ -125,31 +124,16 @@ app.MapControllers();
 app.MapMcp("/mcp");
 
 // The server side of the shared model: the catalog the stock provider holds, through the same AppDbContext.
+// Read-only: the site is public and the database lives in this process's memory for its whole lifetime, so an
+// endpoint that let anyone add rows would let anyone grow it until the process runs out of memory.
 app.MapGet("/api/products", async (AppDbContext db, CancellationToken ct) =>
     await db.Products.AsNoTracking().OrderBy(p => p.Id).ToListAsync(ct));
-
-app.MapPost("/api/products", async (NewProduct body, AppDbContext db, CancellationToken ct) =>
-{
-    var categoryId = await db.Categories.Select(c => c.Id).FirstAsync(ct);
-    db.Products.Add(new Product
-    {
-        Sku = "SRV-" + Guid.NewGuid().ToString("N")[..8].ToUpperInvariant(),
-        Name = body.Name,
-        Price = body.Price,
-        CreatedUtc = DateTime.UtcNow,
-        CategoryId = categoryId,
-    });
-    await db.SaveChangesAsync(ct);
-    return Results.NoContent();
-});
 
 app.MapRazorComponents<App>()
     .AddInteractiveWebAssemblyRenderMode()
     .AddAdditionalAssemblies(typeof(Bit.Bsqlite.Demo.Client._Imports).Assembly);
 
 app.Run();
-
-internal sealed record NewProduct(string Name, decimal Price);
 
 /// <summary>
 /// Named so the tests can host this exact file in-memory. Top-level statements compile to an internal

@@ -94,18 +94,39 @@ public sealed class BsqliteBuilder
     }
 
     /// <summary>
-    /// Registers a <see cref="BsqliteDatabase"/> for <paramref name="databaseName"/>, injectable
-    /// as the application's one shared database. Call once per database the application opens.
+    /// Registers a <see cref="BsqliteDatabase"/> for <paramref name="databaseName"/>. Call once per
+    /// database the application opens.
     /// </summary>
     /// <remarks>
+    /// <para>
+    /// Each database is a keyed service under its name, so with several registered, inject the one
+    /// wanted with <c>[FromKeyedServices("cache.db")]</c> and bind a context to it with
+    /// <see cref="Bit.Bsqlite.EntityFrameworkCore.BsqliteDbContextOptions{TContext}.DatabaseName"/>. An unkeyed
+    /// <see cref="BsqliteDatabase"/> resolves to the one registered last, which is the application's
+    /// one shared database when there is only one.
+    /// </para>
+    /// <para>
     /// Scoped: one session for the whole of a WebAssembly application, and one per circuit on a server.
+    /// </para>
     /// </remarks>
     public BsqliteBuilder AddDatabase(string databaseName)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(databaseName);
-        Services.AddScoped(sp => new BsqliteDatabase(
+
+        if (Services.Any(service => service.ServiceType == typeof(BsqliteDatabaseRegistration)
+            && service.ImplementationInstance is BsqliteDatabaseRegistration { DatabaseName: var registered }
+            && string.Equals(registered, databaseName, StringComparison.Ordinal)))
+        {
+            throw new InvalidOperationException(
+                $"The database '{databaseName}' is already registered. Each database is one shared "
+                + "session, so it is added once.");
+        }
+
+        Services.AddSingleton(new BsqliteDatabaseRegistration(databaseName));
+        Services.AddKeyedScoped(databaseName, (sp, _) => new BsqliteDatabase(
             sp.GetRequiredService<IBsqliteSessionFactory>(),
             databaseName));
+        Services.AddScoped(sp => sp.GetRequiredKeyedService<BsqliteDatabase>(databaseName));
         return this;
     }
 
@@ -188,3 +209,9 @@ public sealed class BsqliteBuilder
         Services.TryAddScoped(sp => (BsqliteSessionFactory)sp.GetRequiredService<IBsqliteSessionFactory>());
     }
 }
+
+/// <summary>
+/// One per <see cref="BsqliteBuilder.AddDatabase"/> call, so the registered names can be listed
+/// without opening - or even constructing - any of the databases.
+/// </summary>
+internal sealed record BsqliteDatabaseRegistration(string DatabaseName);

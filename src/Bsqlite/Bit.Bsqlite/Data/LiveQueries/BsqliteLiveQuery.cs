@@ -11,6 +11,10 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
     private readonly List<TaskCompletionSource> _waiters = [];
     private readonly Action? _onDispose;
     private readonly Lock _refreshGate = new();
+
+    // One run of the query at a time, explicit or not: an EF query runs on a context that allows one
+    // operation at a time, and two runs finishing out of order would publish the older snapshot last.
+    private readonly SemaphoreSlim _runGate = new(1, 1);
     private bool _refreshing;
     private bool _refreshRequested;
     private int _disposed;
@@ -71,13 +75,25 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
     public async Task<T> RefreshAsync(CancellationToken cancellationToken = default)
     {
         ObjectDisposedException.ThrowIf(_disposed != 0, this);
-        var snapshot = await _execute(cancellationToken).ConfigureAwait(false);
-        Current = snapshot;
 
-        // Enumerators first, so a Changed handler that throws cannot starve them of a result.
-        Publish(snapshot);
-        Changed?.Invoke(this, snapshot);
-        return snapshot;
+        await _runGate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
+        {
+            // Again: disposal may have come while this run waited its turn.
+            ObjectDisposedException.ThrowIf(_disposed != 0, this);
+
+            var snapshot = await _execute(cancellationToken).ConfigureAwait(false);
+            Current = snapshot;
+
+            // Enumerators first, so a Changed handler that throws cannot starve them of a result.
+            Publish(snapshot);
+            Changed?.Invoke(this, snapshot);
+            return snapshot;
+        }
+        finally
+        {
+            _runGate.Release();
+        }
     }
 
     /// <inheritdoc />
@@ -102,13 +118,23 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
         while (!cancellationToken.IsCancellationRequested)
         {
             TaskCompletionSource? waiter = null;
+            bool disposed;
             lock (_waiters)
             {
-                if (_version == seenVersion)
+                // Checked under the lock DisposeAsync cancels the waiters under: a waiter added after
+                // that would never be completed, and a consumer that was busy when the query was
+                // disposed would come back to wait forever.
+                disposed = _disposed != 0;
+                if (!disposed && _version == seenVersion)
                 {
                     waiter = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                     _waiters.Add(waiter);
                 }
+            }
+
+            if (disposed)
+            {
+                yield break;
             }
 
             if (waiter is not null)
@@ -222,7 +248,12 @@ public sealed class BsqliteLiveQuery<T> : IBsqliteLiveQuery<T>
                     await RefreshAsync().ConfigureAwait(false);
                     break;
                 }
-                catch (Exception) when (attempt < RefreshAttempts - 1 && _disposed == 0)
+                catch (Exception) when (_disposed != 0)
+                {
+                    // Disposed mid-refresh: nobody is listening for the result, or for its failure.
+                    break;
+                }
+                catch (Exception) when (attempt < RefreshAttempts - 1)
                 {
                     // Almost always the write that triggered this is still finishing and the
                     // context is busy. Give it the rest of the turn and read again.

@@ -1,4 +1,5 @@
-﻿using System.Data;
+﻿using System.Collections.Concurrent;
+using System.Data;
 using System.Runtime.InteropServices;
 using Bit.Bsqlite.Data;
 using Microsoft.Data.Sqlite;
@@ -16,8 +17,14 @@ namespace Bit.Bsqlite.Testing;
 /// and commit-hook mechanism, and snapshotting through <c>sqlite3_serialize</c> - so a test that
 /// passes here is a meaningful signal.
 /// </remarks>
-public sealed class BsqliteInProcessTransport : IBsqliteTransport, IBsqliteSnapshotSource
+public sealed class BsqliteInProcessTransport : IBsqliteTransport, IBsqliteSnapshotSource, IBsqliteLockSource
 {
+    // Transports over the same database share their locks, the way tabs over the same file share the
+    // worker transport's Web Locks.
+    private static readonly ConcurrentDictionary<string, SemaphoreSlim> SharedLocks = new(StringComparer.Ordinal);
+
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks;
+    private readonly string _lockScope;
     private readonly string _connectionString;
     private readonly bool _registerEfFunctions;
     private readonly HashSet<string> _writtenTables = new(StringComparer.OrdinalIgnoreCase);
@@ -41,6 +48,17 @@ public sealed class BsqliteInProcessTransport : IBsqliteTransport, IBsqliteSnaps
     {
         _connectionString = connectionString ?? "Data Source=:memory:";
         _registerEfFunctions = registerEfFunctions;
+
+        // A private in-memory database is reachable through this transport alone, so there is nobody
+        // to share its locks with.
+        var options = new SqliteConnectionStringBuilder(_connectionString);
+        var isPrivate = options.DataSource is "" or ":memory:"
+            || (options.Mode == SqliteOpenMode.Memory && options.Cache != SqliteCacheMode.Shared);
+
+        _locks = isPrivate ? new(StringComparer.Ordinal) : SharedLocks;
+        _lockScope = options.Mode == SqliteOpenMode.Memory || isPrivate
+            ? "memory:" + options.DataSource
+            : Path.GetFullPath(options.DataSource);
     }
 
     /// <summary>Statements executed so far, in order. Useful for asserting generated SQL.</summary>
@@ -163,6 +181,20 @@ public sealed class BsqliteInProcessTransport : IBsqliteTransport, IBsqliteSnaps
         {
             raw.sqlite3_free(pointer);
         }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// A semaphore per database and name, shared by every transport in the process that opens the
+    /// same file or shared-cache memory database - the desktop stand-in for a Web Lock.
+    /// </remarks>
+    public async Task<IAsyncDisposable> AcquireLockAsync(string name, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        var gate = _locks.GetOrAdd($"{_lockScope}|{name}", _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        return new HeldLock(gate);
     }
 
     /// <summary>
@@ -302,5 +334,20 @@ public sealed class BsqliteInProcessTransport : IBsqliteTransport, IBsqliteSnaps
         _connection?.Dispose();
         _connection = null;
         return ValueTask.CompletedTask;
+    }
+
+    private sealed class HeldLock(SemaphoreSlim gate) : IAsyncDisposable
+    {
+        private int _released;
+
+        public ValueTask DisposeAsync()
+        {
+            if (Interlocked.Exchange(ref _released, 1) == 0)
+            {
+                gate.Release();
+            }
+
+            return ValueTask.CompletedTask;
+        }
     }
 }

@@ -9,7 +9,7 @@ namespace Bit.Bsqlite.Tests.Mcp;
 /// The app is started from its own <c>Program.cs</c> rather than from a re-registration of the MCP
 /// pieces, so what the tests exercise is the wiring that ships: the same <c>AddMcpServer</c> options,
 /// the same <c>MapMcp("/mcp")</c>, the same DI container the tools resolve out of - and the same
-/// in-memory server database and /api/products endpoints the demo has always had next to them. And
+/// in-memory server database and /api/products endpoint the demo has always had next to them. And
 /// the tests talk to it through the protocol - initialize, tools/list, tools/call - instead of calling
 /// the tool methods, which is the only way to catch a tool that is written correctly but never reaches
 /// the wire: a missing attribute, a schema a client rejects, a return value that does not serialize.

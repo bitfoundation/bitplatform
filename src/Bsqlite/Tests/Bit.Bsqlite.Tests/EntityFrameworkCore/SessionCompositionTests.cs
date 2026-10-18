@@ -44,7 +44,9 @@ public sealed class SessionCompositionTests
         var loaded = await ctx.Products.Include(p => p.Category).SingleAsync(Ct);
         Assert.AreEqual("Widget", loaded.Name);
         Assert.AreEqual("Tools", loaded.Category!.Name);
-        Assert.AreEqual(BsqliteInMemoryStorageProvider.ProviderName, await store.GetProviderNameAsync("app.db", Ct));
+
+        // In-memory holds nothing across a reload, so there is nothing for a binding to protect.
+        Assert.IsNull(await store.GetProviderNameAsync("app.db", Ct));
     }
 
     private sealed class InProcessTransportFactory : IBsqliteTransportFactory

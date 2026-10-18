@@ -20,7 +20,7 @@ bit-bsqlite-host.js  ── postMessage, transferred ──▶  bit-bsqlite-work
 
 OPFS synchronous access handles - the fastest storage the web has - exist only in workers. Putting the engine in a dedicated worker also keeps SQLite's work off the UI thread. The price is that every call is asynchronous, which is why the synchronous ADO.NET surface throws rather than blocks.
 
-One worker owns one database. A second `BsqliteDatabase` or a second session starts a second worker; the VFSes coordinate through Web Locks.
+One worker owns one database. A second `BsqliteDatabase` or a second session starts a second worker - and so does every other tab, each over the same file; the VFSes coordinate through Web Locks. SQLite's locks last a transaction at most, so work that has to keep other tabs out for longer, like applying EF migrations, takes a named Web Lock through the transport (`IBsqliteLockSource`).
 
 ## The binary wire format
 

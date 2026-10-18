@@ -115,6 +115,78 @@ public sealed class DependencyInjectionTests
         Assert.IsNotNull(sync);
     }
 
+    /// <summary>
+    /// A session opened some other way has not had its schema step run, so a synchronous context on
+    /// it would query tables that are not there yet - or a schema one deploy out of date.
+    /// </summary>
+    [TestMethod]
+    public async Task ContextFactory_SynchronousCreate_RefusesASessionItHasNotPrepared()
+    {
+        await using var provider = Build();
+        var factory = provider.GetRequiredService<IBsqliteDbContextFactory<ProductContext>>();
+        await provider.GetRequiredService<BsqliteDatabase>().OpenAsync(Ct);
+
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() => factory.CreateDbContext());
+        Assert.Contains("CreateDbContextAsync", error.Message);
+        Assert.DoesNotContain("BsqliteDatabase.OpenAsync", error.Message);
+    }
+
+    [TestMethod]
+    public async Task TwoDatabases_TheContextIsBoundToTheOneItNames()
+    {
+        await using var provider = BuildTwoDatabases(o => o.DatabaseName = "app.db");
+
+        var factory = provider.GetRequiredService<IBsqliteDbContextFactory<ProductContext>>();
+
+        Assert.AreEqual("app.db", factory.Database.Name);
+        Assert.AreSame(provider.GetRequiredKeyedService<BsqliteDatabase>("app.db"), factory.Database);
+        Assert.AreEqual("cache.db", provider.GetRequiredKeyedService<BsqliteDatabase>("cache.db").Name);
+    }
+
+    /// <summary>
+    /// The last registration would win, binding the context - and running its migrations - against
+    /// a database that is not its own.
+    /// </summary>
+    [TestMethod]
+    public async Task TwoDatabases_AContextThatNamesNeither_IsRefused()
+    {
+        await using var provider = BuildTwoDatabases(configure: null);
+
+        var error = Assert.ThrowsExactly<InvalidOperationException>(
+            () => provider.GetRequiredService<IBsqliteDbContextFactory<ProductContext>>());
+
+        Assert.Contains("DatabaseName", error.Message);
+        Assert.Contains("'cache.db'", error.Message);
+    }
+
+    [TestMethod]
+    public void AddDatabase_TheSameNameTwice_IsRefused()
+    {
+        var services = new ServiceCollection();
+
+        var error = Assert.ThrowsExactly<InvalidOperationException>(() => services.AddBitBsqliteServices(sqlite => sqlite
+            .AddStorageProvider<BsqliteInMemoryStorageProvider>()
+            .UseStorage(s => s.Prefer(BsqliteInMemoryStorageProvider.ProviderName))
+            .AddDatabase("app.db")
+            .AddDatabase("app.db")));
+
+        Assert.Contains("already registered", error.Message);
+    }
+
+    private static ServiceProvider BuildTwoDatabases(Action<BsqliteDbContextOptions<ProductContext>>? configure)
+    {
+        var services = new ServiceCollection();
+        services.AddBitBsqliteServices(sqlite => sqlite
+            .AddStorageProvider<BsqliteInMemoryStorageProvider>()
+            .UseStorage(s => s.Prefer(BsqliteInMemoryStorageProvider.ProviderName))
+            .UseBindingStore<BsqliteInMemoryStorageBindingStore>()
+            .AddDatabase("app.db")
+            .AddDatabase("cache.db"));
+        services.AddSingleton<IBsqliteTransportFactory>(new InProcessTransportFactory());
+        services.AddBitBsqliteDbContext<ProductContext>(options => configure?.Invoke(options));
+        return services.BuildServiceProvider();
+    }
+
     [TestMethod]
     public async Task Database_Close_RaisesClosing_AndReopenPreparesAgain()
     {

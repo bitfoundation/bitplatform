@@ -219,7 +219,7 @@ public static partial class BsqliteSetupGuide
         {
             builder.AppendLine("## The files, from this demo").AppendLine();
             builder.AppendLine("Everything below compiles as it ships; rename the projects and namespaces to your own. The host's ")
-                   .AppendLine("Program.cs also runs the demo's model on the stock provider for its /api/products endpoints and hosts this ")
+                   .AppendLine("Program.cs also runs the demo's model on the stock provider for its /api/products endpoint and hosts this ")
                    .AppendLine("MCP server - neither is anything Bsqlite needs.")
                    .AppendLine();
 

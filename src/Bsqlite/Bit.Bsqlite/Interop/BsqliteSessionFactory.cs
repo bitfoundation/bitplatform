@@ -16,9 +16,10 @@ namespace Bit.Bsqlite.Interop;
 /// </para>
 /// <para>
 /// <see cref="BsqliteStorageMigrationMode.AutomaticOnOpen"/> copies to the preferred backend,
-/// checks the image, then flips the binding. A failed copy leaves the source and the binding
-/// untouched, is logged, and does not stop the open: the user's data is still where it was, and
-/// an opportunistic move is not a reason to keep them from it.
+/// checks the image, then flips the binding. A failed migration is logged and does not stop the
+/// open - an opportunistic move is not a reason to keep users from their data - and the database
+/// opens wherever the binding then names: the source after a failed copy, the target when only
+/// deleting the source failed.
 /// </para>
 /// </remarks>
 public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
@@ -65,13 +66,15 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
         if (_selection.MigrationMode is BsqliteStorageMigrationMode.AutomaticOnOpen
             && resolution.BetterProviderAvailable is { } better)
         {
-            if (await TryMigrateAsync(databaseName, resolution.Provider, better, cancellationToken)
-                .ConfigureAwait(false))
-            {
-                resolution = await _resolver
-                    .ResolveAsync(databaseName, _selection, cancellationToken)
-                    .ConfigureAwait(false);
-            }
+            await TryMigrateAsync(databaseName, resolution.Provider, better, cancellationToken)
+                .ConfigureAwait(false);
+
+            // Whether it succeeded or not: a migration that failed after the binding moved leaves the
+            // database on the target, and opening the source instead would send this session's
+            // writes somewhere the next load no longer reads.
+            resolution = await _resolver
+                .ResolveAsync(databaseName, _selection, cancellationToken)
+                .ConfigureAwait(false);
         }
 
         var transport = _transports.Create(resolution.Provider);
@@ -105,12 +108,11 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
     }
 
     /// <summary>
-    /// Runs the automatic migration, reporting rather than throwing when it fails: the migrator
-    /// guarantees the source and the binding are untouched, so the database opens where it was
-    /// and <see cref="BsqliteStorageResolution.BetterProviderAvailable"/> still says a move
-    /// is possible.
+    /// Runs the automatic migration, reporting rather than throwing when it fails. The caller
+    /// resolves again either way: the binding the migrator leaves behind - unchanged, or moved when
+    /// only the source's deletion failed - is what says where the database now lives.
     /// </summary>
-    private async Task<bool> TryMigrateAsync(
+    private async Task TryMigrateAsync(
         string databaseName,
         IBsqliteStorageProvider source,
         IBsqliteStorageProvider target,
@@ -121,20 +123,16 @@ public sealed class BsqliteSessionFactory : IBsqliteSessionFactory
             await _migrator
                 .MigrateAsync(databaseName, source, target, _bindings, cancellationToken)
                 .ConfigureAwait(false);
-            return true;
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogWarning(
                 ex,
                 "Automatic migration of database {DatabaseName} from storage provider {Source} to "
-                + "{Target} failed; opening it on {Source} instead. Nothing was moved and the "
-                + "binding is unchanged.",
+                + "{Target} failed; the database opens wherever its binding now points.",
                 databaseName,
                 source.Name,
-                target.Name,
-                source.Name);
-            return false;
+                target.Name);
         }
     }
 }

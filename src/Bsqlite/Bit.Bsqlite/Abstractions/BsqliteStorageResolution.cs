@@ -32,6 +32,12 @@ public sealed record BsqliteStorageResolution
     public bool WasDecidedByExistingData { get; init; }
 
     /// <summary>
+    /// Whether the database had no binding and was found by asking each backend whether it holds
+    /// it - after the binding store was cleared, typically. Committing the resolution binds it again.
+    /// </summary>
+    public bool WasFoundWithoutBinding { get; init; }
+
+    /// <summary>
     /// A backend ranked above <see cref="Provider"/> that is available but not holding the data.
     /// Non-null only for an existing database, and what
     /// <see cref="BsqliteStorageMigrationMode"/> decides the response to.

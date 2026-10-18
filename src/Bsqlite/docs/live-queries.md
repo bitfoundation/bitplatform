@@ -17,6 +17,8 @@ var rows = await live.RefreshAsync();   // first run; later runs are automatic
 
 `AsLiveQuery()` resolves the connection from the query's context and the tables from `ToQueryString()`. Pass a `BsqliteConnection` explicitly when the query's provider does not expose its context.
 
+Each run of the query happens in a context of its own - same type, same options - disposed once the rows are read. A refresh can arrive at any moment another tab writes, so on the application's context it would collide with whatever the application starts there next (EF allows one operation per context at a time); and a tracking query re-run on a context that already tracks its rows gets the tracked instances back with their old values, so updates would never show. The rows a live query returns are therefore current, and are not tracked by the application's context: to change one, load or attach it in the context that saves it.
+
 ## With ADO.NET
 
 ```csharp
@@ -49,8 +51,8 @@ A custom transport that cannot report its own writes leaves `ReportsLocalWrites`
 
 ## Coalescing
 
-A burst of writes during a refresh produces exactly one further refresh after it, not one per write. Each `Changed` event therefore carries the latest state, and the engine is never asked to re-run a query it is about to re-run again.
+A burst of writes during a refresh produces exactly one further refresh after it, not one per write. Each `Changed` event therefore carries the latest state, and the engine is never asked to re-run a query it is about to re-run again. An explicit `RefreshAsync` waits its turn behind a refresh in flight, so two runs never overlap and never publish out of order.
 
 ## Lifetime
 
-Dispose a live query when the component goes away, and before the session closes (`BsqliteDatabase.Closing` is the signal). A disposed query unsubscribes from the connection and cancels pending stream waiters.
+Dispose a live query when the component goes away, and before the session closes (`BsqliteDatabase.Closing` is the signal). A disposed query unsubscribes from the connection and ends its streams: a consumer waiting for the next item gets none, and one that was busy with an item comes back to the end of the stream.

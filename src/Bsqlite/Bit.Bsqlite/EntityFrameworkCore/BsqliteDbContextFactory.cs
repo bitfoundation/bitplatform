@@ -12,8 +12,9 @@ namespace Bit.Bsqlite.EntityFrameworkCore;
 /// <typeparam name="TContext">A context with a constructor taking <see cref="DbContextOptions{TContext}"/>.</typeparam>
 /// <remarks>
 /// Opening a database is asynchronous in the browser, so the factory's main entry point is
-/// <see cref="CreateDbContextAsync"/>. The synchronous <c>CreateDbContext</c> works only
-/// once the database has been opened by an earlier call, and says so otherwise.
+/// <see cref="CreateDbContextAsync"/>. The synchronous <c>CreateDbContext</c> works only once an
+/// earlier <see cref="CreateDbContextAsync"/> has opened the session and run the first-use step on
+/// it, and says so otherwise.
 /// </remarks>
 public interface IBsqliteDbContextFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TContext> : IDbContextFactory<TContext>
     where TContext : DbContext
@@ -42,6 +43,12 @@ public enum BsqliteSchemaStrategy
 public sealed class BsqliteDbContextOptions<TContext>
     where TContext : DbContext
 {
+    /// <summary>
+    /// The registered database (<c>AddDatabase</c>) the contexts are bound to. Required when more
+    /// than one is registered; with exactly one, that one is used.
+    /// </summary>
+    public string? DatabaseName { get; set; }
+
     /// <summary>What to do to the schema the first time a context is created per session.</summary>
     public BsqliteSchemaStrategy Schema { get; set; } = BsqliteSchemaStrategy.Migrate;
 
@@ -58,6 +65,12 @@ public sealed class BsqliteDbContextOptions<TContext>
 internal sealed class BsqliteDbContextFactory<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.NonPublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)] TContext> : IBsqliteDbContextFactory<TContext>
     where TContext : DbContext
 {
+    /// <summary>
+    /// The cross-tab lock the first-use step runs under. Not the migrator's own lock, which
+    /// <c>MigrateAsync</c> takes inside it on EF Core 9 and later: a Web Lock is not re-entrant.
+    /// </summary>
+    internal const string FirstUseLockName = "ef-first-use";
+
     private readonly IServiceProvider _services;
     private readonly BsqliteDbContextOptions<TContext> _options;
     private readonly SemaphoreSlim _gate = new(1, 1);
@@ -76,13 +89,24 @@ internal sealed class BsqliteDbContextFactory<[DynamicallyAccessedMembers(Dynami
 
     public BsqliteDatabase Database { get; }
 
+    private bool NeedsPreparation
+        => _options.Schema != BsqliteSchemaStrategy.None || _options.OnFirstUse is not null;
+
     public TContext CreateDbContext()
     {
-        var session = Database.Session
-            ?? throw new InvalidOperationException(
-                $"The database '{Database.Name}' is not open. Call CreateDbContextAsync() at least once "
-                + "first - opening a database in the browser is asynchronous - or open it with "
-                + "BsqliteDatabase.OpenAsync().");
+        var session = Database.Session;
+
+        // A session opened some other way - BsqliteDatabase.OpenAsync, say - has not had its schema
+        // migrated or its first-use step run, and a context on it would fail with "no such table" or
+        // query a schema one deploy out of date.
+        if (session is null || (!ReferenceEquals(_preparedFor, session) && NeedsPreparation))
+        {
+            throw new InvalidOperationException(
+                $"The database '{Database.Name}' is not ready for {typeof(TContext).Name}. Await "
+                + "CreateDbContextAsync() at least once first: opening the database and applying "
+                + "migrations are asynchronous in the browser, and the synchronous overload cannot "
+                + "wait for them.");
+        }
 
         return Build(session);
     }
@@ -121,10 +145,17 @@ internal sealed class BsqliteDbContextFactory<[DynamicallyAccessedMembers(Dynami
         Justification = "Runs on Blazor WebAssembly, whose AOT keeps the interpreter for dynamic code; NativeAOT is not a host of this library.")]
     private async Task PrepareAsync(BsqliteSession session, CancellationToken cancellationToken)
     {
-        if (_options.Schema == BsqliteSchemaStrategy.None && _options.OnFirstUse is null)
+        if (!NeedsPreparation)
         {
             return;
         }
+
+        // Every tab prepares its own session over the same file. Without this, two tabs opening at
+        // once would both seed an empty database, and - on EF Core 8, whose migrator takes no lock -
+        // both apply the same pending migration.
+        await using var exclusive = await session.Connection
+            .TryAcquireLockAsync(FirstUseLockName, cancellationToken)
+            .ConfigureAwait(false);
 
         await using var context = Build(session);
 

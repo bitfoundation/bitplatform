@@ -66,4 +66,42 @@ public sealed class StorageMigratorTests
         Assert.IsFalse(await target.Admin.ExistsAsync("app.db", Ct));
         Assert.IsNull(await store.GetProviderNameAsync("app.db", Ct));
     }
+
+    /// <summary>
+    /// The binding write landed and only its report failed - a cancel that fired once the interop
+    /// call was out, say. The binding names the copy now, so dropping the copy as unbound would
+    /// leave the binding pointing at nothing.
+    /// </summary>
+    [TestMethod]
+    public async Task ABindingWriteThatLandedButReportedFailure_KeepsTheCopy()
+    {
+        var source = new BsqliteInMemoryStorageProvider("source-memory");
+        var target = new BsqliteInMemoryStorageProvider("target-memory");
+        var store = new WritesThenThrowsBindingStore();
+        await source.Admin.ImportAsync("app.db", Image, Ct);
+
+        await Assert.ThrowsExactlyAsync<TaskCanceledException>(
+            () => new BsqliteStorageMigrator().MigrateAsync("app.db", source, target, store, Ct));
+
+        Assert.AreEqual(target.Name, await store.GetProviderNameAsync("app.db", Ct));
+        CollectionAssert.AreEqual(Image, await target.Admin.ExportAsync("app.db", Ct));
+    }
+
+    /// <summary>A binding store whose writes land and then report a cancellation.</summary>
+    private sealed class WritesThenThrowsBindingStore : IBsqliteStorageBindingStore
+    {
+        private readonly BsqliteInMemoryStorageBindingStore _inner = new();
+
+        public ValueTask<string?> GetProviderNameAsync(string databaseName, CancellationToken cancellationToken = default)
+            => _inner.GetProviderNameAsync(databaseName, cancellationToken);
+
+        public async ValueTask SetProviderNameAsync(string databaseName, string providerName, CancellationToken cancellationToken = default)
+        {
+            await _inner.SetProviderNameAsync(databaseName, providerName, cancellationToken);
+            throw new TaskCanceledException();
+        }
+
+        public ValueTask RemoveAsync(string databaseName, CancellationToken cancellationToken = default)
+            => _inner.RemoveAsync(databaseName, cancellationToken);
+    }
 }

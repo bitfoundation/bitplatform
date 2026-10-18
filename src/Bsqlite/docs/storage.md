@@ -26,8 +26,8 @@ The engine build matters: a VFS that suspends to read storage (IndexedDB, Cache 
 
 Two rules shape everything:
 
-1. **Existing data outranks preference.** A database created on IndexedDB stays on IndexedDB when OPFS later becomes available. If the backend that holds the data cannot be reached, the open fails rather than producing an empty database elsewhere. The binding is recorded in `IBsqliteStorageBindingStore` (in `localStorage` by default) only after the open succeeds.
-2. **Nothing is substituted silently.** A fallback is logged. Falling back to a non-persistent backend needs `AllowNonPersistentFallback()`. Total failure throws `BsqliteStorageUnavailableException` listing every candidate and why it was rejected.
+1. **Existing data outranks preference.** A database created on IndexedDB stays on IndexedDB when OPFS later becomes available. If the backend that holds the data cannot be reached, the open fails rather than producing an empty database elsewhere. The binding is recorded in `IBsqliteStorageBindingStore` (in `localStorage` by default) only after the open succeeds. A database with no binding - after an application clears `localStorage` on sign-out, say - is looked for on every available persistent backend before it is treated as new; found, it opens there, is bound again (`Resolution.WasFoundWithoutBinding`), and a warning is logged.
+2. **Nothing is substituted silently.** A fallback is logged. Falling back to a non-persistent backend needs `AllowNonPersistentFallback()`, and is never bound: the data is gone by the next load, so the binding would protect nothing, and would keep every later visit off a persistent backend that has come back. Total failure throws `BsqliteStorageUnavailableException` listing every candidate and why it was rejected.
 
 `session.Resolution` records the decision: the chosen provider, the probe, every attempt, whether it was the first choice, and whether a better backend is available for an existing database.
 
@@ -35,7 +35,7 @@ Two rules shape everything:
 
 `BsqliteStorageMigrationMode.AutomaticOnOpen` moves a database to a better-ranked backend before opening it. `Manual` and `KeepExisting` leave it and report through `Resolution.BetterProviderAvailable`.
 
-A migration is: probe the target, check quota headroom, export, verify the SQLite header, import, read the copy back and compare it byte for byte, flip the binding, delete the source. A failure at any step leaves the source and the binding untouched. The demo's storage switcher drives the same `BsqliteStorageMigrator` by hand.
+A migration is: probe the target, check quota headroom, export, verify the SQLite header, import, read the copy back and compare it byte for byte, flip the binding, delete the source. A failure before the flip leaves the source and the binding untouched. If deleting the source fails - another tab still holding an OPFS file open, say - the flip is undone when the source is still whole, and kept when it is not; the error is rethrown either way, and the binding says where the database now lives. `AutomaticOnOpen` resolves again after any failure, so the session always opens where the binding points. The demo's storage switcher drives the same `BsqliteStorageMigrator` by hand.
 
 ## Admin
 

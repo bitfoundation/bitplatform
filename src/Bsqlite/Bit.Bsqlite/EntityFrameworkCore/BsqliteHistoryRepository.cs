@@ -1,21 +1,24 @@
-﻿using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Bit.Bsqlite.Data;
+using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Bit.Bsqlite.EntityFrameworkCore;
 
 /// <summary>
-/// A history repository whose migration lock costs no synchronous I/O.
+/// A history repository whose migration lock keeps other tabs out without synchronous I/O.
 /// </summary>
 /// <remarks>
 /// <para>
-/// EF's SQLite history repository guards migrations with a database-level lock whose
+/// EF's SQLite history repository guards migrations with a lock row in a table, whose
 /// <c>Dispose()</c> runs <c>ExecuteScalar</c> - synchronously, even on the <c>MigrateAsync</c> path.
 /// That is the second and last blocker the S1 audit found.
 /// </para>
 /// <para>
-/// The lock is a no-op rather than an async rewrite, and that is a design decision: Bsqlite
-/// serialises at the storage layer. Exactly one worker owns a database, and cross-tab coordination
-/// happens through the Web Locks API, so a SQL-level advisory lock adds a round trip and a failure
-/// mode while guarding against contention the architecture already prevents.
+/// The lock itself is still needed: every tab runs its own worker over the same OPFS or IndexedDB
+/// file, and two tabs opening after a deploy would otherwise both read the history table, both find
+/// the new migration pending, and the second would fail applying it again. So the lock comes from
+/// the transport (<see cref="IBsqliteLockSource"/>) instead - a Web Lock in the browser, which the
+/// browser drops when a tab closes mid-migration, where a lock row would be left behind for every
+/// other tab to wait on. A transport that cannot coordinate tabs gets no lock.
 /// </para>
 /// <para>
 /// The history-table SQL matches EF's SQLite provider: model-driven create script with
@@ -34,10 +37,14 @@ public sealed class BsqliteHistoryRepository(HistoryRepositoryDependencies depen
         => value is not null && Convert.ToInt64(value) != 0L;
 
 #if NET9_0_OR_GREATER
-    // The migration lock arrived with EF Core 9; EF Core 8 takes none, so on net8.0 there is nothing to replace.
+    // The migration lock arrived with EF Core 9; EF Core 8 takes none, so on net8.0 there is nothing to
+    // replace - BsqliteDbContextFactory holds a lock of its own around the migration instead.
 
-    /// <summary>Nothing to release, since the lock is a no-op.</summary>
-    public override LockReleaseBehavior LockReleaseBehavior => LockReleaseBehavior.Connection;
+    /// <summary>
+    /// The lock belongs to neither the connection nor a transaction - the browser holds it - so it
+    /// lasts until EF releases it.
+    /// </summary>
+    public override LockReleaseBehavior LockReleaseBehavior => LockReleaseBehavior.Explicit;
 #endif
 
     /// <summary>
@@ -58,11 +65,24 @@ public sealed class BsqliteHistoryRepository(HistoryRepositoryDependencies depen
     }
 
 #if NET9_0_OR_GREATER
-    public override IMigrationsDatabaseLock AcquireDatabaseLock() => new NoOpLock(this);
+    /// <summary>The cross-tab lock migrations run under; see the remarks.</summary>
+    internal const string MigrationLockName = "ef-migrations";
 
-    public override Task<IMigrationsDatabaseLock> AcquireDatabaseLockAsync(
+    /// <summary>Not supported: waiting for another tab cannot block the browser's main thread.</summary>
+    public override IMigrationsDatabaseLock AcquireDatabaseLock()
+        => throw BsqliteSynchronousApiNotSupportedException.ForMember(
+            nameof(AcquireDatabaseLock), nameof(AcquireDatabaseLockAsync));
+
+    /// <summary>Waits until no other tab is migrating this database, then keeps them out until released.</summary>
+    public override async Task<IMigrationsDatabaseLock> AcquireDatabaseLockAsync(
         CancellationToken cancellationToken = default)
-        => Task.FromResult<IMigrationsDatabaseLock>(new NoOpLock(this));
+    {
+        var held = Dependencies.Connection.DbConnection is BsqliteConnection connection
+            ? await connection.TryAcquireLockAsync(MigrationLockName, cancellationToken).ConfigureAwait(false)
+            : null;
+
+        return new MigrationLock(this, held);
+    }
 #endif
 
     /// <summary>
@@ -82,15 +102,34 @@ public sealed class BsqliteHistoryRepository(HistoryRepositoryDependencies depen
             "SQLite does not support conditional migration scripts; generate a plain script instead.");
 
 #if NET9_0_OR_GREATER
-    private sealed class NoOpLock(IHistoryRepository historyRepository) : IMigrationsDatabaseLock
+    private sealed class MigrationLock(IHistoryRepository historyRepository, IAsyncDisposable? held)
+        : IMigrationsDatabaseLock
     {
+        private IAsyncDisposable? _held = held;
+
         public IHistoryRepository HistoryRepository { get; } = historyRepository;
 
-        public void Dispose()
-        {
-        }
+        /// <summary>
+        /// EF releases from a synchronous <c>Dispose</c> even on the <c>MigrateAsync</c> path, so the
+        /// release is started and not awaited, as a synchronously disposed transaction starts its
+        /// rollback. Letting go of a Web Lock waits on nothing else this tab is doing.
+        /// </summary>
+        public void Dispose() => _ = ReleaseQuietlyAsync();
 
-        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+        public ValueTask DisposeAsync()
+            => Interlocked.Exchange(ref _held, null)?.DisposeAsync() ?? ValueTask.CompletedTask;
+
+        private async Task ReleaseQuietlyAsync()
+        {
+            try
+            {
+                await DisposeAsync().ConfigureAwait(false);
+            }
+            catch (Exception)
+            {
+                // Nothing can observe this failure, and a host that failed has dropped its locks.
+            }
+        }
     }
 #endif
 }

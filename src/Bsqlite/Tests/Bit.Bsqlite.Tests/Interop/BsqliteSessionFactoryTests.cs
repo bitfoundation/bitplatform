@@ -173,6 +173,67 @@ public sealed class BsqliteSessionFactoryTests
         Assert.IsTrue(await slow.Admin.ExistsAsync("app.db", Ct));
     }
 
+    /// <summary>
+    /// The copy was verified and bound, then deleting the source failed with the source still whole -
+    /// another tab holding it open, say. The flip is undone, so the database opens on the source and
+    /// the binding agrees: writes made now are where the next load reads.
+    /// </summary>
+    [TestMethod]
+    public async Task AutomaticOnOpen_WhenDeletingTheSourceFails_AndItSurvived_OpensOnTheSource_AndKeepsItBound()
+    {
+        var slow = new PersistentTestProvider("slow", deletes: DeleteBehavior.FailsLeavingIt);
+        var fast = new PersistentTestProvider("fast");
+        await slow.Admin.ImportAsync("app.db", "SQLite format 3 "u8.ToArray(), Ct);
+
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await store.SetProviderNameAsync("app.db", "slow", Ct);
+
+        var factory = Factory(
+            store,
+            new RecordingTransportFactory(),
+            s => s.Prefer("fast").Fallback("slow").WithMigrationMode(BsqliteStorageMigrationMode.AutomaticOnOpen),
+            fast,
+            slow);
+
+        await using var session = await factory.OpenAsync("app.db", Ct);
+
+        Assert.AreEqual("slow", session.Resolution.Provider.Name);
+        Assert.AreEqual("slow", await store.GetProviderNameAsync("app.db", Ct));
+        Assert.IsTrue(await slow.Admin.ExistsAsync("app.db", Ct));
+        Assert.IsFalse(await fast.Admin.ExistsAsync("app.db", Ct), "The unbound copy is dropped.");
+    }
+
+    /// <summary>
+    /// Deleting the source failed part-way, so the verified copy is the only whole database left. It
+    /// stays bound, and the session opens on it rather than on what remains of the source.
+    /// </summary>
+    [TestMethod]
+    public async Task AutomaticOnOpen_WhenDeletingTheSourceFailsPartway_OpensOnTheTarget()
+    {
+        var slow = new PersistentTestProvider("slow", deletes: DeleteBehavior.FailsAfterDeleting);
+        var fast = new PersistentTestProvider("fast");
+        byte[] image = [.. "SQLite format 3 "u8, 7];
+        await slow.Admin.ImportAsync("app.db", image, Ct);
+
+        var store = new BsqliteInMemoryStorageBindingStore();
+        await store.SetProviderNameAsync("app.db", "slow", Ct);
+
+        var transports = new RecordingTransportFactory();
+        var factory = Factory(
+            store,
+            transports,
+            s => s.Prefer("fast").Fallback("slow").WithMigrationMode(BsqliteStorageMigrationMode.AutomaticOnOpen),
+            fast,
+            slow);
+
+        await using var session = await factory.OpenAsync("app.db", Ct);
+
+        Assert.AreEqual("fast", session.Resolution.Provider.Name);
+        Assert.AreSame(fast, transports.Created[0].Provider);
+        Assert.AreEqual("fast", await store.GetProviderNameAsync("app.db", Ct));
+        CollectionAssert.AreEqual(image, await fast.Admin.ExportAsync("app.db", Ct));
+    }
+
     [TestMethod]
     public async Task Dispose_TearsDownTheTransport()
     {
@@ -189,11 +250,26 @@ public sealed class BsqliteSessionFactoryTests
         Assert.IsTrue(transports.Last.Disposed);
     }
 
+    private enum DeleteBehavior
+    {
+        Deletes,
+
+        /// <summary>Throws with the database untouched - an OPFS file another tab holds open.</summary>
+        FailsLeavingIt,
+
+        /// <summary>Removes the database, then throws - a related file that could not go.</summary>
+        FailsAfterDeleting,
+    }
+
     /// <summary>
     /// A persistent, available backend with a real (in-memory) admin surface, so a migration can be
-    /// run against it. Optionally refuses every import, which is what an origin out of quota does.
+    /// run against it. Optionally refuses every import, which is what an origin out of quota does,
+    /// and fails deletes the ways <see cref="DeleteBehavior"/> lists.
     /// </summary>
-    private sealed class PersistentTestProvider(string name, bool refusesImports = false)
+    private sealed class PersistentTestProvider(
+        string name,
+        bool refusesImports = false,
+        DeleteBehavior deletes = DeleteBehavior.Deletes)
         : IBsqliteStorageProvider
     {
         public string Name { get; } = name;
@@ -206,12 +282,12 @@ public sealed class BsqliteSessionFactoryTests
 
         public BsqliteJsModule? VfsModule => null;
 
-        public IBsqliteStorageAdmin Admin { get; } = new MemoryAdmin(refusesImports);
+        public IBsqliteStorageAdmin Admin { get; } = new MemoryAdmin(refusesImports, deletes);
 
         public ValueTask<BsqliteProbeResult> ProbeAsync(CancellationToken cancellationToken = default)
             => ValueTask.FromResult(BsqliteProbeResult.Available());
 
-        private sealed class MemoryAdmin(bool refusesImports) : IBsqliteStorageAdmin
+        private sealed class MemoryAdmin(bool refusesImports, DeleteBehavior deletes) : IBsqliteStorageAdmin
         {
             private readonly Dictionary<string, byte[]> _images = new(StringComparer.Ordinal);
 
@@ -223,8 +299,16 @@ public sealed class BsqliteSessionFactoryTests
 
             public ValueTask DeleteAsync(string databaseName, CancellationToken cancellationToken = default)
             {
+                if (deletes is DeleteBehavior.FailsLeavingIt)
+                {
+                    throw new IOException("The file is in use.");
+                }
+
                 _images.Remove(databaseName);
-                return ValueTask.CompletedTask;
+
+                return deletes is DeleteBehavior.FailsAfterDeleting
+                    ? throw new IOException("The journal is in use.")
+                    : ValueTask.CompletedTask;
             }
 
             public ValueTask<byte[]> ExportAsync(string databaseName, CancellationToken cancellationToken = default)

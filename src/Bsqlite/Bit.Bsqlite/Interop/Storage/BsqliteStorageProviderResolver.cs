@@ -17,6 +17,13 @@ namespace Bit.Bsqlite.Interop;
 /// every candidate's fate.
 /// </para>
 /// <para>
+/// The binding store is how the first rule usually knows where the data is, but it is not the only
+/// record: an application that clears <c>localStorage</c> on sign-out loses the bindings and keeps
+/// the files. So a database with no binding is looked for on every available persistent backend
+/// before it is treated as new, and found data is bound again rather than shadowed by an empty file
+/// on a backend ranked higher.
+/// </para>
+/// <para>
 /// <see cref="ResolveAsync"/> makes no changes, so it is safe to call for diagnostics. The chosen
 /// backend is recorded only when the caller confirms the database really opened, via
 /// <see cref="CommitBindingAsync"/>.
@@ -69,28 +76,109 @@ public sealed class BsqliteStorageProviderResolver
             .GetProviderNameAsync(databaseName, cancellationToken)
             .ConfigureAwait(false);
 
-        return boundProviderName is null
-            ? await ResolveNewDatabaseAsync(databaseName, selection, cancellationToken).ConfigureAwait(false)
-            : await ResolveExistingDatabaseAsync(databaseName, boundProviderName, selection, cancellationToken)
+        if (boundProviderName is not null)
+        {
+            return await ResolveExistingDatabaseAsync(databaseName, boundProviderName, selection, cancellationToken)
                 .ConfigureAwait(false);
+        }
+
+        var holder = await FindUnboundDataAsync(databaseName, selection, cancellationToken).ConfigureAwait(false);
+        if (holder is not null)
+        {
+            _logger.LogWarning(
+                "Database {DatabaseName} has no storage binding, but storage provider {Provider} holds "
+                + "it - the binding store was probably cleared. Opening the existing data there and "
+                + "binding it again.",
+                databaseName,
+                holder.Name);
+
+            return await ResolveExistingDatabaseAsync(databaseName, holder.Name, selection, cancellationToken)
+                    .ConfigureAwait(false) with
+                {
+                    WasFoundWithoutBinding = true,
+                };
+        }
+
+        return await ResolveNewDatabaseAsync(databaseName, selection, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Records the resolved backend as the home of the database. Call this once the database has
     /// actually opened, so a failed open does not leave a binding pointing at nothing.
     /// </summary>
+    /// <remarks>
+    /// A backend that does not persist is not recorded: its database is gone by the next load, so the
+    /// binding would protect no data - and, outranking preference, it would keep every later visit on
+    /// storage that empties on reload even once a persistent backend is available again.
+    /// </remarks>
     public ValueTask CommitBindingAsync(
         BsqliteStorageResolution resolution,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(resolution);
 
-        return resolution.WasDecidedByExistingData
-            ? ValueTask.CompletedTask
-            : _bindingStore.SetProviderNameAsync(
+        var needsCommit = resolution.WasFoundWithoutBinding
+            || (!resolution.WasDecidedByExistingData && resolution.Provider.Capabilities.IsPersistent);
+
+        return needsCommit
+            ? _bindingStore.SetProviderNameAsync(
                 resolution.DatabaseName,
                 resolution.Provider.Name,
-                cancellationToken);
+                cancellationToken)
+            : ValueTask.CompletedTask;
+    }
+
+    /// <summary>
+    /// Looks for <paramref name="databaseName"/> on every available persistent backend, preferred
+    /// ones first, for a database whose binding has gone missing.
+    /// </summary>
+    /// <remarks>
+    /// Non-persistent backends are skipped: whatever they held did not survive the load that lost
+    /// the binding. A backend whose admin surface cannot answer is passed over rather than allowed to
+    /// fail the open - the same leniency a throwing probe gets.
+    /// </remarks>
+    private async ValueTask<IBsqliteStorageProvider?> FindUnboundDataAsync(
+        string databaseName,
+        BsqliteStorageSelection selection,
+        CancellationToken cancellationToken)
+    {
+        var ranked = selection.Candidates
+            .Select(name => _providers.GetValueOrDefault(name))
+            .Concat(_providers.Values)
+            .OfType<IBsqliteStorageProvider>()
+            .Distinct();
+
+        foreach (var provider in ranked)
+        {
+            if (!provider.Capabilities.IsPersistent)
+            {
+                continue;
+            }
+
+            var probe = await ProbeAsync(provider, cancellationToken).ConfigureAwait(false);
+            if (!probe.IsAvailable)
+            {
+                continue;
+            }
+
+            try
+            {
+                if (await provider.Admin.ExistsAsync(databaseName, cancellationToken).ConfigureAwait(false))
+                {
+                    return provider;
+                }
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                _logger.LogDebug(
+                    ex,
+                    "Could not check whether storage provider {Provider} holds database {DatabaseName}.",
+                    provider.Name,
+                    databaseName);
+            }
+        }
+
+        return null;
     }
 
     private async ValueTask<BsqliteStorageResolution> ResolveExistingDatabaseAsync(

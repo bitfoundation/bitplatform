@@ -663,9 +663,19 @@ export function decodeParameter({ type, value }: { type: number; value: unknown 
         case WireType.null:
             return null;
 
-        // A large integer arrives as a decimal string; BigInt is what makes the engine bind it as int64.
+        // A large integer arrives as a decimal string. Either way BigInt is what makes the engine bind
+        // it as int64: wa-sqlite binds a number outside int32 with bind_double, which would store
+        // Date.now() as REAL - and in a TEXT or untyped column, as '1700000000000.0'.
         case WireType.integer:
-            return typeof value === 'string' ? BigInt(value) : value as number | bigint;
+            if (typeof value === 'bigint') {
+                return value;
+            }
+
+            if (typeof value === 'number' && value === (value | 0)) {
+                return value;
+            }
+
+            return BigInt(typeof value === 'string' ? value : Math.trunc(value as number));
 
         // Infinity arrives as a string, JSON having no spelling for it.
         case WireType.real:

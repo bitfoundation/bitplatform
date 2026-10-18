@@ -23,7 +23,7 @@ namespace Bit.Bsqlite.Interop;
 /// is encoded once in the worker and decoded once here.
 /// </para>
 /// </remarks>
-public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshotSource
+public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshotSource, IBsqliteLockSource
 {
     /// <summary>The RCL path the worker host is served from.</summary>
     public const string DefaultHostModuleUrl = "./_content/Bit.Bsqlite/bit-bsqlite-host.js";
@@ -46,6 +46,8 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
     private IJSObjectReference? _module;
     private IJSObjectReference? _host;
     private DotNetObjectReference<BsqliteWorkerTransport>? _self;
+    private string? _databaseName;
+    private int _nextLockId;
     private bool _disposed;
 
     /// <inheritdoc />
@@ -148,6 +150,8 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
                 extensions = _options.ExtensionModules.Select(EncodeModule).ToArray(),
             },
             cancellationToken).ConfigureAwait(false);
+
+        _databaseName = databaseName;
     }
 
     /// <inheritdoc />
@@ -202,6 +206,58 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
         catch (JSException ex)
         {
             throw new BsqliteException($"The database could not be exported: {ex.Message}");
+        }
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// A Web Lock named after the database, taken on the main thread: every tab's worker opens the
+    /// same file, so the lock has to be one the browser shares between them, and one it drops when
+    /// the tab holding it goes away.
+    /// </remarks>
+    public async Task<IAsyncDisposable> AcquireLockAsync(string name, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (_host is null || _databaseName is null)
+        {
+            throw new InvalidOperationException("The transport is not open.");
+        }
+
+        var id = Interlocked.Increment(ref _nextLockId);
+        try
+        {
+            await _host
+                .InvokeVoidAsync("acquireLock", cancellationToken, $"bit-bsqlite:{_databaseName}:{name}", id)
+                .ConfigureAwait(false);
+        }
+        catch
+        {
+            // Given up on here, but the request may still be queued in the browser - or granted by
+            // now - and a lock nobody releases stalls every other tab until this one closes.
+            await ReleaseLockAsync(id).ConfigureAwait(false);
+            throw;
+        }
+
+        return new HeldLock(this, id);
+    }
+
+    private async ValueTask ReleaseLockAsync(int id)
+    {
+        if (_host is not { } host)
+        {
+            // Disposed: the host released every lock it held when it went.
+            return;
+        }
+
+        try
+        {
+            await host.InvokeVoidAsync("releaseLock", id).ConfigureAwait(false);
+        }
+        catch (JSException)
+        {
+            // The host is already gone, and its locks with it.
         }
     }
 
@@ -299,4 +355,14 @@ public sealed class BsqliteWorkerTransport : IBsqliteTransport, IBsqliteSnapshot
 
     private static object? EncodeModule(BsqliteJsModule? module)
         => module is null ? null : new { moduleUrl = module.ModuleUrl, registerExport = module.RegisterExport };
+
+    private sealed class HeldLock(BsqliteWorkerTransport transport, int id) : IAsyncDisposable
+    {
+        private int _released;
+
+        public ValueTask DisposeAsync()
+            => Interlocked.Exchange(ref _released, 1) == 0
+                ? transport.ReleaseLockAsync(id)
+                : ValueTask.CompletedTask;
+    }
 }

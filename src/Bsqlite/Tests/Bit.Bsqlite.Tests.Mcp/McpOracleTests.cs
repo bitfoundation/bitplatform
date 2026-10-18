@@ -284,6 +284,25 @@ public partial class McpOracleTests
         Assert.AreEqual(HttpStatusCode.OK, products.StatusCode, "The server's own catalog endpoint is untouched.");
     }
 
+    /// <summary>
+    /// The demo is public and its server database lives in memory for the life of the process, so
+    /// nothing may add rows to it: anyone could grow it until the process ran out of memory.
+    /// </summary>
+    [TestMethod]
+    public async Task The_server_catalog_cannot_be_written_to()
+    {
+        using var http = McpTestHost.CreateHttpClient();
+
+        var before = JsonDocument.Parse(await http.GetStringAsync("/api/products")).RootElement.GetArrayLength();
+
+        using var post = await http.PostAsync(
+            "/api/products",
+            new StringContent("""{"name":"x","price":1}""", System.Text.Encoding.UTF8, "application/json"));
+
+        Assert.IsFalse(post.IsSuccessStatusCode);
+        Assert.AreEqual(before, JsonDocument.Parse(await http.GetStringAsync("/api/products")).RootElement.GetArrayLength());
+    }
+
     /// <summary>A first-party backend as the test describes it: its real capabilities, and the probe the plan says it gives.</summary>
     private sealed class DescribedProvider(IBsqliteStorageProvider real, bool unavailable) : IBsqliteStorageProvider
     {

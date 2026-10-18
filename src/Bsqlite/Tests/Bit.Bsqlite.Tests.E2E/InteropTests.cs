@@ -40,6 +40,106 @@ public sealed class InteropTests : BsqliteTest
             """, envelope);
     }
 
+    /// <summary>
+    /// wa-sqlite binds a JavaScript number outside int32 with <c>bind_double</c>. A value tagged as
+    /// an integer has to reach the engine as one, or <c>Date.now()</c> is stored as REAL - and in a
+    /// TEXT column as '1700000000000.0'.
+    /// </summary>
+    [TestMethod]
+    public async Task An_integer_parameter_outside_int32_is_bound_as_an_integer()
+    {
+        await GotoHostPageAsync(Page);
+
+        var envelope = await Page.EvaluateAsync<JsonElement>(
+            """
+            async () => {
+              const { createHost, encodeValue } = globalThis.BitBsqlite.host;
+              const host = createHost();
+              await host.call({ kind: 'open', databaseName: 'int64.db', requiredBuild: 'synchronous' });
+
+              await host.call({
+                kind: 'execute',
+                batch: [{ commandText: 'CREATE TABLE t (s TEXT)', resultKind: 'nonQuery', parameters: [] }],
+              });
+
+              await host.call({
+                kind: 'execute',
+                batch: [{
+                  commandText: 'INSERT INTO t (s) VALUES (@v)',
+                  resultKind: 'nonQuery',
+                  parameters: [{ name: '@v', ...encodeValue(1700000000000) }],
+                }],
+              });
+
+              const result = await host.call({
+                kind: 'execute',
+                batch: [{
+                  commandText: 'SELECT typeof(@a), typeof(@b), typeof(@c), (SELECT s FROM t)',
+                  resultKind: 'reader',
+                  parameters: [
+                    { name: '@a', ...encodeValue(3000000000) },
+                    { name: '@b', ...encodeValue(-3000000000) },
+                    { name: '@c', ...encodeValue(42) },
+                  ],
+                }],
+              });
+
+              host.dispose();
+              return result;
+            }
+            """);
+
+        Assert.IsTrue(envelope.GetProperty("ok").GetBoolean(), envelope.GetRawText());
+        var row = envelope.GetProperty("result")[0].GetProperty("rows")[0];
+        AssertJson.AreEqual("""{ "t": [3, 3, 3, 3], "v": ["integer", "integer", "integer", "1700000000000"] }""", row);
+    }
+
+    /// <summary>
+    /// The lock EF migrations run under: shared by every host on the origin - every tab's worker - and
+    /// let go of when its holder releases it, withdraws a request it gave up on, or is disposed.
+    /// </summary>
+    [TestMethod]
+    public async Task Hosts_share_named_locks_across_the_origin()
+    {
+        await GotoHostPageAsync(Page);
+
+        var outcome = await Page.EvaluateAsync<JsonElement>(
+            """
+            async () => {
+              const { createHost } = globalThis.BitBsqlite.host;
+              const name = 'bit-bsqlite:test:' + crypto.randomUUID();
+              const settle = () => new Promise(resolve => setTimeout(resolve, 100));
+              const first = createHost();
+              const second = createHost();
+              const third = createHost();
+
+              await first.acquireLock(name, 1);
+              let secondHeld = false;
+              const secondWaits = second.acquireLock(name, 1).then(() => { secondHeld = true; });
+              await settle();
+              const heldOff = !secondHeld;
+
+              first.releaseLock(1);
+              await secondWaits;
+
+              // A request given up on while still queued is withdrawn, not granted later to nobody.
+              const withdrawn = first.acquireLock(name, 2).then(() => 'granted', error => error.name);
+              first.releaseLock(2);
+
+              // Disposing the holder releases what it held.
+              second.dispose();
+              await third.acquireLock(name, 1);
+
+              third.releaseLock(1);
+              first.dispose();
+              third.dispose();
+              return { heldOff, secondHeld, withdrawn: await withdrawn };
+            }
+            """);
+
+        AssertJson.AreEqual("""{ "heldOff": true, "secondHeld": true, "withdrawn": "AbortError" }""", outcome);
+    }
+
     [TestMethod]
     public async Task A_successful_execute_carries_tagged_rows_not_raw_JavaScript_values()
     {

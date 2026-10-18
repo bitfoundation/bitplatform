@@ -67,6 +67,12 @@ interface WorkerRequest {
     [key: string]: unknown;
 }
 
+/** A Web Lock request: `release` is set once it is granted, `abort` withdraws it until then. */
+interface HeldLock {
+    abort: AbortController;
+    release: (() => void) | null;
+}
+
 interface WorkerResponse {
     id?: number;
     kind?: string;
@@ -127,6 +133,7 @@ export class SqliteHost {
     #fatal: Error | null = null;
     #listeners = new Set<NotifyListener>();
     #channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel(CHANGE_CHANNEL) : null;
+    #locks = new Map<number, HeldLock>();
 
     constructor(workerUrl: string) {
         this.#worker = new Worker(workerUrl, { type: 'module' });
@@ -287,6 +294,65 @@ export class SqliteHost {
     }
 
     /**
+     * Waits for the Web Lock `name` and holds it until `releaseLock(id)` - or until this host is
+     * disposed, or the tab goes away, whichever comes first.
+     *
+     * Web Locks are shared by every tab and worker of the origin, which is what makes this a lock
+     * between the workers of different tabs that open the same file; and the browser drops a lock
+     * whose holder is gone, so a tab that crashes mid-migration never leaves the others waiting.
+     * `id` is chosen by the caller so it can release a request it gave up on before it was granted.
+     */
+    acquireLock(name: string, id: number): Promise<void> {
+        if (this.#disposed) {
+            return Promise.reject(new Error('This SQLite host has been disposed.'));
+        }
+
+        const locks = globalThis.navigator?.locks;
+        if (!locks) {
+            // The VFSes coordinate tabs through the same API, so without it there is nothing a lock
+            // here could be coordinating with.
+            return Promise.resolve();
+        }
+
+        const held: HeldLock = { abort: new AbortController(), release: null };
+        this.#locks.set(id, held);
+
+        return new Promise<void>((granted, failed) => {
+            locks.request(name, { signal: held.abort.signal }, () => new Promise<void>(release => {
+                if (this.#locks.get(id) !== held) {
+                    // Released while still queued, and granted before the abort landed.
+                    release();
+                    return;
+                }
+
+                held.release = release;
+                granted();
+            })).catch(error => {
+                if (this.#locks.get(id) === held) {
+                    this.#locks.delete(id);
+                }
+
+                failed(error);
+            });
+        });
+    }
+
+    /** Releases a lock taken with `acquireLock`, or withdraws a request still waiting for one. */
+    releaseLock(id: number): void {
+        const held = this.#locks.get(id);
+        if (!held) {
+            return;
+        }
+
+        this.#locks.delete(id);
+        if (held.release) {
+            held.release();
+        } else {
+            held.abort.abort();
+        }
+    }
+
+    /**
      * Terminates the worker. Outstanding requests are rejected rather than abandoned, because a caller
      * awaiting a query that will never answer is worse than a caller seeing the shutdown.
      */
@@ -297,6 +363,10 @@ export class SqliteHost {
 
         this.#disposed = true;
         this.#failAll(new Error('The SQLite host was disposed while the request was in flight.'));
+        for (const id of [...this.#locks.keys()]) {
+            this.releaseLock(id);
+        }
+
         this.#listeners.clear();
         this.#channel?.close();
         this.#worker.terminate();

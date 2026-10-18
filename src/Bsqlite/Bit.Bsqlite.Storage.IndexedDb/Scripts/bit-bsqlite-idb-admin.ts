@@ -19,11 +19,19 @@ interface ProbeResult {
     environment: Record<string, string>;
 }
 
-/** A row of the VFS's `metadata` store: one per file. */
+/**
+ * A row of the VFS's `metadata` store: one per file.
+ *
+ * `version` counts down: each write transaction writes its blocks one below the committed version
+ * and lowers it on commit, so a block below `version` belongs to a transaction that never committed -
+ * one in flight in another tab, or one whose tab died, which `pendingVersion` marks until the VFS
+ * cleans it up on the next shared lock.
+ */
 interface MetadataRow {
     name: string;
     fileSize: number;
     version: number;
+    pendingVersion?: number;
 }
 
 /** A row of the VFS's `blocks` store. Offsets are stored negated, so a key range finds a block's start. */
@@ -129,41 +137,80 @@ export async function deleteDatabase(databaseName: string): Promise<void> {
     }
 }
 
+/**
+ * Reads out the committed database, as of one moment.
+ *
+ * One read-only transaction covers the metadata and every block, so a commit in another tab cannot
+ * land between them. Blocks below the committed version are skipped (see MetadataRow): exporting
+ * them would mix a transaction that never committed into an image that still passes for a SQLite
+ * file - and a migration would bind the user's database to it.
+ */
 export async function exportDatabase(databaseName: string): Promise<Uint8Array> {
     const path = pathOf(requireName(databaseName));
     const db = await openDatabase();
 
     try {
-        const meta = await withStore(db, 'metadata', 'readonly', store => requestOf<MetadataRow | undefined>(store.get(path)));
-        if (!meta) {
-            throw new Error(`IndexedDB holds no database named '${displayName(path)}'.`);
-        }
-
-        if (!meta.fileSize) {
-            return new Uint8Array(0);
-        }
-
-        const image = new Uint8Array(meta.fileSize);
-        let offset = 0;
-
-        while (offset < meta.fileSize) {
-            const block = await withStore(db, 'blocks', 'readonly', store => requestOf<BlockRow | undefined>(
-                store.get(IDBKeyRange.bound([path, -offset], [path, Infinity]))));
-
-            if (!block || block.data.byteLength - block.offset <= offset) {
-                break;
+        return await withTransaction(db, 'readonly', async ({ metadata, blocks }) => {
+            const meta = await requestOf<MetadataRow | undefined>(metadata.get(path));
+            if (!meta) {
+                throw new Error(`IndexedDB holds no database named '${displayName(path)}'.`);
             }
 
-            const srcOffset = offset + block.offset;
-            const n = Math.min(block.data.byteLength - srcOffset, meta.fileSize - offset);
-            image.set(block.data.subarray(srcOffset, srcOffset + n), offset);
-            offset += n;
-        }
-
-        return image;
+            return readCommittedImage(blocks, path, meta);
+        });
     } finally {
         db.close();
     }
+}
+
+/**
+ * Walks the blocks the way the VFS reads them - for each offset, the newest block that starts at or
+ * below it - passing over any whose version is below the committed one.
+ */
+function readCommittedImage(blocks: IDBObjectStore, path: string, meta: MetadataRow): Promise<Uint8Array> {
+    const image = new Uint8Array(meta.fileSize ?? 0);
+
+    return new Promise<Uint8Array>((resolve, reject) => {
+        let offset = 0;
+
+        const seek = () => {
+            if (offset >= image.byteLength) {
+                resolve(image);
+                return;
+            }
+
+            // Callbacks rather than awaits, so each request is issued while the transaction is
+            // certainly still active.
+            const request = blocks.openCursor(IDBKeyRange.bound([path, -offset], [path, Infinity]));
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => {
+                const cursor = request.result;
+                if (!cursor) {
+                    resolve(image);
+                    return;
+                }
+
+                const block = cursor.value as BlockRow;
+                if (block.version < meta.version) {
+                    cursor.continue();
+                    return;
+                }
+
+                if (block.data.byteLength - block.offset <= offset) {
+                    resolve(image);
+                    return;
+                }
+
+                const srcOffset = offset + block.offset;
+                const n = Math.min(block.data.byteLength - srcOffset, image.byteLength - offset);
+                image.set(block.data.subarray(srcOffset, srcOffset + n), offset);
+                offset += n;
+                seek();
+            };
+        };
+
+        seek();
+    });
 }
 
 export async function importDatabase(databaseName: string, contents: Uint8Array | ArrayLike<number> | null): Promise<void> {

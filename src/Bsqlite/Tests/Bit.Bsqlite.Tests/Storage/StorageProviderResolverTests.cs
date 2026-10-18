@@ -352,6 +352,77 @@ public sealed class StorageProviderResolverTests
         }
 
         /// <summary>
+        /// A database on a non-persistent fallback is gone by the next load, so a binding protects
+        /// nothing - and would keep every later visit on in-memory even with OPFS back.
+        /// </summary>
+        [TestMethod]
+        public async Task CommitBinding_DoesNotBindANonPersistentBackend()
+        {
+            var store = new BsqliteInMemoryStorageBindingStore();
+            var opfs = new FakeStorageProvider("opfs", isAvailable: false);
+            var resolver = Resolver(store, opfs, new FakeStorageProvider("in-memory", isPersistent: false));
+            var selection = Select(s => s.Prefer("opfs").Fallback("in-memory").AllowNonPersistentFallback());
+
+            var first = await resolver.ResolveAsync(Database, selection, Ct);
+            Assert.AreEqual("in-memory", first.Provider.Name);
+            await resolver.CommitBindingAsync(first, Ct);
+
+            Assert.IsNull(await store.GetProviderNameAsync(Database, Ct));
+
+            // The next visit, with OPFS working again, picks it.
+            var nextVisit = Resolver(store, new FakeStorageProvider("opfs"), new FakeStorageProvider("in-memory", isPersistent: false));
+            Assert.AreEqual("opfs", (await nextVisit.ResolveAsync(Database, selection, Ct)).Provider.Name);
+        }
+
+        /// <summary>
+        /// An application that clears <c>localStorage</c> on sign-out loses the binding but not the
+        /// file. Opening an empty database on the preferred backend would orphan the data without a
+        /// word, so the backends are asked, and the one holding it is used - and bound again.
+        /// </summary>
+        [TestMethod]
+        public async Task LostBinding_FindsTheExistingData_AndBindsItAgain()
+        {
+            var store = new BsqliteInMemoryStorageBindingStore();
+            var opfs = new FakeStorageProvider("opfs");
+            var indexedDb = new FakeStorageProvider("indexeddb", holds: [Database]);
+            var resolver = Resolver(store, opfs, indexedDb);
+
+            var resolution = await resolver.ResolveAsync(
+                Database,
+                Select(s => s.Prefer("opfs").Fallback("indexeddb")),
+                Ct);
+
+            Assert.AreSame(indexedDb, resolution.Provider);
+            Assert.IsTrue(resolution.WasDecidedByExistingData);
+            Assert.IsTrue(resolution.WasFoundWithoutBinding);
+            Assert.AreSame(opfs, resolution.BetterProviderAvailable);
+            Assert.IsNull(await store.GetProviderNameAsync(Database, Ct), "Resolving records nothing.");
+
+            await resolver.CommitBindingAsync(resolution, Ct);
+            Assert.AreEqual("indexeddb", await store.GetProviderNameAsync(Database, Ct));
+        }
+
+        [TestMethod]
+        public async Task LostBinding_WithNothingAnywhere_IsANewDatabase()
+        {
+            var store = new BsqliteInMemoryStorageBindingStore();
+            var opfs = new FakeStorageProvider("opfs");
+            var indexedDb = new FakeStorageProvider("indexeddb");
+            var resolver = Resolver(store, opfs, indexedDb);
+
+            var resolution = await resolver.ResolveAsync(
+                Database,
+                Select(s => s.Prefer("opfs").Fallback("indexeddb")),
+                Ct);
+
+            Assert.AreSame(opfs, resolution.Provider);
+            Assert.IsFalse(resolution.WasDecidedByExistingData);
+            Assert.IsFalse(resolution.WasFoundWithoutBinding);
+            Assert.AreEqual(1, opfs.ExistsCount);
+            Assert.AreEqual(1, indexedDb.ExistsCount);
+        }
+
+        /// <summary>
         /// Resolving is a read-only decision; a database that never opened must not leave a binding
         /// behind claiming it did.
         /// </summary>

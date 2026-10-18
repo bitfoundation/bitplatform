@@ -46,7 +46,7 @@ Register them in the project that runs on WebAssembly. In a Blazor Web App whose
 | Service | What it is |
 |---|---|
 | `IBsqliteSessionFactory` | Resolves a backend, starts a worker, opens the database |
-| `BsqliteDatabase` | The one shared session for the database named in `AddDatabase` |
+| `BsqliteDatabase` | The one shared session for the database named in `AddDatabase` - also a keyed service under that name, for an application that registers several |
 | `BsqliteStorageProviderResolver`, `BsqliteStorageMigrator`, `IBsqliteStorageBindingStore` | Selection, migration, and the sticky binding (in `localStorage` by default) |
 | `IBsqliteTransportFactory` | The worker transport |
 
@@ -68,7 +68,11 @@ db.Products.Add(new Product { Name = "Widget", Price = 19.99m });
 await db.SaveChangesAsync();
 ```
 
-The factory opens the database on first use, runs the schema step once per session, and hands out contexts bound to the shared connection. Disposing a context does not close the database. The factory also implements `IDbContextFactory<TContext>`; its synchronous `CreateDbContext()` works once the database has been opened.
+The factory opens the database on first use, runs the schema step once per session, and hands out contexts bound to the shared connection. Disposing a context does not close the database. The factory also implements `IDbContextFactory<TContext>`; its synchronous `CreateDbContext()` works once an awaited `CreateDbContextAsync()` has opened the session and run the schema step on it.
+
+The schema step and `OnFirstUse` run under a lock shared with every other tab, and so does EF's own `MigrateAsync` on EF Core 9 and later: each tab has its own worker over the same file, and two tabs opening after a deploy would otherwise both apply the new migration - or both seed an empty database. The lock is a Web Lock, so a tab that closes mid-migration releases it.
+
+With more than one database registered, name the one a context belongs to: `AddBitBsqliteDbContext<CacheDbContext>(o => o.DatabaseName = "cache.db")`. Leaving it out is an error then, rather than a context bound to whichever was registered last.
 
 Use the async EF API throughout: `ToListAsync`, `SaveChangesAsync`, `MigrateAsync`. Synchronous members throw `BsqliteSynchronousApiNotSupportedException` naming the async overload, because the engine runs in a worker the main thread cannot wait on.
 

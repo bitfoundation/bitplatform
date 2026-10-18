@@ -314,6 +314,15 @@ public sealed class BsqliteConnection : DbConnection
         }
     }
 
+    /// <summary>
+    /// Takes the cross-tab lock <paramref name="name"/> through the transport, or returns
+    /// <see langword="null"/> when the transport has no way to coordinate with other tabs.
+    /// </summary>
+    internal async Task<IAsyncDisposable?> TryAcquireLockAsync(string name, CancellationToken cancellationToken)
+        => _transport is IBsqliteLockSource locks
+            ? await locks.AcquireLockAsync(name, cancellationToken).ConfigureAwait(false)
+            : null;
+
     /// <summary>Runs a statement that returns nothing, bypassing command plumbing.</summary>
     internal async Task ExecuteInternalAsync(string sql, CancellationToken cancellationToken)
     {

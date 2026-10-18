@@ -200,6 +200,72 @@ public sealed class IndexedDbTests : BsqliteTest
         Assert.AreEqual("SQLite format 3", header);
     }
 
+    /// <summary>
+    /// A tab killed mid-transaction leaves its blocks behind, one version below the committed one and
+    /// marked by <c>pendingVersion</c>, until a worker next takes a shared lock. An export before
+    /// then - an automatic migration, say - must not read them: the image would mix in a transaction
+    /// that never committed and still pass for a SQLite file.
+    /// </summary>
+    [TestMethod]
+    public async Task Admin_export_leaves_out_the_blocks_of_a_transaction_that_never_committed()
+    {
+        var databaseName = UniqueName("idb-pending");
+        await OpenIdbAsync(Page, databaseName);
+        await ExecAsync(Page, "CREATE TABLE product (id INTEGER PRIMARY KEY, name TEXT)");
+        await ExecAsync(Page, "INSERT INTO product (name) VALUES ('Committed')");
+        await Page.EvaluateAsync(
+            """
+            async () => {
+              await globalThis.host.close();
+              globalThis.host.dispose();
+            }
+            """);
+
+        var outcome = await Page.EvaluateAsync<JsonElement>(
+            """
+            async name => {
+              const admin = await import('/_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-admin.js');
+              const committed = Array.from(await admin.exportDatabase(name));
+
+              // What the VFS leaves when its tab dies between writing a transaction's pages and
+              // committing them: a newer block for every page, and the metadata marking it pending.
+              const path = admin.pathOf(name);
+              const db = await new Promise((resolve, reject) => {
+                const request = indexedDB.open(admin.IDB_NAME, admin.IDB_VERSION);
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+              });
+
+              await new Promise((resolve, reject) => {
+                const tx = db.transaction(['metadata', 'blocks'], 'readwrite');
+                tx.oncomplete = resolve;
+                tx.onerror = () => reject(tx.error);
+                const metadata = tx.objectStore('metadata');
+                const blocks = tx.objectStore('blocks');
+                metadata.get(path).onsuccess = event => {
+                  const meta = event.target.result;
+                  const pending = meta.version - 1;
+                  metadata.put({ ...meta, pendingVersion: pending });
+                  for (let offset = 0; offset < meta.fileSize; offset += 4096) {
+                    const data = new Uint8Array(4096).fill(0xEE);
+                    data.set(new TextEncoder().encode('SQLite format 3\0'));
+                    blocks.put({ path, offset: -offset, version: pending, data });
+                  }
+                };
+              });
+
+              db.close();
+              return { committed, exported: Array.from(await admin.exportDatabase(name)) };
+            }
+            """, databaseName);
+
+        AssertJson.AreEqual(outcome.GetProperty("committed").GetRawText(), outcome.GetProperty("exported"));
+
+        // And the worker agrees: the VFS drops the pending blocks itself when it opens.
+        await OpenIdbAsync(Page, databaseName);
+        AssertJson.AreEqual("""[["Committed"]]""", (await QueryAsync(Page, "SELECT name FROM product")).Rows);
+    }
+
     [TestMethod]
     public async Task Admin_probe_reports_available_when_indexedDB_exists()
     {

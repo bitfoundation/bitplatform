@@ -196,7 +196,7 @@ export class CacheStorageVFS extends WebLocksMixin(FacadeVFS) {
             const n = Math.min(PAGE_SIZE - pageOffset, pData.byteLength - written);
             const page = pageOffset === 0 && n === PAGE_SIZE
                 ? new Uint8Array(PAGE_SIZE)
-                : await this.#readPage(file, pageIndex);
+                : await this.#pageForWrite(file, pageIndex);
             page.set(pData.subarray(written, written + n), pageOffset);
             file.dirty.set(pageIndex, page);
             written += n;
@@ -206,6 +206,16 @@ export class CacheStorageVFS extends WebLocksMixin(FacadeVFS) {
         return VFS.SQLITE_OK;
     }
 
+    /**
+     * Shrinks the file: the new size is recorded first, and only then are the pages past it dropped.
+     *
+     * The order is what makes it atomic. Truncating a journal to nothing is the commit point of
+     * TRUNCATE journal mode, and pages dropped in parallel with the size written last could leave
+     * the old size over a valid header page and missing record pages - a hot journal that plays back
+     * part of a transaction onto a database that already committed it. Recorded first, the size
+     * hides every page past it at once; a page whose drop the tab did not live to finish is beyond
+     * the end, where reads never look and writes start from zeros (see #pageForWrite).
+     */
     override async jTruncate(fileId: number, size: number): Promise<number> {
         const file = this.#file(fileId);
         const previousPages = pageCount(file.size);
@@ -217,8 +227,8 @@ export class CacheStorageVFS extends WebLocksMixin(FacadeVFS) {
             }
         }
 
-        await this.#dropPagesFrom(file.path, firstDropped, previousPages);
         await this.#writeSize(file.path, size);
+        await this.#dropPagesFrom(file.path, firstDropped, previousPages);
         return VFS.SQLITE_OK;
     }
 
@@ -264,6 +274,27 @@ export class CacheStorageVFS extends WebLocksMixin(FacadeVFS) {
         return new Uint8Array(await match.arrayBuffer());
     }
 
+    /**
+     * The page a partial write lands in, with nothing from past the end of the file in it.
+     *
+     * Bytes past the recorded size are not part of the file, but the cache can still hold them: a
+     * truncate or a delete records the new size before it drops the pages, and a tab that closed in
+     * between left those pages behind. A write that extends the file must not resurrect them.
+     */
+    async #pageForWrite(file: File, index: number): Promise<Uint8Array> {
+        const start = index * PAGE_SIZE;
+        if (start >= file.size) {
+            return new Uint8Array(PAGE_SIZE);
+        }
+
+        const page = await this.#readPage(file, index);
+        if (file.size - start < PAGE_SIZE) {
+            page.fill(0, file.size - start);
+        }
+
+        return page;
+    }
+
     async #readSize(path: string): Promise<number | null> {
         const match = await this.#store.match(metaUrl(path));
         if (!match) {
@@ -291,13 +322,23 @@ export class CacheStorageVFS extends WebLocksMixin(FacadeVFS) {
         await this.#writeSize(path, bytes.byteLength);
     }
 
+    /**
+     * Deletes a file, its first page before anything else.
+     *
+     * Deleting the journal is the commit point of DELETE journal mode, so it has to happen all at
+     * once as far as the next open can tell. SQLite treats a journal whose first byte is zero as not
+     * hot - and a page that is gone reads as zeros - so once page 0 is gone the journal can no longer
+     * be played back, whatever else a tab that closed mid-delete left behind. The meta goes last, so
+     * the size still bounds the cleanup when SQLite deletes the remains on a later open.
+     */
     async #deletePath(path: string): Promise<void> {
         const size = await this.#readSize(path);
         if (size === null) {
             return;
         }
 
-        await this.#dropPagesFrom(path, 0, pageCount(size));
+        await this.#store.delete(pageUrl(path, 0));
+        await this.#dropPagesFrom(path, 1, pageCount(size));
         await this.#store.delete(metaUrl(path));
     }
 

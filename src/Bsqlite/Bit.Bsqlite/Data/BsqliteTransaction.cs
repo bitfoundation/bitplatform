@@ -17,6 +17,12 @@ namespace Bit.Bsqlite.Data;
 /// dispose does so on the transport; the synchronous one cannot wait, so it issues the rollback
 /// and returns - the transport serializes requests, so it still lands before the next command.
 /// </para>
+/// <para>
+/// A cancellation token is honoured only before a statement is sent. Once <c>BEGIN</c>,
+/// <c>COMMIT</c> or <c>ROLLBACK</c> is on its way, the worker runs it whatever .NET stops waiting
+/// for, so abandoning the wait would leave the engine in a transaction no object here owns - holding
+/// the write lock against every other tab, and swallowing every later write into it.
+/// </para>
 /// </remarks>
 public sealed class BsqliteTransaction : DbTransaction
 {
@@ -44,9 +50,12 @@ public sealed class BsqliteTransaction : DbTransaction
 
     internal async Task BeginAsync(CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Not cancellable once sent; see the remarks.
         await _connection.ExecuteInternalAsync(
             IsolationLevel == IsolationLevel.Serializable ? "BEGIN IMMEDIATE" : "BEGIN",
-            cancellationToken).ConfigureAwait(false);
+            CancellationToken.None).ConfigureAwait(false);
         _connection.DiscardPendingWrites();
     }
 
@@ -148,9 +157,13 @@ public sealed class BsqliteTransaction : DbTransaction
     {
         ThrowIfCompleted();
 
+        // Before anything changes, so a cancelled commit leaves a transaction the caller can still
+        // roll back or dispose; after this point the statement is sent and runs, as the remarks say.
+        cancellationToken.ThrowIfCancellationRequested();
+
         try
         {
-            await _connection.ExecuteInternalAsync(statement, cancellationToken).ConfigureAwait(false);
+            await _connection.ExecuteInternalAsync(statement, CancellationToken.None).ConfigureAwait(false);
         }
         catch
         {

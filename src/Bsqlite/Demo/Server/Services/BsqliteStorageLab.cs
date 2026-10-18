@@ -349,7 +349,9 @@ public static class BsqliteStorageLab
 
             if (chosen.Capabilities.IsPersistent is false)
             {
-                yield return $"'{chosen.Name}' does not survive a reload: everything written in this session is gone when the page closes.";
+                yield return plan.WasDecidedByExistingData is true
+                    ? $"'{chosen.Name}' does not survive a reload: everything written in this session is gone when the page closes."
+                    : $"'{chosen.Name}' does not survive a reload: everything written in this session is gone when the page closes. No binding is written for it - it would protect no data - so the next load chooses again from the preference order.";
             }
 
             if (plan.WasDecidedByExistingData is true && plan.Migration is not { Outcome: "Migrated" })
@@ -383,7 +385,9 @@ public static class BsqliteStorageLab
 
         if (plan.Migration is { Outcome: "Failed" } failed)
         {
-            yield return $"The automatic migration to '{failed.To}' failed and was logged; the migrator left the source and the binding untouched, so the database opened on '{failed.From}' with its data, and the move is offered again on the next open.";
+            yield return string.Equals(plan.Provider, failed.To, StringComparison.OrdinalIgnoreCase)
+                ? $"The automatic migration to '{failed.To}' failed after the copy was verified and bound - deleting '{failed.From}' failed with the source no longer whole - so the database opened on '{failed.To}', where the binding points."
+                : $"The automatic migration to '{failed.To}' failed and was logged; the binding still names '{failed.From}', so the database opened there with its data, and the move is offered again on the next open.";
         }
 
         if (plan.Candidates.Any(candidate => candidate.Status == nameof(BsqliteStorageCandidateStatus.RejectedAsNonPersistent)))
