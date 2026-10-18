@@ -1,0 +1,21 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Bsqlite browser test host</title>
+</head>
+<body>
+  <!--
+    The page is intentionally empty. Tests drive the library through page.evaluate() against the module
+    imported below, so the host stays a transport for test code rather than becoming a second
+    implementation that has to be kept in step with the real one.
+  -->
+  <script type="module">
+    import * as host from '/_content/Bit.Bsqlite/bit-bsqlite-host.js';
+    import * as engine from '/_content/Bit.Bsqlite/bit-bsqlite-engine.js';
+
+    globalThis.BitBsqlite = { host, engine };
+    globalThis.BitBsqliteReady = true;
+  </script>
+</body>
+</html>

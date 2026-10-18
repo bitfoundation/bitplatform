@@ -1,0 +1,54 @@
+﻿@inject IJSRuntime Js
+
+@* System / light / dark. The chosen mode is stored in localStorage and re-applied before first
+   paint by the boot script in index.html, so reloads never flash the wrong theme. *@
+<div class="segmented" role="group" aria-label="Colour theme">
+    <button type="button" aria-pressed="@Pressed("system")" @onclick='() => SetAsync("system")'>
+        <Icon Name="monitor" Title="Follow the operating system" />
+    </button>
+    <button type="button" aria-pressed="@Pressed("light")" @onclick='() => SetAsync("light")'>
+        <Icon Name="sun" Title="Light theme" />
+    </button>
+    <button type="button" aria-pressed="@Pressed("dark")" @onclick='() => SetAsync("dark")'>
+        <Icon Name="moon" Title="Dark theme" />
+    </button>
+</div>
+
+@code {
+    private string _mode = "system";
+
+    // ARIA wants the literal strings. A bool would make Blazor drop the attribute when false and
+    // emit a valueless one when true, neither of which a screen reader reports as a toggle state.
+    private string Pressed(string mode) => _mode == mode ? "true" : "false";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        try
+        {
+            _mode = await Js.InvokeAsync<string>("bsqliteDemo.theme.get");
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+        }
+    }
+
+    private async Task SetAsync(string mode)
+    {
+        _mode = mode;
+        try
+        {
+            await Js.InvokeAsync<string>("bsqliteDemo.theme.set", mode);
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+        }
+    }
+}

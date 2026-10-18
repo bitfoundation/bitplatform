@@ -1,0 +1,243 @@
+﻿/* =============================================================================
+   Bsqlite - design tokens
+   Layer 1 primitives -> layer 2 semantics. Components never reach for a raw hex.
+
+   Direction: Minimalism & Swiss Style, developer-tool register (see
+   samples/design-system/bsqlite-demo/MASTER.md). Every foreground /
+   background pair below is >= 4.5:1 in both themes.
+   ========================================================================== */
+
+:root {
+    /* --- layer 1: primitives ------------------------------------------- */
+    --ink-950: #0b1220;
+    --ink-900: #131c2b;
+    --ink-800: #1e2a3d;
+    --ink-700: #2c3a51;
+    --ink-600: #54637a;
+    --ink-500: #68788f;
+    --ink-400: #93a2b7;
+    --ink-300: #c3cddb;
+    --ink-200: #dfe5ee;
+    --ink-100: #eef2f7;
+    --ink-050: #f7f9fc;
+    --white: #ffffff;
+
+    --night-950: #070a0f;
+    --night-900: #0a0e14;
+    --night-850: #0e141d;
+    --night-800: #111823;
+    --night-750: #16202d;
+    --night-700: #1c2836;
+    --night-600: #263447;
+
+    --teal-700: #0f766e;
+    --teal-600: #12857c;
+    --teal-500: #14b8a6;
+    --teal-400: #2dd4bf;
+    --teal-300: #5eead4;
+    --teal-100: #dcf5f0;
+    --teal-050: #f0faf8;
+    --teal-950: #04211e;
+    --teal-900: #08302c;
+    --teal-850: #0d3f39;
+
+    --red-700: #b42318;
+    --red-300: #ff8a80;
+    --red-100: #fdecea;
+    --red-900: #3a1512;
+
+    --amber-800: #7a4a03;
+    --amber-400: #fbbf24;
+    --amber-100: #fff7e6;
+    --amber-900: #3a2a08;
+
+    --green-800: #0a5c48;
+    --green-400: #34d399;
+    --green-100: #e6f6f1;
+    --green-900: #0a2b23;
+
+    --violet-600: #7c3aed;
+    --violet-300: #c4b5fd;
+    --blue-700: #0369a1;
+    --blue-300: #7dd3fc;
+    --orange-700: #b45309;
+
+    /* --- scale: type ---------------------------------------------------- */
+    --text-2xs: 0.6875rem;  /* 11 - eyebrows only, uppercase + tracked */
+    --text-xs: 0.75rem;     /* 12 */
+    --text-sm: 0.8125rem;   /* 13 */
+    --text-base: 0.9375rem; /* 15 - UI default */
+    --text-md: 1rem;        /* 16 - prose */
+    --text-lg: 1.125rem;    /* 18 */
+    --text-xl: 1.375rem;    /* 22 */
+    --text-2xl: 1.75rem;    /* 28 */
+    --text-3xl: 2.25rem;    /* 36 */
+    --text-4xl: 3rem;       /* 48 */
+
+    --lh-tight: 1.15;
+    --lh-snug: 1.35;
+    --lh-normal: 1.6;
+
+    --track-wide: 0.09em;
+    --track-tight: -0.02em;
+    --track-tighter: -0.035em;
+
+    --font-sans: "IBM Plex Sans", "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, sans-serif;
+    --font-mono: "JetBrains Mono", ui-monospace, "Cascadia Code", "SFMono-Regular", Consolas, monospace;
+
+    /* --- scale: space (density 6/10 - standard) -------------------------- */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+    --space-7: 3rem;
+    --space-8: 4rem;
+    --space-9: 6rem;
+
+    /* --- scale: radius / elevation --------------------------------------- */
+    --radius-sm: 0.375rem;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-xl: 1rem;
+    --radius-full: 999px;
+
+    /* --- motion (dial 3/10 - subtle) ------------------------------------- */
+    --ease: cubic-bezier(0.2, 0, 0.15, 1);
+    --dur-fast: 120ms;
+    --dur: 180ms;
+    --dur-slow: 260ms;
+
+    /* --- layout ----------------------------------------------------------- */
+    --topbar-h: 3.5rem;
+    --sidebar-w: 16.5rem;
+    --measure: 46rem;
+    --page-max: 84rem;
+}
+
+/* --- layer 2: semantics - light ------------------------------------------ */
+:root {
+    color-scheme: light;
+
+    --canvas: var(--white);
+    --canvas-sunken: var(--ink-050);
+    --surface: var(--white);
+    --surface-2: var(--ink-050);
+    --surface-3: var(--ink-100);
+    --surface-inset: var(--ink-050);
+    --overlay: rgba(11, 18, 32, 0.45);
+
+    --text: var(--ink-950);
+    --text-muted: var(--ink-600);
+    --text-faint: var(--ink-500);
+    --text-on-accent: var(--white);
+
+    --border: var(--ink-200);
+    --border-strong: var(--ink-300);
+    --border-subtle: var(--ink-100);
+
+    --accent: var(--teal-700);
+    --accent-hover: var(--teal-600);
+    --accent-ink: #115e56;
+    --accent-soft: var(--teal-100);
+    --accent-wash: var(--teal-050);
+
+    --danger: var(--red-700);
+    --danger-soft: var(--red-100);
+    --danger-ink: var(--red-700);
+
+    --warn: var(--amber-800);
+    --warn-soft: var(--amber-100);
+    --warn-ink: var(--amber-800);
+
+    --ok: var(--green-800);
+    --ok-soft: var(--green-100);
+    --ok-ink: var(--green-800);
+
+    --focus-ring: var(--teal-700);
+
+    --shadow-xs: 0 1px 2px rgba(11, 18, 32, 0.06);
+    --shadow-sm: 0 1px 2px rgba(11, 18, 32, 0.05), 0 1px 1px rgba(11, 18, 32, 0.04);
+    --shadow-md: 0 4px 12px -4px rgba(11, 18, 32, 0.12), 0 2px 4px -2px rgba(11, 18, 32, 0.06);
+    --shadow-lg: 0 24px 48px -24px rgba(11, 18, 32, 0.28), 0 8px 16px -12px rgba(11, 18, 32, 0.12);
+
+    --code-bg: var(--ink-050);
+    --code-head: var(--ink-100);
+    --code-border: var(--ink-200);
+    --code-text: var(--ink-900);
+    --code-comment: var(--ink-600);
+    --code-keyword: var(--violet-600);
+    --code-string: var(--orange-700);
+    --code-number: var(--blue-700);
+    --code-type: var(--teal-700);
+
+    --grid-line: rgba(11, 18, 32, 0.05);
+    --hero-glow-a: rgba(20, 184, 166, 0.16);
+    --hero-glow-b: rgba(3, 105, 161, 0.09);
+}
+
+/* --- layer 2: semantics - dark -------------------------------------------
+   Only one dark block exists. The boot script in index.html resolves "system"
+   to a concrete light/dark value and stamps data-theme before first paint, so
+   no prefers-color-scheme duplicate of this table is needed.
+   ------------------------------------------------------------------------ */
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --canvas: var(--night-900);
+    --canvas-sunken: var(--night-950);
+    --surface: var(--night-800);
+    --surface-2: var(--night-750);
+    --surface-3: var(--night-700);
+    --surface-inset: var(--night-850);
+    --overlay: rgba(3, 5, 8, 0.66);
+
+    --text: #e6edf6;
+    --text-muted: var(--ink-400);
+    --text-faint: #7c8ca3;
+    --text-on-accent: var(--teal-950);
+
+    --border: var(--night-700);
+    --border-strong: var(--night-600);
+    --border-subtle: var(--night-750);
+
+    --accent: var(--teal-400);
+    --accent-hover: var(--teal-300);
+    --accent-ink: var(--teal-300);
+    --accent-soft: var(--teal-850);
+    --accent-wash: var(--teal-900);
+
+    --danger: var(--red-300);
+    --danger-soft: var(--red-900);
+    --danger-ink: var(--red-300);
+
+    --warn: var(--amber-400);
+    --warn-soft: var(--amber-900);
+    --warn-ink: var(--amber-400);
+
+    --ok: var(--green-400);
+    --ok-soft: var(--green-900);
+    --ok-ink: var(--green-400);
+
+    --focus-ring: var(--teal-400);
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.45);
+    --shadow-md: 0 4px 14px -6px rgba(0, 0, 0, 0.6);
+    --shadow-lg: 0 24px 48px -24px rgba(0, 0, 0, 0.8), 0 8px 16px -12px rgba(0, 0, 0, 0.6);
+
+    --code-bg: var(--night-850);
+    --code-head: var(--night-750);
+    --code-border: var(--night-700);
+    --code-text: #dbe4f0;
+    --code-comment: #8496ad;
+    --code-keyword: var(--violet-300);
+    --code-string: var(--amber-400);
+    --code-number: var(--blue-300);
+    --code-type: var(--teal-300);
+
+    --grid-line: rgba(255, 255, 255, 0.04);
+    --hero-glow-a: rgba(45, 212, 191, 0.13);
+    --hero-glow-b: rgba(56, 130, 246, 0.08);
+}

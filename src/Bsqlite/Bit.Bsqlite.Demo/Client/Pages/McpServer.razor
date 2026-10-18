@@ -1,0 +1,640 @@
+﻿@page "/mcp-server"
+@inject HttpClient Http
+@inject NavigationManager Nav
+
+@* The MCP server's own page. Its route differs from the endpoint's on purpose: two literal endpoints on
+   /mcp would make a GET of it ambiguous.
+
+   Everything interactive here calls the demo's real /api/mcp endpoints - the same methods the MCP server
+   exposes as tools - so what a reader tries is exactly what an agent gets, and the page cannot document a
+   tool that does not work. The tool, prompt and resource lists are fetched rather than written out, for the
+   same reason: GetMcpCatalog reflects over the attributes that declare them. None of it opens a database;
+   the server answers from the library itself. *@
+
+<PageHeader Kicker="For AI agents · MCP" Title="MCP server">
+    This site hosts a Model Context Protocol server at <code>/mcp</code>, so an AI agent writing Bsqlite code
+    reads the library itself - its compiled API documentation, its guides, the capabilities its storage
+    providers declare, its own storage selection and SQL guards, and these demo pages - instead of guessing at
+    an API it half remembers. Every tool is read-only, and none of them executes SQL.
+</PageHeader>
+
+<div class="stack-lg">
+    <DemoCard Step="Connect"
+              Title="Point your agent at it"
+              CodeTitle=".mcp.json - Claude Code, VS Code, and anything else reading this shape"
+              Language="json"
+              Code="@ClientConfig">
+        <Description>
+            <span>
+                The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else:
+                this site's own <code>@Endpoint</code>, the deployed <code>https://bsqlite.bitplatform.dev/mcp</code>,
+                or <code>https://bitplatform.dev/mcp</code>, which serves the tools of every bit library from one
+                address. The same tools are plain <code>GET</code> endpoints under <code>/api/mcp/...</code>, which is
+                what the panels below call.
+            </span>
+        </Description>
+        <ChildContent>
+            <div class="command">
+                <span class="command-prompt">$</span>
+                <span class="command-text">claude mcp add --transport http bsqlite @Endpoint</span>
+            </div>
+        </ChildContent>
+    </DemoCard>
+
+    <DemoCard Step="Lab"
+              Title="Where will the database open?">
+        <Description>
+            <span>
+                <code>PlanBsqliteStorageSelection</code> runs the library's own resolver, migrator and session
+                factory - composed exactly as <code>AddBitBsqliteServices</code> composes them - against stand-in
+                providers that answer their probe the way you describe the browser. The first-party backends keep
+                the capabilities their provider types declare. Nothing is opened.
+            </span>
+        </Description>
+        <Try>
+            <span>
+                Bind the database to <strong>indexeddb</strong>, then switch the migration mode to
+                <strong>AutomaticOnOpen</strong>; or make <strong>opfs</strong> and <strong>indexeddb</strong>
+                unavailable with in-memory last, and toggle the fallback opt-in.
+            </span>
+        </Try>
+        <ChildContent>
+            <form class="stack-form" @onsubmit="PlanAsync" @onsubmit:preventDefault="true">
+                <label>
+                    Preference order
+                    <select @bind="_order" disabled="@IsHydrating">
+                        @foreach (var order in PreferenceOrders)
+                        {
+                            <option value="@order">@order</option>
+                        }
+                    </select>
+                </label>
+                <div class="row">
+                    <span>Unavailable in this browser:</span>
+                    @foreach (var backend in Backends)
+                    {
+                        <label>
+                            <input type="checkbox" checked="@(_unavailable.Contains(backend))" disabled="@IsHydrating"
+                                   @onchange="e => Toggle(_unavailable, backend, e)" />
+                            <span class="mono">@backend</span>
+                        </label>
+                    }
+                </div>
+                <label>
+                    Existing binding (where the database already lives)
+                    <select @bind="_binding" disabled="@IsHydrating">
+                        <option value="">none - a first open</option>
+                        @foreach (var backend in Backends)
+                        {
+                            <option value="@backend">@backend</option>
+                        }
+                    </select>
+                </label>
+                <label>
+                    Migration mode
+                    <select @bind="_mode" disabled="@IsHydrating">
+                        @foreach (var mode in MigrationModes)
+                        {
+                            <option value="@mode">@mode</option>
+                        }
+                    </select>
+                </label>
+                <label><input type="checkbox" @bind="_allowNonPersistent" disabled="@IsHydrating" /> AllowNonPersistentFallback()</label>
+                <div class="row">
+                    <button type="submit" disabled="@(_planning || IsHydrating)">@(_planning ? "Planning..." : "Plan the open")</button>
+                </div>
+            </form>
+
+            @if (_planError is not null)
+            {
+                <p class="error">@_planError</p>
+            }
+            else if (_plan is not null)
+            {
+                <p>
+                    @if (_plan.Opens)
+                    {
+                        <span>Opens on <span class="pill ok">@_plan.Provider</span></span>
+                        <span> - engine build <span class="pill muted">@_plan.EngineBuild</span></span>
+                        @if (_plan.WasDecidedByExistingData is true)
+                        {
+                            <span> - decided by the existing binding.</span>
+                        }
+                        else if (_plan.IsFirstChoice is false)
+                        {
+                            <span> - a fallback.</span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="pill danger">Does not open</span>
+                    }
+                </p>
+
+                @if (_plan.Migration is { } migration)
+                {
+                    <p class="@(migration.Outcome == "Migrated" ? "note" : "warn")">
+                        Migration <code>@migration.From</code> &rarr; <code>@migration.To</code>: @migration.Outcome
+                        @if (migration.Copied is false)
+                        {
+                            <span> - nothing was copied.</span>
+                        }
+                        @if (migration.Error is not null)
+                        {
+                            <span> - @migration.Error</span>
+                        }
+                    </p>
+                }
+
+                @if (_plan.Error is not null)
+                {
+                    <pre class="output">@_plan.Error</pre>
+                }
+
+                <div class="scroll-x">
+                    <table>
+                        <thead>
+                        <tr><th>Backend</th><th>Rank</th><th>Persistent</th><th>Available</th><th>Status</th><th>Why</th></tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var candidate in _plan.Candidates ?? [])
+                        {
+                            <tr>
+                                <td><span class="storage-dot" data-name="@candidate.Name"></span> <code>@candidate.Name</code></td>
+                                <td>@(candidate.Rank?.ToString() ?? "-")</td>
+                                <td>@YesNo(candidate.Persistent)</td>
+                                <td>@YesNo(candidate.Available)</td>
+                                <td>@(candidate.Status ?? "-")</td>
+                                <td>@(candidate.Explanation ?? "-")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+
+                @* The notes name C# - WithMigrationMode(BsqliteStorageMigrationMode.AutomaticOnOpen) is one word to a
+                   line breaker - so they sit in a scroller rather than widening a phone's page. *@
+                @if (_plan.Notes is { Length: > 0 } notes)
+                {
+                    <div class="scroll-x">
+                        <table>
+                            <thead><tr><th>What it means</th></tr></thead>
+                            <tbody>
+                            @foreach (var note in notes)
+                            {
+                                <tr><td>@note</td></tr>
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+                @if (_plan.Log is { Length: > 0 } log)
+                {
+                    <pre class="output">@string.Join("\n", log)</pre>
+                }
+            }
+        </ChildContent>
+        <Extra>
+            @if (_plan?.Configuration is { } configuration)
+            {
+                <CodeBlock Title="The registration this plan describes" Language="csharp" Code="@configuration" />
+            }
+        </Extra>
+    </DemoCard>
+
+    <DemoCard Step="Lab"
+              Title="Will this statement run on every backend?">
+        <Description>
+            <span>
+                <code>CheckBsqliteSql</code> puts SQL to the library's own static rules: the guards each backend's
+                declared capabilities switch on, and the table scan a live query is keyed by. It is pattern
+                matching over the text - nothing is executed, on the server or anywhere else.
+            </span>
+        </Description>
+        <ChildContent>
+            <form @onsubmit="CheckAsync" @onsubmit:preventDefault="true">
+                <input class="grow" @bind="_sql" disabled="@IsHydrating" aria-label="SQL to check" />
+                <button type="submit" disabled="@(_checking || IsHydrating)">@(_checking ? "Checking..." : "Check")</button>
+            </form>
+            <div class="row">
+                @foreach (var sample in SqlSamples)
+                {
+                    <button type="button" class="ghost" disabled="@(_checking || IsHydrating)" @onclick="() => CheckAsync(sample)">@sample</button>
+                }
+            </div>
+
+            @if (_checkError is not null)
+            {
+                <p class="error">@_checkError</p>
+            }
+            else if (_check?.Statements is { Length: > 0 } statements)
+            {
+                var statement = statements[0];
+
+                <div class="scroll-x">
+                    <table>
+                        <thead><tr><th>Backend</th><th>Verdict</th><th>The guard's message</th></tr></thead>
+                        <tbody>
+                        @foreach (var verdict in statement.Backends ?? [])
+                        {
+                            <tr>
+                                <td><span class="storage-dot" data-name="@verdict.Name"></span> <code>@verdict.Name</code></td>
+                                <td><span class="pill @(verdict.Accepted ? "ok" : "danger")">@(verdict.Accepted ? "accepted" : "refused")</span></td>
+                                <td>@(verdict.Error ?? "-")</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+                <p>
+                    A live query over it watches:
+                    @if (statement.Tables is { Length: > 0 } tables)
+                    {
+                        @foreach (var table in tables)
+                        {
+                            <span class="pill muted">@table</span>
+                            <span> </span>
+                        }
+                    }
+                    else
+                    {
+                        <span class="empty">no table names - every write would refresh it</span>
+                    }
+                </p>
+            }
+            else if (_check?.Error is { } error)
+            {
+                <p class="warn">@error</p>
+            }
+        </ChildContent>
+    </DemoCard>
+
+    <DemoCard Step="Search"
+              Title="Everything at once, with the next call to make">
+        <Description>
+            <span>
+                An agent rarely knows which corpus holds the answer. <code>SearchBsqlite</code> covers every
+                document, every public member of the five packages, the storage backends, the setup guides, the labs
+                and the demo's sources at once - and every hit carries the exact follow-up call that returns it in full.
+            </span>
+        </Description>
+        <ChildContent>
+            <form @onsubmit="SearchAsync" @onsubmit:preventDefault="true">
+                <input type="search" class="grow" @bind="_query" disabled="@IsHydrating" placeholder="keep the data when opfs appears" aria-label="Search Bsqlite" />
+                <button type="submit" disabled="@(_searching || IsHydrating)">@(_searching ? "Searching..." : "Search")</button>
+            </form>
+
+            @if (_searchError is not null)
+            {
+                <p class="error">@_searchError</p>
+            }
+            else if (_search?.Hits is { Length: > 0 } hits)
+            {
+                <div class="scroll-x">
+                    <table>
+                        <thead><tr><th>Kind</th><th>Title</th><th>Follow-up call</th></tr></thead>
+                        <tbody>
+                        @foreach (var hit in hits)
+                        {
+                            <tr>
+                                <td><span class="pill muted">@hit.Kind</span></td>
+                                <td>@hit.Title</td>
+                                <td class="mono">@hit.Tool</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else if (_search is not null)
+            {
+                <p class="empty">@(_search.Message ?? "Nothing matched that.")</p>
+            }
+        </ChildContent>
+    </DemoCard>
+
+    <section class="card">
+        <h2>Tools</h2>
+        @if (_catalog is null)
+        {
+            <p class="empty">@(IsHydrating ? "The list loads once the page is interactive." : "Loading the catalog...")</p>
+        }
+        else
+        {
+            <p>
+                @_catalog.Tools.Length of them, listed straight from the attributes that declare them - so this table
+                cannot fall out of step with the server.
+            </p>
+            <div class="scroll-x">
+                <table>
+                    <thead><tr><th>Tool</th><th>Arguments</th><th>What it answers</th></tr></thead>
+                    <tbody>
+                    @foreach (var tool in _catalog.Tools)
+                    {
+                        <tr>
+                            <td><code>@tool.Name</code></td>
+                            @* One argument to a line: the planner takes nine, and on one unbreakable line they would push
+                               the description out of view. *@
+                            <td>
+                                @if (tool.Parameters is { Length: > 0 } parameters)
+                                {
+                                    @foreach (var parameter in parameters)
+                                    {
+                                        <code>@parameter</code><br />
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="empty">none</span>
+                                }
+                            </td>
+                            <td><strong>@tool.Title</strong> - @FirstSentence(tool.Description)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="card">
+        <h2>Prompts and resources</h2>
+        <p>
+            Prompts are the workflows - the order to call the tools in for a whole job - because the failure mode of an
+            agent holding a shelf of tools is calling them in an order that skips the check which would have caught
+            the bug. Resources are the same knowledge as <code>bsqlite://</code> URIs, for clients that attach
+            documentation up front; they read the same catalogs the tools do.
+        </p>
+        @if (_catalog is not null)
+        {
+            <div class="grid">
+                @foreach (var prompt in _catalog.Prompts)
+                {
+                    <div>
+                        <p><code>@prompt.Name</code></p>
+                        <p>@prompt.Description</p>
+                    </div>
+                }
+            </div>
+            @* A table rather than a list: a resource's example URI is one unbreakable word, and only a scroller
+               keeps it from widening a phone's page. *@
+            <div class="scroll-x">
+                <table>
+                    <thead><tr><th>Resource</th><th>What it holds</th></tr></thead>
+                    <tbody>
+                    @foreach (var resource in _catalog.Resources)
+                    {
+                        <tr>
+                            <td><code>@resource.Name</code></td>
+                            <td>@resource.Description</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </section>
+
+    <section class="card">
+        <h2>The same tools over plain HTTP</h2>
+        <p>Open one in a browser tab to read exactly what an agent is handed.</p>
+        <div class="scroll-x">
+            <table>
+                <thead><tr><th>Tool</th><th>Example</th></tr></thead>
+                <tbody>
+                @foreach (var link in HttpLinks)
+                {
+                    <tr>
+                        <td><code>@ToolOf(link)</code></td>
+                        <td class="mono"><a href="@link" target="_blank" rel="noopener">@Uri.UnescapeDataString(link)</a></td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+
+@code {
+    // The response shapes of the endpoints this page calls. They mirror the server's DTOs rather than sharing
+    // them: the client project does not reference the host, and these are the fields the page renders, not the
+    // whole contract. Arrays are nullable throughout: a member the server leaves out arrives as null.
+    private sealed record StoragePlan(bool Opens, string? Provider, string? EngineBuild, bool? IsFirstChoice, bool? WasDecidedByExistingData,
+        Migration? Migration, Candidate[]? Candidates, string? Error, string? Configuration, string[]? Log, string[]? Notes);
+
+    private sealed record Migration(string From, string To, string Outcome, bool? Copied, string? Error);
+
+    private sealed record Candidate(string Name, int? Rank, bool? Persistent, bool? Available, string? Status, string? Explanation);
+
+    private sealed record SqlCheck(SqlReport[]? Statements, string? Error);
+
+    private sealed record SqlReport(string Sql, Verdict[]? Backends, string[]? Tables);
+
+    private sealed record Verdict(string Name, bool Accepted, string? Error);
+
+    private sealed record SearchResult(Hit[]? Hits, string? Message);
+
+    private sealed record Hit(string Kind, string Title, string Tool);
+
+    private sealed record McpCatalog(CatalogMember[] Tools, CatalogMember[] Prompts, CatalogMember[] Resources);
+
+    private sealed record CatalogMember(string Name, string? Title, string Description, string[]? Parameters);
+
+    private static readonly string[] Backends = ["opfs", "indexeddb", "cache-storage", "in-memory"];
+
+    private static readonly string[] PreferenceOrders =
+    [
+        "opfs, indexeddb",
+        "opfs, indexeddb, in-memory",
+        "opfs, indexeddb, cache-storage, in-memory",
+        "cache-storage",
+        "cache-storage, opfs",
+    ];
+
+    private static readonly string[] MigrationModes = ["KeepExisting", "Manual", "AutomaticOnOpen"];
+
+    private static readonly string[] SqlSamples =
+    [
+        "PRAGMA journal_mode = WAL",
+        "ATTACH DATABASE 'other.db' AS other",
+        "PRAGMA page_size = 8192",
+        "DELETE FROM Orders",
+    ];
+
+    private static readonly string[] HttpLinks =
+    [
+        "api/mcp/SearchBsqlite?query=live%20query",
+        "api/mcp/GetBsqliteSetupGuide?scenario=wasm",
+        "api/mcp/GetBsqliteDocument?name=storage&section=Selection",
+        "api/mcp/GetBsqliteApi?typeName=BsqliteDatabase",
+        "api/mcp/GetBsqliteStorageProviders?provider=opfs",
+        "api/mcp/PlanBsqliteStorageSelection?unavailable=opfs",
+        "api/mcp/CheckBsqliteSql?sql=PRAGMA%20page_size%20%3D%208192",
+        "api/mcp/GetBsqliteSourceFile?path=Demo/Client/Components/SessionLifecycle.razor",
+    ];
+
+    /// <summary>What every panel says when a call to the demo's own API comes back with nothing.</summary>
+    private const string Unreachable = "The demo's own API did not answer. Is the server still running?";
+
+    private string _order = PreferenceOrders[0];
+    private readonly HashSet<string> _unavailable = [];
+    private string _binding = string.Empty;
+    private string _mode = MigrationModes[0];
+    private bool _allowNonPersistent;
+    private bool _planning;
+    private string? _planError;
+    private StoragePlan? _plan;
+
+    private string _sql = "SELECT * FROM Orders o JOIN Customers c ON c.Id = o.CustomerId";
+    private bool _checking;
+    private string? _checkError;
+    private SqlCheck? _check;
+
+    private string _query = "keep the data when opfs appears";
+    private bool _searching;
+    private string? _searchError;
+    private SearchResult? _search;
+
+    private McpCatalog? _catalog;
+
+    // The prerendered page is on screen before the runtime that would answer its buttons has loaded.
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    // "This site" resolves against the address the page is served from, so on localhost, a tunnel or a
+    // deployment the snippet points at the server being looked at.
+    private string Endpoint => Nav.ToAbsoluteUri("mcp").ToString();
+
+    private string ClientConfig => $$"""
+        {
+          "mcpServers": {
+            "bsqlite": {
+              "type": "http",
+              "url": "{{Endpoint}}"
+            }
+          }
+        }
+        """;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Every call on this page goes to the app's own API, which prerendering has no way to reach and no
+        // reason to: the catalog is chrome, not content.
+        if (firstRender is false || IsHydrating) return;
+
+        _catalog = await GetAsync<McpCatalog>("api/mcp/GetMcpCatalog");
+
+        StateHasChanged();
+    }
+
+    private static void Toggle(HashSet<string> set, string value, ChangeEventArgs e)
+    {
+        if (e.Value is true) set.Add(value);
+        else set.Remove(value);
+    }
+
+    // Each handler resets its own flag in a finally: the flag disables the panel's controls while a call is
+    // out, so losing it would leave the panel disabled with no way back but a reload. Each also clears its own
+    // error first, so a panel never shows a stale result under a fresh question.
+
+    private async Task PlanAsync()
+    {
+        _planning = true;
+        _planError = null;
+
+        try
+        {
+            var url = $"api/mcp/PlanBsqliteStorageSelection?candidates={Uri.EscapeDataString(_order)}" +
+                      $"&unavailable={Uri.EscapeDataString(string.Join(",", Backends.Where(_unavailable.Contains)))}" +
+                      $"&migrationMode={_mode}&allowNonPersistentFallback={(_allowNonPersistent ? "true" : "false")}" +
+                      (_binding.Length > 0 ? $"&existingBinding={Uri.EscapeDataString(_binding)}" : string.Empty);
+
+            _plan = await GetAsync<StoragePlan>(url);
+            _planError = _plan is null ? Unreachable : null;
+        }
+        finally
+        {
+            _planning = false;
+        }
+    }
+
+    private Task CheckAsync() => CheckAsync(_sql);
+
+    private async Task CheckAsync(string sql)
+    {
+        _sql = sql;
+        _checking = true;
+        _checkError = null;
+
+        try
+        {
+            _check = await GetAsync<SqlCheck>($"api/mcp/CheckBsqliteSql?sql={Uri.EscapeDataString(sql)}");
+            _checkError = _check is null ? Unreachable : null;
+        }
+        finally
+        {
+            _checking = false;
+        }
+    }
+
+    private async Task SearchAsync()
+    {
+        _searching = true;
+        _searchError = null;
+
+        try
+        {
+            _search = await GetAsync<SearchResult>($"api/mcp/SearchBsqlite?query={Uri.EscapeDataString(_query)}&limit=8");
+            _searchError = _search is null ? Unreachable : null;
+        }
+        finally
+        {
+            _searching = false;
+        }
+    }
+
+    /// <summary>
+    /// Calls one of the demo's own MCP endpoints, answering null when it cannot be reached or did not come back
+    /// in the expected shape. Every caller turns that into its own panel saying so: leaving the last answer on
+    /// screen would read as the answer to the question just asked.
+    /// </summary>
+    private async Task<T?> GetAsync<T>(string url)
+    {
+        try
+        {
+            return await Http.GetFromJsonAsync<T>(url);
+        }
+        catch (Exception exception)
+        {
+            SampleLog.Exception(exception);
+            return default;
+        }
+    }
+
+    /// <summary>"api/mcp/GetBsqliteApi?typeName=..." is the GetBsqliteApi tool.</summary>
+    private static string ToolOf(string link) => link["api/mcp/".Length..link.IndexOf('?', StringComparison.Ordinal)];
+
+    private static string YesNo(bool? value) => value is null ? "-" : SampleFormat.YesNo(value.Value);
+
+    /// <summary>
+    /// A tool's description is written for a model; the table shows the sentence that says what it is. An
+    /// "e.g." ends no sentence, and a sentence that runs on past a couple of lines is cut at a word.
+    /// </summary>
+    private static string FirstSentence(string description)
+    {
+        var stop = description.IndexOf(". ", StringComparison.Ordinal);
+
+        while (stop > 0 && (description[..(stop + 1)].EndsWith("e.g.", StringComparison.Ordinal) || description[..(stop + 1)].EndsWith("i.e.", StringComparison.Ordinal)))
+        {
+            stop = description.IndexOf(". ", stop + 1, StringComparison.Ordinal);
+        }
+
+        var sentence = stop > 0 ? description[..(stop + 1)] : description;
+
+        if (sentence.Length <= 240) return sentence;
+
+        var cut = sentence.LastIndexOf(' ', 237);
+
+        return $"{sentence[..(cut > 0 ? cut : 237)]}...";
+    }
+}

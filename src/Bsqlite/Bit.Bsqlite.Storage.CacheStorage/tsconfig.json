@@ -1,0 +1,25 @@
+{
+    "compileOnSave": true,
+    "compilerOptions": {
+        // The same target as Bit.Bsqlite's modules, which these run next to in the same worker.
+        "target": "ES2022",
+        // The VFS module is imported by Bit.Bsqlite's worker and the admin module by the .NET provider, both
+        // through `import()`, and their functions are called as named exports, so the output MUST stay an ES
+        // module: `module: ESNext` with `rootDir`/`outDir` emits each Scripts/*.ts straight to wwwroot/*.js.
+        "module": "ESNext",
+        "moduleResolution": "Bundler",
+        // Type-only imports of Bit.Bsqlite's declarations for the wa-sqlite engine (Scripts/engine/*.d.ts).
+        // They are erased from the output, so nothing outside this package is compiled or bundled into it.
+        "paths": {
+            "bit-bsqlite/*": [ "../Bit.Bsqlite/Scripts/*" ]
+        },
+        "lib": [ "DOM", "DOM.Iterable", "ESNext" ],
+        "rootDir": "Scripts",
+        "outDir": "wwwroot",
+        "strict": true,
+        "noFallthroughCasesInSwitch": true,
+        "noImplicitReturns": true,
+        "forceConsistentCasingInFileNames": true
+    },
+    "include": [ "./Scripts/**/*.ts" ]
+}

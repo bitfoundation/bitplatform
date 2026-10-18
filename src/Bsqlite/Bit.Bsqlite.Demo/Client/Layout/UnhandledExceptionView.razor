@@ -1,0 +1,18 @@
+﻿@if (Exception is not null)
+{
+    <p class="error">@Exception.GetType().FullName: @Exception.Message</p>
+    <p>The full exception, including inner exceptions and stack traces, is in the browser console.</p>
+}
+
+@code {
+    [Parameter]
+    public Exception? Exception { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (Exception is not null)
+        {
+            SampleLog.Exception(Exception);
+        }
+    }
+}

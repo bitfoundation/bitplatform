@@ -1,0 +1,546 @@
+﻿@page "/"
+@inject BrowserDatabase Database
+
+<PageTitle>Bsqlite · EF Core on SQLite, inside the browser tab</PageTitle>
+
+<SessionLifecycle OnReady="LoadAsync" OnTearDown="UnloadAsync" />
+
+<div class="landing">
+
+    @* ---------------------------------------------------------------- hero *@
+    <section class="hero">
+        <div class="hero-inner">
+            <div class="hero-copy">
+                <div class="hero-badges">
+                    <span class="badge"><Icon Name="package" /> .NET 8, 9 and 10 · EF Core</span>
+                    <span class="badge">MIT</span>
+                    <a class="badge" href="@SiteLinks.Repository" target="_blank" rel="noopener">
+                        <Icon Name="github" /> bitfoundation/bitplatform <Icon Name="external" />
+                    </a>
+                </div>
+
+                <h1>EF Core on <em>real SQLite</em>, inside the browser tab.</h1>
+
+                <p class="hero-lead">
+                    The same entities, the same <code>DbContext</code>, and the same migrations you
+                    run on the server - executing against a SQLite engine in a Web Worker, over OPFS,
+                    IndexedDB, Cache Storage, or memory. This page is a Blazor WebAssembly app: after
+                    the download, nothing here talks to a server.
+                </p>
+
+                <div class="hero-actions">
+                    <a class="btn btn-lg" href="catalog">Open the live demo <Icon Name="arrow-right" /></a>
+                    <a class="btn btn-secondary btn-lg" href="@SiteLinks.Repository" target="_blank" rel="noopener">
+                        <Icon Name="github" /> Source
+                    </a>
+                </div>
+
+                <div class="command">
+                    <span class="command-prompt" aria-hidden="true">$</span>
+                    <span class="command-text">dotnet add package Bit.Bsqlite</span>
+                    <button type="button" class="codeblock-btn @(_copied ? "copied" : null)" @onclick="CopyInstallAsync">
+                        <Icon Name="@(_copied ? "check" : "copy")" />
+                        @(_copied ? "Copied" : "Copy")
+                    </button>
+                </div>
+
+                <p class="hero-note">
+                    Five packages: the core, three storage backends, and a test kit. Register only
+                    the backends you ship.
+                </p>
+            </div>
+
+            <div class="hero-panel">
+                <div class="hero-panel-head">
+                    <span class="hero-panel-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                    <span class="hero-panel-file">Program.cs</span>
+                </div>
+                <pre><code>@CodeHighlighter.Highlight(Snippets.Setup.Hero, "csharp")</code></pre>
+            </div>
+        </div>
+    </section>
+
+    <div class="container">
+
+        @if (_error is not null)
+        {
+            <p class="error" style="margin-top: var(--space-5)">
+                <Icon Name="warning" />
+                <span>@_error</span>
+            </p>
+        }
+
+        @* -------------------------------------------------- live proof strip *@
+        <div class="stat-strip">
+            <div class="stat">
+                <span class="stat-value">@_products</span>
+                <span class="stat-label"><span class="live-dot"></span> Products in this tab</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">@_customers</span>
+                <span class="stat-label">Customers</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value">@_openOrders</span>
+                <span class="stat-label">Open orders</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value small">@SampleStorage.Title(_backend ?? "opening…")</span>
+                <span class="stat-label">@_persist</span>
+            </div>
+        </div>
+
+        @* ------------------------------------------------------- capability *@
+        <section class="section">
+            <header class="section-head">
+                <p class="eyebrow">Why it exists</p>
+                <h2>A browser database that behaves like the one on your server</h2>
+                <p>
+                    Not a re-implementation of SQL over IndexedDB. The engine is wa-sqlite - SQLite
+                    compiled to WebAssembly - and the provider is the stock EF Core SQLite provider
+                    with two services swapped so nothing blocks the UI thread.
+                </p>
+            </header>
+
+            <div class="feature-grid">
+                <article class="feature">
+                    <span class="feature-icon"><Icon Name="layers" /></span>
+                    <h3>One model, both sides</h3>
+                    <p>
+                        <code>UseSqlite</code> on the server, <code>UseBitBsqlite</code> in the tab.
+                        Same entities, same configuration classes, same migration set - and the test
+                        suite proves migrations scaffolded against stock SQLite apply here unchanged.
+                    </p>
+                </article>
+                <article class="feature">
+                    <span class="feature-icon"><Icon Name="bolt" /></span>
+                    <h3>Live queries</h3>
+                    <p>
+                        <code>AsLiveQuery()</code> re-runs a query when a table it reads is written -
+                        by this tab, by another tab, or by raw SQL that never touched EF. It learns
+                        what changed from SQLite's own update hook, after the transaction commits.
+                    </p>
+                </article>
+                <article class="feature">
+                    <span class="feature-icon"><Icon Name="drive" /></span>
+                    <h3>Storage is a contract</h3>
+                    <p>
+                        OPFS, IndexedDB, Cache Storage, and in-memory are interchangeable providers
+                        behind one interface. Selection prefers the order you configure, but existing
+                        data always outranks preference.
+                    </p>
+                </article>
+                <article class="feature">
+                    <span class="feature-icon"><Icon Name="database" /></span>
+                    <h3>Real SQLite semantics</h3>
+                    <p>
+                        Foreign keys, unique indexes, and transactions are the engine's, not the UI's.
+                        A constraint failure arrives as the <code>DbUpdateException</code> you would
+                        get on a server, carrying SQLite's own message and result code.
+                    </p>
+                </article>
+                <article class="feature">
+                    <span class="feature-icon"><Icon Name="sync" /></span>
+                    <h3>Move the file, keep the data</h3>
+                    <p>
+                        Migrating between backends exports the image, imports it on the target, checks
+                        the SQLite header, flips the binding, then deletes the source. The bar above
+                        every demo page is that API.
+                    </p>
+                </article>
+                <article class="feature">
+                    <span class="feature-icon"><Icon Name="shield" /></span>
+                    <h3>Testable without a browser</h3>
+                    <p>
+                        <code>Bit.Bsqlite.Testing</code> ships an in-process transport for unit tests
+                        plus the conformance kit every storage provider has to pass. CI runs the browser
+                        suite across Chrome, Edge, Firefox, and WebKit.
+                    </p>
+                </article>
+            </div>
+        </section>
+
+        @* ------------------------------------------------------ live demo *@
+        <section class="section">
+            <header class="section-head">
+                <p class="eyebrow">Proof</p>
+                <h2>A query that re-runs itself</h2>
+                <p>
+                    The table below is a live query over <code>Products</code> in this tab's database.
+                    Nothing polls it.
+                </p>
+            </header>
+
+            <DemoCard Title="Live catalog"
+                      CodeTitle="Pages/Home.razor"
+                      Code="@Snippets.Home.LiveQuery"
+                      CodeOpen="false">
+                <Try>
+                    <span>
+                        Add or edit a product on <a href="catalog">Catalog</a>, or open this page in a
+                        second tab and edit there. The rows below re-run on their own.
+                    </span>
+                </Try>
+                <ChildContent>
+                    @if (_liveRows.Count == 0)
+                    {
+                        <p class="empty">No products yet.</p>
+                    }
+                    else
+                    {
+                        <div class="scroll-x">
+                            <table>
+                                <thead>
+                                <tr><th>SKU</th><th>Name</th><th>Price</th><th>Active</th></tr>
+                                </thead>
+                                <tbody>
+                                @foreach (var product in _liveRows)
+                                {
+                                    <tr>
+                                        <td class="mono">@product.Sku</td>
+                                        <td>@product.Name</td>
+                                        <td>@SampleFormat.Money(product.Price)</td>
+                                        <td>@(product.IsActive ? "yes" : "no")</td>
+                                    </tr>
+                                }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </ChildContent>
+            </DemoCard>
+        </section>
+
+        @* ------------------------------------------------------ quick start *@
+        <section class="section">
+            <header class="section-head">
+                <p class="eyebrow">Quick start</p>
+                <h2>Four steps from an empty Blazor WASM app</h2>
+                <p>
+                    Every snippet below is the code this demo actually runs, not a simplified
+                    version of it.
+                </p>
+            </header>
+
+            <div class="steps">
+                <div class="step">
+                    <span class="step-num" aria-hidden="true"></span>
+                    <div class="step-body">
+                        <h3>Install the packages you will ship</h3>
+                        <p>
+                            The core package carries the engine, the worker, and the storage contract.
+                            Each persistent backend is a separate package, so an app pays only for the
+                            ones it registers.
+                        </p>
+                        <CodeBlock Title="Packages" Language="shell" Code="@Snippets.Setup.Install" />
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-num" aria-hidden="true"></span>
+                    <div class="step-body">
+                        <h3>Register the session factory</h3>
+                        <p>
+                            Order is preference, not a requirement: the first available backend wins,
+                            and <code>AllowNonPersistentFallback()</code> is what makes in-memory
+                            acceptable at all.
+                        </p>
+                        <CodeBlock Title="Program.cs" Language="csharp" Code="@Snippets.Setup.Registration" Open="false" />
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-num" aria-hidden="true"></span>
+                    <div class="step-body">
+                        <h3>Open a session and hand EF the connection</h3>
+                        <p>
+                            A session owns the worker, the transport, and one ADO.NET connection.
+                            <code>UseBitBsqlite(connection)</code> is <code>UseSqlite</code> plus the
+                            two service replacements that would otherwise call
+                            <code>DbConnection.Open()</code> synchronously. SQL generation is the stock
+                            provider's, unchanged.
+                        </p>
+                        <CodeBlock Title="BrowserDatabase.cs" Language="csharp" Code="@Snippets.Setup.OpenContext" />
+                    </div>
+                </div>
+
+                <div class="step">
+                    <span class="step-num" aria-hidden="true"></span>
+                    <div class="step-body">
+                        <h3>Query it - and stay in sync</h3>
+                        <p>
+                            From here it is EF Core. Add <code>AsLiveQuery()</code> where the UI should
+                            follow the data instead of re-fetching it.
+                        </p>
+                        <CodeBlock Title="Live query" Language="csharp" Code="@Snippets.Home.LiveQuery" Open="false" />
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* --------------------------------------------------------- backends *@
+        <section class="section">
+            <header class="section-head">
+                <p class="eyebrow">Storage</p>
+                <h2>Four backends, one interface</h2>
+                <p>
+                    Switch this tab between them with the bar at the top of any demo page, then read
+                    the full contract on <a href="storage">Storage backends</a>.
+                </p>
+            </header>
+
+            <div class="matrix scroll-x">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Backend</th>
+                        <th>Package</th>
+                        <th>Persists</th>
+                        <th>Concurrent readers</th>
+                        <th>Use it when</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><span class="storage-dot" data-name="opfs"></span> OPFS</td>
+                        <td class="mono">Storage.Opfs</td>
+                        <td><span class="pill ok">yes</span></td>
+                        <td>yes</td>
+                        <td>The default. Real files, sync engine, no COOP/COEP headers needed.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="storage-dot" data-name="indexeddb"></span> IndexedDB</td>
+                        <td class="mono">Storage.IndexedDb</td>
+                        <td><span class="pill ok">yes</span></td>
+                        <td>no</td>
+                        <td>Widest reach. Survives browsers without OPFS; readers serialise.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="storage-dot" data-name="cache-storage"></span> Cache Storage</td>
+                        <td class="mono">Storage.CacheStorage</td>
+                        <td><span class="pill ok">yes</span></td>
+                        <td>no</td>
+                        <td>The besql migration path. Persistence cost scales with database size.</td>
+                    </tr>
+                    <tr>
+                        <td><span class="storage-dot" data-name="in-memory"></span> In-memory</td>
+                        <td class="mono">Bit.Bsqlite</td>
+                        <td><span class="pill muted">no</span></td>
+                        <td>yes</td>
+                        <td>Trying the engine, or tests. Gone when the tab closes.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        @* ------------------------------------------------------------ types *@
+        <section class="section">
+            <header class="section-head">
+                <p class="eyebrow">Type mapping</p>
+                <h2>CLR types stored in SQLite</h2>
+                <p>
+                    SQLite has four storage classes. The ADO.NET binder decides which one each CLR
+                    value takes, so the worker never guesses and values round-trip as the type you
+                    wrote.
+                </p>
+            </header>
+
+            <div class="matrix scroll-x">
+                <table class="type-table">
+                    <thead><tr><th>CLR</th><th>SQLite</th><th>Where in this demo</th></tr></thead>
+                    <tbody>
+                    <tr><td><code>decimal</code></td><td>TEXT + <code>ef_*</code></td><td>Price, credit limit</td></tr>
+                    <tr><td><code>DateTime</code></td><td>TEXT ISO</td><td>CreatedUtc</td></tr>
+                    <tr><td><code>DateTimeOffset</code></td><td>TEXT + offset</td><td>OrderedAt</td></tr>
+                    <tr><td><code>DateOnly</code></td><td>TEXT date</td><td>Date of birth, ship-by</td></tr>
+                    <tr><td><code>TimeSpan</code></td><td>TEXT <code>c</code></td><td>Lead time</td></tr>
+                    <tr><td><code>Guid</code></td><td>TEXT</td><td>PublicId</td></tr>
+                    <tr><td><code>bool</code></td><td>INTEGER 0/1</td><td>IsActive, IsVip</td></tr>
+                    <tr><td><code>enum</code></td><td>TEXT</td><td>Order status</td></tr>
+                    <tr><td><code>double</code></td><td>REAL</td><td>Weight</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <CodeBlock Title="Product.cs" Language="csharp" Code="@Snippets.Home.Entity" Open="false" />
+        </section>
+
+        @* ------------------------------------------------------------ demos *@
+        <section class="section">
+            <header class="section-head">
+                <p class="eyebrow">Explore</p>
+                <h2>Every page pairs a working demo with the code that drives it</h2>
+                <p>All of it runs against the database in this tab, on the backend named in the bar.</p>
+            </header>
+
+            <div class="link-grid">
+                @foreach (var entry in SiteMap.Demos)
+                {
+                    <a class="link-card" href="@entry.Href">
+                        <span class="link-card-icon"><Icon Name="@entry.Icon" /></span>
+                        <span>
+                            <strong>@entry.Title</strong>
+                            <span>@entry.Summary</span>
+                        </span>
+                        <span class="link-card-go"><Icon Name="arrow-right" /></span>
+                    </a>
+                }
+            </div>
+        </section>
+
+        @* ----------------------------------------------------------- limits *@
+        <section class="section">
+            <header class="section-head">
+                <p class="eyebrow">Honest limits</p>
+                <h2>What this release does not claim</h2>
+                <p>
+                    The <a href="limits">Limits</a> page demonstrates each of these failing, on
+                    purpose, with the exception it throws.
+                </p>
+            </header>
+
+            <div class="limits-list">
+                <div class="limit-item">
+                    <Icon Name="warning" />
+                    <div>
+                        <strong>Synchronous APIs throw</strong>
+                        <p>
+                            Browsers forbid blocking the main thread, so <code>SaveChanges()</code> and
+                            friends have async-only counterparts. There is no spin-wait hiding behind
+                            them.
+                        </p>
+                    </div>
+                </div>
+                <div class="limit-item">
+                    <Icon Name="warning" />
+                    <div>
+                        <strong>WAL, ATTACH, and page-size changes are guarded</strong>
+                        <p>
+                            A VFS over browser storage cannot honour them safely, so they are refused
+                            up front rather than corrupting a file later.
+                        </p>
+                    </div>
+                </div>
+                <div class="limit-item">
+                    <Icon Name="warning" />
+                    <div>
+                        <strong>IndexedDB serialises readers</strong>
+                        <p>
+                            Its VFS holds the same lock for a read as for a write.
+                            <code>SupportsConcurrentReads</code> reports that honestly instead of
+                            pretending otherwise.
+                        </p>
+                    </div>
+                </div>
+                <div class="limit-item">
+                    <Icon Name="warning" />
+                    <div>
+                        <strong>Client and server do not sync</strong>
+                        <p>
+                            Both sides share a model and a migration set, not a replication protocol.
+                            That is post-1.0.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        @* ---------------------------------------------------------- closing *@
+        <section class="closing">
+            <h2>Open a database in your own tab</h2>
+            <p>
+                The demo pages are the documentation: each one runs a real EF Core call and shows the
+                exact snippet behind it.
+            </p>
+            <div class="hero-actions">
+                <a class="btn btn-lg" href="catalog">Start with Catalog <Icon Name="arrow-right" /></a>
+                <a class="btn btn-secondary btn-lg" href="@SiteLinks.Readme" target="_blank" rel="noopener">
+                    <Icon Name="book" /> Read the docs
+                </a>
+            </div>
+        </section>
+    </div>
+</div>
+
+@code {
+    private AppDbContext? _context;
+    private IBsqliteLiveQuery<IReadOnlyList<Product>>? _live;
+    private IReadOnlyList<Product> _liveRows = [];
+    private int _products;
+    private int _customers;
+    private int _openOrders;
+    private string? _backend;
+    private string _persist = "opening…";
+    private string? _error;
+    private bool _copied;
+
+    [Inject]
+    private IJSRuntime Js { get; set; } = default!;
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        try
+        {
+            _context = await Database.OpenContextAsync();
+            _backend = Database.Resolution?.Provider.Name;
+            var persistent = Database.Resolution?.Provider.Capabilities.IsPersistent == true;
+            _persist = persistent ? "Persists across reload" : "Gone when this tab closes";
+            _products = await _context.Products.CountAsync();
+            _customers = await _context.Customers.CountAsync();
+            _openOrders = await _context.Orders.CountAsync(o =>
+                o.Status != OrderStatus.Shipped && o.Status != OrderStatus.Cancelled);
+
+            _live = _context.Products.AsNoTracking().OrderBy(p => p.Sku).Take(8).AsLiveQuery();
+            _live.Changed += OnChanged;
+            _liveRows = await _live.RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+    }
+
+    private async Task UnloadAsync()
+    {
+        if (_live is not null)
+        {
+            _live.Changed -= OnChanged;
+            await _live.DisposeAsync();
+            _live = null;
+        }
+
+        if (_context is not null)
+        {
+            await _context.DisposeAsync();
+            _context = null;
+        }
+    }
+
+    private void OnChanged(object? sender, IReadOnlyList<Product> rows)
+    {
+        _liveRows = rows;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task CopyInstallAsync()
+    {
+        try
+        {
+            _copied = await Js.InvokeAsync<bool>("bsqliteDemo.copy", "dotnet add package Bit.Bsqlite");
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _copied = false;
+        }
+
+        if (_copied)
+        {
+            await Task.Delay(1400);
+            _copied = false;
+        }
+    }
+}

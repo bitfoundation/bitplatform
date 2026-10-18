@@ -1,0 +1,106 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+    <!-- The server's copy of the demo model, on the stock provider the browser's UseBitBsqlite builds on. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.13" />
+    <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Client\Bit.Bsqlite.Demo.Client.csproj" />
+    <ProjectReference Include="..\Data\Bit.Bsqlite.Demo.Data.csproj" />
+
+    <!-- Every package the MCP server describes, referenced directly rather than through the client: the API
+         reference reflects over each of them and reads the XML documentation each build writes next to it,
+         and the storage tools read the providers' declared capabilities and run the library's own selection.
+         Bit.Bsqlite.Testing is here for its public surface only - nothing on this server constructs its
+         in-process transport or runs its conformance kit. -->
+    <ProjectReference Include="..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" />
+    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.Opfs\Bit.Bsqlite.Storage.Opfs.csproj" />
+    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.IndexedDb\Bit.Bsqlite.Storage.IndexedDb.csproj" />
+    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.CacheStorage\Bit.Bsqlite.Storage.CacheStorage.csproj" />
+    <ProjectReference Include="..\..\Bit.Bsqlite.Testing\Bit.Bsqlite.Testing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Bit.Bsqlite" />
+    <Using Include="Microsoft.AspNetCore.Mvc" />
+  </ItemGroup>
+
+  <!-- Bit.Bsqlite.Testing brings MSTest.TestFramework, whose build targets add its namespace to the implicit
+       usings of every project that references it - this one included, where its DescriptionAttribute collides
+       with the one every MCP tool is described by. Nothing here is a test. A target rather than an item in the
+       body, because the package's targets are imported after it and would add the namespace straight back. -->
+  <Target Name="RemoveTestFrameworkImplicitUsing" BeforeTargets="GenerateGlobalUsings">
+    <ItemGroup>
+      <Using Remove="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    </ItemGroup>
+  </Target>
+
+  <ItemGroup>
+    <!-- The MCP tests boot this very app and reach the internal helpers every answer goes through - the
+         document bound, the lab's fake providers. -->
+    <InternalsVisibleTo Include="Bit.Bsqlite.Tests.Mcp" />
+  </ItemGroup>
+
+  <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+       working from a published deployment, where none of these files exist next to the app.
+       LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\README.md" LogicalName="BsqliteDocs/README.md" />
+
+    <!-- The guides: one document per subject, each of which GetBsqliteDocument hands out whole or a
+         section at a time. -->
+    <EmbeddedResource Include="..\..\docs\*.md">
+      <LogicalName>BsqliteDocs/docs/%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <!-- The package READMEs: the capability tables of the storage backends and the only description of the
+         testing kit live there, not in docs\. Named after the package, which is the name a caller knows. -->
+    <EmbeddedResource Include="..\..\Bit.Bsqlite\README.md" LogicalName="BsqliteDocs/packages/Bit.Bsqlite.md" />
+    <EmbeddedResource Include="..\..\Bit.Bsqlite.Storage.Opfs\README.md" LogicalName="BsqliteDocs/packages/Bit.Bsqlite.Storage.Opfs.md" />
+    <EmbeddedResource Include="..\..\Bit.Bsqlite.Storage.IndexedDb\README.md" LogicalName="BsqliteDocs/packages/Bit.Bsqlite.Storage.IndexedDb.md" />
+    <EmbeddedResource Include="..\..\Bit.Bsqlite.Storage.CacheStorage\README.md" LogicalName="BsqliteDocs/packages/Bit.Bsqlite.Storage.CacheStorage.md" />
+    <EmbeddedResource Include="..\..\Bit.Bsqlite.Testing\README.md" LogicalName="BsqliteDocs/packages/Bit.Bsqlite.Testing.md" />
+
+    <!-- Every demo page - each one runs real queries against a database in the browser - plus the components
+         and helpers they share and the client half of the hosting. The MCP page describes this server rather
+         than the library, and the error and not-found pages teach nothing about databases. -->
+    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
+                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFoundPage.razor;..\Client\Pages\ErrorPage.razor">
+      <LogicalName>BsqliteSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <!-- The model both sides share: the same AppDbContext the browser opens through UseBitBsqlite and this host
+         through UseSqlite. The migrations are left out - they are what dotnet ef generated, and say nothing a
+         migration of any other EF Core app would not. -->
+    <EmbeddedResource Include="..\Data\**\*.cs" Exclude="..\Data\bin\**;..\Data\obj\**;..\Data\Migrations\**">
+      <LogicalName>BsqliteSource/Demo/Data/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <EmbeddedResource Include="..\Domain\**\*.cs" Exclude="..\Domain\bin\**;..\Domain\obj\**">
+      <LogicalName>BsqliteSource/Demo/Domain/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <!-- The host: how a Blazor Web App is wired up around Bsqlite. -->
+    <EmbeddedResource Include="Program.cs" LogicalName="BsqliteSource/Demo/Server/Program.cs" />
+
+    <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**' matched, so it
+         would start at the folder below and drop the one the components live in. -->
+    <EmbeddedResource Include="Components\**\*.razor">
+      <LogicalName>BsqliteSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

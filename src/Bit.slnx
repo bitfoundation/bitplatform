@@ -82,6 +82,25 @@
     <Project Path="Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj" />
     <Project Path="Bmage/Tests/Bit.Bmage.Tests.Mcp/Bit.Bmage.Tests.Mcp.csproj" />
   </Folder>
+  <Folder Name="/Bsqlite/">
+    <File Path="Bsqlite/README.md" />
+    <Project Path="Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj" />
+  </Folder>
+  <Folder Name="/Bsqlite/Bit.Bsqlite.Demo/">
+    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Data/Bit.Bsqlite.Demo.Data.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bsqlite/Tests/">
+    <Project Path="Bsqlite/Tests/Bit.Bsqlite.Tests/Bit.Bsqlite.Tests.csproj" />
+    <Project Path="Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj" />
+    <Project Path="Bsqlite/Tests/Bit.Bsqlite.Tests.Mcp/Bit.Bsqlite.Tests.Mcp.csproj" />
+  </Folder>
   <Folder Name="/Bmotion/">
     <File Path="Bmotion/README.md" />
     <Project Path="Bmotion/Bit.Bmotion/Bit.Bmotion.csproj" />

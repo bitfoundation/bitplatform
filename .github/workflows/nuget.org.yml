@@ -10,6 +10,7 @@ on:
       - 'src/Bink/**'
       - 'src/Blex/**'
       - 'src/Bmage/**'
+      - 'src/Bsqlite/**'
       - 'src/Bmotion/**'
       - 'src/Bonboarding/**'
       - 'src/Brouter/**'
@@ -169,6 +170,31 @@ jobs:
       run: dotnet build src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bmage.Editor
       run: dotnet pack src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj --output . --configuration Release
+
+    - name: dotnet build Bsqlite
+      run: dotnet build src/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bsqlite
+      run: dotnet pack src/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj --output . --configuration Release
+
+    - name: dotnet build Bsqlite.Storage.Opfs
+      run: dotnet build src/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bsqlite.Storage.Opfs
+      run: dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj --output . --configuration Release
+
+    - name: dotnet build Bsqlite.Storage.IndexedDb
+      run: dotnet build src/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bsqlite.Storage.IndexedDb
+      run: dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj --output . --configuration Release
+
+    - name: dotnet build Bsqlite.Storage.CacheStorage
+      run: dotnet build src/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bsqlite.Storage.CacheStorage
+      run: dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj --output . --configuration Release
+
+    - name: dotnet build Bsqlite.Testing
+      run: dotnet build src/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bsqlite.Testing
+      run: dotnet pack src/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj --output . --configuration Release
 
     - name: dotnet build Bink
       run: dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

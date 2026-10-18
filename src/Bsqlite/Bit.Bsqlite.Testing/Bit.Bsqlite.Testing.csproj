@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <RootNamespace>Bit.Bsqlite</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Description>Test support for bit Bsqlite: an in-process IBsqliteTransport backed by Microsoft.Data.Sqlite, so the stack can be unit-tested on desktop .NET without a browser, and the MSTest conformance kit every storage provider must pass - inherit its test classes in your provider's test project and hand them your provider.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>Bit;Bsqlite;SQLite;EF Core;Testing;MSTest;Conformance</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bsqlite\Bit.Bsqlite.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The full engine, not Sqlite.Core: these run on desktop .NET, where the bundled e_sqlite3 is what
+             executes the SQL the in-process transport is handed. Same floating ranges as Bit.Bsqlite's EF Core
+             references, so a test project resolves the provider version its application uses. -->
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Data.Sqlite" Version="[8.0.11,9.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Data.Sqlite" Version="[9.0.0,10.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Data.Sqlite" Version="[10.0.0,11.0.0)" />
+
+        <!-- Lifted to match the SQLitePCLRaw.core Bit.Bsqlite compiles against: a native provider from an older
+             bundle cannot implement the newer core's ISQLite3Provider, and the in-process transport snapshots the
+             database through raw.sqlite3_serialize, which the older ones do not expose. -->
+        <PackageReference Include="SQLitePCLRaw.bundle_e_sqlite3" Version="[2.1.13,3.0.0)" />
+
+        <!-- The conformance kit is a library of tests other projects inherit, not a runnable test project, so
+             it takes the framework rather than the runner. -->
+        <PackageReference Include="MSTest.TestFramework" Version="[4.5.1,5.0.0)" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,62 @@
+﻿<Project>
+
+  <!--
+    Fetches and verifies the pinned engine.
+
+    The fetch runs during *restore*, not build, and the reason is worth keeping: static web assets are
+    globbed from wwwroot when the project is evaluated, so anything created later in the same build is
+    invisible to the asset pipeline - a clean build produced a package with no engine in it. Restore is
+    a separate evaluation, so by the time the build evaluates the project the files are simply there
+    and need no special handling.
+
+    Verification runs on every build instead, where its failure message is seen.
+  -->
+
+  <PropertyGroup>
+    <WaSqliteEngineDirectory>$(MSBuildProjectDirectory)/wwwroot/engine/</WaSqliteEngineDirectory>
+  </PropertyGroup>
+
+  <Target Name="FetchWaSqliteEngine" BeforeTargets="CollectPackageReferences">
+    <ItemGroup>
+      <_WaSqliteMissing Include="@(WaSqliteArtifact)"
+                        Condition="!Exists('$(WaSqliteEngineDirectory)%(Identity)')" />
+    </ItemGroup>
+
+    <Message Importance="high"
+             Condition="'@(_WaSqliteMissing)' != ''"
+             Text="Fetching wa-sqlite $(WaSqliteVersion) (@(_WaSqliteMissing->Count()) artifacts)." />
+
+    <DownloadFile Condition="'@(_WaSqliteMissing)' != ''"
+                  SourceUrl="$(WaSqliteRepository)/$(WaSqliteVersion)/%(_WaSqliteMissing.SourcePath)"
+                  DestinationFolder="$(WaSqliteEngineDirectory)"
+                  DestinationFileName="%(_WaSqliteMissing.Identity)"
+                  Retries="3"
+                  SkipUnchangedFiles="false" />
+  </Target>
+
+  <Target Name="VerifyWaSqliteEngine" BeforeTargets="BeforeBuild">
+    <ItemGroup>
+      <_WaSqliteFile Include="$(WaSqliteEngineDirectory)%(WaSqliteArtifact.Identity)">
+        <Expected>%(WaSqliteArtifact.Sha256)</Expected>
+      </_WaSqliteFile>
+    </ItemGroup>
+
+    <Error Condition="!Exists('%(_WaSqliteFile.Identity)')"
+           Text="The pinned wa-sqlite engine is not present ('%(_WaSqliteFile.Filename)%(_WaSqliteFile.Extension)' is missing). It is fetched during restore, so run 'dotnet restore' - a build with --no-restore cannot obtain it." />
+
+    <!-- Every artifact is checked on every build, not only freshly downloaded ones, so a truncated
+         download or a locally edited file fails the build instead of shipping. -->
+    <GetFileHash Files="@(_WaSqliteFile)" Algorithm="SHA256" HashEncoding="hex">
+      <Output TaskParameter="Items" ItemName="_WaSqliteVerified" />
+    </GetFileHash>
+
+    <Error Condition="'%(_WaSqliteVerified.FileHash)' != '%(_WaSqliteVerified.Expected)'"
+           Text="wa-sqlite artifact '%(_WaSqliteVerified.Filename)%(_WaSqliteVerified.Extension)' does not match the checksum pinned in wa-sqlite.lock.props (expected %(_WaSqliteVerified.Expected), got %(_WaSqliteVerified.FileHash)). Delete wwwroot/engine and restore to refetch, or update the lock file if the pin is being changed deliberately." />
+  </Target>
+
+  <!-- Removes only the vendored engine, so a routine clean does not force a re-download. -->
+  <Target Name="CleanWaSqliteEngine">
+    <RemoveDir Directories="$(WaSqliteEngineDirectory)" />
+  </Target>
+
+</Project>

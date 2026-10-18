@@ -1,0 +1,44 @@
+﻿<Project>
+
+  <!--
+    Fetches IDBBatchAtomicVFS at restore (so wwwroot exists when static assets are globbed) and
+    rewrites its imports to the core engine directory. Verification is on every build.
+  -->
+
+  <PropertyGroup>
+    <IndexedDbVfsUpstreamDirectory>$(MSBuildProjectDirectory)/obj/upstream/</IndexedDbVfsUpstreamDirectory>
+    <IndexedDbVfsWwwrootDirectory>$(MSBuildProjectDirectory)/wwwroot/</IndexedDbVfsWwwrootDirectory>
+    <IndexedDbVfsUpstreamFile>$(IndexedDbVfsUpstreamDirectory)IDBBatchAtomicVFS.js</IndexedDbVfsUpstreamFile>
+    <IndexedDbVfsWwwrootFile>$(IndexedDbVfsWwwrootDirectory)IDBBatchAtomicVFS.js</IndexedDbVfsWwwrootFile>
+  </PropertyGroup>
+
+  <Target Name="FetchIndexedDbBatchAtomicVfs" BeforeTargets="CollectPackageReferences">
+    <MakeDir Directories="$(IndexedDbVfsUpstreamDirectory)" />
+    <MakeDir Directories="$(IndexedDbVfsWwwrootDirectory)" />
+
+    <DownloadFile Condition="!Exists('$(IndexedDbVfsUpstreamFile)')"
+                  SourceUrl="$(WaSqliteRepository)/$(WaSqliteVersion)/$(IndexedDbVfsSourcePath)"
+                  DestinationFolder="$(IndexedDbVfsUpstreamDirectory)"
+                  DestinationFileName="IDBBatchAtomicVFS.js"
+                  Retries="3"
+                  SkipUnchangedFiles="false" />
+
+    <Exec Command="node &quot;$(MSBuildProjectDirectory)/vfs/rewrite-imports.mjs&quot; &quot;$(IndexedDbVfsUpstreamFile)&quot; &quot;$(IndexedDbVfsWwwrootFile)&quot;"
+          Condition="Exists('$(IndexedDbVfsUpstreamFile)') And !Exists('$(IndexedDbVfsWwwrootFile)')" />
+  </Target>
+
+  <Target Name="VerifyIndexedDbBatchAtomicVfs" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(IndexedDbVfsUpstreamFile)')"
+           Text="The pinned IDBBatchAtomicVFS is not present. It is fetched during restore, so run 'dotnet restore'." />
+
+    <GetFileHash Files="$(IndexedDbVfsUpstreamFile)" Algorithm="SHA256" HashEncoding="hex">
+      <Output TaskParameter="Items" ItemName="_IndexedDbVfsVerified" />
+    </GetFileHash>
+
+    <Error Condition="'%(_IndexedDbVfsVerified.FileHash)' != '$(IndexedDbVfsSha256)'"
+           Text="IDBBatchAtomicVFS.js does not match the checksum pinned in vfs/wa-sqlite.lock.props (expected $(IndexedDbVfsSha256), got %(_IndexedDbVfsVerified.FileHash)). Delete obj/upstream and restore to refetch, or update the lock file if the pin is being changed deliberately." />
+
+    <Exec Command="node &quot;$(MSBuildProjectDirectory)/vfs/rewrite-imports.mjs&quot; &quot;$(IndexedDbVfsUpstreamFile)&quot; &quot;$(IndexedDbVfsWwwrootFile)&quot;" />
+  </Target>
+
+</Project>

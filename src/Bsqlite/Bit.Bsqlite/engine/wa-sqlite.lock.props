@@ -1,0 +1,64 @@
+﻿<Project>
+
+  <!--
+    The pinned wa-sqlite engine. Artifacts are fetched at build rather than committed, and every one
+    is verified against the checksum recorded here, so a build either reproduces exactly these bytes
+    or fails. Upgrading means changing the version and the hashes together, in one reviewable commit.
+
+    Why three builds: the synchronous one is the smallest and serves every VFS that can read storage
+    without suspending (memory, OPFS sync access handles); an asynchronous VFS such as IndexedDB needs
+    JSPI where the browser has it and Asyncify where it does not. Exactly one is downloaded by the
+    browser per session, chosen from the selected provider's RequiredBuild plus a JSPI probe.
+
+    The sizes below are the reason the preference order is JSPI first: JSPI costs 0.9% over the
+    synchronous build, while Asyncify costs 107%.
+  -->
+
+  <PropertyGroup>
+    <WaSqliteVersion>v1.1.2</WaSqliteVersion>
+    <WaSqliteRepository>https://raw.githubusercontent.com/rhashimoto/wa-sqlite</WaSqliteRepository>
+  </PropertyGroup>
+
+  <ItemGroup Label="Engine builds">
+    <WaSqliteArtifact Include="wa-sqlite.mjs" SourcePath="dist/wa-sqlite.mjs"
+                      Sha256="53D985DFAB4FC562AF7D7A83345F6715400C212BFDB40A6820439B0E46B6F453" />
+    <WaSqliteArtifact Include="wa-sqlite.wasm" SourcePath="dist/wa-sqlite.wasm"
+                      Sha256="AA0C2E6F606D49ECB276808BFD9F31176ECC73B5D9C9A80DD15C615FA801846C" />
+
+    <WaSqliteArtifact Include="wa-sqlite-jspi.mjs" SourcePath="dist/wa-sqlite-jspi.mjs"
+                      Sha256="BD37B0A73F62BE8967D0FBF85A43848EDC6ED5ADD4D4A3A38B68045487F9CD9F" />
+    <WaSqliteArtifact Include="wa-sqlite-jspi.wasm" SourcePath="dist/wa-sqlite-jspi.wasm"
+                      Sha256="712E92D9D085E36F9F5D2AF0F4190BE4FF48CAF2722DC676D9EADC20992774BA" />
+
+    <WaSqliteArtifact Include="wa-sqlite-async.mjs" SourcePath="dist/wa-sqlite-async.mjs"
+                      Sha256="4AC8BE5305557AC06F08B70BEAE24B4E55BA21993B608C49B3531DB1CF981A01" />
+    <WaSqliteArtifact Include="wa-sqlite-async.wasm" SourcePath="dist/wa-sqlite-async.wasm"
+                      Sha256="6BFCF02FE6C30EB05784850D985F37058475FCE686CDCDC4322C8192C5A43722" />
+  </ItemGroup>
+
+  <!--
+    The build-independent JavaScript API. Flat on purpose: every one of these imports its siblings by
+    relative path, so they must land in a single directory to resolve. VFS.js, FacadeVFS.js, and
+    WebLocksMixin.js are the base classes a storage provider's VFS extends, and they live here rather
+    than in each provider package so that all providers share one copy against one engine.
+  -->
+  <ItemGroup Label="JavaScript API">
+    <WaSqliteArtifact Include="sqlite-api.js" SourcePath="src/sqlite-api.js"
+                      Sha256="6A18BC86FA5A2EF300C7A7A84BFC762CAFF396EC56AF17FCC4885D20189FE54C" />
+    <WaSqliteArtifact Include="sqlite-constants.js" SourcePath="src/sqlite-constants.js"
+                      Sha256="F7B570F0C39E4B54C99F2598B6AD42018D4D8BF791861EDE20D295628AE49F8F" />
+    <WaSqliteArtifact Include="VFS.js" SourcePath="src/VFS.js"
+                      Sha256="55E7455E2EC0000CC4BA7A8BF7882F414A40F2A0BA6EB4C4AC847F379F54D92F" />
+    <WaSqliteArtifact Include="FacadeVFS.js" SourcePath="src/FacadeVFS.js"
+                      Sha256="6DE41EEE28F7D4279D409E275B3E25FD5E7837163386E4E8F2C379CD9F72A60C" />
+    <WaSqliteArtifact Include="WebLocksMixin.js" SourcePath="src/WebLocksMixin.js"
+                      Sha256="0EE2F39F43B3A8D70E94C0E5A2BAC97F2C55416830183D4810CAF28B2CEC7375" />
+  </ItemGroup>
+
+  <!-- Shipped so the MIT terms travel with the bytes they cover. -->
+  <ItemGroup Label="Provenance">
+    <WaSqliteArtifact Include="LICENSE.wa-sqlite.txt" SourcePath="LICENSE"
+                      Sha256="547F9E97E461BD369CC64B6FC12D724E8B02764B8DB7812691F29F0EC572BE79" />
+  </ItemGroup>
+
+</Project>

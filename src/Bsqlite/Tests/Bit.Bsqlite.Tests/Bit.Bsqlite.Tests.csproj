@@ -1,0 +1,48 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <!-- Signed with the repo key, which is what Bit.Bsqlite's InternalsVisibleTo names. -->
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.5.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The full SQLite provider, native engine included: the EF Core tests compare what the stock
+             provider does on desktop with what UseBitBsqlite does through the in-process transport. -->
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.11" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.8" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.EntityFrameworkCore.Sqlite" Version="10.0.13" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" />
+        <ProjectReference Include="..\..\Bit.Bsqlite.Testing\Bit.Bsqlite.Testing.csproj" />
+        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.Opfs\Bit.Bsqlite.Storage.Opfs.csproj" />
+        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.IndexedDb\Bit.Bsqlite.Storage.IndexedDb.csproj" />
+        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.CacheStorage\Bit.Bsqlite.Storage.CacheStorage.csproj" />
+    </ItemGroup>
+
+    <!-- The demo's model and migrations are the proof that one AppDbContext and one migration set run on both
+         sides. The demo only exists for net10.0, so the tests that load it do too. -->
+    <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
+        <ProjectReference Include="..\..\Bit.Bsqlite.Demo\Data\Bit.Bsqlite.Demo.Data.csproj" />
+    </ItemGroup>
+
+    <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">
+        <Compile Remove="EntityFrameworkCore\SharedSampleModelTests.cs" />
+    </ItemGroup>
+
+</Project>

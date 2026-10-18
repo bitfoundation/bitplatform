@@ -1,0 +1,44 @@
+﻿<Project>
+
+  <!--
+    Fetches OPFSCoopSyncVFS at restore (so wwwroot exists when static assets are globbed) and
+    rewrites its imports to the core engine directory. Verification is on every build.
+  -->
+
+  <PropertyGroup>
+    <OpfsVfsUpstreamDirectory>$(MSBuildProjectDirectory)/obj/upstream/</OpfsVfsUpstreamDirectory>
+    <OpfsVfsWwwrootDirectory>$(MSBuildProjectDirectory)/wwwroot/</OpfsVfsWwwrootDirectory>
+    <OpfsVfsUpstreamFile>$(OpfsVfsUpstreamDirectory)OPFSCoopSyncVFS.js</OpfsVfsUpstreamFile>
+    <OpfsVfsWwwrootFile>$(OpfsVfsWwwrootDirectory)OPFSCoopSyncVFS.js</OpfsVfsWwwrootFile>
+  </PropertyGroup>
+
+  <Target Name="FetchOpfsCoopSyncVfs" BeforeTargets="CollectPackageReferences">
+    <MakeDir Directories="$(OpfsVfsUpstreamDirectory)" />
+    <MakeDir Directories="$(OpfsVfsWwwrootDirectory)" />
+
+    <DownloadFile Condition="!Exists('$(OpfsVfsUpstreamFile)')"
+                  SourceUrl="$(WaSqliteRepository)/$(WaSqliteVersion)/$(OpfsVfsSourcePath)"
+                  DestinationFolder="$(OpfsVfsUpstreamDirectory)"
+                  DestinationFileName="OPFSCoopSyncVFS.js"
+                  Retries="3"
+                  SkipUnchangedFiles="false" />
+
+    <Exec Command="node &quot;$(MSBuildProjectDirectory)/vfs/rewrite-imports.mjs&quot; &quot;$(OpfsVfsUpstreamFile)&quot; &quot;$(OpfsVfsWwwrootFile)&quot;"
+          Condition="Exists('$(OpfsVfsUpstreamFile)') And !Exists('$(OpfsVfsWwwrootFile)')" />
+  </Target>
+
+  <Target Name="VerifyOpfsCoopSyncVfs" BeforeTargets="BeforeBuild">
+    <Error Condition="!Exists('$(OpfsVfsUpstreamFile)')"
+           Text="The pinned OPFSCoopSyncVFS is not present. It is fetched during restore, so run 'dotnet restore'." />
+
+    <GetFileHash Files="$(OpfsVfsUpstreamFile)" Algorithm="SHA256" HashEncoding="hex">
+      <Output TaskParameter="Items" ItemName="_OpfsVfsVerified" />
+    </GetFileHash>
+
+    <Error Condition="'%(_OpfsVfsVerified.FileHash)' != '$(OpfsVfsSha256)'"
+           Text="OPFSCoopSyncVFS.js does not match the checksum pinned in vfs/wa-sqlite.lock.props (expected $(OpfsVfsSha256), got %(_OpfsVfsVerified.FileHash)). Delete obj/upstream and restore to refetch, or update the lock file if the pin is being changed deliberately." />
+
+    <Exec Command="node &quot;$(MSBuildProjectDirectory)/vfs/rewrite-imports.mjs&quot; &quot;$(OpfsVfsUpstreamFile)&quot; &quot;$(OpfsVfsWwwrootFile)&quot;" />
+  </Target>
+
+</Project>

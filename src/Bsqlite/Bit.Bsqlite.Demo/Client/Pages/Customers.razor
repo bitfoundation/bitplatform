@@ -1,0 +1,283 @@
+﻿@page "/customers"
+@inject BrowserDatabase Database
+
+<SessionLifecycle OnReady="LoadAsync" OnTearDown="UnloadAsync" />
+
+<PageHeader Kicker="Data · Types" Title="Customers">
+    The same CRUD shape as Catalog, aimed at the values that historically broke on a WASM
+    transport: a <code>Guid</code> public id, a <code>DateOnly</code> birth date, a
+    <code>bool</code> flag stored as INTEGER, and a <code>decimal</code> credit limit that keeps
+    its scale because it is compared through <code>ef_compare</code>, not floating point.
+</PageHeader>
+
+@if (_error is not null)
+{
+    <p class="error">@_error</p>
+}
+
+<div class="split">
+    <section class="card">
+        <h2>Directory</h2>
+        <p class="try">
+            <b>Try</b>
+            <span>
+                Save a customer with an email that already exists. The unique index is SQLite's,
+                so the failure arrives as a <code>DbUpdateException</code> - see the snippet below.
+            </span>
+        </p>
+        <div class="toolbar">
+            <input type="search" placeholder="Filter name or email" @bind="_filter" @bind:event="oninput" />
+            <span class="grow"></span>
+            <button type="button" @onclick="NewCustomer" disabled="@(_busy || _context is null)">New customer</button>
+        </div>
+        <div class="scroll-x">
+            <table>
+                <thead>
+                <tr><th>Name</th><th>Email</th><th>Born</th><th>Credit</th><th>VIP</th><th></th></tr>
+                </thead>
+                <tbody>
+                @foreach (var customer in Visible)
+                {
+                    <tr class="clickable @(customer.Id == _edit?.Id ? "selected" : null)" @onclick="() => Edit(customer)">
+                        <td>@customer.DisplayName</td>
+                        <td>@customer.Email</td>
+                        <td>@SampleFormat.Day(customer.DateOfBirth)</td>
+                        <td>@SampleFormat.Money(customer.CreditLimit)</td>
+                        <td>@(customer.IsVip ? "yes" : "no")</td>
+                        <td class="actions">
+                            <button type="button" class="danger" @onclick="() => DeleteAsync(customer)" @onclick:stopPropagation="true">Delete</button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <CodeBlock Title="Reading and inserting" Language="csharp" Code="@Snippets.Customers.Crud" />
+    </section>
+    <div class="stack">
+        <section class="card">
+            <h2>@(_edit?.Id == 0 ? "New customer" : "Edit customer")</h2>
+            @if (_edit is null)
+            {
+                <p class="empty">Select a row, or create one.</p>
+            }
+            else
+            {
+                <form class="stack-form" @onsubmit="SaveAsync" @onsubmit:preventDefault="true">
+                    <label>Name <input @bind="_edit.DisplayName" required /></label>
+                    <label>Email <input type="email" @bind="_edit.Email" required /></label>
+                    <label>Date of birth <input type="date" @bind="_edit.DateOfBirth" /></label>
+                    <label>Credit limit <input type="number" step="0.01" @bind="_edit.CreditLimit" /></label>
+                    <label><input type="checkbox" @bind="_edit.IsVip" /> VIP</label>
+                    <label>Notes <textarea @bind="_edit.Notes"></textarea></label>
+                    <p class="mono">PublicId @_edit.PublicId</p>
+                    <div class="row">
+                        <button type="submit" disabled="@_busy">Save</button>
+                        <button type="button" class="secondary" @onclick="() => _edit = null">Cancel</button>
+                    </div>
+                </form>
+            }
+        </section>
+        <section class="card">
+            <h2>What the values become</h2>
+            <div class="scroll-x">
+                <table class="type-table">
+                    <thead><tr><th>Property</th><th>Stored as</th></tr></thead>
+                    <tbody>
+                    <tr><td><code>PublicId</code></td><td>TEXT, 36-char Guid</td></tr>
+                    <tr><td><code>DateOfBirth</code></td><td>TEXT <code>yyyy-MM-dd</code></td></tr>
+                    <tr><td><code>IsVip</code></td><td>INTEGER 0/1</td></tr>
+                    <tr><td><code>CreditLimit</code></td><td>TEXT, compared via <code>ef_compare</code></td></tr>
+                    <tr><td><code>CreatedUtc</code></td><td>TEXT, ISO 8601</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>
+                Filtering on <code>CreditLimit</code> - a real decimal comparison in SQL, not in
+                the CLR - is on the <a href="queries">SQL</a> page.
+            </p>
+        </section>
+    </div>
+</div>
+
+<div class="stack-lg">
+    <DemoCard Title="The entity and its configuration"
+              CodeTitle="Customer.cs"
+              Code="@Snippets.Customers.Entity">
+        <Description>
+            No browser-specific attributes, no converters bolted on for WASM. Precision and the
+            unique index are declared once and apply on the server and in the tab alike.
+        </Description>
+    </DemoCard>
+
+    <DemoCard Title="Handling a constraint failure"
+              CodeTitle="Pages/Customers.razor"
+              Code="@Snippets.Customers.Unique"
+              CodeOpen="false">
+        <Description>
+            <span>
+                After a failed save the change tracker still holds the rejected entity, so the
+                demo clears it before the next read - the same hygiene you would apply on a
+                server. The inner exception carries SQLite's message and result code.
+            </span>
+        </Description>
+    </DemoCard>
+</div>
+
+@code {
+    private AppDbContext? _context;
+    private List<Customer> _rows = [];
+    private Customer? _edit;
+    private string _filter = string.Empty;
+    private bool _busy;
+    private string? _error;
+
+    private IEnumerable<Customer> Visible
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_filter))
+            {
+                return _rows;
+            }
+
+            var term = _filter.Trim();
+            return _rows.Where(c =>
+                c.DisplayName.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || c.Email.Contains(term, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        try
+        {
+            _context = await Database.OpenContextAsync();
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+    }
+
+    private async Task UnloadAsync()
+    {
+        _edit = null;
+        if (_context is not null)
+        {
+            await _context.DisposeAsync();
+            _context = null;
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _rows = await _context.Customers.AsNoTracking().OrderBy(c => c.DisplayName).ToListAsync();
+    }
+
+    private void NewCustomer()
+    {
+        _edit = new Customer
+        {
+            DisplayName = string.Empty,
+            Email = string.Empty,
+            DateOfBirth = new DateOnly(1980, 1, 1),
+            CreditLimit = 1_000m,
+        };
+    }
+
+    private void Edit(Customer customer)
+    {
+        _edit = new Customer
+        {
+            Id = customer.Id,
+            PublicId = customer.PublicId,
+            DisplayName = customer.DisplayName,
+            Email = customer.Email,
+            DateOfBirth = customer.DateOfBirth,
+            IsVip = customer.IsVip,
+            CreditLimit = customer.CreditLimit,
+            Notes = customer.Notes,
+            CreatedUtc = customer.CreatedUtc,
+        };
+    }
+
+    private async Task SaveAsync()
+    {
+        if (_context is null || _edit is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            if (_edit.Id == 0)
+            {
+                _context.Customers.Add(_edit);
+            }
+            else
+            {
+                _context.Customers.Update(_edit);
+            }
+
+            await _context.SaveChangesAsync();
+            _context.ChangeTracker.Clear();
+            _edit = null;
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+            _context.ChangeTracker.Clear();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task DeleteAsync(Customer customer)
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            var tracked = await _context.Customers.FirstAsync(c => c.Id == customer.Id);
+            _context.Customers.Remove(tracked);
+            await _context.SaveChangesAsync();
+            _context.ChangeTracker.Clear();
+            if (_edit?.Id == customer.Id)
+            {
+                _edit = null;
+            }
+
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+            _context.ChangeTracker.Clear();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

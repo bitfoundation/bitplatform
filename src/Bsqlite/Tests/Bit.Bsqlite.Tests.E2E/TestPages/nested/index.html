@@ -1,0 +1,22 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <!--
+    The document base is a sub-path, as it is for a Blazor application published under one. Every
+    library URL below is document-relative, the way an application would write it, so a test on this
+    page fails if any module is still reached through a root-relative path.
+  -->
+  <base href="/nested/">
+  <title>Bsqlite browser test host (sub-path)</title>
+</head>
+<body>
+  <script type="module">
+    import * as host from './_content/Bit.Bsqlite/bit-bsqlite-host.js';
+    import * as engine from './_content/Bit.Bsqlite/bit-bsqlite-engine.js';
+
+    globalThis.BitBsqlite = { host, engine };
+    globalThis.BitBsqliteReady = true;
+  </script>
+</body>
+</html>

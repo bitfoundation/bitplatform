@@ -49,6 +49,7 @@ bit new MyApp
 - [***Butil***](src/Butil/README.md) (`Bit.Butil`): The browser platform in C#. The DOM, storage, media, sensors, crypto, workers and more, exposed as injectable, strongly-typed services, so you don't have to drop back to JavaScript.
 - [***Blex***](src/Blex/README.md) (`Bit.Blex`): Reactive state management for Blazor and .NET MAUI. A source generator turns plain `[BlexState]` fields and `[BlexAction]` methods into observable stores, with computed state, effects, middleware, persistence, undo/redo and Redux DevTools time-travel built in.
 - [***Besql***](src/Besql/README.md) (`Bit.Besql`): EF Core and SQLite in the browser, for offline-capable web apps that save data locally and sync later.
+- [***Bsqlite***](src/Bsqlite/README.md) (`Bit.Bsqlite`): SQLite in the browser for Blazor, with EF Core on top. The same entities and migrations run on the client as on the server, in a dedicated worker over OPFS, IndexedDB, Cache Storage or memory, with live queries, a complete ADO.NET surface and storage selection that never loses data silently.
 - [***Bswup***](src/Bswup/README.md) (`Bit.Bswup`): Turns your Blazor app into a PWA with service-worker update progress, and works with prerendering for an experience like GitHub's or Reddit's.
 
 ## Build & tooling

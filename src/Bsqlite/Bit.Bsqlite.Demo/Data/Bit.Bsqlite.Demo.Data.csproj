@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- The one AppDbContext, entity configurations, migrations and seed data both sides of the demo run:
+       the server applies the migrations with the stock SQLite provider, the browser through UseBitBsqlite. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Bit.Bsqlite.Demo.Data</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Relational only: which SQLite provider runs the model is the host's choice, not the model's. -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Domain\Bit.Bsqlite.Demo.Domain.csproj" />
+  </ItemGroup>
+
+</Project>

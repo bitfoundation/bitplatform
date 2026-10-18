@@ -1,0 +1,420 @@
+﻿/* =============================================================================
+   Bsqlite - reset, typography, and the application shell
+   ========================================================================== */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+    scrollbar-gutter: stable;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    margin: 0;
+    min-height: 100dvh;
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--lh-normal);
+    color: var(--text);
+    background: var(--canvas);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+::selection { background: var(--accent-soft); color: var(--accent-ink); }
+
+/* --- headings -------------------------------------------------------------- */
+h1, h2, h3, h4 {
+    margin: 0;
+    font-weight: 600;
+    line-height: var(--lh-tight);
+    letter-spacing: var(--track-tight);
+    color: var(--text);
+    text-wrap: balance;
+}
+h1 { font-size: var(--text-2xl); letter-spacing: var(--track-tighter); }
+h2 { font-size: var(--text-lg); }
+h3 { font-size: var(--text-md); }
+h4 { font-size: var(--text-base); }
+
+p { margin: 0 0 var(--space-3); color: var(--text-muted); text-wrap: pretty; }
+p:last-child { margin-bottom: 0; }
+
+.lead {
+    font-size: var(--text-md);
+    line-height: var(--lh-normal);
+    color: var(--text-muted);
+    max-width: var(--measure);
+}
+
+.eyebrow {
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    letter-spacing: var(--track-wide);
+    text-transform: uppercase;
+    color: var(--accent);
+}
+
+a {
+    color: var(--accent);
+    text-decoration-color: color-mix(in srgb, var(--accent) 35%, transparent);
+    text-underline-offset: 0.18em;
+    transition: color var(--dur) var(--ease);
+}
+a:hover { color: var(--accent-hover); text-decoration-color: currentColor; }
+
+hr { border: 0; border-top: 1px solid var(--border); margin: var(--space-6) 0; }
+
+strong, b { font-weight: 600; color: var(--text); }
+
+/* --- focus ---------------------------------------------------------------- */
+:focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+}
+:focus:not(:focus-visible) { outline: none; }
+
+.skip-link {
+    position: fixed;
+    top: var(--space-2);
+    left: var(--space-2);
+    z-index: 100;
+    padding: var(--space-2) var(--space-4);
+    background: var(--accent);
+    color: var(--text-on-accent);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+    transform: translateY(-200%);
+    transition: transform var(--dur) var(--ease);
+}
+.skip-link:focus-visible { transform: translateY(0); color: var(--text-on-accent); }
+
+/* --- inline code ----------------------------------------------------------- */
+code, pre, .mono {
+    /* Ligatures off: a documentation site has to show the characters you type,
+       not JetBrains Mono's arrow glyph for "=>". */
+    font-variant-ligatures: none;
+    font-feature-settings: "calt" 0, "liga" 0;
+}
+
+code {
+    font-family: var(--font-mono);
+    font-size: 0.86em;
+    background: var(--surface-2);
+    border: 1px solid var(--border-subtle);
+    border-radius: var(--radius-sm);
+    padding: 0.05em 0.35em;
+    color: var(--text);
+    white-space: nowrap;
+}
+
+/* An identifier such as BsqliteSynchronousApiNotSupportedException is wider than a phone held upright; there it
+   may break anywhere rather than widen the page. */
+@media (max-width: 40rem) {
+    code {
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+}
+.mono { font-family: var(--font-mono); font-size: var(--text-sm); font-variant-numeric: tabular-nums; }
+
+/* =============================================================================
+   Shell: topbar / sidebar / content
+   ========================================================================== */
+
+.topbar {
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    height: var(--topbar-h);
+    display: flex;
+    align-items: center;
+    background: color-mix(in srgb, var(--canvas) 82%, transparent);
+    backdrop-filter: saturate(180%) blur(12px);
+    border-bottom: 1px solid var(--border);
+}
+.topbar-inner {
+    width: 100%;
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.brand {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-3);
+    text-decoration: none;
+    color: var(--text);
+    border-radius: var(--radius-md);
+    padding: var(--space-1);
+    margin-left: calc(var(--space-1) * -1);
+}
+.brand:hover { color: var(--text); }
+.brand-mark {
+    flex: none;
+    width: 1.75rem;
+    height: 1.75rem;
+    display: grid;
+    place-items: center;
+    border-radius: var(--radius-md);
+    background: var(--accent);
+    color: var(--text-on-accent);
+}
+.brand-mark svg { width: 1.05rem; height: 1.05rem; }
+.brand-name {
+    font-weight: 600;
+    font-size: var(--text-md);
+    letter-spacing: var(--track-tight);
+    line-height: 1.1;
+}
+.brand-version {
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-full);
+    padding: 0.1rem 0.45rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.topbar-links { display: flex; align-items: center; gap: var(--space-1); margin-left: var(--space-4); }
+.topbar-link {
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: var(--text-base);
+    font-weight: 500;
+    transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.topbar-link:hover { color: var(--text); background: var(--surface-2); }
+.topbar-link[aria-current] { color: var(--text); background: var(--surface-2); }
+
+.topbar-actions { margin-left: auto; display: flex; align-items: center; gap: var(--space-2); }
+
+/* --- icon button / theme switch ------------------------------------------- */
+.icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: var(--radius-md);
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color var(--dur) var(--ease), background var(--dur) var(--ease), border-color var(--dur) var(--ease);
+}
+/* The :not(:disabled) is not decoration: components.css styles bare <button> as the primary
+   action, and `button:hover:not(:disabled)` out-specifies a plain `.icon-btn:hover`, which would
+   paint every chrome button accent-green on hover. Chrome controls match that specificity. */
+.icon-btn:hover:not(:disabled) { color: var(--text); background: var(--surface-2); border-color: var(--border); }
+.icon-btn svg { width: 1.15rem; height: 1.15rem; }
+
+.segmented {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+}
+.segmented button {
+    display: inline-grid;
+    place-items: center;
+    width: 1.85rem;
+    height: 1.6rem;
+    padding: 0;
+    border: 0;
+    border-radius: calc(var(--radius-md) - 2px);
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+    transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.segmented button:hover:not(:disabled) { color: var(--text); background: transparent; }
+.segmented button[aria-pressed="true"],
+.segmented button[aria-pressed="true"]:hover:not(:disabled) {
+    background: var(--surface);
+    color: var(--text);
+    box-shadow: var(--shadow-xs);
+}
+.segmented svg { width: 0.95rem; height: 0.95rem; }
+
+/* --- layout grid ----------------------------------------------------------- */
+.layout {
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    display: grid;
+    grid-template-columns: var(--sidebar-w) minmax(0, 1fr);
+    gap: var(--space-6);
+    align-items: start;
+}
+
+.sidebar {
+    position: sticky;
+    top: var(--topbar-h);
+    max-height: calc(100dvh - var(--topbar-h));
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    min-height: calc(100dvh - var(--topbar-h));
+    padding: var(--space-5) var(--space-2) var(--space-7) 0;
+    border-right: 1px solid var(--border-subtle);
+    scrollbar-width: thin;
+}
+
+.nav-group + .nav-group { margin-top: var(--space-5); }
+.nav-group-title {
+    margin: 0 0 var(--space-2) var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    letter-spacing: var(--track-wide);
+    text-transform: uppercase;
+    color: var(--text-faint);
+}
+.nav-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: var(--text-base);
+    line-height: 1.3;
+    min-height: 2.25rem;
+    transition: color var(--dur) var(--ease), background var(--dur) var(--ease);
+}
+.nav-link:hover { color: var(--text); background: var(--surface-2); }
+.nav-link svg { width: 1.05rem; height: 1.05rem; flex: none; color: var(--text-faint); transition: color var(--dur) var(--ease); }
+.nav-link:hover svg { color: var(--text-muted); }
+.nav-link[aria-current="page"] {
+    background: var(--accent-wash);
+    color: var(--accent-ink);
+    font-weight: 600;
+    box-shadow: inset 2px 0 0 var(--accent);
+}
+.nav-link[aria-current="page"] svg { color: var(--accent); }
+.nav-external { margin-left: auto; opacity: 0.65; }
+.nav-external svg { width: 0.85rem; height: 0.85rem; }
+
+.nav-toggle { display: none; }
+.nav-scrim { display: none; }
+
+/* --- content --------------------------------------------------------------- */
+.content { min-width: 0; padding: var(--space-5) 0 var(--space-8); }
+.container { width: 100%; max-width: var(--page-max); margin: 0 auto; padding: 0 var(--space-4); }
+
+.site-footer {
+    border-top: 1px solid var(--border);
+    background: var(--canvas-sunken);
+    padding: var(--space-6) 0;
+    margin-top: var(--space-8);
+}
+.footer-inner {
+    max-width: var(--page-max);
+    margin: 0 auto;
+    padding: 0 var(--space-4);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4) var(--space-6);
+    align-items: center;
+    justify-content: space-between;
+    font-size: var(--text-sm);
+    color: var(--text-muted);
+}
+.footer-links { display: flex; flex-wrap: wrap; gap: var(--space-4); }
+.footer-links a { color: var(--text-muted); text-decoration: none; }
+.footer-links a:hover { color: var(--accent); }
+
+/* --- responsive ------------------------------------------------------------- */
+@media (max-width: 639px) {
+    /* At 390px the version chip pushes the theme switch off the right edge. */
+    .brand-version { display: none; }
+    .topbar-inner { gap: var(--space-2); padding: 0 var(--space-3); }
+}
+
+@media (max-width: 1023px) {
+    .layout { grid-template-columns: minmax(0, 1fr); gap: 0; }
+    .topbar-links { display: none; }
+
+    .nav-toggle { display: inline-grid; }
+
+    .sidebar {
+        position: fixed;
+        min-height: 0;
+        inset: var(--topbar-h) auto 0 0;
+        z-index: 45;
+        width: min(20rem, 84vw);
+        max-height: none;
+        padding: var(--space-4) var(--space-3) var(--space-7);
+        background: var(--canvas);
+        border-right: 1px solid var(--border);
+        box-shadow: var(--shadow-lg);
+        transform: translateX(-102%);
+        transition: transform var(--dur-slow) var(--ease), visibility var(--dur-slow) var(--ease);
+        visibility: hidden;
+    }
+    .sidebar[data-open="true"] { transform: translateX(0); visibility: visible; }
+
+    .nav-scrim {
+        display: block;
+        position: fixed;
+        inset: var(--topbar-h) 0 0 0;
+        z-index: 44;
+        background: var(--overlay);
+        border: 0;
+        padding: 0;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity var(--dur-slow) var(--ease);
+    }
+    .nav-scrim[data-open="true"] { opacity: 1; pointer-events: auto; }
+    .nav-scrim:hover:not(:disabled) { background: var(--overlay); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Blazor's unhandled-error bar (Components/App.razor). Hidden until the runtime shows it - the framework only
+   switches its display on, so without this rule it would sit at the bottom of every page. */
+#blazor-error-ui {
+    position: fixed;
+    inset: auto 0 0 0;
+    z-index: 1000;
+    display: none;
+    padding: 0.7rem 1.2rem;
+    background: var(--danger-soft);
+    color: var(--danger-ink);
+    border-top: 1px solid var(--danger);
+    font-size: var(--text-sm);
+}
+
+#blazor-error-ui .reload { margin-inline-start: 0.5rem; }
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    float: right;
+    font-weight: 700;
+}

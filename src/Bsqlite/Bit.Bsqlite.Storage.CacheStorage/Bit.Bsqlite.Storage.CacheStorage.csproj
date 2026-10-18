@@ -1,0 +1,81 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <RootNamespace>Bit.Bsqlite.Storage.CacheStorage</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <!-- Static assets only; no Razor components, so no need to scan for them. -->
+        <AddRazorSupportForMvc>false</AddRazorSupportForMvc>
+        <Description>Cache Storage for bit Bsqlite: block-based and journal-committed, and the migration path off Bit.Besql - a database Bit.Besql left in Cache Storage is imported losslessly on first open.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>Bit;Bsqlite;Blazor;WebAssembly;SQLite;Cache Storage;Besql;Storage;Migration</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bsqlite\Bit.Bsqlite.csproj" />
+    </ItemGroup>
+
+    <!-- Keep the build inputs (tsconfig + package manifests) out of the published static web
+         assets while still showing them in the project. -->
+    <ItemGroup>
+        <Content Remove="package*.json;tsconfig.json" />
+        <None Include="package*.json;tsconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TypeScriptFiles Include="Scripts\**\*.ts" Exclude="Scripts\**\*.d.ts" />
+        <TypeScriptDeclarationFiles Include="Scripts\**\*.d.ts" />
+    </ItemGroup>
+
+    <!-- The same TypeScript pipeline as Bit.Bsqlite's (see the comments there): npm ci, tsc into wwwroot,
+         esbuild minification on Release, once per build rather than once per target framework, and the
+         generated modules added to the static web assets explicitly because the Content glob was evaluated
+         before they existed. -->
+    <Target Name="BuildBsqliteCacheStorageJavaScript" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript" />
+
+    <Target Name="IncludeBsqliteCacheStorageJavaScriptAsStaticWebAsset"
+            BeforeTargets="ResolveProjectStaticWebAssets"
+            DependsOnTargets="BuildBsqliteCacheStorageJavaScriptOnce">
+        <ItemGroup>
+            <_BsqliteCacheStorageGeneratedJavaScript Include="wwwroot\bit-bsqlite-*.js" />
+            <Content Remove="@(_BsqliteCacheStorageGeneratedJavaScript)" />
+            <Content Include="@(_BsqliteCacheStorageGeneratedJavaScript)" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="BuildBsqliteCacheStorageJavaScriptOnce">
+        <MSBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="BuildBsqliteCacheStorageJavaScript"
+                 RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
+    </Target>
+
+    <Target Name="BuildBsqliteCacheStorageJavaScriptOnCrossTargeting"
+            BeforeTargets="DispatchToInnerBuilds"
+            Condition="'$(IsCrossTargetingBuild)' == 'true'"
+            DependsOnTargets="BuildBsqliteCacheStorageJavaScript" />
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json;package-lock.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm ci" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <Target Name="BuildJavaScript"
+            Inputs="@(TypeScriptFiles);@(TypeScriptDeclarationFiles);tsconfig.json"
+            Outputs="@(TypeScriptFiles->'wwwroot\%(Filename).js');$(BaseIntermediateOutputPath)bit-bsqlite.$(Configuration).stamp">
+        <ItemGroup>
+            <_BsqliteCacheStorageStaleStamps Include="$(BaseIntermediateOutputPath)bit-bsqlite.*.stamp" />
+        </ItemGroup>
+        <Delete Files="@(_BsqliteCacheStorageStaleStamps)" />
+        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild wwwroot/%(TypeScriptFiles.Filename).js --minify --format=esm --target=es2022 --outfile=wwwroot/%(TypeScriptFiles.Filename).min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="@(TypeScriptFiles->'wwwroot\%(Filename).min.js')" DestinationFiles="@(TypeScriptFiles->'wwwroot\%(Filename).js')" OverwriteReadOnlyFiles="true" />
+        <MakeDir Directories="$(BaseIntermediateOutputPath)" />
+        <Touch Files="$(BaseIntermediateOutputPath)bit-bsqlite.$(Configuration).stamp" AlwaysCreate="true" />
+    </Target>
+
+</Project>

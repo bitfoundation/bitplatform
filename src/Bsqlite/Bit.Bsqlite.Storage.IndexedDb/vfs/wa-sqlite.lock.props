@@ -1,0 +1,15 @@
+﻿<Project>
+
+  <!--
+    The pinned IDBBatchAtomicVFS. Fetched at restore, checksummed, then rewritten so its
+    FacadeVFS / VFS / WebLocksMixin imports resolve against the core package.
+  -->
+
+  <PropertyGroup>
+    <WaSqliteVersion>v1.1.2</WaSqliteVersion>
+    <WaSqliteRepository>https://raw.githubusercontent.com/rhashimoto/wa-sqlite</WaSqliteRepository>
+    <IndexedDbVfsSourcePath>src/examples/IDBBatchAtomicVFS.js</IndexedDbVfsSourcePath>
+    <IndexedDbVfsSha256>809018E8976A8001BFAC6062B1FAA2A75333BD004885C8918F926C9E596E9CC6</IndexedDbVfsSha256>
+  </PropertyGroup>
+
+</Project>

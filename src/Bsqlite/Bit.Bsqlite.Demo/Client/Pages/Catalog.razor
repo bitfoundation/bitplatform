@@ -1,0 +1,384 @@
+﻿@page "/catalog"
+@inject BrowserDatabase Database
+
+<SessionLifecycle OnReady="LoadAsync" OnTearDown="UnloadAsync" />
+
+<PageHeader Kicker="Data · CRUD" Title="Catalog">
+    Products and categories, read and written entirely on the client. SKU is unique, price is a
+    <code>decimal</code>, lead time is a <code>TimeSpan</code>, and discontinued-on is a nullable
+    <code>DateOnly</code> - the types a browser database is usually worst at. Every button below
+    is a normal EF Core call; the snippet under each panel is the code it runs.
+</PageHeader>
+
+@if (_error is not null)
+{
+    <p class="error">@_error</p>
+}
+
+<div class="split">
+    <section class="card">
+        <div class="card-head">
+            <h2>Products</h2>
+        </div>
+        <p class="try">
+            <b>Try</b>
+            <span>
+                Edit a row and save, then reload the tab - the row is still there, because the
+                write went to the storage backend named in the bar above.
+            </span>
+        </p>
+        <div class="toolbar">
+            <input type="search" placeholder="Filter name, SKU, tags" @bind="_filter" @bind:event="oninput" />
+            <span class="grow"></span>
+            <button type="button" @onclick="NewProduct" disabled="@(_busy || _context is null)">New product</button>
+        </div>
+        <div class="scroll-x">
+            <table>
+                <thead>
+                <tr>
+                    <th>SKU</th><th>Name</th><th>Category</th><th>Price</th><th>Lead</th><th>Status</th><th></th>
+                </tr>
+                </thead>
+                <tbody>
+                @foreach (var product in VisibleProducts)
+                {
+                    <tr class="clickable @(product.Id == _editProduct?.Id ? "selected" : null)" @onclick="() => EditProduct(product)">
+                        <td class="mono">@product.Sku</td>
+                        <td>@product.Name</td>
+                        <td>
+                            <span class="swatch" style="background:@product.Category?.Color"></span>
+                            @product.Category?.Name
+                        </td>
+                        <td>@SampleFormat.Money(product.Price)</td>
+                        <td>@SampleFormat.Lead(product.LeadTime)</td>
+                        <td>
+                            @if (!product.IsActive)
+                            {
+                                <span class="pill muted">discontinued @SampleFormat.Day(product.DiscontinuedOn)</span>
+                            }
+                            else
+                            {
+                                <span class="pill ok">active</span>
+                            }
+                        </td>
+                        <td class="actions">
+                            <button type="button" class="danger" @onclick="() => DeleteProductAsync(product)" @onclick:stopPropagation="true">Delete</button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+        <CodeBlock Title="Loading this table" Language="csharp" Code="@Snippets.Catalog.Read" />
+    </section>
+    <div class="stack">
+        <section class="card">
+            <h2>@(_editProduct?.Id == 0 ? "New product" : "Edit product")</h2>
+            @if (_editProduct is null)
+            {
+                <p class="empty">Select a row, or create one.</p>
+            }
+            else
+            {
+                <form class="stack-form" @onsubmit="SaveProductAsync" @onsubmit:preventDefault="true">
+                    <label>SKU <input @bind="_editProduct.Sku" required /></label>
+                    <label>Name <input @bind="_editProduct.Name" required /></label>
+                    <label>Category
+                        <select @bind="_editProduct.CategoryId">
+                            @foreach (var category in _categories)
+                            {
+                                <option value="@category.Id">@category.Name</option>
+                            }
+                        </select>
+                    </label>
+                    <label>Price <input type="number" step="0.01" @bind="_editProduct.Price" /></label>
+                    <label>Weight (kg) <input type="number" step="0.01" @bind="_editProduct.WeightKg" /></label>
+                    <label>Lead time (days) <input type="number" step="1" @bind="_leadDays" /></label>
+                    <label>Tags <input @bind="_editProduct.Tags" placeholder="comma separated" /></label>
+                    <label><input type="checkbox" @bind="_editProduct.IsActive" /> Active</label>
+                    <label>Discontinued on <input type="date" @bind="_editProduct.DiscontinuedOn" /></label>
+                    <p class="mono">PublicId @_editProduct.PublicId</p>
+                    <div class="row">
+                        <button type="submit" disabled="@_busy">Save</button>
+                        <button type="button" class="secondary" @onclick="() => _editProduct = null">Cancel</button>
+                    </div>
+                </form>
+            }
+        </section>
+        <section class="card">
+            <h2>Categories</h2>
+            <p>A category cascades to its products; a product on an order does not delete at all.</p>
+            <form class="stack-form" @onsubmit="SaveCategoryAsync" @onsubmit:preventDefault="true">
+                <label>Name <input @bind="_categoryName" required /></label>
+                <label>Color <input type="color" @bind="_categoryColor" /></label>
+                <button type="submit" disabled="@_busy">Add category</button>
+            </form>
+            <table>
+                <thead><tr><th>Name</th><th>Items</th></tr></thead>
+                <tbody>
+                @foreach (var category in _categories)
+                {
+                    <tr>
+                        <td><span class="swatch" style="background:@category.Color"></span>@category.Name</td>
+                        <td>@_products.Count(p => p.CategoryId == category.Id)</td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </section>
+    </div>
+</div>
+
+<div class="stack-lg">
+    <DemoCard Title="Inserting and updating"
+              CodeTitle="Saving the form"
+              Code="@Snippets.Catalog.Write">
+        <Description>
+            <span>
+                One code path for both: EF decides insert or update from the key. The write goes
+                through the worker and lands in the storage backend named in the bar above, so it
+                is still there after a reload.
+            </span>
+        </Description>
+    </DemoCard>
+
+    <DemoCard Title="Foreign keys are enforced, not simulated"
+              CodeTitle="Deleting a product"
+              Code="@Snippets.Catalog.Delete">
+        <Description>
+            The engine in the worker is real SQLite with foreign keys on. Nothing in the browser
+            re-implements referential integrity, so a constraint failure comes back as the
+            <code>DbUpdateException</code> you would get on a server.
+        </Description>
+        <Try>
+            <span>
+                Delete a product that appears on an <a href="orders">order</a>. The message above
+                the table is SQLite's, surfaced through EF.
+            </span>
+        </Try>
+    </DemoCard>
+
+    <DemoCard Title="The model that shapes these tables"
+              CodeTitle="ProductConfiguration.cs"
+              Code="@Snippets.Catalog.Configuration"
+              CodeOpen="false">
+        <Description>
+            <span>
+                Ordinary <code>IEntityTypeConfiguration</code>. The same class compiles against the
+                server's <code>UseSqlite</code>, and the same migration creates both databases -
+                nothing here is browser-specific.
+            </span>
+        </Description>
+    </DemoCard>
+</div>
+
+@code {
+    private AppDbContext? _context;
+    private List<Product> _products = [];
+    private List<Category> _categories = [];
+    private Product? _editProduct;
+    private string _filter = string.Empty;
+    private string _categoryName = string.Empty;
+    private string _categoryColor = "#0f766e";
+    private int _leadDays = 2;
+    private bool _busy;
+    private string? _error;
+
+    private IEnumerable<Product> VisibleProducts
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_filter))
+            {
+                return _products;
+            }
+
+            var term = _filter.Trim();
+            return _products.Where(p =>
+                p.Name.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || p.Sku.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || p.Tags.Contains(term, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        try
+        {
+            _context = await Database.OpenContextAsync();
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+    }
+
+    private async Task UnloadAsync()
+    {
+        _editProduct = null;
+        if (_context is not null)
+        {
+            await _context.DisposeAsync();
+            _context = null;
+        }
+    }
+
+    private async Task RefreshAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _categories = await _context.Categories.AsNoTracking().OrderBy(c => c.Name).ToListAsync();
+        _products = await _context.Products
+            .AsNoTracking()
+            .Include(p => p.Category)
+            .OrderBy(p => p.Sku)
+            .ToListAsync();
+    }
+
+    private void NewProduct()
+    {
+        var categoryId = _categories.FirstOrDefault()?.Id ?? 0;
+        _editProduct = new Product
+        {
+            Sku = "SKU-" + Guid.NewGuid().ToString("N")[..6].ToUpperInvariant(),
+            Name = string.Empty,
+            CategoryId = categoryId,
+            Price = 0,
+            LeadTime = TimeSpan.FromDays(2),
+            IsActive = true,
+        };
+        _leadDays = 2;
+    }
+
+    private void EditProduct(Product product)
+    {
+        _editProduct = new Product
+        {
+            Id = product.Id,
+            PublicId = product.PublicId,
+            Sku = product.Sku,
+            Name = product.Name,
+            Price = product.Price,
+            WeightKg = product.WeightKg,
+            IsActive = product.IsActive,
+            CreatedUtc = product.CreatedUtc,
+            DiscontinuedOn = product.DiscontinuedOn,
+            LeadTime = product.LeadTime,
+            Tags = product.Tags,
+            CategoryId = product.CategoryId,
+        };
+        _leadDays = Math.Max(0, (int)Math.Round(product.LeadTime.TotalDays));
+    }
+
+    private async Task SaveProductAsync()
+    {
+        if (_context is null || _editProduct is null || string.IsNullOrWhiteSpace(_editProduct.Name))
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            _editProduct.LeadTime = TimeSpan.FromDays(_leadDays);
+            if (!_editProduct.IsActive && _editProduct.DiscontinuedOn is null)
+            {
+                _editProduct.DiscontinuedOn = DateOnly.FromDateTime(DateTime.UtcNow);
+            }
+
+            if (_editProduct.Id == 0)
+            {
+                _context.Products.Add(_editProduct);
+            }
+            else
+            {
+                _context.Products.Update(_editProduct);
+            }
+
+            await _context.SaveChangesAsync();
+            _context.ChangeTracker.Clear();
+            _editProduct = null;
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+            _context.ChangeTracker.Clear();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task DeleteProductAsync(Product product)
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            var tracked = await _context.Products.FirstAsync(p => p.Id == product.Id);
+            _context.Products.Remove(tracked);
+            await _context.SaveChangesAsync();
+            _context.ChangeTracker.Clear();
+            if (_editProduct?.Id == product.Id)
+            {
+                _editProduct = null;
+            }
+
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+            _context.ChangeTracker.Clear();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task SaveCategoryAsync()
+    {
+        if (_context is null || string.IsNullOrWhiteSpace(_categoryName))
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            _context.Categories.Add(new Category { Name = _categoryName.Trim(), Color = _categoryColor });
+            await _context.SaveChangesAsync();
+            _context.ChangeTracker.Clear();
+            _categoryName = string.Empty;
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+            _context.ChangeTracker.Clear();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

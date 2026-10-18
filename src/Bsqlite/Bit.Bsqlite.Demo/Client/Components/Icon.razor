@@ -1,0 +1,55 @@
+﻿@* Every icon on the site, inlined. A demo that demonstrates an offline-first database has no
+   business downloading an icon font, and emoji are not icons: they render differently on every
+   platform and read as text to a screen reader.
+
+   Icons are decorative here - the label beside them carries the meaning - so the <svg> is marked
+   aria-hidden unless the caller passes a Title, which turns it into a labelled image instead. *@
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"
+     stroke-linecap="round" stroke-linejoin="round"
+     aria-hidden="@(Title is null ? "true" : null)"
+     role="@(Title is null ? null : "img")"
+     focusable="false">@Body</svg>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Name { get; set; } = string.Empty;
+
+    /// <summary>Set only when the icon is the sole content of a control and so carries its name.</summary>
+    [Parameter]
+    public string? Title { get; set; }
+
+    private MarkupString Body => new(
+        (Title is null ? string.Empty : $"<title>{Title}</title>")
+        + (Paths.TryGetValue(Name, out var path) ? path : Paths["dot"]));
+
+    private static readonly Dictionary<string, string> Paths = new(StringComparer.Ordinal)
+    {
+        ["database"] = """<ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 1.66 3.58 3 8 3s8-1.34 8-3V5"/><path d="M4 12c0 1.66 3.58 3 8 3s8-1.34 8-3"/>""",
+        ["home"] = """<path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/><path d="M9.5 21v-6h5v6"/>""",
+        ["boxes"] = """<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>""",
+        ["users"] = """<path d="M16 20v-1.5a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4V20"/><circle cx="9" cy="7.5" r="3.5"/><path d="M22 20v-1.5a4 4 0 0 0-3-3.87"/><path d="M16.5 4.13a4 4 0 0 1 0 7.75"/>""",
+        ["receipt"] = """<path d="M5 3h14v18l-2.33-1.5L14.33 21 12 19.5 9.67 21 7.33 19.5 5 21z"/><path d="M9 8h6"/><path d="M9 12h6"/>""",
+        ["terminal"] = """<rect x="2" y="3" width="20" height="18" rx="2.5"/><path d="m6.5 9 3 3-3 3"/><path d="M13 15h4.5"/>""",
+        ["drive"] = """<rect x="2.5" y="5" width="19" height="6" rx="2"/><rect x="2.5" y="13" width="19" height="6" rx="2"/><path d="M6.5 8h.01"/><path d="M6.5 16h.01"/>""",
+        ["files"] = """<path d="M3 6.5A1.5 1.5 0 0 1 4.5 5h4L11 7.5h8.5A1.5 1.5 0 0 1 21 9v9a1.5 1.5 0 0 1-1.5 1.5h-15A1.5 1.5 0 0 1 3 18z"/>""",
+        ["shield"] = """<path d="M12 2.5 4.5 5.5v6c0 4.5 3.1 8.6 7.5 10 4.4-1.4 7.5-5.5 7.5-10v-6z"/><path d="m9 12 2 2 4-4"/>""",
+        ["warning"] = """<path d="M10.3 3.9 1.9 18a2 2 0 0 0 1.7 3h16.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/><path d="M12 9v4.5"/><path d="M12 17.5h.01"/>""",
+        ["bolt"] = """<path d="M13.5 2 4 13.5h7L10.5 22 20 10.5h-7z"/>""",
+        ["layers"] = """<path d="m12 2.5 9 4.75-9 4.75-9-4.75z"/><path d="m3 12.5 9 4.75 9-4.75"/><path d="m3 17.5 9 4.75 9-4.75"/>""",
+        ["sync"] = """<path d="M20.5 12a8.5 8.5 0 0 1-14.5 6L3.5 15.5"/><path d="M3.5 12A8.5 8.5 0 0 1 18 6l2.5 2.5"/><path d="M20.5 4.5v4h-4"/><path d="M3.5 19.5v-4h4"/>""",
+        ["package"] = """<path d="m12 2.5 8.5 4.5v10L12 21.5 3.5 17V7z"/><path d="M3.5 7 12 11.5 20.5 7"/><path d="M12 11.5v10"/>""",
+        ["copy"] = """<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/>""",
+        ["check"] = """<path d="m5 12.5 4.5 4.5L19 7"/>""",
+        ["github"] = """<path d="M9.2 19.6c-4.2 1.3-4.2-2.2-5.9-2.6m11.8 4.5v-3.4c0-1 .1-1.7-.6-2.3 2.8-.3 5.7-1.4 5.7-6.2a4.8 4.8 0 0 0-1.3-3.3 4.5 4.5 0 0 0-.1-3.3s-1.1-.3-3.5 1.3a12 12 0 0 0-6.2 0C6.7 3.7 5.6 4 5.6 4a4.5 4.5 0 0 0-.1 3.3 4.8 4.8 0 0 0-1.3 3.4c0 4.7 2.9 5.8 5.7 6.1-.4.4-.7 1-.6 1.6v3.7"/>""",
+        ["external"] = """<path d="M13 4h7v7"/><path d="M20 4 10.5 13.5"/><path d="M18 14.5V19a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4.5"/>""",
+        ["arrow-right"] = """<path d="M4 12h15"/><path d="m13 6 6 6-6 6"/>""",
+        ["sun"] = """<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.5 1.5M17.6 17.6l1.5 1.5M2 12h2M20 12h2M4.9 19.1l1.5-1.5M17.6 6.4l1.5-1.5"/>""",
+        ["moon"] = """<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>""",
+        ["monitor"] = """<rect x="2.5" y="4" width="19" height="13" rx="2"/><path d="M8.5 21h7"/><path d="M12 17v4"/>""",
+        ["menu"] = """<path d="M4 7h16"/><path d="M4 12h16"/><path d="M4 17h16"/>""",
+        ["close"] = """<path d="m6 6 12 12"/><path d="m18 6-12 12"/>""",
+        ["book"] = """<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v16H6.5A2.5 2.5 0 0 0 4 20.5z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20v4H6.5A2.5 2.5 0 0 1 4 20.5z"/>""",
+        ["dot"] = """<circle cx="12" cy="12" r="9"/>""",
+    };
+}

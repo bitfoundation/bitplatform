@@ -1,0 +1,413 @@
+﻿@page "/orders"
+@inject BrowserDatabase Database
+
+<SessionLifecycle OnReady="LoadAsync" OnTearDown="UnloadAsync" />
+
+<PageHeader Kicker="Data · Relationships" Title="Orders">
+    A master-detail graph loaded in one query: header, customer, lines, and each line's product.
+    Status is an enum stored as TEXT, <code>OrderedAt</code> is a <code>DateTimeOffset</code>, and
+    both foreign keys are <code>Restrict</code> - so the engine, not the UI, decides what may be
+    deleted.
+</PageHeader>
+
+@if (_error is not null)
+{
+    <p class="error">@_error</p>
+}
+
+<div class="split">
+    <section class="card">
+        <h2>Orders</h2>
+        <p class="try">
+            <b>Try</b>
+            <span>
+                Move an order to <em>Shipped</em>. The <a href="queries">SQL</a> page holds a live
+                query over this table - open it in a second tab and watch it re-run.
+            </span>
+        </p>
+        <div class="toolbar">
+            <input type="search" placeholder="Filter number or customer" @bind="_filter" @bind:event="oninput" />
+            <span class="grow"></span>
+            <button type="button" @onclick="NewOrder" disabled="@(_busy || _context is null)">New order</button>
+        </div>
+        <div class="scroll-x">
+        <table>
+            <thead>
+            <tr><th>Number</th><th>Customer</th><th>Status</th><th>Ordered</th><th>Ship by</th><th>Total</th></tr>
+            </thead>
+            <tbody>
+            @foreach (var order in Visible)
+            {
+                <tr class="clickable @(order.Id == _selected?.Id ? "selected" : null)" @onclick="() => Select(order)">
+                    <td class="mono">@order.Number</td>
+                    <td>@order.Customer?.DisplayName</td>
+                    <td><span class="pill @StatusClass(order.Status)">@order.Status</span></td>
+                    <td>@SampleFormat.When(order.OrderedAt)</td>
+                    <td>@SampleFormat.Day(order.ShipBy)</td>
+                    <td>@SampleFormat.Money(order.Lines.Sum(l => l.UnitPrice * l.Quantity))</td>
+                </tr>
+            }
+            </tbody>
+        </table>
+        </div>
+        <CodeBlock Title="Loading the graph" Language="csharp" Code="@Snippets.Orders.Read" />
+    </section>
+    <section class="card">
+        @if (_selected is null)
+        {
+            <h2>Detail</h2>
+            <p>Select an order, or create one.</p>
+        }
+        else
+        {
+            <h2>@_selected.Number</h2>
+            <form class="stack-form" @onsubmit="SaveHeaderAsync" @onsubmit:preventDefault="true">
+                <label>Customer
+                    <select @bind="_selected.CustomerId">
+                        @foreach (var customer in _customers)
+                        {
+                            <option value="@customer.Id">@customer.DisplayName</option>
+                        }
+                    </select>
+                </label>
+                <label>Status
+                    <select @bind="_status">
+                        @foreach (var status in Enum.GetValues<OrderStatus>())
+                        {
+                            <option value="@status">@status</option>
+                        }
+                    </select>
+                </label>
+                <label>Ship by <input type="date" @bind="_selected.ShipBy" /></label>
+                <label>Notes <textarea @bind="_selected.Notes"></textarea></label>
+                <div class="row">
+                    <button type="submit" disabled="@_busy">Save header</button>
+                    <button type="button" class="danger" @onclick="DeleteOrderAsync" disabled="@_busy">Delete order</button>
+                </div>
+            </form>
+            <h3>Lines</h3>
+            <table>
+                <thead><tr><th>Product</th><th>Qty</th><th>Unit</th><th></th></tr></thead>
+                <tbody>
+                @foreach (var line in _selected.Lines)
+                {
+                    <tr>
+                        <td>@(line.Product?.Name ?? $"#{line.ProductId}")</td>
+                        <td>@line.Quantity</td>
+                        <td>@SampleFormat.Money(line.UnitPrice)</td>
+                        <td class="actions">
+                            <button type="button" class="danger" @onclick="() => RemoveLineAsync(line)">Remove</button>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+            <form class="stack-form" @onsubmit="AddLineAsync" @onsubmit:preventDefault="true">
+                <label>Add product
+                    <select @bind="_newProductId">
+                        @foreach (var product in _products)
+                        {
+                            <option value="@product.Id">@product.Sku - @product.Name</option>
+                        }
+                    </select>
+                </label>
+                <label>Quantity <input type="number" min="1" @bind="_newQty" /></label>
+                <button type="submit" disabled="@(_busy || _selected.Id == 0)">Add line</button>
+            </form>
+            @if (_selected.Id == 0)
+            {
+                <p class="empty">Save the header before adding lines.</p>
+            }
+        }
+    </section>
+</div>
+
+<div class="stack-lg">
+    <DemoCard Title="Saving a header, then its lines"
+              CodeTitle="Adding a line"
+              Code="@Snippets.Orders.Graph">
+        <Description>
+            <span>
+                The header is saved first because the lines need its generated key, and the unit
+                price is copied onto the line so later price changes do not rewrite history. Both
+                saves go through the same connection in the same worker.
+            </span>
+        </Description>
+    </DemoCard>
+
+    <DemoCard Title="Why the grid sorts by Id"
+              CodeTitle="Sorting a DateTimeOffset column"
+              Code="@Snippets.Orders.Offset">
+        <Description>
+            <span>
+                A <code>DateTimeOffset</code> round-trips correctly, but SQLite has no type that
+                can order one, so the stock SQLite provider refuses <code>ORDER BY</code> on it -
+                on a server exactly as here. Bsqlite does not paper over that: same provider,
+                same rules.
+            </span>
+        </Description>
+    </DemoCard>
+
+    <DemoCard Title="The relationships behind this page"
+              CodeTitle="SalesOrderConfiguration.cs"
+              Code="@Snippets.Orders.Configuration"
+              CodeOpen="false">
+        <Description>
+            <span>
+                Status is stored as TEXT so an exported <code>.db</code> stays readable and
+                reordering the enum cannot silently change history. Deleting a customer who has
+                orders, or a product on a line, is refused by <code>Restrict</code>.
+            </span>
+        </Description>
+    </DemoCard>
+</div>
+
+@code {
+    private AppDbContext? _context;
+    private List<SalesOrder> _orders = [];
+    private List<Customer> _customers = [];
+    private List<Product> _products = [];
+    private SalesOrder? _selected;
+    private OrderStatus _status;
+    private string _filter = string.Empty;
+    private int _newProductId;
+    private int _newQty = 1;
+    private bool _busy;
+    private string? _error;
+
+    private IEnumerable<SalesOrder> Visible
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(_filter))
+            {
+                return _orders;
+            }
+
+            var term = _filter.Trim();
+            return _orders.Where(o =>
+                o.Number.Contains(term, StringComparison.OrdinalIgnoreCase)
+                || (o.Customer?.DisplayName.Contains(term, StringComparison.OrdinalIgnoreCase) ?? false));
+        }
+    }
+
+    private static string StatusClass(OrderStatus status) => status switch
+    {
+        OrderStatus.Shipped => "ok",
+        OrderStatus.Cancelled => "danger",
+        OrderStatus.Draft => "muted",
+        OrderStatus.Packed => "warn",
+        _ => string.Empty,
+    };
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        try
+        {
+            _context = await Database.OpenContextAsync();
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+    }
+
+    private async Task UnloadAsync()
+    {
+        _selected = null;
+        if (_context is not null)
+        {
+            await _context.DisposeAsync();
+            _context = null;
+        }
+    }
+
+    private async Task RefreshAsync(int? keepId = null)
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _customers = await _context.Customers.AsNoTracking().OrderBy(c => c.DisplayName).ToListAsync();
+        _products = await _context.Products.AsNoTracking().OrderBy(p => p.Sku).ToListAsync();
+        _orders = await _context.Orders
+            .AsNoTracking()
+            .Include(o => o.Customer)
+            .Include(o => o.Lines)
+            .ThenInclude(l => l.Product)
+            .OrderByDescending(o => o.Id)
+            .ToListAsync();
+        _newProductId = _products.FirstOrDefault()?.Id ?? 0;
+        var id = keepId ?? _selected?.Id;
+        _selected = id is int found ? _orders.FirstOrDefault(o => o.Id == found) : null;
+        if (_selected is not null)
+        {
+            _status = _selected.Status;
+        }
+    }
+
+    private void NewOrder()
+    {
+        var customerId = _customers.FirstOrDefault()?.Id ?? 0;
+        _selected = new SalesOrder
+        {
+            Number = "SO-" + DateTime.UtcNow.ToString("HHmmss"),
+            CustomerId = customerId,
+            Status = OrderStatus.Draft,
+            OrderedAt = DateTimeOffset.Now,
+            ShipBy = DateOnly.FromDateTime(DateTime.UtcNow.AddDays(7)),
+        };
+        _status = OrderStatus.Draft;
+    }
+
+    private void Select(SalesOrder order)
+    {
+        _selected = order;
+        _status = order.Status;
+    }
+
+    private async Task SaveHeaderAsync()
+    {
+        if (_context is null || _selected is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            _selected.Status = _status;
+            if (_selected.Id == 0)
+            {
+                _context.Orders.Add(_selected);
+            }
+            else
+            {
+                var tracked = await _context.Orders.FirstAsync(o => o.Id == _selected.Id);
+                tracked.CustomerId = _selected.CustomerId;
+                tracked.Status = _selected.Status;
+                tracked.ShipBy = _selected.ShipBy;
+                tracked.Notes = _selected.Notes ?? string.Empty;
+            }
+
+            await _context.SaveChangesAsync();
+            var id = _selected.Id;
+            _context.ChangeTracker.Clear();
+            await RefreshAsync(id);
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+            _context.ChangeTracker.Clear();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task AddLineAsync()
+    {
+        if (_context is null || _selected is null || _selected.Id == 0)
+        {
+            return;
+        }
+
+        var product = _products.FirstOrDefault(p => p.Id == _newProductId);
+        if (product is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            _context.OrderLines.Add(new OrderLine
+            {
+                OrderId = _selected.Id,
+                ProductId = product.Id,
+                Quantity = Math.Max(1, _newQty),
+                UnitPrice = product.Price,
+            });
+            await _context.SaveChangesAsync();
+            _context.ChangeTracker.Clear();
+            await RefreshAsync(_selected.Id);
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+            _context.ChangeTracker.Clear();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task RemoveLineAsync(OrderLine line)
+    {
+        if (_context is null || _selected is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            var tracked = await _context.OrderLines.FirstAsync(l => l.Id == line.Id);
+            _context.OrderLines.Remove(tracked);
+            await _context.SaveChangesAsync();
+            _context.ChangeTracker.Clear();
+            await RefreshAsync(_selected.Id);
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+            _context.ChangeTracker.Clear();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task DeleteOrderAsync()
+    {
+        if (_context is null || _selected is null || _selected.Id == 0)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            var tracked = await _context.Orders.FirstAsync(o => o.Id == _selected.Id);
+            _context.Orders.Remove(tracked);
+            await _context.SaveChangesAsync();
+            _context.ChangeTracker.Clear();
+            _selected = null;
+            await RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+            _context.ChangeTracker.Clear();
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

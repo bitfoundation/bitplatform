@@ -1,0 +1,291 @@
+﻿@page "/queries"
+@inject BrowserDatabase Database
+
+<SessionLifecycle OnReady="LoadAsync" OnTearDown="UnloadAsync" />
+
+<PageHeader Kicker="Engine · SQL" Title="SQL, live queries, and raw ADO.NET">
+    SQL generation here is the stock EF Core SQLite provider, untouched. Bsqlite replaces
+    only the two services that assume synchronous I/O, and registers on every connection the same
+    <code>ef_*</code> functions, <code>EF_DECIMAL</code> collation, and <code>regexp</code> that EF
+    expects from a native <code>SqliteConnection</code>. Each panel below runs against this tab's
+    database and shows exactly what it ran.
+</PageHeader>
+
+@if (_error is not null)
+{
+    <p class="error">@_error</p>
+}
+
+<div class="stack-lg">
+    <DemoCard Step="Live"
+              Title="A query that re-runs itself"
+              CodeTitle="Pages/Queries.razor"
+              Code="@Snippets.Sql.LiveInclude">
+        <Description>
+            <span>
+                Live queries are table-level: Bsqlite reads the tables out of the generated
+                SQL, then re-executes the query when any of them is written - by this tab or, over
+                a <code>BroadcastChannel</code>, by another one. <code>Include</code> is honoured,
+                so the customer below comes along.
+            </span>
+        </Description>
+        <Try>
+            <span>
+                Open <a href="orders">Orders</a> in a second tab and change a status. This table
+                updates without a refresh and without polling.
+            </span>
+        </Try>
+        <ChildContent>
+            @if (_liveRows.Count == 0)
+            {
+                <p class="empty">No orders yet.</p>
+            }
+            else
+            {
+                <div class="scroll-x">
+                    <table>
+                        <thead><tr><th>Number</th><th>Customer</th><th>Status</th><th>Ordered</th></tr></thead>
+                        <tbody>
+                        @foreach (var order in _liveRows)
+                        {
+                            <tr>
+                                <td class="mono">@order.Number</td>
+                                <td>@order.Customer?.DisplayName</td>
+                                <td>@order.Status</td>
+                                <td>@SampleFormat.When(order.OrderedAt)</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </ChildContent>
+    </DemoCard>
+
+    <DemoCard Step="LINQ"
+              Title="Comparing decimals in SQL"
+              CodeTitle="Pages/Queries.razor"
+              Code="@Snippets.Sql.QueryString">
+        <Description>
+            <span>
+                <code>decimal</code> is not a SQLite affinity, so EF stores it as TEXT and compares
+                it with <code>ef_compare</code> under the <code>EF_DECIMAL</code> collation. Those
+                functions run on 96-bit coefficients inside the worker - not on JavaScript numbers,
+                which would quietly round.
+            </span>
+        </Description>
+        <Try>
+            <span>Raise the threshold and run it: the generated SQL appears underneath.</span>
+        </Try>
+        <ChildContent>
+            <form @onsubmit="FilterDecimalAsync" @onsubmit:preventDefault="true">
+                <label>Credit limit ≥ <input @bind="_minCredit" type="number" step="0.01" /></label>
+                <button type="submit" disabled="@(_busy || _context is null)">Run LINQ</button>
+            </form>
+            @if (_decimalRows is not null)
+            {
+                <p>@(_decimalRows.Count) customer(s) matched.</p>
+                <ul class="plain">
+                    @foreach (var customer in _decimalRows)
+                    {
+                        <li>@customer.DisplayName - @SampleFormat.Money(customer.CreditLimit)</li>
+                    }
+                </ul>
+            }
+        </ChildContent>
+        <Extra>
+            @if (_decimalSql is not null)
+            {
+                <CodeBlock Title="query.ToQueryString() - what EF actually sent" Language="sql" Code="@_decimalSql" />
+            }
+        </Extra>
+    </DemoCard>
+
+    <DemoCard Step="Raw SQL"
+              Title="REGEXP, registered on every open"
+              CodeTitle="Pages/Queries.razor"
+              Code="@Snippets.Sql.Regexp">
+        <Description>
+            <span>
+                SQLite ships no <code>regexp</code> implementation; a host has to supply one. The
+                worker registers it on every connection, so the pattern is a JavaScript
+                <code>RegExp</code> - lookaround and backreferences included.
+            </span>
+        </Description>
+        <Try>
+            <span>Try <code>^a</code>, or <code>northwind|alpine</code>, against the seeded emails.</span>
+        </Try>
+        <ChildContent>
+            <form @onsubmit="FilterRegexAsync" @onsubmit:preventDefault="true">
+                <input @bind="_pattern" placeholder="Email REGEXP" />
+                <button type="submit" disabled="@(_busy || _context is null)">Run SQL</button>
+            </form>
+            @if (_regexRows is not null)
+            {
+                <p>@(_regexRows.Count) row(s) matching <code>@_pattern</code>.</p>
+                <ul class="plain">
+                    @foreach (var customer in _regexRows)
+                    {
+                        <li>@customer.DisplayName - @customer.Email</li>
+                    }
+                </ul>
+            }
+        </ChildContent>
+    </DemoCard>
+
+    <DemoCard Step="ADO.NET"
+              Title="No EF at all"
+              CodeTitle="Commands on the session connection"
+              Code="@Snippets.Sql.Ado">
+        <Description>
+            <span>
+                The session exposes a <code>DbConnection</code> that is already open. Commands,
+                parameters, and readers behave as you expect, with one rule: the async overloads
+                only. The version below is read from wa-sqlite in the worker, not from a native
+                <code>e_sqlite3</code>.
+            </span>
+        </Description>
+        <ChildContent>
+            <button type="button" class="secondary" @onclick="ReadVersionAsync" disabled="@_busy">
+                SELECT sqlite_version()
+            </button>
+            @if (_sqliteVersion is not null)
+            {
+                <p>sqlite_version() = <code>@_sqliteVersion</code></p>
+            }
+        </ChildContent>
+        <Extra>
+            <CodeBlock Title="Transactions" Language="csharp" Code="@Snippets.Sql.Transaction" Open="false" />
+        </Extra>
+    </DemoCard>
+</div>
+
+@code {
+    private AppDbContext? _context;
+    private IBsqliteLiveQuery<IReadOnlyList<SalesOrder>>? _live;
+    private IReadOnlyList<SalesOrder> _liveRows = [];
+    private IReadOnlyList<Customer>? _decimalRows;
+    private IReadOnlyList<Customer>? _regexRows;
+    private string? _decimalSql;
+    private string? _sqliteVersion;
+    private string? _error;
+    private decimal _minCredit = 10000m;
+    private string _pattern = "northwind|alpine";
+    private bool _busy;
+
+    private async Task LoadAsync()
+    {
+        _error = null;
+        try
+        {
+            _context = await Database.OpenContextAsync();
+            _live = _context.Orders
+                .Include(o => o.Customer)
+                .OrderByDescending(o => o.Id)
+                .AsLiveQuery();
+            _live.Changed += OnChanged;
+            _liveRows = await _live.RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+    }
+
+    private async Task UnloadAsync()
+    {
+        if (_live is not null)
+        {
+            _live.Changed -= OnChanged;
+            await _live.DisposeAsync();
+            _live = null;
+        }
+
+        if (_context is not null)
+        {
+            await _context.DisposeAsync();
+            _context = null;
+        }
+    }
+
+    private void OnChanged(object? sender, IReadOnlyList<SalesOrder> rows)
+    {
+        _liveRows = rows;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    private async Task FilterDecimalAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            var query = _context.Customers.AsNoTracking()
+                .Where(c => c.CreditLimit >= _minCredit)
+                .OrderBy(c => c.DisplayName);
+            _decimalSql = query.ToQueryString();
+            _decimalRows = await query.ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task FilterRegexAsync()
+    {
+        if (_context is null)
+        {
+            return;
+        }
+
+        _busy = true;
+        _error = null;
+        try
+        {
+            _regexRows = await _context.Customers
+                .FromSql($"SELECT * FROM \"Customers\" WHERE \"Email\" REGEXP {_pattern}")
+                .AsNoTracking()
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task ReadVersionAsync()
+    {
+        _busy = true;
+        _error = null;
+        try
+        {
+            _sqliteVersion = Convert.ToString(await Database.ExecuteScalarAsync("SELECT sqlite_version()"));
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

@@ -1,0 +1,61 @@
+﻿@* A demo section: what it shows, what to try, the live thing, then the code behind it. *@
+<section class="card">
+    <div class="card-head">
+        @if (!string.IsNullOrEmpty(Step))
+        {
+            <span class="card-step">@Step</span>
+        }
+        <h2>@Title</h2>
+    </div>
+    @if (Description is not null)
+    {
+        <p>@Description</p>
+    }
+    @if (Try is not null)
+    {
+        <p class="try"><b>Try</b> <span>@Try</span></p>
+    }
+    @ChildContent
+    @if (!string.IsNullOrWhiteSpace(Code))
+    {
+        <CodeBlock Title="@CodeTitle" Language="@Language" Code="@Code" Open="@CodeOpen" />
+    }
+    @Extra
+</section>
+
+@code {
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>Small uppercase kicker, e.g. a step number in a walkthrough.</summary>
+    [Parameter]
+    public string? Step { get; set; }
+
+    [Parameter]
+    public RenderFragment? Description { get; set; }
+
+    /// <summary>One concrete action the reader can take to see the behaviour.</summary>
+    [Parameter]
+    public RenderFragment? Try { get; set; }
+
+    /// <summary>The live demo.</summary>
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>The snippet that produces what the demo just did.</summary>
+    [Parameter]
+    public string? Code { get; set; }
+
+    [Parameter]
+    public string CodeTitle { get; set; } = "Sample";
+
+    [Parameter]
+    public string Language { get; set; } = "csharp";
+
+    [Parameter]
+    public bool CodeOpen { get; set; } = true;
+
+    /// <summary>Anything that belongs after the snippet, such as extra code blocks.</summary>
+    [Parameter]
+    public RenderFragment? Extra { get; set; }
+}

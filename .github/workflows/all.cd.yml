@@ -71,6 +71,12 @@ jobs:
     uses: ./.github/workflows/bmage.demo.cd.yml
     secrets: inherit
 
+  bsqlite_demo:
+    name: bsqlite demo
+    if: inputs.server
+    uses: ./.github/workflows/bsqlite.demo.cd.yml
+    secrets: inherit
+
   bink_demo:
     name: bink demo
     if: inputs.server

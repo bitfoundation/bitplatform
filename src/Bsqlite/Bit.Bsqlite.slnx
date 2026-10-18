@@ -1,0 +1,25 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Bit.Bsqlite.Demo/">
+    <Project Path="Bit.Bsqlite.Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />
+    <Project Path="Bit.Bsqlite.Demo/Data/Bit.Bsqlite.Demo.Data.csproj" />
+    <Project Path="Bit.Bsqlite.Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
+    <Project Path="Bit.Bsqlite.Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Bsqlite.Tests/Bit.Bsqlite.Tests.csproj" />
+    <Project Path="Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.Bsqlite.Tests.Mcp/Bit.Bsqlite.Tests.Mcp.csproj" />
+  </Folder>
+  <Project Path="Bit.Bsqlite/Bit.Bsqlite.csproj" />
+  <Project Path="Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj" />
+  <Project Path="Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj" />
+  <Project Path="Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj" />
+  <Project Path="Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj" />
+</Solution>

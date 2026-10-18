@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- The host owns the launch profile: this project is never started on its own. -->
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <!-- Publishes this project's static web assets at the app root (not under _content/), the
+         way a Blazor Web App's client project is expected to contribute them. -->
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The library and every first-party storage backend: the demo moves its database between all four. -->
+    <ProjectReference Include="..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" />
+    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.Opfs\Bit.Bsqlite.Storage.Opfs.csproj" />
+    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.IndexedDb\Bit.Bsqlite.Storage.IndexedDb.csproj" />
+    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.CacheStorage\Bit.Bsqlite.Storage.CacheStorage.csproj" />
+
+    <!-- The one AppDbContext and migration set the server runs too. -->
+    <ProjectReference Include="..\Data\Bit.Bsqlite.Demo.Data.csproj" />
+  </ItemGroup>
+
+</Project>
