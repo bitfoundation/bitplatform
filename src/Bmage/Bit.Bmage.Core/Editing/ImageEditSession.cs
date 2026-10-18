@@ -29,6 +29,7 @@ public sealed class ImageEditSession : IDisposable
     private readonly IPixelAllocator _allocator;
     private readonly ImageLimits _limits;
     private readonly DocumentRenderer _renderer;
+    private readonly Func<ImageBuffer, Size, ValueTask<ImageBuffer?>>? _proxyScaler;
     private ImageBuffer _original;
     private ImageBuffer? _proxy;
     private ImageBuffer? _preview;
@@ -48,6 +49,7 @@ public sealed class ImageEditSession : IDisposable
         _allocator = o.Allocator ?? PooledPixelAllocator.Shared;
         _limits = o.Limits ?? ImageLimits.Default;
         _renderer = new DocumentRenderer(o.TextRasterizer);
+        _proxyScaler = o.ProxyScaler;
         MaxProxyDimension = o.MaxProxyDimension;
         UpdateProxyGeometry();
         History = new EditHistory(ImageDocument.Create(original), o.MaxHistoryDepth);
@@ -247,7 +249,7 @@ public sealed class ImageEditSession : IDisposable
             if (_disposed) throw new OperationCanceledException(cts.Token);
             var sourceVersion = _sourceVersion;
             var source = Document;
-            var proxy = EnsureProxy();
+            var proxy = await EnsureProxyAsync(cts.Token).ConfigureAwait(false);
             var document = overlay is null ? source : overlay(source);
             if (UsesProxy) document = document.ForScale(ProxyScale);
             var rendered = await _renderer.RenderAsync(document, proxy, new PipelineExecutionOptions
@@ -340,13 +342,30 @@ public sealed class ImageEditSession : IDisposable
             : height / (double)_original.Height;
     }
 
-    private ImageBuffer EnsureProxy()
+    private async ValueTask<ImageBuffer> EnsureProxyAsync(CancellationToken cancellationToken)
     {
         if (_proxy is { } existing) return existing;
         if (!UsesProxy) return _original;
-        _proxy = new ResizeOperation(ProxySize.Width, ProxySize.Height, ResizeMode.Stretch, ResamplingFilter.Auto)
-            .Apply(_original, new OperationContext(_allocator, _limits));
-        return _proxy;
+        var sourceVersion = _sourceVersion;
+        var proxy = await ScaleProxyAsync(_original, ProxySize).ConfigureAwait(false);
+        if (_disposed || sourceVersion != _sourceVersion)
+        {
+            proxy.Dispose();
+            throw new OperationCanceledException(cancellationToken);
+        }
+        _proxy = proxy;
+        return proxy;
+    }
+
+    private async ValueTask<ImageBuffer> ScaleProxyAsync(ImageBuffer original, Size size)
+    {
+        if (_proxyScaler is not null && await _proxyScaler(original, size).ConfigureAwait(false) is { } scaled)
+        {
+            if (scaled.Size == size) return scaled;
+            scaled.Dispose();
+        }
+        return new ResizeOperation(size.Width, size.Height, ResizeMode.Stretch, ResamplingFilter.Auto)
+            .Apply(original, new OperationContext(_allocator, _limits));
     }
 
     private void DisposePreview()
@@ -414,4 +433,6 @@ public sealed class ImageEditSessionOptions
 
     /// <summary>Rasteriser used for text annotations.</summary>
     public ITextRasterizer? TextRasterizer { get; set; }
+
+    internal Func<ImageBuffer, Size, ValueTask<ImageBuffer?>>? ProxyScaler { get; set; }
 }

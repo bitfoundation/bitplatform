@@ -9,6 +9,7 @@
 @inject IImageCapabilityProvider Capabilities
 @inject Bit.Bmage.Text.FontTextRasterizer FontRasterizer
 @inject BitBmageOptions Options
+@inject Bit.Bmage.Interop.BrowserImageInterop Interop
 
 @*
     The complete editor. Every visual element is a slot: hosts can replace the toolbar, panels or empty state entirely
@@ -275,6 +276,7 @@
             MaxProxyDimension = EffectiveProxyDimension,
             MaxHistoryDepth = MaxHistoryDepth,
             TextRasterizer = EffectiveTextRasterizer,
+            ProxyScaler = OperatingSystem.IsBrowser() ? (source, size) => Bit.Bmage.Codecs.Browser.BrowserImageScaler.ScaleAsync(Interop, source, size) : null,
         });
         _selectedId = null;
         _cropRectangle = null;

@@ -200,6 +200,26 @@ function closeBitmap(bitmap: ImageBitmap | HTMLImageElement) {
     if ('close' in bitmap) bitmap.close();
 }
 
+export async function scale(pixels: any, width: number, height: number, targetWidth: number, targetHeight: number) {
+    const source = new ImageData(new Uint8ClampedArray(pixels.buffer as ArrayBuffer, pixels.byteOffset, pixels.byteLength), width, height);
+    const bitmap = await createImageBitmap(source, { resizeWidth: targetWidth, resizeHeight: targetHeight, resizeQuality: 'high', premultiplyAlpha: 'premultiply' });
+    try {
+        const canvas = rentCanvas(targetWidth, targetHeight);
+        try {
+            const ctx = get2d(canvas);
+            ctx.clearRect(0, 0, targetWidth, targetHeight);
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
+            const data = ctx.getImageData(0, 0, targetWidth, targetHeight);
+            return new ByteResult(new Uint8Array(data.data.buffer), { width: targetWidth, height: targetHeight });
+        } finally {
+            returnCanvas(canvas);
+        }
+    } finally {
+        bitmap.close();
+    }
+}
+
 /**
  * Reads dimensions using the browser's own decoder. Only used for formats with no managed header reader (AVIF),
  * because it really does decode the image: there is no cheaper way to ask the browser for a size.

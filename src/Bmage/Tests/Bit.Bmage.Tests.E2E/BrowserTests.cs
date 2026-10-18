@@ -191,6 +191,36 @@ public class EditorTests : DemoTest
     }
 
     [TestMethod]
+    public async Task LargeImagesAreEditedThroughAProxyOfTheWholePicture()
+    {
+        var page = await OpenAsync("annotate");
+        var file = SampleImage.WriteToTempFile(3000, 1500, "large.png");
+        try
+        {
+            await page.SetInputFilesAsync(".bmg-editor input[type=file]", file);
+            await page.WaitForFunctionAsync("() => document.querySelector('.bmg-canvas')?.width > 1", null,
+                new PageWaitForFunctionOptions { Timeout = 60_000 });
+        }
+        finally
+        {
+            File.Delete(file);
+        }
+
+        var result = await page.EvaluateAsync<JsonElement>("""
+            () => {
+                const c = document.querySelector('.bmg-canvas');
+                const p = c.getContext('2d').getImageData(c.width * 3 >> 2, c.height >> 2, 1, 1).data;
+                return { w: c.width, h: c.height, r: p[0], g: p[1], a: p[3] };
+            }
+            """);
+        Assert.AreEqual(2048, result.GetProperty("w").GetInt32());
+        Assert.AreEqual(1024, result.GetProperty("h").GetInt32());
+        Assert.AreEqual(191, result.GetProperty("r").GetInt32(), 3);
+        Assert.AreEqual(64, result.GetProperty("g").GetInt32(), 3);
+        Assert.AreEqual(255, result.GetProperty("a").GetInt32());
+    }
+
+    [TestMethod]
     public async Task RendersTheFullToolbarAndPanel()
     {
         var page = await OpenEditorWithImageAsync();

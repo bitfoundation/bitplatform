@@ -95,6 +95,35 @@ public class JsModuleContractTests : DemoTest
         Assert.AreEqual(640 * 360 * 4, result.GetProperty("byteLength").GetInt32());
     }
 
+    [TestMethod]
+    public async Task BrowserScaleReturnsExactlyTheRequestedSizeAndKeepsTheColours()
+    {
+        var page = await OpenAsync("capabilities");
+
+        var result = await EvaluateAgainstModuleAsync(page, """
+            const w = 400, h = 300, tw = 133, th = 100;
+            const pixels = new Uint8Array(w * h * 4);
+            for (let i = 0; i < w * h; i++) pixels.set((i % w) < w / 2 ? [0, 200, 0, 255] : [200, 0, 0, 128], i * 4);
+            const handle = await m.scale(pixels, w, h, tw, th);
+            const info = handle.info();
+            const out = handle.bytes();
+            handle.dispose();
+            const at = (x, y) => Array.from(out.slice((y * tw + x) * 4, (y * tw + x) * 4 + 4));
+            return { info, left: at(10, 50), right: at(120, 50) };
+            """);
+
+        var info = result.GetProperty("info");
+        Assert.AreEqual(133, info.GetProperty("width").GetInt32());
+        Assert.AreEqual(100, info.GetProperty("height").GetInt32());
+        Assert.AreEqual(133 * 100 * 4, info.GetProperty("byteLength").GetInt32());
+        int[] left = [.. result.GetProperty("left").EnumerateArray().Select(e => e.GetInt32())];
+        int[] right = [.. result.GetProperty("right").EnumerateArray().Select(e => e.GetInt32())];
+        CollectionAssert.AreEqual(new[] { 0, 200, 0, 255 }, left);
+        Assert.AreEqual(200, right[0], 2);
+        Assert.AreEqual(0, right[1]);
+        Assert.AreEqual(128, right[3], 1);
+    }
+
     /// <summary>
     /// The encoder must never report success for a format the browser silently substituted. Browsers hand back a PNG
     /// when asked for a format they cannot write, and claiming that as AVIF would corrupt a user's export pipeline.
