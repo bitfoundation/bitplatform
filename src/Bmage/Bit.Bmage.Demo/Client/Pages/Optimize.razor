@@ -1,0 +1,377 @@
+﻿@page "/optimize"
+@implements IDisposable
+@inject ImageLoader Loader
+@inject ImageExporter Exporter
+@inject IImageCapabilityProvider Capabilities
+
+@* The upload pipeline most applications actually need, run before anything is sent: cap the
+   dimensions, re-encode, strip the metadata, report the bytes. Files are decoded one at a time so a
+   large drop never holds every original in memory at once, and a file that fails is reported on
+   its own row rather than ending the run. *@
+
+<PageTitle>Upload optimisation - Bit.Bmage</PageTitle>
+
+<h1>Upload optimisation</h1>
+
+<p class="page-intro">
+    The upload pipeline most applications actually need: cap the dimensions, re-encode to a modern
+    format, strip the metadata, and see exactly how many bytes that saved. Everything happens on the
+    user's device, so <strong>your servers never receive the 8 megapixel original</strong>.
+</p>
+
+<div class="demo-section">
+    <h2>Try it</h2>
+
+    @if (_error is not null)
+    {
+        <div class="alert alert-error" role="alert">@_error</div>
+    }
+
+    <div class="split">
+        <div>
+            <BmageDropZone Label="Drop images here, or click to choose them" Multiple="true" OnFilesSelected="OnFilesSelected" />
+
+            @if (_running)
+            {
+                <div class="sample-row optimize-progress">
+                    <div class="progress" role="progressbar" aria-label="Optimising" aria-valuenow="@((int)(_progress * 100))" aria-valuemin="0" aria-valuemax="100">
+                        <div class="progress-bar" style="width:@((_progress * 100).ToString("0"))%"></div>
+                    </div>
+                    <span class="small muted" role="status">Processing @_completed of @_total&hellip;</span>
+                    <button type="button" class="btn btn-small" @onclick="Cancel">Stop</button>
+                </div>
+            }
+
+            @if (_results.Count > 0)
+            {
+                <div class="stat-grid results-stats">
+                    <div class="stat">
+                        <span class="stat-label">Images</span>
+                        <span class="stat-value">@_results.Count</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Before</span>
+                        <span class="stat-value">@Display.Bytes(TotalBefore)</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">After</span>
+                        <span class="stat-value">@Display.Bytes(TotalAfter)</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Change</span>
+                        <span class="stat-value @(Display.IsSmaller(TotalBefore, TotalAfter) ? "good" : "bad")">@Display.Change(TotalBefore, TotalAfter)</span>
+                    </div>
+                </div>
+            }
+
+            @if (_results.Count > 0 || _failures.Count > 0)
+            {
+                <div class="btn-row results-actions">
+                    <button type="button" class="btn btn-accent" disabled="@(_running || _results.Count == 0)" @onclick="DownloadAll">
+                        <Icon Path="@Icons.Download" />
+                        Download all
+                    </button>
+                    <button type="button" class="btn" disabled="@_running" @onclick="Clear">Clear</button>
+                </div>
+
+                <div class="table-scroll" tabindex="0" role="region" aria-label="Optimised files">
+                    <table class="data">
+                        <thead>
+                            <tr>
+                                <th scope="col">File</th>
+                                <th scope="col">Size</th>
+                                <th scope="col" class="num">Before</th>
+                                <th scope="col" class="num">After</th>
+                                <th scope="col" class="num">Change</th>
+                                <th scope="col"><span class="visually-hidden">Actions</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var result in _results)
+                            {
+                                <tr>
+                                    <td>@result.Name</td>
+                                    <td class="mono">@result.Dimensions</td>
+                                    <td class="num">@Display.Bytes(result.OriginalBytes)</td>
+                                    <td class="num">@Display.Bytes(result.NewBytes)</td>
+                                    <td class="num @(Display.IsSmaller(result.OriginalBytes, result.NewBytes) ? "text-good" : "text-bad")">@Display.Change(result.OriginalBytes, result.NewBytes)</td>
+                                    <td><button type="button" class="btn btn-small" @onclick="() => Download(result)" aria-label="@($"Save {result.Name}")">Save</button></td>
+                                </tr>
+                            }
+                            @foreach (var failure in _failures)
+                            {
+                                <tr>
+                                    <td>@failure.Name</td>
+                                    <td colspan="5" class="text-bad">@failure.Message</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="card">
+            <p class="card-title">Pipeline</p>
+
+            <div class="field">
+                <label class="field-label" for="maxdim">Longest edge <span class="field-value">@_maxDimension px</span></label>
+                <input id="maxdim" type="range" min="320" max="4096" step="80" value="@_maxDimension" @oninput="e => Set(ref _maxDimension, e)" />
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="format">Format</label>
+                <select id="format" class="bmg-select" disabled="@(_capabilities is null)" @onchange="OnFormatChanged">
+                    @foreach (var format in AvailableFormats)
+                    {
+                        <option value="@format" selected="@(_format == format)">@format.ToString().ToUpperInvariant()</option>
+                    }
+                </select>
+            </div>
+
+            @if (_format.IsLossy())
+            {
+                <div class="field">
+                    <label class="field-label" for="quality">Quality <span class="field-value">@_quality.ToString("0.00")</span></label>
+                    <input id="quality" type="range" min="0.3" max="1" step="0.01" value="@_quality.ToString(System.Globalization.CultureInfo.InvariantCulture)" @oninput="OnQualityChanged" />
+                </div>
+            }
+
+            <div class="field">
+                <label class="field-label" for="metadata">Metadata</label>
+                <select id="metadata" class="bmg-select" @onchange="OnMetadataChanged">
+                    <option value="Remove" selected="@(_metadata == MetadataPolicy.Remove)">Remove everything</option>
+                    <option value="StripSensitive" selected="@(_metadata == MetadataPolicy.StripSensitive)">Keep camera, drop location</option>
+                    <option value="Preserve" selected="@(_metadata == MetadataPolicy.Preserve)">Keep everything</option>
+                </select>
+            </div>
+
+            <div class="field field-inline">
+                <input id="sharpen" type="checkbox" checked="@_sharpen" @onchange="e => _sharpen = (bool)(e.Value ?? false)" />
+                <label class="field-label" for="sharpen">Sharpen after downscaling</label>
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="concurrency">Concurrency <span class="field-value">@_concurrency</span></label>
+                <input id="concurrency" type="range" min="1" max="8" step="1" value="@_concurrency" @oninput="e => Set(ref _concurrency, e)" aria-describedby="concurrency-hint" />
+                <span class="field-hint" id="concurrency-hint">The batch API's MaxConcurrency, as in the snippet below; this page itself decodes one file at a time to keep memory flat. Higher is faster but holds more decoded images at once - two is a safe default on phones. <a href="/batch">Batch processing</a> runs it for real.</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>The code</h2>
+    <p>
+        One pipeline, built once and reused for every file: nothing runs until it is executed, so it
+        is safe to keep in a field. <code>MaxSize</code> only ever shrinks - a small image passes
+        through untouched instead of being blown up - and the sharpen afterwards recovers the bite
+        that downscaling takes away.
+    </p>
+    <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Choosing the numbers</h2>
+    <ul>
+        <li><strong>1920 on the long edge</strong> covers a full-width hero on most screens; product thumbnails and avatars want far less.</li>
+        <li><strong>WebP at 0.8</strong> is typically 25 to 35% smaller than JPEG at similar quality. Where this browser cannot write it, the format list above simply does not offer it - the list is the capability probe's answer.</li>
+        <li><strong>Re-encoding can grow a file.</strong> A small or already heavily compressed upload may come out larger; the table says so in red rather than claiming a saving. A real pipeline would keep the original in that case.</li>
+    </ul>
+</div>
+
+@code {
+    private sealed record Result(string Name, string Dimensions, long OriginalBytes, long NewBytes, EncodedImage Encoded);
+
+    private sealed record Failure(string Name, string Message);
+
+    private readonly List<Result> _results = [];
+    private readonly List<Failure> _failures = [];
+    private int _maxDimension = 1920;
+    private ImageFormat _format = ImageFormat.WebP;
+    private double _quality = 0.82;
+    private MetadataPolicy _metadata = MetadataPolicy.Remove;
+    private bool _sharpen = true;
+    private int _concurrency = 2;
+    private bool _running;
+    private int _completed;
+    private int _total;
+    private double _progress;
+    private string? _error;
+    private CancellationTokenSource? _cts;
+    private ImageCapabilities? _capabilities;
+
+    private long TotalBefore => _results.Sum(r => r.OriginalBytes);
+    private long TotalAfter => _results.Sum(r => r.NewBytes);
+
+    // Until the probe has run, only the current choice is listed (and the list is disabled), so the select never shows
+    // one format while the page would use another.
+    private IEnumerable<ImageFormat> AvailableFormats => _capabilities is null
+        ? [_format]
+        : new[] { ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Jpeg, ImageFormat.Png }.Where(_capabilities.CanEncode);
+
+    private const string Snippet = """
+        // One pipeline, reused for every file. Nothing runs until ProcessBatchAsync executes it.
+        var pipeline = ImagePipeline.Create()
+            .AutoOrient()                       // honour the phone's rotation sensor
+            .MaxSize(maxEdge, maxEdge)          // never enlarge, only cap
+            .Sharpen(0.3f);                     // recover the bite lost to downscaling
+
+        var processor = await processorFactory.GetAsync();
+        var result = await processor.ProcessBatchAsync(items, pipeline, new BatchOptions
+        {
+            MaxConcurrency = 2,
+            Progress       = progress,
+            ExportOptions  = new ImageExportOptions
+            {
+                Format   = ImageFormat.WebP,
+                Quality  = 0.82,
+                Metadata = MetadataPolicy.Remove,
+            },
+        });
+        """;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || RendererInfo.IsInteractive is false) return;
+        _capabilities = await Capabilities.GetAsync();
+        if (!_capabilities.CanEncode(_format)) _format = _capabilities.ChooseEncodableFormat([ImageFormat.WebP, ImageFormat.Jpeg]);
+        StateHasChanged();
+    }
+
+    private void Set(ref int field, ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out var value)) field = value;
+    }
+
+    private void OnQualityChanged(ChangeEventArgs e)
+    {
+        if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var value))
+            _quality = value;
+    }
+
+    private void OnFormatChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format)) _format = format;
+    }
+
+    private void OnMetadataChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<MetadataPolicy>(value, out var policy)) _metadata = policy;
+    }
+
+    private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
+    {
+        if (files.Count == 0 || _running) return;
+        Clear();
+        _running = true;
+        _total = files.Count;
+        _completed = 0;
+        _progress = 0;
+        _cts = new CancellationTokenSource();
+        StateHasChanged();
+
+        var pipeline = ImagePipeline.Create()
+            .AutoOrient()
+            .MaxSize(_maxDimension, _maxDimension);
+        if (_sharpen) pipeline = pipeline.Sharpen(0.3f);
+
+        var exportOptions = new ImageExportOptions
+        {
+            Format = _format,
+            Quality = _quality,
+            Metadata = _metadata,
+            Background = Rgba32.White,
+        };
+
+        try
+        {
+            // Files are read one at a time so a large drop does not pull every byte into memory at once.
+            foreach (var file in files)
+            {
+                _cts.Token.ThrowIfCancellationRequested();
+                try
+                {
+                    using var source = await Loader.LoadAsync(file, new DecodeOptions { FileName = file.Name }, _cts.Token);
+                    var dimensions = $"{source.Width}×{source.Height}";
+                    using var processed = await pipeline.ExecuteAsync(source, new PipelineExecutionOptions { CancellationToken = _cts.Token });
+                    var encoded = await Exporter.EncodeAsync(processed, exportOptions, _cts.Token);
+                    _results.Add(new Result(file.Name, $"{dimensions} → {processed.Width}×{processed.Height}", file.Size, encoded.Length, encoded));
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _failures.Add(new Failure(file.Name, Describe(ex)));
+                }
+                _completed++;
+                _progress = _completed / (double)_total;
+                StateHasChanged();
+                // Yield so the progress bar actually paints between files.
+                await Task.Yield();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            _error = "Processing was stopped.";
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+        }
+        finally
+        {
+            _running = false;
+            _cts?.Dispose();
+            _cts = null;
+            StateHasChanged();
+        }
+    }
+
+    private void Cancel() => _cts?.Cancel();
+
+    private async Task Download(Result result)
+    {
+        try
+        {
+            await Exporter.DownloadAsync(result.Encoded, System.IO.Path.GetFileNameWithoutExtension(result.Name));
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+        }
+    }
+
+    private async Task DownloadAll()
+    {
+        foreach (var result in _results.ToList())
+        {
+            await Download(result);
+            // Browsers throttle rapid successive downloads; a short gap keeps them all.
+            await Task.Delay(250);
+        }
+    }
+
+    private void Clear()
+    {
+        _results.Clear();
+        _failures.Clear();
+        _error = null;
+    }
+
+    private static string Describe(Exception ex) => ex switch
+    {
+        ImageLimitExceededException => "Too large to process here.",
+        ImageDecodeException => "Not a readable image.",
+        ImageCapabilityException c => c.Message,
+        _ => ex.Message,
+    };
+
+    public void Dispose()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+    }
+}

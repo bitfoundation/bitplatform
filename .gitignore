@@ -276,6 +276,9 @@ _book
 /src/Bmotion/Bit.Bmotion/Scripts/**/*.js
 /src/Bmotion/Bit.Bmotion/wwwroot/**/*.js
 
+/src/Bmage/Bit.Bmage/Scripts/**/*.js
+/src/Bmage/Bit.Bmage/wwwroot/**/*.js
+
 /src/Bink/Bit.Bink/Scripts/**/*.js
 /src/Bink/Bit.Bink/wwwroot/**/*.js
 /src/Bink/Bit.Bink/wwwroot/**/*.css

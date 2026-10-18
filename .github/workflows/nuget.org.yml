@@ -10,6 +10,7 @@ on:
       - 'src/Bink/**'
       - 'src/BlazeDb/**'
       - 'src/Blex/**'
+      - 'src/Bmage/**'
       - 'src/Bmotion/**'
       - 'src/Bonboarding/**'
       - 'src/Brouter/**'
@@ -154,6 +155,21 @@ jobs:
       run: dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bmotion
       run: dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output . --configuration Release
+
+    - name: dotnet build Bmage.Core
+      run: dotnet build src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bmage.Core
+      run: dotnet pack src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj --output . --configuration Release
+
+    - name: dotnet build Bmage
+      run: dotnet build src/Bmage/Bit.Bmage/Bit.Bmage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bmage
+      run: dotnet pack src/Bmage/Bit.Bmage/Bit.Bmage.csproj --output . --configuration Release
+
+    - name: dotnet build Bmage.Editor
+      run: dotnet build src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bmage.Editor
+      run: dotnet pack src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj --output . --configuration Release
 
     - name: dotnet build Bink
       run: dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
