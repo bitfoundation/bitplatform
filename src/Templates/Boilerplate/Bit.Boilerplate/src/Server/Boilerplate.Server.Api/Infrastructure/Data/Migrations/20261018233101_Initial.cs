@@ -200,6 +200,7 @@ public partial class Initial : Migration
             constraints: table =>
             {
                 table.PrimaryKey("PK_Categories", x => x.Id);
+                table.UniqueConstraint("AK_Categories_TenantId_Id", x => new { x.TenantId, x.Id });
                 table.ForeignKey(
                     name: "FK_Categories_Tenants_TenantId",
                     column: x => x.TenantId,
@@ -488,10 +489,10 @@ public partial class Initial : Migration
             {
                 table.PrimaryKey("PK_Products", x => x.Id);
                 table.ForeignKey(
-                    name: "FK_Products_Categories_CategoryId",
-                    column: x => x.CategoryId,
+                    name: "FK_Products_Categories_TenantId_CategoryId",
+                    columns: x => new { x.TenantId, x.CategoryId },
                     principalTable: "Categories",
-                    principalColumn: "Id",
+                    principalColumns: new[] { "TenantId", "Id" },
                     onDelete: ReferentialAction.Restrict);
                 table.ForeignKey(
                     name: "FK_Products_Tenants_TenantId",
@@ -946,15 +947,15 @@ public partial class Initial : Migration
             column: "UserId");
 
         migrationBuilder.CreateIndex(
-            name: "IX_Products_CategoryId",
-            table: "Products",
-            column: "CategoryId");
-
-        migrationBuilder.CreateIndex(
             name: "IX_Products_ShortId",
             table: "Products",
             column: "ShortId",
             unique: true);
+
+        migrationBuilder.CreateIndex(
+            name: "IX_Products_TenantId_CategoryId",
+            table: "Products",
+            columns: new[] { "TenantId", "CategoryId" });
 
         migrationBuilder.CreateIndex(
             name: "IX_Products_TenantId_Name",

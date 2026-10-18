@@ -261,6 +261,27 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
                 .GetMethod(nameof(ConfigureTenantAwareEntity), BindingFlags.NonPublic | BindingFlags.Instance)!
                 .MakeGenericMethod(entityType.ClrType).Invoke(this, [modelBuilder]);
         }
+
+        ConfigureTenantScopedForeignKeys(modelBuilder);
+    }
+
+    private static void ConfigureTenantScopedForeignKeys(ModelBuilder modelBuilder)
+    {
+        var foreignKeys = modelBuilder.Model.GetEntityTypes()
+            .Where(et => typeof(ITenantAware).IsAssignableFrom(et.ClrType))
+            .SelectMany(et => et.GetDeclaredForeignKeys())
+            .Where(fk => typeof(ITenantAware).IsAssignableFrom(fk.PrincipalEntityType.ClrType)
+                && fk.Properties.All(p => p.Name != nameof(ITenantAware.TenantId)))
+            .ToArray();
+
+        foreach (var foreignKey in foreignKeys)
+        {
+            var principal = foreignKey.PrincipalEntityType;
+            IMutableProperty[] principalKeyProperties = [principal.FindProperty(nameof(ITenantAware.TenantId))!, .. foreignKey.PrincipalKey.Properties];
+            var principalKey = principal.FindKey(principalKeyProperties) ?? principal.AddKey(principalKeyProperties);
+
+            foreignKey.SetProperties([foreignKey.DeclaringEntityType.FindProperty(nameof(ITenantAware.TenantId))!, .. foreignKey.Properties], principalKey);
+        }
     }
 
     private void ConfigureTenantAwareEntity<TEntity>(ModelBuilder modelBuilder)

@@ -11,14 +11,14 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261004200357_Initial")]
+    [Migration("20261018233101_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
-            modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
+            modelBuilder.HasAnnotation("ProductVersion", "10.0.13");
 
             modelBuilder.Entity("Boilerplate.Server.Api.Features.Attachments.Attachment", b =>
                 {
@@ -837,10 +837,10 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.HasIndex("ShortId")
                         .IsUnique();
+
+                    b.HasIndex("TenantId", "CategoryId");
 
                     b.HasIndex("TenantId", "Name")
                         .IsUnique();
@@ -2271,16 +2271,17 @@ namespace Boilerplate.Server.Api.Infrastructure.Data.Migrations
 
             modelBuilder.Entity("Boilerplate.Server.Api.Features.Products.Product", b =>
                 {
-                    b.HasOne("Boilerplate.Server.Api.Features.Categories.Category", "Category")
-                        .WithMany("Products")
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("Boilerplate.Server.Api.Features.Tenants.Tenant", "Tenant")
                         .WithMany()
                         .HasForeignKey("TenantId")
                         .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("Boilerplate.Server.Api.Features.Categories.Category", "Category")
+                        .WithMany("Products")
+                        .HasForeignKey("TenantId", "CategoryId")
+                        .HasPrincipalKey("TenantId", "Id")
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.Navigation("Category");

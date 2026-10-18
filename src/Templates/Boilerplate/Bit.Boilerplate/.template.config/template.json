@@ -1030,7 +1030,8 @@
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
                         "src/Tests/Features/Caching/ProductImageCacheInvalidationTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
-                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs"
+                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
+                        "src/Tests/Features/Tenants/CrossTenantReferenceTests.cs"
                     ]
                 },
                 {
