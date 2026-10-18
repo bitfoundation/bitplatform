@@ -7,7 +7,10 @@ public partial class MainLayout
     [
         new() { Text = "Overview", Url = "/overview" },
         new() { Text = "Getting started", Url = "/getting-started" },
-        // Right after Getting started: connecting an agent to the MCP server is the second thing an
+        // Right after Getting started, which summarizes it and links here: how a published app downloads
+        // only the css and js it uses - the publish-time trimming and the lazy scripts.
+        new() { Text = "Trimming", Url = "/trimming", Description = "BundleSize, LazyScripts, Publish" },
+        // Next to the setup pages: connecting an agent to the MCP server is one of the first things an
         // app does, and the page is a working client rather than a description of one.
         new() { Text = "MCP server", Url = "/mcp-server", Description = "AI, Agent, Copilot, Cursor, Claude, Tools" },
         // The searchable index of the whole library. It used to share a route with Overview, which
@@ -207,8 +210,6 @@ public partial class MainLayout
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },
-        // How a published app downloads only what it uses: the publish-time trimming and the lazy scripts.
-        new() { Text = "Trimming", Url = "/trimming", Description = "BundleSize, LazyScripts, Publish" },
     ];
 }
 
