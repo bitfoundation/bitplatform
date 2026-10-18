@@ -8,6 +8,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
         <Description>A Blazor-native, accessible, keyboard-first command palette (Ctrl+K / Cmd+K): fzf-style fuzzy search, nested pages, prefix modes, async sources, recents and frecency, global shortcuts and sequences, multi-select, prompts, theming and full templating. Matching, ranking and every decision run in C#; the browser layer only handles the dialog, focus and keys.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
         <PackageTags>Bit;Blazor;CommandPalette;Cmdk;CommandMenu;Search;FuzzySearch;Keyboard;Shortcuts;Accessibility</PackageTags>
     </PropertyGroup>
 
