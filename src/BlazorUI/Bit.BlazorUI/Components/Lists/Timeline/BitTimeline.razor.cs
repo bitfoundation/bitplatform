@@ -11,6 +11,8 @@ public partial class BitTimeline<[DynamicallyAccessedMembers(DynamicallyAccessed
     private List<TItem> _items = [];
     private IEnumerable<TItem> _oldItems = default!;
 
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
 
 
     /// <summary>
@@ -257,6 +259,15 @@ public partial class BitTimeline<[DynamicallyAccessedMembers(DynamicallyAccessed
     protected override void RegisterCssStyles()
     {
         StyleBuilder.Register(() => Styles?.Root);
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The script that keeps Space on an item from scrolling the page is called by nothing: with the lazy scripts on
+        // (BitBlazorUIScripts), the timeline is what loads it.
+        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI", "Timelines");
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
     [DynamicDependency(DynamicallyAccessedMemberTypes.All, typeof(BitTimelineParams))]

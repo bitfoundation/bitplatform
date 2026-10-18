@@ -615,3 +615,5 @@
         }
     }
 }
+
+// bit-lazy: teardown BitMapAzureMaps.dispose

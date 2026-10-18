@@ -40,7 +40,11 @@ public sealed class TrimBitBlazorUIAssets : Task
     /// <summary>The untrimmed library assemblies (Bit.BlazorUI.dll, ...), for the scan and for the names a csproj gives.</summary>
     public ITaskItem[] LibraryAssemblies { get; set; } = [];
 
-    /// <summary>None, or TypeReferences to read the app's own assemblies for what it uses.</summary>
+    /// <summary>
+    /// How the app's own assemblies are read for what it uses: None, TypeReferences (their TypeRef rows, which name the
+    /// namespace too - the precise mode), or TypeNames (the names their string heaps hold, which over-includes a type of
+    /// the app's own named like one of the packages', and never misses).
+    /// </summary>
     public string ScanMode { get; set; } = "None";
 
     /// <summary>Whether the csproj asked for the scan itself, which makes a scan that cannot run an error rather than a no-op.</summary>
@@ -64,7 +68,14 @@ public sealed class TrimBitBlazorUIAssets : Task
     /// <summary>Icons the csproj keeps by name (BitBlazorUIIcon).</summary>
     public ITaskItem[] Icons { get; set; } = [];
 
+    /// <summary>Puts the script bundles back together from the scripts the app keeps.</summary>
     public bool TrimScripts { get; set; }
+
+    /// <summary>
+    /// Leaves the modules of the lazy scripts the app keeps none of out of the publish, and writes the boot modules again
+    /// with the scripts the app starts with that it keeps.
+    /// </summary>
+    public bool TrimScriptModules { get; set; }
 
     public bool TrimStyles { get; set; }
 
@@ -78,7 +89,10 @@ public sealed class TrimBitBlazorUIAssets : Task
 
     public bool TrimVendorAssets { get; set; }
 
-    /// <summary>The static web assets of the vendor folders nothing the app can run asks for, and what was derived from them.</summary>
+    /// <summary>
+    /// The static web assets nothing the app can run asks for - the files of the vendor folders, the modules of the lazy
+    /// scripts it keeps none of - and what was derived from them.
+    /// </summary>
     [Output]
     public ITaskItem[] RemovedAssets { get; set; } = [];
 
@@ -113,9 +127,16 @@ public sealed class TrimBitBlazorUIAssets : Task
         }
     }
 
+    // The codes of the warnings, so a project can silence one through NoWarn rather than turn the trimming off.
+    private const string UnresolvedExternalCode = "BITBLAZORUI001";
+    private const string NothingScannedCode = "BITBLAZORUI002";
+    private const string IconsWithoutPackageCode = "BITBLAZORUI003";
+
+    private static readonly string[] ScanModes = ["None", "TypeReferences", "TypeNames"];
+
     private bool Run()
     {
-        if (TrimScripts is false && TrimStyles is false && TrimIcons is false && TrimVendorAssets is false) return StandDown(null);
+        if (TrimScripts is false && TrimScriptModules is false && TrimStyles is false && TrimIcons is false && TrimVendorAssets is false) return StandDown(null);
 
         var packages = AssetFolders.Select(f => PackageAssets.Load(f.GetMetadata("FullPath"))).ToList();
         var duplicate = packages.GroupBy(p => p.PackageId, StringComparer.Ordinal).FirstOrDefault(g => g.Count() > 1);
@@ -128,12 +149,15 @@ public sealed class TrimBitBlazorUIAssets : Task
 
         var libraryNames = new HashSet<string>(packages.Select(p => p.PackageId), StringComparer.OrdinalIgnoreCase);
         var trimmed = string.IsNullOrEmpty(TrimmedAssembliesDirectory) is false;
-        var scan = trimmed is false && string.Equals(ScanMode, "TypeReferences", StringComparison.OrdinalIgnoreCase);
-        if (trimmed is false && scan is false && string.Equals(ScanMode, "None", StringComparison.OrdinalIgnoreCase) is false)
+
+        // A mode misspelled is the trimming asked for and none given, with nothing said: an error rather than a None.
+        var mode = ScanModes.FirstOrDefault(m => string.Equals(m, ScanMode?.Trim(), StringComparison.OrdinalIgnoreCase));
+        if (mode is null)
         {
-            Log.LogError("Bit.BlazorUI: '{0}' is not a BitBlazorUIScan mode; use TypeReferences or None.", ScanMode);
+            Log.LogError("Bit.BlazorUI: '{0}' is not a BitBlazorUIScan mode; use {1}.", ScanMode, string.Join(", ", Enumerable.Reverse(ScanModes)));
             return false;
         }
+        var scan = trimmed is false && mode != "None";
 
         // The components a csproj names are the whole of what it renders where nothing else says so. The scripts,
         // stylesheets and icons it names only add to what something else said: a list of glyphs is no list of components.
@@ -168,7 +192,19 @@ public sealed class TrimBitBlazorUIAssets : Task
                     return StandDown(missing!, MessageImportance.High);
                 }
 
-                var result = AppScan.Scan(ScanAssemblies.Select(a => a.GetMetadata("FullPath")), libraryNames, graph);
+                var result = AppScan.Scan(ScanAssemblies.Select(a => a.GetMetadata("FullPath")), libraryNames, graph, byTypeNames: mode == "TypeNames");
+
+                // Every app that renders a component references the packages, so none doing so means the assemblies read
+                // were not the app's: trimming on that would leave out every script and stylesheet it uses.
+                if (result.Referencing == 0)
+                {
+                    Log.LogWarning(null, NothingScannedCode, null, null, 0, 0, 0, 0,
+                        "Bit.BlazorUI: none of the {0} assemblies read references the bit BlazorUI packages, so there is nothing to tell what this app uses from; publishing the full scripts and stylesheets. Add a <BitBlazorUIScanAssembly> item for each of the app's own assemblies, or set <BitBlazorUIScan>None</BitBlazorUIScan> to silence this.",
+                        ScanAssemblies.Length);
+                    Skipped = true;
+                    return true;
+                }
+
                 foreach (var s in result.Strings) appStrings.Add(s);
 
                 var reached = graph.Closure(result.Roots);
@@ -257,7 +293,7 @@ public sealed class TrimBitBlazorUIAssets : Task
         }
         else if (Icons.Length > 0 && packages.All(p => p.IconSets.Count == 0))
         {
-            Log.LogWarning("Bit.BlazorUI: <BitBlazorUIIcon> items are given, but this app does not reference Bit.BlazorUI.Icons.");
+            Log.LogWarning(null, IconsWithoutPackageCode, null, null, 0, 0, 0, 0, "Bit.BlazorUI: <BitBlazorUIIcon> items are given, but this app does not reference Bit.BlazorUI.Icons.");
         }
         if (Log.HasLoggedErrors) return false;
 
@@ -266,25 +302,70 @@ public sealed class TrimBitBlazorUIAssets : Task
             Log.LogMessage(MessageImportance.Low, "Bit.BlazorUI: '{0}' looks like a call into the packages' scripts but no script exports it.", unresolved);
         }
 
+        // What a script of one package uses of another's that no package of the app exports: the packages are of different
+        // versions, and the script fails where it calls it - trimmed or not.
+        foreach (var (path, user) in selection.UnresolvedExternals)
+        {
+            Log.LogWarning(null, UnresolvedExternalCode, null, null, 0, 0, 0, 0,
+                "Bit.BlazorUI: {0} uses BitBlazorUI.{1}, which no bit BlazorUI package of this app exports. Reference the same version of every bit BlazorUI package.", user, path);
+        }
+
         var outputs = new List<AssetComposer.Output>();
         foreach (var package in packages)
         {
             if (TrimScripts) outputs.AddRange(AssetComposer.ComposeScripts(package, selection, OutputDirectory));
+            if (TrimScriptModules) outputs.AddRange(AssetComposer.ComposeBoot(package, selection, OutputDirectory));
             if (TrimStyles) outputs.AddRange(AssetComposer.ComposeStyles(package, selection, OutputDirectory));
         }
         foreach (var (package, set, glyphs) in iconSets) outputs.Add(AssetComposer.ComposeIcons(package, set, glyphs, selection, OutputDirectory));
 
         Report(packages, selection, outputs);
 
-        if (TrimVendorAssets) RemoveVendorAssets(texts);
+        var removed = new List<ITaskItem>();
+        if (TrimVendorAssets) removed.AddRange(RemoveVendorAssets(texts));
+        if (TrimScriptModules) removed.AddRange(RemoveScriptModules(packages, selection));
+        RemovedAssets = [.. removed];
 
         return Swap(outputs);
+    }
+
+    // A module of the lazy scripts is imported for an identifier naming it, or for a script that uses it - so one the
+    // selection does not keep is a file no code the app can run will ever import, and the publish leaves it out. It is the
+    // very selection the bundles are put back together from, so a module is published exactly where its piece is bundled.
+    private List<ITaskItem> RemoveScriptModules(List<PackageAssets> packages, AssetSelection selection)
+    {
+        var removed = new List<ITaskItem>();
+
+        foreach (var package in packages)
+        {
+            var modules = package.ScriptModules.Where(m => m.ModulePath is not null).ToList();
+            var dropped = new HashSet<string>(modules.Where(m => selection.Scripts.Contains(m) is false).Select(m => "/" + m.ModulePath!), StringComparer.OrdinalIgnoreCase);
+            if (dropped.Count == 0) continue;
+
+            var primaries = StaticWebAssets
+                .Where(a => string.Equals(a.GetMetadata("SourceId"), package.PackageId, StringComparison.OrdinalIgnoreCase)
+                    && string.IsNullOrEmpty(a.GetMetadata("RelatedAsset"))
+                    && dropped.Any(suffix => Normalize(a.GetMetadata("FullPath")).EndsWith(suffix, StringComparison.OrdinalIgnoreCase)))
+                .ToList();
+            if (primaries.Count == 0) continue;
+
+            var paths = new HashSet<string>(primaries.Select(p => Normalize(p.GetMetadata("FullPath"))), StringComparer.OrdinalIgnoreCase);
+            removed.AddRange(primaries.Select(WithAssetFile));
+            removed.AddRange(StaticWebAssets
+                .Where(a => string.IsNullOrEmpty(a.GetMetadata("RelatedAsset")) is false && paths.Contains(Normalize(Path.GetFullPath(a.GetMetadata("RelatedAsset")))))
+                .Select(WithAssetFile));
+
+            Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: {0} lazy script modules -> {1} of {2} ({3} left out: nothing this app can run imports them).",
+                package.PackageId, modules.Count - primaries.Count, modules.Count, primaries.Count);
+        }
+
+        return removed;
     }
 
     // A vendor folder is loaded by the code that names it - "_content/Bit.BlazorUI.Legacy/pdf.js/pdfjs.js" is a literal
     // of BitPdfReaderLegacy - or by the app's own markup, which is read along with it. Nothing naming the folder, nothing
     // can request a file of it, and the publish leaves the whole folder out.
-    private void RemoveVendorAssets(IReadOnlyCollection<string> texts)
+    private List<ITaskItem> RemoveVendorAssets(IReadOnlyCollection<string> texts)
     {
         var removed = new List<ITaskItem>();
 
@@ -313,7 +394,7 @@ public sealed class TrimBitBlazorUIAssets : Task
             Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: {0} -> left out ({1} files): nothing this app can run loads it.", url, primaries.Count);
         }
 
-        RemovedAssets = [.. removed];
+        return removed;
     }
 
     private bool StandDown(string? why, MessageImportance importance = MessageImportance.Normal)
@@ -403,7 +484,7 @@ public sealed class TrimBitBlazorUIAssets : Task
 
         foreach (var package in packages)
         {
-            if (TrimScripts && package.ScriptModules.Count > 0)
+            if ((TrimScripts || TrimScriptModules) && package.ScriptModules.Count > 0)
             {
                 Log.LogMessage(MessageImportance.Low, "Bit.BlazorUI: {0} scripts kept: {1}.", package.PackageId, string.Join(", ", package.ScriptModules.Where(selection.Scripts.Contains).Select(m => m.Name)));
             }

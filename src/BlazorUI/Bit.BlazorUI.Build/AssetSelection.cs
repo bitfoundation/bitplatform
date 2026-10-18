@@ -61,6 +61,12 @@ public sealed class AssetSelection
     public SortedSet<string> UnresolvedIdentifiers { get; } = new(StringComparer.Ordinal);
 
     /// <summary>
+    /// What a kept script uses of another package's namespace that no package exports - its path under the namespace and
+    /// the script using it: the other package is newer or older than the script's.
+    /// </summary>
+    public SortedSet<(string Path, string User)> UnresolvedExternals { get; } = [];
+
+    /// <summary>
     /// The scripts an interop identifier calls into: "BitBlazorUI.Utils.isRtl" is Utils.isRtl if a script exports exactly
     /// that, else Utils. An identifier that stops at a namespace several files add to ("BitBlazorUI.Utils" - an alias of
     /// it, or the text of a call made through brackets) is every script adding to it.
@@ -178,7 +184,7 @@ public sealed class AssetSelection
                 var resolved = ResolvePath(external);
                 // A path this package names in another package's namespace that no package of the app exports: the
                 // other package is newer or older than this one. Said, since the script would fail where it calls it.
-                if (resolved.Count == 0) UnresolvedIdentifiers.Add($"BitBlazorUI.{external} (used by {current.Id})");
+                if (resolved.Count == 0) UnresolvedExternals.Add((external, current.Id));
                 foreach (var dependency in resolved) pending.Push(dependency);
             }
         }

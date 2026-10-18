@@ -69,7 +69,7 @@
 
     <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <ItemGroup>
-            <Content Include="wwwroot\scripts\*.js;wwwroot\styles\*.css" Exclude="@(Content);@(None)" />
+            <Content Include="wwwroot\scripts\*.js;wwwroot\scripts\modules\*.js;wwwroot\styles\*.css" Exclude="@(Content);@(None)" />
         </ItemGroup>
     </Target>
 
@@ -85,7 +85,7 @@
 
     <!-- build-assets.mjs writes the bundle from one piece per .ts file and keeps the pieces in obj\bit-assets for the
          package (see Bit.BlazorUI's csproj); the stamp per configuration rebuilds it when the configuration changes. -->
-    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;@(BitAssetsScript)" Outputs="wwwroot/scripts/bit.blazorui.legacy.js;$(BaseIntermediateOutputPath)bit-assets\scripts.json;$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.legacy.js.stamp">
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;@(BitAssetsScript)" Outputs="wwwroot/scripts/bit.blazorui.legacy.js;$(BaseIntermediateOutputPath)bit-assets\scripts.json;$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json;$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.legacy.js.stamp">
         <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; scripts --package $(PackageId) --tsconfig tsconfig.json --bundle scripts/bit.blazorui.legacy.js --out $(BaseIntermediateOutputPath)bit-assets $(_BitAssetsMinify)" StandardOutputImportance="high" StandardErrorImportance="high" />
         <ItemGroup>
             <_OtherConfigurationScriptStamps Include="$(BaseIntermediateOutputPath)*\bit.blazorui.legacy.js.stamp" Exclude="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.legacy.js.stamp" />

@@ -58,6 +58,40 @@ public static class AssetComposer
         return outputs;
     }
 
+    /// <summary>
+    /// The boot module of a package's lazy scripts, importing the scripts the app starts with that the app keeps - in the
+    /// bundle's order, written the way build-assets.mjs writes the full one (bootModuleText there). None for a package that
+    /// boots nothing.
+    /// </summary>
+    public static List<Output> ComposeBoot(PackageAssets package, AssetSelection selection, string outputRoot)
+    {
+        var outputs = new List<Output>();
+        if (package.ScriptBoot is null) return outputs;
+
+        var booting = package.ScriptModules.Where(m => m.Boot && m.ModulePath is not null).ToList();
+        var kept = booting.Where(selection.Scripts.Contains).ToList();
+
+        outputs.Add(Write(package, package.ScriptBoot, BootModuleText(package.ScriptBoot, kept), outputRoot, BootModuleText(package.ScriptBoot, booting), kept.Count, booting.Count));
+        return outputs;
+    }
+
+    /// <summary>One import per module, each relative to the boot module's own folder.</summary>
+    public static string BootModuleText(string boot, IEnumerable<ScriptModule> modules)
+        => string.Concat(modules.Select(m => $"import \"./{RelativeTo(boot, m.ModulePath!)}\";\n"));
+
+    // A path under wwwroot relative to the folder of another one, the way path.posix.relative writes it.
+    private static string RelativeTo(string from, string to)
+    {
+        var fromParts = from.Split('/').ToList();
+        fromParts.RemoveAt(fromParts.Count - 1);
+        var toParts = to.Split('/').ToList();
+
+        var common = 0;
+        while (common < fromParts.Count && common < toParts.Count - 1 && fromParts[common] == toParts[common]) common++;
+
+        return string.Join("/", Enumerable.Repeat("..", fromParts.Count - common).Concat(toParts.Skip(common)));
+    }
+
     public static List<Output> ComposeStyles(PackageAssets package, AssetSelection selection, string outputRoot)
     {
         var outputs = new List<Output>();

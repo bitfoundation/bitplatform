@@ -73,8 +73,8 @@ public sealed class BitAssetTrimmingContractTests
             selection.KeepScript(module);
         }
 
-        Assert.AreEqual(0, selection.UnresolvedIdentifiers.Count,
-            $"Scripts use members of another package's namespace that no package exports: {string.Join(", ", selection.UnresolvedIdentifiers)}");
+        Assert.AreEqual(0, selection.UnresolvedExternals.Count,
+            $"Scripts use members of another package's namespace that no package exports: {string.Join(", ", selection.UnresolvedExternals.Select(x => $"BitBlazorUI.{x.Path} (used by {x.User})"))}");
     }
 
     [TestMethod]

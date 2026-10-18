@@ -9,6 +9,13 @@
         <BitBlazorUIAssetFolder Include="$(MSBuildThisFileDirectory)bit-assets\;$(MSBuildThisFileDirectory)..\obj\bit-assets\" Package="Bit.BlazorUI.Legacy" />
     </ItemGroup>
 
+    <!-- Names this package's scripts to the choice between the bundle and the lazy scripts (BitBlazorUILazyScripts): the
+         file names of its bundle and its boot module under scripts/ (it boots no script, so it ships none). -->
+    <ItemGroup>
+        <BitBlazorUIScriptPackage Remove="Bit.BlazorUI.Legacy" />
+        <BitBlazorUIScriptPackage Include="Bit.BlazorUI.Legacy" Bundle="bit.blazorui.legacy.js" Boot="bit.blazorui.legacy.boot.js" />
+    </ItemGroup>
+
     <!-- The libraries a component of this package loads at run time from its own wwwroot, each named by the code that
          loads it (_content/Bit.BlazorUI.Legacy/pdf.js/...): a publish leaves out the ones nothing the app can run names
          (BitBlazorUITrimVendorAssets). -->

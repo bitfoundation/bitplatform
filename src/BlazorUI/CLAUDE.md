@@ -86,6 +86,27 @@ trimmed - off the app's type references and everything they reach. A piece left 
   real apps and reads what came out (`dotnet run`, see its README). Run both after touching a script's exports, a
   `bit-trim` comment, the components file or the targets.
 
+The same pieces are the **lazy scripts** (`BitBlazorUILazyScripts`, `BitBlazorUIScripts`): `build-assets.mjs` also writes
+each script as an ES module (`wwwroot/scripts/modules/<name>.js`, its piece behind the imports of the scripts of its package
+it uses), a boot module importing the `always` and `markup` scripts, and the package's JavaScript initializer
+(`scripts/<package>.lib.module.js`) importing that, which Blazor loads as the app starts. The .NET side imports a module
+the first time an identifier of it is called (`BitScriptLoader`, off the `bit-lazy-scripts.json` each assembly embeds). So:
+
+- **A script's top level declares nothing another script reads** but the members of the `BitBlazorUI` namespace: as a
+  module, its own scope is its own. A boot script (`always`, `markup`) uses nothing of another package's namespace -
+  `build-assets.mjs` fails on one that does, since nothing would import that package first.
+- **Every call of the packages' code into a script goes through the loader** - `InvokeVoid`, `Invoke`, `FastInvoke*`, or
+  the internal `InvokeScriptAsync` / `InvokeScriptVoidAsync` where a call must throw as `IJSRuntime.InvokeAsync` does -
+  never `IJSRuntime.InvokeAsync("BitBlazorUI...")` itself, whose module would never have been imported.
+- **A script kept by `owners` that runs as it loads is loaded by its component**: in lazy mode nothing calls it, so the
+  component calls `_js.EnsureScriptAsync("<package>", "<script>")` as it first renders (BitNav, BitTag, BitDataGrid).
+- **A function that only undoes what its script did** (a `dispose`, an `unregister`) says so in a
+  `// bit-lazy: teardown Callouts.clear ...` comment of its script: the loader skips its call in a page that never ran the
+  script, rather than download the script to release nothing. A function with an effect of its own (clearing a stored
+  preference, a file input) is no teardown.
+- `BitLazyScriptsContractTests` pins the modules, the boot module, the embedded map, the owners' loads and the calls;
+  `BitLazyScriptsTests` the loader; `LazyScriptsTrimmingTests` (in the trimming suite) publishes and runs lazy apps.
+
 ## Razor comments
 
 **Never put a `@* ... *@` comment inside a tag, between its attributes.** It compiles, but the Razor

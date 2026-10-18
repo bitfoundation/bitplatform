@@ -24,6 +24,14 @@
         <!-- Not a WebAssembly project, so the trimming is off by default here; the scenarios that want it say so. -->
     </PropertyGroup>
 
+    <!-- A scenario published with the .NET trimmer, set here rather than on the command line, where it would reach the
+         netstandard projects the packages build with too. The asset trimming then comes on by itself. -->
+    <PropertyGroup Condition="'$(FixturePublishTrimmed)' == 'true'">
+        <PublishTrimmed>true</PublishTrimmed>
+        <RuntimeIdentifier>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifier>
+        <SelfContained>true</SelfContained>
+    </PropertyGroup>
+
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
         <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
@@ -39,6 +47,7 @@
         <BitBlazorUIAsset Include="$([MSBuild]::Unescape($(FixtureAssets.Replace('|', ';'))))" Condition="'$(FixtureAssets)' != ''" />
         <BitBlazorUIIcon Include="$([MSBuild]::Unescape($(FixtureIcons.Replace('|', ';'))))" Condition="'$(FixtureIcons)' != ''" />
         <BitBlazorUIScanFile Include="$([MSBuild]::Unescape($(FixtureScanFiles.Replace('|', ';'))))" Condition="'$(FixtureScanFiles)' != ''" />
+        <BitBlazorUIScanAssembly Include="$([MSBuild]::Unescape($(FixtureScanAssemblies.Replace('|', ';'))))" Condition="'$(FixtureScanAssemblies)' != ''" />
     </ItemGroup>
 
     <!-- The packages reach this app as ProjectReferences, so the consumer-side targets NuGet would import are imported by

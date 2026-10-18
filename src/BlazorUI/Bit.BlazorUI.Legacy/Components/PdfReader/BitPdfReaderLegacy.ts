@@ -96,3 +96,5 @@ declare type BitPdfReaderLegacyConfig = {
     pdfDoc?: PDFDocumentProxy;
     isRendering: boolean[];
 }
+
+// bit-lazy: teardown Legacy.PdfReader.dispose

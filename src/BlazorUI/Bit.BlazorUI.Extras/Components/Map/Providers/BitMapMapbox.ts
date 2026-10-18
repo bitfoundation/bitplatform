@@ -71,3 +71,5 @@
         public static removeTileOverlay(id: string, overlayId: string) { return BitMapGlBase.removeTileOverlay(BitMapMapbox._key, id, overlayId); }
     }
 }
+
+// bit-lazy: teardown BitMapMapbox.dispose

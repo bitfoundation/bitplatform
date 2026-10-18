@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection.Metadata;
 using System.Reflection.Metadata.Ecma335;
 using System.Reflection.PortableExecutable;
@@ -34,6 +35,9 @@ public static class AppScan
 
         /// <summary>The assemblies read: every one but the libraries' own and the platform's.</summary>
         public List<string> Scanned { get; } = [];
+
+        /// <summary>How many of them reference a library assembly - none, and the list read was not the app's.</summary>
+        public int Referencing { get; set; }
     }
 
     /// <summary>
@@ -42,8 +46,19 @@ public static class AppScan
     /// </summary>
     /// <param name="libraryNames">The library assemblies, whose own references say nothing about what an app uses.</param>
     /// <param name="graph">Resolves the references to library types; null to read only the string literals.</param>
-    public static Result Scan(IEnumerable<string> paths, ISet<string> libraryNames, LibraryGraph? graph)
+    /// <param name="byTypeNames">
+    /// Matches the library's type names against every name an assembly's string heap holds (BitBlazorUIScan TypeNames)
+    /// rather than resolving its TypeRef rows: no table is read, and a type of the app's own named like a library type
+    /// keeps that one too - it over-includes, never misses.
+    /// </param>
+    public static Result Scan(IEnumerable<string> paths, ISet<string> libraryNames, LibraryGraph? graph, bool byTypeNames = false)
     {
+        // The library's top-level types by name, for the names a string heap holds (a generic one under its name without
+        // the arity, which is how a heap holding "BitDropdown`2" is matched).
+        var byName = byTypeNames && graph is not null
+            ? graph.Assemblies.SelectMany(a => a.Types).Where(t => t.FullName.IndexOf('/') < 0).GroupBy(t => t.Name, StringComparer.Ordinal).ToDictionary(g => g.Key, g => g.ToList(), StringComparer.Ordinal)
+            : null;
+
         var result = new Result();
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
@@ -64,8 +79,17 @@ public static class AppScan
                 if (references is false && IsPlatformAssembly(reader)) continue;
 
                 result.Scanned.Add(path);
+                if (references) result.Referencing++;
 
-                if (graph is not null && references)
+                if (byName is not null && references)
+                {
+                    foreach (var name in ReadNames(pe, reader))
+                    {
+                        var tick = name.IndexOf('`');
+                        if (byName.TryGetValue(tick < 0 ? name : name.Substring(0, tick), out var nodes)) result.Roots.UnionWith(nodes);
+                    }
+                }
+                else if (graph is not null && references)
                 {
                     foreach (var handle in reader.TypeReferences)
                     {
@@ -120,6 +144,23 @@ public static class AppScan
     {
         "b77a5c561934e089", "b03f5f7f11d50a3a", "7cec85d7bea7798e", "adb9793829ddae60", "31bf3856ad364e35", "cc7b13ffcd2ddd51",
     };
+
+    /// <summary>Every name an assembly holds - the #Strings heap: of its types, members and namespaces and of those it references.</summary>
+    public static IEnumerable<string> ReadNames(PEReader pe, MetadataReader reader)
+    {
+        var offset = reader.GetHeapMetadataOffset(HeapIndex.String);
+        var size = reader.GetHeapSize(HeapIndex.String);
+        var heap = pe.GetMetadata().GetContent(offset, size).ToArray();
+
+        // Null-terminated UTF-8, one after the other; the first is the empty string.
+        for (var start = 0; start < heap.Length;)
+        {
+            var end = Array.IndexOf(heap, (byte)0, start);
+            if (end < 0) end = heap.Length;
+            if (end > start) yield return Encoding.UTF8.GetString(heap, start, end - start);
+            start = end + 1;
+        }
+    }
 
     /// <summary>Every string literal of an assembly - the #US heap, which holds nothing else.</summary>
     public static IEnumerable<string> ReadUserStrings(MetadataReader reader)

@@ -249,6 +249,48 @@ public sealed class ServerAppTrimmingTests
     }
 
     [TestMethod]
+    public void TheTypeNamesScanShouldKeepAtLeastWhatTheTypeReferencesKeep()
+    {
+        // The coarser mode matches names rather than references: it may keep more, never less.
+        var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUIScan=TypeNames");
+        publish.AssertSucceeded();
+        Trimmed.AssertSucceeded();
+
+        CollectionAssert.IsSubsetOf(Trimmed.KeptStyles(Core), publish.KeptStyles(Core));
+        CollectionAssert.IsSubsetOf(Trimmed.KeptScripts(Core), publish.KeptScripts(Core));
+        CollectionAssert.DoesNotContain(publish.KeptStyles(Core), "BitSwiper");
+        publish.AssertScriptsAreThePiecesInOrder(Core);
+        publish.AssertStylesAreThePiecesInOrder(Core);
+    }
+
+    [TestMethod]
+    public void AScanReadingNothingOfTheAppShouldKeepEverythingAndSaySo()
+    {
+        // Assemblies none of which references the packages are not the app's: trimming on what they say would leave out
+        // every script and stylesheet the app uses.
+        var publish = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", $"FixtureScanAssemblies={typeof(Bit.BlazorUI.Build.PackageAssets).Assembly.Location}");
+        publish.AssertSucceeded();
+
+        StringAssert.Contains(publish.Output, "BITBLAZORUI002");
+        CollectionAssert.AreEqual(File.ReadAllBytes(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")),
+                                  File.ReadAllBytes(publish.GetAssetPath(Core, "styles/bit.blazorui.css")));
+    }
+
+    [TestMethod]
+    public void APublishTrimmedByDotNetShouldTrimTheAssetsWithoutBeingAsked()
+    {
+        // No BitBlazorUITrimAssets: the .NET trimmer running is what turns it on, as in a WebAssembly project. (ILLink also
+        // trims away the pages Blazor finds by reflection here, which is the app's own business - only the switch is
+        // checked.)
+        var publish = Publisher.Publish(Publisher.Fixture, "FixturePublishTrimmed=true");
+        publish.AssertSucceeded();
+
+        StringAssert.Contains(publish.Output, "Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> ");
+        Assert.AreNotEqual(new FileInfo(Path.Combine(Publisher.Root, Core, "wwwroot", "styles", "bit.blazorui.css")).Length,
+                           new FileInfo(publish.GetAssetPath(Core, "styles/bit.blazorui.css")).Length);
+    }
+
+    [TestMethod]
     public void TheMarkupOfTheAppShouldKeepTheScriptsItNeeds()
     {
         // The theme's script reads the bit-theme attributes off the page, which an app may write in a host page the build

@@ -11,6 +11,8 @@
       the package            the pieces under buildTransitive\bit-assets, where the consumer-side targets read them
                              (Bit.BlazorUI's buildTransitive\Bit.BlazorUI.targets); with BitBlazorUIPackBuildTask set
                              (Bit.BlazorUI's), the task itself under tasks\ too
+      the assembly           obj\bit-assets\lazy-scripts.json as the resource bit-lazy-scripts.json: which module of the
+                             lazy scripts exports what, read by the .NET side of BitBlazorUILazyScripts (BitScriptLoader)
 
     Imported after the csproj sets TargetFrameworks, which the packing reads.
     -->
@@ -34,6 +36,16 @@
     <ItemGroup>
         <Content Remove="wwwroot\styles\*.map;wwwroot\scripts\*.map" />
     </ItemGroup>
+
+    <!-- Embedded from a target because build-assets.mjs writes it during the build, which a clean build has not run yet when
+         the project is evaluated; before the build proper, so the resources are prepared with it. A package without scripts
+         (Bit.BlazorUI.Icons) has none to embed. -->
+    <Target Name="EmbedBitBlazorUILazyScripts" BeforeTargets="BeforeBuild" DependsOnTargets="BeforeBuildTasksOnce" Condition="'$(DesignTimeBuild)' != 'true'">
+        <ItemGroup Condition="Exists('$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json')">
+            <EmbeddedResource Remove="$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json" />
+            <EmbeddedResource Include="$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json" LogicalName="bit-lazy-scripts.json" WithCulture="false" Type="Non-Resx" />
+        </ItemGroup>
+    </Target>
 
     <Target Name="IncludeBitBlazorUIAssetsInPackage" Condition="'$(TargetFramework)' == '$(_BitBlazorUIPackedTfm)'">
         <MSBuild Condition="'$(BitBlazorUIPackBuildTask)' == 'true'" Projects="$(MSBuildThisFileDirectory)Bit.BlazorUI.Build.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration)" RemoveProperties="TargetFramework;TargetFrameworks;RuntimeIdentifier">

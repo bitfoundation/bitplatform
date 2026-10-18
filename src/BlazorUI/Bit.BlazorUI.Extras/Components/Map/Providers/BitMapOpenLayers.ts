@@ -920,3 +920,5 @@
         }
     }
 }
+
+// bit-lazy: teardown BitMapOpenLayers.dispose

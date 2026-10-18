@@ -460,3 +460,5 @@
         }
     }
 }
+
+// bit-lazy: teardown InfiniteScrolling.dispose

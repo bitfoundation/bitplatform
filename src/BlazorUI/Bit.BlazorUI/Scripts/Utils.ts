@@ -307,3 +307,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Utils.disposeTransitionEnd

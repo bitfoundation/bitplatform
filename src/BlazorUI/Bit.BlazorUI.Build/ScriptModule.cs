@@ -47,6 +47,18 @@ public sealed class ScriptModule
     /// <summary>Kept in every trimmed bundle.</summary>
     public bool Always { get; set; }
 
+    /// <summary>Its module of the lazy scripts under the package's wwwroot (scripts/modules/Callouts.js); null for a manifest that predates them.</summary>
+    public string? ModulePath { get; set; }
+
+    /// <summary>Imported by the package's boot module as the app starts with the lazy scripts: it acts without being called.</summary>
+    public bool Boot { get; set; }
+
+    /// <summary>Runs code as it loads - a listener added to the page, an install().</summary>
+    public bool Loads { get; set; }
+
+    /// <summary>The functions it exports that only undo what it did, which the lazy scripts skip in a page it never ran in.</summary>
+    public List<string> Teardown { get; } = [];
+
     public string Id => $"{Package.PackageId}:{Name}";
 
     public override string ToString() => Id;

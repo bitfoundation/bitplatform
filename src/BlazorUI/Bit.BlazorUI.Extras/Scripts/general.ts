@@ -10,6 +10,10 @@
 window.addEventListener('load', setBitEnvCssVars);
 window.addEventListener('resize', setBitEnvCssVars);
 
+// Loaded after the page has - by the lazy scripts' initializer, which Blazor imports as it starts - there is no load
+// event left to wait for.
+if (document.readyState === 'complete') setBitEnvCssVars();
+
 function setBitEnvCssVars() {
     document.documentElement.style.setProperty('--bit-env-win-width', `${window.innerWidth}px`);
     document.documentElement.style.setProperty('--bit-env-win-height', `${window.innerHeight}px`);

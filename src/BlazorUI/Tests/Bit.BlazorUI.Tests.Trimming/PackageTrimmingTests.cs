@@ -27,6 +27,9 @@ public sealed partial class PackageTrimmingTests
     [DataRow(8, "web")]
     [DataRow(9, "web")]
     [DataRow(10, "web")]
+    [DataRow(8, "web-lazy")]
+    [DataRow(9, "web-lazy")]
+    [DataRow(10, "web-lazy")]
     public void AnAppReferencingThePackagesShouldPublishTrimmedBundles(int sdkMajor, string shape)
     {
         if (Environment.GetEnvironmentVariable("RUN_PACKAGE_TESTS") != "1") Assert.Inconclusive("Set RUN_PACKAGE_TESTS=1 to pack the packages and publish apps referencing them.");
@@ -44,6 +47,23 @@ public sealed partial class PackageTrimmingTests
 
         // The app renders BitButton and BitDropdown, and nothing of the Extras: only their stylesheets, and the scripts
         // they reach, are in the bundles the package's pieces are put back together into.
+        if (shape == "web-lazy")
+        {
+            // The lazy scripts: the modules the app can reach and the initializers Blazor imports, no script bundle.
+            CollectionAssert.Contains(published.PublishedModules("Bit.BlazorUI"), "Callouts");
+            CollectionAssert.DoesNotContain(published.PublishedModules("Bit.BlazorUI"), "BitScrollablePane");
+            Assert.IsFalse(published.HasAsset("Bit.BlazorUI", "scripts/bit.blazorui.js"), "A lazy app published the script bundle.");
+            Assert.IsTrue(published.ListedInitializers().Any(i => i.StartsWith("_content/Bit.BlazorUI/scripts/Bit.BlazorUI.", StringComparison.Ordinal)),
+                          $"A lazy app does not list the core's initializer: {string.Join(", ", published.ListedInitializers())}");
+            CollectionAssert.IsSubsetOf(new[] { "BitButton", "BitDropdown" }, published.KeptStyles("Bit.BlazorUI"));
+            return;
+        }
+
+        // A bundle-mode app has Blazor import none of the lazy scripts' initializers, on any SDK.
+        Assert.IsFalse(published.ListedInitializers().Any(i => i.Contains("Bit.BlazorUI", StringComparison.Ordinal)),
+                       $"A bundle-mode app lists an initializer of the lazy scripts: {string.Join(", ", published.ListedInitializers())}");
+        Assert.AreEqual(0, published.PublishedModules("Bit.BlazorUI").Count, "A bundle-mode app published the modules of the lazy scripts.");
+
         var styles = published.KeptStyles("Bit.BlazorUI");
         CollectionAssert.IsSubsetOf(new[] { "BitButton", "BitDropdown" }, styles, string.Join(", ", styles));
         CollectionAssert.DoesNotContain(styles, "BitCard");
@@ -147,6 +167,7 @@ public sealed partial class PackageTrimmingTests
                     <Nullable>enable</Nullable>
                     <ImplicitUsings>enable</ImplicitUsings>
                     <BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>
+                    <BitBlazorUILazyScripts>{{(shape == "web-lazy" ? "true" : "false")}}</BitBlazorUILazyScripts>
                   </PropertyGroup>
                   <ItemGroup>
                 {{packages}}

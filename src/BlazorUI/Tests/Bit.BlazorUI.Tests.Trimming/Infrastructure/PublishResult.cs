@@ -104,6 +104,30 @@ public sealed class PublishResult(string directory, int exitCode, string output)
         }
     }
 
+    /// <summary>The names of the modules of a package's lazy scripts the publish holds (scripts/modules/&lt;name&gt;.js).</summary>
+    public List<string> PublishedModules(string package)
+    {
+        var folder = GetAssetPath(package, "scripts/modules");
+        return System.IO.Directory.Exists(folder)
+            ? [.. System.IO.Directory.EnumerateFiles(folder, "*.js").Select(f => Path.GetFileNameWithoutExtension(f)).OrderBy(n => n, StringComparer.Ordinal)]
+            : [];
+    }
+
+    /// <summary>Whether the publish holds a file of a package's static web assets.</summary>
+    public bool HasAsset(string package, string relativePath) => File.Exists(GetAssetPath(package, relativePath));
+
+    /// <summary>
+    /// The JavaScript initializers a Blazor Web App's publish lists for Blazor to import as it starts (its modules manifest),
+    /// by their routes - fingerprinted on the .NET 9 SDK and later.
+    /// </summary>
+    public List<string> ListedInitializers()
+    {
+        var manifest = System.IO.Directory.EnumerateFiles(WebRoot, "*.modules.json").SingleOrDefault();
+        if (manifest is null) return [];
+        using var document = JsonDocument.Parse(File.ReadAllText(manifest));
+        return [.. document.RootElement.EnumerateArray().Select(e => e.GetString()!)];
+    }
+
     /// <summary>The endpoints of the publish, from the manifest a Blazor Web App's server serves its static web assets by.</summary>
     public List<JsonElement> ReadEndpoints()
     {

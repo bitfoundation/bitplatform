@@ -18,31 +18,67 @@ public static class IJSRuntimeExtensions
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
+    /// <remarks>
+    /// With the lazy scripts on (<see cref="BitBlazorUIScripts"/>), the module of the packages the identifier calls into is
+    /// imported first, the first time it is called.
+    /// </remarks>
     public static ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
     {
         if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
-        return jsRuntime.InvokeVoidAsync(identifier, args);
+        var loading = BitScriptLoader.EnsureLoaded(jsRuntime, identifier, CancellationToken.None);
+        if (loading.IsCompletedSuccessfully) return loading.Result ? jsRuntime.InvokeVoidAsync(identifier, args) : ValueTask.CompletedTask;
+
+        return InvokeVoidAfter(loading, jsRuntime, identifier, args);
+
+        static async ValueTask InvokeVoidAfter(ValueTask<bool> loading, IJSRuntime jsRuntime, string identifier, object?[]? args)
+        {
+            if (await loading) await jsRuntime.InvokeVoidAsync(identifier, args);
+        }
     }
 
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
+    /// <remarks>
+    /// With the lazy scripts on (<see cref="BitBlazorUIScripts"/>), the module of the packages the identifier calls into is
+    /// imported first, the first time it is called.
+    /// </remarks>
     public static ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
         if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
-        return jsRuntime.InvokeVoidAsync(identifier, timeout, args);
+        var loading = BitScriptLoader.EnsureLoaded(jsRuntime, identifier, CancellationToken.None);
+        if (loading.IsCompletedSuccessfully) return loading.Result ? jsRuntime.InvokeVoidAsync(identifier, timeout, args) : ValueTask.CompletedTask;
+
+        return InvokeVoidAfter(loading, jsRuntime, identifier, timeout, args);
+
+        static async ValueTask InvokeVoidAfter(ValueTask<bool> loading, IJSRuntime jsRuntime, string identifier, TimeSpan timeout, object?[]? args)
+        {
+            if (await loading) await jsRuntime.InvokeVoidAsync(identifier, timeout, args);
+        }
     }
 
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
+    /// <remarks>
+    /// With the lazy scripts on (<see cref="BitBlazorUIScripts"/>), the module of the packages the identifier calls into is
+    /// imported first, the first time it is called.
+    /// </remarks>
     public static ValueTask InvokeVoid(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
 
-        return jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
+        var loading = BitScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+        if (loading.IsCompletedSuccessfully) return loading.Result ? jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args) : ValueTask.CompletedTask;
+
+        return InvokeVoidAfter(loading, jsRuntime, identifier, cancellationToken, args);
+
+        static async ValueTask InvokeVoidAfter(ValueTask<bool> loading, IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+        {
+            if (await loading) await jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
+        }
     }
 
 
@@ -50,31 +86,107 @@ public static class IJSRuntimeExtensions
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
+    /// <remarks>
+    /// With the lazy scripts on (<see cref="BitBlazorUIScripts"/>), the module of the packages the identifier calls into is
+    /// imported first, the first time it is called.
+    /// </remarks>
     public static ValueTask<TValue> Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
     {
         if (jsRuntime.IsRuntimeInvalid()) return default;
 
-        return jsRuntime.InvokeAsync<TValue>(identifier, args);
+        var loading = BitScriptLoader.EnsureLoaded(jsRuntime, identifier, CancellationToken.None);
+        if (loading.IsCompletedSuccessfully) return loading.Result ? jsRuntime.InvokeAsync<TValue>(identifier, args) : default;
+
+        return InvokeAfter(loading, jsRuntime, identifier, args);
+
+        static async ValueTask<TValue> InvokeAfter(ValueTask<bool> loading, IJSRuntime jsRuntime, string identifier, object?[]? args)
+            => await loading ? await jsRuntime.InvokeAsync<TValue>(identifier, args) : default!;
     }
 
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
+    /// <remarks>
+    /// With the lazy scripts on (<see cref="BitBlazorUIScripts"/>), the module of the packages the identifier calls into is
+    /// imported first, the first time it is called.
+    /// </remarks>
     public static ValueTask<TValue> Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, TimeSpan timeout, params object?[]? args)
     {
         if (jsRuntime.IsRuntimeInvalid()) return default;
 
-        return jsRuntime.InvokeAsync<TValue>(identifier, timeout, args);
+        var loading = BitScriptLoader.EnsureLoaded(jsRuntime, identifier, CancellationToken.None);
+        if (loading.IsCompletedSuccessfully) return loading.Result ? jsRuntime.InvokeAsync<TValue>(identifier, timeout, args) : default;
+
+        return InvokeAfter(loading, jsRuntime, identifier, timeout, args);
+
+        static async ValueTask<TValue> InvokeAfter(ValueTask<bool> loading, IJSRuntime jsRuntime, string identifier, TimeSpan timeout, object?[]? args)
+            => await loading ? await jsRuntime.InvokeAsync<TValue>(identifier, timeout, args) : default!;
     }
 
     /// <summary>
     /// Only tries to Invoke the js call when the runtime is valid.
     /// </summary>
+    /// <remarks>
+    /// With the lazy scripts on (<see cref="BitBlazorUIScripts"/>), the module of the packages the identifier calls into is
+    /// imported first, the first time it is called.
+    /// </remarks>
     public static ValueTask<TValue> Invoke<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
     {
         if (jsRuntime.IsRuntimeInvalid()) return default;
 
-        return jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args);
+        var loading = BitScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken);
+        if (loading.IsCompletedSuccessfully) return loading.Result ? jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args) : default;
+
+        return InvokeAfter(loading, jsRuntime, identifier, cancellationToken, args);
+
+        static async ValueTask<TValue> InvokeAfter(ValueTask<bool> loading, IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, object?[]? args)
+            => await loading ? await jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args) : default!;
+    }
+
+
+
+    /// <summary>
+    /// Invokes a function of the packages' scripts the way <see cref="JSRuntimeExtensions.InvokeVoidAsync(IJSRuntime, string, object?[])"/>
+    /// does - throwing where the runtime cannot take the call - after importing its module where the lazy scripts are on.
+    /// The form every call of the packages' code into their scripts takes that does not go through
+    /// <see cref="InvokeVoid(IJSRuntime, string, object?[])"/>.
+    /// </summary>
+    internal static async ValueTask InvokeScriptVoidAsync(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    {
+        if (await BitScriptLoader.EnsureLoaded(jsRuntime, identifier, CancellationToken.None)) await jsRuntime.InvokeVoidAsync(identifier, args);
+    }
+
+    /// <summary>The same as <see cref="InvokeScriptVoidAsync(IJSRuntime, string, object?[])"/>, under a cancellation token.</summary>
+    internal static async ValueTask InvokeScriptVoidAsync(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
+    {
+        if (await BitScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken)) await jsRuntime.InvokeVoidAsync(identifier, cancellationToken, args);
+    }
+
+    /// <summary>
+    /// Invokes a function of the packages' scripts the way <see cref="JSRuntimeExtensions.InvokeAsync{TValue}(IJSRuntime, string, object?[])"/>
+    /// does - throwing where the runtime cannot take the call - after importing its module where the lazy scripts are on.
+    /// </summary>
+    internal static async ValueTask<TValue> InvokeScriptAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, params object?[]? args)
+    {
+        return await BitScriptLoader.EnsureLoaded(jsRuntime, identifier, CancellationToken.None) ? await jsRuntime.InvokeAsync<TValue>(identifier, args) : default!;
+    }
+
+    /// <summary>The same as <see cref="InvokeScriptAsync{TValue}(IJSRuntime, string, object?[])"/>, under a cancellation token.</summary>
+    internal static async ValueTask<TValue> InvokeScriptAsync<[DynamicallyAccessedMembers(JsonSerialized)] TValue>(this IJSRuntime jsRuntime, string identifier, CancellationToken cancellationToken, params object?[]? args)
+    {
+        return await BitScriptLoader.EnsureLoaded(jsRuntime, identifier, cancellationToken) ? await jsRuntime.InvokeAsync<TValue>(identifier, cancellationToken, args) : default!;
+    }
+
+    /// <summary>
+    /// Loads a script of the packages that acts on a component's markup without being called - kept for the component by a
+    /// <c>bit-trim: owners</c> comment, and adding its listeners as it loads - where the lazy scripts are on, which nothing
+    /// calling into it would ever load. A component owning one calls this as it first renders.
+    /// </summary>
+    internal static ValueTask EnsureScriptAsync(this IJSRuntime jsRuntime, string package, string script)
+    {
+        if (jsRuntime.IsRuntimeInvalid()) return ValueTask.CompletedTask;
+
+        return BitScriptLoader.EnsureScript(jsRuntime, package, script);
     }
 
 

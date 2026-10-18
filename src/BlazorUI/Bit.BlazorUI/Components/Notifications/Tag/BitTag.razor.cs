@@ -7,6 +7,8 @@ namespace Bit.BlazorUI;
 /// </summary>
 public partial class BitTag : BitComponentBase
 {
+    [Inject] private IJSRuntime _js { get; set; } = default!;
+
     private string? _rel;
     private ElementReference _contentRef;
     private ElementReference _dismissRef;
@@ -634,6 +636,15 @@ public partial class BitTag : BitComponentBase
         CascadingParameters?.UpdateParameters(this);
 
         base.OnParametersSet();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The script that keeps Delete and Backspace from navigating away is called by nothing: with the lazy scripts on
+        // (BitBlazorUIScripts), the tag is what loads it.
+        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI", "BitTag");
+
+        await base.OnAfterRenderAsync(firstRender);
     }
 
 

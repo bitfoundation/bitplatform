@@ -1713,3 +1713,5 @@
             && CSS.supports('overflow-anchor', 'auto');
     }
 }
+
+// bit-lazy: teardown ScrollablePane.dispose

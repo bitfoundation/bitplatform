@@ -203,3 +203,5 @@
 // Escape right after the claim (see dismissTooltipsOnEscape), ahead of every other listener of the library.
 BitBlazorUI.Utils.addEscapeBoundary(element => BitBlazorUI.Utils.showsDismissibleTooltip(element));
 BitBlazorUI.Utils.afterEscapeClaim(e => BitBlazorUI.Utils.dismissTooltipsOnEscape(e));
+
+// bit-lazy: teardown Utils.disposeTooltip

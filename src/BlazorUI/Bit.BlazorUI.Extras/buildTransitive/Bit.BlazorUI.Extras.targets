@@ -9,6 +9,13 @@
         <BitBlazorUIAssetFolder Include="$(MSBuildThisFileDirectory)bit-assets\;$(MSBuildThisFileDirectory)..\obj\bit-assets\" Package="Bit.BlazorUI.Extras" />
     </ItemGroup>
 
+    <!-- Names this package's scripts to the choice between the bundle and the lazy scripts (BitBlazorUILazyScripts): the
+         file names of its bundle and its boot module under scripts/. -->
+    <ItemGroup>
+        <BitBlazorUIScriptPackage Remove="Bit.BlazorUI.Extras" />
+        <BitBlazorUIScriptPackage Include="Bit.BlazorUI.Extras" Bundle="bit.blazorui.extras.js" Boot="bit.blazorui.extras.boot.js" />
+    </ItemGroup>
+
     <!-- What a component of this package loads at run time from its own wwwroot - the Leaflet and OpenLayers loaders of
          BitMap's providers, the flag images of BitFlag - each named by the code that loads it
          (_content/Bit.BlazorUI.Extras/leaflet/...): a publish leaves out the ones nothing the app can run names

@@ -69,4 +69,31 @@ public static class IBitBlazorUIServiceCollectionExtensions
 
         return services;
     }
+
+    /// <summary>
+    /// Registers the core Bit.BlazorUI services and applies the library's runtime options in the same call - the lazy
+    /// scripts and where the packages' assets are served from - so an app configures the library in its Program.cs.
+    /// </summary>
+    /// <param name="services">The service collection to add the services to.</param>
+    /// <param name="configure">Sets the options; see <see cref="BitBlazorUIOptions"/> for what each one covers.</param>
+    public static IServiceCollection AddBitBlazorUIServices(this IServiceCollection services, Action<BitBlazorUIOptions> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+
+        var options = new BitBlazorUIOptions();
+        configure(options);
+
+        switch (options.LazyScripts)
+        {
+            case true: BitBlazorUIScripts.UseLazyScripts(options.ContentPath); break;
+            case false: BitBlazorUIScripts.UseBundledScripts(); break;
+            default:
+                // The mode left alone; the path still applies, for an app whose project turned the lazy scripts on and
+                // serves the packages' assets from somewhere else.
+                if (string.IsNullOrWhiteSpace(options.ContentPath) is false) BitBlazorUIScripts.SetContentPath(options.ContentPath);
+                break;
+        }
+
+        return AddBitBlazorUIServices(services, options.TrySingleton);
+    }
 }

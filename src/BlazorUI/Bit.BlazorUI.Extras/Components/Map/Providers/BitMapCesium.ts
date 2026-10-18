@@ -890,3 +890,5 @@
         }
     }
 }
+
+// bit-lazy: teardown BitMapCesium.dispose

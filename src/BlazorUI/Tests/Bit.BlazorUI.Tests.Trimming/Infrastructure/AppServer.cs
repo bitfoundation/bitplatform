@@ -16,8 +16,8 @@ public abstract class AppServer : IAsyncDisposable
 
     public abstract ValueTask DisposeAsync();
 
-    /// <summary>Serves a published WebAssembly app's wwwroot the way a static host would.</summary>
-    public static async Task<AppServer> StartStaticAsync(string webRoot)
+    /// <summary>Serves a published WebAssembly app's wwwroot the way a static host would, with the given page as its host page.</summary>
+    public static async Task<AppServer> StartStaticAsync(string webRoot, string hostPage = "index.html")
     {
         var builder = WebApplication.CreateSlimBuilder(new WebApplicationOptions { WebRootPath = webRoot, ContentRootPath = webRoot });
         builder.WebHost.UseUrls("http://127.0.0.1:0");
@@ -30,9 +30,12 @@ public abstract class AppServer : IAsyncDisposable
         types.Mappings[".webcil"] = "application/octet-stream";
 
         var files = new PhysicalFileProvider(webRoot);
-        app.UseDefaultFiles(new DefaultFilesOptions { FileProvider = files });
+        var defaults = new DefaultFilesOptions { FileProvider = files };
+        defaults.DefaultFileNames.Clear();
+        defaults.DefaultFileNames.Add(hostPage);
+        app.UseDefaultFiles(defaults);
         app.UseStaticFiles(new StaticFileOptions { FileProvider = files, ContentTypeProvider = types, ServeUnknownFileTypes = true });
-        app.MapFallbackToFile("index.html", new StaticFileOptions { FileProvider = files });
+        app.MapFallbackToFile(hostPage, new StaticFileOptions { FileProvider = files });
 
         await app.StartAsync();
         return new StaticServer(app, app.Urls.First());

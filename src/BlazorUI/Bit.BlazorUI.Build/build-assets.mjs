@@ -1,14 +1,20 @@
-﻿// Builds the JavaScript and CSS of one bit BlazorUI package, in the two shapes the package ships them in:
+﻿// Builds the JavaScript and CSS of one bit BlazorUI package, in the shapes the package ships them in:
 //
 //   * the bundles under wwwroot (bit.blazorui.js, bit.blazorui.css, ...) an app references with a <script> or a
 //     <link>, holding everything - exactly what a build and every development run serve;
 //   * the pieces those bundles are made of - one chunk per TypeScript file and one per component stylesheet - and a
 //     manifest of what each piece is, which the package carries for the publish-time trimming
-//     (Bit.BlazorUI.Build's TrimBitBlazorUIAssets) to put a bundle back together from only the pieces an app can use.
+//     (Bit.BlazorUI.Build's TrimBitBlazorUIAssets) to put a bundle back together from only the pieces an app can use;
+//   * the lazy scripts (BitBlazorUILazyScripts) under wwwroot/scripts: one ES module per script piece
+//     (scripts/modules/<name>.js), importing the pieces of its package it uses, which the .NET side import()s the first
+//     time something calls into it; a boot module (scripts/<bundle>.boot.js) importing the pieces that act on the page
+//     without being called - the 'always' and 'markup' ones below; and the package's JavaScript initializer
+//     (scripts/<package>.lib.module.js), which Blazor imports as the app starts and which imports the boot module.
 //
 // A bundle is written FROM its pieces, never next to them, so a trimmed bundle is a subset of the very text the full
 // one is: the scripts are concatenated in the load order below, and every stylesheet is checked to compile to exactly
-// its own prefix, chunks and suffix before anything is written.
+// its own prefix, chunks and suffix before anything is written. A module file is its piece too, behind the imports
+// of what it uses and a guard that leaves it out where the package's bundle already ran.
 //
 //   node build-assets.mjs scripts --package <id> --tsconfig tsconfig.json --bundle scripts/x.js --out <dir> [--minify]
 //   node build-assets.mjs styles  --package <id> --out <dir>
@@ -43,13 +49,24 @@
 // the functions it calls there use in turn: what runs at load - a listener added to the page, an install() - finds what
 // it calls already defined, and listeners added to one node at load keep the order their scripts load in (the manifest
 // lists each script's, as "window keydown capture").
+//
+// The lazy scripts read one more comment, of what a script exports:
+//
+//   // bit-lazy: teardown Callouts.clear Utils.disposeFocusTrap ...
+//                                    each a function that only undoes what the script itself did - a listener it added, a
+//                                    registry entry, a class it set - so a call of it in a page the script never ran in
+//                                    has nothing to undo: the .NET side skips the call rather than download the script for
+//                                    it (a component disposed before it ever called into its script)
 
 import fs from 'node:fs';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
-const MANIFEST_VERSION = 1;
+// 2: the lazy scripts (each script's module, whether it runs code as it loads, whether it boots, its teardown functions)
+// and a bundle prologue that registers the bundle.
+const MANIFEST_VERSION = 2;
+const LAZY_MANIFEST_VERSION = 1;
 const NAMESPACE = 'BitBlazorUI';
 const COMPONENTS_MARKER = '/*! bit-assets:components */';
 
@@ -111,6 +128,7 @@ function buildScripts() {
     for (const m of modules) {
         m.exports = collectExports(ts, m.sf);
         m.pragma = readPragma(m.sf.text, m.file, SCRIPT_PRAGMAS);
+        m.teardown = readTeardowns(m.sf.text, m.file, m.exports);
         const refs = collectReferences(ts, checker, m.sf, bySourceFile, caches);
         m.deps = refs.deps;
         m.loadDeps = refs.loadDeps;
@@ -152,11 +170,14 @@ function buildScripts() {
 
     // The compiler writes "use strict" at the head of every file it emits on its own, where the outFile has it once:
     // only at the very start of a script is it a directive, so it goes to the head of the bundle, once, and the
-    // trimming puts it back there the same way.
+    // trimming puts it back there the same way. After it, the bundle says that it ran, which is what keeps a module
+    // file of the lazy scripts from running a piece a second time in a page that loaded the bundle as well.
     const strict = /^"use strict";\n/;
-    const prologue = [...emitted.values()].some(text => strict.test(text.replace(/^\uFEFF/, ''))) ? '"use strict";\n' : '';
+    const prologue = ([...emitted.values()].some(text => strict.test(text.replace(/^\uFEFF/, ''))) ? '"use strict";\n' : '')
+        + `${namespaceOfWindow()}(${NAMESPACE}.$bundles || (${NAMESPACE}.$bundles = {}))[${JSON.stringify(packageId)}] = true;\n`;
 
     const manifestModules = [];
+    const codes = new Map();
     const parts = [prologue];
     for (const m of modules) {
         let code = emitted.get(m.name).replace(/^\uFEFF/, '').replace(strict, '');
@@ -169,18 +190,28 @@ function buildScripts() {
         const chunkFile = `scripts/${m.name}.js`;
         fs.writeFileSync(path.join(outDir, chunkFile), code);
         parts.push(code);
+        codes.set(m.name, code);
+
+        const always = m.pragma?.always === true;
+        const markup = m.pragma?.markup ?? [];
 
         manifestModules.push({
             name: m.name,
             file: chunkFile,
             source: m.file,
+            module: `${LAZY_MODULES_DIR}${m.name}.js`,
             exports: [...m.exports].sort(),
             deps: [...m.deps].sort(),
             loadDeps: [...m.loadDeps].sort(),
             externals: [...m.externals].sort(),
-            always: m.pragma?.always === true,
+            always,
             owners: m.pragma?.owners ?? [],
-            markup: m.pragma?.markup ?? [],
+            markup,
+            // What the lazy scripts import as the app starts rather than when something calls into it: a script acting on
+            // the page without being called, which nothing calling it would ever load.
+            boot: always || markup.length > 0,
+            loads: m.loadTimeCalls.length > 0,
+            teardown: m.teardown,
             listeners: m.listeners,
         });
     }
@@ -197,6 +228,8 @@ function buildScripts() {
 
     writeBundle(path.join(packageDir, 'wwwroot', bundle), parts.join(''));
 
+    const lazy = writeLazyScripts(packageId, bundle, manifestModules, codes);
+
     writeJson(path.join(outDir, 'scripts.json'), {
         version: MANIFEST_VERSION,
         package: packageId,
@@ -204,10 +237,124 @@ function buildScripts() {
         bundle,
         minified: minify,
         prologue,
+        lazy,
         modules: manifestModules,
     });
 
-    log(`${packageId}: ${bundle} written from ${modules.length} script modules${minify ? ' (minified)' : ''}.`);
+    // What the .NET side of the lazy scripts reads, embedded into the package's assembly (see Bit.BlazorUI.Assets.targets):
+    // which script exports what, what each imports, what it needs of another package, and which of its functions only
+    // undo what it did. Kept apart from scripts.json, which the publish reads and an app never downloads.
+    writeJson(path.join(outDir, 'lazy-scripts.json'), {
+        version: LAZY_MANIFEST_VERSION,
+        package: packageId,
+        boot: lazy.boot,
+        modules: manifestModules.map(m => ({ name: m.name, path: m.module, boot: m.boot, exports: m.exports, deps: m.deps, externals: m.externals, teardown: m.teardown })),
+    }, { compact: true });
+
+    log(`${packageId}: ${bundle} written from ${modules.length} script modules${minify ? ' (minified)' : ''}, and as ${manifestModules.length} lazy modules${lazy.boot ? `, ${manifestModules.filter(m => m.boot).length} of them booting` : ''}.`);
+}
+
+// Where the module files of the lazy scripts live under the package's wwwroot.
+const LAZY_MODULES_DIR = 'scripts/modules/';
+
+// The statement every script of the namespace starts its scope with when it runs as a module or after a bundle that may
+// not have created the namespace yet: the global, created when it is not there (window, since an ES module's own
+// top-level var would not be one).
+function namespaceOfWindow() {
+    return `var ${NAMESPACE} = window.${NAMESPACE} || (window.${NAMESPACE} = {});\n`;
+}
+
+/**
+ * The lazy scripts of a package: one module per piece, a boot module importing the pieces that act without being called,
+ * and the JavaScript initializer importing the boot module as the app starts. Written under wwwroot/scripts, beside the
+ * bundle, and each one only when it changed, so what a static web asset was fingerprinted from stays what it was.
+ */
+function writeLazyScripts(packageId, bundle, modules, codes) {
+    const wwwroot = path.join(packageDir, 'wwwroot');
+    const order = new Map(modules.map((m, i) => [m.name, i]));
+    const byOrder = names => [...names].sort((a, b) => order.get(a) - order.get(b));
+
+    // A script the app starts with is loaded by no .NET call, so nothing would import what it needs of another package
+    // first (the .NET side does that for every other module, from the externals below).
+    const crossing = modules.filter(m => m.boot && m.externals.length);
+    if (crossing.length) {
+        throw new BuildError(crossing.map(m => `${m.source}: is loaded as the app starts ('always' or 'markup') but uses ${m.externals.join(', ')} of another package, which the lazy scripts load only for what calls into it. Move what it uses into this package, or make it a script that is called.`).join('\nbuild-assets : error : '));
+    }
+
+    const written = new Set();
+    for (const m of modules) {
+        // Its own package's scripts it uses, in the bundle's order, so what runs as they load runs in the order it does
+        // in the bundle; the ones of another package are imported by the .NET side, which knows where each package is.
+        const imports = byOrder(m.deps).map(d => `import "./${d}.js";\n`).join('');
+        const text = imports
+            + namespaceOfWindow()
+            + `if (!${NAMESPACE}.$bundles || !${NAMESPACE}.$bundles[${JSON.stringify(packageId)}]) {\n`
+            + codes.get(m.name)
+            + '}\n';
+
+        writeIfChanged(path.join(wwwroot, m.module), text);
+        written.add(path.basename(m.module));
+    }
+
+    // A module of a script that no longer exists would still be served, and imported by nothing.
+    const modulesDir = path.join(wwwroot, LAZY_MODULES_DIR);
+    for (const file of fs.existsSync(modulesDir) ? fs.readdirSync(modulesDir) : []) {
+        if (!written.has(file)) fs.rmSync(path.join(modulesDir, file), { force: true });
+    }
+
+    const booting = modules.filter(m => m.boot);
+    const boot = booting.length ? bundle.replace(/\.js$/, '.boot.js') : null;
+    const initializer = booting.length ? `${path.posix.dirname(bundle)}/${packageId}.lib.module.js` : null;
+
+    for (const stale of [bundle.replace(/\.js$/, '.boot.js'), `${path.posix.dirname(bundle)}/${packageId}.lib.module.js`]) {
+        if (stale !== boot && stale !== initializer) fs.rmSync(path.join(wwwroot, stale), { force: true });
+    }
+
+    if (boot) {
+        writeIfChanged(path.join(wwwroot, boot), bootModuleText(boot, booting.map(m => m.module)));
+
+        // Blazor imports a file named after the package and ending in .lib.module.js as the app starts, and awaits its
+        // callbacks before it renders anything (a JavaScript initializer). It is never trimmed - Blazor's own list of them
+        // names it by its fingerprint - so what it imports is the boot module, which the publish rewrites with the scripts
+        // an app keeps. Not where the package's bundle ran already (a page keeping both shapes, the <script> tag ahead of
+        // Blazor's start): the bundle holds the boot scripts, and their modules would only be fetched to be left out.
+        const bundled = `window.${NAMESPACE} && window.${NAMESPACE}.$bundles && window.${NAMESPACE}.$bundles[${JSON.stringify(packageId)}]`;
+        writeIfChanged(path.join(wwwroot, initializer),
+            '// The JavaScript initializer of the lazy scripts of ' + packageId + ' (BitBlazorUILazyScripts): Blazor imports it as the\n'
+            + '// app starts, and it runs the scripts that act on the page without being called. Everything else is imported by\n'
+            + '// the .NET side the first time something calls into it.\n'
+            + `function boot() { return ${bundled} ? undefined : import("./${path.posix.relative(path.posix.dirname(initializer), boot)}"); }\n`
+            + 'export function beforeWebStart() { return boot(); }\n'
+            + 'export function beforeStart() { return boot(); }\n');
+    }
+
+    return { modules: LAZY_MODULES_DIR, boot, initializer };
+}
+
+// The boot module: one import per script the app starts with, in the bundle's order. The publish writes it again from the
+// scripts an app keeps (Bit.BlazorUI.Build's AssetComposer), in this very shape.
+function bootModuleText(boot, modulePaths) {
+    return modulePaths.map(p => `import "./${path.posix.relative(path.posix.dirname(boot), p)}";\n`).join('');
+}
+
+// The functions of a script that only undo what it did (see '// bit-lazy: teardown' above): each one a path a member of the
+// script's exports starts (Callouts.clear of the class Callouts, Utils.disposeFocusTrap of the namespace function itself),
+// declared in the script by that last name.
+function readTeardowns(text, file, exports) {
+    const names = [];
+    for (const match of text.matchAll(/\/\/\s*bit-lazy:\s*(.*)$/gm)) {
+        const [kind, ...rest] = match[1].trim().split(/[\s,]+/).filter(Boolean);
+        if (kind !== 'teardown' || rest.length === 0) throw new BuildError(`${file}: '// bit-lazy: ${match[1].trim()}' is not 'teardown <function> ...'.`);
+
+        for (const name of rest) {
+            const owner = [...exports].some(e => name === e || name.startsWith(`${e}.`));
+            const member = name.substring(name.lastIndexOf('.') + 1);
+            const declared = new RegExp(`(^|[^\\w$.])(function\\s+|static\\s+(async\\s+)?)?${escapeRegExp(member)}\\s*(\\(|=\\s*(async\\s*)?(\\(|function))`, 'm').test(text);
+            if (!owner || !declared) throw new BuildError(`${file}: '// bit-lazy: teardown ${name}' names no function this script exports.`);
+            names.push(name);
+        }
+    }
+    return [...new Set(names)].sort();
 }
 
 // The members a file adds to the BitBlazorUI namespace, by their path under it: 'TextField' for a class, 'Utils.isRtl'
@@ -885,9 +1032,21 @@ function writeBundle(file, text) {
     fs.writeFileSync(file, text);
 }
 
-function writeJson(file, value) {
+// A file served as it is written (a module of the lazy scripts), rewritten only when it changed, for the same reason as a
+// bundle.
+function writeIfChanged(file, text) {
     fs.mkdirSync(path.dirname(file), { recursive: true });
-    fs.writeFileSync(file, JSON.stringify(value, null, 2) + '\n');
+    if (fs.existsSync(file) && fs.readFileSync(file, 'utf8') === text) {
+        const now = new Date();
+        fs.utimesSync(file, now, now);
+        return;
+    }
+    fs.writeFileSync(file, text);
+}
+
+function writeJson(file, value, { compact = false } = {}) {
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, (compact ? JSON.stringify(value) : JSON.stringify(value, null, 2)) + '\n');
 }
 
 function resetDir(dir) {

@@ -720,3 +720,5 @@
         }
     }
 }
+
+// bit-lazy: teardown BitMapLeaflet.dispose

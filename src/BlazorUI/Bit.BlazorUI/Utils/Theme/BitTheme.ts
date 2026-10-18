@@ -1300,3 +1300,5 @@ namespace BitBlazorUI {
             : undefined,
     });
 }
+
+// bit-lazy: teardown Theme.unregisterDotNetNotifier

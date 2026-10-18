@@ -3746,3 +3746,5 @@
         }
     }
 }
+
+// bit-lazy: teardown RichTextEditor.dispose

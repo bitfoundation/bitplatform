@@ -858,3 +858,5 @@
         document.addEventListener('DOMContentLoaded', () => { bind(); }, { once: true });
     }
 }());
+
+// bit-lazy: teardown AppShell.disposeKeyboard AppShell.disposeScroll AppShell.disposeScrollState AppShell.unregisterShell

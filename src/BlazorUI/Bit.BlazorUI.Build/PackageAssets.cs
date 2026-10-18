@@ -11,7 +11,8 @@ namespace Bit.BlazorUI.Build;
 public sealed class PackageAssets
 {
     /// <summary>The manifests this code reads. A higher version is a package newer than its task, which says so.</summary>
-    public const int ManifestVersion = 1;
+    /// <remarks>2 added the lazy scripts; a manifest of version 1 has none, and is read as a package without them.</remarks>
+    public const int ManifestVersion = 2;
 
     private PackageAssets(string packageId, string directory)
     {
@@ -32,6 +33,15 @@ public sealed class PackageAssets
 
     /// <summary>The modules in bundle order, the order they load in.</summary>
     public List<ScriptModule> ScriptModules { get; } = [];
+
+    /// <summary>
+    /// The boot module of the lazy scripts under wwwroot (scripts/bit.blazorui.boot.js), importing the scripts the app
+    /// starts with: null for a package that boots none, or whose manifest predates the lazy scripts.
+    /// </summary>
+    public string? ScriptBoot { get; private set; }
+
+    /// <summary>The JavaScript initializer of the lazy scripts under wwwroot, importing the boot module.</summary>
+    public string? ScriptInitializer { get; private set; }
 
     public List<StyleBundle> StyleBundles { get; } = [];
 
@@ -62,13 +72,23 @@ public sealed class PackageAssets
             package.ScriptBundle = Json.GetString(scripts, "bundle", scriptsPath);
             package.ScriptPrologue = Json.GetOptionalString(scripts, "prologue") ?? string.Empty;
 
+            if (scripts.TryGetValue("lazy", out var lazyValue) && lazyValue is Dictionary<string, object?> lazy)
+            {
+                package.ScriptBoot = Json.GetOptionalString(lazy, "boot");
+                package.ScriptInitializer = Json.GetOptionalString(lazy, "initializer");
+            }
+
             foreach (var item in Json.AsArray(scripts.TryGetValue("modules", out var m) ? m : null, scriptsPath))
             {
                 var obj = Json.AsObject(item, scriptsPath);
                 var module = new ScriptModule(package, Json.GetString(obj, "name", scriptsPath), Json.GetString(obj, "file", scriptsPath))
                 {
                     Always = Json.GetBool(obj, "always"),
+                    ModulePath = Json.GetOptionalString(obj, "module"),
+                    Boot = Json.GetBool(obj, "boot"),
+                    Loads = Json.GetBool(obj, "loads"),
                 };
+                module.Teardown.AddRange(Json.GetStrings(obj, "teardown"));
                 module.Exports.AddRange(Json.GetStrings(obj, "exports"));
                 module.Dependencies.AddRange(Json.GetStrings(obj, "deps"));
                 module.Externals.AddRange(Json.GetStrings(obj, "externals"));

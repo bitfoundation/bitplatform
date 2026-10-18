@@ -2081,3 +2081,5 @@ if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', onVisualViewportChange);
     window.visualViewport.addEventListener('scroll', onVisualViewportChange);
 }
+
+// bit-lazy: teardown Callouts.clear Callouts.disposeKeyboard

@@ -52,8 +52,12 @@ Install-Package Bit.BlazorUI
 
 When an app is published, `bit.blazorui.css` and `bit.blazorui.js` (and the bundles of `Bit.BlazorUI.Extras`, `Bit.BlazorUI.Legacy` and `Bit.BlazorUI.Icons`) are put back together from only the components and scripts the app can use - under the same names, so the tags above stay as they are. A build, `dotnet run` and `dotnet watch` always serve the full bundles.
 
-- A standalone **Blazor WebAssembly** app gets it by default, off what the .NET trimmer kept.
-- A **Blazor Web App** or **Blazor Server** app turns it on in the server project: `<BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>`.
+- A standalone **Blazor WebAssembly** app gets it by default, off what the .NET trimmer kept - as does any project published with `PublishTrimmed`.
+- A **Blazor Web App** or **Blazor Server** app turns it on in the server project: `<BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>`. The publish then reads the app's assemblies for what it uses (`BitBlazorUIScan`: `TypeReferences`, the default, or the coarser `TypeNames`).
 - `BitBlazorUITrimScripts`, `BitBlazorUITrimStyles`, `BitBlazorUITrimVendorAssets` and `BitBlazorUITrimIcons` (off unless set) control each kind of file, and `<BitBlazorUIComponent Include="..." />`, `<BitBlazorUIAsset Include="..." />` and `<BitBlazorUIIcon Include="..." />` keep what the publish cannot see the app use.
 
 See https://blazorui.bitplatform.dev/getting-started#trimming for the details.
+
+### Lazy scripts
+
+`<BitBlazorUILazyScripts>true</BitBlazorUILazyScripts>` in the project you publish replaces the script bundles with one module per script, imported the first time a component calls into it: remove the `<script>` tags of the packages, and each page downloads only the scripts of the components it uses (a publish keeps only the modules the app can reach). The same switch at runtime: `AddBitBlazorUIServices(options => options.LazyScripts = true)`. See https://blazorui.bitplatform.dev/getting-started#lazy-scripts.

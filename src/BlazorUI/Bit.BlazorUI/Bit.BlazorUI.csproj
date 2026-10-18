@@ -91,7 +91,7 @@
 
     <Target Name="IncludeGeneratedAssets" BeforeTargets="ResolveProjectStaticWebAssets" DependsOnTargets="BeforeBuildTasksOnce" Condition=" '$(DesignTimeBuild)' != 'true' ">
         <ItemGroup>
-            <Content Include="wwwroot\scripts\*.js;wwwroot\styles\*.css" Exclude="@(Content);@(None)" />
+            <Content Include="wwwroot\scripts\*.js;wwwroot\scripts\modules\*.js;wwwroot\styles\*.css" Exclude="@(Content);@(None)" />
         </ItemGroup>
     </Target>
 
@@ -113,7 +113,7 @@
          both). The stamp is per configuration, and a build takes every other configuration's stamp away, so switching
          from one configuration to another rebuilds the script either way even when no .ts file changed in between: a
          Release build after a Debug one minifies it, and a Debug build after a Release one writes it readable again. -->
-    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;@(BitAssetsScript)" Outputs="wwwroot\scripts\bit.blazorui.js;$(BaseIntermediateOutputPath)bit-assets\scripts.json;$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.js.stamp">
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json;@(BitAssetsScript)" Outputs="wwwroot\scripts\bit.blazorui.js;$(BaseIntermediateOutputPath)bit-assets\scripts.json;$(BaseIntermediateOutputPath)bit-assets\lazy-scripts.json;$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.js.stamp">
         <Exec Command="node &quot;@(BitAssetsScript->'%(FullPath)')&quot; scripts --package $(PackageId) --tsconfig tsconfig.json --bundle scripts/bit.blazorui.js --out $(BaseIntermediateOutputPath)bit-assets $(_BitAssetsMinify)" StandardOutputImportance="high" StandardErrorImportance="high" />
         <ItemGroup>
             <_OtherConfigurationScriptStamps Include="$(BaseIntermediateOutputPath)*\bit.blazorui.js.stamp" Exclude="$(BaseIntermediateOutputPath)$(Configuration)\bit.blazorui.js.stamp" />

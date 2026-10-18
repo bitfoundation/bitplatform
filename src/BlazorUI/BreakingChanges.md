@@ -25,7 +25,8 @@ left out of the publish. A standalone Blazor WebAssembly app gets this by defaul
 projects - the `.js` and `.html` files of those are read) can lose what it needs in production only: name it with
 `<BitBlazorUIComponent Include="..." />` or `<BitBlazorUIAsset Include="..." />` in the csproj, or turn the trimming off
 with `<BitBlazorUITrimAssets>false</BitBlazorUITrimAssets>`. A Blazor Web App or Blazor Server app is unchanged until it
-turns the trimming on.
+turns the trimming on - or publishes with `PublishTrimmed`, which turns it on the way it does in a WebAssembly app (a
+server hosting a WebAssembly client excepted, whose trimmer knows the server alone).
 
 The packages no longer ship source maps (`.css.map`): they pointed at stylesheet sources the packages do not carry.
 

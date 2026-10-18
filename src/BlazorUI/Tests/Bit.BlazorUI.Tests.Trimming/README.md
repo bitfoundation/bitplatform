@@ -14,6 +14,11 @@ pieces the packages' builds wrote (`obj/bit-assets`), which a trimmed bundle is 
 - `Bit.BlazorUI.Tests.Consumer` - a Blazor WebAssembly app, trimmed by default off what ILLink kept.
   `WebAssemblyTrimmingTests`, one of which also runs the trimmed app in Chromium, Firefox and WebKit.
 
+`LazyScriptsTrimmingTests` publishes both apps with `BitBlazorUILazyScripts`: one module per script and the boot modules
+instead of the bundles, trimmed to what the app can reach, and - with `RUN_BROWSER_TESTS=1` - runs them (the WebAssembly
+one through `wwwroot/index.lazy.html`, the host page without the packages' script tags). It also checks that a bundle-mode
+publish carries none of the lazy scripts.
+
 `PackageTrimmingTests` packs the packages into a feed of their own and publishes apps outside the repository that
 reference them, with each of the .NET 8, 9 and 10 SDKs: the package layout and the SDK paths a ProjectReference never
 takes.
