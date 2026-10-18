@@ -482,6 +482,10 @@ public partial class BitNav<[DynamicallyAccessedMembers(DynamicallyAccessedMembe
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // The script that walks the tree on the arrow keys is called by nothing: with the lazy scripts on
+        // (BitBlazorUIScripts), the nav is what loads it.
+        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI", "BitNav");
+
         await ReorderOptionsByDomOrder();
 
         // A focus request for an item of a collapsed branch had to wait for the render that opens the

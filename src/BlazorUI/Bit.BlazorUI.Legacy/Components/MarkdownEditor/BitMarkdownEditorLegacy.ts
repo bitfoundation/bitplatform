@@ -561,3 +561,5 @@
         return str.slice(0, index) + str.slice(index + 1);
     };
 }
+
+// bit-lazy: teardown Legacy.MarkdownEditor.dispose

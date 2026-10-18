@@ -362,3 +362,5 @@
         Vertical
     }
 }
+
+// bit-lazy: teardown Swipes.dispose

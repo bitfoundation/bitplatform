@@ -1,0 +1,612 @@
+﻿<Project>
+
+    <!--
+    bit BlazorUI consumer-side build logic: how an app loads the packages' scripts, and publish-time trimming of the
+    packages' scripts and stylesheets. Imported into every project that references the Bit.BlazorUI package (NuGet imports
+    buildTransitive/ for direct and transitive references alike; a build/ copy is packed as well), and configured through
+    the properties and items below, set in the csproj of the project that publishes the app. The same, for app authors:
+    https://blazorui.bitplatform.dev/trimming
+
+    The packages ship their JavaScript and CSS as bundles an app links once - bit.blazorui.js, bit.blazorui.css (and its
+    Fluent variants), bit.blazorui.extras.js / .css, bit.blazorui.legacy.js / .css, bit.blazorui.icons.css - and, beside
+    them, the pieces those bundles are made of: one per TypeScript file and one per component stylesheet. A trimmed
+    publish puts each bundle back together from only the pieces the app can use, under the same name and URL, so the
+    <script> and <link> tags stay exactly as they are. A build - and dotnet run and dotnet watch, which run on one - is
+    never trimmed: what a developer debugs is always the full set.
+
+    The scripts come in a second shape too, built from the same pieces: the lazy scripts, one ES module per script under
+    _content/<package>/scripts/modules/, which the .NET side import()s the first time something calls into it. A page then
+    downloads the scripts of the components it actually uses, and the app needs no <script> tag of the packages at all:
+    the few scripts that act on the page without being called (the theme, the claim of the Escape key, the keys every
+    component relies on) are imported as the app starts by each package's JavaScript initializer.
+
+    Loading:
+
+      BitBlazorUILazyScripts     true    The lazy scripts: no <script> tag of the packages - remove them - and only the
+                                         modules a page calls into are downloaded. Sets the Bit.BlazorUI.LazyScripts
+                                         runtime switch (BitBlazorUIScripts.LazyScriptsEnabled) and drops the bundles from
+                                         the app's static web assets.
+                                 false   (default) The bundles, which the app references with its <script> tags; the
+                                         modules, the boot modules and the JavaScript initializers are dropped from its
+                                         static web assets.
+
+      BitBlazorUIIncludeScriptBundle / BitBlazorUIIncludeScriptModules
+                                         Which shape of the scripts ends up in the app's static web assets. Default to the
+                                         mode above; set both to true to keep both (an app choosing at run time, through
+                                         BitBlazorUIScripts.UseLazyScripts / AddBitBlazorUIServices(o => o.LazyScripts =
+                                         ...), and rendering its <script> tags only for the bundles). Written out in the
+                                         csproj, BitBlazorUIIncludeScriptModules=true is also what publishes every module
+                                         through a trimmed publish, which otherwise keeps the ones the app can reach.
+
+    Trimming switches - they decide WHETHER to trim:
+
+      BitBlazorUITrimAssets      true    Trim the scripts and the stylesheets of the publish. The default for the three
+                                         switches below.
+                                         Default: true wherever the .NET trimmer runs - a Blazor WebAssembly project
+                                         (published trimmed by default) or any project published with PublishTrimmed - since
+                                         ILLink then already knows exactly what the app can reach; false elsewhere, where a
+                                         Blazor Server app or the server project of a Blazor Web App turns it on here. (A
+                                         server hosting a WebAssembly client is not defaulted on by its PublishTrimmed: its
+                                         trimmer knows the server alone.)
+                                 false   Publish the full bundles.
+
+      BitBlazorUITrimScripts     Trim the scripts: the bundles (bit.blazorui.js, ...), and in lazy mode the modules and the
+                                 boot modules. Default: BitBlazorUITrimAssets.
+      BitBlazorUITrimStyles      Trim the stylesheets (bit.blazorui.css, its Fluent variants, ...). Default:
+                                 BitBlazorUITrimAssets.
+      BitBlazorUITrimVendorAssets
+                                 Leave out of the publish the libraries and files a component loads at run time - the
+                                 Legacy package's pdf.js, quill, chart.js and marked, the Extras' Leaflet and OpenLayers
+                                 loaders and its flag images - wherever nothing the app can run asks for them: the code
+                                 loading one names its folder (_content/Bit.BlazorUI.Legacy/pdf.js/), and so does markup
+                                 of the app's own that links one. They are never downloaded unless asked for, so this
+                                 is the size of the publish, not of a page. Default: BitBlazorUITrimAssets.
+      BitBlazorUITrimIcons       Trim bit.blazorui.icons.css (Bit.BlazorUI.Icons) down to the glyphs whose names appear
+                                 in the app's code. Default: false, whatever the switches above say - an app that reads
+                                 icon names out of data (a menu from a database, a user's choice) names them nowhere in
+                                 its code. Turn it on where every icon is named in code, and list the others with
+                                 <BitBlazorUIIcon>.
+
+    What it goes on - what the trimming KNOWS. With none of these in play it stands down and the full set is published:
+
+      PublishTrimmed             (not a bit BlazorUI property) The most precise signal there is: the types ILLink left
+                                 in the trimmed Bit.BlazorUI*.dll are the components the app can render, and the
+                                 interop identifiers left in them the scripts it can call. In play whenever the publish
+                                 is trimmed, and it then supersedes the scan - except on a server hosting a WebAssembly
+                                 client (a Blazor Web App's), whose trimmed assemblies say nothing of a component the
+                                 client renders, and where the scan answers instead.
+
+      BitBlazorUIScan  TypeReferences  Read the app's own assemblies for the bit BlazorUI types they reference - a
+                                 <BitButton> in a .razor file references Bit.BlazorUI.BitButton - and the untrimmed
+                                 library assemblies for everything those reach. The signal for a publish ILLink does not
+                                 trim: a Blazor Server app, a Blazor Web App's server (which references its WebAssembly
+                                 client, so the scan covers both), a WebAssembly app with PublishTrimmed off. The precise
+                                 mode of the two, and the default wherever a switch above is on.
+                       TypeNames The same without reading the metadata tables: the library's type names are matched
+                                 against the names each assembly's string heap holds. Coarser - an app with a class of its
+                                 own called BitButton keeps that component too - so it over-includes, never misses.
+                       None      Do not read the app's assemblies: the full set, unless the items below say otherwise.
+                                 Ignored, like the other two, where PublishTrimmed is true.
+
+    Items, for what no signal can see:
+
+      <BitBlazorUIComponent Include="BitChart;BitDataGrid" />
+                                 Types the app needs whatever the signals concluded - a component rendered by
+                                 reflection or through a DynamicComponent built from a type name. Everything the type
+                                 reaches comes with it: its stylesheet, its scripts, the components it renders. A name
+                                 that is no type of the packages fails the publish. With BitBlazorUIScan None and the
+                                 publish not trimmed, these are a signal of their own: the whole of what the app renders.
+                                 The two items below only ever add to a signal - a list of scripts or glyphs says nothing
+                                 of the components an app renders - so with nothing else in play they trim nothing.
+
+      <BitBlazorUIAsset Include="Callouts;BitButton" />
+                                 Scripts (the TypeScript file's name, which is also its module's) and component
+                                 stylesheets (the .scss file's name) kept by name - for JavaScript calling into
+                                 BitBlazorUI.* from where the publish cannot read it (the app's own .js and .html files, of
+                                 every project it references, are read, and so are the string literals of its assemblies),
+                                 or markup of the app's own using a component's classes without the component. A script
+                                 comes with every script it uses; a component stylesheet comes alone - name the component
+                                 in <BitBlazorUIComponent> for everything it needs. A name that is neither fails the
+                                 publish.
+
+      <BitBlazorUIIcon Include="Add;Delete" />
+                                 Glyphs kept whatever the code says, with BitBlazorUITrimIcons on - the icon names that
+                                 come from data.
+
+      <BitBlazorUIScanAssembly Include="..." />
+                                 Which assemblies BitBlazorUIScan reads. Defaults to this project's own assembly and its
+                                 copy-local references, which is the app.
+
+      <BitBlazorUIScanFile Include="..." />
+                                 Text files read for what the app says outside its code - a host page or a script the
+                                 static web assets do not hold - with the .html and .js of the app's projects (not the
+                                 framework's own, under _framework) included already. Their text counts like a string
+                                 literal of the app's code: icon names, the bit-theme attributes, a data-bit-esc of the
+                                 app's own markup.
+
+      <BitBlazorUILibraryAssembly Include="..." />
+                                 The untrimmed Bit.BlazorUI*.dll the scan reads the components from. Defaults to the
+                                 copy-local references of those names; set it for a layout where that comes back empty
+                                 or ambiguous, rather than turning the feature off.
+
+    Warnings, each with a code a project can silence through NoWarn without turning anything off: BITBLAZORUI001 (a script
+    uses a function of another package that no package of the app exports - the packages are of different versions),
+    BITBLAZORUI002 (the scan read no assembly referencing the packages, so it kept everything), BITBLAZORUI003
+    (<BitBlazorUIIcon> items without Bit.BlazorUI.Icons).
+
+    Where these go. On the project that publishes the app - the Blazor WebAssembly project, or the server project of a
+    Blazor Web App - and not in a shared Directory.Build.props: from there they would also reach the Razor class
+    libraries of the solution, which do not publish the app's static web assets. Such a project stands down with a
+    message rather than trimming (see _BitBlazorUIResolveAssetTrimming). BitBlazorUILazyScripts is the exception: it is a
+    switch of the app as a whole, and the projects of a solution may share it.
+    -->
+
+    <!-- The package carries this file under buildTransitive\ and build\, and tooling that imports both would evaluate it
+         twice: the group below runs on the first import only, the rest of the file assigns rather than accumulates, and
+         the items are written to be repeatable. -->
+    <PropertyGroup>
+        <_BitBlazorUITargetsAlreadyImported>$(_BitBlazorUITargetsImported)</_BitBlazorUITargetsAlreadyImported>
+        <_BitBlazorUITargetsImported>true</_BitBlazorUITargetsImported>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(_BitBlazorUITargetsAlreadyImported)' != 'true'">
+        <_BitBlazorUIIsWebAssembly Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">true</_BitBlazorUIIsWebAssembly>
+
+        <BitBlazorUILazyScripts Condition="'$(BitBlazorUILazyScripts)' == ''">false</BitBlazorUILazyScripts>
+
+        <!-- Whether the csproj asked for the modules by name, read while the property is still unset: only that publishes
+             every module through a trimmed publish, which otherwise keeps the ones the app can reach. -->
+        <_BitBlazorUIScriptModulesRequested Condition="'$(BitBlazorUIIncludeScriptModules)' == 'true'">true</_BitBlazorUIScriptModulesRequested>
+        <BitBlazorUIIncludeScriptBundle Condition="'$(BitBlazorUIIncludeScriptBundle)' == '' and '$(BitBlazorUILazyScripts)' == 'true'">false</BitBlazorUIIncludeScriptBundle>
+        <BitBlazorUIIncludeScriptBundle Condition="'$(BitBlazorUIIncludeScriptBundle)' == ''">true</BitBlazorUIIncludeScriptBundle>
+        <BitBlazorUIIncludeScriptModules Condition="'$(BitBlazorUIIncludeScriptModules)' == ''">$(BitBlazorUILazyScripts)</BitBlazorUIIncludeScriptModules>
+
+        <!-- Which switches the csproj left to their defaults, read while they are still unset: a project published with
+             PublishTrimmed - which a publish profile or the command line may set, after this file is evaluated - turns the
+             defaulted ones on in _BitBlazorUIResolveAssetTrimming, where its final value is known. -->
+        <_BitBlazorUITrimAssetsDefaulted Condition="'$(BitBlazorUITrimAssets)' == ''">true</_BitBlazorUITrimAssetsDefaulted>
+        <_BitBlazorUITrimScriptsDefaulted Condition="'$(BitBlazorUITrimScripts)' == ''">true</_BitBlazorUITrimScriptsDefaulted>
+        <_BitBlazorUITrimStylesDefaulted Condition="'$(BitBlazorUITrimStyles)' == ''">true</_BitBlazorUITrimStylesDefaulted>
+        <_BitBlazorUITrimVendorAssetsDefaulted Condition="'$(BitBlazorUITrimVendorAssets)' == ''">true</_BitBlazorUITrimVendorAssetsDefaulted>
+
+        <BitBlazorUITrimAssets Condition="'$(BitBlazorUITrimAssets)' == '' and '$(_BitBlazorUIIsWebAssembly)' == 'true'">true</BitBlazorUITrimAssets>
+        <BitBlazorUITrimAssets Condition="'$(BitBlazorUITrimAssets)' == ''">false</BitBlazorUITrimAssets>
+        <BitBlazorUITrimScripts Condition="'$(BitBlazorUITrimScripts)' == ''">$(BitBlazorUITrimAssets)</BitBlazorUITrimScripts>
+        <BitBlazorUITrimStyles Condition="'$(BitBlazorUITrimStyles)' == ''">$(BitBlazorUITrimAssets)</BitBlazorUITrimStyles>
+        <BitBlazorUITrimIcons Condition="'$(BitBlazorUITrimIcons)' == ''">false</BitBlazorUITrimIcons>
+        <BitBlazorUITrimVendorAssets Condition="'$(BitBlazorUITrimVendorAssets)' == ''">$(BitBlazorUITrimAssets)</BitBlazorUITrimVendorAssets>
+
+        <!-- Whether this WebAssembly project is the client of a Blazor Web App, being asked for its publish assets by the
+             server publishing them: the server trims the app, off the scan of its own assemblies - the client's among them -
+             and its own copies of the packages' bundles are the ones published, so a trimming of the client's here would be
+             work thrown away and a second, misleading line per bundle in the build output. The WebAssembly SDK makes that
+             request with these two global properties (StaticWebAssetsAdditionalPublishProperties, Microsoft.NET.Sdk.WebAssembly
+             .Browser.props, on 8, 9 and 10 alike), read here while only a global property can have set them: the second
+             is given a default inside a target, as the references are resolved. -->
+        <_BitBlazorUIPublishedByHost Condition="'$(_BitBlazorUIIsWebAssembly)' == 'true' and '$(BuildProjectReferences)' == 'false' and '$(ResolveAssemblyReferencesFindRelatedSatellites)' == 'true'">true</_BitBlazorUIPublishedByHost>
+
+        <!-- Whether the csproj wrote the scan out, read while it is still unset: a scan asked for by name fails the
+             publish when it cannot run, a defaulted one stands down quietly instead. The default itself is decided in
+             _BitBlazorUIResolveAssetTrimming, along with the switches it follows. -->
+        <_BitBlazorUIScanRequested Condition="'$(BitBlazorUIScan)' != ''">true</_BitBlazorUIScanRequested>
+
+        <!-- The task ships in the package's tasks\ folder. A project referencing Bit.BlazorUI as a ProjectReference (this
+             repository's own tests) imports this file by hand and gets the source tree's build of it instead. -->
+        <BitBlazorUIBuildTasksAssembly Condition="'$(BitBlazorUIBuildTasksAssembly)' == '' and Exists('$(MSBuildThisFileDirectory)..\tasks\Bit.BlazorUI.Build.dll')">$(MSBuildThisFileDirectory)..\tasks\Bit.BlazorUI.Build.dll</BitBlazorUIBuildTasksAssembly>
+        <_BitBlazorUITasksFromSource Condition="'$(BitBlazorUIBuildTasksAssembly)' == ''">true</_BitBlazorUITasksFromSource>
+        <BitBlazorUIBuildTasksAssembly Condition="'$(BitBlazorUIBuildTasksAssembly)' == ''">$(MSBuildThisFileDirectory)..\..\Bit.BlazorUI.Build\bin\$(Configuration)\netstandard2.0\Bit.BlazorUI.Build.dll</BitBlazorUIBuildTasksAssembly>
+
+        <!-- Appended, not assigned: the SDK's own definition of this property, imported after this file, keeps what it
+             already holds. The stage at which the WebAssembly SDK swaps in its trimmed assemblies - after ILLink has run,
+             before compressed copies, service-worker manifests and fingerprinted endpoints are computed. The gate first,
+             because MSBuild reads a target's own Condition before it builds that target's DependsOnTargets. The shape of
+             the scripts is chosen ahead of the trimming, which only ever narrows what is left (on the .NET 8 SDK, the one
+             stage there is; on 9 and later it has run already, see below). -->
+        <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);_BitBlazorUIResolveAssetTrimming;BitBlazorUISelectPublishScriptAssets;BitBlazorUITrimAssets</ResolvePublishStaticWebAssetsDependsOn>
+
+        <!-- On the .NET 9 SDK and later, the publish lists the JavaScript initializers Blazor imports as it starts before
+             the stage above, right after it gathered the assets of every source (ResolveCorePublishStaticWebAssets): an
+             initializer of the lazy scripts dropped any later would still be listed, and fail to load in a bundle-mode app
+             that references the packages as projects (a package's are dropped from its build already). So the shape is
+             chosen at the end of that stage there. -->
+        <ResolveCorePublishStaticWebAssetsDependsOn>$(ResolveCorePublishStaticWebAssetsDependsOn);BitBlazorUISelectPublishScriptAssets</ResolveCorePublishStaticWebAssetsDependsOn>
+
+        <!-- The build's assets are gathered from three places in a fixed order - the packages', this project's own, then
+             the referenced projects' - named in the dependency list of one target: ResolveCoreStaticWebAssets on the .NET 9
+             SDK and later, ResolveStaticWebAssetsInputs on .NET 8. Appended to both, so the shape is chosen once every
+             source has contributed and before the initializers are listed, whichever SDK is in play; the second to be
+             reached finds the target built already. -->
+        <ResolveCoreStaticWebAssetsDependsOn>$(ResolveCoreStaticWebAssetsDependsOn);BitBlazorUISelectScriptAssets</ResolveCoreStaticWebAssetsDependsOn>
+        <ResolveStaticWebAssetsInputsDependsOn>$(ResolveStaticWebAssetsInputsDependsOn);BitBlazorUISelectScriptAssets</ResolveStaticWebAssetsInputsDependsOn>
+    </PropertyGroup>
+
+    <!-- Where this package keeps its pieces: buildTransitive\bit-assets in the package, obj\bit-assets in the source tree.
+         Both are named; the task reads whichever holds a manifest. Removed before they are included, so a second import
+         of this file leaves one of each. -->
+    <ItemGroup>
+        <BitBlazorUIAssetFolder Remove="$(MSBuildThisFileDirectory)bit-assets\;$(MSBuildThisFileDirectory)..\obj\bit-assets\" />
+        <BitBlazorUIAssetFolder Include="$(MSBuildThisFileDirectory)bit-assets\;$(MSBuildThisFileDirectory)..\obj\bit-assets\" Package="Bit.BlazorUI" />
+    </ItemGroup>
+
+    <!-- The packages whose scripts come in the two shapes, each with the file names of its bundle and its boot module under
+         scripts/: what the selection of the shape tells a bundle, a module, a boot module and an initializer of theirs
+         apart by. -->
+    <ItemGroup>
+        <BitBlazorUIScriptPackage Remove="Bit.BlazorUI" />
+        <BitBlazorUIScriptPackage Include="Bit.BlazorUI" Bundle="bit.blazorui.js" Boot="bit.blazorui.boot.js" />
+    </ItemGroup>
+
+    <!-- The runtime switch the .NET side reads (BitBlazorUIScripts.LazyScriptsEnabled): an AppContext switch through the
+         host's runtime configuration, removed before it is included so a second import leaves one... -->
+    <ItemGroup Condition="'$(BitBlazorUILazyScripts)' == 'true'">
+        <RuntimeHostConfigurationOption Remove="Bit.BlazorUI.LazyScripts" />
+        <RuntimeHostConfigurationOption Include="Bit.BlazorUI.LazyScripts" Value="true" Trim="true" />
+    </ItemGroup>
+
+    <!-- ...and, because runtime configuration options do not reach a .NET 8 Blazor WebAssembly app at all (they only started
+         flowing into its boot configuration with .NET 9), a module initializer compiled into the project that turns the
+         mode on as soon as the assembly loads. Both say the same thing; the initializer is what makes it hold on every
+         host. Skipped for a project pinned to a C# version without module initializers (older than 9), which keeps the
+         runtime configuration only. Ahead of BeforeCompile, which comes before the hash of the compiled files that decides
+         whether to compile again: added any later, turning the switch back off would leave the compiled initializer in
+         place, the list of files hashing the same either way. -->
+    <Target Name="BitBlazorUIGenerateLazyScriptsInitializer" BeforeTargets="BeforeCompile"
+            Condition="'$(BitBlazorUILazyScripts)' == 'true' and '$(Language)' == 'C#' and '$(DesignTimeBuild)' != 'true' and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(LangVersion)', '^[1-8](\.\d+)?$'))">
+        <PropertyGroup>
+            <_BitBlazorUILazyScriptsInitializer>$(IntermediateOutputPath)Bit.BlazorUI.LazyScripts.g.cs</_BitBlazorUILazyScriptsInitializer>
+        </PropertyGroup>
+        <ItemGroup>
+            <_BitBlazorUILazyScriptsInitializerLine Include="// &lt;auto-generated /&gt; Written by Bit.BlazorUI (BitBlazorUILazyScripts=true). Do not edit." />
+            <_BitBlazorUILazyScriptsInitializerLine Include="internal static class BitBlazorUILazyScriptsInitializer" />
+            <_BitBlazorUILazyScriptsInitializerLine Include="{" />
+            <_BitBlazorUILazyScriptsInitializerLine Include="%20%20%20%20[global::System.Runtime.CompilerServices.ModuleInitializer]" />
+            <_BitBlazorUILazyScriptsInitializerLine Include="%20%20%20%20internal static void Initialize() => global::Bit.BlazorUI.BitBlazorUIScripts.UseLazyScripts()%3B" />
+            <_BitBlazorUILazyScriptsInitializerLine Include="}" />
+        </ItemGroup>
+        <WriteLinesToFile File="$(_BitBlazorUILazyScriptsInitializer)" Lines="@(_BitBlazorUILazyScriptsInitializerLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+        <ItemGroup>
+            <Compile Include="$(_BitBlazorUILazyScriptsInitializer)" />
+            <FileWrites Include="$(_BitBlazorUILazyScriptsInitializer)" />
+            <_BitBlazorUILazyScriptsInitializerLine Remove="@(_BitBlazorUILazyScriptsInitializerLine)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- A separate process for the source tree's build of the task, so the long-lived MSBuild nodes do not hold the dll
+         while it is being rebuilt. The package's copy never changes, and loads in-process. -->
+    <UsingTask TaskName="Bit.BlazorUI.Build.TrimBitBlazorUIAssets" AssemblyFile="$(BitBlazorUIBuildTasksAssembly)" Condition="'$(_BitBlazorUITasksFromSource)' != 'true'" />
+    <UsingTask TaskName="Bit.BlazorUI.Build.TrimBitBlazorUIAssets" AssemblyFile="$(BitBlazorUIBuildTasksAssembly)" TaskFactory="TaskHostFactory" Condition="'$(_BitBlazorUITasksFromSource)' == 'true'" />
+
+    <!--
+    Drops the shape of the scripts the app does not use from its static web assets: a bundle-mode app carries none of the
+    modules, boot modules and JavaScript initializers (an initializer left in would have Blazor import the boot scripts
+    next to the bundle), and a lazy-mode app none of the bundles it never loads. Runs once the SDK has gathered the assets
+    from every source - which is what makes it work for a ProjectReference to the packages as well as for the
+    PackageReference a consumer has - and before the build manifest is written, so the removed items reach neither the
+    build output nor that manifest.
+
+    The build half. A publish rebuilds the asset list from scratch, and a referenced project asked for its publish assets
+    answers with the whole of its wwwroot, so the publish is told again by BitBlazorUISelectPublishScriptAssets: written out
+    twice rather than shared, since a target runs at most once per project build and one hooked into both stages would be
+    skipped at the second. The two bodies are identical, and are meant to stay that way.
+    -->
+    <Target Name="BitBlazorUISelectScriptAssets"
+            Condition="'$(BitBlazorUIIncludeScriptBundle)' != 'true' or '$(BitBlazorUIIncludeScriptModules)' != 'true'">
+        <PropertyGroup>
+            <_BitBlazorUIScriptPackages>;@(BitBlazorUIScriptPackage);</_BitBlazorUIScriptPackages>
+            <_BitBlazorUIScriptBundles>;@(BitBlazorUIScriptPackage->'%(Bundle)');</_BitBlazorUIScriptBundles>
+            <_BitBlazorUIScriptBoots>;@(BitBlazorUIScriptPackage->'%(Boot)');</_BitBlazorUIScriptBoots>
+        </PropertyGroup>
+        <ItemGroup>
+            <_BitBlazorUIScriptAsset Include="@(StaticWebAsset)" Condition="$([System.String]::Copy('$(_BitBlazorUIScriptPackages)').Contains(';%(StaticWebAsset.SourceId);'))" />
+            <_BitBlazorUIScriptAsset>
+                <_Path>$([MSBuild]::NormalizePath('%(FullPath)'))</_Path>
+                <_MatchPath>$([MSBuild]::NormalizePath('%(FullPath)'))</_MatchPath>
+            </_BitBlazorUIScriptAsset>
+            <!-- A derived asset - a compressed .gz/.br variant - is classified by the asset it was derived from, so that it
+                 leaves with it instead of staying behind with a RelatedAsset pointing at a file the app no longer has. -->
+            <_BitBlazorUIScriptAsset Condition="'%(_BitBlazorUIScriptAsset.RelatedAsset)' != ''">
+                <_MatchPath>$([MSBuild]::NormalizePath('%(_BitBlazorUIScriptAsset.RelatedAsset)'))</_MatchPath>
+            </_BitBlazorUIScriptAsset>
+            <_BitBlazorUIScriptAsset>
+                <_File>$([System.IO.Path]::GetFileName('%(_MatchPath)'))</_File>
+                <_Folder>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('%(_MatchPath)'))))</_Folder>
+                <_Parent>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('%(_MatchPath)'))))))</_Parent>
+            </_BitBlazorUIScriptAsset>
+            <!-- A bundle is scripts/<the package's bundle>; the lazy shape is scripts/modules/*, the package's boot module
+                 beside the bundle and its JavaScript initializer - <package>.lib.module.js, which a package packed with the
+                 .NET 9 SDK or later holds under its fingerprint (Bit.BlazorUI.ysja66vzx0.lib.module.js). The rest of the
+                 packages' scripts - vendored libraries under folders of their own - is neither. -->
+            <_BitBlazorUIScriptAsset Condition="'%(_BitBlazorUIScriptAsset._Folder)' == 'scripts'">
+                <_IsBundle>$([System.String]::Copy('$(_BitBlazorUIScriptBundles)').Contains(';%(_File);'))</_IsBundle>
+                <_IsLazy>$([System.String]::Copy('$(_BitBlazorUIScriptBoots)').Contains(';%(_File);'))</_IsLazy>
+            </_BitBlazorUIScriptAsset>
+            <_BitBlazorUIScriptAsset Condition="'%(_BitBlazorUIScriptAsset._Folder)' == 'scripts' and $([System.String]::Copy('%(_BitBlazorUIScriptAsset._File)').StartsWith('%(_BitBlazorUIScriptAsset.SourceId).')) and $([System.String]::Copy('%(_BitBlazorUIScriptAsset._File)').EndsWith('.lib.module.js'))">
+                <_IsLazy>True</_IsLazy>
+            </_BitBlazorUIScriptAsset>
+            <_BitBlazorUIScriptAsset Condition="'%(_BitBlazorUIScriptAsset._Folder)' == 'modules' and '%(_BitBlazorUIScriptAsset._Parent)' == 'scripts'">
+                <_IsLazy>True</_IsLazy>
+            </_BitBlazorUIScriptAsset>
+
+            <_BitBlazorUIRemovedScriptAsset Include="@(_BitBlazorUIScriptAsset)" Condition="'$(BitBlazorUIIncludeScriptBundle)' != 'true' and '%(_BitBlazorUIScriptAsset._IsBundle)' == 'True'" />
+            <_BitBlazorUIRemovedScriptAsset Include="@(_BitBlazorUIScriptAsset)" Condition="'$(BitBlazorUIIncludeScriptModules)' != 'true' and '%(_BitBlazorUIScriptAsset._IsLazy)' == 'True'" />
+
+            <!-- Endpoints (.NET 9 SDK and later) are keyed by the asset file they serve. -->
+            <_BitBlazorUIRemovedScriptEndpointKey Include="@(_BitBlazorUIRemovedScriptAsset)">
+                <AssetFile>%(_BitBlazorUIRemovedScriptAsset._Path)</AssetFile>
+            </_BitBlazorUIRemovedScriptEndpointKey>
+
+            <StaticWebAsset Remove="@(_BitBlazorUIRemovedScriptAsset)" />
+            <StaticWebAssetEndpoint Remove="@(_BitBlazorUIRemovedScriptEndpointKey)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" />
+
+            <_BitBlazorUIScriptAsset Remove="@(_BitBlazorUIScriptAsset)" />
+            <_BitBlazorUIRemovedScriptAsset Remove="@(_BitBlazorUIRemovedScriptAsset)" />
+            <_BitBlazorUIRemovedScriptEndpointKey Remove="@(_BitBlazorUIRemovedScriptEndpointKey)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- The same selection again, on the publish asset list (see BitBlazorUISelectScriptAssets for why it is written out
+         twice). -->
+    <Target Name="BitBlazorUISelectPublishScriptAssets"
+            Condition="'$(BitBlazorUIIncludeScriptBundle)' != 'true' or '$(BitBlazorUIIncludeScriptModules)' != 'true'">
+        <PropertyGroup>
+            <_BitBlazorUIScriptPackages>;@(BitBlazorUIScriptPackage);</_BitBlazorUIScriptPackages>
+            <_BitBlazorUIScriptBundles>;@(BitBlazorUIScriptPackage->'%(Bundle)');</_BitBlazorUIScriptBundles>
+            <_BitBlazorUIScriptBoots>;@(BitBlazorUIScriptPackage->'%(Boot)');</_BitBlazorUIScriptBoots>
+        </PropertyGroup>
+        <ItemGroup>
+            <_BitBlazorUIScriptAsset Include="@(StaticWebAsset)" Condition="$([System.String]::Copy('$(_BitBlazorUIScriptPackages)').Contains(';%(StaticWebAsset.SourceId);'))" />
+            <_BitBlazorUIScriptAsset>
+                <_Path>$([MSBuild]::NormalizePath('%(FullPath)'))</_Path>
+                <_MatchPath>$([MSBuild]::NormalizePath('%(FullPath)'))</_MatchPath>
+            </_BitBlazorUIScriptAsset>
+            <!-- A derived asset - a compressed .gz/.br variant - is classified by the asset it was derived from, so that it
+                 leaves with it instead of staying behind with a RelatedAsset pointing at a file the app no longer has. -->
+            <_BitBlazorUIScriptAsset Condition="'%(_BitBlazorUIScriptAsset.RelatedAsset)' != ''">
+                <_MatchPath>$([MSBuild]::NormalizePath('%(_BitBlazorUIScriptAsset.RelatedAsset)'))</_MatchPath>
+            </_BitBlazorUIScriptAsset>
+            <_BitBlazorUIScriptAsset>
+                <_File>$([System.IO.Path]::GetFileName('%(_MatchPath)'))</_File>
+                <_Folder>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName('%(_MatchPath)'))))</_Folder>
+                <_Parent>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName($([System.IO.Path]::GetDirectoryName('%(_MatchPath)'))))))</_Parent>
+            </_BitBlazorUIScriptAsset>
+            <!-- A bundle is scripts/<the package's bundle>; the lazy shape is scripts/modules/*, the package's boot module
+                 beside the bundle and its JavaScript initializer - <package>.lib.module.js, which a package packed with the
+                 .NET 9 SDK or later holds under its fingerprint (Bit.BlazorUI.ysja66vzx0.lib.module.js). The rest of the
+                 packages' scripts - vendored libraries under folders of their own - is neither. -->
+            <_BitBlazorUIScriptAsset Condition="'%(_BitBlazorUIScriptAsset._Folder)' == 'scripts'">
+                <_IsBundle>$([System.String]::Copy('$(_BitBlazorUIScriptBundles)').Contains(';%(_File);'))</_IsBundle>
+                <_IsLazy>$([System.String]::Copy('$(_BitBlazorUIScriptBoots)').Contains(';%(_File);'))</_IsLazy>
+            </_BitBlazorUIScriptAsset>
+            <_BitBlazorUIScriptAsset Condition="'%(_BitBlazorUIScriptAsset._Folder)' == 'scripts' and $([System.String]::Copy('%(_BitBlazorUIScriptAsset._File)').StartsWith('%(_BitBlazorUIScriptAsset.SourceId).')) and $([System.String]::Copy('%(_BitBlazorUIScriptAsset._File)').EndsWith('.lib.module.js'))">
+                <_IsLazy>True</_IsLazy>
+            </_BitBlazorUIScriptAsset>
+            <_BitBlazorUIScriptAsset Condition="'%(_BitBlazorUIScriptAsset._Folder)' == 'modules' and '%(_BitBlazorUIScriptAsset._Parent)' == 'scripts'">
+                <_IsLazy>True</_IsLazy>
+            </_BitBlazorUIScriptAsset>
+
+            <_BitBlazorUIRemovedScriptAsset Include="@(_BitBlazorUIScriptAsset)" Condition="'$(BitBlazorUIIncludeScriptBundle)' != 'true' and '%(_BitBlazorUIScriptAsset._IsBundle)' == 'True'" />
+            <_BitBlazorUIRemovedScriptAsset Include="@(_BitBlazorUIScriptAsset)" Condition="'$(BitBlazorUIIncludeScriptModules)' != 'true' and '%(_BitBlazorUIScriptAsset._IsLazy)' == 'True'" />
+
+            <!-- Endpoints (.NET 9 SDK and later) are keyed by the asset file they serve. -->
+            <_BitBlazorUIRemovedScriptEndpointKey Include="@(_BitBlazorUIRemovedScriptAsset)">
+                <AssetFile>%(_BitBlazorUIRemovedScriptAsset._Path)</AssetFile>
+            </_BitBlazorUIRemovedScriptEndpointKey>
+
+            <StaticWebAsset Remove="@(_BitBlazorUIRemovedScriptAsset)" />
+            <StaticWebAssetEndpoint Remove="@(_BitBlazorUIRemovedScriptEndpointKey)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" />
+
+            <_BitBlazorUIScriptAsset Remove="@(_BitBlazorUIScriptAsset)" />
+            <_BitBlazorUIRemovedScriptAsset Remove="@(_BitBlazorUIRemovedScriptAsset)" />
+            <_BitBlazorUIRemovedScriptEndpointKey Remove="@(_BitBlazorUIRemovedScriptEndpointKey)" />
+        </ItemGroup>
+    </Target>
+
+    <PropertyGroup>
+        <!-- Evaluation time, because the Import at the foot of this file conditions on it. -->
+        <_BitBlazorUISdkHasEndpoints>false</_BitBlazorUISdkHasEndpoints>
+        <_BitBlazorUISdkHasEndpoints Condition="'$(NETCoreSdkVersion)' != '' and $([MSBuild]::VersionGreaterThanOrEquals('$(NETCoreSdkVersion)', '9.0'))">true</_BitBlazorUISdkHasEndpoints>
+
+        <!-- Only the project that publishes an app. ResolvePublishStaticWebAssets is not the publish-only stage it looks
+             like: the SDK runs it on REFERENCED projects too, and a hybrid head that packages its wwwroot reaches it in a
+             plain build. A Razor class library asked for its publish assets that way would trim against its own
+             references, which are not the app's. The SDK a project loaded says which it is - the Web SDK or one of the
+             two WebAssembly ones names every project shape that publishes an app rather than contributing to one, on
+             8, 9 and 10 alike; a Razor class library (Sdk.Razor) and a MAUI hybrid head (the plain SDK with UseMaui)
+             match none of them. -->
+        <_BitBlazorUIIsTrimmingHead>false</_BitBlazorUIIsTrimmingHead>
+        <_BitBlazorUIIsTrimmingHead Condition="'$(UsingMicrosoftNETSdkWeb)' == 'true' or '$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWebAssembly)' == 'true'">true</_BitBlazorUIIsTrimmingHead>
+
+        <!-- ResolveReferences, because @(ReferenceCopyLocalPaths) is where the assemblies to scan come from, and the stage
+             this hangs off does not imply it has run. Only on a head: forcing it in a MAUI hybrid head closes a cycle in
+             the target graph (MSB4006), and the gate above keeps that head out of the trimming altogether. -->
+        <_BitBlazorUIAssembleDependsOn>_BitBlazorUIResolveAssetTrimming</_BitBlazorUIAssembleDependsOn>
+        <_BitBlazorUIAssembleDependsOn Condition="'$(_BitBlazorUIIsTrimmingHead)' == 'true'">$(_BitBlazorUIAssembleDependsOn);ResolveReferences</_BitBlazorUIAssembleDependsOn>
+    </PropertyGroup>
+
+    <!-- Whether the trimming runs, and on which signal. A target rather than a property group because it reads items,
+         which MSBuild evaluates only after every property of every import - and PublishTrimmed, whose final value a
+         publish profile or a command line sets after this file is evaluated. -->
+    <Target Name="_BitBlazorUIResolveAssetTrimming">
+
+        <!-- A server that hosts a WebAssembly client - a Blazor Web App's - publishes the client's assets with its own: the
+             files of the .NET WebAssembly runtime are among its static web assets. ILLink's answer there is the server's
+             alone, and a component the client renders without prerendering it is no type the server's trimmed assemblies
+             keep, so the scan, which reads the client's assembly among the server's references, answers instead. -->
+        <ItemGroup Condition="'$(_BitBlazorUIIsWebAssembly)' != 'true'">
+            <_BitBlazorUIWasmResource Include="@(StaticWebAsset)" Condition="'%(StaticWebAsset.AssetTraitName)' == 'WasmResource'" />
+        </ItemGroup>
+        <PropertyGroup>
+            <_BitBlazorUIHostsWebAssembly>false</_BitBlazorUIHostsWebAssembly>
+            <_BitBlazorUIHostsWebAssembly Condition="'@(_BitBlazorUIWasmResource->Count())' != '0'">true</_BitBlazorUIHostsWebAssembly>
+
+            <_BitBlazorUIUseTrimmedAssemblies>false</_BitBlazorUIUseTrimmedAssemblies>
+            <_BitBlazorUIUseTrimmedAssemblies Condition="'$(PublishTrimmed)' == 'true' and '$(_BitBlazorUIHostsWebAssembly)' != 'true'">true</_BitBlazorUIUseTrimmedAssemblies>
+        </PropertyGroup>
+        <ItemGroup>
+            <_BitBlazorUIWasmResource Remove="@(_BitBlazorUIWasmResource)" />
+        </ItemGroup>
+
+        <!-- Where the .NET trimmer runs, it already knows exactly what the app can reach: the switches the csproj left to
+             their defaults follow it, the way they follow it in a WebAssembly project. Not on a server hosting a client,
+             whose trimmer knows only the server. -->
+        <PropertyGroup Condition="'$(_BitBlazorUIUseTrimmedAssemblies)' == 'true' and '$(_BitBlazorUITrimAssetsDefaulted)' == 'true' and '$(BitBlazorUITrimAssets)' != 'true'">
+            <BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>
+            <BitBlazorUITrimScripts Condition="'$(_BitBlazorUITrimScriptsDefaulted)' == 'true'">true</BitBlazorUITrimScripts>
+            <BitBlazorUITrimStyles Condition="'$(_BitBlazorUITrimStylesDefaulted)' == 'true'">true</BitBlazorUITrimStyles>
+            <BitBlazorUITrimVendorAssets Condition="'$(_BitBlazorUITrimVendorAssetsDefaulted)' == 'true'">true</BitBlazorUITrimVendorAssets>
+        </PropertyGroup>
+
+        <PropertyGroup>
+            <_BitBlazorUITrimAny>false</_BitBlazorUITrimAny>
+            <_BitBlazorUITrimAny Condition="'$(BitBlazorUITrimScripts)' == 'true' or '$(BitBlazorUITrimStyles)' == 'true' or '$(BitBlazorUITrimIcons)' == 'true' or '$(BitBlazorUITrimVendorAssets)' == 'true'">true</_BitBlazorUITrimAny>
+
+            <!-- On wherever a switch is on, so an app asking for the trimming asks for nothing else: on a publish ILLink
+                 never touched, the scan is the only thing that can answer what to trim to. -->
+            <BitBlazorUIScan Condition="'$(_BitBlazorUIScanRequested)' != 'true' and '$(_BitBlazorUITrimAny)' == 'true'">TypeReferences</BitBlazorUIScan>
+            <BitBlazorUIScan Condition="'$(BitBlazorUIScan)' == ''">None</BitBlazorUIScan>
+
+            <!-- ILLink's answer supersedes the scan: both answer what the app can use, and the trimmed assemblies answer it
+                 from what survived rather than from what was referenced. -->
+            <_BitBlazorUIScanMode>None</_BitBlazorUIScanMode>
+            <_BitBlazorUIScanMode Condition="'$(_BitBlazorUIUseTrimmedAssemblies)' != 'true'">$(BitBlazorUIScan)</_BitBlazorUIScanMode>
+
+            <_BitBlazorUIHasSignal>false</_BitBlazorUIHasSignal>
+            <_BitBlazorUIHasSignal Condition="'$(_BitBlazorUIUseTrimmedAssemblies)' == 'true' or '$(_BitBlazorUIScanMode)' != 'None' or '@(BitBlazorUIComponent)' != ''">true</_BitBlazorUIHasSignal>
+
+            <_BitBlazorUIPublishTrimming>false</_BitBlazorUIPublishTrimming>
+            <_BitBlazorUIPublishTrimming Condition="'$(_BitBlazorUITrimAny)' == 'true' and '$(_BitBlazorUIHasSignal)' == 'true' and '$(_BitBlazorUIIsTrimmingHead)' == 'true' and '$(_BitBlazorUIPublishedByHost)' != 'true' and '$(WasmBuildingForNestedPublish)' != 'true' and '$(DesignTimeBuild)' != 'true'">true</_BitBlazorUIPublishTrimming>
+
+            <!-- The two shapes of the scripts, each trimmed where the app has it: the bundles put back together, the modules
+                 the app can no longer import left out - unless the csproj asked for every module by name. -->
+            <_BitBlazorUITrimScriptBundles>false</_BitBlazorUITrimScriptBundles>
+            <_BitBlazorUITrimScriptBundles Condition="'$(BitBlazorUITrimScripts)' == 'true' and '$(BitBlazorUIIncludeScriptBundle)' == 'true'">true</_BitBlazorUITrimScriptBundles>
+            <_BitBlazorUITrimScriptModules>false</_BitBlazorUITrimScriptModules>
+            <_BitBlazorUITrimScriptModules Condition="'$(BitBlazorUITrimScripts)' == 'true' and '$(BitBlazorUIIncludeScriptModules)' == 'true' and '$(_BitBlazorUIScriptModulesRequested)' != 'true'">true</_BitBlazorUITrimScriptModules>
+
+            <!-- Said out loud for the settings that describe THIS app - a scan written out by hand, names in items - landing
+                 in a project that does not publish one, which is what a shared Directory.Build.props does. The switches
+                 themselves are worth sharing and are not worth a line per class library. -->
+            <_BitBlazorUITrimmingStoodDown>false</_BitBlazorUITrimmingStoodDown>
+            <_BitBlazorUITrimmingStoodDown Condition="'$(_BitBlazorUITrimAny)' == 'true' and '$(_BitBlazorUIIsTrimmingHead)' != 'true' and '$(DesignTimeBuild)' != 'true' and ('$(_BitBlazorUIScanRequested)' == 'true' or '@(BitBlazorUIComponent)' != '' or '@(BitBlazorUIAsset)' != '' or '@(BitBlazorUIIcon)' != '')">true</_BitBlazorUITrimmingStoodDown>
+        </PropertyGroup>
+
+        <Message Importance="normal" Condition="'$(_BitBlazorUIUseTrimmedAssemblies)' == 'true' and '$(_BitBlazorUIScanRequested)' == 'true' and '$(BitBlazorUIScan)' != 'None'"
+                 Text="Bit.BlazorUI: this publish is trimmed, so &lt;BitBlazorUIScan&gt;$(BitBlazorUIScan)&lt;/BitBlazorUIScan&gt; is not used - the trimmed assemblies answer the same question more precisely." />
+
+        <Message Importance="normal" Condition="'$(PublishTrimmed)' == 'true' and '$(_BitBlazorUIHostsWebAssembly)' == 'true' and '$(_BitBlazorUIPublishTrimming)' == 'true'"
+                 Text="Bit.BlazorUI: this publish is trimmed, but it hosts a WebAssembly client whose components the server's trimmed assemblies do not show, so &lt;BitBlazorUIScan&gt;$(BitBlazorUIScan)&lt;/BitBlazorUIScan&gt; answers what the app uses instead." />
+
+        <Message Importance="normal" Condition="'$(_BitBlazorUIPublishedByHost)' == 'true' and '$(_BitBlazorUITrimAny)' == 'true' and '$(DesignTimeBuild)' != 'true'"
+                 Text="Bit.BlazorUI: this WebAssembly client is published by the server hosting it, which trims the app's scripts and stylesheets - the client's components among them - so it is left to the server." />
+
+        <Message Importance="normal" Condition="'$(_BitBlazorUITrimmingStoodDown)' == 'true'"
+                 Text="Bit.BlazorUI: asset trimming is configured here but this project does not publish an app's static web assets - it is a class library or a hybrid head contributing to someone else's - so it is left to the project that does. Set &lt;BitBlazorUIScan&gt; and the &lt;BitBlazorUIComponent&gt;, &lt;BitBlazorUIAsset&gt; and &lt;BitBlazorUIIcon&gt; items on the project you publish rather than in a shared Directory.Build.props." />
+
+    </Target>
+
+    <Target Name="_BitBlazorUIAssembleTrimmedAssets" DependsOnTargets="$(_BitBlazorUIAssembleDependsOn)" Condition="'$(_BitBlazorUIPublishTrimming)' == 'true'">
+
+        <PropertyGroup>
+            <!-- Only when ILLink is in play; the task reads "a folder was given but holds no bit BlazorUI assembly" as a
+                 publish set up to be trimmed whose packages were not, and keeps the full bundles. -->
+            <_BitBlazorUITrimmedAssembliesDirectory Condition="'$(_BitBlazorUIUseTrimmedAssemblies)' == 'true'">$(IntermediateLinkDir)</_BitBlazorUITrimmedAssembliesDirectory>
+            <_BitBlazorUITrimmedAssetsDirectory>$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'bit-blazorui-assets'))</_BitBlazorUITrimmedAssetsDirectory>
+        </PropertyGroup>
+
+        <!-- The app's own assemblies: this project's output and everything copied next to it. -->
+        <ItemGroup Condition="'$(_BitBlazorUIScanMode)' != 'None' and '@(BitBlazorUIScanAssembly)' == ''">
+            <BitBlazorUIScanAssembly Include="@(IntermediateAssembly->'%(FullPath)')" />
+            <BitBlazorUIScanAssembly Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll'" />
+        </ItemGroup>
+
+        <!-- The untrimmed library assemblies the scan and the <BitBlazorUIComponent> names read the components from. -->
+        <ItemGroup Condition="'@(BitBlazorUILibraryAssembly)' == ''">
+            <_BitBlazorUILibraryAssembly Include="@(ReferenceCopyLocalPaths)" Condition="'%(Extension)' == '.dll' and $([System.String]::Copy('%(Filename)').StartsWith('Bit.BlazorUI', System.StringComparison.OrdinalIgnoreCase))" />
+        </ItemGroup>
+        <ItemGroup Condition="'@(BitBlazorUILibraryAssembly)' != ''">
+            <_BitBlazorUILibraryAssembly Include="@(BitBlazorUILibraryAssembly)" />
+        </ItemGroup>
+
+        <!-- The packages' folders that hold a manifest - the package's own or, for a ProjectReference, the source tree's. -->
+        <ItemGroup>
+            <_BitBlazorUIAssetFolder Include="@(BitBlazorUIAssetFolder)" Condition="Exists('%(FullPath)scripts.json') or Exists('%(FullPath)styles.json')" />
+        </ItemGroup>
+
+        <!-- The app's own static markup and scripts, of this project and the projects it references - a WebAssembly app's
+             index.html, which is where it writes the <html bit-theme-*> attributes, and a script of its own calling into
+             the library (BitBlazorUI.Theme.onChange) - read whatever the signal; what a .razor page says is compiled into
+             the assemblies already. Added to by BitBlazorUIScanFile items. -->
+        <ItemGroup>
+            <_BitBlazorUIScanFile Include="@(StaticWebAsset)"
+                                  Condition="('%(StaticWebAsset.SourceType)' == 'Discovered' or '%(StaticWebAsset.SourceType)' == 'Project') and '%(StaticWebAsset.AssetRole)' == 'Primary' and ('%(StaticWebAsset.Extension)' == '.html' or '%(StaticWebAsset.Extension)' == '.htm' or '%(StaticWebAsset.Extension)' == '.js' or '%(StaticWebAsset.Extension)' == '.mjs')" />
+            <_BitBlazorUIScanFile Include="@(BitBlazorUIScanFile)" />
+        </ItemGroup>
+
+        <TrimBitBlazorUIAssets AssetFolders="@(_BitBlazorUIAssetFolder)"
+                               TrimmedAssembliesDirectory="$(_BitBlazorUITrimmedAssembliesDirectory)"
+                               LibraryAssemblies="@(_BitBlazorUILibraryAssembly)"
+                               ScanMode="$(_BitBlazorUIScanMode)"
+                               ScanRequested="$(_BitBlazorUIScanRequested)"
+                               ScanAssemblies="@(BitBlazorUIScanAssembly)"
+                               ScanFiles="@(_BitBlazorUIScanFile)"
+                               Components="@(BitBlazorUIComponent)"
+                               Assets="@(BitBlazorUIAsset)"
+                               Icons="@(BitBlazorUIIcon)"
+                               TrimScripts="$(_BitBlazorUITrimScriptBundles)"
+                               TrimScriptModules="$(_BitBlazorUITrimScriptModules)"
+                               TrimStyles="$(BitBlazorUITrimStyles)"
+                               TrimIcons="$(BitBlazorUITrimIcons)"
+                               VendorFolders="@(BitBlazorUIVendorFolder)"
+                               TrimVendorAssets="$(BitBlazorUITrimVendorAssets)"
+                               OutputDirectory="$(_BitBlazorUITrimmedAssetsDirectory)"
+                               StaticWebAssets="@(StaticWebAsset)">
+            <Output TaskParameter="CandidateAssets" ItemName="_BitBlazorUITrimmedCandidate" />
+            <Output TaskParameter="StaleAssets" ItemName="_BitBlazorUIStaleAsset" />
+            <Output TaskParameter="RemovedAssets" ItemName="_BitBlazorUIRemovedAsset" />
+            <Output TaskParameter="Skipped" PropertyName="_BitBlazorUITrimSkipped" />
+        </TrimBitBlazorUIAssets>
+
+        <ItemGroup>
+            <_BitBlazorUILibraryAssembly Remove="@(_BitBlazorUILibraryAssembly)" />
+            <_BitBlazorUIAssetFolder Remove="@(_BitBlazorUIAssetFolder)" />
+            <_BitBlazorUIScanFile Remove="@(_BitBlazorUIScanFile)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- .NET 8 SDK: no fingerprinting, no endpoints. The .NET 9+ counterpart is in Bit.BlazorUI.Endpoints.targets. -->
+    <Target Name="_BitBlazorUIDefineTrimmedAssets" AfterTargets="_BitBlazorUIAssembleTrimmedAssets"
+            Condition="'$(_BitBlazorUISdkHasEndpoints)' != 'true' and '@(_BitBlazorUITrimmedCandidate)' != ''">
+        <DefineStaticWebAssets CandidateAssets="@(_BitBlazorUITrimmedCandidate)">
+            <Output TaskParameter="Assets" ItemName="_BitBlazorUITrimmedAsset" />
+        </DefineStaticWebAssets>
+    </Target>
+
+    <!-- The swap itself: the packages' bundles, what was derived from them and the endpoints that served either leave;
+         the trimmed bundles, defined from their own content, take their place at the same URLs. -->
+    <Target Name="BitBlazorUITrimAssets" DependsOnTargets="_BitBlazorUIAssembleTrimmedAssets" Condition="'$(_BitBlazorUIPublishTrimming)' == 'true'">
+        <!-- What nothing the app can run asks for - the vendor folders, the modules it can no longer import - its files,
+             what was derived from them, and the endpoints of either. -->
+        <ItemGroup Condition="'@(_BitBlazorUIRemovedAsset)' != ''">
+            <StaticWebAssetEndpoint Remove="@(_BitBlazorUIRemovedAsset)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" Condition="'@(StaticWebAssetEndpoint)' != ''" />
+            <StaticWebAsset Remove="@(_BitBlazorUIRemovedAsset)" />
+            <_BitBlazorUIRemovedAsset Remove="@(_BitBlazorUIRemovedAsset)" />
+        </ItemGroup>
+
+        <ItemGroup Condition="'@(_BitBlazorUITrimmedAsset)' != ''">
+            <StaticWebAssetEndpoint Remove="@(_BitBlazorUIStaleAsset)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" Condition="'@(StaticWebAssetEndpoint)' != ''" />
+            <StaticWebAsset Remove="@(_BitBlazorUIStaleAsset)" />
+            <StaticWebAsset Include="@(_BitBlazorUITrimmedAsset)" />
+            <StaticWebAssetEndpoint Include="@(_BitBlazorUITrimmedEndpoint)" />
+            <FileWrites Include="@(_BitBlazorUITrimmedCandidate)" />
+        </ItemGroup>
+
+        <ItemGroup>
+            <_BitBlazorUITrimmedCandidate Remove="@(_BitBlazorUITrimmedCandidate)" />
+            <_BitBlazorUIStaleAsset Remove="@(_BitBlazorUIStaleAsset)" />
+            <_BitBlazorUITrimmedEndpoint Remove="@(_BitBlazorUITrimmedEndpoint)" />
+        </ItemGroup>
+    </Target>
+
+    <Import Project="Bit.BlazorUI.Endpoints.targets" Condition="'$(_BitBlazorUISdkHasEndpoints)' == 'true'" />
+
+</Project>

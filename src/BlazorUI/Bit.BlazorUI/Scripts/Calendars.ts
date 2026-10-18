@@ -150,3 +150,5 @@
 
     }
 }
+
+// bit-lazy: teardown Calendars.dispose

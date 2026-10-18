@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Bit.BlazorUI;
 
+[BitAssetTrimmingRegistrar]
 public static class IBlazorUIExtrasServiceCollectionExtensions
 {
     /// <summary>
