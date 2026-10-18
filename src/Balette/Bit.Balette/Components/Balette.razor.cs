@@ -1289,6 +1289,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
             await InvokeAsync(() =>
             {
+                // A newer search may have started between the delay and this callback reaching the dispatcher.
+                if (token.IsCancellationRequested)
+                {
+                    return;
+                }
+
                 _loading = true;
                 _pendingSources.Clear();
                 foreach (var s in sources)
@@ -1322,6 +1328,11 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
                 await InvokeAsync(() =>
                 {
+                    if (token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     _sourceResults[source.Name] = results.Take(source.MaxResults).ToList();
                     _pendingSources.Remove(source.Name);
                     _loading = _pendingSources.Count > 0;
