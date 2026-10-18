@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Bit.Bmotion.Tests.TestInfra;
 
 namespace Bit.Bmotion.Tests.Engine;
@@ -138,7 +140,8 @@ public class KeyframeOffloadTests
         // The new offload starts from the realized middle keyframe.
         var keyframes = OffloadedKeyframes(interop)!;
         var from = (string)((Dictionary<string, object>)keyframes[0])["transform"];
-        StringAssert.Contains(from, "scale(2)", $"the interrupted pulse must resume from its peak: {from}");
+        var scale = double.Parse(Regex.Match(from, @"scale\(([^)]+)\)").Groups[1].Value, CultureInfo.InvariantCulture);
+        Assert.AreEqual(2.0, scale, 1e-3, $"the interrupted pulse must resume from its peak: {from}");
         Assert.AreEqual(2.0, engine.GetDiagnostics().Single(d => d.Id == "el").Transforms["scale"], 1e-3);
     }
 }
