@@ -1,6 +1,6 @@
 ---
 name: test-platform
-description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit, and check that its Aspire containers are reused from one run to the next and stopped once it sits idle. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
+description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit and runs the app, and check that its Aspire containers are reused from one run to the next and stopped once it sits idle, on Windows and inside the dev container. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
 ---
 
 # Test the platform
@@ -400,11 +400,22 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
   aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
   doesn't have compiles against them.
 - It's heavy: a few GB in Docker Desktop's VM and about ten minutes, most of them for the container's image and the
-  restore. Run it on its own, after the E2E suite, never next to it.
-- Done means every `bit setup` step passed and `bit doctor` exits with 0, with VS Code not needed inside a container.
-  Its memory warning describes Docker Desktop's VM, not this machine, and is expected.
+  restore, then about half an hour for the Aspire check below. Run it on its own, after the E2E suite, never next to
+  it.
+- Done means every `bit setup` step passed, `bit doctor` exits with 0, with VS Code not needed inside a container,
+  and the Aspire check below passes. `bit doctor`'s memory warning describes Docker Desktop's VM, not this machine,
+  and is expected.
 - The logs of `bit new`, of the container's start and of `bit doctor` stay in the folder the helper names. `-Keep`
   leaves the container up, to look inside it with the devcontainers CLI; bit's own logs are in its home folder there.
+
+A container that sets itself up can still fail to run the app. And the Aspire containers have to behave in there as
+step 6 shows they do on Windows: on Linux the keeper that stops them is a different process, started in a session of
+its own, and the containers run on the dev container's own Docker engine, not on Docker Desktop's. So run
+`devcontainer` with `-Keep`, and once `bit doctor` has passed, do step 6's check inside the container: three
+`dotnet run`s of the app host, each until the web app answers inside the container and each ended the way closing
+its terminal does, with the same bar for the second run's reuse, the idle stop and the third run's volumes. Then
+remove the kept container, its volumes and its image, the helper's folder, and with `-Sha` the worktree it added: a
+later run of the helper doesn't.
 
 A failure in bit or in the template is fixed like a CI failure, and the next `devcontainer -Sha` on the fix proves it;
 no CD is involved.
@@ -451,7 +462,7 @@ Lead with the verdict, then:
    event log lines) and what happens next.
 4. **MCP**: the served versions, their tool counts, the version check, and how good the answers were.
 5. **Dev container**: the commit or the nuget.org version tested, each `bit setup` step with its time, `bit doctor`'s
-   exit code, and per failure its cause and fix.
+   exit code, the Aspire check inside it as in item 6, and per failure its cause and fix.
 6. **Aspire containers**: the commit or the nuget.org version tested, how soon each run was up, whether the second run
    reused every container, how long after the last run they stopped, and per failure its cause and fix.
 7. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
