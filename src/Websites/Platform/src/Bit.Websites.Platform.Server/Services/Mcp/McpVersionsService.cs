@@ -193,7 +193,7 @@ public partial class McpVersionsService : BackgroundService
         // One at a time: they share referenced projects, so parallel builds fight over the same obj folders.
         foreach (var site in released)
         {
-            if (await site.EnsureRunning(cancellationToken)) continue;
+            if (await Start(site, cancellationToken)) continue;
 
             foreach (var started in released) started.Dispose();
 
@@ -253,7 +253,7 @@ public partial class McpVersionsService : BackgroundService
 
                 restarted = true;
 
-                await site.EnsureRunning(cancellationToken);
+                await Start(site, cancellationToken);
             }
 
             if (restarted is false) continue;
@@ -266,6 +266,22 @@ public partial class McpVersionsService : BackgroundService
         if (changed)
         {
             Publish();
+        }
+    }
+
+    private async Task<bool> Start(McpDocumentationSite site, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await site.EnsureRunning(cancellationToken);
+        }
+        catch (Exception exp) when (cancellationToken.IsCancellationRequested is false)
+        {
+            site.Dispose();
+
+            logger.LogError(exp, "Starting {UpstreamName} {VersionName} failed.", site.UpstreamName, site.VersionName);
+
+            return false;
         }
     }
 
