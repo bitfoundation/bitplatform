@@ -16,16 +16,24 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 {
     public const string DevelopmentCertificateSubject = "CN=AppCertificate, OU=Development";
 
-    private static readonly Dictionary<string, string?> gitWithoutAutoMaintenance = new()
-    {
-        ["GIT_CONFIG_COUNT"] = "2",
-        ["GIT_CONFIG_KEY_0"] = "maintenance.auto",
-        ["GIT_CONFIG_VALUE_0"] = "false",
-        ["GIT_CONFIG_KEY_1"] = "gc.auto",
-        ["GIT_CONFIG_VALUE_1"] = "0"
-    };
-
     private IProcessRunner Runner => cli.Runner;
+
+    private Dictionary<string, string?> GitWithoutAutoMaintenance
+    {
+        get
+        {
+            var inherited = int.TryParse(cli.Environment.GetVariable("GIT_CONFIG_COUNT"), out var count) && count > 0 ? count : 0;
+
+            return new()
+            {
+                ["GIT_CONFIG_COUNT"] = $"{inherited + 2}",
+                [$"GIT_CONFIG_KEY_{inherited}"] = "maintenance.auto",
+                [$"GIT_CONFIG_VALUE_{inherited}"] = "false",
+                [$"GIT_CONFIG_KEY_{inherited + 1}"] = "gc.auto",
+                [$"GIT_CONFIG_VALUE_{inherited + 1}"] = "0"
+            };
+        }
+    }
 
     private IEnumerable<string> BuildProperties => project.BuildProperties.Select(p => $"-p:{p}");
 
@@ -706,7 +714,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private Task<ProcessResult> Git(string[] arguments, CancellationToken cancellationToken, string? workingDirectory = null)
     {
-        return Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = arguments, WorkingDirectory = workingDirectory ?? project.Directory, Environment = gitWithoutAutoMaintenance, Timeout = TimeSpan.FromMinutes(5) }, cancellationToken);
+        return Runner.RunAsync(new ProcessSpec { FileName = "git", Arguments = arguments, WorkingDirectory = workingDirectory ?? project.Directory, Environment = GitWithoutAutoMaintenance, Timeout = TimeSpan.FromMinutes(5) }, cancellationToken);
     }
 
     private Task<ProcessResult> Dotnet(string[] arguments, CancellationToken cancellationToken, Action<string>? progress, TimeSpan timeout)
