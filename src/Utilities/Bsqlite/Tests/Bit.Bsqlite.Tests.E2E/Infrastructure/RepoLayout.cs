@@ -29,7 +29,7 @@ public static class RepoLayout
     public static string DemoServerProject() => Path.Combine(BsqliteRoot(), "Demo", "Server", $"{DemoServerName}.csproj");
 
     public static string DemoServerAssembly(string configuration) =>
-        Path.Combine(Path.GetDirectoryName(DemoServerProject())!, "bin", configuration, "net10.0", $"{DemoServerName}.dll");
+        Path.Combine(Path.GetDirectoryName(DemoServerProject())!, "bin", configuration, "net11.0", $"{DemoServerName}.dll");
 
     private static string FindUpward(string relativePath)
     {
