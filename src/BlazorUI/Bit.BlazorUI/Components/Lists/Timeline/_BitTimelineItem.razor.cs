@@ -38,6 +38,7 @@ public partial class _BitTimelineItem<[DynamicallyAccessedMembers(DynamicallyAcc
         {
             _buttonKeysElementId = id;
 
+            await Timeline.EnsureItemKeysScriptAsync();
             await _js.BitUtilsRegisterButtonKeys(_buttonElement);
         }
     }

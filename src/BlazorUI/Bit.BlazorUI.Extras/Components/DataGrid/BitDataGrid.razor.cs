@@ -1936,6 +1936,10 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // What the script does on the page's keys and pointer it does as it loads, called by nothing: with the lazy scripts
+        // on (BitBlazorUIScripts), the grid loads it before anything else of it is called.
+        if (firstRender) await JS.EnsureScriptAsync("Bit.BlazorUI.Extras", "BitDataGrid");
+
         if (_stateChangePending)
         {
             _stateChangePending = false;
@@ -1947,7 +1951,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _editorFocusRequest = null;
             var typed = _editorFocusTyped;
             _editorFocusTyped = false;
-            try { await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.focusEditor", RootElement, editorColumn, typed); }
+            try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.focusEditor", RootElement, editorColumn, typed); }
             catch (JSException) { }
             catch (JSDisconnectedException) { }
         }
@@ -1959,7 +1963,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _commandFocusItem = default;
             if (row is not null && AriaRowIndex(row) is { } rowIndex)
             {
-                try { await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.focusRowCommand", RootElement, rowIndex); }
+                try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.focusRowCommand", RootElement, rowIndex); }
                 catch (JSException) { }
                 catch (JSDisconnectedException) { }
             }
@@ -1978,7 +1982,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
-                _cellEditBlurHandle = await JS.InvokeAsync<IJSObjectReference>("BitBlazorUI.DataGrid.initCellEditBlur", RootElement, _gridSelfRef);
+                _cellEditBlurHandle = await JS.InvokeScriptAsync<IJSObjectReference>("BitBlazorUI.DataGrid.initCellEditBlur", RootElement, _gridSelfRef);
             }
             catch (Exception ex)
             {
@@ -1990,7 +1994,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (_focusAfterRender is { } focusTargets)
         {
             _focusAfterRender = null;
-            try { await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.focusFirst", RootElement, focusTargets); }
+            try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.focusFirst", RootElement, focusTargets); }
             catch (JSException) { }
             catch (JSDisconnectedException) { }
         }
@@ -1998,7 +2002,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         if (_focusHeaderColumn is { } movedColumn)
         {
             _focusHeaderColumn = null;
-            try { await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.focusHeader", RootElement, movedColumn.Id); }
+            try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.focusHeader", RootElement, movedColumn.Id); }
             catch (JSException) { }
             catch (JSDisconnectedException) { }
         }
@@ -2010,7 +2014,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             if (firstRender || indeterminate != _lastIndeterminate)
             {
                 _lastIndeterminate = indeterminate;
-                try { await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.setIndeterminate", _selectAllCheckbox, indeterminate); }
+                try { await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.setIndeterminate", _selectAllCheckbox, indeterminate); }
                 catch (JSException) { }
                 catch (JSDisconnectedException) { }
             }
@@ -2031,7 +2035,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
-                _pointerReorderHandle = await JS.InvokeAsync<IJSObjectReference>(
+                _pointerReorderHandle = await JS.InvokeScriptAsync<IJSObjectReference>(
                     "BitBlazorUI.DataGrid.initPointerReorder", RootElement, _gridSelfRef);
             }
             // Released on failure, so a failed init (transient JS error, a timed-out call) is retried on a later render
@@ -2051,7 +2055,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
-                _hScrollHandle = await JS.InvokeAsync<IJSObjectReference>(
+                _hScrollHandle = await JS.InvokeScriptAsync<IJSObjectReference>(
                     "BitBlazorUI.DataGrid.initHorizontalScroll", _infiniteViewport, _gridSelfRef, HScrollReportThresholdPx);
             }
             // Released on failure so a failed init retries on a later render.
@@ -2070,7 +2074,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _gridSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
-                await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.watchNestedSurfaceKeys", RootElement, _gridSelfRef);
+                await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.watchNestedSurfaceKeys", RootElement, _gridSelfRef);
             }
             // Released on failure so a failed call retries on a later render.
             catch (Exception ex)
@@ -2085,7 +2089,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _stickyBandsAttached = true;
             try
             {
-                _stickyBandsHandle = await JS.InvokeAsync<IJSObjectReference>("BitBlazorUI.DataGrid.observeStickyBands", _infiniteViewport);
+                _stickyBandsHandle = await JS.InvokeScriptAsync<IJSObjectReference>("BitBlazorUI.DataGrid.observeStickyBands", _infiniteViewport);
             }
             // Released on failure so a failed init retries on a later render.
             catch (Exception ex)
@@ -2101,7 +2105,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             _infiniteSelfRef ??= DotNetObjectReference.Create(this);
             try
             {
-                _infiniteHandle = await JS.InvokeAsync<IJSObjectReference>(
+                _infiniteHandle = await JS.InvokeScriptAsync<IJSObjectReference>(
                     "BitBlazorUI.DataGrid.initInfiniteScroll", _infiniteViewport, _infiniteSelfRef, 200);
             }
             // Released on failure so a failed init retries on a later render.
@@ -3513,7 +3517,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
     {
         try
         {
-            var width = await JS.InvokeAsync<double>("BitBlazorUI.DataGrid.getWidth", column.HeaderCellRef);
+            var width = await JS.InvokeScriptAsync<double>("BitBlazorUI.DataGrid.getWidth", column.HeaderCellRef);
             if (width > 0) return width;
         }
         catch (JSException) { }
@@ -4870,7 +4874,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
             // Prefix the UTF-8 byte-order mark: Excel ignores the charset in the MIME type and decodes a
             // BOM-less CSV with the system code page, mangling every non-ASCII character. The BOM is
             // added at download time only, so ToCsvAsync stays a clean string for programmatic callers.
-            await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.download",
+            await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.download",
                 $"{ExportBaseName}.csv", "﻿" + csv, "text/csv;charset=utf-8");
         }
         catch (JSDisconnectedException) { }
@@ -4915,7 +4919,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         {
             try
             {
-                style = await JS.InvokeAsync<BitDataGridExcelStyle?>("BitBlazorUI.DataGrid.getExportStyles", RootElement);
+                style = await JS.InvokeScriptAsync<BitDataGridExcelStyle?>("BitBlazorUI.DataGrid.getExportStyles", RootElement);
                 // Vertical borders come from the grid's own Bordered mode rather than a sampled edge:
                 // cell borders are only rendered when Bordered is set, and the sampled row-separator
                 // color already covers the shared border color.
@@ -4937,7 +4941,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         var bytes = await ToExcelAsync(selectedOnly);
         try
         {
-            await JS.InvokeVoidAsync("BitBlazorUI.DataGrid.downloadBase64", $"{ExportBaseName}.xlsx",
+            await JS.InvokeScriptVoidAsync("BitBlazorUI.DataGrid.downloadBase64", $"{ExportBaseName}.xlsx",
                 Convert.ToBase64String(bytes),
                 "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         }
@@ -5131,7 +5135,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         var text = BuildDelimited(rows, '\t');
         try
         {
-            var copied = await JS.InvokeAsync<bool>("BitBlazorUI.DataGrid.copyToClipboard", text);
+            var copied = await JS.InvokeScriptAsync<bool>("BitBlazorUI.DataGrid.copyToClipboard", text);
             if (!copied) return 0;
         }
         catch (JSDisconnectedException) { return 0; }
@@ -5167,7 +5171,7 @@ public partial class BitDataGrid<[DynamicallyAccessedMembers(DynamicallyAccessed
         double width;
         try
         {
-            width = await JS.InvokeAsync<double>(
+            width = await JS.InvokeScriptAsync<double>(
                 "BitBlazorUI.DataGrid.measureColumnContentWidth", RootElement, AriaColIndex(index));
         }
         catch (JSDisconnectedException) { return; }

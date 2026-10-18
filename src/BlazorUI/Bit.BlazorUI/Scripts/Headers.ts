@@ -347,3 +347,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Headers.dispose

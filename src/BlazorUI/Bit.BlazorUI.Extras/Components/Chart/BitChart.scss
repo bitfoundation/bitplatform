@@ -1,5 +1,8 @@
 ﻿@import '../../../Bit.BlazorUI/Styles/functions.scss';
 
+// bit-trim: owners BitChart BitChartSvgPrimitive
+// The shapes of the chart are drawn by a component of their own, styled here with the chart.
+
 // Public CSS variables, read off the root and never declared here, so a value set on :root re-skins every
 // chart and one set on the Style of an instance re-skins that one and the charts nested in it. The colors the chart
 // draws INSIDE the SVG are the defaults of its options (BitChartTickOptions.Color, BitChartGridOptions.Color, ...),

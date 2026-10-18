@@ -3,6 +3,9 @@
      * MapLibre GL JS provider. Loads from a CDN; the C# layer adds the script tag.
      * Routes every method through BitMapGlBase using the 'maplibre' provider key.
      */
+    // bit-trim: owners BitMapLibreMapProvider
+    // Called through the JsObjectName of its provider, which BitMap puts together into the identifier it calls (see
+    // BitMapJsRuntimeExtensions), so no interop identifier names this script: the provider type an app passes keeps it.
     export class BitMapMapLibre {
         private static readonly _key = 'maplibre';
         private static readonly _global = 'maplibregl';
@@ -68,3 +71,5 @@
         public static removeTileOverlay(id: string, overlayId: string) { return BitMapGlBase.removeTileOverlay(BitMapMapLibre._key, id, overlayId); }
     }
 }
+
+// bit-lazy: teardown BitMapMapLibre.dispose

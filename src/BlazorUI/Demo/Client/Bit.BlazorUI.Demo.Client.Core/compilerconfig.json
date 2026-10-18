@@ -576,6 +576,12 @@
         "options": { "sourceMap": false }
     },
     {
+        "outputFile": "Pages/TrimmingPage.razor.css",
+        "inputFile": "Pages/TrimmingPage.razor.scss",
+        "minify": { "enabled": false },
+        "options": { "sourceMap": false }
+    },
+    {
         "outputFile": "Pages/TermsPage.razor.css",
         "inputFile": "Pages/TermsPage.razor.scss",
         "minify": { "enabled": false },

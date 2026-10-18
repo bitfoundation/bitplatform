@@ -13,7 +13,7 @@ internal static class BitFcAgendaScrollInterop
     {
         try
         {
-            return await js.InvokeAsync<bool>(
+            return await js.InvokeScriptAsync<bool>(
                 "BitBlazorUI.FullCalendar.scrollAgendaToDate",
                 cancellationToken,
                 scrollContainerId,
