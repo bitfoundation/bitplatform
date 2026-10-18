@@ -107,6 +107,10 @@ the first time an identifier of it is called (`BitScriptLoader`, off the `bit-la
 - `BitLazyScriptsContractTests` pins the modules, the boot module, the embedded map, the owners' loads and the calls;
   `BitLazyScriptsTests` the loader; `LazyScriptsTrimmingTests` (in the trimming suite) publishes and runs lazy apps.
 
+App authors read all of this on the demo's Trimming page (`Pages/TrimmingPage.razor`, `/trimming`): every switch, signal,
+item, warning and lazy-script behaviour. A change to the targets, the task or the loader that an app can notice changes
+that page in the same commit.
+
 ## Razor comments
 
 **Never put a `@* ... *@` comment inside a tag, between its attributes.** It compiles, but the Razor
@@ -411,7 +415,7 @@ tabs (`_..ItemDemo`, `_..CustomDemo`, `_..OptionDemo`), each with its own `.razo
 Every page is one column of anchored sections with the "on this page" rail beside it; only what the
 sections hold differs.
 
-- **Prose pages** (Overview, Getting started, Theming, Iconography, Terms): `DocsArticle` +
+- **Prose pages** (Overview, Getting started, Theming, Iconography, Trimming, Terms): `DocsArticle` +
   `DocSection` - eyebrow, title, badges, lead, sections separated by air and a hairline, then
   `DocFeedback`.
 - **Component pages** (~110): `DemoPage`, the same shell by hand (`.doc-shell` / `.doc-main` /

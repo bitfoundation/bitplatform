@@ -207,6 +207,8 @@ public partial class MainLayout
             ]
         },
         new() { Text = "Iconography", Url = "/iconography" },
+        // How a published app downloads only what it uses: the publish-time trimming and the lazy scripts.
+        new() { Text = "Trimming", Url = "/trimming", Description = "BundleSize, LazyScripts, Publish" },
     ];
 }
 

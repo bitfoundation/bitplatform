@@ -236,7 +236,7 @@ public class Middlewares
         return route switch
         {
             "/" => ("weekly", "1.0"),
-            "/overview" or "/getting-started" or "/theming" or "/iconography" => ("weekly", "0.9"),
+            "/overview" or "/getting-started" or "/theming" or "/iconography" or "/trimming" => ("weekly", "0.9"),
             "/terms" => ("yearly", "0.3"),
             _ => ("monthly", "0.7")
         };

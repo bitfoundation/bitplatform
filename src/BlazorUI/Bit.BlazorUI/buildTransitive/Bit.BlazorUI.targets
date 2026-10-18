@@ -4,7 +4,8 @@
     bit BlazorUI consumer-side build logic: how an app loads the packages' scripts, and publish-time trimming of the
     packages' scripts and stylesheets. Imported into every project that references the Bit.BlazorUI package (NuGet imports
     buildTransitive/ for direct and transitive references alike; a build/ copy is packed as well), and configured through
-    the properties and items below, set in the csproj of the project that publishes the app.
+    the properties and items below, set in the csproj of the project that publishes the app. The same, for app authors:
+    https://blazorui.bitplatform.dev/trimming
 
     The packages ship their JavaScript and CSS as bundles an app links once - bit.blazorui.js, bit.blazorui.css (and its
     Fluent variants), bit.blazorui.extras.js / .css, bit.blazorui.legacy.js / .css, bit.blazorui.icons.css - and, beside

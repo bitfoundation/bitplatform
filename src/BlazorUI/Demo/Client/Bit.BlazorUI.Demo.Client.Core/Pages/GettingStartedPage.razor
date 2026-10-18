@@ -475,8 +475,8 @@ bit new MyBitProject</CodeBox>
                 </BitAccordion>
             </DocSection>
 
-            <DocSection Id="trimming" Title="Trimming at publish"
-                        Description="In production an app downloads the css and js of the components it can render, and nothing else. The tags from step 4 stay exactly as they are.">
+            <DocSection Id="trimming" Title="Trimming and lazy scripts"
+                        Description="In production an app downloads the css and js of the components it uses, and nothing else. The tags from step 4 stay exactly as they are.">
 
                 <BitText Element="p">
                     The stylesheets and scripts of the packages are built from one piece per component and per
@@ -497,11 +497,11 @@ bit new MyBitProject</CodeBox>
                     <tbody>
                         <tr>
                             <th scope="row">Standalone WebAssembly</th>
-                            <td>Nothing: it is on by default, and works off what the .NET trimmer kept.</td>
+                            <td>Nothing: it is on by default, and works off what the .NET trimmer kept - as in any project published with <code>PublishTrimmed</code>.</td>
                         </tr>
                         <tr>
                             <th scope="row">Blazor Web App, Blazor Server</th>
-                            <td>Turn it on in the server project: <code>&lt;BitBlazorUITrimAssets&gt;true&lt;/BitBlazorUITrimAssets&gt;</code> (on by itself where the project publishes with <code>PublishTrimmed</code>)</td>
+                            <td>Turn it on in the server project: <code>&lt;BitBlazorUITrimAssets&gt;true&lt;/BitBlazorUITrimAssets&gt;</code></td>
                         </tr>
                         <tr>
                             <th scope="row">Blazor Hybrid (MAUI)</th>
@@ -511,139 +511,18 @@ bit new MyBitProject</CodeBox>
                 </table>
 
                 <BitText Element="p">
-                    Without the .NET trimmer - a server app - the publish reads your app's assemblies for the
-                    components they reference, and the library's for everything those reach. Either way the build
-                    log says what came out:
-                </BitText>
-                <CodeBox>Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> 6 of 88 pieces, 221,789 of 1,359,205 bytes (-84%).</CodeBox>
-
-                <BitAccordion Title="Switches and exceptions">
-                    <BitText Element="p">Each kind of file has a switch of its own, set in the project you publish:</BitText>
-                    <CodeBox Language="xml">&lt;PropertyGroup>
-    &lt;BitBlazorUITrimAssets>true&lt;/BitBlazorUITrimAssets>             &lt;!-- the default of the next three -->
-    &lt;BitBlazorUITrimScripts>true&lt;/BitBlazorUITrimScripts>
-    &lt;BitBlazorUITrimStyles>true&lt;/BitBlazorUITrimStyles>
-    &lt;BitBlazorUITrimVendorAssets>true&lt;/BitBlazorUITrimVendorAssets> &lt;!-- pdf.js, quill, leaflet, flags... -->
-    &lt;BitBlazorUITrimIcons>true&lt;/BitBlazorUITrimIcons>               &lt;!-- off unless set: see below -->
-&lt;/PropertyGroup></CodeBox>
-
-                    <BitText Element="p">
-                        What the publish cannot see, you name. A component rendered by reflection or from a type
-                        name, a script called from JavaScript the publish does not read (your projects' own
-                        <code>.js</code> and <code>.html</code> files it does), an icon whose name comes from data:
-                    </BitText>
-                    <CodeBox Language="xml">&lt;ItemGroup>
-    &lt;BitBlazorUIComponent Include="BitChart;BitDataGrid" /> &lt;!-- with everything they need -->
-    &lt;BitBlazorUIAsset Include="Callouts;BitButton" />      &lt;!-- a script or a stylesheet by name -->
-    &lt;BitBlazorUIIcon Include="Add;Delete" />
-&lt;/ItemGroup></CodeBox>
-
-                    <BitText Element="p">
-                        <b>Icons</b> are trimmed only when you ask for it: the glyphs kept are the ones whose names
-                        appear in your code - <code>BitIconName.Add</code> is a literal of your own - so an app that
-                        reads icon names out of a database names them with <code>BitBlazorUIIcon</code>, or leaves
-                        the switch off.
-                    </BitText>
-
-                    <BitText Element="p">
-                        <b>How your assemblies are read</b> without the .NET trimmer is
-                        <code>BitBlazorUIScan</code>: <code>TypeReferences</code> (the default) follows the library
-                        types your code references; <code>TypeNames</code> matches the library's type names against
-                        every name your assemblies hold - coarser, it keeps a component a class of your own is named
-                        after, and never misses one; <code>None</code> reads nothing, and publishes the full bundles
-                        unless <code>BitBlazorUIComponent</code> names what the app renders. Where the publish is
-                        trimmed, the trimmed assemblies answer instead - except on a server hosting a WebAssembly
-                        client, whose trimmer knows the server alone.
-                    </BitText>
-
-                    <BitText Element="p">
-                        <b>Warnings</b> carry codes you can silence with <code>NoWarn</code> without turning anything
-                        off: <code>BITBLAZORUI001</code> (the packages are of different versions),
-                        <code>BITBLAZORUI002</code> (the assemblies read reference none of the packages, so everything
-                        was kept), <code>BITBLAZORUI003</code> (icons named without Bit.BlazorUI.Icons).
-                    </BitText>
-                </BitAccordion>
-            </DocSection>
-
-            <DocSection Id="lazy-scripts" Title="Lazy scripts"
-                        Description="No script tag of the packages at all, and each page downloads the scripts of the components it actually uses.">
-
-                <BitText Element="p">
-                    Instead of the bundles, the packages' scripts also ship as one module per script, which the library
-                    imports the first time a component calls into it. Turn it on in the project you publish, and remove
-                    the <code>&lt;script&gt;</code> tags of the packages from step 4 - the stylesheets stay:
-                </BitText>
-                <CodeBox Language="xml">&lt;PropertyGroup>
-    &lt;BitBlazorUILazyScripts>true&lt;/BitBlazorUILazyScripts>
-&lt;/PropertyGroup></CodeBox>
-
-                <BitText Element="p">
-                    The few scripts that act on the page without being called - the theme, the claim of the Escape
-                    key, the keys every component relies on - are imported as the app starts, by the packages'
-                    JavaScript initializers, which Blazor loads by itself. A published app trims the modules exactly
-                    as it trims a bundle: only the modules the app can reach are published.
+                    Or go further with lazy scripts - <code>&lt;BitBlazorUILazyScripts&gt;true&lt;/BitBlazorUILazyScripts&gt;</code>
+                    and no <code>&lt;script&gt;</code> tag of the packages at all: each page then downloads the scripts
+                    of the components it renders, the first time it uses them. The
+                    <BitLink Href="/trimming">trimming page</BitLink> has every switch, how the publish knows what an
+                    app uses, how to name what it cannot see, and what to look for when something goes missing.
                 </BitText>
 
-                <table class="gs-table">
-                    <thead>
-                        <tr>
-                            <th scope="col"></th>
-                            <th scope="col">Bundles (default)</th>
-                            <th scope="col">Lazy scripts</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <th scope="row">Downloaded</th>
-                            <td>Every script the app can reach, up front</td>
-                            <td>The scripts of what a page uses, on first use</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Requests</th>
-                            <td>One per package</td>
-                            <td>One per script, the first time it is used</td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Theme on first paint</th>
-                            <td>As soon as the tag runs</td>
-                            <td>Once Blazor starts - add the boot module to <code>&lt;head&gt;</code> for sooner (below)</td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <BitAccordion Title="Options and exceptions">
-                    <BitText Element="p">
-                        The same switch at runtime, for a host where the project cannot say it - it decides how the
-                        scripts load, not what is published:
-                    </BitText>
-                    <CodeBox Language="csharp">builder.Services.AddBitBlazorUIServices(options =>
-{
-    options.LazyScripts = true;
-    options.ContentPath = "https://cdn.example.com/_content/"; // only if the packages' assets are served elsewhere
-});</CodeBox>
-
-                    <BitText Element="p">
-                        A host page serving both modes renders the tags only for the bundles, and keeps both shapes with
-                        <code>&lt;BitBlazorUIIncludeScriptBundle&gt;true&lt;/BitBlazorUIIncludeScriptBundle&gt;</code>
-                        next to <code>BitBlazorUILazyScripts</code>:
-                    </BitText>
-                    <CodeBox Language="cshtml">@@if (BitBlazorUIScripts.LazyScriptsEnabled is false)
-{
-    &lt;script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js">&lt;/script>
-}</CodeBox>
-
-                    <BitText Element="p">
-                        For the theme on the very first paint, import the boot module from <code>&lt;head&gt;</code>;
-                        Blazor's initializer then finds it loaded:
-                    </BitText>
-                    <CodeBox Language="html">&lt;script type="module" src="_content/Bit.BlazorUI/scripts/bit.blazorui.boot.js">&lt;/script></CodeBox>
-
-                    <BitText Element="p">
-                        A script of your own calling <code>BitBlazorUI.*</code> imports the module it calls first:
-                        <code>await import('./_content/Bit.BlazorUI/scripts/modules/PageVisibility.js')</code>. And a
-                        page rendered statically, with no interactivity, runs only the scripts the app starts with.
-                    </BitText>
-                </BitAccordion>
+                <BitStack Horizontal Wrap AutoHeight Gap="0.75rem" VerticalAlign="BitAlignment.Center">
+                    <BitButton Href="/trimming" Variant="BitVariant.Outline" IconName="@BitIconName.Download">
+                        Trimming and lazy scripts
+                    </BitButton>
+                </BitStack>
             </DocSection>
 
             <DocSection Id="troubleshooting" Title="Troubleshooting"
@@ -721,7 +600,7 @@ bit new MyBitProject</CodeBox>
                     <div class="trouble">
                         <p class="trouble-symptom">A component looks unstyled, or "BitBlazorUI.x is undefined", only in the published app</p>
                         <p class="trouble-fix">
-                            The publish <BitLink Href="/getting-started#trimming">trimmed</BitLink> away something
+                            The publish <BitLink Href="/trimming">trimmed</BitLink> away something
                             it could not see the app use - a component rendered by reflection, a script called from
                             JavaScript loaded from elsewhere. Name it with <code>&lt;BitBlazorUIComponent&gt;</code> or
                             <code>&lt;BitBlazorUIAsset&gt;</code>, or publish with
