@@ -13,6 +13,9 @@ public class KeyboardShortcutTests
     [DataRow("Ctrl++", "ctrl++")]
     [DataRow("Alt+Up", "alt+arrowup")]
     [DataRow("Esc", "escape")]
+    [DataRow("Ctrl+Space", "ctrl+space")]
+    [DataRow("Mod+Spacebar", "mod+space")]
+    [DataRow("Space G", "space g")]
     public void Parses_and_normalizes(string input, string expected)
     {
         Assert.AreEqual(expected, BaletteKeyboardShortcut.Parse(input).Normalized);
@@ -45,6 +48,15 @@ public class KeyboardShortcutTests
         var s = BaletteKeyboardShortcut.Parse("Mod+Shift+K");
         AssertSequence.AreEqual(new[] { "⌘", "⇧", "K" }, s.DisplayTokens(isMac: true)[0]);
         AssertSequence.AreEqual(new[] { "Ctrl", "Shift", "K" }, s.DisplayTokens(isMac: false)[0]);
+    }
+
+    [TestMethod]
+    public void Space_is_one_chord_and_displays_as_Space()
+    {
+        var s = BaletteKeyboardShortcut.Parse("Ctrl+Space");
+        Assert.IsFalse(s.IsSequence);
+        Assert.DoesNotContain(" ", s.Normalized);
+        Assert.AreEqual("Ctrl+Space", s.ToDisplayString(isMac: false));
     }
 
     [TestMethod]

@@ -58,7 +58,7 @@ dotnet test --filter "FullyQualifiedName~.FlowTests."
 dotnet test --filter "FullyQualifiedName~Backspace_on_an_empty_query"
 ```
 
-CI does the same in Release (`.github/workflows/bit.ci.Balette.yml`):
+CI does the same in Release (`.github/workflows/bit.ci.Balette.e2e.yml`):
 
 ```bash
 dotnet build src/Balette/Bit.Balette.Demo/Server/Bit.Balette.Demo.Server.csproj -c Release
@@ -66,6 +66,8 @@ dotnet build src/Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.cspro
 pwsh src/Balette/Tests/Bit.Balette.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/Balette/Tests/Bit.Balette.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename balette-e2e.trx
 ```
+
+That workflow only runs when started by hand (Actions > "bit platform CI - Balette E2E" > Run workflow). The pull-request pipeline, `bit.ci.Balette.yml`, runs the build, model, search, component and MCP tests only.
 
 Without PowerShell 7, the browser can be installed with Windows PowerShell
 (`powershell -ExecutionPolicy Bypass -File bin/Debug/net10.0/playwright.ps1 install chromium`), or with the Node.js

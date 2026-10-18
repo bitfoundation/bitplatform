@@ -122,6 +122,42 @@ public class BaletteServiceTests
     }
 
     [TestMethod]
+    public void Update_replaces_the_static_children_too()
+    {
+        var svc = NewService();
+        svc.Register(BaletteCmd.Page("Theme", BaletteCmd.New("Light"), BaletteCmd.New("Dark")).Id("theme"));
+        svc.Update(BaletteCmd.Page("Theme", BaletteCmd.New("Solarized")).Id("theme"));
+
+        AssertSequence.AreEqual(["theme.solarized"], svc.Commands.Where(c => c.Parent == "theme").Select(c => c.Id));
+    }
+
+    [TestMethod]
+    public void Update_flattens_a_command_it_adds()
+    {
+        var svc = NewService();
+        svc.Update(BaletteCmd.Page("Theme", BaletteCmd.New("Dark")).Id("theme"));
+        Assert.AreEqual("theme", svc.Find("theme.dark")?.Parent);
+    }
+
+    [TestMethod]
+    public void Update_keeps_commands_registered_with_an_explicit_parent()
+    {
+        var svc = NewService();
+        svc.Register(BaletteCmd.Page("Theme", BaletteCmd.New("Light")).Id("theme"), BaletteCmd.New("Custom").Id("custom").Parent("theme"));
+        svc.Update(BaletteCmd.Page("Theme", BaletteCmd.New("Dark")).Id("theme"));
+
+        AssertSequence.AreEqual(["custom", "theme.dark"], svc.Commands.Where(c => c.Parent == "theme").Select(c => c.Id).Order());
+    }
+
+    [TestMethod]
+    public void Destructive_without_a_message_keeps_an_earlier_confirmation()
+    {
+        var c = BaletteCmd.New("Drop database").Confirm("Really drop?").Destructive().Build();
+        Assert.IsTrue(c.Destructive);
+        Assert.AreEqual("Really drop?", c.ConfirmMessage);
+    }
+
+    [TestMethod]
     public void Options_commands_are_preloaded()
     {
         var options = new BaletteOptions();

@@ -111,14 +111,20 @@ public sealed class BaletteService : IBaletteService
                 var idx = reg.Commands.FindIndex(c => c.Id == command.Id);
                 if (idx >= 0)
                 {
-                    reg.Commands[idx] = command;
+                    // The old command's static children leave with it, and the new one's are flattened in its place.
+                    var stale = new HashSet<string>(StringComparer.Ordinal);
+                    CollectChildIds(reg.Commands, reg.Commands[idx], command.Id, stale);
+                    var at = idx - reg.Commands.Take(idx).Count(c => stale.Contains(c.Id));
+                    reg.Commands.RemoveAt(idx);
+                    reg.Commands.RemoveAll(c => stale.Contains(c.Id));
+                    reg.Commands.InsertRange(at, Flatten([command]));
                     replaced = true;
                 }
             }
 
             if (!replaced)
             {
-                _registrations.Add(new Registration(this, [command]));
+                _registrations.Add(new Registration(this, Flatten([command]).ToList()));
             }
 
             Rebuild();
@@ -253,7 +259,7 @@ public sealed class BaletteService : IBaletteService
         foreach (var c in commands)
         {
             var cmd = parent is not null && c.Parent is null
-                ? c.With(b => b.Parent(parent).Id(c.HasExplicitId ? c.Id : BaletteCommandIdGenerator.FromTitle(c.Title, c.Group, parent)))
+                ? c.With(b => b.Parent(parent).Id(ChildId(c, parent)))
                 : c;
             yield return cmd;
             if (cmd.Children is { Count: > 0 })
@@ -262,6 +268,24 @@ public sealed class BaletteService : IBaletteService
                 {
                     yield return child;
                 }
+            }
+        }
+    }
+
+    /// <summary>The id a static child gets once flattened under the command with id <paramref name="parentId"/>.</summary>
+    private static string ChildId(BaletteCommand child, string parentId)
+        => child.Parent is not null || child.HasExplicitId ? child.Id : BaletteCommandIdGenerator.FromTitle(child.Title, child.Group, parentId);
+
+    /// <summary>Collects the ids a command's static children were flattened into, down to the last level.</summary>
+    private static void CollectChildIds(List<BaletteCommand> commands, BaletteCommand parent, string parentId, HashSet<string> ids)
+    {
+        foreach (var child in parent.Children ?? [])
+        {
+            var id = ChildId(child, parentId);
+            if (ids.Add(id))
+            {
+                // A child updated since brings children of its own; one no longer stored, the ones it had.
+                CollectChildIds(commands, commands.Find(c => c.Id == id) ?? child, id, ids);
             }
         }
     }

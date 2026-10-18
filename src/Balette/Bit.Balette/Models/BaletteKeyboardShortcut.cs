@@ -83,8 +83,8 @@ public sealed record BaletteKeyChord(string Key, bool Ctrl = false, bool Shift =
     {
         ["esc"] = "escape",
         ["return"] = "enter",
-        ["space"] = " ",
-        ["spacebar"] = " ",
+        // Spelled out: a literal space separates the chords of a sequence in Normalized.
+        ["spacebar"] = "space",
         ["del"] = "delete",
         ["ins"] = "insert",
         ["up"] = "arrowup",
@@ -177,7 +177,7 @@ public sealed record BaletteKeyChord(string Key, bool Ctrl = false, bool Shift =
         "backspace" => isMac ? "⌫" : "Backspace",
         "delete" => isMac ? "⌦" : "Del",
         "tab" => isMac ? "⇥" : "Tab",
-        " " => "Space",
+        "space" => "Space",
         "arrowup" => "↑",
         "arrowdown" => "↓",
         "arrowleft" => "←",

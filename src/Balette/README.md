@@ -380,7 +380,8 @@ BaletteCmd.New("Theme").Value("Dark").Children(/* the options */);
 ```
 
 Because commands are immutable, the new state is a new command: re-register it, or call
-`Palette.Update(command)`, which replaces the command with the same id wherever it was registered.
+`Palette.Update(command)`, which replaces the command with the same id wherever it was registered, its static
+children included.
 `BaletteCommands` (see [declarative markup](#declarative-markup)) makes this a matter of re-rendering.
 
 ### Disabled, hidden and destructive commands
@@ -451,7 +452,8 @@ A handler returns a `BaletteCommandResult` that says what happens next:
 
 `BaletteCommandContext` carries the `Command` being run, the `Query` without its mode prefix, the `ModePrefix`,
 the `PromptValue` of a prompt step, the `SelectedCommands` of a multi-select page, `Services`, `Navigation`, the
-`Palette` service itself and a `CancellationToken` that is cancelled when another command starts.
+`Palette` service itself and a `CancellationToken` that is cancelled when the palette is closed while the handler
+is still running; what such a handler returns afterwards is ignored, so a late page or prompt never reopens it.
 `GetRequiredService<T>()` resolves a service from the scope.
 
 ### Prompts

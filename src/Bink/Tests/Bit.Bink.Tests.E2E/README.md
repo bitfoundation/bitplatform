@@ -48,7 +48,7 @@ dotnet test --filter "FullyQualifiedName~.KeyboardAndTouchTests."
 dotnet test --filter "FullyQualifiedName~Drawing_with_the_mouse"
 ```
 
-CI does the same in Release (`.github/workflows/bit.ci.Bink.yml`):
+CI does the same in Release (`.github/workflows/bit.ci.Bink.e2e.yml`):
 
 ```bash
 dotnet build src/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj -c Release
@@ -56,6 +56,8 @@ dotnet build src/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj -c Rele
 pwsh src/Bink/Tests/Bit.Bink.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/Bink/Tests/Bit.Bink.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bink-e2e.trx
 ```
+
+That workflow only runs when started by hand (Actions > "bit platform CI - Bink E2E" > Run workflow). The pull-request pipeline, `bit.ci.Bink.yml`, runs the build, engine, component and MCP tests only.
 
 Without PowerShell 7, the browser can be installed with the Node.js runtime Playwright ships:
 `bin/Debug/net10.0/.playwright/node/<platform>/node bin/Debug/net10.0/.playwright/package/cli.js install chromium`.

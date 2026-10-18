@@ -35,6 +35,9 @@ public sealed class BaletteRow
     /// <summary>DOM id used for <c>aria-activedescendant</c>.</summary>
     public string ElementId { get; }
 
+    /// <summary>Zero-based index among all rows, headings included.</summary>
+    internal int Position { get; init; }
+
     /// <summary>The command of an item row. Throws for a heading.</summary>
     public BaletteCommand Command => Match?.Command ?? throw new InvalidOperationException("Row has no command.");
 }

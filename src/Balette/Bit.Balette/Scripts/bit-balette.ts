@@ -36,7 +36,7 @@ interface BaletteHandle {
     open(input: HTMLInputElement | null, selectAll: boolean): void;
     close(): void;
     focusInput(input: HTMLInputElement | null): void;
-    scrollIntoView(list: HTMLElement | null, id: string): void;
+    scrollIntoView(list: HTMLElement | null, id: string, position?: number, count?: number): void;
     setCommandShortcuts(list: string[] | null): void;
     setToggleShortcuts(list: string[] | null): void;
     setVimBindings(enabled: boolean): void;
@@ -76,7 +76,16 @@ function chordsFor(e: KeyboardEvent, isMac: boolean): string[] {
     const raw = e.key;
     if (!raw) return [];
     if (MOD_KEYS.has(raw)) return [];
-    const key = raw.toLowerCase();
+    // Space is written out, as on the C# side: a literal ' ' is what separates the chords of a sequence.
+    const key = raw === ' ' ? 'space' : raw.toLowerCase();
+
+    // Option on macOS, and AltGr on many layouts, compose a character instead ('Ω' for Option+Z), which no
+    // shortcut is written with: with Alt held, the physical letter or digit key stands for the key as well.
+    const keys = [key];
+    if (e.altKey && !/^[a-z0-9]$/.test(key)) {
+        const physical = physicalKey(e.code);
+        if (physical) keys.push(physical);
+    }
 
     const parts: string[] = [];
     if (e.ctrlKey) parts.push('ctrl');
@@ -84,17 +93,18 @@ function chordsFor(e: KeyboardEvent, isMac: boolean): string[] {
     if (e.shiftKey) parts.push('shift');
     if (e.metaKey) parts.push('meta');
 
-    const result = [[...parts, key].join('+')];
-
     // The 'mod' variant: Meta on macOS, Ctrl everywhere else.
     const modPressed = isMac ? e.metaKey : e.ctrlKey;
-    if (modPressed) {
-        const modParts = ['mod'];
-        if (isMac && e.ctrlKey) modParts.push('ctrl');
-        if (e.altKey) modParts.push('alt');
-        if (e.shiftKey) modParts.push('shift');
-        if (!isMac && e.metaKey) modParts.push('meta');
-        result.push([...modParts, key].join('+'));
+    const modParts = ['mod'];
+    if (isMac && e.ctrlKey) modParts.push('ctrl');
+    if (e.altKey) modParts.push('alt');
+    if (e.shiftKey) modParts.push('shift');
+    if (!isMac && e.metaKey) modParts.push('meta');
+
+    const result: string[] = [];
+    for (const k of keys) {
+        result.push([...parts, k].join('+'));
+        if (modPressed) result.push([...modParts, k].join('+'));
     }
 
     // A shifted single character also matches without its shift: a shortcut written "?" fires on
@@ -104,6 +114,41 @@ function chordsFor(e: KeyboardEvent, isMac: boolean): string[] {
     }
 
     return result;
+}
+
+/** The key a letter or digit key ('KeyZ', 'Digit1') stands for whatever it types, or null for any other key. */
+function physicalKey(code: string): string | null {
+    const m = /^(?:Key([A-Z])|Digit([0-9]))$/.exec(code || '');
+    return m ? (m[1] || m[2]).toLowerCase() : null;
+}
+
+/** Scrolls the list just enough to show the element, with the group heading above a group's first item. */
+function reveal(list: HTMLElement | null, el: Element): void {
+    const prev = el.previousElementSibling;
+    const anchor = prev && prev.getAttribute('role') === 'presentation' ? prev : el;
+    if (anchor !== el && list) {
+        const r = list.getBoundingClientRect();
+        const a = anchor.getBoundingClientRect();
+        if (a.top < r.top) {
+            anchor.scrollIntoView({ block: 'nearest' });
+            return;
+        }
+    }
+    el.scrollIntoView({ block: 'nearest' });
+}
+
+/** Scrolls the list to where row `position` of `count` lies, estimated from the list's height. */
+function scrollToEstimate(list: HTMLElement, position: number, count: number): void {
+    const style = getComputedStyle(list);
+    const padTop = parseFloat(style.paddingTop) || 0;
+    const content = list.scrollHeight - padTop - (parseFloat(style.paddingBottom) || 0);
+    const height = content / count;
+    const top = padTop + height * position;
+    if (top < list.scrollTop) {
+        list.scrollTop = top;
+    } else if (top + height > list.scrollTop + list.clientHeight) {
+        list.scrollTop = top + height - list.clientHeight;
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -124,6 +169,8 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, o
     let previouslyFocused: Element | null = null;
     let inputEl: HTMLInputElement | null = null;
     let disposed = false;
+    let reportedSuspension: string | null = null;
+    let scrollRequest = 0;
 
     const allShortcuts = () => [...toggleShortcuts, ...commandShortcuts];
 
@@ -264,7 +311,13 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, o
         }
     }
 
+    // Hover selection is suspended while a new query moves rows under a resting pointer, and each suspension renders
+    // a fresh value on the dialog. Only the first move of each crosses to .NET: every other one would be a round
+    // trip under Blazor Server for nothing.
     function onPointerMove(): void {
+        const suspension = dialog.getAttribute('data-hover-suspended');
+        if (suspension === null || suspension === reportedSuspension) return;
+        reportedSuspension = suspension;
         dotnet.invokeMethodAsync('OnPointerMoved');
     }
 
@@ -324,21 +377,29 @@ export function init(dialog: HTMLDialogElement, dotnet: DotNetObjectReference, o
             }
         },
 
-        scrollIntoView(list, id) {
+        scrollIntoView(list, id, position, count) {
+            const request = ++scrollRequest;
             const el = document.getElementById(id);
-            if (!el) return;
-            // Keep the group heading above the first item of a group in view as well.
-            const prev = el.previousElementSibling;
-            const anchor = prev && prev.getAttribute('role') === 'presentation' ? prev : el;
-            if (anchor !== el && list) {
-                const r = list.getBoundingClientRect();
-                const a = anchor.getBoundingClientRect();
-                if (a.top < r.top) {
-                    anchor.scrollIntoView({ block: 'nearest' });
+            if (el) {
+                reveal(list, el);
+                return;
+            }
+
+            // Virtualized out of the DOM: scroll to where the row should be so that Virtualize renders it, then
+            // reveal it once it is there. The estimate is redone while Virtualize is still measuring its rows.
+            if (!list || typeof position !== 'number' || !count) return;
+            let frames = 0;
+            const step = () => {
+                if (disposed || request !== scrollRequest || !list.isConnected) return;
+                const found = document.getElementById(id);
+                if (found) {
+                    reveal(list, found);
                     return;
                 }
-            }
-            el.scrollIntoView({ block: 'nearest' });
+                if (frames % 4 === 0) scrollToEstimate(list, position, count);
+                if (++frames < 60) requestAnimationFrame(step);
+            };
+            step();
         },
 
         setCommandShortcuts(list) {

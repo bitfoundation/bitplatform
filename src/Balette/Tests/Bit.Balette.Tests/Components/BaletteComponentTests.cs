@@ -571,4 +571,193 @@ public class BaletteComponentTests : BunitContext
             Assert.ContainsSingle(cut.FindAll("[data-balette=item] .bit-balette-pin"));
         });
     }
+
+    [TestMethod]
+    public async Task A_command_both_registered_and_passed_in_is_listed_once()
+    {
+        _service.Register(BaletteCmd.Navigate("Settings", "/settings"));
+        var cut = Render<Balette>(p => p.Add(x => x.Commands, new[] { BaletteCmd.Navigate("Settings", "/settings").Build() }));
+
+        // Opened again, the palette finds the history loaded and builds the recents from the ranked commands by id.
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        await cut.InvokeAsync(() => _service.CloseAsync());
+        await cut.InvokeAsync(() => _service.OpenAsync());
+
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+    }
+
+    [TestMethod]
+    public async Task Opening_and_closing_from_another_thread_reach_the_renderer()
+    {
+        _service.Register(BaletteCmd.New("Anything"));
+        var cut = RenderPalette();
+
+        await Task.Run(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.AreEqual("true", cut.Find("dialog").GetAttribute("data-open")));
+
+        await Task.Run(() => _service.CloseAsync());
+        cut.WaitForAssertion(() => Assert.AreEqual("false", cut.Find("dialog").GetAttribute("data-open")));
+    }
+
+    [TestMethod]
+    public async Task The_highlight_follows_its_command_when_the_rows_reorder()
+    {
+        _service.Register(
+            BaletteCmd.New("Other").Group("Tools"),
+            BaletteCmd.Action("Word wrap", _ => Task.FromResult(BaletteCommandResult.KeepOpen)).Group("Tools"));
+        var cut = RenderPalette();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("ArrowDown", false, false, false, false));
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+
+        // Run, the command moved up into Recent; the highlight went with it.
+        cut.WaitForAssertion(() =>
+        {
+            Assert.Contains("Recent", cut.FindAll("[data-balette=group-heading]").Select(h => h.TextContent.Trim()));
+            Assert.AreEqual("Word wrap", cut.Find("[data-active=true] .bit-balette-item-title").TextContent.Trim());
+        });
+    }
+
+    [TestMethod]
+    public async Task Moving_away_from_an_armed_command_clears_its_confirmation_prompt()
+    {
+        var ran = false;
+        _service.Register(
+            BaletteCmd.Action("Delete project", () => ran = true).Destructive("This permanently deletes the project").Priority(10),
+            BaletteCmd.New("Other"));
+        var cut = RenderPalette();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.Contains("permanently deletes", cut.Find("[data-balette=toast]").TextContent));
+
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("ArrowDown", false, false, false, false));
+        cut.WaitForAssertion(() =>
+        {
+            Assert.IsEmpty(cut.FindAll("[data-balette=toast]"));
+            Assert.IsEmpty(cut.FindAll("[data-confirming=true]"));
+        });
+        Assert.IsFalse(ran);
+    }
+
+    [TestMethod]
+    public async Task A_second_Enter_does_not_submit_a_running_prompt_again()
+    {
+        var submits = 0;
+        var release = new TaskCompletionSource();
+        _service.Register(BaletteCmd.Action("Rename", _ => Task.FromResult(BaletteCommandResult.Prompt("New name", async _ =>
+        {
+            submits++;
+            await release.Task;
+            return BaletteCommandResult.Close;
+        }))));
+        var cut = RenderPalette();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        cut.WaitForAssertion(() => Assert.IsNotNull(cut.Find("[data-balette=prompt]")));
+        await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("report.pdf"));
+
+        var first = cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        var second = cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        release.SetResult();
+        await Task.WhenAll(first, second);
+
+        Assert.AreEqual(1, submits);
+    }
+
+    [TestMethod]
+    public async Task Closing_while_a_handler_runs_cancels_it_and_drops_its_answer()
+    {
+        var release = new TaskCompletionSource();
+        var token = CancellationToken.None;
+        _service.Register(BaletteCmd.Action("Export…", async ctx =>
+        {
+            token = ctx.CancellationToken;
+            await release.Task;
+            return BaletteCommandResult.Page("Export as", [BaletteCmd.New("PDF")]);
+        }));
+        var cut = RenderPalette();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.ContainsSingle(cut.FindAll("[data-balette=item]")));
+
+        var running = cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Escape", false, false, false, false));
+        Assert.IsTrue(token.IsCancellationRequested);
+
+        release.SetResult();
+        await running;
+        Assert.AreEqual("false", cut.Find("dialog").GetAttribute("data-open"));
+    }
+
+    [TestMethod]
+    public async Task A_reset_drops_the_source_results_of_the_old_query()
+    {
+        _service.RegisterSource(new BaletteDelegateSource("Remote", (q, _) => Task.FromResult<IReadOnlyList<BaletteCommand>>([BaletteCmd.New($"Remote hit for {q}").Build()])));
+        _service.Register(BaletteCmd.Action("Adapt layout", _ => Task.FromResult(BaletteCommandResult.Reset)));
+        var cut = RenderPalette();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("ada"));
+        cut.WaitForAssertion(() => Assert.Contains("Remote hit for ada", cut.Find("[data-balette=list]").TextContent), TimeSpan.FromSeconds(3));
+
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("Enter", false, false, false, false));
+
+        cut.WaitForAssertion(() =>
+        {
+            Assert.AreEqual(string.Empty, cut.Find("[data-balette=input]").GetAttribute("value"));
+            Assert.DoesNotContain("Remote hit", cut.Find("[data-balette=list]").TextContent);
+        });
+    }
+
+    [TestMethod]
+    public void Changed_vim_bindings_and_toggle_shortcut_reach_the_browser_layer()
+    {
+        var cut = Render<Balette>(p => p.Add(x => x.VimBindings, false));
+        cut.WaitForAssertion(() => Assert.IsTrue(_jsHandle.Invocations.Any(i => i.Identifier == "isMac")));
+
+        cut.Render(p => p.Add(x => x.VimBindings, true).Add(x => x.ToggleShortcut, "Ctrl+Shift+P"));
+
+        Assert.AreEqual(true, _jsHandle.Invocations.Single(i => i.Identifier == "setVimBindings").Arguments[0]);
+        var toggles = (IEnumerable<string>)_jsHandle.Invocations.Single(i => i.Identifier == "setToggleShortcuts").Arguments[0]!;
+        Assert.Contains("ctrl+shift+p", toggles);
+    }
+
+    [TestMethod]
+    public async Task Each_hover_suspension_is_rendered_with_a_fresh_value()
+    {
+        _service.Register(BaletteCmd.New("Alpha"));
+        var cut = RenderPalette();
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        Assert.IsNull(cut.Find("dialog").GetAttribute("data-hover-suspended"));
+
+        await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("al"));
+        var first = cut.Find("dialog").GetAttribute("data-hover-suspended");
+        Assert.IsNotNull(first);
+
+        await cut.InvokeAsync(cut.Instance.OnPointerMoved);
+        await cut.InvokeAsync(() => cut.Find("[data-balette=input]").Input("alp"));
+        Assert.AreNotEqual(first, cut.Find("dialog").GetAttribute("data-hover-suspended"));
+    }
+
+    [TestMethod]
+    public async Task Scrolling_to_a_row_passes_its_position_among_all_rows()
+    {
+        _service.Register(BaletteCmd.New("A").Group("One"), BaletteCmd.New("B").Group("Two"));
+        var cut = Render<Balette>(p => p.Add(x => x.Virtualize, true));
+        await cut.InvokeAsync(() => _service.OpenAsync());
+        cut.WaitForAssertion(() => Assert.AreEqual(2, cut.FindAll("[data-balette=item]").Count));
+
+        await cut.InvokeAsync(() => cut.Instance.OnKeyDown("End", false, false, false, false));
+
+        // Heading One, A, heading Two, B: the browser layer estimates where an unrendered row lies from these.
+        cut.WaitForAssertion(() =>
+        {
+            var args = _jsHandle.Invocations.Last(i => i.Identifier == "scrollIntoView").Arguments;
+            Assert.AreEqual(3, args[2]);
+            Assert.AreEqual(4, args[3]);
+        });
+    }
 }

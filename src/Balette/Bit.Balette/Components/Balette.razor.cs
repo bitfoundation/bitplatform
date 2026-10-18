@@ -45,6 +45,10 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private CancellationTokenSource? _toastCts;
     private bool _executing;
     private bool _pointerSelectionSuspended;
+    private int _hoverSuspension;
+    private bool _selectionReset;
+    private bool _syncedVim;
+    private string _syncedToggles = string.Empty;
     private bool _inputPending;
     private int _inputVersion;
     private TimeSpan _lastSearchCost;
@@ -199,8 +203,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     protected override void OnInitialized()
     {
-        Service.OpenRequested += OpenCoreAsync;
-        Service.CloseRequested += CloseCoreAsync;
+        Service.OpenRequested += OpenFromServiceAsync;
+        Service.CloseRequested += CloseFromServiceAsync;
         Service.ExecuteRequested += ExecuteFromServiceAsync;
         Service.CommandsChanged += OnRegistryChanged;
         History.Changed += OnHistoryChanged;
@@ -227,6 +231,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             SyncShortcuts();
         }
 
+        SyncBrowserOptions();
+
         if (Open && !_isOpen)
         {
             await OpenCoreAsync(null, null);
@@ -248,7 +254,11 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             {
                 _module = await JS.InvokeAsync<IJSObjectReference>("import", "./_content/Bit.Balette/bit-balette.js");
                 _selfRef = DotNetObjectReference.Create(this);
-                _handle = await _module.InvokeAsync<IJSObjectReference>("init", _dialogEl, _selfRef, BuildJsOptions());
+                var toggles = ToggleShortcutStrings();
+                _syncedToggles = string.Join('\n', toggles);
+                _syncedVim = EffectiveVim;
+                _handle = await _module.InvokeAsync<IJSObjectReference>("init", _dialogEl, _selfRef, BuildJsOptions(toggles));
+                SyncBrowserOptions(); // parameters set while init was on its way
                 _isMac = await _handle.InvokeAsync<bool>("isMac");
                 Service.SetPlatform(_isMac);
                 StateHasChanged();
@@ -267,8 +277,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         if (_pendingOpen)
         {
             _pendingOpen = false;
-            await _handle.InvokeVoidAsync("open", _inputEl, _selectOnOpen);
-            _pendingScroll = true;
+            // Closed again before this render: showing the dialog now would leave an empty modal nothing dismisses.
+            if (_isOpen)
+            {
+                await _handle.InvokeVoidAsync("open", _inputEl, _selectOnOpen);
+                _pendingScroll = true;
+            }
         }
 
         if (_pendingFocus)
@@ -285,18 +299,19 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         if (_pendingScroll && _isOpen)
         {
             _pendingScroll = false;
-            var active = _activeIndex >= 0 && _activeIndex < _itemRows.Count ? _itemRows[_activeIndex].ElementId : null;
-            if (active is not null)
+            if (_activeIndex >= 0 && _activeIndex < _itemRows.Count)
             {
-                await _handle.InvokeVoidAsync("scrollIntoView", _listEl, active);
+                // The row's position lets the browser layer reach a row Virtualize has not rendered.
+                var active = _itemRows[_activeIndex];
+                await _handle.InvokeVoidAsync("scrollIntoView", _listEl, active.ElementId, active.Position, _rows.Count);
             }
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        Service.OpenRequested -= OpenCoreAsync;
-        Service.CloseRequested -= CloseCoreAsync;
+        Service.OpenRequested -= OpenFromServiceAsync;
+        Service.CloseRequested -= CloseFromServiceAsync;
         Service.ExecuteRequested -= ExecuteFromServiceAsync;
         Service.CommandsChanged -= OnRegistryChanged;
         History.Changed -= OnHistoryChanged;
@@ -380,6 +395,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
     }
 
+    // The service can be called from any thread - a timer, a hub callback, code after ConfigureAwait(false) - and opening
+    // or closing renders, so its requests move onto the renderer's dispatcher first.
+    private Task OpenFromServiceAsync(string? query, string? pageCommandId) => InvokeAsync(() => OpenCoreAsync(query, pageCommandId));
+
+    private Task CloseFromServiceAsync() => InvokeAsync(CloseCoreAsync);
+
     private Task ExecuteFromServiceAsync(string commandId) => InvokeAsync(async () =>
     {
         var command = FindCommand(commandId) ?? throw new KeyNotFoundException($"Command '{commandId}' is not registered.");
@@ -387,11 +408,14 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         StateHasChanged();
     });
 
-    /// <summary>Looks a command up in the registry first, then among the ones declared in markup and passed to <see cref="Commands"/>.</summary>
+    /// <summary>
+    /// Looks a command up in the registry first, then among the ones declared in markup and passed to <see cref="Commands"/>:
+    /// the order in which <see cref="RefreshSnapshot"/> keeps one command per id.
+    /// </summary>
     private BaletteCommand? FindCommand(string commandId)
         => Service.Find(commandId)
-        ?? _declarative.LastOrDefault(c => c.Id == commandId)
-        ?? Commands?.LastOrDefault(c => c.Id == commandId);
+        ?? _declarative.FirstOrDefault(c => c.Id == commandId)
+        ?? Commands?.FirstOrDefault(c => c.Id == commandId);
 
     /// <summary>
     /// The page a command with children opens. Children registered through the service are flattened into the
@@ -442,6 +466,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
 
         var wasOpen = _isOpen;
+        if (!wasOpen && Options.ResetOnClose)
+        {
+            // The state was reset on closing, but rebuilds since may have put another command on the first row.
+            ResetSelection();
+        }
+
         _isOpen = true;
         _pendingOpen = !wasOpen;
         // A query passed in on purpose - often a mode prefix - is kept for typing after; one left over from the
@@ -477,10 +507,18 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
 
         _isOpen = false;
+        _pendingOpen = false;
         _inputPending = false;
         _debounceCts?.Cancel();
-        _confirmingId = null;
+        Disarm();
         Service.SetOpen(false);
+
+        // A handler still running would answer into a palette the user has dismissed - a page or a prompt would reopen
+        // it - so it is told, and its answer is dropped (see RunHandlerAsync).
+        if (_executing)
+        {
+            _executeCts?.Cancel();
+        }
 
         if (_handle is not null)
         {
@@ -517,9 +555,28 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         _sourceResults.Clear();
         _pendingSources.Clear();
         _loading = false;
-        _activeIndex = 0;
+        ResetSelection();
         _confirmingId = null;
-        _toast = null;
+        ShowToast(null);
+    }
+
+    /// <summary>Puts the highlight on the first row of the next rebuild, instead of keeping it on the command it was on.</summary>
+    private void ResetSelection()
+    {
+        _activeIndex = 0;
+        _selectionReset = true;
+    }
+
+    /// <summary>Drops a pending confirmation together with the prompt that asked for it.</summary>
+    private void Disarm()
+    {
+        if (_confirmingId is null)
+        {
+            return;
+        }
+
+        _confirmingId = null;
+        ShowToast(null);
     }
 
     // ---- Input ------------------------------------------------------------------------------------
@@ -554,9 +611,11 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     private async Task OnQueryUpdatedAsync()
     {
         _inputPending = false;
-        _confirmingId = null;
-        _activeIndex = 0;
+        Disarm();
+        ResetSelection();
+        // The rows change under a pointer resting on the list; hover selects again once it moves (see OnPointerMoved).
         _pointerSelectionSuspended = true;
+        _hoverSuspension++;
         var started = Stopwatch.GetTimestamp();
         Rebuild();
         _lastSearchCost = Stopwatch.GetElapsedTime(started);
@@ -657,8 +716,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             case "Escape":
                 if (_confirmingId is not null)
                 {
-                    _confirmingId = null;
-                    ShowToast(null);
+                    Disarm();
                 }
                 else if (_pages.Count > 1)
                 {
@@ -703,7 +761,10 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     [JSInvokable]
     public Task OnBackdropClick() => Options.CloseOnBackdropClick ? InvokeAsync(CloseCoreAsync) : Task.CompletedTask;
 
-    /// <summary>Called by the browser layer when the pointer moved over the list, which re-enables hover selection. Not meant to be called from application code.</summary>
+    /// <summary>
+    /// Called by the browser layer when the pointer first moved after the dialog's <c>data-hover-suspended</c> changed,
+    /// which re-enables hover selection. Not meant to be called from application code.
+    /// </summary>
     [JSInvokable]
     public Task OnPointerMoved()
     {
@@ -740,7 +801,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
 
         _activeIndex = Math.Clamp(index, 0, _itemRows.Count - 1);
-        _confirmingId = null;
+        Disarm();
         _pendingScroll = true;
     }
 
@@ -754,12 +815,18 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         if (row.ItemIndex != _activeIndex)
         {
             _activeIndex = row.ItemIndex;
+            Disarm();
         }
     }
 
     private Task OnItemClick(BaletteRow row)
     {
-        _activeIndex = row.ItemIndex;
+        if (row.ItemIndex != _activeIndex)
+        {
+            _activeIndex = row.ItemIndex;
+            Disarm();
+        }
+
         return ExecuteCommandAsync(row.Command, viaKeyboard: false);
     }
 
@@ -782,8 +849,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         _pages.Add(frame);
         _query = frame.Prompt?.InitialValue ?? string.Empty;
         _inputPending = false;
-        _activeIndex = 0;
-        _confirmingId = null;
+        ResetSelection();
+        Disarm();
         _sourceResults.Clear();
         _pendingFocus = true;
         _pendingScroll = true;
@@ -801,8 +868,8 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         _pages.RemoveAt(_pages.Count - 1);
         _query = frame.QueryBefore;
         _inputPending = false;
-        _activeIndex = 0;
-        _confirmingId = null;
+        ResetSelection();
+        Disarm();
         _sourceResults.Clear();
         _pendingFocus = true;
         _pendingScroll = true;
@@ -980,7 +1047,7 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
-        _confirmingId = null;
+        Disarm();
 
         if (HasPage(cmd))
         {
@@ -1025,9 +1092,14 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     private async Task RunHandlerAsync(BaletteCommand cmd, Func<BaletteCommandContext, Task<BaletteCommandResult>> handler, IReadOnlyList<BaletteCommand> selected, string? promptValue)
     {
-        _executeCts?.Cancel();
-        _executeCts = new CancellationTokenSource();
-        var ctx = CreateContext(cmd, promptValue, _executeCts.Token, selected);
+        // Submitting a prompt or a multi-select page comes here directly: this is what turns away a second Enter.
+        if (_executing)
+        {
+            return;
+        }
+
+        var cts = _executeCts = new CancellationTokenSource();
+        var ctx = CreateContext(cmd, promptValue, cts.Token, selected);
         var sw = Stopwatch.StartNew();
         _executing = true;
         BaletteCommandResult result;
@@ -1067,6 +1139,12 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             await OnCommandExecuted.InvokeAsync(new BaletteCommandExecutedEventArgs(cmd, result, sw.Elapsed));
         }
 
+        // Closed (or disposed) while the handler ran: what it answers with must not bring the palette back.
+        if (cts.IsCancellationRequested)
+        {
+            return;
+        }
+
         await ApplyResultAsync(cmd, result);
     }
 
@@ -1082,12 +1160,10 @@ public partial class Balette : ComponentBase, IAsyncDisposable
                 _pendingFocus = true;
                 break;
             case BaletteCommandResult.ResetResult:
-                _pages.RemoveRange(1, _pages.Count - 1);
-                _query = string.Empty;
-                _inputPending = false;
-                _activeIndex = 0;
+                ResetState();
                 _pendingFocus = true;
                 Rebuild();
+                TriggerSourceSearch();
                 break;
             case BaletteCommandResult.BackResult:
                 PopPage();
@@ -1283,7 +1359,10 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// <summary>Takes one snapshot of every command source so rendering never rescans the registry per row.</summary>
     private void RefreshSnapshot()
     {
-        _all = AllCommands().ToList();
+        // One command per id, in FindCommand's order: one registered through the service and declared in markup as well
+        // would otherwise be listed twice.
+        var ids = new HashSet<string>(StringComparer.Ordinal);
+        _all = AllCommands().Where(c => ids.Add(c.Id)).ToList();
         _parentIds = new HashSet<string>(StringComparer.Ordinal);
         foreach (var c in _all)
         {
@@ -1297,6 +1376,10 @@ public partial class Balette : ComponentBase, IAsyncDisposable
     /// <param name="reuseRegistryMatches">Only async source results changed: keep the registry matches computed for this query.</param>
     private void Rebuild(bool reuseRegistryMatches = false)
     {
+        // Rows move under the highlight - a command that just ran joins Recent, source results arrive above it - so it
+        // stays on the command it was on, unless the selection was reset on purpose.
+        var activeId = _selectionReset ? null : ActiveCommand?.Id;
+        _selectionReset = false;
         var page = CurrentPage;
         ResolveMode();
         var key = (page, _mode, _effectiveQuery);
@@ -1367,11 +1450,11 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         var itemCounter = 0;
         var usedIds = new HashSet<string>(StringComparer.Ordinal);
 
-        void AddHeader(string group) => rows.Add(new BaletteRow(BaletteRowKind.GroupHeader, group, null, -1, $"{_id}-g-{rows.Count}"));
+        void AddHeader(string group) => rows.Add(new BaletteRow(BaletteRowKind.GroupHeader, group, null, -1, $"{_id}-g-{rows.Count}") { Position = rows.Count });
 
         void AddItem(BaletteMatch m, string? group)
         {
-            var row = new BaletteRow(BaletteRowKind.Item, group, m, itemCounter, $"{_id}-i-{itemCounter}");
+            var row = new BaletteRow(BaletteRowKind.Item, group, m, itemCounter, $"{_id}-i-{itemCounter}") { Position = rows.Count };
             itemCounter++;
             rows.Add(row);
             items.Add(row);
@@ -1380,7 +1463,13 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         // Pinned & recents (root, default mode, empty query).
         if (!hasQuery && page.IsRoot && _mode is null && EffectiveEnableHistory && History.IsLoaded)
         {
-            var byId = ranked.ToDictionary(m => m.Command.Id, StringComparer.Ordinal);
+            // A source result can share an id with a registered command; the better ranked one stands for both.
+            var byId = new Dictionary<string, BaletteMatch>(ranked.Count, StringComparer.Ordinal);
+            foreach (var m in ranked)
+            {
+                byId.TryAdd(m.Command.Id, m);
+            }
+
             var pinned = History.Pinned().Where(byId.ContainsKey).Select(id => byId[id]).ToList();
             if (pinned.Count > 0)
             {
@@ -1454,18 +1543,26 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
         _rows = rows;
         _itemRows = items;
-        if (_activeIndex >= items.Count)
+        var kept = activeId is null ? -1 : items.FindIndex(r => r.Command.Id == activeId);
+        if (kept >= 0)
         {
-            _activeIndex = Math.Max(0, items.Count - 1);
+            _activeIndex = kept;
         }
-
-        // Skip disabled items as initial selection.
-        if (items.Count > 0 && items[_activeIndex].Command.Disabled)
+        else
         {
-            var firstEnabled = items.FindIndex(r => !r.Command.Disabled);
-            if (firstEnabled >= 0)
+            if (_activeIndex >= items.Count)
             {
-                _activeIndex = firstEnabled;
+                _activeIndex = Math.Max(0, items.Count - 1);
+            }
+
+            // Skip disabled items as initial selection.
+            if (items.Count > 0 && items[_activeIndex].Command.Disabled)
+            {
+                var firstEnabled = items.FindIndex(r => !r.Command.Disabled);
+                if (firstEnabled >= 0)
+                {
+                    _activeIndex = firstEnabled;
+                }
             }
         }
 
@@ -1569,7 +1666,16 @@ public partial class Balette : ComponentBase, IAsyncDisposable
 
     // ---- JS plumbing ---------------------------------------------------------------------------------------
 
-    private object BuildJsOptions()
+    private object BuildJsOptions(List<string> toggles) => new
+    {
+        toggleShortcuts = toggles,
+        commandShortcuts = GlobalShortcutStrings(),
+        suppressInEditable = Options.SuppressShortcutsInEditableElements,
+        sequenceTimeout = Options.SequenceTimeoutMs,
+        vimBindings = _syncedVim,
+    };
+
+    private List<string> ToggleShortcutStrings()
     {
         var toggles = new List<string>();
         if (ToggleShortcut is not null && BaletteKeyboardShortcut.TryParse(ToggleShortcut, out var ts))
@@ -1582,15 +1688,30 @@ public partial class Balette : ComponentBase, IAsyncDisposable
         }
 
         toggles.AddRange(Options.AdditionalToggleShortcuts.Select(s => s.Normalized));
+        return toggles;
+    }
 
-        return new
+    /// <summary>Passes on the parameters the browser layer acts on by itself when they changed since <c>init</c>.</summary>
+    private void SyncBrowserOptions()
+    {
+        if (_handle is null)
         {
-            toggleShortcuts = toggles,
-            commandShortcuts = GlobalShortcutStrings(),
-            suppressInEditable = Options.SuppressShortcutsInEditableElements,
-            sequenceTimeout = Options.SequenceTimeoutMs,
-            vimBindings = EffectiveVim,
-        };
+            return;
+        }
+
+        if (EffectiveVim != _syncedVim)
+        {
+            _syncedVim = EffectiveVim;
+            InvokeInBackground("setVimBindings", _syncedVim);
+        }
+
+        var toggles = ToggleShortcutStrings();
+        var key = string.Join('\n', toggles);
+        if (key != _syncedToggles)
+        {
+            _syncedToggles = key;
+            InvokeInBackground("setToggleShortcuts", toggles);
+        }
     }
 
     private List<string> GlobalShortcutStrings() => AllCommands()
@@ -1606,8 +1727,11 @@ public partial class Balette : ComponentBase, IAsyncDisposable
             return;
         }
 
-        _ = _handle.InvokeVoidAsync("setCommandShortcuts", GlobalShortcutStrings()).AsTask().ContinueWith(_ => { }, TaskContinuationOptions.OnlyOnFaulted);
+        InvokeInBackground("setCommandShortcuts", GlobalShortcutStrings());
     }
+
+    private void InvokeInBackground(string identifier, object argument)
+        => _ = _handle!.InvokeVoidAsync(identifier, argument).AsTask().ContinueWith(_ => { }, TaskContinuationOptions.OnlyOnFaulted);
 
     // ---- Effective settings ----------------------------------------------------------------------------------
 

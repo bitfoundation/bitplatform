@@ -51,7 +51,7 @@ public sealed class BaletteCommandContext
     /// <summary>The palette service, for handlers that register, open or execute other commands.</summary>
     public IBaletteService Palette { get; }
 
-    /// <summary>Cancelled when another command starts while this one is still running.</summary>
+    /// <summary>Cancelled when the palette is closed while this command is still running; whatever the handler then returns is ignored.</summary>
     public CancellationToken CancellationToken { get; }
 
     /// <summary>Resolves a service from the scope, throwing when it is not registered.</summary>

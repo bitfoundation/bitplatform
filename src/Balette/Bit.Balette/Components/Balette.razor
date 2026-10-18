@@ -13,6 +13,7 @@
         data-open="@(_isOpen ? "true" : "false")"
         data-multiselect="@(CurrentPage.MultiSelect ? "true" : "false")"
         data-has-detail="@(DetailTemplate is not null ? "true" : "false")"
+        data-hover-suspended="@(_pointerSelectionSuspended && !DisablePointerSelection ? _hoverSuspension.ToString(System.Globalization.CultureInfo.InvariantCulture) : null)"
         aria-label="@S.DialogLabel"
         @attributes="AdditionalAttributes">
     @if (_isOpen)

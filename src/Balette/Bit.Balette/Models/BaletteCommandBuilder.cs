@@ -138,8 +138,8 @@ public sealed class BaletteCommandBuilder
     public BaletteCommandBuilder Disabled(bool disabled = true, string? reason = null) { _disabled = disabled; _disabledReason = reason; return this; }
     /// <summary>Lists the command only while <paramref name="predicate"/> returns true; evaluated every time the list is built.</summary>
     public BaletteCommandBuilder VisibleWhen(Func<bool> predicate) { _isVisible = predicate; return this; }
-    /// <summary>Styles the command as dangerous; with a message, <c>Enter</c> has to be pressed twice.</summary>
-    public BaletteCommandBuilder Destructive(string? confirmMessage = null) { _destructive = true; _confirm = confirmMessage; return this; }
+    /// <summary>Styles the command as dangerous; with a message, <c>Enter</c> has to be pressed twice. Without one, a confirmation set by <see cref="Confirm"/> stays.</summary>
+    public BaletteCommandBuilder Destructive(string? confirmMessage = null) { _destructive = true; _confirm = confirmMessage ?? _confirm; return this; }
     /// <summary>Asks for a second <c>Enter</c> before running, showing <paramref name="message"/>.</summary>
     public BaletteCommandBuilder Confirm(string message) { _confirm = message; return this; }
     /// <summary>Sets a small pill at the end of the row, e.g. "New".</summary>
