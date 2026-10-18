@@ -31,7 +31,7 @@ public sealed class DemoHost : IAsyncDisposable
         if (File.Exists(assembly) is false)
             throw new FileNotFoundException(
                 $"The demo server has not been built in the {E2EEnvironment.Configuration} configuration. Build it first with " +
-                $"'dotnet build src/Balette/Bit.Balette.Demo/Server/Bit.Balette.Demo.Server.csproj -c {E2EEnvironment.Configuration}'", assembly);
+                $"'dotnet build src/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj -c {E2EEnvironment.Configuration}'", assembly);
 
         var baseUrl = $"http://127.0.0.1:{ChildProcess.FreePort()}";
 

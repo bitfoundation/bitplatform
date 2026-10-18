@@ -302,7 +302,7 @@ public partial class McpOracleTests
     {
         for (var directory = new DirectoryInfo(AppContext.BaseDirectory); directory is not null; directory = directory.Parent)
         {
-            var candidate = Path.Combine([directory.FullName, "Bit.Balette.Demo", .. parts]);
+            var candidate = Path.Combine([directory.FullName, "Demo", .. parts]);
             if (File.Exists(candidate)) return candidate;
         }
 

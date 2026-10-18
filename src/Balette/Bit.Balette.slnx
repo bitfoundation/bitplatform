@@ -6,9 +6,9 @@
     <File Path="../global.json" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Bit.Balette.Demo/">
-    <Project Path="Bit.Balette.Demo/Client/Bit.Balette.Demo.Client.csproj" />
-    <Project Path="Bit.Balette.Demo/Server/Bit.Balette.Demo.Server.csproj" />
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.Balette.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.Balette.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Balette.Tests/Bit.Balette.Tests.csproj" />

@@ -117,9 +117,9 @@
     <File Path="Balette/README.md" />
     <Project Path="Balette/Bit.Balette/Bit.Balette.csproj" />
   </Folder>
-  <Folder Name="/Balette/Bit.Balette.Demo/">
-    <Project Path="Balette/Bit.Balette.Demo/Client/Bit.Balette.Demo.Client.csproj" />
-    <Project Path="Balette/Bit.Balette.Demo/Server/Bit.Balette.Demo.Server.csproj" />
+  <Folder Name="/Balette/Demo/">
+    <Project Path="Balette/Demo/Client/Bit.Balette.Demo.Client.csproj" />
+    <Project Path="Balette/Demo/Server/Bit.Balette.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Balette/Tests/">
     <Project Path="Balette/Tests/Bit.Balette.Tests/Bit.Balette.Tests.csproj" />

@@ -62,8 +62,8 @@
   </Folder>
   <Folder Name="/Balette/">
     <File Path="Balette/README.md" />
-    <Project Path="Balette/Bit.Balette.Demo/Client/Bit.Balette.Demo.Client.csproj" />
-    <Project Path="Balette/Bit.Balette.Demo/Server/Bit.Balette.Demo.Server.csproj" />
+    <Project Path="Balette/Demo/Client/Bit.Balette.Demo.Client.csproj" />
+    <Project Path="Balette/Demo/Server/Bit.Balette.Demo.Server.csproj" />
     <Project Path="Balette/Bit.Balette/Bit.Balette.csproj" />
     <Project Path="Balette/Tests/Bit.Balette.Tests/Bit.Balette.Tests.csproj" />
   </Folder>

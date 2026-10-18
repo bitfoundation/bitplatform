@@ -45,7 +45,7 @@ From `src/Balette` (inside `src`, so `src/global.json` selects the Microsoft.Tes
 
 ```bash
 # The suite runs the demo server's build output: build it first, in the configuration the tests run in.
-dotnet build Bit.Balette.Demo/Server/Bit.Balette.Demo.Server.csproj
+dotnet build Demo/Server/Bit.Balette.Demo.Server.csproj
 dotnet build Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -61,7 +61,7 @@ dotnet test --filter "FullyQualifiedName~Backspace_on_an_empty_query"
 CI does the same in Release (`.github/workflows/bit.ci.Balette.e2e.yml`):
 
 ```bash
-dotnet build src/Balette/Bit.Balette.Demo/Server/Bit.Balette.Demo.Server.csproj -c Release
+dotnet build src/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj -c Release
 dotnet build src/Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj -c Release
 pwsh src/Balette/Tests/Bit.Balette.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/Balette/Tests/Bit.Balette.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename balette-e2e.trx

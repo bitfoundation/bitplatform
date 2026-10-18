@@ -39,7 +39,7 @@ jobs:
 
     - name: Build the demo and the E2E suite
       run: |
-        dotnet build src/Balette/Bit.Balette.Demo/Server/Bit.Balette.Demo.Server.csproj -c Release
+        dotnet build src/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj -c Release
         dotnet build src/Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
