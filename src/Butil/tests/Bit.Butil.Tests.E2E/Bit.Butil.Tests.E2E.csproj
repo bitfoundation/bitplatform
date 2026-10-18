@@ -30,7 +30,7 @@
     <!-- The echo protocol itself, compiled from the demo server's copy rather than restated here.
          The suite asserts on this protocol and the demo page is what ships it, so two
          implementations of it would drift and the tests would go on passing against the stale one. -->
-    <Compile Include="..\..\Bit.Butil.Demo\Server\Endpoints\WebSocketEcho.cs"
+    <Compile Include="..\..\Demo\Server\Endpoints\WebSocketEcho.cs"
              Link="Infrastructure\WebSocketEcho.cs" />
   </ItemGroup>
 
