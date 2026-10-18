@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.EventLog;
 using Boilerplate.Client.Core.Components;
 using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
@@ -158,6 +160,8 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
             webAppBuilder.Services.AddBrowserlessClientServices();
         }
 
+        ConfigureTestHost(webAppBuilder);
+
         configureTestServices?.Invoke(webAppBuilder.Services);
         configureTestWebAppServices?.Invoke(webAppBuilder.Services);
         //#if (api == "Integrated")
@@ -206,6 +210,8 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         apiAppBuilder.Services.AddSharedProjectServices(apiAppBuilder.Configuration);
         Server.Api.Program.AddServerApiProjectServices(apiAppBuilder);
         apiAppBuilder.AddTestApiProjectServices();
+
+        ConfigureTestHost(apiAppBuilder);
 
         configureTestServices?.Invoke(apiAppBuilder.Services);
         configureTestApiAppServices?.Invoke(apiAppBuilder.Services);
@@ -396,7 +402,23 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
                 await app.StopAsync();
             }
             catch (OperationCanceledException) { }
-            await app.DisposeAsync();
+            catch (AggregateException exception) when (exception.Flatten().InnerExceptions.All(inner => inner is OperationCanceledException)) { }
+            finally
+            {
+                await app.DisposeAsync();
+            }
+        }
+    }
+
+    private static void ConfigureTestHost(WebApplicationBuilder builder)
+    {
+        builder.Services.Configure<HostOptions>(options => options.ShutdownTimeout = TimeSpan.FromSeconds(1));
+
+        foreach (var eventLogProvider in builder.Services
+            .Where(descriptor => descriptor.ServiceType == typeof(ILoggerProvider) && descriptor.ImplementationType == typeof(EventLogLoggerProvider))
+            .ToList())
+        {
+            builder.Services.Remove(eventLogProvider);
         }
     }
 
