@@ -107,11 +107,17 @@ public class GestureCancellationTests : BunitContext
     }
 
     [TestMethod]
-    public void ACancelledDragDoesNotReportItselfAsFinished()
+    public void ACancelledDragEndsOnceWithNothingLeftToRecord()
     {
         var stops = 0;
+        var changes = 0;
+        BlowXYPosition? positionAtStop = null;
         var nodes = ThreeNodes();
-        var cut = Render(nodes, extra: p => p.Add(c => c.OnNodeDragStop, (BlowNode _) => stops++));
+        var cut = Render(nodes, extra: p =>
+        {
+            p.Add(c => c.OnNodeDragStop, (BlowNode n) => { stops++; positionAtStop = n.Position; });
+            p.Add(c => c.NodesChanged, (List<BlowNode> _) => changes++);
+        });
 
         cut.FindAll(".bit-blow-node")[0]
             .PointerDown(new PointerEventArgs { Button = 0, ClientX = 0, ClientY = 0 });
@@ -119,7 +125,57 @@ public class GestureCancellationTests : BunitContext
         Escape(cut);
         cut.Find(".bit-blow").PointerUp(new PointerEventArgs { ClientX = 90, ClientY = 70 });
 
-        Assert.AreEqual(0, stops);
+        // A listener pairing the stop with the start still gets it - once, not again on the
+        // release - and by then the node is back, so the list was never reported as changed.
+        Assert.AreEqual(1, stops);
+        Assert.AreEqual(new BlowXYPosition(0, 0), positionAtStop);
+        Assert.AreEqual(0, changes);
+    }
+
+    [TestMethod]
+    public void ACancelledPanStillEndsTheMove()
+    {
+        var starts = 0;
+        var ends = 0;
+        var cut = Render(ThreeNodes(), extra: p =>
+        {
+            p.Add(c => c.OnMoveStart, (BlowViewport _) => starts++);
+            p.Add(c => c.OnMoveEnd, (BlowViewport _) => ends++);
+        });
+        var pane = cut.Find(".bit-blow");
+
+        pane.PointerDown(new PointerEventArgs { PointerId = 1, Button = 0, ClientX = 600, ClientY = 300 });
+        pane.PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 650, ClientY = 300 });
+        pane.PointerCancel(new PointerEventArgs { PointerId = 1 });
+
+        Assert.AreEqual(1, starts);
+        Assert.AreEqual(1, ends);
+    }
+
+    [TestMethod]
+    public void EscapeShrinksAParentAChildDragGrewBackToItsOwnSize()
+    {
+        List<BlowNode> nodes =
+        [
+            new() { Id = "group", Position = new(100, 100), Width = 200, Height = 100 },
+            new() { Id = "child", ParentId = "group", ExpandParent = true, Position = new(10, 10), Width = 50, Height = 30 },
+            new() { Id = "sibling", ParentId = "group", Position = new(100, 50), Width = 50, Height = 30 },
+        ];
+        var cut = Render(nodes);
+
+        // Dragged out past the group's left edge, which moves the group and renumbers its children.
+        cut.FindAll(".bit-blow-node")[1]
+            .PointerDown(new PointerEventArgs { Button = 0, ClientX = 120, ClientY = 120 });
+        cut.Find(".bit-blow").PointerMove(new PointerEventArgs { ClientX = 40, ClientY = 120 });
+        Assert.AreNotEqual(new BlowXYPosition(100, 100), nodes[0].Position);
+
+        Escape(cut);
+
+        Assert.AreEqual(new BlowXYPosition(100, 100), nodes[0].Position);
+        Assert.AreEqual(200, nodes[0].Width);
+        Assert.AreEqual(100, nodes[0].Height);
+        Assert.AreEqual(new BlowXYPosition(10, 10), nodes[1].Position);
+        Assert.AreEqual(new BlowXYPosition(100, 50), nodes[2].Position);
     }
 
     // ---- connection ----
@@ -183,10 +239,9 @@ public class GestureCancellationTests : BunitContext
 
         cut.Find(".bit-blow-minimap")
             .PointerDown(new PointerEventArgs { Button = 0, OffsetX = 10, OffsetY = 10 });
-        cut.Find(".bit-blow-minimap")
-            .PointerMove(new PointerEventArgs { OffsetX = 40, OffsetY = 40 });
 
-        Assert.IsNotNull(cut.Find(".bit-blow-minimap"));
+        // With no canvas to pan, the press starts nothing, so no move listener is put up for it.
+        Assert.IsFalse(cut.Find(".bit-blow-minimap").HasAttribute("blazor:onpointermove"));
     }
 
     // ---- viewport culling ----

@@ -7,10 +7,10 @@
      @ref="_self"
      @onpointerdown="OnPointerDown"
      @onpointerdown:stopPropagation="true"
-     @onpointermove="OnPointerMove"
-     @onpointerup="OnPointerUp"
-     @onpointerleave="OnPointerUp"
-     @onpointercancel="OnPointerUp"
+     @onpointermove="PointerMoveHandler"
+     @onpointerup="PointerEndHandler"
+     @onpointerleave="PointerEndHandler"
+     @onpointercancel="PointerEndHandler"
      @onwheel="OnWheel"
      @onwheel:stopPropagation="true"
      @onwheel:preventDefault="Zoomable"
@@ -241,6 +241,16 @@
         if (OnNodeClick.HasDelegate && NodeAt(e.OffsetX, e.OffsetY) is { } hit)
             await OnNodeClick.InvokeAsync(hit);
     }
+
+    // Only listened for while panning: every hover move (and leave) would otherwise round-trip into
+    // .NET and re-render the minimap for nothing. An empty callback makes the renderer omit the attribute.
+    private EventCallback<PointerEventArgs> PointerMoveHandler => _panning
+        ? EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerMove)
+        : default;
+
+    private EventCallback<PointerEventArgs> PointerEndHandler => _panning
+        ? EventCallback.Factory.Create<PointerEventArgs>(this, OnPointerUp)
+        : default;
 
     private void OnPointerMove(PointerEventArgs e)
     {

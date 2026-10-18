@@ -702,6 +702,192 @@ public class ReviewRegressionTests : BunitContext
         Assert.AreEqual(before, cut.Instance.GetViewport());
     }
 
+    [TestMethod]
+    public void AnIdleMiniMapDoesNotListenForPointerMoves()
+    {
+        var cut = Render(TwoNodes(), extra: p => p.AddChildContent<BlowMiniMap>(_ => { }));
+
+        Assert.IsFalse(cut.Find(".bit-blow-minimap").HasAttribute("blazor:onpointermove"));
+
+        cut.Find(".bit-blow-minimap").PointerDown(new PointerEventArgs { Button = 0, OffsetX = 10, OffsetY = 10 });
+
+        Assert.IsTrue(cut.Find(".bit-blow-minimap").HasAttribute("blazor:onpointermove"));
+    }
+
+    // ---- nested flows ----
+
+    [TestMethod]
+    public void OnlyANestedFlowKeepsItsInputFromTheFlowAroundIt()
+    {
+        List<BlowNode> inner = [new() { Id = "i", Position = new(0, 0), Width = 50, Height = 30 }];
+        List<BlowNode> outer = [new() { Id = "o", Position = new(0, 0), Width = 300, Height = 200 }];
+        var cut = Render(outer, extra: p => p.Add(c => c.NodeTemplate, (RenderFragment<BlowNode>)(_ => b =>
+        {
+            b.OpenComponent<BlowCanvas>(0);
+            b.AddAttribute(1, nameof(BlowCanvas.Nodes), inner);
+            b.CloseComponent();
+        })));
+
+        var panes = cut.FindAll(".bit-blow");
+        Assert.HasCount(2, panes);
+        foreach (var name in new[] { "onpointerdown", "onwheel", "onkeydown" })
+        {
+            Assert.IsFalse(panes[0].HasAttribute($"blazor:{name}:stoppropagation"));
+            Assert.IsTrue(panes[1].HasAttribute($"blazor:{name}:stoppropagation"));
+        }
+
+        // A press on the inner pane is the inner flow's gesture, not a press on the node around it.
+        cut.FindAll(".bit-blow")[1].PointerDown(new PointerEventArgs { Button = 0, ClientX = 100, ClientY = 100 });
+
+        Assert.IsFalse(outer[0].Selected);
+        Assert.IsFalse(outer[0].Dragging);
+    }
+
+    // ---- parents and children ----
+
+    private static List<BlowNode> Group() =>
+    [
+        new() { Id = "group", Position = new(100, 100), Width = 200, Height = 100 },
+        // Centred in the group, so it lines up with the group wherever the group goes.
+        new() { Id = "child", ParentId = "group", Position = new(75, 35), Width = 50, Height = 30 },
+    ];
+
+    [TestMethod]
+    public void AGroupDraggedWithGuidesOnIsNotHeldBackByItsOwnChild()
+    {
+        var nodes = Group();
+        var cut = Render(nodes, extra: p => p.Add(c => c.SnapToGuides, true));
+
+        cut.FindAll(".bit-blow-node")[0].PointerDown(new PointerEventArgs { Button = 0, ClientX = 110, ClientY = 110 });
+        cut.Find(".bit-blow").PointerMove(new PointerEventArgs { ClientX = 112, ClientY = 110 });
+
+        Assert.AreEqual(new BlowXYPosition(102, 100), nodes[0].Position);
+    }
+
+    [TestMethod]
+    public void ArrowKeysMoveASelectedGroupAndItsSelectedChildTogether()
+    {
+        var nodes = Group();
+        foreach (var n in nodes) n.Selected = true;
+        var cut = Render(nodes);
+
+        cut.Find(".bit-blow").KeyDown(new KeyboardEventArgs { Key = "ArrowRight" });
+
+        Assert.AreEqual(new BlowXYPosition(105, 100), nodes[0].Position);
+        Assert.AreEqual(new BlowXYPosition(75, 35), nodes[1].Position);
+    }
+
+    [TestMethod]
+    public void DeletingAGroupDeletesEverythingNestedInIt()
+    {
+        var nodes = Group();
+        nodes.Add(new() { Id = "grandchild", ParentId = "child", Position = new(5, 5), Width = 10, Height = 10, Deletable = false });
+        nodes[0].Selected = true;
+        var cut = Render(nodes);
+
+        cut.Find(".bit-blow").KeyDown(new KeyboardEventArgs { Key = "Delete" });
+
+        Assert.IsEmpty(nodes);
+    }
+
+    [TestMethod]
+    public async Task DeletingAGroupFromCodeReportsWhatWasNestedInItAsDeletedToo()
+    {
+        var nodes = Group();
+        IReadOnlyList<BlowNode>? deleted = null;
+        var cut = Render(nodes, extra: p => p.Add(c => c.OnNodesDelete, (IReadOnlyList<BlowNode> d) => deleted = d));
+
+        var group = nodes[0];
+        await cut.InvokeAsync(() => cut.Instance.DeleteElementsAsync([group]));
+
+        Assert.IsEmpty(nodes);
+        Assert.HasCount(2, deleted!);
+    }
+
+    // ---- keyboard ----
+
+    [TestMethod]
+    public void ASpaceTypedIntoAFieldInsideANodeDoesNotSelectTheNode()
+    {
+        Module().Setup<bool>("isEditableFocused").SetResult(true);
+        var nodes = TwoNodes();
+        var cut = Render(nodes);
+
+        cut.Find(".bit-blow-node").KeyDown(new KeyboardEventArgs { Key = " " });
+
+        Assert.IsFalse(nodes[0].Selected);
+    }
+
+    [TestMethod]
+    public void TheBrowserIsToldWhichWheelsAndShortcutsTheFlowTakes()
+    {
+        var module = Module();
+        Render(TwoNodes(), extra: p =>
+        {
+            p.Add(c => c.ZoomOnScroll, false);
+            p.Add(c => c.ClipboardShortcutsEnabled, true);
+        });
+
+        var policy = (BlowInputPolicy)module.Invocations["installInteractionGuards"].Last().Arguments[4]!;
+
+        Assert.IsFalse(policy.ZoomOnScroll);
+        Assert.IsTrue(policy.SelectAllKey);
+        Assert.IsTrue(policy.ClipboardKeys);
+        Assert.IsFalse(policy.HistoryKeys);
+    }
+
+    // ---- selection ----
+
+    [TestMethod]
+    public void PanningTheBackgroundKeepsTheSelectionWhileClickingItClearsIt()
+    {
+        var nodes = TwoNodes();
+        nodes[0].Selected = true;
+        var cut = Render(nodes);
+        var pane = cut.Find(".bit-blow");
+
+        pane.PointerDown(new PointerEventArgs { PointerId = 1, Button = 0, ClientX = 500, ClientY = 500 });
+        pane.PointerMove(new PointerEventArgs { PointerId = 1, ClientX = 560, ClientY = 500 });
+        pane.PointerUp(new PointerEventArgs { PointerId = 1, ClientX = 560, ClientY = 500 });
+        pane.Click(new MouseEventArgs { ClientX = 560, ClientY = 500 });
+        Assert.IsTrue(nodes[0].Selected);
+
+        pane.PointerDown(new PointerEventArgs { PointerId = 1, Button = 0, ClientX = 500, ClientY = 500 });
+        pane.PointerUp(new PointerEventArgs { PointerId = 1, ClientX = 500, ClientY = 500 });
+        pane.Click(new MouseEventArgs { ClientX = 500, ClientY = 500 });
+        Assert.IsFalse(nodes[0].Selected);
+    }
+
+    // ---- history and cloning ----
+
+    [TestMethod]
+    public async Task AHistoryCapacityBelowOneStillKeepsItsStepAcrossRenders()
+    {
+        var cut = Render(TwoNodes(), extra: p =>
+        {
+            p.Add(c => c.HistoryEnabled, true);
+            p.Add(c => c.HistoryCapacity, 0);
+        });
+
+        await cut.InvokeAsync(() => cut.Instance.AddNodes(new BlowNode { Id = "c" }));
+        cut.Render();
+
+        Assert.IsTrue(cut.Instance.CanUndo);
+    }
+
+    [TestMethod]
+    public void ACloneKeepsTheHandleAnchorsThatGoWithItsMeasuredSize()
+    {
+        var node = new BlowNode { Id = "a" };
+        var key = BlowHandleBounds.Key(BlowHandleType.Source, "out");
+        node.Handles[key] = new BlowHandleBounds("out", BlowHandleType.Source, BlowPosition.Right, 150, 20);
+
+        var clone = node.Clone();
+
+        Assert.AreEqual(node.Handles[key], clone.Handles[key]);
+        Assert.AreNotSame(node.Handles, clone.Handles);
+    }
+
     // ---- text ----
 
     [TestMethod]

@@ -45,7 +45,10 @@ public class BlowNode
     /// <summary>When true the node is not rendered and takes no part in interaction or fit-view. The auto-layouts still place it.</summary>
     public bool Hidden { get; set; }
 
-    /// <summary>When false the node is skipped by delete interactions (key press, <c>DeleteElementsAsync</c>).</summary>
+    /// <summary>
+    /// When false the node is skipped by delete interactions (key press, <c>DeleteElementsAsync</c>).
+    /// A node nested in one that is deleted goes with its parent regardless, as its edges do.
+    /// </summary>
     public bool Deletable { get; set; } = true;
 
     /// <summary>
@@ -172,7 +175,19 @@ public class BlowNode
     /// payload you attached. Useful for duplicate/copy-paste and for taking a snapshot that
     /// won't change under you as the user keeps editing.
     /// </summary>
-    public BlowNode Clone(string? newId = null) => new()
+    public BlowNode Clone(string? newId = null)
+    {
+        var clone = CloneCore(newId);
+
+        // The measured handle anchors go with the measured size. A clone that counts as measured
+        // but has no anchors would hang every edge off a side midpoint until it is next measured -
+        // and one culled off screen never is.
+        foreach (var (key, handle) in Handles) clone.Handles[key] = handle;
+
+        return clone;
+    }
+
+    private BlowNode CloneCore(string? newId) => new()
     {
         // The resolved position is carried over only if the canvas has actually resolved one;
         // a node that was never laid out keeps following its own Position, as the original does.

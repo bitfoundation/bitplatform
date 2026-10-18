@@ -990,7 +990,8 @@ Demo: `/examples/default-edge-overwrite`.
 
 Pressing a node or an edge selects it and clears the rest of the selection - except that pressing a node that is
 already selected keeps the selection, so it can be dragged as a group. Holding `MultiSelectionKey` (Shift) adds to
-the selection instead. Pressing empty space clears it, even when the press goes on to pan. Box selection draws a
+the selection instead. Clicking empty space clears it; a press there that goes on to pan keeps it, so the graph can
+be moved around to see more of it without losing what was selected. Box selection draws a
 rectangle while `SelectionKey` (Shift) is held, or on any plain drag of the pane when `SelectionOnDrag` is on - then
 holding `PanActivationKey` (Space) pans instead. Holding the multi-selection key while drawing the box adds to the
 existing selection; since both keys default to Shift, Shift+drag does exactly that. Set `SelectionKey` to null to
@@ -1020,7 +1021,8 @@ travels further than `NodeClickDistance` (3) is not reported as `OnNodeClick`, a
 moving, `OnSelectionDragStart`, `OnSelectionDrag` and `OnSelectionDragStop` report all of them as a
 `BlowSelectionMouseEvent`, so a listener can treat the group as one edit. `NodesChanged` follows a drag that
 actually moved something. Escape, or the browser cancelling the pointer, puts every node back where the drag found
-it. The pointer is captured for the whole gesture, so a drag survives the cursor leaving the canvas. Demo:
+it - and shrinks back a parent the drag grew - and still raises the stop events, so every start has its stop. The
+pointer is captured for the whole gesture, so a drag survives the cursor leaving the canvas. Demo:
 `/examples/click-distance`, `/drag-threshold`.
 
 ### Snapping to a grid
@@ -1082,8 +1084,8 @@ needed, so tabbing through a large graph does not re-centre the view at every st
 
 Delete or Backspace (`DeleteKeys`) remove the selection while `DeleteKeyEnabled` is on; set `DeleteKeys` to just
 `["Delete"]` when Backspace should always mean "go back". Elements with `Deletable = false` stay, but an edge always
-goes with a node it is attached to. `OnBeforeDelete` can veto the whole deletion; it is synchronous and sees the
-cascaded edges too:
+goes with a node it is attached to, and a node always goes with the parent it is nested in. `OnBeforeDelete` can
+veto the whole deletion; it is synchronous and sees the cascaded nodes and edges too:
 
 ```razor
 <BlowCanvas Nodes="_nodes" Edges="_edges" OnBeforeDelete="CanDelete" OnDelete="OnDeleted" />
@@ -1125,7 +1127,9 @@ The guards are listeners in the browser, because only the DOM knows which elemen
 time Blazor delivers the event it is too late to opt out. Only elements inside the canvas count, so a page that
 wraps the whole flow in an element carrying one of these classes does not switch the flow off. Set a parameter to
 null to disable that guard, or to another name if the class clashes with your CSS. Keys typed into an input,
-textarea, select or contenteditable element always belong to it. Demo: `/examples/interaction-guards`.
+textarea, select or contenteditable element always belong to it. A flow nested inside a node of another flow keeps
+its presses, wheels and keys to itself, so it needs no `nodrag` wrapper: using it never drags the node around it,
+zooms the outer flow or deletes there. Demo: `/examples/interaction-guards`.
 
 ### Locking the canvas
 

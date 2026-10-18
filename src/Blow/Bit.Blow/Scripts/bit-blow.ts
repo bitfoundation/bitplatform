@@ -49,9 +49,13 @@ interface BlowHandleHit {
 interface BlowInputPolicy {
     preventScrolling?: boolean;
     panOnScroll?: boolean;
+    zoomOnScroll?: boolean;
     zoomKey?: 'ctrlKey' | 'metaKey' | 'shiftKey' | 'altKey' | null;
     panKey?: string | null;
     keyboardA11y?: boolean;
+    selectAllKey?: boolean;
+    clipboardKeys?: boolean;
+    historyKeys?: boolean;
 }
 
 // What observeResize and installInteractionGuards hand back; .NET disposes it as a JS object reference.
@@ -273,13 +277,16 @@ function isEditable(el: Element | null): boolean {
 // The same listeners also apply the parts of the input policy that must be decided while the
 // event is still being dispatched, since a DOM event can only be cancelled synchronously and so
 // cannot wait for a round-trip to .NET. `policy` carries them:
-//   preventScrolling, panOnScroll, zoomKey - whether a wheel over the flow may scroll the page.
-//     A plain scroll that the flow ignores because its zoom activation key is not held is left
-//     to scroll the page; so is a wheel over a panel, the controls or a non-zoomable minimap,
-//     which keep the behaviour of ordinary page content.
-//   panKey, keyboardA11y - which keys the flow uses while it (or a node or edge in it) has focus,
-//     so they do not also scroll the page: Space/Enter activate a focused node or edge, the arrow
-//     keys move the selection, and the pan key held over the pane pans.
+//   preventScrolling, panOnScroll, zoomOnScroll, zoomKey - whether a wheel over the flow may
+//     scroll the page. A plain scroll that the flow ignores, because zooming on scroll is off or
+//     its zoom activation key is not held, is left to scroll the page; so is a wheel over a
+//     panel, the controls or a non-zoomable minimap, which keep the behaviour of ordinary page
+//     content.
+//   panKey, keyboardA11y, selectAllKey, clipboardKeys, historyKeys - which keys the flow uses
+//     while it (or a node or edge in it) has focus, so they do not also reach the browser: Space/
+//     Enter activate a focused node or edge, the arrow keys move the selection, the pan key held
+//     over the pane pans, and Ctrl/Cmd+A, C, X, V, D, Z and Y select, copy, paste, duplicate, undo
+//     and redo - which would otherwise also select the page's text or open the bookmark dialog.
 //
 // Returns a handle whose dispose() removes the listeners.
 export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass: string | null, noPanClass: string | null,
@@ -303,18 +310,41 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
         return match && match !== pane && pane.contains(match) ? match : null;
     };
 
+    // True for an event that started inside another flow nested in this one. That flow applies its
+    // own guards and policy and keeps the event from reaching this one; acting on it here as well
+    // would switch the nested flow off (stopPropagation) or impose this flow's wheel policy on it.
+    const inNestedFlow = (target: EventTarget | null): boolean =>
+        target instanceof Element && target.closest(`.${ROOT_CLASS}`) !== pane;
+
     const onPointerDown = (e: PointerEvent) => {
+        if (inNestedFlow(e.target)) return;
         if (closestInPane(e.target, pointerSelector)) e.stopPropagation();
     };
 
     const preventScrolling = !!(policy && policy.preventScrolling);
     const panOnScroll = !!(policy && policy.panOnScroll);
+    const zoomOnScroll = !(policy && policy.zoomOnScroll === false);
     const zoomKey = (policy && policy.zoomKey) || null;
     const panKey = (policy && policy.panKey) || null;
     const keyboardA11y = !!(policy && policy.keyboardA11y);
+    const selectAllKey = !!(policy && policy.selectAllKey);
+    const clipboardKeys = !!(policy && policy.clipboardKeys);
+    const historyKeys = !!(policy && policy.historyKeys);
     const overlaySelector = '.bit-blow-panel, .bit-blow-controls, .bit-blow-minimap';
 
+    // The Ctrl/Cmd shortcuts the flow has been told to handle itself.
+    const isFlowShortcut = (e: KeyboardEvent): boolean => {
+        if (!e.ctrlKey && !e.metaKey) return false;
+        switch ((e.key || '').toLowerCase()) {
+            case 'a': return selectAllKey;
+            case 'c': case 'x': case 'v': case 'd': return clipboardKeys;
+            case 'z': case 'y': return historyKeys;
+            default: return false;
+        }
+    };
+
     const onWheel = (e: WheelEvent) => {
+        if (inNestedFlow(e.target)) return;
         if (closestInPane(e.target, wheelSelector)) {
             // The element keeps its own scrolling: neither the flow nor the page policy applies.
             // Ctrl+wheel is still a pinch, though, and left alone it zooms the whole page.
@@ -331,10 +361,12 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
             return;
         }
 
-        // Ctrl+wheel is the browser's pinch-zoom and always zooms the flow; so does any wheel
-        // while pan-on-scroll owns it. Otherwise a required zoom key that is not held means the
-        // flow does nothing with this wheel, and the page should get to scroll.
-        const passesThrough = zoomKey && !panOnScroll && !e.ctrlKey && !e[zoomKey];
+        // Ctrl+wheel is the browser's pinch-zoom and always zooms the flow; any wheel while
+        // pan-on-scroll owns it pans the flow. Otherwise zooming on scroll being off, or a required
+        // zoom key that is not held, means the flow does nothing with this wheel, and the page
+        // should get to scroll.
+        const passesThrough = !panOnScroll && !e.ctrlKey
+            && (!zoomOnScroll || (!!zoomKey && !e[zoomKey]));
         if (!passesThrough) e.preventDefault();
     };
 
@@ -352,6 +384,7 @@ export function installInteractionGuards(paneEl: HTMLElement | null, noDragClass
         if (onElement && (e.key === ' ' || e.key === 'Enter')) e.preventDefault();
         else if (panKey && e.key === panKey) e.preventDefault();
         else if (keyboardA11y && e.key && e.key.startsWith('Arrow')) e.preventDefault();
+        else if (isFlowShortcut(e)) e.preventDefault();
     };
 
     if (pointerSelector) pane.addEventListener('pointerdown', onPointerDown);
