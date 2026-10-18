@@ -1,4 +1,4 @@
-using Bit.BlazorUI;
+﻿using Bit.BlazorUI;
 using Bit.BlazorUI.Tests.Trimming.Hosted.Client;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 
