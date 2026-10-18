@@ -377,12 +377,6 @@ public sealed class ImageEditSession : IDisposable
     private void DisposeWhenIdle(ImageBuffer? first, ImageBuffer? second)
     {
         if (first is null && second is null) return;
-        if (_renderLock.Wait(0))
-        {
-            try { first?.Dispose(); second?.Dispose(); }
-            finally { _renderLock.Release(); }
-            return;
-        }
         _ = DisposeAfterRenderAsync(first, second);
     }
 
