@@ -1,0 +1,585 @@
+﻿@page "/queries"
+@inject DemoDbService Db
+
+<PageTitle>Query primitives - BlazeDb</PageTitle>
+
+<PageHeader Eyebrow="Engine" IconName="query" Title="Querying without a query language"
+            Lead="Query is a tiny composable pipeline: pick at most one index as the source, add residual predicates, optionally sort, then page. Build one below and watch the code, the plan and the timing update as you go.">
+    <span class="chip"><Icon Name="bolt" /> No parser, no planner cache</span>
+    <span class="chip"><Icon Name="cpu" /> Delegates, not expression trees</span>
+</PageHeader>
+
+@if (_todos is null)
+{
+    <Panel><div class="empty">Opening the database…</div></Panel>
+}
+else
+{
+    <div class="grid grid-sidebar">
+        <div class="flex-col gap-lg">
+            <Panel Title="1 · Source" IconName="database"
+                   Sub="at most one index source per query">
+                <div class="chip-row">
+                    @foreach (var option in SourceOptions)
+                    {
+                        var value = option.Kind;
+                        <button class="chip @(_source == value ? "on" : null)" @onclick="() => SetSource(value)">
+                            @option.Label
+                        </button>
+                    }
+                </div>
+
+                @if (_source is SourceKind.OrderedCreatedAt or SourceKind.OrderedEffort)
+                {
+                    <div class="form-row mt-2">
+                        @if (_source == SourceKind.OrderedEffort)
+                        {
+                            <div class="field">
+                                <label class="field-label" for="q-from">From</label>
+                                <input id="q-from" class="input mono" type="number" disabled="@_fromUnbounded"
+                                       @bind="_effortFrom" @bind:after="Run" />
+                            </div>
+                            <div class="field">
+                                <label class="field-label" for="q-to">To</label>
+                                <input id="q-to" class="input mono" type="number" disabled="@_toUnbounded"
+                                       @bind="_effortTo" @bind:after="Run" />
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="field">
+                                <label class="field-label" for="q-days">Created within the last</label>
+                                <input id="q-days" class="input mono" type="number" min="1" max="365" disabled="@_fromUnbounded"
+                                       @bind="_days" @bind:after="Run" />
+                                <span class="field-hint">days</span>
+                            </div>
+                        }
+                        <div class="field" style="flex:0 0 auto">
+                            <label class="field-label">Bounds</label>
+                            <label class="check">
+                                <input type="checkbox" @bind="_fromUnbounded" @bind:after="Run" /> from unbounded
+                            </label>
+                            <label class="check">
+                                <input type="checkbox" @bind="_toUnbounded" @bind:after="Run" /> to unbounded
+                            </label>
+                        </div>
+                        <div class="field" style="flex:0 0 auto">
+                            <label class="field-label">Direction</label>
+                            <label class="check">
+                                <input type="checkbox" @bind="_sourceDescending" @bind:after="Run" /> descending
+                            </label>
+                        </div>
+                    </div>
+                }
+                else if (_source == SourceKind.HashCategory)
+                {
+                    <div class="form-row mt-2">
+                        <div class="field">
+                            <label class="field-label" for="q-cat">Category key</label>
+                            <select id="q-cat" class="select" @bind="_category" @bind:after="Run">
+                                @foreach (var c in DemoData.Categories)
+                                {
+                                    <option value="@c">@c</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                }
+                else if (_source == SourceKind.HashPriority)
+                {
+                    <div class="form-row mt-2">
+                        <div class="field">
+                            <label class="field-label" for="q-prio">Priority key</label>
+                            <select id="q-prio" class="select" @bind="_priority" @bind:after="Run">
+                                @foreach (var p in Enum.GetValues<Priority>())
+                                {
+                                    <option value="@p">@p</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                }
+                else if (_source == SourceKind.HashDone)
+                {
+                    <div class="form-row mt-2">
+                        <div class="field">
+                            <label class="field-label" for="q-done">Done key</label>
+                            <select id="q-done" class="select" @bind="_doneKey" @bind:after="Run">
+                                <option value="false">false</option>
+                                <option value="true">true</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+            </Panel>
+
+            <Panel Title="2 · Residual predicates" IconName="filter"
+                   Sub="every Where is ANDed with the others">
+                <div class="chip-row">
+                    <button class="chip @(_whereOpen ? "on" : null)" @onclick="() => Toggle(ref _whereOpen)">
+                        t =&gt; !t.Done
+                    </button>
+                    <button class="chip @(_whereRated ? "on" : null)" @onclick="() => Toggle(ref _whereRated)">
+                        t =&gt; t.Rating is not null
+                    </button>
+                    <button class="chip @(_whereTagged ? "on" : null)" @onclick="() => Toggle(ref _whereTagged)">
+                        t =&gt; t.Tags.Count &gt; 0
+                    </button>
+                    <button class="chip @(_whereEffort ? "on" : null)" @onclick="() => Toggle(ref _whereEffort)">
+                        t =&gt; t.Effort &gt;= @_minEffort
+                    </button>
+                </div>
+                <div class="form-row mt-2">
+                    <div class="field">
+                        <label class="field-label" for="q-min">Minimum effort</label>
+                        <input id="q-min" class="slider" type="range" min="0" max="140" step="5"
+                               @bind="_minEffort" @bind:after="Run" />
+                    </div>
+                    <div class="field" style="flex:2 1 200px">
+                        <label class="field-label" for="q-text">Title contains</label>
+                        <input id="q-text" class="input" placeholder="(no text predicate)" @bind="_text"
+                               @bind:event="oninput" @bind:after="Run" />
+                    </div>
+                </div>
+            </Panel>
+
+            <Panel Title="3 · Order, page and execute" IconName="sort">
+                <div class="form-row">
+                    <div class="field">
+                        <label class="field-label" for="q-order">OrderBy</label>
+                        <select id="q-order" class="select" @bind="_order" @bind:after="Run">
+                            <option value="@OrderKind.None">none - keep source order</option>
+                            <option value="@OrderKind.Title">t =&gt; t.Title</option>
+                            <option value="@OrderKind.EffortDesc">t =&gt; t.Effort, descending</option>
+                            <option value="@OrderKind.CreatedDesc">t =&gt; t.CreatedAt, descending</option>
+                        </select>
+                    </div>
+                    <div class="field" style="flex:0 1 110px">
+                        <label class="field-label" for="q-skip">Skip</label>
+                        <input id="q-skip" class="input mono" type="number" min="0" @bind="_skip" @bind:after="Run" />
+                    </div>
+                    <div class="field" style="flex:0 1 110px">
+                        <label class="field-label" for="q-take">Take</label>
+                        <input id="q-take" class="input mono" type="number" min="1" max="50" @bind="_take" @bind:after="Run" />
+                    </div>
+                    <div class="field">
+                        <label class="field-label" for="q-exec">Terminal call</label>
+                        <select id="q-exec" class="select" @bind="_execute" @bind:after="Run">
+                            <option value="@ExecuteKind.ToList">ToList()</option>
+                            <option value="@ExecuteKind.Projection">Execute(t =&gt; …)</option>
+                            <option value="@ExecuteKind.First">FirstOrDefault()</option>
+                            <option value="@ExecuteKind.Count">Count()</option>
+                        </select>
+                    </div>
+                </div>
+            </Panel>
+
+            <Panel Title="Result" IconName="play" Flush="true">
+                <Actions>
+                    <span class="panel-sub mono">@_resultSummary</span>
+                </Actions>
+                <ChildContent>
+                    @if (_execute == ExecuteKind.Count)
+                    {
+                        <div class="panel-body">
+                            <div class="stat-value" style="font-size:2.2rem">@_count.ToString("N0")</div>
+                            <p class="small muted mb-0">
+                                <code>Count()</code> runs the whole pipeline and counts what comes out -
+                                it is not a shortcut around the predicates.
+                            </p>
+                        </div>
+                    }
+                    else if (_execute == ExecuteKind.Projection)
+                    {
+                        @if (_projected.Count == 0)
+                        {
+                            <div class="empty"><Icon Name="search" /><div>No rows matched.</div></div>
+                        }
+                        else
+                        {
+                            <div class="log">
+                                @foreach (var line in _projected)
+                                {
+                                    <div class="log-row"><span class="log-name">@line</span></div>
+                                }
+                            </div>
+                        }
+                    }
+                    else if (_rows.Count == 0)
+                    {
+                        <div class="empty"><Icon Name="search" /><div>No rows matched.</div></div>
+                    }
+                    else
+                    {
+                        <div class="table-wrap">
+                            <table class="data">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Category</th>
+                                        <th>Priority</th>
+                                        <th class="num">Effort</th>
+                                        <th class="num">Rating</th>
+                                        <th>Created</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var row in _rows)
+                                    {
+                                        <tr>
+                                            <td class="strong">@row.Title</td>
+                                            <td class="mono">@(row.Category ?? "null")</td>
+                                            <td><span class="prio @row.Priority">@row.Priority</span></td>
+                                            <td class="num mono">@row.Effort</td>
+                                            <td class="num mono">@(row.Rating?.ToString() ?? "-")</td>
+                                            <td class="mono tiny">@row.CreatedAt.ToLocalTime().ToString("MMM d HH:mm")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </ChildContent>
+            </Panel>
+        </div>
+
+        <div class="flex-col gap-lg">
+            <Panel Title="Generated call" IconName="code">
+                <CodeBlock Code="@_code" ShowHeader="false" Wrap="true" />
+            </Panel>
+
+            <Panel Title="Plan" IconName="layers">
+                <dl class="kv">
+                    <dt>Source</dt>
+                    <dd>@_sourceLabel</dd>
+                    <dt>Predicates</dt>
+                    <dd>@_predicateCount</dd>
+                    <dt>IsIndexOrdered</dt>
+                    <dd class="@(_isIndexOrdered ? "ok-text" : "")">@_isIndexOrdered.ToString().ToLowerInvariant()</dd>
+                    <dt>Matched</dt>
+                    <dd>@_matched.ToString("N0")</dd>
+                    <dt>Returned</dt>
+                    <dd>@_returned.ToString("N0")</dd>
+                    <dt>Elapsed</dt>
+                    <dd>@_elapsed</dd>
+                </dl>
+                @if (!_isIndexOrdered && _order != OrderKind.None)
+                {
+                    <Callout Tone="info" Class="mt-2">
+                        <code>OrderBy</code> sorts in memory. When an ordered index already produces the
+                        order you want, dropping the sort makes the query allocation-free.
+                    </Callout>
+                }
+            </Panel>
+
+            <Panel Title="Execution order" IconName="arrow-down">
+                <ol class="small mb-0">
+                    <li><strong>Source</strong> - index lookup, index range, or a full <code>Scan</code>.</li>
+                    <li><strong>Predicates</strong> - each <code>Where</code> in the order added.</li>
+                    <li><strong>Order</strong> - only if <code>OrderBy</code> was called.</li>
+                    <li><strong>Skip</strong>, then <strong>Take</strong>.</li>
+                </ol>
+            </Panel>
+
+            <Panel Title="One source per query" IconName="alert">
+                <p class="small mb-1">
+                    Calling <code>UseIndex</code> twice is rejected rather than silently intersecting.
+                </p>
+                <button class="btn btn-sm btn-block" @onclick="TryTwoSources">
+                    <Icon Name="play" /> Call UseIndex twice
+                </button>
+                @if (_twoSourceError is not null)
+                {
+                    <div class="api-call mt-2">@_twoSourceError</div>
+                }
+            </Panel>
+
+            <Panel Title="Beyond these primitives" IconName="map">
+                <p class="small mb-0">
+                    There is no join, no grouping and no aggregate beyond counting. Compose the
+                    primitives in ordinary C#, or use LINQ over <code>Scan()</code> when a query is
+                    genuinely ad hoc - a scan over in-memory objects is already fast. The
+                    <a href="efcore">EF Core provider</a> translates LINQ onto this same plan.
+                </p>
+            </Panel>
+        </div>
+    </div>
+}
+
+@code {
+    private enum SourceKind { Scan, HashDone, HashCategory, HashPriority, OrderedCreatedAt, OrderedEffort }
+
+    private enum OrderKind { None, Title, EffortDesc, CreatedDesc }
+
+    private enum ExecuteKind { ToList, Projection, First, Count }
+
+    private static readonly (SourceKind Kind, string Label)[] SourceOptions =
+    [
+        (SourceKind.Scan, "Scan() - no index"),
+        (SourceKind.HashDone, "UseIndex(Done)"),
+        (SourceKind.HashCategory, "UseIndex(Category)"),
+        (SourceKind.HashPriority, "UseIndex(ByPriority)"),
+        (SourceKind.OrderedCreatedAt, "UseIndex(CreatedAt, range)"),
+        (SourceKind.OrderedEffort, "UseIndex(Effort, range)"),
+    ];
+
+    private BlazeDbTable<Guid, TodoEntry>? _todos;
+
+    private SourceKind _source = SourceKind.OrderedEffort;
+    private string _doneKey = "false";
+    private string _category = "engine";
+    private Priority _priority = Priority.High;
+    private int _effortFrom = 40;
+    private int _effortTo = 120;
+    private int _days = 10;
+    private bool _fromUnbounded;
+    private bool _toUnbounded;
+    private bool _sourceDescending = true;
+
+    private bool _whereOpen;
+    private bool _whereRated;
+    private bool _whereTagged;
+    private bool _whereEffort;
+    private int _minEffort = 60;
+    private string _text = "";
+
+    private OrderKind _order = OrderKind.None;
+    private int _skip;
+    private int _take = 8;
+    private ExecuteKind _execute = ExecuteKind.ToList;
+
+    private List<TodoEntry> _rows = [];
+    private List<string> _projected = [];
+    private int _count;
+    private int _matched;
+    private int _returned;
+    private bool _isIndexOrdered;
+    private int _predicateCount;
+    private string _code = "";
+    private string _sourceLabel = "";
+    private string _elapsed = "-";
+    private string _resultSummary = "";
+    private string? _twoSourceError;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Db.GetDatabaseAsync();
+        _todos = Db.Todos;
+        Run();
+    }
+
+    private void SetSource(SourceKind source)
+    {
+        _source = source;
+        Run();
+    }
+
+    private void Toggle(ref bool flag)
+    {
+        flag = !flag;
+        Run();
+    }
+
+    private BlazeDbQuery<Guid, TodoEntry> BuildSource(List<string> lines)
+    {
+        var query = BlazeDbQuery<Guid, TodoEntry>.From(_todos!);
+        lines.Add("BlazeDbQuery<Guid, TodoEntry>.From(todos)");
+
+        switch (_source)
+        {
+            case SourceKind.HashDone:
+                var done = _doneKey == "true";
+                query = query.UseIndex(TodoEntry.Indexes.Done, done);
+                lines.Add($"    .UseIndex(TodoEntry.Indexes.Done, {_doneKey})");
+                _sourceLabel = "hash - Done";
+                break;
+
+            case SourceKind.HashCategory:
+                query = query.UseIndex(TodoEntry.Indexes.Category, _category);
+                lines.Add($"    .UseIndex(TodoEntry.Indexes.Category, \"{_category}\")");
+                _sourceLabel = "hash - Category";
+                break;
+
+            case SourceKind.HashPriority:
+                query = query.UseIndex(TodoEntry.Indexes.ByPriority, _priority);
+                lines.Add($"    .UseIndex(TodoEntry.Indexes.ByPriority, Priority.{_priority})");
+                _sourceLabel = "hash - ByPriority";
+                break;
+
+            case SourceKind.OrderedEffort:
+                var effortFrom = _fromUnbounded ? BlazeDbBound<int>.Unbounded : BlazeDbBound<int>.At(_effortFrom);
+                var effortTo = _toUnbounded ? BlazeDbBound<int>.Unbounded : BlazeDbBound<int>.At(_effortTo);
+                query = query.UseIndex(TodoEntry.Indexes.Effort, effortFrom, effortTo, _sourceDescending);
+                lines.Add("    .UseIndex(TodoEntry.Indexes.Effort,");
+                lines.Add($"              {(_fromUnbounded ? "BlazeDbBound<int>.Unbounded" : _effortFrom.ToString())},");
+                lines.Add($"              {(_toUnbounded ? "BlazeDbBound<int>.Unbounded" : _effortTo.ToString())},");
+                lines.Add($"              descending: {Lower(_sourceDescending)})");
+                _sourceLabel = "ordered - Effort";
+                break;
+
+            case SourceKind.OrderedCreatedAt:
+                var since = DateTime.UtcNow.AddDays(-_days);
+                var createdFrom = _fromUnbounded ? BlazeDbBound<DateTime>.Unbounded : BlazeDbBound<DateTime>.At(since);
+                var createdTo = _toUnbounded ? BlazeDbBound<DateTime>.Unbounded : BlazeDbBound<DateTime>.At(DateTime.UtcNow);
+                query = query.UseIndex(TodoEntry.Indexes.CreatedAt, createdFrom, createdTo, _sourceDescending);
+                lines.Add("    .UseIndex(TodoEntry.Indexes.CreatedAt,");
+                lines.Add($"              {(_fromUnbounded ? "BlazeDbBound<DateTime>.Unbounded" : $"DateTime.UtcNow.AddDays(-{_days})")},");
+                lines.Add($"              {(_toUnbounded ? "BlazeDbBound<DateTime>.Unbounded" : "DateTime.UtcNow")},");
+                lines.Add($"              descending: {Lower(_sourceDescending)})");
+                _sourceLabel = "ordered - CreatedAt";
+                break;
+
+            default:
+                _sourceLabel = "full scan";
+                break;
+        }
+
+        return query;
+    }
+
+    private void Run()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        // The inputs are numeric fields; the engine rejects negative paging, so clamp what the user typed.
+        _skip = Math.Max(0, _skip);
+        _take = Math.Clamp(_take, 0, 50);
+
+        var sw = Stopwatch.StartNew();
+        var lines = new List<string>();
+        _predicateCount = 0;
+
+        var query = BuildSource(lines);
+
+        if (_whereOpen)
+        {
+            query = query.Where(t => !t.Done);
+            lines.Add("    .Where(t => !t.Done)");
+            _predicateCount++;
+        }
+
+        if (_whereRated)
+        {
+            query = query.Where(t => t.Rating is not null);
+            lines.Add("    .Where(t => t.Rating is not null)");
+            _predicateCount++;
+        }
+
+        if (_whereTagged)
+        {
+            query = query.Where(t => t.Tags.Count > 0);
+            lines.Add("    .Where(t => t.Tags.Count > 0)");
+            _predicateCount++;
+        }
+
+        if (_whereEffort)
+        {
+            var minimum = _minEffort;
+            query = query.Where(t => t.Effort >= minimum);
+            lines.Add($"    .Where(t => t.Effort >= {minimum})");
+            _predicateCount++;
+        }
+
+        if (!string.IsNullOrWhiteSpace(_text))
+        {
+            var needle = _text.Trim();
+            query = query.Where(t => t.Title.Contains(needle, StringComparison.OrdinalIgnoreCase));
+            lines.Add($"    .Where(t => t.Title.Contains(\"{needle}\", StringComparison.OrdinalIgnoreCase))");
+            _predicateCount++;
+        }
+
+        switch (_order)
+        {
+            case OrderKind.Title:
+                query = query.OrderBy(t => t.Title);
+                lines.Add("    .OrderBy(t => t.Title)");
+                break;
+            case OrderKind.EffortDesc:
+                query = query.OrderBy(t => t.Effort, descending: true);
+                lines.Add("    .OrderBy(t => t.Effort, descending: true)");
+                break;
+            case OrderKind.CreatedDesc:
+                query = query.OrderBy(t => t.CreatedAt, descending: true);
+                lines.Add("    .OrderBy(t => t.CreatedAt, descending: true)");
+                break;
+        }
+
+        _matched = query.Count();
+        _isIndexOrdered = query.IsIndexOrdered;
+
+        if (_skip > 0)
+        {
+            query = query.Skip(_skip);
+            lines.Add($"    .Skip({_skip})");
+        }
+
+        if (_execute != ExecuteKind.Count)
+        {
+            query = query.Take(_take);
+            lines.Add($"    .Take({_take})");
+        }
+
+        _rows = [];
+        _projected = [];
+
+        switch (_execute)
+        {
+            case ExecuteKind.ToList:
+                lines.Add("    .ToList();");
+                _rows = query.ToList();
+                _returned = _rows.Count;
+                _resultSummary = $"{_returned} rows";
+                break;
+
+            case ExecuteKind.Projection:
+                lines.Add("    .Execute(t => $\"{t.Title} - {t.Effort} min\")");
+                lines.Add("    .ToList();");
+                _projected = query.Execute(t => $"{t.Title} - {t.Effort} min").ToList();
+                _returned = _projected.Count;
+                _resultSummary = $"{_returned} projected values";
+                break;
+
+            case ExecuteKind.First:
+                lines.Add("    .FirstOrDefault();");
+                var first = query.FirstOrDefault();
+                _rows = first is null ? [] : [first];
+                _returned = _rows.Count;
+                _resultSummary = first is null ? "null" : "1 row";
+                break;
+
+            case ExecuteKind.Count:
+                lines.Add("    .Count();");
+                _count = query.Count();
+                _returned = _count;
+                _resultSummary = $"{_count} counted";
+                break;
+        }
+
+        _code = string.Join('\n', lines);
+        _elapsed = DemoSandbox.Duration(sw.Elapsed.TotalMilliseconds);
+    }
+
+    private void TryTwoSources()
+    {
+        if (_todos is null)
+        {
+            return;
+        }
+
+        try
+        {
+            var query = BlazeDbQuery<Guid, TodoEntry>.From(_todos).UseIndex(TodoEntry.Indexes.Done, true);
+            query.UseIndex(TodoEntry.Indexes.Effort, BlazeDbBound<int>.Unbounded, BlazeDbBound<int>.Unbounded);
+            _twoSourceError = "No exception - unexpected.";
+        }
+        catch (InvalidOperationException ex)
+        {
+            _twoSourceError = $"InvalidOperationException\n{ex.Message}";
+        }
+    }
+
+    private static string Lower(bool value) => value.ToString().ToLowerInvariant();
+}

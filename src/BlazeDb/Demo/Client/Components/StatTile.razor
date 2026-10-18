@@ -1,0 +1,29 @@
+﻿<div class="stat @Tone">
+    <div class="stat-label">
+        @if (!string.IsNullOrWhiteSpace(IconName))
+        {
+            <Icon Name="@IconName" />
+        }
+        @Label
+    </div>
+    <div class="stat-value">@Value@if (!string.IsNullOrWhiteSpace(Unit)) {<span class="unit">@Unit</span>}</div>
+    @if (!string.IsNullOrWhiteSpace(Note))
+    {
+        <div class="stat-note">@Note</div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+
+    [Parameter, EditorRequired] public string Value { get; set; } = "";
+
+    [Parameter] public string? Unit { get; set; }
+
+    [Parameter] public string? Note { get; set; }
+
+    [Parameter] public string? IconName { get; set; }
+
+    /// <summary>One of <c>""</c>, <c>accent</c> or <c>ok</c>.</summary>
+    [Parameter] public string? Tone { get; set; }
+}
