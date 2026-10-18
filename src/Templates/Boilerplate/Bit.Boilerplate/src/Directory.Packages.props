@@ -14,7 +14,7 @@
         <PackageVersion Include="Bit.CodeAnalyzers" Version="10.7.0-pre-02" />
         <PackageVersion Include="Bit.SourceGenerators" Version="10.7.0-pre-02" />
         <PackageVersion Include="DistributedLock.FileSystem" Version="1.0.3" />
-        <PackageVersion Include="Fido2.AspNet" Version="4.3.0" />
+        <PackageVersion Include="Fido2.AspNet" Version="4.3.1" />
         <PackageVersion Include="HtmlSanitizer" Version="9.2.1039" />
         <PackageVersion Include="libphonenumber-csharp" Version="9.0.41" />
         <PackageVersion Include="Microsoft.AspNetCore.Components.Authorization" Version="10.0.13" />
