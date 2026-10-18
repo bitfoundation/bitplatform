@@ -6,6 +6,7 @@
         <SelfContained>true</SelfContained>
         <PublishReadyToRun>true</PublishReadyToRun>
         <PublishReadyToRunComposite>true</PublishReadyToRunComposite>
+        <BitBlazorUITrimAssets>true</BitBlazorUITrimAssets>
     </PropertyGroup>
 
     <ItemGroup>

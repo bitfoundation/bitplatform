@@ -55,12 +55,24 @@ on:
         description: Bmage solution
         type: boolean
         default: true
+      bsqlite:
+        description: Bsqlite solution
+        type: boolean
+        default: true
       bink:
         description: Bink solution
         type: boolean
         default: true
+      balette:
+        description: Balette solution
+        type: boolean
+        default: true
       bbscanner:
         description: BbScanner solution
+        type: boolean
+        default: true
+      blazedb:
+        description: BlazeDb solution
         type: boolean
         default: true
       blex:
@@ -602,15 +614,65 @@ jobs:
         dotnet build src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Bsqlite
+      run: |
+        dotnet build src/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bsqlite.Storage.Opfs
+      run: |
+        dotnet build src/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bsqlite.Storage.IndexedDb
+      run: |
+        dotnet build src/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bsqlite.Storage.CacheStorage
+      run: |
+        dotnet build src/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bsqlite.Testing
+      run: |
+        dotnet build src/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj --output ./packages --configuration Release
+
     - name: Build and pack Bink
       run: |
         dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Balette
+      run: |
+        dotnet build src/Balette/Bit.Balette/Bit.Balette.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Balette/Bit.Balette/Bit.Balette.csproj --output ./packages --configuration Release
+
     - name: Build and pack BbScanner
       run: |
         dotnet build src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb.Generators
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb.Browser
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb.EntityFrameworkCore
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj --output ./packages --configuration Release
 
     - name: Build and pack Blex
       run: |
@@ -705,15 +767,30 @@ jobs:
     if: ${{ inputs.bmage }}
     uses: ./.github/workflows/bit.ci.Bmage.yml
 
+  bsqlite:
+    name: bsqlite
+    if: ${{ inputs.bsqlite }}
+    uses: ./.github/workflows/bit.ci.Bsqlite.yml
+
   bink:
     name: bink
     if: ${{ inputs.bink }}
     uses: ./.github/workflows/bit.ci.Bink.yml
 
+  balette:
+    name: balette
+    if: ${{ inputs.balette }}
+    uses: ./.github/workflows/bit.ci.Balette.yml
+
   bbscanner:
     name: bbscanner
     if: ${{ inputs.bbscanner }}
     uses: ./.github/workflows/bit.ci.BbScanner.yml
+
+  blazedb:
+    name: blazedb
+    if: ${{ inputs.blazedb }}
+    uses: ./.github/workflows/bit.ci.BlazeDb.yml
 
   blex:
     name: blex

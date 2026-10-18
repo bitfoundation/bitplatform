@@ -672,3 +672,5 @@
         }
     }
 }
+
+// bit-lazy: teardown BitMapChrome.detach

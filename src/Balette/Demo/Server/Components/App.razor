@@ -1,0 +1,49 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="bit Balette (Bit.Balette) - a Blazor-native, accessible, keyboard-first command palette: fuzzy search, nested pages, prefix modes, async sources, recents and frecency, global shortcuts and sequences, multi-select, prompts, theming and templates, with every decision made in C#." />
+    <meta name="color-scheme" content="light dark" />
+    <base href="/" />
+    <ResourcePreloader />
+    @* The library's stylesheet is linked by the host page - Bit.Balette does not add it by itself - and it
+       comes first: the site's own one restyles the palette through the library's custom properties, which
+       only works if it comes later in the cascade. *@
+    <link rel="stylesheet" href="@Assets["_content/Bit.Balette/bit-balette.css"]" />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+
+    @* A stored theme is applied here, in the head, rather than once the app is interactive: both
+       stylesheets key off the data-theme attribute, and setting it after the first paint would show
+       the reader a flash of the other theme. "auto", or nothing stored, leaves it to the system. *@
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('bit-balette-demo.theme');
+                if (stored === 'light' || stored === 'dark') {
+                    document.documentElement.setAttribute('data-theme', stored);
+                }
+            } catch (e) { /* storage disabled: follow the system */ }
+        })();
+    </script>
+
+    <ImportMap />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* InteractiveWebAssembly rather than Auto or Server: the palette matches and ranks on every keystroke,
+       and in the browser that never waits on a network round trip. The pages are still prerendered, so the
+       first response carries them. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&#128473;</span>
+    </div>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

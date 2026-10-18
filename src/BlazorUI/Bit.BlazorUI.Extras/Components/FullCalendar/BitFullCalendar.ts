@@ -686,3 +686,5 @@
         }
     }
 }
+
+// bit-lazy: teardown FullCalendar.disposeRoot FullCalendar.teardownDialog

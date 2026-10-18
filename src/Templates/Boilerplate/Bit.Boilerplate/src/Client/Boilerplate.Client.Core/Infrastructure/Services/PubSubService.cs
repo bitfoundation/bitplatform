@@ -13,7 +13,7 @@ public partial class PubSubService
     /// <summary>
     /// Messages that were published before any handler was subscribed.
     /// </summary>
-    private readonly ConcurrentBag<(string message, object? payload)> persistentMessages = [];
+    private readonly List<(string message, object? payload)> persistentMessages = [];
 
     [AutoInject] private readonly IServiceProvider serviceProvider = default!;
 
@@ -78,26 +78,12 @@ public partial class PubSubService
             weakHandlers.Add(weakHandler);
 
             // If persistent messages exist for this message, publish them immediately.
-            // A ConcurrentBag can't remove a specific item (TryTake removes an arbitrary one), so we drain it
-            // once: matching messages are dispatched and dropped, the rest are put back.
-            if (persistentMessages.IsEmpty is false)
+            var pendingMessages = persistentMessages.Where(p => p.message == message).ToArray();
+            persistentMessages.RemoveAll(p => p.message == message);
+
+            foreach (var pending in pendingMessages)
             {
-                var retained = new List<(string message, object? payload)>();
-                while (persistentMessages.TryTake(out var pending))
-                {
-                    if (pending.message == message)
-                    {
-                        weakHandler.Invoke(pending.payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
-                    }
-                    else
-                    {
-                        retained.Add(pending);
-                    }
-                }
-                foreach (var pending in retained)
-                {
-                    persistentMessages.Add(pending);
-                }
+                weakHandler.Invoke(pending.payload)?.ContinueWith(HandleException, TaskContinuationOptions.OnlyOnFaulted);
             }
         }
 

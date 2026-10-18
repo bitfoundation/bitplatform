@@ -663,7 +663,7 @@ public partial class BitFullCalendar : BitComponentBase
         {
             try
             {
-                await _js.InvokeVoidAsync("BitBlazorUI.FullCalendar.setupRoot", RootElement, UniqueId);
+                await _js.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.setupRoot", RootElement, UniqueId);
                 _rootSetUp = true;
             }
             catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or InvalidOperationException)
@@ -1078,7 +1078,7 @@ public partial class BitFullCalendar : BitComponentBase
             {
                 if (State.View is not (BitFullCalendarView.Day or BitFullCalendarView.Week)) return false;
 
-                return await _js.InvokeAsync<bool>("BitBlazorUI.FullCalendar.scrollGridToTime", RootElement, offsetHours);
+                return await _js.InvokeScriptAsync<bool>("BitBlazorUI.FullCalendar.scrollGridToTime", RootElement, offsetHours);
             }
 
             double offsetPx;
@@ -1097,7 +1097,7 @@ public partial class BitFullCalendar : BitComponentBase
                     return false;
             }
 
-            return await _js.InvokeAsync<bool>("BitBlazorUI.FullCalendar.scrollTimelineToOffset", RootElement, offsetPx);
+            return await _js.InvokeScriptAsync<bool>("BitBlazorUI.FullCalendar.scrollTimelineToOffset", RootElement, offsetPx);
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or InvalidOperationException)
         {
@@ -1124,7 +1124,7 @@ public partial class BitFullCalendar : BitComponentBase
                 try
                 {
                     // The document listener and the observer setupRoot added would otherwise keep the root alive.
-                    await _js.InvokeVoidAsync("BitBlazorUI.FullCalendar.disposeRoot", UniqueId);
+                    await _js.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.disposeRoot", UniqueId);
                 }
                 catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException or ObjectDisposedException)
                 {

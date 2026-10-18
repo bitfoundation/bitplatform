@@ -9,11 +9,11 @@
 
     <ItemGroup>
         <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
-        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.12" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
         <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
         <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
         <!-- Flattens the rendered HTML of a docs page into the Markdown an MCP client reads. -->
-        <PackageReference Include="HtmlAgilityPack" Version="1.13.0" />
+        <PackageReference Include="HtmlAgilityPack" Version="1.13.1" />
         <!-- InspectBlexStore compiles the submitted store and runs the generator over it. The version the
              generator itself is built against, so the two can never disagree about the API between them. -->
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />

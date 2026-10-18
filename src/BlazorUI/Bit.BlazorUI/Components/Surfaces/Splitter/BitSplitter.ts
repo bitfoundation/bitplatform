@@ -1075,3 +1075,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Splitter.dispose

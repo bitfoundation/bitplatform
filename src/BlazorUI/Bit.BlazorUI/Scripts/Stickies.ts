@@ -800,3 +800,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Stickies.dispose

@@ -111,3 +111,5 @@
         }
     }
 }
+
+// bit-lazy: teardown TimePicker.dispose

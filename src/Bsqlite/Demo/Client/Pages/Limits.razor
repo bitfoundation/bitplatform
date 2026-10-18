@@ -1,0 +1,229 @@
+﻿@page "/limits"
+@inject BrowserDatabase Database
+
+<SessionLifecycle OnReady="LoadAsync" OnTearDown="NoopAsync" />
+
+<PageHeader Kicker="Platform · Honesty" Title="What the browser cannot do">
+    The default tier is asynchronous: the engine lives in a worker and the Blazor UI thread is not
+    allowed to block on it. Some SQLite features cannot be honoured on the web at all. Each one
+    below fails with a typed exception that names the alternative, rather than half-working - run
+    them and read the real message.
+</PageHeader>
+
+@if (_error is not null)
+{
+    <p class="error">@_error</p>
+}
+
+<div class="stack-lg">
+    <DemoCard Title="Synchronous EF and ADO.NET"
+              CodeTitle="Calling SaveChanges()"
+              Code="@Snippets.Limits.Sync">
+        <Description>
+            <span>
+                <code>SaveChanges()</code>, <code>ToList()</code>, and
+                <code>DbConnection.Open()</code> throw
+                <code>BsqliteSynchronousApiNotSupportedException</code>, and the message names
+                the async overload to use. The opt-in tier that would lift this (COOP/COEP plus a
+                native <code>ISQLite3Provider</code>) slipped past 1.0. EF wraps a failed save, so
+                the panel below unwraps to the exception that actually explains the refusal.
+            </span>
+        </Description>
+        <Try>
+            <span>Run it: this is the exception your users would see, not a paraphrase of it.</span>
+        </Try>
+        <ChildContent>
+            <button type="button" @onclick="TrySyncSaveAsync" disabled="@_busy">Call SaveChanges()</button>
+            @if (_syncResult is not null)
+            {
+                <pre class="output">@_syncResult</pre>
+            }
+        </ChildContent>
+    </DemoCard>
+
+    <DemoCard Title="WAL journal mode"
+              CodeTitle="PRAGMA journal_mode=WAL"
+              Code="@Snippets.Limits.Wal">
+        <Description>
+            No web VFS implements WAL: WASM lacks the shared-memory primitives it needs, and the
+            official SQLite WASM build cannot even <em>read</em> a WAL-mode file. Journal mode here
+            is DELETE or TRUNCATE. Concurrent reads, where a backend offers them, come from the VFS
+            instead.
+        </Description>
+        <ChildContent>
+            <button type="button" class="secondary" @onclick='() => RunSqlAsync("PRAGMA journal_mode=WAL")' disabled="@_busy">
+                Run PRAGMA journal_mode=WAL
+            </button>
+        </ChildContent>
+    </DemoCard>
+
+    <DemoCard Title="ATTACH across two databases"
+              CodeTitle="Guarding on capability"
+              Code="@Snippets.Limits.Attach">
+        <Description>
+            <span>
+                Gated by <code>SupportsMultiDatabaseTransactions</code>: OPFS CoopSync cannot run a
+                transaction spanning two files, IndexedDB can. The guard reads the selected
+                backend's capabilities - it does not test the provider name, so a new backend
+                inherits the rule for free.
+            </span>
+        </Description>
+        <ChildContent>
+            <p>
+                This session supports multi-database transactions:
+                <strong>@SampleFormat.YesNo(_supportsAttach)</strong>
+            </p>
+            <button type="button" class="secondary" @onclick="TryAttachAsync" disabled="@_busy">
+                Run ATTACH DATABASE 'other.db' AS other
+            </button>
+        </ChildContent>
+    </DemoCard>
+
+    <DemoCard Title="Changing the page size"
+              CodeTitle="PRAGMA page_size"
+              Code="@Snippets.Limits.PageSize">
+        <Description>
+            Block-oriented backends pin the page size to their block size - IndexedDB batch-atomic
+            is the usual case. Letting the PRAGMA through would report success and then corrupt the
+            image on the next write, so it is refused up front.
+        </Description>
+        <ChildContent>
+            <p>
+                This session can change page size:
+                <strong>@SampleFormat.YesNo(_canChangePageSize)</strong>
+            </p>
+            <button type="button" class="secondary" @onclick='() => RunSqlAsync("PRAGMA page_size=512")' disabled="@_busy">
+                Run PRAGMA page_size=512
+            </button>
+        </ChildContent>
+    </DemoCard>
+
+    @if (_sqlResult is not null)
+    {
+        <section class="card">
+            <h2>Last statement</h2>
+            <pre class="output">@_sqlResult</pre>
+        </section>
+    }
+</div>
+
+@code {
+    private bool _supportsAttach = true;
+    private bool _canChangePageSize = true;
+    private string? _error;
+    private string? _syncResult;
+    private string? _sqlResult;
+    private bool _busy;
+
+    private static Task NoopAsync() => Task.CompletedTask;
+
+    private async Task LoadAsync()
+    {
+        try
+        {
+            var session = await Database.EnsureSessionAsync();
+            var limits = session.Connection.RuntimeLimits;
+            _supportsAttach = limits.SupportsMultiDatabaseTransactions;
+            _canChangePageSize = limits.CanChangePageSize;
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+    }
+
+    private async Task TrySyncSaveAsync()
+    {
+        _busy = true;
+        _error = null;
+        _syncResult = null;
+        try
+        {
+            await using var context = await Database.OpenContextAsync();
+
+            // EF short-circuits SaveChanges() when nothing is pending, so stage a real insert:
+            // without one, the call would return 0 and never reach the connection.
+            var probe = new Category
+            {
+                Name = "sync-probe-" + Guid.NewGuid().ToString("N")[..8],
+                Color = "#0f766e",
+            };
+            context.Categories.Add(probe);
+
+            try
+            {
+                context.SaveChanges();
+                _syncResult = "Unexpected: SaveChanges() succeeded on the async tier.";
+
+                // Should be unreachable. If it ever runs, undo the write the guard let through.
+                context.ChangeTracker.Clear();
+                var written = await context.Categories.FirstOrDefaultAsync(c => c.Name == probe.Name);
+                if (written is not null)
+                {
+                    context.Categories.Remove(written);
+                    await context.SaveChangesAsync();
+                }
+            }
+            catch (Exception ex)
+            {
+                SampleLog.Exception(ex);
+                _syncResult = Describe(ex);
+            }
+            finally
+            {
+                context.ChangeTracker.Clear();
+            }
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    /// <summary>
+    /// EF wraps a failed save in <c>DbUpdateException</c>, whose own message says only "see the
+    /// inner exception" - so unwrap to the exception that actually explains the refusal.
+    /// </summary>
+    private static string Describe(Exception exception)
+    {
+        var root = exception;
+        while (root.InnerException is not null)
+        {
+            root = root.InnerException;
+        }
+
+        return ReferenceEquals(root, exception)
+            ? $"{exception.GetType().Name}\n\n{exception.Message}"
+            : $"{exception.GetType().Name}: {exception.Message}\n\n-> {root.GetType().Name}\n\n{root.Message}";
+    }
+
+    private Task TryAttachAsync()
+        => RunSqlAsync("ATTACH DATABASE 'other.db' AS other");
+
+    private async Task RunSqlAsync(string sql)
+    {
+        _busy = true;
+        _error = null;
+        _sqlResult = null;
+        try
+        {
+            await Database.ExecuteNonQueryAsync(sql);
+            _sqlResult = $"{sql}\n\nCompleted without error on this backend.";
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _sqlResult = $"{sql}\n\n{Describe(ex)}";
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+}

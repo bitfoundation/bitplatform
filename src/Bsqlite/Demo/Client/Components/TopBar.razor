@@ -1,0 +1,52 @@
+﻿@inject NavigationManager Nav
+@implements IDisposable
+
+<header class="topbar">
+    <div class="topbar-inner">
+        <button type="button" class="icon-btn nav-toggle"
+                aria-expanded="@(NavOpen ? "true" : "false")"
+                aria-controls="site-nav"
+                @onclick="OnToggleNav">
+            <Icon Name="@(NavOpen ? "close" : "menu")" Title="@(NavOpen ? "Close navigation" : "Open navigation")" />
+        </button>
+
+        <a class="brand" href="">
+            <span class="brand-mark"><Icon Name="database" /></span>
+            <span class="brand-name">Bsqlite</span>
+        </a>
+        <span class="brand-version">v@(SiteLinks.Version)</span>
+
+        <div class="topbar-links">
+            <a class="topbar-link" href="" aria-current="@(IsHome ? "page" : null)">Overview</a>
+            @* "true" rather than "page": this marks the section you are inside, not the exact page. *@
+            <a class="topbar-link" href="catalog" aria-current="@(IsHome ? null : "true")">Live demo</a>
+            <a class="topbar-link" href="@SiteLinks.Readme" target="_blank" rel="noopener">Docs</a>
+        </div>
+
+        <div class="topbar-actions">
+            <a class="icon-btn" href="@SiteLinks.Repository" target="_blank" rel="noopener">
+                <Icon Name="github" Title="Bsqlite on GitHub" />
+            </a>
+            <ThemeToggle />
+        </div>
+    </div>
+</header>
+
+@code {
+    [Parameter]
+    public bool NavOpen { get; set; }
+
+    [Parameter]
+    public EventCallback OnToggleNav { get; set; }
+
+    private bool IsHome => Nav.ToBaseRelativePath(Nav.Uri).Trim('/').Length == 0;
+
+    protected override void OnInitialized()
+        => Nav.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+        => StateHasChanged();
+
+    public void Dispose()
+        => Nav.LocationChanged -= OnLocationChanged;
+}

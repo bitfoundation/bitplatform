@@ -1919,3 +1919,5 @@
         }
     }
 }
+
+// bit-lazy: teardown MarkdownEditor.dispose

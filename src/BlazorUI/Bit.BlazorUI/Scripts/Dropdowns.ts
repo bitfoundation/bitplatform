@@ -471,3 +471,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Dropdowns.dispose

@@ -2,6 +2,20 @@
 
 @import "semantic-tokens.scss";
 @import "family-tokens.scss";
+@import "media-queries.scss";
+
+// The breakpoints BitMediaQuery, BitScreenQuery, the theme's layout tokens and an app's own styles read. Declared here,
+// once, rather than by media-queries.scss: every component importing its mixins wrote them again, and a bundle trimmed
+// down to components that do not import it would have had none at all.
+:root {
+    --bit-bp-xs: 0;
+    --bit-bp-sm: #{$mq-sm-min};
+    --bit-bp-md: #{$mq-md-min};
+    --bit-bp-lg: #{$mq-lg-min};
+    --bit-bp-xl: #{$mq-xl-min};
+    --bit-bp-xxl: #{$mq-xxl-min};
+}
+
 @import "bit-css.scss";
 @import "components.scss";
 @import "fabric.mdl2.bit.blazoui.scss";

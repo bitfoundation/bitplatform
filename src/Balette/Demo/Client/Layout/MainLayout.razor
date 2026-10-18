@@ -1,0 +1,134 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject DemoState State
+@inject IBaletteService Palette
+
+@* data-interactive turns true once the page runs in the browser. Prerendered markup is on screen
+   long before its event handlers are, which is what the E2E suite waits out with it. data-palette-ready
+   follows once the palette's browser layer listens for keys (it reports the platform as it starts): a
+   Ctrl+K pressed between the two reaches no listener at all, so the suite waits for both. *@
+<div class="app" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")" data-palette-ready="@(_paletteReady ? "true" : "false")">
+    <a class="skip-link" href="#main">Skip to content</a>
+    <NavMenu />
+    <div class="content">
+        <header class="topbar">
+            @* The trigger reads the toggle shortcut from the options, so its hint is always the real one,
+               in the platform's own symbols once the palette has detected it. *@
+            <BaletteTrigger Label="Search or run a command…" Class="topbar-trigger" />
+            <div class="topbar-modes" role="group" aria-label="Open the palette in a mode">
+                <button type="button" class="btn" title="Commands mode" @onclick='() => Palette.OpenAsync(">")'><kbd>&gt;</kbd><span>Commands</span></button>
+                <button type="button" class="btn" title="Issues mode" @onclick='() => Palette.OpenAsync("#")'><kbd>#</kbd><span>Issues</span></button>
+                <button type="button" class="btn" title="People mode" @onclick="@(() => Palette.OpenAsync("@"))"><kbd>@@</kbd><span>People</span></button>
+            </div>
+        </header>
+        <main class="main" id="main" tabindex="-1">
+            @Body
+        </main>
+    </div>
+</div>
+
+@* The app-wide commands. A new list is handed over whenever the demo state changes, and BaletteCommands
+   swaps the registration, so a toggle's switch and a setting's value are never stale. *@
+<BaletteCommands Commands="_globalCommands" />
+
+@* One palette for the whole app. Everything it is passed here comes from DemoState, which the theming,
+   search and performance pages change, so they restyle this very palette rather than a copy of it. *@
+<Balette Theme="@State.PaletteTheme"
+         Style="@State.PaletteStyle"
+         DetailTemplate="@(State.ShowDetail ? _detailPane : null)"
+         ShowFooter="State.ShowFooter"
+         HighlightMatches="State.HighlightMatches"
+         GroupWhenSearching="State.GroupWhenSearching"
+         Virtualize="State.Virtualize"
+         OnCommandExecuted="OnExecuted">
+    @* Declarative commands live next to the markup that owns them. An item with nested items becomes a page. *@
+    <BaletteGroup Heading="Quick create" Priority="20">
+        <BaletteItem Title="New issue" Shortcut="C" Keywords="create add" IconCss="demo-plus"
+                     Description="Declared in MainLayout.razor as a BaletteItem, with a single-key global shortcut."
+                     OnExecute='_ => State.Record("New issue dialog opened")' />
+        <BaletteItem Title="New…" Keywords="create add" ChildrenPlaceholder="What do you want to create?"
+                     Description="A page made of nested BaletteItem markup.">
+            <BaletteItem Title="Project" OnExecute='_ => State.Record("New project")' />
+            <BaletteItem Title="Document" OnExecute='_ => State.Record("New document")' />
+            <BaletteItem Title="Team" Badge="Beta" OnExecute='_ => State.Record("New team")' />
+        </BaletteItem>
+    </BaletteGroup>
+</Balette>
+
+@code {
+    private List<BaletteCommand> _globalCommands = [];
+    private RenderFragment<BaletteCommand>? _detailPane;
+    private bool _paletteReady;
+
+    protected override void OnInitialized()
+    {
+        _globalCommands = [.. DemoCommands.Global(State)];
+        State.Changed += OnStateChanged;
+        // The detail pane's shortcut hint reads IsMac, which is only known once the palette has started.
+        Palette.PlatformDetected += OnPlatformDetected;
+
+        // A Raycast-style preview of the active row. It is a template like any other, so it can show whatever a
+        // command carries - here the Person record the people source attaches as Data.
+        _detailPane = command =>
+            @<div class="demo-detail">
+                <div class="demo-detail-kind">@command.Kind</div>
+                <h3>@command.Title</h3>
+                @if (command.Subtitle is not null)
+                {
+                    <p class="demo-detail-sub">@command.Subtitle</p>
+                }
+                @if (command.Description is not null)
+                {
+                    <p>@command.Description</p>
+                }
+                @if (command.Shortcut is not null)
+                {
+                    <p>Shortcut: <BaletteShortcutHint Shortcut="command.Shortcut" IsMac="Palette.IsMac" /></p>
+                }
+                @if (command.Keywords.Count > 0)
+                {
+                    <p class="demo-detail-sub">Also matches: @string.Join(", ", command.Keywords)</p>
+                }
+                @if (command.Data is Person person)
+                {
+                    <dl>
+                        <dt>Role</dt><dd>@person.Role</dd>
+                        <dt>E-mail</dt><dd>@person.Email</dd>
+                    </dl>
+                }
+                <code class="demo-detail-id">@command.Id</code>
+            </div>;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The inline script in App.razor applied a stored theme before the first paint; this tells the state.
+        if (firstRender)
+        {
+            await State.RestoreThemeAsync();
+        }
+    }
+
+    private void OnStateChanged()
+    {
+        _globalCommands = [.. DemoCommands.Global(State)];
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    // The component's own callback sees every execution - declarative items included - with how long the
+    // handler took. The pages listen to IBaletteService.CommandExecuted for the same thing.
+    private void OnExecuted(BaletteCommandExecutedEventArgs e)
+        => Console.WriteLine($"[balette] {e.Command.Id} -> {e.Result.GetType().Name} in {e.Duration.TotalMilliseconds:F0} ms");
+
+    private void OnPlatformDetected()
+    {
+        _paletteReady = true;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        State.Changed -= OnStateChanged;
+        Palette.PlatformDetected -= OnPlatformDetected;
+    }
+}

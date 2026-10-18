@@ -156,8 +156,8 @@ public partial class BitFcEventBlock
         try
         {
             _dotNetRef ??= DotNetObjectReference.Create(this);
-            await JS.InvokeVoidAsync("BitBlazorUI.FullCalendar.initResize", _dotNetRef, _topHandleId, "top");
-            await JS.InvokeVoidAsync("BitBlazorUI.FullCalendar.initResize", _dotNetRef, _bottomHandleId, "bottom");
+            await JS.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.initResize", _dotNetRef, _topHandleId, "top");
+            await JS.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.initResize", _dotNetRef, _bottomHandleId, "bottom");
             _resizeInitialized = true;
         }
         catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException or OperationCanceledException)

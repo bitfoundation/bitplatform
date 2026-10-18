@@ -1,0 +1,70 @@
+﻿@inject IJSRuntime Js
+
+@* Shows the code that powers the demo next to the demo itself. *@
+<div class="codeblock" data-open="@(_open ? "true" : "false")">
+    <div class="codeblock-head">
+        <span class="codeblock-lang">@Language</span>
+        <span class="codeblock-title">@Title</span>
+        <span class="grow"></span>
+        @if (Collapsible)
+        {
+            <button type="button" class="codeblock-btn" aria-expanded="@(_open ? "true" : "false")"
+                    @onclick="() => _open = !_open">
+                @(_open ? "Hide" : "Show")
+            </button>
+        }
+        <button type="button" class="codeblock-btn @(_copied ? "copied" : null)" @onclick="CopyAsync">
+            <Icon Name="@(_copied ? "check" : "copy")" />
+            @(_copied ? "Copied" : "Copy")
+        </button>
+    </div>
+    @if (_open)
+    {
+        <pre><code>@CodeHighlighter.Highlight(Code, Language)</code></pre>
+    }
+</div>
+
+@code {
+    private bool _open;
+    private bool _copied;
+
+    /// <summary>File name or label shown in the header, e.g. <c>Pages/Catalog.razor</c>.</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    [Parameter]
+    public string Language { get; set; } = "csharp";
+
+    [Parameter, EditorRequired]
+    public string Code { get; set; } = string.Empty;
+
+    /// <summary>Lets the reader fold long listings away. The block still starts open.</summary>
+    [Parameter]
+    public bool Collapsible { get; set; } = true;
+
+    /// <summary>Set false for long reference listings that should start folded.</summary>
+    [Parameter]
+    public bool Open { get; set; } = true;
+
+    protected override void OnInitialized() => _open = Open;
+
+    private async Task CopyAsync()
+    {
+        try
+        {
+            _copied = await Js.InvokeAsync<bool>("bsqliteDemo.copy", Code);
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+            _copied = false;
+        }
+
+        if (_copied)
+        {
+            // Blazor re-renders around the await, so the label flips back on its own.
+            await Task.Delay(1400);
+            _copied = false;
+        }
+    }
+}
