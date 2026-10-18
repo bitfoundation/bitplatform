@@ -27,8 +27,8 @@ That query runs in a dedicated worker in the browser: SQLite 3.53 (via [wa-sqlit
 > **Interactive WebAssembly** or **Interactive Auto** once the page runs on WebAssembly. Prerendered pages render on the
 > server and open their database once interactive.
 
-Bsqlite's documentation website lives in [`Bit.Bsqlite.Demo`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Bsqlite/Bit.Bsqlite.Demo/) - run the
-`Bit.Bsqlite.Demo/Server` project, or visit [bsqlite.bitplatform.dev](https://bsqlite.bitplatform.dev).
+Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Bsqlite/Demo/) - run the
+`Demo/Server` project, or visit [bsqlite.bitplatform.dev](https://bsqlite.bitplatform.dev).
 
 ---
 

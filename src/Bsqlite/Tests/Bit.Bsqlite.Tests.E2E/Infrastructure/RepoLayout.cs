@@ -26,7 +26,7 @@ public static class RepoLayout
     /// <summary>The pages the asset host serves at its root, copied next to the test assembly.</summary>
     public static string TestPages() => Path.Combine(AppContext.BaseDirectory, "TestPages");
 
-    public static string DemoServerProject() => Path.Combine(BsqliteRoot(), "Bit.Bsqlite.Demo", "Server", $"{DemoServerName}.csproj");
+    public static string DemoServerProject() => Path.Combine(BsqliteRoot(), "Demo", "Server", $"{DemoServerName}.csproj");
 
     public static string DemoServerAssembly(string configuration) =>
         Path.Combine(Path.GetDirectoryName(DemoServerProject())!, "bin", configuration, "net10.0", $"{DemoServerName}.dll");

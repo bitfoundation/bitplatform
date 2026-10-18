@@ -48,10 +48,10 @@
   </Folder>
   <Folder Name="/Bsqlite/">
     <File Path="Bsqlite/README.md" />
-    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />
-    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Data/Bit.Bsqlite.Demo.Data.csproj" />
-    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
-    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
+    <Project Path="Bsqlite/Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />
+    <Project Path="Bsqlite/Demo/Data/Bit.Bsqlite.Demo.Data.csproj" />
+    <Project Path="Bsqlite/Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
+    <Project Path="Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
     <Project Path="Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj" />
     <Project Path="Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj" />
     <Project Path="Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj" />

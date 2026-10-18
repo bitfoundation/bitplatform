@@ -6,11 +6,11 @@
     <File Path="../global.json" />
     <File Path="README.md" />
   </Folder>
-  <Folder Name="/Bit.Bsqlite.Demo/">
-    <Project Path="Bit.Bsqlite.Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />
-    <Project Path="Bit.Bsqlite.Demo/Data/Bit.Bsqlite.Demo.Data.csproj" />
-    <Project Path="Bit.Bsqlite.Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
-    <Project Path="Bit.Bsqlite.Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />
+    <Project Path="Demo/Data/Bit.Bsqlite.Demo.Data.csproj" />
+    <Project Path="Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
+    <Project Path="Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Tests/">
     <Project Path="Tests/Bit.Bsqlite.Tests/Bit.Bsqlite.Tests.csproj" />

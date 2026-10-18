@@ -43,7 +43,7 @@ From `src/Bsqlite` (inside `src`, so `src/global.json` selects the Microsoft.Tes
 ```bash
 # Building the suite builds the libraries too: it serves their compiled modules and the engine their restore vendored.
 # The demo tests run the demo server's build output, so build that first, in the configuration the tests run in.
-dotnet build Bit.Bsqlite.Demo/Server/Bit.Bsqlite.Demo.Server.csproj
+dotnet build Demo/Server/Bit.Bsqlite.Demo.Server.csproj
 dotnet build Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -60,7 +60,7 @@ CI does the same in Release (`.github/workflows/bit.ci.Bsqlite.e2e.yml`), only w
 "bit platform CI - Bsqlite E2E" > Run workflow), and uploads the test results (TRX) as an artifact:
 
 ```bash
-dotnet build src/Bsqlite/Bit.Bsqlite.Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release
+dotnet build src/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release
 dotnet build src/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj -c Release
 pwsh src/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bsqlite-e2e.trx

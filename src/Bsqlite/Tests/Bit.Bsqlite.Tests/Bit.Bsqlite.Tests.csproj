@@ -38,7 +38,7 @@
     <!-- The demo's model and migrations are the proof that one AppDbContext and one migration set run on both
          sides. The demo only exists for net10.0, so the tests that load it do too. -->
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-        <ProjectReference Include="..\..\Bit.Bsqlite.Demo\Data\Bit.Bsqlite.Demo.Data.csproj" />
+        <ProjectReference Include="..\..\Demo\Data\Bit.Bsqlite.Demo.Data.csproj" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(TargetFramework)' != 'net10.0'">

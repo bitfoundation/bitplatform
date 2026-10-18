@@ -90,11 +90,11 @@
     <Project Path="Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj" />
     <Project Path="Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj" />
   </Folder>
-  <Folder Name="/Bsqlite/Bit.Bsqlite.Demo/">
-    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />
-    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Data/Bit.Bsqlite.Demo.Data.csproj" />
-    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
-    <Project Path="Bsqlite/Bit.Bsqlite.Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
+  <Folder Name="/Bsqlite/Demo/">
+    <Project Path="Bsqlite/Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />
+    <Project Path="Bsqlite/Demo/Data/Bit.Bsqlite.Demo.Data.csproj" />
+    <Project Path="Bsqlite/Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
+    <Project Path="Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Bsqlite/Tests/">
     <Project Path="Bsqlite/Tests/Bit.Bsqlite.Tests/Bit.Bsqlite.Tests.csproj" />

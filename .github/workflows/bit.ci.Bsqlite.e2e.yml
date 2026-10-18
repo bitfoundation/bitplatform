@@ -52,7 +52,7 @@ jobs:
     # Building the E2E suite builds the libraries too (it serves their compiled modules), but not the demo.
     - name: Build the demo and the E2E suite
       run: |
-        dotnet build src/Bsqlite/Bit.Bsqlite.Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release
+        dotnet build src/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj -c Release
         dotnet build src/Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
