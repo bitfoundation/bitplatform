@@ -89,6 +89,8 @@ public sealed class BitPdfSource
     /// This source is intended for files/server blobs, not IBrowserFile uploads;
     /// the viewer's upload path continues using FromStreamAsync snapshots. This
     /// does not provide HTTP Range loading or asynchronous browser network reads.
+    /// Decoded resources and cached decrypted stream buffers are outside the
+    /// raw-byte cache budget.
     /// The viewer serializes byte copies with rendering and asynchronous helpers.
     /// Await a browser copy before accessing Document or its raw streams directly.
     /// </remarks>

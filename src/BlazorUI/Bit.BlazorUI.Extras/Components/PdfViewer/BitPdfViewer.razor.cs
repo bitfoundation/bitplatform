@@ -1289,6 +1289,8 @@ public partial class BitPdfViewer : BitComponentBase
     /// fetched for the current document are reused. Stream sources copy directly
     /// from their captured origin, without retaining a complete server buffer.
     /// <see cref="OnDownloading"/> runs first and may rename or cancel it.
+    /// Active stream-source download failures are reported through <see cref="OnError"/>.
+    /// Buffered download failures and <see cref="OnDownloading"/> exceptions propagate.
     /// </summary>
     public async Task Download()
     {
@@ -2897,7 +2899,7 @@ public partial class BitPdfViewer : BitComponentBase
             previousDocument?.ReleaseByteWindows();
             if (previousStream is not null)
             {
-                 await previousStream.DisposeAsync();
+                await previousStream.DisposeAsync();
             }
             previousCancellation?.Dispose();
             _bytes = null;    // the old document's bytes; Download must not offer them for the new one

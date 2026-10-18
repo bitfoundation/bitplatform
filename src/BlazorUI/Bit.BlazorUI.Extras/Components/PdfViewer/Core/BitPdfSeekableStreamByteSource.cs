@@ -43,11 +43,11 @@ internal sealed class BitPdfSeekableStreamByteSource : IBitPdfByteSource, IBitPd
     {
         ArgumentNullException.ThrowIfNull(stream);
         if (!stream.CanRead || !stream.CanSeek)
-            throw new ArgumentException("A PDF stream factory must return a readable, seekable stream supporting synchronous reads.", nameof(stream));
+            throw new ArgumentException("A PDF stream factory must return a readable, seekable stream supporting synchronous reads.");
         _physicalLength = stream.Length;
         _origin = stream.Position;
         if (_origin < 0 || _origin > _physicalLength || _physicalLength - _origin > int.MaxValue)
-            throw new ArgumentException("The remaining PDF stream length must be between zero and Int32.MaxValue.", nameof(stream));
+            throw new ArgumentException("The remaining PDF stream length must be between zero and Int32.MaxValue.");
         if (blockSize <= 0 || cacheSize < blockSize)
             throw new ArgumentOutOfRangeException(nameof(cacheSize));
         _stream = stream;

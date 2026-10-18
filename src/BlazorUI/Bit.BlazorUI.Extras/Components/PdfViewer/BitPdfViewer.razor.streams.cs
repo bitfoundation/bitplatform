@@ -100,6 +100,12 @@ public partial class BitPdfViewer
                 catch (BitPdfPasswordException ex)
                 {
                     if (IsDisposed || version != _loadVersion) return;
+                    // Match buffered loading: a prerender cannot answer the built-in password dialog.
+                    if (OnPasswordRequested is null && ShowPasswordPrompt && IsRendered is false)
+                    {
+                        _loadDeferred = true;
+                        return;
+                    }
                     string? entered = OnPasswordRequested is not null
                         ? await OnPasswordRequested()
                         : ShowPasswordPrompt ? await PromptForPasswordAsync(ex.WasProvided) : null;
@@ -163,7 +169,7 @@ public partial class BitPdfViewer
                 if (ReferenceEquals(_streamLoadCancellation, cancellation)) _streamLoadCancellation = null;
                 cancellation.Dispose();
             }
-            if (version == _loadVersion)
+            if (version == _loadVersion && _loadDeferred is false)
             {
                 _loading = false;
                 _progress = null;
