@@ -19,7 +19,43 @@ public class StaticSsrModeTests : HarnessTest
 
     protected override string Framework => E2EEnvironment.Framework;
 
-    protected override Task<IPage> OpenPageAsync() => _session.OpenAsync("ssr");
+    private readonly object _network = new();
+    private int _requestsInFlight;
+    private DateTime _lastRequestActivity = DateTime.UtcNow;
+
+    protected override async Task<IPage> OpenPageAsync()
+    {
+        var page = await _session.OpenAsync("ssr");
+        page.Request += (_, _) => OnRequest(1);
+        page.RequestFinished += (_, _) => OnRequest(-1);
+        page.RequestFailed += (_, _) => OnRequest(-1);
+        return page;
+    }
+
+    private void OnRequest(int change)
+    {
+        lock (_network)
+        {
+            _requestsInFlight += change;
+            _lastRequestActivity = DateTime.UtcNow;
+        }
+    }
+
+    private async Task WaitForNetworkQuietAsync()
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(30);
+        while (true)
+        {
+            lock (_network)
+            {
+                if (_requestsInFlight <= 0 && DateTime.UtcNow - _lastRequestActivity >= TimeSpan.FromMilliseconds(500)) return;
+            }
+
+            if (DateTime.UtcNow > deadline) throw new TimeoutException($"The page still had {_requestsInFlight} request(s) in flight after 30 seconds.");
+
+            await Task.Delay(50);
+        }
+    }
 
     protected override Task ClosePageAsync() => _session.CloseAsync();
 
@@ -31,7 +67,7 @@ public class StaticSsrModeTests : HarnessTest
         Assert.AreEqual(200, response!.Status);
         await Expect(Page.Locator("#page-item")).ToHaveAttributeAsync("data-item-id", "42");
 
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForNetworkQuietAsync();
         await Expect(Page.Locator("#status")).ToHaveAttributeAsync("data-interactive", "false");
         if (E2EEnvironment.FrameworkReportsRendererName(Framework))
         {
@@ -128,7 +164,7 @@ public class StaticSsrModeTests : HarnessTest
     {
         await GotoStartedAsync("/");
         await ClickAndExpectAsync("#nav-long", "#page-long");
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForNetworkQuietAsync();
 
         var requests = await BrouterModuleRequestsAsync();
 
@@ -153,6 +189,6 @@ public class StaticSsrModeTests : HarnessTest
     {
         await GotoAsync(path);
         await Page.WaitForFunctionAsync("() => !!window.Blazor");
-        await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
+        await WaitForNetworkQuietAsync();
     }
 }
