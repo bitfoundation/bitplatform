@@ -81,6 +81,8 @@ param(
     # mcp: the tool's arguments, as json.
     [string] $Arguments = '{}',
 
+    [switch] $PrereleasePackages,
+
     [switch] $Keep
 )
 
@@ -308,7 +310,7 @@ function Get-CdRunId {
 # With its prerelease_packages option, every job of a CD run that took the Bit packages of a Prerelease nuget packages
 # run leaves a "Bit packages" notice naming that run (.github/actions/use-prerelease-packages). No notice: nuget.org.
 function Get-BitPackagesSource([string] $runId) {
-    $notices = foreach ($jobId in gh api "repos/$repository/actions/runs/$runId/jobs" --paginate --jq '.jobs[].id') {
+    $notices = foreach ($jobId in gh api "repos/$repository/actions/runs/$runId/jobs?filter=all&per_page=100" --paginate --jq '.jobs[].id') {
         gh api "repos/$repository/check-runs/$jobId/annotations" --jq '.[] | select(.title == "Bit packages") | .message'
     }
 
@@ -538,8 +540,24 @@ function Get-WebAppVersions {
 # Every Client.Windows app starts WebView2 with --remote-debugging-port=9222, so only one of them may run while one is
 # driven over CDP - a leftover instance would be the one answering. /T takes its WebView2 processes along.
 function Stop-WindowsApps {
-    foreach ($process in Get-Process | Where-Object { $_.ProcessName -like '*.Client.Windows' }) {
-        taskkill /PID $process.Id /T /F 2>&1 | Out-Null
+    $deadline = (Get-Date).AddSeconds(30)
+
+    do {
+        foreach ($process in Get-Process | Where-Object { $_.ProcessName -like '*.Client.Windows' }) {
+            taskkill /PID $process.Id /T /F 2>&1 | Out-Null
+        }
+
+        Start-Sleep -Seconds 1
+    }
+    while ((Get-NetTCPConnection -LocalPort 9222 -State Listen -ErrorAction SilentlyContinue) -and (Get-Date) -lt $deadline)
+}
+
+function Get-CdpOwner([int] $port) {
+    $listener = Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+
+    if ($listener) {
+        $webView = Get-CimInstance Win32_Process -Filter "ProcessId=$($listener.OwningProcess)"
+        (Get-Process -Id $webView.ParentProcessId -ErrorAction SilentlyContinue).ProcessName
     }
 }
 
@@ -566,19 +584,26 @@ function Update-WindowsApps {
         Start-Process $app.Exe -WindowStyle Minimized
 
         # The version button runs ForceUpdate: Velopack downloads the release and restarts the app into it.
-        $page = Get-CdpPage 9222
-        $shown = Wait-AppVersion $page.webSocketDebuggerUrl
-
-        if (-not $shown) {
-            throw "$($app.Id) never showed its version in the nav panel."
-        }
-
-        Write-Host "  its nav panel shows $shown, tapping it."
-        Invoke-Cdp $page.webSocketDebuggerUrl 'Runtime.evaluate' @{ expression = "document.querySelector('.app-version').click()" } | Out-Null
-
+        $name = [IO.Path]::GetFileNameWithoutExtension($app.Exe)
         $deadline = (Get-Date).AddMinutes(10)
+        $tapped = $false
 
         while (-not (Test-Version (Get-ProductVersion $app.Exe)) -and (Get-Date) -lt $deadline) {
+            if (-not $tapped -and (Get-CdpOwner 9222) -eq $name) {
+                try {
+                    $page = Get-CdpPage 9222 5
+                    $shown = Wait-AppVersion $page.webSocketDebuggerUrl 5
+
+                    if ($shown) {
+                        Write-Host "  its nav panel shows $shown, tapping it."
+                        Invoke-Cdp $page.webSocketDebuggerUrl 'Runtime.evaluate' @{ expression = "document.querySelector('.app-version').click()" } | Out-Null
+                        $tapped = $true
+                    }
+                }
+                catch {
+                }
+            }
+
             Start-Sleep -Seconds 5
         }
 
@@ -854,6 +879,10 @@ function Install-BitUnderTest([string] $lab) {
     New-Item -ItemType Directory -Force $tools, $feed | Out-Null
     $templateArguments = @()
 
+    if ($PrereleasePackages -and -not $Sha) {
+        throw '-PrereleasePackages takes the template from the commit, so it needs -Sha.'
+    }
+
     if ($Sha) {
         Write-Host "Packing bit from $Sha..."
         git -C $repositoryRoot fetch --quiet origin 2>&1 | Out-Null
@@ -871,6 +900,10 @@ function Install-BitUnderTest([string] $lab) {
 
         dotnet tool install Bit.Cli --tool-path $tools --add-source $feed --version 0.0.0 | Out-Null
         $templateArguments = '--template-package', (Join-Path $source 'src\Templates\Boilerplate\Bit.Boilerplate')
+
+        if ($PrereleasePackages) {
+            Add-PrereleasePackages $feed
+        }
     }
     else {
         Write-Host 'Installing bit from nuget.org...'
@@ -885,6 +918,53 @@ function Install-BitUnderTest([string] $lab) {
     Write-Host "Testing $((& $bit --version) | Select-Object -Last 1)"
 
     [pscustomobject]@{ Path = $bit; TemplateArguments = $templateArguments }
+}
+
+function Add-PrereleasePackages([string] $feed) {
+    $runs = gh run list -R $repository --workflow prerelease.nuget.org.yml --limit 100 --json databaseId,headBranch,headSha | ConvertFrom-Json
+    $artifact = (gh api "repos/$repository/actions/artifacts?name=nupkg-files&per_page=100" | ConvertFrom-Json).artifacts |
+        Where-Object { -not $_.expired -and $_.workflow_run.id -in $runs.databaseId } |
+        Sort-Object { [datetimeoffset]$_.created_at } -Descending |
+        Select-Object -First 1
+    $run = $runs | Where-Object databaseId -eq $artifact.workflow_run.id
+
+    if (-not $run) {
+        throw 'No Prerelease nuget packages run has an unexpired nupkg-files artifact.'
+    }
+
+    $download = Join-Path $feed 'prerelease'
+    gh run download $run.databaseId -R $repository --name nupkg-files --dir $download
+
+    if ($LASTEXITCODE -ne 0) {
+        throw "The nupkg-files artifact of Prerelease nuget packages run $($run.databaseId) could not be downloaded."
+    }
+
+    Get-ChildItem $download -Filter *.nupkg | Where-Object Name -notlike 'Bit.Cli.*' | Move-Item -Destination $feed
+    Remove-Item $download -Recurse -Force
+    Write-Host "Bit packages from Prerelease nuget packages run $($run.databaseId), $($run.headBranch) at $($run.headSha.Substring(0, 9))."
+}
+
+function Set-BitUnderTestFeed([string] $project, [string] $feed) {
+    $pattern = $PrereleasePackages ? 'Bit.*' : 'Bit.Cli'
+
+    Set-Content (Join-Path $project 'nuget.config') -Encoding utf8 -Value @"
+<?xml version="1.0" encoding="utf-8"?>
+<configuration>
+  <packageSources>
+    <clear />
+    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
+    <add key="bit-under-test" value="$feed" />
+  </packageSources>
+  <packageSourceMapping>
+    <packageSource key="bit-under-test">
+      <package pattern="$pattern" />
+    </packageSource>
+    <packageSource key="nuget.org">
+      <package pattern="*" />
+    </packageSource>
+  </packageSourceMapping>
+</configuration>
+"@
 }
 
 function New-BitProject([string] $lab, $bit, [string] $name, [string[]] $options = @()) {
@@ -921,7 +1001,7 @@ function Remove-BitUnderTest([string] $lab) {
         git -C $repositoryRoot worktree remove --force $source 2>&1 | Out-Null
     }
 
-    Remove-Item (Join-Path $lab 'tools'), (Join-Path $lab 'feed'), $source, (Join-Path $lab 'home') -Recurse -Force -ErrorAction SilentlyContinue
+    Remove-Item (Join-Path $lab 'tools'), (Join-Path $lab 'feed'), $source, (Join-Path $lab 'home'), (Join-Path $lab 'packages') -Recurse -Force -ErrorAction SilentlyContinue
 }
 
 function Invoke-DevContainerTest {
@@ -943,24 +1023,7 @@ function Invoke-DevContainerTest {
         $mount = @()
 
         if ($Sha) {
-            Set-Content (Join-Path $project 'nuget.config') -Encoding utf8 -Value @'
-<?xml version="1.0" encoding="utf-8"?>
-<configuration>
-  <packageSources>
-    <clear />
-    <add key="nuget.org" value="https://api.nuget.org/v3/index.json" />
-    <add key="bit-under-test" value="/feed" />
-  </packageSources>
-  <packageSourceMapping>
-    <packageSource key="bit-under-test">
-      <package pattern="Bit.Cli" />
-    </packageSource>
-    <packageSource key="nuget.org">
-      <package pattern="*" />
-    </packageSource>
-  </packageSourceMapping>
-</configuration>
-'@
+            Set-BitUnderTestFeed $project '/feed'
             $mount = '--mount', "type=bind,source=$($feed -replace '\\', '/'),target=/feed"
         }
 
@@ -1156,11 +1219,17 @@ function Invoke-AspireTest {
     $before = $null
     $project = $null
     $allBefore = @(docker ps -a --format '{{.Names}}')
+    $nugetPackages = $env:NUGET_PACKAGES
 
     try {
         $bit = Install-BitUnderTest $lab
         $project = New-BitProject $lab $bit 'AspireApp' '--database', 'PostgreSQL', '--redis', 'true'
         $appHost = Join-Path $project "src\Server\$appHostName"
+
+        if ($PrereleasePackages) {
+            Set-BitUnderTestFeed $project (Join-Path $lab 'feed')
+            $env:NUGET_PACKAGES = Join-Path $lab 'packages'
+        }
 
         $profiles = (Get-Content (Join-Path $project 'src\Server\AspireApp.Server.Web\Properties\launchSettings.json') -Raw | ConvertFrom-Json).profiles.PSObject.Properties.Value
         $aliveUrl = (($profiles | Where-Object { $_.commandName -eq 'Project' -and $_.applicationUrl } | Select-Object -First 1).applicationUrl -split ';')[0].TrimEnd('/') + '/alive'
@@ -1250,6 +1319,7 @@ function Invoke-AspireTest {
     }
     finally {
         [Console]::OutputEncoding = $outputEncoding
+        $env:NUGET_PACKAGES = $nugetPackages
 
         if ($Keep) {
             Write-Host "Kept $project and its containers."

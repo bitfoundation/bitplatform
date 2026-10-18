@@ -64,7 +64,9 @@ answer, and repeat the plan back before starting:
    or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
    (`gh run list -R bitfoundation/bitplatform -w all.cd.yml -L 1`): it is often another branch than the one under test.
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
-7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org.
+7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
+   come from nuget.org at the template's version; when nuget.org's build of that version is older than the commit's
+   libraries, `-PrereleasePackages` takes them from the newest Prerelease nuget packages run instead.
 
 Start, change or skip nothing beyond the answers, and ask nothing more once they are in: the user is often away
 until the report. Then go in this order:
@@ -74,8 +76,8 @@ until the report. Then go in this order:
    (`gh run watch <run-id> -R bitfoundation/bitplatform --exit-status`) before anything that takes its packages.
 2. `APP_VERSION`, then All CI and All CD together, both with the chosen `prerelease_packages`. All CI's inputs name
    its jobs and all default to on; `-f <job>=false` leaves one out.
-3. While they run: step 6 in the background, and step 1 as CI jobs fail.
-4. Once CD is done: step 2, then steps 3 and 4.
+3. While they run: step 1 as CI jobs fail.
+4. Once CD is done: step 2, then steps 3 and 4, with step 6 in the background next to the web stages of step 3.
 5. Step 5 last, on its own.
 
 Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows that version everywhere: as
@@ -98,8 +100,8 @@ websites - is checked. Every command prints what it checked and exits non-zero o
 | `windows [-Force]` | Opens each Windows app that is behind and taps its version, which updates it and restarts it. |
 | `e2e [-Stage <stages>] [-Filter <filter>]` | Signs the global admin in once, then runs the E2E suite stage by stage like `RunTests.bat` - skipping the mac's stages when its Playwright server is down or on another version - keeping each stage's log and TRX. |
 | `mcp [-McpVersion <x.y.z>] [-Tool <name> -Arguments <json>]` | One `tools/list` or `tools/call` on `https://bitplatform.dev/mcp`. |
-| `devcontainer [-Sha <sha>] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
-| `aspire [-Sha <sha>] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
+| `devcontainer [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new`, brings its dev container up with the devcontainers CLI and runs `bit doctor` in it, with bit and the template from that commit or from nuget.org. Then removes the container, its volumes and its image, and keeps the logs. |
+| `aspire [-Sha <sha> [-PrereleasePackages]] [-Keep]` | Creates a project with `bit new` the same way and runs its Aspire app host three times with `dotnet run`: the second run must reuse the first one's containers, they must stop once the app host has sat idle for its idle time, and the third run must bring them back on the same volumes. Then removes the project, its containers and their volumes, and keeps the logs. |
 
 ## 1. The CI run
 
@@ -163,6 +165,13 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    - In a fresh worktree, a library whose build runs `npm install`, such as Bswup, breaks when its target frameworks
      build in parallel: the installs race on `node_modules` (`ENOTEMPTY`), and the half-installed folder then fails
      every build with `tsc` exiting 9009. Delete `node_modules`, build one framework (`-f net10.0`), then the rest.
+   - A job whose runner "received a shutdown signal" in the middle of a step ran the runner out of memory, and its log
+     says nothing more. To see what grew, have the step print `free -m` and the top processes by RSS every 30 seconds
+     from a background loop, and take a `dotnet-gcdump` of a `dotnet` process past a few GB, then kill it so the
+     failed-step upload still runs. `dotnet-gcdump` stops at ten million objects, so a heap that looks small next to
+     the process is a cut-off count, not native memory. The Boilerplate's test process is known to keep finished test
+     servers alive; look for the open issue before calling such growth new. One lucky pass of the job alone on a
+     runner proves nothing; compare a step's duration with an earlier run's instead.
    - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left. Never the `redis`
      container, which the demos use, nor another project's containers.
 
@@ -176,6 +185,11 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    ask before pushing to anyone else's. A CI run on the pushed branch is the final proof:
    `gh workflow run all.ci.yml -R bitfoundation/bitplatform --ref <branch>`. Re-running a failed job
    (`gh run rerun <run-id> --failed`) tells flaky from broken, and proves nothing about a fix.
+
+   A fix in a bit library - any `Bit.*` project other than the Boilerplate template, its tests, demos and samples
+   included - also gets an issue and a PR of its own, cut from develop when the fix applies there and from bit11
+   otherwise, so its owners review it; the commit on the run's branch only proves that it works. Fixes to the
+   Boilerplate and to the websites need nothing beyond the run's branch.
 
 This machine has four cores and serves the demos too, so a local build or test run never overlaps step 3.
 
@@ -209,7 +223,10 @@ after uninstalling the app, which drops its data.
 **Windows.** `windows`. The apps are Velopack installs in `%LocalAppData%\<AppId>`: the Boilerplate's
 `AdminPanel.Client.Windows`, `SalesModule.Client.Windows` and `TodoSample.Client.Windows`. The nav-panel version
 button runs `ForceUpdate`: Velopack downloads the release from the app's feed and restarts into it. Every app starts
-WebView2 with `--remote-debugging-port=9222`, so the helper first closes any that is running.
+WebView2 with `--remote-debugging-port=9222`, so the helper first closes any that is running, and taps only once the
+WebView on that port is the app's own: an app that just updated restarts on its own and may hold the port. An app a
+release behind also updates itself when it starts, before it shows a page, which takes a few minutes; either way
+counts once its executable is at `APP_VERSION`.
 
 Then `versions -Sha <CD head sha> -CdRun <run>`. Anything still behind is a failed rollout: find the CD job that did not deliver -
 its log, the feed's `releases.win.json`, the Play upload - before testing anything.
@@ -379,6 +396,9 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 - With `-Sha`, bit and the template come from that commit, as in CI: bit is packed into a feed the container mounts,
   and the project's `nuget.config` maps `Bit.Cli` to that feed alone, so a newer prerelease on nuget.org can't stand
   in for it. Without `-Sha`, it tests what nuget.org serves, which is what users get.
+- `-PrereleasePackages` puts the packages of the newest Prerelease nuget packages run into that feed too, bit's
+  aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
+  doesn't have compiles against them.
 - It's heavy: a few GB in Docker Desktop's VM and about ten minutes, most of them for the container's image and the
   restore. Run it on its own, after the E2E suite, never next to it.
 - Done means every `bit setup` step passed and `bit doctor` exits with 0, with VS Code not needed inside a container.
@@ -402,9 +422,16 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
   key covers changed between the runs, such as its image, environment or ports.
 - After the second run the containers keep running for the idle time, then stop. Stopped, not removed: the third run
   brings them back on the same volumes.
-- `-Sha` works as for `devcontainer`; the Bit packages come from nuget.org at the version the template asks for.
+- `-Sha` and `-PrereleasePackages` work as for `devcontainer`. With `-PrereleasePackages` the project restores into a
+  packages folder of its own, since this machine's cache may hold nuget.org's build of the same version; without it
+  the Bit packages come from nuget.org at the version the template asks for. The project's `global.json` asks for
+  the repository's SDK, which needs the workloads the template's clients build with (`wasm-tools`): an SDK that
+  Visual Studio installed brings only its own.
 - It takes about half an hour, most of it the idle wait, and a few GB of Docker Desktop's memory while the app runs.
-  Start it in the background early and go on with the other steps, but never next to `devcontainer`.
+  Start it in the background once the CD's deploy jobs are done, and never next to `devcontainer` or the Android
+  stage. Its containers hold that memory, and Docker Desktop's VM keeps it for a while after they stop: IIS sites
+  deployed next to them took minutes to start, and one never did ("Managed server didn't initialize after 120000
+  ms" in the Application log), which a CD reports as a failed health check.
 
 Two things are expected and are not failures. `dotnet test` and a `dotnet run` or `aspire start` re-create each
 other's containers, since the test host picks random ports and the ports are part of the lifecycle key. And a run
