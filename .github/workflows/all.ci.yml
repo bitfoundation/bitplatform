@@ -3,10 +3,6 @@ name: All CI
 on:
   workflow_dispatch:
     inputs:
-      boilerplate:
-        description: Boilerplate solution (bit.ci.Templates.yml)
-        type: boolean
-        default: true
       boilerplate_postgres:
         description: Boilerplate tests with PostgreSQL
         type: boolean
@@ -21,10 +17,6 @@ on:
         default: true
       boilerplate_configurations:
         description: Boilerplate configurations
-        type: boolean
-        default: true
-      blazorempty:
-        description: BlazorEmpty configurations
         type: boolean
         default: true
       nuget_packages:
@@ -124,7 +116,6 @@ jobs:
 
   boilerplate:
     name: boilerplate
-    if: ${{ inputs.boilerplate }}
     uses: ./.github/workflows/bit.ci.Templates.yml
     with:
       prerelease_packages: ${{ inputs.prerelease_packages }}
@@ -448,7 +439,6 @@ jobs:
 
   build_blazorempty_configurations:
     name: build blazorempty based projects
-    if: ${{ inputs.blazorempty }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -797,42 +787,34 @@ jobs:
 
   bmotion:
     name: bmotion
-    if: ${{ inputs.bmotion }}
     uses: ./.github/workflows/bit.ci.Bmotion.yml
 
   bmage:
     name: bmage
-    if: ${{ inputs.bmage }}
     uses: ./.github/workflows/bit.ci.Bmage.yml
 
   bsqlite:
     name: bsqlite
-    if: ${{ inputs.bsqlite }}
     uses: ./.github/workflows/bit.ci.Bsqlite.yml
 
   bink:
     name: bink
-    if: ${{ inputs.bink }}
     uses: ./.github/workflows/bit.ci.Bink.yml
 
   balette:
     name: balette
-    if: ${{ inputs.balette }}
     uses: ./.github/workflows/bit.ci.Balette.yml
 
   bbscanner:
     name: bbscanner
-    if: ${{ inputs.bbscanner }}
     uses: ./.github/workflows/bit.ci.BbScanner.yml
 
   blazedb:
     name: blazedb
-    if: ${{ inputs.blazedb }}
     uses: ./.github/workflows/bit.ci.BlazeDb.yml
 
   blow:
     name: blow
-    if: ${{ inputs.blow }}
     uses: ./.github/workflows/bit.ci.Blow.yml
 
   bcrdt:
@@ -842,47 +824,38 @@ jobs:
 
   blex:
     name: blex
-    if: ${{ inputs.blex }}
     uses: ./.github/workflows/bit.ci.Blex.yml
 
   bonboarding:
     name: bonboarding
-    if: ${{ inputs.bonboarding }}
     uses: ./.github/workflows/bit.ci.Bonboarding.yml
 
   besql:
     name: besql
-    if: ${{ inputs.besql }}
     uses: ./.github/workflows/bit.ci.Besql.yml
 
   blazores2019:
     name: blazores2019
-    if: ${{ inputs.blazores2019 }}
     uses: ./.github/workflows/bit.ci.BlazorES2019.yml
 
   codeanalyzers:
     name: codeanalyzers
-    if: ${{ inputs.tooling }}
     uses: ./.github/workflows/bit.ci.CodeAnalyzers.yml
 
   minifier:
     name: minifier
-    if: ${{ inputs.tooling }}
     uses: ./.github/workflows/bit.ci.Minifier.yml
 
   cli:
     name: cli
-    if: ${{ inputs.tooling }}
     uses: ./.github/workflows/bit.ci.Cli.yml
 
   sourcegenerators:
     name: sourcegenerators
-    if: ${{ inputs.tooling }}
     uses: ./.github/workflows/bit.ci.SourceGenerators.yml
 
   websites:
     name: websites
-    if: ${{ inputs.websites }}
     uses: ./.github/workflows/bit.ci.Websites.yml
     with:
       prerelease_packages: ${{ inputs.prerelease_packages }}
