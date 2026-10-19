@@ -106,8 +106,10 @@ public sealed class BevObjectInspector
                         break;
                     }
 
+                    // Described by key, so a sensitive key ("Authorization", "password") hides its value the way a
+                    // sensitive member does, and the way Flatten already hides it from diffs.
                     var key = FormatKey(entry.Key);
-                    result.Add(DescribeCore(key, entry.Value, path + "[" + key + "]", ancestors));
+                    result.Add(Describe(key, entry.Value, path + "[" + key + "]", null, ancestors));
                 }
 
                 return result;
@@ -407,6 +409,11 @@ public sealed class BevObjectInspector
             ancestors.Add(current);
             if (segment.IsIndex)
             {
+                if (current is IDictionary && _redactor.IsSensitiveName(segment.Value))
+                {
+                    return null;
+                }
+
                 current = Index(current, segment.Value);
             }
             else

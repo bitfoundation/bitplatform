@@ -336,4 +336,31 @@ public class PanelInteractionTests : BunitContext
         var navigation = Session.Timeline.Snapshot().Last(e => e.Kind == BevToolsEventKind.Navigation);
         Assert.IsNull(navigation.ParentEventId);
     }
+
+    [TestMethod]
+    public void Navigation_urls_are_redacted_at_capture_time()
+    {
+        RenderPanel();
+
+        Services.GetRequiredService<NavigationManager>().NavigateTo("/reset-password?token=abc123&step=2");
+
+        var navigation = Session.Timeline.Snapshot().Last(e => e.Kind == BevToolsEventKind.Navigation);
+        Assert.AreEqual("Navigate to /reset-password?token=" + BevRedactor.RedactedValue + "&step=2", navigation.Title);
+        Assert.DoesNotContain("abc123", BevSessionExporter.ToJson(Session), StringComparison.Ordinal);
+    }
+
+    [TestMethod]
+    public void A_bridge_that_times_out_while_attaching_leaves_the_panel_working()
+    {
+        // An interop call that exceeds the timeout (the tab throttled, or paused in the browser's debugger) must not
+        // escape OnAfterRenderAsync: on Blazor Server that would terminate the circuit.
+        var module = JSInterop.SetupModule("./_content/Bit.BevTools/bit-bevtools.js");
+        module.Setup<BevBrowserSnapshot>("attach", _ => true).SetException(new TaskCanceledException("interop timed out"));
+
+        var cut = Render<BevToolsPanel>();
+
+        Assert.IsNotEmpty(cut.FindAll(".bev-panel"));
+        Assert.AreEqual("interop timed out", Session.Browser.BridgeError);
+        Assert.IsFalse(Session.Browser.BridgeAttached);
+    }
 }

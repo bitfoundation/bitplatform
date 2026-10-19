@@ -73,6 +73,78 @@ public class JsInteropTrackingTests
         }
     }
 
+#if NET10_0_OR_GREATER
+    [TestMethod]
+    public async Task Value_and_constructor_calls_added_in_net10_reach_the_runtime_and_are_recorded()
+    {
+        // .NET 10 declares these on IJSRuntime and IJSObjectReference as default members that throw
+        // NotImplementedException; a wrapper that left them to the defaults broke the code it was patched into.
+        var (session, scope) = TestHelpers.CreateSession();
+        using (scope)
+        {
+            var fake = new Net10JSRuntime();
+            var tracked = (BevTrackingInProcessJSRuntime)fake.WithBevToolsTracking(session);
+
+            Assert.AreEqual("Home", await tracked.GetValueAsync<string>("document.title"));
+            await tracked.SetValueAsync("document.title", "Orders");
+            var map = await tracked.InvokeConstructorAsync("Map");
+            Assert.AreEqual("Orders", tracked.GetValue<string>("document.title"));
+            tracked.SetValue("app.ready", true);
+            Assert.IsExactInstanceOfType<BevTrackingInProcessJSObjectReference>(tracked.InvokeConstructor("Set"));
+
+            Assert.IsExactInstanceOfType<BevTrackingInProcessJSObjectReference>(map);
+            Assert.AreEqual(1, await map.GetValueAsync<int>("size"));
+            await map.SetValueAsync("label", "m");
+
+            Assert.AreEqual(true, fake.Values["app.ready"]);
+            CollectionAssert.AreEqual(
+                new[] { "get document.title", "set document.title", "new Map", "get document.title", "set app.ready", "new Set", "get module.size", "set module.label" },
+                session.Interop.Snapshot().Select(c => c.Identifier).ToArray());
+            Assert.IsTrue(session.Interop.Snapshot().All(c => c.Succeeded));
+        }
+    }
+
+    /// <summary>A runtime that implements the .NET 10 members, as the framework's own runtimes do.</summary>
+    private sealed class Net10JSRuntime : IJSInProcessRuntime, IJSInProcessObjectReference
+    {
+        public Dictionary<string, object?> Values { get; } = new() { ["document.title"] = "Home", ["size"] = 1 };
+
+        public TValue Invoke<TValue>(string identifier, params object?[]? args) => default!;
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, object?[]? args) => ValueTask.FromResult(default(TValue)!);
+
+        public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args) => ValueTask.FromResult(default(TValue)!);
+
+        public TValue GetValue<TValue>(string identifier) => (TValue)Values[identifier]!;
+
+        public void SetValue<TValue>(string identifier, TValue value) => Values[identifier] = value;
+
+        public IJSInProcessObjectReference InvokeConstructor(string identifier, params object?[]? args) => this;
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier) => ValueTask.FromResult(GetValue<TValue>(identifier));
+
+        public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken) => GetValueAsync<TValue>(identifier);
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value)
+        {
+            SetValue(identifier, value);
+            return ValueTask.CompletedTask;
+        }
+
+        public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken) => SetValueAsync(identifier, value);
+
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args) => ValueTask.FromResult<IJSObjectReference>(this);
+
+        public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args) => InvokeConstructorAsync(identifier, args);
+
+        public void Dispose()
+        {
+        }
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+#endif
+
     [TestMethod]
     public void Wrapping_is_idempotent_and_disabled_sessions_return_the_original()
     {

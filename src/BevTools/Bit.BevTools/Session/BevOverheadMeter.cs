@@ -2,7 +2,12 @@
 
 namespace Bit.BevTools;
 
-/// <summary>Measures the cost of BevTools itself so it can be reported honestly next to application numbers.</summary>
+/// <summary>
+/// Measures the cost of BevTools itself so it can be reported honestly next to application numbers. Every Add method
+/// takes <see cref="Stopwatch"/> ticks (a difference of <see cref="Stopwatch.GetTimestamp"/> values), never
+/// <see cref="TimeSpan.Ticks"/>: the two only coincide where <see cref="Stopwatch.Frequency"/> is 10 MHz (Windows),
+/// and are 100× apart on Linux, macOS and WebAssembly.
+/// </summary>
 public sealed class BevOverheadMeter
 {
     private long _instrumentationTicks;

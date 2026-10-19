@@ -103,7 +103,7 @@ public class ActivityAttributionTests : BunitContext
         cut.Find("button").Click();
         cut.Find("button").Click();
 
-        Assert.IsTrue(Session.TypeMetrics.TryGetValue("ClickableComponent", out var metrics));
+        Assert.IsTrue(Session.TypeMetrics.TryGetValue(typeof(ClickableComponent).FullName!, out var metrics));
         Assert.AreEqual(2, metrics!.EventHandlers);
     }
 
@@ -124,10 +124,33 @@ public class ActivityAttributionTests : BunitContext
         Render<ClickableComponent>();
 
         Assert.IsTrue(ActivityObserver.LifecycleMetricsObserved);
-        Assert.IsTrue(Session.TypeMetrics.TryGetValue("ClickableComponent", out var metrics));
+        Assert.IsTrue(Session.TypeMetrics.TryGetValue(typeof(ClickableComponent).FullName!, out var metrics));
         Assert.IsTrue(metrics!.ParameterUpdates > 0);
     }
 #endif
+
+    [TestMethod]
+    public void Lifecycle_metrics_of_same_named_components_in_different_namespaces_stay_apart()
+    {
+        // Keyed by the short name, Pages.Index and Admin.Index used to share one row, shown in each inspector as that
+        // component's own numbers; a generic type's short name never matched the inspector's lookup at all.
+        var (session, scope) = TestHelpers.CreateSession();
+        using (scope)
+        using (session.UseAmbient())
+        using (var meter = new System.Diagnostics.Metrics.Meter(ActivityObserver.MeterName))
+        {
+            var histogram = meter.CreateHistogram<double>("aspnetcore.components.update_parameters.duration");
+            histogram.Record(0.002, new KeyValuePair<string, object?>(ActivityObserver.ComponentTypeTag, "Shop.Pages.Index"));
+            histogram.Record(0.004, new KeyValuePair<string, object?>(ActivityObserver.ComponentTypeTag, "Shop.Admin.Index"));
+            histogram.Record(0.004, new KeyValuePair<string, object?>(ActivityObserver.ComponentTypeTag, "Shop.Admin.Index, Shop, Version=1.0.0.0"));
+            histogram.Record(0.001, new KeyValuePair<string, object?>(ActivityObserver.ComponentTypeTag, "Shop.Grid`1[[Shop.Product, Shop, Version=1.0.0.0]]"));
+
+            Assert.AreEqual(1, session.TypeMetrics["Shop.Pages.Index"].ParameterUpdates);
+            Assert.AreEqual(2, session.TypeMetrics["Shop.Admin.Index"].ParameterUpdates);
+            Assert.AreEqual("Index", session.TypeMetrics["Shop.Admin.Index"].DisplayName);
+            Assert.IsTrue(session.TypeMetrics.ContainsKey("Shop.Grid`1[[Shop.Product, Shop, Version=1.0.0.0]]"));
+        }
+    }
 }
 
 public class ClickableComponent : ComponentBase

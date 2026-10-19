@@ -261,7 +261,7 @@
 
         _parameters = parameters.Select(p => new MemberValue(p.Name, SafeGet(p, component), p)).ToList();
         _cascading = cascading.Select(p => new MemberValue(p.Name, SafeGet(p, component), p)).ToList();
-        _state = ComponentStateReader.Fields(Record.Type).Select(f => new MemberValue(f.Name, SafeGet(f.Field, component), f.Field)).ToList();
+        _state = ComponentStateReader.Fields(Record.Type).Select(f => new MemberValue(f.Name, SafeGet(f.Field, component), f.Member)).ToList();
         var graph = Host.Graph;
         _services = injected.Select(p =>
         {
@@ -284,7 +284,7 @@
             .ToList();
         _children = Session.Components.All.Where(c => !c.IsDisposed && !c.IsHidden && c.Parent is not null && NearestVisibleAncestor(c) == Record).OrderBy(c => c.ComponentId).ToList();
         _errors = Session.Errors.Snapshot().Where(e => e.ComponentInstanceId == Record.InstanceId).Reverse().ToList();
-        Session.TypeMetrics.TryGetValue(Record.DisplayName, out _typeMetrics);
+        Session.TypeMetrics.TryGetValue(Record.TypeName, out _typeMetrics);
     }
 
     private static BevComponentRecord? NearestVisibleAncestor(BevComponentRecord record)

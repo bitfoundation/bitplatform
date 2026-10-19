@@ -184,6 +184,26 @@ public class SafetyTests
     }
 
     [TestMethod]
+    public void Sessions_of_a_server_process_are_never_resolved_by_being_the_only_one_whatever_their_platform()
+    {
+        // On .NET 8 a circuit's platform stays unknown until the panel reports it, and a static SSR request scope that
+        // renders nothing never reports one. The host decides: a process with an ASP.NET Core server serves many users.
+        var (control, controlScope) = TestHelpers.CreateSession();
+        using (controlScope)
+        {
+            Assert.IsNull(control.Platform);
+            Assert.AreSame(control, SessionResolver.Resolve());
+        }
+
+        var (session, scope) = TestHelpers.CreateSession(services: s => s.AddSingleton<Microsoft.AspNetCore.Hosting.Server.IServer>(_ => throw new InvalidOperationException("only its registration is consulted")));
+        using (scope)
+        {
+            Assert.IsNull(session.Platform);
+            Assert.IsNull(SessionResolver.Resolve());
+        }
+    }
+
+    [TestMethod]
     public void Component_tracking_stops_at_the_configured_budget()
     {
         var (session, scope) = TestHelpers.CreateSession(o => o.MaxTrackedComponents = 2);

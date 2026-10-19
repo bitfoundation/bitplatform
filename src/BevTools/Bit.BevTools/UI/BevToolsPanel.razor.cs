@@ -135,9 +135,18 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             var prefs = await _module.InvokeAsync<string?>("loadPrefs");
             ApplyPrefs(prefs);
         }
-        catch (Exception ex) when (ex is JSException or JSDisconnectedException or InvalidOperationException)
+        catch (Exception ex)
         {
+            // Whatever attaching fails with - a JS error, a disconnect, an interop timeout while the tab is throttled or
+            // paused in the browser's debugger, a result that does not deserialize - must not escape a lifecycle method:
+            // on Blazor Server that terminates the circuit, and the diagnostics tool would take the app down with it.
             Session.Browser.BridgeError = ex.Message;
+        }
+
+        if (_cts.IsCancellationRequested)
+        {
+            // Disposed while attaching; the token source is gone.
+            return;
         }
 
         _loop = RefreshLoopAsync(_cts.Token);
@@ -202,8 +211,11 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
     {
+        // Redacted at capture time like HTTP URLs: reset links and sign-in callbacks carry tokens in the query or the
+        // fragment, and the title is shown, searched and exported.
+        var path = Session.Redactor.RedactUrl(Navigation.ToBaseRelativePath(e.Location));
         var last = Session.LastNavigationEventId is { } id ? Session.Timeline.Find(id) : null;
-        if (last is not null && System.Diagnostics.Stopwatch.GetElapsedTime(last.StartTicks).TotalMilliseconds < 500 && last.Title.Contains(Navigation.ToBaseRelativePath(e.Location), StringComparison.OrdinalIgnoreCase))
+        if (last is not null && System.Diagnostics.Stopwatch.GetElapsedTime(last.StartTicks).TotalMilliseconds < 500 && last.Title.Contains(path, StringComparison.OrdinalIgnoreCase))
         {
             return;
         }
@@ -212,7 +224,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         {
             Kind = BevToolsEventKind.Navigation,
             Category = "navigation",
-            Title = "Navigate to /" + Navigation.ToBaseRelativePath(e.Location),
+            Title = "Navigate to /" + path,
             Detail = e.IsNavigationIntercepted ? "intercepted link" : "programmatic",
             ParentEventId = Session.CurrentTriggerEventId,
         });
@@ -308,7 +320,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
             var prefs = new Prefs { Open = Ui.IsOpen, Dock = Ui.Dock.ToString(), Theme = Ui.Theme.ToString(), Size = Ui.Size.ToString(), Panel = Ui.ActivePanelId, Live = Ui.LiveUpdates };
             await _module.InvokeVoidAsync("savePrefs", JsonSerializer.Serialize(prefs, PrefsJson));
         }
-        catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
         {
         }
     }
@@ -354,20 +366,10 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
 
     public void SelectComponent(long instanceId)
     {
-        if (!Options.CaptureComponentStateOnRender && Ui.SelectedComponentId is { } previousId && previousId != instanceId)
-        {
-            var previous = Session.Components.Get(previousId);
-            if (previous is not null)
-            {
-                previous.CaptureState = false;
-            }
-        }
-
-        Ui.SelectedComponentId = instanceId;
+        InspectComponent(instanceId);
         var record = Session.Components.Get(instanceId);
         if (record is not null)
         {
-            record.CaptureState = true;
             // expand ancestors so the node is visible
             var parent = record.Parent;
             while (parent is not null)
@@ -378,6 +380,26 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         }
 
         ShowPanel("components");
+    }
+
+    /// <summary>
+    /// Makes a component the inspected one: its state is captured on every render from now on, and the previously
+    /// inspected one stops being captured (unless every component is). The one implementation behind selecting from
+    /// the tree and from anywhere else.
+    /// </summary>
+    internal void InspectComponent(long instanceId)
+    {
+        if (!Options.CaptureComponentStateOnRender && Ui.SelectedComponentId is { } previousId && previousId != instanceId
+            && Session.Components.Get(previousId) is { } previous)
+        {
+            previous.CaptureState = false;
+        }
+
+        Ui.SelectedComponentId = instanceId;
+        if (Session.Components.Get(instanceId) is { } record)
+        {
+            record.CaptureState = true;
+        }
     }
 
     public void SelectEvent(long eventId)
@@ -469,7 +491,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         {
             return await _module.InvokeAsync<bool>("downloadText", fileName, content, contentType);
         }
-        catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
         {
             return false;
         }
@@ -507,7 +529,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
         {
             return await _module.InvokeAsync<bool>("copyText", text);
         }
-        catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+        catch (Exception ex) when (ex is JSException or JSDisconnectedException or OperationCanceledException)
         {
             return false;
         }
@@ -618,7 +640,7 @@ public partial class BevToolsPanel : ComponentBase, IBevToolsCommandContext, IAs
                 await _module.InvokeVoidAsync("detach");
                 await _module.DisposeAsync();
             }
-            catch (Exception ex) when (ex is JSException or JSDisconnectedException or ObjectDisposedException)
+            catch (Exception ex) when (ex is JSException or JSDisconnectedException or ObjectDisposedException or OperationCanceledException)
             {
             }
         }

@@ -16,6 +16,58 @@ public class HttpTrackingTests
         protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken) => throw new HttpRequestException("connection refused");
     }
 
+    /// <summary>Behaves like a resilience handler: waits on the thread pool before each attempt and retries a 503 once.</summary>
+    private sealed class RetryingHandler : DelegatingHandler
+    {
+        protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            await Task.Delay(1, cancellationToken).ConfigureAwait(false);
+            var response = await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+            if (response.StatusCode != HttpStatusCode.ServiceUnavailable)
+            {
+                return response;
+            }
+
+            await Task.Delay(1, cancellationToken).ConfigureAwait(false);
+            return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    [TestMethod]
+    public async Task Attempts_made_after_an_outer_handler_left_the_renderer_context_are_still_recorded()
+    {
+        // The recorder sits innermost so retries show up. A handler outside it that awaits with ConfigureAwait(false)
+        // runs the recorder on the thread pool, where the issuing session can no longer be inferred; it is resolved
+        // at the outer end of the pipeline instead, while the caller's context is still current.
+        var attempts = 0;
+        var (session, scope) = TestHelpers.CreateSession(services: s => s.AddHttpClient("api")
+            .AddHttpMessageHandler(() => new RetryingHandler())
+            .ConfigurePrimaryHttpMessageHandler(() => new StubHandler(_ => new HttpResponseMessage(Interlocked.Increment(ref attempts) == 1 ? HttpStatusCode.ServiceUnavailable : HttpStatusCode.OK))));
+        using (scope)
+        {
+            // A circuit: only its renderer's context identifies it, never being the only session.
+            session.Platform = "Server";
+            using var client = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>().CreateClient("api");
+            var rendererContext = new SynchronizationContext();
+            var previous = SynchronizationContext.Current;
+            Task<HttpResponseMessage> request;
+            SynchronizationContext.SetSynchronizationContext(rendererContext);
+            try
+            {
+                SessionResolver.NoteCurrentContext(session);
+                request = client.GetAsync("https://example.com/flaky");
+            }
+            finally
+            {
+                SynchronizationContext.SetSynchronizationContext(previous);
+            }
+
+            await request;
+
+            CollectionAssert.AreEqual(new int?[] { 503, 200 }, session.Http.Snapshot().Select(r => r.StatusCode).ToArray());
+        }
+    }
+
     [TestMethod]
     public async Task Successful_request_is_recorded_with_status_duration_and_redacted_headers()
     {

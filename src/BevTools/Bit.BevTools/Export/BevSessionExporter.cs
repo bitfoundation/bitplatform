@@ -54,7 +54,7 @@ public static class BevSessionExporter
             WriteComponents(writer, session, options.IncludeDisposedComponents);
             if (options.IncludeTimeline)
             {
-                WriteTimeline(writer, session.Timeline.Snapshot(), options.IncludeEventData);
+                WriteTimeline(writer, session.Timeline.Snapshot(), options.IncludeEventData ? session.Inspector : null);
             }
 
             WriteErrors(writer, session.Errors.Snapshot());
@@ -428,7 +428,8 @@ public static class BevSessionExporter
         w.WriteEndObject();
     }
 
-    private static void WriteTimeline(Utf8JsonWriter w, BevToolsEvent[] events, bool includeData)
+    /// <summary>Writes the timeline; event data only when an <paramref name="inspector"/> is given to write it through.</summary>
+    private static void WriteTimeline(Utf8JsonWriter w, BevToolsEvent[] events, BevObjectInspector? inspector)
     {
         w.WriteStartArray("timeline");
         foreach (var e in events)
@@ -465,12 +466,12 @@ public static class BevSessionExporter
                 w.WriteString("componentName", e.ComponentName);
             }
 
-            if (includeData && e.Data is { Count: > 0 })
+            if (inspector is not null && e.Data is { Count: > 0 })
             {
                 w.WriteStartObject("data");
                 foreach (var (key, value) in e.Data)
                 {
-                    WriteValue(w, key, value);
+                    WriteValue(w, key, value, inspector);
                 }
 
                 w.WriteEndObject();
@@ -823,9 +824,31 @@ public static class BevSessionExporter
         w.WriteEndObject();
     }
 
-    /// <summary>Writes an arbitrary <c>Data</c> value without ever throwing: primitives as themselves, everything else as text.</summary>
-    private static void WriteValue(Utf8JsonWriter w, string key, object? value)
+    /// <summary>
+    /// Writes an arbitrary <c>Data</c> value without ever throwing: primitives as themselves, everything else as the
+    /// display the timeline panel shows for it. Both go through the inspector, so a sensitive key is redacted and an
+    /// object with sensitive members is never written through its ToString (a record prints every member).
+    /// </summary>
+    private static void WriteValue(Utf8JsonWriter w, string key, object? value, BevObjectInspector inspector)
     {
+        BevInspectedNode node;
+        try
+        {
+            node = inspector.Describe(key, value);
+        }
+        catch (Exception ex)
+        {
+            // A value formatter or a Count getter threw; the value is not written rather than written unchecked.
+            w.WriteString(key, "«inspection threw " + ex.GetType().Name + "»");
+            return;
+        }
+
+        if (node.Kind == BevNodeKind.Redacted)
+        {
+            w.WriteString(key, BevRedactor.RedactedValue);
+            return;
+        }
+
         switch (value)
         {
             case null:
@@ -868,16 +891,7 @@ public static class BevSessionExporter
                 w.WriteEndArray();
                 break;
             default:
-                string text;
-                try
-                {
-                    text = value.ToString() ?? "";
-                }
-                catch (Exception ex)
-                {
-                    text = "«ToString threw " + ex.GetType().Name + "»";
-                }
-
+                var text = node.Display;
                 w.WriteString(key, text.Length > 500 ? text[..500] + "…" : text);
                 break;
         }

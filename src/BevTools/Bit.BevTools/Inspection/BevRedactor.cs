@@ -47,17 +47,31 @@ public sealed class BevRedactor
         return IsSensitiveName(member.Name);
     }
 
-    /// <summary>Redacts embedded credentials and query-string values whose key looks sensitive; keeps everything else intact.</summary>
+    /// <summary>
+    /// Redacts embedded credentials, and query-string and fragment values whose key looks sensitive; keeps everything
+    /// else intact. Works on absolute and on base-relative URLs (navigation targets).
+    /// </summary>
     public string RedactUrl(string url)
     {
         url = RedactUserInfo(url);
-        var q = url.IndexOf('?');
-        if (q < 0)
+        var hash = url.IndexOf('#');
+        var beforeFragment = hash < 0 ? url : url[..hash];
+        var q = beforeFragment.IndexOf('?');
+        var redacted = q < 0 ? beforeFragment : beforeFragment[..(q + 1)] + RedactParameters(beforeFragment[(q + 1)..]);
+        if (hash < 0)
         {
-            return url;
+            return redacted;
         }
 
-        var parts = url[(q + 1)..].Split('&');
+        // OAuth implicit and hybrid flows return their tokens in the fragment (#access_token=…&id_token=…), which a
+        // client-side router sees on every navigation.
+        var fragment = url[(hash + 1)..];
+        return redacted + "#" + (fragment.Contains('=') ? RedactParameters(fragment) : fragment);
+    }
+
+    private string RedactParameters(string parameters)
+    {
+        var parts = parameters.Split('&');
         var changed = false;
         for (var i = 0; i < parts.Length; i++)
         {
@@ -71,7 +85,7 @@ public sealed class BevRedactor
             }
         }
 
-        return changed ? url[..(q + 1)] + string.Join('&', parts) : url;
+        return changed ? string.Join('&', parts) : parameters;
     }
 
     /// <summary>Removes credentials embedded in a URL (https://user:secret@host), which would otherwise be shown verbatim.</summary>

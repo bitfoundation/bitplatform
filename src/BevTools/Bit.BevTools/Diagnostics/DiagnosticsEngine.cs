@@ -159,7 +159,7 @@ internal sealed class DiagnosticsEngine
         }
 
         Merge(produced);
-        _session.Overhead.AddDiagnostics(Stopwatch.GetElapsedTime(now).Ticks);
+        _session.Overhead.AddDiagnostics(Stopwatch.GetTimestamp() - now);
     }
 
     private void Merge(List<BevDiagnostic> produced)
@@ -196,12 +196,36 @@ internal sealed class DiagnosticsEngine
                 changed = true;
                 RecordTimeline(record, key, escalatedFrom: null);
             }
+
+            changed |= EvictLeastRecentlySeen();
         }
 
         if (changed)
         {
             _session.Touch();
         }
+    }
+
+    /// <summary>
+    /// Keeps at most <see cref="BitBevToolsOptions.MaxFindings"/> findings, dropping the ones no rule has reported for
+    /// the longest time. Several rules fingerprint per occurrence (a slow request, a cascading batch), so a long session
+    /// would otherwise keep every one of them for good. A finding that is still being reported is seen again on every
+    /// evaluation, so it is never among the oldest. Called under the lock.
+    /// </summary>
+    private bool EvictLeastRecentlySeen()
+    {
+        var excess = _findings.Count - Math.Max(1, _options.MaxFindings);
+        if (excess <= 0)
+        {
+            return false;
+        }
+
+        foreach (var key in _findings.OrderBy(f => f.Value.LastSeen).ThenBy(f => f.Value.Diagnostic.Severity).Take(excess).Select(f => f.Key).ToList())
+        {
+            _findings.Remove(key);
+        }
+
+        return true;
     }
 
     private void RecordTimeline(BevDiagnosticRecord record, string fingerprint, BevDiagnosticSeverity? escalatedFrom)

@@ -7,7 +7,11 @@ namespace Bit.BevTools;
 /// <summary>Per-type lifecycle numbers observed through the framework's meters (.NET 10+): SetParametersAsync durations.</summary>
 public sealed class BevLifecycleTypeMetrics
 {
+    /// <summary>The full type name, namespace included, as the framework reports it; the same as <see cref="BevComponentRecord.TypeName"/>.</summary>
     public required string TypeName { get; init; }
+
+    /// <summary>The type name without its namespace, for display.</summary>
+    public required string DisplayName { get; init; }
 
     public int ParameterUpdates;
 
@@ -119,6 +123,70 @@ public sealed class BevToolsSession : IDisposable
 
     /// <summary>"Server", "WebAssembly", "Static" or "WebView" as reported by RendererInfo; null until a component reports it.</summary>
     public string? Platform { get; internal set; }
+
+    // 0: not checked yet, 1: no, 2: yes. An int so concurrent first reads cannot see a torn value.
+    private int _inServerProcess;
+
+    /// <summary>
+    /// True when the session lives in a process that serves many users - an ASP.NET Core server, home of Blazor Server
+    /// circuits, static SSR requests and prerendering - rather than WebAssembly, a WebView or a test host, where the only
+    /// session is the only possible owner of activity that cannot be attributed otherwise. Decided by the host, not by
+    /// <see cref="Platform"/> alone: a circuit's platform is unknown until something reports it (always on .NET 8, where
+    /// RendererInfo does not exist), and a request scope that renders nothing never reports one.
+    /// </summary>
+    internal bool IsInMultiUserHost
+    {
+        get
+        {
+            if (Platform is "Server" or "Static")
+            {
+                return true;
+            }
+
+            var known = Volatile.Read(ref _inServerProcess);
+            if (known == 0)
+            {
+                known = HostsAServer(Services) ? 2 : 1;
+                Volatile.Write(ref _inServerProcess, known);
+            }
+
+            return known == 2;
+        }
+    }
+
+    private static readonly Type? ServerType = FindServerType();
+
+    private static Type? FindServerType()
+    {
+        if (OperatingSystem.IsBrowser())
+        {
+            return null;
+        }
+
+        try
+        {
+            // ASP.NET Core registers its IServer (Kestrel, IIS, TestServer) in every host that accepts requests. Looked up
+            // by name: this package does not reference the ASP.NET Core framework, and WebAssembly does not ship it.
+            return Type.GetType("Microsoft.AspNetCore.Hosting.Server.IServer, Microsoft.AspNetCore.Hosting.Server.Abstractions", throwOnError: false);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static bool HostsAServer(IServiceProvider services)
+    {
+        try
+        {
+            return ServerType is not null && services.GetService<IServiceProviderIsService>()?.IsService(ServerType) == true;
+        }
+        catch
+        {
+            // a disposed container; nothing it hosts can be attributed to this session any more.
+            return true;
+        }
+    }
 
     public bool IsInteractive { get; internal set; }
 

@@ -132,8 +132,9 @@ and its measured cost in [docs/performance.md](docs/performance.md).
 
 ## Security
 
-Development-only by default. Member, header, query and storage names matching sensitive patterns (`password`, `token`,
-`authorization`, `cookie`, `connectionstring`, …) are redacted; `[BevToolsSensitive]` redacts explicitly;
+Development-only by default. Member, dictionary-key, header, query, URL-fragment and storage names matching sensitive
+patterns (`password`, `token`, `authorization`, `cookie`, `connectionstring`, …) are redacted, in navigation URLs as in
+request URLs; `[BevToolsSensitive]` redacts explicitly (fields, properties and auto-properties);
 `[BevToolsIgnore]` hides members or whole components. Request/response bodies and DI instance values are never read.
 Circuit ids are truncated. Nothing is sent anywhere: all data stays in the session's memory and is bounded by ring
 buffers (`MaxEvents`, `MaxRendersPerComponent`, …). Exports contain exactly what the panels show, with the same

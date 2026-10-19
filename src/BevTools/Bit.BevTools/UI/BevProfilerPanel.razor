@@ -99,7 +99,7 @@
                         <tbody>
                             @foreach (var m in _typeMetrics)
                             {
-                                <tr><td class="bev-mono">@m.TypeName</td><td class="bev-num">@m.ParameterUpdates</td><td class="bev-num">@BevFmt.Ms(m.ParameterUpdateMs)</td><td class="bev-num">@BevFmt.Ms(m.MaxParameterUpdateMs)</td><td class="bev-num">@m.EventHandlers</td><td class="bev-num">@BevFmt.Ms(m.EventHandlerMs)</td></tr>
+                                <tr><td class="bev-mono" title="@m.TypeName">@m.DisplayName</td><td class="bev-num">@m.ParameterUpdates</td><td class="bev-num">@BevFmt.Ms(m.ParameterUpdateMs)</td><td class="bev-num">@BevFmt.Ms(m.MaxParameterUpdateMs)</td><td class="bev-num">@m.EventHandlers</td><td class="bev-num">@BevFmt.Ms(m.EventHandlerMs)</td></tr>
                             }
                         </tbody>
                     </table>

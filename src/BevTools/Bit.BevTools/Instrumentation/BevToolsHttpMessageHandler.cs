@@ -11,12 +11,36 @@ internal sealed class BevToolsHttpFilter(BitBevToolsOptions options, BevToolsReg
         next(builder);
         if (registry.IsEnabled && options.TrackHttp)
         {
+            // Outermost: the caller's synchronization context is still current here, so this is where the issuing
+            // session can be inferred. A handler further in that awaits with ConfigureAwait(false) - a retry delay, a
+            // token fetch - leaves everything after it on the thread pool, where it no longer can.
+            builder.AdditionalHandlers.Insert(0, new BevToolsHttpSessionHandler());
+
             // Innermost, i.e. closest to the primary handler: every attempt a resilience/retry handler makes is a real
             // network request and is recorded as one. Sitting outermost would hide retries behind a single record,
             // which is exactly the pattern "why is this request repeating?" needs to show.
             builder.AdditionalHandlers.Add(new BevToolsHttpMessageHandler(options));
         }
     };
+}
+
+/// <summary>
+/// Resolves the session that issued a request at the outer end of the pipeline and passes it, in the request's
+/// options, to the <see cref="BevToolsHttpMessageHandler"/> at the inner end.
+/// </summary>
+internal sealed class BevToolsHttpSessionHandler : DelegatingHandler
+{
+    internal static readonly HttpRequestOptionsKey<BevToolsSession> SessionKey = new("Bit.BevTools.Session");
+
+    protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+    {
+        if (!request.Options.TryGetValue(SessionKey, out _) && SessionResolver.Resolve() is { } session)
+        {
+            request.Options.Set(SessionKey, session);
+        }
+
+        return base.SendAsync(request, cancellationToken);
+    }
 }
 
 /// <summary>
@@ -46,7 +70,9 @@ public sealed class BevToolsHttpMessageHandler : DelegatingHandler
 
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var session = _explicitSession ?? SessionResolver.Resolve();
+        var session = _explicitSession
+            ?? (request.Options.TryGetValue(BevToolsHttpSessionHandler.SessionKey, out var captured) && !captured.IsDisposed ? captured : null)
+            ?? SessionResolver.Resolve();
         if (session is null || !session.IsEnabled)
         {
             return await base.SendAsync(request, cancellationToken).ConfigureAwait(false);

@@ -55,6 +55,98 @@ public class BevTrackingJSRuntime : IJSRuntime
         }
     }
 
+#if NET10_0_OR_GREATER
+    // .NET 10 added these to IJSRuntime as default interface members that throw NotImplementedException. A wrapper
+    // that left them to the defaults would break working application code the moment BevTools patched it in.
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args) => InvokeConstructorAsync(identifier, CancellationToken.None, args);
+
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        args = Unwrap(args);
+        return TrackAsync("new " + identifier, args, isModule: false, () => Inner.InvokeConstructorAsync(identifier, cancellationToken, args));
+    }
+
+    public ValueTask<TValue> GetValueAsync<TValue>(string identifier) => GetValueAsync<TValue>(identifier, CancellationToken.None);
+
+    public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken) =>
+        TrackAsync("get " + identifier, null, isModule: false, () => Inner.GetValueAsync<TValue>(identifier, cancellationToken));
+
+    public ValueTask SetValueAsync<TValue>(string identifier, TValue value) => SetValueAsync(identifier, value, CancellationToken.None);
+
+    public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+    {
+        value = UnwrapValue(value);
+        return TrackVoidAsync("set " + identifier, [value], isModule: false, () => Inner.SetValueAsync(identifier, value, cancellationToken));
+    }
+#endif
+
+    /// <summary>Records one asynchronous call made through <paramref name="call"/>, wrapping a returned object reference.</summary>
+    internal async ValueTask<TValue> TrackAsync<TValue>(string identifier, object?[]? args, bool isModule, Func<ValueTask<TValue>> call)
+    {
+        var record = Begin<TValue>(identifier, args, isModule, isSync: false);
+        try
+        {
+            var result = await call().ConfigureAwait(false);
+            End(record, null);
+            return Wrap(result);
+        }
+        catch (Exception ex)
+        {
+            End(record, ex);
+            throw;
+        }
+    }
+
+    internal async ValueTask TrackVoidAsync(string identifier, object?[]? args, bool isModule, Func<ValueTask> call)
+    {
+        var record = Begin<IJSVoidResult>(identifier, args, isModule, isSync: false);
+        try
+        {
+            await call().ConfigureAwait(false);
+            End(record, null);
+        }
+        catch (Exception ex)
+        {
+            End(record, ex);
+            throw;
+        }
+    }
+
+    internal TValue Track<TValue>(string identifier, object?[]? args, bool isModule, Func<TValue> call)
+    {
+        var record = Begin<TValue>(identifier, args, isModule, isSync: true);
+        try
+        {
+            var result = call();
+            End(record, null);
+            return Wrap(result);
+        }
+        catch (Exception ex)
+        {
+            End(record, ex);
+            throw;
+        }
+    }
+
+    internal void TrackVoid(string identifier, object?[]? args, bool isModule, Action call)
+    {
+        var record = Begin<IJSVoidResult>(identifier, args, isModule, isSync: true);
+        try
+        {
+            call();
+            End(record, null);
+        }
+        catch (Exception ex)
+        {
+            End(record, ex);
+            throw;
+        }
+    }
+
+    /// <summary>The single-value form of <see cref="Unwrap"/>, for a value passed as a typed argument.</summary>
+    internal static TValue UnwrapValue<TValue>(TValue value) =>
+        value is BevTrackingJSObjectReference wrapper && wrapper.Inner is TValue inner ? inner : value;
+
     /// <summary>
     /// Replaces tracking wrappers in an argument array with the framework's own references.
     /// The JSON converter that turns an <see cref="IJSObjectReference"/> into <c>{"__jsObjectId":n}</c> only matches
@@ -185,6 +277,22 @@ public sealed class BevTrackingInProcessJSRuntime : BevTrackingJSRuntime, IJSInP
             throw;
         }
     }
+
+#if NET10_0_OR_GREATER
+    public IJSInProcessObjectReference InvokeConstructor(string identifier, params object?[]? args)
+    {
+        args = Unwrap(args);
+        return Track("new " + identifier, args, isModule: false, () => _inner.InvokeConstructor(identifier, args));
+    }
+
+    public TValue GetValue<TValue>(string identifier) => Track("get " + identifier, null, isModule: false, () => _inner.GetValue<TValue>(identifier));
+
+    public void SetValue<TValue>(string identifier, TValue value)
+    {
+        value = UnwrapValue(value);
+        TrackVoid("set " + identifier, [value], isModule: false, () => _inner.SetValue(identifier, value));
+    }
+#endif
 }
 
 public class BevTrackingJSObjectReference : IJSObjectReference
@@ -218,6 +326,29 @@ public class BevTrackingJSObjectReference : IJSObjectReference
         }
     }
 
+#if NET10_0_OR_GREATER
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, object?[]? args) => InvokeConstructorAsync(identifier, CancellationToken.None, args);
+
+    public ValueTask<IJSObjectReference> InvokeConstructorAsync(string identifier, CancellationToken cancellationToken, object?[]? args)
+    {
+        args = BevTrackingJSRuntime.Unwrap(args);
+        return Runtime.TrackAsync("new module." + identifier, args, isModule: true, () => Inner.InvokeConstructorAsync(identifier, cancellationToken, args));
+    }
+
+    public ValueTask<TValue> GetValueAsync<TValue>(string identifier) => GetValueAsync<TValue>(identifier, CancellationToken.None);
+
+    public ValueTask<TValue> GetValueAsync<TValue>(string identifier, CancellationToken cancellationToken) =>
+        Runtime.TrackAsync("get module." + identifier, null, isModule: true, () => Inner.GetValueAsync<TValue>(identifier, cancellationToken));
+
+    public ValueTask SetValueAsync<TValue>(string identifier, TValue value) => SetValueAsync(identifier, value, CancellationToken.None);
+
+    public ValueTask SetValueAsync<TValue>(string identifier, TValue value, CancellationToken cancellationToken)
+    {
+        value = BevTrackingJSRuntime.UnwrapValue(value);
+        return Runtime.TrackVoidAsync("set module." + identifier, [value], isModule: true, () => Inner.SetValueAsync(identifier, value, cancellationToken));
+    }
+#endif
+
     public ValueTask DisposeAsync() => Inner.DisposeAsync();
 }
 
@@ -246,6 +377,22 @@ public sealed class BevTrackingInProcessJSObjectReference : BevTrackingJSObjectR
             throw;
         }
     }
+
+#if NET10_0_OR_GREATER
+    public IJSInProcessObjectReference InvokeConstructor(string identifier, params object?[]? args)
+    {
+        args = BevTrackingJSRuntime.Unwrap(args);
+        return Runtime.Track("new module." + identifier, args, isModule: true, () => _inner.InvokeConstructor(identifier, args));
+    }
+
+    public TValue GetValue<TValue>(string identifier) => Runtime.Track("get module." + identifier, null, isModule: true, () => _inner.GetValue<TValue>(identifier));
+
+    public void SetValue<TValue>(string identifier, TValue value)
+    {
+        value = BevTrackingJSRuntime.UnwrapValue(value);
+        Runtime.TrackVoid("set module." + identifier, [value], isModule: true, () => _inner.SetValue(identifier, value));
+    }
+#endif
 
     public void Dispose() => _inner.Dispose();
 }

@@ -75,7 +75,12 @@ public class WastedRenderTests : BunitContext
         var changed = host.LastRender!.ChangedState!;
         Assert.Contains(c => c.StartsWith("_note: \"n1\" → \"n2\"", StringComparison.Ordinal), changed);
         Assert.DoesNotContain(c => c.StartsWith("_apiPhrase", StringComparison.Ordinal), changed);
+        Assert.DoesNotContain(c => c.StartsWith("RecoveryPhrase", StringComparison.Ordinal), changed);
         Assert.DoesNotContain(c => c.Contains("plain-", StringComparison.Ordinal), changed);
+
+        // The inspector's State section describes fields with the same member.
+        var (_, _, member) = ComponentStateReader.Fields(typeof(SecretHost)).Single(f => f.Name == "RecoveryPhrase");
+        Assert.AreEqual(BevNodeKind.Redacted, Session.Inspector.Describe("RecoveryPhrase", "plain-recovery-2", "", member).Kind);
 
         // The child's [BevToolsSensitive] parameter changed too; redacted values compare equal, which is the safe
         // direction: over-redaction never leaks, and the "forced" verdict is documented as observable-only.
@@ -84,6 +89,41 @@ public class WastedRenderTests : BunitContext
         Assert.AreEqual(BevRedactor.RedactedValue, child.LastParameterSnapshot!["Passphrase"]);
         Assert.DoesNotContain(k => k.StartsWith("Passphrase.", StringComparison.Ordinal), child.LastParameterSnapshot.Keys);
         Assert.DoesNotContain(e => e.Detail?.Contains("plain-", StringComparison.Ordinal) == true, Session.Timeline.Snapshot());
+    }
+
+    [TestMethod]
+    public void A_render_that_was_not_compared_is_never_compared_against_later()
+    {
+        // Renders of a component that is no longer inspected, and renders while capture is paused, are not compared.
+        // The snapshot from before them no longer describes the previous render: a parameter that changed and
+        // changed back would compare as unchanged, and the render be called forced.
+        using var context = new BunitContext();
+        context.Services.AddBitBevToolsServices(o => o.Enabled = true);
+        var session = context.Services.GetRequiredService<BevToolsSession>();
+        var cut = context.Render<ParentComponent>(ps => ps.Add(p => p.Value, 1));
+        var child = session.Components.All.Single(r => r.Type == typeof(ChildComponent));
+
+        child.CaptureState = true;
+        cut.Render(ps => ps.Add(p => p.Value, 5));
+        cut.Render(ps => ps.Add(p => p.Value, 1));
+        Assert.IsTrue(child.LastRender!.ParametersCompared);
+
+        child.CaptureState = false;
+        cut.Render(ps => ps.Add(p => p.Value, 2));
+        child.CaptureState = true;
+        cut.Render(ps => ps.Add(p => p.Value, 1));
+
+        Assert.IsFalse(child.LastRender!.ParametersCompared);
+        Assert.IsFalse(child.LastRender.IsWastedRender);
+
+        session.PauseCapture();
+        cut.Render(ps => ps.Add(p => p.Value, 3));
+        session.ResumeCapture();
+        cut.Render(ps => ps.Add(p => p.Value, 1));
+
+        Assert.IsFalse(child.LastRender!.ParametersCompared);
+        Assert.IsFalse(child.LastRender.IsWastedRender);
+        Assert.AreEqual(0, child.ParentRendersWithUnchangedParameters);
     }
 
     [TestMethod]
@@ -289,10 +329,14 @@ public class WastedRenderTests : BunitContext
         [BevToolsSensitive] private string _apiPhrase = "plain-1";
         private string _note = "n1";
 
+        // The compiler does not copy the attribute to the backing field, which is what the state reader walks.
+        [BevToolsSensitive] private string RecoveryPhrase { get; set; } = "plain-recovery-1";
+
         public void Rotate()
         {
             _apiPhrase = "plain-2";
             _note = "n2";
+            RecoveryPhrase = "plain-recovery-2";
             StateHasChanged();
         }
 

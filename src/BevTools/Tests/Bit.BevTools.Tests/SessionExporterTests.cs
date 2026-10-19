@@ -129,6 +129,37 @@ public class SessionExporterTests : BunitContext
         Assert.Contains("Capture paused", report, StringComparison.Ordinal);
     }
 
+    [TestMethod]
+    public void Event_data_is_exported_no_more_revealing_than_the_timeline_panel_shows_it()
+    {
+        // The panel never shows the ToString of a type with sensitive members (a record prints every member) and
+        // hides values under sensitive keys; the export used to write both verbatim.
+        Session.Timeline.Record(new BevToolsEvent
+        {
+            Kind = BevToolsEventKind.Custom,
+            Category = "app",
+            Title = "login",
+            Data = new Dictionary<string, object?>
+            {
+                ["attempt"] = new LoginAttempt("ada", "hunter2"),
+                ["sessionToken"] = "opaque-123",
+                ["user"] = "ada",
+            },
+        });
+
+        var json = BevSessionExporter.ToJson(Session);
+
+        Assert.DoesNotContain("hunter2", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("opaque-123", json, StringComparison.Ordinal);
+        using var document = JsonDocument.Parse(json);
+        var data = document.RootElement.GetProperty("timeline").EnumerateArray().Single(e => e.GetProperty("title").GetString() == "login").GetProperty("data");
+        Assert.AreEqual("LoginAttempt", data.GetProperty("attempt").GetString());
+        Assert.AreEqual(BevRedactor.RedactedValue, data.GetProperty("sessionToken").GetString());
+        Assert.AreEqual("ada", data.GetProperty("user").GetString());
+    }
+
+    public sealed record LoginAttempt(string User, string Password);
+
     private sealed class ThrowingToString
     {
         public override string ToString() => throw new InvalidOperationException("no");

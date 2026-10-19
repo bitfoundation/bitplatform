@@ -11,7 +11,18 @@ namespace Bit.BevTools;
 /// <summary>Bookkeeping for one render batch (one pass of the renderer's queue, ending in one diff sent to the browser).</summary>
 public sealed class BevRenderBatchInfo
 {
-    public long Id { get; init; }
+    /// <summary>The number shown as "Render batch #N"; 0 for a batch that is only bookkept (see <see cref="IsTracked"/>).</summary>
+    public long Id { get; internal set; }
+
+    /// <summary>
+    /// False for a batch kept only so diff measurements stay aligned with the renderer's batches: one in which only
+    /// BevTools' own components rendered, or that ran while capture was paused. It has no timeline row; it absorbs
+    /// its own measurement, which would otherwise be attached to an application batch.
+    /// </summary>
+    public bool IsTracked { get; internal set; }
+
+    /// <summary>Every render seen in this batch, BevTools' own and paused ones included; compared with the renderer's diff count to detect a new pass.</summary>
+    internal int ObservedRenders { get; set; }
 
     public long EventId { get; set; }
 
@@ -156,18 +167,32 @@ internal sealed class RenderTracker
 
         if (record.IsBevTools)
         {
+            // Not recorded, but the renderer still produces a batch and a diff measurement for it.
+            if (DiffMatchingActive)
+            {
+                DetectBatch(record, track: false);
+            }
+
             return default;
         }
 
         if (!_session.IsCapturing)
         {
             // Paused: the buffers must stay frozen, but the instance must still count as "has rendered" so the next
-            // recorded render is not mislabeled as its first.
+            // recorded render is not mislabeled as its first. This render is not compared, so the snapshots taken
+            // before it no longer describe the previous render.
             _session.NoteSkippedRender(record);
+            record.LastStateSnapshot = null;
+            record.LastParameterSnapshot = null;
+            if (DiffMatchingActive)
+            {
+                DetectBatch(record, track: false);
+            }
+
             return default;
         }
 
-        var batch = DetectBatch(record);
+        var batch = DetectBatch(record, track: true);
         var (cause, detail, triggerId) = DetermineCause(record, batch);
         var sample = new BevRenderSample
         {
@@ -183,6 +208,14 @@ internal sealed class RenderTracker
         if (record.CaptureState || _options.CaptureComponentStateOnRender)
         {
             CaptureStateDiff(record, component, sample);
+        }
+        else if (record.LastStateSnapshot is not null || record.LastParameterSnapshot is not null)
+        {
+            // Not compared (the component is no longer inspected), so the snapshots stop describing the previous
+            // render. Kept, they would make a parameter that changed and changed back look unchanged once the
+            // component is inspected again, and call that render forced.
+            record.LastStateSnapshot = null;
+            record.LastParameterSnapshot = null;
         }
 
         return new RenderScope(sample, batch);
@@ -298,9 +331,30 @@ internal sealed class RenderTracker
         _session.Components.ResolveHierarchy(record, DateTimeOffset.UtcNow);
     }
 
-    private BevRenderBatchInfo? DetectBatch(BevComponentRecord record)
+    /// <summary>
+    /// Whether <c>render_diff</c> measurements are expected, so closed batches wait in a queue for theirs. Never on a
+    /// runtime without the framework meters (before .NET 10), unless a measurement was actually seen: batches would
+    /// wait for a measurement that never comes until the queue overflowed.
+    /// </summary>
+    private bool DiffMatchingActive =>
+        ((_options.UseFrameworkInstrumentation && CapabilityReport.FrameworkInstrumentationExists) || ActivityObserver.BatchMetricsObserved)
+        && CapabilityReport.MetricsAreSupported();
+
+    /// <summary>
+    /// Detects the batch a render belongs to. With <paramref name="track"/> false (BevTools' own renders, renders while
+    /// paused) the batch is only bookkept: the renderer emits one diff measurement per batch whether BevTools records
+    /// it or not, and a batch without an entry would hand its measurement to an application batch - the open one in
+    /// WebAssembly, the next one in the queue on Server, shifting every later attribution by one. Bookkeeping needs
+    /// the exact detector: the idle-time heuristic cannot tell where a batch of unrecorded renders ends.
+    /// </summary>
+    private BevRenderBatchInfo? DetectBatch(BevComponentRecord record, bool track)
     {
         var renderer = record.Renderer;
+        if (!track && (renderer is null || !BlazorReflection.CanDetectBatches))
+        {
+            return null;
+        }
+
         var current = CurrentBatch;
         bool newBatch;
         if (renderer is not null && BlazorReflection.CanDetectBatches)
@@ -309,9 +363,9 @@ internal sealed class RenderTracker
             {
                 var diffCount = BlazorReflection.GetUpdatedDiffCount!(renderer);
                 // The batch builder's diff list is cleared between batches, so a count of zero means the renderer just
-                // started a new pass. A count lower than what we already attributed means a new pass started with renders
-                // we could not observe (components that do not derive from ComponentBase).
-                newBatch = current is null || current.Closed || diffCount <= 0 || current.Count > diffCount;
+                // started a new pass. A count lower than the renders we already saw means a new pass started with
+                // renders we could not observe (components that do not derive from ComponentBase).
+                newBatch = current is null || current.Closed || diffCount <= 0 || current.ObservedRenders > diffCount;
             }
             catch
             {
@@ -328,11 +382,31 @@ internal sealed class RenderTracker
 
         if (!newBatch)
         {
+            current!.ObservedRenders++;
+            if (track && !current.IsTracked)
+            {
+                // The first application render in a batch that so far held only unrecorded renders.
+                StartTracking(current);
+            }
+
             return current;
         }
 
         CloseBatch();
-        var batch = new BevRenderBatchInfo { Id = Interlocked.Increment(ref _batchSequence), StartTicks = Stopwatch.GetTimestamp() };
+        var batch = new BevRenderBatchInfo { StartTicks = Stopwatch.GetTimestamp(), ObservedRenders = 1 };
+        if (track)
+        {
+            StartTracking(batch);
+        }
+
+        CurrentBatch = batch;
+        return batch;
+    }
+
+    private void StartTracking(BevRenderBatchInfo batch)
+    {
+        batch.IsTracked = true;
+        batch.Id = Interlocked.Increment(ref _batchSequence);
         batch.EventId = _session.Timeline.Record(new BevToolsEvent
         {
             Kind = BevToolsEventKind.RenderBatch,
@@ -340,10 +414,9 @@ internal sealed class RenderTracker
             Title = "Render batch #" + batch.Id,
             Detail = "in progress",
             ParentEventId = ActivityObserver.CurrentTriggerEvent(_session)?.Id,
+            StartTicks = batch.StartTicks,
             Data = new Dictionary<string, object?> { ["batch"] = batch.Id },
         });
-        CurrentBatch = batch;
-        return batch;
     }
 
     /// <summary>Finalizes the current batch event. Called when the next batch starts and by the UI refresh.</summary>
@@ -356,8 +429,7 @@ internal sealed class RenderTracker
 
         batch.Closed = true;
         batch.RenderedInstanceIds.Clear();
-        if (batch.DiffMs is null && CapabilityReport.MetricsAreSupported()
-            && (_options.UseFrameworkInstrumentation || ActivityObserver.BatchMetricsObserved))
+        if (batch.DiffMs is null && DiffMatchingActive)
         {
             if (DiffAttributionLost)
             {
@@ -387,6 +459,11 @@ internal sealed class RenderTracker
 
     private void UpdateBatchEvent(BevRenderBatchInfo batch)
     {
+        if (!batch.IsTracked)
+        {
+            return;
+        }
+
         _session.Timeline.Update(batch.EventId, evt =>
         {
             evt.DurationMs = batch.TotalMs;
@@ -424,7 +501,9 @@ internal sealed class RenderTracker
             return;
         }
 
-        var batch = TakeBatchAwaitingDiff() ?? CurrentBatch;
+        // A batch that already has its measurement is never given a second one: that would overwrite a closed batch's
+        // numbers with those of a batch BevTools could not see (one made only of unobserved components).
+        var batch = TakeBatchAwaitingDiff() ?? (CurrentBatch is { DiffMs: null } current ? current : null);
         if (batch is null)
         {
             return;
@@ -537,10 +616,10 @@ internal sealed class RenderTracker
         try
         {
             var snapshot = new Dictionary<string, string>(StringComparer.Ordinal);
-            foreach (var (name, value, field) in ComponentStateReader.ReadFields(component))
+            foreach (var (name, value, member) in ComponentStateReader.ReadFields(component))
             {
                 // The member is passed so [BevToolsSensitive] is honoured, not only the name patterns.
-                snapshot[name] = _session.Inspector.Describe(name, value, "", field).Display;
+                snapshot[name] = _session.Inspector.Describe(name, value, "", member).Display;
             }
 
             if (record.LastStateSnapshot is not null)
@@ -595,7 +674,7 @@ internal sealed class RenderTracker
         }
         finally
         {
-            _session.Overhead.AddInspection(Stopwatch.GetElapsedTime(start).Ticks);
+            _session.Overhead.AddInspection(Stopwatch.GetTimestamp() - start);
         }
     }
 
@@ -669,12 +748,17 @@ internal sealed class RenderTracker
 /// <summary>Reads a component's own fields (state) excluding parameters, injected services and framework plumbing, and its parameters.</summary>
 internal static class ComponentStateReader
 {
-    private static readonly ConcurrentDictionary<Type, (FieldInfo Field, string Name)[]> Cache = new();
+    private static readonly ConcurrentDictionary<Type, (FieldInfo Field, string Name, MemberInfo Member)[]> Cache = new();
     private static readonly ConcurrentDictionary<Type, PropertyInfo[]> ParameterCache = new();
 
-    public static IEnumerable<(string Name, object? Value, FieldInfo Field)> ReadFields(object component)
+    /// <summary>
+    /// Each field's value with the member whose attributes decide whether it is sensitive: the property for an
+    /// auto-property's backing field, which is where <c>[BevToolsSensitive]</c> is written (the compiler does not copy
+    /// it to the field), unless the field itself carries it (<c>[field: BevToolsSensitive]</c>).
+    /// </summary>
+    public static IEnumerable<(string Name, object? Value, MemberInfo Member)> ReadFields(object component)
     {
-        foreach (var (field, name) in Fields(component.GetType()))
+        foreach (var (field, name, member) in Fields(component.GetType()))
         {
             object? value;
             try
@@ -686,7 +770,7 @@ internal static class ComponentStateReader
                 value = "«threw " + ex.GetType().Name + "»";
             }
 
-            yield return (name, value, field);
+            yield return (name, value, member);
         }
     }
 
@@ -737,9 +821,9 @@ internal static class ComponentStateReader
         return result.Values.OrderBy(p => p.Name, StringComparer.Ordinal).ToArray();
     });
 
-    public static (FieldInfo Field, string Name)[] Fields(Type type) => Cache.GetOrAdd(type, static t =>
+    public static (FieldInfo Field, string Name, MemberInfo Member)[] Fields(Type type) => Cache.GetOrAdd(type, static t =>
     {
-        var result = new List<(FieldInfo, string)>();
+        var result = new List<(FieldInfo, string, MemberInfo)>();
         var excludedProperties = new HashSet<string>(StringComparer.Ordinal);
         for (var current = t; current is not null && !IsFrameworkType(current); current = current.BaseType)
         {
@@ -764,12 +848,19 @@ internal static class ComponentStateReader
                 }
 
                 var name = field.Name;
+                MemberInfo member = field;
                 if (name.StartsWith('<') && name.EndsWith(">k__BackingField", StringComparison.Ordinal))
                 {
                     name = name[1..name.IndexOf('>')];
                     if (excludedProperties.Contains(name))
                     {
                         continue;
+                    }
+
+                    if (!field.IsDefined(typeof(BevToolsSensitiveAttribute), true)
+                        && current.GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly) is { } property)
+                    {
+                        member = property;
                     }
                 }
 
@@ -778,7 +869,7 @@ internal static class ComponentStateReader
                     continue;
                 }
 
-                result.Add((field, name));
+                result.Add((field, name, member));
             }
         }
 

@@ -238,7 +238,7 @@ internal sealed class StateStore : IBevStateProviderRegistry, IDisposable
             }
         }
 
-        _session.Overhead.AddInspection(Stopwatch.GetElapsedTime(start).Ticks);
+        _session.Overhead.AddInspection(Stopwatch.GetTimestamp() - start);
         _session.Touch();
     }
 

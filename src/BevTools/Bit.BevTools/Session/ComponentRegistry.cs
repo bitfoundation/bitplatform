@@ -140,7 +140,7 @@ internal sealed class ComponentRegistry
             ResolveHierarchy(record, now);
         }
 
-        _session.Overhead.AddTreeRefresh(Stopwatch.GetElapsedTime(start).Ticks);
+        _session.Overhead.AddTreeRefresh(Stopwatch.GetTimestamp() - start);
     }
 
     internal void ResolveHierarchy(BevComponentRecord record, DateTimeOffset now)

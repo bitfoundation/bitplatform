@@ -180,10 +180,10 @@ public class BatchAttributionTests : BunitContext
     }
 
     /// <summary>Mimics ComponentsActivitySource: display name set before the activity starts, tags only on stop.</summary>
-    private static void Emit(string displayName)
+    private static void Emit(string displayName, string operationName = ActivityObserver.HandleEventName)
     {
         using var source = new ActivitySource(ActivityObserver.SourceName);
-        var activity = source.CreateActivity(ActivityObserver.HandleEventName, ActivityKind.Client);
+        var activity = source.CreateActivity(operationName, ActivityKind.Client);
         if (activity is null)
         {
             Assert.Fail("no listener is attached to the components ActivitySource");
@@ -195,17 +195,93 @@ public class BatchAttributionTests : BunitContext
     }
 
     [TestMethod]
-    [DataRow("Event onclick -> MyApp.Pages.Counter.IncrementCount", "MyApp.Pages.Counter", "IncrementCount", "onclick")]
-    [DataRow("Event oninput -> Lib.Filter.OnQuery", "Lib.Filter", "OnQuery", "oninput")]
-    [DataRow("Route /counter -> MyApp.Pages.Counter", "MyApp.Pages", "Counter", "/counter")]
-    [DataRow("something else", null, null, null)]
-    public void Display_names_are_parsed_back_into_their_parts(string displayName, string? type, string? method, string? attribute)
+    [DataRow("Event onclick -> MyApp.Pages.Counter.IncrementCount", true, "MyApp.Pages.Counter", "IncrementCount", "onclick")]
+    [DataRow("Event oninput -> Lib.Filter.OnQuery", true, "Lib.Filter", "OnQuery", "oninput")]
+    [DataRow("Route /counter -> MyApp.Pages.Counter", false, "MyApp.Pages.Counter", null, "/counter")]
+    [DataRow("something else", true, null, null, null)]
+    public void Display_names_are_parsed_back_into_their_parts(string displayName, bool hasMethod, string? type, string? method, string? attribute)
     {
-        var parsed = ActivityObserver.ParseDisplayName(displayName);
+        var parsed = ActivityObserver.ParseDisplayName(displayName, hasMethod);
 
         Assert.AreEqual(type, parsed.ComponentType);
         Assert.AreEqual(method, parsed.Method);
         Assert.AreEqual(attribute, parsed.Attribute);
+    }
+
+    [TestMethod]
+    public void Navigating_to_an_application_page_under_the_product_namespace_is_recorded()
+    {
+        // A navigation names the page type with no method after it. Cutting one off anyway turned
+        // Bit.BevTools.Shop.Counter into "Bit.BevTools.Shop", which looks like BevTools' own namespace.
+        Render<PanelLikeComponent>();
+
+        Emit("Route /counter -> Bit.BevTools.Shop.Counter", ActivityObserver.NavigateName);
+
+        var navigation = Assert.ContainsSingle(e => e.Kind == BevToolsEventKind.Navigation, Session.Timeline.Snapshot());
+        Assert.AreEqual("Counter", navigation.ComponentName);
+    }
+
+    [TestMethod]
+    public void A_batch_of_only_bevtools_renders_does_not_take_the_diff_of_a_closed_application_batch()
+    {
+        // WebAssembly: each measurement arrives while its batch is still open. The panel's own refresh is a batch
+        // too; with no entry of its own, its measurement used to overwrite the application batch before it.
+        ActivityObserver.MarkBatchMetricsObserved();
+        Render<ParentComponent>();
+        var tracker = Session.RenderTracker;
+        var application = tracker.CurrentBatch!;
+        tracker.RecordBatchDiff(3);
+        tracker.RecordBatchDiffSize(30);
+
+        Render<BevInspectorSection>(ps => ps.Add(p => p.Title, "own"));
+        var own = tracker.CurrentBatch!;
+        Assert.AreNotSame(application, own);
+        Assert.IsFalse(own.IsTracked);
+        tracker.RecordBatchDiff(9);
+        tracker.RecordBatchDiffSize(90);
+
+        Assert.AreEqual(3, application.DiffMs);
+        Assert.AreEqual(30, application.DiffSize);
+        Assert.Contains("3.00 ms diffing", Session.Timeline.Find(application.EventId)!.Detail!, StringComparison.Ordinal);
+        Assert.DoesNotContain(e => e.Kind == BevToolsEventKind.RenderBatch && e.Id > application.EventId, Session.Timeline.Snapshot());
+    }
+
+    [TestMethod]
+    public void Late_diff_measurements_stay_aligned_across_batches_bevtools_does_not_record()
+    {
+        // Blazor Server: measurements arrive with the browser's acknowledgement, after later batches started. An
+        // unrecorded batch in between still produces one, which used to be handed to the next application batch,
+        // shifting every later attribution by one.
+        ActivityObserver.MarkBatchMetricsObserved();
+        var cut = Render<ParentComponent>();
+        var tracker = Session.RenderTracker;
+        var first = tracker.CurrentBatch!;
+        tracker.CloseBatch();
+
+        Render<BevInspectorSection>(ps => ps.Add(p => p.Title, "own"));
+        var own = tracker.CurrentBatch!;
+        tracker.CloseBatch();
+
+        Session.PauseCapture();
+        cut.InvokeAsync(() => cut.Instance.Refresh());
+        var paused = tracker.CurrentBatch!;
+        tracker.CloseBatch();
+        Session.ResumeCapture();
+
+        cut.InvokeAsync(() => cut.Instance.Refresh());
+        var second = tracker.CurrentBatch!;
+        Assert.IsFalse(own.IsTracked);
+        Assert.IsFalse(paused.IsTracked);
+        Assert.IsTrue(second.IsTracked);
+
+        tracker.RecordBatchDiff(1);
+        tracker.RecordBatchDiff(2);
+        tracker.RecordBatchDiff(3);
+        tracker.RecordBatchDiff(4);
+
+        Assert.AreEqual(1, first.DiffMs);
+        Assert.AreEqual(4, second.DiffMs);
+        Assert.Contains("4.00 ms diffing", Session.Timeline.Find(second.EventId)!.Detail!, StringComparison.Ordinal);
     }
 
     [TestMethod]

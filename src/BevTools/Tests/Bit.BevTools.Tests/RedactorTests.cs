@@ -27,6 +27,17 @@ public class RedactorTests
     }
 
     [TestMethod]
+    public void Fragment_parameters_and_relative_urls_are_redacted_too()
+    {
+        // OAuth implicit and hybrid flows return tokens in the fragment, and navigation targets are base-relative.
+        Assert.AreEqual("signin#access_token=" + BevRedactor.RedactedValue + "&state=xyz",
+            BevRedactor.Default.RedactUrl("signin#access_token=opaque&state=xyz"));
+        Assert.AreEqual("reset-password?token=" + BevRedactor.RedactedValue + "&step=2#top",
+            BevRedactor.Default.RedactUrl("reset-password?token=abc123&step=2#top"));
+        Assert.AreEqual("docs#section-2", BevRedactor.Default.RedactUrl("docs#section-2"));
+    }
+
+    [TestMethod]
     public void Jwt_values_are_redacted_even_under_innocent_query_names()
     {
         var jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjM0NTY3ODkwIn0.signature";

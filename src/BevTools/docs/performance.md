@@ -41,7 +41,7 @@ Read these carefully:
 | Option | Effect |
 |---|---|
 | `RecordRenderEvents = false` | Drops the per-render timeline rows; keeps counts, durations, causes and the profiler. Saves about a third of the allocations. |
-| `MaxEvents`, `MaxRendersPerComponent`, `MaxTrackedComponents` | Bound memory. Every buffer is a ring buffer; nothing grows without a limit. |
+| `MaxEvents`, `MaxRendersPerComponent`, `MaxTrackedComponents`, `MaxFindings` | Bound memory. Every buffer is a ring buffer; nothing grows without a limit. |
 | `CaptureComponentStateOnRender = false` (default) | Field and parameter snapshots and diffs are taken only for the component selected in the inspector. |
 | `TrackJsInterop = false`, `TrackHttp = false` | Removes the JS runtime wrapper / HTTP handler entirely. |
 | `UseFrameworkInstrumentation = false` | Stops BevTools registering the framework's ActivitySource and meters. Render causes degrade to *StateHasChanged*. |

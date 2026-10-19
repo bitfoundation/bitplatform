@@ -113,6 +113,12 @@ public sealed class BitBevToolsOptions
 
     public int MaxStateChangesPerProvider { get; set; } = 100;
 
+    /// <summary>
+    /// Maximum number of diagnostic findings kept per session; the ones no rule has reported for the longest time are
+    /// dropped first. Several rules report one finding per occurrence (each slow request, each cascading batch).
+    /// </summary>
+    public int MaxFindings { get; set; } = 200;
+
     /// <summary>Attribute renders to UI events, parent renders and navigation using <c>Activity</c> and render-batch analysis.</summary>
     public bool TrackRenderCauses { get; set; } = true;
 

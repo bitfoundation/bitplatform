@@ -25,6 +25,7 @@ internal static class ActivityObserver
 
     private const string EventProperty = "Bit.BevTools.Event";
     private const string SessionProperty = "Bit.BevTools.Session";
+    private const string ComponentTypeProperty = "Bit.BevTools.ComponentType";
 
     private static readonly object Lock = new();
     private static ActivityListener? _listener;
@@ -137,7 +138,7 @@ internal static class ActivityObserver
         // display name is the only source of the component type while the handler is still running.
         var tags = new Dictionary<string, object?>(StringComparer.Ordinal);
         var (componentType, method, attribute, route) = ReadTags(activity, tags);
-        var fromDisplayName = ParseDisplayName(activity.DisplayName);
+        var fromDisplayName = ParseDisplayName(activity.DisplayName, hasMethod: isEvent);
         componentType ??= fromDisplayName.ComponentType;
         method ??= fromDisplayName.Method;
         attribute ??= fromDisplayName.Attribute;
@@ -180,6 +181,7 @@ internal static class ActivityObserver
 
         activity.SetCustomProperty(EventProperty, evt);
         activity.SetCustomProperty(SessionProperty, session);
+        activity.SetCustomProperty(ComponentTypeProperty, componentType);
         if (isEvent)
         {
             session.LastUiEventId = id;
@@ -218,11 +220,12 @@ internal static class ActivityObserver
     }
 
     /// <summary>
-    /// Recovers the component type, method and attribute from the activity display name
-    /// ("Event onclick -&gt; MyApp.Pages.Counter.IncrementCount"), which is the only thing the framework fills in
-    /// before the activity starts.
+    /// Recovers the component type, method and attribute from the activity display name, which is the only thing the
+    /// framework fills in before the activity starts: "Event onclick -&gt; MyApp.Pages.Counter.IncrementCount" for an
+    /// event (<paramref name="hasMethod"/>), "Route /counter -&gt; MyApp.Pages.Counter" for a navigation, whose target
+    /// is the whole type name - cutting a method off it would leave the namespace as the type.
     /// </summary>
-    internal static (string? ComponentType, string? Method, string? Attribute) ParseDisplayName(string? displayName)
+    internal static (string? ComponentType, string? Method, string? Attribute) ParseDisplayName(string? displayName, bool hasMethod)
     {
         if (string.IsNullOrEmpty(displayName))
         {
@@ -239,6 +242,11 @@ internal static class ActivityObserver
         var target = displayName[(arrow + 4)..];
         var space = head.LastIndexOf(' ');
         var attribute = space >= 0 ? head[(space + 1)..] : null;
+        if (!hasMethod)
+        {
+            return (target.Length == 0 ? null : target, null, attribute);
+        }
+
         var dot = target.LastIndexOf('.');
         return dot <= 0
             ? (target.Length == 0 ? null : target, null, attribute)
@@ -361,10 +369,10 @@ internal static class ActivityObserver
             current.Severity = severity;
         }, cloneData: true);
 
-        var typeName = shortComponentType ?? evt.ComponentName;
+        var typeName = componentType ?? activity.GetCustomProperty(ComponentTypeProperty) as string;
         if (evt.Kind == BevToolsEventKind.UiEvent && typeName is not null)
         {
-            var metrics = session.TypeMetrics.GetOrAdd(typeName, static name => new BevLifecycleTypeMetrics { TypeName = name });
+            var metrics = GetTypeMetrics(session, typeName);
             lock (metrics)
             {
                 metrics.EventHandlers++;
@@ -427,8 +435,7 @@ internal static class ActivityObserver
                     return;
                 }
 
-                var shortType = Shorten(type);
-                var metrics = session.TypeMetrics.GetOrAdd(shortType, static n => new BevLifecycleTypeMetrics { TypeName = n });
+                var metrics = GetTypeMetrics(session, type);
                 var ms = ToDouble(value) * 1000;
                 lock (metrics)
                 {
@@ -466,6 +473,41 @@ internal static class ActivityObserver
         int i => i,
         _ => 0,
     };
+
+    /// <summary>
+    /// Per-type metrics are keyed by the full type name the framework reports (<c>Type.FullName</c>, which is also
+    /// <see cref="BevComponentRecord.TypeName"/>), never by the short name: <c>Pages.Index</c> and <c>Admin.Index</c>
+    /// are different components, and a generic type's short name is not the one the component tree shows.
+    /// </summary>
+    private static BevLifecycleTypeMetrics GetTypeMetrics(BevToolsSession session, string typeName) =>
+        session.TypeMetrics.GetOrAdd(TypeKey(typeName), static key => new BevLifecycleTypeMetrics { TypeName = key, DisplayName = Shorten(key) });
+
+    /// <summary>Cuts an assembly-qualified name back to the full type name. The commas inside a generic argument list are not the assembly separator.</summary>
+    internal static string TypeKey(string typeName)
+    {
+        if (typeName.IndexOf(',') < 0)
+        {
+            return typeName;
+        }
+
+        var depth = 0;
+        for (var i = 0; i < typeName.Length; i++)
+        {
+            switch (typeName[i])
+            {
+                case '[':
+                    depth++;
+                    break;
+                case ']':
+                    depth--;
+                    break;
+                case ',' when depth == 0:
+                    return typeName[..i];
+            }
+        }
+
+        return typeName;
+    }
 
     /// <summary>Turns an assembly-qualified or namespaced type name into a short display name.</summary>
     internal static string Shorten(string typeName)

@@ -152,4 +152,25 @@ public class ObjectInspectorTests
         var deep = inspector.Children(chain, "Next.Next");
         Assert.AreEqual(BevNodeKind.Special, deep.Single(c => c.Name == "Next").Kind);
     }
+
+    [TestMethod]
+    public void Dictionary_entries_with_sensitive_keys_are_redacted_when_expanded()
+    {
+        // Flatten (state diffs) already redacted these by path; the expandable tree showed them in plain text.
+        var inspector = Create();
+        var headers = new Dictionary<string, object?>
+        {
+            ["Authorization"] = "Bearer eyJhbGciOi",
+            ["password"] = new[] { 'h', 'u', 'n', 't', 'e', 'r', '2' },
+            ["Accept"] = "application/json",
+        };
+
+        var children = inspector.Children(headers, "");
+
+        Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == "Authorization").Kind);
+        Assert.AreEqual(BevNodeKind.Redacted, children.Single(c => c.Name == "password").Kind);
+        Assert.AreEqual("\"application/json\"", children.Single(c => c.Name == "Accept").Display);
+        Assert.IsEmpty(inspector.Children(headers, "[password]"));
+        Assert.DoesNotContain(c => c.Display.Contains("eyJ", StringComparison.Ordinal), children);
+    }
 }

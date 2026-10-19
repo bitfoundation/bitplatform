@@ -145,19 +145,7 @@
 
     private void Select(long id)
     {
-        var previous = Ui.SelectedComponentId is { } p ? Session.Components.Get(p) : null;
-        if (previous is not null && previous.InstanceId != id && !Session.Options.CaptureComponentStateOnRender)
-        {
-            previous.CaptureState = false;
-        }
-
-        Ui.SelectedComponentId = id;
-        var record = Session.Components.Get(id);
-        if (record is not null)
-        {
-            record.CaptureState = true;
-        }
-
+        Host.InspectComponent(id);
         Ui.Touch();
     }
 

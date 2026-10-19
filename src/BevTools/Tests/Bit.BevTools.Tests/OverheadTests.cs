@@ -33,6 +33,47 @@ public class OverheadTests : BunitContext
     }
 
     [TestMethod]
+    public void Overhead_of_a_measured_pass_is_reported_in_real_milliseconds()
+    {
+        // The meter takes Stopwatch ticks. Diagnostics, inspection and tree refreshes used to pass TimeSpan ticks,
+        // which coincide only on Windows: on Linux, macOS and WebAssembly those figures read 100× too small.
+        var (session, scope) = TestHelpers.CreateSession(o => o.Extensions.Add(new SlowRuleExtension()));
+        using (scope)
+        {
+            session.Diagnostics.Evaluate(force: true);
+
+            Assert.IsTrue(session.Overhead.DiagnosticsMs is >= 15 and < 5000, $"a 20 ms rule was reported as {session.Overhead.DiagnosticsMs:0.###} ms");
+        }
+    }
+
+    private sealed class SlowRuleExtension : IBevToolsExtension
+    {
+        public string Name => "slow rule";
+
+        public void Configure(IBevToolsExtensionBuilder builder) => builder.AddDiagnosticRule(new SlowRule());
+    }
+
+    private sealed class SlowRule : IBevDiagnosticRule
+    {
+        public string Id => "test.slow";
+
+        public string Title => "Slow";
+
+        public string Description => "";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            var watch = System.Diagnostics.Stopwatch.StartNew();
+            while (watch.ElapsedMilliseconds < 20)
+            {
+                Thread.Sleep(1);
+            }
+
+            return [];
+        }
+    }
+
+    [TestMethod]
     public void Buffers_stay_bounded_under_sustained_activity()
     {
         var cut = Render<ParentComponent>();

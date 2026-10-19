@@ -78,4 +78,27 @@ public class CircuitRegistryTests
             Assert.Contains("Reconnect show", finding.Diagnostic.Evidence);
         }
     }
+
+    [TestMethod]
+    public void A_connection_that_keeps_failing_stays_one_finding()
+    {
+        // The fingerprint used to be the newest event's id, so every further drop or slow message opened a new
+        // finding with its own timeline row instead of updating the one already shown.
+        var (session, scope) = TestHelpers.CreateSession(o => o.Extensions.Add(new BevToolsServerExtension()));
+        using (scope)
+        {
+            for (var i = 0; i < 5; i++)
+            {
+                session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Circuit, Category = "circuit", Title = "Connection down" });
+                session.Timeline.Record(new BevToolsEvent { Kind = BevToolsEventKind.Circuit, Category = "circuit-inbound", Title = "Slow inbound message", DurationMs = 250 });
+                session.Diagnostics.Evaluate(force: true);
+            }
+
+            var unstable = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "circuit.unstable", session.Diagnostics.Findings);
+            Assert.Contains("dropped 5 times", unstable.Diagnostic.Title);
+            var blocked = Assert.ContainsSingle(f => f.Diagnostic.RuleId == "circuit.blocked", session.Diagnostics.Findings);
+            Assert.StartsWith("5 inbound messages", blocked.Diagnostic.Title, StringComparison.Ordinal);
+            Assert.AreEqual(2, session.Timeline.Snapshot().Count(e => e.Kind == BevToolsEventKind.Diagnostic && e.Category.StartsWith("diagnostic:circuit.", StringComparison.Ordinal)));
+        }
+    }
 }

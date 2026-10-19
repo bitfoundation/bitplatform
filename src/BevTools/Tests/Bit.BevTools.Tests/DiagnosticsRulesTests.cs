@@ -205,6 +205,51 @@ public class DiagnosticsRulesTests
         public void Configure(IBevToolsExtensionBuilder builder) => builder.AddDiagnosticRule(rule);
     }
 
+    [TestMethod]
+    public void Findings_are_bounded_and_the_least_recently_reported_go_first()
+    {
+        // Several rules report one finding per occurrence (each slow request, each cascading batch); a dashboard
+        // polling a slow endpoint would otherwise add a finding every few seconds for the life of the session.
+        var rule = new PerOccurrenceRule();
+        var (session, scope) = TestHelpers.CreateSession(o =>
+        {
+            o.MaxFindings = 5;
+            o.Extensions.Add(new RuleExtension(rule));
+        });
+        using (scope)
+        {
+            for (var i = 0; i < 12; i++)
+            {
+                rule.Occurrence = i;
+                session.Diagnostics.Evaluate(force: true);
+            }
+
+            var fingerprints = session.Diagnostics.Findings.Where(f => f.Diagnostic.RuleId == rule.Id).Select(f => f.Diagnostic.EffectiveFingerprint).ToList();
+            Assert.IsTrue(session.Diagnostics.Findings.Length <= 5);
+            Assert.Contains("test.occurrence:steady", fingerprints);
+            Assert.Contains("test.occurrence:11", fingerprints);
+            Assert.DoesNotContain("test.occurrence:0", fingerprints);
+        }
+    }
+
+    /// <summary>One finding that is reported on every evaluation, and one per occurrence that is reported once.</summary>
+    private sealed class PerOccurrenceRule : IBevDiagnosticRule
+    {
+        public int Occurrence;
+
+        public string Id => "test.occurrence";
+
+        public string Title => "Per occurrence";
+
+        public string Description => "";
+
+        public IEnumerable<BevDiagnostic> Evaluate(IBevDiagnosticContext context)
+        {
+            yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Info, "steady", "", Fingerprint: Id + ":steady");
+            yield return new BevDiagnostic(Id, BevDiagnosticSeverity.Info, "occurrence " + Occurrence, "", Fingerprint: Id + ":" + Occurrence);
+        }
+    }
+
     private sealed class CountingRule : IBevDiagnosticRule
     {
         public int Evaluations;
