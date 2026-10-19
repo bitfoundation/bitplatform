@@ -193,6 +193,11 @@ jobs:
     - name: dotnet pack BbScanner
       run: dotnet pack src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output . --configuration Release
 
+    - name: dotnet build Bdnd
+      run: dotnet build src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bdnd
+      run: dotnet pack src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj --output . --configuration Release
+
     - name: dotnet build BlazeDb
       run: dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazeDb
@@ -217,6 +222,16 @@ jobs:
       run: dotnet build src/Blow/Bit.Blow/Bit.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blow
       run: dotnet pack src/Blow/Bit.Blow/Bit.Blow.csproj --output . --configuration Release
+
+    - name: dotnet build Borm
+      run: dotnet build src/Borm/Bit.Borm/Bit.Borm.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Borm
+      run: dotnet pack src/Borm/Bit.Borm/Bit.Borm.csproj --output . --configuration Release
+
+    - name: dotnet build Borm.FluentValidation
+      run: dotnet build src/Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Borm.FluentValidation
+      run: dotnet pack src/Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj --output . --configuration Release
 
     - name: dotnet build Bcrdt
       run: dotnet build src/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -272,6 +287,26 @@ jobs:
       run: dotnet build src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bonboarding
       run: dotnet pack src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj --output . --configuration Release
+
+    - name: dotnet build Bortable
+      run: dotnet build src/Bortable/Bit.Bortable/Bit.Bortable.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bortable
+      run: dotnet pack src/Bortable/Bit.Bortable/Bit.Bortable.csproj --output . --configuration Release
+
+    - name: dotnet build Belemetry
+      run: dotnet build src/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Belemetry
+      run: dotnet pack src/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj --output . --configuration Release
+
+    - name: dotnet build Belemetry.EntityFrameworkCore
+      run: dotnet build src/Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Belemetry.EntityFrameworkCore
+      run: dotnet pack src/Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj --output . --configuration Release
+
+    - name: dotnet build Belemetry.Hangfire
+      run: dotnet build src/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Belemetry.Hangfire
+      run: dotnet pack src/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj --output . --configuration Release
 
     - name: dotnet build CodeAnalyzers
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

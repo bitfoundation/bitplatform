@@ -1,0 +1,181 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* An affixed control wraps the input so a "$", a "kg" or a reveal button sits inside the same bordered
+   box. Without any adornment the input is emitted bare, so the common case adds nothing to the DOM. *@
+@if (HasAffix)
+{
+    <div class="bit-borm-affixed @(Context.HasError && Context.ShowMessages ? "bit-borm-affixed--invalid" : "")">
+        @if (!string.IsNullOrEmpty(Field.Prefix))
+        {
+            <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Field.Prefix</span>
+        }
+        @Control
+        @if (!string.IsNullOrEmpty(Field.Suffix))
+        {
+            <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Field.Suffix</span>
+        }
+        @if (ShowClear)
+        {
+            @* Discoverable on a touch screen, where "select all and delete" is real work, and skipped
+               by the tab order because the same thing is achievable from the field itself. *@
+            <button type="button" class="bit-borm-affix bit-borm-affix--btn" tabindex="-1"
+                    title="@ClearLabel" aria-label="@ClearLabel" @onclick="Clear">×</button>
+        }
+        @if (ShowReveal)
+        {
+            @* aria-pressed, not a label that changes meaning: a screen reader announces the toggle's
+               state rather than the user having to infer it from the button's name. *@
+            <button type="button" class="bit-borm-affix bit-borm-affix--btn" aria-pressed="@(_revealed ? "true" : "false")"
+                    title="@RevealLabel" aria-label="@RevealLabel" @onclick="ToggleReveal">@(_revealed ? "🙈" : "👁")</button>
+        }
+    </div>
+}
+else
+{
+    @Control
+}
+
+@if (SuggestionsId is not null)
+{
+    @* A datalist suggests without constraining: the field still accepts anything the user types, which
+       is what separates "here are the usual answers" from a closed set of options. *@
+    <datalist id="@SuggestionsId">
+        @foreach (var suggestion in Field.Suggestions)
+        {
+            <option value="@suggestion" />
+        }
+    </datalist>
+}
+
+@if (ShowCounter)
+{
+    @* aria-hidden, not a live region: announcing a new count on every keystroke would drown out
+       everything else, and the limit is already enforced by the control itself. *@
+    <p class="bit-borm-counter @(Length > Field.MaxLength ? "bit-borm-counter--over" : "")" aria-hidden="true">
+        @Context.Text(BormMessageKeys.CharacterCount, Length, Field.MaxLength)
+    </p>
+    @* The counter above is decorative, so the same information is announced here — but only once the
+       limit is close enough to matter. See BormInputBase.CharacterCountAnnouncement. *@
+    <p class="bit-borm-sr-only" aria-live="polite">@CharacterCountAnnouncement</p>
+}
+
+@code {
+    // The splat comes first on purpose: Blazor applies duplicate attributes in source order and the
+    // last one wins, so everything below overrides what the schema supplied. That is what stops a
+    // stray aria-describedby in the schema from unhooking the field's own error message.
+    private RenderFragment Control => @<input @attributes="ExtraAttributes"
+                                              id="@Context.ElementId"
+                                              @ref="Element"
+                                              class="@CssClass"
+                                              type="@HtmlType"
+                                              value="@DisplayValue"
+                                              placeholder="@Field.Placeholder"
+                                              disabled="@Disabled"
+                                              readonly="@ReadOnly"
+                                              maxlength="@MaxLengthAttribute"
+                                              list="@SuggestionsId"
+                                              autocomplete="@Field.Autocomplete"
+                                              inputmode="@Field.InputMode"
+                                              aria-required="@AriaRequired"
+                                              aria-invalid="@AriaInvalid"
+                                              aria-label="@AriaLabel"
+                                              aria-describedby="@DescribedBy"
+                                              @onchange="OnChange"
+                                              @oninput="InputHandler"
+                                              @onblur="OnBlur" />
+    ;
+
+    private string HtmlType => Field.Type switch
+    {
+        // A revealed password is a plain text box for as long as it is revealed; there is no other way
+        // to show the characters, and `autocomplete` on the field still tells the browser what it is.
+        BormFieldType.Password => _revealed ? "text" : "password",
+        BormFieldType.Email => "email",
+        BormFieldType.Url => "url",
+        BormFieldType.Tel => "tel",
+        BormFieldType.Search => "search",
+        BormFieldType.Color => "color",
+        BormFieldType.Hidden => "hidden",
+        _ => "text"
+    };
+
+    /// <summary>
+    /// What the control displays. Identical to the stored value except for an empty colour picker: the
+    /// browser has no "no colour" state and renders black regardless, so the swatch is made to agree
+    /// with the placeholder rather than showing a colour the model does not hold.
+    /// </summary>
+    private string DisplayValue => Field.Type == BormFieldType.Color && Context.StringValue.Length == 0
+        ? EmptyColour
+        : Context.StringValue;
+
+    /// <summary>The colour an empty picker shows — <c>Attr("emptyColor", "#rrggbb")</c>, else black.</summary>
+    private string EmptyColour => Attr("emptyColor", "#000000")!;
+
+    /// <summary>
+    /// Whether the control is wrapped. Decided by what the field is configured to offer, never by its
+    /// current value: the wrapper and the bare input are two different places in the tree, so a
+    /// wrapper that appeared with the first character replaced the input element under the caret — a
+    /// clearable live field lost focus on the first keystroke, and the clear button dropped it on the
+    /// page body when it took the wrapper away again.
+    /// </summary>
+    private bool HasAffix
+        => !string.IsNullOrEmpty(Field.Prefix) || !string.IsNullOrEmpty(Field.Suffix) || ShowReveal || OffersClear;
+
+    private bool _revealed;
+
+    /// <summary>
+    /// Whether a password field offers a "show the characters" toggle — <c>Attr("reveal", true)</c>, or
+    /// the builder's <c>Revealable()</c>. Opt-in, because whether a password may be shown at all is a
+    /// decision about the surrounding environment, not about the field.
+    /// </summary>
+    private bool ShowReveal
+        => Field.Type == BormFieldType.Password && Attr("reveal", false) && !DisabledOrReadOnly;
+
+    /// <summary>
+    /// Whether the field offers a one-click "empty this" button — <c>Attr("clearable", true)</c>, or
+    /// the builder's <c>Clearable()</c>. Hidden while there is nothing to clear.
+    /// </summary>
+    private bool ShowClear => OffersClear && Context.StringValue.Length > 0;
+
+    /// <summary>Whether the field has a clear button at all, whether or not there is anything to clear yet.</summary>
+    private bool OffersClear
+        => Attr("clearable", false)
+           && Field.Type is not (BormFieldType.Hidden or BormFieldType.Color)
+           && !DisabledOrReadOnly;
+
+    private string RevealLabel => Context.Text(_revealed
+        ? BormMessageKeys.PasswordHide
+        : BormMessageKeys.PasswordShow);
+
+    private string ClearLabel => Context.Text(BormMessageKeys.Clear);
+
+    private void ToggleReveal() => _revealed = !_revealed;
+
+    /// <summary>
+    /// Empties the field and puts the caret back in it. The button takes itself away once there is
+    /// nothing left to clear, and the focus it was holding would otherwise fall to the page body.
+    /// </summary>
+    private async Task Clear()
+    {
+        await Context.SetValueAsync(null);
+        await FocusAsync();
+    }
+
+    /// <summary>
+    /// A hidden input cannot take focus: the browser accepts the call and does nothing. Reporting that
+    /// as success stopped focus-the-first-error on an invisible control instead of moving on to one the
+    /// user can see.
+    /// </summary>
+    public override ValueTask<bool> FocusAsync()
+        => Field.Type == BormFieldType.Hidden ? ValueTask.FromResult(false) : base.FocusAsync();
+
+    private bool ShowCounter => Field.ShowCharacterCount && Field.MaxLength is > 0 && Field.Type != BormFieldType.Hidden;
+
+    private int Length => DisplayLength;
+
+    /// <summary>Id of the suggestion list, or null when the field offers none.</summary>
+    private string? SuggestionsId => Field.Suggestions.Count > 0 && Field.Type != BormFieldType.Hidden
+        ? Context.ElementId + "_list"
+        : null;
+}

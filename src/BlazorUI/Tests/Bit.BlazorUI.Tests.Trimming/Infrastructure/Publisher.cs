@@ -18,6 +18,8 @@ public static class Publisher
 
     public const string Fixture = "Tests/Bit.BlazorUI.Tests.Trimming.Fixture/Bit.BlazorUI.Tests.Trimming.Fixture.csproj";
     public const string Consumer = "Tests/Bit.BlazorUI.Tests.Consumer/Bit.BlazorUI.Tests.Consumer.csproj";
+    public const string Hosted = "Tests/Bit.BlazorUI.Tests.Trimming.Hosted/Bit.BlazorUI.Tests.Trimming.Hosted.csproj";
+    public const string HostedClient = "Tests/Bit.BlazorUI.Tests.Trimming.Hosted.Client/Bit.BlazorUI.Tests.Trimming.Hosted.Client.csproj";
 
     /// <summary>Publishes in Release with the given MSBuild properties ("Name=Value"), or hands back the publish already made.</summary>
     public static PublishResult Publish(string project, params string[] properties)

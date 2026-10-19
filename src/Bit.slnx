@@ -30,6 +30,50 @@
     <File Path="../.github/workflows/sales.website.cd.yml" />
     <File Path="../.github/workflows/todo-sample.cd.yml" />
   </Folder>
+  <Folder Name="/Belemetry/">
+    <File Path="Belemetry/README.md" />
+    <Project Path="Belemetry/Bit.Belemetry/Bit.Belemetry.csproj" />
+    <Project Path="Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj" />
+    <Project Path="Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Demo/">
+    <Project Path="Belemetry/Demo/Client/Bit.Belemetry.Demo.Client.csproj" />
+    <Project Path="Belemetry/Demo/Server/Bit.Belemetry.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/">
+    <Project Path="Belemetry/Samples/Core/Bit.Belemetry.Samples.Core.csproj" />
+    <Project Path="Belemetry/Samples/Maui/Bit.Belemetry.Samples.Maui.csproj">
+      <Deploy />
+    </Project>
+  </Folder>
+  <Folder Name="/Belemetry/Samples/Auto/">
+    <Project Path="Belemetry/Samples/Auto/Bit.Belemetry.Samples.Auto/Bit.Belemetry.Samples.Auto.csproj" />
+    <Project Path="Belemetry/Samples/Auto/Bit.Belemetry.Samples.Auto.Client/Bit.Belemetry.Samples.Auto.Client.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/Server/">
+    <Project Path="Belemetry/Samples/Server/Bit.Belemetry.Samples.Server.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/Wasm/">
+    <Project Path="Belemetry/Samples/Wasm/Bit.Belemetry.Samples.Wasm/Bit.Belemetry.Samples.Wasm.csproj" />
+    <Project Path="Belemetry/Samples/Wasm/Bit.Belemetry.Samples.Wasm.Client/Bit.Belemetry.Samples.Wasm.Client.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Samples/WinForms/">
+    <Project Path="Belemetry/Samples/WinForms/Bit.Belemetry.Samples.WinForms.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Tests/">
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests/Bit.Belemetry.Tests.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.EntityFrameworkCore/Bit.Belemetry.Tests.EntityFrameworkCore.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Hangfire/Bit.Belemetry.Tests.Hangfire.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Mcp/Bit.Belemetry.Tests.Mcp.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Hosting/Bit.Belemetry.Tests.Hosting.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj" />
+  </Folder>
+  <Folder Name="/Belemetry/Tests/Harness/">
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Harness/Bit.Belemetry.Tests.Harness.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Harness.Web/Bit.Belemetry.Tests.Harness.Web.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Harness.Web.Client/Bit.Belemetry.Tests.Harness.Web.Client.csproj" />
+    <Project Path="Belemetry/Tests/Bit.Belemetry.Tests.Harness.Hybrid/Bit.Belemetry.Tests.Harness.Hybrid.csproj" />
+  </Folder>
   <Folder Name="/Besql/">
     <File Path="Besql/README.md" />
     <Project Path="Besql/Bit.Besql/Bit.Besql.csproj" />
@@ -161,6 +205,19 @@
     <Project Path="BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj" />
     <Project Path="BbScanner/Tests/Bit.BbScanner.Benchmarks/Bit.BbScanner.Benchmarks.csproj" />
   </Folder>
+  <Folder Name="/Bdnd/">
+    <File Path="Bdnd/README.md" />
+    <Project Path="Bdnd/Bit.Bdnd/Bit.Bdnd.csproj" />
+  </Folder>
+  <Folder Name="/Bdnd/Demo/">
+    <Project Path="Bdnd/Demo/Client/Bit.Bdnd.Demo.Client.csproj" />
+    <Project Path="Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bdnd/Tests/">
+    <Project Path="Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
+    <Project Path="Bdnd/Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj" />
+    <Project Path="Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj" />
+  </Folder>
   <Folder Name="/BlazeDb/">
     <File Path="BlazeDb/README.md" />
     <Project Path="BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj" />
@@ -191,6 +248,20 @@
     <Project Path="Blow/Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj" />
     <Project Path="Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj" />
   </Folder>
+  <Folder Name="/Borm/">
+    <File Path="Borm/README.md" />
+    <Project Path="Borm/Bit.Borm/Bit.Borm.csproj" />
+    <Project Path="Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj" />
+  </Folder>
+  <Folder Name="/Borm/Demo/">
+    <Project Path="Borm/Demo/Client/Bit.Borm.Demo.Client.csproj" />
+    <Project Path="Borm/Demo/Server/Bit.Borm.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Borm/Tests/">
+    <Project Path="Borm/Tests/Bit.Borm.Tests/Bit.Borm.Tests.csproj" />
+    <Project Path="Borm/Tests/Bit.Borm.Tests.Mcp/Bit.Borm.Tests.Mcp.csproj" />
+    <Project Path="Borm/Tests/Bit.Borm.Tests.E2E/Bit.Borm.Tests.E2E.csproj" />
+  </Folder>
   <Folder Name="/Bcrdt/">
     <File Path="Bcrdt/README.md" />
     <Project Path="Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj" />
@@ -220,6 +291,19 @@
   <Folder Name="/Bonboarding/Tests/">
     <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
     <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp/Bit.Bonboarding.Tests.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/">
+    <File Path="Bortable/README.md" />
+    <Project Path="Bortable/Bit.Bortable/Bit.Bortable.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/Demo/">
+    <Project Path="Bortable/Demo/Client/Bit.Bortable.Demo.Client.csproj" />
+    <Project Path="Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/Tests/">
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests/Bit.Bortable.Tests.csproj" />
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests.Mcp/Bit.Bortable.Tests.Mcp.csproj" />
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj" />
   </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />

@@ -433,7 +433,9 @@ published trimmed - a Blazor WebAssembly publish is - the package's build logic 
 `Bit.Butil.dll`, finds which `BitButil.<module>.*` identifiers survived (every interop call goes
 through such a literal, so the trimmed assembly is the exact list of modules the app can still reach)
 and replaces `bit-butil.js` with a bundle assembled from only those modules and their dependencies.
-Fingerprints, integrity hashes and compressed variants are computed from the new content. An app
+Fingerprints, integrity hashes and compressed variants are computed from the new content, and so is a PWA's
+`service-worker-assets.js` - including the one a Blazor Web App's WebAssembly client wrote before the server
+trimmed, which the server's publish rewrites to list what it actually serves. An app
 that injects `Clipboard`, `LocalStorage` and `Window` ships about 6 KB of JavaScript instead of the
 321 KB bundle. It is on by default only in a Blazor WebAssembly project - a standalone app or PWA - because
 that is where the assembly being trimmed is the assembly calling the served JavaScript; a server that hosts

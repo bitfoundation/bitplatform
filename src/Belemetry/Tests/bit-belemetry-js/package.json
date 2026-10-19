@@ -1,0 +1,15 @@
+﻿{
+    "name": "bit-belemetry-js-tests",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "description": "Unit tests for the bit-belemetry browser SDK (Bit.Belemetry/Scripts)",
+    "scripts": {
+        "test": "vitest run",
+        "watch": "vitest"
+    },
+    "devDependencies": {
+        "happy-dom": "^21.0.1",
+        "vitest": "^3.2.4"
+    }
+}

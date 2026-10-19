@@ -1,5 +1,8 @@
-﻿using System.Text;
+﻿using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Bit.BlazorUI.Build;
 
 namespace Bit.BlazorUI.Tests.Trimming.Infrastructure;
@@ -135,6 +138,81 @@ public sealed class PublishResult(string directory, int exitCode, string output)
         Assert.IsNotNull(manifest, "The publish has no static web assets endpoints manifest.");
         using var document = JsonDocument.Parse(File.ReadAllText(manifest));
         return document.RootElement.GetProperty("Endpoints").EnumerateArray().Select(e => e.Clone()).ToList();
+    }
+
+    /// <summary>
+    /// The service worker assets manifest of the publish (service-worker-assets.js): its version, and each URL it lists with
+    /// its hash. <paramref name="clientBasePath"/> is the base path of the project that owns the service worker, where a
+    /// Blazor Web App's client is served under one of its own.
+    /// </summary>
+    public (string Version, Dictionary<string, string> Assets) ReadServiceWorkerManifest(string clientBasePath = "")
+    {
+        var path = Path.Combine(WebRoot, clientBasePath, "service-worker-assets.js");
+        Assert.IsTrue(File.Exists(path), $"The publish has no {Path.GetRelativePath(WebRoot, path).Replace('\\', '/')}.");
+
+        var text = File.ReadAllText(path);
+        using var document = JsonDocument.Parse(text[text.IndexOf('{')..(text.LastIndexOf('}') + 1)]);
+
+        var assets = document.RootElement.GetProperty("assets").EnumerateArray()
+                             .ToDictionary(a => a.GetProperty("url").GetString()!, a => a.GetProperty("hash").GetString()!, StringComparer.Ordinal);
+
+        return (document.RootElement.GetProperty("version").GetString()!, assets);
+    }
+
+    /// <summary>
+    /// Every URL the service worker manifest lists is published under the hash it lists - a service worker caches by that
+    /// hash, one that checks integrity rejects any other, and one that precaches every listed file fails to install on a 404
+    /// - and the service worker script carries the manifest's version, the change a browser installs an update over.
+    /// </summary>
+    /// <remarks>
+    /// Under a <paramref name="clientBasePath"/>, the SDK writes every URL beneath it, the packages' files too
+    /// (<c>app/_content/Bit.BlazorUI/...</c>), while the server publishes those at its root: a package's file is read there.
+    /// </remarks>
+    public void AssertServiceWorkerListsWhatIsServed(string clientBasePath = "")
+    {
+        var (version, assets) = ReadServiceWorkerManifest(clientBasePath);
+        var packages = clientBasePath.Length == 0 ? null : clientBasePath + "/_content/";
+
+        var wrong = new List<string>();
+        foreach (var (url, hash) in assets)
+        {
+            var served = packages is not null && url.StartsWith(packages, StringComparison.Ordinal) ? url[(clientBasePath.Length + 1)..] : url;
+            var path = Path.Combine(WebRoot, served.Replace('/', Path.DirectorySeparatorChar));
+            if (File.Exists(path) is false) wrong.Add($"{url} is listed but not published");
+            else if ($"sha256-{Sha256(path)}" != hash) wrong.Add($"{url} is listed under another file's hash");
+        }
+
+        Assert.AreEqual(0, wrong.Count, $"{wrong.Count} entries of service-worker-assets.js are wrong: {string.Join("; ", wrong.Take(5))}");
+        StringAssert.Contains(File.ReadAllText(Path.Combine(WebRoot, clientBasePath, "service-worker.js")), $"/* {ServiceWorkerManifest.VersionMarker}{version} */",
+                              "service-worker.js does not carry the manifest's version, so a browser has no new service worker to install.");
+    }
+
+    /// <summary>
+    /// The line the trimming's rewrite of a service worker manifest wrote to the build output - its entries dropped and its
+    /// hashes replaced - or null where no manifest was rewritten.
+    /// </summary>
+    public (string Line, int Dropped, int Rehashed)? ServiceWorkerRewrite
+    {
+        get
+        {
+            var line = Regex.Match(Output, @"Bit\.BlazorUI: \S+ lists (?<dropped>\d+) fewer assets and (?<rehashed>\d+) trimmed hashes, version \S+");
+            return line.Success
+                ? (line.Value, int.Parse(line.Groups["dropped"].Value, CultureInfo.InvariantCulture), int.Parse(line.Groups["rehashed"].Value, CultureInfo.InvariantCulture))
+                : null;
+        }
+    }
+
+    private static readonly Dictionary<string, string> Hashes = [];
+
+    /// <summary>A file's SHA-256 in base64, the form integrity, ETags and service worker manifests all use.</summary>
+    public static string Sha256(string path)
+    {
+        var key = $"{path}|{File.GetLastWriteTimeUtc(path).Ticks}";
+        lock (Hashes)
+        {
+            if (Hashes.TryGetValue(key, out var hash) is false) Hashes[key] = hash = Convert.ToBase64String(SHA256.HashData(File.ReadAllBytes(path)));
+            return hash;
+        }
     }
 
     private static string Piece(PackageAssets pieces, string relativePath) => File.ReadAllText(pieces.Resolve(relativePath), Encoding.UTF8);

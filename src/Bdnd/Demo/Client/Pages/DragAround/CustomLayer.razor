@@ -1,0 +1,73 @@
+﻿@page "/drag-around/custom-layer"
+@using System.Globalization
+
+<PageTitle>Drag Around · Custom Drag Layer - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Drag Around - Custom Drag Layer</h3>
+    <p class="text-muted">
+        The boxes set <code>UseCustomDragLayer="true"</code> to hide the native preview, and a
+        <code>&lt;BdndDragLayer&gt;</code> renders our own preview positioned at
+        <code>Monitor.GetSourceClientOffset()</code>. This gives full control over how the
+        dragged item looks.
+    </p>
+</div>
+
+<DemoCode />
+
+<BdndProvider>
+    <BdndDropTarget TItem="DragBox" Accept="@ItemTypes.DragAroundBox"
+                    style="display:contents" OnDrop="HandleDrop">
+        <div class="drag-around-container">
+            @foreach (var box in _boxes)
+            {
+                <BdndDraggable TItem="DragBox" Type="@ItemTypes.DragAroundBox" Item="box"
+                               UseCustomDragLayer="true" Context="ds"
+                               class="drag-around-box"
+                               style="@($"left:{Px(box.Left)};top:{Px(box.Top)};opacity:{(box == _draggingBox ? "0.5" : "1")};")"
+                               OnBegin="@(_ => _draggingBox = box)"
+                               OnEnd="@(_ => _draggingBox = null)">
+                    @box.Title
+                </BdndDraggable>
+            }
+        </div>
+    </BdndDropTarget>
+
+    <BdndDragLayer TItem="DragBox" Context="layer">
+        @if (layer.IsDragging && layer.SourceClientOffset is { } pos && layer.Item is { } item)
+        {
+            <div class="drag-layer-preview" style="@($"position:fixed;left:{Px(pos.X)};top:{Px(pos.Y)};z-index:1000;pointer-events:none;margin:0;padding:0.5rem 1rem;background:#4f46e5;color:white;border:1px solid #4f46e5;border-radius:6px;white-space:nowrap;")">
+                @item.Title
+            </div>
+        }
+    </BdndDragLayer>
+</BdndProvider>
+
+@code {
+    public class DragBox
+    {
+        public required string Title { get; init; }
+        public double Left { get; set; }
+        public double Top { get; set; }
+    }
+
+    private readonly List<DragBox> _boxes =
+    [
+        new() { Title = "Custom preview", Left = 40, Top = 40 },
+        new() { Title = "Drag me", Left = 220, Top = 170 },
+    ];
+
+    private DragBox? _draggingBox;
+
+    private void HandleDrop(BdndDropEventArgs<DragBox> e)
+    {
+        var delta = e.Monitor.GetDifferenceFromInitialOffset();
+        if (e.Item is null || delta is null) return;
+        e.Item.Left = Math.Round(e.Item.Left + delta.Value.X);
+        e.Item.Top = Math.Round(e.Item.Top + delta.Value.Y);
+    }
+
+    // Format with the invariant culture so the decimal separator is always '.'
+    // (a comma would produce invalid CSS like left:282,5px).
+    private static string Px(double v) => v.ToString("0.###", CultureInfo.InvariantCulture) + "px";
+}

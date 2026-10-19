@@ -161,11 +161,11 @@ public abstract class TenantInvitationJourneyTestBase : AppTestBase
         await page.GoToInApp(PageUrls.ManageMyTenants, "fa-IR");
 
         var leave = Localized(nameof(AppStrings.LeaveTenant), faCulture);
-        var yes = Localized(nameof(AppStrings.Yes), faCulture);
+        var yes = BitBlazorUIStrings.ResourceManager.GetString(nameof(BitBlazorUIStrings.DialogOkText), faCulture)!;
         await page.GetByRole(AriaRole.Button, new() { NameRegex = LocalizedButton(leave, AppStrings.LeaveTenant) }).ClickAsync();
 
         var mailedBefore = await mcp.HangfireJobIds(email, TestContext.CancellationToken);
-        await page.GetByRole(AriaRole.Button, new() { NameRegex = LocalizedButton(yes, AppStrings.Yes) }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { NameRegex = LocalizedButton(yes, BitBlazorUIStrings.DialogOkText) }).ClickAsync();
         await FillElevatedAccessIfPrompted(page, email, mailedBefore, mcp);
 
         var accept = Localized(nameof(AppStrings.AcceptInvitation), faCulture);

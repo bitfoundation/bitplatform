@@ -46,7 +46,8 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                 }
 
                 if (isInternalRequest &&
-                    response.StatusCode is HttpStatusCode.BadRequest &&
+                    response.IsSuccessStatusCode is false &&
+                    string.IsNullOrWhiteSpace(requestIdValue) is false && /* Written by our own server (See UseRequestIdHeader), not by IIS, a reverse proxy or a CDN in front of it. */
                     response.Content.Headers.ContentType?.MediaType is "text/plain")
                 {
                     // A plain localized message, such as AttachmentController's image validation errors

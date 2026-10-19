@@ -159,7 +159,7 @@ public partial class CultureService
     }
 
     /// <summary>
-    /// Boilerplate.Shared is the app's only localized assembly (AppStrings, IdentityStrings); add any other assembly
+    /// Boilerplate.Shared is the app's only localized assembly (AppStrings, IdentityStrings, BitBlazorUIStrings); add any other assembly
     /// that gets its own resx files wherever this is fetched.
     /// </summary>
     private static string GetSatelliteAssemblyUrl(string languageName)

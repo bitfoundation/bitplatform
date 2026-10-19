@@ -14,7 +14,7 @@ Strongly-typed C# wrappers over browser Web APIs for Blazor (WebAssembly, Server
 | `Bit.Butil.Build/` | MSBuild task run in a consumer's publish: script scanning, trimming, bundling |
 | `Demo/` | The documentation site (Client) and its host (Server), which also hosts the MCP server at `/mcp` |
 | `Samples/` | Minimal hosting samples: `Samples.Core` (shared pages), `Samples.Web` (standalone WebAssembly), `Samples.Maui` (Hybrid) |
-| `tests/` | `Tests.E2E` (Playwright, against every host), `Tests.Hosting` (in-process HTTP against every render mode), `Tests.Harness.Web` (+ `.Client`) and `Tests.Harness.Hybrid` (the Blazor Web App and BlazorWebView hosts those two drive), `Tests.Mcp` (MSTest against the live MCP server), `Tests.Manual` (trimming/bundling console harness), `Tests.Benchmarks` (weight and interop-cost budgets), `Tests.PublishFixture` (the consumer app it publishes) |
+| `tests/` | `Tests.E2E` (Playwright, against every host), `Tests.Hosting` (in-process HTTP against every render mode), `Tests.Harness.Web` (+ `.Client`) and `Tests.Harness.Hybrid` (the Blazor Web App and BlazorWebView hosts those two drive), `Tests.Mcp` (MSTest against the live MCP server), `Tests.Manual` (trimming/bundling console harness), `Tests.Benchmarks` (weight and interop-cost budgets), `Tests.PublishFixture` (the consumer app it publishes) and `Tests.PublishFixture.Hosted` (+ `.Client`, the Blazor Web App with a service worker it publishes) |
 
 ## Coding style
 

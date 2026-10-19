@@ -104,7 +104,7 @@ internal static class BitPdfEmbeddedFiles
         {
             content = BitPdfStreamDecoder.Decode(stream);
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             // A broken attachment must not cost the document its other ones.
             content = [];

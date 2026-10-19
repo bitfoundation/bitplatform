@@ -24,10 +24,10 @@ internal sealed class BitPdfMemoryByteSource : IBitPdfByteSource
         return true;
     }
 
-    public ReadOnlyMemory<byte> GetMemory(int offset, int length)
+    public BitPdfByteSourceWindow GetMemory(int offset, int length)
     {
         ValidateRange(offset, length);
-        return _bytes.AsMemory(offset, length);
+        return new(_bytes.AsMemory(offset, length));
     }
 
     public BitPdfBaseStream CreateStream(int start = 0, int? length = null)

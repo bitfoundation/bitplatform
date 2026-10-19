@@ -1,0 +1,148 @@
+﻿@page "/mcp-server"
+
+@* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
+   purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
+
+<PageTitle>MCP server</PageTitle>
+
+<div class="demo-intro">
+    <h1>MCP server</h1>
+    <p>
+        This site hosts a Model Context Protocol server at <code>/mcp</code>, so an AI agent writing form code with
+        Bit.Borm reads the library itself - its compiled API documentation, its guide, its stylesheet, its own JSON
+        Schema importer and these demo pages - instead of guessing at an API it half remembers. Every tool is read-only.
+    </p>
+</div>
+
+<section class="demo-card mcp-card">
+    <h2>Connect a client</h2>
+
+    <p>
+        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else. The same tools
+        are also served, version by version, through the bit platform's own server at
+        <code>https://bitplatform.dev/mcp</code>, next to the other bit libraries.
+    </p>
+
+    <div class="demo-source">
+        <pre><code>@ClientConfig</code></pre>
+    </div>
+</section>
+
+<section class="demo-card mcp-card">
+    <h2>Tools</h2>
+
+    <table class="mcp-table">
+        <thead>
+            <tr><th>Tool</th><th>What it answers</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>SearchBorm</code></td>
+                <td>Everything at once - the guide, every public member, the setup guides, the theme, the stylesheet and the demo's working forms - each hit with the exact follow-up call that returns its full text.</td>
+            </tr>
+            <tr>
+                <td><code>GetBormSetupGuide</code></td>
+                <td>The complete wiring for one hosting model: web-app, webassembly, server or hybrid - <code>AddBorm()</code> in every container that renders a form, and the stylesheet link.</td>
+            </tr>
+            <tr>
+                <td><code>GetBormGuideSection</code></td>
+                <td>One section of the reference guide, or the index of sections.</td>
+            </tr>
+            <tr>
+                <td><code>GetBormApi</code></td>
+                <td>One public type with every parameter, property and method, its real default and its documentation - or the index of types.</td>
+            </tr>
+            <tr>
+                <td><code>GetBormTheme</code></td>
+                <td>The <code>--bit-borm-*</code> custom properties with their light and dark values and what each one is for - or one of them in full, with the override to write in every colour mode.</td>
+            </tr>
+            <tr>
+                <td><code>InspectBormSchema</code></td>
+                <td>What the library makes of a JSON Schema document - the form it becomes, field by field, what <code>Validate()</code> reports, what the importer drops without a word, and the document it exports back - or a sample schema, to see the format.</td>
+            </tr>
+            <tr>
+                <td><code>GetBormSourceFile</code></td>
+                <td>One demo or library file verbatim - every page here is a working form - or the index of files.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p>
+        The guide, the API, the theme, a sample schema and the sources are also exposed as <code>borm://</code>
+        resources, and three prompts - <code>add-borm-to-app</code>, <code>implement-borm-form</code> and
+        <code>debug-borm-form</code> - walk an agent through the common jobs in the right order.
+    </p>
+</section>
+
+<section class="demo-card mcp-card">
+    <h2>The same tools over plain HTTP</h2>
+
+    <p>
+        Every tool is also a <code>GET</code> under <code>/api/mcp/...</code>: open one in a browser tab to read
+        exactly what an agent is handed.
+    </p>
+
+    <ul>
+        <li><a href="/api/mcp/SearchBorm?query=cascading%20options" target="_blank" rel="noopener">/api/mcp/SearchBorm?query=cascading options</a></li>
+        <li><a href="/api/mcp/GetBormApi?typeName=BormState" target="_blank" rel="noopener">/api/mcp/GetBormApi?typeName=BormState</a></li>
+        <li><a href="/api/mcp/GetBormTheme" target="_blank" rel="noopener">/api/mcp/GetBormTheme</a></li>
+        <li><a href="/api/mcp/InspectBormSchema" target="_blank" rel="noopener">/api/mcp/InspectBormSchema</a></li>
+        <li><a href="/api/mcp/GetBormSourceFile?path=Demo/Client/Pages/WizardDemo.razor" target="_blank" rel="noopener">/api/mcp/GetBormSourceFile?path=Demo/Client/Pages/WizardDemo.razor</a></li>
+    </ul>
+</section>
+
+@* The demo's stylesheet has no table styles of its own - every other page is a form - so the few this
+   page needs live with it, built on the site's own --demo-* palette. *@
+<style>
+    .mcp-card {
+        margin-bottom: 1.25rem;
+        line-height: 1.55;
+    }
+
+    .mcp-card h2 {
+        margin: 0 0 .6rem;
+        font-size: 1.15rem;
+    }
+
+    .mcp-card p {
+        margin: .4rem 0;
+        color: var(--demo-muted);
+    }
+
+    .mcp-card .demo-source {
+        margin-top: .75rem;
+    }
+
+    .mcp-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: .9rem;
+        margin-bottom: .6rem;
+    }
+
+    .mcp-table th,
+    .mcp-table td {
+        padding: .45rem .6rem;
+        border-bottom: 1px solid var(--demo-border);
+        text-align: left;
+        vertical-align: top;
+    }
+
+    .mcp-table td:first-child {
+        white-space: nowrap;
+    }
+</style>
+
+@code {
+    private const string ClientConfig = """
+        // .mcp.json (Claude Code, VS Code, and anything else reading this shape)
+        {
+          "mcpServers": {
+            "borm": {
+              "type": "http",
+              "url": "https://borm.bitplatform.dev/mcp"
+            }
+          }
+        }
+        """;
+}

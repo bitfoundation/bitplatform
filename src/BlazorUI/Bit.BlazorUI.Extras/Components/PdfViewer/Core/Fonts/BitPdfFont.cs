@@ -399,7 +399,7 @@ public sealed class BitPdfFont
             }
             // Bare CFF (FontFile3 /Type1C) still needs a CFF parser; substituted for now.
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             // Ignore malformed font programs and fall back to substitute fonts.
         }
@@ -626,7 +626,7 @@ public sealed class BitPdfFont
             {
                 font._cidEncoding = BitPdfCMap.Parse(BitPdfStreamDecoder.Decode(cmapStream));
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 font._cidEncoding = BitPdfCMap.Identity;
             }
@@ -682,7 +682,7 @@ public sealed class BitPdfFont
             {
                 return BitPdfToUnicodeCMap.Parse(BitPdfStreamDecoder.Decode(stream));
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 return null;
             }

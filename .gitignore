@@ -297,10 +297,14 @@ _book
 /src/BlazeDb/Bit.BlazeDb.Browser/Scripts/**/*.js
 /src/BlazeDb/Bit.BlazeDb.Browser/wwwroot/**/*.js
 
+/src/Bdnd/Bit.Bdnd/Scripts/**/*.js
+/src/Bdnd/Bit.Bdnd/wwwroot/**/*.js
+
 /src/Blow/Bit.Blow/Scripts/**/*.js
 /src/Blow/Bit.Blow/wwwroot/**/*.js
 /src/Blow/Bit.Blow/wwwroot/**/*.css
 
+/src/Borm/Bit.Borm/wwwroot/**/*.css
 /src/Bcrdt/Bit.Bcrdt.Blazor/Scripts/**/*.js
 /src/Bcrdt/Bit.Bcrdt.Blazor/wwwroot/**/*.js
 
@@ -310,6 +314,13 @@ _book
 /src/Bonboarding/Bit.Bonboarding/Scripts/**/*.js
 /src/Bonboarding/Bit.Bonboarding/wwwroot/**/*.js
 /src/Bonboarding/Bit.Bonboarding/wwwroot/**/*.css
+
+/src/Bortable/Bit.Bortable/Scripts/**/*.js
+/src/Bortable/Bit.Bortable/wwwroot/**/*.js
+/src/Bortable/Bit.Bortable/wwwroot/**/*.css
+
+/src/Belemetry/Bit.Belemetry/Scripts/**/*.js
+/src/Belemetry/Bit.Belemetry/wwwroot/**/*.js
 
 /src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js

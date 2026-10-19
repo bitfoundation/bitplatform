@@ -32,6 +32,8 @@ public static partial class Program
 
         app.UseLocalization();
 
+        app.UseRequestIdHeader();
+
         app.UseExceptionHandler();
 
         if (env.IsDevelopment() is false)

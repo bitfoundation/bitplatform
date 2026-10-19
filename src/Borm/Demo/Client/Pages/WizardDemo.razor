@@ -1,0 +1,98 @@
+﻿@page "/wizard"
+
+<PageTitle>Multi-step wizard</PageTitle>
+
+<div class="demo-intro">
+    <h1>Multi-step wizard</h1>
+    <p>Group fields into steps. Each step validates before advancing, and steps can be shown conditionally — the company step here only appears for business accounts.</p>
+    <p>
+        Walk to the last step and then click back through the stepper. Every step you have already been
+        past stays clickable in <em>both</em> directions — it was validated on the way through, so
+        making you press Next through the rest just to fix one answer would be busywork. A step you
+        have never reached stays inert.
+    </p>
+</div>
+
+<div class="demo-card">
+    <BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit" SubmitText="Finish" />
+</div>
+
+@if (_submitted)
+{
+    <div class="demo-result"><strong>All done ✓</strong> <pre>@_json</pre></div>
+}
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/wizard"
+
+<BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit" SubmitText="Finish" />
+
+@code {
+    private readonly AccountSignup _model = new();
+    private BormDefinition _schema = default!;
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.For<AccountSignup>()
+            .Title("Account setup")
+            .Field(x => x.FullName, f => f.Required().MinLength(2))
+            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.AccountKind, f => f.AsRadio().Label("Account type"))
+            .Field(x => x.CompanyName, f => f.Label("Company name").Required("Required for business accounts."))
+            .Field(x => x.VatNumber, f => f.Label("VAT number"))
+            .Field(x => x.AcceptTerms, f => f.Required("Please accept the terms."))
+            .Step("contact", s => s.Title("Contact").Fields("FullName", "Email"))
+            .Step("type", s => s.Title("Account type").Fields("AccountKind"))
+            .Step("company", s => s.Title("Company")
+                .Fields("CompanyName", "VatNumber")
+                .VisibleWhen(new BormFieldCondition("AccountKind", BormConditionOperator.Equals, "Business")))
+            .Step("confirm", s => s.Title("Confirm").Fields("AcceptTerms"))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
+""";
+
+    private readonly AccountSignup _model = new();
+    private BormDefinition _schema = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.For<AccountSignup>()
+            .Title("Account setup")
+            .Field(x => x.FullName, f => f.Required().MinLength(2))
+            .Field(x => x.Email, f => f.Required().Email())
+            .Field(x => x.AccountKind, f => f.AsRadio().Label("Account type"))
+            .Field(x => x.CompanyName, f => f.Label("Company name").Required("Required for business accounts."))
+            .Field(x => x.VatNumber, f => f.Label("VAT number"))
+            .Field(x => x.AcceptTerms, f => f.Required("Please accept the terms."))
+            .Step("contact", s => s.Title("Contact").Fields("FullName", "Email"))
+            .Step("type", s => s.Title("Account type").Fields("AccountKind"))
+            .Step("company", s => s.Title("Company")
+                .Fields("CompanyName", "VatNumber")
+                .VisibleWhen(new BormFieldCondition("AccountKind", BormConditionOperator.Equals, "Business")))
+            .Step("confirm", s => s.Title("Confirm").Fields("AcceptTerms"))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

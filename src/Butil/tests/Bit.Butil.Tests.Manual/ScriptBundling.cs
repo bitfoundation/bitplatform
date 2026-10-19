@@ -717,12 +717,26 @@ internal static class ScriptBundling
             "the chunks and their manifest are packed into the folder the consumer-side targets read them from",
             $"the targets read '{chunksDirectory}' and the package ships them to [{string.Join(", ", packed.SelectMany(entry => PackageFolders(entry.PackagePath)))}]");
 
-        // The task is packed through the item its own project's GetTargetPath hands back, so the pack entry
-        // names no file - only the folder it lands in can be compared with the path the targets load from.
-        checks.That(packed.Any(entry => entry.Include.Contains("ButilBuildTaskAssembly", StringComparison.OrdinalIgnoreCase)
-                && PackageFolders(entry.PackagePath).Any(folder => tasksAssembly == folder + "/" + Path.GetFileName(tasksAssembly))),
-            "the MSBuild task is packed into the folder the consumer-side targets load it from",
-            $"the targets load '{tasksAssembly}'");
+        // The task is packed through the item its own project's GetTargetPath hands back, so the pack entry names
+        // the file only through that item's metadata - a folder (tasks\), or a path spelled from its
+        // %(Filename)%(Extension), which is how it avoids the double slash a folder gets (#13819). Either is
+        // resolved against the assembly that project builds - what the package then carries - and compared
+        // with the path the targets load, so a renamed assembly fails here too, not only a moved folder.
+        var taskProject = Path.Combine(butilRoot, "..", "Bit.Butil.Build", "Bit.Butil.Build.csproj");
+        if (File.Exists(taskProject) is false)
+        {
+            checks.That(false, "the MSBuild task's packing was not checked", $"{taskProject} is missing");
+        }
+        else
+        {
+            var taskFile = TaskAssemblyFileName(taskProject);
+            var taskEntries = packed.Where(entry => entry.Include.Contains("ButilBuildTaskAssembly", StringComparison.OrdinalIgnoreCase)).ToArray();
+            var shippedTo = taskEntries.SelectMany(entry => PackageFolders(entry.PackagePath)).Select(path => PackedFile(path, taskFile)).ToArray();
+
+            checks.That(shippedTo.Contains(tasksAssembly),
+                "the MSBuild task is packed into the folder the consumer-side targets load it from",
+                $"the targets load '{tasksAssembly}' and the package ships {taskFile} to [{string.Join(", ", shippedTo)}]");
+        }
 
         var packedTargets = packed.Where(entry => entry.Include.Contains(".targets", StringComparison.OrdinalIgnoreCase)).ToArray();
         checks.That(packedTargets.Any(entry => entry.Include.Contains("Bit.Butil.targets", StringComparison.OrdinalIgnoreCase)
@@ -801,6 +815,28 @@ internal static class ScriptBundling
     /// <summary>The folders one pack item's PackagePath names - it may name several, separated by semicolons.</summary>
     private static string[] PackageFolders(string? packagePath)
         => [.. (packagePath ?? string.Empty).Split(';', StringSplitOptions.RemoveEmptyEntries).Select(Normalize)];
+
+    /// <summary>
+    /// Where a pack item lands <paramref name="fileName"/>, as <see cref="Normalize"/> spells it: under a folder
+    /// PackagePath as itself, or at a file PackagePath with the item's <c>%(Filename)</c> and <c>%(Extension)</c>
+    /// filled in. Any other metadata is left as written, so a path naming it matches nothing.
+    /// </summary>
+    private static string PackedFile(string packagePath, string fileName)
+    {
+        if (packagePath.Contains("%(", StringComparison.Ordinal) is false) return packagePath + "/" + fileName.ToLowerInvariant();
+
+        var resolved = Regex.Replace(packagePath, @"%\((?:\w+\.)?filename\)", Path.GetFileNameWithoutExtension(fileName).ToLowerInvariant());
+        return Regex.Replace(resolved, @"%\((?:\w+\.)?extension\)", Path.GetExtension(fileName).ToLowerInvariant());
+    }
+
+    /// <summary>The file a project's GetTargetPath names: its AssemblyName, or else the project's own name, as a dll.</summary>
+    private static string TaskAssemblyFileName(string projectPath)
+    {
+        var assemblyName = XDocument.Load(projectPath).Descendants()
+            .FirstOrDefault(element => element.Name.LocalName == "AssemblyName" && string.IsNullOrWhiteSpace(element.Value) is false)?.Value.Trim();
+
+        return (assemblyName ?? Path.GetFileNameWithoutExtension(projectPath)) + ".dll";
+    }
 
     /// <summary>The default a targets file gives a property, as written in its conditioned assignment.</summary>
     private static string TargetsDefault(string targets, string property)
