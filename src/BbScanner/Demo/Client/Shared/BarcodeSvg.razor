@@ -1,0 +1,138 @@
+﻿@using System.Text
+@using Bit.BbScanner
+
+@*
+    Renders a generated symbol as inline SVG.
+
+    The demo needs real, scannable barcodes on screen so that a visitor can point a phone at the
+    page, and so that the file scanning page has something to load. Emitting SVG keeps that free
+    of any image encoder: the module grid becomes a single path, which stays crisp at any size.
+*@
+
+<figure class="sample">
+    <svg class="sample__svg"
+         viewBox="@_viewBox"
+         style="max-inline-size:@(Size)px;aspect-ratio:@_aspectRatio;"
+         shape-rendering="crispEdges"
+         role="img"
+         aria-label="@($"{Caption} barcode encoding {Value}")">
+        <rect width="100%" height="100%" fill="#ffffff" />
+        <path d="@_path" fill="#000000" />
+    </svg>
+    <figcaption class="sample__caption">
+        <strong>@Caption</strong>
+        <span class="sample__value">@Value</span>
+    </figcaption>
+</figure>
+
+@code {
+    private string _path = string.Empty;
+    private string _viewBox = "0 0 1 1";
+    private string _aspectRatio = "1 / 1";
+
+    /// <summary>A two dimensional module grid to render.</summary>
+    [Parameter]
+    public BbBitMatrix? Matrix { get; set; }
+
+    /// <summary>A linear module array to render; true is a bar.</summary>
+    [Parameter]
+    public bool[]? Modules { get; set; }
+
+    /// <summary>Bar height in modules, for linear symbols.</summary>
+    [Parameter]
+    public int LinearHeight { get; set; } = 28;
+
+    /// <summary>Quiet zone width in modules.</summary>
+    [Parameter]
+    public int QuietZone { get; set; } = 4;
+
+    /// <summary>Widest the symbol is drawn, in CSS pixels. It shrinks to fit a narrower card.</summary>
+    [Parameter]
+    public int Size { get; set; } = 190;
+
+    /// <summary>Label shown under the symbol.</summary>
+    [Parameter]
+    public string Caption { get; set; } = string.Empty;
+
+    /// <summary>The encoded value, shown under the caption.</summary>
+    [Parameter]
+    public string Value { get; set; } = string.Empty;
+
+    protected override void OnParametersSet()
+    {
+        if (Matrix is not null)
+        {
+            BuildMatrixPath(Matrix);
+        }
+        else if (Modules is not null)
+        {
+            BuildLinearPath(Modules);
+        }
+    }
+
+    private void BuildMatrixPath(BbBitMatrix matrix)
+    {
+        var width = matrix.Width + (2 * QuietZone);
+        var height = matrix.Height + (2 * QuietZone);
+        _viewBox = $"0 0 {width} {height}";
+        _aspectRatio = $"{width} / {height}";
+
+        var path = new StringBuilder(matrix.Width * matrix.Height / 2);
+        for (var y = 0; y < matrix.Height; y++)
+        {
+            var x = 0;
+            while (x < matrix.Width)
+            {
+                if (!matrix[x, y])
+                {
+                    x++;
+                    continue;
+                }
+
+                // Merge horizontal runs into one rectangle: far fewer path commands, identical output.
+                var run = 1;
+                while (x + run < matrix.Width && matrix[x + run, y])
+                {
+                    run++;
+                }
+
+                path.Append('M').Append(x + QuietZone).Append(' ').Append(y + QuietZone)
+                    .Append('h').Append(run).Append("v1h-").Append(run).Append('z');
+                x += run;
+            }
+        }
+
+        _path = path.ToString();
+    }
+
+    private void BuildLinearPath(bool[] modules)
+    {
+        var width = modules.Length + (2 * QuietZone);
+        var height = LinearHeight + (2 * QuietZone);
+        _viewBox = $"0 0 {width} {height}";
+        _aspectRatio = $"{width} / {height}";
+
+        var path = new StringBuilder(modules.Length);
+        var i = 0;
+        while (i < modules.Length)
+        {
+            if (!modules[i])
+            {
+                i++;
+                continue;
+            }
+
+            var run = 1;
+            while (i + run < modules.Length && modules[i + run])
+            {
+                run++;
+            }
+
+            path.Append('M').Append(i + QuietZone).Append(' ').Append(QuietZone)
+                .Append('h').Append(run).Append('v').Append(LinearHeight).Append("h-").Append(run).Append('z');
+            i += run;
+        }
+
+        _path = path.ToString();
+    }
+}

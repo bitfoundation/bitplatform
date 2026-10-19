@@ -1,0 +1,137 @@
+﻿@page "/array"
+@implements IDisposable
+
+<PageTitle>Array / repeater</PageTitle>
+
+<div class="demo-intro">
+    <h1>Array / repeater</h1>
+    <p>
+        Array fields render a repeating editor with add, remove and reorder. Each item is a nested
+        object validated like any other field, and its errors travel with it when rows move. The
+        <em>Total</em> below is a <strong>computed field</strong>: the schema derives it from the lines,
+        so no page code keeps it in sync.
+    </p>
+    <p>
+        Try it with the keyboard. Adding a line puts the caret in it; removing one moves the caret to
+        the line that took its place — rather than dropping it on the page body, which is where a
+        button that deletes itself normally leaves you. An invoice needs at least one line, so the last
+        one cannot be removed; on a repeater that can be emptied, the caret goes to the add button.
+    </p>
+</div>
+
+<div class="demo-card">
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save invoice"
+              ShowErrorSummary="true" Disabled="_locked" />
+</div>
+
+<div class="demo-card" style="margin-top:1rem;">
+    <label style="display:flex;gap:.5rem;align-items:center;font-size:.9rem;">
+        <input type="checkbox" checked="@_locked" @onchange="@(e => _locked = e.Value is bool b && b)" />
+        Lock the invoice (<code>Disabled</code>)
+    </label>
+    <p style="color:#64748b;font-size:.82rem;margin:.4rem 0 0;">
+        <code>Disabled</code> makes the form inoperable — every control and button, the repeater's
+        buttons included. It is deliberately not the same as <code>ReadOnly</code>, which keeps the
+        fields focusable and readable for a review screen.
+    </p>
+</div>
+
+@if (_submitted)
+{
+    <div class="demo-result"><strong>Saved ✓</strong> <pre>@_json</pre></div>
+}
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/array"
+@implements IDisposable
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save invoice" ShowErrorSummary="true" />
+
+@code {
+    private readonly Invoice _model = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<Invoice>()
+            .Title("New invoice")
+            .Field(x => x.Customer, f => f.Required().Autocomplete("organization"))
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Description, f => f.Required())
+                    .Field(l => l.Quantity, f => f.Range(1, 9999))
+                    .Field(l => l.UnitPrice, f => f.Range(0, 1_000_000).Step(0.01))
+                    // Each line's total is derived from its own quantity and price.
+                    .Computed(l => l.LineTotal, l => l.Quantity * l.UnitPrice,
+                              dependsOn: ["Quantity", "UnitPrice"]),
+                f => f.Items(min: 1, message: "Add at least one line.").Attr("itemNoun", "line"))
+            // ...and the invoice total from every line. Recomputed whenever anything under Lines changes.
+            .Computed(x => x.Total, m => m.Lines.Sum(l => l.Quantity * l.UnitPrice),
+                      dependsOn: [nameof(Invoice.Lines)])
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}
+""";
+
+    private readonly Invoice _model = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private bool _locked;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<Invoice>()
+            .Title("New invoice")
+            .Field(x => x.Customer, f => f.Required().Autocomplete("organization"))
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Description, f => f.Required())
+                    .Field(l => l.Quantity, f => f.Range(1, 9999))
+                    .Field(l => l.UnitPrice, f => f.Range(0, 1_000_000).Step(0.01))
+                    .Computed(l => l.LineTotal, l => l.Quantity * l.UnitPrice,
+                              dependsOn: ["Quantity", "UnitPrice"]),
+                f => f.Items(min: 1, message: "Add at least one line.").Attr("itemNoun", "line"))
+            .Computed(x => x.Total, m => m.Lines.Sum(l => l.Quantity * l.UnitPrice),
+                      dependsOn: [nameof(Invoice.Lines)])
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}

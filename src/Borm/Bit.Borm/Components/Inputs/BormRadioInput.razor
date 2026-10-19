@@ -1,0 +1,51 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* The group is named by the field's own label element when there is one; when the schema suppressed
+   the visible label, pointing aria-labelledby at an element that was never rendered would leave the
+   group anonymous, so the name is inlined instead. *@
+@* tabindex="-1" so "take me to this field" has somewhere to land. A radio group has no single control
+   to focus, and landing on the group itself makes the screen reader announce the group's name and role
+   before the user arrows through the options — which is how a radio group is meant to be navigated. *@
+@* Splat first, exactly as every other renderer does: the schema's extra attributes land on the group
+   (there is no single control to put them on), and everything below overrides them so a stray
+   aria-labelledby cannot unhook the group's name. The field's id goes on the group for the same
+   reason the tag list's does: it is what an error-summary link points at, and with no element
+   carrying it the link led nowhere. *@
+<div @attributes="ExtraAttributes"
+     id="@Context.ElementId"
+     class="bit-borm-radio-group"
+     @ref="Element"
+     tabindex="-1"
+     role="radiogroup"
+     aria-labelledby="@(Field.ShowLabel ? Context.LabelId : null)"
+     aria-label="@AriaLabel"
+     aria-required="@AriaRequired"
+     aria-invalid="@AriaInvalid"
+     aria-describedby="@DescribedBy">
+    @for (var index = 0; index < Context.Options.Count; index++)
+    {
+        var opt = Context.Options[index];
+        var optionId = OptionId(index, opt.Value);
+        <label class="bit-borm-radio" for="@optionId">
+            <input type="radio"
+                   id="@optionId"
+                   name="@Context.ElementId"
+                   value="@opt.Value"
+                   checked="@(opt.Value == Context.StringValue)"
+                   disabled="@(DisabledOrReadOnly || opt.Disabled)"
+                   @onchange="@(() => Context.SetFromStringAsync(opt.Value))"
+                   @onblur="OnBlur" />
+            <span>@opt.Label</span>
+        </label>
+    }
+</div>
+
+@code {
+    protected override Task OnParametersSetAsync() => LoadOptionsAsync();
+
+    // Option values become part of a DOM id, so anything that is not id-safe is folded to '_'. The
+    // index goes in too: folding makes "en-US" and "en_US" the same string, and two options sharing an
+    // id would leave one label pointing at the other's control.
+    private string OptionId(int index, string value) => BormFieldContext.OptionId(Context.ElementId, index, value);
+}

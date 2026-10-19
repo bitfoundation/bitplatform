@@ -1,0 +1,99 @@
+﻿@page "/builder"
+
+<PageTitle>Fluent builder + conditions</PageTitle>
+
+<div class="demo-intro">
+    <h1>Fluent builder + conditions</h1>
+    <p>Configure fields with a type-safe fluent API. The company fields below appear only when the account type is <em>Business</em>.</p>
+</div>
+
+<div class="demo-card">
+    <BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit" SubmitText="Sign up" />
+</div>
+
+@if (_submitted)
+{
+    <div class="demo-result">
+        <strong>Submitted ✓</strong>
+        <pre>@_json</pre>
+    </div>
+}
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/builder"
+
+<BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit" SubmitText="Sign up" />
+
+@code {
+    private readonly AccountSignup _model = new();
+    private BormDefinition _schema = default!;
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.For<AccountSignup>()
+            .Title("Create your account")
+            .Field(x => x.FullName, f => f.Required().MinLength(2).Placeholder("Ada Lovelace"))
+            .Field(x => x.Email, f => f.Required().Email().Placeholder("you@example.com"))
+            .Field(x => x.AccountKind, f => f.AsRadio().Label("Account type"))
+            .Field(x => x.CompanyName, f => f
+                .Label("Company name")
+                .Required("Company name is required for business accounts.")
+                .VisibleWhen("AccountKind", BormConditionOperator.Equals, "Business"))
+            .Field(x => x.VatNumber, f => f
+                .Label("VAT number")
+                .Pattern(@"^[A-Z]{2}\d{8,12}$", "Use a format like GB123456789.")
+                .VisibleWhen("AccountKind", BormConditionOperator.Equals, "Business"))
+            .Field(x => x.AcceptTerms, f => f
+                .Label("I accept the terms and conditions")
+                .Required("You must accept the terms to continue."))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
+""";
+
+    private readonly AccountSignup _model = new();
+    private BormDefinition _schema = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.For<AccountSignup>()
+            .Title("Create your account")
+            .Field(x => x.FullName, f => f.Required().MinLength(2).Placeholder("Ada Lovelace"))
+            .Field(x => x.Email, f => f.Required().Email().Placeholder("you@example.com"))
+            .Field(x => x.AccountKind, f => f.AsRadio().Label("Account type"))
+            .Field(x => x.CompanyName, f => f
+                .Label("Company name")
+                .Required("Company name is required for business accounts.")
+                .VisibleWhen("AccountKind", BormConditionOperator.Equals, "Business"))
+            .Field(x => x.VatNumber, f => f
+                .Label("VAT number")
+                .Pattern(@"^[A-Z]{2}\d{8,12}$", "Use a format like GB123456789.")
+                .VisibleWhen("AccountKind", BormConditionOperator.Equals, "Business"))
+            .Field(x => x.AcceptTerms, f => f
+                .Label("I accept the terms and conditions")
+                .Required("You must accept the terms to continue."))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

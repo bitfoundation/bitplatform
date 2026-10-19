@@ -1,0 +1,34 @@
+﻿<section class="section" id="@Id">
+    @if (!string.IsNullOrWhiteSpace(Title))
+    {
+        <div class="section-head">
+            <h2>
+                @if (!string.IsNullOrWhiteSpace(IconName))
+                {
+                    <Icon Name="@IconName" />
+                }
+                @Title
+            </h2>
+            @if (!string.IsNullOrWhiteSpace(Lead))
+            {
+                <p class="lead">@Lead</p>
+            }
+            @Description
+        </div>
+    }
+    @ChildContent
+</section>
+
+@code {
+    [Parameter] public string? Title { get; set; }
+
+    [Parameter] public string? IconName { get; set; }
+
+    [Parameter] public string? Lead { get; set; }
+
+    [Parameter] public string? Id { get; set; }
+
+    [Parameter] public RenderFragment? Description { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

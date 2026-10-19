@@ -82,6 +82,25 @@
     <Project Path="Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj" />
     <Project Path="Bmage/Tests/Bit.Bmage.Tests.Mcp/Bit.Bmage.Tests.Mcp.csproj" />
   </Folder>
+  <Folder Name="/Bsqlite/">
+    <File Path="Bsqlite/README.md" />
+    <Project Path="Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj" />
+    <Project Path="Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj" />
+  </Folder>
+  <Folder Name="/Bsqlite/Demo/">
+    <Project Path="Bsqlite/Demo/Client/Bit.Bsqlite.Demo.Client.csproj" />
+    <Project Path="Bsqlite/Demo/Data/Bit.Bsqlite.Demo.Data.csproj" />
+    <Project Path="Bsqlite/Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
+    <Project Path="Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bsqlite/Tests/">
+    <Project Path="Bsqlite/Tests/Bit.Bsqlite.Tests/Bit.Bsqlite.Tests.csproj" />
+    <Project Path="Bsqlite/Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj" />
+    <Project Path="Bsqlite/Tests/Bit.Bsqlite.Tests.Mcp/Bit.Bsqlite.Tests.Mcp.csproj" />
+  </Folder>
   <Folder Name="/Bmotion/">
     <File Path="Bmotion/README.md" />
     <Project Path="Bmotion/Bit.Bmotion/Bit.Bmotion.csproj" />
@@ -113,6 +132,92 @@
     <Project Path="Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj" />
     <Project Path="Bink/Tests/Bit.Bink.Benchmarks/Bit.Bink.Benchmarks.csproj" />
   </Folder>
+  <Folder Name="/Balette/">
+    <File Path="Balette/README.md" />
+    <Project Path="Balette/Bit.Balette/Bit.Balette.csproj" />
+  </Folder>
+  <Folder Name="/Balette/Demo/">
+    <Project Path="Balette/Demo/Client/Bit.Balette.Demo.Client.csproj" />
+    <Project Path="Balette/Demo/Server/Bit.Balette.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Balette/Tests/">
+    <Project Path="Balette/Tests/Bit.Balette.Tests/Bit.Balette.Tests.csproj" />
+    <Project Path="Balette/Tests/Bit.Balette.Tests.Mcp/Bit.Balette.Tests.Mcp.csproj" />
+    <Project Path="Balette/Tests/Bit.Balette.Tests.E2E/Bit.Balette.Tests.E2E.csproj" />
+    <Project Path="Balette/Tests/Bit.Balette.Benchmarks/Bit.Balette.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/BbScanner/">
+    <File Path="BbScanner/README.md" />
+    <Project Path="BbScanner/Bit.BbScanner/Bit.BbScanner.csproj" />
+  </Folder>
+  <Folder Name="/BbScanner/Demo/">
+    <Project Path="BbScanner/Demo/Client/Bit.BbScanner.Demo.Client.csproj" />
+    <Project Path="BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/BbScanner/Tests/">
+    <Project Path="BbScanner/Tests/Bit.BbScanner.TestKit/Bit.BbScanner.TestKit.csproj" />
+    <Project Path="BbScanner/Tests/Bit.BbScanner.Tests/Bit.BbScanner.Tests.csproj" />
+    <Project Path="BbScanner/Tests/Bit.BbScanner.Tests.Mcp/Bit.BbScanner.Tests.Mcp.csproj" />
+    <Project Path="BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj" />
+    <Project Path="BbScanner/Tests/Bit.BbScanner.Benchmarks/Bit.BbScanner.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/Bdnd/">
+    <File Path="Bdnd/README.md" />
+    <Project Path="Bdnd/Bit.Bdnd/Bit.Bdnd.csproj" />
+  </Folder>
+  <Folder Name="/Bdnd/Demo/">
+    <Project Path="Bdnd/Demo/Client/Bit.Bdnd.Demo.Client.csproj" />
+    <Project Path="Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bdnd/Tests/">
+    <Project Path="Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
+    <Project Path="Bdnd/Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj" />
+    <Project Path="Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj" />
+  </Folder>
+  <Folder Name="/BlazeDb/">
+    <File Path="BlazeDb/README.md" />
+    <Project Path="BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj" />
+    <Project Path="BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj" />
+    <Project Path="BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj" />
+    <Project Path="BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj" />
+  </Folder>
+  <Folder Name="/BlazeDb/Demo/">
+    <Project Path="BlazeDb/Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
+    <Project Path="BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/BlazeDb/Tests/">
+    <Project Path="BlazeDb/Tests/Bit.BlazeDb.Tests/Bit.BlazeDb.Tests.csproj" />
+    <Project Path="BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp/Bit.BlazeDb.Tests.Mcp.csproj" />
+    <Project Path="BlazeDb/Tests/Bit.BlazeDb.Tests.E2E/Bit.BlazeDb.Tests.E2E.csproj" />
+    <Project Path="BlazeDb/Tests/Bit.BlazeDb.Benchmarks/Bit.BlazeDb.Benchmarks.csproj" />
+  </Folder>
+  <Folder Name="/Blow/">
+    <File Path="Blow/README.md" />
+    <Project Path="Blow/Bit.Blow/Bit.Blow.csproj" />
+  </Folder>
+  <Folder Name="/Blow/Demo/">
+    <Project Path="Blow/Demo/Client/Bit.Blow.Demo.Client.csproj" />
+    <Project Path="Blow/Demo/Server/Bit.Blow.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Blow/Tests/">
+    <Project Path="Blow/Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj" />
+    <Project Path="Blow/Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj" />
+    <Project Path="Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj" />
+  </Folder>
+  <Folder Name="/Borm/">
+    <File Path="Borm/README.md" />
+    <Project Path="Borm/Bit.Borm/Bit.Borm.csproj" />
+    <Project Path="Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj" />
+  </Folder>
+  <Folder Name="/Borm/Demo/">
+    <Project Path="Borm/Demo/Client/Bit.Borm.Demo.Client.csproj" />
+    <Project Path="Borm/Demo/Server/Bit.Borm.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Borm/Tests/">
+    <Project Path="Borm/Tests/Bit.Borm.Tests/Bit.Borm.Tests.csproj" />
+    <Project Path="Borm/Tests/Bit.Borm.Tests.Mcp/Bit.Borm.Tests.Mcp.csproj" />
+    <Project Path="Borm/Tests/Bit.Borm.Tests.E2E/Bit.Borm.Tests.E2E.csproj" />
+  </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />
@@ -124,6 +229,19 @@
   <Folder Name="/Bonboarding/Tests/">
     <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
     <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp/Bit.Bonboarding.Tests.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/">
+    <File Path="Bortable/README.md" />
+    <Project Path="Bortable/Bit.Bortable/Bit.Bortable.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/Demo/">
+    <Project Path="Bortable/Demo/Client/Bit.Bortable.Demo.Client.csproj" />
+    <Project Path="Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/Tests/">
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests/Bit.Bortable.Tests.csproj" />
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests.Mcp/Bit.Bortable.Tests.Mcp.csproj" />
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj" />
   </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
@@ -228,9 +346,9 @@
     <Project Path="Butil/Bit.Butil/Bit.Butil.csproj" />
     <Project Path="Butil/Bit.Butil.Build/Bit.Butil.Build.csproj" />
   </Folder>
-  <Folder Name="/Butil/Bit.Butil.Demo/">
-    <Project Path="Butil/Bit.Butil.Demo/Client/Bit.Butil.Demo.Client.csproj" />
-    <Project Path="Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj" />
+  <Folder Name="/Butil/Demo/">
+    <Project Path="Butil/Demo/Client/Bit.Butil.Demo.Client.csproj" />
+    <Project Path="Butil/Demo/Server/Bit.Butil.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Butil/Samples/">
     <Project Path="Butil/Samples/Bit.Butil.Samples.Core/Bit.Butil.Samples.Core.csproj" />

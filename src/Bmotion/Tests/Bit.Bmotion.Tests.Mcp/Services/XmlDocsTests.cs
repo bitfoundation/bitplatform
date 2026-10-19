@@ -62,6 +62,20 @@ public class XmlDocsTests
     }
 
     /// <summary>
+    /// A cref to a member of a generic type carries the type's arity marker in its middle
+    /// ("P:Bit.Bmotion.BmotionPresenceGroup`1.ChildContent"); the reference still names the member.
+    /// </summary>
+    [TestMethod]
+    public void GetSummary_ACrefToAMemberOfAGenericType_KeepsTheMember()
+    {
+        var summary = BmotionXmlDocs.GetSummary($"T:{typeof(BmotionPresenceGroup<>).FullName}")!;
+
+        StringAssert.Contains(summary, "BmotionPresenceGroup.ChildContent");
+        StringAssert.Contains(summary, "BmotionPresenceGroup.Items");
+        Assert.IsFalse(summary.Contains("`1", StringComparison.Ordinal), $"An arity marker reached the reader: {summary}");
+    }
+
+    /// <summary>
     /// While the prose is unwrapped, a code sample is parked under a U+0001 placeholder so its own
     /// line breaks survive the whitespace passes. The placeholder itself must always be put back.
     /// </summary>

@@ -1,0 +1,38 @@
+﻿@page "/examples/cancel-connection"
+
+<PageTitle>Cancel Connection - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Cancel Connection"
+                 Summary="Start dragging a connection from a handle, then press Escape to cancel it before releasing. The status line tracks the connection lifecycle.">
+    <Toolbar>
+        <span class="text-muted">status: <strong>@_status</strong></span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    OnConnectStart="OnStart" OnConnectEnd="OnEnd">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _status = "idle";
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Start dragging, then press Esc", Position = new(140, 40), Width = 240 },
+            new BlowNode { Id = "2", Label = "Target", Position = new(220, 220) },
+        ];
+        _edges = [];
+    }
+
+    private void OnStart(BlowConnectionStartInfo info) => _status = $"connecting from node {info.NodeId}…";
+
+    private void OnEnd(BlowConnectEndInfo info) =>
+        _status = info.IsValid ? "connected" : "cancelled (no connection made)";
+}

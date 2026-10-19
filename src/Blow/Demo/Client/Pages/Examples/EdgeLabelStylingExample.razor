@@ -1,0 +1,89 @@
+﻿@page "/examples/edge-label-styling"
+
+<PageTitle>Edge Label Styling - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Edge Label Styling"
+                 Summary="The plate behind an edge label can be restyled, padded, rounded or removed. SVG cannot size a rectangle to the text inside it and measuring every label in the browser on every render would be far too costly, so the plate is sized from a character-weighted estimate - the padding controls are there to tune it for an unusual font.">
+    <Toolbar>
+        <label>
+            Padding
+            <input type="range" min="0" max="20" step="1" value="@_paddingX"
+                   @oninput="@(e => Set(ref _paddingX, e.Value))" />
+        </label>
+        <label>
+            Radius
+            <input type="range" min="0" max="12" step="1" value="@_radius"
+                   @oninput="@(e => Set(ref _radius, e.Value))" />
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private double _paddingX = 4;
+    private double _radius = 3;
+
+    private readonly List<BlowNode> _nodes =
+    [
+        new() { Id = "a1", Type = "input", Label = "Plain", Position = new(0, 0) },
+        new() { Id = "a2", Type = "output", Label = "…", Position = new(320, 60) },
+        new() { Id = "b1", Type = "input", Label = "Styled", Position = new(0, 150) },
+        new() { Id = "b2", Type = "output", Label = "…", Position = new(320, 210) },
+        new() { Id = "c1", Type = "input", Label = "No plate", Position = new(0, 300) },
+        new() { Id = "c2", Type = "output", Label = "…", Position = new(320, 360) },
+        new() { Id = "d1", Type = "input", Label = "Mixed width", Position = new(0, 450) },
+        new() { Id = "d2", Type = "output", Label = "…", Position = new(320, 510) },
+    ];
+
+    // Built once: the canvas edits this list in place as the user connects, selects and deletes,
+    // so a list rebuilt on every render would throw those edits away at the next slider move.
+    private readonly List<BlowEdge> _edges =
+    [
+        new() { Id = "plain", Source = "a1", Target = "a2", Label = "default" },
+        new()
+        {
+            Id = "styled", Source = "b1", Target = "b2", Label = "approved",
+            Stroke = "#16a34a",
+            LabelStyle = "fill:#065f46;font-weight:600",
+            LabelBgStyle = "fill:#d1fae5;fill-opacity:1;stroke:#16a34a;stroke-width:1",
+        },
+        new()
+        {
+            Id = "bare", Source = "c1", Target = "c2", Label = "no plate",
+            LabelShowBg = false,
+            LabelStyle = "fill:#b91c1c;font-weight:700",
+        },
+        new()
+        {
+            // 'i' and 'm' are nothing like the same width, which a naive length-times-a-constant
+            // estimate gets badly wrong in both directions.
+            Id = "mixed", Source = "d1", Target = "d2", Label = "illili vs WWMMWW",
+        },
+    ];
+
+    protected override void OnInitialized() => ApplyPlate();
+
+    private void Set(ref double field, object? raw)
+    {
+        if (!double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var value))
+            return;
+
+        field = value;
+        ApplyPlate();
+    }
+
+    // The plate is read on every render, so retuning the edges in place is all a slider needs.
+    private void ApplyPlate()
+    {
+        foreach (var edge in _edges)
+        {
+            edge.LabelBgPaddingX = _paddingX;
+            edge.LabelBgBorderRadius = _radius;
+        }
+    }
+}

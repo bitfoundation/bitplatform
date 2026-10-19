@@ -2213,4 +2213,34 @@ Después de alcanzar {0}, los inicios de sesión adicionales tendrán funciones 
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>Hemos enviado un código a {0} y {1}.</value>
   </data>
+    <data name="EditImage" xml:space="preserve">
+    <value>Editar imagen</value>
+  </data>
+    <data name="Crop" xml:space="preserve">
+    <value>Recortar</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>Aplicar recorte</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>Girar a la izquierda</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>Girar a la derecha</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>Deshacer</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>Rehacer</value>
+  </data>
+    <data name="ImageEditorCropHint" xml:space="preserve">
+    <value>Arrastra sobre la imagen para marcar la parte que quieres conservar.</value>
+  </data>
+    <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
+    <value>Esta imagen no se puede abrir aquí para editarla. Aun así puedes cargarla tal como está.</value>
+  </data>
+    <data name="UploadImageAsIs" xml:space="preserve">
+    <value>Cargar tal cual</value>
+  </data>
 </root>

@@ -29,6 +29,7 @@ public static partial class IClientCoreServiceCollectionExtensions
             services.AddScoped<TimeZoneService>();
             services.AddScoped<LazyAssemblyLoader>();
             services.AddScoped<SignInModalService>();
+            services.AddScoped<ImageEditorService>();
             services.AddScoped<IAuthTokenProvider, ClientSideAuthTokenProvider>();
             services.AddScoped<IExternalNavigationService, DefaultExternalNavigationService>();
             services.AddScoped<FileSaveService>();

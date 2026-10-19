@@ -1,0 +1,56 @@
+﻿@page "/examples/multi-flows"
+
+<PageTitle>Multi Flows - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Multi Flows"
+                 Summary="Two independent BlowCanvas instances on one page, each with its own nodes, edges, viewport and overlays.">
+    <div class="multi">
+        <div class="multi__pane">
+            <BlowCanvas Nodes="_a" Edges="_ea" FitViewOnInit="true">
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" Color="#c7d2fe" />
+                <BlowControls />
+                <BlowPanel Position="top-left"><strong>Flow A</strong></BlowPanel>
+            </BlowCanvas>
+        </div>
+        <div class="multi__pane">
+            <BlowCanvas Nodes="_b" Edges="_eb" FitViewOnInit="true">
+                <BlowBackground Variant="BlowBackgroundVariant.Lines" Gap="20" Color="#bbf7d0" />
+                <BlowControls />
+                <BlowPanel Position="top-left"><strong>Flow B</strong></BlowPanel>
+            </BlowCanvas>
+        </div>
+    </div>
+</ExampleScaffold>
+
+<style>
+    .multi { display:flex; height:100%; }
+    .multi__pane { flex:1; position:relative; border-right:1px solid var(--demo-border); }
+    .multi__pane:last-child { border-right:0; }
+</style>
+
+@code {
+    private List<BlowNode> _a = [], _b = [];
+    private List<BlowEdge> _ea = [], _eb = [];
+
+    protected override void OnInitialized()
+    {
+        _a =
+        [
+            new BlowNode { Id = "a1", Type = "input", Label = "A · 1", Position = new(80, 40) },
+            new BlowNode { Id = "a2", Type = "output", Label = "A · 2", Position = new(80, 180) },
+        ];
+        _ea = [ new BlowEdge { Id = "ea", Source = "a1", Target = "a2", Animated = true } ];
+
+        _b =
+        [
+            new BlowNode { Id = "b1", Type = "input", Label = "B · 1", Position = new(80, 40) },
+            new BlowNode { Id = "b2", Label = "B · 2", Position = new(60, 160) },
+            new BlowNode { Id = "b3", Type = "output", Label = "B · 3", Position = new(200, 160) },
+        ];
+        _eb =
+        [
+            new BlowEdge { Id = "eb1", Source = "b1", Target = "b2" },
+            new BlowEdge { Id = "eb2", Source = "b1", Target = "b3" },
+        ];
+    }
+}

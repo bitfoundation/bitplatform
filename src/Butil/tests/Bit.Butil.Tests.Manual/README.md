@@ -162,6 +162,21 @@ and this repository never does, plus the artifacts the whole feature rests on:
 Node runs the last of those; it is already a build dependency of Bit.Butil (it compiles the TypeScript), so
 a checkout that can produce the artifacts under test can always run them.
 
+**Service worker manifest** ([`ServiceWorkerRewriting.cs`](ServiceWorkerRewriting.cs)). The trimming changes
+files a service worker precaches, and in a Blazor Web App it changes them in a project other than the one that
+listed them: the WebAssembly client writes `service-worker-assets.js` from its own bundle, and the server trims
+its own afterwards. `ButilServiceWorkerManifest` rewrites the list to match, and these run it directly on
+manifests written in the SDK's shape - the cases no publish below happens to produce: a replaced bundle taking
+the new hash with every other entry untouched; dropped files leaving the list (the first, the last, all of them);
+nothing to change leaving the file byte for byte, under its own version; a URL matched however the JSON spells it
+(an escaped slash, a leading one) and only whole; a statement appended after the object kept whole, brackets and
+all; line endings kept; a version that follows what is listed and nothing else; a file that is not a manifest -
+or lists an entry that is not one flat object - refused rather than rewritten on a guess; the service worker
+script taking the new version only where the SDK put the old one; and the URL each asset is matched on computed
+from the SDK's path pattern, whichever fingerprint token it carries (optional `?`, preferred `!`, required, or one
+with its value inline). Every result is read back with a JSON parser, since a manifest that no longer parses is a
+service worker that installs nothing.
+
 **Script scanning** ([`ScriptScanning.cs`](ScriptScanning.cs)). Everything above rests on ILLink having
 run. A consumer publishing untrimmed has no trimmed assembly, and an *untrimmed* `Bit.Butil.dll` names every
 module the library has - so the signal has to come from somewhere else: the Bit.Butil types the app's own
@@ -209,7 +224,9 @@ is allowed to use, that a csproj list is *added* to what the others found rather
 assets removed from the build list are also removed from the publish list, and that a name meaning nothing
 fails the build. So these publish a real consumer app - a two-class web app next door, published in seconds
 rather than the minutes a WebAssembly one takes - and read the JavaScript back out of its publish output.
-Fifteen `dotnet publish` runs and one `dotnet msbuild`, about a minute in total, untrimmed runs only:
+Five more publish the one shape a two-class web app cannot stand in for, a Blazor Web App with a WebAssembly
+client, since that is where the service worker checks below have something to find. Twenty `dotnet publish`
+runs and one `dotnet msbuild`, about two minutes in total, untrimmed runs only:
 
 - with **no signal at all** the full bundle is published - the case that has to keep working for every
   consumer who never asked for any of this. Reached by setting `BitButilScriptScan=None`, since the switch
@@ -234,9 +251,20 @@ Fifteen `dotnet publish` runs and one `dotnet msbuild`, about a minute in total,
   loaded is - and the fixture stands in for a hybrid head by forcing Root with the Web SDK marker off, which
   is the shape that fails the moment anyone reads the mode as "this project is the app's head";
 - a **misspelled module name**, and a **scan mode that is not one of the three**, each fail the publish with
-  the error naming what was wrong.
+  the error naming what was wrong;
+- a **Blazor Web App with a service worker**
+  ([`../Bit.Butil.Tests.PublishFixture.Hosted`](../Bit.Butil.Tests.PublishFixture.Hosted), with its
+  WebAssembly client): the client trims to one module fewer than the server, so the bundle the server serves is
+  never the one the client's manifest listed, and the manifest published has to list it under its own hash - on
+  .NET 10 and on .NET 8, whose static web assets differ. In lazy mode with a client that does not trim, the
+  module files the server dropped have to leave the list; with both sides trimming there is nothing to rewrite,
+  and nothing may be. And the client published on its own, a standalone PWA, has to list its trimmed bundle with
+  no rewrite at all, since there the SDK writes the manifest after the trimming. Each of these reads the
+  rewrite's own line out of the build log and asserts it either way, so a fixture that stopped producing the
+  mismatch fails instead of passing over a manifest nobody had to fix; and each checks every listed file against
+  the publish output, the service worker's version line, and the compressed copies of all of it.
 
-The `dotnet msbuild` run is the sixteenth, and it is not a publish: it drives the two trimming targets by name
+The `dotnet msbuild` run is the twenty-first, and it is not a publish: it drives the two trimming targets by name
 so they land in a project instance where nothing else has run, which is the position the SDK puts them in on
 a referenced project. The untrimmed `Bit.Butil.dll` has to resolve there too - `@(ReferenceCopyLocalPaths)`
 is only populated because the target names `ResolveReferences` itself - and the scan reporting what it read
@@ -246,6 +274,22 @@ Every bundle assertion reads the published file and asks which chunk guards are 
 browser would find - rather than comparing byte counts. Each scenario also asserts the per-module files:
 exactly the reachable ones under lazy scripts, and *none at all* in bundle mode, which is the half of the
 selection that only a publish exercises.
+
+And each one reads the lazy-scripts switch back out of what it published: the `BitButilLazyScriptsInitializer`
+module initializer in the app's assembly (from its metadata) and the `Bit.Butil.LazyScripts` option in its
+`runtimeconfig.json` must both be there under lazy scripts and both be gone otherwise. Every scenario
+publishes from the same `obj` folder with its properties on the command line, so the bundle scenario that
+follows the lazy ones is also lazy scripts turned off on an incremental publish - the case that used to skip
+`CoreCompile` as up to date and ship a bundle app still calling `BitButil.UseLazyScripts()` at startup, its
+JavaScript files all correct and every Butil call failing on a module `import()` that 404s. The standalone
+WebAssembly client is the one publish not read this way: its assemblies are Webcil files under `_framework`
+and its runtime options are in the boot manifest; the Blazor Web App is read from its server's assembly.
+
+And every publish that succeeds has its static web assets checked against what is on disk, because the
+trimming swaps and removes assets and everything derived from one has to follow it: every endpoint in the
+published endpoints manifest names a file that was published and carries that file's Content-Length, ETag
+and integrity (MapStaticAssets serves those headers from the manifest, not from the file), and every `.br`
+and `.gz` copy of Bit.Butil's files decompresses to the file next to it.
 
 **Lazy scripts** ([`LazyScripts.cs`](LazyScripts.cs)). Against a recording `IJSRuntime`, with
 `BitButil.UseLazyScripts()` on: the first call into an API must `import()` that API's module - and only
@@ -435,8 +479,11 @@ assembly comes out at 32,256 bytes and 34 types.
   publish asset list is no longer being narrowed, so a bundle-mode app ships all 171 module files - that is
   `BitButilSelectPublishScriptAssets` not running, or running too late), *with no signal at all the full
   bundle is published* (the feature has started trimming against nothing, which would strip JavaScript from
-  every consumer who never opted in), and *fails the publish* (a name that means nothing is being accepted in
-  silence, which surfaces in a browser rather than in a build).
+  every consumer who never opted in), *fails the publish* (a name that means nothing is being accepted in
+  silence, which surfaces in a browser rather than in a build), and *compiles the lazy-scripts initializer in
+  only when lazy* (the generated `Bit.Butil.LazyScripts.g.cs` is being added to `@(Compile)` after
+  `_GenerateCompileDependencyCache` has hashed it - `BitButilGenerateLazyScriptsInitializer` has to run
+  before `BeforeCompile`).
 - **`script publishing: ... was not checked`** - a publish of the fixture failed for a reason the scenario
   did not ask for. The message carries the first error line; usually the fixture cannot find Bit.Butil's
   chunks or the MSBuild task, both of which it points at the source tree.

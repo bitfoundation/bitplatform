@@ -1,0 +1,21 @@
+﻿@inherits LayoutComponentBase
+
+@* data-interactive turns true once the page runs in the browser. Prerendered markup is on screen
+   long before its event handlers are, which is what the E2E suite waits out with it. *@
+<div class="page" data-interactive="@(RendererInfo.IsInteractive ? "true" : "false")">
+    <aside class="sidebar">
+        <NavMenu />
+    </aside>
+
+    <main class="main">
+        <header class="top-row">
+            <a href="examples">Examples</a>
+            <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Blow" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://learn.microsoft.com/aspnet/core/blazor/" target="_blank" rel="noopener">Blazor Docs</a>
+        </header>
+
+        <article class="content">
+            @Body
+        </article>
+    </main>
+</div>

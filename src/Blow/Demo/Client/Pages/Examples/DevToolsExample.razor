@@ -1,0 +1,79 @@
+﻿@page "/examples/devtools"
+
+<PageTitle>DevTools - bit Blow</PageTitle>
+
+<ExampleScaffold Title="DevTools"
+                 Summary="Inspector panels in the spirit of React Flow's DevTools: a live viewport logger, a node inspector and a change log. Drag and select nodes to see updates."
+                 Height="calc(100vh - 230px)">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                OnViewportChanged="v => { _vp = v; StateHasChanged(); }"
+                OnNodeDragStop="OnNodeDragStop"
+                OnSelectionChange="OnSelectionChange">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        @* Top-left, so the change log can have the bottom-left corner to itself. *@
+        <BlowControls Position="BlowPanelPosition.TopLeft" />
+        <BlowPanel Position="top-right">
+            <div class="dev-panel">
+                <div class="dev-panel__title">Viewport</div>
+                <div>x: @_vp.X.ToString("0"), y: @_vp.Y.ToString("0"), zoom: @_vp.Zoom.ToString("0.00")</div>
+            </div>
+        </BlowPanel>
+        <BlowPanel Position="bottom-right">
+            <div class="dev-panel">
+                <div class="dev-panel__title">Node Inspector</div>
+                @foreach (var n in _nodes)
+                {
+                    <div>@n.Id: (@n.Position.X.ToString("0"), @n.Position.Y.ToString("0")) @(n.Selected ? "★" : "")</div>
+                }
+            </div>
+        </BlowPanel>
+        <BlowPanel Position="bottom-left">
+            <div class="dev-panel dev-panel--log">
+                <div class="dev-panel__title">Change Log</div>
+                @foreach (var line in _log)
+                {
+                    <div>@line</div>
+                }
+            </div>
+        </BlowPanel>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .dev-panel { background:#111827; color:#e5e7eb; border-radius:8px; padding:8px 10px; font-size:11px; font-family:monospace; min-width:180px; max-width:240px; box-shadow:0 2px 6px var(--bit-blow-shadow); }
+    .dev-panel__title { font-weight:700; color:#a5b4fc; margin-bottom:4px; }
+    .dev-panel--log { max-height:140px; overflow:auto; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowViewport _vp = BlowViewport.Identity;
+    private readonly List<string> _log = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(250, 20) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(150, 160) },
+            new BlowNode { Id = "3", Type = "output", Label = "Node 3", Position = new(380, 160) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+        ];
+    }
+
+    private void Log(string line)
+    {
+        _log.Insert(0, $"{DateTime.Now:HH:mm:ss} {line}");
+        if (_log.Count > 30) _log.RemoveAt(_log.Count - 1);
+    }
+
+    private void OnNodeDragStop(BlowNode n) => Log($"drag {n.Id} → ({n.Position.X:0},{n.Position.Y:0})");
+
+    private void OnSelectionChange(BlowSelectionChange c) =>
+        Log($"select [{string.Join(",", c.Nodes.Select(n => n.Id))}]");
+}

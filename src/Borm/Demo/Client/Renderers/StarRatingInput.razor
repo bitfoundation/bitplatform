@@ -1,0 +1,26 @@
+﻿@inherits BormInputBase
+
+<div class="star-rating" role="radiogroup" aria-label="@Field.Label">
+    @for (var n = 1; n <= Max; n++)
+    {
+        var star = n;
+        <button type="button"
+                class="star @(star <= Current ? "star--on" : "")"
+                disabled="@Disabled"
+                @onclick="@(() => Context.SetValueAsync(star))">★</button>
+    }
+    <span class="star-rating__value">@Current / @Max</span>
+</div>
+
+<style>
+    .star-rating { display: inline-flex; align-items: center; gap: .15rem; }
+    .star { background: none; border: none; cursor: pointer; font-size: 1.6rem; line-height: 1; color: #d1d5db; padding: 0 .05rem; }
+    .star--on { color: #f59e0b; }
+    .star:disabled { cursor: not-allowed; }
+    .star-rating__value { margin-left: .6rem; color: #6b7280; font-size: .85rem; }
+</style>
+
+@code {
+    private int Max => Field.Attributes.TryGetValue("max", out var m) && m is int i ? i : 5;
+    private int Current => Context.Value is int v ? v : int.TryParse(Context.StringValue, out var p) ? p : 0;
+}

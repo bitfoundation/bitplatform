@@ -1,0 +1,18 @@
+﻿@inject AppInterop Interop
+
+<button type="button" class="icon-btn" title="@(_dark ? "Switch to light theme" : "Switch to dark theme")" @onclick="ToggleAsync">
+    <Icon Name="@(_dark ? "sun" : "moon")" />
+</button>
+
+@code {
+    private bool _dark = true;
+
+    protected override async Task OnInitializedAsync() =>
+        _dark = await Interop.GetThemeAsync() != "light";
+
+    private async Task ToggleAsync()
+    {
+        _dark = !_dark;
+        await Interop.SetThemeAsync(_dark ? "dark" : "light");
+    }
+}

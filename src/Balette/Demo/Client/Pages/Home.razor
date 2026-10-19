@@ -1,0 +1,155 @@
+﻿@page "/"
+@implements IDisposable
+@inject IBaletteService Palette
+@inject DemoState State
+
+<PageTitle>bit Balette - a command palette for Blazor</PageTitle>
+
+<h1>bit Balette</h1>
+<p class="page-intro">
+    A keyboard-first command palette for Blazor. Press <kbd>Ctrl</kbd> <kbd>K</kbd> (<kbd>⌘</kbd> <kbd>K</kbd> on a
+    Mac) anywhere on this site. Fuzzy search, nested pages, modes, async sources, recents, global shortcuts,
+    multi-select, prompts and a detail pane, with full keyboard and screen-reader support. Matching, ranking and every
+    decision run in C#; JavaScript only owns the dialog, focus and keys.
+</p>
+
+<div class="actions">
+    <button type="button" class="btn primary" @onclick="() => Palette.OpenAsync()">Open the palette</button>
+    <button type="button" class="btn" @onclick='() => Palette.OpenAsync(">")'>Commands mode <code>&gt;</code></button>
+    <button type="button" class="btn" @onclick='() => Palette.OpenAsync("#")'>Issues mode <code>#</code></button>
+    <button type="button" class="btn" @onclick="@(() => Palette.OpenAsync("@"))">People mode <code>@@</code></button>
+    @* Opens straight inside a command's page: the id is the one the builder derived from the group and the title. *@
+    <button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "preferences.theme")'>Open the "Theme" page</button>
+</div>
+
+<div class="split">
+    <section class="panel padded">
+        <h2>Try these</h2>
+        <ul class="try-list">
+            <li>Type <code>rc</code> - fuzzy matching jumps to <em>Registering commands</em>, with the word starts highlighted.</li>
+            <li>Type <code>theme</code> and press <kbd>Enter</kbd> - a nested page; <kbd>Backspace</kbd> on an empty box goes back.</li>
+            <li>Type <code>&gt;</code> for commands only, <code>#105</code> to look up an issue, <code>@@ada</code> to search people (async).</li>
+            <li>Type <code>doc theming</code> - both terms must match, and the async documentation source answers too.</li>
+            <li>Pick <em>Set labels…</em> - a multi-select page; <kbd>Ctrl</kbd> <kbd>Enter</kbd> applies.</li>
+            <li>Pick <em>Rename project…</em> - a free-text prompt step.</li>
+            <li>Pick <em>Delete project</em> - destructive, so it needs a second <kbd>Enter</kbd>.</li>
+            <li>Press <kbd>Tab</kbd> on any row - the action panel: pin, forget, and the row's own actions.</li>
+            <li>Close the palette and press <kbd>G</kbd> then <kbd>S</kbd> - a sequence shortcut opens the settings.</li>
+            <li>Try the operators <code>'exact</code>, <code>^prefix</code>, <code>suffix$</code> and <code>!exclude</code>.</li>
+        </ul>
+    </section>
+
+    <section class="panel padded">
+        <h2>Activity</h2>
+        <p class="muted">
+            Project: <strong>@State.ProjectName</strong> · Labels: <strong>@(State.Labels.Count == 0 ? "none" : string.Join(", ", State.Labels))</strong>
+            · Theme: <strong>@State.Theme</strong>
+        </p>
+        @if (State.Log.Count == 0)
+        {
+            <p class="muted">Run a command and it shows up here.</p>
+        }
+        else
+        {
+            <ul class="log" aria-live="polite">
+                @foreach (var entry in State.Log)
+                {
+                    <li>@entry</li>
+                }
+            </ul>
+        }
+    </section>
+</div>
+
+<h2>What it does</h2>
+<div class="grid">
+    <a class="card" href="commands">
+        <h3>Registering commands</h3>
+        <p>A fluent builder, declarative markup, and commands that exist only while a page is on screen.</p>
+    </a>
+    <a class="card" href="pages">
+        <h3>Nested pages &amp; flows</h3>
+        <p>Static, lazy and ad-hoc pages, prompts, multi-select, confirmations, toasts and the action panel.</p>
+    </a>
+    <a class="card" href="search">
+        <h3>Search &amp; ranking</h3>
+        <p>The fuzzy matcher and the ranker, run live over this app's commands with every score shown.</p>
+    </a>
+    <a class="card" href="modes">
+        <h3>Modes &amp; sources</h3>
+        <p>Typed prefixes that scope the palette, and async sources that are debounced and cancelled.</p>
+    </a>
+    <a class="card" href="keyboard">
+        <h3>Keyboard &amp; shortcuts</h3>
+        <p>Every key inside the palette, global chords, and G-then-X sequences.</p>
+    </a>
+    <a class="card" href="theming">
+        <h3>Theming &amp; templates</h3>
+        <p>Light and dark, design tokens changed live, the detail pane, item templates and unstyled mode.</p>
+    </a>
+    <a class="card" href="performance">
+        <h3>Large registry</h3>
+        <p>Register thousands of commands and measure what a keystroke costs.</p>
+    </a>
+    <a class="card" href="mcp-server">
+        <h3>MCP server</h3>
+        <p>The library's documentation, API and matcher, served to AI agents from this site.</p>
+    </a>
+</div>
+
+<h2>How it is built</h2>
+<pre><code>Key press (browser)
+  -> bit-balette.js     toggle, global chords and G-then-X sequences, navigation keys
+  -> Balette            query, mode prefix, page stack, active row     (C#)
+  -> IBaletteMatcher    fzf-style score and highlight positions per field
+  -> BaletteRanker      score + priority + frecency, the best MaxResults kept
+  -> rows               groups, pinned, recents, async source blocks
+  -> &lt;dialog&gt;          native top layer, focus trap, aria-activedescendant</code></pre>
+
+<p>
+    The browser layer is small on purpose: it decides which keys belong to the palette and hands them over. What
+    matches, in which order, what Enter does and which page comes next are all decided in C#, so they can be unit
+    tested, replaced (<code>IBaletteMatcher</code>, <code>IBaletteHistoryStore</code>, <code>IBaletteSource</code>)
+    and reasoned about like the rest of the app.
+</p>
+
+<div class="note">
+    This site runs on WebAssembly, so the whole search runs in the browser next to the list it fills. The same
+    component works on Blazor Server, where a keystroke is one round trip; it searches synchronously there instead of
+    deferring to the next frame, because the network already separates typing from rendering.
+</div>
+
+<h2 id="get-started">Get started</h2>
+<pre><code>dotnet add package Bit.Balette</code></pre>
+<pre><code>// Program.cs - in both projects of a Blazor Web App
+builder.Services.AddBitBaletteServices();</code></pre>
+<pre><code>&lt;!-- App.razor (or index.html): the stylesheet is linked by the host page --&gt;
+&lt;link rel="stylesheet" href="_content/Bit.Balette/bit-balette.css" /&gt;</code></pre>
+<pre><code>@@* MainLayout.razor *@@
+@@using Bit.Balette
+
+&lt;BaletteTrigger /&gt;
+&lt;BaletteCommands Commands="_commands" /&gt;
+&lt;Balette /&gt;
+
+@@code {
+    private readonly BaletteCommand[] _commands =
+    [
+        BaletteCmd.Navigate("Home", "/").Shortcut("G H"),
+        BaletteCmd.Action("Say hello", () =&gt; Console.WriteLine("Hello")),
+    ];
+}</code></pre>
+<p>
+    The stylesheet is not added for you: linking it yourself puts it before your own overrides in the cascade, and
+    leaving it out is how <code>Unstyled</code> starts from bare markup. The source code, the documentation and the
+    code of this demo are on
+    <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Balette" target="_blank" rel="noopener">GitHub</a>.
+</p>
+
+@code {
+    protected override void OnInitialized() => State.Changed += Refresh;
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => State.Changed -= Refresh;
+}

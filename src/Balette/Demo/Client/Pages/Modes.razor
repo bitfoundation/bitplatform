@@ -1,0 +1,224 @@
+﻿@page "/modes"
+@implements IDisposable
+@inject IBaletteService Palette
+@inject BaletteOptions Options
+@inject SourceLog SourceLog
+
+<PageTitle>Modes and sources - bit Balette</PageTitle>
+
+<h1>Modes &amp; sources</h1>
+<p class="page-intro">
+    A mode is a prefix typed at the start of the query - <code>&gt;</code> in VS Code, <code>#</code> on GitHub - that
+    scopes the palette to part of the registry, to its own asynchronous sources, or both. A source is anything that
+    answers a query later: an API, a database, a search index. The palette debounces it, cancels it when the query
+    moves on, and merges what it returns.
+</p>
+
+<h2>The modes of this app</h2>
+<div class="panel">
+    <table>
+        <thead>
+            <tr><th>Prefix</th><th>Mode</th><th>Lists</th><th>Sources</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var mode in Palette.Modes)
+            {
+                <tr>
+                    <td><code>@mode.Prefix</code></td>
+                    <td>
+                        <strong>@mode.Name</strong>
+                        <div class="muted small">@mode.Description</div>
+                    </td>
+                    <td>@Scope(mode)</td>
+                    <td>@(mode.Sources.Count == 0 ? "-" : string.Join(", ", mode.Sources.Select(s => s.Name)))</td>
+                    <td><button type="button" class="btn" @onclick="() => Palette.OpenAsync(mode.Prefix)">Open</button></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<p>
+    On the empty query the palette lists every mode as a hint under <em>Modes</em>, so they can be discovered without
+    reading this page; picking a hint types its prefix. <code>ShowHint = false</code> keeps a mode out of that list.
+</p>
+
+<h2 id="sources">The sources</h2>
+<div class="panel">
+    <table>
+        <thead>
+            <tr><th>Source</th><th>Asked in</th><th class="num">From</th><th class="num">At most</th><th>Order</th><th class="num">Latency</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var (source, where) in AllSources())
+            {
+                <tr>
+                    <td><strong>@source.Name</strong></td>
+                    <td>@where</td>
+                    <td class="num">@(source.MinQueryLength == 0 ? "empty box" : $"{source.MinQueryLength} char{(source.MinQueryLength == 1 ? "" : "s")}")</td>
+                    <td class="num">@source.MaxResults</td>
+                    <td>@(source.ApplyMatcher ? "re-ranked with the registry" : "its own, as one block")</td>
+                    <td class="num">@(Latency.TryGetValue(source.Name, out var ms) ? $"{ms} ms" : "-")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="split">
+    <div>
+        <h3>Re-ranked</h3>
+        <p>
+            With <code>ApplyMatcher</code> the palette scores what a source returns with its own matcher and sorts it in
+            with everything else. The source only has to return candidates, and its rows are highlighted like the rest.
+            <em>People</em> and <em>Documentation</em> work this way.
+        </p>
+    </div>
+    <div>
+        <h3>Ordered</h3>
+        <p>
+            Without it, the source's order is kept and its rows are listed as one block under its name - right for a
+            server that already sorts by relevance. <em>Issues</em> puts open issues first, newest first, and asks on the
+            empty query too, so <code>#</code> opens on a list.
+        </p>
+    </div>
+</div>
+
+<h2>Debounced and cancelled, live</h2>
+<p>
+    Open the palette and type <code>@@ada lovelace</code> at your normal speed. The palette waits
+    <strong>@Options.DebounceMs ms</strong> after the last keystroke before it asks a source, so most keystrokes never
+    reach one; a search still running when the next one starts is cancelled through its token. Every call that did
+    reach a source is listed here, newest first.
+</p>
+
+<div class="panel">
+    <div class="toolbar">
+        <button type="button" class="btn" @onclick="@(() => Palette.OpenAsync("@"))">Open in People mode</button>
+        <button type="button" class="btn" @onclick='() => Palette.OpenAsync("#")'>Open in Issues mode</button>
+        <button type="button" class="btn" @onclick='() => Palette.OpenAsync("theming")'>Search "theming" (documentation)</button>
+        <div class="toolbar-spacer"></div>
+        <button type="button" class="btn" disabled="@(SourceLog.Calls.Count == 0)" @onclick="SourceLog.Clear">Clear</button>
+    </div>
+    <table>
+        <thead>
+            <tr><th>Started</th><th>Source</th><th>Query</th><th>Outcome</th><th class="num">Results</th><th class="num">Took</th></tr>
+        </thead>
+        <tbody>
+            @if (SourceLog.Calls.Count == 0)
+            {
+                <tr><td colspan="6" class="muted">No source has been asked yet.</td></tr>
+            }
+            @foreach (var call in SourceLog.Calls)
+            {
+                <tr>
+                    <td class="muted">@call.StartedAt.ToString("HH:mm:ss.fff")</td>
+                    <td>@call.Source</td>
+                    <td><code>@(call.Query.Length == 0 ? "(empty)" : call.Query)</code></td>
+                    <td><span class="badge @(call.Outcome == SourceCallOutcome.Completed ? "on" : null)">@call.Outcome</span></td>
+                    <td class="num">@(call.Outcome == SourceCallOutcome.Completed ? call.ResultCount.ToString() : "-")</td>
+                    <td class="num">@(call.Outcome == SourceCallOutcome.Running ? "-" : $"{call.Duration.TotalMilliseconds:0} ms")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<h2>Registering them</h2>
+<pre><code>@RegistrationExample</code></pre>
+<p>
+    Sources in <code>options.Sources</code> are asked in the default mode; a mode's own <code>Sources</code> only in that
+    mode. <code>IBaletteService.RegisterMode</code> and <code>RegisterSource</code> add either at runtime and return a
+    handle that removes it again, and <code>AddBitBaletteSource&lt;T&gt;()</code> registers a source resolved from DI.
+</p>
+
+@code {
+    private const string RegistrationExample = """
+        builder.Services.AddBitBaletteServices(options =>
+        {
+            options.Modes.Add(new BaletteCommandMode
+            {
+                Prefix = "@",
+                Name = "People",
+                Description = "Find a teammate",
+                HideRegistryCommands = true,       // only the source's rows
+                Sources = [new PeopleSource()],
+            });
+
+            options.Sources.Add(new DocsSource()); // also asked in the default mode
+            options.DebounceMs = 150;
+        });
+
+        public sealed class PeopleSource : IBaletteSource
+        {
+            public string Name => "People";
+            public bool ApplyMatcher => true;      // re-rank with the palette's matcher
+
+            public async Task<IReadOnlyList<BaletteCommand>> SearchAsync(
+                string query, BaletteSourceContext context, CancellationToken cancellationToken)
+            {
+                var people = await context.Services.GetRequiredService<PeopleClient>()
+                    .SearchAsync(query, cancellationToken);
+                return [.. people.Select(p => BaletteCmd.New(p.Name).Subtitle(p.Role).Build())];
+            }
+        }
+        """;
+
+    // The delays the demo's sources simulate (Services/FakeData.cs); nothing in IBaletteSource reports one.
+    private static readonly Dictionary<string, int> Latency = new()
+    {
+        ["People"] = 250,
+        ["Issues"] = 180,
+        ["Documentation"] = 300,
+    };
+
+    protected override void OnInitialized()
+    {
+        SourceLog.Changed += Refresh;
+        Palette.CommandsChanged += Refresh;
+    }
+
+    private IEnumerable<(IBaletteSource Source, string Where)> AllSources()
+    {
+        foreach (var source in Palette.Sources)
+        {
+            yield return (source, "the default mode");
+        }
+
+        foreach (var mode in Palette.Modes)
+        {
+            foreach (var source in mode.Sources)
+            {
+                yield return (source, $"{mode.Prefix} {mode.Name}");
+            }
+        }
+    }
+
+    private static string Scope(BaletteCommandMode mode)
+    {
+        if (mode.HideRegistryCommands)
+        {
+            return "only its sources";
+        }
+
+        if (mode.Tags is { Count: > 0 } tags)
+        {
+            return $"commands tagged {string.Join(", ", tags.Select(t => $"“{t}”"))}";
+        }
+
+        if (mode.Groups is { Count: > 0 } groups)
+        {
+            return $"the {string.Join(", ", groups)} group";
+        }
+
+        return "every command";
+    }
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose()
+    {
+        SourceLog.Changed -= Refresh;
+        Palette.CommandsChanged -= Refresh;
+    }
+}

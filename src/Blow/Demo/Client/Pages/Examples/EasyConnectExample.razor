@@ -1,0 +1,61 @@
+﻿@page "/examples/easy-connect"
+
+<PageTitle>Easy Connect - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Easy Connect"
+                 Summary="Each node is almost entirely covered by a connectable handle, so you can start and finish a connection from anywhere inside it; drag a node by its rim to move it. Uses loose connection mode and floating edges.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="BlowConnectionMode.Loose">
+        <NodeTemplate Context="node">
+            <div class="easy-node">@node.Label</div>
+            @* Inset, not edge to edge: a handle covering the whole node would leave nothing to
+               press that drags the node instead of starting a connection. *@
+            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Top"
+                    Style="position:absolute;inset:8px;width:auto;height:auto;border-radius:6px;background:transparent;border:1px dashed #a5b4fc;transform:none;" />
+        </NodeTemplate>
+        <EdgeTemplate Context="ctx">
+            <BlowBaseEdge Path="@FloatingPath(ctx.Edge)" StrokeWidth="2" />
+        </EdgeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    /* The node element keeps the library's default chrome - padding, border, white background,
+       an 80px minimum width - unless told otherwise; this node draws its own, edge to edge. */
+    .bit-blow-node.easy-shell { padding:0; border:0; background:none; min-width:0; box-shadow:none; border-radius:10px; }
+    .bit-blow-node.easy-shell.selected { box-shadow:0 0 0 2px var(--bit-blow-node-selected); }
+
+    .easy-node {
+        display:flex; align-items:center; justify-content:center;
+        width:100%; height:100%; box-sizing:border-box; border-radius:10px;
+        background:#eef2ff; border:2px solid #6366f1; font-weight:600;
+    }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Label = "Drag me", Position = new(40, 40), Width = 80, Height = 50, Class = "easy-shell" },
+            new BlowNode { Id = "2", Label = "to me", Position = new(300, 60), Width = 80, Height = 50, Class = "easy-shell" },
+            new BlowNode { Id = "3", Label = "or me", Position = new(180, 220), Width = 80, Height = 50, Class = "easy-shell" },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+    }
+
+    private string FloatingPath(BlowEdge edge)
+    {
+        var s = _nodes.FirstOrDefault(n => n.Id == edge.Source);
+        var t = _nodes.FirstOrDefault(n => n.Id == edge.Target);
+        if (s is null || t is null) return string.Empty;
+        var (src, srcPos, tgt, tgtPos) = BlowGraphUtils.GetFloatingEdgeParams(s, t);
+        return BlowEdgePath.Compute(BlowEdgeType.Straight, src.X, src.Y, srcPos, tgt.X, tgt.Y, tgtPos).Path;
+    }
+}

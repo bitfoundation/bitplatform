@@ -1,0 +1,182 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* A combobox built on the browser's own: <input list> plus a <datalist> is the platform's combobox,
+   and it arrives with filtering, keyboard navigation, touch behaviour and screen-reader support that
+   every hand-rolled ARIA implementation spends a thousand lines approximating and still gets wrong on
+   some browser. What the platform does not do is map a label the user reads onto a value the model
+   stores, which is the whole difference between a datalist of suggestions and a real combobox — so
+   that is what this adds, and nothing else.
+
+   The datalist options carry the *label* as their value, because that is what the browser puts in the
+   box when one is picked. The label is translated back to the option's value on the way to the model. *@
+<div class="bit-borm-combobox">
+    @if (HasAffix)
+    {
+        <div class="bit-borm-affixed @(Context.HasError && Context.ShowMessages ? "bit-borm-affixed--invalid" : "")">
+            @if (!string.IsNullOrEmpty(Field.Prefix))
+            {
+                <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Field.Prefix</span>
+            }
+            @Control
+            @if (!string.IsNullOrEmpty(Field.Suffix))
+            {
+                <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Field.Suffix</span>
+            }
+            @if (ShowClear)
+            {
+                <button type="button" class="bit-borm-affix bit-borm-affix--btn" tabindex="-1"
+                        title="@ClearLabel" aria-label="@ClearLabel" @onclick="Clear">×</button>
+            }
+        </div>
+    }
+    else
+    {
+        @Control
+    }
+
+    @* Resolved once per render: the list is filtered and materialised, and it is read by both the
+       datalist below and the announcement beneath it. *@
+    @{ var choices = Choices; }
+    <datalist id="@ListId">
+        @foreach (var opt in choices)
+        {
+            @* Disabled options are omitted rather than rendered: a datalist has no disabled state, and
+               offering a choice the field will then reject is worse than not offering it. *@
+            <option value="@opt.Label" label="@GroupSuffix(opt)" />
+        }
+    </datalist>
+
+    @* How many choices the list holds, and whether it is still loading or failed to load — said when the
+       list arrives or changes, so a screen-reader user knows there is something to type towards. It is
+       not a count of what matches the text typed so far: the browser filters the list itself and never
+       tells the page, and finding out would mean a round-trip per keystroke, which this control
+       deliberately does not make (see WantsInputEvent). *@
+    <p class="bit-borm-sr-only" aria-live="polite">@Announce(choices.Count)</p>
+</div>
+
+@code {
+    // No role="combobox" and no aria-expanded, deliberately. An <input> carrying a `list` already *is*
+    // a combobox to the accessibility tree — the browser maps it for us — and declaring the role again
+    // takes on its contract: aria-expanded then has to say whether the popup is open, which is state
+    // only the browser has and never exposes. A hard-coded "false" is not a simplification, it is an
+    // assertion that the list is closed, told to a screen-reader user at the exact moment it is open.
+    //
+    // Splat first so the renderer's own id and ARIA wiring below always wins.
+    private RenderFragment Control => @<input @attributes="ExtraAttributes"
+                                              id="@Context.ElementId"
+                                              @ref="Element"
+                                              class="@CssClass"
+                                              type="text"
+                                              list="@ListId"
+                                              value="@DisplayText"
+                                              placeholder="@Field.Placeholder"
+                                              disabled="@Disabled"
+                                              readonly="@ReadOnly"
+                                              autocomplete="off"
+                                              aria-autocomplete="list"
+                                              aria-required="@AriaRequired"
+                                              aria-invalid="@AriaInvalid"
+                                              aria-label="@AriaLabel"
+                                              aria-busy="@(Context.IsLoadingOptions ? "true" : null)"
+                                              aria-describedby="@DescribedBy"
+                                              @onchange="OnCommit"
+                                              @onblur="OnBlur" />
+    ;
+
+    protected override Task OnParametersSetAsync() => LoadOptionsAsync();
+
+    /// <summary>
+    /// A combobox never writes as the user types, whatever <see cref="BormFieldDefinition.UpdateOn"/>
+    /// says.
+    /// </summary>
+    /// <remarks>
+    /// What the box holds is a label, and what the model holds is the value the label stands for. Half
+    /// of a label stands for nothing: writing on every keystroke would store "Fran" as the country, and
+    /// then "Franc", and — on a field that accepts only what is on the list — flag each of them as an
+    /// answer that does not exist. Picking from the list and leaving the box both raise <c>change</c>,
+    /// which is where the translation belongs. <see cref="BormDefinition.Validate"/> reports a
+    /// schema that asked for the other behaviour rather than leaving it to be discovered.
+    /// </remarks>
+    protected override bool WantsInputEvent => false;
+
+    /// <summary>
+    /// The choices to offer. A provider that is still loading or that failed offers nothing, which is
+    /// what an empty list already means; the live region below says which of the two it is.
+    /// </summary>
+    private IReadOnlyList<BormSelectOption> Choices
+        => Context.Options.Where(o => !o.Disabled).ToList();
+
+    private string ListId => Context.ElementId + "_list";
+
+    /// <summary>
+    /// What the box shows: the label of the option currently selected, or the raw stored value when it
+    /// matches none — a custom answer, or one the user is still halfway through typing. Showing the
+    /// stored value rather than blanking the box is the same promise the rest of the library makes:
+    /// what the user typed is never thrown away without saying so.
+    /// </summary>
+    private string DisplayText
+    {
+        get
+        {
+            var stored = Context.StringValue;
+            if (stored.Length == 0) return "";
+
+            foreach (var opt in Context.Options)
+                if (string.Equals(opt.Value, stored, StringComparison.Ordinal))
+                    return opt.Label;
+
+            return stored;
+        }
+    }
+
+    /// <summary>
+    /// Turns what the browser handed back — a label — into the value the model stores. An entry that
+    /// matches no label is kept verbatim, so a field that allows custom answers gets one and a field
+    /// that does not still shows the user their own text next to the message explaining it.
+    /// </summary>
+    private Task OnCommit(ChangeEventArgs e)
+    {
+        var text = e.Value?.ToString() ?? "";
+        if (text.Length == 0) return Context.SetValueAsync(null);
+
+        foreach (var opt in Context.Options)
+            if (string.Equals(opt.Label, text, StringComparison.OrdinalIgnoreCase))
+                return Context.SetFromStringAsync(opt.Value);
+
+        return Context.SetFromStringAsync(text);
+    }
+
+    /// <summary>
+    /// A group name shown beside the option. A datalist has no <c>optgroup</c>, and the browser renders
+    /// the <c>label</c> attribute as secondary text — which is exactly where the group belongs.
+    /// </summary>
+    private string? GroupSuffix(BormSelectOption option) => option.Group;
+
+    /// <summary>
+    /// Whether the control is wrapped — by configuration, never by value. See the text input: a wrapper
+    /// that came and went with the value replaced the input element, and the caret with it, the moment
+    /// a choice was committed while the box still had focus.
+    /// </summary>
+    private bool HasAffix
+        => !string.IsNullOrEmpty(Field.Prefix) || !string.IsNullOrEmpty(Field.Suffix) || OffersClear;
+
+    private bool ShowClear => OffersClear && Context.StringValue.Length > 0;
+
+    private bool OffersClear => Attr("clearable", false) && !DisabledOrReadOnly;
+
+    private string ClearLabel => Context.Text(BormMessageKeys.Clear);
+
+    /// <summary>Empties the box and puts the caret back in it, rather than on the page body.</summary>
+    private async Task Clear()
+    {
+        await Context.SetValueAsync(null);
+        await FocusAsync();
+    }
+
+    private string Announce(int count) => Context.IsLoadingOptions
+        ? Context.Text(BormMessageKeys.SelectLoading)
+        : Context.OptionsFailed
+            ? Context.Text(BormMessageKeys.SelectError)
+            : Context.Text(BormMessageKeys.ComboboxAvailable, count);
+}

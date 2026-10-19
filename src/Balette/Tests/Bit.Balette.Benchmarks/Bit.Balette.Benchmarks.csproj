@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net10.0 matches
+             global.json's pinned SDK. -->
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <!-- BenchmarkDotNet refuses to measure an unoptimized assembly, so keep the JIT-relevant optimizations on
+             even when the project is built without -c Release. Numbers should still come from a Release run. -->
+        <Optimize>true</Optimize>
+        <!-- Not a unit-test project: it's a console harness run manually (dotnet run -c Release), so it
+             deliberately does NOT set IsTestProject. -->
+        <!-- Signed with the repository key because Bit.Balette grants InternalsVisibleTo to this assembly by public
+             key: the keystroke benchmarks call the internal parse-once BaletteQuery overload and the ranker's
+             limited overload, exactly as the palette component does, rather than the slower public entry points. -->
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="BenchmarkDotNet" Version="0.15.8" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Balette\Bit.Balette.csproj" />
+    </ItemGroup>
+
+</Project>

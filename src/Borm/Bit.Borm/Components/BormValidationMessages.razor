@@ -1,0 +1,23 @@
+﻿@namespace Bit.Borm
+
+@if (Show && Messages.Count > 0)
+{
+    @* No live region here on purpose. The input points `aria-describedby` at this list, so a screen
+       reader reads the message when focus reaches the field; a second announcement from a live region
+       would just repeat it. The error summary is the one place that announces. *@
+    <ul class="bit-borm-messages" id="@Id">
+        @foreach (var msg in Messages)
+        {
+            <li class="bit-borm-message bit-borm-message--@msg.Severity.ToString().ToLowerInvariant()">@msg.Message</li>
+        }
+    </ul>
+}
+
+@code {
+    [Parameter, EditorRequired] public IReadOnlyList<BormValidationMessage> Messages { get; set; } = Array.Empty<BormValidationMessage>();
+
+    [Parameter] public bool Show { get; set; } = true;
+
+    /// <summary>DOM id, so an input's <c>aria-describedby</c> can point at this list.</summary>
+    [Parameter] public string? Id { get; set; }
+}

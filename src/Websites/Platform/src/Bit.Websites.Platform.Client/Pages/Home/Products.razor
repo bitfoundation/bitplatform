@@ -186,6 +186,25 @@
         },
         new()
         {
+            Title = "SQLite and EF Core, in the browser tab",
+            Subtitle = "bit Bsqlite · EF Core on SQLite for Blazor",
+            LinkUrl = Urls.Bsqlite,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bsqlite runs SQLite and the stock EF Core provider in a worker in the user's browser, over OPFS, IndexedDB
+                    or Cache Storage, with the same entities and migrations as the server and live queries across tabs.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>builder.Services.AddBitBsqliteServices(sqlite => sqlite
+    .AddStorageProvider&lt;BsqliteOpfsStorageProvider&gt;()
+    .UseStorage(s => s.Prefer("opfs"))
+    .AddDatabase("app.db"));</CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Ink that feels like paper",
             Subtitle = "bit Bink · Blazor-native drawing and ink",
             LinkUrl = Urls.Bink,
@@ -198,6 +217,114 @@
                 <div>
                     <CodeBox HideCopyButton>&lt;BinkCanvas @@ref="canvas" Width="400px" Height="180px"
             AriaLabel="Signature" /></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Everything one keystroke away",
+            Subtitle = "bit Balette · Blazor-native command palette",
+            LinkUrl = Urls.Balette,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Balette is a Blazor-native, keyboard-first command palette with fzf-style fuzzy search, nested pages,
+                    prefix modes, async sources, recents, global shortcuts and sequences, prompts and multi-select, all in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>Palette.Register(
+    BaletteCmd.Navigate("Settings", "/settings").Shortcut("G S"),
+    BaletteCmd.Action("Toggle sidebar", Toggle).Shortcut("Mod+B"));</CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Barcodes read in C#",
+            Subtitle = "bit BbScanner · Blazor-native barcode scanner",
+            LinkUrl = Urls.BbScanner,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit BbScanner is a dependency-free barcode scanner that reads QR Code, Data Matrix, Code 128, Code 39,
+                    EAN-13, EAN-8, UPC-A, UPC-E and ITF from the camera or from still images, with the decoding written in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BbScanner Formats="BbBarcodeFormat.QrCode"
+           OnScan="HandleScan" /></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Drag, drop, done",
+            Subtitle = "bit Bdnd · declarative drag and drop for Blazor",
+            LinkUrl = Urls.Bdnd,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bdnd is a declarative drag-and-drop library for Blazor, inspired by React DnD: typed items matched to
+                    drop targets by type, custom drag previews, drag handles, sortable lists, nesting and native file drops,
+                    with the drag state kept in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BdndDraggable TItem="Card" Type="card" Item="card" />
+&lt;BdndDropTarget TItem="Card" Accept="card" OnDrop="HandleDrop" /></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Data that stays in the browser",
+            Subtitle = "bit BlazeDb · memory-first database for Blazor",
+            LinkUrl = Urls.BlazeDb,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit BlazeDb is a memory-first, SQL-free embedded database for Blazor WebAssembly: rows live in memory as your
+                    own objects, reads are index lookups with no interop, and commits persist to OPFS in the background - with
+                    transactions, encryption, multi-tab replicas and an EF Core provider, all in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>var open = todos.Lookup(TodoItem.Indexes.Done, false);</CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Diagrams that connect",
+            Subtitle = "bit Blow · Blazor-native node-based editors",
+            LinkUrl = Urls.Blow,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Blow is a Blazor-native library for node-based editors, flow charts and diagrams - a Blazor counterpart
+                    to React Flow - with draggable, resizable and connectable nodes, sub-flows, auto-layout, undo/redo and full
+                    keyboard accessibility, all in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BlowCanvas Nodes="nodes" Edges="edges" FitViewOnInit="true">
+    &lt;BlowBackground />
+    &lt;BlowControls />
+&lt;/BlowCanvas></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Forms that describe themselves",
+            Subtitle = "bit Borm · Schema-driven forms for Blazor",
+            LinkUrl = Urls.Borm,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Borm is a schema-driven form engine for Blazor: describe a form once, from a C# type, a fluent builder or
+                    a JSON Schema document, and it renders, validates and tracks it - conditions, computed values, cascading
+                    options, wizards and repeaters included, all decided in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BormView Definition="BormSchemaGenerator.Generate&lt;Contact>()"
+          Model="contact" OnValidSubmit="Save" /></CodeBox>
                 </div>
             </text>
         },
@@ -217,6 +344,25 @@
     &lt;BonboardingStep Anchor="new-project" Title="Create a project" />
     &lt;BonboardingStep Anchor="search" Title="Find anything" />
 &lt;/BonboardingTour></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Lists that reorder",
+            Subtitle = "bit Bortable · Blazor-native sortable lists",
+            LinkUrl = Urls.Bortable,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bortable is a Blazor-native drag-and-drop sortable list inspired by SortableJS - reorder items or drag
+                    them between lists that share a group, with live reordering, cloning, drag handles, nested lists, swap
+                    mode and multi-drag, all decided in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;Bortable @@bind-Items="todo" TItem="string" Group="board">
+    &lt;ItemTemplate Context="item">@@item&lt;/ItemTemplate>
+&lt;/Bortable></CodeBox>
                 </div>
             </text>
         },

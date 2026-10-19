@@ -1,0 +1,84 @@
+﻿@page "/examples/controlled-uncontrolled"
+
+<PageTitle>Controlled vs Uncontrolled - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Controlled vs Uncontrolled"
+                 Summary="Controlled: the page subscribes to NodesChanged/EdgesChanged and keeps its own view of the graph in step with every edit as it happens. Uncontrolled: the page subscribes to nothing - the canvas edits the lists it was handed on its own, and the page only learns what changed when it asks the canvas through a component reference. Toggle, drag, connect or delete, and compare.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_controlled" @onchange="OnModeChanged" /> controlled</label>
+        @if (_controlled)
+        {
+            <span class="text-muted">page state: @_nodeCount nodes, @_edgeCount edges (last change @_lastChange)</span>
+        }
+        else
+        {
+            <button class="btn btn-sm" @onclick="ReadFromCanvas">Ask the canvas</button>
+            <span class="text-muted">last read: @_lastRead</span>
+        }
+    </Toolbar>
+    <ChildContent>
+        @* Uncontrolled hands the canvas empty callbacks, so it has nobody to notify. *@
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    NodesChanged="@(_controlled ? EventCallback.Factory.Create<List<BlowNode>>(this, OnNodesChanged) : default)"
+                    EdgesChanged="@(_controlled ? EventCallback.Factory.Create<List<BlowEdge>>(this, OnEdgesChanged) : default)">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _controlled = true;
+    private int _nodeCount, _edgeCount;
+    private string _lastChange = "-";
+    private string _lastRead = "not yet";
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Drag / connect me", Position = new(160, 40), Width = 180 },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(120, 200) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(360, 200) },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+        _nodeCount = _nodes.Count;
+        _edgeCount = _edges.Count;
+    }
+
+    private void OnModeChanged(ChangeEventArgs e)
+    {
+        _controlled = (bool)e.Value!;
+
+        // Taking control again starts from what the canvas holds now: anything edited while
+        // uncontrolled went unreported.
+        if (_controlled)
+        {
+            _nodeCount = _nodes.Count;
+            _edgeCount = _edges.Count;
+            _lastChange = "synced on switching";
+        }
+    }
+
+    private void OnNodesChanged(List<BlowNode> nodes)
+    {
+        _nodeCount = nodes.Count;
+        _lastChange = $"nodes @ {DateTime.Now:HH:mm:ss}";
+    }
+
+    private void OnEdgesChanged(List<BlowEdge> edges)
+    {
+        _edgeCount = edges.Count;
+        _lastChange = $"edges @ {DateTime.Now:HH:mm:ss}";
+    }
+
+    private void ReadFromCanvas()
+    {
+        if (_flow is null) return;
+        var snapshot = _flow.ToObject(deep: false);
+        _lastRead = $"{snapshot.Nodes.Count} nodes, {snapshot.Edges.Count} edges at {DateTime.Now:HH:mm:ss}";
+    }
+}
