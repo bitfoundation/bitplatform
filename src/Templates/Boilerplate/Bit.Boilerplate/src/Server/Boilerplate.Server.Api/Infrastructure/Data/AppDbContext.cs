@@ -265,6 +265,9 @@ public partial class AppDbContext(DbContextOptions<AppDbContext> options)
         ConfigureTenantScopedForeignKeys(modelBuilder);
     }
 
+    /// <summary>
+    /// Adds TenantId to both sides of every foreign key between two tenant-aware entities, so the database rejects a reference to another tenant's row.
+    /// </summary>
     private static void ConfigureTenantScopedForeignKeys(ModelBuilder modelBuilder)
     {
         var foreignKeys = modelBuilder.Model.GetEntityTypes()
