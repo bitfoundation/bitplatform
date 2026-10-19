@@ -617,9 +617,11 @@
     <!--
     Keeps a service worker's precache list true to what the trimming publishes. The manifest (service-worker-assets.js) is
     written by the project that owns the service worker, during that project's own publish: in a standalone WebAssembly
-    app that is this project, after this stage, from the trimmed files - and there is nothing for these targets to do. In a
-    Blazor Web App it is the WebAssembly client, which leaves the trimming to the server hosting it and hands the server a
-    manifest written from the packages' full bundles and every vendored file. The server then trims against its own
+    app that is this project, after this stage, from the trimmed files - and there is nothing for these targets to do, so
+    the task leaves the project's own manifest alone (the .NET 8 SDK lists it from the build on, while its file is not
+    written yet, or is still the previous publish's). In a Blazor Web App it is the WebAssembly client, which leaves the
+    trimming to the server hosting it and hands the server a manifest written from the packages' full bundles and every
+    vendored file, each URL under the client's base path. The server then trims against its own
     assemblies and the client's together, and serves bundles the manifest describes with other files' hashes, without the
     vendored files and lazy-script modules the manifest still lists. An installed app keeps a cached file for as long as its
     listed hash stays the same, so that is an app left on old bundles - or, under a service worker that checks integrity or
@@ -640,6 +642,7 @@
     -->
     <Target Name="_BitBlazorUIRewriteServiceWorker" DependsOnTargets="BitBlazorUITrimAssets" Condition="'$(_BitBlazorUIPublishTrimming)' == 'true'">
         <UpdateBitBlazorUIServiceWorker StaticWebAssets="@(StaticWebAsset)"
+                                        ProjectSourceId="$(PackageId)"
                                         RemovedAssets="@(_BitBlazorUIServiceWorkerDropped)"
                                         TrimmedAssets="@(_BitBlazorUITrimmedAsset)"
                                         OutputDirectory="$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'bit-blazorui-service-worker'))">

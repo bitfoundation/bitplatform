@@ -55,9 +55,18 @@ public static class ServiceWorkerManifest
     /// read.
     /// </summary>
     /// <param name="manifest">The text of <c>service-worker-assets.js</c>.</param>
-    /// <param name="removedUrls">The URLs of the files no longer served, relative to the app's base path.</param>
-    /// <param name="hashes">The <c>sha256-</c> hash of the file now served at each URL that changed.</param>
-    public static ServiceWorkerManifestUpdate? Update(string manifest, IEnumerable<string> removedUrls, IReadOnlyDictionary<string, string> hashes)
+    /// <param name="removedUrls">The URLs of the files no longer served, as <see cref="AssetUrl"/> spells them.</param>
+    /// <param name="hashOf">
+    /// The <c>sha256-</c> hash of the file now served at a URL (as <see cref="AssetUrl"/> spells it), or null where it is
+    /// still the file the manifest was written from. Asked only about the URLs the manifest lists and keeps, so a caller
+    /// hashing files on demand hashes none the manifest does not need.
+    /// </param>
+    /// <param name="basePath">
+    /// The base path of the project that wrote the manifest. The SDK writes every URL under it - a package's files too,
+    /// <c>app/_content/Bit.BlazorUI/...</c> for a client whose <c>StaticWebAssetBasePath</c> is <c>app</c> - so an entry is
+    /// matched with it taken off, and one outside it names no file of the publish's.
+    /// </param>
+    public static ServiceWorkerManifestUpdate? Update(string manifest, IEnumerable<string> removedUrls, Func<string, string?> hashOf, string basePath = "")
     {
         var assets = AssetsArray.Match(manifest);
         var versionMatch = VersionProperty.Match(manifest);
@@ -65,8 +74,7 @@ public static class ServiceWorkerManifest
 
         var previousVersion = versionMatch.Groups["value"].Value;
         var removed = new HashSet<string>(removedUrls.Select(Normalize), StringComparer.OrdinalIgnoreCase);
-        var replacements = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var pair in hashes) replacements[Normalize(pair.Key)] = pair.Value;
+        var root = Normalize(basePath).Trim('/');
 
         var dropped = 0;
         var rehashed = 0;
@@ -76,14 +84,15 @@ public static class ServiceWorkerManifest
             var body = entry.Value.TrimStart(',', ' ', '\t', '\r', '\n');
             var url = Normalize(Regex.Unescape(UrlProperty.Match(body).Groups["value"].Value));
             var hash = Regex.Unescape(HashProperty.Match(body).Groups["value"].Value);
+            var served = Served(url, root);
 
-            if (removed.Contains(url))
+            if (served is not null && removed.Contains(served))
             {
                 dropped++;
                 continue;
             }
 
-            if (replacements.TryGetValue(url, out var replacement) && string.Equals(hash, replacement, StringComparison.Ordinal) is false)
+            if (served is not null && hashOf(served) is { } replacement && string.Equals(hash, replacement, StringComparison.Ordinal) is false)
             {
                 body = HashProperty.Replace(body, $"\"hash\": \"{replacement}\"", 1);
                 hash = replacement;
@@ -142,6 +151,12 @@ public static class ServiceWorkerManifest
 
     /// <summary>A URL as the manifest spells it: forward slashes, no leading slash.</summary>
     private static string Normalize(string url) => url.Replace('\\', '/').TrimStart('/');
+
+    /// <summary>A manifest's URL without the base path it was written under, or null when it is not under it.</summary>
+    private static string? Served(string url, string root) =>
+        root.Length == 0 ? url
+        : url.StartsWith(root + "/", StringComparison.OrdinalIgnoreCase) ? url.Substring(root.Length + 1)
+        : null;
 
     /// <summary>
     /// The same shape as the SDK's own version - eight characters of a hash over what is listed - so that it changes

@@ -5,8 +5,8 @@ namespace Bit.BlazorUI.Tests.Trimming;
 
 /// <summary>
 /// The trimming as an app gets it from nuget.org: the packages packed from this source tree into a feed of their own, and
-/// apps outside the repository referencing them - a Blazor WebAssembly app, a Blazor Web App's server, and a Blazor Web App
-/// whose server hosts a WebAssembly client with a service worker - published with
+/// apps outside the repository referencing them - a Blazor WebAssembly app with a service worker (a standalone PWA), a Blazor
+/// Web App's server, and a Blazor Web App whose server hosts a WebAssembly client with a service worker - published with
 /// each SDK the packages support (.NET 8, 9 and 10; the targets differ between 8 and 9). This is what checks the package
 /// layout (buildTransitive\bit-assets, tasks\Bit.BlazorUI.Build.dll), the task loading from the package, and the SDK
 /// paths a ProjectReference never takes.
@@ -79,6 +79,16 @@ public sealed partial class PackageTrimmingTests
         published.AssertStylesAreThePiecesInOrder("Bit.BlazorUI");
 
         StringAssert.Contains(result.Output, "Bit.BlazorUI: Bit.BlazorUI/styles/bit.blazorui.css -> ");
+
+        if (shape == "wasm")
+        {
+            // A standalone PWA's manifest is its own, which the SDK writes after the trimming, from the trimmed files - on
+            // every SDK, though the .NET 8 one defines it as an asset from the build on, before its file is written (or while
+            // it is still the previous publish's). Nothing to rewrite, then, and nothing to warn about.
+            Assert.IsNull(published.ServiceWorkerRewrite, $"A standalone app's own manifest was rewritten:\n{Tail(result.Output)}");
+            Assert.IsFalse(Regex.IsMatch(result.Output, "BITBLAZORUI00[45]"), $"A standalone app warned about its own service worker:\n{Tail(result.Output)}");
+            published.AssertServiceWorkerListsWhatIsServed();
+        }
 
         if (shape == "web-hosted")
         {
@@ -154,13 +164,18 @@ public sealed partial class PackageTrimmingTests
 
         if (shape == "wasm")
         {
+            // A PWA: a service worker precaching from the manifest the SDK writes.
             File.WriteAllText(Path.Combine(app, "App.csproj"), $$"""
                 <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
                   <PropertyGroup>
                     <TargetFramework>{{tfm}}</TargetFramework>
                     <Nullable>enable</Nullable>
                     <ImplicitUsings>enable</ImplicitUsings>
+                    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
                   </PropertyGroup>
+                  <ItemGroup>
+                    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+                  </ItemGroup>
                   <ItemGroup>
                     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="{{sdk.Major}}.0.*" />
                 {{packages}}
@@ -182,6 +197,7 @@ public sealed partial class PackageTrimmingTests
                 <html><head><base href="/" /><link rel="stylesheet" href="_content/Bit.BlazorUI/styles/bit.blazorui.css" /></head>
                 <body><div id="app"></div><script src="_framework/blazor.webassembly.js"></script><script src="_content/Bit.BlazorUI/scripts/bit.blazorui.js"></script></body></html>
                 """);
+            WriteServiceWorker(app);
         }
         else if (shape == "web-hosted")
         {
@@ -237,9 +253,7 @@ public sealed partial class PackageTrimmingTests
                   </ItemGroup>
                 </Project>
                 """);
-            Directory.CreateDirectory(Path.Combine(client, "wwwroot"));
-            File.WriteAllText(Path.Combine(client, "wwwroot", "service-worker.js"), "self.addEventListener('fetch', () => { });\n");
-            File.WriteAllText(Path.Combine(client, "wwwroot", "service-worker.published.js"), "self.importScripts('./service-worker-assets.js');\nself.addEventListener('fetch', () => { });\n");
+            WriteServiceWorker(client);
             File.WriteAllText(Path.Combine(client, "Program.cs"), """
                 using Bit.BlazorUI;
                 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
@@ -303,6 +317,15 @@ public sealed partial class PackageTrimmingTests
               """);
 
         return app;
+    }
+
+    // The development and the published service worker of a <ServiceWorker> item, the published one precaching from the
+    // manifest - all the SDK needs to write the manifest and the version line.
+    private static void WriteServiceWorker(string project)
+    {
+        Directory.CreateDirectory(Path.Combine(project, "wwwroot"));
+        File.WriteAllText(Path.Combine(project, "wwwroot", "service-worker.js"), "self.addEventListener('fetch', () => { });\n");
+        File.WriteAllText(Path.Combine(project, "wwwroot", "service-worker.published.js"), "self.importScripts('./service-worker-assets.js');\nself.addEventListener('fetch', () => { });\n");
     }
 
     private static List<Version> InstalledSdks()

@@ -10,17 +10,24 @@ using Microsoft.Build.Utilities;
 namespace Bit.BlazorUI.Build;
 
 /// <summary>
-/// Rewrites the service worker assets manifests a publish carries - and the service worker scripts that name their
-/// version - after the trimming swapped in trimmed bundles or left files out. Runs in a consumer's publish; wired up by
-/// <c>buildTransitive/Bit.BlazorUI.targets</c>.
+/// Rewrites the service worker assets manifests a publish carries from a referenced project - and the service worker
+/// scripts that name their version - after the trimming swapped in trimmed bundles or left files out. Runs in a
+/// consumer's publish; wired up by <c>buildTransitive/Bit.BlazorUI.targets</c>.
 /// </summary>
 /// <remarks>
 /// <para>
 /// <see cref="ServiceWorkerManifest"/> says why a manifest needs it and does the rewriting. This is the MSBuild half: it
 /// finds the manifests among the static web assets, writes each changed file to a folder of its own, and hands back
 /// candidate assets for the new files along with the stale assets they replace - the originals and the compressed copies
-/// derived from them - so the targets swap them the way the trimmed bundles are swapped, and the SDK computes integrity,
-/// endpoints and fresh <c>.br</c>/<c>.gz</c> copies from the new content.
+/// derived from them - so the targets swap them the way the trimmed bundles are swapped (<see cref="StaticWebAssetSwap"/>),
+/// and the SDK computes integrity, endpoints and fresh <c>.br</c>/<c>.gz</c> copies from the new content.
+/// </para>
+/// <para>
+/// Only a manifest another project wrote is read: the client of a Blazor Web App, which wrote it during its own publish,
+/// before this project trimmed. The project's own manifest - a standalone WebAssembly app's - is the SDK's to write after
+/// this runs, from the trimmed files, and is left alone even where the SDK already lists it: the .NET 8 SDK defines it as
+/// an asset from the build on, so at this point its file is not there yet on a first publish, and is the previous
+/// publish's on a later one.
 /// </para>
 /// <para>
 /// A manifest that cannot be read, or is not in the shape the SDK writes, is reported with BITBLAZORUI004 and published as
@@ -38,6 +45,10 @@ public sealed class UpdateBitBlazorUIServiceWorker : Task
     /// <summary>The static web assets as they stand once the trimming is done.</summary>
     [Required]
     public ITaskItem[] StaticWebAssets { get; set; } = [];
+
+    /// <summary>The <c>SourceId</c> of the project's own assets (its <c>PackageId</c>), whose manifest is never read.</summary>
+    [Required]
+    public string ProjectSourceId { get; set; } = string.Empty;
 
     /// <summary>
     /// The assets the trimming removed - the files of the vendor folders, the modules of the lazy scripts the app can no
@@ -59,12 +70,6 @@ public sealed class UpdateBitBlazorUIServiceWorker : Task
     /// <summary>The assets the candidates replace, each with an <c>AssetFile</c> to match its endpoints on.</summary>
     [Output]
     public ITaskItem[] StaleAssets { get; set; } = [];
-
-    private static readonly string[] CopiedMetadata =
-    [
-        "SourceId", "SourceType", "BasePath", "RelativePath", "AssetMode", "AssetRole", "AssetMergeSource",
-        "AssetMergeBehavior", "RelatedAsset", "AssetTraitName", "AssetTraitValue", "AssetKind",
-    ];
 
     private const string StaleManifest = "so it is published as it is, still listing the bit BlazorUI scripts and stylesheets as they were before the trimming";
     private const string StaleScript = "so it is published unchanged, and a browser that already installed the app sees no new service worker to update to - it keeps the bit BlazorUI scripts and stylesheets it cached";
@@ -91,25 +96,22 @@ public sealed class UpdateBitBlazorUIServiceWorker : Task
                 && string.Equals(a.GetMetadata("AssetKind"), "Build", StringComparison.OrdinalIgnoreCase) is false)
             .ToList();
 
-        // None in a standalone WebAssembly app, whose own manifest is written after this runs, from the trimmed files -
-        // which is why it never needs rewriting.
-        var manifests = serviceWorkerFiles.Where(a => string.Equals(a.GetMetadata("AssetTraitValue"), "ServiceWorkerManifest", StringComparison.Ordinal)).ToList();
+        // Another project's only (see the remarks): none in a standalone WebAssembly app.
+        var manifests = serviceWorkerFiles.Where(a => string.Equals(a.GetMetadata("AssetTraitValue"), "ServiceWorkerManifest", StringComparison.Ordinal)
+                && string.Equals(a.GetMetadata("SourceId"), ProjectSourceId, StringComparison.OrdinalIgnoreCase) is false)
+            .ToList();
         if (manifests.Count == 0) return true;
 
         var removed = RemovedAssets.Select(UrlOf).ToList();
-        var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var asset in TrimmedAssets.Where(a => string.IsNullOrEmpty(a.GetMetadata("RelatedAsset"))))
-        {
-            // The .NET 8 SDK defines an asset without an integrity, so the file is hashed here instead.
-            var integrity = asset.GetMetadata("Integrity");
-            if (string.IsNullOrEmpty(integrity))
-            {
-                using var sha = SHA256.Create();
-                using var stream = File.OpenRead(asset.GetMetadata("FullPath"));
-                integrity = Convert.ToBase64String(sha.ComputeHash(stream));
-            }
+        var trimmed = new Dictionary<string, ITaskItem>(StringComparer.OrdinalIgnoreCase);
+        foreach (var asset in TrimmedAssets.Where(a => string.IsNullOrEmpty(a.GetMetadata("RelatedAsset")))) trimmed[UrlOf(asset)] = asset;
 
-            hashes[UrlOf(asset)] = "sha256-" + integrity;
+        // Asked for by the rewrite only for a URL a manifest lists, so no file is hashed that no manifest needs.
+        var hashes = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        string? HashOf(string url)
+        {
+            if (hashes.TryGetValue(url, out var hash)) return hash;
+            return trimmed.TryGetValue(url, out var asset) ? hashes[url] = "sha256-" + IntegrityOf(asset) : null;
         }
 
         var candidates = new List<ITaskItem>();
@@ -119,7 +121,8 @@ public sealed class UpdateBitBlazorUIServiceWorker : Task
         {
             if (ReadText(manifest, ManifestWarningCode, StaleManifest) is not { } text) continue;
 
-            var update = ServiceWorkerManifest.Update(text, removed, hashes);
+            // Its URLs are written under the base path of the project that wrote it, the one its own asset is served under.
+            var update = ServiceWorkerManifest.Update(text, removed, HashOf, manifest.GetMetadata("BasePath"));
             if (update is null)
             {
                 Warn(ManifestWarningCode, $"{manifest.GetMetadata("FullPath")} is not a service worker assets manifest it can read, {StaleManifest}.");
@@ -181,8 +184,8 @@ public sealed class UpdateBitBlazorUIServiceWorker : Task
 
     private ITaskItem Rewrite(ITaskItem original, string content, List<ITaskItem> stale)
     {
-        var originalPath = Path.GetFullPath(original.GetMetadata("FullPath"));
-        var contentRoot = Path.GetFullPath(Path.Combine(OutputDirectory, original.GetMetadata("SourceId"))).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        var originalPath = original.GetMetadata("FullPath");
+        var contentRoot = StaticWebAssetSwap.ContentRoot(OutputDirectory, original.GetMetadata("SourceId"));
         var path = Path.Combine(contentRoot, Path.GetFileName(originalPath));
         Directory.CreateDirectory(contentRoot);
 
@@ -193,29 +196,19 @@ public sealed class UpdateBitBlazorUIServiceWorker : Task
             File.WriteAllBytes(path, bytes);
         }
 
-        var candidate = new TaskItem(path);
-        foreach (var name in CopiedMetadata) candidate.SetMetadata(name, original.GetMetadata(name));
-        candidate.SetMetadata("ContentRoot", contentRoot);
-        candidate.SetMetadata("CopyToOutputDirectory", "Never");
-        candidate.SetMetadata("CopyToPublishDirectory", "PreserveNewest");
-        candidate.SetMetadata("OriginalItemSpec", path);
-
-        stale.Add(WithAssetFile(original));
-        foreach (var derived in StaticWebAssets.Where(a => string.IsNullOrEmpty(a.GetMetadata("RelatedAsset")) is false
-            && string.Equals(Path.GetFullPath(a.GetMetadata("RelatedAsset")), originalPath, StringComparison.OrdinalIgnoreCase)))
-        {
-            stale.Add(WithAssetFile(derived));
-        }
-
-        return candidate;
+        stale.AddRange(StaticWebAssetSwap.WithDerived([original], StaticWebAssets));
+        return StaticWebAssetSwap.Candidate(original, path, contentRoot);
     }
 
-    // Endpoints are keyed by the file they serve (their AssetFile), which is what an item removing them matches on.
-    private static ITaskItem WithAssetFile(ITaskItem asset)
+    // The .NET 8 SDK defines an asset without an integrity, so the file is hashed here instead.
+    private static string IntegrityOf(ITaskItem asset)
     {
-        var item = new TaskItem(asset);
-        item.SetMetadata("AssetFile", asset.GetMetadata("FullPath"));
-        return item;
+        var integrity = asset.GetMetadata("Integrity");
+        if (string.IsNullOrEmpty(integrity) is false) return integrity;
+
+        using var sha = SHA256.Create();
+        using var stream = File.OpenRead(asset.GetMetadata("FullPath"));
+        return Convert.ToBase64String(sha.ComputeHash(stream));
     }
 
     private static bool HasBom(string path)

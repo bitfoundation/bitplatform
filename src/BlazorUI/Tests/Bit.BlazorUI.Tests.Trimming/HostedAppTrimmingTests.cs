@@ -8,8 +8,9 @@ namespace Bit.BlazorUI.Tests.Trimming;
 /// The trimming of a Blazor Web App whose WebAssembly client has a service worker: Bit.BlazorUI.Tests.Trimming.Hosted. The
 /// client writes service-worker-assets.js during its own publish, from the packages' full bundles and every vendored file,
 /// and the server trims afterwards - so what a service worker is told to install is right only where the server's publish
-/// rewrote the list to match what it serves (#13907). And the same client published on its own, a standalone PWA, whose
-/// manifest the SDK writes after the trimming, with nothing to rewrite.
+/// rewrote the list to match what it serves (#13907) - the client served at the root, or under a base path of its own. And
+/// the same client published on its own, a standalone PWA, whose manifest the SDK writes after the trimming, with nothing to
+/// rewrite.
 /// </summary>
 /// <remarks>
 /// Whether a publish rewrote the manifest is read off the task's own line in the build output, and asserted either way.
@@ -30,6 +31,12 @@ public sealed class HostedAppTrimmingTests
     private static PublishResult Lazy => Publisher.Publish(Publisher.Hosted, "BitBlazorUITrimAssets=true", "BitBlazorUILazyScripts=true");
 
     private static PublishResult Standalone => Publisher.Publish(Publisher.HostedClient);
+
+    // The client served under a base path of its own (its StaticWebAssetBasePath), which the SDK writes every URL of its
+    // manifest under. Only the client reads the property.
+    private const string ClientBasePath = "app";
+
+    private static PublishResult UnderABasePath => Publisher.Publish(Publisher.Hosted, "BitBlazorUITrimAssets=true", $"BitTrimmingClientBasePath={ClientBasePath}");
 
     [TestMethod]
     public void TheServiceWorkerShouldListTheBundlesTheServerTrimmedAndNotTheFilesItLeftOut()
@@ -70,6 +77,28 @@ public sealed class HostedAppTrimmingTests
         CollectionAssert.AreEqual(publish.PublishedModules("Bit.BlazorUI"), listed, $"The manifest lists the modules {string.Join(", ", listed)}.");
     }
 
+    /// <summary>
+    /// A client under a base path of its own has the SDK write every URL of its manifest beneath it - the packages' files
+    /// too, <c>app/_content/Bit.BlazorUI/...</c> - while the trimming names those files by the packages' base paths alone.
+    /// Matched as the trimming names them, nothing in such a manifest would be found, and it would be published as the
+    /// client wrote it, without a warning.
+    /// </summary>
+    [TestMethod]
+    public void AClientUnderABasePathOfItsOwnShouldHaveItsManifestRewrittenAllTheSame()
+    {
+        var publish = UnderABasePath;
+        publish.AssertSucceeded();
+
+        var rewrite = publish.ServiceWorkerRewrite;
+        Assert.IsTrue(rewrite is { Dropped: > 0, Rehashed: > 0 }, $"The manifest should have lost entries and taken trimmed hashes, but {Describe(rewrite)}");
+
+        publish.AssertServiceWorkerListsWhatIsServed(ClientBasePath);
+
+        var (_, assets) = publish.ReadServiceWorkerManifest(ClientBasePath);
+        Assert.IsTrue(assets.ContainsKey($"{ClientBasePath}/{ScriptBundle}"), "The manifest no longer lists the trimmed script bundle.");
+        Assert.IsFalse(assets.Keys.Any(url => url.StartsWith($"{ClientBasePath}/{Leaflet}", StringComparison.Ordinal)), "The manifest lists Leaflet, which the app does not use.");
+    }
+
     [TestMethod]
     public void AStandalonePwaShouldListItsOwnTrimmedFilesWithNothingToRewrite()
     {
@@ -91,6 +120,7 @@ public sealed class HostedAppTrimmingTests
     [DataRow("bundles")]
     [DataRow("lazy")]
     [DataRow("standalone")]
+    [DataRow("base-path")]
     public void TheCompressedCopiesShouldBeTheFilesTheyAreCopiesOf(string scenario)
     {
         var publish = Of(scenario);
@@ -99,14 +129,18 @@ public sealed class HostedAppTrimmingTests
         // The server picks a copy by the request's Accept-Encoding, so a copy left over from a file the publish replaced is
         // the old file served to every browser. The service worker script's own copies only where the publish rewrote it:
         // the ones the SDK publishes of an untouched one are not this feature's to check.
-        var (_, assets) = publish.ReadServiceWorkerManifest();
-        var files = new List<string> { "service-worker-assets.js" };
-        if (publish.ServiceWorkerRewrite is not null) files.Add("service-worker.js");
+        var basePath = scenario == "base-path" ? ClientBasePath : "";
+        var (_, assets) = publish.ReadServiceWorkerManifest(basePath);
+        var files = new List<string> { Path.Combine(basePath, "service-worker-assets.js") };
+        if (publish.ServiceWorkerRewrite is not null) files.Add(Path.Combine(basePath, "service-worker.js"));
         files.AddRange(assets.Keys);
 
         var wrong = new List<string>();
         foreach (var file in files.Select(f => Path.Combine(publish.WebRoot, f.Replace('/', Path.DirectorySeparatorChar))).Where(File.Exists))
         {
+            // Read once, and only for a file that has a copy: the list holds every wasm file of the framework.
+            byte[]? identity = null;
+
             foreach (var (extension, decompress) in new (string, Func<Stream, Stream>)[]
             {
                 (".gz", stream => new GZipStream(stream, CompressionMode.Decompress)),
@@ -119,7 +153,8 @@ public sealed class HostedAppTrimmingTests
                 using var content = new MemoryStream();
                 using (var stream = decompress(File.OpenRead(copy))) stream.CopyTo(content);
 
-                if (content.ToArray().AsSpan().SequenceEqual(File.ReadAllBytes(file)) is false) wrong.Add($"{Path.GetRelativePath(publish.WebRoot, copy).Replace('\\', '/')} is not {Path.GetFileName(file)} compressed");
+                identity ??= File.ReadAllBytes(file);
+                if (content.ToArray().AsSpan().SequenceEqual(identity) is false) wrong.Add($"{Path.GetRelativePath(publish.WebRoot, copy).Replace('\\', '/')} is not {Path.GetFileName(file)} compressed");
             }
         }
 
@@ -139,6 +174,7 @@ public sealed class HostedAppTrimmingTests
     [TestMethod]
     [DataRow("bundles")]
     [DataRow("lazy")]
+    [DataRow("base-path")]
     public void EveryEndpointShouldDescribeTheFileItServes(string scenario)
     {
         var publish = Of(scenario);
@@ -203,6 +239,7 @@ public sealed class HostedAppTrimmingTests
         "bundles" => Bundles,
         "lazy" => Lazy,
         "standalone" => Standalone,
+        "base-path" => UnderABasePath,
         _ => throw new ArgumentOutOfRangeException(nameof(scenario), scenario, null),
     };
 

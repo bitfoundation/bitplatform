@@ -20,6 +20,12 @@
         <IsPackable>false</IsPackable>
         <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
         <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+        <!-- As the Blazor Web App template's client, the Boilerplate's and the websites' have it: the packages' assets reach
+             the server as the server's own references, not as the client's. The Boilerplate publishes its client on its
+             own with it too. -->
+        <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+        <!-- HostedAppTrimmingTests' client served under a path of its own: the SDK writes the manifest's URLs under it. -->
+        <StaticWebAssetBasePath Condition="'$(BitTrimmingClientBasePath)' != ''">$(BitTrimmingClientBasePath)</StaticWebAssetBasePath>
     </PropertyGroup>
 
     <ItemGroup>

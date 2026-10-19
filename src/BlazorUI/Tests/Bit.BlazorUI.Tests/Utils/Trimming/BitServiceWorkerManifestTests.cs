@@ -40,7 +40,7 @@ public sealed class BitServiceWorkerManifestTests
     public void AReplacedBundlesEntryShouldTakeTheReplacementsHashAndNothingElseChange()
     {
         var original = Manifest("\r\n", ("_framework/dotnet.js", FrameworkHash), (Bundle, FullHash), ("index.html", OtherHash));
-        var update = ServiceWorkerManifest.Update(original, [], new Dictionary<string, string> { [Bundle] = TrimmedHash });
+        var update = ServiceWorkerManifest.Update(original, [], Serving((Bundle, TrimmedHash)));
 
         var result = Read(update);
         Assert.IsTrue(update!.Changed && update.Rehashed == 1 && update.Dropped == 0, $"It reported {update.Rehashed} replaced and {update.Dropped} dropped.");
@@ -59,7 +59,7 @@ public sealed class BitServiceWorkerManifestTests
     {
         var original = Manifest("\r\n", (Module("Callouts"), FrameworkHash), (Leaflet("leaflet.js"), FullHash), (Module("BitSplitter"), OtherHash),
                                 (Leaflet("leaflet.css"), TrimmedHash), ("index.html", OtherHash));
-        var update = ServiceWorkerManifest.Update(original, [Leaflet("leaflet.js"), Leaflet("leaflet.css"), Module("BitSplitter"), Module("BitChart")], new Dictionary<string, string>());
+        var update = ServiceWorkerManifest.Update(original, [Leaflet("leaflet.js"), Leaflet("leaflet.css"), Module("BitSplitter"), Module("BitChart")], Serving());
 
         var result = Read(update);
         Assert.IsTrue(update!.Dropped == 3 && update.Rehashed == 0, $"It reported {update.Dropped} dropped and {update.Rehashed} replaced, where it listed three of the four.");
@@ -76,7 +76,7 @@ public sealed class BitServiceWorkerManifestTests
         (string Url, string Hash)[] assets = [(Module("Callouts"), FrameworkHash), (Module("BitNav"), FullHash), (Module("BitSplitter"), OtherHash)];
         var removed = dropped.Select(i => assets[i].Url).ToArray();
 
-        var result = Read(ServiceWorkerManifest.Update(Manifest("\r\n", assets), removed, new Dictionary<string, string>()));
+        var result = Read(ServiceWorkerManifest.Update(Manifest("\r\n", assets), removed, Serving()));
         Expect(result.Assets, [.. assets.Where(a => removed.Contains(a.Url) is false)]);
     }
 
@@ -88,7 +88,7 @@ public sealed class BitServiceWorkerManifestTests
     public void AManifestAlreadyListingWhatIsServedShouldBeLeftAsItIs()
     {
         var original = Manifest("\r\n", (Bundle, TrimmedHash), ("index.html", OtherHash));
-        var update = ServiceWorkerManifest.Update(original, [Module("BitSplitter")], new Dictionary<string, string> { [Bundle] = TrimmedHash, ["_content/Other/other.js"] = OtherHash });
+        var update = ServiceWorkerManifest.Update(original, [Module("BitSplitter")], Serving((Bundle, TrimmedHash), ("_content/Other/other.js", OtherHash)));
 
         Assert.IsNotNull(update, "It was refused.");
         Assert.IsFalse(update.Changed);
@@ -104,9 +104,46 @@ public sealed class BitServiceWorkerManifestTests
     public void URLsShouldBeMatchedHoweverTheManifestSpellsThemAndOnlyWhole()
     {
         var original = Manifest("\r\n", (Bundle.Replace("/", "\\/"), FullHash), ("/" + Module("BitSplitter"), OtherHash), (Bundle + ".map", FullHash));
-        var update = ServiceWorkerManifest.Update(original, [Module("BitSplitter")], new Dictionary<string, string> { ["/" + Bundle] = TrimmedHash });
+        var update = ServiceWorkerManifest.Update(original, [Module("BitSplitter")], Serving((Bundle, TrimmedHash)));
 
         Expect(Read(update).Assets, (Bundle, TrimmedHash), (Bundle + ".map", FullHash));
+    }
+
+    /// <summary>
+    /// A client served under a base path of its own has the SDK write every URL under it, the packages' files too
+    /// (<c>app/_content/Bit.BlazorUI/...</c>), while the trimming names a package's file by its own base path alone - so the
+    /// entries are matched with the client's base path taken off, however it is spelled, and an entry outside it is no file
+    /// of the trimming's.
+    /// </summary>
+    [TestMethod]
+    [DataRow("app", DisplayName = "a bare base path")]
+    [DataRow("/app/", DisplayName = "a base path with its slashes")]
+    [DataRow("\\app\\", DisplayName = "a base path with backslashes")]
+    public void AClientsEntriesShouldBeMatchedUnderItsBasePath(string basePath)
+    {
+        var original = Manifest("\r\n", ("app/_framework/dotnet.js", FrameworkHash), ("app/" + Bundle, FullHash), ("app/" + Leaflet("leaflet.js"), OtherHash), (Styles, FullHash));
+        var update = ServiceWorkerManifest.Update(original, [Leaflet("leaflet.js")], Serving((Bundle, TrimmedHash), (Styles, TrimmedHash)), basePath);
+
+        Expect(Read(update).Assets, ("app/_framework/dotnet.js", FrameworkHash), ("app/" + Bundle, TrimmedHash), (Styles, FullHash));
+    }
+
+    /// <summary>
+    /// The task hashes a trimmed file only when asked, so it asks only about what a manifest lists and keeps: not a file the
+    /// manifest does not list, and not an entry it drops anyway.
+    /// </summary>
+    [TestMethod]
+    public void OnlyTheURLsAManifestKeepsShouldBeAskedFor()
+    {
+        var asked = new List<string>();
+        var original = Manifest("\r\n", ("_framework/dotnet.js", FrameworkHash), (Bundle, FullHash), (Module("BitSplitter"), OtherHash));
+
+        ServiceWorkerManifest.Update(original, [Module("BitSplitter")], url =>
+        {
+            asked.Add(url);
+            return url == Bundle ? TrimmedHash : null;
+        });
+
+        CollectionAssert.AreEqual(new[] { "_framework/dotnet.js", Bundle }, asked, $"It asked about {string.Join(", ", asked)}.");
     }
 
     /// <summary>
@@ -120,7 +157,7 @@ public sealed class BitServiceWorkerManifestTests
         const string Trailer = "self.assetsInclude = [/\\.js$/, /\\.wasm$/];\r\n";
 
         var original = Manifest("\r\n", (Module("BitSplitter"), OtherHash), (Bundle, FullHash), ("_content/Other/a]b.js", FrameworkHash)) + Trailer;
-        var update = ServiceWorkerManifest.Update(original, [Module("BitSplitter")], new Dictionary<string, string> { [Bundle] = TrimmedHash });
+        var update = ServiceWorkerManifest.Update(original, [Module("BitSplitter")], Serving((Bundle, TrimmedHash)));
 
         Expect(Read(update).Assets, (Bundle, TrimmedHash), ("_content/Other/a]b.js", FrameworkHash));
         Assert.IsTrue(update!.Text.EndsWith("  ]\r\n};\r\n" + Trailer, StringComparison.Ordinal), $"The file ends: {update.Text[Math.Max(0, update.Text.Length - 80)..]}");
@@ -136,7 +173,7 @@ public sealed class BitServiceWorkerManifestTests
     public void ARewrittenManifestShouldKeepItsLineEndings(string newline)
     {
         var original = Manifest(newline, (Module("Callouts"), FrameworkHash), (Module("BitSplitter"), OtherHash), (Bundle, FullHash));
-        var update = ServiceWorkerManifest.Update(original, [Module("BitSplitter")], new Dictionary<string, string> { [Bundle] = TrimmedHash });
+        var update = ServiceWorkerManifest.Update(original, [Module("BitSplitter")], Serving((Bundle, TrimmedHash)));
 
         Assert.IsNotNull(update, "It was refused.");
         var mixed = newline == "\n" ? update.Text.Contains('\r') : update.Text.Replace("\r\n", "").Contains('\n');
@@ -151,7 +188,7 @@ public sealed class BitServiceWorkerManifestTests
     public void TheVersionShouldFollowWhatIsListedAndNothingElse()
     {
         static string? VersionFor(string newline, string hash) => ServiceWorkerManifest.Update(
-            Manifest(newline, ("index.html", OtherHash), (Bundle, FullHash)), [], new Dictionary<string, string> { [Bundle] = hash })?.Version;
+            Manifest(newline, ("index.html", OtherHash), (Bundle, FullHash)), [], Serving((Bundle, hash)))?.Version;
 
         var version = VersionFor("\r\n", TrimmedHash);
 
@@ -174,7 +211,7 @@ public sealed class BitServiceWorkerManifestTests
              DisplayName = "a manifest whose asset is not one flat object")]
     public void WhatIsNotAManifestShouldBeRefusedRatherThanRewritten(string text)
     {
-        Assert.IsNull(ServiceWorkerManifest.Update(text, [Bundle], new Dictionary<string, string> { [Bundle] = TrimmedHash }));
+        Assert.IsNull(ServiceWorkerManifest.Update(text, [Bundle], Serving((Bundle, TrimmedHash))));
     }
 
     /// <summary>
@@ -210,6 +247,10 @@ public sealed class BitServiceWorkerManifestTests
     {
         Assert.AreEqual(expected, ServiceWorkerManifest.AssetUrl(basePath, relativePath, name => name == "Fingerprint" ? "abc123" : ""));
     }
+
+    /// <summary>The files a publish serves in place of the ones a manifest lists, looked up the way the task looks them up.</summary>
+    private static Func<string, string?> Serving(params (string Url, string Hash)[] files) =>
+        url => files.FirstOrDefault(f => f.Url == url).Hash;
 
     private static string Module(string name) => $"_content/Bit.BlazorUI/scripts/modules/{name}.js";
 

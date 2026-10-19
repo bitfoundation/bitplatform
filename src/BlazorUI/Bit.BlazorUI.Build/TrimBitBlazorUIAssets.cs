@@ -355,11 +355,7 @@ public sealed class TrimBitBlazorUIAssets : Task
                 .ToList();
             if (primaries.Count == 0) continue;
 
-            var paths = new HashSet<string>(primaries.Select(p => Normalize(p.GetMetadata("FullPath"))), StringComparer.OrdinalIgnoreCase);
-            removed.AddRange(primaries.Select(WithAssetFile));
-            removed.AddRange(StaticWebAssets
-                .Where(a => string.IsNullOrEmpty(a.GetMetadata("RelatedAsset")) is false && paths.Contains(Normalize(Path.GetFullPath(a.GetMetadata("RelatedAsset")))))
-                .Select(WithAssetFile));
+            removed.AddRange(StaticWebAssetSwap.WithDerived(primaries, StaticWebAssets));
 
             Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: {0} lazy script modules -> {1} of {2} ({3} left out: nothing this app can run imports them).",
                 package.PackageId, modules.Count - primaries.Count, modules.Count, primaries.Count);
@@ -391,11 +387,7 @@ public sealed class TrimBitBlazorUIAssets : Task
                 .ToList();
             if (primaries.Count == 0) continue;
 
-            var paths = new HashSet<string>(primaries.Select(p => Normalize(p.GetMetadata("FullPath"))), StringComparer.OrdinalIgnoreCase);
-            removed.AddRange(primaries.Select(WithAssetFile));
-            removed.AddRange(StaticWebAssets
-                .Where(a => string.IsNullOrEmpty(a.GetMetadata("RelatedAsset")) is false && paths.Contains(Normalize(Path.GetFullPath(a.GetMetadata("RelatedAsset")))))
-                .Select(WithAssetFile));
+            removed.AddRange(StaticWebAssetSwap.WithDerived(primaries, StaticWebAssets));
 
             Log.LogMessage(MessageImportance.High, "Bit.BlazorUI: {0} -> left out ({1} files): nothing this app can run loads it.", url, primaries.Count);
         }
@@ -539,46 +531,13 @@ public sealed class TrimBitBlazorUIAssets : Task
                 return false;
             }
 
-            var original = matches[0];
-            var originalPath = Normalize(original.GetMetadata("FullPath"));
-
-            var contentRoot = Path.Combine(OutputDirectory, output.PackageId);
-            contentRoot = Path.GetFullPath(contentRoot).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + Path.DirectorySeparatorChar;
-
-            var candidate = new TaskItem(Path.GetFullPath(output.Path));
-            foreach (var name in CopiedMetadata) candidate.SetMetadata(name, original.GetMetadata(name));
-            candidate.SetMetadata("ContentRoot", contentRoot);
-            candidate.SetMetadata("AssetKind", "Publish");
-            candidate.SetMetadata("CopyToOutputDirectory", "Never");
-            candidate.SetMetadata("CopyToPublishDirectory", "PreserveNewest");
-            candidate.SetMetadata("OriginalItemSpec", Path.GetFullPath(output.Path));
-            candidates.Add(candidate);
-
-            stale.Add(WithAssetFile(original));
-            foreach (var derived in StaticWebAssets.Where(a => string.IsNullOrEmpty(a.GetMetadata("RelatedAsset")) is false
-                && string.Equals(Normalize(Path.GetFullPath(a.GetMetadata("RelatedAsset"))), originalPath, StringComparison.OrdinalIgnoreCase)))
-            {
-                stale.Add(WithAssetFile(derived));
-            }
+            candidates.Add(StaticWebAssetSwap.Candidate(matches[0], output.Path, StaticWebAssetSwap.ContentRoot(OutputDirectory, output.PackageId)));
+            stale.AddRange(StaticWebAssetSwap.WithDerived(matches, StaticWebAssets));
         }
 
         CandidateAssets = [.. candidates];
         StaleAssets = [.. stale];
         return Log.HasLoggedErrors is false;
-    }
-
-    private static readonly string[] CopiedMetadata =
-    [
-        "SourceId", "SourceType", "BasePath", "RelativePath", "AssetMode", "AssetRole", "AssetMergeSource",
-        "AssetMergeBehavior", "RelatedAsset", "AssetTraitName", "AssetTraitValue",
-    ];
-
-    // Endpoints are keyed by the file they serve (their AssetFile), which is what an item removing them matches on.
-    private static ITaskItem WithAssetFile(ITaskItem asset)
-    {
-        var item = new TaskItem(asset);
-        item.SetMetadata("AssetFile", asset.GetMetadata("FullPath"));
-        return item;
     }
 
     private static string Normalize(string path) => path.Replace('\\', '/');

@@ -140,11 +140,15 @@ public sealed class PublishResult(string directory, int exitCode, string output)
         return document.RootElement.GetProperty("Endpoints").EnumerateArray().Select(e => e.Clone()).ToList();
     }
 
-    /// <summary>The service worker assets manifest of the publish (service-worker-assets.js): its version, and each URL it lists with its hash.</summary>
-    public (string Version, Dictionary<string, string> Assets) ReadServiceWorkerManifest()
+    /// <summary>
+    /// The service worker assets manifest of the publish (service-worker-assets.js): its version, and each URL it lists with
+    /// its hash. <paramref name="clientBasePath"/> is the base path of the project that owns the service worker, where a
+    /// Blazor Web App's client is served under one of its own.
+    /// </summary>
+    public (string Version, Dictionary<string, string> Assets) ReadServiceWorkerManifest(string clientBasePath = "")
     {
-        var path = Path.Combine(WebRoot, "service-worker-assets.js");
-        Assert.IsTrue(File.Exists(path), "The publish has no service-worker-assets.js.");
+        var path = Path.Combine(WebRoot, clientBasePath, "service-worker-assets.js");
+        Assert.IsTrue(File.Exists(path), $"The publish has no {Path.GetRelativePath(WebRoot, path).Replace('\\', '/')}.");
 
         var text = File.ReadAllText(path);
         using var document = JsonDocument.Parse(text[text.IndexOf('{')..(text.LastIndexOf('}') + 1)]);
@@ -160,20 +164,26 @@ public sealed class PublishResult(string directory, int exitCode, string output)
     /// hash, one that checks integrity rejects any other, and one that precaches every listed file fails to install on a 404
     /// - and the service worker script carries the manifest's version, the change a browser installs an update over.
     /// </summary>
-    public void AssertServiceWorkerListsWhatIsServed()
+    /// <remarks>
+    /// Under a <paramref name="clientBasePath"/>, the SDK writes every URL beneath it, the packages' files too
+    /// (<c>app/_content/Bit.BlazorUI/...</c>), while the server publishes those at its root: a package's file is read there.
+    /// </remarks>
+    public void AssertServiceWorkerListsWhatIsServed(string clientBasePath = "")
     {
-        var (version, assets) = ReadServiceWorkerManifest();
+        var (version, assets) = ReadServiceWorkerManifest(clientBasePath);
+        var packages = clientBasePath.Length == 0 ? null : clientBasePath + "/_content/";
 
         var wrong = new List<string>();
         foreach (var (url, hash) in assets)
         {
-            var path = Path.Combine(WebRoot, url.Replace('/', Path.DirectorySeparatorChar));
+            var served = packages is not null && url.StartsWith(packages, StringComparison.Ordinal) ? url[(clientBasePath.Length + 1)..] : url;
+            var path = Path.Combine(WebRoot, served.Replace('/', Path.DirectorySeparatorChar));
             if (File.Exists(path) is false) wrong.Add($"{url} is listed but not published");
             else if ($"sha256-{Sha256(path)}" != hash) wrong.Add($"{url} is listed under another file's hash");
         }
 
         Assert.AreEqual(0, wrong.Count, $"{wrong.Count} entries of service-worker-assets.js are wrong: {string.Join("; ", wrong.Take(5))}");
-        StringAssert.Contains(File.ReadAllText(Path.Combine(WebRoot, "service-worker.js")), $"/* {ServiceWorkerManifest.VersionMarker}{version} */",
+        StringAssert.Contains(File.ReadAllText(Path.Combine(WebRoot, clientBasePath, "service-worker.js")), $"/* {ServiceWorkerManifest.VersionMarker}{version} */",
                               "service-worker.js does not carry the manifest's version, so a browser has no new service worker to install.");
     }
 
