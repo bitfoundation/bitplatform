@@ -85,6 +85,37 @@ public class LifecycleTests : BortableTestContext
         Assert.AreSequenceEqual(["C", "A", "B"], items);
         Assert.IsNull(Coordinator.Context);
         Assert.AreEqual("B", log[^1].Args!.Item);
+        // The first drag is reported as it ends, before the second one starts: OnEnd follows every OnStart.
+        Assert.AreEqual(
+            "Start:L1 Change:L1 ItemsChanged:L1 Update:L1 Sort:L1 End:L1 Start:L1 Change:L1 ItemsChanged:L1 Update:L1 Sort:L1 End:L1",
+            Sequence(log));
+        Assert.AreEqual("A", log[5].Args!.Item);
+    }
+
+    [TestMethod]
+    public async Task ASlowItemsChangedHandlerDoesNotHoldUpTheNextDrag()
+    {
+        List<string> items = ["A", "B", "C"];
+        var saving = new TaskCompletionSource();
+        var list = RenderList(items, "L1", p => p.Add(c => c.ItemsChanged, async (IList<string> _) => await saving.Task));
+
+        await DragStartAsync(list, "A");
+        await DragOverAsync(list, 3);
+        var drop = DropAsync(list);
+        Assert.IsFalse(drop.IsCompleted, "The app is still saving the first drag.");
+
+        // A drag started meanwhile must not wait for the save: its dragover, drop and dragend would all be lost.
+        var next = DragStartAsync(list, "B");
+        Assert.IsTrue(next.IsCompleted);
+        Assert.AreEqual("B", Coordinator.Context?.Item);
+        await DragOverAsync(list, 3);
+
+        saving.SetResult();
+        await drop;
+        await DropAsync(list);
+
+        Assert.AreSequenceEqual(["C", "A", "B"], items);
+        Assert.IsNull(Coordinator.Context);
     }
 
     [TestMethod]
@@ -117,6 +148,34 @@ public class LifecycleTests : BortableTestContext
         await DragOverAsync(l2, 2);
         await DropAsync(l2);
         Assert.AreSequenceEqual(["Y", "X"], right);
+    }
+
+    [TestMethod]
+    public async Task RemovingTheSourceListMidDragReportsWhatTheDragAlreadyChanged()
+    {
+        List<string> items = ["A", "B", "C"];
+        var log = new List<Raised<string>>();
+        var host = Render<Toggle>(p => p.AddChildContent<Bortable<string>>(l =>
+        {
+            l.Add(c => c.Id, "L1");
+            l.Add(c => c.Items, items);
+            l.Add(c => c.ItemTemplate, i => $"<span>{i}</span>");
+            Record(l, "L1", log);
+        }));
+        var l1 = host.FindComponent<Bortable<string>>();
+
+        await DragStartAsync(l1, "A");
+        await DragOverAsync(l1, 3);
+
+        // The list closes (a tab, an @if panel) with the item already moved in the bound list.
+        host.Render(p => p.Add(t => t.Show, false));
+
+        Assert.AreSequenceEqual(["B", "C", "A"], items);
+        Assert.AreEqual("Start:L1 Change:L1 ItemsChanged:L1 Update:L1 Sort:L1 End:L1", Sequence(log));
+        var end = Single(log, "End", "L1");
+        Assert.AreEqual(0, end.OldIndex);
+        Assert.AreEqual(2, end.NewIndex);
+        Assert.IsNull(Coordinator.Context);
     }
 
     [TestMethod]
@@ -269,7 +328,7 @@ public class LifecycleTests : BortableTestContext
             .Add(c => c.ItemTemplate, i => $"<span>{i}</span>"));
 
         // B, so that a module answering anything at all (loose mode would say 0) would move it.
-        await ItemElement(list, "B").DragStartAsync(new DragEventArgs());
+        await ItemElement(list, "B").DragStartAsync(ListDragStart());
         await Container(list).DragOverAsync(new DragEventArgs());
         await Container(list).DropAsync(new DragEventArgs());
 

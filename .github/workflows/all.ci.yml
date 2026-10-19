@@ -48,7 +48,7 @@ on:
         type: boolean
         default: true
       bmotion:
-        description: Bmotion solution
+        description: Bmotion and Bortable solutions
         type: boolean
         default: true
       bmage:
@@ -85,10 +85,6 @@ on:
         default: true
       bonboarding:
         description: Bonboarding solution
-        type: boolean
-        default: true
-      bortable:
-        description: Bortable solution
         type: boolean
         default: true
       besql:
@@ -827,7 +823,7 @@ jobs:
 
   bortable:
     name: bortable
-    if: ${{ inputs.bortable }}
+    if: ${{ inputs.bmotion }}
     uses: ./.github/workflows/bit.ci.Bortable.yml
 
   besql:

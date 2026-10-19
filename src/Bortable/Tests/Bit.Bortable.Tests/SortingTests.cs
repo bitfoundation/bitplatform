@@ -1,4 +1,5 @@
 ﻿using Bunit;
+using Microsoft.AspNetCore.Components.Web;
 
 namespace Bit.Bortable.Tests;
 
@@ -250,6 +251,28 @@ public class SortingTests : BortableTestContext
 
         // The filter only stops the item itself from being picked up, as in SortableJS.
         Assert.AreSequenceEqual(["Locked", "C", "A"], items);
+    }
+
+    [TestMethod]
+    public async Task ADragTheBrowserLayerDidNotMarkIsNotASort()
+    {
+        List<string> items = ["A", "B"];
+        var log = new List<Raised<string>>();
+        var list = RenderList(items, "L1", p =>
+        {
+            p.Add(c => c.Handle, ".grip");
+            Record(p, "L1", log);
+        });
+
+        // The drag of a link, an image or an element of the app's own inside an item that is not draggable itself
+        // (here, pressed outside its handle) bubbles up to the item: it stays the app's drag.
+        await ItemElement(list, "A").DragStartAsync(new DragEventArgs());
+        await DragOverAsync(list, 2);
+        await DropAsync(list);
+
+        Assert.AreSequenceEqual(["A", "B"], items);
+        Assert.IsEmpty(log);
+        Assert.IsNull(Coordinator.Context);
     }
 
     [TestMethod]

@@ -20,6 +20,9 @@ public abstract class BortableTestContext : BunitContext
 {
     internal const string ModulePath = "./_content/Bit.Bortable/bit-bortable.js";
 
+    /// <summary>The data type <c>bit-bortable.js</c> marks the drags of a list with.</summary>
+    protected const string DragDataType = "application/x-bit-bortable";
+
     private const string ItemSelector = "[data-bortable-item]:not([data-bortable-placeholder])";
 
     private readonly JSRuntimeInvocationHandler<int> _dropIndex;
@@ -93,13 +96,27 @@ public abstract class BortableTestContext : BunitContext
         => list.FindAll(ItemSelector).Single(e => e.TextContent.Trim() == label);
 
     protected static Task DragStartAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, string label)
-        => ItemElement(list, label).DragStartAsync(new DragEventArgs());
+        => ItemElement(list, label).DragStartAsync(ListDragStart());
+
+    /// <summary>
+    /// A dragstart the browser layer let a list start: it carries the list's drag data type. One without it is
+    /// the drag of something else inside an item (a link, an image, an element of the app's own).
+    /// </summary>
+    protected static DragEventArgs ListDragStart() => new() { DataTransfer = new DataTransfer { Types = [DragDataType] } };
 
     /// <summary>A dragover of <paramref name="list"/> for which the browser measured <paramref name="dropIndex"/>.</summary>
     protected Task DragOverAsync<TItem>(IRenderedComponent<Bortable<TItem>> list, int dropIndex)
+        => DragOverAsync(Container(list), dropIndex);
+
+    /// <summary>
+    /// A dragover of the list container <paramref name="list"/> for which the browser measured <paramref name="dropIndex"/>.
+    /// bUnit bubbles an event only through the markup of the component the element was found in, so a list
+    /// nested in another one is found through the outer one to let the event reach it.
+    /// </summary>
+    protected Task DragOverAsync(IElement list, int dropIndex)
     {
         _dropIndex.SetResult(dropIndex);
-        return Container(list).DragOverAsync(new DragEventArgs { ClientX = 10, ClientY = 20 });
+        return list.DragOverAsync(new DragEventArgs { ClientX = 10, ClientY = 20 });
     }
 
     /// <summary>A swap-mode dragover of <paramref name="list"/> with the pointer over item <paramref name="itemIndex"/>.</summary>

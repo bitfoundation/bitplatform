@@ -48,6 +48,12 @@ internal interface IBortableZone
     /// <summary>Re-renders the list (visual state only; the bound data is unchanged).</summary>
     void Rerender();
 
+    /// <summary>
+    /// Re-renders the list when the drag that just started or ended changes whether it takes the drag's
+    /// <c>dragover</c> events, or lets them bubble on to the list around it.
+    /// </summary>
+    void SyncDragState();
+
     /// <summary>Notifies <c>ItemsChanged</c> (two-way binding) that the bound list was modified.</summary>
     Task NotifyItemsChangedAsync();
 

@@ -97,7 +97,7 @@ public abstract class BortableTest
     /// Waits until the page runs in the browser and its lists can take a drag. Every page is prerendered, so the
     /// lists are on screen long before anything listens to them. The layout's <c>data-interactive</c> marker says
     /// the handlers are attached; but a list only finds the drop position (and installs its drag handle) through
-    /// <c>bit-bortable.js</c>, which each list imports after its first interactive render, and until that import
+    /// <c>bit-bortable.js</c>, which the lists import after their first interactive render, and until that import
     /// has resolved every dragover is answered with "keep the current order". Nothing in the DOM changes when it
     /// resolves, so the wait is for the module to have been fetched and the page to have stayed quiet a moment
     /// after: the import resolves, and .NET picks the module up, within the same few milliseconds.

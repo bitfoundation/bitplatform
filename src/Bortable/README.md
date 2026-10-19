@@ -186,7 +186,7 @@ renders throws, because it cannot be given the service it injects.
 
 It is not injected for you. It styles the drag states only - the ghost, the chosen item, the hidden original, the
 swap target, the multi-drag selection and filtered items - and leaves the look of the list to you. The script
-module, `_content/Bit.Bortable/bit-bortable.js`, needs no tag: each list imports it on demand.
+module, `_content/Bit.Bortable/bit-bortable.js`, needs no tag: the lists import it on demand, once for all of them.
 
 ### A first list
 
@@ -241,8 +241,10 @@ and it can still receive items, but its own order never changes.
 ### Direction
 
 `Direction` is the axis the swap zones are measured along. `BortableDirection.Auto`, the default, reads it from
-the layout of the first two items: side by side is horizontal, anything else vertical. Set it explicitly for grids,
-whose first two items sit side by side even though the list wraps.
+the layout of the first two items (the drop placeholder counts as one): side by side is horizontal, anything else
+vertical. A list with a single item in view reads the layout instead, as SortableJS does: a flex row, or a grid of
+several columns, is horizontal and a flex column vertical; otherwise an item that flows inline or floats is
+horizontal. Set it explicitly for grids, whose first two items sit side by side even though the list wraps.
 
 ```razor
 <Bortable @bind-Items="_tiles" TItem="Tile" Class="grid" Direction="BortableDirection.Horizontal">
@@ -381,8 +383,10 @@ shares a group, so items move between branches.
 
 An item is never dropped inside itself: the lists within the dragged item's own subtree, and the lists inside the
 drop preview, refuse it. Each nested list handles the events of its own items only, so a drag that starts in an
-inner list is not also a drag of the outer item around it. Give nested lists some padding or a minimum height, so
-an empty branch still has an area to drop into.
+inner list is not also a drag of the outer item around it. A nested list takes the pointer only for a drag it could
+receive: one of another group, of another item type, or with `Put="false"` leaves it to the list around it, so the
+columns of a board still sort while the pointer crosses the card lists inside them. Give nested lists some padding
+or a minimum height, so an empty branch still has an area to drop into.
 
 ## Drag handles
 
@@ -404,8 +408,9 @@ item.
 
 ## Filtering items
 
-`Filter` returns `true` for items that must not be dragged. A filtered item stays in place - other items move
-around it - and gets the `bit-bortable-filtered` class.
+`Filter` returns `true` for items that must not be dragged. A filtered item cannot be picked up and gets the
+`bit-bortable-filtered` class, but the other items can still be dragged past it, which moves it along by one: as in
+SortableJS, a filter does not pin an item to its index.
 
 ```razor
 <Bortable @bind-Items="_items" TItem="string" Filter='i => i.StartsWith("Locked")'>
@@ -458,7 +463,7 @@ All events are `EventCallback<BortableEventArgs<TItem>>`:
 | `OnRemove` | An item was moved out to another list (not raised for a clone). | The source list. |
 | `OnAdd` | An item was dropped in from another list. | The destination list. |
 | `OnSort` | Any change to a list: add, remove or update. | Each list that changed. |
-| `OnEnd` | The drag ended, whatever its outcome. | The source list. |
+| `OnEnd` | The drag ended, whatever its outcome - also when it ended before its release (see below). | The source list. |
 
 ```razor
 <Bortable @bind-Items="_items" TItem="string"
@@ -490,7 +495,13 @@ The completion events are raised after the bound lists have been updated and `It
 handler sees the final state. Within a list: `OnUpdate`, `OnSort`, `OnEnd`. Across lists: `OnRemove` on the source
 (unless it was a clone), `OnAdd` on the destination, `OnSort` on the source (unless it was a clone), `OnSort` on the
 destination, then `OnEnd` on the source. A drag that leaves the lists as they were raises no completion event but
-`OnEnd`.
+`OnEnd`. All of them are raised once the drag is over, so a handler that takes its time - a save in `ItemsChanged`,
+say - never holds up the next drag.
+
+A drag can also end before it is released: when its source list leaves the page (a tab or a panel closing over
+it), or when the browser never reports its end and the next drag starts. It ends where it is: a preview in another
+list is dropped, while a live reorder of the source list stays, and is reported like any other - `ItemsChanged`,
+`OnUpdate`, `OnSort` - followed by `OnEnd`.
 
 ## Styling
 
@@ -596,6 +607,12 @@ Each item wrapper is `draggable`, and the component handles `dragstart`, `dragov
 The handlers of every list are serialized through the scoped coordinator, so a burst of `dragover` events can never
 act on stale positions, and whichever of `drop` and `dragend` comes first finishes the drag.
 
+The browser layer marks the drags of the lists with a data type of their own, `application/x-bit-bortable`, when it
+lets an item start one. Any other drag - a file, selected text, a link or an element of your own inside an item -
+is left alone: a list neither starts a sort for it nor allows it to be dropped, and its events reach your own
+handlers, around the list or inside its items. The `dragover` and `drop` events of a list's drag stop at the list
+that takes them.
+
 ### Live reordering within a list
 
 Within its own list, the dragged item is moved in the bound list on each `dragover` that crosses a swap zone, and
@@ -614,9 +631,9 @@ the DOM, each item is moved back to where it was with a transform and transition
 
 ### The browser layer
 
-`bit-bortable.js` measures the pointer against the items for the swap thresholds, installs the `pointerdown`
-listener behind drag handles, refuses a drop into the dragged item's own subtree, and plays the animations. It
-keeps no copy of the lists and decides nothing about them.
+`bit-bortable.js` marks the lists' own drags and allows their drop, measures the pointer against the items for
+the swap thresholds, installs the `pointerdown` listener behind drag handles, refuses a drop into the dragged item's
+own subtree, and plays the animations. It keeps no copy of the lists and decides nothing about them.
 
 ## API reference
 
@@ -670,7 +687,7 @@ See [event arguments](#event-arguments).
 
 | Value | Meaning |
 | --- | --- |
-| `Auto` | Read from the layout of the first two items (the default). |
+| `Auto` | Read from the layout of the first two items, or of the list for a single one (the default). |
 | `Horizontal` | Swap zones span the item's width. |
 | `Vertical` | Swap zones span the item's height. |
 

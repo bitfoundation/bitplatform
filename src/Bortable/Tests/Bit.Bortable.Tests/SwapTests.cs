@@ -204,4 +204,48 @@ public class SwapTests : BortableTestContext
         Assert.AreSequenceEqual(["A", "B"], left);
         Assert.AreSequenceEqual(["X", "B"], right);
     }
+
+    [TestMethod]
+    public async Task ASwapListThatRefusesTheItemLeavesThePreviewOfAnotherListAlone()
+    {
+        List<string> left = ["A"], right = ["X"];
+        var l1 = RenderList(left, "L1", p => p.Add(c => c.Group, "g"));
+        var l2 = RenderList(right, "L2", p => p.Add(c => c.Group, "g"));
+        var l3 = RenderList(["Y"], "L3", p =>
+        {
+            p.Add(c => c.Group, "other");
+            p.Add(c => c.Swap, true);
+        });
+
+        await DragStartAsync(l1, "A");
+        await DragOverAsync(l2, 1);
+        // On the way out the pointer crosses a swap list of another group, as a sorting list of it would.
+        await HoverItemAsync(l3, 0);
+
+        Assert.AreEqual(1, PlaceholderIndex(l2));
+        Assert.AreEqual("", LabelsWithClass(l3, Highlight));
+
+        // Released outside every list, the item still lands where it was previewed.
+        await DragEndAsync(l1, "A");
+        Assert.IsEmpty(left);
+        Assert.AreSequenceEqual(["X", "A"], right);
+    }
+
+    [TestMethod]
+    public async Task ASwapListThatRefusesTheItemLeavesTheSwapTargetOfAnotherListAlone()
+    {
+        List<string> left = ["A"], right = ["X"];
+        var l1 = RenderSwapList(left, "L1");
+        var l2 = RenderSwapList(right, "L2");
+        var l3 = RenderSwapList(["Y"], "L3", extra: p => p.Add(c => c.Put, false));
+
+        await DragStartAsync(l1, "A");
+        await HoverItemAsync(l2, 0);
+        await HoverItemAsync(l3, 0);
+
+        Assert.AreEqual("X", LabelsWithClass(l2, Highlight));
+        await DragEndAsync(l1, "A");
+        Assert.AreSequenceEqual(["X"], left);
+        Assert.AreSequenceEqual(["A"], right);
+    }
 }

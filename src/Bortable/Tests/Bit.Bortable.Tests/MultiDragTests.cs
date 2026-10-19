@@ -272,5 +272,35 @@ public class MultiDragTests : BortableTestContext
         Assert.AreSequenceEqual(["A", "B", "C"], left);
         Assert.AreSequenceEqual(["B"], right);
         Assert.AreSequenceEqual(["B"], Single(log, "Add", "L2").Items);
+        // The preview already said so: only the dragged item is on its way.
+        Assert.AreSequenceEqual(["B"], Single(log, "Change", "L2").Items);
+    }
+
+    [TestMethod]
+    public async Task ACloneOfASelectionOfMixedTypesPreviewsOnlyTheDraggedItem()
+    {
+        var log = new List<Raised<string>>();
+        var l1 = RenderList(new List<object> { "a", 42 }, o => o.ToString()!, "L1", p =>
+        {
+            p.Add(c => c.MultiDrag, true);
+            p.Add(c => c.Group, "g");
+            p.Add(c => c.Pull, BortablePull.Clone);
+        });
+        List<string> right = [];
+        var l2 = RenderList(right, "L2", p =>
+        {
+            p.Add(c => c.Group, "g");
+            Record(p, "L2", log);
+        });
+        await ClickAsync(l1, "a");
+        await ClickAsync(l1, "42");
+
+        // 42 is no string: reporting the whole selection to a list of strings would fail to cast it.
+        await DragStartAsync(l1, "a");
+        await DragOverAsync(l2, 0);
+        await DropAsync(l2);
+
+        Assert.AreSequenceEqual(["a"], Single(log, "Change", "L2").Items);
+        Assert.AreSequenceEqual(["a"], right);
     }
 }

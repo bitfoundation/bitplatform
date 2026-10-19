@@ -8,6 +8,7 @@ using Microsoft.JSInterop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.RenderTree;
+using Microsoft.AspNetCore.Components.Web;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Bit.Bortable.Demo.Server.Services;
@@ -121,8 +122,15 @@ internal sealed class BortableListHost : IAsyncDisposable
     /// <summary>What a list threw while it rendered or handled an event - a finding, not a crash.</summary>
     public IReadOnlyList<Exception> Exceptions => _renderer.Exceptions;
 
-    /// <summary>How many lists imported their browser module - every one should have, after its first render.</summary>
+    /// <summary>How many times the lists imported their browser module: once, after the first render, as they all share it.</summary>
     public int ModuleImports => _browser.Imports;
+
+    /// <summary>
+    /// The dragstart of an item the browser layer lets its list drag: bit-bortable.js marks it with its own data
+    /// type, and a list starts a drag only for a dragstart carrying it (any other is the drag of a link, an image
+    /// or an element of the app's own inside the item).
+    /// </summary>
+    public static DragEventArgs ListDragStart() => new() { DataTransfer = new DataTransfer { Types = ["application/x-bit-bortable"] } };
 
     /// <summary>Renders <paramref name="lists"/>, in order, as the children of one host component.</summary>
     public static async Task<BortableListHost> StartAsync(IReadOnlyList<ListSetup> lists)
@@ -354,7 +362,7 @@ internal sealed class BortableListHost : IAsyncDisposable
     }
 
     /// <summary>
-    /// Stands in for the browser. Each list imports its module once and calls everything through it;
+    /// Stands in for the browser. The lists import its module once, share it and call everything through it;
     /// the module answers the hit tests for the list under the pointer with the position the lab put
     /// there, and every other call with nothing.
     /// </summary>

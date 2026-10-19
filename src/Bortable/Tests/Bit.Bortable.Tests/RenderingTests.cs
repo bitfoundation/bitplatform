@@ -170,6 +170,17 @@ public class RenderingTests : BortableTestContext
     }
 
     [TestMethod]
+    public void EveryListOfTheScopeSharesOneImport()
+    {
+        RenderList(["A"]);
+        RenderList(["B"]);
+        RenderList(["C"]);
+
+        // The module keeps no per-list state, so a tree with a list per node still imports it once.
+        Assert.ContainsSingle(JSInterop.Invocations["import"]);
+    }
+
+    [TestMethod]
     public void RenderingWithoutTheServicesThrows()
     {
         using var bare = new BunitContext();

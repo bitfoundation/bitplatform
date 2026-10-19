@@ -188,7 +188,7 @@ public static partial class BortableSetupGuide
            `<link rel="stylesheet" href="_content/Bit.Bortable/bit-bortable.css" />` (in a Blazor Web App's `App.razor`,
            `@Assets["_content/Bit.Bortable/bit-bortable.css"]`). Without it a drag still works, but the dragged item is not
            dimmed and its original does not hide while it is previewed in another list. Load your own overrides of its
-           `--bit-bortable-*` properties after it. The script module needs no tag: each list imports it itself.
+           `--bit-bortable-*` properties after it. The script module needs no tag: the lists import it themselves.
         5. Render the lists interactively. On a statically rendered page the items show and nothing can be dragged.
            Prerendering is fine: dragging starts once the page becomes interactive.
         6. Bind the items with `@bind-Items` to an `IList<TItem>` field (the parameter's type) holding a mutable list -

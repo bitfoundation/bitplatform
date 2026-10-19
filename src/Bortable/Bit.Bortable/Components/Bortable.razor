@@ -3,18 +3,22 @@
 @implements IBortableZone
 @implements IAsyncDisposable
 
+@{
+    // The drag events stop at this list only while it takes the drag in progress: an unrelated drag (a file,
+    // selected text), or one this list refuses, bubbles on to the list or the app around it. bit-bortable.js
+    // allows the drop (preventDefault) for every drag of a list, and only for those.
+    _renderedDrag = Service.Context;
+    _handlesDrag = _renderedDrag is { Finished: false } drag && HandlesDrag(drag);
+}
 <div @ref="_listElement"
      id="@Id"
      class="@ContainerCssClass"
      style="@Style"
      data-bortable-list="@Id"
      @ondragover="OnContainerDragOver"
-     @ondragover:preventDefault="true"
-     @ondragover:stopPropagation="true"
-     @ondragenter:preventDefault="true"
+     @ondragover:stopPropagation="_handlesDrag"
      @ondrop="OnDrop"
-     @ondrop:preventDefault="true"
-     @ondrop:stopPropagation="true">
+     @ondrop:stopPropagation="_handlesDrag">
     @if (Items is not null)
     {
         for (int i = 0; i < Items.Count; i++)
@@ -33,7 +37,7 @@
                  data-bortable-disabled="@(canDrag ? null : "true")"
                  draggable="@(canDrag && string.IsNullOrEmpty(Handle) ? "true" : "false")"
                  @onclick="ItemClickCallback(current)"
-                 @ondragstart="() => OnItemDragStart(current)"
+                 @ondragstart="e => OnItemDragStart(current, e)"
                  @ondragstart:stopPropagation="true"
                  @ondragend="OnItemDragEnd"
                  @ondragend:stopPropagation="true">

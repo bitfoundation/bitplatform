@@ -8,11 +8,15 @@
  *   3. FLIP animations, so items glide to their new positions instead of snapping.
  */
 
-// The attributes Bortable.razor renders on its item wrappers and on the drop placeholder.
+// The attributes Bortable.razor renders on its lists, its item wrappers and the drop placeholder.
+const LIST = 'data-bortable-list';
 const ITEM = 'data-bortable-item';
 const PLACEHOLDER = 'data-bortable-placeholder';
 const NO_DRAG = 'data-bortable-disabled';
 const EASING = 'cubic-bezier(0.22, 1, 0.36, 1)';
+
+// The data type that marks a drag as a list's own: Bortable.razor starts a drag only for a dragstart carrying it.
+const DRAG_TYPE = 'application/x-bit-bortable';
 
 /** The direction values BortableDirection is sent as. */
 type Direction = 'auto' | 'horizontal' | 'vertical';
@@ -86,27 +90,37 @@ function resetDragState(): void {
 document.addEventListener('dragstart', (e: DragEvent) => {
     resetDragState();
     const item = e.target instanceof Element ? e.target.closest(`[${ITEM}]`) : null;
-    if (!item) return;
 
-    if (item.getAttribute('draggable') !== 'true') {
-        // A native drag of something inside an item that is not itself draggable right now (a link or an
-        // image outside the handle, or a filtered item). Keep it a plain browser drag: don't let the list
-        // treat it as a sort.
-        e.stopPropagation();
-        return;
-    }
+    // A native drag of something inside an item that is not itself draggable right now (a link or an image
+    // outside the handle, an element of the app's own, or anything in a filtered item) stays a plain browser
+    // drag: left unmarked, it reaches every listener as usual, and the list does not treat it as a sort.
+    if (!item || item.getAttribute('draggable') !== 'true' || !e.dataTransfer) return;
 
     draggedItemEl = item;
-    if (e.dataTransfer) {
-        // Some browsers (older Firefox) only start a drag once some data has been set.
-        if (e.dataTransfer.types.length === 0) e.dataTransfer.setData('application/x-bit-bortable', item.parentElement?.id || 'item');
-        e.dataTransfer.effectAllowed = 'move';
-    }
+    // The mark the list starts the drag on. Setting data also makes older browsers (Firefox) start the drag.
+    e.dataTransfer.setData(DRAG_TYPE, item.parentElement?.id || 'item');
+    e.dataTransfer.effectAllowed = 'move';
 }, true);
 
 // The state is deliberately kept after dragend and only reset by the next dragstart: with Blazor Server, the
 // last dragover events of a drag can reach .NET (and call back into this module) after the browser has
 // already fired dragend.
+
+/**
+ * Lets a list's own drag be dropped on any list (the browser allows a drop only where dragenter and dragover
+ * are cancelled): which list takes it is for .NET to decide. Done here, at the event, rather than with the
+ * lists' Blazor preventDefault flags, which are rendered ahead of it and cannot tell one drag from another: a
+ * drag the lists do not own (a file, selected text) keeps its default, so it does not show as droppable and is
+ * dropped where the browser drops it, such as into an input inside an item.
+ */
+function allowListDrop(e: DragEvent): void {
+    if (!e.dataTransfer?.types.includes(DRAG_TYPE)) return;
+    if (e.target instanceof Element && e.target.closest(`[${LIST}]`)) e.preventDefault();
+}
+
+document.addEventListener('dragenter', allowListDrop, true);
+document.addEventListener('dragover', allowListDrop, true);
+document.addEventListener('drop', allowListDrop, true);
 
 /**
  * True when the given list must not receive the dragged item: it lives inside the element being dragged
@@ -211,7 +225,7 @@ export function dropIndex(listEl: Element | null, x: number, y: number, swapThre
 
     if (entries.length === 0) return count;
 
-    const vertical = isVertical(direction, entries);
+    const vertical = isVertical(listEl, direction, entries, slot);
     const over = (r: DOMRect): boolean => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
 
     // Over the dragged item (or its placeholder) itself: nothing to do.
@@ -340,12 +354,25 @@ function distanceSquared(r: DOMRect, x: number, y: number): number {
     return dx * dx + dy * dy;
 }
 
-function isVertical(direction: Direction, entries: ItemEntry[]): boolean {
+function isVertical(listEl: Element, direction: Direction, entries: ItemEntry[], slot: Slot | null): boolean {
     if (direction === 'horizontal') return false;
     if (direction === 'vertical') return true;
-    if (entries.length < 2) return true;
-    const a = entries[0].rect, b = entries[1].rect;
-    return !(Math.abs(b.left - a.left) > Math.abs(b.top - a.top));
+
+    // Two boxes side by side make a row. The placeholder counts: it stands where the dragged item will.
+    const second = entries.length > 1 ? entries[1].rect : slot && isPlaceholder(slot) ? slot.rect : null;
+    if (second) {
+        const first = entries[0].rect;
+        return !(Math.abs(second.left - first.left) > Math.abs(second.top - first.top));
+    }
+
+    // A single box has nothing to line up with: read the layout instead, like SortableJS's _detectDirection.
+    // The container's own (a flex row, a grid of several columns), else the item's (one that flows inline or
+    // floats sits in a row).
+    const list = getComputedStyle(listEl);
+    if (list.display.endsWith('flex')) return list.flexDirection.startsWith('column');
+    if (list.display.endsWith('grid')) return list.gridTemplateColumns.split(' ').length <= 1;
+    const item = getComputedStyle(entries[0].el);
+    return !item.display.startsWith('inline') && item.cssFloat === 'none';
 }
 
 /** Layout position and size (ignoring the transforms used by the animations). */

@@ -364,9 +364,9 @@ public static class BortableDragLab
         var notes = new List<string>();
         var view = await host.ReadAsync();
 
-        if (host.ModuleImports < lists.Length)
+        if (host.ModuleImports == 0)
         {
-            notes.Add($"Only {host.ModuleImports} of the {lists.Length} lists imported their browser module, so the others answered every hit test with -1. That is a fault in this lab.");
+            notes.Add("No list imported the browser module, so every hit test answered -1. That is a fault in this lab.");
         }
 
         // ---- Select (multi-drag): one click per item, as a person would -----------------------
@@ -413,7 +413,7 @@ public static class BortableDragLab
             var step = ++host.Step;
             var wrapper = Wrapper(view, drag.From.Id, drag.Item)!;
 
-            await host.DispatchAsync(wrapper.DragStart, new DragEventArgs());
+            await host.DispatchAsync(wrapper.DragStart, BortableListHost.ListDragStart());
             var previous = view;
             view = await host.ReadAsync();
             host.TakeBrowserCalls();
