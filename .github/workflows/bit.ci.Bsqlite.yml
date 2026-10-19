@@ -1,0 +1,76 @@
+name: bit platform CI - Bsqlite
+
+# Build, ADO.NET/EF Core/storage tests, MCP server tests and the JavaScript that needs no browser. The browser suite
+# lives in bit.ci.Bsqlite.e2e.yml and runs on demand only.
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+    paths:
+    - 'src/Bsqlite/**'
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+
+  # Its `if:` skips the job on Release/Prerelease/Version PRs.
+  build-Bsqlite:
+    if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
+    name: build Bit.Bsqlite
+    runs-on: ubuntu-24.04
+
+    steps:
+
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 9.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 8.0.x
+
+    # Node runs the TypeScript build, and the restore of the storage packages runs it to rewrite the imports of
+    # the wa-sqlite VFSes they vendor - so it has to be there before the first restore.
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: dotnet workload restore
+      run:  cd src/Bsqlite && dotnet workload restore
+
+    # The restore also fetches the pinned wa-sqlite engine and VFSes and the build verifies their checksums (see
+    # src/Bsqlite/Bit.Bsqlite/engine/wa-sqlite.lock.props); none of it is committed.
+    - name: dotnet build
+      run: dotnet build src/Bsqlite/Bit.Bsqlite.slnx
+
+    - name: dotnet test (ADO.NET, EF Core and storage tests, net8.0/net9.0/net10.0)
+      # Run from inside src so src/global.json's "test" runner setting applies
+      # (from the repo root the SDK falls back to the unsupported VSTest path).
+      run: cd src/Bsqlite/Tests/Bit.Bsqlite.Tests && dotnet test --no-build
+
+    - name: dotnet test (MCP server)
+      run: cd src/Bsqlite/Tests/Bit.Bsqlite.Tests.Mcp && dotnet test --no-build
+
+    - name: JS tests (decimal arithmetic, change-notification filter, function-table patch)
+      # The wasm-table tests read the engine builds the restore above vendored into Bit.Bsqlite/wwwroot/engine.
+      run: |
+        cd src/Bsqlite/Tests/bit-bsqlite-js
+        npm ci || npm install
+        npm test

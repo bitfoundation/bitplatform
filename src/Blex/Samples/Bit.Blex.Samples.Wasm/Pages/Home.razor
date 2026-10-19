@@ -1,0 +1,47 @@
+﻿@page "/"
+
+<PageTitle>Blex</PageTitle>
+
+<h1>Blex</h1>
+
+<p class="lead">
+    Lightweight, source-generator-powered reactive state for Blazor &mdash; with Redux DevTools
+    time-travel built in.
+</p>
+
+<p>This is the entire <code>CounterStore</code>. Everything else is generated:</p>
+
+<pre class="p-3 bg-light border rounded"><code>[BlexStore(Name = "counter")]
+public partial class CounterStore
+{
+    [BlexState] private int _count;
+    [BlexState] private int _step = 1;
+
+    [BlexComputed] private int ComputeDoubleCount() =&gt; Count * 2;
+    [BlexComputed] private bool ComputeIsEven() =&gt; Count % 2 == 0;
+
+    [BlexAction] private void OnIncrement() =&gt; Count += Step;
+    [BlexAction] private void OnReset() { Count = 0; Step = 1; }
+}</code></pre>
+
+<h3>Try time-travel</h3>
+<ol>
+    <li>Install the <strong>Redux DevTools</strong> browser extension.</li>
+    <li>Open it (look for the <em>Blex Sample</em> instance).</li>
+    <li>Click around the <a href="counter">Counter</a>, <a href="todos">Todos</a> and <a href="weather">Weather</a> pages.</li>
+    <li>Use the slider / "jump" buttons in DevTools to rewind your app state &mdash; every action shows its argument payload.</li>
+</ol>
+
+<h3>What you get</h3>
+<ul>
+    <li><strong>Reactive containers</strong> &mdash; annotate fields, get notifying properties.</li>
+    <li><strong>Computed state</strong> &mdash; memoized, auto-invalidated on change.</li>
+    <li><strong>Named actions</strong> &mdash; sync &amp; async, batched into single entries, payloads included.</li>
+    <li><strong>Effects</strong> &mdash; generated loading/error lifecycle, cancellation, Latest/Drop/Queue concurrency (see <a href="weather">Weather</a>).</li>
+    <li><strong>Entity adapter</strong> &mdash; normalized, immutable collections (see <a href="todos">Todos</a>).</li>
+    <li><strong>Batch &amp; reset</strong> &mdash; <code>store.Batch(...)</code> and <code>store.ResetState()</code> (see <a href="counter">Counter</a>).</li>
+    <li><strong>Persistence</strong> &mdash; debounced, versioned with migrations, corrupt-data resilient.</li>
+    <li><strong>Undo / redo</strong> &mdash; in-app history with per-action labels.</li>
+    <li><strong>Middleware</strong> &mdash; observe or veto actions (with payload access), plus an error hook.</li>
+    <li><strong>Time-travel</strong> &mdash; full Redux DevTools integration.</li>
+</ul>

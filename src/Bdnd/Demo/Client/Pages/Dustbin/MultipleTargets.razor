@@ -1,0 +1,96 @@
+﻿@page "/dustbin/multiple"
+
+<PageTitle>Dustbin · Multiple Targets - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Dustbin - Multiple Targets</h3>
+    <p class="text-muted">
+        Each dustbin <code>Accept</code>s a different set of types, so a box only highlights
+        the dustbins that can receive it. Boxes themselves carry a type.
+    </p>
+</div>
+
+<DemoCode />
+
+<section class="demo-stage">
+    <BdndProvider>
+        <div class="row-wrap">
+            @foreach (var bin in _bins)
+            {
+                <BdndDropTarget TItem="SourceBox" AcceptTypes="bin.Accepts" Context="t"
+                                style="display:contents"
+                                OnDrop="@(e => HandleDrop(bin, e))">
+                    <div class="dustbin" data-bin="@bin.Name" style="@BinStyle(bin, t)">
+                        <div>
+                            <div>accepts: <b>@string.Join(", ", bin.Accepts)</b></div>
+                            @if (t.IsOver && t.CanDrop)
+                            {
+                                <div>release to drop</div>
+                            }
+                            else if (bin.LastDropped is not null)
+                            {
+                                <div>last: <b>@bin.LastDropped</b></div>
+                            }
+                        </div>
+                    </div>
+                </BdndDropTarget>
+            }
+        </div>
+
+        <div class="row-wrap" style="margin-top:1.5rem;">
+            @foreach (var box in _boxes)
+            {
+                <BdndDraggable TItem="SourceBox" Type="@box.Type" Item="box" Context="d">
+                    <div class="box" style="opacity:@(d.IsDragging ? "0.4" : "1")">
+                        @box.Name
+                    </div>
+                </BdndDraggable>
+            }
+        </div>
+    </BdndProvider>
+</section>
+
+@code {
+    public record SourceBox(string Name, string Type);
+
+    public class Bin
+    {
+        public required string Name { get; init; }
+        public required string[] Accepts { get; init; }
+        public string? LastDropped { get; set; }
+        public Color Color { get; init; }
+    }
+
+    public enum Color { Green, Blue, Purple }
+
+    private readonly List<SourceBox> _boxes =
+    [
+        new("Glass", ItemTypes.Box),
+        new("Banana", ItemTypes.Box),
+        new("Knight", ItemTypes.Knight),
+        new("Card #1", ItemTypes.Card),
+    ];
+
+    private readonly List<Bin> _bins =
+    [
+        new() { Name = "Boxes", Accepts = [ItemTypes.Box], Color = Color.Green },
+        new() { Name = "Pieces", Accepts = [ItemTypes.Knight, ItemTypes.Card], Color = Color.Blue },
+        new() { Name = "Anything", Accepts = [ItemTypes.Box, ItemTypes.Knight, ItemTypes.Card], Color = Color.Purple },
+    ];
+
+    private void HandleDrop(Bin bin, BdndDropEventArgs<SourceBox> e)
+        => bin.LastDropped = e.Item?.Name;
+
+    private string BinStyle(Bin bin, BdndDropState<SourceBox> t)
+    {
+        var baseColor = bin.Color switch
+        {
+            Color.Green => "#2e7d32",
+            Color.Blue => "#1565c0",
+            _ => "#6a1b9a",
+        };
+        if (t.IsOver && t.CanDrop) return "background-color:#111;";
+        if (t.CanDrop) return $"background-color:{baseColor};outline:3px dashed #fff;";
+        return $"background-color:{baseColor};opacity:{(t.Monitor.IsDragging() ? "0.5" : "1")};";
+    }
+}

@@ -1,0 +1,65 @@
+﻿@namespace Bit.Blow
+@* A single resize control on one side/corner of a node, in contrast to BlowNodeResizer which
+   renders all eight. Place inside a node's template. Provide ChildContent for a custom handle. *@
+
+@if (IsVisible)
+{
+    <div class="bit-blow-resize-handle @PositionClass @Class"
+         style="@HandleStyle"
+         @onpointerdown="OnDown"
+         @onpointerdown:stopPropagation="true">
+        @ChildContent
+    </div>
+}
+
+@code {
+    [CascadingParameter] private BlowNodeContext NodeContext { get; set; } = default!;
+    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+
+    /// <summary>Which side/corner this control resizes.</summary>
+    [Parameter] public BlowResizeDirection Position { get; set; } = BlowResizeDirection.BottomRight;
+
+    /// <summary>Show the control. When null, it appears only while the node is selected.</summary>
+    [Parameter] public bool? Visible { get; set; }
+
+    [Parameter] public double MinWidth { get; set; } = 40;
+    [Parameter] public double MinHeight { get; set; } = 30;
+
+    /// <summary>Upper bound for the node's width while resizing.</summary>
+    [Parameter] public double MaxWidth { get; set; } = double.MaxValue;
+
+    /// <summary>Upper bound for the node's height while resizing.</summary>
+    [Parameter] public double MaxHeight { get; set; } = double.MaxValue;
+
+    [Parameter] public bool KeepAspectRatio { get; set; }
+    [Parameter] public string Color { get; set; } = "var(--bit-blow-node-selected)";
+
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>False outside a node template inside a canvas, where there is nothing to resize.</summary>
+    private bool Attached => Flow is not null && NodeContext is not null;
+
+    private bool IsVisible => Attached && (Visible ?? NodeContext.Node.Selected);
+    private string HandleStyle => $"background:{Color};";
+
+    private string PositionClass => Position switch
+    {
+        BlowResizeDirection.TopLeft => "top-left",
+        BlowResizeDirection.TopRight => "top-right",
+        BlowResizeDirection.BottomLeft => "bottom-left",
+        BlowResizeDirection.BottomRight => "bottom-right",
+        BlowResizeDirection.Top => "top",
+        BlowResizeDirection.Right => "right",
+        BlowResizeDirection.Bottom => "bottom",
+        BlowResizeDirection.Left => "left",
+        _ => "bottom-right",
+    };
+
+    private void OnDown(PointerEventArgs e)
+    {
+        if (!Attached || e.Button != 0) return;
+        Flow.StartResize(NodeContext.Node.Id, Position, e.ClientX, e.ClientY,
+            MinWidth, MinHeight, KeepAspectRatio, MaxWidth, MaxHeight, e.PointerId);
+    }
+}

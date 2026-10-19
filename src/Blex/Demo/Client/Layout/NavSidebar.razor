@@ -1,0 +1,40 @@
+﻿@*
+    The sidebar renders straight from DocsNav, so the site map lives in exactly one place.
+*@
+<nav class="sidebar @(Open ? "sidebar--open" : null)">
+    <div class="sidebar__inner">
+        @foreach (var section in DocsNav.Sections)
+        {
+            <div class="sidebar__section">
+                <p class="sidebar__heading">@section.Title</p>
+                <ul>
+                    @* NB: the loop variable must not be called "page" -- Razor would parse @page as the directive. *@
+                    @foreach (var entry in section.Pages)
+                    {
+                        <li>
+                            <NavLink class="sidebar__link"
+                                     href="@entry.Href"
+                                     Match="@(entry.Href.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                                     @onclick="OnNavigate">
+                                @entry.Title
+                            </NavLink>
+                        </li>
+                    }
+                </ul>
+            </div>
+        }
+
+        <div class="sidebar__foot">
+            <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Blex" target="_blank" rel="noopener">Source on GitHub</a>
+            <span>MIT licensed</span>
+        </div>
+    </div>
+</nav>
+
+@code {
+    /// <summary>Whether the mobile drawer is expanded.</summary>
+    [Parameter] public bool Open { get; set; }
+
+    /// <summary>Raised when a link is clicked, so the layout can close the drawer.</summary>
+    [Parameter] public EventCallback OnNavigate { get; set; }
+}

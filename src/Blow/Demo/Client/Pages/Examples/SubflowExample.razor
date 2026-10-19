@@ -1,0 +1,41 @@
+﻿@page "/examples/subflow"
+
+<PageTitle>Subflow - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Subflow"
+                 Summary="Nodes nested inside group containers via ParentId. Dragging a group moves its children; children with ExtentParent stay within their group's bounds.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+        <BlowMiniMap />
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "A", Type = "group", Label = "Group A", Position = new(0, 0), Width = 320, Height = 220,
+                       Style = "background:rgba(99,102,241,0.08);" },
+            new BlowNode { Id = "A-1", Label = "Child A1", Position = new(20, 40), ParentId = "A", ExtentParent = true },
+            new BlowNode { Id = "A-2", Label = "Child A2", Position = new(160, 120), ParentId = "A", ExtentParent = true },
+
+            new BlowNode { Id = "B", Type = "group", Label = "Group B", Position = new(400, 60), Width = 280, Height = 180,
+                       Style = "background:rgba(16,185,129,0.08);" },
+            new BlowNode { Id = "B-1", Label = "Child B1", Position = new(30, 50), ParentId = "B", ExtentParent = true },
+
+            new BlowNode { Id = "out", Type = "output", Label = "Output", Position = new(250, 320) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "eA1-A2", Source = "A-1", Target = "A-2" },
+            new BlowEdge { Id = "eA2-B1", Source = "A-2", Target = "B-1", Type = BlowEdgeType.SmoothStep },
+            new BlowEdge { Id = "eB1-out", Source = "B-1", Target = "out" },
+        ];
+    }
+}

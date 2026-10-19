@@ -1,0 +1,135 @@
+﻿@implements IDisposable
+@inject NavigationManager Nav
+@inject IJSRuntime JS
+
+@* The site's chrome, in Fluent 2: the skip link, the sticky header, the nav panel, the reading column
+   with its breadcrumb and pager, and the footer. It is the demo's own layout and nothing a tour
+   depends on - MainLayout wraps the page in it and hosts BonboardingRoot beside it.
+
+   The home page is deliberately outside the docs part of that. It is a landing page rather than a
+   document: no nav panel and no reading column - it lays out its own full-bleed sections. Only the
+   header and the footer are shared.
+
+   The styles live in wwwroot/css/app.css and are written against the Fluent 2 tokens in
+   wwwroot/css/theme.css; nothing here is built from a component library, because the demo carries
+   no dependency other than Bit.Bonboarding itself. *@
+
+<a class="skip-link" href="#main-content">Skip to main content</a>
+
+<div class="app-shell">
+    <AppHeader IsHomePage="_isHomePage" IsNavOpen="_isNavOpen"
+               OnToggleNav="ToggleNav" OnToggleTheme="ToggleThemeAsync" />
+
+    <div class="layout-row">
+        @if (_isHomePage)
+        {
+            <div class="site-content home">
+                <main id="main-content">
+                    @ChildContent
+                </main>
+
+                <AppFooter />
+            </div>
+        }
+        else
+        {
+            @* Only rendered at the widths where the panel is a drawer - CSS hides it above them -
+               and only while it is open, so it never covers a page that has nothing to close. *@
+            @if (_isNavOpen)
+            {
+                <button type="button" class="nav-panel-overlay" aria-label="Close navigation" @onclick="CloseNav"></button>
+            }
+
+            <AppNavPanel IsOpen="_isNavOpen" />
+
+            <div class="site-content">
+                <main id="main-content" class="page-container">
+                    <DocBreadcrumb Current="_current" Href="@_href" />
+
+                    @ChildContent
+
+                    <DocPager Href="@_href" />
+                </main>
+
+                <AppFooter />
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    /// <summary>The page.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>
+    /// Whether the dark theme is applied. The theme itself is owned by js/demo.js, which applies it
+    /// before the first paint; this is the shell reporting it, so the layout can hand it on to the
+    /// tours.
+    /// </summary>
+    [Parameter] public bool IsDark { get; set; }
+
+    [Parameter] public EventCallback<bool> IsDarkChanged { get; set; }
+
+    private bool _isNavOpen;
+    private bool _isHomePage;
+    private string _href = "";
+    private NavItem? _current;
+
+    protected override void OnInitialized()
+    {
+        UpdateRoute();
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Prerendering never gets here, so this is the first moment there is a browser to ask.
+        if (firstRender is false) return;
+
+        await ReportThemeAsync("boGetTheme");
+    }
+
+    private Task ToggleThemeAsync() => ReportThemeAsync("boToggleTheme");
+
+    private async Task ReportThemeAsync(string identifier)
+    {
+        string theme;
+        try
+        {
+            theme = await JS.InvokeAsync<string>(identifier);
+        }
+        catch (Exception exception) when (exception is JSException or JSDisconnectedException or TaskCanceledException)
+        {
+            // The theme is a preference, not a feature: if the script is missing or the circuit is
+            // going away there is nothing to tell the reader, and the page keeps the theme it has.
+            return;
+        }
+
+        var isDark = theme == "dark";
+        if (isDark == IsDark) return;
+
+        await IsDarkChanged.InvokeAsync(isDark);
+    }
+
+    private void ToggleNav() => _isNavOpen = _isNavOpen is false;
+
+    private void CloseNav() => _isNavOpen = false;
+
+    // Following a link inside the drawer closes it: on the widths where the drawer exists it covers
+    // the page the reader just asked for.
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _isNavOpen = false;
+        UpdateRoute();
+        InvokeAsync(StateHasChanged);
+    }
+
+    private void UpdateRoute()
+    {
+        _href = Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].Trim('/');
+        _isHomePage = _href.Length == 0;
+        _current = NavItem.ByHref(_href);
+    }
+
+    public void Dispose() => Nav.LocationChanged -= OnLocationChanged;
+}

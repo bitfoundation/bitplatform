@@ -1,0 +1,81 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject ThemeService Theme
+@inject NavigationManager Nav
+
+<div class="shell">
+    <header class="topbar">
+        <button type="button" class="topbar__burger" @onclick="() => _navOpen = !_navOpen" aria-label="Toggle navigation">
+            <span></span><span></span><span></span>
+        </button>
+
+        <a class="brand" href="">
+            <span class="brand__mark" aria-hidden="true">
+                <svg viewBox="0 0 32 32" width="26" height="26" role="img" aria-label="Blex">
+                    <path d="M7 26 L15 4 L19 4 L12 18 L21 18 L14 29 Z" fill="currentColor" />
+                </svg>
+            </span>
+            <span class="brand__text">
+                <strong>Blex</strong>
+                <span class="brand__tag">for Blazor</span>
+            </span>
+        </a>
+
+        <div class="topbar__spacer"></div>
+
+        <nav class="topbar__links">
+            <a href="quick-start">Quick start</a>
+            <a href="api">API</a>
+            <a href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Blex" target="_blank" rel="noopener">GitHub</a>
+        </nav>
+
+        <button type="button" class="topbar__theme" @onclick="ToggleThemeAsync" title="Toggle light / dark">
+            @(Theme.Theme == "dark" ? "☾" : "☀")
+        </button>
+    </header>
+
+    <div class="body">
+        <NavSidebar Open="_navOpen" OnNavigate="() => _navOpen = false" />
+
+        <main class="content" id="content">
+            @Body
+        </main>
+    </div>
+
+    <InspectorDock />
+</div>
+
+@code {
+    private bool _navOpen;
+
+    protected override void OnInitialized()
+    {
+        Theme.Changed += OnThemeChanged;
+        Nav.LocationChanged += OnLocationChanged;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Theme.InitializeAsync();
+            StateHasChanged();
+        }
+    }
+
+    private async Task ToggleThemeAsync() => await Theme.ToggleAsync();
+
+    private void OnThemeChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+    {
+        _navOpen = false;
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    public void Dispose()
+    {
+        Theme.Changed -= OnThemeChanged;
+        Nav.LocationChanged -= OnLocationChanged;
+    }
+}

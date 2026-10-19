@@ -1,0 +1,47 @@
+﻿@page "/customize/handles"
+
+<PageTitle>Customize · Handles &amp; Previews - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Customize - Handles &amp; Previews</h3>
+    <p class="text-muted">
+        With <code>UseHandle="true"</code> a draggable can only be picked up by a nested
+        <code>&lt;BdndDragHandle&gt;</code>. The rest of the element stays interactive. Compare the two
+        boxes below: the first drags from anywhere, the second only from its grip.
+    </p>
+</div>
+
+<DemoCode />
+
+<section class="demo-stage">
+    <BdndProvider>
+        <div class="row-wrap">
+            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("whole")" Context="d">
+                <div class="box" style="opacity:@(d.IsDragging ? "0.4" : "1");width:13rem;">
+                    Drag me from anywhere
+                </div>
+            </BdndDraggable>
+
+            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("handle")"
+                           UseHandle="true" Context="d">
+                <div class="box" style="opacity:@(d.IsDragging ? "0.4" : "1");width:13rem;display:flex;align-items:center;">
+                    <BdndDragHandle>
+                        <span class="handle">⠿</span>
+                    </BdndDragHandle>
+                    <span>Only the grip drags me</span>
+                </div>
+            </BdndDraggable>
+        </div>
+
+        <BdndDropTarget TItem="string" Accept="@ItemTypes.Box" Context="t"
+                        style="display:contents" OnDrop="@(e => _last = e.Item)">
+            <div class="dustbin" style="@($"margin-top:1.5rem;width:18rem;background:{(t.IsOver ? "darkgreen" : "#333")};")">
+                @(string.IsNullOrEmpty(_last) ? "Drop a box here" : $"Dropped: {_last}")
+            </div>
+        </BdndDropTarget>
+    </BdndProvider>
+</section>
+
+@code {
+    private string? _last;
+}

@@ -1,0 +1,35 @@
+﻿@namespace Bit.Blow.Demo.Client.Examples
+
+@* Shared shell for every ported React Flow example: a titled header, an optional
+   summary and toolbar, and a bordered canvas area that hosts the BlowCanvas. *@
+
+<div class="demo-header">
+    <h3>@Title</h3>
+    @if (!string.IsNullOrWhiteSpace(Summary))
+    {
+        <p class="text-muted">@Summary</p>
+    }
+</div>
+
+<DemoCode />
+
+@if (Toolbar is not null)
+{
+    <div class="example-toolbar">@Toolbar</div>
+}
+
+<div class="demo-canvas" style="@CanvasStyle">
+    @ChildContent
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Title { get; set; } = string.Empty;
+    [Parameter] public string? Summary { get; set; }
+    [Parameter] public RenderFragment? Toolbar { get; set; }
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Optional override for the canvas height (defaults to the standard demo height).</summary>
+    [Parameter] public string? Height { get; set; }
+
+    private string CanvasStyle => Height is null ? string.Empty : $"height:{Height};";
+}

@@ -4,7 +4,7 @@ A Blazor-native animation library inspired by [Motion](https://motion.dev) (Fram
 
 **Hybrid engine:** compositor-eligible animations (tweens and zero-velocity springs on transform/opacity - i.e. most enter/exit/hover/variant animations) are pre-sampled in C# and handed to the browser's **Web Animations API**, so they play off the main thread with zero per-frame interop. Everything else runs on the C# rAF engine.
 
-> Targets **.NET 8, 9, and 10** · Full support on **Blazor WebAssembly**. On **Blazor Server**, compositor-eligible animations play normally (they need only async interop); features that require the per-frame loop - inertia, color/dimension interpolation, keyframe arrays, drag, motion values - degrade to instant state changes.
+> Targets **.NET 8, 9, and 10** · Full support on **Blazor WebAssembly**. On **Blazor Server**, compositor-eligible animations play normally (they need only async interop), and drag follows the pointer a round trip behind (one position, and one `OnDrag`, per frame); features that require the per-frame loop - inertia (a throw lands where it would have come to rest), color/dimension interpolation, keyframe arrays off the compositor - degrade to instant state changes.
 
 ---
 
@@ -167,7 +167,7 @@ literals, single-quote the attribute: `WhileHover='Bm.To(backgroundColor: "#8a66
 | `Layout` | `BmLayout` | Automatic FLIP layout animations (`true`, `BmLayout.Position` or `BmLayout.Size`) |
 | `LayoutId` | `string?` | Shared-element transitions (see [Layout & shared elements](#layout--shared-elements)) |
 | `Once` / `Viewport` | `bool` / `BmViewport?` | Viewport tracking for `WhileInView` (`Viewport.Root` measures against a scroll container instead of the page) |
-| `OnUpdate` | `Action<IReadOnlyDictionary<string, string>>?` | Per-frame callback with the CSS flushed this frame (no re-render) |
+| `OnUpdate` | `Action<IReadOnlyDictionary<string, string>>?` | Per-frame callback with the CSS flushed this frame (no re-render). An element with one animates on the C# frame loop rather than the compositor, so there are frames to report |
 | `Prerender` | `BmPrerenderMode?` | What the element renders while prerendered / statically rendered; overrides the global option (see [Prerendering](#prerendering--static-ssr)) |
 
 Plain HTML attributes (`class`, `role`, `data-*`, …) go directly on the element you author
@@ -457,8 +457,8 @@ keeps working when either end moves:
 The timing still comes from the transition, so a spring on a path arcs *and* overshoots. An arc
 needs both `x` and `y` as single values in the same target - a keyframe sequence on either axis is
 already describing its own path, so it is left alone. Because the two axes have to move together,
-an arc runs on the C# frame loop rather than the compositor (so, like drag, it is a
-**Blazor WebAssembly** feature).
+an arc runs on the C# frame loop rather than the compositor (so it is a **Blazor WebAssembly**
+feature).
 
 ## Keyframes
 
@@ -565,6 +565,9 @@ coming down while everything below it still inherits the variants *it* defines:
 </Bmotion>
 ```
 
+Children animated by the cascade raise `OnAnimationStart` / `OnAnimationComplete` exactly as an
+element with its own `Animate` does - so "the last item has arrived" is one callback away.
+
 Dynamic variants receive the component's `Custom` parameter:
 
 ```csharp
@@ -662,6 +665,12 @@ never land outside the bounds.
     <div />
 </Bmotion>
 ```
+
+**Reconfiguring a drag mid-gesture ends it.** Changing any gesture parameter (`Drag`, `DragConstraints`,
+`DragElastic`, `DragHandle`, ...) while a drag is in progress re-attaches the element's listeners,
+which releases the drag first (`OnDragEnd` fires, momentum and snap-back run as for a pointer-up).
+Keep those parameters stable for the duration of a drag - bind them to state you change on
+`OnDragEnd`, not on `OnDrag`.
 
 ## Layout & shared elements
 

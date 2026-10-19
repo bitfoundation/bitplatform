@@ -1,0 +1,14 @@
+{
+  "name": "bit-bsqlite-js-tests",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Unit tests for the parts of Bit.Bsqlite/Scripts that need no browser: the .NET decimal arithmetic, the host's change-notification filter and the WebAssembly function-table patch",
+  "scripts": {
+    "test": "vitest run",
+    "watch": "vitest"
+  },
+  "devDependencies": {
+    "vitest": "^3.2.4"
+  }
+}

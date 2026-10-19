@@ -4,7 +4,7 @@ import {
     resolveConstraintBounds,
     clampToConstraints,
     scrollFraction,
-} from '../../Bit.Bmotion/wwwroot/bit-bmotion.js';
+} from '../../Bit.Bmotion/Scripts/bit-bmotion.ts';
 
 const rect = (left, top, width, height) => ({
     left, top, width, height, right: left + width, bottom: top + height,
@@ -100,5 +100,20 @@ describe('scrollFraction', () => {
         expect(scrollFraction(0, 1000, 500)).toBe(0);
         expect(scrollFraction(250, 1000, 500)).toBe(0.5);
         expect(scrollFraction(500, 1000, 500)).toBe(1);
+    });
+    // scrollFraction does not clamp. Elastic overscroll (iOS rubber-banding, macOS bounce) reports
+    // scroll offsets outside [0, scrollable], and those pass straight through as progress below 0 or
+    // above 1. The scrub fallback turns it into Animation.currentTime on an animation created with
+    // fill: 'both', so a time before the start or past the end just holds the first or last keyframe
+    // and the overshoot is harmless there - pinned here so a change to that contract is a deliberate one.
+    it('passes a negative (pulled-down) overscroll through as negative progress', () => {
+        expect(scrollFraction(-50, 1000, 500)).toBe(-0.1);
+    });
+    it('passes an overscroll past the end through as progress above 1', () => {
+        expect(scrollFraction(550, 1000, 500)).toBeCloseTo(1.1, 10);
+    });
+    it('still reports 0 for non-overflowing content, whatever the offset', () => {
+        expect(scrollFraction(-50, 500, 500)).toBe(0);
+        expect(scrollFraction(50, 400, 500)).toBe(0);
     });
 });

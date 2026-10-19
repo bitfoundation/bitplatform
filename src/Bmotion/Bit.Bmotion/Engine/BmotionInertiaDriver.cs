@@ -41,10 +41,20 @@ internal sealed class BmotionInertiaDriver : IBmotionAnimationDriver
         _delayMs = config.Delay * 1000;
         _apply = apply;
 
-        double power = config.Power;
-        double velocity = config.InertiaVelocity;
+        double projected = ProjectRest(from, config);
 
-        double projected = from + power * velocity;
+        _projected = projected;
+        _delta = projected - from;
+    }
+
+    /// <summary>
+    /// Where an inertia starting at <paramref name="from"/> comes to rest: the decay's projected
+    /// end, snapped by <c>ModifyTarget</c> and clamped to the bounds. Also what a runtime without a
+    /// frame loop lands on at once (see <c>BmotionElementAnimationState.ForceInstant</c>).
+    /// </summary>
+    internal static double ProjectRest(double from, BmotionTransitionConfig config)
+    {
+        double projected = from + config.Power * config.InertiaVelocity;
         // Snap-to-grid / snap-to-page hook (motion.dev's modifyTarget): the consumer rounds the
         // projected resting place to whatever grid it wants. Run it before clamping so a snapped
         // target can't escape the constraints, and ignore a non-finite result rather than letting
@@ -56,9 +66,7 @@ internal sealed class BmotionInertiaDriver : IBmotionAnimationDriver
         }
         if (config.InertiaMax.HasValue) projected = Math.Min(projected, config.InertiaMax.Value);
         if (config.InertiaMin.HasValue) projected = Math.Max(projected, config.InertiaMin.Value);
-
-        _projected = projected;
-        _delta = projected - from;
+        return double.IsFinite(projected) ? projected : from;
     }
 
     public bool Tick(double timestamp)

@@ -1,0 +1,88 @@
+name: bit platform CI - Bmotion E2E
+
+on:
+  workflow_dispatch:
+
+env:
+  DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
+
+permissions:
+  contents: read
+
+jobs:
+  # The browser suite: every harness page in a real Chromium, once per render mode - and on every runtime the
+  # library ships for where the runtime is what differs. See src/Bmotion/Tests/Bit.Bmotion.Tests.E2E/README.md.
+  e2e:
+    name: Bmotion E2E - ${{ matrix.host }} (${{ matrix.framework }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+        - { host: wasm, framework: net10.0 }
+        - { host: wasm-noprerender, framework: net10.0 }
+        - { host: server, framework: net10.0 }
+        - { host: server-noprerender, framework: net10.0 }
+        - { host: auto, framework: net10.0 }
+        - { host: auto-noprerender, framework: net10.0 }
+        - { host: wasm, framework: net9.0 }
+        - { host: server, framework: net9.0 }
+        - { host: wasm, framework: net8.0 }
+        - { host: server, framework: net8.0 }
+
+    steps:
+    - name: Checkout source code
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+          persist-credentials: false
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        global-json-file: src/global.json
+
+    - name: Setup .NET 9.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 9.0.x
+
+    - name: Setup .NET 8.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 8.0.x
+
+    - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      with:
+        node-version: 24
+
+    - name: dotnet workload restore
+      run: cd src/Bmotion && dotnet workload restore
+
+    - name: Build the harness host
+      run: dotnet build src/Bmotion/Tests/Bit.Bmotion.Tests.Harness.Web/Bit.Bmotion.Tests.Harness.Web.csproj -c Release -f ${{ matrix.framework }}
+
+    - name: Build the E2E suite
+      run: dotnet build src/Bmotion/Tests/Bit.Bmotion.Tests.E2E/Bit.Bmotion.Tests.E2E.csproj -c Release
+
+    - name: Install Playwright Chromium
+      run: pwsh src/Bmotion/Tests/Bit.Bmotion.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+
+    - name: Run E2E tests
+      env:
+        BMOTION_E2E_HOST: ${{ matrix.host }}
+        BMOTION_E2E_FRAMEWORK: ${{ matrix.framework }}
+        BMOTION_E2E_CONFIGURATION: Release
+        BMOTION_E2E_SKIP_BUILD: 1
+      # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
+      run: >
+        cd src/Bmotion/Tests/Bit.Bmotion.Tests.E2E &&
+        dotnet test -c Release --no-build
+        --report-trx --report-trx-filename bmotion-e2e-${{ matrix.host }}-${{ matrix.framework }}.trx
+
+    - name: Upload test results
+      if: always()
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: bmotion-e2e-${{ matrix.host }}-${{ matrix.framework }}
+        path: '**/bmotion-e2e-*.trx'
+        if-no-files-found: ignore

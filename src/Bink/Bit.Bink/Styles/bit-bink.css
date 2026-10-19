@@ -1,0 +1,98 @@
+﻿/* Bink canvas layout.
+   The container stacks two canvases and a transparent input surface. Everything here is layout only:
+   applications style the surrounding UI themselves. */
+
+.bit-bink-canvas {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    /* Stops long-press menus, text selection and the tap highlight from interrupting drawing. */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
+    background: transparent;
+}
+
+.bit-bink-canvas:focus-visible {
+    /* Two rings, one dark and one light, so the indicator stays visible against any drawing or page background.
+       Under forced colours the system takes over and Highlight is the right answer. */
+    outline: 2px solid #1d4ed8;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9);
+}
+
+@media (forced-colors: active) {
+    .bit-bink-canvas:focus-visible {
+        outline: 3px solid Highlight;
+        box-shadow: none;
+    }
+}
+
+.bit-bink-layer {
+    position: absolute;
+    inset: 0;
+    display: block;
+    pointer-events: none;
+}
+
+.bit-bink-document {
+    z-index: 0;
+}
+
+.bit-bink-overlay {
+    z-index: 1;
+}
+
+.bit-bink-input {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    /* touch-action is set inline from the component so applications can allow page scrolling. */
+    cursor: inherit;
+}
+
+.bit-bink-content {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+}
+
+.bit-bink-content > * {
+    pointer-events: auto;
+}
+
+.bit-bink-text-editor {
+    position: absolute;
+    z-index: 4;
+    margin: 0;
+    padding: 0;
+    border: 1px solid Highlight;
+    outline: none;
+    background: transparent;
+    color: inherit;
+    overflow: hidden;
+    resize: none;
+    white-space: pre;
+    line-height: inherit;
+}
+
+.bit-bink-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+@media (forced-colors: active) {
+    .bit-bink-canvas {
+        forced-color-adjust: none;
+    }
+}

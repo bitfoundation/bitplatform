@@ -1,0 +1,108 @@
+﻿@page "/examples/diagnostics"
+
+<PageTitle>Diagnostics - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Diagnostics"
+                 Summary="A graph assembled from real data is not always well formed. Rather than throwing, the canvas reports what it found through OnError and carries on drawing what it can - each distinct problem once, not on every render. Break the graph with the buttons and watch the log.">
+    <Toolbar>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="AddDanglingEdge">Add dangling edge</button>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="AddDuplicateId">Add duplicate id</button>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="AddOrphan">Add orphan child</button>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="Reset">Reset</button>
+    </Toolbar>
+    <ChildContent>
+        @* The canvas reports each distinct problem once for its lifetime, so Reset mounts a new
+           one: otherwise breaking the graph the same way again would go unreported. *@
+        <BlowCanvas @key="_generation" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnError="OnError">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <div class="diag-log">
+                    <strong>OnError</strong>
+                    @if (_errors.Count == 0)
+                    {
+                        <div class="diag-empty">Nothing reported.</div>
+                    }
+                    else
+                    {
+                        @foreach (var error in _errors)
+                        {
+                            <div class="diag-row">
+                                <code>@error.Code</code>
+                                <div>@error.Message</div>
+                            </div>
+                        }
+                    }
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .diag-log {
+        width: 320px;
+        max-height: 220px;
+        overflow-y: auto;
+        padding: 8px 10px;
+        font-size: 11px;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+    .diag-empty { color: var(--bit-blow-text-muted); }
+    .diag-row { margin-top: 6px; }
+    .diag-row code { color: #b91c1c; }
+
+    @@media (max-width: 640px) {
+        .diag-log { width: 200px; max-height: 140px; }
+    }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly List<BlowError> _errors = [];
+    private int _generation;
+
+    // Never reset, so every element added in this session gets an id of its own.
+    private int _counter;
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "a", Label = "A", Position = new(80, 60) },
+            new BlowNode { Id = "b", Label = "B", Position = new(80, 200) },
+        ];
+        _edges = [new BlowEdge { Id = "a-b", Source = "a", Target = "b" }];
+        _errors.Clear();
+        _generation++;
+    }
+
+    private void OnError(BlowError error) => _errors.Add(error);
+
+    // Points at a node that was never added: the edge is skipped, the graph keeps working.
+    private void AddDanglingEdge()
+    {
+        var n = _counter++;
+        _edges.Add(new BlowEdge { Id = $"dangling-{n}", Source = "a", Target = $"ghost-{n}" });
+    }
+
+    // Two nodes claiming the same id: only the first is drawn, so the diff stays valid.
+    private void AddDuplicateId() =>
+        _nodes.Add(new BlowNode { Id = "a", Label = "A (duplicate)", Position = new(320, 60) });
+
+    // Names a parent that does not exist, so it is laid out as a root instead.
+    private void AddOrphan() =>
+        _nodes.Add(new BlowNode
+        {
+            Id = $"orphan-{_counter++}",
+            Label = "Orphan",
+            Position = new(320, 200),
+            ParentId = "missing-group",
+        });
+}

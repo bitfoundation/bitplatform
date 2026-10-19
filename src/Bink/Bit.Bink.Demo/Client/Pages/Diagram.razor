@@ -1,0 +1,212 @@
+﻿@page "/diagram"
+@using System.Numerics
+@implements IDisposable
+
+<PageTitle>Diagram surface - bit Bink</PageTitle>
+
+<h1>Diagram surface</h1>
+<p class="page-intro">
+    Nodes and connectors, built entirely on top of the document model. Bit.Bink knows nothing about diagrams: a
+    node is a rectangle, a connector is a line and a label is text, and what joins them is element metadata plus
+    one listener. Move a node and its connectors and label follow, in the same undo step as the move.
+</p>
+
+<div class="panel">
+    <div class="toolbar" role="toolbar" aria-label="Diagram tools">
+        <div class="toolbar-group" role="group" aria-label="Tool">
+            @foreach ((string id, string label) in Tools)
+            {
+                <button type="button" class="btn @(_toolId == id ? "active" : null)"
+                        aria-pressed="@(_toolId == id ? "true" : "false")"
+                        @onclick="() => SelectTool(id)">@label</button>
+            }
+        </div>
+
+        <div class="toolbar-separator"></div>
+
+        <ColorSwatches Colors="Palette" Value="@_color" ValueChanged="SetColor" />
+
+        <div class="toolbar-separator"></div>
+
+        <button type="button" class="btn" @onclick="ResetToSample">Sample diagram</button>
+
+        <div class="toolbar-spacer"></div>
+
+        <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanUndo)"
+                @onclick="() => _canvas?.Undo()">Undo</button>
+        <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanRedo)"
+                @onclick="() => _canvas?.Redo()">Redo</button>
+        <button type="button" class="btn danger" disabled="@_document.IsEmpty" @onclick="() => _canvas?.Clear()">Clear</button>
+    </div>
+
+    <div class="toolbar" style="border-top:none" role="toolbar" aria-label="Selected node">
+        @if (SelectedNode is { } node)
+        {
+            <label class="field">
+                Label
+                <input type="text" value="@(DiagramGraph.LabelOf(node))" maxlength="60" aria-label="Node label"
+                       @onchange="e => Rename(node.Id, e.Value?.ToString())" />
+            </label>
+        }
+        else
+        {
+            <span class="field">Select a single node to rename it. Picking a colour recolours the selection.</span>
+        }
+        <button type="button" class="btn danger" disabled="@(_canvas is null || _canvas.Selection.IsEmpty)"
+                @onclick="() => _canvas?.DeleteSelection()">Delete</button>
+        <div class="toolbar-spacer"></div>
+        <button type="button" class="btn" disabled="@_document.IsEmpty" @onclick="() => _canvas?.ZoomToFit()">Fit</button>
+        <button type="button" class="btn" disabled="@_document.IsEmpty" @onclick="ExportSvgAsync">Export SVG</button>
+    </div>
+
+    <div class="canvas-host">
+        <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()"
+                   Document="_document"
+                   Height="560px"
+                   Tool="_tool"
+                   ShapeStyle="_shapeStyle"
+                   ActiveLayerId="_diagramLayer"
+                   EnableTouchGestures="true"
+                   AriaLabel="Diagram canvas"
+                   Ready="() => StateHasChanged()"
+                   SelectionChanged="() => StateHasChanged()"
+                   DocumentChanged="() => StateHasChanged()" />
+    </div>
+
+    <CanvasStatus Canvas="_canvas">
+        <span>@NodeCount nodes, @ConnectorCount connectors</span>
+        <span>@_graph?.RerouteCount connector reroutes</span>
+    </CanvasStatus>
+</div>
+
+<div class="note">
+    Drag with <strong>Node</strong> to draw a box, then drag with <strong>Connector</strong> from one box to
+    another. Switch to <strong>Select</strong> and move a node: the connectors re-route while the move is still
+    being reported, so the document never shows a connector detached from its node, and one undo puts everything
+    back. Delete a node and its connectors go with it. Connector endpoints and label positions are derived data,
+    so they are recomputed rather than stored as offsets.
+</div>
+
+@code {
+    private BinkCanvas? _canvas;
+    private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 0, Height = 0, Background = BinkColor.White });
+    private DiagramGraph? _graph;
+    private Guid _diagramLayer;
+    private IBinkTool _tool = null!;
+    private string _toolId = "node";
+    private string _color = "#2563eb";
+    private int _nodeNumber;
+    private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#2563eb"), StrokeWidth = 2f, FillColor = BinkColor.Parse("#eff6ff") };
+
+    private static readonly (string Id, string Label)[] Tools =
+    [
+        ("node", "Node"),
+        ("connector", "Connector"),
+        ("select", "Select"),
+        ("pan", "Pan"),
+    ];
+
+    private static readonly string[] Palette = ["#2563eb", "#dc2626", "#15803d", "#a16207", "#7c3aed"];
+
+    private int NodeCount => _document.AllElements.Count(e => DiagramGraph.HasRole(e, DiagramGraph.NodeRole));
+
+    private int ConnectorCount => _document.AllElements.Count(e => DiagramGraph.HasRole(e, DiagramGraph.ConnectorRole));
+
+    /// <summary>The node when the selection is exactly one node.</summary>
+    private BinkElement? SelectedNode
+        => _canvas is { Selection.Count: 1 } canvas
+           && canvas.Selection.Elements.FirstOrDefault() is { } element
+           && DiagramGraph.HasRole(element, DiagramGraph.NodeRole)
+            ? element
+            : null;
+
+    protected override void OnInitialized()
+    {
+        // Labels live on a locked layer above the diagram: they are drawn on top of the nodes, but a click on the
+        // text still selects the node underneath, because locked layers are not hit tested.
+        _document.UpdateLayer(_document.Layers[0].Id, p => p with { Name = "Diagram" });
+        _diagramLayer = _document.Layers[0].Id;
+        Guid labels = _document.AddLayer(new BinkLayerProperties { Name = "Labels", IsLocked = true }).Id;
+
+        _graph = new DiagramGraph(_document) { LabelLayerId = labels };
+        SelectTool("node");
+        AddSampleDiagram();
+    }
+
+    private void SelectTool(string id)
+    {
+        _toolId = id;
+        _tool = id switch
+        {
+            "connector" => new ConnectorTool(),
+            "select" => new BinkSelectTool(),
+            "pan" => new BinkPanTool(),
+            _ => new NodeTool { NextLabel = () => $"Node {++_nodeNumber}" },
+        };
+    }
+
+    private void SetColor(string color)
+    {
+        _color = color;
+        BinkColor stroke = BinkColor.Parse(color);
+        _shapeStyle = _shapeStyle with { StrokeColor = stroke, FillColor = stroke with { A = 24 } };
+
+        // Recolour what is selected, in one undo step. The graph recolours the labels to match.
+        if (_canvas is null || _canvas.Selection.IsEmpty) return;
+        List<BinkElement> recoloured = _canvas.Selection.Elements
+            .OfType<BinkShapeElement>()
+            .Select(shape => (BinkElement)(shape with
+            {
+                Style = shape.Style with
+                {
+                    StrokeColor = stroke,
+                    FillColor = shape.Style.FillColor is null ? null : _shapeStyle.FillColor,
+                },
+            }))
+            .ToList();
+        if (recoloured.Count > 0) _document.ReplaceElements(recoloured, "Recolour");
+    }
+
+    private void Rename(Guid nodeId, string? label)
+    {
+        if (!_document.TryGetElement(nodeId, out BinkElement? node)) return;
+        if (string.Equals(DiagramGraph.LabelOf(node), label?.Trim(), StringComparison.Ordinal)) return;
+        _document.ReplaceElement(DiagramGraph.WithLabel(node, label));
+    }
+
+    private void ResetToSample()
+    {
+        // Replacing the drawing with the sample is one undo step, so a misclick costs nothing.
+        using (_document.BeginBatch("Sample diagram"))
+        {
+            _document.Clear();
+            AddSampleDiagram();
+        }
+        _canvas?.ResetViewport();
+    }
+
+    private void AddSampleDiagram()
+    {
+        // Built as one batch so the whole example is a single undo step.
+        using (_document.BeginBatch("Sample diagram"))
+        {
+            BinkRectangleShape capture = DiagramGraph.CreateNode(new BinkRect(80, 80, 150, 60), _shapeStyle, "Capture");
+            BinkRectangleShape process = DiagramGraph.CreateNode(new BinkRect(330, 200, 150, 60), _shapeStyle, "Process");
+            BinkRectangleShape store = DiagramGraph.CreateNode(new BinkRect(80, 320, 150, 60), _shapeStyle, "Store");
+
+            // Connectors first, so they sit under the nodes.
+            _document.AddElement(DiagramGraph.CreateConnector(capture, process, _shapeStyle), _diagramLayer);
+            _document.AddElement(DiagramGraph.CreateConnector(process, store, _shapeStyle), _diagramLayer);
+            _document.AddElement(capture, _diagramLayer);
+            _document.AddElement(process, _diagramLayer);
+            _document.AddElement(store, _diagramLayer);
+        }
+        _canvas?.Refresh();
+    }
+
+    private Task ExportSvgAsync()
+        => _canvas?.SaveSvgAsync("diagram.svg", new BinkSvgExportOptions { Region = BinkExportRegion.Content, Padding = 24f, IncludeElementDescriptions = true })
+           ?? Task.CompletedTask;
+
+    public void Dispose() => _graph?.Dispose();
+}

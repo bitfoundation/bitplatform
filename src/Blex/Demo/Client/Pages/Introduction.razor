@@ -1,0 +1,180 @@
+﻿@page "/"
+@inherits BlexComponentBase
+@inject CounterStore Counter
+
+<PageTitle>Blex · Reactive state management for Blazor</PageTitle>
+
+<article class="doc">
+    <header class="hero">
+        <span class="hero__tag">Blazor state management</span>
+        <h1>State management that gets out of the way</h1>
+        <p class="hero__lead">
+            Blex is a lightweight, source-generator-powered state library for Blazor. You write one
+            <code>[BlexState]</code> field and one <code>[BlexAction]</code> method; the generator writes the
+            reactive properties, the dispatch plumbing, the JSON snapshots and the loading/error
+            lifecycle. Redux DevTools time-travel is built in.
+        </p>
+        <div class="hero__cta">
+            <a class="btn btn-primary" href="quick-start">Get started</a>
+            <a class="btn" href="stores">Read the concepts</a>
+            <a class="btn btn-ghost" href="https://github.com/bitfoundation/bitplatform/tree/develop/src/Blex" target="_blank" rel="noopener">GitHub ↗</a>
+        </div>
+    </header>
+
+    <h2>The whole store</h2>
+    <p>
+        This is not an excerpt - it is a complete, working store. There are no action classes, no
+        reducers, no feature registrations and no selector boilerplate.
+    </p>
+
+    <CodeBlock Code="@StoreSample" FileName="CounterStore.cs" />
+
+    <p>From that, the generator emits:</p>
+    <ul>
+        <li>reactive <code>Count</code> / <code>Step</code> properties whose setters flow through the dispatch pipeline,</li>
+        <li>memoized <code>DoubleCount</code> / <code>IsEven</code> accessors that invalidate themselves on every state change,</li>
+        <li>public <code>Increment()</code>, <code>Decrement()</code> and <code>SetStep(int)</code> wrappers that batch their mutations into one named, recorded action,</li>
+        <li><code>SerializeState()</code> / <code>DeserializeState()</code> for snapshots, persistence and time-travel,</li>
+        <li>and the <code>BlexStoreBase</code> base type itself.</li>
+    </ul>
+
+    <DemoCard Title="That store, running right now"
+              Description="This is the very store shown above, resolved from DI. Open the Inspector at the bottom of the page to watch the actions stream in."
+              Source="@CounterUsage" SourceLanguage="razor">
+        <div class="readout">
+            <div class="readout__item">
+                <span class="readout__label">Count</span>
+                <span class="readout__value readout__value--accent">@Counter.Count</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">DoubleCount</span>
+                <span class="readout__value">@Counter.DoubleCount</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">IsEven</span>
+                <span class="readout__value">@Counter.IsEven</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Step</span>
+                <span class="readout__value">@Counter.Step</span>
+            </div>
+        </div>
+        <div class="row" style="margin-top:0.9rem">
+            <button class="btn btn-primary" @onclick="Counter.Increment">+ @Counter.Step</button>
+            <button class="btn" @onclick="Counter.Decrement">− @Counter.Step</button>
+            <button class="btn" @onclick="() => Counter.SetStep(Counter.Step == 1 ? 5 : 1)">
+                Step → @(Counter.Step == 1 ? 5 : 1)
+            </button>
+            <button class="btn btn-ghost" @onclick="Counter.ResetState">Reset</button>
+        </div>
+        <p class="small muted" style="margin-top:0.7rem;margin-bottom:0">
+            This store is marked <code>Persist = true</code> - reload the page and the count survives.
+        </p>
+    </DemoCard>
+
+    <h2>Why it exists</h2>
+    <p>
+        Fluxor is the de-facto Redux implementation for Blazor, and it works - but a single counter
+        costs you a state class, an action class, a reducer and often an effect class, and there is no
+        first-class DevTools time-travel. Blex keeps what makes Flux good - one observable state
+        tree, named actions, a middleware pipeline - and deletes the ceremony with a Roslyn
+        incremental generator.
+    </p>
+
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr><th>Task</th><th>Fluxor</th><th>Blex</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Define a piece of state</td><td>Feature + State class</td><td>one <code>[BlexState]</code> field</td></tr>
+                <tr><td>Define an action</td><td>Action class + Reducer method</td><td>one <code>[BlexAction]</code> method</td></tr>
+                <tr><td>Action payloads in DevTools / middleware</td><td>manual</td><td>automatic (<code>ctx.Args</code>)</td></tr>
+                <tr><td>Derived state</td><td>manual selectors</td><td><code>[BlexComputed]</code>, memoized</td></tr>
+                <tr><td>Async side-effects</td><td>Effect classes</td><td><code>[BlexEffect]</code> with generated loading/error</td></tr>
+                <tr><td>Effect cancellation &amp; concurrency</td><td>manual</td><td><code>CancellationToken</code> + <code>Latest</code>/<code>Drop</code>/<code>Queue</code></td></tr>
+                <tr><td>Ad-hoc batched mutations</td><td class="check-no">✗</td><td><code>store.Batch(name, …)</code></td></tr>
+                <tr><td>Reset to initial state</td><td>manual</td><td><code>store.ResetState()</code></td></tr>
+                <tr><td>Granular re-render</td><td>manual selectors</td><td>selector <code>Subscribe(…)</code></td></tr>
+                <tr><td>Normalized collections</td><td>manual</td><td><code>BlexEntityAdapter</code> / <code>BlexEntityState</code></td></tr>
+                <tr><td>Persistence</td><td>3rd-party</td><td>built in, with debounce + migrations</td></tr>
+                <tr><td>Undo / redo</td><td class="check-no">✗</td><td><code>BlexHistory</code></td></tr>
+                <tr><td>Redux DevTools time-travel</td><td class="check-no">✗</td><td class="check-yes">✓ built in</td></tr>
+                <tr><td>Test helpers</td><td class="check-no">✗</td><td><code>Bit.Blex.Testing</code> harness</td></tr>
+                <tr><td>Boilerplate</td><td>high</td><td>generated away</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <h2>What's in the box</h2>
+    <div class="grid grid--3">
+        @foreach (var entry in DocsNav.Flat.Skip(1))
+        {
+            <a class="card" href="@entry.Href">
+                <p class="card__title">@entry.Title</p>
+                <p class="card__body">@entry.Summary</p>
+            </a>
+        }
+    </div>
+
+    <h2>Packages</h2>
+    <ApiTable Rows="@Packages" MemberHeader="Package" />
+
+    <Callout Kind="Callout.CalloutKind.Tip" Title="The docs site is the demo">
+        <p style="margin-bottom:0">
+            Every page here runs against real stores registered in this app's
+            <code>Program.cs</code>. The <strong>Inspector</strong> at the bottom of the window shows
+            the live action feed, the serialized global state tree, the undo stack and the error sink -
+            all fed by the same public APIs you are reading about.
+        </p>
+    </Callout>
+
+    <nav class="doc__pager">
+        <span></span>
+        <a class="pager pager--next" href="installation">
+            <span class="pager__dir">Next</span>
+            <span class="pager__title">Installation</span>
+        </a>
+    </nav>
+</article>
+
+@code {
+    protected override void OnInitialized() => Subscribe(Counter);
+
+    private static readonly IReadOnlyList<ApiTable.Row> Packages =
+    [
+        new("Bit.Blex", "The core runtime: <code>BlexStoreBase</code>, attributes, dispatch, middleware, persistence, entity adapter, undo/redo and <code>BlexManager</code>. No JS dependency."),
+        new("Bit.Blex.Generators", "The Roslyn incremental generator that writes the store plumbing. Reference it next to <code>Bit.Blex</code>; it ships as an analyzer only."),
+        new("Bit.Blex.Blazor", "Blazor integration: <code>&lt;BlexProvider&gt;</code>, <code>BlexComponentBase</code>, browser-storage persistence and the Redux DevTools bridge."),
+        new("Bit.Blex.Maui", ".NET MAUI integration: <code>UseBitBlex()</code> startup initializer, <code>Preferences</code>-backed persistence and XAML-bindable stores."),
+        new("Bit.Blex.Testing", "Test harness and assertions: <code>BlexTestHarness</code>, <code>BlexActionLog</code>, <code>WaitForAsync</code>."),
+    ];
+
+    private const string StoreSample = """
+        [BlexStore(Name = "counter", Persist = true)]
+        public partial class CounterStore
+        {
+            [BlexState] private int _count;
+            [BlexState] private int _step = 1;
+
+            [BlexComputed] private int  ComputeDoubleCount() => Count * 2;
+            [BlexComputed] private bool ComputeIsEven()      => Count % 2 == 0;
+
+            [BlexAction] private void OnIncrement()       => Count += Step;
+            [BlexAction] private void OnDecrement()       => Count -= Step;
+            [BlexAction] private void OnSetStep(int step) => Step = step;
+        }
+        """;
+
+    private const string CounterUsage = """
+        @inherits BlexComponentBase
+        @inject CounterStore Counter
+
+        <p>Count: @Counter.Count (double: @Counter.DoubleCount)</p>
+        <button @onclick="Counter.Increment">+ @Counter.Step</button>
+
+        @code {
+            protected override void OnInitialized() => Subscribe(Counter);
+        }
+        """;
+}

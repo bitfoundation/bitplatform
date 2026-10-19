@@ -74,6 +74,16 @@ public class ViewportRootTests
 
         Assert.AreEqual(before + 1, ctx.Interop.CountOf("observeViewport"),
             "a changed root must re-observe; otherwise the element keeps watching the old container");
+
+        // Order matters: the bridge's observeViewport detaches the element from its old observer
+        // itself, so any unobserve must come BEFORE the re-observe. One arriving after it would
+        // leave the element watched by nothing at all.
+        var viewportCalls = ctx.Interop.Calls
+            .Where(c => c.Method is "observeViewport" or "unobserveViewport" && (string?)c.Args[0] == "box")
+            .ToArray();
+        var last = viewportCalls[^1];
+        Assert.AreEqual("observeViewport", last.Method, "the element must end up observed");
+        Assert.AreEqual("#b", ((BmViewport)last.Args[1]!).Root);
     }
 
     [TestMethod]

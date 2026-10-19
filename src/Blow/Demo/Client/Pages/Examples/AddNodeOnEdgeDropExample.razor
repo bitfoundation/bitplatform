@@ -1,0 +1,56 @@
+﻿@page "/examples/add-node-on-edge-drop"
+
+<PageTitle>Add Node on Edge Drop - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Add Node on Edge Drop"
+                 Summary="Drag a connection from a handle and release it on empty canvas. A new node is created where you dropped, already connected - downstream when you dragged from a source handle, upstream when you dragged from a target handle. Releasing on a handle connects normally; a click, Escape or a reconnect adds nothing.">
+    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                OnConnectEnd="OnConnectEnd">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _id = 1;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Drag from my handle", Position = new(180, 40), Width = 200 },
+        ];
+        _edges = [];
+    }
+
+    private void OnConnectEnd(BlowConnectEndInfo info)
+    {
+        // Only a new connection dragged out and released over empty canvas spawns a node - not a
+        // plain click on a handle, Escape, or letting go of an existing edge's end.
+        if (info.IsValid || !info.IsDropped || info.IsReconnect) return;
+
+        _id++;
+        var id = _id.ToString();
+        var start = info.Start;
+
+        // Dragged out of a target handle, the new node feeds the start node rather than being
+        // fed by it. Either way the new node's matching handle - its source at the bottom, or
+        // its target at the top - is placed right where the connection was let go.
+        var fromTarget = start.HandleType == BlowHandleType.Target;
+        _nodes.Add(new BlowNode
+        {
+            Id = id,
+            Label = $"Node {id}",
+            Position = new(
+                info.FlowPosition.X - BlowNode.DefaultWidth / 2,
+                fromTarget ? info.FlowPosition.Y - BlowNode.DefaultHeight : info.FlowPosition.Y),
+        });
+        _edges.Add(fromTarget
+            ? new BlowEdge { Id = $"e{id}-{start.NodeId}", Source = id, Target = start.NodeId, TargetHandle = start.HandleId }
+            : new BlowEdge { Id = $"e{start.NodeId}-{id}", Source = start.NodeId, SourceHandle = start.HandleId, Target = id });
+        _flow?.Refresh(remeasure: true);
+    }
+}

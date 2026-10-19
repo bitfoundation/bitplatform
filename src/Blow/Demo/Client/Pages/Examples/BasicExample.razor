@@ -1,0 +1,35 @@
+﻿@page "/examples/basic"
+
+<PageTitle>Basic - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Basic"
+                 Summary="The minimal flow: a handful of nodes and edges with panning, zooming, selection and connecting.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+        <BlowMiniMap />
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input",  Label = "Node 1", Position = new(250, 5) },
+            new BlowNode { Id = "2",                  Label = "Node 2", Position = new(100, 100) },
+            new BlowNode { Id = "3",                  Label = "Node 3", Position = new(400, 100) },
+            new BlowNode { Id = "4", Type = "output", Label = "Node 4", Position = new(400, 200) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Label = "this is an edge label" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4", Animated = true, Label = "animated" },
+        ];
+    }
+}

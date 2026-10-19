@@ -1,0 +1,45 @@
+﻿<div class="callout callout--@Kind.ToString().ToLowerInvariant()">
+    <div class="callout__icon" aria-hidden="true">@Icon</div>
+    <div class="callout__body">
+        @if (!string.IsNullOrEmpty(Title))
+        {
+            <p class="callout__title">@Title</p>
+        }
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    /// <summary>Visual tone of the callout.</summary>
+    public enum CalloutKind
+    {
+        /// <summary>Neutral supporting information.</summary>
+        Note,
+
+        /// <summary>A recommended practice.</summary>
+        Tip,
+
+        /// <summary>Something that will bite if ignored.</summary>
+        Warning,
+
+        /// <summary>A behaviour that is easy to get wrong.</summary>
+        Gotcha,
+    }
+
+    /// <summary>Which tone to render.</summary>
+    [Parameter] public CalloutKind Kind { get; set; } = CalloutKind.Note;
+
+    /// <summary>Optional bold lead-in line.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>The callout body.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private string Icon => Kind switch
+    {
+        CalloutKind.Tip => "★",
+        CalloutKind.Warning => "!",
+        CalloutKind.Gotcha => "⚠",
+        _ => "i",
+    };
+}

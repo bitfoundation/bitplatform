@@ -18,7 +18,7 @@ public partial class BitPdfViewerDemo
             Name = "BackgroundRendering",
             Type = "bool",
             DefaultValue = "false",
-            Description = "Offloads document parsing and page rendering to a background thread so scrolling and navigation stay responsive while a complex page renders. Only has an effect when the runtime provides a spare thread (Blazor Server, or a Blazor WebAssembly app built with WasmEnableThreads); on the default single-threaded WebAssembly runtime it is a safe no-op.",
+            Description = "Offloads document parsing and page rendering to a background thread so scrolling and navigation stay responsive while a complex page renders. Only has an effect when the runtime provides a spare thread (Blazor Server, or a Blazor WebAssembly app built with WasmEnableThreads); on the default single-threaded WebAssembly runtime it is a safe no-op. Seekable stream sources always run server parsing, page/thumbnail builds, search and print off the circuit.",
         },
         new()
         {
@@ -406,7 +406,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "Document",
             Type = "BitPdfDocument?",
-            Description = "The parsed document model, or null when nothing is loaded. Exposes the full engine surface (catalog, pages, cross-reference table) for callers that need more than the viewer's own API.",
+            Description = "The parsed document model, or null when nothing is loaded. Exposes the full engine surface (catalog, pages, cross-reference table). With a stream source these objects and raw-file streams are valid only during that viewer load; released access throws ObjectDisposedException. Use the async viewer helpers for server rendering and text extraction.",
         },
         new()
         {
@@ -594,7 +594,7 @@ public partial class BitPdfViewerDemo
         {
             Name = "Download",
             Type = "Task Download()",
-            Description = "Downloads the original document bytes. Works for URL sources too: the bytes fetched for the current document are reused, so nothing is downloaded twice. OnDownloading runs first and may rename or cancel it.",
+            Description = "Downloads original bytes, reusing fetched URL buffers or streaming from a seekable source without retaining a complete server buffer. OnDownloading runs first and may rename or cancel it.",
         },
         new()
         {
@@ -610,15 +610,27 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "ExtractPageTextAsync",
+            Type = "Task<string> ExtractPageTextAsync(int pageNumber, CancellationToken cancellationToken = default)",
+            Description = "Extracts one page's text without blocking server stream reads on the circuit.",
+        },
+        new()
+        {
             Name = "ExtractPageText",
             Type = "string ExtractPageText(int pageNumber)",
-            Description = "Extracts the visible text of a single page (1-based) for search or copy, or an empty string when unavailable.",
+            Description = "Extracts the visible text of a single page (1-based) for search or copy, or an empty string when unavailable. Throws InvalidOperationException for an active stream source; use ExtractPageTextAsync.",
+        },
+        new()
+        {
+            Name = "ExtractTextAsync",
+            Type = "Task<string> ExtractTextAsync(string pageSeparator = \"\\n\\n\", CancellationToken cancellationToken = default)",
+            Description = "Extracts all page text asynchronously and reuses the viewer's text index.",
         },
         new()
         {
             Name = "ExtractText",
             Type = "string ExtractText(string pageSeparator = \"\\n\\n\")",
-            Description = "Extracts the visible text of the whole document, one page per entry joined by the separator. Reuses the index the find box builds.",
+            Description = "Extracts the visible text of the whole document, one page per entry joined by the separator. Reuses the index the find box builds. Throws InvalidOperationException for an active stream source; use ExtractTextAsync.",
         },
         new()
         {
@@ -652,9 +664,15 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "GetBytesAsync",
+            Type = "Task<byte[]?> GetBytesAsync(CancellationToken cancellationToken = default)",
+            Description = "Returns the existing buffered array, or explicitly copies a stream source to a complete caller-owned array. The viewer does not retain the copy; GetBytes stays null for stream sources.",
+        },
+        new()
+        {
             Name = "GetBytes",
             Type = "byte[]? GetBytes()",
-            Description = "The raw bytes of the loaded document (fetched ones included), or null when nothing is loaded.",
+            Description = "The raw bytes of a buffered document (fetched ones included), or null for a stream source or when nothing is loaded. Use GetBytesAsync for an explicit copy.",
         },
         new()
         {
@@ -714,9 +732,15 @@ public partial class BitPdfViewerDemo
         },
         new()
         {
+            Name = "RenderPageHtmlAsync",
+            Type = "Task<string> RenderPageHtmlAsync(int pageNumber, CancellationToken cancellationToken = default)",
+            Description = "Renders a page asynchronously, with server stream work off the circuit. Cancellation or document replacement discards the result.",
+        },
+        new()
+        {
             Name = "RenderPageHtml",
             Type = "string RenderPageHtml(int pageNumber)",
-            Description = "Renders a single page (1-based) to self-contained HTML, or an empty string when no document is loaded or the number is out of range.",
+            Description = "Renders a single page (1-based) to self-contained HTML, or an empty string when no document is loaded or the number is out of range. Throws InvalidOperationException for an active stream source; use RenderPageHtmlAsync.",
         },
         new()
         {
@@ -877,7 +901,7 @@ public partial class BitPdfViewerDemo
         {
             Id = "pdf-source",
             Title = "BitPdfSource",
-            Description = "Identifies where a pdf document is loaded from. A source is either a byte buffer already in memory (BitPdfSource.FromBytes), or a URL the document can be fetched from (BitPdfSource.FromUrl).",
+            Description = "Identifies where a pdf document is loaded from. A source is a buffered byte array/URL or an owned seekable stream factory. Store it in a field: the viewer compares source identity by reference.",
             Parameters =
             [
                 new()
@@ -921,6 +945,13 @@ public partial class BitPdfViewerDemo
                     Type = "bool",
                     DefaultValue = "false",
                     Description = "True when this source carries an in-memory byte buffer.",
+                },
+                new()
+                {
+                    Name = "FromStreamFactory",
+                    Type = "static BitPdfSource FromStreamFactory(Func<CancellationToken, Task<Stream>> streamFactory, string? fileName = null)",
+                    DefaultValue = "",
+                    Description = "Opens a fresh owned readable, seekable stream per load, without buffering the full PDF. Captures its initial position as the origin; the remaining stable length must fit Int32. Password retries reuse the stream. Cancellation is signalled on replacement/disposal. For files/server blobs; HTTP Range remains a later contribution.",
                 },
                 new()
                 {

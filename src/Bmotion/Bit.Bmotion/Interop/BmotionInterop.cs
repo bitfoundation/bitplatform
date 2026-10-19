@@ -232,6 +232,13 @@ public sealed class BmotionInterop : IBmotionInterop
         await (await Module()).InvokeVoidAsync("cancelWaapiAnimation", elementId, token, commit);
     }
 
+    /// <summary>Sets the playback rate of the element's compositor animations (1 = realtime, 0 = paused).</summary>
+    public async ValueTask SetWaapiPlaybackRateAsync(string elementId, double rate)
+    {
+        if (!_moduleTask.IsValueCreated) return;
+        await (await Module()).InvokeVoidAsync("setWaapiPlaybackRate", elementId, rate);
+    }
+
     // ── Scroll-driven timelines ───────────────────────────────────────────────
 
     /// <summary>

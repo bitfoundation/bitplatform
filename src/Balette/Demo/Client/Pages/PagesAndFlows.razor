@@ -1,0 +1,167 @@
+﻿@page "/pages"
+@implements IDisposable
+@inject IBaletteService Palette
+@inject DemoState State
+
+<PageTitle>Nested pages and flows - bit Balette</PageTitle>
+
+<h1>Nested pages &amp; flows</h1>
+<p class="page-intro">
+    A palette is more than a list: a command can open a page of further commands, ask for text, collect a selection or
+    ask to be confirmed, and every one of those steps happens inside the same box, with breadcrumbs above it and
+    <kbd>Esc</kbd> or <kbd>Backspace</kbd> to step back. Each button below opens the layout's palette on one of them.
+</p>
+
+<div class="panel">
+    <table>
+        <thead>
+            <tr><th>Flow</th><th>Declared with</th><th>In this app</th><th></th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Static page</td>
+                <td><code>.Children(a, b, c)</code></td>
+                <td><em>Theme</em> - three options, the current one checked</td>
+                <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "preferences.theme")'>Open</button></td>
+            </tr>
+            <tr>
+                <td>Lazy page</td>
+                <td><code>.Children(async (ctx, ct) =&gt; ...)</code></td>
+                <td><em>Assign to…</em> - loads people for 400 ms, with a spinner</td>
+                <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "actions.assign-to")'>Open</button></td>
+            </tr>
+            <tr>
+                <td>Declarative page</td>
+                <td>Nested <code>&lt;BaletteItem&gt;</code></td>
+                <td><em>New…</em> in <em>Quick create</em></td>
+                <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "quick-create.new")'>Open</button></td>
+            </tr>
+            <tr>
+                <td>Ad-hoc page</td>
+                <td><code>BaletteCommandResult.Page(...)</code></td>
+                <td><em>Export…</em> - the handler decides the list, one row disabled</td>
+                <td><button type="button" class="btn" @onclick='() => Palette.ExecuteAsync("actions.export")'>Run</button></td>
+            </tr>
+            <tr>
+                <td>Prompt</td>
+                <td><code>BaletteCommandResult.Prompt(...)</code></td>
+                <td><em>Rename project…</em> - pre-filled with the current name</td>
+                <td><button type="button" class="btn" @onclick='() => Palette.ExecuteAsync("actions.rename-project")'>Run</button></td>
+            </tr>
+            <tr>
+                <td>Multi-select</td>
+                <td><code>.MultiSelect()</code></td>
+                <td><em>Set labels…</em> - <kbd>Enter</kbd> checks, <kbd>Ctrl</kbd> <kbd>Enter</kbd> applies</td>
+                <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "actions.set-labels")'>Open</button></td>
+            </tr>
+            <tr>
+                <td>Confirmation</td>
+                <td><code>.Destructive("message")</code></td>
+                <td><em>Delete project</em> - the first <kbd>Enter</kbd> asks, the second runs</td>
+                <td><button type="button" class="btn" @onclick='() => Palette.OpenAsync("delete project")'>Search</button></td>
+            </tr>
+            <tr>
+                <td>Toast</td>
+                <td><code>BaletteCommandResult.Toast(...)</code></td>
+                <td><em>What's new</em> - a message in the footer, palette kept open</td>
+                <td><button type="button" class="btn" @onclick='() => Palette.ExecuteAsync("help.what-s-new")'>Run</button></td>
+            </tr>
+            <tr>
+                <td>Action panel</td>
+                <td><code>.Actions(...)</code></td>
+                <td>Any row: press <kbd>Tab</kbd>. People rows add their own two actions</td>
+                <td><button type="button" class="btn" @onclick="@(() => Palette.OpenAsync("@ada"))">Search</button></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<p class="muted" role="status">
+    Project: <strong>@State.ProjectName</strong> · Labels: <strong>@(State.Labels.Count == 0 ? "none" : string.Join(", ", State.Labels))</strong>
+    · Last: <strong>@(State.Log.Count == 0 ? "nothing yet" : State.Log[0])</strong>
+</p>
+
+<h2>What a handler returns</h2>
+<p>
+    A handler does its work and then tells the palette what comes next. That is what keeps a multi-step flow in one
+    place: the next step is a return value, not a callback wired up somewhere else.
+</p>
+<table>
+    <thead>
+        <tr><th>Result</th><th>What the palette does</th></tr>
+    </thead>
+    <tbody>
+        <tr><td><code>Close</code></td><td>Closes. The default for <code>Handler(Action)</code> and for navigation.</td></tr>
+        <tr><td><code>KeepOpen</code></td><td>Stays on the current page and re-renders it - the toggles use it.</td></tr>
+        <tr><td><code>Back</code></td><td>Goes back one page - the theme options use it to land on the list again.</td></tr>
+        <tr><td><code>Reset</code></td><td>Clears the query and returns to the root page, still open.</td></tr>
+        <tr><td><code>Page(title, commands)</code></td><td>Pushes a page with these commands; optionally multi-select with its own submit handler.</td></tr>
+        <tr><td><code>Prompt(title, onSubmit)</code></td><td>Turns the input into a text field; Enter calls <code>onSubmit</code> with <code>ctx.PromptValue</code>.</td></tr>
+        <tr><td><code>Toast(message)</code></td><td>Shows a message in the footer, then closes - or stays, with <code>keepOpen: true</code>.</td></tr>
+    </tbody>
+</table>
+
+<h2>A prompt</h2>
+<pre><code>@PromptExample</code></pre>
+
+<h2>A multi-select page</h2>
+<pre><code>@MultiSelectExample</code></pre>
+
+<h2>A lazy page</h2>
+<p>
+    The provider runs each time the page opens, with a context whose <code>Services</code> come from the user's
+    scope - which is how a real application would reach its API client from here.
+</p>
+<pre><code>@LazyExample</code></pre>
+
+<div class="note">
+    <code>OpenAsync(pageCommandId: ...)</code> opens straight inside a registered command's page, and
+    <code>BaletteTrigger</code> takes the same <code>PageCommandId</code>: a "Change theme" button can be a trigger
+    that lands on the theme options rather than on the root list.
+</div>
+
+@code {
+    private const string PromptExample = """
+        BaletteCmd.New("Rename project…")
+            .Shortcut("F2")
+            .Handler(_ => Task.FromResult(BaletteCommandResult.Prompt(
+                "New project name",
+                ctx =>
+                {
+                    state.Rename(ctx.PromptValue!.Trim());
+                    return Task.FromResult(BaletteCommandResult.Toast($"Renamed to {ctx.PromptValue}"));
+                },
+                placeholder: "Project name…",
+                initialValue: state.ProjectName)))
+        """;
+
+    private const string MultiSelectExample = """
+        BaletteCmd.New("Set labels…")
+            .MultiSelect()
+            .ChildrenPlaceholder("Toggle labels, Ctrl+Enter to apply…")
+            .Children(
+                BaletteCmd.New("bug").Id("label:bug"),
+                BaletteCmd.New("enhancement").Id("label:enhancement"))
+            // Runs on Ctrl+Enter, with the checked rows.
+            .Handler(ctx =>
+            {
+                state.SetLabels(ctx.SelectedCommands.Select(c => c.Title));
+                return Task.FromResult(BaletteCommandResult.Toast($"{ctx.SelectedCommands.Count} labels applied"));
+            })
+        """;
+
+    private const string LazyExample = """
+        BaletteCmd.New("Assign to…")
+            .Children(async (ctx, ct) =>
+            {
+                var people = await ctx.GetRequiredService<PeopleClient>().GetAllAsync(ct);
+                return people.Select(p => BaletteCmd.New(p.Name).Subtitle(p.Role).Build()).ToList();
+            }, placeholder: "Pick an assignee…")
+        """;
+
+    protected override void OnInitialized() => State.Changed += Refresh;
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => State.Changed -= Refresh;
+}

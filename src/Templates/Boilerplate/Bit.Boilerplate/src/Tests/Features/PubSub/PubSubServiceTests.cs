@@ -170,6 +170,22 @@ public class PubSubServiceTests
     }
 
     [TestMethod]
+    public void Publish_Persistent_Should_DeliverQueuedMessagesInPublishOrder()
+    {
+        var pubSub = CreatePubSubService();
+        var received = new List<object?>();
+
+        pubSub.Publish(Message, "first", persistent: true);
+        pubSub.Publish(OtherMessage, "other", persistent: true);
+        pubSub.Publish(Message, "second", persistent: true);
+        pubSub.Publish(Message, "third", persistent: true);
+
+        pubSub.Subscribe(Message, payload => { received.Add(payload); return Task.CompletedTask; });
+
+        Assert.AreEqual("first, second, third", string.Join(", ", received));
+    }
+
+    [TestMethod]
     public void Publish_Should_SupportStaticHandlers()
     {
         var pubSub = CreatePubSubService();

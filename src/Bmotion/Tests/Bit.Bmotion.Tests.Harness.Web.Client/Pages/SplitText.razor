@@ -1,0 +1,57 @@
+﻿@page "/splittext"
+
+@* BmotionSplitText: by characters, words and lines; its accessibility shape; a cascade running backwards; and a
+   surrounding BmotionConfig's transition. *@
+
+<HarnessHeader Title="Split text" Ready="Ready" OnLog="BindLog" />
+
+<BmotionSplitText Text="Hi there"
+                  By="BmSplitBy.Chars"
+                  Class="chars"
+                  UnitClass="unit"
+                  Initial="Bm.To(opacity: 0, y: 12)"
+                  Animate="Bm.To(opacity: 1, y: 0)"
+                  Transition="Bm.Tween(0.2)"
+                  Stagger="Bm.Stagger(0.05)"
+                  OnComplete='() => Log("chars:complete")' />
+
+<BmotionSplitText Text="one two three"
+                  By="BmSplitBy.Words"
+                  As="h2"
+                  Class="words"
+                  UnitClass="unit"
+                  Animate="Bm.To(opacity: 1)"
+                  OnComplete='() => Log("words:complete")' />
+
+<BmotionSplitText Text="@("first line\nsecond line")"
+                  By="BmSplitBy.Lines"
+                  Class="lines"
+                  UnitClass="unit"
+                  Animate="Bm.To(opacity: 1)" />
+
+<BmotionSplitText Text="quiet" Class="inaccessible" UnitClass="unit" Accessible="false" Animate="Bm.To(opacity: 1)" />
+
+@* From the last: the first character starts last, so it is the one that finishes last. *@
+<BmotionSplitText Text="abcd"
+                  Class="backwards"
+                  UnitClass="unit"
+                  Initial="Bm.To(opacity: 0)"
+                  Animate="Bm.To(opacity: 1)"
+                  Transition="Bm.Tween(0.2)"
+                  Stagger="Bm.Stagger(0.3, from: BmStaggerFrom.Last)"
+                  OnComplete='() => Log("backwards:complete")' />
+
+<button id="go" @onclick="() => Change(() => _go = true)">go</button>
+<BmotionConfig Transition="Bm.Tween(1.2, BmEase.Linear)">
+    <BmotionSplitText Text="xy"
+                      Class="configured"
+                      UnitClass="unit"
+                      Initial="Bm.To(opacity: 0)"
+                      Animate="_go ? Bm.To(opacity: 1) : null"
+                      Stagger="Bm.Stagger(0.01)"
+                      OnComplete='() => Log("configured:complete")' />
+</BmotionConfig>
+
+@code {
+    private bool _go;
+}

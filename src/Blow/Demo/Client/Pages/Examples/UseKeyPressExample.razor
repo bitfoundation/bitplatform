@@ -1,0 +1,54 @@
+﻿@page "/examples/use-key-press"
+
+<PageTitle>Use Key Press - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Use Key Press"
+                 Summary="Click the canvas area to focus it, then use keyboard shortcuts: 'a' adds a node, Delete removes the selection. The last key pressed is shown.">
+    <Toolbar>
+        <span class="text-muted">last key: <strong>@_lastKey</strong></span>
+    </Toolbar>
+    <ChildContent>
+        <div class="keypress" tabindex="0" @onkeydown="OnKeyDown">
+            @* The page handles Delete itself, so the canvas's own binding for it is switched off -
+               left on, both would act on the same key press. *@
+            <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DeleteKeyEnabled="false">
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </BlowCanvas>
+        </div>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .keypress { height:100%; outline:none; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _lastKey = "-";
+    private int _id = 1;
+
+    protected override void OnInitialized()
+    {
+        _nodes = [ new BlowNode { Id = "1", Label = "Press 'a' to add a node", Position = new(160, 120), Width = 200 } ];
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        _lastKey = e.Key;
+        if (e.Key is "a" or "A")
+        {
+            _id++;
+            _nodes.Add(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 420), Random.Shared.Next(40, 280)) });
+            _flow?.Refresh(remeasure: true);
+        }
+        else if (e.Key is "Delete" or "Backspace")
+        {
+            var selected = _nodes.Where(n => n.Selected).ToList();
+            if (_flow is not null && selected.Count > 0)
+                await _flow.DeleteElementsAsync(selected);
+        }
+    }
+}

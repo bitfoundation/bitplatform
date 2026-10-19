@@ -281,7 +281,7 @@ public sealed class BitPdfHtmlRenderer
         {
             ops = new BitPdfContentParser(_page.GetContentBytes()).Parse();
         }
-        catch (Exception ex)
+        catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
         {
             ops = new List<BitPdfOperation>();
             _html.Append($"<!-- content parse error: {Escape(ex.Message)} -->");
@@ -362,7 +362,7 @@ public sealed class BitPdfHtmlRenderer
             {
                 Execute(op);
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 // A single malformed operator must not abort the whole page;
                 // skip it and continue with the rest of the content stream.
@@ -1142,7 +1142,7 @@ public sealed class BitPdfHtmlRenderer
             byte[] content = BitPdfStreamDecoder.Decode(stream);
             RunOps(new BitPdfContentParser(content).Parse());
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             // Ignore malformed form content.
         }
@@ -1210,7 +1210,7 @@ public sealed class BitPdfHtmlRenderer
                 DrawAnnotationAppearance(annot);
                 DrawLinkOverlay(annot);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
             {
                 _html.Append($"<!-- annotation error: {Escape(ex.Message)} -->");
                 // The failed appearance may have left graphics state behind; put the
@@ -1665,7 +1665,7 @@ public sealed class BitPdfHtmlRenderer
             byte[] content = BitPdfStreamDecoder.Decode(proc);
             RunOps(new BitPdfContentParser(content).Parse());
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             // Ignore malformed glyph procedures.
         }
@@ -2474,7 +2474,7 @@ public sealed class BitPdfHtmlRenderer
             byte[] content = BitPdfStreamDecoder.Decode(patStream);
             RunOps(new BitPdfContentParser(content).Parse());
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             // Ignore malformed pattern content.
         }

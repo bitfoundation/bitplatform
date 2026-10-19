@@ -1,0 +1,103 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <IsTrimmable>true</IsTrimmable>
+        <PackageTags>$(PackageTags);Blazor;State management;Redux;DevTools</PackageTags>
+        <Description>Blazor integration for Bit.Blex: the BlexComponentBase base class, &lt;BlexProvider&gt;, browser-storage persistence, and the Redux DevTools time-travel bridge.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0,9.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0,10.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Blex\Bit.Blex.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System" />
+        <Using Include="System.Linq" />
+        <Using Include="System.Threading" />
+        <Using Include="System.Threading.Tasks" />
+        <Using Include="System.Collections.Generic" />
+        <Using Include="Microsoft.AspNetCore.Components" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="tsconfig.json" />
+        <None Include="tsconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TypeScriptFiles Include="Scripts\**\*.ts" />
+    </ItemGroup>
+
+    <!-- Restores npm packages then compiles the TypeScript into wwwroot. Both sub-targets are
+         incremental via their Inputs/Outputs, so this is a no-op when nothing changed. -->
+    <Target Name="BuildBlexJavaScript" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript" />
+
+    <!-- The outputs (wwwroot/bit-blex-*.js) are generated, git-ignored files. On a clean build they do
+         not exist when the default "wwwroot/**" Content glob is evaluated, so the static web asset
+         discovery in ResolveProjectStaticWebAssets would miss them and consumers get a 404 for
+         _content/Bit.Blex.Blazor/bit-blex-storage.js. Hooking BeforeTargets="ResolveProjectStaticWebAssets"
+         guarantees the files are generated first and then explicitly added to @(Content); the
+         Remove-before-Include keeps them to a single Content entry each. -->
+    <Target Name="IncludeBlexJavaScriptAsStaticWebAsset"
+            BeforeTargets="ResolveProjectStaticWebAssets"
+            DependsOnTargets="BuildBlexJavaScriptOnce">
+        <ItemGroup>
+            <Content Remove="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js" />
+            <Content Include="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Runs BuildBlexJavaScript through the MSBuild task with TargetFramework removed, so every
+         per-TFM build asks for the same project configuration and MSBuild runs tsc/esbuild once:
+         a ProjectReference builds this project's inner builds directly (one per referencing target
+         framework, in parallel) without the outer build, so calling the target from each inner
+         build would race on the same wwwroot files ("EBUSY: resource busy or locked"). -->
+    <Target Name="BuildBlexJavaScriptOnce">
+        <MSBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="BuildBlexJavaScript"
+                 RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
+    </Target>
+
+    <!-- In a multi-targeted build, produce the outputs exactly once in the outer (cross-targeting)
+         build, before the per-TFM inner builds are dispatched. -->
+    <Target Name="BuildBlexJavaScriptOnCrossTargeting"
+            BeforeTargets="DispatchToInnerBuilds"
+            Condition="'$(IsCrossTargetingBuild)' == 'true'"
+            DependsOnTargets="BuildBlexJavaScript" />
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <!-- Release minifies into the same files Debug writes unminified, so a per-configuration stamp in
+         obj/ makes switching configurations invalidate the up-to-date check; the other configuration's
+         stamp is deleted so switching back rebuilds too. Each file is minified to a temp file and moved
+         into place, so an interrupted run cannot leave a half-written output that looks up to date. -->
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json" Outputs="wwwroot/bit-blex-storage.js;wwwroot/bit-blex-devtools.js;obj/bit-blex-$(Configuration).stamp">
+        <ItemGroup>
+            <_BlexStaleJsStamps Include="obj\bit-blex-*.stamp" Exclude="obj\bit-blex-$(Configuration).stamp" />
+            <_BlexJsOutputs Include="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js" />
+        </ItemGroup>
+        <Delete Files="@(_BlexStaleJsStamps)" />
+        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild %(_BlexJsOutputs.Identity) --minify --format=esm --outfile=%(_BlexJsOutputs.RelativeDir)%(_BlexJsOutputs.Filename).min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="@(_BlexJsOutputs->'%(RelativeDir)%(Filename).min.js')" DestinationFiles="@(_BlexJsOutputs)" OverwriteReadOnlyFiles="true" />
+        <MakeDir Directories="obj" />
+        <Touch Files="obj/bit-blex-$(Configuration).stamp" AlwaysCreate="true" />
+    </Target>
+
+</Project>

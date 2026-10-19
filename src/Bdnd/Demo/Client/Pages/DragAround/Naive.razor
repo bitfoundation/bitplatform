@@ -1,0 +1,64 @@
+﻿@page "/drag-around/naive"
+@using System.Globalization
+
+<PageTitle>Drag Around · Naive - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Drag Around - Naive</h3>
+    <p class="text-muted">
+        The whole container is a <code>BdndDropTarget</code>. Each box remembers its position;
+        on drop the new position is computed from
+        <code>Monitor.GetDifferenceFromInitialOffset()</code>. This uses the native HTML5
+        drag preview (note the "ghost" while dragging).
+    </p>
+</div>
+
+<DemoCode />
+
+<BdndProvider>
+    <BdndDropTarget TItem="DragBox" Accept="@ItemTypes.DragAroundBox"
+                    style="display:contents" OnDrop="HandleDrop">
+        <div class="drag-around-container">
+            @foreach (var box in _boxes)
+            {
+                <BdndDraggable TItem="DragBox" Type="@ItemTypes.DragAroundBox" Item="box"
+                               Context="ds"
+                               class="drag-around-box"
+                               style="@($"left:{Px(box.Left)};top:{Px(box.Top)};opacity:{(box == _draggingBox ? "0.5" : "1")};")"
+                               OnBegin="@(_ => _draggingBox = box)"
+                               OnEnd="@(_ => _draggingBox = null)">
+                    @box.Title
+                </BdndDraggable>
+            }
+        </div>
+    </BdndDropTarget>
+</BdndProvider>
+
+@code {
+    public class DragBox
+    {
+        public required string Title { get; init; }
+        public double Left { get; set; }
+        public double Top { get; set; }
+    }
+
+    private readonly List<DragBox> _boxes =
+    [
+        new() { Title = "Drag me around", Left = 40, Top = 40 },
+        new() { Title = "Drag me too", Left = 200, Top = 160 },
+    ];
+
+    private DragBox? _draggingBox;
+
+    private void HandleDrop(BdndDropEventArgs<DragBox> e)
+    {
+        var delta = e.Monitor.GetDifferenceFromInitialOffset();
+        if (e.Item is null || delta is null) return;
+        e.Item.Left = Math.Round(e.Item.Left + delta.Value.X);
+        e.Item.Top = Math.Round(e.Item.Top + delta.Value.Y);
+    }
+
+    // Format with the invariant culture so the decimal separator is always '.'
+    // (a comma would produce invalid CSS like left:282,5px).
+    private static string Px(double v) => v.ToString("0.###", CultureInfo.InvariantCulture) + "px";
+}

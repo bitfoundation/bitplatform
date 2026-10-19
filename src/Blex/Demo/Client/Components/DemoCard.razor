@@ -1,0 +1,54 @@
+﻿<div class="demo">
+    <div class="demo__head">
+        <div>
+            <span class="demo__badge">Live demo</span>
+            <span class="demo__title">@Title</span>
+        </div>
+        @if (!string.IsNullOrEmpty(Source))
+        {
+            <button type="button" class="demo__toggle" @onclick="() => _showSource = !_showSource">
+                @(_showSource ? "Hide code" : "Show code")
+            </button>
+        }
+    </div>
+
+    @if (!string.IsNullOrEmpty(Description))
+    {
+        <p class="demo__desc">@Description</p>
+    }
+
+    <div class="demo__stage">
+        @ChildContent
+    </div>
+
+    @if (_showSource && !string.IsNullOrEmpty(Source))
+    {
+        <div class="demo__source">
+            <CodeBlock Code="@Source" Language="@SourceLanguage" ShowChrome="false" Compact="true" />
+        </div>
+    }
+</div>
+
+@code {
+    private bool _showSource;
+
+    /// <summary>Short name for the demo.</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>One-line explanation of what to try.</summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>The interactive content.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Optional source listing revealed by the "Show code" toggle.</summary>
+    [Parameter] public string? Source { get; set; }
+
+    /// <summary>Language of <see cref="Source"/>.</summary>
+    [Parameter] public string SourceLanguage { get; set; } = "csharp";
+
+    /// <summary>Whether the source starts expanded.</summary>
+    [Parameter] public bool SourceExpanded { get; set; }
+
+    protected override void OnInitialized() => _showSource = SourceExpanded;
+}

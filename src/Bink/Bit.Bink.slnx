@@ -1,0 +1,20 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Bit.Bink.Demo/">
+    <Project Path="Bit.Bink.Demo/Client/Bit.Bink.Demo.Client.csproj" />
+    <Project Path="Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
+    <Project Path="Tests/Bit.Bink.Tests.Mcp/Bit.Bink.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.Bink.Benchmarks/Bit.Bink.Benchmarks.csproj" />
+  </Folder>
+  <Project Path="Bit.Bink/Bit.Bink.csproj" />
+</Solution>

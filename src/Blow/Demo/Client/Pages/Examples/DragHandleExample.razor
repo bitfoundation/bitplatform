@@ -1,0 +1,50 @@
+﻿@page "/examples/drag-handle"
+
+<PageTitle>Drag Handle - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Drag Handle"
+                 Summary="The node only moves when you drag the small grip area. Dragging the body does nothing, so the body can host interactive content.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <NodeTemplate Context="node">
+            @if (node.Type == "draggable")
+            {
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="dh-node">
+                    <BlowDragHandle Class="dh-node__grip">⋮⋮</BlowDragHandle>
+                    <div class="dh-node__body">@node.Label</div>
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            }
+            else
+            {
+                <BlowDefaultNode Node="node" />
+            }
+        </NodeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .dh-node { display:flex; align-items:stretch; }
+    .dh-node__grip { display:flex; align-items:center; padding:0 6px; cursor:grab; color:#888; border-right:1px solid #eee; user-select:none; }
+    .dh-node__grip:active { cursor:grabbing; }
+    .dh-node__body { padding:8px 12px; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "draggable", Label = "Drag me by the grip", Position = new(120, 60), UseCustomDragHandle = true },
+            new BlowNode { Id = "2", Type = "draggable", Label = "Me too", Position = new(160, 220), UseCustomDragHandle = true },
+        ];
+        _edges = [ new BlowEdge { Id = "e1-2", Source = "1", Target = "2" } ];
+    }
+}

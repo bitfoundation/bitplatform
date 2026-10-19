@@ -1,0 +1,99 @@
+﻿@*
+    A file drop target that also works as a button and a paste target. Keyboard accessible: it is a real button, so
+    Enter and Space open the file picker, and it announces its state to screen readers.
+*@
+
+<div class="bmg-dropzone @(_dragOver ? "bmg-dropzone-active" : null) @(Class)"
+     @ondragenter="OnDragEnter"
+     @ondragenter:preventDefault="true"
+     @ondragover="OnDragOver"
+     @ondragover:preventDefault="true"
+     @ondragleave="OnDragLeave"
+     @ondrop="OnDrop">
+    @* The drop must not be cancelled: the transparent file input covering the zone receives the dropped files
+       through the browser's default action, and reports them through its change event. *@
+
+    <InputFile OnChange="OnChange"
+               accept="@Accept"
+               multiple="@Multiple"
+               class="bmg-dropzone-input"
+               id="@_inputId"
+               aria-label="@(Label ?? Strings.OpenImage)" />
+
+    <label for="@_inputId" class="bmg-dropzone-label">
+        @if (ChildContent is not null)
+        {
+            @ChildContent
+        }
+        else
+        {
+            <span class="bmg-dropzone-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="16" rx="2" />
+                    <circle cx="8.5" cy="9.5" r="1.5" />
+                    <path d="m21 15-5-5L5 20" />
+                </svg>
+            </span>
+            <span class="bmg-dropzone-text">@(Label ?? Strings.DropImageHere)</span>
+        }
+    </label>
+</div>
+
+@code {
+    private readonly string _inputId = $"bmg-file-{Guid.NewGuid():N}";
+    private bool _dragOver;
+    private int _dragDepth;
+
+    /// <summary>Localised strings.</summary>
+    [Parameter] public BmageEditorStrings Strings { get; set; } = BmageEditorStrings.Default;
+
+    /// <summary>The <c>accept</c> attribute for the file input.</summary>
+    [Parameter] public string Accept { get; set; } = "image/*";
+
+    /// <summary>Allow selecting several files at once.</summary>
+    [Parameter] public bool Multiple { get; set; }
+
+    /// <summary>Overrides the prompt text.</summary>
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Extra CSS classes.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Replaces the default icon and text.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Raised with the selected or dropped files.</summary>
+    [Parameter] public EventCallback<IReadOnlyList<IBrowserFile>> OnFilesSelected { get; set; }
+
+    /// <summary>Maximum number of files accepted at once.</summary>
+    [Parameter] public int MaxFiles { get; set; } = 100;
+
+    private void OnDragEnter()
+    {
+        // Drag events fire for child elements too; count depth so leaving a child does not clear the highlight.
+        _dragDepth++;
+        _dragOver = true;
+    }
+
+    private void OnDragOver() => _dragOver = true;
+
+    private void OnDragLeave()
+    {
+        _dragDepth = Math.Max(0, _dragDepth - 1);
+        if (_dragDepth == 0) _dragOver = false;
+    }
+
+    private void OnDrop()
+    {
+        _dragOver = false;
+        _dragDepth = 0;
+    }
+
+    private async Task OnChange(InputFileChangeEventArgs e)
+    {
+        _dragOver = false;
+        _dragDepth = 0;
+        var files = e.FileCount == 1 ? [e.File] : e.GetMultipleFiles(MaxFiles);
+        if (files.Count > 0) await OnFilesSelected.InvokeAsync(files);
+    }
+}

@@ -56,6 +56,7 @@ public partial class IdentityController
             }
 
             var isNewUser = user is null;
+            var wasConfirmed = user is not null && await userConfirmation.IsConfirmedAsync(userManager, user);
 
             if (user is null)
             {
@@ -112,6 +113,11 @@ public partial class IdentityController
 
                     throw new ResourceValidationException(addLoginResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
                 }
+            }
+
+            if (isNewUser is false && wasConfirmed is false)
+            {
+                await SetUnconfirmedAccountPassword(user, password: null, cancellationToken);
             }
 
             // Confirmation is only as good as the provider's own verification of the identifier

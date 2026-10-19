@@ -104,3 +104,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Observers.unregisterIntersection Observers.unregisterResize

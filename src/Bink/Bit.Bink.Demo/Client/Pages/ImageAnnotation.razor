@@ -1,0 +1,258 @@
+﻿@page "/image-annotation"
+@using System.Numerics
+
+<PageTitle>Image annotation - bit Bink</PageTitle>
+
+<h1>Image annotation</h1>
+<p class="page-intro">
+    Drop in a screenshot or photo, mark it up, and export a flattened image or an SVG that keeps the annotations
+    editable. The picture is an element in the document like any other, so annotations sit above it, move with the
+    selection tool and survive a round trip through the file format.
+</p>
+
+<div class="panel">
+    <div class="toolbar" role="toolbar" aria-label="Annotation tools">
+        <label class="btn">
+            Open image
+            <InputFile OnChange="OnFileSelected" accept="image/*" style="display:none" />
+        </label>
+        <button type="button" class="btn" @onclick="LoadSampleAsync">Use a sample</button>
+
+        <div class="toolbar-separator"></div>
+
+        <div class="toolbar-group" role="group" aria-label="Tool">
+            @foreach ((string id, string label) in Tools)
+            {
+                <button type="button" class="btn @(_toolId == id ? "active" : null)"
+                        aria-pressed="@(_toolId == id ? "true" : "false")"
+                        @onclick="() => SelectTool(id)">@label</button>
+            }
+        </div>
+
+        <div class="toolbar-separator"></div>
+
+        <ColorSwatches Colors="Palette" Value="@_color" ValueChanged="SetColor" />
+
+        <div class="toolbar-spacer"></div>
+
+        <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanUndo)" @onclick="() => _canvas?.Undo()">Undo</button>
+        <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanRedo)" @onclick="() => _canvas?.Redo()">Redo</button>
+    </div>
+
+    <div class="toolbar" style="border-top:none">
+        <button type="button" class="btn danger" disabled="@(_canvas is null || _canvas.Selection.IsEmpty)"
+                @onclick="() => _canvas?.DeleteSelection()">Delete selected</button>
+        <button type="button" class="btn danger" disabled="@(AnnotationCount == 0)" @onclick="ClearAnnotations">Clear annotations</button>
+        <span class="field"><strong>@AnnotationCount</strong>&nbsp;annotations</span>
+        <div class="toolbar-spacer"></div>
+        <button type="button" class="btn" disabled="@_document.IsEmpty" @onclick="ExportPngAsync">Export PNG</button>
+        <button type="button" class="btn" disabled="@_document.IsEmpty" @onclick="ExportSvgAsync">Export SVG</button>
+    </div>
+
+    <div class="canvas-host">
+        <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()"
+                   Document="_document"
+                   Height="560px"
+                   Tool="_tool"
+                   Brush="_brush"
+                   ShapeStyle="_shapeStyle"
+                   ActiveLayerId="_annotationLayer"
+                   EnableTouchGestures="true"
+                   AriaLabel="Image annotation canvas"
+                   DocumentChanged="() => StateHasChanged()"
+                   SelectionChanged="() => StateHasChanged()"
+                   Ready="OnReadyAsync" />
+    </div>
+
+    <CanvasStatus Canvas="_canvas">
+        @if (_imageInfo is not null)
+        {
+            <span>@_imageInfo</span>
+        }
+    </CanvasStatus>
+</div>
+
+<div class="note">
+    The image sits on its own locked layer so annotating never moves it by accident. Exported SVG references the
+    image and keeps every arrow, box and note as vector geometry; exported PNG rasterizes the whole thing at twice
+    the document resolution.
+</div>
+
+@if (_error is not null)
+{
+    <p role="alert" style="color:var(--danger)">@_error</p>
+}
+
+@code {
+    private BinkCanvas? _canvas;
+    private readonly BinkDocument _document = new(new BinkDocumentSettings { Width = 900, Height = 560, Background = BinkColor.Parse("#f8f9fb") });
+    private Guid _imageLayer;
+    private Guid _annotationLayer;
+    private string _toolId = "arrow";
+    private string _color = "#dc2626";
+    private IBinkTool _tool = new BinkShapeTool(BinkShapeKind.Arrow);
+    private BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#dc2626") };
+    private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#dc2626"), StrokeWidth = 3f };
+    private string? _imageInfo;
+    private string? _error;
+
+    private static readonly (string Id, string Label)[] Tools =
+    [
+        ("select", "Select"),
+        ("draw", "Pen"),
+        ("arrow", "Arrow"),
+        ("rect", "Box"),
+        ("ellipse", "Circle"),
+        ("highlight", "Highlight"),
+        ("text", "Text"),
+    ];
+
+    private static readonly string[] Palette = ["#dc2626", "#ea580c", "#16a34a", "#2563eb", "#111827"];
+
+    protected override void OnInitialized()
+    {
+        _document.UpdateLayer(_document.Layers[0].Id, p => p with { Name = "Image" });
+        _imageLayer = _document.Layers[0].Id;
+        _annotationLayer = _document.AddLayer("Annotations").Id;
+    }
+
+    private int AnnotationCount => _document.TryGetLayer(_annotationLayer, out BinkLayer? layer) ? layer.Elements.Count : 0;
+
+    private async Task OnReadyAsync()
+    {
+        if (!_document.IsEmpty) return;
+        await LoadSampleAsync();
+        // The picture the page opens with is the starting point, not an edit: undo should not take it away.
+        _canvas?.History.Clear();
+        StateHasChanged();
+    }
+
+    private void ClearAnnotations()
+    {
+        if (!_document.TryGetLayer(_annotationLayer, out BinkLayer? layer)) return;
+        _document.RemoveElements(layer.Elements.Select(e => e.Id).ToArray());
+        _canvas?.Refresh();
+    }
+
+    private void SelectTool(string id)
+    {
+        _toolId = id;
+        BinkColor color = BinkColor.Parse(_color);
+        _shapeStyle = new BinkShapeStyle { StrokeColor = color, StrokeWidth = 3f };
+        _brush = new BinkPenBrush { Width = 4f, Color = color };
+        _tool = id switch
+        {
+            "select" => new BinkSelectTool(),
+            "draw" => new BinkDrawTool(),
+            "rect" => new BinkShapeTool(BinkShapeKind.Rectangle),
+            "ellipse" => new BinkShapeTool(BinkShapeKind.Ellipse),
+            "highlight" => new BinkShapeTool(BinkShapeKind.Highlight),
+            "text" => new BinkTextTool { Style = BinkTextStyle.Default with { FontSize = 18f, Color = color } },
+            _ => new BinkShapeTool(BinkShapeKind.Arrow),
+        };
+    }
+
+    private void SetColor(string color)
+    {
+        _color = color;
+        SelectTool(_toolId);
+    }
+
+    private async Task OnFileSelected(InputFileChangeEventArgs args)
+    {
+        _error = null;
+        IBrowserFile file = args.File;
+        const long maxBytes = 12 * 1024 * 1024;
+        if (file.Size > maxBytes)
+        {
+            _error = $"That image is {file.Size / 1024 / 1024} MB. Please choose one under 12 MB.";
+            return;
+        }
+
+        try
+        {
+            using var buffer = new MemoryStream();
+            await using (Stream stream = file.OpenReadStream(maxBytes))
+            {
+                await stream.CopyToAsync(buffer);
+            }
+
+            string mediaType = string.IsNullOrWhiteSpace(file.ContentType) ? "image/png" : file.ContentType;
+            var source = BinkImageSource.FromBytes(buffer.ToArray(), mediaType, 0, 0);
+            await PlaceImageAsync(source, file.Name);
+        }
+        catch (Exception ex) when (ex is IOException or ArgumentException or InvalidOperationException)
+        {
+            _error = "That image could not be loaded: " + ex.Message;
+        }
+    }
+
+    private async Task LoadSampleAsync()
+    {
+        // A generated sample keeps the demo self-contained and shows that any PNG works.
+        byte[] png = CreateSampleImage(640, 400);
+        await PlaceImageAsync(BinkImageSource.FromBytes(png, "image/png", 640, 400), "sample.png");
+    }
+
+    private async Task PlaceImageAsync(BinkImageSource source, string name)
+    {
+        if (_canvas is null) return;
+
+        // The browser decodes the picture before the history group opens. A group left open across that round
+        // trip would disable undo until the decode finished, and a stroke drawn meanwhile would be folded into
+        // the "Open image" step.
+        BinkImageSource ready = await _canvas.LoadImageAsync(source);
+
+        // Swapping the picture is several edits - remove the old one, add, centre, lock - but to the person using
+        // it it is one action, so it is one undo step.
+        BinkImageElement placed = BinkImageElement.AtNaturalSize(ready, Vector2.Zero, maxWidth: _document.Settings.Width - 40);
+        BinkRect page = _document.Settings.PageRect;
+        placed = placed with
+        {
+            Rect = placed.Rect.Offset(page.Center - placed.Rect.Center),
+            Description = "Annotated image: " + name,
+        };
+        using (_canvas.History.BeginGroup("Open image"))
+        {
+            var existing = _document.Layers.SelectMany(l => l.Elements).OfType<BinkImageElement>().Select(e => e.Id).ToList();
+            if (existing.Count > 0) _document.RemoveElements(existing);
+
+            // Unlock to place the picture, then lock the layer again so annotating cannot move it.
+            _document.UpdateLayer(_imageLayer, p => p with { IsLocked = false });
+            _document.AddElement(placed, _imageLayer);
+            _document.UpdateLayer(_imageLayer, p => p with { IsLocked = true });
+        }
+
+        _imageInfo = $"{name}: {placed.Source.Width} by {placed.Source.Height} pixels";
+        _canvas.Announce("Image added.");
+        _canvas.Refresh();
+    }
+
+    private static byte[] CreateSampleImage(int width, int height)
+    {
+        byte[] rgba = new byte[width * height * 4];
+        for (int y = 0; y < height; y++)
+        {
+            for (int x = 0; x < width; x++)
+            {
+                // A soft gradient with a grid, standing in for a screenshot.
+                byte r = (byte)(210 - y * 60 / height);
+                byte g = (byte)(222 - y * 40 / height);
+                byte b = (byte)(240 - x * 30 / width);
+                bool grid = x % 64 == 0 || y % 64 == 0;
+                int o = (y * width + x) * 4;
+                rgba[o] = grid ? (byte)(r - 30) : r;
+                rgba[o + 1] = grid ? (byte)(g - 30) : g;
+                rgba[o + 2] = grid ? (byte)(b - 30) : b;
+                rgba[o + 3] = 255;
+            }
+        }
+        return BinkPngCodec.Encode(rgba, width, height);
+    }
+
+    private Task ExportPngAsync()
+        => _canvas?.SavePngAsync("annotated.png", new BinkPngExportOptions { Region = BinkExportRegion.Content, Padding = 0f, Scale = 2f }) ?? Task.CompletedTask;
+
+    private Task ExportSvgAsync()
+        => _canvas?.SaveSvgAsync("annotated.svg", new BinkSvgExportOptions { Region = BinkExportRegion.Content, Padding = 0f, IncludeElementDescriptions = true }) ?? Task.CompletedTask;
+}

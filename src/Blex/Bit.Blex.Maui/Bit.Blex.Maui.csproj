@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <IsTrimmable>true</IsTrimmable>
+        <PackageTags>$(PackageTags);MAUI;State management</PackageTags>
+        <Description>.NET MAUI integration for Bit.Blex: Preferences-backed persistence, automatic startup hydration, and XAML-bindable stores for native (non-Blazor) MAUI apps.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Plain-TFM references to the MAUI NuGet packages: their neutral net8.0+ builds are enough
+             to compile against (MauiAppBuilder, IMauiInitializeService, IPreferences), and the
+             consuming app's platform TFM (net8.0-android, net8.0-ios, ...) resolves the real platform
+             implementations at runtime. This keeps the repo buildable without MAUI workloads. -->
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Maui.Core" Version="[8.0.100,9.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Maui.Essentials" Version="[8.0.100,9.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Maui.Core" Version="[9.0.0,10.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Maui.Essentials" Version="[9.0.0,10.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Maui.Core" Version="[10.0.0,11.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Maui.Essentials" Version="[10.0.0,11.0.0)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Blex\Bit.Blex.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System" />
+        <Using Include="System.Linq" />
+        <Using Include="System.Threading" />
+        <Using Include="System.Threading.Tasks" />
+        <Using Include="System.Collections.Generic" />
+    </ItemGroup>
+
+</Project>

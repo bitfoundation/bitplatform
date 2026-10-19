@@ -1,0 +1,91 @@
+﻿@page "/examples/zindex-mode"
+
+<PageTitle>Z-Index Mode - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Z-Index Mode"
+                 Summary="How much of the stacking order the canvas manages. Auto lifts the selection and keeps a child above the group it sits in; Basic lifts the selection only; Manual leaves everything to the ZIndex you set yourself. The child node is deliberately listed before its group, so only Auto draws it on top.">
+    <Toolbar>
+        @foreach (var mode in Enum.GetValues<BlowZIndexMode>())
+        {
+            <button class="btn btn-sm @(mode == _mode ? "btn-primary" : "btn-outline-secondary")"
+                    @onclick="@(() => _mode = mode)">
+                @mode
+            </button>
+        }
+        <span class="zi-sep"></span>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="Swap">Swap explicit z-index</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" ZIndexMode="_mode" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .zi-sep { display: inline-block; width: 1rem; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowZIndexMode _mode = BlowZIndexMode.Auto;
+    private BlowNode _red = default!;
+    private BlowNode _blue = default!;
+
+    protected override void OnInitialized()
+    {
+        // A child listed before its parent: in Auto mode the canvas reorders so the group
+        // container is drawn behind it; in the other modes the list order stands.
+        var child = new BlowNode
+        {
+            Id = "child",
+            Label = "Child",
+            ParentId = "group",
+            Position = new(30, 40),
+            Width = 120,
+            Height = 50,
+        };
+        var group = new BlowNode
+        {
+            Id = "group",
+            Type = "group",
+            Label = "Group",
+            Position = new(40, 40),
+            Width = 260,
+            Height = 140,
+        };
+
+        // Two overlapping nodes with explicit stacking, which every mode honours.
+        _red = new BlowNode
+        {
+            Id = "red", Position = new(360, 60),
+            Width = 140, Height = 90, ZIndex = 1,
+            Style = "background:#fee2e2;border-color:#ef4444;",
+        };
+        _blue = new BlowNode
+        {
+            Id = "blue", Position = new(430, 110),
+            Width = 140, Height = 90, ZIndex = 2,
+            Style = "background:#dbeafe;border-color:#3b82f6;",
+        };
+        Relabel();
+
+        _nodes = [child, group, _red, _blue];
+        _edges = [];
+    }
+
+    private void Swap()
+    {
+        (_red.ZIndex, _blue.ZIndex) = (_blue.ZIndex, _red.ZIndex);
+        Relabel();
+    }
+
+    // The labels state the z-index each node actually has, so they have to follow a swap.
+    private void Relabel()
+    {
+        _red.Label = $"Red (z={_red.ZIndex})";
+        _blue.Label = $"Blue (z={_blue.ZIndex})";
+    }
+}

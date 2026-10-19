@@ -1,0 +1,103 @@
+﻿@page "/gestures"
+
+@* Hover, tap (pointer and keyboard), focus and pan: the gesture overlays, their revert, and their callbacks. Every
+   element announces "armed:<name>" from OnAnimationStart, which the library raises only once the element's
+   listeners are attached - so a test never hovers an element that can't hear it yet. *@
+
+<HarnessHeader Title="Gestures" Ready="Ready" OnLog="BindLog" />
+
+<section class="row">
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileHover="Bm.To(scale: 1.5)"
+             Transition="Bm.Tween(0.15)"
+             OnAnimationStart='_ => Log("armed:hover")'
+             OnHoverStart='() => Log("hover-start")'
+             OnHoverEnd='() => Log("hover-end")'>
+        <div id="hover" class="box"></div>
+    </Bmotion>
+
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileTap="Bm.To(scale: 0.5)"
+             Transition="Bm.Tween(0.1)"
+             OnAnimationStart='_ => Log("armed:tap")'
+             OnTapStart='() => Log("tap-start")'
+             OnTap='() => Log("tap")'
+             OnTapCancel='() => Log("tap-cancel")'>
+        <div id="tap" class="box" tabindex="0"></div>
+    </Bmotion>
+
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileFocus='Bm.To(scale: 1.2, backgroundColor: "rgb(0, 128, 0)")'
+             Transition="Bm.Tween(0.1)"
+             OnAnimationStart='_ => Log("armed:focus")'
+             OnFocusStart='() => Log("focus-start")'
+             OnFocusEnd='() => Log("focus-end")'>
+        <button id="focus" class="box">focus</button>
+    </Bmotion>
+
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             OnAnimationStart='_ => Log("armed:pan")'
+             OnPanStart='() => Log("pan-start")'
+             OnPan="OnPan"
+             OnPanEnd='() => Log("pan-end")'>
+        <div id="pan" class="box" style="touch-action: none"></div>
+    </Bmotion>
+    <Readout @ref="_panOffset" Id="pan-offset" />
+</section>
+
+<h2>Propagation</h2>
+<section class="row">
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileTap="Bm.To(scale: 0.9)"
+             OnAnimationStart='_ => Log("armed:outer")'
+             OnTapStart='() => Log("outer-tap-start")'>
+        <div id="outer" style="width: 200px; height: 100px; background: #ccc; padding: 10px">
+            <Bmotion Animate="Bm.To(opacity: 1)"
+                     OnAnimationStart='_ => Log("armed:inner-isolated")'
+                     WhileTap="Bm.To(scale: 0.8)"
+                     GesturePropagation="false"
+                     OnTapStart='() => Log("inner-isolated-tap-start")'>
+                <div id="inner-isolated" class="small"></div>
+            </Bmotion>
+            <Bmotion Animate="Bm.To(opacity: 1)"
+                     OnAnimationStart='_ => Log("armed:inner-bubbling")'
+                     WhileTap="Bm.To(scale: 0.8)"
+                     OnTapStart='() => Log("inner-bubbling-tap-start")'>
+                <div id="inner-bubbling" class="small" style="margin-top: 10px"></div>
+            </Bmotion>
+        </div>
+    </Bmotion>
+</section>
+
+<h2>Revert</h2>
+<section class="row">
+    @* Hovering out must return to the resting target without replaying it: a keyframe Animate must not restart
+       from its first frame, and the completion of the enter must still be reported. *@
+    <Bmotion Animate="Bm.To(opacity: [0, 1])"
+             WhileHover="Bm.To(scale: 1.3)"
+             Transition="Bm.Tween(0.2)"
+             OnAnimationStart='_ => Log("armed:revert-keyframes")'
+             OnAnimationComplete='_ => Log("revert-keyframes:complete")'>
+        <div id="revert-keyframes" class="box"></div>
+    </Bmotion>
+
+    @* Gestures can be turned on after the first render. *@
+    <button id="enable-hover" @onclick="() => Change(() => _lateHover = true)">enable hover</button>
+    <Bmotion Animate="Bm.To(opacity: 1)"
+             WhileHover="_lateHover ? Bm.To(scale: 1.4) : null"
+             Transition="Bm.Tween(0.1)"
+             OnAnimationStart='_ => Log("armed:late")'>
+        <div id="late" class="box"></div>
+    </Bmotion>
+</section>
+
+@code {
+    private bool _lateHover;
+    private Readout _panOffset = default!;
+
+    private void OnPan(BmPanInfo info)
+    {
+        Log("pan");
+        _panOffset.Set($"{Math.Round(info.Offset.X)},{Math.Round(info.Offset.Y)}");
+    }
+}

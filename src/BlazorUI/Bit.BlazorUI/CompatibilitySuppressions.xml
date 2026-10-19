@@ -864,6 +864,48 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.AssignColor(System.String)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.get_Color</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.get_ColorChanged</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.get_OnChange</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.set_Color(System.String)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.set_ColorChanged(Microsoft.AspNetCore.Components.EventCallback{System.String})</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitComponentBase.get_IsEnabled</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
@@ -871,14 +913,14 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitComponentBase.set_IsEnabled(System.Boolean)</Target>
+    <Target>M:Bit.BlazorUI.BitComponentBase.OnVisibilityChanged(Bit.BlazorUI.BitVisibility)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitComponentBase.OnVisibilityChanged(Bit.BlazorUI.BitVisibility)</Target>
+    <Target>M:Bit.BlazorUI.BitComponentBase.set_IsEnabled(System.Boolean)</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -1032,7 +1074,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFileInput.get_OnChange</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitFileInput.ReadContentAsync(Bit.BlazorUI.BitFileInputInfo)</Target>
+    <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFileUpload.get_OnChange</Target>
     <Left>lib/net10.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net10.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -2040,6 +2096,48 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.AssignColor(System.String)</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.get_Color</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.get_ColorChanged</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.get_OnChange</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.set_Color(System.String)</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.set_ColorChanged(Microsoft.AspNetCore.Components.EventCallback{System.String})</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitComponentBase.get_IsEnabled</Target>
     <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
@@ -2047,14 +2145,14 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitComponentBase.set_IsEnabled(System.Boolean)</Target>
+    <Target>M:Bit.BlazorUI.BitComponentBase.OnVisibilityChanged(Bit.BlazorUI.BitVisibility)</Target>
     <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitComponentBase.OnVisibilityChanged(Bit.BlazorUI.BitVisibility)</Target>
+    <Target>M:Bit.BlazorUI.BitComponentBase.set_IsEnabled(System.Boolean)</Target>
     <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -2208,7 +2306,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFileInput.get_OnChange</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitFileInput.ReadContentAsync(Bit.BlazorUI.BitFileInputInfo)</Target>
+    <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFileUpload.get_OnChange</Target>
     <Left>lib/net8.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net8.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -3216,6 +3328,48 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.AssignColor(System.String)</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.get_Color</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.get_ColorChanged</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.get_OnChange</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.set_Color(System.String)</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitColorPicker.set_ColorChanged(Microsoft.AspNetCore.Components.EventCallback{System.String})</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitComponentBase.get_IsEnabled</Target>
     <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
@@ -3223,14 +3377,14 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitComponentBase.set_IsEnabled(System.Boolean)</Target>
+    <Target>M:Bit.BlazorUI.BitComponentBase.OnVisibilityChanged(Bit.BlazorUI.BitVisibility)</Target>
     <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
-    <Target>M:Bit.BlazorUI.BitComponentBase.OnVisibilityChanged(Bit.BlazorUI.BitVisibility)</Target>
+    <Target>M:Bit.BlazorUI.BitComponentBase.set_IsEnabled(System.Boolean)</Target>
     <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>
@@ -3384,7 +3538,21 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFileInput.get_OnChange</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Bit.BlazorUI.BitFileInput.ReadContentAsync(Bit.BlazorUI.BitFileInputInfo)</Target>
+    <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
+    <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Bit.BlazorUI.BitFileUpload.get_OnChange</Target>
     <Left>lib/net9.0/Bit.BlazorUI.dll</Left>
     <Right>lib/net9.0/Bit.BlazorUI.dll</Right>
     <IsBaselineSuppression>true</IsBaselineSuppression>

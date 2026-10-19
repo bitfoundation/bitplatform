@@ -42,6 +42,8 @@ public static partial class Program
             app.UseLocalization();
 
             //#if (api == "Integrated")
+            app.UseRequestIdHeader();
+
             app.UseExceptionHandler();
             //#endif
 

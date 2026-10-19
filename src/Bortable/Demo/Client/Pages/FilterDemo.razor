@@ -1,0 +1,30 @@
+﻿@page "/filter"
+
+<PageTitle>Filter - bit Bortable</PageTitle>
+
+<div class="demo-header">
+    <h3>Filter</h3>
+    <p class="text-muted">
+        The <code>Filter</code> predicate marks certain items as non-draggable. Try dragging the red item - it
+        can't be picked up. The other items can still be dragged past it, which shifts it along by one.
+    </p>
+</div>
+
+<DemoCode />
+
+<Bortable @bind-Items="_items" TItem="string" Id="filter-list"
+          Filter="IsLocked" ItemClassSelector='i => IsLocked(i) ? "filtered" : null'
+          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+    <ItemTemplate Context="item">@item</ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Order:</strong> <span id="filter-order">@string.Join(", ", _items)</span></p>
+
+@code {
+    private IList<string> _items = new List<string>
+    {
+        "Item 1", "Item 2", "Item 3", "Filtered (locked)", "Item 4", "Item 5"
+    };
+
+    private bool IsLocked(string item) => item.StartsWith("Filtered", StringComparison.Ordinal);
+}

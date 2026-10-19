@@ -70,7 +70,8 @@ public sealed class BitPdfXRef : IBitPdfXRef
     private static int FindHeaderOffset(IBitPdfByteSource source)
     {
         var marker = "%PDF-"u8;
-        ReadOnlySpan<byte> buffer = source.GetMemory(0, Math.Min(source.Length, 1024 + marker.Length)).Span;
+        using var window = source.GetMemory(0, Math.Min(source.Length, 1024 + marker.Length));
+        ReadOnlySpan<byte> buffer = window.Span;
         int limit = buffer.Length - marker.Length;
         for (int i = 0; i <= limit; i++)
         {
@@ -97,6 +98,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
     /// <summary>Parses the cross-reference data starting from the file's <c>startxref</c>.</summary>
     public void Parse()
     {
+        ThrowIfSourceDisposed();
         try
         {
             ReadXRefChain();
@@ -105,7 +107,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
         {
             throw;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
         {
             Warnings.Add($"Cross-reference parsing failed ({ex.Message}); rebuilding by scanning objects.");
         }
@@ -157,7 +159,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 (sectionTrailer, ownFree) = ReadSection(offset, tableFree);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (BitPdfByteSourceErrors.IsContentError(ex))
             {
                 // Tolerate a broken /Prev or /XRefStm section: keep the entries
                 // already parsed. Only the very first section failing forces
@@ -414,13 +416,21 @@ public sealed class BitPdfXRef : IBitPdfXRef
         }
     }
 
+    internal void ThrowIfSourceDisposed() => (_source as IBitPdfByteSourceLifetime)?.ThrowIfDisposed();
+
+    internal void ReleaseByteWindows() => _reader.Dispose();
+
     /// <inheritdoc/>
     public object? FetchIfRef(object? value, bool suppressEncryption = false)
-        => value is BitPdfRef r ? Fetch(r, suppressEncryption) : value;
+    {
+        ThrowIfSourceDisposed();
+        return value is BitPdfRef r ? Fetch(r, suppressEncryption) : value;
+    }
 
     /// <inheritdoc/>
     public object? Fetch(BitPdfRef reference, bool suppressEncryption = false)
     {
+        ThrowIfSourceDisposed();
         if (_cache.TryGetValue((reference.Num, reference.Gen), out var cached))
         {
             return cached;
@@ -531,6 +541,12 @@ public sealed class BitPdfXRef : IBitPdfXRef
                 stream.Reset();
                 byte[] raw = stream.GetBytes();
                 byte[] decrypted = _security!.DecryptStream(raw, num, gen);
+                if (_source is IBitPdfByteSourceLifetime lifetime)
+                {
+                    var guarded = new BitPdfGuardedMemoryByteSource(decrypted, lifetime).CreateStream();
+                    guarded.Dict = stream.Dict;
+                    return guarded;
+                }
                 return new BitPdfStream(decrypted, 0, decrypted.Length, stream.Dict);
 
             default:
@@ -675,7 +691,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             // The generation should match too; tolerate a header that omits it.
             return lexer.GetObj() is not double dg || (int)dg == gen;
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             return false;
         }
@@ -746,7 +762,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 obj = FetchUncompressed(new BitPdfRef(streamNum, entry.Field3), entry);
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 continue;
             }
@@ -760,7 +776,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 data = BitPdfStreamDecoder.Decode(s);
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 continue;
             }
@@ -809,7 +825,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
             {
                 obj = Fetch(new BitPdfRef(num, entry.Field3));
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 continue;
             }
@@ -844,7 +860,7 @@ public sealed class BitPdfXRef : IBitPdfXRef
                     result = d; // keep the last (most recent) trailer
                 }
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 // Ignore an unparseable trailer candidate.
             }
@@ -881,7 +897,8 @@ public sealed class BitPdfXRef : IBitPdfXRef
     {
         var keyword = "startxref"u8.ToArray();
         int searchStart = Math.Max(0, _reader.Length - 2048);
-        var tail = _source.GetMemory(searchStart, _reader.Length - searchStart).Span;
+        using var window = _source.GetMemory(searchStart, _reader.Length - searchStart);
+        var tail = window.Span;
         int index = tail.LastIndexOf(keyword);
         if (index >= 0)
         {

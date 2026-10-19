@@ -1,0 +1,79 @@
+﻿@page "/examples/overlay-layout"
+
+<PageTitle>Overlay Layout - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Overlay Layout"
+                 Summary="Controls, the minimap, panels and the attribution badge can all be anchored to any corner, and the control bar can hide individual buttons or show a lock toggle that freezes the canvas.">
+    <Toolbar>
+        <label>Controls
+            <select @onchange="@(e => _controlsPosition = Parse(e.Value))">
+                <option value="BottomLeft" selected>bottom-left</option>
+                <option value="TopLeft">top-left</option>
+                <option value="TopRight">top-right</option>
+                <option value="BottomCenter">bottom-center</option>
+            </select>
+        </label>
+        <label>BlowMiniMap
+            <select @onchange="@(e => _miniMapPosition = Parse(e.Value))">
+                <option value="BottomRight" selected>bottom-right</option>
+                <option value="TopRight">top-right</option>
+                <option value="TopLeft">top-left</option>
+                <option value="BottomLeft">bottom-left</option>
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_horizontal" @onchange="@(e => _horizontal = (bool)e.Value!)" /> Horizontal controls</label>
+        <span class="text-muted">Interactive: @(_interactive ? "on" : "locked")</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    NodesDraggable="_interactive"
+                    NodesConnectable="_interactive"
+                    ElementsSelectable="_interactive"
+                    AttributionPosition="BlowPanelPosition.TopCenter">
+            <BlowBackground Variant="BlowBackgroundVariant.Cross" Gap="30" BgColor="#fbfbfd" Color="#cbd5e1" />
+            <BlowControls Position="_controlsPosition"
+                      Orientation="@(_horizontal ? BlowControlsOrientation.Horizontal : BlowControlsOrientation.Vertical)"
+                      ShowInteractive="true"
+                      @bind-Interactive="_interactive" />
+            <BlowMiniMap Position="_miniMapPosition" Zoomable="true" Pannable="true" />
+            <BlowPanel Anchor="BlowPanelPosition.BottomCenter">
+                <div class="overlay-hint">Lock the canvas with the padlock button</div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .overlay-hint { padding: 6px 12px; font-size: 12px; color: var(--bit-blow-text); background: var(--bit-blow-surface); border: 1px solid var(--bit-blow-border); border-radius: 999px; }
+</style>
+
+@code {
+    private BlowPanelPosition _controlsPosition = BlowPanelPosition.BottomLeft;
+    private BlowPanelPosition _miniMapPosition = BlowPanelPosition.BottomRight;
+    private bool _horizontal;
+    private bool _interactive = true;
+
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input",  Label = "Start", Position = new(120, 20) },
+            new BlowNode { Id = "2",                  Label = "Step",  Position = new(60, 140) },
+            new BlowNode { Id = "3", Type = "output", Label = "End",   Position = new(220, 260) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3", Animated = true },
+        ];
+    }
+
+    private static BlowPanelPosition Parse(object? value) =>
+        Enum.TryParse<BlowPanelPosition>(value?.ToString(), out var parsed) ? parsed : BlowPanelPosition.TopLeft;
+}

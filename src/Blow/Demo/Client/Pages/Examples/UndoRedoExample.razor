@@ -1,0 +1,96 @@
+﻿@page "/examples/undo-redo"
+<PageTitle>Undo & Redo - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Undo & Redo"
+                 Summary="BlowHistory holds snapshots and hands back the one to restore. It is something you drive rather than something the canvas does for you, because only your app knows what counts as one undoable step - dragging five nodes is one step, not five hundred pointer moves. Capture when a gesture ends; identical captures are ignored, so pressing undo always does something.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" disabled="@(!_history.CanUndo)" @onclick="Undo">
+            Undo (@_history.UndoDepth)
+        </button>
+        <button class="btn btn-sm btn-primary" disabled="@(!_history.CanRedo)" @onclick="Redo">
+            Redo (@_history.RedoDepth)
+        </button>
+        <span class="hist-sep"></span>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="AddNode">Add node</button>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="Scramble">Scramble</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    FitViewOnInit="true"
+                    OnNodeDragStop="_ => Capture()"
+                    OnConnect="_ => Capture()"
+                    OnDelete="_ => Capture()"
+                    OnInit="OnInit">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .hist-sep { display: inline-block; width: 1rem; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private readonly BlowHistory _history = new(capacity: 50);
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _next = 4;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Start", Position = new(80, 40) },
+            new BlowNode { Id = "2", Label = "Middle", Position = new(80, 170) },
+            new BlowNode { Id = "3", Type = "output", Label = "End", Position = new(80, 300) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3" },
+        ];
+    }
+
+    // The starting point has to be on the stack, or the first undo has nothing to return to.
+    private void OnInit(BlowCanvas flow) => Capture();
+
+    // ToObject() deep-copies by default, so the history keeps describing the graph as it was
+    // rather than following along as the user carries on editing.
+    private void Capture() => _history.Capture(_flow!.ToObject());
+
+    private async Task Undo()
+    {
+        if (_history.Undo() is { } snapshot) await _flow!.RestoreAsync(snapshot);
+    }
+
+    private async Task Redo()
+    {
+        if (_history.Redo() is { } snapshot) await _flow!.RestoreAsync(snapshot);
+    }
+
+    private void AddNode()
+    {
+        var id = (_next++).ToString();
+        _nodes.Add(new BlowNode
+        {
+            Id = id,
+            Label = $"Node {id}",
+            Position = new(Random.Shared.Next(240, 460), Random.Shared.Next(40, 300)),
+        });
+        _flow?.Refresh(remeasure: true);
+        Capture();
+    }
+
+    private void Scramble()
+    {
+        foreach (var node in _nodes)
+            node.Position = new BlowXYPosition(Random.Shared.Next(40, 460), Random.Shared.Next(40, 320));
+
+        _flow?.Refresh(remeasure: true);
+        Capture();
+    }
+}

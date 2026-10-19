@@ -1,0 +1,104 @@
+﻿@page "/variants"
+
+@* Variants: a label selected on a parent cascades to its children, staggered and orchestrated (before/after
+   children, from the last child), with dynamic variants reading Custom and Inherit="false" opting out. *@
+
+<HarnessHeader Title="Variants" Ready="Ready" OnLog="BindLog" />
+
+<button id="toggle" @onclick="() => Change(() => _open = !_open)">toggle</button>
+
+<h2>Stagger</h2>
+<Bmotion Variants="_list" InitialState="hidden" State="@Label"
+         Transition="Bm.Tween(0.2, staggerChildren: 0.25)"
+         OnAnimationComplete='_ => Log($"list:{Label}")'>
+    <div id="list" class="row">
+        @for (var i = 0; i < 4; i++)
+        {
+            var index = i;
+            <Bmotion Variants="_item"
+                     Transition="Bm.Tween(0.2)"
+                     WhileHover="Bm.To(scale: 1.3)"
+                     OnAnimationStart='_ => Log($"item{index}:start")'
+                     OnAnimationComplete='_ => Log($"item{index}:{Label}")'>
+                <div id="item@(index)" class="small"></div>
+            </Bmotion>
+        }
+    </div>
+</Bmotion>
+
+<h2>From last</h2>
+<Bmotion Variants="_list" InitialState="hidden" State="@Label"
+         Transition="Bm.Tween(0.2, childStagger: Bm.Stagger(0.25, from: BmStaggerFrom.Last))">
+    <div class="row">
+        @for (var i = 0; i < 3; i++)
+        {
+            var index = i;
+            <Bmotion Variants="_item" Transition="Bm.Tween(0.2)"
+                     OnAnimationComplete='_ => Log($"last{index}:{Label}")'>
+                <div id="last@(index)" class="small"></div>
+            </Bmotion>
+        }
+    </div>
+</Bmotion>
+
+<h2>Before children</h2>
+<Bmotion Variants="_list" InitialState="hidden" State="@Label"
+         Transition="Bm.Tween(0.5, when: BmWhen.BeforeChildren)"
+         OnAnimationComplete='_ => Log($"before-parent:{Label}")'>
+    <div id="before" class="row">
+        <Bmotion Variants="_item" Transition="Bm.Tween(0.1)"
+                 OnAnimationComplete='_ => Log($"before-child:{Label}")'>
+            <div id="before-child" class="small"></div>
+        </Bmotion>
+    </div>
+</Bmotion>
+
+<h2>After children</h2>
+<Bmotion Variants="_list" InitialState="hidden" State="@Label"
+         Transition="Bm.Tween(0.1, when: BmWhen.AfterChildren)"
+         OnAnimationComplete='_ => Log($"after-parent:{Label}")'>
+    <div id="after" class="row">
+        <Bmotion Variants="_item" Transition="Bm.Tween(0.5)"
+                 OnAnimationComplete='_ => Log($"after-child:{Label}")'>
+            <div id="after-child" class="small"></div>
+        </Bmotion>
+    </div>
+</Bmotion>
+
+<h2>Custom and Inherit</h2>
+<Bmotion Variants="_list" InitialState="hidden" State="@Label" Transition="Bm.Tween(0.1)">
+    <div class="row">
+        @for (var i = 1; i <= 3; i++)
+        {
+            var index = i;
+            <Bmotion Variants="_dynamic" Custom="@index" Transition="Bm.Tween(0.1)">
+                <div id="custom@(index)" class="small"></div>
+            </Bmotion>
+        }
+        <Bmotion Inherit="false" Variants="_item" State="hidden" Transition="Bm.Tween(0.1)">
+            <div id="opted-out" class="small"></div>
+        </Bmotion>
+    </div>
+</Bmotion>
+
+@code {
+    private bool _open;
+
+    private string Label => _open ? "visible" : "hidden";
+
+    private readonly BmVariants _list = new()
+    {
+        ["hidden"] = Bm.To(opacity: 0.5),
+        ["visible"] = Bm.To(opacity: 1),
+    };
+
+    private readonly BmVariants _item = new()
+    {
+        ["hidden"] = Bm.To(opacity: 0, x: -30),
+        ["visible"] = Bm.To(opacity: 1, x: 0),
+    };
+
+    private readonly BmVariants _dynamic = new BmVariants()
+        .Add("hidden", Bm.To(x: 0))
+        .Add("visible", custom => Bm.To(x: 10 * (int)custom!));
+}

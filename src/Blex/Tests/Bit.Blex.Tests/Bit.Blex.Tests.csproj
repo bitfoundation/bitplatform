@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <!-- Runs against every framework the packages ship for, so no TFM leg goes untested. -->
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <!-- BLEX011 is intentionally triggered by a fixture that verifies value-returning actions. -->
+        <NoWarn>$(NoWarn);CS1591;BLEX011</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.5.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Blex\Bit.Blex.csproj" />
+        <ProjectReference Include="..\..\Bit.Blex.Blazor\Bit.Blex.Blazor.csproj" />
+        <ProjectReference Include="..\..\Bit.Blex.Maui\Bit.Blex.Maui.csproj" />
+        <ProjectReference Include="..\..\Bit.Blex.Testing\Bit.Blex.Testing.csproj" />
+        <ProjectReference Include="..\..\Bit.Blex.Generators\Bit.Blex.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
+    </ItemGroup>
+
+</Project>

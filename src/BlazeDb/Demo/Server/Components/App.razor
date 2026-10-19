@@ -1,0 +1,63 @@
+﻿<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="bit BlazeDb (Bit.BlazeDb) - a SQL-free, memory-first embedded database engine for .NET and Blazor WebAssembly, with source-generated schemas, transactions, an EF Core provider and OPFS-backed durability. Every page drives the real engine in your browser." />
+    <meta name="theme-color" content="#08090d" />
+    <base href="/" />
+    <script>
+        // Applied before first paint so the theme never flashes.
+        (function () {
+            try {
+                var saved = localStorage.getItem('blazedb-theme');
+                var dark = saved ? saved === 'dark' : !window.matchMedia('(prefers-color-scheme: light)').matches;
+                document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+            } catch (e) { /* storage blocked - keep the default */ }
+        })();
+    </script>
+    <ResourcePreloader />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="mask-icon" href="favicon.svg" color="#f2610c" />
+    <HeadOutlet @rendermode="RenderMode" />
+</head>
+
+<body>
+    @* Shown until the app's shell replaces it (app.css hides it once a .shell exists): nothing is
+       prerendered, so this is what the first response carries while the runtime downloads. *@
+    <div class="boot">
+        <div class="boot-mark">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5Z" />
+            </svg>
+        </div>
+        <div class="boot-name">BlazeDb</div>
+        <div class="boot-track"></div>
+        <div class="boot-text"></div>
+    </div>
+
+    <Routes @rendermode="RenderMode" />
+
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&times;</span>
+    </div>
+
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>
+
+@code {
+    /// <summary>
+    /// InteractiveWebAssembly without prerendering. Every page opens the demo database the moment it
+    /// initializes, and that database lives in this browser tab - in managed memory, persisted to OPFS
+    /// under a Web Lock - none of which exists on the server. A prerender would either fail there or
+    /// render a second, empty database's numbers that the browser then replaces.
+    /// </summary>
+    private static readonly IComponentRenderMode RenderMode = new InteractiveWebAssemblyRenderMode(prerender: false);
+}

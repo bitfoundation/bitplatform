@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DialogOkText" xml:space="preserve">
+    <value>نعم</value>
+  </data>
+  <data name="DialogCancelText" xml:space="preserve">
+    <value>لا</value>
+  </data>
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>لا توجد سجلات للعرض.</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>جارٍ التحميل…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>الإجراءات</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ إضافة</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>مسح عوامل التصفية</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>تصدير CSV</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>تصدير Excel</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>الأعمدة</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>تعديل</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>تحديد الكل</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>تحديد الصف</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>تحديد الصف: {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>تصفية…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>تصفية حسب {0}</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>الكل</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>عامل التصفية لـ {0}</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>يحتوي على</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>لا يحتوي على</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>يبدأ بـ</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>ينتهي بـ</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>صحيح</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>خطأ</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>تجميع حسب {0}</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>إلغاء التجميع حسب {0}</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>توسيع المجموعة {0}: {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>طي المجموعة {0}: {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1} من {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>الصفحة {0} من {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / صفحة</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>الصفوف لكل صفحة</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>الصفحة الأولى</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>الصفحة السابقة</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>الصفحة التالية</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>الصفحة الأخيرة</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- نهاية النتائج -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>إظهار/إخفاء التفاصيل</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>إظهار/إخفاء العناصر الفرعية</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>اسحب لإعادة الترتيب، أو ركّز واستخدم مفاتيح الأسهم لنقل هذا الصف</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>إعادة ترتيب الصف. اضغط على السهم لأعلى أو لأسفل لنقل هذا الصف.</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>قيمة غير صالحة لـ {0}.</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>مرتب حسب {0} تصاعديًا</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>مرتب حسب {0} تنازليًا</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>تمت إزالة الترتيب حسب {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>تم تطبيق التصفية على {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>تم مسح التصفية على {0}</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>الصفحة {0} من {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>تم حذف الصف</value>
+  </data>
+  <data name="DataGridAnnouncementSearched" xml:space="preserve">
+    <value>جارٍ البحث عن {0}</value>
+  </data>
+  <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
+    <value>تم مسح البحث</value>
+  </data>
+  <data name="ImageEditorSelect" xml:space="preserve">
+    <value>تحديد</value>
+  </data>
+  <data name="ImageEditorCrop" xml:space="preserve">
+    <value>اقتصاص</value>
+  </data>
+  <data name="ImageEditorDraw" xml:space="preserve">
+    <value>رسم</value>
+  </data>
+  <data name="ImageEditorArrow" xml:space="preserve">
+    <value>سهم</value>
+  </data>
+  <data name="ImageEditorLine" xml:space="preserve">
+    <value>خط</value>
+  </data>
+  <data name="ImageEditorRectangle" xml:space="preserve">
+    <value>مستطيل</value>
+  </data>
+  <data name="ImageEditorEllipse" xml:space="preserve">
+    <value>شكل بيضاوي</value>
+  </data>
+  <data name="ImageEditorText" xml:space="preserve">
+    <value>نص</value>
+  </data>
+  <data name="ImageEditorHighlight" xml:space="preserve">
+    <value>تمييز</value>
+  </data>
+  <data name="ImageEditorRedact" xml:space="preserve">
+    <value>إخفاء</value>
+  </data>
+  <data name="ImageEditorStep" xml:space="preserve">
+    <value>رقم الخطوة</value>
+  </data>
+  <data name="ImageEditorEraser" xml:space="preserve">
+    <value>ممحاة</value>
+  </data>
+  <data name="ImageEditorPan" xml:space="preserve">
+    <value>تحريك العرض</value>
+  </data>
+  <data name="ImageEditorAdjust" xml:space="preserve">
+    <value>ضبط</value>
+  </data>
+  <data name="ImageEditorFilters" xml:space="preserve">
+    <value>المرشحات</value>
+  </data>
+  <data name="ImageEditorTransform" xml:space="preserve">
+    <value>تحويل</value>
+  </data>
+  <data name="ImageEditorLayers" xml:space="preserve">
+    <value>الطبقات</value>
+  </data>
+  <data name="ImageEditorHistory" xml:space="preserve">
+    <value>السجل</value>
+  </data>
+  <data name="ImageEditorExport" xml:space="preserve">
+    <value>تصدير</value>
+  </data>
+  <data name="ImageEditorTools" xml:space="preserve">
+    <value>الأدوات</value>
+  </data>
+  <data name="ImageEditorBrightness" xml:space="preserve">
+    <value>السطوع</value>
+  </data>
+  <data name="ImageEditorContrast" xml:space="preserve">
+    <value>التباين</value>
+  </data>
+  <data name="ImageEditorSaturation" xml:space="preserve">
+    <value>التشبع</value>
+  </data>
+  <data name="ImageEditorExposure" xml:space="preserve">
+    <value>التعريض</value>
+  </data>
+  <data name="ImageEditorTemperature" xml:space="preserve">
+    <value>درجة حرارة اللون</value>
+  </data>
+  <data name="ImageEditorTint" xml:space="preserve">
+    <value>الصبغة</value>
+  </data>
+  <data name="ImageEditorHue" xml:space="preserve">
+    <value>درجة اللون</value>
+  </data>
+  <data name="ImageEditorGamma" xml:space="preserve">
+    <value>جاما</value>
+  </data>
+  <data name="ImageEditorVibrance" xml:space="preserve">
+    <value>الحيوية</value>
+  </data>
+  <data name="ImageEditorShadows" xml:space="preserve">
+    <value>الظلال</value>
+  </data>
+  <data name="ImageEditorHighlights" xml:space="preserve">
+    <value>المناطق الساطعة</value>
+  </data>
+  <data name="ImageEditorSharpen" xml:space="preserve">
+    <value>زيادة الحدة</value>
+  </data>
+  <data name="ImageEditorBlur" xml:space="preserve">
+    <value>تمويه</value>
+  </data>
+  <data name="ImageEditorVignette" xml:space="preserve">
+    <value>تظليل الحواف</value>
+  </data>
+  <data name="ImageEditorNone" xml:space="preserve">
+    <value>بلا</value>
+  </data>
+  <data name="ImageEditorGrayscale" xml:space="preserve">
+    <value>تدرج رمادي</value>
+  </data>
+  <data name="ImageEditorSepia" xml:space="preserve">
+    <value>بني داكن</value>
+  </data>
+  <data name="ImageEditorInvert" xml:space="preserve">
+    <value>عكس الألوان</value>
+  </data>
+  <data name="ImageEditorPosterize" xml:space="preserve">
+    <value>تقليل الألوان</value>
+  </data>
+  <data name="ImageEditorThreshold" xml:space="preserve">
+    <value>العتبة</value>
+  </data>
+  <data name="ImageEditorRotateLeft" xml:space="preserve">
+    <value>تدوير لليسار</value>
+  </data>
+  <data name="ImageEditorRotateRight" xml:space="preserve">
+    <value>تدوير لليمين</value>
+  </data>
+  <data name="ImageEditorFlipHorizontal" xml:space="preserve">
+    <value>قلب أفقي</value>
+  </data>
+  <data name="ImageEditorFlipVertical" xml:space="preserve">
+    <value>قلب رأسي</value>
+  </data>
+  <data name="ImageEditorStraighten" xml:space="preserve">
+    <value>تعديل الاستقامة</value>
+  </data>
+  <data name="ImageEditorAspectRatio" xml:space="preserve">
+    <value>نسبة الأبعاد</value>
+  </data>
+  <data name="ImageEditorFreeform" xml:space="preserve">
+    <value>حر</value>
+  </data>
+  <data name="ImageEditorOriginal" xml:space="preserve">
+    <value>الأصلي</value>
+  </data>
+  <data name="ImageEditorSquare" xml:space="preserve">
+    <value>مربع</value>
+  </data>
+  <data name="ImageEditorApplyCrop" xml:space="preserve">
+    <value>تطبيق الاقتصاص</value>
+  </data>
+  <data name="ImageEditorCancelCrop" xml:space="preserve">
+    <value>إلغاء القص</value>
+  </data>
+  <data name="ImageEditorUndo" xml:space="preserve">
+    <value>تراجع</value>
+  </data>
+  <data name="ImageEditorRedo" xml:space="preserve">
+    <value>إعادة</value>
+  </data>
+  <data name="ImageEditorReset" xml:space="preserve">
+    <value>إعادة تعيين</value>
+  </data>
+  <data name="ImageEditorSave" xml:space="preserve">
+    <value>حفظ</value>
+  </data>
+  <data name="ImageEditorCancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="ImageEditorDone" xml:space="preserve">
+    <value>تم</value>
+  </data>
+  <data name="ImageEditorDelete" xml:space="preserve">
+    <value>حذف</value>
+  </data>
+  <data name="ImageEditorDuplicate" xml:space="preserve">
+    <value>تكرار</value>
+  </data>
+  <data name="ImageEditorBringToFront" xml:space="preserve">
+    <value>إحضار إلى الأمام</value>
+  </data>
+  <data name="ImageEditorSendToBack" xml:space="preserve">
+    <value>إرسال إلى الخلف</value>
+  </data>
+  <data name="ImageEditorDownload" xml:space="preserve">
+    <value>تنزيل</value>
+  </data>
+  <data name="ImageEditorCopyToClipboard" xml:space="preserve">
+    <value>نسخ إلى الحافظة</value>
+  </data>
+  <data name="ImageEditorZoomIn" xml:space="preserve">
+    <value>تكبير</value>
+  </data>
+  <data name="ImageEditorZoomOut" xml:space="preserve">
+    <value>تصغير</value>
+  </data>
+  <data name="ImageEditorZoomToFit" xml:space="preserve">
+    <value>ملاءمة النافذة</value>
+  </data>
+  <data name="ImageEditorZoomTo100" xml:space="preserve">
+    <value>الحجم الفعلي</value>
+  </data>
+  <data name="ImageEditorOpenImage" xml:space="preserve">
+    <value>فتح صورة</value>
+  </data>
+  <data name="ImageEditorPasteImage" xml:space="preserve">
+    <value>لصق من الحافظة</value>
+  </data>
+  <data name="ImageEditorColor" xml:space="preserve">
+    <value>اللون</value>
+  </data>
+  <data name="ImageEditorFillColor" xml:space="preserve">
+    <value>لون التعبئة</value>
+  </data>
+  <data name="ImageEditorStrokeColor" xml:space="preserve">
+    <value>لون الحد</value>
+  </data>
+  <data name="ImageEditorStrokeWidth" xml:space="preserve">
+    <value>عرض الخط</value>
+  </data>
+  <data name="ImageEditorOpacity" xml:space="preserve">
+    <value>العتامة</value>
+  </data>
+  <data name="ImageEditorFontSize" xml:space="preserve">
+    <value>حجم النص</value>
+  </data>
+  <data name="ImageEditorDashed" xml:space="preserve">
+    <value>متقطع</value>
+  </data>
+  <data name="ImageEditorFilled" xml:space="preserve">
+    <value>معبأ</value>
+  </data>
+  <data name="ImageEditorRedactionStyle" xml:space="preserve">
+    <value>نمط الإخفاء</value>
+  </data>
+  <data name="ImageEditorSolid" xml:space="preserve">
+    <value>مصمت</value>
+  </data>
+  <data name="ImageEditorPixelate" xml:space="preserve">
+    <value>تقطيع إلى بكسلات</value>
+  </data>
+  <data name="ImageEditorFormat" xml:space="preserve">
+    <value>التنسيق</value>
+  </data>
+  <data name="ImageEditorQuality" xml:space="preserve">
+    <value>الجودة</value>
+  </data>
+  <data name="ImageEditorWidth" xml:space="preserve">
+    <value>العرض</value>
+  </data>
+  <data name="ImageEditorHeight" xml:space="preserve">
+    <value>الارتفاع</value>
+  </data>
+  <data name="ImageEditorMetadata" xml:space="preserve">
+    <value>البيانات الوصفية</value>
+  </data>
+  <data name="ImageEditorKeepMetadata" xml:space="preserve">
+    <value>الاحتفاظ بالكل</value>
+  </data>
+  <data name="ImageEditorRemoveMetadata" xml:space="preserve">
+    <value>إزالة الكل</value>
+  </data>
+  <data name="ImageEditorStripSensitiveMetadata" xml:space="preserve">
+    <value>إزالة الموقع والجهاز</value>
+  </data>
+  <data name="ImageEditorEstimatedSize" xml:space="preserve">
+    <value>الحجم التقديري</value>
+  </data>
+  <data name="ImageEditorLoading" xml:space="preserve">
+    <value>جارٍ تحميل الصورة</value>
+  </data>
+  <data name="ImageEditorProcessing" xml:space="preserve">
+    <value>جارٍ المعالجة</value>
+  </data>
+  <data name="ImageEditorNoImage" xml:space="preserve">
+    <value>لم يتم تحميل أي صورة</value>
+  </data>
+  <data name="ImageEditorDropImageHere" xml:space="preserve">
+    <value>أفلت صورة هنا، أو انقر لاختيار واحدة</value>
+  </data>
+  <data name="ImageEditorImageTooLarge" xml:space="preserve">
+    <value>هذه الصورة أكبر من أن تُفتح هنا.</value>
+  </data>
+  <data name="ImageEditorUnsupportedFormat" xml:space="preserve">
+    <value>تنسيق الملف هذا غير مدعوم.</value>
+  </data>
+  <data name="ImageEditorLoadFailed" xml:space="preserve">
+    <value>تعذر فتح الصورة.</value>
+  </data>
+  <data name="ImageEditorExportFailed" xml:space="preserve">
+    <value>تعذر تصدير الصورة.</value>
+  </data>
+  <data name="ImageEditorTextNeedsFont" xml:space="preserve">
+    <value>لا يمكن رسم النص حتى يتم تسجيل خط لدى أداة تحويل النص إلى صورة.</value>
+  </data>
+  <data name="ImageEditorFormatNotSupported" xml:space="preserve">
+    <value>لا يستطيع هذا المتصفح حفظ هذا التنسيق، لذا تم استخدام تنسيق مدعوم بدلاً منه.</value>
+  </data>
+  <data name="ImageEditorEditorLabel" xml:space="preserve">
+    <value>محرر الصور</value>
+  </data>
+  <data name="ImageEditorCanvasLabel" xml:space="preserve">
+    <value>لوحة الصورة</value>
+  </data>
+  <data name="ImageEditorToolbarLabel" xml:space="preserve">
+    <value>أدوات المحرر</value>
+  </data>
+  <data name="ImageEditorPanelLabel" xml:space="preserve">
+    <value>خيارات المحرر</value>
+  </data>
+  <data name="ImageEditorCropHandleLabel" xml:space="preserve">
+    <value>مقبض القص</value>
+  </data>
+  <data name="ImageEditorSelectedAnnotation" xml:space="preserve">
+    <value>التعليق التوضيحي المحدد</value>
+  </data>
+  <data name="ImageEditorKeyboardHint" xml:space="preserve">
+    <value>استخدم مفاتيح الأسهم لتحريك التحديد، ومفتاح Delete لإزالته.</value>
+  </data>
+</root>

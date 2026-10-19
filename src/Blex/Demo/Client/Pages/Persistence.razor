@@ -1,0 +1,574 @@
+﻿@page "/persistence"
+@inherits BlexComponentBase
+@inject SettingsStore Settings
+@inject BlexStatePersistor Persistor
+@inject IJSRuntime Js
+
+<DocPage Href="persistence" Title="Persistence"
+         Lead="Opt a store in, register a storage provider, and its state survives a reload - with debouncing, versioning and migrations included.">
+
+    <h2>Opting in</h2>
+    <p>
+        Set <code>Persist = true</code> on the store and register a provider. The store is rehydrated
+        during startup and written back after every action that touches it.
+    </p>
+
+    <CodeBlock Code="@OptIn" />
+    <CodeBlock Code="@Register" FileName="Program.cs" />
+
+    <ApiTable Title="Providers" Rows="@ProviderRows" MemberHeader="Call" />
+
+    <DemoCard Title="This page's settings are persisted"
+              Description="Change something, then reload the browser. The values come back - and so does the raw payload below, read straight out of localStorage."
+              Source="@StoreSource">
+        <div class="row">
+            <span class="small muted">Accent:</span>
+            @foreach (var accent in Accents)
+            {
+                var current = accent;
+                <button class="btn btn-sm @(Settings.Accent == current ? "btn-primary" : null)"
+                        @onclick="() => Settings.SetAccent(current)">@current</button>
+            }
+        </div>
+        <div class="row">
+            <span class="small muted">Density:</span>
+            <button class="btn btn-sm @(Settings.Density == Density.Comfortable ? "btn-primary" : null)"
+                    @onclick="() => Settings.SetDensity(Density.Comfortable)">Comfortable</button>
+            <button class="btn btn-sm @(Settings.Density == Density.Compact ? "btn-primary" : null)"
+                    @onclick="() => Settings.SetDensity(Density.Compact)">Compact</button>
+            <label class="check">
+                <input type="checkbox" checked="@Settings.ShowLineNumbers" @onchange="_ => Settings.ToggleLineNumbers()" />
+                Line numbers
+            </label>
+        </div>
+
+        <div class="readout" style="margin-top:0.8rem">
+            <div class="readout__item">
+                <span class="readout__label">Summary (computed)</span>
+                <span class="readout__value" style="font-size:0.95rem">@Settings.Summary</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Storage key</span>
+                <span class="readout__value" style="font-size:0.85rem">blex-docs:settings</span>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top:0.8rem">
+            <button class="btn btn-sm" @onclick="ReadRaw">Read localStorage</button>
+            <button class="btn btn-sm" @onclick="FlushAsync">FlushAsync()</button>
+            <button class="btn btn-sm btn-ghost" @onclick="Settings.ResetState">ResetState()</button>
+            <button class="btn btn-sm btn-danger" @onclick="ClearAsync">ClearAsync()</button>
+        </div>
+
+        @if (_raw is not null)
+        {
+            <div style="margin-top:0.8rem">
+                <CodeBlock Code="@_raw" Language="json" Title="Raw payload" Compact="true" />
+            </div>
+        }
+
+        <p class="small muted" style="margin-top:0.8rem;margin-bottom:0">
+            This site runs with <code>SyncAcrossTabs</code> on. Open it in a second tab, change the
+            theme there, and watch this one follow without a reload.
+        </p>
+    </DemoCard>
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Note the envelope">
+        <p style="margin-bottom:0">
+            Because this site sets <code>options.Version = 1</code>, the payload is wrapped as
+            <code>{ "__blexVersion": 1, "state": { … } }</code>. With <code>Version</code> left at
+            <code>0</code> the state is stored bare, with no envelope and no version checking.
+        </p>
+    </Callout>
+
+    <h2>Options</h2>
+    <ApiTable Title="BlexPersistenceOptions" Rows="@OptionRows" />
+
+    <h3>Debouncing</h3>
+    <p>
+        Without a debounce, every action writes. For a store that changes on every keystroke or drag
+        that is a lot of serialization and a lot of storage churn. <code>DebounceInterval</code>
+        coalesces a burst into one write once things go quiet.
+    </p>
+    <CodeBlock Code="@Debounce" />
+    <p>
+        Debouncing is trailing-edge, so a continuous stream of actions would postpone the write
+        forever. <code>DebounceMaxDelay</code> caps that: once the oldest pending change reaches that
+        age, a save is forced. Pending writes are also flushed on dispose, and on demand via
+        <code>FlushAsync()</code>.
+    </p>
+
+    <h3>Versioning and migrations</h3>
+    <p>
+        When a persisted store's shape changes, bump <code>Version</code>. On load, a payload whose
+        stored version differs is handed to <code>Migrate</code>; return the upgraded state, or
+        <code>null</code> to discard it. Without a migration hook, a mismatched payload is simply
+        dropped.
+    </p>
+    <CodeBlock Code="@Migrate" />
+
+    <Callout Kind="Callout.CalloutKind.Tip" Title="fromVersion 0 means &quot;pre-envelope&quot;">
+        <p style="margin-bottom:0">
+            A payload written before you enabled versioning has no envelope, so it arrives as
+            version <code>0</code>. Handle that case explicitly - usually by accepting it as-is or
+            discarding it, depending on whether the shape actually changed.
+        </p>
+    </Callout>
+
+    <h3>Persisting only part of a store</h3>
+    <p>
+        <code>Partialize</code> receives each store's snapshot on its way to storage and returns what
+        should actually be written - zustand's option of the same name. Use it to keep transient
+        state out of storage: a search box's text, an "is the drawer open" flag, a cached response
+        that must be re-fetched rather than restored. Returning <code>null</code> skips that store's
+        write entirely and leaves whatever is already stored untouched.
+    </p>
+    <CodeBlock Code="@Partialize" Title="Drop transient fields" />
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Omitted keys come back as their declared defaults">
+        <p style="margin-bottom:0">
+            Rehydration applies only the keys present in the payload, so a field you left out is not
+            wiped - it simply keeps the value the store's field initializer gives it. That is what
+            makes <code>Partialize</code> safe to widen or narrow between releases.
+        </p>
+    </Callout>
+
+    <h3>Reacting to rehydration</h3>
+    <p>
+        <code>OnRehydrated</code> fires once per persistent store as <code>StartAsync</code> applies
+        it, with the slice that was applied - or <code>null</code> when nothing was stored, which is
+        how you tell a returning user from a first visit. It is the natural place to kick off a
+        refresh, mark a splash screen done, or record the hydration in telemetry. A callback that
+        throws is reported through <code>OnError</code> and never derails startup.
+    </p>
+    <CodeBlock Code="@OnRehydrated" Title="First visit vs returning" Compact="true" />
+
+    <h3>Deferring hydration</h3>
+    <p>
+        Sometimes state must not be restored at startup: a per-user payload that only makes sense
+        once sign-in resolves, or a draft the user should be asked about before it reappears. Set
+        <code>SkipHydration</code> and call <code>RehydrateAsync()</code> when the moment arrives.
+        Saving is live from the start either way, so nothing changed in the meantime is lost.
+    </p>
+    <CodeBlock Code="@SkipHydration" Title="Hydrate after sign-in" Compact="true" />
+
+    <h3>Two tabs, one state</h3>
+    <p>
+        By default, two open tabs of the same app quietly fight. Each saves its own state after every
+        action, so whichever tab acted last wins and the other's changes disappear on its next
+        reload. Set <code>SyncAcrossTabs</code> and a change made in one tab is re-read and applied
+        in the others as soon as it lands, so they converge instead.
+    </p>
+    <CodeBlock Code="@SyncTabs" Title="Opting in" Compact="true" />
+
+    <p>
+        Incoming state is applied as a <em>restore</em>, not an action: it raises the usual change
+        notification so the UI updates, but records no time-travel entry and is not written straight
+        back - echoing it would bounce the same value between tabs forever.
+        <code>Migrate</code> runs on it exactly as at startup, so a tab on an older build still reads
+        what a newer one wrote. <code>OnExternalChange</code> tells you it happened.
+    </p>
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="localStorage only, and last writer still wins">
+        <p style="margin-bottom:0">
+            <code>sessionStorage</code> is per-tab, so there is no other instance to hear from and
+            the option is inert there. Synchronization does not merge concurrent edits: two tabs
+            editing the same store still resolve to whoever wrote last. What it removes is the
+            <em>silence</em> - both tabs end up showing the same state rather than diverging until
+            the next reload.
+        </p>
+    </Callout>
+
+    <h3>Knowing when the real state has landed</h3>
+    <p>
+        Hydration is not instantaneous: browser storage sits behind JS interop, a Blazor Server
+        prerender cannot reach it at all, and <code>SkipHydration</code> defers it on purpose. Until
+        it finishes, a component bound to a persisted store is rendering <em>declared defaults</em>,
+        not the user's data - which is how a full cart briefly renders as "0 items".
+        <code>HasHydrated</code> is the flag to branch on, <code>Hydrated</code> the event to
+        re-render from, and <code>WhenHydratedAsync()</code> the awaitable form.
+    </p>
+    <CodeBlock Code="@Hydration" Language="razor" />
+
+    <DemoCard Title="This page's own hydration state"
+              Description="Already true by the time you can read this - <BlexProvider> awaits StartAsync before the first interactive render. The interesting case is SkipHydration, or a slow storage provider."
+              Source="@HydrationSource" SourceLanguage="razor">
+        <div class="readout">
+            <div class="readout__item">
+                <span class="readout__label">HasHydrated</span>
+                <span class="readout__value readout__value--accent">@Persistor.HasHydrated</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">settings/Accent</span>
+                <span class="readout__value">@Settings.Accent</span>
+            </div>
+        </div>
+    </DemoCard>
+
+    <h3>Deciding how stored state meets live state</h3>
+    <p>
+        The default is already a shallow merge: the generated deserializer only writes the properties
+        the payload actually contains, so a key it omits keeps whatever the store currently holds.
+        <code>Merge</code> is for when that is not enough - a nested object that must be combined key
+        by key rather than replaced wholesale, or a value the <em>live</em> store must win on because
+        it was assigned before hydration finished.
+    </p>
+    <CodeBlock Code="@Merge" Title="Keeping a live value" Compact="true" />
+
+    <p>
+        It runs for cross-tab changes too, so both paths agree on what "applying stored state" means.
+        Return <code>null</code> to discard the payload and keep what the store already has; a hook
+        that throws does the same and reports through <code>OnError</code>, because applying a
+        half-merged state would be worse than starting from defaults.
+    </p>
+
+    <h2>BlexStatePersistor</h2>
+    <p>Resolve it from DI when you need to control persistence directly.</p>
+    <ApiTable Rows="@PersistorRows" />
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Only registered stores rehydrate">
+        <p style="margin-bottom:0">
+            <code>StartAsync</code> walks the manager's registry. <code>&lt;BlexProvider&gt;</code>
+            registers everything before calling it, so in Blazor this is automatic. In a host without
+            the provider, resolve every store from DI first - resolution is what registers them.
+        </p>
+    </Callout>
+
+    <h2>Custom storage</h2>
+    <p>
+        The core package ships only the abstraction; <code>Bit.Blex.Blazor</code> supplies the browser
+        implementation. Anything else - a file, IndexedDB, a server round-trip - is one small class.
+    </p>
+    <CodeBlock Code="@CustomStorage" />
+
+    <p>
+        A storage that can tell when something <em>else</em> wrote to it - a file watcher, a server
+        push, another tab - can also implement <code>IBlexExternalStorageChange</code> to opt into
+        <code>SyncAcrossTabs</code>. Raise the event only for changes you did not make yourself;
+        echoing your own writes back would spin the two sides against each other.
+    </p>
+    <CodeBlock Code="@WatchableStorage" Title="Reporting external changes" Compact="true" />
+
+    <h2>Prerendering</h2>
+    <p>
+        <code>&lt;BlexProvider&gt;</code> also bridges to Blazor's
+        <code>PersistentComponentState</code>. State produced during prerendering is handed to the
+        interactive render instead of being recomputed, which removes the "double render" flicker.
+        That is separate from durable persistence: it applies to <em>every</em> store, not just
+        persisted ones, and only spans a single page load. Opt out with
+        <code>PersistComponentState="false"</code>.
+    </p>
+    <p>
+        Under Blazor Server, browser storage is unreachable during prerendering because JS interop is
+        not available yet. Rather than crashing startup, the provider retries hydration on first
+        render, once the circuit is interactive.
+    </p>
+
+    <h2>What you can rely on</h2>
+    <ul>
+        <li><strong>Corrupt data never breaks startup.</strong> An unreadable payload is reported through <code>OnError</code>, discarded and removed from storage.</li>
+        <li><strong>Restores are written back.</strong> Undo/redo and DevTools time-travel save the restored state, so a reload cannot resurrect the pre-restore state.</li>
+        <li><strong>Writes are ordered.</strong> Saves are chained in dispatch order, so a stale payload can never overwrite a newer one.</li>
+        <li><strong>Rehydration does not echo.</strong> Saving is suspended while <code>StartAsync</code> restores, so loading state does not immediately rewrite it.</li>
+        <li><strong>Only persisted stores are written.</strong> A store without <code>Persist = true</code> is ignored entirely.</li>
+        <li><strong>A failed write is reported, not swallowed.</strong> Quota exhaustion, private mode or storage being disabled reaches <code>OnError</code> with source <code>"persistence"</code> - the app can tell the user their changes are not being saved rather than pretending they were.</li>
+    </ul>
+
+    <Callout Kind="Callout.CalloutKind.Warning" Title="Renaming a store strands its data">
+        <p style="margin-bottom:0">
+            The storage key is <code>KeyPrefix + store.Name</code>. Change <code>Name</code> and the
+            old payload is orphaned - the store silently starts from defaults. Treat a persisted
+            store's name as part of its contract, and use <code>Version</code> plus
+            <code>Migrate</code> when the shape has to change.
+        </p>
+    </Callout>
+
+</DocPage>
+
+@code {
+    private static readonly string[] Accents = ["violet", "teal", "amber", "rose"];
+
+    private string? _raw;
+
+    protected override void OnInitialized() => Subscribe(Settings);
+
+    private async Task ReadRaw()
+    {
+        var value = await Js.InvokeAsync<string?>("blexDocs.readStorage", "blex-docs:settings");
+        _raw = value ?? "(nothing stored yet - change a setting, then read again)";
+    }
+
+    private async Task FlushAsync()
+    {
+        await Persistor.FlushAsync();
+        await ReadRaw();
+    }
+
+    private async Task ClearAsync()
+    {
+        await Persistor.ClearAsync();
+        await ReadRaw();
+    }
+
+    private static readonly IReadOnlyList<ApiTable.Row> ProviderRows =
+    [
+        new("AddBitBlexLocalStoragePersistence(…)", "Blazor: <code>window.localStorage</code>. Survives browser restarts."),
+        new("AddBitBlexSessionStoragePersistence(…)", "Blazor: <code>window.sessionStorage</code>. Cleared when the tab closes."),
+        new("AddBitBlexPersistence(…)", "Core: wires the persistor to whatever <code>IBlexStorage</code> you have registered."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> OptionRows =
+    [
+        new("string KeyPrefix", "Prepended to every store's key. Default <code>\"blex:\"</code>, giving <code>blex:settings</code>."),
+        new("TimeSpan? DebounceInterval", "Coalesce a burst of actions into one write after this quiet period. Default <code>null</code> - write after every action."),
+        new("TimeSpan? DebounceMaxDelay", "Upper bound on how long a debounced write may be postponed under a steady stream of actions. Only meaningful with <code>DebounceInterval</code>."),
+        new("int Version", "Schema version. Above zero, payloads are wrapped in a version envelope and checked on load. Default <code>0</code> - no envelope, no checking."),
+        new("Func&lt;string, int, JsonObject, JsonObject?&gt;? Migrate", "Called when a stored version differs from <code>Version</code>. Receives the store name, the stored version and the state; return the migrated state, or <code>null</code> to discard."),
+        new("Func&lt;string, JsonObject, JsonObject?&gt;? Partialize", "Projects each store's snapshot before it is written. Receives the store name and its state; return what to persist, or <code>null</code> to skip that store's write and leave storage as-is."),
+        new("Action&lt;string, JsonObject?&gt;? OnRehydrated", "Called once per persistent store as its stored slice is applied. Receives the store name and the applied state, or <code>null</code> when nothing was stored."),
+        new("bool SkipHydration", "Start saving without restoring. Call <code>RehydrateAsync()</code> to apply stored state later. Default <code>false</code>."),
+        new("bool SyncAcrossTabs", "Apply state written by another tab as soon as it lands, instead of only at the next startup. Requires a storage implementing <code>IBlexExternalStorageChange</code> (the browser <code>localStorage</code> provider does). Default <code>false</code>."),
+        new("Action&lt;string, JsonObject&gt;? OnExternalChange", "Called after another tab's state has been applied, with the store name and the applied slice."),
+        new("Func&lt;string, JsonObject, JsonObject, JsonObject?&gt;? Merge", "Combines a stored payload with the store's current state before it is applied. Receives the store name, the stored slice and a fresh snapshot of the live store; return what to apply, or <code>null</code> to discard. Runs for cross-tab changes too."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> PersistorRows =
+    [
+        new("Task StartAsync(CancellationToken)", "Rehydrates every persistent store, then starts listening. Safe to call again - storage errors (such as interop being unavailable during prerender) propagate so the host can retry."),
+        new("Task FlushAsync()", "Forces any debounced write now and awaits every queued write. Useful before navigating away, and in tests."),
+        new("Task RehydrateAsync(CancellationToken)", "Applies stored state to every persistent store now. Pairs with <code>SkipHydration</code>; the restore itself is not an action, so it does not trigger a write back."),
+        new("Task ClearAsync(CancellationToken)", "Removes every persistent store's saved slice from storage."),
+        new("ValueTask DisposeAsync()", "Stops listening and flushes what is pending."),
+        new("bool HasHydrated", "Whether rehydration has completed at least once - i.e. whether the stores hold stored state or declared defaults."),
+        new("event Action? Hydrated", "Raised when hydration completes. Re-render from it to swap a skeleton for real data."),
+        new("Task WhenHydratedAsync()", "Completes once hydration has finished; already completed when <code>HasHydrated</code> is true. Released on disposal so a persistor torn down before it hydrated leaves nobody awaiting forever."),
+    ];
+
+    private const string OptIn = """
+        [BlexStore(Name = "settings", Persist = true)]
+        public partial class SettingsStore
+        {
+            [BlexState] private string _accent = "violet";
+            [BlexState] private Density _density = Density.Comfortable;
+        }
+        """;
+
+    private const string Register = """
+        // Blazor WebAssembly / Blazor Server
+        builder.Services.AddBitBlexLocalStoragePersistence();
+
+        // ... or with options
+        builder.Services.AddBitBlexLocalStoragePersistence(options =>
+        {
+            options.KeyPrefix = "myapp:";
+            options.DebounceInterval = TimeSpan.FromMilliseconds(300);
+            options.DebounceMaxDelay = TimeSpan.FromSeconds(2);
+            options.Version = 1;
+        });
+        """;
+
+    private const string StoreSource = """
+        [BlexStore(Name = "settings", Persist = true)]
+        public partial class SettingsStore
+        {
+            [BlexState] private string _accent = "violet";
+            [BlexState] private Density _density = Density.Comfortable;
+            [BlexState] private bool _showLineNumbers = true;
+            [BlexState] private string _token = "sk-live-...";   // redacted from DevTools
+
+            [BlexComputed]
+            private string ComputeSummary()
+                => $"{Accent} / {Density} / {(ShowLineNumbers ? "numbered" : "plain")}";
+
+            [BlexAction] private void OnSetAccent(string accent)  => Accent = accent;
+            [BlexAction] private void OnSetDensity(Density d)     => Density = d;
+            [BlexAction] private void OnToggleLineNumbers()       => ShowLineNumbers = !ShowLineNumbers;
+        }
+        """;
+
+    private const string Debounce = """
+        builder.Services.AddBitBlexLocalStoragePersistence(options =>
+        {
+            // One write per quiet 300 ms...
+            options.DebounceInterval = TimeSpan.FromMilliseconds(300);
+            // ...but never postpone a pending change by more than 2 s.
+            options.DebounceMaxDelay = TimeSpan.FromSeconds(2);
+        });
+        """;
+
+    private const string Migrate = """
+        builder.Services.AddBitBlexLocalStoragePersistence(options =>
+        {
+            options.Version = 2;
+            options.Migrate = (storeName, fromVersion, state) =>
+            {
+                if (storeName != "settings")
+                    return state;
+
+                if (fromVersion < 2)
+                {
+                    // v1 stored a bool; v2 stores an enum.
+                    var compact = state["Compact"]?.GetValue<bool>() ?? false;
+                    state["Density"] = compact ? "Compact" : "Comfortable";
+                    state.Remove("Compact");
+                }
+
+                return state;      // or null to discard the payload entirely
+            };
+        });
+        """;
+
+    private const string Partialize = """
+        builder.Services.AddBitBlexLocalStoragePersistence(options =>
+        {
+            options.Partialize = (storeName, state) =>
+            {
+                if (storeName == "search")
+                {
+                    // The query text and the fetched results are per-visit; the saved filters are not.
+                    state.Remove("Query");
+                    state.Remove("Results");
+                }
+
+                // Never write a half-finished upload back to storage.
+                if (storeName == "uploads" && state["Status"]?.GetValue<string>() == "InFlight")
+                    return null;
+
+                return state;
+            };
+        });
+        """;
+
+    private const string SyncTabs = """
+        builder.Services.AddBitBlexLocalStoragePersistence(options =>
+        {
+            options.SyncAcrossTabs = true;
+
+            options.OnExternalChange = (storeName, state) =>
+                _toasts.Show($"{storeName} was updated in another tab");
+        });
+        """;
+
+    private const string OnRehydrated = """
+        options.OnRehydrated = (storeName, state) =>
+        {
+            if (storeName != "settings")
+                return;
+
+            if (state is null)
+                _telemetry.FirstVisit();          // nothing was stored
+            else
+                _telemetry.Restored(state.Count); // came back with saved settings
+        };
+        """;
+
+    private const string Hydration = """
+        @inject BlexStatePersistor Persistor
+        @inject CartStore Cart
+
+        @if (!Persistor.HasHydrated)
+        {
+            <CartSkeleton />        @* not "0 items" -- we do not know yet *@
+        }
+        else
+        {
+            <CartSummary Total="Cart.Total" />
+        }
+
+        @code {
+            protected override void OnInitialized() => Persistor.Hydrated += Rerender;
+
+            private void Rerender() => _ = InvokeAsync(StateHasChanged);
+
+            protected override void Dispose(bool disposing) => Persistor.Hydrated -= Rerender;
+        }
+        """;
+
+    private const string HydrationSource = """
+        @inject BlexStatePersistor Persistor
+
+        <p>HasHydrated: @Persistor.HasHydrated</p>
+
+        @code {
+            // Or await it, when the decision is not a render:
+            protected override async Task OnInitializedAsync()
+            {
+                await Persistor.WhenHydratedAsync();
+                _accent = Settings.Accent;   // guaranteed to be the stored value
+            }
+        }
+        """;
+
+    private const string Merge = """
+        builder.Services.AddBitBlexLocalStoragePersistence(options =>
+        {
+            options.Merge = (storeName, persisted, current) =>
+            {
+                // A connection id assigned during startup must survive rehydration.
+                if (storeName == "session")
+                    persisted["ConnectionId"] = current["ConnectionId"]?.DeepClone();
+
+                return persisted;   // or null to discard the payload entirely
+            };
+        });
+        """;
+
+    private const string SkipHydration = """
+        builder.Services.AddBitBlexLocalStoragePersistence(options => options.SkipHydration = true);
+
+        // ...later, once you know who the user is:
+        @inject BlexStatePersistor Persistor
+
+        private async Task OnSignedIn()
+        {
+            await Persistor.RehydrateAsync();
+        }
+        """;
+
+    private const string CustomStorage = """
+        public sealed class FileStorage(string directory) : IBlexStorage
+        {
+            private string Path(string key) => System.IO.Path.Combine(directory, key + ".json");
+
+            public async ValueTask<string?> GetAsync(string key, CancellationToken ct = default)
+                => File.Exists(Path(key)) ? await File.ReadAllTextAsync(Path(key), ct) : null;
+
+            public async ValueTask SetAsync(string key, string value, CancellationToken ct = default)
+                => await File.WriteAllTextAsync(Path(key), value, ct);
+
+            public ValueTask RemoveAsync(string key, CancellationToken ct = default)
+            {
+                File.Delete(Path(key));
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        // Program.cs
+        services.AddSingleton<IBlexStorage>(new FileStorage("./state"));
+        services.AddBitBlexPersistence();
+        """;
+
+    private const string WatchableStorage = """
+        public sealed class FileStorage : IBlexStorage, IBlexExternalStorageChange
+        {
+            private FileSystemWatcher? _watcher;
+
+            public event Action<string?>? ExternalChange;
+
+            public ValueTask StartWatchingAsync(CancellationToken ct = default)
+            {
+                _watcher ??= new FileSystemWatcher(_directory, "*.json") { EnableRaisingEvents = true };
+                _watcher.Changed += (_, e) =>
+                {
+                    // Skip anything this instance just wrote, or the two sides will ping-pong.
+                    if (!_ownWrites.Remove(e.FullPath))
+                        ExternalChange?.Invoke(Path.GetFileNameWithoutExtension(e.Name));
+                };
+
+                return ValueTask.CompletedTask;
+            }
+
+            // ...Get/Set/Remove as above.
+        }
+        """;
+}

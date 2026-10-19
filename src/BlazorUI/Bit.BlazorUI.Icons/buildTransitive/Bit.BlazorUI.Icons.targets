@@ -1,0 +1,13 @@
+﻿<Project>
+
+    <!-- Names this package's icon stylesheet, glyph by glyph, to the publish-time asset trimming of Bit.BlazorUI, whose
+         buildTransitive\Bit.BlazorUI.targets does the trimming when BitBlazorUITrimIcons is on (and documents how to
+         configure it): buildTransitive\bit-assets in the package, obj\bit-assets in the source tree. An app referencing
+         this package without Bit.BlazorUI has nothing that reads them, and publishes the stylesheet whole. Removed before
+         they are included, so a second import of this file (from build\ as well as buildTransitive\) leaves one of each. -->
+    <ItemGroup>
+        <BitBlazorUIAssetFolder Remove="$(MSBuildThisFileDirectory)bit-assets\;$(MSBuildThisFileDirectory)..\obj\bit-assets\" />
+        <BitBlazorUIAssetFolder Include="$(MSBuildThisFileDirectory)bit-assets\;$(MSBuildThisFileDirectory)..\obj\bit-assets\" Package="Bit.BlazorUI.Icons" />
+    </ItemGroup>
+
+</Project>

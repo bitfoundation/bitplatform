@@ -1,0 +1,110 @@
+﻿@page "/floating-edges"
+
+<PageTitle>Floating Edges - bit Blow</PageTitle>
+
+<div class="demo-header">
+    <h3>Floating Edges</h3>
+    <p class="text-muted">
+        Uses the new <code>BlowGraphUtils.GetFloatingEdgeParams</code> helper (a port of React Flow's floating-edge
+        math) inside a custom <code>EdgeTemplate</code>. Each edge attaches to the point on a node's border that
+        faces the other node and re-anchors live as you drag. Every node is one big handle apart from a thin
+        rim you move it by, so with <code>BlowConnectionMode.Loose</code> you can connect from anywhere inside a
+        node to anywhere on another.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="example-toolbar">
+    <label>edge path:
+        <select @onchange="e => _edgeType = Enum.Parse<BlowEdgeType>(e.Value!.ToString()!)">
+            <option value="Straight">Straight</option>
+            <option value="Bezier" selected>Bezier</option>
+            <option value="SmoothStep">SmoothStep</option>
+        </select>
+    </label>
+</div>
+
+<div class="demo-canvas" style="height: calc(100vh - 250px);">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="BlowConnectionMode.Loose">
+        <NodeTemplate Context="node">
+            <div class="fl-node" style="@($"background:{Color(node)}")">@node.Label</div>
+            @* Inset, not edge to edge: a handle covering the whole node would leave nothing to
+               press that drags the node instead of starting a connection. *@
+            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Top"
+                    Style="position:absolute;inset:10px;width:auto;height:auto;border-radius:8px;background:transparent;border:1px dashed rgba(255,255,255,0.55);transform:none;" />
+        </NodeTemplate>
+
+        <EdgeTemplate Context="ctx">
+            <BlowBaseEdge Path="@FloatingPath(ctx.Edge)" StrokeWidth="@(ctx.Edge.Selected ? 3 : 1.5)" />
+        </EdgeTemplate>
+
+        <ConnectionLineTemplate Context="c">
+            <path d="@BlowEdgePath.Compute(_edgeType, c.From.X, c.From.Y, c.FromPosition, c.To.X, c.To.Y, c.ToPosition).Path"
+                  fill="none" stroke="#6366f1" stroke-width="2" stroke-dasharray="6 4" />
+        </ConnectionLineTemplate>
+
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap NodeColorFunc="Color" />
+        </ChildContent>
+    </BlowCanvas>
+</div>
+
+<style>
+    /* The node element keeps the library's default chrome - padding, border, white background,
+       an 80px minimum width - unless told otherwise; this node draws its own, edge to edge. */
+    .bit-blow-node.fl-shell { padding:0; border:0; background:none; min-width:0; box-shadow:none; border-radius:14px; }
+    .bit-blow-node.fl-shell.selected { box-shadow:0 0 0 2px var(--bit-blow-node-selected); }
+
+    /* A rounded square rather than a circle: the floating-edge helper meets the node's bounding
+       box, so a circle would leave the edges stopping short of it on the diagonals. */
+    .fl-node {
+        display:flex; align-items:center; justify-content:center;
+        width:100%; height:100%; box-sizing:border-box; border-radius:14px;
+        border:2px solid rgba(0,0,0,0.15); font-weight:700; color:#fff; font-size:13px;
+    }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowEdgeType _edgeType = BlowEdgeType.Bezier;
+
+    private static readonly string[] Palette = ["#6366f1", "#ef4444", "#16a34a", "#f59e0b", "#0ea5e9", "#a855f7"];
+
+    protected override void OnInitialized()
+    {
+        var layout = new (double x, double y)[] { (250, 0), (500, 130), (430, 380), (160, 430), (10, 200), (260, 200) };
+        _nodes = layout.Select((p, i) => new BlowNode
+        {
+            Id = (i + 1).ToString(),
+            Label = $"N{i + 1}",
+            Position = new(p.x, p.y),
+            Width = 70,
+            Height = 70,
+            Class = "fl-shell",
+        }).ToList();
+
+        _edges =
+        [
+            new BlowEdge { Id = "e6-1", Source = "6", Target = "1" },
+            new BlowEdge { Id = "e6-2", Source = "6", Target = "2" },
+            new BlowEdge { Id = "e6-3", Source = "6", Target = "3" },
+            new BlowEdge { Id = "e6-4", Source = "6", Target = "4" },
+            new BlowEdge { Id = "e6-5", Source = "6", Target = "5" },
+        ];
+    }
+
+    private string Color(BlowNode n) => Palette[(int.Parse(n.Id) - 1) % Palette.Length];
+
+    private string FloatingPath(BlowEdge edge)
+    {
+        var s = _nodes.FirstOrDefault(n => n.Id == edge.Source);
+        var t = _nodes.FirstOrDefault(n => n.Id == edge.Target);
+        if (s is null || t is null) return string.Empty;
+        var (src, srcPos, tgt, tgtPos) = BlowGraphUtils.GetFloatingEdgeParams(s, t);
+        return BlowEdgePath.Compute(_edgeType, src.X, src.Y, srcPos, tgt.X, tgt.Y, tgtPos).Path;
+    }
+}

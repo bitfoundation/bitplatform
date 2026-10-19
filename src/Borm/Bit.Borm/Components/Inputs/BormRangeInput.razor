@@ -1,0 +1,43 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+<div class="bit-borm-range">
+    @* Splat first so the renderer's own attributes below always win. *@
+    <input @attributes="ExtraAttributes"
+           id="@Context.ElementId"
+           @ref="Element"
+           class="bit-borm-range__slider"
+           type="range"
+           value="@Context.StringValue"
+           disabled="@DisabledOrReadOnly"
+           min="@(MinAttribute ?? "0")"
+           max="@(MaxAttribute ?? "100")"
+           step="@Step"
+           aria-required="@AriaRequired"
+           aria-invalid="@AriaInvalid"
+           aria-label="@AriaLabel"
+           aria-valuetext="@ValueText"
+           aria-describedby="@DescribedBy"
+           @oninput="OnSlide"
+           @onblur="OnBlur" />
+    <output class="bit-borm-range__value" for="@Context.ElementId" aria-live="off">@Display</output>
+</div>
+
+@code {
+    private string Step => BormNumber.ToAttribute(Field.NumericStep) ?? "1";
+
+    // A slider has no meaningful "commit" moment — dragging *is* the interaction — so it always writes
+    // live, whatever the field's update trigger says.
+    private Task OnSlide(ChangeEventArgs e) => Context.SetFromStringAsync(e.Value?.ToString());
+
+    /// <summary>The readout beside the slider, with the field's affixes so "70" can read as "70 kg".</summary>
+    private string Display => $"{Field.Prefix}{Context.StringValue}{Field.Suffix}";
+
+    /// <summary>
+    /// What a screen reader announces as the slider moves. Null unless the field carries an affix: the
+    /// bare number is already announced, and overriding it with the same thing would only risk saying
+    /// it worse. With a unit attached, "70" and "70 kg" are not the same announcement.
+    /// </summary>
+    private string? ValueText
+        => string.IsNullOrEmpty(Field.Prefix) && string.IsNullOrEmpty(Field.Suffix) ? null : Display;
+}

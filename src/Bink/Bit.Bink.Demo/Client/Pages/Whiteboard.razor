@@ -1,0 +1,401 @@
+﻿@page "/whiteboard"
+@using System.Numerics
+@inject FileDownloads Downloads
+
+<PageTitle>Whiteboard - bit Bink</PageTitle>
+
+<h1>Whiteboard</h1>
+<p class="page-intro">
+    The full editor: pens, markers, highlighters, three kinds of eraser, shapes, text, selection with move,
+    resize and rotate, layers, pan and zoom. Everything here is built from the public API.
+</p>
+
+<div class="panel">
+    <div class="toolbar" role="toolbar" aria-label="Whiteboard tools">
+        <div class="toolbar-group" role="group" aria-label="Tool">
+            @foreach ((string id, string label, string title) in ToolButtons)
+            {
+                <button type="button" class="btn @(_toolId == id ? "active" : null)" title="@title"
+                        aria-pressed="@(_toolId == id ? "true" : "false")"
+                        @onclick="() => SelectTool(id)">@label</button>
+            }
+        </div>
+
+        <div class="toolbar-separator"></div>
+
+        <ColorSwatches Colors="Palette" Value="@_color" ValueChanged="SetColor" />
+
+        <div class="toolbar-separator"></div>
+
+        <label class="field">
+            Size
+            <input type="range" min="1" max="40" step="1" value="@_width" aria-label="Size" @onchange="OnWidthChanged" />
+            <span style="min-width:2ch">@((int)_width)</span>
+        </label>
+
+        @if (_toolId is "rect" or "ellipse")
+        {
+            <label class="field">
+                <input type="checkbox" checked="@_fill" @onchange="OnFillChanged" />
+                Fill
+            </label>
+        }
+
+        @if (_toolId == "eraser")
+        {
+            <label class="field">
+                Eraser
+                <select value="@_eraserMode" @onchange="OnEraserModeChanged" aria-label="Eraser mode">
+                    <option value="Stroke">Whole stroke</option>
+                    <option value="Segment">Part of a stroke</option>
+                    <option value="Pixel">Mask (undoable)</option>
+                </select>
+            </label>
+        }
+
+        <div class="toolbar-spacer"></div>
+
+        <div class="toolbar-group" role="group" aria-label="History">
+            <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanUndo)"
+                    title="Undo (Ctrl+Z)" @onclick="() => _canvas?.Undo()">Undo</button>
+            <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanRedo)"
+                    title="Redo (Ctrl+Shift+Z)" @onclick="() => _canvas?.Redo()">Redo</button>
+            <button type="button" class="btn danger" disabled="@_document.IsEmpty" @onclick="() => _canvas?.Clear()">Clear</button>
+        </div>
+    </div>
+
+    <div class="toolbar" style="border-top:none">
+        <div class="toolbar-group" role="group" aria-label="View">
+            <button type="button" class="btn" @onclick="() => _canvas?.ZoomBy(1.25f)" aria-label="Zoom in">+</button>
+            <button type="button" class="btn" @onclick="() => _canvas?.ZoomBy(0.8f)" aria-label="Zoom out">-</button>
+            <button type="button" class="btn" @onclick="() => _canvas?.ZoomToFit()">Fit</button>
+            <button type="button" class="btn" @onclick="() => _canvas?.ResetViewport()">100%</button>
+        </div>
+
+        <div class="toolbar-separator"></div>
+
+        <div class="toolbar-group" role="group" aria-label="Layers">
+            <label class="field">
+                Layer
+                <select value="@_activeLayer" @onchange="OnLayerChanged" aria-label="Active layer">
+                    @foreach (BinkLayer layer in _document.Layers.Reverse())
+                    {
+                        <option value="@layer.Id">@LayerLabel(layer)</option>
+                    }
+                </select>
+            </label>
+            <button type="button" class="btn" @onclick="AddLayer">Add layer</button>
+            <button type="button" class="btn" aria-pressed="@(ActiveLayer?.IsVisible == false ? "true" : "false")"
+                    @onclick="ToggleLayerVisibility">@(ActiveLayer?.IsVisible == false ? "Show" : "Hide")</button>
+            <button type="button" class="btn" aria-pressed="@(ActiveLayer?.IsLocked == true ? "true" : "false")"
+                    @onclick="ToggleLayerLock">@(ActiveLayer?.IsLocked == true ? "Unlock" : "Lock")</button>
+            <button type="button" class="btn danger" disabled="@(_document.Layers.Count < 2)" @onclick="DeleteLayer">Delete layer</button>
+        </div>
+
+        <div class="toolbar-spacer"></div>
+
+        <div class="toolbar-group" role="group" aria-label="File">
+            <label class="btn">
+                Open
+                <InputFile OnChange="OpenAsync" accept=".json,.bink,application/json" style="display:none" />
+            </label>
+            <button type="button" class="btn" @onclick="SaveAsync">Save</button>
+            <button type="button" class="btn" disabled="@_document.IsEmpty" @onclick="ExportSvgAsync">Export SVG</button>
+            <button type="button" class="btn" disabled="@_document.IsEmpty" @onclick="ExportPngAsync">Export PNG</button>
+        </div>
+    </div>
+
+    <div class="toolbar" style="border-top:none" role="toolbar" aria-label="Selection">
+        <div class="toolbar-group" role="group" aria-label="Arrange">
+            <button type="button" class="btn" disabled="@_document.IsEmpty" title="Select all (Ctrl+A)" @onclick="SelectAll">Select all</button>
+            <button type="button" class="btn" disabled="@(!HasSelection)" title="Duplicate (Ctrl+D)" @onclick="Duplicate">Duplicate</button>
+            <button type="button" class="btn" disabled="@(!HasSelection)" @onclick="() => Arrange(toFront: true)">Bring to front</button>
+            <button type="button" class="btn" disabled="@(!HasSelection)" @onclick="() => Arrange(toFront: false)">Send to back</button>
+            <button type="button" class="btn danger" disabled="@(!HasSelection)" title="Delete" @onclick="() => _canvas?.DeleteSelection()">Delete</button>
+        </div>
+        @if (_message is not null)
+        {
+            <span class="field" role="status">@_message</span>
+        }
+    </div>
+
+    <div class="canvas-host">
+        <BinkCanvas @ref="_canvas"
+                   Document="_document"
+                   Height="520px"
+                   Tool="_tool"
+                   Brush="_brush"
+                   ShapeStyle="_shapeStyle"
+                   ActiveLayerId="_activeLayer"
+                   EnableTouchGestures="true"
+                   AriaLabel="Whiteboard"
+                   DocumentChanged="() => StateHasChanged()"
+                   HistoryChanged="() => StateHasChanged()"
+                   Ready="() => StateHasChanged()"
+                   SelectionChanged="() => StateHasChanged()" />
+    </div>
+
+    <CanvasStatus Canvas="_canvas">
+        <span><strong>@(_canvas?.Selection.Count ?? 0)</strong> selected</span>
+        <span><strong>@_document.Layers.Count</strong> layers</span>
+    </CanvasStatus>
+</div>
+
+<div class="note">
+    Selection has real handles: drag inside the box to move, the corners and edges to resize, the circle above it
+    to rotate. Manipulation only changes each element's transform, so the vector data is never rewritten and undo
+    restores it exactly. Arrow keys nudge, Shift makes larger steps, Delete removes. A locked layer is skipped by
+    selection and erasing, and saving writes the whole board, layers included, as a file you can open again.
+</div>
+
+@code {
+    private BinkCanvas? _canvas;
+    private BinkDocument _document = CreateDocument();
+    private Guid _activeLayer;
+    private string _toolId = "draw";
+    private string _color = "#111827";
+    private float _width = 4f;
+    private bool _fill;
+    private string _eraserMode = "Stroke";
+    private IBinkTool _tool = new BinkDrawTool();
+    private BinkBrush _brush = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse("#111827") };
+    private BinkShapeStyle _shapeStyle = new() { StrokeColor = BinkColor.Parse("#111827"), StrokeWidth = 3f };
+    private string? _message;
+
+    private static readonly (string Id, string Label, string Title)[] ToolButtons =
+    [
+        ("select", "Select", "Select, move, resize and rotate"),
+        ("draw", "Pen", "Freehand pen"),
+        ("marker", "Marker", "Constant width marker"),
+        ("highlighter", "Highlighter", "Translucent highlighter"),
+        ("eraser", "Eraser", "Eraser"),
+        ("rect", "Rectangle", "Rectangle"),
+        ("ellipse", "Ellipse", "Ellipse"),
+        ("arrow", "Arrow", "Arrow"),
+        ("text", "Text", "Text"),
+        ("pan", "Pan", "Pan and pinch zoom"),
+    ];
+
+    private static readonly string[] Palette =
+        ["#111827", "#dc2626", "#ea580c", "#ca8a04", "#16a34a", "#2563eb", "#7c3aed", "#db2777"];
+
+    private static BinkDocument CreateDocument()
+    {
+        var document = new BinkDocument(new BinkDocumentSettings { Width = 1600, Height = 1000, Background = BinkColor.White });
+        document.UpdateLayer(document.Layers[0].Id, p => p with { Name = "Drawing" });
+        document.AddLayer("Annotations");
+        return document;
+    }
+
+    protected override void OnInitialized()
+    {
+        _activeLayer = _document.Layers[0].Id;
+    }
+
+    private BinkLayer? ActiveLayer => _document.TryGetLayer(_activeLayer, out BinkLayer? layer) ? layer : null;
+
+    private bool HasSelection => _canvas is not null && !_canvas.Selection.IsEmpty;
+
+    private static string LayerLabel(BinkLayer layer)
+        => layer.Name + (layer.IsVisible ? null : " (hidden)") + (layer.IsLocked ? " (locked)" : null);
+
+    private void SelectTool(string id)
+    {
+        _toolId = id;
+        BinkColor color = BinkColor.Parse(_color);
+        _shapeStyle = _shapeStyle with
+        {
+            StrokeColor = color,
+            StrokeWidth = MathF.Max(_width * 0.75f, 1f),
+            FillColor = _fill ? color with { A = 48 } : null,
+        };
+
+        switch (id)
+        {
+            case "select":
+                _tool = new BinkSelectTool();
+                break;
+            case "draw":
+                _brush = new BinkPenBrush { Width = _width, Color = color };
+                _tool = new BinkDrawTool();
+                break;
+            case "marker":
+                _brush = new BinkMarkerBrush { Width = MathF.Max(_width * 1.5f, 6f), Color = color };
+                _tool = new BinkDrawTool();
+                break;
+            case "highlighter":
+                _brush = new BinkHighlighterBrush { Width = MathF.Max(_width * 4f, 16f), Color = color with { A = 255 } };
+                _tool = new BinkDrawTool();
+                break;
+            case "eraser":
+                _tool = new BinkEraserTool
+                {
+                    Mode = Enum.Parse<BinkEraserMode>(_eraserMode),
+                    Radius = MathF.Max(_width * 2f, 8f),
+                };
+                _brush = new BinkPixelEraserBrush { Width = MathF.Max(_width * 4f, 16f) };
+                break;
+            case "rect":
+                _tool = new BinkShapeTool(BinkShapeKind.Rectangle);
+                break;
+            case "ellipse":
+                _tool = new BinkShapeTool(BinkShapeKind.Ellipse);
+                break;
+            case "arrow":
+                _tool = new BinkShapeTool(BinkShapeKind.Arrow);
+                break;
+            case "text":
+                _tool = new BinkTextTool { Style = BinkTextStyle.Default with { FontSize = MathF.Max(_width * 4f, 14f), Color = color } };
+                break;
+            case "pan":
+                _tool = new BinkPanTool();
+                break;
+        }
+    }
+
+    private void SetColor(string color)
+    {
+        _color = color;
+        SelectTool(_toolId);
+    }
+
+    private void OnWidthChanged(ChangeEventArgs e)
+    {
+        if (float.TryParse(e.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out float value))
+        {
+            _width = value;
+            SelectTool(_toolId);
+        }
+    }
+
+    private void OnFillChanged(ChangeEventArgs e)
+    {
+        _fill = e.Value is true;
+        SelectTool(_toolId);
+    }
+
+    private void OnEraserModeChanged(ChangeEventArgs e)
+    {
+        _eraserMode = e.Value?.ToString() ?? "Stroke";
+        SelectTool("eraser");
+    }
+
+    private void OnLayerChanged(ChangeEventArgs e)
+    {
+        if (Guid.TryParse(e.Value?.ToString(), out Guid id)) _activeLayer = id;
+    }
+
+    private void AddLayer()
+    {
+        BinkLayer layer = _document.AddLayer($"Layer {_document.Layers.Count + 1}");
+        _activeLayer = layer.Id;
+    }
+
+    private void ToggleLayerVisibility()
+    {
+        if (ActiveLayer is not { } layer) return;
+        bool visible = layer.IsVisible;
+        _document.UpdateLayer(layer.Id, p => p with { IsVisible = !visible });
+        _canvas?.Refresh();
+    }
+
+    private void ToggleLayerLock()
+    {
+        if (ActiveLayer is not { } layer) return;
+        bool locked = layer.IsLocked;
+        _document.UpdateLayer(layer.Id, p => p with { IsLocked = !locked });
+        // A locked layer cannot keep a selection: what is selected there could still be moved by the keyboard.
+        if (!locked) _canvas?.Selection.Set(_canvas.Selection.Ids.Where(id => _document.GetLayerOf(id)?.Id != layer.Id));
+    }
+
+    private void DeleteLayer()
+    {
+        if (ActiveLayer is not { } layer || _document.Layers.Count < 2) return;
+        _document.RemoveLayer(layer.Id);
+        _activeLayer = _document.Layers[^1].Id;
+        _canvas?.Refresh();
+    }
+
+    private void SelectAll()
+    {
+        if (_toolId != "select") SelectTool("select");
+        _canvas?.SelectAll();
+    }
+
+    /// <summary>Copies the selection, offset so the copy is visible, and selects the copy.</summary>
+    private void Duplicate()
+    {
+        if (_canvas is null || _canvas.Selection.IsEmpty) return;
+        var copies = new List<Guid>();
+        using (_document.BeginBatch("Duplicate"))
+        {
+            foreach (BinkElement element in _canvas.Selection.Elements.ToList())
+            {
+                Guid? layer = _document.GetLayerOf(element.Id)?.Id;
+                BinkElement copy = element.Translate(new Vector2(16f, 16f)) with { Id = Guid.NewGuid(), Version = 0 };
+                _document.AddElement(copy, layer);
+                copies.Add(copy.Id);
+            }
+        }
+        _canvas.Selection.Set(copies);
+        _message = copies.Count == 1 ? "Duplicated 1 element." : $"Duplicated {copies.Count} elements.";
+    }
+
+    /// <summary>Moves the selection to the top or bottom of its layer, keeping the selected elements' own order.</summary>
+    private void Arrange(bool toFront)
+    {
+        if (_canvas is null || _canvas.Selection.IsEmpty) return;
+        // Work in document order so the selected elements keep their relative stacking.
+        List<BinkElement> ordered = _document.AllElements.Where(e => _canvas.Selection.Contains(e.Id)).ToList();
+        if (!toFront) ordered.Reverse();
+        using (_document.BeginBatch(toFront ? "Bring to front" : "Send to back"))
+        {
+            foreach (BinkElement element in ordered)
+            {
+                if (_document.GetLayerOf(element.Id) is not { } layer) continue;
+                _document.Apply(new BinkReorderElementOperation(element.Id, layer.Id, toFront ? null : 0));
+            }
+        }
+        _canvas.Refresh();
+    }
+
+    private async Task SaveAsync()
+    {
+        byte[] bytes = BinkSerializer.SerializeToUtf8Bytes(_document);
+        await Downloads.SaveAsync("whiteboard.bink.json", bytes, "application/json");
+        _message = $"Saved {bytes.Length / 1024.0:0.#} KB.";
+    }
+
+    private async Task OpenAsync(InputFileChangeEventArgs args)
+    {
+        const long maxBytes = 20 * 1024 * 1024;
+        try
+        {
+            using var buffer = new MemoryStream();
+            await using (Stream stream = args.File.OpenReadStream(maxBytes))
+            {
+                await stream.CopyToAsync(buffer);
+            }
+            string json = System.Text.Encoding.UTF8.GetString(buffer.ToArray());
+            if (!BinkSerializer.TryDeserialize(json, out BinkDocument? document, out string? error) || document is null)
+            {
+                _message = "That file could not be opened: " + error;
+                return;
+            }
+            // Swapping the Document parameter is all it takes: the canvas resets its history and selection.
+            _document = document;
+            _activeLayer = _document.Layers[^1].Id;
+            _message = $"Opened {args.File.Name}: {_document.ElementCount} elements on {_document.Layers.Count} layers.";
+        }
+        catch (IOException ex)
+        {
+            _message = "That file could not be read: " + ex.Message;
+        }
+    }
+
+    private Task ExportSvgAsync()
+        => _canvas?.SaveSvgAsync("whiteboard.svg", new BinkSvgExportOptions { Region = BinkExportRegion.Content, Padding = 24f }) ?? Task.CompletedTask;
+
+    private Task ExportPngAsync()
+        => _canvas?.SavePngAsync("whiteboard.png", new BinkPngExportOptions { Region = BinkExportRegion.Content, Padding = 24f, Scale = 2f }) ?? Task.CompletedTask;
+}

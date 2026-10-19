@@ -1,0 +1,778 @@
+﻿/*
+ * Bmage editor styles.
+ *
+ * Everything is driven by custom properties on .bmg-editor, so a host restyles the whole editor by overriding a handful
+ * of variables rather than fighting specificity. Dark mode, right-to-left layout, high contrast and reduced motion are
+ * all handled here; no component hard-codes a colour.
+ */
+
+.bmg-editor {
+    /* Surfaces */
+    --bmg-bg: #ffffff;
+    --bmg-bg-subtle: #f5f6f8;
+    --bmg-bg-sunken: #e9ebef;
+    --bmg-canvas-bg: #6b7280;
+    --bmg-border: #d5d8de;
+
+    /* Text */
+    --bmg-text: #14161a;
+    --bmg-text-muted: #5c626e;
+
+    /* Accent */
+    --bmg-accent: #2563eb;
+    --bmg-accent-text: #ffffff;
+    --bmg-accent-subtle: #dbe6fe;
+    --bmg-danger: #dc2626;
+
+    /* Metrics */
+    --bmg-radius: 8px;
+    --bmg-radius-sm: 5px;
+    --bmg-gap: 8px;
+    --bmg-toolbar-height: 48px;
+    --bmg-panel-width: 280px;
+    --bmg-focus-ring: 2px solid var(--bmg-accent);
+    --bmg-shadow: 0 1px 3px rgb(0 0 0 / 0.12), 0 1px 2px rgb(0 0 0 / 0.08);
+    --bmg-transition: 120ms ease;
+
+    display: flex;
+    flex-direction: column;
+    min-height: 320px;
+    height: 100%;
+    background: var(--bmg-bg);
+    color: var(--bmg-text);
+    border: 1px solid var(--bmg-border);
+    border-radius: var(--bmg-radius);
+    overflow: hidden;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.45;
+    /* Contains the absolutely positioned overlays. */
+    position: relative;
+}
+
+@media (prefers-color-scheme: dark) {
+    .bmg-editor:not(.bmg-theme-light) {
+        --bmg-bg: #16181d;
+        --bmg-bg-subtle: #1e2128;
+        --bmg-bg-sunken: #101216;
+        --bmg-canvas-bg: #26292f;
+        --bmg-border: #2f333c;
+        --bmg-text: #e8eaed;
+        --bmg-text-muted: #9aa1ad;
+        --bmg-accent: #4f83f1;
+        --bmg-accent-text: #0b0d10;
+        --bmg-accent-subtle: #1d2b4a;
+        --bmg-shadow: 0 1px 3px rgb(0 0 0 / 0.5);
+    }
+}
+
+/* An explicit dark theme, for hosts that manage the theme themselves. */
+.bmg-editor.bmg-theme-dark {
+    --bmg-bg: #16181d;
+    --bmg-bg-subtle: #1e2128;
+    --bmg-bg-sunken: #101216;
+    --bmg-canvas-bg: #26292f;
+    --bmg-border: #2f333c;
+    --bmg-text: #e8eaed;
+    --bmg-text-muted: #9aa1ad;
+    --bmg-accent: #4f83f1;
+    --bmg-accent-text: #0b0d10;
+    --bmg-accent-subtle: #1d2b4a;
+}
+
+/* ---- Layout ---- */
+
+.bmg-editor-body {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+.bmg-editor-stage {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bmg-canvas-bg);
+    overflow: hidden;
+}
+
+/* ---- Toolbar ---- */
+
+.bmg-toolbar {
+    display: flex;
+    align-items: center;
+    gap: var(--bmg-gap);
+    min-height: var(--bmg-toolbar-height);
+    padding: 6px 10px;
+    background: var(--bmg-bg-subtle);
+    border-bottom: 1px solid var(--bmg-border);
+    flex-wrap: wrap;
+}
+
+.bmg-toolgroup {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px;
+    background: var(--bmg-bg);
+    border: 1px solid var(--bmg-border);
+    border-radius: var(--bmg-radius-sm);
+}
+
+.bmg-toolbar-spacer {
+    flex: 1 1 auto;
+}
+
+.bmg-tool {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 32px;
+    padding: 0 6px;
+    border: none;
+    border-radius: var(--bmg-radius-sm);
+    background: transparent;
+    color: var(--bmg-text);
+    cursor: pointer;
+    transition: background var(--bmg-transition), color var(--bmg-transition);
+}
+
+.bmg-tool:hover:not(:disabled) {
+    background: var(--bmg-bg-sunken);
+}
+
+.bmg-tool-active {
+    background: var(--bmg-accent);
+    color: var(--bmg-accent-text);
+}
+
+.bmg-tool-active:hover:not(:disabled) {
+    background: var(--bmg-accent);
+}
+
+.bmg-tool:disabled,
+.bmg-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.bmg-zoom-value {
+    min-width: 52px;
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+}
+
+.bmg-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--bmg-border);
+    border-radius: var(--bmg-radius-sm);
+    background: var(--bmg-bg);
+    color: var(--bmg-text);
+    font: inherit;
+    cursor: pointer;
+    transition: background var(--bmg-transition), border-color var(--bmg-transition);
+}
+
+.bmg-button:hover:not(:disabled) {
+    background: var(--bmg-bg-sunken);
+}
+
+.bmg-button-primary {
+    background: var(--bmg-accent);
+    border-color: var(--bmg-accent);
+    color: var(--bmg-accent-text);
+}
+
+.bmg-button-primary:hover:not(:disabled) {
+    filter: brightness(1.08);
+    background: var(--bmg-accent);
+}
+
+.bmg-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border: none;
+    border-radius: var(--bmg-radius-sm);
+    background: transparent;
+    color: var(--bmg-text-muted);
+    cursor: pointer;
+}
+
+.bmg-icon-button:hover {
+    background: var(--bmg-bg-sunken);
+    color: var(--bmg-danger);
+}
+
+/* ---- Canvas ---- */
+
+.bmg-canvas-host {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    /* Not a flex container: the canvas is placed by its pan offset from the top-left corner, the same mapping the
+       crop and selection overlays use, so the three always line up. The editor centres the image by panning. */
+    overflow: hidden;
+    /* The editor handles its own gestures; the browser must not scroll or zoom the page underneath. */
+    touch-action: none;
+    outline: none;
+}
+
+.bmg-canvas-host:focus-visible {
+    outline: var(--bmg-focus-ring);
+    outline-offset: -2px;
+}
+
+.bmg-canvas {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    /* A checkerboard makes transparency obvious rather than looking like white. */
+    background-color: #ffffff;
+    background-image:
+        linear-gradient(45deg, #d9dce1 25%, transparent 25%),
+        linear-gradient(-45deg, #d9dce1 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #d9dce1 75%),
+        linear-gradient(-45deg, transparent 75%, #d9dce1 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+    box-shadow: var(--bmg-shadow);
+    /* Preserve hard pixel edges when zoomed in past 100%. */
+    image-rendering: auto;
+    transform-origin: 0 0;
+}
+
+/* ---- Crop overlay ---- */
+
+.bmg-crop-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.bmg-crop-shade {
+    position: absolute;
+    background: rgb(0 0 0 / 0.5);
+}
+
+.bmg-crop-frame {
+    position: absolute;
+    border: 1px solid #ffffff;
+    box-shadow: 0 0 0 1px rgb(0 0 0 / 0.35);
+    pointer-events: auto;
+    cursor: move;
+}
+
+/* Rule-of-thirds guides. */
+.bmg-crop-frame::before,
+.bmg-crop-frame::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    opacity: 0.45;
+}
+
+.bmg-crop-frame::before {
+    background-image: linear-gradient(to right, transparent calc(33.33% - 0.5px), #fff calc(33.33% - 0.5px), #fff calc(33.33% + 0.5px), transparent calc(33.33% + 0.5px)),
+                      linear-gradient(to right, transparent calc(66.66% - 0.5px), #fff calc(66.66% - 0.5px), #fff calc(66.66% + 0.5px), transparent calc(66.66% + 0.5px));
+}
+
+.bmg-crop-frame::after {
+    background-image: linear-gradient(to bottom, transparent calc(33.33% - 0.5px), #fff calc(33.33% - 0.5px), #fff calc(33.33% + 0.5px), transparent calc(33.33% + 0.5px)),
+                      linear-gradient(to bottom, transparent calc(66.66% - 0.5px), #fff calc(66.66% - 0.5px), #fff calc(66.66% + 0.5px), transparent calc(66.66% + 0.5px));
+}
+
+.bmg-crop-handle {
+    position: absolute;
+    /* Large enough to hit with a finger; 24px is the minimum comfortable touch target. */
+    width: 24px;
+    height: 24px;
+    background: transparent;
+    pointer-events: auto;
+    cursor: pointer;
+}
+
+.bmg-crop-handle::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 12px;
+    height: 12px;
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    border: 1px solid rgb(0 0 0 / 0.5);
+    border-radius: 2px;
+}
+
+.bmg-crop-handle:focus-visible {
+    outline: var(--bmg-focus-ring);
+}
+
+.bmg-handle-topleft     { top: -12px; left: -12px; cursor: nwse-resize; }
+.bmg-handle-top         { top: -12px; left: calc(50% - 12px); cursor: ns-resize; }
+.bmg-handle-topright    { top: -12px; right: -12px; cursor: nesw-resize; }
+.bmg-handle-left        { top: calc(50% - 12px); left: -12px; cursor: ew-resize; }
+.bmg-handle-right       { top: calc(50% - 12px); right: -12px; cursor: ew-resize; }
+.bmg-handle-bottomleft  { bottom: -12px; left: -12px; cursor: nesw-resize; }
+.bmg-handle-bottom      { bottom: -12px; left: calc(50% - 12px); cursor: ns-resize; }
+.bmg-handle-bottomright { bottom: -12px; right: -12px; cursor: nwse-resize; }
+
+/* ---- Selection ---- */
+
+.bmg-selection {
+    position: absolute;
+    border: 1px dashed var(--bmg-accent);
+    background: rgb(37 99 235 / 0.08);
+    pointer-events: none;
+}
+
+/* ---- Panel ---- */
+
+.bmg-panel {
+    display: flex;
+    flex-direction: column;
+    width: var(--bmg-panel-width);
+    flex: 0 0 var(--bmg-panel-width);
+    background: var(--bmg-bg);
+    border-inline-start: 1px solid var(--bmg-border);
+    overflow: hidden;
+}
+
+.bmg-panel-tabs {
+    display: flex;
+    overflow-x: auto;
+    border-bottom: 1px solid var(--bmg-border);
+    background: var(--bmg-bg-subtle);
+    scrollbar-width: thin;
+}
+
+.bmg-panel-tab {
+    flex: 0 0 auto;
+    padding: 10px 12px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: transparent;
+    color: var(--bmg-text-muted);
+    font: inherit;
+    font-size: 13px;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: color var(--bmg-transition), border-color var(--bmg-transition);
+}
+
+.bmg-panel-tab:hover {
+    color: var(--bmg-text);
+}
+
+.bmg-panel-tab-active {
+    color: var(--bmg-accent);
+    border-bottom-color: var(--bmg-accent);
+}
+
+.bmg-panel-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 12px;
+    outline: none;
+}
+
+.bmg-panel-body:focus-visible {
+    outline: var(--bmg-focus-ring);
+    outline-offset: -2px;
+}
+
+.bmg-fieldset {
+    border: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bmg-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.bmg-field-inline {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.bmg-field-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12px;
+    color: var(--bmg-text-muted);
+}
+
+.bmg-field-value {
+    font-variant-numeric: tabular-nums;
+    color: var(--bmg-text);
+}
+
+.bmg-field-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.bmg-slider {
+    width: 100%;
+    accent-color: var(--bmg-accent);
+    /* Keep the thumb comfortably draggable on touch screens. */
+    height: 24px;
+}
+
+.bmg-slider:focus-visible {
+    outline: var(--bmg-focus-ring);
+    outline-offset: 2px;
+}
+
+.bmg-color {
+    width: 100%;
+    height: 32px;
+    padding: 2px;
+    border: 1px solid var(--bmg-border);
+    border-radius: var(--bmg-radius-sm);
+    background: var(--bmg-bg);
+    cursor: pointer;
+}
+
+.bmg-select {
+    width: 100%;
+    height: 32px;
+    padding: 0 8px;
+    border: 1px solid var(--bmg-border);
+    border-radius: var(--bmg-radius-sm);
+    background: var(--bmg-bg);
+    color: var(--bmg-text);
+    font: inherit;
+}
+
+.bmg-readout {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: var(--bmg-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.bmg-note {
+    opacity: 0.7;
+}
+
+.bmg-empty {
+    margin: 0;
+    padding: 16px 0;
+    text-align: center;
+    color: var(--bmg-text-muted);
+}
+
+/* ---- Filters ---- */
+
+.bmg-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 8px;
+}
+
+.bmg-filter {
+    padding: 10px 6px;
+    border: 1px solid var(--bmg-border);
+    border-radius: var(--bmg-radius-sm);
+    background: var(--bmg-bg);
+    color: var(--bmg-text);
+    font: inherit;
+    font-size: 12px;
+    cursor: pointer;
+    transition: border-color var(--bmg-transition), background var(--bmg-transition);
+}
+
+.bmg-filter:hover:not(:disabled) {
+    background: var(--bmg-bg-sunken);
+}
+
+.bmg-filter-active {
+    border-color: var(--bmg-accent);
+    background: var(--bmg-accent-subtle);
+}
+
+/* ---- Layers and history ---- */
+
+.bmg-layer-list,
+.bmg-history-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.bmg-layer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border-radius: var(--bmg-radius-sm);
+}
+
+.bmg-layer-selected {
+    background: var(--bmg-accent-subtle);
+}
+
+.bmg-layer-name,
+.bmg-history-button {
+    flex: 1 1 auto;
+    padding: 7px 8px;
+    border: none;
+    border-radius: var(--bmg-radius-sm);
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+}
+
+.bmg-layer-name:hover,
+.bmg-history-button:hover {
+    background: var(--bmg-bg-sunken);
+}
+
+.bmg-history-entry {
+    border-radius: var(--bmg-radius-sm);
+}
+
+.bmg-history-current {
+    background: var(--bmg-accent-subtle);
+    font-weight: 600;
+}
+
+.bmg-history-future {
+    opacity: 0.45;
+}
+
+/* ---- Drop zone ---- */
+
+.bmg-dropzone {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: min(520px, 90%);
+    min-height: 220px;
+    border: 2px dashed var(--bmg-border);
+    border-radius: var(--bmg-radius);
+    background: var(--bmg-bg);
+    transition: border-color var(--bmg-transition), background var(--bmg-transition);
+}
+
+.bmg-dropzone-active {
+    border-color: var(--bmg-accent);
+    background: var(--bmg-accent-subtle);
+}
+
+/* The input stays in the layout so it can receive focus, but is visually replaced by the label. */
+.bmg-dropzone-input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.bmg-dropzone-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px;
+    text-align: center;
+    color: var(--bmg-text-muted);
+    pointer-events: none;
+}
+
+.bmg-dropzone-input:focus-visible + .bmg-dropzone-label {
+    outline: var(--bmg-focus-ring);
+    outline-offset: 4px;
+    border-radius: var(--bmg-radius);
+}
+
+.bmg-dropzone-icon {
+    color: var(--bmg-text-muted);
+    opacity: 0.7;
+}
+
+.bmg-dropzone-text {
+    font-size: 14px;
+}
+
+/* ---- Status ---- */
+
+.bmg-busy {
+    position: absolute;
+    inset-block-start: 12px;
+    inset-inline-end: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgb(0 0 0 / 0.65);
+    color: #fff;
+    font-size: 12px;
+}
+
+.bmg-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgb(255 255 255 / 0.35);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: bmg-spin 700ms linear infinite;
+}
+
+@keyframes bmg-spin {
+    to { transform: rotate(360deg); }
+}
+
+.bmg-message {
+    position: absolute;
+    inset-block-end: 12px;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: min(90%, 520px);
+    padding: 10px 14px;
+    border-radius: var(--bmg-radius-sm);
+    background: var(--bmg-bg);
+    border: 1px solid var(--bmg-border);
+    box-shadow: var(--bmg-shadow);
+    font-size: 13px;
+}
+
+.bmg-message-error {
+    border-color: var(--bmg-danger);
+    color: var(--bmg-danger);
+}
+
+.bmg-message-dismiss {
+    border: none;
+    background: transparent;
+    color: inherit;
+    font-size: 18px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0 2px;
+}
+
+/* ---- Accessibility helpers ---- */
+
+.bmg-visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
+.bmg-editor :focus-visible {
+    outline: var(--bmg-focus-ring);
+    outline-offset: 1px;
+}
+
+/* Prerendered output is inert until interactivity arrives; make that visible rather than looking broken. */
+.bmg-prerender .bmg-toolbar,
+.bmg-prerender .bmg-panel {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+/* ---- Responsive: stack the panel below the canvas on narrow screens ---- */
+
+@media (max-width: 720px) {
+    .bmg-editor-body {
+        flex-direction: column;
+    }
+
+    .bmg-panel {
+        width: 100%;
+        flex: 0 0 auto;
+        max-height: 45%;
+        border-inline-start: none;
+        border-block-start: 1px solid var(--bmg-border);
+    }
+
+    .bmg-toolbar {
+        overflow-x: auto;
+        flex-wrap: nowrap;
+    }
+
+    .bmg-tool {
+        /* Comfortable touch targets on phones. */
+        min-width: 40px;
+        height: 40px;
+    }
+}
+
+/* ---- Reduced motion ---- */
+
+@media (prefers-reduced-motion: reduce) {
+    .bmg-editor,
+    .bmg-editor * {
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+
+    .bmg-spinner {
+        animation: none;
+        border-top-color: transparent;
+    }
+}
+
+/* ---- High contrast ---- */
+
+@media (forced-colors: active) {
+    .bmg-editor {
+        --bmg-border: CanvasText;
+        --bmg-accent: Highlight;
+        --bmg-accent-text: HighlightText;
+    }
+
+    .bmg-tool-active,
+    .bmg-button-primary {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+
+    .bmg-crop-frame,
+    .bmg-selection {
+        border-color: CanvasText;
+    }
+}

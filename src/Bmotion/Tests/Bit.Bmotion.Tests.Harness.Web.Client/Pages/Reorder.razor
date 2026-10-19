@@ -1,0 +1,44 @@
+﻿@page "/reorder"
+
+@* BmotionReorderGroup: a vertical list, a horizontal one, and one that only drags by its grip. The committed
+   order of each is published to a readout. *@
+
+<HarnessHeader Title="Reorder" Ready="Ready" OnLog="BindLog" />
+
+<div class="list" id="vertical">
+    <BmotionReorderGroup @bind-Items="_vertical" Context="item" OnReorder='() => Committed(_vertical, _verticalOrder, "vertical")'>
+        <div class="item" data-item="@item">@item</div>
+    </BmotionReorderGroup>
+</div>
+<Readout @ref="_verticalOrder" Id="vertical-order" Initial="A,B,C,D" />
+
+<div class="hlist" id="horizontal">
+    <BmotionReorderGroup @bind-Items="_horizontal" Axis="BmDragAxis.X" Context="item" OnReorder='() => Committed(_horizontal, _horizontalOrder, "horizontal")'>
+        <div class="item" data-item="@item">@item</div>
+    </BmotionReorderGroup>
+</div>
+<Readout @ref="_horizontalOrder" Id="horizontal-order" Initial="1,2,3" />
+
+<div class="list" id="handled">
+    <BmotionReorderGroup @bind-Items="_handled" HandleSelector=".grip" Context="item" OnReorder='() => Committed(_handled, _handledOrder, "handled")'>
+        <div class="item" data-item="@item"><span class="grip"></span>&nbsp;@item</div>
+    </BmotionReorderGroup>
+</div>
+<Readout @ref="_handledOrder" Id="handled-order" Initial="X,Y,Z" />
+
+@code {
+    private List<string> _vertical = ["A", "B", "C", "D"];
+    private List<string> _horizontal = ["1", "2", "3"];
+    private List<string> _handled = ["X", "Y", "Z"];
+    private Readout _verticalOrder = default!;
+    private Readout _horizontalOrder = default!;
+    private Readout _handledOrder = default!;
+
+    private void Committed(List<string> items, Readout readout, string name)
+    {
+        readout.Set(string.Join(",", items));
+        Log($"{name}:reordered");
+        // As an app would: the bound list changed, so the page renders it.
+        StateHasChanged();
+    }
+}

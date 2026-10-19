@@ -138,5 +138,6 @@
         }
     }
 
+    // bit-trim: owners BitNavBar
     NavBar.install();
 }

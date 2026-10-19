@@ -1,0 +1,31 @@
+﻿@inherits BlexComponentBase
+@inject CounterStore Counter
+
+@*
+    Subscribe(store, selector): re-renders only when the projected value changes. Mutating an
+    unrelated field on the same store leaves this component alone.
+*@
+<div class="card">
+    <p class="card__title">
+        <span class="card__num">Subscribe(Store, () =&gt; Store.Count)</span>
+    </p>
+    <p class="card__body">Renders only when <code>Count</code> changes.</p>
+    <div class="readout" style="margin-top:0.6rem">
+        <div class="readout__item">
+            <span class="readout__label">Count (displayed)</span>
+            <span class="readout__value">@Counter.Count</span>
+        </div>
+        <div class="readout__item">
+            <span class="readout__label">Renders</span>
+            <span class="readout__value readout__value--accent">@_renders</span>
+        </div>
+    </div>
+</div>
+
+@code {
+    private int _renders;
+
+    protected override void OnInitialized() => Subscribe(Counter, () => Counter.Count);
+
+    protected override void OnAfterRender(bool firstRender) => _renders++;
+}

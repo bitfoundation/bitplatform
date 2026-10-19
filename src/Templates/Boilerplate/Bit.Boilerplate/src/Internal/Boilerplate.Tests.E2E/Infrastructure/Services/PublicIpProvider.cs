@@ -14,11 +14,11 @@ public static class PublicIpProvider
     public static async Task<IReadOnlyCollection<string>> Resolve(CancellationToken cancellationToken)
     {
         var addresses = await Task.WhenAll(Read("https://api.ipify.org", cancellationToken),
-                                           Read("https://api64.ipify.org", cancellationToken));
+                                           Read("https://api6.ipify.org", cancellationToken));
 
         var resolved = addresses.OfType<string>().Distinct().ToArray();
 
-        Assert.IsGreaterThan(0, resolved.Length, "Neither api.ipify.org nor api64.ipify.org returned this machine's public IP, so there is nothing to compare a deployment's answer with.");
+        Assert.IsGreaterThan(0, resolved.Length, "Neither api.ipify.org nor api6.ipify.org returned this machine's public IP, so there is nothing to compare a deployment's answer with.");
 
         return resolved;
     }
@@ -36,11 +36,11 @@ public static class PublicIpProvider
         try
         {
             var addresses = await Task.WhenAll(ReadFromBrowser(page, "https://api.ipify.org"),
-                                               ReadFromBrowser(page, "https://api64.ipify.org"));
+                                               ReadFromBrowser(page, "https://api6.ipify.org"));
 
             var resolved = addresses.OfType<string>().Distinct().ToArray();
 
-            Assert.IsGreaterThan(0, resolved.Length, "Neither api.ipify.org nor api64.ipify.org answered the browser, so there is nothing to compare a deployment's answer with.");
+            Assert.IsGreaterThan(0, resolved.Length, "Neither api.ipify.org nor api6.ipify.org answered the browser, so there is nothing to compare a deployment's answer with.");
 
             return resolved;
         }

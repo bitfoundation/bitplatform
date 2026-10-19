@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { splitAnimationRange } from '../../Bit.Bmotion/wwwroot/bit-bmotion.js';
+import { splitAnimationRange } from '../../Bit.Bmotion/Scripts/bit-bmotion.ts';
 
 // BmScrollTimeline.Range carries a CSS `animation-range` shorthand, but the Web Animations API
 // takes the two ends as separate rangeStart / rangeEnd values - so the bridge has to split it.

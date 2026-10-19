@@ -1,0 +1,84 @@
+﻿@page "/custom-renderer"
+
+<PageTitle>Custom renderer</PageTitle>
+
+<div class="demo-intro">
+    <h1>Custom renderer</h1>
+    <p>Renderers are pluggable. The <em>rating</em> field below is drawn by a custom star-rating component registered against the key <code>"rating"</code> — the engine, validation and state are unchanged.</p>
+</div>
+
+<div class="demo-card">
+    <BormView Definition="_schema" Data="_data" OnValidSubmit="HandleSubmit" SubmitText="Send feedback" />
+</div>
+
+@if (_submitted)
+{
+    <div class="demo-result"><strong>Thanks ✓</strong> <pre>@_json</pre></div>
+}
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/custom-renderer"
+
+<BormView Definition="_schema" Data="_data" OnValidSubmit="HandleSubmit" SubmitText="Send feedback" />
+
+@code {
+    private BormDefinition _schema = default!;
+    private readonly Dictionary<string, object?> _data = new();
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.Create()
+            .Title("Leave feedback")
+            .Field("rating", BormFieldType.Custom, f => f
+                .Label("How would you rate us?")
+                .CustomRenderer("rating")
+                .Attr("max", 5)
+                .Must(v => v is int i && i >= 1, "Please pick a rating."))
+            .Text("comment", f => f.AsTextArea(3).Label("Comments").Placeholder("Optional"))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(_data,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
+
+// Renderers are registered in Program.cs against a key:
+//   builder.Services.AddBorm(registry =>
+//       registry.RegisterCustom("rating", typeof(StarRatingInput)));
+""";
+
+    private BormDefinition _schema = default!;
+    private readonly Dictionary<string, object?> _data = new();
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.Create()
+            .Title("Leave feedback")
+            .Field("rating", BormFieldType.Custom, f => f
+                .Label("How would you rate us?")
+                .CustomRenderer("rating")
+                .Attr("max", 5)
+                .Must(v => v is int i && i >= 1, "Please pick a rating."))
+            .Text("comment", f => f.AsTextArea(3).Label("Comments").Placeholder("Optional"))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_data,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

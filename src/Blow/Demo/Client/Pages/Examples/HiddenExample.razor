@@ -1,0 +1,60 @@
+﻿@page "/examples/hidden"
+
+<PageTitle>Hidden - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Hidden"
+                 Summary="Toggle the Hidden flag on nodes and edges. Hidden elements are left out of rendering, layout, selection and fit-view, but stay in state. Hiding a node also takes away the edges attached to it - an edge with only one end left has nothing to be an edge between - so collapsing part of a graph needs only the nodes named.">
+    <Toolbar>
+        <label><input type="checkbox" checked="@_hidden" @onchange="Toggle" /> hide the middle row</label>
+        <label><input type="checkbox" checked="@_hideOneEdge" @onchange="ToggleEdge" /> hide edge 3&nbsp;→&nbsp;4 on its own</label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _hidden;
+    private bool _hideOneEdge;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node 1", Position = new(250, 5) },
+            new BlowNode { Id = "2", Label = "Node 2", Position = new(100, 100) },
+            new BlowNode { Id = "3", Label = "Node 3", Position = new(400, 100) },
+            new BlowNode { Id = "4", Type = "output", Label = "Node 4", Position = new(250, 200) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4" },
+        ];
+    }
+
+    private void Toggle(ChangeEventArgs e)
+    {
+        // Only the nodes are named: every edge touching them goes with them, which is what makes
+        // collapsing a branch a one-liner rather than a bookkeeping exercise over the edge list.
+        _hidden = (bool)e.Value!;
+        foreach (var n in _nodes.Where(n => n.Id is "2" or "3")) n.Hidden = _hidden;
+        _flow?.Refresh(remeasure: true);
+    }
+
+    private void ToggleEdge(ChangeEventArgs e)
+    {
+        // An edge can still be hidden on its own, with both of its nodes left on screen.
+        _hideOneEdge = (bool)e.Value!;
+        _edges.Single(ed => ed.Id == "e3-4").Hidden = _hideOneEdge;
+        _flow?.Refresh(remeasure: false);
+    }
+}

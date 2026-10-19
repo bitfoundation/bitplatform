@@ -94,12 +94,15 @@ public class NumericKeyframesDriverTests
             v => log.Add(v));
 
         driver.Tick(0);
+        int logCountAfterFirstTick = log.Count;
         driver.Cancel();
         bool done = driver.Tick(100);
 
         // Cancel() freezes in place rather than snapping to the last frame;
         // only completion is guaranteed.
         Assert.IsTrue(done);
+        // A cancelled Tick must exit before applying, so no new value is emitted after Cancel().
+        Assert.AreEqual(logCountAfterFirstTick, log.Count);
     }
 
     // ── Repeat / Mirror ───────────────────────────────────────────────────────
@@ -296,19 +299,22 @@ public class ColorKeyframesDriverTests
     [TestMethod]
     public void Cancel_CompletesImmediately()
     {
-        string? lastValue = null;
+        var emitted = new List<string>();
         var driver = new BmotionColorKeyframesDriver(
             ["#000000", "#ff0000"],
             new BmotionTransitionConfig { Duration = 0.3 },
-            v => lastValue = v);
+            v => emitted.Add(v));
 
         driver.Tick(0);
+        int emittedAfterFirstTick = emitted.Count;
         driver.Cancel();
         bool done = driver.Tick(50);
 
         // Cancel() freezes in place rather than snapping to the last frame;
         // only completion is guaranteed.
         Assert.IsTrue(done);
+        // Nothing may be emitted after Cancel(): a late frame would overwrite the frozen color.
+        Assert.AreEqual(emittedAfterFirstTick, emitted.Count);
     }
 
     // ── Mirror repeat ─────────────────────────────────────────────────────────

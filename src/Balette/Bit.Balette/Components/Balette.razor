@@ -1,0 +1,375 @@
+﻿@namespace Bit.Balette
+
+<CascadingValue Value="this" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+<dialog @ref="_dialogEl"
+        id="@_id"
+        class="@(Unstyled ? null : "bit-balette-dialog") @Class"
+        style="@Style"
+        data-balette="dialog"
+        data-theme="@EffectiveTheme"
+        data-open="@(_isOpen ? "true" : "false")"
+        data-multiselect="@(CurrentPage.MultiSelect ? "true" : "false")"
+        data-has-detail="@(DetailTemplate is not null ? "true" : "false")"
+        data-hover-suspended="@(_pointerSelectionSuspended && !DisablePointerSelection ? _hoverSuspension.ToString(System.Globalization.CultureInfo.InvariantCulture) : null)"
+        aria-label="@S.DialogLabel"
+        @attributes="AdditionalAttributes">
+    @if (_isOpen)
+    {
+        var frame = CurrentPage;
+        var state = StateContext;
+        <div class="bit-balette-root" data-balette="root" data-mode="@(_mode?.Prefix)" data-page-depth="@(_pages.Count - 1)">
+            <div class="bit-balette-main" data-balette="main">
+                @* ---------- Header ---------- *@
+                @if (HeaderTemplate is not null)
+                {
+                    @HeaderTemplate(state)
+                }
+                <div class="bit-balette-header" data-balette="header">
+                    @if (_pages.Count > 1 || _mode is not null)
+                    {
+                        <nav class="bit-balette-breadcrumbs" data-balette="breadcrumbs" aria-label="Breadcrumb">
+                            @if (_pages.Count > 1)
+                            {
+                                <button type="button" class="bit-balette-crumb bit-balette-crumb-home" @onclick="OnBackClick" aria-label="@S.BackButton" title="@S.BackButton">
+                                    @IconSvg("arrow-left")
+                                </button>
+                                @foreach (var crumb in Breadcrumbs)
+                                {
+                                    <span class="bit-balette-crumb" data-balette="crumb">@crumb</span>
+                                }
+                            }
+                            @if (_mode is not null)
+                            {
+                                <span class="bit-balette-crumb bit-balette-mode-chip" data-balette="mode">@_mode.Name</span>
+                            }
+                        </nav>
+                    }
+                    <div class="bit-balette-input-row" data-balette="input-row">
+                        <span class="bit-balette-input-icon" aria-hidden="true">
+                            @if (_loading)
+                            {
+                                <span class="bit-balette-spinner" data-balette="spinner"></span>
+                            }
+                            else
+                            {
+                                @IconSvg("search")
+                            }
+                        </span>
+                        <input @ref="_inputEl"
+                               class="bit-balette-input"
+                               data-balette="input"
+                               type="text"
+                               role="combobox"
+                               autocomplete="off"
+                               autocorrect="off"
+                               autocapitalize="off"
+                               spellcheck="false"
+                               enterkeyhint="go"
+                               aria-label="@S.InputLabel"
+                               aria-expanded="true"
+                               aria-haspopup="listbox"
+                               aria-autocomplete="list"
+                               aria-controls="@(_id)-list"
+                               aria-activedescendant="@ActiveDescendant"
+                               placeholder="@EffectivePlaceholder"
+                               value="@_query"
+                               @oninput="OnInput" />
+                        @if (frame.MultiSelect && frame.Selected.Count > 0)
+                        {
+                            <span class="bit-balette-selected-count" data-balette="selected-count">@S.Format(S.SelectedCount, frame.Selected.Count)</span>
+                        }
+                        <button type="button" class="bit-balette-close" data-balette="close" @onclick="CloseCoreAsync" aria-label="@S.CloseButton" title="@S.CloseButton">
+                            <kbd class="bit-balette-kbd">Esc</kbd>
+                        </button>
+                    </div>
+                </div>
+
+                @* ---------- List ---------- *@
+                <div @ref="_listEl"
+                     id="@(_id)-list"
+                     class="bit-balette-list"
+                     data-balette="list"
+                     role="listbox"
+                     aria-label="@(frame.Title)"
+                     aria-multiselectable="@(frame.MultiSelect ? "true" : null)"
+                     style="@RowHeightStyle">
+                    @if (frame.Prompt is not null)
+                    {
+                        <div class="bit-balette-prompt" data-balette="prompt">
+                            <p class="bit-balette-prompt-title">@frame.Prompt.Title</p>
+                            <p class="bit-balette-prompt-hint">
+                                <kbd class="bit-balette-kbd">@(_isMac ? "↩" : "Enter")</kbd> @S.Apply
+                                <span class="bit-balette-sep">·</span>
+                                <kbd class="bit-balette-kbd">Esc</kbd> @S.Back
+                            </p>
+                        </div>
+                    }
+                    else if (_rows.Count == 0)
+                    {
+                        if (_loading)
+                        {
+                            if (LoadingTemplate is not null)
+                            {
+                                @LoadingTemplate
+                            }
+                            else
+                            {
+                                <div class="bit-balette-empty" data-balette="loading" role="status">
+                                    <span class="bit-balette-spinner"></span>
+                                    <p>@S.Loading</p>
+                                </div>
+                            }
+                        }
+                        else if (EmptyTemplate is not null)
+                        {
+                            @EmptyTemplate(_effectiveQuery)
+                        }
+                        else
+                        {
+                            <div class="bit-balette-empty" data-balette="empty" role="status">
+                                @IconSvg("empty")
+                                <p class="bit-balette-empty-title">@(_effectiveQuery.Length > 0 ? S.Format(S.NoResults, _effectiveQuery) : S.Empty)</p>
+                                @if (_effectiveQuery.Length > 0)
+                                {
+                                    <p class="bit-balette-empty-hint">@S.NoResultsHint</p>
+                                }
+                            </div>
+                        }
+                    }
+                    else if (EffectiveVirtualize)
+                    {
+                        <Virtualize Items="_rows" ItemSize="Options.RowHeight" Context="row" OverscanCount="6">
+                            @RenderRow(row)
+                        </Virtualize>
+                    }
+                    else
+                    {
+                        foreach (var row in _rows)
+                        {
+                            @RenderRow(row)
+                        }
+                    }
+                </div>
+
+                @* ---------- Footer ---------- *@
+                @if (EffectiveShowFooter)
+                {
+                    if (FooterTemplate is not null)
+                    {
+                        @FooterTemplate(state)
+                    }
+                    else
+                    {
+                        <div class="bit-balette-footer" data-balette="footer">
+                            @if (_toast is not null)
+                            {
+                                <span class="bit-balette-toast @(_confirmingId is not null ? "bit-balette-toast-confirm" : null)" data-balette="toast" role="status">@_toast</span>
+                            }
+                            else
+                            {
+                                <span class="bit-balette-hint"><kbd class="bit-balette-kbd">↑</kbd><kbd class="bit-balette-kbd">↓</kbd> @S.Navigate</span>
+                                @if (frame.MultiSelect)
+                                {
+                                    <span class="bit-balette-hint"><kbd class="bit-balette-kbd">@(_isMac ? "↩" : "Enter")</kbd> @S.Toggle</span>
+                                    <span class="bit-balette-hint"><kbd class="bit-balette-kbd">@(_isMac ? "⌘" : "Ctrl")</kbd><kbd class="bit-balette-kbd">@(_isMac ? "↩" : "Enter")</kbd> @S.Apply</span>
+                                }
+                                else
+                                {
+                                    <span class="bit-balette-hint"><kbd class="bit-balette-kbd">@(_isMac ? "↩" : "Enter")</kbd> @S.Select</span>
+                                }
+                                @if (!frame.MultiSelect && ActiveCommand is { } active && (active.Actions is { Count: > 0 } || EffectiveEnableHistory))
+                                {
+                                    <span class="bit-balette-hint"><kbd class="bit-balette-kbd">Tab</kbd> @S.OpenActions</span>
+                                }
+                                <span class="bit-balette-hint bit-balette-hint-right"><kbd class="bit-balette-kbd">Esc</kbd> @(_pages.Count > 1 ? S.Back : S.Close)</span>
+                            }
+                        </div>
+                    }
+                }
+            </div>
+
+            @* ---------- Detail pane ---------- *@
+            @if (DetailTemplate is not null && ActiveCommand is { } detailCmd)
+            {
+                <aside class="bit-balette-detail" data-balette="detail">
+                    @DetailTemplate(detailCmd)
+                </aside>
+            }
+        </div>
+
+        <div class="bit-balette-sr-only" aria-live="polite" aria-atomic="true">@_announcement</div>
+    }
+</dialog>
+
+@code {
+    private RenderFragment RenderRow(BaletteRow row) => __builder =>
+    {
+        if (row.Kind == BaletteRowKind.GroupHeader)
+        {
+            <div class="bit-balette-group-heading" data-balette="group-heading" role="presentation" id="@row.ElementId">
+                @if (GroupHeaderTemplate is not null)
+                {
+                    @GroupHeaderTemplate(row.Group!)
+                }
+                else
+                {
+                    @row.Group
+                }
+            </div>
+            return;
+        }
+
+        var match = row.Match!;
+        var cmd = match.Command;
+        var isActive = row.ItemIndex == _activeIndex;
+        var isChecked = CurrentPage.MultiSelect && CurrentPage.Selected.Contains(cmd.Id);
+        var isPinned = EffectiveEnableHistory && History.IsPinned(cmd.Id);
+        var isConfirming = _confirmingId == cmd.Id;
+
+        <div id="@row.ElementId"
+             class="bit-balette-item"
+             data-balette="item"
+             role="option"
+             aria-selected="@(isActive ? "true" : "false")"
+             aria-checked="@(CurrentPage.MultiSelect ? (isChecked ? "true" : "false") : null)"
+             aria-disabled="@(cmd.Disabled ? "true" : null)"
+             data-active="@(isActive ? "true" : null)"
+             data-checked="@(isChecked ? "true" : null)"
+             data-disabled="@(cmd.Disabled ? "true" : null)"
+             data-destructive="@(cmd.Destructive ? "true" : null)"
+             data-confirming="@(isConfirming ? "true" : null)"
+             data-kind="@cmd.Kind.ToString().ToLowerInvariant()"
+             data-value="@cmd.Id"
+             @onmouseenter="() => OnItemHover(row)"
+             @onclick="() => OnItemClick(row)"
+             @onclick:preventDefault>
+            @if (ItemTemplate is not null)
+            {
+                @ItemTemplate(new BaletteItemContext(row, isActive, isChecked, isPinned, isConfirming, _isMac))
+            }
+            else
+            {
+                @if (CurrentPage.MultiSelect)
+                {
+                    <span class="bit-balette-check" aria-hidden="true">@(isChecked ? IconSvg("check") : null)</span>
+                }
+                <span class="bit-balette-item-icon" aria-hidden="true">
+                    @if (IconTemplate is not null)
+                    {
+                        @IconTemplate(cmd)
+                    }
+                    else if (cmd.Icon is not null)
+                    {
+                        @cmd.Icon
+                    }
+                    else if (cmd.IconCss is not null)
+                    {
+                        <i class="@cmd.IconCss"></i>
+                    }
+                    else
+                    {
+                        @IconSvg(DefaultIconFor(cmd))
+                    }
+                </span>
+                <span class="bit-balette-item-body">
+                    <span class="bit-balette-item-title">
+                        @if (isConfirming)
+                        {
+                            <span class="bit-balette-confirm-label">@S.ConfirmPrefix</span>
+                        }
+                        @* One inline box for the text and its marks: as direct children of the flex title they would each
+                           become a flex item, spaced apart by the title's gap and never ellipsized. *@
+                        <span class="bit-balette-item-label" data-balette="label"><BaletteHighlightedText Text="@cmd.Title" Positions="@(EffectiveHighlight ? match.TitlePositions : null)" /></span>
+                        @if (cmd.Badge is not null)
+                        {
+                            <span class="bit-balette-badge" data-balette="badge">@cmd.Badge</span>
+                        }
+                        @if (isPinned)
+                        {
+                            <span class="bit-balette-pin" aria-label="@S.Pinned" title="@S.Pinned">@IconSvg("pin")</span>
+                        }
+                    </span>
+                    @if (cmd.Subtitle is not null || match.MatchedKeyword is not null || (cmd.Disabled && cmd.DisabledReason is not null))
+                    {
+                        <span class="bit-balette-item-subtitle">
+                            @if (cmd.Disabled && cmd.DisabledReason is not null)
+                            {
+                                @cmd.DisabledReason
+                            }
+                            else if (cmd.Subtitle is not null)
+                            {
+                                <BaletteHighlightedText Text="@cmd.Subtitle" Positions="@(EffectiveHighlight ? match.SubtitlePositions : null)" />
+                            }
+                            else if (match.MatchedKeyword is not null)
+                            {
+                                <span class="bit-balette-keyword-hit">@match.MatchedKeyword</span>
+                            }
+                        </span>
+                    }
+                </span>
+                <span class="bit-balette-item-trailing">
+                    @if (cmd.Checked is { } chk)
+                    {
+                        <span class="bit-balette-toggle" data-on="@(chk ? "true" : "false")" aria-hidden="true"></span>
+                    }
+                    else if (cmd.Value is not null && !cmd.Tags.Contains(ModeHintTag))
+                    {
+                        <span class="bit-balette-value">@cmd.Value</span>
+                    }
+                    @if (EffectiveShowShortcuts && cmd.Shortcut is not null)
+                    {
+                        <BaletteShortcutHint Shortcut="cmd.Shortcut" IsMac="_isMac" />
+                    }
+                    @if (HasPage(cmd))
+                    {
+                        <span class="bit-balette-chevron" aria-hidden="true">@IconSvg("chevron-right")</span>
+                    }
+                    else if (isActive && cmd.Actions is { Count: > 0 })
+                    {
+                        <span class="bit-balette-actions-hint" aria-hidden="true"><kbd class="bit-balette-kbd">Tab</kbd></span>
+                    }
+                </span>
+            }
+        </div>
+    };
+
+    private static string DefaultIconFor(BaletteCommand cmd) => cmd.Kind switch
+    {
+        BaletteCommandKind.Navigation => "arrow-right",
+        BaletteCommandKind.Page => "folder",
+        BaletteCommandKind.Toggle => "toggle",
+        BaletteCommandKind.Setting => "sliders",
+        BaletteCommandKind.Search => "search",
+        BaletteCommandKind.Help => "help",
+        BaletteCommandKind.Recent => "clock",
+        _ when cmd.Destructive => "trash",
+        _ => "bolt",
+    };
+
+    private static readonly Dictionary<string, string> IconPaths = new(StringComparer.Ordinal)
+    {
+        ["search"] = "M11 4a7 7 0 1 0 4.2 12.6l3.6 3.6 1.4-1.4-3.6-3.6A7 7 0 0 0 11 4zm0 2a5 5 0 1 1 0 10 5 5 0 0 1 0-10z",
+        ["arrow-right"] = "M13 5l7 7-7 7-1.4-1.4 4.6-4.6H4v-2h12.2l-4.6-4.6z",
+        ["arrow-left"] = "M11 19l-7-7 7-7 1.4 1.4L7.8 11H20v2H7.8l4.6 4.6z",
+        ["chevron-right"] = "M9 6l6 6-6 6-1.4-1.4L12.2 12 7.6 7.4z",
+        ["folder"] = "M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z",
+        ["toggle"] = "M7 7h10a5 5 0 0 1 0 10H7A5 5 0 0 1 7 7zm10 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6z",
+        ["sliders"] = "M4 6h10v2H4zm12 0h4v2h-4zM4 11h4v2H4zm6 0h10v2H10zM4 16h12v2H4zm14 0h2v2h-2z",
+        ["help"] = "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm-1-5h2v2h-2zm2.1-2.3c-.6.4-.1 1.3-1.1 1.3h-1c0-1.7.5-2 1.4-2.6.5-.3.6-.7.6-1.1a1 1 0 0 0-2 0H9a3 3 0 0 1 6 0c0 1.2-.7 1.8-1.9 2.4z",
+        ["clock"] = "M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 18a8 8 0 1 1 0-16 8 8 0 0 1 0 16zm1-13h-2v6l5 3 1-1.7-4-2.3z",
+        ["trash"] = "M9 3h6l1 2h4v2H4V5h4zm-3 5h12l-1 12H7zm4 2v8h2v-8zm4 0v8h2v-8z",
+        ["bolt"] = "M13 2L4 14h7l-1 8 9-12h-7z",
+        ["check"] = "M9 16.2l-3.5-3.5L4 14.2 9 19.2 20 8.2l-1.4-1.4z",
+        ["pin"] = "M16 3l5 5-4 1-3 3 1 5-2 2-4-4-5 5-1-1 5-5-4-4 2-2 5 1 3-3z",
+        ["empty"] = "M4 5h16v3H4zm0 5h16v9H4zm2 2v5h12v-5z",
+    };
+
+    private static RenderFragment IconSvg(string name) => __builder =>
+    {
+        var path = IconPaths.GetValueOrDefault(name, IconPaths["bolt"]);
+        <svg class="bit-balette-svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true" focusable="false"><path d="@path" /></svg>
+    };
+}

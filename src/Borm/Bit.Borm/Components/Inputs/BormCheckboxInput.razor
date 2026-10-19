@@ -1,0 +1,50 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+<label class="bit-borm-checkbox" for="@Context.ElementId">
+    @* The splat comes first on purpose: Blazor applies duplicate attributes in source order and the
+       last one wins, so anything the renderer sets below overrides what the schema supplied. That is
+       what stops a stray aria-describedby in the schema from unhooking the error message. *@
+    <input @attributes="ExtraAttributes"
+           type="checkbox"
+           id="@Context.ElementId"
+           @ref="Element"
+           class="@SwitchClass"
+           checked="@Context.BoolValue"
+           disabled="@DisabledOrReadOnly"
+           role="@(IsSwitch ? "switch" : null)"
+           aria-required="@AriaRequired"
+           aria-invalid="@AriaInvalid"
+           aria-label="@AriaLabel"
+           aria-describedby="@DescribedBy"
+           @onchange="OnToggle"
+           @onblur="OnBlur" />
+    @* HideLabel() means "this control is already named by what surrounds it" — a consent box under a
+       heading that says the same thing, a switch in a labelled toolbar. The visible text goes and the
+       label survives as the control's accessible name (see BormInputBase.AriaLabel), which is
+       what it means everywhere else in the library; rendering it anyway made HideLabel the one
+       builder call that silently did nothing on a checkbox. *@
+    @if (Field.ShowLabel)
+    {
+        <span id="@Context.LabelId">
+            @(Field.Label ?? Field.Name)
+            @if (Context.IsRequired)
+            {
+                <span class="bit-borm-required" aria-hidden="true">*</span>
+            }
+        </span>
+    }
+</label>
+
+@code {
+    private Task OnToggle(ChangeEventArgs e) => Context.SetValueAsync(e.Value is bool b && b);
+
+    /// <summary>
+    /// Renders as a switch when the schema asks for it — <c>Attr("switch", true)</c>. It is the same
+    /// control with the same semantics; <c>role="switch"</c> is what tells a screen reader to say
+    /// "on/off" rather than "checked".
+    /// </summary>
+    private bool IsSwitch => Attr("switch", false);
+
+    private string? SwitchClass => IsSwitch ? "bit-borm-switch" : null;
+}

@@ -120,7 +120,7 @@ public class BitDateRangePickerCultureTests : BunitTestContext
     [TestMethod]
     public void BitDateRangePickerShouldShowTheUmAlQuraMonthOfAnArSaCulture()
     {
-        var culture = CultureInfo.GetCultureInfo("ar-SA");
+        var culture = TestCultures.ArSaUmAlQura;
         var firstDayOfWeek = culture.DateTimeFormat.FirstDayOfWeek;
 
         var component = Render(culture, Utc(2025, 3, 15));
@@ -135,7 +135,7 @@ public class BitDateRangePickerCultureTests : BunitTestContext
     [TestMethod]
     public void BitDateRangePickerShouldSelectTheGregorianInstantsOfAnUmAlQuraRange()
     {
-        var culture = CultureInfo.GetCultureInfo("ar-SA");
+        var culture = TestCultures.ArSaUmAlQura;
         BitDateRangePickerValue? value = null;
 
         var component = Render(culture, Utc(2025, 3, 15), p => p.Bind(x => x.Value, value, v => value = v));
@@ -155,7 +155,7 @@ public class BitDateRangePickerCultureTests : BunitTestContext
     [TestMethod]
     public void BitDateRangePickerShouldNavigateAcrossTheHijriNewYearOfAnArSaCulture()
     {
-        var culture = CultureInfo.GetCultureInfo("ar-SA");
+        var culture = TestCultures.ArSaUmAlQura;
         var umAlQura = new UmAlQuraCalendar();
 
         var component = Render(culture, new DateTimeOffset(new DateTime(1446, 12, 10, umAlQura), TimeSpan.Zero));

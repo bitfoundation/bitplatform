@@ -1,0 +1,57 @@
+﻿@page "/examples/stress"
+
+<PageTitle>Stress - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Stress"
+                 Summary="A large grid of nodes and edges. 'Only render visible elements' culls off-screen items so panning and zooming stay responsive.">
+    <Toolbar>
+        <label>grid:
+            <select @onchange="OnSizeChange">
+                <option value="10">10 × 10 (100)</option>
+                <option value="20" selected>20 × 20 (400)</option>
+                <option value="30">30 × 30 (900)</option>
+            </select>
+        </label>
+        <label><input type="checkbox" checked="@_cull" @onchange="e => _cull = (bool)e.Value!" /> only render visible</label>
+        <span class="text-muted">@_nodes.Count nodes, @_edges.Count edges</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    OnlyRenderVisibleElements="_cull" MinZoom="0.05">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private bool _cull = true;
+    private int _size = 20;
+
+    protected override void OnInitialized() => Build();
+
+    private void OnSizeChange(ChangeEventArgs e)
+    {
+        _size = int.Parse(e.Value?.ToString() ?? "20");
+        Build();
+    }
+
+    private void Build()
+    {
+        _nodes = [];
+        _edges = [];
+        for (var x = 0; x < _size; x++)
+        {
+            for (var y = 0; y < _size; y++)
+            {
+                var id = $"{x}-{y}";
+                _nodes.Add(new BlowNode { Id = id, Label = id, Position = new(x * 90, y * 60), Width = 60, Height = 36 });
+                if (y > 0)
+                    _edges.Add(new BlowEdge { Id = $"e{x}-{y}", Source = $"{x}-{y - 1}", Target = id });
+            }
+        }
+    }
+}

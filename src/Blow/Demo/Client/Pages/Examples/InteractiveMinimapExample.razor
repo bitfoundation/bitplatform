@@ -1,0 +1,32 @@
+﻿@page "/examples/interactive-minimap"
+
+<PageTitle>Interactive MiniMap - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Interactive MiniMap"
+                 Summary="The minimap is both pannable and zoomable: drag inside it to move the viewport, and scroll over it to zoom the main flow.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+        <BlowMiniMap Pannable="true" Zoomable="true" Width="240" Height="180" />
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        for (var i = 0; i < 12; i++)
+        {
+            _nodes.Add(new BlowNode
+            {
+                Id = i.ToString(),
+                Label = $"Node {i}",
+                Position = new((i % 4) * 200, (i / 4) * 160),
+            });
+            if (i > 0)
+                _edges.Add(new BlowEdge { Id = $"e{i}", Source = (i - 1).ToString(), Target = i.ToString() });
+        }
+    }
+}

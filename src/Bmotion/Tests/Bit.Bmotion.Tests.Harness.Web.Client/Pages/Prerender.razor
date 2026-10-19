@@ -1,0 +1,50 @@
+﻿@page "/prerender"
+
+@* What an element looks like before - or without - an interactive runtime, per BmPrerenderMode, and how the
+   runtime takes it over. Every enter is long (2s) so a test can tell a CSS animation still playing from one that
+   never ran, and an element that rests from one that replays its enter. *@
+
+<HarnessHeader Title="Prerender" Ready="Ready" OnLog="BindLog" />
+
+<Bmotion Prerender="BmPrerenderMode.Initial"
+         Initial="Bm.To(opacity: 0)"
+         Animate="Bm.To(opacity: 1)"
+         Transition="Bm.Tween(2, BmEase.Linear)"
+         OnAnimationStart='_ => Log("initial:start")'>
+    <div id="pr-initial" class="small"></div>
+</Bmotion>
+
+<Bmotion Prerender="BmPrerenderMode.Final"
+         Initial="Bm.To(opacity: 0, x: -50)"
+         Animate="Bm.To(opacity: 1, x: 0)"
+         Transition="Bm.Tween(2, BmEase.Linear)"
+         OnAnimationStart='_ => Log("final:start")'>
+    <div id="pr-final" class="small"></div>
+</Bmotion>
+
+<Bmotion Prerender="BmPrerenderMode.Animate"
+         Initial="Bm.To(opacity: 0, x: -50)"
+         Animate="Bm.To(opacity: 1, x: 0)"
+         Transition="Bm.Tween(2, BmEase.Linear)"
+         OnAnimationStart='_ => Log("animate:start")'>
+    <div id="pr-animate" class="small"></div>
+</Bmotion>
+
+<Bmotion Prerender="BmPrerenderMode.Animate"
+         Animate="Bm.To(rotate: [0, 360])"
+         Transition="Bm.Tween(1, BmEase.Linear, repeat: BmRepeat.Forever)">
+    <div id="pr-forever" class="small"></div>
+</Bmotion>
+
+<Bmotion Prerender="BmPrerenderMode.Final"
+         Initial="Bm.To(opacity: 0.2)"
+         WhileInView="Bm.To(opacity: 1)">
+    <div id="pr-inview" class="small"></div>
+</Bmotion>
+
+@* Initial="false" renders at rest on every pass, whatever the mode. *@
+<Bmotion Initial="false"
+         Animate="Bm.To(opacity: 0.5, x: 40)"
+         Transition="Bm.Tween(2)">
+    <div id="pr-no-initial" class="small"></div>
+</Bmotion>

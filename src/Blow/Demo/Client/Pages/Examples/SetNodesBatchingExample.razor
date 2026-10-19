@@ -1,0 +1,52 @@
+﻿@page "/examples/set-nodes-batching"
+
+<PageTitle>setNodes Batching - bit Blow</PageTitle>
+
+<ExampleScaffold Title="setNodes Batching"
+                 Summary="Add many nodes in a single batched update. AddNodes appends them all and triggers one measure pass instead of one per node.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="@(() => AddBatch(25))">Add 25</button>
+        <button class="btn btn-sm btn-primary" @onclick="@(() => AddBatch(100))">Add 100</button>
+        <button class="btn btn-sm" @onclick="Clear">Clear</button>
+        <span class="text-muted">@_nodes.Count nodes</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" OnlyRenderVisibleElements="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+            <BlowMiniMap />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _id;
+
+    private void AddBatch(int count)
+    {
+        var batch = new BlowNode[count];
+        for (var i = 0; i < count; i++)
+        {
+            _id++;
+            batch[i] = new BlowNode
+            {
+                Id = _id.ToString(),
+                Label = _id.ToString(),
+                Position = new(Random.Shared.Next(0, 900), Random.Shared.Next(0, 600)),
+                Width = 50, Height = 32,
+            };
+        }
+        _flow?.AddNodes(batch); // single batched update
+    }
+
+    private void Clear()
+    {
+        _nodes.Clear();
+        _edges.Clear();
+        _id = 0;
+        _flow?.Refresh(remeasure: true);
+    }
+}

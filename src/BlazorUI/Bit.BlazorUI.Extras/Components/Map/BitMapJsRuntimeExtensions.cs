@@ -5,6 +5,11 @@
 /// All calls go through <c>BitBlazorUI.&lt;JsObjectName&gt;.&lt;method&gt;</c> so each
 /// provider exposes its own implementation under the same shape.
 /// </summary>
+/// <remarks>
+/// The only identifiers of the packages put together at run time rather than written out: the publish-time trimming,
+/// which keeps a script for the identifiers an app's code can reach, cannot read these, so each provider's script names
+/// its provider type instead (<c>// bit-trim: owners BitLeafletMapProvider</c>), and is kept wherever that type is.
+/// </remarks>
 internal static class BitMapJsRuntimeExtensions
 {
     public static ValueTask BitMapInit<TProvider>(this IJSRuntime jsRuntime,

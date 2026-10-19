@@ -19,13 +19,27 @@ namespace Bit.Bmotion.Tests.Mcp.Protocol;
 [TestClass]
 public class McpServerIntegrationTests
 {
-    private static BmotionMcpServerFixture _server = null!;
+    private static BmotionMcpServerFixture? _fixture;
+
+    // Every test reads the server through here, so a failed ClassInitialize surfaces as one clear
+    // message per test rather than as a NullReferenceException.
+    private static BmotionMcpServerFixture Server
+        => _fixture ?? throw new InvalidOperationException("The in-memory MCP server did not start; see ClassInitialize.");
 
     [ClassInitialize]
-    public static async Task StartServerAsync(TestContext _) => _server = await BmotionMcpServerFixture.StartAsync();
+    public static async Task StartServerAsync(TestContext _) => _fixture = await BmotionMcpServerFixture.StartAsync();
 
+    // Runs even when ClassInitialize threw, in which case there is nothing to stop - and a throw here
+    // would bury the start-up failure under a cleanup one.
     [ClassCleanup]
-    public static async Task StopServerAsync() => await _server.DisposeAsync();
+    public static async Task StopServerAsync()
+    {
+        if (_fixture is { } fixture)
+        {
+            _fixture = null;
+            await fixture.DisposeAsync();
+        }
+    }
 
     /// <summary>
     /// That the client connected at all is the handshake. What it negotiated is the interesting
@@ -35,12 +49,12 @@ public class McpServerIntegrationTests
     [TestMethod]
     public void Server_CompletesTheHandshake_AdvertisingAllThreeHalvesOfItsSurface()
     {
-        Assert.IsNotNull(_server.Client.ServerInfo);
-        Assert.IsNotNull(_server.Client.ServerCapabilities);
+        Assert.IsNotNull(Server.Client.ServerInfo);
+        Assert.IsNotNull(Server.Client.ServerCapabilities);
 
-        Assert.IsNotNull(_server.Client.ServerCapabilities.Tools, "The server does not advertise tools.");
-        Assert.IsNotNull(_server.Client.ServerCapabilities.Prompts, "The server does not advertise prompts.");
-        Assert.IsNotNull(_server.Client.ServerCapabilities.Resources, "The server does not advertise resources.");
+        Assert.IsNotNull(Server.Client.ServerCapabilities.Tools, "The server does not advertise tools.");
+        Assert.IsNotNull(Server.Client.ServerCapabilities.Prompts, "The server does not advertise prompts.");
+        Assert.IsNotNull(Server.Client.ServerCapabilities.Resources, "The server does not advertise resources.");
     }
 
     /// <summary>
@@ -51,7 +65,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListTools_ExposesExactlyTheToolsTheAttributesDeclare()
     {
-        var overTheWire = (await _server.Client.ListToolsAsync()).Select(tool => tool.Name).ToArray();
+        var overTheWire = (await Server.Client.ListToolsAsync()).Select(tool => tool.Name).ToArray();
         var declared = new McpController().GetMcpCatalog().Tools.Select(tool => tool.Name).ToArray();
 
         CollectionAssert.AreEquivalent(declared, overTheWire,
@@ -65,7 +79,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListTools_EveryTool_ArrivesWithADescriptionAndAnInputSchema()
     {
-        foreach (var tool in await _server.Client.ListToolsAsync())
+        foreach (var tool in await Server.Client.ListToolsAsync())
         {
             Assert.IsFalse(string.IsNullOrWhiteSpace(tool.Description), $"'{tool.Name}' arrived with no description.");
 
@@ -79,10 +93,16 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListTools_TheArgumentNames_AreTheOnesTheMethodsDeclare()
     {
-        var tools = (await _server.Client.ListToolsAsync()).ToDictionary(tool => tool.Name, StringComparer.Ordinal);
+        var tools = (await Server.Client.ListToolsAsync()).ToDictionary(tool => tool.Name, StringComparer.Ordinal);
 
-        foreach (var (name, expected) in new Dictionary<string, string[]>(StringComparer.Ordinal)
+        // One entry per tool - including the ones that take no arguments - so a tool added without
+        // updating this map fails the coverage check below instead of going unchecked.
+        var expectedArguments = new Dictionary<string, string[]>(StringComparer.Ordinal)
         {
+            [nameof(McpController.GetBmotionOverview)] = [],
+            [nameof(McpController.GetBmotionRecipes)] = [],
+            [nameof(McpController.GetBmotionGuideSections)] = [],
+            [nameof(McpController.GetBmotionApiList)] = [],
             [nameof(McpController.SearchBmotion)] = ["query", "limit"],
             [nameof(McpController.GetBmotionSetupGuide)] = ["renderMode"],
             [nameof(McpController.GetBmotionRecipe)] = ["id"],
@@ -95,15 +115,21 @@ public class McpServerIntegrationTests
             [nameof(McpController.GetBmotionSourceFile)] = ["path", "fromLine", "toLine"],
             [nameof(McpController.GetBmotionEasings)] = ["filter"],
             [nameof(McpController.GetBmotionAnimatableProperties)] = ["filter"],
-        })
-        {
-            var properties = tools[name].ProtocolTool.InputSchema.GetProperty("properties");
+        };
 
-            foreach (var argument in expected)
-            {
-                Assert.IsTrue(properties.TryGetProperty(argument, out _),
-                              $"'{name}' has no '{argument}' argument in its schema.");
-            }
+        CollectionAssert.AreEquivalent(tools.Keys.ToArray(), expectedArguments.Keys.ToArray(),
+                                       "The expected-argument map must cover exactly the tools the server exposes.");
+
+        foreach (var (name, expected) in expectedArguments)
+        {
+            var schema = tools[name].ProtocolTool.InputSchema;
+            var properties = schema.TryGetProperty("properties", out var declared) ? declared : default;
+            var actual = properties.ValueKind == JsonValueKind.Object
+                ? properties.EnumerateObject().Select(property => property.Name).ToArray()
+                : [];
+
+            CollectionAssert.AreEquivalent(expected, actual,
+                                           $"'{name}' declares [{string.Join(", ", actual)}] in its schema.");
         }
     }
 
@@ -125,15 +151,28 @@ public class McpServerIntegrationTests
             [nameof(McpController.GetBmotionGuideSection)] = new Dictionary<string, object?> { ["heading"] = "Installation" },
             [nameof(McpController.GetBmotionApiDetails)] = new Dictionary<string, object?> { ["typeName"] = "BmSpring" },
             [nameof(McpController.GetBmotionSourceFile)] = new Dictionary<string, object?> { ["path"] = "Demo/Server/Program.cs" },
+            // Tools whose arguments are all optional are called without any.
+            [nameof(McpController.GetBmotionOverview)] = new Dictionary<string, object?>(),
+            [nameof(McpController.GetBmotionRecipes)] = new Dictionary<string, object?>(),
+            [nameof(McpController.GetBmotionGuideSections)] = new Dictionary<string, object?>(),
+            [nameof(McpController.GetBmotionApiList)] = new Dictionary<string, object?>(),
+            [nameof(McpController.GetBmotionSourceFiles)] = new Dictionary<string, object?>(),
+            [nameof(McpController.GetBmotionEasings)] = new Dictionary<string, object?>(),
+            [nameof(McpController.GetBmotionAnimatableProperties)] = new Dictionary<string, object?>(),
         };
+
+        var tools = await Server.Client.ListToolsAsync();
+
+        // A new tool must get an entry here - otherwise it would be called with no arguments and a
+        // required one would fail for a reason that has nothing to do with the server.
+        CollectionAssert.AreEquivalent(tools.Select(tool => tool.Name).ToArray(), arguments.Keys.ToArray(),
+                                       "The argument map must cover exactly the tools the server exposes.");
 
         var called = 0;
 
-        foreach (var tool in await _server.Client.ListToolsAsync())
+        foreach (var tool in tools)
         {
-            var result = await _server.Client.CallToolAsync(
-                tool.Name,
-                arguments.GetValueOrDefault(tool.Name) ?? new Dictionary<string, object?>());
+            var result = await Server.Client.CallToolAsync(tool.Name, arguments[tool.Name]);
 
             Assert.IsFalse(result.IsError is true, $"'{tool.Name}' answered with an error: {Render(result)}");
             Assert.AreNotEqual(0, result.Content.Count, $"'{tool.Name}' answered with nothing at all.");
@@ -152,7 +191,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task CallTool_AMeasuringTool_ReturnsItsNumbersAsStructuredData()
     {
-        var result = await _server.Client.CallToolAsync(
+        var result = await Server.Client.CallToolAsync(
             nameof(McpController.SimulateBmotionTransition),
             new Dictionary<string, object?>
             {
@@ -178,7 +217,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task CallTool_TheDoubleArguments_SurviveTheJsonRoundTrip()
     {
-        var result = await _server.Client.CallToolAsync(
+        var result = await Server.Client.CallToolAsync(
             nameof(McpController.SimulateBmotionTransition),
             new Dictionary<string, object?> { ["transition"] = "tween(0.5, Linear)", ["from"] = 12.5, ["to"] = 87.5 });
 
@@ -191,7 +230,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task CallTool_TheCodeReview_ReturnsItsFindingsAsData()
     {
-        var result = await _server.Client.CallToolAsync(
+        var result = await Server.Client.CallToolAsync(
             nameof(McpController.ReviewBmotionCode),
             new Dictionary<string, object?>
             {
@@ -217,7 +256,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task CallTool_AnUnreadableArgument_ComesBackAsAnExplanation_NotAsAProtocolError()
     {
-        var result = await _server.Client.CallToolAsync(
+        var result = await Server.Client.CallToolAsync(
             nameof(McpController.SimulateBmotionTransition),
             new Dictionary<string, object?> { ["transition"] = "swoosh(0.4)" });
 
@@ -232,7 +271,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task CallTool_AMissingId_NamesWhatDoesExist()
     {
-        var result = await _server.Client.CallToolAsync(
+        var result = await Server.Client.CallToolAsync(
             nameof(McpController.GetBmotionRecipe),
             new Dictionary<string, object?> { ["id"] = "teleport" });
 
@@ -243,7 +282,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task CallTool_AnOptionalArgumentOmitted_UsesTheDeclaredDefault()
     {
-        var result = await _server.Client.CallToolAsync(
+        var result = await Server.Client.CallToolAsync(
             nameof(McpController.SimulateBmotionTransition),
             new Dictionary<string, object?> { ["transition"] = "tween(0.3)" });
 
@@ -257,18 +296,18 @@ public class McpServerIntegrationTests
     public async Task CallTool_AToolThatDoesNotExist_Fails_WithoutTakingTheSessionDown()
     {
         var error = await Assert.ThrowsAsync<ModelContextProtocol.McpException>(
-            () => _server.Client.CallToolAsync("GetBmotionNothing", new Dictionary<string, object?>()).AsTask());
+            () => Server.Client.CallToolAsync("GetBmotionNothing", new Dictionary<string, object?>()).AsTask());
 
         StringAssert.Contains(error.Message, "GetBmotionNothing");
 
         // The session is still usable afterwards, which is what makes a bad call recoverable.
-        Assert.AreNotEqual(0, (await _server.Client.ListToolsAsync()).Count);
+        Assert.AreNotEqual(0, (await Server.Client.ListToolsAsync()).Count);
     }
 
     [TestMethod]
     public async Task ListPrompts_ExposesEveryWorkflow_WithItsArguments()
     {
-        var prompts = await _server.Client.ListPromptsAsync();
+        var prompts = await Server.Client.ListPromptsAsync();
 
         var declared = new McpController().GetMcpCatalog().Prompts.Select(prompt => prompt.Name).ToArray();
 
@@ -283,7 +322,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task GetPrompt_RendersTheWorkflowWithTheArgumentsItWasGiven()
     {
-        var result = await _server.Client.GetPromptAsync(
+        var result = await Server.Client.GetPromptAsync(
             "animate-with-bmotion",
             new Dictionary<string, object?>
             {
@@ -303,8 +342,8 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ListResources_ExposesTheFixedOnes_AndTheTemplatedOnes()
     {
-        var resources = await _server.Client.ListResourcesAsync();
-        var templates = await _server.Client.ListResourceTemplatesAsync();
+        var resources = await Server.Client.ListResourcesAsync();
+        var templates = await Server.Client.ListResourceTemplatesAsync();
 
         var uris = resources.Select(resource => resource.Uri)
             .Concat(templates.Select(template => template.UriTemplate))
@@ -318,7 +357,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ReadResource_TheFixedResources_ReturnTheirDocuments()
     {
-        foreach (var resource in await _server.Client.ListResourcesAsync())
+        foreach (var resource in await Server.Client.ListResourcesAsync())
         {
             var result = await resource.ReadAsync();
 
@@ -333,15 +372,15 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ReadResource_ATemplatedResource_ResolvesItsArgument()
     {
-        var guide = await _server.Client.ReadResourceAsync("bmotion://guide/Installation");
+        var guide = await Server.Client.ReadResourceAsync("bmotion://guide/Installation");
 
         StringAssert.Contains(((TextResourceContents)guide.Contents[0]).Text!, "## Installation");
 
-        var type = await _server.Client.ReadResourceAsync("bmotion://api/BmSpring");
+        var type = await Server.Client.ReadResourceAsync("bmotion://api/BmSpring");
 
         StringAssert.Contains(((TextResourceContents)type.Contents[0]).Text!, "Stiffness");
 
-        var setup = await _server.Client.ReadResourceAsync("bmotion://setup/server");
+        var setup = await Server.Client.ReadResourceAsync("bmotion://setup/server");
 
         StringAssert.Contains(((TextResourceContents)setup.Contents[0]).Text!, "Blazor Server");
     }
@@ -354,7 +393,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task ReadResource_ASourceFilePath_SurvivesUriEscaping()
     {
-        var result = await _server.Client.ReadResourceAsync($"bmotion://source/{Uri.EscapeDataString("Demo/Server/Program.cs")}");
+        var result = await Server.Client.ReadResourceAsync($"bmotion://source/{Uri.EscapeDataString("Demo/Server/Program.cs")}");
 
         var text = ((TextResourceContents)result.Contents[0]).Text!;
 
@@ -383,7 +422,7 @@ public class McpServerIntegrationTests
         };
 
         var results = await Task.WhenAll(calls.Select(call =>
-            _server.Client.CallToolAsync(call.Tool, call.Arguments).AsTask()));
+            Server.Client.CallToolAsync(call.Tool, call.Arguments).AsTask()));
 
         for (int i = 0; i < results.Length; i++)
         {
@@ -391,7 +430,7 @@ public class McpServerIntegrationTests
         }
 
         // And the same question asked in that crowd still gives the answer it gives alone.
-        var alone = await _server.Client.CallToolAsync(
+        var alone = await Server.Client.CallToolAsync(
             nameof(McpController.SimulateBmotionTransition),
             new Dictionary<string, object?> { ["transition"] = "spring(stiffness: 260, damping: 12)" });
 
@@ -407,7 +446,7 @@ public class McpServerIntegrationTests
     [TestMethod]
     public async Task Server_TheSameToolsAreAlsoReachableOverPlainHttp()
     {
-        var http = _server.Http;
+        var http = Server.Http;
 
         var catalog = await http.GetFromJsonAsync<BmotionMcpCatalogDto>("/api/Mcp/GetMcpCatalog");
 

@@ -146,7 +146,7 @@ public partial class TwoFactorAuthTests : AppPageTest
         await page.WaitForBlazorInteractive();
         await page.GetByText(AppStrings.Delete, new() { Exact = true }).ClickAsync();
         await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.DeleteAccount }).ClickAsync();
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Yes }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = BitBlazorUIStrings.DialogOkText }).ClickAsync();
 
         // With an already-elevated session, deletion needs no elevated-access token, so the elevated-access OTP prompt
         // never appears; the account is deleted and she is signed out - the settings page becomes "not authorized".

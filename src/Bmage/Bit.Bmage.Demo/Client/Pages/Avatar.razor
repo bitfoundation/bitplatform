@@ -1,0 +1,453 @@
+﻿@page "/avatar"
+@implements IDisposable
+@inject ImageLoader Loader
+@inject ImageExporter Exporter
+@inject IImageCapabilityProvider Capabilities
+
+@* A profile picture, end to end: smart framing, a square or circular crop, a resize, and an encode
+   that searches for the highest quality that still fits a byte budget - in WebP where the browser
+   can write it, with a fallback where it cannot. Every option re-runs the whole pipeline on the
+   decoded source, debounced so a slider drag queues one run rather than one per pixel of travel. *@
+
+<PageTitle>Avatar editor - Bit.Bmage</PageTitle>
+
+<h1>Avatar editor</h1>
+
+<p class="page-intro">
+    Upload, crop to a square or a circle, resize, and compress to a byte budget. The exported file
+    is <strong>WebP</strong> where the browser can write it and a fallback otherwise, with every
+    trace of location metadata removed.
+</p>
+
+<div class="demo-section">
+    <h2>Try it</h2>
+
+    @if (_error is not null)
+    {
+        <div class="alert alert-error" role="alert">@_error</div>
+    }
+
+    <div class="split">
+        <div>
+            @if (_source is null)
+            {
+                <BmageDropZone Label="Drop a photo here, or click to choose one" OnFilesSelected="OnFilesSelected" />
+                <div class="sample-row">
+                    <button type="button" class="btn" disabled="@(_busy || IsHydrating)" @onclick="UseSample">Use a sample image</button>
+                    <span class="small muted">No photo to hand? A generated scene with a person in it works too.</span>
+                </div>
+            }
+            else
+            {
+                <div class="preview-row">
+                    <div>
+                        <p class="card-title">
+                            Result
+                            @if (_busy)
+                            {
+                                <span class="working" role="status">Working&hellip;</span>
+                            }
+                        </p>
+                        @* Clipped to the shape here as well as in the pixels, so the preview reads
+                           as an avatar would in an app; the exported file is round on its own. *@
+                        <div class="avatar-frame" style="width:@(PreviewSize)px; height:@(PreviewSize)px; border-radius:@(_circular ? "50%" : "0.75rem")">
+                            <ImagePreview Image="_result" Version="_resultVersion" Alt="Avatar preview" Class="avatar-image" />
+                        </div>
+                    </div>
+                    <div class="avatar-source">
+                        <p class="card-title">Source</p>
+                        <ImagePreview Image="_source" Alt="Uploaded photo" Style="max-height:200px" />
+                        <p class="small muted preview-meta">
+                            @_source.Width &times; @_source.Height
+                            @if (_sourceBytes > 0)
+                            {
+                                <text> &middot; @Display.Bytes(_sourceBytes)</text>
+                            }
+                        </p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="card">
+            <p class="card-title">Options</p>
+
+            <div class="field">
+                <label class="field-label" for="size">Output size <span class="field-value">@_size px</span></label>
+                <input id="size" type="range" min="64" max="1024" step="32" value="@_size"
+                       @oninput="OnSizeChanged" />
+            </div>
+
+            <div class="field field-inline">
+                <input id="circular" type="checkbox" checked="@_circular" @onchange="OnCircularChanged" />
+                <label class="field-label" for="circular">Circular mask</label>
+            </div>
+
+            <div class="field">
+                <label class="field-label" for="budget">Size budget <span class="field-value">@(_budgetKb) KB</span></label>
+                <input id="budget" type="range" min="10" max="500" step="10" value="@_budgetKb"
+                       @oninput="OnBudgetChanged" />
+            </div>
+
+            <div class="field" role="group" aria-labelledby="framing-label">
+                <span class="field-label" id="framing-label">Framing</span>
+                <div class="chip-row">
+                    <button type="button" class="chip" aria-pressed="@(_smart ? "true" : "false")" @onclick="() => SetSmart(true)">Smart</button>
+                    @foreach (var anchor in new[] { Anchor.Center, Anchor.Top, Anchor.Bottom })
+                    {
+                        <button type="button" class="chip" aria-pressed="@(!_smart && _anchor == anchor ? "true" : "false")"
+                                @onclick="() => SetAnchor(anchor)">@anchor</button>
+                    }
+                </div>
+                <span class="field-hint">
+                    Smart framing scores detail, colour and skin tones to find the subject, instead of
+                    assuming it is in the middle. Centre-cropping a portrait is how avatars lose the
+                    top of a head.
+                </span>
+            </div>
+
+            @if (_dominant.Count > 0)
+            {
+                <div class="field">
+                    <span class="field-label">Dominant colours</span>
+                    <div class="chip-row">
+                        @foreach (var colour in _dominant)
+                        {
+                            <span class="chip" style="background:@colour.Color.ToHex(false); color:@(colour.Color.Luminance > 140 ? "#111" : "#fff"); border-color:transparent"
+                                  title="@colour.Color.ToHex(false)">
+                                @FormatShare(colour.Percent)
+                            </span>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (_encoded is not null)
+            {
+                <hr class="divider" />
+                <div class="stat-grid">
+                    <div class="stat">
+                        <span class="stat-label">Format</span>
+                        <span class="stat-value">@_encoded.Format.ToString().ToUpperInvariant()</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Size</span>
+                        <span class="stat-value @(_encoded.Length <= _budgetKb * 1024 ? "good" : "bad")">@Display.Bytes(_encoded.Length)</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Quality</span>
+                        <span class="stat-value">@(_encoded.Quality is { } q ? $"{q:0.00}" : "—")</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-label">Vs. upload</span>
+                        <span class="stat-value @(Display.IsSmaller(_sourceBytes, _encoded.Length) ? "good" : null)">@Display.Change(_sourceBytes, _encoded.Length)</span>
+                    </div>
+                </div>
+            }
+
+            <hr class="divider" />
+            <div class="btn-row">
+                <button type="button" class="btn btn-accent" disabled="@(_encoded is null || _busy)" @onclick="Download">
+                    <Icon Path="@Icons.Download" />
+                    Download
+                </button>
+                <button type="button" class="btn" disabled="@(_source is null)" @onclick="Clear">Start over</button>
+            </div>
+
+            @if (_fallbackNotice is not null)
+            {
+                <p class="small muted preview-meta">@_fallbackNotice</p>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>The pipeline behind this page</h2>
+    <p>
+        A square crop around the subject, a high quality downscale and a gentle sharpen, then an
+        encode that bisects on quality until the file fits the budget. The circular mask is applied
+        to the pixels rather than drawn with CSS, so the exported file is genuinely round - which is
+        also why a circular avatar falls back to PNG rather than JPEG: a format without an alpha
+        channel would show the corners.
+    </p>
+    <CodeSnippet Code="@Snippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>What to take from it</h2>
+    <ul>
+        <li><strong>Frame the subject, not the centre.</strong> <code>SmartCrop</code> is a heuristic, not face recognition; if you have a detector, pass its rectangle to <code>SmartCrop.FindCrop</code> as <code>mustInclude</code>.</li>
+        <li><strong>Budget in bytes, not quality.</strong> <code>MaxFileSize</code> reports the quality it settled on, and throws <code>ImageEncodeException</code> rather than handing back an oversized file when the target is impossible.</li>
+        <li><strong>Remove metadata.</strong> An avatar is published to everyone; <code>MetadataPolicy.Remove</code> is the default for a reason. See <a href="/metadata">Metadata and privacy</a>.</li>
+    </ul>
+</div>
+
+@code {
+    private ImageBuffer? _source;
+    private ImageBuffer? _result;
+    private EncodedImage? _encoded;
+    private long _resultVersion;
+    private long _sourceBytes;
+    private int _size = 256;
+    private int _budgetKb = 80;
+    private bool _circular = true;
+    private Anchor _anchor = Anchor.Center;
+    private bool _smart = true;
+    private IReadOnlyList<ColorFrequency> _dominant = [];
+    private bool _busy;
+    private string? _error;
+    private string? _fallbackNotice;
+    private ImageCapabilities? _capabilities;
+    private readonly Debouncer _debounce = new(200);
+    // Identifies the newest run. An older run that finishes late, or after the source changed, is discarded.
+    private int _run;
+
+    // The prerendered page is visible before the runtime that would answer its buttons has loaded.
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    private int PreviewSize => Math.Min(_size, 220);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // Probing needs a live browser, so it runs after the first interactive render rather than
+        // during initialisation, which also runs on the server for the prerender.
+        if (firstRender is false || IsHydrating) return;
+        _capabilities = await Capabilities.GetAsync();
+    }
+
+    private const string Snippet = """
+        // Square crop around the subject, high quality downscale, gentle sharpen,
+        // then compress until it fits the budget. Circular masks are a pixel
+        // operation, so they survive the resize rather than being a CSS trick.
+        var pipeline = ImagePipeline.Create()
+            .AutoOrient()
+            .SmartCrop(AspectRatio.Square)     // finds the subject instead of assuming the centre
+            .Resize(size, size, ResizeMode.Stretch)
+            .Sharpen(amount: 0.25f);
+
+        using var avatar = await pipeline.ExecuteAsync(source);
+        if (circular) ApplyCircularMask(avatar);
+
+        var encoded = await exporter.EncodeWithFallbackAsync(
+            avatar,
+            circular ? [ImageFormat.WebP, ImageFormat.Png] : [ImageFormat.WebP, ImageFormat.Jpeg],
+            new ImageExportOptions
+            {
+                Quality     = 0.9,
+                MaxFileSize = budgetKb * 1024,
+                MinQuality  = 0.5,
+                Metadata    = MetadataPolicy.Remove,
+                Background  = Rgba32.White,
+            });
+        """;
+
+    private async Task OnFilesSelected(IReadOnlyList<IBrowserFile> files)
+    {
+        if (files.Count == 0) return;
+        _error = null;
+        _busy = true;
+        try
+        {
+            var image = await Loader.LoadAsync(files[0]);
+            await SetSourceAsync(image, files[0].Size);
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+            _busy = false;
+        }
+    }
+
+    private async Task UseSample()
+    {
+        _error = null;
+        _busy = true;
+        StateHasChanged();
+        // Let the busy state paint before the drawing work starts.
+        await Task.Yield();
+        await SetSourceAsync(SampleImages.Landscape(), 0);
+    }
+
+    private async Task SetSourceAsync(ImageBuffer image, long bytes)
+    {
+        _run++; // whatever is still running was reading the old source
+        _source?.Dispose();
+        _source = image;
+        _sourceBytes = bytes;
+        _dominant = ImageStatistics.GetDominantColors(_source, 5, ignoreNearWhiteAndBlack: true);
+        await Regenerate();
+    }
+
+    private void OnSizeChanged(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var value)) return;
+        _size = value;
+        // Re-encoding on every pixel of slider travel would queue work faster than it finishes.
+        _debounce.Schedule(async _ => await Regenerate());
+    }
+
+    private void OnBudgetChanged(ChangeEventArgs e)
+    {
+        if (!int.TryParse(e.Value?.ToString(), out var value)) return;
+        _budgetKb = value;
+        _debounce.Schedule(async _ => await Regenerate());
+    }
+
+    private async Task OnCircularChanged(ChangeEventArgs e)
+    {
+        _circular = (bool)(e.Value ?? false);
+        await Regenerate();
+    }
+
+    private async Task SetAnchor(Anchor anchor)
+    {
+        _smart = false;
+        _anchor = anchor;
+        await Regenerate();
+    }
+
+    private async Task SetSmart(bool smart)
+    {
+        _smart = smart;
+        await Regenerate();
+    }
+
+    private async Task Regenerate()
+    {
+        if (_source is not { } source) return;
+        var run = ++_run;
+        _busy = true;
+        _error = null;
+        StateHasChanged();
+        ImageBuffer? next = null;
+        try
+        {
+            // Smart framing picks where to crop; the fixed anchors are there to compare against.
+            var pipeline = _smart
+                ? ImagePipeline.Create().AutoOrient().SmartCrop(AspectRatio.Square).Resize(_size, _size, ResizeMode.Stretch).Sharpen(0.25f)
+                : ImagePipeline.Create().AutoOrient().Cover(_size, _size, _anchor).Sharpen(0.25f);
+
+            next = await pipeline.ExecuteAsync(source);
+            if (_circular) ApplyCircularMask(next);
+
+            var preferred = new[] { ImageFormat.WebP, ImageFormat.Jpeg };
+            // A circular avatar needs transparency, so a lossy opaque format would show the corners.
+            if (_circular) preferred = [ImageFormat.WebP, ImageFormat.Png];
+
+            var encoded = await Exporter.EncodeWithFallbackAsync(next, preferred, new ImageExportOptions
+            {
+                Quality = 0.9,
+                MaxFileSize = _budgetKb * 1024L,
+                MinQuality = 0.5,
+                Metadata = MetadataPolicy.Remove,
+                Background = Rgba32.White,
+            });
+            if (run != _run) return;
+
+            _result?.Dispose();
+            _result = next;
+            next = null;
+            _resultVersion++;
+            _encoded = encoded;
+            _fallbackNotice = _capabilities is { } caps && !caps.CanEncode(ImageFormat.WebP)
+                ? $"This browser cannot write WebP, so {_encoded.Format.ToString().ToUpperInvariant()} was used instead."
+                : null;
+        }
+        catch (Exception) when (run != _run)
+        {
+            // Superseded: the newer run reports its own outcome.
+        }
+        catch (ImageEncodeException)
+        {
+            _error = "That budget is too small for this image even at the lowest quality. Try a larger budget or a smaller output size.";
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+        }
+        finally
+        {
+            next?.Dispose();
+            if (run == _run)
+            {
+                _busy = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Clears the pixels outside an inscribed circle, with a one pixel feather so the edge is not jagged.
+    /// Done on the pixels rather than in CSS so the exported file is genuinely round.
+    /// </summary>
+    private static void ApplyCircularMask(ImageBuffer image)
+    {
+        var cx = image.Width / 2f;
+        var cy = image.Height / 2f;
+        var radius = MathF.Min(cx, cy);
+        for (var y = 0; y < image.Height; y++)
+        {
+            var row = image.GetRow(y);
+            var dy = y + 0.5f - cy;
+            for (var x = 0; x < image.Width; x++)
+            {
+                var dx = x + 0.5f - cx;
+                var distance = MathF.Sqrt(dx * dx + dy * dy);
+                if (distance <= radius - 1) continue;
+                var coverage = Math.Clamp(radius - distance, 0f, 1f);
+                var p = row[x];
+                row[x] = p.WithAlpha((byte)(p.A * coverage));
+            }
+        }
+    }
+
+    private async Task Download()
+    {
+        if (_encoded is null) return;
+        try
+        {
+            await Exporter.DownloadAsync(_encoded, "avatar");
+        }
+        catch (Exception ex)
+        {
+            _error = Describe(ex);
+        }
+    }
+
+    private void Clear()
+    {
+        _run++;
+        _source?.Dispose();
+        _result?.Dispose();
+        _source = null;
+        _result = null;
+        _encoded = null;
+        _sourceBytes = 0;
+        _dominant = [];
+        _fallbackNotice = null;
+        _busy = false;
+        _error = null;
+    }
+
+    /// <summary>A smooth photograph has no single dominant colour, so small shares need a decimal to stay meaningful.</summary>
+    private static string FormatShare(double percent) => percent >= 1
+        ? $"{percent:0}%"
+        : percent >= 0.1 ? $"{percent:0.0}%" : "<0.1%";
+
+    private static string Describe(Exception ex) => ex switch
+    {
+        ImageLimitExceededException => "That image is larger than this page allows.",
+        ImageDecodeException => "That file could not be read as an image.",
+        ImageCapabilityException c => c.Message,
+        _ => $"Something went wrong: {ex.Message}",
+    };
+
+    public void Dispose()
+    {
+        _run++;
+        _debounce.Dispose();
+        _source?.Dispose();
+        _result?.Dispose();
+    }
+}

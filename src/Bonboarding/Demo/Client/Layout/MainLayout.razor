@@ -1,0 +1,31 @@
+﻿@inherits LayoutComponentBase
+@implements IDisposable
+@inject IBonboardingService BonboardingService
+
+@* SiteShell is this demo's own chrome - header, navigation, footer - and stands in for your layout's
+   markup. The part every application needs is the BonboardingRoot below it. *@
+
+<SiteShell @bind-IsDark="_dark">
+    @Body
+</SiteShell>
+
+@* One host renders every tour the application starts, wherever it is started from. *@
+@* The site's theme switch drives the tours as well as the page: in the dark theme, a tour that leaves
+   its own Theme unset is drawn dark. A tour that sets one keeps it whichever theme the site is in,
+   which is what lets the theming page demonstrate the option. *@
+<BonboardingRoot Theme="@HostTheme" />
+
+@code {
+    private bool _dark;
+
+    // The host's Theme overrides the tour's, so it is only passed for a tour that has not chosen one.
+    private BonboardingTheme? HostTheme
+        => _dark && BonboardingService.Active?.Tour.Theme is null ? BonboardingTheme.Dark : null;
+
+    protected override void OnInitialized() => BonboardingService.SessionsChanged += OnSessionsChanged;
+
+    // HostTheme depends on which tour is active.
+    private void OnSessionsChanged(object? sender, EventArgs e) => _ = InvokeAsync(StateHasChanged);
+
+    public void Dispose() => BonboardingService.SessionsChanged -= OnSessionsChanged;
+}

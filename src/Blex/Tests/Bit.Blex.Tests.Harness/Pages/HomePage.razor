@@ -1,0 +1,45 @@
+﻿@page "/"
+@inherits BlexComponentBase
+@inject CounterStore Counter
+@inject TokenStore Tokens
+@inject BlexHistory History
+
+<section id="page-home">
+    <h1>Blex harness</h1>
+
+    <p>Count: <span id="count" data-count="@Counter.Count">@Counter.Count</span></p>
+    <button id="increment" @onclick="Counter.Increment">increment</button>
+    <button id="reset" @onclick="Counter.Reset">reset</button>
+
+    <p>
+        <button id="undo" disabled="@(History.CanUndo is false)" @onclick="History.Undo">undo</button>
+        <button id="redo" disabled="@(History.CanRedo is false)" @onclick="History.Redo">redo</button>
+    </p>
+
+    <p>Token: <span id="token" data-token="@Tokens.Token" data-issued-on="@Tokens.IssuedOn">@Tokens.Token</span></p>
+</section>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Subscribe(Counter, Tokens);
+        History.Changed += OnHistoryChanged;
+
+        // Issued once per page load - by the prerender pass when there is one. If the interactive render
+        // finds the token already set, <BlexProvider> handed the prerendered state over; if it has to issue
+        // a new one, it did not.
+        if (Tokens.Token.Length == 0)
+        {
+            Tokens.Issue(Guid.NewGuid().ToString("N"), HarnessRuntime.Platform);
+        }
+    }
+
+    private void OnHistoryChanged() => _ = InvokeAsync(StateHasChanged);
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) History.Changed -= OnHistoryChanged;
+
+        base.Dispose(disposing);
+    }
+}
