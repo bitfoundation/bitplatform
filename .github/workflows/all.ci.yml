@@ -87,6 +87,10 @@ on:
         description: Bonboarding solution
         type: boolean
         default: true
+      bortable:
+        description: Bortable solution
+        type: boolean
+        default: true
       besql:
         description: Besql solution
         type: boolean
@@ -713,6 +717,11 @@ jobs:
         dotnet build src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Bortable
+      run: |
+        dotnet build src/Bortable/Bit.Bortable/Bit.Bortable.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bortable/Bit.Bortable/Bit.Bortable.csproj --output ./packages --configuration Release
+
     - name: Build and pack CodeAnalyzers
       run: |
         dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -815,6 +824,11 @@ jobs:
     name: bonboarding
     if: ${{ inputs.bonboarding }}
     uses: ./.github/workflows/bit.ci.Bonboarding.yml
+
+  bortable:
+    name: bortable
+    if: ${{ inputs.bortable }}
+    uses: ./.github/workflows/bit.ci.Bortable.yml
 
   besql:
     name: besql

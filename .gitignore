@@ -308,6 +308,10 @@ _book
 /src/Bonboarding/Bit.Bonboarding/wwwroot/**/*.js
 /src/Bonboarding/Bit.Bonboarding/wwwroot/**/*.css
 
+/src/Bortable/Bit.Bortable/Scripts/**/*.js
+/src/Bortable/Bit.Bortable/wwwroot/**/*.js
+/src/Bortable/Bit.Bortable/wwwroot/**/*.css
+
 /src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js
 

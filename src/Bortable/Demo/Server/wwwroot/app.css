@@ -1,0 +1,558 @@
+﻿/* The demo site's own palette. Prefixed --demo-, not --bit-bortable-: the library defines its theme tokens
+   under that prefix, and a page-level token of the same name with a different meaning breaks whatever
+   reads it. */
+:root {
+    --demo-bg: #f5f8f8;
+    --demo-surface: #ffffff;
+    --demo-border: #e0e7e6;
+    --demo-text: #1f2430;
+    --demo-muted: #6b7280;
+    --demo-primary: #0d9488;
+    --demo-primary-hover: #0f766e;
+    --demo-primary-rgb: 13, 148, 136;
+    --demo-list-bg: #eef4f3;
+    --demo-tint: #ecfdf8;
+    --demo-tint-border: #b9e9df;
+    --demo-radius: 10px;
+    --demo-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+}
+
+/* The library's drag states, tinted with the demo's accent. html:root rather than :root: bit-bortable.css
+   declares the same property on :root and is linked after this file, so a plain :root here would lose. It
+   has to be set on the root itself, too: the library derives its state colours from it there, and those
+   derived values are what every list inherits. */
+html:root {
+    --bit-bortable-accent-rgb: 13, 148, 136;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--demo-text);
+    background: var(--demo-bg);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+/* Page headings take focus on navigation (FocusOnNavigate in Routes.razor) so a screen reader
+   starts reading at the new page; that focus is not something to draw a ring around. */
+h3:focus {
+    outline: none;
+}
+
+a {
+    color: var(--demo-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+code {
+    color: #b4236b;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.text-muted {
+    color: var(--demo-muted);
+}
+
+/* Blazor framework UI */
+#blazor-error-ui {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.blazor-error-boundary {
+    background: #b32121;
+    padding: 1rem;
+    color: white;
+    border-radius: var(--demo-radius);
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred.";
+    }
+
+/* Demo page helpers */
+.demo-header {
+    margin-bottom: 1.1rem;
+}
+
+    .demo-header h3 {
+        margin: 0 0 0.4rem;
+        font-size: 1.4rem;
+    }
+
+    .demo-header p {
+        margin: 0;
+        max-width: 70ch;
+        line-height: 1.55;
+    }
+
+/* Side-by-side lists. They wrap under each other once the page is too narrow for two. */
+.demo-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    max-width: 760px;
+}
+
+    .demo-columns > .demo-col {
+        flex: 1 1 220px;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+    }
+
+.demo-col-title {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.demo-col-title--spaced {
+    margin-top: 1.75rem;
+}
+
+/* The live readout of a bound list. The span holds just the items, joined with ", ". */
+.demo-order {
+    margin: 0.9rem 0 0;
+    font-size: 0.9rem;
+    color: var(--demo-muted);
+    overflow-wrap: anywhere;
+}
+
+    .demo-order + .demo-order {
+        margin-top: 0.3rem;
+    }
+
+    .demo-order strong {
+        margin-right: 0.2rem;
+        color: var(--demo-text);
+        font-weight: 600;
+    }
+
+    .demo-order span {
+        color: var(--demo-text);
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 0.85rem;
+    }
+
+/* A list: a tray of cards. Padding and a minimum height leave an area to drop into even when it is empty. */
+.demo-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-width: 520px;
+    min-height: 3.5rem;
+    padding: 0.5rem;
+    border: 1px solid var(--demo-border);
+    border-radius: var(--demo-radius);
+    background: var(--demo-list-bg);
+}
+
+    /* In a column the tray fills it, so the shorter of two lists is as easy to drop into as the longer. */
+    .demo-col > .demo-list {
+        flex: 1;
+        max-width: none;
+    }
+
+.demo-item {
+    display: flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0.65rem 0.9rem;
+    border: 1px solid var(--demo-border);
+    border-radius: 8px;
+    background: var(--demo-surface);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+    .demo-item:hover {
+        border-color: rgba(var(--demo-primary-rgb), 0.45);
+        box-shadow: 0 2px 8px rgba(16, 24, 40, 0.08);
+    }
+
+    .demo-item.tinted {
+        border-color: var(--demo-tint-border);
+        background: var(--demo-tint);
+    }
+
+    /* Locked by the Filter page's predicate. */
+    .demo-item.filtered {
+        border-color: #f5c2c7;
+        background: #fdecee;
+        color: #842029;
+    }
+
+/* The ghost: the dragged item in its list, and the placeholder that previews where it lands in another. */
+.demo-ghost {
+    opacity: 1 !important;
+    border-style: dashed !important;
+    border-color: var(--demo-primary) !important;
+    background: #ccfbf1 !important;
+    box-shadow: none !important;
+}
+
+/* The library's swap and selection states, restated for the cards: .demo-item paints its own background,
+   border and shadow, and these have to win over it, over .tinted and over :hover. */
+.demo-item.bit-bortable-swap-highlight,
+.nested-item.bit-bortable-swap-highlight {
+    background: linear-gradient(var(--bit-bortable-swap-bg), var(--bit-bortable-swap-bg)), var(--demo-surface);
+    outline: var(--bit-bortable-swap-outline);
+    outline-offset: -2px;
+}
+
+.demo-item.bit-bortable-selected {
+    border-color: transparent;
+    background: linear-gradient(var(--bit-bortable-selected-bg), var(--bit-bortable-selected-bg)), var(--demo-surface);
+    box-shadow: var(--bit-bortable-selected-ring);
+}
+
+/* The drag handle of the Handle page: the only part of a row that starts a drag. */
+.handle {
+    margin-right: 0.6rem;
+    padding: 0 0.15rem;
+    color: var(--demo-muted);
+    font-size: 1.05rem;
+    line-height: 1;
+    cursor: grab;
+    user-select: none;
+}
+
+    .handle:hover {
+        color: var(--demo-primary);
+    }
+
+    .handle:active {
+        cursor: grabbing;
+    }
+
+/* Grid example: the list is a CSS grid; each item wraps a square. */
+.demo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+    gap: 0.6rem;
+    max-width: 520px;
+}
+
+.grid-square {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 90px;
+    border-radius: var(--demo-radius);
+    background: linear-gradient(135deg, #14b8a6 0%, #0d9488 100%);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08), 0 4px 12px rgba(13, 148, 136, 0.18);
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+    .demo-grid > .bit-bortable-item:hover .grid-square {
+        filter: brightness(1.07);
+    }
+
+    /* The square covers its wrapper, so the ghost state is drawn on the square, and the wrapper - square
+       where the square is rounded - stays clear. */
+    .demo-grid > .demo-ghost {
+        background: transparent !important;
+    }
+
+    .demo-ghost .grid-square {
+        outline: 2px dashed var(--demo-primary);
+        outline-offset: -2px;
+        background: #ccfbf1;
+        box-shadow: none;
+        color: var(--demo-primary-hover);
+    }
+
+/* Nested example. Every item holds a list of its own; the padding and minimum height keep an empty branch
+   big enough to drop into. */
+.nested-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    min-height: 2.5rem;
+    padding: 0.45rem;
+    border: 1px dashed rgba(var(--demo-primary-rgb), 0.35);
+    border-radius: 8px;
+    background: rgba(var(--demo-primary-rgb), 0.04);
+}
+
+#nested-root {
+    max-width: 640px;
+}
+
+.nested-item {
+    padding: 0.5rem 0.55rem 0.55rem;
+    border: 1px solid var(--demo-border);
+    border-radius: 8px;
+    background: var(--demo-surface);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05);
+}
+
+    /* Only the innermost item under the pointer lights up, not every item around it. */
+    .nested-item:hover:not(:has(.nested-item:hover)) {
+        border-color: rgba(var(--demo-primary-rgb), 0.45);
+    }
+
+.nested-item__name {
+    margin: 0 0 0.4rem 0.2rem;
+    font-size: 0.92rem;
+    font-weight: 500;
+}
+
+/* Events example. */
+.event-log {
+    max-width: 760px;
+    max-height: 220px;
+    margin-top: 1rem;
+    padding: 0.75rem 0.9rem;
+    overflow-y: auto;
+    border-radius: var(--demo-radius);
+    background: #1e2430;
+    color: #d8dee9;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+}
+
+.event-log__empty {
+    color: #8b93a3;
+}
+
+.event-log__line {
+    overflow-wrap: anywhere;
+}
+
+/* Thresholds example. */
+.threshold-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    max-width: 760px;
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--demo-border);
+    border-radius: var(--demo-radius);
+    background: var(--demo-surface);
+}
+
+    .threshold-controls label {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 0.9rem;
+    }
+
+    .threshold-controls strong {
+        min-width: 2.6rem;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .threshold-controls input[type="range"] {
+        flex: 1 1 160px;
+        max-width: 260px;
+        accent-color: var(--demo-primary);
+    }
+
+    .threshold-controls input[type="checkbox"] {
+        width: 1rem;
+        height: 1rem;
+        margin: 0;
+        accent-color: var(--demo-primary);
+    }
+
+    .threshold-controls .threshold-check {
+        gap: 0.45rem;
+    }
+
+.threshold-grid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 300px;
+}
+
+/* The swap-zone visualizer. Each item draws its active zones, sized by the --zone and --inverted-zone the
+   page sets on the list: one band of --zone across the middle, or with InvertSwap two bands of
+   --inverted-zone / 2 at the edges - the geometry bit-bortable.js hit-tests against. The list is measured
+   top to bottom, the grid left to right (Direction="Horizontal"). */
+.show-zones > .bit-bortable-item {
+    position: relative;
+}
+
+    .show-zones > .bit-bortable-item::before,
+    .show-zones > .bit-bortable-item::after {
+        content: "";
+        position: absolute;
+        border: 1px dashed rgba(var(--demo-primary-rgb), 0.6);
+        border-radius: 5px;
+        background: rgba(var(--demo-primary-rgb), 0.14);
+        pointer-events: none;
+    }
+
+    .show-zones > .bit-bortable-item::after {
+        display: none;
+    }
+
+.threshold-list.show-zones > .bit-bortable-item::before {
+    left: 3px;
+    right: 3px;
+    top: calc((1 - var(--zone)) * 50%);
+    bottom: calc((1 - var(--zone)) * 50%);
+}
+
+.threshold-list.show-zones.zones-inverted > .bit-bortable-item::before,
+.threshold-list.show-zones.zones-inverted > .bit-bortable-item::after {
+    display: block;
+    left: 3px;
+    right: 3px;
+    height: calc(var(--inverted-zone) * 50%);
+}
+
+.threshold-list.show-zones.zones-inverted > .bit-bortable-item::before {
+    top: 0;
+    bottom: auto;
+}
+
+.threshold-list.show-zones.zones-inverted > .bit-bortable-item::after {
+    bottom: 0;
+}
+
+.threshold-grid.show-zones > .bit-bortable-item::before,
+.threshold-grid.show-zones > .bit-bortable-item::after {
+    border-color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.26);
+}
+
+.threshold-grid.show-zones > .bit-bortable-item::before {
+    top: 3px;
+    bottom: 3px;
+    left: calc((1 - var(--zone)) * 50%);
+    right: calc((1 - var(--zone)) * 50%);
+}
+
+.threshold-grid.show-zones.zones-inverted > .bit-bortable-item::before,
+.threshold-grid.show-zones.zones-inverted > .bit-bortable-item::after {
+    display: block;
+    top: 3px;
+    bottom: 3px;
+    width: calc(var(--inverted-zone) * 50%);
+}
+
+.threshold-grid.show-zones.zones-inverted > .bit-bortable-item::before {
+    left: 0;
+    right: auto;
+}
+
+.threshold-grid.show-zones.zones-inverted > .bit-bortable-item::after {
+    right: 0;
+}
+
+/* "View code" toggle + source panel */
+.demo-code {
+    margin-bottom: 1rem;
+}
+
+.demo-code__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font: inherit;
+    font-weight: 500;
+    font-size: 0.88rem;
+    padding: 6px 12px;
+    border: 1px solid var(--demo-border);
+    border-radius: 8px;
+    background: var(--demo-surface);
+    color: var(--demo-text);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.demo-code__toggle:hover {
+    background: #f1f4f4;
+    border-color: var(--demo-primary);
+}
+
+.demo-code__toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--demo-primary-rgb), 0.35);
+}
+
+.demo-code__caret {
+    font-size: 0.8em;
+    color: var(--demo-muted);
+}
+
+.demo-code__glyph {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    color: var(--demo-primary);
+    font-weight: 600;
+}
+
+.demo-code__file {
+    margin: 0.9rem 0 -0.3rem;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--demo-muted);
+}
+
+.demo-code__pre {
+    margin: 0.7rem 0 0;
+    padding: 1rem 1.1rem;
+    max-height: 520px;
+    overflow: auto;
+    border: 1px solid var(--demo-border);
+    border-radius: var(--demo-radius);
+    background: #1e2430;
+    box-shadow: var(--demo-shadow);
+}
+
+.demo-code__code {
+    display: block;
+    color: #e6e9ef;
+    background: none;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    white-space: pre;
+    tab-size: 4;
+}
+
+.demo-code__empty {
+    margin-top: 0.7rem;
+    font-size: 0.88rem;
+    color: var(--demo-muted);
+}

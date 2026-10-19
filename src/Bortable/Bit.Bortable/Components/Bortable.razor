@@ -1,0 +1,67 @@
+﻿@typeparam TItem
+@namespace Bit.Bortable
+@implements IBortableZone
+@implements IAsyncDisposable
+
+<div @ref="_listElement"
+     id="@Id"
+     class="@ContainerCssClass"
+     style="@Style"
+     data-bortable-list="@Id"
+     @ondragover="OnContainerDragOver"
+     @ondragover:preventDefault="true"
+     @ondragover:stopPropagation="true"
+     @ondragenter:preventDefault="true"
+     @ondrop="OnDrop"
+     @ondrop:preventDefault="true"
+     @ondrop:stopPropagation="true">
+    @if (Items is not null)
+    {
+        for (int i = 0; i < Items.Count; i++)
+        {
+            TItem current = Items[i];
+
+            if (IsPlaceholderAt(i))
+            {
+                @Placeholder
+            }
+
+            bool canDrag = CanDrag(current);
+            <div @key="current"
+                 class="@ItemCssClass(current)"
+                 data-bortable-item="true"
+                 data-bortable-disabled="@(canDrag ? null : "true")"
+                 draggable="@(canDrag && string.IsNullOrEmpty(Handle) ? "true" : "false")"
+                 @onclick="ItemClickCallback(current)"
+                 @ondragstart="() => OnItemDragStart(current)"
+                 @ondragstart:stopPropagation="true"
+                 @ondragend="OnItemDragEnd"
+                 @ondragend:stopPropagation="true">
+                @if (ItemTemplate is not null)
+                {
+                    @ItemTemplate(current)
+                }
+            </div>
+        }
+
+        if (IsPlaceholderAt(Items.Count))
+        {
+            @Placeholder
+        }
+    }
+    @ChildContent
+</div>
+
+@code {
+    // Drop preview shown in a list the dragged item would be moved into. It renders
+    // the dragged item's own template, so it looks like the item will once dropped.
+    private RenderFragment Placeholder => @<div class="@PlaceholderCssClass()"
+                                                data-bortable-item="true"
+                                                data-bortable-placeholder="true"
+                                                aria-hidden="true">
+        @if (ItemTemplate is not null && Service.Context?.Item is TItem preview)
+        {
+            @ItemTemplate(preview)
+        }
+    </div>;
+}

@@ -248,6 +248,11 @@ jobs:
     - name: dotnet pack Bonboarding
       run: dotnet pack src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj --output . --configuration Release
 
+    - name: dotnet build Bortable
+      run: dotnet build src/Bortable/Bit.Bortable/Bit.Bortable.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bortable
+      run: dotnet pack src/Bortable/Bit.Bortable/Bit.Bortable.csproj --output . --configuration Release
+
     - name: dotnet build CodeAnalyzers
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack CodeAnalyzer
