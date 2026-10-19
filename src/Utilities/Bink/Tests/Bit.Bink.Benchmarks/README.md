@@ -23,13 +23,13 @@ a 1600 by 1000 page) rather than convenient straight lines, so the numbers refle
 
 ```bash
 # From the repository's src folder. Release is required - a Debug build's numbers are meaningless.
-dotnet run -c Release --project Bink/Tests/Bit.Bink.Benchmarks
+dotnet run -c Release --project Utilities/Bink/Tests/Bit.Bink.Benchmarks
 
 # A single set, selected with BenchmarkDotNet's glob filter:
-dotnet run -c Release --project Bink/Tests/Bit.Bink.Benchmarks -- --filter "*Render*"
+dotnet run -c Release --project Utilities/Bink/Tests/Bit.Bink.Benchmarks -- --filter "*Render*"
 
 # A quick smoke run (one iteration, in-process, numbers not meaningful):
-dotnet run -c Release --project Bink/Tests/Bit.Bink.Benchmarks -- --filter "*InputBenchmarks*" --job dry --inProcess
+dotnet run -c Release --project Utilities/Bink/Tests/Bit.Bink.Benchmarks -- --filter "*InputBenchmarks*" --job dry --inProcess
 ```
 
 Run with no `--filter` to get an interactive picker. Results (Markdown, CSV and HTML reports) are written to

@@ -35,13 +35,13 @@ Run from inside `src` (so `src/global.json` selects the test runner):
 
 ```powershell
 # Builds Bit.Bmage.Demo.Server, starts it on a free 127.0.0.1 port, runs every test, stops it.
-dotnet test --project Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj
+dotnet test --project Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj
 
 # One class, or one test.
-dotnet test --project Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj --filter "FullyQualifiedName~DemoRegressionTests"
+dotnet test --project Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj --filter "FullyQualifiedName~DemoRegressionTests"
 
 # Or run the built test executable directly.
-.\Bmage\Tests\Bit.Bmage.Tests.E2E\bin\Debug\net10.0\Bit.Bmage.Tests.E2E.exe --filter "FullyQualifiedName~EditorTests"
+.\Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\bin\Debug\net10.0\Bit.Bmage.Tests.E2E.exe --filter "FullyQualifiedName~EditorTests"
 ```
 
 To drive a demo that is already running - `dotnet run` in another terminal, a published (AOT) build, the live site -
@@ -49,7 +49,7 @@ point the suite at it; nothing is built or started then:
 
 ```powershell
 $env:BMAGE_E2E_HOST_URL = "http://127.0.0.1:5092"
-dotnet test --project Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj
+dotnet test --project Utilities\Bmage\Tests\Bit.Bmage.Tests.E2E\Bit.Bmage.Tests.E2E.csproj
 ```
 
 The tests run one at a time: a Debug build runs Bmage's pixel loops on the WebAssembly interpreter, and several

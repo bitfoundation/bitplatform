@@ -20,13 +20,13 @@ query, so the gaps measured here are the smallest they get.
 
 ```bash
 # From the repository's src folder. Release is required - a Debug build's numbers are meaningless.
-dotnet run -c Release --project BlazeDb/Tests/Bit.BlazeDb.Benchmarks
+dotnet run -c Release --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Benchmarks
 
 # A single set, selected with BenchmarkDotNet's glob filter:
-dotnet run -c Release --project BlazeDb/Tests/Bit.BlazeDb.Benchmarks -- --filter "*ReadBenchmarks*"
+dotnet run -c Release --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Benchmarks -- --filter "*ReadBenchmarks*"
 
 # A quick smoke run (one iteration, in-process, numbers not meaningful):
-dotnet run -c Release --project BlazeDb/Tests/Bit.BlazeDb.Benchmarks -- --filter "*" --job dry --inProcess
+dotnet run -c Release --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Benchmarks -- --filter "*" --job dry --inProcess
 ```
 
 Run with no `--filter` to get an interactive picker. Results (Markdown, CSV and HTML reports) are written to

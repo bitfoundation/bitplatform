@@ -29,16 +29,16 @@ matcher therefore sees real word boundaries, shared prefixes and near misses.
 
 ```bash
 # From the repository's src folder. Release is required - a Debug build's numbers are meaningless.
-dotnet run -c Release --project Balette/Tests/Bit.Balette.Benchmarks
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks
 
 # A single set, selected with BenchmarkDotNet's glob filter:
-dotnet run -c Release --project Balette/Tests/Bit.Balette.Benchmarks -- --filter "*Keystroke*"
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*Keystroke*"
 
 # How the numbers below were captured (3 measured iterations per case, about 7 minutes for the whole suite):
-dotnet run -c Release --project Balette/Tests/Bit.Balette.Benchmarks -- --filter "*" --job short
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*" --job short
 
 # A quick smoke run (one iteration, in-process, numbers not meaningful):
-dotnet run -c Release --project Balette/Tests/Bit.Balette.Benchmarks -- --filter "*FuzzyMatcher*" --job dry --inProcess
+dotnet run -c Release --project Utilities/Balette/Tests/Bit.Balette.Benchmarks -- --filter "*FuzzyMatcher*" --job dry --inProcess
 ```
 
 Run with no `--filter` to get an interactive picker. Results (Markdown, CSV and HTML reports) are written to

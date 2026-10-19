@@ -53,17 +53,17 @@ and `CssWarn`.
 From inside `src` (so `src/global.json` selects the test runner):
 
 ```powershell
-dotnet build Bmotion\Tests\Bit.Bmotion.Tests.E2E\Bit.Bmotion.Tests.E2E.csproj
+dotnet build Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\Bit.Bmotion.Tests.E2E.csproj
 
 # First time only: the Playwright-managed Chromium.
-pwsh Bmotion\Tests\Bit.Bmotion.Tests.E2E\bin\Debug\net10.0\playwright.ps1 install chromium
+pwsh Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\bin\Debug\net10.0\playwright.ps1 install chromium
 
 # The default host (WebAssembly). The harness host is built before the first test.
-dotnet test --project Bmotion\Tests\Bit.Bmotion.Tests.E2E\Bit.Bmotion.Tests.E2E.csproj
+dotnet test --project Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\Bit.Bmotion.Tests.E2E.csproj
 
 # Another render mode.
 $env:BMOTION_E2E_HOST = "server"
-dotnet test --project Bmotion\Tests\Bit.Bmotion.Tests.E2E\Bit.Bmotion.Tests.E2E.csproj
+dotnet test --project Utilities\Bmotion\Tests\Bit.Bmotion.Tests.E2E\Bit.Bmotion.Tests.E2E.csproj
 ```
 
 Run the harness by hand with one of its launch profiles (`ssr`, `server`, `wasm`, `auto`, `wasm-strict`) and open

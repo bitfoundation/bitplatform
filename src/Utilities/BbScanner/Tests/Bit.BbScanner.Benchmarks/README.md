@@ -18,13 +18,13 @@ symbols the unit tests round trip against - so every benchmark measures a frame 
 
 ```bash
 # From the repository's src folder. Release is required - a Debug build's numbers are meaningless.
-dotnet run -c Release --project BbScanner/Tests/Bit.BbScanner.Benchmarks
+dotnet run -c Release --project Utilities/BbScanner/Tests/Bit.BbScanner.Benchmarks
 
 # A single set, selected with BenchmarkDotNet's glob filter:
-dotnet run -c Release --project BbScanner/Tests/Bit.BbScanner.Benchmarks -- --filter "*DecoderBenchmarks*"
+dotnet run -c Release --project Utilities/BbScanner/Tests/Bit.BbScanner.Benchmarks -- --filter "*DecoderBenchmarks*"
 
 # A quick smoke run (one iteration, in-process, numbers not meaningful):
-dotnet run -c Release --project BbScanner/Tests/Bit.BbScanner.Benchmarks -- --filter "*StageBenchmarks*" --job dry --inProcess
+dotnet run -c Release --project Utilities/BbScanner/Tests/Bit.BbScanner.Benchmarks -- --filter "*StageBenchmarks*" --job dry --inProcess
 ```
 
 Before measuring anything the harness decodes every frame once and fails when one of them no longer decodes

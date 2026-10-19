@@ -225,10 +225,10 @@
 
     private const string BuildSnippet = """
         # from the bitplatform repository's src folder
-        dotnet build BlazeDb/Bit.BlazeDb.slnx
-        dotnet test --project BlazeDb/Tests/Bit.BlazeDb.Tests
-        dotnet run --project BlazeDb/Demo/Server
-        dotnet run -c Release --project BlazeDb/Tests/Bit.BlazeDb.Benchmarks -- --filter "*"
+        dotnet build Utilities/BlazeDb/Bit.BlazeDb.slnx
+        dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests
+        dotnet run --project Utilities/BlazeDb/Demo/Server
+        dotnet run -c Release --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Benchmarks -- --filter "*"
         """;
 
 }

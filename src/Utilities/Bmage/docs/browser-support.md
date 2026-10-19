@@ -112,7 +112,7 @@ video.
 The browser test project starts the demo application and drives a real Chrome against it:
 
 ```bash
-cd src && dotnet test --project Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj
+cd src && dotnet test --project Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj
 ```
 
 It uses Playwright's bundled browser when installed, falls back to a system Chrome or Edge, and skips with a clear

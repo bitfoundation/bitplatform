@@ -577,10 +577,10 @@ runtime, including per-row storage cost.
 From the repository's `src` folder:
 
 ```bash
-dotnet build BlazeDb/Bit.BlazeDb.slnx
-dotnet test --project BlazeDb/Tests/Bit.BlazeDb.Tests        # engine and EF Core provider, net8.0/net9.0/net10.0
-dotnet test --project BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp    # the demo's MCP server
-dotnet run --project BlazeDb/Demo/Server                     # the demo site
+dotnet build Utilities/BlazeDb/Bit.BlazeDb.slnx
+dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests        # engine and EF Core provider, net8.0/net9.0/net10.0
+dotnet test --project Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests.Mcp    # the demo's MCP server
+dotnet run --project Utilities/BlazeDb/Demo/Server                     # the demo site
 ```
 
 The browser suite (`Tests/Bit.BlazeDb.Tests.E2E`) runs the demo in Chromium; its README says how.
