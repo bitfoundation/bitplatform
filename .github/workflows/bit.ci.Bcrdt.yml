@@ -65,8 +65,8 @@ jobs:
       run: cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.Mcp && dotnet test --no-build
 
     # Packing on every run means a broken nuspec or a stale readme path is caught here rather than at release time.
-    # Each project is built in Release with GeneratePackageOnBuild off before it is packed, as all.ci.yml and
-    # nuget.org.yml do: Bit.Build.props turns that property on for Release, and a bare `dotnet pack` of a
+    # Each project is built in Release with GeneratePackageOnBuild off before it is packed, as all.ci.utilities.yml
+    # and nuget.org.yml do: Bit.Build.props turns that property on for Release, and a bare `dotnet pack` of a
     # multi-targeted project with it on fails with NU5026 (the pack-on-build step runs before every TFM's assembly is
     # on disk).
     - name: dotnet pack

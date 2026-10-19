@@ -311,11 +311,14 @@ Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoun
 4. PR from `<fork-owner>:<n>` into `upstream/develop`, title `Update project dependencies (#<n>)`.
    The body starts with `closes #<n>` and carries the report: Changed, Breaking or important,
    Held back, Missed / drifted, Not verified.
-5. Run `all.ci.yml` on the fork against the branch and give its URL with the PR link:
+5. Run `all.ci.yml` and `all.ci.utilities.yml` on the fork against the branch and give both URLs
+   with the PR link:
 
    ```bash
    gh workflow run all.ci.yml --repo <fork-owner>/bitplatform --ref <n>
+   gh workflow run all.ci.utilities.yml --repo <fork-owner>/bitplatform --ref <n>
    gh run list --repo <fork-owner>/bitplatform --workflow all.ci.yml --branch <n> --limit 1 --json url --jq '.[0].url'
+   gh run list --repo <fork-owner>/bitplatform --workflow all.ci.utilities.yml --branch <n> --limit 1 --json url --jq '.[0].url'
    ```
 
    A red job goes into the PR as a comment, with the failing step and its first error line.
