@@ -1,0 +1,39 @@
+﻿@namespace Bit.BevTools.Demo.Client.Components
+@inject UserSession Session
+@inject ProductApi Api
+
+<div class="card">
+    <h3>User profile</h3>
+    <div><strong>@Session.DisplayName</strong> <span class="muted">(@Session.UserName)</span></div>
+    @if (_profile is null)
+    {
+        <div class="muted">@(_error ?? "loading profile…")</div>
+    }
+    else
+    {
+        <div>@_profile.Email · plan @_profile.Plan</div>
+    }
+    <div class="muted">The access token, api key and the Bearer header are redacted in BevTools (Components → State / Network → headers).</div>
+</div>
+
+@code {
+    private Profile? _profile;
+    private string? _error;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && RendererInfo.IsInteractive)
+        {
+            try
+            {
+                _profile = await Api.GetProfileAsync();
+            }
+            catch (Exception ex)
+            {
+                _error = ex.Message;
+            }
+
+            StateHasChanged();
+        }
+    }
+}

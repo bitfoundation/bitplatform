@@ -1,0 +1,78 @@
+﻿@namespace Bit.BevTools
+@using Microsoft.AspNetCore.Components.Server.Circuits
+@inherits BevToolsTab
+@inject BevCircuitRegistry Registry
+@inject IEnumerable<CircuitHandler> Handlers
+
+<div class="bev-stat-grid">
+    <div class="bev-stat"><div class="bev-stat-value">@Registry.ActiveCount</div><div class="bev-stat-label">active circuits in this process (@Registry.ConnectedCount connected)</div></div>
+    <div class="bev-stat"><div class="bev-stat-value">@Registry.TotalOpened / @Registry.TotalClosed</div><div class="bev-stat-label">opened / closed since start</div></div>
+    @if (_mine is { } m)
+    {
+        <div class="bev-stat"><div class="bev-stat-value">@(m.IsConnected ? "connected" : "disconnected")</div><div class="bev-stat-label">this circuit @m.ShortId · @m.Disconnects disconnect(s)</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Num(m.Duration.TotalSeconds) s</div><div class="bev-stat-label">circuit age</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@m.InboundMessages</div><div class="bev-stat-label">inbound messages · avg @BevFmt.Ms(m.InboundMessages == 0 ? 0 : m.InboundProcessingMs / m.InboundMessages) · max @BevFmt.Ms(m.MaxInboundMs)</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@(Session.Browser.ReconnectState ?? "–")</div><div class="bev-stat-label">browser reconnect state · @Session.Browser.ReconnectCount reconnect dialogs</div></div>
+    }
+    else
+    {
+        <div class="bev-stat"><div class="bev-stat-value">n/a</div><div class="bev-stat-label">this session's circuit handler is not registered (call AddBitBevToolsServerServices)</div></div>
+    }
+</div>
+<div class="bev-section">
+    <div class="bev-section-title">Circuits <span class="bev-muted" style="font-weight:normal">this process serves every connected browser, so other circuits listed here may belong to other people using this development server. Only their lifecycle counters are visible - components, events, state and full circuit ids stay private to their own sessions</span></div>
+    <div class="bev-section-body">
+        <table>
+            <thead><tr><th>Circuit</th><th>State</th><th>Opened</th><th class="bev-num">Age</th><th class="bev-num">Disconnects</th><th class="bev-num">Inbound</th><th class="bev-num">Max inbound</th><th class="bev-num">Errors</th><th>Last activity</th></tr></thead>
+            <tbody>
+                @foreach (var c in Registry.Circuits)
+                {
+                    <tr class="@(c.SessionId == Session.Id ? "bev-selected" : "")">
+                        <td class="bev-mono">@c.ShortId @(c.SessionId == Session.Id ? "(this)" : "")</td>
+                        <td>@if (c.IsClosed) { <span class="bev-chip">closed</span> } else if (c.IsConnected) { <span class="bev-chip bev-ok">connected</span> } else { <span class="bev-chip bev-warn">disconnected</span> }</td>
+                        <td class="bev-mono">@BevFmt.Time(c.OpenedAt)</td>
+                        <td class="bev-num">@BevFmt.Num(c.Duration.TotalSeconds) s</td>
+                        <td class="bev-num @(c.Disconnects > 1 ? "bev-err" : "")">@c.Disconnects</td>
+                        <td class="bev-num">@c.InboundMessages</td>
+                        <td class="bev-num">@BevFmt.Ms(c.MaxInboundMs)</td>
+                        <td class="bev-num @(c.Errors > 0 ? "bev-err" : "")">@c.Errors</td>
+                        <td>@BevFmt.Ago(c.LastActivityAt)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<div class="bev-section">
+    <div class="bev-section-title">Circuit events for this session</div>
+    <div class="bev-section-body">
+        @foreach (var e in _events)
+        {
+            <div class="bev-ev-row @BevFmt.SevClass(e.Severity)" @onclick="() => Host.SelectEvent(e.Id)">
+                <span class="bev-time">@BevFmt.Time(e.Timestamp)</span>
+                <span class="@BevFmt.KindClass(e.Kind)">@BevFmt.KindLabel(e.Kind)</span>
+                <span class="bev-ev-title">@e.Title @if (e.Detail is not null) { <span class="bev-muted">· @e.Detail</span> }</span>
+            </div>
+        }
+        @if (_events.Length == 0)
+        {
+            <div class="bev-muted">No circuit events yet.</div>
+        }
+    </div>
+</div>
+<div class="bev-section">
+    <div class="bev-section-body bev-muted">
+        Not available from the framework: SignalR message sizes, round-trip latency and per-message payloads. Use SignalR logging (<code>Microsoft.AspNetCore.SignalR</code> at Debug) or the browser's WS frame inspector for those.
+    </div>
+</div>
+
+@code {
+    private BevCircuitInfo? _mine;
+    private BevToolsEvent[] _events = [];
+
+    protected override void OnParametersSet()
+    {
+        _mine = Handlers.OfType<BevToolsCircuitHandler>().FirstOrDefault()?.Info;
+        _events = Session.Timeline.Snapshot().Where(e => e.Kind == BevToolsEventKind.Circuit).Reverse().Take(50).ToArray();
+    }
+}

@@ -1,0 +1,178 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+@using Microsoft.Extensions.DependencyInjection
+
+<div class="bev-split">
+    <div class="bev-left" style="flex-basis:50%">
+        <div class="bev-toolbar">
+            <input type="text" placeholder="Filter: type name, lifetime:scoped|singleton|transient" value="@Query" @oninput="OnQuery" />
+            <label><input type="checkbox" checked="@_showFramework" @onchange='e => { _showFramework = e.Value is true; OnParametersSet(); }' /> framework</label>
+            <span class="bev-muted bev-nowrap">@_rows.Count / @(Host.Graph?.Count ?? 0)</span>
+        </div>
+        <div class="bev-scroll">
+            @if (Host.Graph is null)
+            {
+                <div class="bev-empty">The service collection was not captured (AddBitBevToolsServices was called with a collection that could not be enumerated).</div>
+            }
+            else
+            {
+                <table>
+                    <thead><tr><th>Service</th><th>Lifetime</th><th>Implementation</th><th class="bev-num">Deps</th><th class="bev-num">Used by</th></tr></thead>
+                    <tbody>
+                        <Virtualize Items="_rows" ItemSize="23" Context="s" SpacerElement="tr">
+                            <tr class="bev-row @(_selected == s ? "bev-selected" : "")" @onclick="() => { _selected = s; OnParametersSet(); }">
+                                <td class="bev-mono bev-truncate" style="max-width:260px" title="@s.ServiceType.FullName">@s.ServiceTypeName @(s.IsKeyed ? "🔑" : "") @(s.IsShadowed ? "(overridden)" : "")</td>
+                                <td><span class="bev-chip bev-@BevFmt.Lifetime(s.Lifetime)">@BevFmt.Lifetime(s.Lifetime)</span></td>
+                                <td class="bev-mono bev-truncate bev-muted" style="max-width:220px">@s.ImplementationName</td>
+                                <td class="bev-num">@s.Dependencies.Count</td>
+                                <td class="bev-num">@s.Consumers.Count</td>
+                            </tr>
+                        </Virtualize>
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+    <div class="bev-right">
+        @if (_selected is { } s)
+        {
+            <div class="bev-section">
+                <div class="bev-section-title bev-mono">@s.ServiceTypeName</div>
+                <div class="bev-section-body">
+                    <dl class="bev-kv">
+                        <dt>Service type</dt><dd class="bev-mono">@s.ServiceType.FullName</dd>
+                        <dt>Lifetime</dt><dd><span class="bev-chip bev-@BevFmt.Lifetime(s.Lifetime)">@BevFmt.Lifetime(s.Lifetime)</span></dd>
+                        <dt>Implementation</dt><dd class="bev-mono">@(s.ImplementationType?.FullName ?? s.ImplementationName)</dd>
+                        <dt>Registration</dt><dd>@s.RegistrationKind @(s.IsKeyed ? "(keyed)" : "") @(s.IsShadowed ? "— overridden by a later registration of the same type" : "") · #@s.Index in the collection</dd>
+                        <dt>Transitive deps</dt><dd>@s.SubtreeSize</dd>
+                    </dl>
+                    @if (s.RegistrationKind != "Type")
+                    {
+                        <div class="bev-muted">Dependencies of factory/instance registrations cannot be inspected without executing them.</div>
+                    }
+                </div>
+            </div>
+            <div class="bev-section">
+                <div class="bev-section-title">Dependency tree</div>
+                <div class="bev-section-body">
+                    @if (s.Dependencies.Count == 0 && s.UnresolvedDependencies.Count == 0)
+                    {
+                        <div class="bev-muted">No constructor dependencies.</div>
+                    }
+                    @DependencyTree(s, 0, new HashSet<int>())
+                    @foreach (var u in s.UnresolvedDependencies)
+                    {
+                        <div class="bev-mono bev-muted">? @u <span class="bev-chip bev-warn">not registered</span></div>
+                    }
+                </div>
+            </div>
+            <div class="bev-section">
+                <div class="bev-section-title">Consumers (@s.Consumers.Count) <span class="bev-muted" style="font-weight:normal">constructor injection only</span></div>
+                <div class="bev-section-body">
+                    @foreach (var c in s.Consumers)
+                    {
+                        var consumer = c;
+                        <div><button type="button" class="bev-link bev-mono" @onclick="() => _selected = consumer">@c.ServiceTypeName</button> <span class="bev-chip bev-@BevFmt.Lifetime(c.Lifetime)">@BevFmt.Lifetime(c.Lifetime)</span></div>
+                    }
+                    @foreach (var comp in _componentConsumers)
+                    {
+                        <div><span class="bev-mono">@comp</span> <span class="bev-chip">component [Inject]</span></div>
+                    }
+                </div>
+            </div>
+            @if (_findings.Count > 0)
+            {
+                <div class="bev-section">
+                    <div class="bev-section-title">Findings</div>
+                    <div class="bev-section-body">
+                        @foreach (var f in _findings)
+                        {
+                            <div class="bev-diag"><div class="bev-diag-title"><span class="bev-sev-dot bev-@f.Severity.ToString().ToLowerInvariant()"></span>@f.Title</div><div class="bev-diag-evidence">@f.Evidence</div><div class="bev-diag-suggestion">@f.Suggestion</div></div>
+                        }
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="bev-empty">Select a service to see its dependency tree, consumers and lifetime findings (captive dependencies, cycles).</div>
+        }
+    </div>
+</div>
+
+@code {
+    private string? Query => Ui.GetQuery("services");
+
+    private List<BevServiceInfo> _rows = [];
+    private BevServiceInfo? _selected;
+    private bool _showFramework;
+    private List<BevDiagnostic> _findings = [];
+    private List<string> _componentConsumers = [];
+
+    protected override void OnParametersSet()
+    {
+        var graph = Host.Graph;
+        if (graph is null)
+        {
+            return;
+        }
+
+        var filter = BevQueryFilter.Parse(Query);
+        var lifetime = filter.Token("lifetime");
+        _rows = graph.Services
+            .Where(s => (_showFramework || !s.IsFramework || filter.Terms.Count > 0) && !s.IsShadowed)
+            .Where(s => filter.MatchesText(s.ServiceTypeName, s.ServiceType.FullName, s.ImplementationName))
+            .Where(s => lifetime is null || BevFmt.Lifetime(s.Lifetime).StartsWith(lifetime, StringComparison.OrdinalIgnoreCase))
+            .OrderBy(s => s.IsFramework).ThenBy(s => s.ServiceTypeName)
+            .ToList();
+        if (_selected is null && filter.Terms.Count == 1 && _rows.Count > 0 && _rows[0].ServiceTypeName.Equals(filter.Terms[0], StringComparison.OrdinalIgnoreCase))
+        {
+            _selected = _rows[0];
+        }
+
+        if (_selected is { } s)
+        {
+            _findings = graph.Findings.Where(d => d.Evidence.Contains(s.ServiceTypeName, StringComparison.Ordinal) || d.Title.Contains(s.ServiceTypeName, StringComparison.Ordinal)).ToList();
+            _componentConsumers = Host.Session.Components.All.Where(c => !c.IsDisposed && !c.IsBevTools)
+                .Where(c => Array.IndexOf(InjectedTypes(c.Type), s.ServiceType) >= 0)
+                .Select(c => c.DisplayName).Distinct().OrderBy(n => n).ToList();
+        }
+    }
+
+    // Reflected once per component type: this runs on every refresh for every live component while a service is selected.
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<Type, Type[]> InjectedTypeCache = new();
+
+    private static Type[] InjectedTypes(Type componentType) => InjectedTypeCache.GetOrAdd(componentType, static t =>
+        t.GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)
+            .Where(p => p.IsDefined(typeof(InjectAttribute), true))
+            .Select(p => p.PropertyType)
+            .Distinct()
+            .ToArray());
+
+    private void OnQuery(ChangeEventArgs e)
+    {
+        Ui.SetQuery("services", e.Value?.ToString());
+        _selected = null;
+        OnParametersSet();
+    }
+
+    private RenderFragment DependencyTree(BevServiceInfo service, int depth, HashSet<int> visited) => __builder =>
+    {
+        if (depth > 6 || !visited.Add(service.Index))
+        {
+            return;
+        }
+
+        foreach (var dep in service.Dependencies)
+        {
+            var d = dep;
+            var captive = service.Lifetime == ServiceLifetime.Singleton && d.Lifetime != ServiceLifetime.Singleton;
+            <div style="padding-left:@(depth * 14)px">
+                <button type="button" class="bev-link bev-mono" @onclick="() => { _selected = d; OnParametersSet(); }">@d.ServiceTypeName</button>
+                <span class="bev-chip bev-@BevFmt.Lifetime(d.Lifetime)">@BevFmt.Lifetime(d.Lifetime)</span>
+                @if (captive) { <span class="bev-chip bev-err">captive</span> }
+            </div>
+            @DependencyTree(d, depth + 1, visited)
+        }
+    };
+}

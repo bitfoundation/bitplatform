@@ -1,0 +1,185 @@
+﻿@namespace Bit.BevTools
+@implements IDisposable
+
+<div class="bev-palette-backdrop" @onclick="Close">
+    <div class="bev-palette" @onclick:stopPropagation="true" @onkeydown="OnKeyDown">
+        <input type="text" @ref="_input" placeholder="Search components, errors, requests… or type > for commands" value="@_text" @oninput="OnInput" autocomplete="off" spellcheck="false" />
+        <div class="bev-palette-list">
+            @{ var index = 0; }
+            @foreach (var item in _items)
+            {
+                var i = index++;
+                <div class="bev-palette-item @(i == _active ? "bev-active" : "")" @onclick="() => Execute(item)" @onmouseenter="() => _active = i">
+                    <span class="bev-cat">@item.Category</span>
+                    <span>@item.Title</span>
+                    @if (item.Hint is not null)
+                    {
+                        <span class="bev-hint">@item.Hint</span>
+                    }
+                </div>
+            }
+            @if (_items.Count == 0)
+            {
+                <div class="bev-palette-item bev-muted">No matches.</div>
+            }
+        </div>
+        <div class="bev-palette-footer">↑↓ navigate · Enter run · Esc close · "&gt;" commands · "kind:render", "component:12", "status:failed" filters</div>
+    </div>
+</div>
+
+@code {
+    private sealed record Item(string Category, string Title, string? Hint, Func<Task> Action);
+
+    [CascadingParameter] public BevToolsPanel Host { get; set; } = default!;
+
+    [Parameter] public string? Initial { get; set; }
+
+    private ElementReference _input;
+    private string _text = "";
+    private int _active;
+    private List<Item> _items = [];
+    private bool _focused;
+
+    protected override void OnParametersSet()
+    {
+        _text = Initial ?? "";
+        Rebuild();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_focused)
+        {
+            _focused = true;
+            try
+            {
+                await _input.FocusAsync();
+            }
+            catch (Exception ex) when (ex is JSException or JSDisconnectedException)
+            {
+            }
+        }
+    }
+
+    private void OnInput(ChangeEventArgs e)
+    {
+        _text = e.Value?.ToString() ?? "";
+        _active = 0;
+        Rebuild();
+    }
+
+    private void Rebuild()
+    {
+        var session = Host.Session;
+        var items = new List<Item>();
+        var text = _text.Trim();
+        if (text.StartsWith('>') || text.Length == 0)
+        {
+            foreach (var match in session.Commands.Search(text, 14))
+            {
+                var command = match.Command;
+                var argument = match.Argument;
+                items.Add(new Item(command.Category, command.Title + (argument is not null ? " " + argument : command.AcceptsArgument ? " …" : ""), argument is null && command.AcceptsArgument ? "accepts text" : null, () => command.ExecuteAsync(Host, argument)));
+            }
+        }
+        else
+        {
+            var q = text;
+            foreach (var record in session.Components.All.Where(c => !c.IsDisposed && !c.IsBevTools && c.DisplayName.Contains(q, StringComparison.OrdinalIgnoreCase)).OrderBy(c => c.DisplayName.Length).Take(6))
+            {
+                var id = record.InstanceId;
+                items.Add(new Item("Component", record.DisplayName, $"{record.RenderCount} renders · {BevFmt.Ms(record.TotalRenderMs)}", () => { Host.SelectComponent(id); return Task.CompletedTask; }));
+            }
+
+            foreach (var error in session.Errors.Snapshot().Reverse().Where(e => e.Message.Contains(q, StringComparison.OrdinalIgnoreCase) || e.ExceptionType.Contains(q, StringComparison.OrdinalIgnoreCase)).Take(4))
+            {
+                var id = error.Id;
+                items.Add(new Item("Error", error.Message, BevFmt.Time(error.At), () => { Host.SelectError(id); return Task.CompletedTask; }));
+            }
+
+            foreach (var http in session.Http.Snapshot().Reverse().Where(h => h.Url.Contains(q, StringComparison.OrdinalIgnoreCase)).Take(4))
+            {
+                var id = http.Id;
+                items.Add(new Item("Network", http.Method + " " + http.Url, http.StatusCode?.ToString() ?? http.Error ?? "pending", () => { Host.SelectHttp(id); return Task.CompletedTask; }));
+            }
+
+            if (Host.Graph is { } graph)
+            {
+                foreach (var service in graph.Services.Where(s => !s.IsShadowed && s.ServiceTypeName.Contains(q, StringComparison.OrdinalIgnoreCase)).Take(4))
+                {
+                    var name = service.ServiceTypeName;
+                    items.Add(new Item("Service", name, BevFmt.Lifetime(service.Lifetime), () => { Host.ShowPanel("services", name); return Task.CompletedTask; }));
+                }
+            }
+
+            foreach (var evt in session.Timeline.Snapshot().Reverse().Where(e => e.Title.Contains(q, StringComparison.OrdinalIgnoreCase)).Take(4))
+            {
+                var id = evt.Id;
+                items.Add(new Item("Event", evt.Title, BevFmt.Time(evt.Timestamp), () => { Host.SelectEvent(id); return Task.CompletedTask; }));
+            }
+
+            foreach (var match in session.Commands.Search(text, 4))
+            {
+                var command = match.Command;
+                var argument = match.Argument;
+                items.Add(new Item("Command", command.Title + (argument is not null ? " " + argument : ""), null, () => command.ExecuteAsync(Host, argument)));
+            }
+
+            items.Add(new Item("Timeline", "Filter timeline by \"" + q + "\"", null, () => { Host.ShowPanel("timeline", q); return Task.CompletedTask; }));
+        }
+
+        _items = items;
+        if (_active >= _items.Count)
+        {
+            _active = 0;
+        }
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        switch (e.Key)
+        {
+            case "ArrowDown":
+                _active = _items.Count == 0 ? 0 : (_active + 1) % _items.Count;
+                break;
+            case "ArrowUp":
+                _active = _items.Count == 0 ? 0 : (_active - 1 + _items.Count) % _items.Count;
+                break;
+            case "Enter":
+                if (_active < _items.Count)
+                {
+                    await Execute(_items[_active]);
+                }
+
+                break;
+            case "Escape":
+                Close();
+                break;
+        }
+    }
+
+    private async Task Execute(Item item)
+    {
+        try
+        {
+            await item.Action();
+        }
+        catch (Exception ex)
+        {
+            Host.Notify("Command failed: " + ex.Message);
+        }
+
+        Close();
+    }
+
+    private void Close()
+    {
+        Host.Ui.CommandPaletteOpen = false;
+        Host.Ui.Touch();
+        Host.Refresh();
+    }
+
+    public void Dispose()
+    {
+    }
+}

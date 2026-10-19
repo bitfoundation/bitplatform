@@ -1,0 +1,81 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-scroll" style="flex:1">
+    @{ var o = Session.Overhead; }
+    <div class="bev-stat-grid">
+        <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Ms(o.TotalMs)</div><div class="bev-stat-label">total BevTools CPU time in @BevFmt.Num(o.UptimeSeconds) s</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Num(o.InstrumentationPerRenderMicroseconds) µs</div><div class="bev-stat-label">bookkeeping per app render (@o.AppRenderCount renders, @BevFmt.Ms(o.InstrumentationMs) total)</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Ms(o.BevToolsRenderMs)</div><div class="bev-stat-label">BevTools UI rendering (@o.BevToolsRenderCount renders)</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Ms(o.InspectionMs)</div><div class="bev-stat-label">object inspection & state diffs</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Ms(o.DiagnosticsMs)</div><div class="bev-stat-label">diagnostics rules</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@BevFmt.Ms(o.TreeRefreshMs)</div><div class="bev-stat-label">tree refresh</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@Session.Timeline.Count / @Session.Options.MaxEvents</div><div class="bev-stat-label">events buffered</div></div>
+        <div class="bev-stat"><div class="bev-stat-value">@Session.Components.LiveCount</div><div class="bev-stat-label">live application component instances (@Session.Components.TrackedCount records tracked in total, incl. BevTools' own UI and recently disposed)</div></div>
+    </div>
+    @if (Session.Components.IsTruncated)
+    {
+        <div class="bev-empty">Component tracking stopped at <code>MaxTrackedComponents</code> (@Session.Options.MaxTrackedComponents). The tree and profiler are incomplete; raise the limit or clear captured data.</div>
+    }
+    <div class="bev-section">
+        <div class="bev-section-title">Session</div>
+        <div class="bev-section-body">
+            <dl class="bev-kv">
+                <dt>Platform</dt><dd>@(Session.Platform ?? "unknown") @(Session.IsInteractive ? "(interactive)" : "(static)") @(Session.RenderModeName is null ? "" : "· render mode " + Session.RenderModeName)</dd>
+                <dt>Session</dt><dd>#@Session.Id started @BevFmt.Time(Session.StartedAt) · @SessionResolver.LiveSessionCount live session(s) in this process</dd>
+                <dt>Framework</dt><dd class="bev-mono">@typeof(Microsoft.AspNetCore.Components.ComponentBase).Assembly.GetName().Version · @System.Runtime.InteropServices.RuntimeInformation.FrameworkDescription</dd>
+                <dt>Extensions</dt><dd>@(Session.Registry.ExtensionNames.Count == 0 ? "none" : string.Join(", ", Session.Registry.ExtensionNames)) @foreach (var e in Session.Registry.ExtensionErrors) { <span class="bev-chip bev-err">@e</span> }</dd>
+                <dt>Shortcut</dt><dd>@Session.Options.Ui.ToggleShortcut toggles the panel · Ctrl+K opens search/commands</dd>
+                <dt>Enabled because</dt><dd>@Session.Registry.EnabledReason</dd>
+                <dt>Framework diagnostics</dt><dd>@FrameworkDiagnostics()</dd>
+                <dt>Capture</dt><dd>@(Session.IsCapturing ? "recording" : "paused " + BevFmt.Ago(Session.PausedAt) + " — buffers are frozen; errors are still collected")</dd>
+            </dl>
+            <div class="bev-diag-actions" style="margin-top:6px">
+                <button type="button" @onclick="() => Session.ClearAll()">Clear captured event histories</button>
+                <button type="button" title="Download everything this session captured as JSON (already redacted and bounded)" @onclick="() => BevSessionExporter.DownloadJsonAsync(Session, Host)">⬇ Export session (JSON)</button>
+                <button type="button" title="Copy a short Markdown summary: findings, errors, hottest components, failed requests, timeline tail" @onclick="() => BevSessionExporter.CopyMarkdownReportAsync(Session, Host)">⎘ Copy report (Markdown)</button>
+            </div>
+        </div>
+    </div>
+    <div class="bev-section">
+        <div class="bev-section-title">Capabilities <span class="bev-muted" style="font-weight:normal">what this session can and cannot observe, and why</span></div>
+        <div class="bev-section-body">
+            <table>
+                <thead><tr><th>Area</th><th>Information</th><th>Status</th><th>Explanation</th></tr></thead>
+                <tbody>
+                    @foreach (var c in Session.Capabilities)
+                    {
+                        <tr>
+                            <td>@c.Area</td>
+                            <td>@c.Name</td>
+                            <td class="bev-nowrap bev-cap-@c.Status.ToString().ToLowerInvariant()">@Label(c.Status)</td>
+                            <td class="bev-muted">@c.Explanation</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string FrameworkDiagnostics()
+    {
+        var (activitySource, metrics) = Session.FrameworkInstrumentation;
+        return $"ActivitySource {(activitySource ? "registered" : "missing")} · meters {(metrics ? "registered" : "missing")}"
+            + $" · observed: events {(ActivityObserver.HandleEventActivitiesObserved ? "yes" : "no")}, "
+            + $"batch metrics {(ActivityObserver.BatchMetricsObserved ? "yes" : "no")}, "
+            + $"lifecycle metrics {(ActivityObserver.LifecycleMetricsObserved ? "yes" : "no")}";
+    }
+
+    private static string Label(BevCapabilityStatus status) => status switch
+    {
+        BevCapabilityStatus.Available => "Available",
+        BevCapabilityStatus.Partial => "Partially available",
+        BevCapabilityStatus.RequiresInstrumentation => "Requires instrumentation",
+        BevCapabilityStatus.RequiresIntegration => "Requires app integration",
+        BevCapabilityStatus.RequiresRuntimeSupport => "Requires runtime support",
+        BevCapabilityStatus.NotReliable => "Not technically reliable",
+        _ => "Not available",
+    };
+}

@@ -1,0 +1,34 @@
+﻿@namespace Bit.BevTools
+
+<div class="bev-section">
+    <button type="button" class="bev-section-title" aria-expanded="@(_open ? "true" : "false")" @onclick="() => _open = !_open"><span class="bev-caret">@(_open ? "▾" : "▸")</span>@Title @if (Subtitle is not null) { <span class="bev-muted" style="font-weight:normal">@Subtitle</span> }</button>
+    @if (_open)
+    {
+        <div class="bev-section-body">@ChildContent</div>
+    }
+</div>
+
+@code {
+    private bool _open;
+    private bool _initialized;
+    private bool _lastCollapsed;
+
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    [Parameter] public string? Subtitle { get; set; }
+
+    [Parameter] public bool Collapsed { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (!_initialized || Collapsed != _lastCollapsed)
+        {
+            _initialized = true;
+            _open = !Collapsed;
+        }
+
+        _lastCollapsed = Collapsed;
+    }
+}

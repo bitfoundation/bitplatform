@@ -1,0 +1,57 @@
+﻿@page "/problems"
+
+<PageTitle>Problems to diagnose</PageTitle>
+
+<h1>Problems to diagnose</h1>
+<p class="muted">Each problem is real, deliberately left in the code, and discoverable with BevTools. Follow the steps; the point is to reach the cause faster than with logs and breakpoints.</p>
+
+<ProblemCard Title="1. The whole dashboard re-renders twice a second" Symptom="Dashboard feels busy; Profiler shows StatsCard, UserProfile and RecentOrders rendering constantly." Href="/">
+    <li>On the dashboard, tick "clock re-renders whole dashboard".</li>
+    <li>BevTools → Profiler: sort by renders. <code>Home</code> and every child climb together.</li>
+    <li>Select the Revenue <code>StatsCard</code>: "Why did it render?" says <em>Parent Home re-rendered (parameters re-applied)</em>. Keep it selected for a few ticks: the render list marks each one <em>forced</em> because no observable parameter value changed (compare with the Visitors card, whose <code>Value</code> does change), and <em>Forced re-renders</em> counts them.</li>
+    <li>Select <code>Home</code>: cause is <em>StateHasChanged outside an event</em>; the Timeline shows it right after each <code>LiveClock</code> render.</li>
+    <li>Diagnostics reports <em>Renders driven only by the parent</em> for each StatsCard: every one of their renders was caused by Home, never by their own state. Fix: do not call StateHasChanged on the parent from the clock tick (or override ShouldRender in the cards).</li>
+</ProblemCard>
+
+<ProblemCard Title="2. Typing in the product search renders 120 rows per keystroke" Symptom="Input feels laggy on Server; Profiler shows ProductRow × 120 per keystroke." Href="/products">
+    <li>Type a few characters. Diagnostics: render storm on <code>ProductList</code>, render cascade of 100+ components per batch.</li>
+    <li>Timeline: each <em>oninput → FilterBar</em> event is followed by a state notification and one batch with 121 renders.</li>
+    <li>Fix candidates: debounce <code>FilterState</code>, override <code>ShouldRender</code> in <code>ProductRow</code>, use <code>@@key</code> and immutable rows.</li>
+</ProblemCard>
+
+<ProblemCard Title="3. One HTTP request per keystroke, none cancelled" Symptom="Network panel fills with GET /api/search?q=… requests; results arrive out of order." Href="/products">
+    <li>Enable "search the API on every keystroke", type quickly.</li>
+    <li>Network: overlapping requests, each triggered by an <em>oninput</em> event (see Trigger column). Diagnostics: duplicate HTTP requests.</li>
+    <li>Fix: debounce and pass a <code>CancellationToken</code> that is cancelled by the next keystroke.</li>
+</ProblemCard>
+
+<ProblemCard Title="4. Slow and failing endpoints" Symptom="Orders take seconds; the flaky endpoint fails intermittently; a 404 goes unnoticed." Href="/orders">
+    <li>Use the buttons on the Orders page.</li>
+    <li>Network: durations and statuses; Errors: HTTP failures with the preceding UI event; Diagnostics: slow HTTP, repeated failures.</li>
+</ProblemCard>
+
+<ProblemCard Title="5. Chatty and slow JS interop" Symptom="On Server every interop call is a round trip; 120 calls in a loop take a while." Href="/interop">
+    <li>Click "Chatty loop" and "Slow call". JS Interop panel: per-identifier counts, max duration, originating component.</li>
+    <li>Diagnostics: excessive interop, slow interop. Fix: batch into one JS function; move loops to JS.</li>
+</ProblemCard>
+
+<ProblemCard Title="6. Where did that exception come from?" Symptom="An error surfaces; which component and which click caused it?" Href="/errors">
+    <li>Trigger any error. Errors panel: source, component, source location (from the stack), the UI event that preceded it and the last ten timeline entries.</li>
+</ProblemCard>
+
+<ProblemCard Title="7. Sensitive data must not leak into a debugging tool" Symptom="Tokens and keys exist in state, headers and storage." Href="/">
+    <li>Components → UserProfile → Injected services / State → <code>AccessToken</code>, <code>Nickname</code> and <code>ApiKey</code> are redacted; Network → headers show a redacted Authorization; Browser → storage redacts <code>demo:auth_token</code>.</li>
+</ProblemCard>
+
+<ProblemCard Title="8. A singleton captures a scoped service; two services depend on each other" Symptom="Works on the developer machine, leaks user state in production; the cycle throws only when resolved." Href="/">
+    <li>BevTools → Services: search <code>LeakyCache</code> (captive dependency) and <code>ReportService</code> (cycle). Diagnostics lists both with the evidence.</li>
+</ProblemCard>
+
+<ProblemCard Title="9. The circuit freezes and eventually disconnects (Server only)" Symptom="UI stops responding for a moment; reconnect dialog appears; circuit dies." Href="/circuit">
+    <li>Block the circuit; Timeline shows <em>Slow inbound message</em>; Circuit panel shows max inbound processing time.</li>
+    <li>Kill the circuit; Errors shows the logged circuit exception, Browser/Circuit show reconnect state changes.</li>
+</ProblemCard>
+
+<ProblemCard Title="10. What changed in the cart, and which click did it?" Symptom="State mutated somewhere; find the action and the before/after values." Href="/checkout">
+    <li>Add and remove items. State → CartState: change history with named actions, diffs and a link to the triggering UI event.</li>
+</ProblemCard>

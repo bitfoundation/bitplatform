@@ -1,0 +1,55 @@
+﻿@page "/"
+@inject AppState AppState
+
+<PageTitle>Dashboard</PageTitle>
+
+<h1>Dashboard</h1>
+<p class="muted">A realistic component hierarchy with cascading settings, async HTTP data, a live clock and a user profile. Open BevTools → Components to see the tree; Profiler to see who renders and why.</p>
+
+<CascadingValue Value="_settings">
+    <div class="row">
+        <button @onclick="() => { _settings.Dense = !_settings.Dense; _settings.Version++; }">Toggle dense (cascading value → re-renders subscribers)</button>
+        <button @onclick="ChangeAccent">Change accent</button>
+        <button @onclick="AppState.Click">Click counter (AppState) = @AppState.Counters["clicks"]</button>
+        <label><input type="checkbox" @bind="_clockRerendersDashboard" /> clock re-renders whole dashboard (intentional problem)</label>
+    </div>
+
+    <div class="cards">
+        <StatsCard Title="Revenue" Value="@_revenue.ToString("C0")" Trend="+4.2%" />
+        <StatsCard Title="Orders" Value="@_orders.ToString()" Trend="+12" />
+        <StatsCard Title="Visitors" Value="@_visitors.ToString("N0")" Trend="-1.8%" />
+        <div class="card">
+            <h3>Server time</h3>
+            <LiveClock OnTick="OnClockTick" />
+        </div>
+    </div>
+
+    <div class="cards">
+        <UserProfile />
+        <RecentOrders />
+    </div>
+</CascadingValue>
+
+@code {
+    private readonly DashboardSettings _settings = new();
+    private decimal _revenue = 128_430;
+    private int _orders = 1_204;
+    private int _visitors = 48_213;
+    private bool _clockRerendersDashboard;
+
+    private void ChangeAccent()
+    {
+        _settings.Accent = _settings.Accent == "#0969da" ? "#cf222e" : "#0969da";
+        _settings.Version++;
+    }
+
+    private void OnClockTick()
+    {
+        // Intentional problem #1: a timer in a child bubbles up and re-renders the entire dashboard twice a second.
+        if (_clockRerendersDashboard)
+        {
+            _visitors++;
+            StateHasChanged();
+        }
+    }
+}
