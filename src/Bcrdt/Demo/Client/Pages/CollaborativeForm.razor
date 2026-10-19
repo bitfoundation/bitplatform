@@ -1,0 +1,146 @@
+﻿@page "/form"
+@inherits ReplicaPageBase
+
+<h1>Collaborative forms</h1>
+
+<section class="prose">
+    <p>
+        Most collaborative features are not documents. They are forms, settings panels and entity
+        editors whose shape is already a C# type. This page is two replicas of one such form, and it
+        exists to make a single decision visible: <strong>which field type you pick determines what
+        happens when two people edit the same thing at once.</strong>
+    </p>
+    <p>
+        The three fields at the top are plain map entries. Different fields never conflict - one
+        person can change the title while another changes the owner and both survive, which is
+        already better than the usual save-the-whole-record approach. But two people editing
+        <em>the same</em> map field concurrently resolve last-writer-wins: one value survives,
+        deterministically but arbitrarily, and the other is gone.
+    </p>
+    <p>
+        The notes field at the bottom is a nested <code>BcrdtText</code> instead. Concurrent edits to
+        it merge character by character, exactly as on the text page.
+    </p>
+    <p class="callout">
+        <strong>The thing worth trying.</strong> Take <em>Replica B</em> offline. In A, set the
+        title to <em>one thing</em> and add a sentence to the notes. In B, set the title to
+        <em>something else</em> and add a different sentence to the notes. Bring B back online.
+        One of the two titles wins outright and the other is lost - while <em>both</em> sentences
+        appear in the notes. Same two clients, same moment, same conflict; different outcome purely
+        because of how the field was modelled.
+    </p>
+</section>
+
+@if (!Ready)
+{
+    <p class="loading">Opening two replicas…</p>
+}
+else
+{
+    <div class="panel-grid panel-grid-2">
+        @foreach (DemoReplica replica in Replicas)
+        {
+            <ReplicaPanel Replica="replica">
+                <ChildContent>
+                    <label class="field">
+                        <span class="field-label">Title</span>
+                        <span class="field-note">map entry - last writer wins</span>
+                        <input class="field-input"
+                               value="@Read(replica, TitleKey)"
+                               @oninput="@(args => Write(replica, TitleKey, args))" />
+                    </label>
+
+                    <label class="field">
+                        <span class="field-label">Owner</span>
+                        <span class="field-note">map entry - independent of the others</span>
+                        <input class="field-input"
+                               value="@Read(replica, OwnerKey)"
+                               @oninput="@(args => Write(replica, OwnerKey, args))" />
+                    </label>
+
+                    <label class="field">
+                        <span class="field-label">Status</span>
+                        <span class="field-note">map entry - a menu is a natural fit for last-writer-wins</span>
+                        <select class="field-input"
+                                value="@Read(replica, StatusKey)"
+                                @onchange="@(args => Write(replica, StatusKey, args))">
+                            @*
+                                Shown while the field has no value. Without it the browser would
+                                display the first real option even though nothing is stored, and
+                                choosing that option would raise no change at all.
+                            *@
+                            <option value="" disabled selected="@(Read(replica, StatusKey).Length == 0)">Choose a status…</option>
+                            @foreach (string option in StatusOptions)
+                            {
+                                <option value="@option" selected="@(Read(replica, StatusKey) == option)">@option</option>
+                            }
+                        </select>
+                    </label>
+
+                    <label class="field">
+                        <span class="field-label">Notes</span>
+                        <span class="field-note">nested BcrdtText - concurrent edits merge</span>
+                        @*
+                            The same component as the text page. Because the notes are a collaborative
+                            text type rather than a string in a map entry, two people typing here at
+                            once both keep their work.
+                        *@
+                        <BcrdtTextArea Text="Notes(replica)"
+                                       Presence="replica.Document.Presence"
+                                       Field="notes"
+                                       Rows="5"
+                                       Class="editor"
+                                       Placeholder="Both replicas can type here at once." />
+                    </label>
+                </ChildContent>
+
+                <Footer>
+                    <span class="metric">@Notes(replica).Count characters of notes</span>
+                </Footer>
+            </ReplicaPanel>
+        }
+    </div>
+
+    <section class="prose">
+        <h2>What the two replicas hold</h2>
+        <p>
+            The projection below is what each replica would hand to your application. When both are
+            online and idle they are identical; while one is offline they differ, and that is the
+            divergence the handshake reconciles.
+        </p>
+        <div class="panel-grid panel-grid-2">
+            @foreach (DemoReplica replica in Replicas)
+            {
+                <div>
+                    <h3 class="json-title" style="border-color: @replica.Color">@replica.Label</h3>
+                    <pre class="json">@DemoJson.Format(replica.Document.GetMap(FormKey).ToJson())</pre>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@code {
+    private const string FormKey = "form";
+    private const string TitleKey = "title";
+    private const string OwnerKey = "owner";
+    private const string StatusKey = "status";
+    private const string NotesKey = "notes";
+
+    private static readonly string[] StatusOptions = ["Draft", "In review", "Approved", "Archived"];
+
+    protected override string DocumentId => "demo-form";
+
+    protected override string[] ReplicaLabels => ["Replica A", "Replica B"];
+
+    private static string Read(DemoReplica replica, string key) =>
+        replica.Document.GetMap(FormKey).Get(key) as string ?? string.Empty;
+
+    private static void Write(DemoReplica replica, string key, ChangeEventArgs args) =>
+        replica.Document.GetMap(FormKey).Set(key, args.Value as string ?? string.Empty);
+
+    // EnsureText creates the nested type on first use and returns the existing one thereafter. Two
+    // replicas calling it concurrently on an empty document is itself a last-writer-wins race, so a
+    // real application would create the structure once when the document is first provisioned.
+    private static BcrdtText Notes(DemoReplica replica) => replica.Document.GetMap(FormKey).EnsureText(NotesKey);
+}

@@ -1,8 +1,8 @@
 name: bit platform CI - Bswup E2E
 
-# The real-browser suites: every host shape in Chromium on net10.0/net9.0/net8.0, and the published-output gate.
-# They take far longer than the build-and-unit pipeline (bit.ci.Bswup.yml), so they run only when started by hand.
-# See src/Bswup/Tests/Bit.Bswup.Tests.E2E/README.md for what each job proves and how to run it locally.
+# On demand only (Actions > bit platform CI - Bswup E2E > Run workflow). The regular build and test pipeline is
+# bit.ci.Bswup.yml. See src/Bswup/Tests/Bit.Bswup.Tests.E2E/README.md for what each job proves and how to run it
+# locally.
 
 on:
   workflow_dispatch:
@@ -15,9 +15,9 @@ permissions:
 
 jobs:
 
-  # Every host shape (the Blazor Web App in the WebAssembly, WebAssembly without prerendering, Auto and Server
-  # render modes, and the standalone WebAssembly app on a sub-path) in Chromium, on each runtime the library
-  # ships for.
+  # Every host shape (the Blazor Web App in the WebAssembly, WebAssembly without prerendering, Auto
+  # and Server render modes, and the standalone WebAssembly app on a sub-path) in Chromium, on each runtime the
+  # library ships for.
   e2e-web:
     name: Bswup E2E - browser (${{ matrix.framework }})
     runs-on: ubuntu-24.04
@@ -79,10 +79,10 @@ jobs:
         path: '**/bswup-e2e-web-*.trx'
         if-no-files-found: ignore
 
-  # Publishes the harness the way an app ships - trimmed WebAssembly clients, pre-compressed static assets, the
-  # service-worker manifests generated for publish - and runs the browser suite against that output. The
-  # integrity-checked install is the test that matters most here: it proves the published bytes match the hashes
-  # the published manifest carries, which a Debug build never shows.
+  # Publishes the harness the way an app ships - trimmed WebAssembly clients, pre-compressed static
+  # assets, the service-worker manifests generated for publish - and runs the browser suite against that output.
+  # The integrity-checked install is the test that matters most here: it proves the published bytes match the
+  # hashes the published manifest carries, which a Debug build never shows.
   publish-gate:
     name: Bswup publish gate
     runs-on: ubuntu-24.04

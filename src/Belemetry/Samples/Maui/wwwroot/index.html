@@ -1,0 +1,20 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="/" />
+    <meta charset="utf-8" />
+    <title>Belemetry samples (MAUI)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <link rel="stylesheet" href="_content/Bit.Belemetry.Samples.Core/app.css" />
+</head>
+
+<body>
+    <div id="app">Loading...</div>
+
+    <!-- No <BelemetryScript /> in Blazor Hybrid: there is no server-rendered head. <BelemetryInitializer /> (in
+         Routes.razor) imports and starts the script once the WebView is up. -->
+    <script src="_framework/blazor.webview.js" autostart="false"></script>
+</body>
+
+</html>

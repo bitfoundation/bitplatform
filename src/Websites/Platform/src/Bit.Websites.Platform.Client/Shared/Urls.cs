@@ -32,9 +32,11 @@ public static class Urls
     public const string BlazeDb = "https://blazedb.bitplatform.dev/";
     public const string Blow = "https://blow.bitplatform.dev/";
     public const string Borm = "https://borm.bitplatform.dev/";
+    public const string Bcrdt = "https://bcrdt.bitplatform.dev/";
     public const string Bonboarding = "https://bonboarding.bitplatform.dev/";
     public const string Bortable = "https://bortable.bitplatform.dev/";
     public const string Blex = "https://blex.bitplatform.dev/";
+    public const string Belemetry = "https://belemetry.bitplatform.dev/";
 
     public const string PlatformPwa = "https://bitplatform.dev/";
     public const string PlatformPageSpeed = "https://pagespeed.web.dev/analysis/https-bitplatform-dev/qa9agr7isx?form_factor=mobile";

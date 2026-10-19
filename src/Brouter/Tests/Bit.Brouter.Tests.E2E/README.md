@@ -92,7 +92,7 @@ BROUTER_E2E_PUBLISHED_HOST=$PWD/../../artifacts/harness-trimmed \
   dotnet test Tests/Bit.Brouter.Tests.E2E/Bit.Brouter.Tests.E2E.csproj --filter "FullyQualifiedName!~HybridModeTests"
 ```
 
-CI runs all of the above in `.github/workflows/bit.ci.Brouter.e2e.yml`, which only runs when started by hand (Actions > "bit platform CI - Brouter E2E" > Run workflow). The pull-request pipeline, `bit.ci.Brouter.yml`, runs the build, unit, MCP, source generator and hosting tests only.
+CI runs all of the above on demand, in `.github/workflows/bit.ci.Brouter.e2e.yml`.
 
 ## Hybrid notes
 

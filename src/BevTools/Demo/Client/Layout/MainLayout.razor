@@ -1,0 +1,35 @@
+﻿@inherits LayoutComponentBase
+@inject AppState AppState
+@inject NavigationManager Navigation
+
+<div class="page">
+    <div class="sidebar">
+        <NavMenu />
+    </div>
+
+    <main>
+        <div class="top-row">
+            <span class="renderer-info">Renderer: <strong>@RendererInfo.Name</strong> @(RendererInfo.IsInteractive ? "(interactive)" : "(prerendering)")</span>
+            <span class="hint">Press <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>D</kbd> or use the badge to open BevTools</span>
+        </div>
+
+        <article class="content">
+            @Body
+        </article>
+    </main>
+</div>
+
+<BevToolsPanel />
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.LocationChanged += (_, e) => AppState.Visit("/" + Navigation.ToBaseRelativePath(e.Location));
+    }
+}

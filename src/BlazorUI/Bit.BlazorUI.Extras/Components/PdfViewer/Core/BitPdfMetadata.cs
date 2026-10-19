@@ -102,7 +102,7 @@ public sealed class BitPdfMetadata
                 byte[] bytes = BitPdfStreamDecoder.Decode(stream);
                 return System.Text.Encoding.UTF8.GetString(bytes);
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 return null;
             }

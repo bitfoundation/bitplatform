@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>preview</LangVersion>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <!-- ASP0006: the scale fixtures generate repeated siblings on purpose, so their sequence numbers are computed. -->
+        <NoWarn>$(NoWarn);CS1591;ASP0006</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.5.1" />
+        <PackageReference Include="bunit" Version="2.11.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BevTools\Bit.BevTools.csproj" />
+        <ProjectReference Include="..\..\Bit.BevTools.Server\Bit.BevTools.Server.csproj" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DialogOkText" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="DialogCancelText" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>没有可显示的记录。</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>加载中…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>操作</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ 添加</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>清除筛选</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>导出 CSV</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>导出 Excel</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>列</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>编辑</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>全选</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>选择行</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>选择行：{0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>筛选…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>按 {0} 筛选</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>全部</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>{0} 的筛选运算符</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>包含</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>不包含</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>开头为</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>结尾为</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>是</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>否</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>按 {0} 分组</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>取消按 {0} 分组</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>展开分组 {0}：{1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>折叠分组 {0}：{1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1}，共 {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>第 {0} 页，共 {1} 页</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} 条/页</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>每页行数</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>首页</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>上一页</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>下一页</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>末页</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- 结果结束 -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>切换详情</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>切换子项</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>拖动以重新排序，或聚焦后使用方向键移动该行</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>重新排序行。按向上或向下方向键移动该行。</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>{0} 的值无效。</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>按 {0} 升序排序</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>按 {0} 降序排序</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>已移除按 {0} 的排序</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>已对 {0} 应用筛选</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>已清除对 {0} 的筛选</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>第 {0} 页，共 {1} 页</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>行已删除</value>
+  </data>
+  <data name="DataGridAnnouncementSearched" xml:space="preserve">
+    <value>正在搜索 {0}</value>
+  </data>
+  <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
+    <value>已清除搜索</value>
+  </data>
+  <data name="ImageEditorSelect" xml:space="preserve">
+    <value>选择</value>
+  </data>
+  <data name="ImageEditorCrop" xml:space="preserve">
+    <value>裁剪</value>
+  </data>
+  <data name="ImageEditorDraw" xml:space="preserve">
+    <value>绘制</value>
+  </data>
+  <data name="ImageEditorArrow" xml:space="preserve">
+    <value>箭头</value>
+  </data>
+  <data name="ImageEditorLine" xml:space="preserve">
+    <value>直线</value>
+  </data>
+  <data name="ImageEditorRectangle" xml:space="preserve">
+    <value>矩形</value>
+  </data>
+  <data name="ImageEditorEllipse" xml:space="preserve">
+    <value>椭圆</value>
+  </data>
+  <data name="ImageEditorText" xml:space="preserve">
+    <value>文本</value>
+  </data>
+  <data name="ImageEditorHighlight" xml:space="preserve">
+    <value>高亮</value>
+  </data>
+  <data name="ImageEditorRedact" xml:space="preserve">
+    <value>遮盖</value>
+  </data>
+  <data name="ImageEditorStep" xml:space="preserve">
+    <value>步骤编号</value>
+  </data>
+  <data name="ImageEditorEraser" xml:space="preserve">
+    <value>橡皮擦</value>
+  </data>
+  <data name="ImageEditorPan" xml:space="preserve">
+    <value>平移</value>
+  </data>
+  <data name="ImageEditorAdjust" xml:space="preserve">
+    <value>调整</value>
+  </data>
+  <data name="ImageEditorFilters" xml:space="preserve">
+    <value>滤镜</value>
+  </data>
+  <data name="ImageEditorTransform" xml:space="preserve">
+    <value>变换</value>
+  </data>
+  <data name="ImageEditorLayers" xml:space="preserve">
+    <value>图层</value>
+  </data>
+  <data name="ImageEditorHistory" xml:space="preserve">
+    <value>历史记录</value>
+  </data>
+  <data name="ImageEditorExport" xml:space="preserve">
+    <value>导出</value>
+  </data>
+  <data name="ImageEditorTools" xml:space="preserve">
+    <value>工具</value>
+  </data>
+  <data name="ImageEditorBrightness" xml:space="preserve">
+    <value>亮度</value>
+  </data>
+  <data name="ImageEditorContrast" xml:space="preserve">
+    <value>对比度</value>
+  </data>
+  <data name="ImageEditorSaturation" xml:space="preserve">
+    <value>饱和度</value>
+  </data>
+  <data name="ImageEditorExposure" xml:space="preserve">
+    <value>曝光</value>
+  </data>
+  <data name="ImageEditorTemperature" xml:space="preserve">
+    <value>色温</value>
+  </data>
+  <data name="ImageEditorTint" xml:space="preserve">
+    <value>色调</value>
+  </data>
+  <data name="ImageEditorHue" xml:space="preserve">
+    <value>色相</value>
+  </data>
+  <data name="ImageEditorGamma" xml:space="preserve">
+    <value>伽马</value>
+  </data>
+  <data name="ImageEditorVibrance" xml:space="preserve">
+    <value>自然饱和度</value>
+  </data>
+  <data name="ImageEditorShadows" xml:space="preserve">
+    <value>阴影</value>
+  </data>
+  <data name="ImageEditorHighlights" xml:space="preserve">
+    <value>高光</value>
+  </data>
+  <data name="ImageEditorSharpen" xml:space="preserve">
+    <value>锐化</value>
+  </data>
+  <data name="ImageEditorBlur" xml:space="preserve">
+    <value>模糊</value>
+  </data>
+  <data name="ImageEditorVignette" xml:space="preserve">
+    <value>暗角</value>
+  </data>
+  <data name="ImageEditorNone" xml:space="preserve">
+    <value>无</value>
+  </data>
+  <data name="ImageEditorGrayscale" xml:space="preserve">
+    <value>灰度</value>
+  </data>
+  <data name="ImageEditorSepia" xml:space="preserve">
+    <value>怀旧</value>
+  </data>
+  <data name="ImageEditorInvert" xml:space="preserve">
+    <value>反相</value>
+  </data>
+  <data name="ImageEditorPosterize" xml:space="preserve">
+    <value>色调分离</value>
+  </data>
+  <data name="ImageEditorThreshold" xml:space="preserve">
+    <value>阈值</value>
+  </data>
+  <data name="ImageEditorRotateLeft" xml:space="preserve">
+    <value>向左旋转</value>
+  </data>
+  <data name="ImageEditorRotateRight" xml:space="preserve">
+    <value>向右旋转</value>
+  </data>
+  <data name="ImageEditorFlipHorizontal" xml:space="preserve">
+    <value>水平翻转</value>
+  </data>
+  <data name="ImageEditorFlipVertical" xml:space="preserve">
+    <value>垂直翻转</value>
+  </data>
+  <data name="ImageEditorStraighten" xml:space="preserve">
+    <value>拉直</value>
+  </data>
+  <data name="ImageEditorAspectRatio" xml:space="preserve">
+    <value>宽高比</value>
+  </data>
+  <data name="ImageEditorFreeform" xml:space="preserve">
+    <value>自由</value>
+  </data>
+  <data name="ImageEditorOriginal" xml:space="preserve">
+    <value>原始</value>
+  </data>
+  <data name="ImageEditorSquare" xml:space="preserve">
+    <value>正方形</value>
+  </data>
+  <data name="ImageEditorApplyCrop" xml:space="preserve">
+    <value>应用裁剪</value>
+  </data>
+  <data name="ImageEditorCancelCrop" xml:space="preserve">
+    <value>取消裁剪</value>
+  </data>
+  <data name="ImageEditorUndo" xml:space="preserve">
+    <value>撤销</value>
+  </data>
+  <data name="ImageEditorRedo" xml:space="preserve">
+    <value>重做</value>
+  </data>
+  <data name="ImageEditorReset" xml:space="preserve">
+    <value>重置</value>
+  </data>
+  <data name="ImageEditorSave" xml:space="preserve">
+    <value>保存</value>
+  </data>
+  <data name="ImageEditorCancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="ImageEditorDone" xml:space="preserve">
+    <value>完成</value>
+  </data>
+  <data name="ImageEditorDelete" xml:space="preserve">
+    <value>删除</value>
+  </data>
+  <data name="ImageEditorDuplicate" xml:space="preserve">
+    <value>复制</value>
+  </data>
+  <data name="ImageEditorBringToFront" xml:space="preserve">
+    <value>置于顶层</value>
+  </data>
+  <data name="ImageEditorSendToBack" xml:space="preserve">
+    <value>置于底层</value>
+  </data>
+  <data name="ImageEditorDownload" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="ImageEditorCopyToClipboard" xml:space="preserve">
+    <value>复制到剪贴板</value>
+  </data>
+  <data name="ImageEditorZoomIn" xml:space="preserve">
+    <value>放大</value>
+  </data>
+  <data name="ImageEditorZoomOut" xml:space="preserve">
+    <value>缩小</value>
+  </data>
+  <data name="ImageEditorZoomToFit" xml:space="preserve">
+    <value>适应窗口</value>
+  </data>
+  <data name="ImageEditorZoomTo100" xml:space="preserve">
+    <value>实际大小</value>
+  </data>
+  <data name="ImageEditorOpenImage" xml:space="preserve">
+    <value>打开图片</value>
+  </data>
+  <data name="ImageEditorPasteImage" xml:space="preserve">
+    <value>从剪贴板粘贴</value>
+  </data>
+  <data name="ImageEditorColor" xml:space="preserve">
+    <value>颜色</value>
+  </data>
+  <data name="ImageEditorFillColor" xml:space="preserve">
+    <value>填充颜色</value>
+  </data>
+  <data name="ImageEditorStrokeColor" xml:space="preserve">
+    <value>轮廓颜色</value>
+  </data>
+  <data name="ImageEditorStrokeWidth" xml:space="preserve">
+    <value>线宽</value>
+  </data>
+  <data name="ImageEditorOpacity" xml:space="preserve">
+    <value>不透明度</value>
+  </data>
+  <data name="ImageEditorFontSize" xml:space="preserve">
+    <value>文字大小</value>
+  </data>
+  <data name="ImageEditorDashed" xml:space="preserve">
+    <value>虚线</value>
+  </data>
+  <data name="ImageEditorFilled" xml:space="preserve">
+    <value>填充</value>
+  </data>
+  <data name="ImageEditorRedactionStyle" xml:space="preserve">
+    <value>遮盖样式</value>
+  </data>
+  <data name="ImageEditorSolid" xml:space="preserve">
+    <value>纯色</value>
+  </data>
+  <data name="ImageEditorPixelate" xml:space="preserve">
+    <value>像素化</value>
+  </data>
+  <data name="ImageEditorFormat" xml:space="preserve">
+    <value>格式</value>
+  </data>
+  <data name="ImageEditorQuality" xml:space="preserve">
+    <value>质量</value>
+  </data>
+  <data name="ImageEditorWidth" xml:space="preserve">
+    <value>宽度</value>
+  </data>
+  <data name="ImageEditorHeight" xml:space="preserve">
+    <value>高度</value>
+  </data>
+  <data name="ImageEditorMetadata" xml:space="preserve">
+    <value>元数据</value>
+  </data>
+  <data name="ImageEditorKeepMetadata" xml:space="preserve">
+    <value>全部保留</value>
+  </data>
+  <data name="ImageEditorRemoveMetadata" xml:space="preserve">
+    <value>全部移除</value>
+  </data>
+  <data name="ImageEditorStripSensitiveMetadata" xml:space="preserve">
+    <value>移除位置和设备信息</value>
+  </data>
+  <data name="ImageEditorEstimatedSize" xml:space="preserve">
+    <value>预计大小</value>
+  </data>
+  <data name="ImageEditorLoading" xml:space="preserve">
+    <value>正在加载图片</value>
+  </data>
+  <data name="ImageEditorProcessing" xml:space="preserve">
+    <value>正在处理</value>
+  </data>
+  <data name="ImageEditorNoImage" xml:space="preserve">
+    <value>未加载图片</value>
+  </data>
+  <data name="ImageEditorDropImageHere" xml:space="preserve">
+    <value>将图片拖放到此处，或点击选择图片</value>
+  </data>
+  <data name="ImageEditorImageTooLarge" xml:space="preserve">
+    <value>该图片太大，无法在此打开。</value>
+  </data>
+  <data name="ImageEditorUnsupportedFormat" xml:space="preserve">
+    <value>不支持该文件格式。</value>
+  </data>
+  <data name="ImageEditorLoadFailed" xml:space="preserve">
+    <value>无法打开该图片。</value>
+  </data>
+  <data name="ImageEditorExportFailed" xml:space="preserve">
+    <value>无法导出该图片。</value>
+  </data>
+  <data name="ImageEditorTextNeedsFont" xml:space="preserve">
+    <value>在文本光栅化器中注册字体之前，无法绘制文本。</value>
+  </data>
+  <data name="ImageEditorFormatNotSupported" xml:space="preserve">
+    <value>此浏览器无法保存该格式，因此改用了受支持的格式。</value>
+  </data>
+  <data name="ImageEditorEditorLabel" xml:space="preserve">
+    <value>图片编辑器</value>
+  </data>
+  <data name="ImageEditorCanvasLabel" xml:space="preserve">
+    <value>图片画布</value>
+  </data>
+  <data name="ImageEditorToolbarLabel" xml:space="preserve">
+    <value>编辑器工具</value>
+  </data>
+  <data name="ImageEditorPanelLabel" xml:space="preserve">
+    <value>编辑器选项</value>
+  </data>
+  <data name="ImageEditorCropHandleLabel" xml:space="preserve">
+    <value>裁剪手柄</value>
+  </data>
+  <data name="ImageEditorSelectedAnnotation" xml:space="preserve">
+    <value>已选注释</value>
+  </data>
+  <data name="ImageEditorKeyboardHint" xml:space="preserve">
+    <value>使用方向键移动所选内容，按 Delete 键将其删除。</value>
+  </data>
+</root>

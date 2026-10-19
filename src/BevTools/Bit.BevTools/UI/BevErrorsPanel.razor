@@ -1,0 +1,123 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-split">
+    <div class="bev-left" style="flex-basis:50%">
+        <div class="bev-toolbar">
+            <input type="text" placeholder="Filter: text, source:render|http|javascript|circuit|js-interop" value="@Query" @oninput="OnQuery" />
+            <button type="button" @onclick="() => Session.Errors.Clear()">Clear</button>
+            <span class="bev-muted bev-nowrap">@_rows.Count errors · @Session.Errors.TotalOccurrences occurrences</span>
+        </div>
+        <div class="bev-scroll">
+            @if (_rows.Count == 0)
+            {
+                <div class="bev-empty">No errors. Render exceptions, event handler exceptions, ErrorBoundary catches, JS errors, HTTP failures, JS interop failures and circuit errors all land here.</div>
+            }
+            else
+            {
+                <table>
+                    <thead><tr><th>Time</th><th>Source</th><th>Error</th><th>Component</th><th class="bev-num">×</th></tr></thead>
+                    <tbody>
+                        <Virtualize Items="_rows" ItemSize="23" Context="e" SpacerElement="tr">
+                            <tr class="bev-row bev-sev-error @(Ui.SelectedErrorId == e.Id ? "bev-selected" : "")" @onclick="() => { Ui.SelectedErrorId = e.Id; Ui.Touch(); }">
+                                <td class="bev-mono">@BevFmt.Time(e.LastSeen)</td>
+                                <td><span class="bev-chip">@e.Source</span></td>
+                                <td class="bev-truncate" style="max-width:360px" title="@e.Message"><span class="bev-mono">@ErrorCenter.ShortTypeName(e.ExceptionType)</span>: @e.Message</td>
+                                <td>@if (e.ComponentInstanceId is { } id) { <button type="button" class="bev-link" @onclick:stopPropagation="true" @onclick="() => Host.SelectComponent(id)">@e.ComponentName</button> }</td>
+                                <td class="bev-num">@(e.Count > 1 ? e.Count : "")</td>
+                            </tr>
+                        </Virtualize>
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+    <div class="bev-right">
+        @if (_selected is { } s)
+        {
+            <div class="bev-section">
+                <div class="bev-section-title"><span class="bev-chip bev-err">@s.Source</span> <span class="bev-mono">@s.ExceptionType</span></div>
+                <div class="bev-section-body">
+                    <div style="margin-bottom:6px">@s.Message</div>
+                    <dl class="bev-kv">
+                        <dt>First seen</dt><dd>@BevFmt.Time(s.At)</dd>
+                        <dt>Last seen</dt><dd>@BevFmt.Time(s.LastSeen) (@s.Count occurrence@(s.Count == 1 ? "" : "s"))</dd>
+                        @if (s.SourceLocation is not null)
+                        {
+                            <dt>Location</dt><dd class="bev-mono">@s.SourceLocation</dd>
+                        }
+                        @if (s.ComponentInstanceId is { } cid)
+                        {
+                            <dt>Component</dt><dd><button type="button" class="bev-link" @onclick="() => Host.SelectComponent(cid)">@s.ComponentName #@cid ↗</button></dd>
+                        }
+                        <dt>Preceded by</dt>
+                        <dd>@if (_preceding is { } p) { <button type="button" class="bev-link" @onclick="() => Host.SelectEvent(p.Id)"><span class="@BevFmt.KindClass(p.Kind)">@BevFmt.KindLabel(p.Kind)</span> @p.Title ↗</button> } else { <span class="bev-muted">no UI event recorded before this error</span> }</dd>
+                        <dt>Timeline</dt><dd>@if (s.TimelineEventId > 0) { <button type="button" class="bev-link" @onclick="() => Host.SelectEvent(s.TimelineEventId)">open ↗</button> } else { <span class="bev-muted">not in the timeline (capture was paused when it occurred)</span> }</dd>
+                    </dl>
+                    @if (s.InnerError is { } inner)
+                    {
+                        <div style="margin-top:6px"><strong>Inner:</strong> <span class="bev-mono">@inner</span></div>
+                    }
+                    @if (s.StackTrace is not null)
+                    {
+                        <div style="margin-top:6px; display:flex; gap:6px; align-items:center"><strong>Stack trace</strong> <button type="button" @onclick="() => Copy(s)">Copy</button></div>
+                        <pre class="bev-pre">@s.StackTrace</pre>
+                    }
+                </div>
+            </div>
+            <div class="bev-section">
+                <div class="bev-section-title">Activity before the error</div>
+                <div class="bev-section-body">
+                    @if (_before.Count == 0)
+                    {
+                        <div class="bev-muted">Nothing recorded before it.</div>
+                    }
+                    @foreach (var b in _before)
+                    {
+                        <div><button type="button" class="bev-link" @onclick="() => Host.SelectEvent(b.Id)"><span class="@BevFmt.KindClass(b.Kind)">@BevFmt.KindLabel(b.Kind)</span> @b.Title</button> <span class="bev-muted">@BevFmt.Time(b.Timestamp)</span></div>
+                    }
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="bev-empty">Select an error to see its stack trace, the component involved and what happened right before it.</div>
+        }
+    </div>
+</div>
+
+@code {
+    private string? Query => Ui.GetQuery("errors");
+
+    private List<BevErrorRecord> _rows = [];
+    private BevErrorRecord? _selected;
+    private BevToolsEvent? _preceding;
+    private List<BevToolsEvent> _before = [];
+
+    protected override void OnParametersSet()
+    {
+        var filter = BevQueryFilter.Parse(Query);
+        var source = filter.Token("source");
+        _rows = Session.Errors.Snapshot().Reverse().Where(e => filter.MatchesText(e.Message, e.ExceptionType, e.ComponentName, e.Source) && (source is null || e.Source.StartsWith(source, StringComparison.OrdinalIgnoreCase))).ToList();
+        _selected = Ui.SelectedErrorId is { } id ? Session.Errors.Find(id) : null;
+        if (_selected is not null)
+        {
+            _preceding = _selected.PrecedingEventId is { } pid ? Session.Timeline.Find(pid) : null;
+            var all = Session.Timeline.Snapshot();
+            var index = Array.FindIndex(all, e => e.Id == _selected.TimelineEventId);
+            _before = index <= 0 ? [] : all.Skip(Math.Max(0, index - 10)).Take(Math.Min(10, index)).Reverse().ToList();
+        }
+    }
+
+    private void OnQuery(ChangeEventArgs e)
+    {
+        Ui.SetQuery("errors", e.Value?.ToString());
+        OnParametersSet();
+    }
+
+    private async Task Copy(BevErrorRecord e)
+    {
+        var ok = await Host.CopyAsync(e.ExceptionType + ": " + e.Message + "\n" + e.StackTrace);
+        Host.Notify(ok ? "Copied" : "Clipboard unavailable");
+    }
+}

@@ -1,0 +1,125 @@
+﻿@namespace Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+
+@if (Document is not null)
+{
+    @* Keyed on the document, so switching documents recreates the subtree: nothing rendered for the
+       previous document - a component holding its text, a cascaded reference - survives into the next. *@
+    <CascadingValue Value="Document" IsFixed="true" @key="Document">
+        @ChildContent(Document)
+    </CascadingValue>
+}
+else if (LoadingContent is not null)
+{
+    @LoadingContent
+}
+
+@code {
+    private readonly List<IDisposable> _documentSubscriptions = [];
+    private string? _requestedId;
+    private string? _heldId;
+    private int _generation;
+    private bool _isDisposed;
+
+    /// <summary>The document to open. Changing it closes the current document and opens the new one.</summary>
+    [Parameter, EditorRequired]
+    public string DocumentId { get; set; } = default!;
+
+    /// <summary>Who the local participant is, published as soon as the document opens.</summary>
+    [Parameter]
+    public BcrdtCollaboratorInfo? User { get; set; }
+
+    /// <summary>Rendered once the document is open, with the document as context.</summary>
+    [Parameter, EditorRequired]
+    public RenderFragment<BcrdtCollaborativeDocument> ChildContent { get; set; } = default!;
+
+    /// <summary>Rendered while the document is being opened.</summary>
+    [Parameter]
+    public RenderFragment? LoadingContent { get; set; }
+
+    /// <summary>Invoked once the document is open.</summary>
+    [Parameter]
+    public EventCallback<BcrdtCollaborativeDocument> OnOpened { get; set; }
+
+    /// <summary>The open document, or null while it is still opening.</summary>
+    public BcrdtCollaborativeDocument? Document { get; private set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (string.Equals(_requestedId, DocumentId, StringComparison.Ordinal)) return;
+
+        // Parameters can change again while an earlier open is still in flight. Each pass takes a
+        // generation; a pass that has been overtaken releases what it opened and stands down.
+        int generation = ++_generation;
+        _requestedId = DocumentId;
+
+        // Stop rendering the previous document before it is closed, so nothing can edit it while it
+        // is being torn down, and release the subscriptions that would otherwise keep it reachable.
+        string? held = _heldId;
+        _heldId = null;
+        Document = null;
+        ReleaseDocumentSubscriptions();
+
+        // Release a reference rather than force a close: another scope may share the document.
+        if (held is not null) await Collaboration.CloseAsync(held);
+        if (generation != _generation || _isDisposed) return;
+
+        BcrdtCollaborativeDocument opened;
+        try
+        {
+            opened = await Collaboration.OpenAsync(DocumentId, new BcrdtOpenDocumentOptions { User = User });
+        }
+        catch (Exception) when (generation != _generation || _isDisposed)
+        {
+            // Overtaken by a newer identifier, or disposed, while opening: the failure belongs to a
+            // document nobody is waiting for any more. Rethrowing it would fail the component - in
+            // Blazor Server, the whole circuit - over something already irrelevant.
+            return;
+        }
+        catch
+        {
+            // Forget the attempt, so the same identifier can be retried rather than ignored forever.
+            _requestedId = null;
+            throw;
+        }
+
+        if (generation != _generation || _isDisposed)
+        {
+            await Collaboration.CloseAsync(opened.Id);
+            return;
+        }
+
+        _heldId = opened.Id;
+        Document = opened;
+
+        _documentSubscriptions.Add(Track(opened));
+        _documentSubscriptions.Add(Track(opened.Presence));
+        if (opened.Sync is not null) _documentSubscriptions.Add(Track(opened.Sync));
+
+        if (OnOpened.HasDelegate) await OnOpened.InvokeAsync(opened);
+    }
+
+    private void ReleaseDocumentSubscriptions()
+    {
+        foreach (IDisposable subscription in _documentSubscriptions) subscription.Dispose();
+        _documentSubscriptions.Clear();
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+        _generation++;
+
+        ReleaseDocumentSubscriptions();
+        await base.DisposeAsync();
+
+        // Closing here rather than leaving it to the service means a component that navigates away
+        // stops consuming a connection immediately, instead of when the circuit eventually ends. An
+        // open still in flight releases its own reference when it completes.
+        string? held = _heldId;
+        _heldId = null;
+        Document = null;
+        if (held is not null) await Collaboration.CloseAsync(held);
+    }
+}

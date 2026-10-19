@@ -184,7 +184,7 @@ public class ResxParityTests
     }
 
     /// <summary>
-    /// The three families, resolved from disk rather than listed, so a new locale is covered the day it is added.
+    /// The four families, resolved from disk rather than listed, so a new locale is covered the day it is added.
     /// <c>EmailStrings</c> is globbed through <c>src/Server/*</c> because the project directory carries the
     /// generated project's name in every configuration but this one.
     /// </summary>
@@ -196,6 +196,7 @@ public class ResxParityTests
         [
             Path.Combine(templateRoot, "src", "Shared", "Resources", "AppStrings.resx"),
             Path.Combine(templateRoot, "src", "Shared", "Resources", "IdentityStrings.resx"),
+            Path.Combine(templateRoot, "src", "Shared", "Resources", "BitBlazorUIStrings.resx"),
             .. Directory.GetFiles(Path.Combine(templateRoot, "src", "Server"), "EmailStrings.resx", SearchOption.AllDirectories)
         ];
 

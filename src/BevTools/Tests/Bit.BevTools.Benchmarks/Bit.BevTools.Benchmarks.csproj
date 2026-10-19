@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- Single-target: this is a measurement tool, not a shipped/multi-TFM library. net10.0 matches
+         global.json's pinned SDK and is the runtime whose framework instrumentation BevTools observes. -->
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <!-- Not a unit-test project: it's a console harness run manually (dotnet run -c Release) that renders the same
+         workload with and without BevTools through a real Blazor renderer, so it deliberately does NOT set IsTestProject.
+         BL0006/ASP0006: it builds a fixed-size list of identical children, so its sequence numbers are computed. -->
+    <NoWarn>$(NoWarn);BL0006;ASP0000;ASP0006</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bit.BevTools\Bit.BevTools.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,9 +1,8 @@
 name: bit platform CI - Brouter E2E
 
-# The cross-host suites: every web render mode in Chromium on net10.0/net9.0/net8.0, Blazor Hybrid in WebView2,
-# and trimmed/AOT publishes. They take far longer than the build-and-unit pipeline (bit.ci.Brouter.yml), so they
-# run only when started by hand. See src/Brouter/Tests/Bit.Brouter.Tests.E2E/README.md for what each job proves and
-# how to run it locally.
+# On demand only (Actions > bit platform CI - Brouter E2E > Run workflow). The regular build and test pipeline is
+# bit.ci.Brouter.yml. See src/Brouter/Tests/Bit.Brouter.Tests.E2E/README.md for what each job proves and how to
+# run it locally.
 
 on:
   workflow_dispatch:

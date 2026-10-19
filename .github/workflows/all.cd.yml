@@ -53,6 +53,12 @@ jobs:
     with:
       prerelease_packages: ${{ inputs.prerelease_packages }}
 
+  bevtools_demo:
+    name: bevtools demo
+    if: inputs.server
+    uses: ./.github/workflows/bevtools.demo.cd.yml
+    secrets: inherit
+
   blex_demo:
     name: blex demo
     if: inputs.server
@@ -119,6 +125,12 @@ jobs:
     uses: ./.github/workflows/borm.demo.cd.yml
     secrets: inherit
 
+  bcrdt_demo:
+    name: bcrdt demo
+    if: inputs.server
+    uses: ./.github/workflows/bcrdt.demo.cd.yml
+    secrets: inherit
+
   bonboarding_demo:
     name: bonboarding demo
     if: inputs.server
@@ -129,6 +141,12 @@ jobs:
     name: bortable demo
     if: inputs.server
     uses: ./.github/workflows/bortable.demo.cd.yml
+    secrets: inherit
+
+  belemetry_demo:
+    name: belemetry demo
+    if: inputs.server
+    uses: ./.github/workflows/belemetry.demo.cd.yml
     secrets: inherit
 
   brouter_demo:

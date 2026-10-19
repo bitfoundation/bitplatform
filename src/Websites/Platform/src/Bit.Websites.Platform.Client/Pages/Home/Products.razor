@@ -330,6 +330,26 @@
         },
         new()
         {
+            Title = "Editing that merges",
+            Subtitle = "bit Bcrdt · real-time collaboration for Blazor",
+            LinkUrl = Urls.Bcrdt,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bcrdt lets several people edit the same text, list or form at once - online or offline - and never
+                    lose anyone's work: a CRDT engine, a sync protocol, presence and cursors, offline-first persistence and
+                    selective undo, all written in C#, over SignalR, WebSockets or any transport.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BcrdtCollaborationScope DocumentId="notes-42" User="me" Context="doc">
+    &lt;BcrdtPresenceView Presence="doc.Presence" />
+    &lt;BcrdtTextArea Text="@@doc.Text("body")" Presence="doc.Presence" />
+&lt;/BcrdtCollaborationScope></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Onboarding that guides",
             Subtitle = "bit Bonboarding · Blazor-native product tours",
             LinkUrl = Urls.Bonboarding,
@@ -385,6 +405,24 @@ public partial class CounterStore
     [BlexComputed] private bool ComputeIsEven() => Count % 2 == 0;
     [BlexAction] private void OnIncrement() => Count++;
 }</CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
+            Title = "Telemetry without the weight",
+            Subtitle = "bit Belemetry · OpenTelemetry for every Blazor app",
+            LinkUrl = Urls.Belemetry,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Belemetry collects page views, web vitals, JS errors and fetch calls in the browser plus ILogger,
+                    Activity and Meter data in .NET, and exports it over OTLP or to Azure Monitor - in WebAssembly,
+                    Server and Hybrid apps, without the OpenTelemetry packages, and with per-feature GDPR consent.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>builder.Services.AddBitBelemetryServices(o =>
+    o.AddOtlpExporter("http://localhost:4318"));</CodeBox>
                 </div>
             </text>
         },

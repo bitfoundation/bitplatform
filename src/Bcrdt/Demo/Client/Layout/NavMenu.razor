@@ -1,0 +1,50 @@
+﻿<nav class="nav">
+    <div class="nav-brand">
+        <span class="nav-title">bit Bcrdt</span>
+        <span class="nav-subtitle">CRDT collaboration for .NET, demonstrated</span>
+    </div>
+
+    <ul class="nav-links">
+        <li>
+            <NavLink href="" Match="NavLinkMatch.All">Overview</NavLink>
+        </li>
+        <li>
+            <NavLink href="text">Collaborative text</NavLink>
+            <span class="nav-note">three replicas, offline merge</span>
+        </li>
+        <li>
+            <NavLink href="list">Collaborative list</NavLink>
+            <span class="nav-note">nested types in a sequence</span>
+        </li>
+        <li>
+            <NavLink href="form">Collaborative form</NavLink>
+            <span class="nav-note">scalar fields versus text</span>
+        </li>
+        <li>
+            <NavLink href="conflicts">Conflict lab</NavLink>
+            <span class="nav-note">provoke conflicts on purpose</span>
+        </li>
+        <li>
+            <NavLink href="undo">Collaborative undo</NavLink>
+            <span class="nav-note">undo mine, not yours</span>
+        </li>
+        <li>
+            <NavLink href="internals">Internals</NavLink>
+            <span class="nav-note">state vector, blocks, updates</span>
+        </li>
+        <li>
+            <NavLink href="live">Live, across tabs</NavLink>
+            <span class="nav-note">real tabs, through the server</span>
+        </li>
+        <li>
+            <NavLink href="mcp-server">MCP server</NavLink>
+            <span class="nav-note">the library, for AI agents</span>
+        </li>
+    </ul>
+
+    <p class="nav-foot">
+        Every panel on every page is a separate replica with its own client id, connected through the
+        library's in-memory transport, all inside this tab. Only the live page leaves it, and the server
+        it goes through only relays.
+    </p>
+</nav>

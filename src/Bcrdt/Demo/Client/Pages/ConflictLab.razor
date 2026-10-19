@@ -1,0 +1,138 @@
+﻿@page "/conflicts"
+@inherits ReplicaPageBase
+
+<h1>Conflict laboratory</h1>
+
+<section class="prose">
+    <p>
+        The other pages show collaboration working. This one is for disbelieving it. Each scenario
+        below gives both replicas the same starting point, takes them both offline, makes a specific
+        pair of conflicting edits - the exact cases that break naïve synchronization - and then
+        reconnects them so you can watch what the merge actually does.
+    </p>
+    <p>
+        Every scenario states its expectation before you run it. The point is not that something
+        happens, but that the <em>stated</em> thing happens, on both replicas, every time.
+    </p>
+</section>
+
+@if (!Ready || _session is null)
+{
+    <p class="loading">Opening two replicas…</p>
+}
+else
+{
+    <section class="lab">
+        @foreach (ConflictScenario scenario in ConflictLabSession.Scenarios)
+        {
+            <article class="lab-case">
+                <h3>@scenario.Title</h3>
+                <p>@scenario.Description</p>
+                <p class="lab-expect"><strong>Expected:</strong> @scenario.Expectation</p>
+                <button class="button" @onclick="() => RunAsync(scenario)" disabled="@_busy">
+                    Run this scenario
+                </button>
+            </article>
+        }
+    </section>
+
+    @if (_session.Log.Count > 0)
+    {
+        <section class="prose">
+            <h2>What happened</h2>
+            <ol class="lab-log">
+                @foreach (string entry in _session.Log)
+                {
+                    <li>@entry</li>
+                }
+            </ol>
+            <p class="@(_session.Converged ? "verdict verdict-ok" : "verdict verdict-warn")">
+                @if (_session.Converged)
+                {
+                    <text>
+                        Both replicas hold identical state. That is the convergence property: they
+                        received the same operations, so they agree - regardless of the order those
+                        operations were made or delivered in.
+                    </text>
+                }
+                else
+                {
+                    <text>
+                        The replicas currently differ. If a scenario is still running or a replica is
+                        offline this is expected; otherwise it would be a bug.
+                    </text>
+                }
+            </p>
+        </section>
+    }
+
+    <div class="panel-grid panel-grid-2">
+        @foreach (DemoReplica replica in Replicas)
+        {
+            <ReplicaPanel Replica="replica" ShowPresence="false">
+                <ChildContent>
+                    <h4 class="sub">Text</h4>
+                    <pre class="json">@ConflictLabSession.Quote(replica.Document.Text(ConflictLabSession.TextKey).ToString())</pre>
+
+                    <h4 class="sub">List</h4>
+                    <pre class="json">@DemoJson.Format(replica.Document.Array(ConflictLabSession.ListKey).ToJson())</pre>
+
+                    <h4 class="sub">Map</h4>
+                    <pre class="json">@DemoJson.Format(replica.Document.GetMap(ConflictLabSession.MapKey).ToJson())</pre>
+                </ChildContent>
+            </ReplicaPanel>
+        }
+    </div>
+
+    <section class="prose">
+        <p>
+            <button class="button" @onclick="ResetAsync" disabled="@_busy">Reset the document</button>
+            <span class="hint">Clears all three fields on both replicas and empties the log.</span>
+        </p>
+    </section>
+}
+
+@code {
+    // The procedure lives in ConflictLabSession rather than here, so that the sequence this page
+    // runs is the same sequence the demo's tests replay.
+    private ConflictLabSession? _session;
+    private bool _busy;
+
+    protected override string DocumentId => "demo-conflicts";
+
+    protected override string[] ReplicaLabels => ["Replica A", "Replica B"];
+
+    protected override void OnReplicasOpened() => _session = new ConflictLabSession(Replicas[0], Replicas[1]);
+
+    private async Task RunAsync(ConflictScenario scenario)
+    {
+        if (_session is null) return;
+
+        _busy = true;
+        try
+        {
+            await _session.RunAsync(scenario);
+        }
+        finally
+        {
+            _busy = false;
+            RequestRender();
+        }
+    }
+
+    private async Task ResetAsync()
+    {
+        if (_session is null) return;
+
+        _busy = true;
+        try
+        {
+            await _session.ResetAsync();
+        }
+        finally
+        {
+            _busy = false;
+            RequestRender();
+        }
+    }
+}

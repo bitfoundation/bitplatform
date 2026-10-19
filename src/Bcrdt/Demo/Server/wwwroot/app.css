@@ -1,0 +1,593 @@
+﻿/*
+    Deliberately plain and self-contained: no framework, no CDN, no web fonts. The demo's job is to
+    make collaborative behaviour legible, so the styling stays out of the way - a neutral palette,
+    generous reading measure for the explanatory prose, and one strong colour per replica so a panel
+    and its name in a presence list can be matched up by eye.
+*/
+
+:root {
+    --ink: #1b1d21;
+    --ink-soft: #5b6169;
+    --ink-faint: #878d95;
+    --paper: #ffffff;
+    --wash: #f5f6f8;
+    --line: #dfe2e7;
+    --accent: #2f5bd7;
+    --good: #1a7f4b;
+    --busy: #a2650a;
+    --bad: #b3261e;
+    --radius: 8px;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--wash);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.55;
+}
+
+.boot {
+    padding: 3rem;
+    color: var(--ink-faint);
+}
+
+/* ---------- shell ---------- */
+
+.shell {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    min-height: 100vh;
+    align-items: start;
+}
+
+.content {
+    padding: 2rem 2.5rem 5rem;
+    min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .shell { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- navigation ---------- */
+
+.nav {
+    position: sticky;
+    top: 0;
+    align-self: start;
+    height: 100vh;
+    overflow-y: auto;
+    padding: 1.5rem 1.25rem;
+    background: var(--paper);
+    border-right: 1px solid var(--line);
+}
+
+/* Single-column layout: the navigation becomes an ordinary block above the content. Left sticky and
+   a full viewport tall, it would fill the whole first screen before any demo appeared. */
+@media (max-width: 900px) {
+    .nav {
+        position: static;
+        height: auto;
+        overflow-y: visible;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+    }
+}
+
+.nav-brand { margin-bottom: 1.5rem; }
+
+.nav-title {
+    display: block;
+    font-weight: 650;
+    font-size: 1.05rem;
+}
+
+.nav-subtitle {
+    display: block;
+    font-size: .8rem;
+    color: var(--ink-faint);
+}
+
+.nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.nav-links li { margin-bottom: .75rem; }
+
+.nav-links a {
+    display: block;
+    color: var(--ink);
+    text-decoration: none;
+    font-weight: 500;
+    padding: .3rem .5rem;
+    margin-left: -.5rem;
+    border-radius: 6px;
+}
+
+.nav-links a:hover { background: var(--wash); }
+
+.nav-links a.active {
+    background: var(--accent);
+    color: #fff;
+}
+
+.nav-note {
+    display: block;
+    font-size: .75rem;
+    color: var(--ink-faint);
+    padding-left: 0;
+}
+
+.nav-foot {
+    margin-top: 2rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    font-size: .75rem;
+    color: var(--ink-faint);
+}
+
+/* ---------- prose ---------- */
+
+h1 {
+    font-size: 1.75rem;
+    margin: 0 0 1rem;
+    letter-spacing: -.01em;
+}
+
+h2 {
+    font-size: 1.2rem;
+    margin: 2.5rem 0 .75rem;
+}
+
+h3 { font-size: 1rem; margin: 0 0 .5rem; }
+
+.prose { max-width: 68ch; }
+
+.prose p { margin: 0 0 .9rem; }
+
+.lede { font-size: 1.05rem; color: var(--ink-soft); }
+
+.callout {
+    background: #fffaf0;
+    border-left: 3px solid #e0a02a;
+    padding: .85rem 1rem;
+    border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.hint, .empty {
+    color: var(--ink-faint);
+    font-size: .85rem;
+}
+
+.loading { color: var(--ink-faint); }
+
+.sub {
+    font-size: .8rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--ink-faint);
+    margin: 1rem 0 .35rem;
+}
+
+code, .mono { font-family: var(--mono); font-size: .85em; }
+
+code { color: #a3306e; }
+
+/* A block of sample code. Scrolls rather than overflowing the reading column, because code lines
+   do not wrap. */
+.code {
+    background: #1e2128;
+    color: #e6e9ef;
+    font-family: var(--mono);
+    font-size: .8rem;
+    line-height: 1.5;
+    padding: .85rem 1rem;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    margin: 0 0 1rem;
+}
+
+.code code { color: inherit; font-size: inherit; }
+
+/* ---------- replica panels ---------- */
+
+.panel-grid {
+    display: grid;
+    gap: 1.25rem;
+    margin: 1.75rem 0;
+    align-items: start;
+}
+
+.panel-grid-2 { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); }
+.panel-grid-3 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+.panel {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    min-width: 0;
+}
+
+/* An offline replica is visibly set apart, because "why is this one different" is the question the
+   offline demos are trying to provoke. */
+.panel-offline { opacity: .92; box-shadow: inset 0 0 0 2px #e9d8b4; }
+
+.panel-head {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+    padding: .55rem .75rem;
+    color: #fff;
+}
+
+.panel-name { font-weight: 600; }
+
+.panel-client {
+    font-family: var(--mono);
+    font-size: .7rem;
+    opacity: .85;
+}
+
+.panel-toggle {
+    margin-left: auto;
+    background: rgba(255, 255, 255, .22);
+    border: 1px solid rgba(255, 255, 255, .5);
+    color: #fff;
+    border-radius: 5px;
+    padding: .2rem .6rem;
+    font-size: .78rem;
+    cursor: pointer;
+}
+
+.panel-toggle:hover { background: rgba(255, 255, 255, .34); }
+
+.panel-presence {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    flex-wrap: wrap;
+    padding: .45rem .75rem;
+    background: var(--wash);
+    border-bottom: 1px solid var(--line);
+    font-size: .8rem;
+}
+
+.presence-label { color: var(--ink-faint); }
+
+.presence-list { display: inline-flex; flex-wrap: wrap; gap: .4rem; }
+
+.presence-empty { color: var(--ink-faint); font-style: italic; }
+
+.panel-body { padding: .85rem; }
+
+.panel-foot {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem .9rem;
+    padding: .5rem .75rem;
+    border-top: 1px solid var(--line);
+    background: var(--wash);
+}
+
+/* ---------- badges and metrics ---------- */
+
+.badge {
+    font-size: .7rem;
+    font-weight: 600;
+    padding: .12rem .5rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .25);
+    border: 1px solid rgba(255, 255, 255, .45);
+}
+
+.badge-good { background: rgba(255, 255, 255, .95); color: var(--good); }
+.badge-busy { background: rgba(255, 255, 255, .95); color: var(--busy); }
+.badge-bad { background: rgba(255, 255, 255, .95); color: var(--bad); }
+.badge-offline { background: rgba(0, 0, 0, .22); color: #fff; }
+
+.metric { font-size: .75rem; color: var(--ink-soft); }
+
+.metric-warn { color: var(--busy); font-weight: 500; }
+
+.swatch {
+    display: inline-block;
+    width: .6rem;
+    height: .6rem;
+    border-radius: 50%;
+    margin-right: .4rem;
+    vertical-align: baseline;
+}
+
+/* ---------- controls ---------- */
+
+.button {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: .4rem .85rem;
+    font-size: .85rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.button:hover { filter: brightness(1.08); }
+
+.button:disabled { background: var(--line); color: var(--ink-faint); cursor: not-allowed; }
+
+.button-quiet {
+    background: var(--paper);
+    color: var(--ink);
+    border: 1px solid var(--line);
+}
+
+.button-quiet:hover { background: var(--wash); filter: none; }
+
+.icon-button {
+    background: none;
+    border: none;
+    color: var(--ink-faint);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: .1rem .35rem;
+    border-radius: 4px;
+}
+
+.icon-button:hover { background: var(--wash); color: var(--ink); }
+
+.icon-danger:hover { color: var(--bad); }
+
+.toolbar {
+    display: flex;
+    gap: .5rem;
+    flex-wrap: wrap;
+    margin-top: .75rem;
+}
+
+.input, .field-input, .editor {
+    width: 100%;
+    font: inherit;
+    color: inherit;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: .45rem .6rem;
+}
+
+.input:focus, .field-input:focus, .editor:focus {
+    outline: 2px solid var(--accent);
+    outline-offset: -1px;
+}
+
+.editor {
+    font-family: var(--mono);
+    font-size: .85rem;
+    line-height: 1.5;
+    resize: vertical;
+}
+
+.field { display: block; margin-bottom: .9rem; }
+
+.field-label { display: block; font-size: .85rem; font-weight: 600; }
+
+.field-note {
+    display: block;
+    font-size: .72rem;
+    color: var(--ink-faint);
+    margin-bottom: .25rem;
+}
+
+/* ---------- list demo ---------- */
+
+.demo-list { list-style: none; margin: 0; padding: 0; }
+
+.todo {
+    list-style: none;
+    margin: .75rem 0 0;
+    padding: 0;
+}
+
+/* One row per item: checkbox, title, then the action buttons. The rule targets the rows, not the
+   list - a flex list would lay every item out side by side in a single row. */
+.todo-item {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .35rem 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.todo-item:last-child { border-bottom: none; }
+
+.todo-title { flex: 1; min-width: 0; }
+
+.todo-done .todo-title { text-decoration: line-through; color: var(--ink-faint); }
+
+.list-add { display: flex; gap: .5rem; margin-top: .75rem; }
+
+/* ---------- data read-outs ---------- */
+
+.json {
+    background: #1e2128;
+    color: #e6e9ef;
+    font-family: var(--mono);
+    font-size: .75rem;
+    line-height: 1.45;
+    padding: .7rem .85rem;
+    border-radius: var(--radius);
+    overflow-x: auto;
+    max-height: 340px;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin: 0 0 .75rem;
+}
+
+.json-title {
+    border-left: 4px solid var(--line);
+    padding-left: .5rem;
+    margin-bottom: .4rem;
+    font-size: .9rem;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: .15rem .75rem;
+    margin: .85rem 0 0;
+    font-size: .82rem;
+}
+
+.stats dt { color: var(--ink-soft); }
+
+.stats dd {
+    margin: 0;
+    font-family: var(--mono);
+    text-align: right;
+    font-weight: 600;
+}
+
+.log-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .8rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+}
+
+.log-table th, .log-table td {
+    text-align: left;
+    padding: .4rem .6rem;
+    border-bottom: 1px solid var(--line);
+}
+
+.log-table th { background: var(--wash); font-weight: 600; }
+
+.log-table tr:last-child td { border-bottom: none; }
+
+/* ---------- conflict laboratory ---------- */
+
+.lab {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+    margin: 1.75rem 0;
+    align-items: start;
+}
+
+.lab-case {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: .9rem 1rem;
+}
+
+.lab-case p { margin: 0 0 .6rem; font-size: .87rem; }
+
+.lab-expect { color: var(--ink-soft); }
+
+.lab-log {
+    font-family: var(--mono);
+    font-size: .78rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: .75rem 1rem .75rem 2.25rem;
+    max-height: 320px;
+    overflow-y: auto;
+}
+
+.lab-log li { margin-bottom: .2rem; }
+
+.verdict {
+    padding: .7rem .9rem;
+    border-radius: var(--radius);
+    font-size: .87rem;
+}
+
+.verdict-ok { background: #eaf7ef; border-left: 3px solid var(--good); }
+.verdict-warn { background: #fdf3e6; border-left: 3px solid var(--busy); }
+
+/* ---------- framework error strip ---------- */
+
+#blazor-error-ui {
+    background: #fff3cd;
+    bottom: 0;
+    box-shadow: 0 -1px 4px rgba(0, 0, 0, .2);
+    display: none;
+    left: 0;
+    padding: .7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+#blazor-error-ui .dismiss {
+    cursor: pointer;
+    position: absolute;
+    right: .75rem;
+    top: .5rem;
+}
+
+.blazor-error-boundary {
+    background: var(--bad);
+    color: #fff;
+    padding: 1rem;
+    border-radius: var(--radius);
+}
+
+.blazor-error-boundary::after { content: "An error has occurred."; }
+
+/* ---------- live page ---------- */
+
+.live-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem .75rem;
+    margin: 1.5rem 0 1rem;
+    padding: .75rem 1rem;
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.live-label { font-size: .8rem; color: var(--ink-soft); }
+
+.live-link {
+    font-family: var(--mono);
+    font-size: .8rem;
+    color: var(--accent);
+    overflow-wrap: anywhere;
+    margin-right: auto;
+}
+
+.live-relay {
+    font-size: .8rem;
+    padding: .2rem .6rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    color: var(--ink);
+    text-decoration: none;
+}
+
+.live-relay:hover { background: var(--wash); }
+
+.live-relay-active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+}
+
+.live-relay-active:hover { background: var(--accent); }

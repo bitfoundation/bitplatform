@@ -1,0 +1,87 @@
+﻿@namespace Bit.BevTools
+@inherits BevToolsTab
+
+<div class="bev-split">
+    <div class="bev-left" style="flex-basis:50%">
+        <div class="bev-toolbar">
+            <input type="text" aria-label="Filter JS interop calls" placeholder="Filter identifier, component, result or error" value="@Query" @oninput="OnQuery" />
+            <span class="bev-muted bev-nowrap">@_calls.Count calls · → .NET→JS, ← JS→.NET</span>
+            <button type="button" @onclick="() => Session.Interop.Clear()">Clear</button>
+        </div>
+        <div class="bev-scroll">
+            @if (_aggregates.Length == 0)
+            {
+                <div class="bev-empty">No JS interop calls captured. Calls through <code>IJSRuntime</code> injected into components (and modules obtained from it) are tracked automatically; services can opt in with <code>jsRuntime.WithBevToolsTracking(session)</code>.</div>
+            }
+            else
+            {
+                <table>
+                    <thead><tr><th>Identifier</th><th class="bev-num">Calls</th><th class="bev-num">Total</th><th class="bev-num">Avg</th><th class="bev-num">Max</th><th class="bev-num">Failed</th></tr></thead>
+                    <tbody>
+                        @foreach (var a in _aggregates)
+                        {
+                            <tr class="bev-row" @onclick='() => Host.ShowPanel("timeline", "kind:js " + a.Identifier)'>
+                                <td class="bev-mono bev-truncate" style="max-width:280px">@(a.Direction == BevJsInteropDirection.DotNetToJs ? "→" : "←") @a.Identifier</td>
+                                <td class="bev-num">@a.Count</td>
+                                <td class="bev-num">@BevFmt.Ms(a.TotalMs)</td>
+                                <td class="bev-num">@BevFmt.Ms(a.Count == 0 ? 0 : a.TotalMs / a.Count)</td>
+                                <td class="bev-num @(a.MaxMs >= Session.Options.Diagnostics.SlowJsInteropMs ? "bev-err" : "")">@BevFmt.Ms(a.MaxMs)</td>
+                                <td class="bev-num @(a.Failures > 0 ? "bev-err" : "")">@a.Failures</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+    <div class="bev-right">
+        <div class="bev-toolbar"><strong>Recent calls</strong> <span class="bev-muted">newest first</span></div>
+        <div class="bev-scroll">
+            <table>
+                <thead><tr><th>Time</th><th>Call</th><th>Component</th><th class="bev-num">Duration</th><th>Result</th></tr></thead>
+                <tbody>
+                    <Virtualize Items="_calls" ItemSize="23" Context="c" SpacerElement="tr">
+                        <tr class="bev-row @(c.Succeeded ? "" : "bev-sev-error")" @onclick="() => Host.SelectEvent(c.TimelineEventId)">
+                            <td class="bev-mono">@BevFmt.Time(c.At)</td>
+                            <td class="bev-mono bev-truncate" style="max-width:240px" title="args: @(c.ArgumentTypes ?? "none")">@(c.Direction == BevJsInteropDirection.DotNetToJs ? "→" : "←") @c.Identifier (@c.ArgumentCount)</td>
+                            <td>@if (c.ComponentInstanceId is { } id) { <button type="button" class="bev-link" @onclick:stopPropagation="true" @onclick="() => Host.SelectComponent(id)">@c.ComponentName</button> } else { <span class="bev-muted">–</span> }</td>
+                            <td class="bev-num">@(c.DurationMs is null ? "…" : BevFmt.Ms(c.DurationMs))</td>
+                            <td class="bev-truncate @(c.Succeeded ? "bev-muted" : "bev-err")" style="max-width:200px" title="@c.Error">@(c.Succeeded ? (c.ResultType ?? "") : c.Error)</td>
+                        </tr>
+                    </Virtualize>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string? Query => Ui.GetQuery("interop");
+
+    private BevJsInteropAggregate[] _aggregates = [];
+    private List<BevJsInteropRecord> _calls = [];
+
+    protected override void OnParametersSet()
+    {
+        var filter = BevQueryFilter.Parse(Query);
+        foreach (var token in filter.Tokens)
+        {
+            filter.Terms.Add(token.Key + ":" + token.Value);
+        }
+
+        _calls = Session.Interop.Snapshot().Reverse()
+            .Where(c => filter.MatchesText(c.Identifier, c.ComponentName, c.ResultType, c.Error, c.Direction.ToString()))
+            .ToList();
+        var matchingCalls = _calls.Select(c => (c.Identifier, c.Direction)).ToHashSet();
+        _aggregates = Session.Interop.Aggregates()
+            .Where(a => filter.MatchesText(a.Identifier, a.Direction.ToString()) || matchingCalls.Contains((a.Identifier, a.Direction)))
+            .OrderByDescending(a => a.TotalMs)
+            .ToArray();
+    }
+
+    private void OnQuery(ChangeEventArgs e)
+    {
+        Ui.SetQuery("interop", e.Value?.ToString());
+        OnParametersSet();
+    }
+}

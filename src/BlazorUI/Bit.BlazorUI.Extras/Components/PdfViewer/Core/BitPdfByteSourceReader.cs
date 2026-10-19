@@ -10,19 +10,22 @@ namespace Bit.BlazorUI;
 /// so filling a block allocates no byte buffer. A complete memory source uses
 /// its existing array directly, preserving the buffered scan's fast path.
 /// </summary>
-internal sealed class BitPdfByteSourceReader
+internal sealed class BitPdfByteSourceReader : IDisposable
 {
     private const int BlockSize = 64 * 1024;
     private readonly IBitPdfByteSource _source;
     private readonly byte[]? _memoryBytes;
     private readonly int _memoryOffset;
     private ReadOnlyMemory<byte> _block;
+    private BitPdfByteSourceWindow _window;
+    private readonly IBitPdfByteSourceLifetime? _lifetime;
     private int _blockStart;
 
     public BitPdfByteSourceReader(IBitPdfByteSource source)
     {
         _source = source ?? throw new ArgumentNullException(nameof(source));
         Length = source.Length;
+        _lifetime = source as IBitPdfByteSourceLifetime;
         if (source.TryGetContiguous(out var memory))
         {
             if (memory.Length != Length)
@@ -48,6 +51,7 @@ internal sealed class BitPdfByteSourceReader
         {
             return (uint)offset < (uint)Length ? bytes[_memoryOffset + offset] : ReadNextBlock(offset);
         }
+        _lifetime?.CheckRead();
         int index = offset - _blockStart;
         return (uint)index < (uint)_block.Length ? _block.Span[index] : ReadNextBlock(offset);
     }
@@ -55,6 +59,7 @@ internal sealed class BitPdfByteSourceReader
     /// <summary>Finds a raw keyword, including matches across block boundaries.</summary>
     public int IndexOf(ReadOnlySpan<byte> keyword, int start)
     {
+        _lifetime?.CheckRead();
         if ((uint)start > (uint)Length)
         {
             throw new ArgumentOutOfRangeException(nameof(start));
@@ -82,7 +87,8 @@ internal sealed class BitPdfByteSourceReader
         {
             int count = Math.Min(BlockSize, lastStart - start + 1);
             // Overlap enough bytes to find a keyword crossing this block's end.
-            var block = _source.GetMemory(start, count + (keyword.Length - 1)).Span;
+            using var window = _source.GetMemory(start, count + (keyword.Length - 1));
+            var block = window.Span;
             int index = block.IndexOf(keyword);
             if (index >= 0)
             {
@@ -91,6 +97,13 @@ internal sealed class BitPdfByteSourceReader
             start += count;
         }
         return -1;
+    }
+
+    public void Dispose()
+    {
+        _window.Dispose();
+        _window = default;
+        _block = default;
     }
 
     private int ReadNextBlock(int offset)
@@ -106,8 +119,10 @@ internal sealed class BitPdfByteSourceReader
 
         int blockStart = offset / BlockSize * BlockSize;
         var block = _source.GetMemory(blockStart, Math.Min(BlockSize, Length - blockStart));
+        _window.Dispose();
+        _window = block;
         _blockStart = blockStart;
-        _block = block;
+        _block = block.Memory;
         return _block.Span[offset - _blockStart];
     }
 }

@@ -1,0 +1,40 @@
+﻿{
+  "profiles": {
+    "ssr": {
+      "commandName": "Project",
+      "commandLineArgs": "--BelemetryHarness:Mode=ssr",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5390",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    },
+    "server": {
+      "commandName": "Project",
+      "commandLineArgs": "--BelemetryHarness:Mode=server",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5390",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    },
+    "server-pipeline": {
+      "commandName": "Project",
+      "commandLineArgs": "--BelemetryHarness:Mode=server --BelemetryHarness:ServerPipeline=true",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5390",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    },
+    "wasm": {
+      "commandName": "Project",
+      "commandLineArgs": "--BelemetryHarness:Mode=wasm",
+      "launchBrowser": true,
+      "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+      "applicationUrl": "http://localhost:5390",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    },
+    "auto": {
+      "commandName": "Project",
+      "commandLineArgs": "--BelemetryHarness:Mode=auto",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5390",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}

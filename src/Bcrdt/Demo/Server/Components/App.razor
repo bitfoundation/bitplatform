@@ -1,0 +1,29 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="bit Bcrdt (Bit.Bcrdt) - real-time collaborative editing for .NET and Blazor, written natively in C#: a CRDT engine for text, lists, maps and sets, a synchronization protocol, presence, offline-first persistence and selective undo, with no JavaScript CRDT library." />
+    <base href="/" />
+    <ResourcePreloader />
+    <link rel="stylesheet" href="@Assets["app.css"]" />
+    <ImportMap />
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <HeadOutlet @rendermode="InteractiveWebAssembly" />
+</head>
+
+<body>
+    @* InteractiveWebAssembly rather than Auto or Server: every replica on a demo page is a separate document in the
+       browser's own memory, talking to its peers over the library's in-memory transport, so nothing has to cross the
+       network to be merged. The pages are still prerendered, so the first response carries the explanations. *@
+    <Routes @rendermode="InteractiveWebAssembly" />
+    <div id="blazor-error-ui" data-nosnippet>
+        An unhandled error has occurred.
+        <a href="." class="reload">Reload</a>
+        <span class="dismiss">&#128473;</span>
+    </div>
+    <script src="@Assets["_framework/blazor.web.js"]"></script>
+</body>
+
+</html>

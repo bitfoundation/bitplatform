@@ -276,6 +276,9 @@ _book
 /src/Utilities/Bmotion/Bit.Bmotion/Scripts/**/*.js
 /src/Utilities/Bmotion/Bit.Bmotion/wwwroot/**/*.js
 
+/src/BevTools/Bit.BevTools/Scripts/**/*.js
+/src/BevTools/Bit.BevTools/wwwroot/**/*.js
+
 /src/Utilities/Bmage/Bit.Bmage/Scripts/**/*.js
 /src/Utilities/Bmage/Bit.Bmage/wwwroot/**/*.js
 
@@ -305,6 +308,8 @@ _book
 /src/Utilities/Blow/Bit.Blow/wwwroot/**/*.css
 
 /src/Utilities/Borm/Bit.Borm/wwwroot/**/*.css
+/src/Bcrdt/Bit.Bcrdt.Blazor/Scripts/**/*.js
+/src/Bcrdt/Bit.Bcrdt.Blazor/wwwroot/**/*.js
 
 /src/Utilities/Blex/Bit.Blex.Blazor/Scripts/**/*.js
 /src/Utilities/Blex/Bit.Blex.Blazor/wwwroot/**/*.js
@@ -316,6 +321,9 @@ _book
 /src/Utilities/Bortable/Bit.Bortable/Scripts/**/*.js
 /src/Utilities/Bortable/Bit.Bortable/wwwroot/**/*.js
 /src/Utilities/Bortable/Bit.Bortable/wwwroot/**/*.css
+
+/src/Belemetry/Bit.Belemetry/Scripts/**/*.js
+/src/Belemetry/Bit.Belemetry/wwwroot/**/*.js
 
 /src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js

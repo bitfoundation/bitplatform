@@ -1,0 +1,54 @@
+﻿@page "/circuit"
+
+<PageTitle>Circuit</PageTitle>
+
+<h1>Circuit</h1>
+@if (RendererInfo.Name != "Server")
+{
+    <p class="warn">This page is running on the <strong>@RendererInfo.Name</strong> renderer. Circuit scenarios only apply to Interactive Server; under Interactive Auto the app switches to WebAssembly once the runtime is cached. Open the site in a fresh private window (or clear site data) to get a Server circuit, then come back here.</p>
+}
+else
+{
+    <p class="muted">Circuit problems: blocking the circuit's single thread, and killing the circuit with an unhandled exception. Watch BevTools → Circuit and Timeline (circuit events, reconnect state from the browser).</p>
+}
+
+<div class="row">
+    <button @onclick="Block">Block the circuit for 800 ms (Thread.Sleep in a handler)</button>
+    <button @onclick="BlockRepeatedly">Block 5× in a row</button>
+    <button class="danger" @onclick="Kill">Unhandled exception in a background task (terminates the circuit)</button>
+</div>
+<p class="muted">Blocked: @_blocked times. Renderer: @RendererInfo.Name, interactive: @RendererInfo.IsInteractive.</p>
+
+@code {
+    private int _blocked;
+
+    private void Block()
+    {
+        // Intentional problem: synchronous blocking inside the circuit. Nothing else for this user is processed meanwhile.
+        Thread.Sleep(800);
+        _blocked++;
+    }
+
+    private async Task BlockRepeatedly()
+    {
+        for (var i = 0; i < 5; i++)
+        {
+            Thread.Sleep(300);
+            _blocked++;
+            StateHasChanged();
+            await Task.Delay(50);
+        }
+    }
+
+    private void Kill()
+    {
+        // Background work reports its failure to the renderer with DispatchExceptionAsync. With no ErrorBoundary around
+        // the page that is fatal for the circuit; BevTools captures the logged error first. (A throw inside InvokeAsync
+        // would only fault the discarded task and nothing would happen.)
+        _ = Task.Run(async () =>
+        {
+            await Task.Delay(100);
+            await DispatchExceptionAsync(new InvalidOperationException("Simulated unhandled exception dispatched to the circuit."));
+        });
+    }
+}

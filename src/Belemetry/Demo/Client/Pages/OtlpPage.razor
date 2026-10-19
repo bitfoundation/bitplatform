@@ -1,0 +1,348 @@
+﻿@page "/otlp"
+
+<PageTitle>OTLP - bit Belemetry</PageTitle>
+
+<h1>OTLP</h1>
+
+<p class="page-intro">
+    OTLP is OpenTelemetry's own wire protocol, and the one exporter that reaches almost every backend: the
+    OpenTelemetry Collector, the .NET Aspire dashboard, Grafana, Jaeger, Honeycomb, Datadog, New Relic, Elastic and
+    more. Belemetry writes it by hand - HTTP with protobuf or JSON, and gRPC, without the OpenTelemetry packages -
+    from both the .NET pipeline and the browser script, with one configuration.
+</p>
+
+<div class="demo-section">
+    <h2>Adding the exporter</h2>
+    <p>
+        <code>AddOtlpExporter</code> takes the base endpoint, or a callback for everything else, or both. Any number of
+        exporters can be added; each record goes to all of them. The browser script exports with the same settings
+        unless <code>IncludeInBrowser</code> is off.
+    </p>
+    <CodeSnippet Code="@BasicCode" Language="C#" Expanded="true" />
+    <div class="callout">
+        This site exports to itself: the WebAssembly app and the browser script post OTLP/JSON to an in-process
+        receiver at <code>/otlp</code>, which is what the <a href="/live">Live telemetry</a> page and the feeds on
+        every page read from. JSON was chosen so every payload is readable in the browser's network tab.
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Protobuf, JSON or gRPC</h2>
+    <p>
+        <code>Protocol</code> picks the encoding. <code>HttpProtobuf</code> (the default,
+        <code>application/x-protobuf</code>) is the most widely supported and the smallest on the wire.
+        <code>HttpJson</code> (<code>application/json</code>) is the OTLP JSON mapping - ids as hex, 64-bit integers as
+        strings, enums as numbers - and is easier to inspect and to receive without generated code.
+        <code>Grpc</code> is OTLP/gRPC over HTTP/2, spoken without a gRPC library: a unary call is an HTTP/2 POST with
+        the 5-byte message prefix, and the status comes back in the trailers. It is what the OpenTelemetry SDKs default
+        to and what the Aspire AppHost hands a resource (<code>OTEL_EXPORTER_OTLP_PROTOCOL=grpc</code>, port 4317);
+        <code>Compression</code> becomes the gRPC message compression (<code>grpc-encoding: gzip</code>).
+    </p>
+    <p>
+        A browser cannot speak gRPC - <code>fetch</code> has no HTTP/2 trailers - so a gRPC exporter reaches the page
+        only through an OTLP/HTTP <code>BrowserEndpoint</code>; in a WebAssembly app the .NET pipeline cannot either, so
+        there the whole exporter becomes OTLP/HTTP to that endpoint (which must be absolute), and one without is skipped
+        with a startup warning in the <code>Bit.Belemetry</code> log category. On Android and iOS gRPC goes through a
+        <code>SocketsHttpHandler</code> of its own, since the native handlers cannot do HTTP/2 without TLS.
+    </p>
+    <CodeSnippet Code="@ProtocolCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Endpoints</h2>
+    <p>
+        <code>Endpoint</code> is the base URL; <code>/v1/traces</code>, <code>/v1/logs</code> and
+        <code>/v1/metrics</code> are appended to it, exactly as <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> works.
+        <code>TracesEndpoint</code>, <code>LogsEndpoint</code> and <code>MetricsEndpoint</code> are full URLs, used as
+        they are - for backends whose routes do not follow the convention (with gRPC they are base addresses the
+        service method is appended to, as the specification defines the variables). Without any endpoint, the
+        exporter posts to <code>http://localhost:4318</code> (<code>4317</code> for gRPC).
+    </p>
+    <p>
+        <code>BrowserEndpoint</code> is the base URL the browser script uses instead of <code>Endpoint</code>: a public,
+        CORS-enabled route to the collector while the server talks to it over an internal address. The per-signal
+        endpoints apply to the browser only when it shares <code>Endpoint</code>. <code>Signals</code> restricts what
+        is sent - a traces-only backend such as Jaeger gets <code>BelemetrySignals.Traces</code>.
+    </p>
+    <CodeSnippet Code="@EndpointsCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Headers, compression and timeout</h2>
+    <p>
+        <code>Headers</code> are added to every request - typically the vendor's API key.
+        <code>Compression = BelemetryCompression.Gzip</code> sends <code>Content-Encoding: gzip</code> (in the browser
+        through <code>CompressionStream</code>, except for the final batch sent while the page unloads, which cannot
+        wait for it). <code>Timeout</code> bounds one export request (10 s, the OTLP default). Failed requests are
+        retried with backoff, honoring <code>Retry-After</code>, and kept for later with the
+        <a href="/persistence">offline persistence</a>. <code>MinimumLogLevel</code> is the per-exporter counterpart
+        of a logging provider's level: this exporter gets the plain log records at or above it while the others get
+        everything - one backend for errors, another for the full picture, from one pipeline. Events (page views,
+        interactions, web vitals, custom events, exceptions), spans and metrics are not logs to a log level and always pass.
+    </p>
+    <div class="callout warn">
+        Headers the browser script uses are visible to anyone who opens the page. Never put a credential in an
+        exporter the browser exports to: set <code>IncludeInBrowser = false</code> on it and give the browser a
+        credential-free route (a collector in front of the vendor), or use the
+        <a href="/transport">Relay transport</a>, which hands browser records to .NET. Relay only hides the key when
+        .NET runs outside the browser - Blazor Server or Hybrid. In WebAssembly the .NET pipeline is itself in the
+        browser, and so is its configuration.
+    </div>
+    <CodeSnippet Code="@HeadersCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Environment variables</h2>
+    <p>
+        Outside the browser, with <code>options.UseEnvironmentVariables</code> (on by default), the standard OTLP
+        variables are read - which is how the Aspire AppHost and most container platforms wire telemetry into an app
+        without code changes. <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> alone adds an OTLP exporter when none is
+        configured, and fills <code>Endpoint</code> on those that have none - as does any of the per-signal endpoint
+        variables. Headers from the variable are added unless the code set the same name. A protocol of
+        <code>http/protobuf</code>, <code>http/json</code> or <code>grpc</code> sets <code>Protocol</code>; any other
+        value is reported at startup and ignored.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th scope="col">Variable</th><th scope="col">Effect</th></tr></thead>
+            <tbody>
+                <tr><td><code>OTEL_SERVICE_NAME</code></td><td><code>service.name</code>, when <code>ServiceName</code> is not set</td></tr>
+                <tr><td><code>OTEL_RESOURCE_ATTRIBUTES</code></td><td>Extra resource attributes (<code>k=v,k2=v2</code>)</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_ENDPOINT</code></td><td>Adds an OTLP exporter when none is configured, and fills unset endpoints</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_TRACES_ENDPOINT</code>, <code>_LOGS_ENDPOINT</code>, <code>_METRICS_ENDPOINT</code></td><td>Per-signal endpoints, when the code set none; any of them adds the exporter too</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_HEADERS</code></td><td>Request headers (<code>k=v,k2=v2</code>)</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_PROTOCOL</code></td><td><code>http/protobuf</code>, <code>http/json</code> or <code>grpc</code>, unless <code>Protocol</code> is set in code</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_COMPRESSION</code></td><td><code>gzip</code> or <code>none</code>, unless <code>Compression</code> is set in code</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_TIMEOUT</code></td><td>The request timeout in milliseconds, unless <code>Timeout</code> is set in code</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <CodeSnippet Code="@EnvCode" Language="Shell" />
+</div>
+
+<div class="demo-section">
+    <h2>.NET Aspire dashboard</h2>
+    <p>
+        The dashboard is an OTLP receiver with a UI - the quickest way to see traces, logs and metrics locally. Use its
+        OTLP/HTTP endpoint with protobuf. The browser posts to it from your app's origin, so allow that origin with
+        <code>DASHBOARD__OTLP__CORS__ALLOWEDORIGINS</code> (and <code>DASHBOARD__OTLP__CORS__ALLOWEDHEADERS</code> if
+        you send headers). If the dashboard requires an OTLP API key, the browser would have to carry it - keep the
+        browser on the Relay transport or on an unsecured local endpoint.
+    </p>
+    <CodeSnippet Code="@AspireShellCode" Language="Shell" />
+    <CodeSnippet Code="@AspireCode" Language="C#" />
+    <p>
+        Under an Aspire AppHost, <code>WithOtlpExporter()</code> sets <code>OTEL_EXPORTER_OTLP_ENDPOINT</code> and
+        <code>OTEL_EXPORTER_OTLP_PROTOCOL=grpc</code> for the projects it runs, and Belemetry follows them: leave the
+        protocol unset in code and the .NET side speaks gRPC to the dashboard. An exporter whose protocol is fixed to
+        HTTP in code would post HTTP to the gRPC port and fail quietly - give the AppHost
+        <code>WithOtlpExporter(OtlpProtocol.HttpProtobuf)</code> in that case. The browser still needs the dashboard's
+        HTTP endpoint (as <code>BrowserEndpoint</code>) and its CORS origin.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>OpenTelemetry Collector</h2>
+    <p>
+        The Collector is the usual production setup: the app sends to a collector you control, and the collector holds
+        the vendor credentials, batches, samples and fans out. The browser posts to it cross-origin, so the http
+        receiver needs a <code>cors</code> section; <code>traceparent</code> does not need to be allowed there - it is
+        sent to your API, not to the collector.
+    </p>
+    <CodeSnippet Code="@CollectorYaml" Language="YAML" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Grafana</h2>
+    <p>
+        Grafana Alloy is a Collector distribution: its <code>otelcol.receiver.otlp</code> component takes the same
+        http endpoint and <code>cors</code> block, then forwards to Tempo, Loki and Mimir. Grafana Cloud also exposes an
+        OTLP gateway directly; it authenticates with Basic auth (instance id and access token), which is a credential -
+        so the browser should go through Alloy or a collector rather than to the gateway itself.
+    </p>
+    <CodeSnippet Code="@AlloyCode" Language="Alloy" />
+    <CodeSnippet Code="@GrafanaCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Jaeger</h2>
+    <p>
+        Jaeger receives OTLP natively on port 4318 - traces only, so restrict the exporter to
+        <code>BelemetrySignals.Traces</code> or its logs and metrics requests are rejected. For the browser, allow the
+        app's origin: Jaeger v2 is built on the Collector and takes the same <code>cors</code> block as above; Jaeger
+        v1 uses <code>--collector.otlp.http.cors.allowed-origins</code>.
+    </p>
+    <CodeSnippet Code="@JaegerCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Honeycomb</h2>
+    <p>
+        Honeycomb accepts OTLP/HTTP at <code>https://api.honeycomb.io</code> (<code>https://api.eu1.honeycomb.io</code>
+        in the EU) with the API key in the <code>x-honeycomb-team</code> header; metrics also need
+        <code>x-honeycomb-dataset</code>. That key is a credential: keep this exporter out of the browser and route
+        browser telemetry through a collector, or use the Relay transport on Blazor Server and Hybrid.
+    </p>
+    <CodeSnippet Code="@HoneycombCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="BelemetryOtlpExporterOptions" />
+    <ApiTable TypeName="BelemetryOtlpProtocol" />
+</div>
+
+@code {
+    private const string BasicCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.ServiceName = "MyApp";
+
+            // The base endpoint: /v1/traces, /v1/logs and /v1/metrics are appended.
+            options.AddOtlpExporter("http://localhost:4318");
+
+            // Or everything at once.
+            options.AddOtlpExporter(otlp =>
+            {
+                otlp.Endpoint = new Uri("https://otel.example.com");
+                otlp.Protocol = BelemetryOtlpProtocol.HttpProtobuf;
+                otlp.Compression = BelemetryCompression.Gzip;
+            });
+        });
+        """;
+
+    private const string ProtocolCode = """
+        options.AddOtlpExporter("http://localhost:4318", otlp =>
+        {
+            otlp.Protocol = BelemetryOtlpProtocol.HttpJson;     // default: HttpProtobuf
+        });
+        """;
+
+    private const string EndpointsCode = """
+        options.AddOtlpExporter(otlp =>
+        {
+            // The .NET side talks to the collector over the internal network...
+            otlp.Endpoint = new Uri("http://otel-collector:4318");
+
+            // ...and the browser through a public, CORS-enabled route.
+            otlp.BrowserEndpoint = new Uri("https://telemetry.example.com");
+        });
+
+        // A backend with non-standard routes: full URLs, used verbatim.
+        options.AddOtlpExporter(otlp =>
+        {
+            otlp.TracesEndpoint = new Uri("https://ingest.example.com/otlp/traces");
+            otlp.LogsEndpoint = new Uri("https://ingest.example.com/otlp/logs");
+            otlp.Signals = BelemetrySignals.Traces | BelemetrySignals.Logs;
+        });
+        """;
+
+    private const string HeadersCode = """
+        options.AddOtlpExporter("https://otlp.vendor.example", otlp =>
+        {
+            otlp.Headers["x-api-key"] = builder.Configuration["Telemetry:ApiKey"]!;
+            otlp.Compression = BelemetryCompression.Gzip;
+            otlp.Timeout = TimeSpan.FromSeconds(5);
+
+            // The key must not reach the page: browser telemetry takes the Relay transport
+            // (Blazor Server, Hybrid) or a credential-free collector route instead.
+            otlp.IncludeInBrowser = false;
+        });
+        """;
+
+    private const string EnvCode = """
+        OTEL_SERVICE_NAME=checkout
+        OTEL_RESOURCE_ATTRIBUTES=service.namespace=shop,deployment.environment.name=staging
+        OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4318
+        OTEL_EXPORTER_OTLP_HEADERS=x-api-key=abc123
+        OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+        """;
+
+    private const string AspireShellCode = """
+        docker run --rm -it -p 18888:18888 -p 4318:18890 \
+          -e DASHBOARD__OTLP__CORS__ALLOWEDORIGINS=https://localhost:5001 \
+          -e "DASHBOARD__OTLP__CORS__ALLOWEDHEADERS=*" \
+          mcr.microsoft.com/dotnet/aspire-dashboard
+        """;
+
+    private const string AspireCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.ServiceName = "MyApp";
+            options.AddOtlpExporter("http://localhost:4318");     // the dashboard's OTLP/HTTP endpoint
+        });
+        """;
+
+    private const string CollectorYaml = """
+        receivers:
+          otlp:
+            protocols:
+              http:
+                endpoint: 0.0.0.0:4318
+                cors:
+                  allowed_origins: ["https://myapp.example.com"]
+                  allowed_headers: ["*"]
+
+        processors:
+          batch: {}
+
+        exporters:
+          otlphttp:
+            endpoint: https://otlp.vendor.example
+            headers:
+              x-api-key: ${env:VENDOR_API_KEY}
+
+        service:
+          pipelines:
+            traces:  { receivers: [otlp], processors: [batch], exporters: [otlphttp] }
+            logs:    { receivers: [otlp], processors: [batch], exporters: [otlphttp] }
+            metrics: { receivers: [otlp], processors: [batch], exporters: [otlphttp] }
+        """;
+
+    private const string AlloyCode = """
+        otelcol.receiver.otlp "default" {
+          http {
+            endpoint = "0.0.0.0:4318"
+            cors {
+              allowed_origins = ["https://myapp.example.com"]
+              allowed_headers = ["*"]
+            }
+          }
+
+          output {
+            traces  = [otelcol.exporter.otlphttp.grafana_cloud.input]
+            logs    = [otelcol.exporter.otlphttp.grafana_cloud.input]
+            metrics = [otelcol.exporter.otlphttp.grafana_cloud.input]
+          }
+        }
+        """;
+
+    private const string GrafanaCode = """
+        // Both sides send to Alloy, which holds the Grafana Cloud credential, so no header here
+        // can leak through the page.
+        options.AddOtlpExporter(otlp =>
+        {
+            otlp.Endpoint = new Uri("http://alloy:4318");                  // internal, for .NET
+            otlp.BrowserEndpoint = new Uri("https://alloy.example.com");   // public, CORS-enabled
+        });
+        """;
+
+    private const string JaegerCode = """
+        options.AddOtlpExporter("http://localhost:4318", otlp =>
+        {
+            otlp.Signals = BelemetrySignals.Traces;     // Jaeger stores traces only
+        });
+        """;
+
+    private const string HoneycombCode = """
+        options.AddOtlpExporter("https://api.honeycomb.io", otlp =>
+        {
+            otlp.Headers["x-honeycomb-team"] = builder.Configuration["Honeycomb:ApiKey"]!;
+            otlp.Headers["x-honeycomb-dataset"] = "myapp-metrics";    // used for metrics only
+            otlp.IncludeInBrowser = false;                            // the key must not reach the page
+        });
+
+        // Blazor Server / Hybrid: browser records travel to .NET and leave with the key from there.
+        options.Browser.Transport = BelemetryBrowserTransport.Relay;
+        """;
+}

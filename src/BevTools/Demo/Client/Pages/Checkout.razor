@@ -1,0 +1,80 @@
+﻿@page "/checkout"
+@inject CartState Cart
+@inject AppState AppState
+
+<PageTitle>Checkout</PageTitle>
+
+<h1>Checkout</h1>
+<p class="muted">Forms, validation and state changes. Every cart action is a named state change in BevTools → State → CartState with a before/after diff.</p>
+
+<div class="cards">
+    <div class="card">
+        <h3>Cart (@Cart.ItemCount items)</h3>
+        @if (Cart.Lines.Count == 0)
+        {
+            <div class="muted">Empty. Add products from the <a href="products">products page</a> or:</div>
+            <div class="row"><button @onclick="AddSample">Add sample items</button></div>
+        }
+        else
+        {
+            <table>
+                <tbody>
+                    @foreach (var line in Cart.Lines)
+                    {
+                        <tr><td>@line.Product.Name</td><td>× @line.Quantity</td><td>@line.LineTotal.ToString("C")</td><td><button @onclick="() => Cart.Remove(line.Product.Id)">✕</button></td></tr>
+                    }
+                </tbody>
+            </table>
+            <div><strong>Total @Cart.Total.ToString("C")</strong> @(Cart.CouponCode is null ? "" : $"(coupon {Cart.CouponCode})")</div>
+            <div class="row">
+                <button @onclick='() => Cart.ApplyCoupon("SAVE10")'>Apply coupon</button>
+                <button @onclick="Cart.Clear">Clear</button>
+            </div>
+        }
+    </div>
+
+    <div class="card" style="grid-column: span 2">
+        <h3>Shipping details</h3>
+        <EditForm Model="_model" OnValidSubmit="Submit" FormName="checkout">
+            <DataAnnotationsValidator />
+            <div class="form-grid">
+                <label>Full name</label><InputText @bind-Value="_model.FullName" />
+                <label>Email</label><InputText @bind-Value="_model.Email" />
+                <label>Address</label><InputText @bind-Value="_model.Address" />
+                <label>Postal code</label><InputText @bind-Value="_model.PostalCode" />
+                <label>Notes</label><InputTextArea @bind-Value="_model.Notes" />
+                <label></label><label><InputCheckbox @bind-Value="_model.AcceptTerms" /> I accept the terms</label>
+            </div>
+            <ValidationSummary />
+            <div class="row">
+                <button type="submit" class="primary">Place order</button>
+                <button type="button" @onclick="ToggleTheme">Toggle AppState.Theme (@AppState.Theme)</button>
+                <button type="button" @onclick="() => AppState.NotificationsEnabled = !AppState.NotificationsEnabled">Toggle notifications (@AppState.NotificationsEnabled)</button>
+            </div>
+        </EditForm>
+        @if (_submitted)
+        {
+            <p class="ok">Order placed for @_model.FullName. (Nothing was actually sent.)</p>
+        }
+    </div>
+</div>
+
+@code {
+    private readonly CheckoutModel _model = new();
+    private bool _submitted;
+
+    private void ToggleTheme() => AppState.Theme = AppState.Theme == "light" ? "dark" : "light";
+
+    private void Submit()
+    {
+        _submitted = true;
+        Cart.Clear();
+    }
+
+    private void AddSample()
+    {
+        Cart.Add(new Product(1, "Quantum Lamp 1", "Office", 46.99m, 12, 4.1));
+        Cart.Add(new Product(2, "Rustic Keyboard 2", "Office", 83.99m, 3, 3.8));
+        Cart.Add(new Product(1, "Quantum Lamp 1", "Office", 46.99m, 12, 4.1));
+    }
+}

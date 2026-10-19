@@ -194,7 +194,7 @@ public partial class TenantInvitationUITests : AppPageTest
 
         // Leaving is destructive, so it is confirmed before anything is sent - the elevated-access token is only
         // requested after Yes. She has accepted this tenant, so the button and the dialog both read "leave", not "decline".
-        await page.GetByRole(AriaRole.Button, new() { Name = AppStrings.Yes }).ClickAsync();
+        await page.GetByRole(AriaRole.Button, new() { Name = BitBlazorUIStrings.DialogOkText }).ClickAsync();
 
         // Leaving needs elevated access; she has none, so an elevated token is e-mailed (and dev-logged) and the OTP prompt appears.
         await page.Locator(".bit-otp-inp").First.WaitForAsync();

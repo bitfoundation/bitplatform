@@ -17,41 +17,74 @@ public sealed class BitPdfDocument
 
     private BitPdfDocument(BitPdfXRef xref) => _xref = xref;
 
+    internal void ReleaseByteWindows() => _xref.ReleaseByteWindows();
+
     /// <summary>The cross-reference reader for this document.</summary>
-    public BitPdfXRef XRef => _xref;
+    public BitPdfXRef XRef
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _xref; }
+    }
+
+    private BitPdfDict _catalog = BitPdfDict.Empty;
 
     /// <summary>The document catalog (<c>/Root</c>).</summary>
-    public BitPdfDict Catalog { get; private set; } = BitPdfDict.Empty;
+    public BitPdfDict Catalog
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _catalog; }
+        private set => _catalog = value;
+    }
+
+    private string? _version;
 
     /// <summary>The PDF version declared in the header (e.g. "1.7"), if present.</summary>
-    public string? Version { get; private set; }
+    public string? Version
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _version; }
+        private set => _version = value;
+    }
 
     /// <summary><c>true</c> when the trailer declares an <c>/Encrypt</c> dictionary.</summary>
-    public bool IsEncrypted => _xref.Trailer?.Has("Encrypt") == true;
+    public bool IsEncrypted
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _xref.Trailer?.Has("Encrypt") == true; }
+    }
 
     /// <summary>
     /// The user access permissions (<c>/P</c>) of an encrypted document. Every
     /// permission is granted for an unencrypted document.
     /// </summary>
-    public BitPdfPermissions Permissions => new(_xref.Permissions ?? -1, IsEncrypted && _xref.Permissions.HasValue);
+    public BitPdfPermissions Permissions
+    {
+        get { _xref.ThrowIfSourceDisposed(); return new(_xref.Permissions ?? -1, IsEncrypted && _xref.Permissions.HasValue); }
+    }
 
     /// <summary>
     /// Non-fatal diagnostics from parsing (e.g. the file was damaged and its
     /// cross-reference table had to be rebuilt by scanning). Empty for clean files.
     /// </summary>
-    public IReadOnlyList<string> Warnings => _xref.Warnings;
+    public IReadOnlyList<string> Warnings
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _xref.Warnings; }
+    }
 
     /// <summary>The document's pages in order.</summary>
-    public IReadOnlyList<BitPdfPage> Pages => _pages ??= BuildPages();
+    public IReadOnlyList<BitPdfPage> Pages
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _pages ??= BuildPages(); }
+    }
 
     /// <summary>Number of pages.</summary>
-    public int PageCount => Pages.Count;
+    public int PageCount
+    {
+        get { _xref.ThrowIfSourceDisposed(); return Pages.Count; }
+    }
 
     /// <summary>The document outline (bookmarks), empty when none is present.</summary>
     public IReadOnlyList<BitPdfOutlineItem> Outline
     {
         get
         {
+            _xref.ThrowIfSourceDisposed();
             if (_outline is null)
             {
                 _ = Pages; // ensure the page-index map is populated
@@ -65,16 +98,20 @@ public sealed class BitPdfDocument
     /// Document metadata: the <c>/Info</c> dictionary fields plus the raw XMP
     /// packet (<c>/Metadata</c>) when present.
     /// </summary>
-    public BitPdfMetadata Metadata =>
-        _metadata ??= BitPdfMetadata.Build(_xref, _xref.Trailer?.Get("Info") as BitPdfDict, Catalog);
+    public BitPdfMetadata Metadata
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _metadata ??= BitPdfMetadata.Build(_xref, _xref.Trailer?.Get("Info") as BitPdfDict, Catalog); }
+    }
 
     /// <summary>
     /// The per-page labels declared by the catalog's <c>/PageLabels</c> number
     /// tree (e.g. "i", "ii", "1", "A-1"), one per page in document order. When no
     /// <c>/PageLabels</c> entry exists, labels default to the 1-based page number.
     /// </summary>
-    public IReadOnlyList<string> PageLabels =>
-        _pageLabels ??= BitPdfPageLabelBuilder.Build(_xref, Catalog, PageCount);
+    public IReadOnlyList<string> PageLabels
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _pageLabels ??= BitPdfPageLabelBuilder.Build(_xref, Catalog, PageCount); }
+    }
 
     private IReadOnlyList<BitPdfStructElement>? _structure;
 
@@ -82,8 +119,10 @@ public sealed class BitPdfDocument
     /// The tagged-PDF logical structure tree (<c>/StructTreeRoot</c>) for
     /// assistive technology and reflow, or empty when the document is untagged.
     /// </summary>
-    public IReadOnlyList<BitPdfStructElement> StructureTree =>
-        _structure ??= BitPdfStructTree.Build(_xref, Catalog);
+    public IReadOnlyList<BitPdfStructElement> StructureTree
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _structure ??= BitPdfStructTree.Build(_xref, Catalog); }
+    }
 
     private IReadOnlyList<BitPdfLayer>? _layers;
 
@@ -92,8 +131,10 @@ public sealed class BitPdfDocument
     /// visibility its default configuration gives each. Empty when the document
     /// declares no <c>/OCProperties</c>.
     /// </summary>
-    public IReadOnlyList<BitPdfLayer> Layers =>
-        _layers ??= BitPdfOptionalContent.Build(_xref, Catalog);
+    public IReadOnlyList<BitPdfLayer> Layers
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _layers ??= BitPdfOptionalContent.Build(_xref, Catalog); }
+    }
 
     private IReadOnlyList<BitPdfAttachment>? _attachments;
 
@@ -102,8 +143,10 @@ public sealed class BitPdfDocument
     /// name tree plus any <c>/FileAttachment</c> annotation pinned to a page. Empty
     /// when the document carries none.
     /// </summary>
-    public IReadOnlyList<BitPdfAttachment> Attachments =>
-        _attachments ??= BitPdfEmbeddedFiles.Build(_xref, Catalog, Pages);
+    public IReadOnlyList<BitPdfAttachment> Attachments
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _attachments ??= BitPdfEmbeddedFiles.Build(_xref, Catalog, Pages); }
+    }
 
     private IReadOnlyList<BitPdfFormField>? _formFields;
 
@@ -111,8 +154,10 @@ public sealed class BitPdfDocument
     /// The interactive form fields (<c>/AcroForm</c>) as a flat list of
     /// name/type/value, or empty when the document has no form.
     /// </summary>
-    public IReadOnlyList<BitPdfFormField> FormFields =>
-        _formFields ??= BitPdfAcroForm.Build(_xref, Catalog);
+    public IReadOnlyList<BitPdfFormField> FormFields
+    {
+        get { _xref.ThrowIfSourceDisposed(); return _formFields ??= BitPdfAcroForm.Build(_xref, Catalog); }
+    }
 
     /// <summary>
     /// Resolves a destination (a named destination string/name, or an explicit
@@ -152,25 +197,33 @@ public sealed class BitPdfDocument
     {
         ArgumentNullException.ThrowIfNull(source);
         var xref = new BitPdfXRef(source) { Password = password };
-        xref.Parse();
-
-        var document = new BitPdfDocument(xref)
+        try
         {
-            Version = ReadHeaderVersion(source),
-        };
+            xref.Parse();
 
-        document.Catalog = xref.Root
-            ?? throw new BitPdfFormatException("Document catalog (/Root) not found.");
+            var document = new BitPdfDocument(xref)
+            {
+                Version = ReadHeaderVersion(source),
+            };
 
-        // A catalog /Version overrides the header version when it is later
-        // (PDF 32000-1 §7.5.2); an incremental update can raise the version here.
-        if (document.Catalog.Get("Version") is BitPdfName catalogVersion
-            && string.CompareOrdinal(catalogVersion.Value, document.Version) > 0)
-        {
-            document.Version = catalogVersion.Value;
+            document.Catalog = xref.Root
+                ?? throw new BitPdfFormatException("Document catalog (/Root) not found.");
+
+            // A catalog /Version overrides the header version when it is later
+            // (PDF 32000-1 §7.5.2); an incremental update can raise the version here.
+            if (document.Catalog.Get("Version") is BitPdfName catalogVersion
+                && string.CompareOrdinal(catalogVersion.Value, document.Version) > 0)
+            {
+                document.Version = catalogVersion.Value;
+            }
+
+            return document;
         }
-
-        return document;
+        catch
+        {
+            xref.ReleaseByteWindows();
+            throw;
+        }
     }
 
     private List<BitPdfPage> BuildPages()
@@ -293,7 +346,8 @@ public sealed class BitPdfDocument
     {
         // Header looks like "%PDF-1.7" within the first bytes of the file.
         int limit = Math.Min(source.Length, 1024);
-        ReadOnlySpan<byte> bytes = source.GetMemory(0, limit).Span;
+        using var window = source.GetMemory(0, limit);
+        ReadOnlySpan<byte> bytes = window.Span;
         ReadOnlySpan<byte> prefix = "%PDF-"u8;
         for (int i = 0; i + prefix.Length < limit; i++)
         {

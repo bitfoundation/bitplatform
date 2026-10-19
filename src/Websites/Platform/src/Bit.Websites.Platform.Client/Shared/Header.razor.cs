@@ -33,9 +33,11 @@ public partial class Header : IDisposable
             new("BlazeDb", "Memory-first database for Blazor", Urls.BlazeDb, External: true),
             new("Blow", "Blazor-native node-based editors", Urls.Blow, External: true),
             new("Borm", "Schema-driven forms for Blazor", Urls.Borm, External: true),
+            new("Bcrdt", "Real-time collaborative editing for Blazor", Urls.Bcrdt, External: true),
             new("Bonboarding", "Blazor-native product tours", Urls.Bonboarding, External: true),
             new("Bortable", "Blazor-native sortable lists", Urls.Bortable, External: true),
             new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
+            new("Belemetry", "OpenTelemetry for every Blazor app", Urls.Belemetry, External: true),
             new("BlazorUI", "Native Blazor UI components", Urls.BlazorUI, External: true),
         ]
     ];

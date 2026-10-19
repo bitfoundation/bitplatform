@@ -29,6 +29,7 @@ internal sealed partial class McpDocumentationSite : IDisposable
         ("bitBlazeDb", ["src/Utilities/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj", "src/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj"]),
         ("bitBlow", ["src/Utilities/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj", "src/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj"]),
         ("bitBorm", ["src/Utilities/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj", "src/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj"]),
+        ("bitBcrdt", ["src/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj"]),
         ("bitBlex", ["src/Utilities/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj", "src/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj"]),
         ("bitBmage", ["src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj", "src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj"]),
         ("bitBonboarding", ["src/Utilities/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj", "src/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj"]),
@@ -37,7 +38,8 @@ internal sealed partial class McpDocumentationSite : IDisposable
         ("bitBrouter", ["src/Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj"]),
         ("bitBswup", ["src/Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj"]),
         ("bitButil", ["src/Butil/Demo/Server/Bit.Butil.Demo.Server.csproj", "src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj"]),
-        ("bitMotion", ["src/Utilities/Bmotion/Demo/Server/Bit.Bmotion.Demo.Server.csproj", "src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj"])
+        ("bitMotion", ["src/Utilities/Bmotion/Demo/Server/Bit.Bmotion.Demo.Server.csproj", "src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj"]),
+        ("bitBelemetry", ["src/Belemetry/Demo/Server/Bit.Belemetry.Demo.Server.csproj"])
     ];
 
     private static readonly TimeSpan buildTimeout = TimeSpan.FromMinutes(30);
