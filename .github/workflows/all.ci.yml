@@ -39,62 +39,6 @@ on:
         description: Brouter solution
         type: boolean
         default: true
-      bmotion:
-        description: Bmotion and Bortable solutions
-        type: boolean
-        default: true
-      bmage:
-        description: Bmage solution
-        type: boolean
-        default: true
-      bsqlite:
-        description: Bsqlite solution
-        type: boolean
-        default: true
-      bink:
-        description: Bink solution
-        type: boolean
-        default: true
-      balette:
-        description: Balette solution
-        type: boolean
-        default: true
-      bbscanner:
-        description: BbScanner solution
-        type: boolean
-        default: true
-      blazedb:
-        description: BlazeDb solution
-        type: boolean
-        default: true
-      blow:
-        description: Blow solution
-        type: boolean
-        default: true
-      blex:
-        description: Blex solution
-        type: boolean
-        default: true
-      bonboarding:
-        description: Bonboarding solution
-        type: boolean
-        default: true
-      besql:
-        description: Besql solution
-        type: boolean
-        default: true
-      blazores2019:
-        description: BlazorES2019 project
-        type: boolean
-        default: true
-      tooling:
-        description: CodeAnalyzers, Minifier, bit CLI and SourceGenerators solutions
-        type: boolean
-        default: true
-      websites:
-        description: Website solutions
-        type: boolean
-        default: true
       prerelease_packages:
         description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (the Boilerplate, BlazorEmpty and website jobs)
         type: boolean
@@ -703,11 +647,6 @@ jobs:
         dotnet build src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj --output ./packages --configuration Release
 
-    - name: Build and pack Bortable
-      run: |
-        dotnet build src/Bortable/Bit.Bortable/Bit.Bortable.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Bortable/Bit.Bortable/Bit.Bortable.csproj --output ./packages --configuration Release
-
     - name: Build and pack CodeAnalyzers
       run: |
         dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -800,11 +739,6 @@ jobs:
   bonboarding:
     name: bonboarding
     uses: ./.github/workflows/bit.ci.Bonboarding.yml
-
-  bortable:
-    name: bortable
-    if: ${{ inputs.bmotion }}
-    uses: ./.github/workflows/bit.ci.Bortable.yml
 
   besql:
     name: besql
