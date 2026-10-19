@@ -248,7 +248,7 @@ public sealed class BormDefinition
             // as null forever, so the step is either always shown or never shown — and "never shown" on
             // a wizard means a page of questions the user is never asked and a set of answers the
             // schema quietly drops.
-            CheckPaths(step.VisibleWhen?.Dependencies, string.Empty, $"Step '{step.Id}' VisibleWhen", diagnostics);
+            CheckPaths(BormConditionGroup.NamedPaths(step.VisibleWhen), string.Empty, $"Step '{step.Id}' VisibleWhen", diagnostics);
         }
 
         // Two fields both asking for focus is a race the schema cannot win: whichever renders last
@@ -345,10 +345,10 @@ public sealed class BormDefinition
             foreach (var compare in field.Validators.OfType<BormCompareRule>())
                 CheckPaths([compare.OtherPath], path, "MatchesField", into);
 
-            CheckPaths(field.VisibleWhen?.Dependencies, path, "VisibleWhen", into);
-            CheckPaths(field.DisabledWhen?.Dependencies, path, "DisabledWhen", into);
-            CheckPaths(field.ReadOnlyWhen?.Dependencies, path, "ReadOnlyWhen", into);
-            CheckPaths(field.RequiredWhen?.Dependencies, path, "RequiredWhen", into);
+            CheckPaths(BormConditionGroup.NamedPaths(field.VisibleWhen), path, "VisibleWhen", into);
+            CheckPaths(BormConditionGroup.NamedPaths(field.DisabledWhen), path, "DisabledWhen", into);
+            CheckPaths(BormConditionGroup.NamedPaths(field.ReadOnlyWhen), path, "ReadOnlyWhen", into);
+            CheckPaths(BormConditionGroup.NamedPaths(field.RequiredWhen), path, "RequiredWhen", into);
             CheckPaths(field.ComputedDependencies, path, "a computed dependency", into);
             CheckPaths(field.OptionsDependencies, path, "an options dependency", into);
             CheckPaths(field.RevalidateOn, path, "RevalidateOn", into);

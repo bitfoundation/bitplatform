@@ -455,23 +455,36 @@ public sealed class BormFieldBuilder
         return this;
     }
 
-    public BormFieldBuilder Accept(string accept, bool multiple = false)
+    /// <summary>Limits the files that may be chosen to the listed extensions and media types.</summary>
+    /// <remarks>
+    /// Size and type are checked by one rule, which this rebuilds — keeping the size limit and any
+    /// message <see cref="MaxFileSize"/> was given, so the two can be called in either order.
+    /// </remarks>
+    public BormFieldBuilder Accept(string accept, bool multiple = false, string? message = null)
     {
         _field.Type = BormFieldType.File;
         _field.Accept = accept;
         _field.Multiple = multiple;
-        _field.AddValidator(new BormFileRule(_field.MaxFileSize, accept));
+        _field.AddValidator(new BormFileRule(_field.MaxFileSize, accept,
+            sizeMessage: CurrentFileRule()?.SizeMessage, typeMessage: message));
         return this;
     }
 
     /// <summary>Limits each selected file's size, in bytes.</summary>
+    /// <remarks>
+    /// <paramref name="message"/> is said only about a file that is too large; a file of the wrong type
+    /// keeps the message <see cref="Accept"/> gave it, whichever of the two was called first.
+    /// </remarks>
     public BormFieldBuilder MaxFileSize(long bytes, string? message = null)
     {
         _field.Type = BormFieldType.File;
         _field.MaxFileSize = bytes;
-        _field.AddValidator(new BormFileRule(bytes, _field.Accept, message));
+        _field.AddValidator(new BormFileRule(bytes, _field.Accept,
+            sizeMessage: message, typeMessage: CurrentFileRule()?.TypeMessage));
         return this;
     }
+
+    private BormFileRule? CurrentFileRule() => _field.Validators.OfType<BormFileRule>().FirstOrDefault();
 
     public BormFieldBuilder Items(int? min = null, int? max = null, string? message = null)
     {

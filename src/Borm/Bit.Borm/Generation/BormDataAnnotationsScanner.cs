@@ -211,11 +211,11 @@ public static class BormDataAnnotationsScanner
             {
                 field.Type = BormFieldType.File;
                 field.Accept = accept;
-                field.AddValidator(new BormFileRule(field.MaxFileSize, accept, ExplicitMessage(fx)));
+                field.AddValidator(new BormFileRule(field.MaxFileSize, accept, typeMessage: ExplicitMessage(fx)));
             }
             else
             {
-                field.AddValidator(new BormFileRule(null, accept, ExplicitMessage(fx)));
+                field.AddValidator(new BormFileRule(null, accept, typeMessage: ExplicitMessage(fx)));
             }
         }
 

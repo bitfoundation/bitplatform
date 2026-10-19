@@ -3,7 +3,11 @@
 /// <summary>Options controlling reflection-based schema generation.</summary>
 public sealed class BormSchemaGeneratorOptions
 {
-    /// <summary>Maximum nesting depth for object graphs (guards against cycles).</summary>
+    /// <summary>
+    /// Maximum nesting depth for object graphs (guards against cycles). At this depth an object is
+    /// generated without its children, and a list of objects — which cannot render a row without them —
+    /// is left out; a list of plain values is generated at any depth.
+    /// </summary>
     public int MaxDepth { get; set; } = 5;
 
     /// <summary>When true, properties marked <c>[ScaffoldColumn(false)]</c> are skipped.</summary>

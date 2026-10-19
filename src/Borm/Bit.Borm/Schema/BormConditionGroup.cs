@@ -14,7 +14,37 @@ public sealed class BormConditionGroup : IBormCondition
     public BormConditionLogic Logic { get; }
     public IReadOnlyList<IBormCondition> Conditions { get; }
 
-    public IEnumerable<string> Dependencies => Conditions.SelectMany(c => c.Dependencies);
+    /// <summary>
+    /// Every path the children read. A child that declares none — a raw predicate — depends on
+    /// everything, and so, through it, does the group: flattening it away left the group re-evaluated
+    /// only when its <em>other</em> children's fields changed, and a field hidden by the predicate was
+    /// never cleared.
+    /// </summary>
+    public IEnumerable<string> Dependencies
+    {
+        get
+        {
+            var all = new List<string>();
+            foreach (var condition in Conditions)
+            {
+                var before = all.Count;
+                all.AddRange(condition.Dependencies);
+                if (all.Count == before) return [];
+            }
+            return all;
+        }
+    }
+
+    /// <summary>
+    /// The paths the field conditions in this group name, at any depth — including those beside a child
+    /// that depends on everything, which <see cref="Dependencies"/> cannot list. For schema diagnostics.
+    /// </summary>
+    internal static IEnumerable<string> NamedPaths(IBormCondition? condition) => condition switch
+    {
+        null => [],
+        BormConditionGroup group => group.Conditions.SelectMany(NamedPaths),
+        _ => condition.Dependencies
+    };
 
     public bool Evaluate(IBormDataReader data)
         => Logic == BormConditionLogic.And

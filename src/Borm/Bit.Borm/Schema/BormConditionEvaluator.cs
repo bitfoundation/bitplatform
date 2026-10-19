@@ -59,8 +59,11 @@ public static class BormConditionEvaluator
         if (a is null || b is null) return false;
         if (a.Equals(b)) return true;
 
-        // Numbers compare numerically (1 == 1.0 == "1"), everything else by invariant text.
-        if (BormNumber.TryToDouble(a, out var da) && BormNumber.TryToDouble(b, out var db))
+        // Numbers compare numerically (1 == 1.0 == "1"), everything else by invariant text. At least one
+        // side has to actually be a number: two pieces of text are compared as text, so a zip code of
+        // "01234" is not "1234" and a code of "007" is not in ["7"] merely because both parse.
+        if ((BormNumber.IsNumber(a) || BormNumber.IsNumber(b))
+            && BormNumber.TryToDouble(a, out var da) && BormNumber.TryToDouble(b, out var db))
             return da.Equals(db);
 
         // A typed value — a date, a time, an enum member — against the text a condition authored in

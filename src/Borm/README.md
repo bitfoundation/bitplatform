@@ -852,6 +852,8 @@ Paths resolve relative to the object that owns the field, exactly as conditions 
 handler on a repeater's item template means *that row*. What a handler writes does not mark the field touched - the
 user has not been there, and a field the form filled in on their behalf should not open covered in errors. Handlers
 do not run while the form is being constructed, and a pair that answer each other settles rather than recursing.
+A handler runs after the form has settled the change it reacts to - computed values are up to date and any select
+cascading off the field has already been emptied - so it reads current totals and may set the dependent field itself.
 
 ## Layout
 
@@ -949,7 +951,8 @@ going away all write it first.
 
 A property typed `IBrowserFile` (or a list of them) renders a file picker. `Accept(...)`, `MaxFileSize(...)` and
 `[FileExtensions]` become both the picker's own `accept` list and rules that report a file the picker let through
-anyway; a list of files counts against `Items(min, max)` like any other collection. Read the files in your submit
+anyway; a list of files counts against `Items(min, max)` like any other collection. Each takes a message of its own,
+which is used only for its own failure, whichever order they are called in. Read the files in your submit
 handler with `OpenReadStream`, exactly as you would with Blazor's `InputFile`.
 
 ## Checking a schema

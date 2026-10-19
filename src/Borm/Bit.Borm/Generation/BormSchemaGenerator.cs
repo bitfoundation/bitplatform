@@ -48,13 +48,18 @@ public static class BormSchemaGenerator
 
         var list = new List<BormFieldDefinition>();
         foreach (var prop in props)
-            list.Add(BuildField(prop, options, depth, ancestry));
+            if (BuildField(prop, options, depth, ancestry) is { } field)
+                list.Add(field);
 
         // OrderBy is stable, so fields that share an order keep their declaration sequence.
         return list.OrderBy(f => f.Order);
     }
 
-    private static BormFieldDefinition BuildField(
+    /// <summary>
+    /// Builds the field for <paramref name="prop"/>, or returns null when it cannot be rendered at this
+    /// depth.
+    /// </summary>
+    private static BormFieldDefinition? BuildField(
         PropertyInfo prop, BormSchemaGeneratorOptions options, int depth, HashSet<Type> ancestry)
     {
         var propType = prop.PropertyType;
@@ -89,9 +94,15 @@ public static class BormSchemaGenerator
             // A collection of files is one control that accepts several, not a repeater of file pickers.
             field.Multiple = BormFieldTypeResolver.GetEnumerableElementType(underlying) is not null;
         }
-        else if (fieldType == BormFieldType.Array && depth < options.MaxDepth)
+        else if (fieldType == BormFieldType.Array)
         {
+            // A repeater cannot render a row without a template. A list of plain values gets one without
+            // going any deeper, so it is built at any depth; a list of objects past MaxDepth cannot be,
+            // and is left off the form. Generated without a template it was a repeater that threw the
+            // moment it had a row to show — on a server, a dropped circuit.
             var elementType = BormFieldTypeResolver.GetEnumerableElementType(propType) ?? typeof(string);
+            if (depth >= options.MaxDepth && BormFieldTypeResolver.Resolve(elementType) == BormFieldType.Object)
+                return null;
             field.ItemTemplate = BuildItemTemplate(elementType, options, depth + 1, ancestry);
         }
         else if (fieldType == BormFieldType.Object && depth < options.MaxDepth && !ancestry.Contains(underlying))

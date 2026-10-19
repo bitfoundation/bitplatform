@@ -528,6 +528,11 @@
     /// <see cref="Actions"/> row, or from a button somewhere else on the page, so replacing the button
     /// does not mean reimplementing the pipeline behind it.
     /// </summary>
+    /// <returns>
+    /// True when the form passed validation and <see cref="OnValidSubmit"/> ran. False when it did not —
+    /// including when a submit was already in flight, in which case nothing was validated or raised;
+    /// check <see cref="BormState.IsSubmitting"/> before calling to tell the two apart.
+    /// </returns>
     public Task<bool> SubmitAsync() => HandleSubmit();
 
     /// <summary>
@@ -568,6 +573,11 @@
 
     private async Task<bool> HandleSubmit()
     {
+        // A submit already in flight is answered with false before anything is judged. What is on record
+        // then describes the previous attempt, and treating it as this one's verdict moved the wizard to
+        // a step and pulled focus while the first submit was still saving.
+        if (FormState.IsSubmitting) return false;
+
         var valid = await FormState.SubmitAsync(
             onValid: state => OnValidSubmit.InvokeAsync(state),
             onInvalid: state => OnInvalidSubmit.InvokeAsync(state));

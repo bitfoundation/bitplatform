@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Globalization;
 using System.Reflection;
 
 namespace Bit.Borm;
@@ -302,17 +303,24 @@ public sealed class BormState : IDisposable
 
     private void Write(string path, object? value, bool markTouched)
     {
-        Data.SetValue(path, value);
-        RecordConversionResult(path, value);
+        // Text a number field could not read is refused here exactly as a typed model's accessor refuses
+        // it. A dictionary store takes anything, so without this "1.5" in an integer box was stored as a
+        // string, passed every rule and reached the submit handler as text in a numeric field.
+        var rejected = IsUnreadableNumber(path, value);
+        if (!rejected) Data.SetValue(path, value);
+        RecordConversionResult(path, value, rejected || Data.LastWriteFailed);
 
         TrackDirty(path);
         if (markTouched) _touched.Add(path);
 
-        // Side effects first, so a listener sees the form in its settled state.
+        // Side effects first, so a listener sees the form in its settled state. The schema's own change
+        // handler runs last: it may write a field the sweeps would otherwise clear straight after it (a
+        // city chosen for the country just picked, wiped by the cascade that country starts), and it
+        // reads totals that are only up to date once the formulas have run.
         ClearHiddenValues(path);
-        RunChangeHandler(path);
         RecomputeValues(path);
         InvalidateDependentOptions(path);
+        RunChangeHandler(path);
         // The answer just given may have hidden the step the user is standing on…
         ClampStep();
         // …or a control still holding text the model refused.
@@ -374,7 +382,7 @@ public sealed class BormState : IDisposable
             if (string.Equals(path, changedPath, StringComparison.OrdinalIgnoreCase)) continue;
 
             var next = field.Computed(new BormComputedContext(Data, path, scope));
-            if (Equals(Data.GetValue(path), next)) continue;
+            if (SameValue(Data.GetValue(path), next)) continue;
 
             Data.SetValue(path, next);
             TrackDirty(path);
@@ -383,14 +391,50 @@ public sealed class BormState : IDisposable
             // VisibleWhen reads a total was never cleared when the total hid it, a cascading select
             // that depended on one never reloaded, and OnFieldChanged never heard about it at all —
             // the three things every hand-written change handler does, skipped for exactly the values
-            // the form computed for itself.
+            // the form computed for itself. The handler runs after the cascade, as it does in Write.
             ClearHiddenValues(path);
-            RunChangeHandler(path);
             InvalidateDependentOptions(path);
-            FieldChanged?.Invoke(path);
-
             RecomputeValues(path, depth + 1);
+            RunChangeHandler(path);
+            FieldChanged?.Invoke(path);
         }
+    }
+
+    /// <summary>
+    /// Whether two values are the same answer. Numbers compare by value whatever their CLR type: a
+    /// formula returning <c>5</c> for a <c>decimal</c> property is read back as <c>5m</c>, and
+    /// <see cref="object.Equals(object?, object?)"/> calling those different made every recompute a
+    /// change — re-firing handlers and emptying every select that cascades off the total.
+    /// </summary>
+    private static bool SameValue(object? a, object? b)
+    {
+        if (Equals(a, b)) return true;
+        if (!BormNumber.IsNumber(a) || !BormNumber.IsNumber(b)) return false;
+        var ca = BormNumber.Canonical(a);
+        return ca is not null && ca == BormNumber.Canonical(b);
+    }
+
+    /// <summary>
+    /// Whether <paramref name="value"/> is text a numeric field cannot read. Only a field with no CLR
+    /// type of its own or a numeric one is judged: a typed model's accessor refuses such text already,
+    /// and a field whose property is a string holds whatever it is given.
+    /// </summary>
+    private bool IsUnreadableNumber(string path, object? value)
+    {
+        if (value is not string { Length: > 0 } text) return false;
+        if (Definition.FindByPath(path) is not { Type: BormFieldType.Integer or BormFieldType.Number or BormFieldType.Range } field)
+            return false;
+
+        if (field.ValueType is { } declared)
+        {
+            var type = Nullable.GetUnderlyingType(declared) ?? declared;
+            if (type.IsEnum || Type.GetTypeCode(type) is < TypeCode.SByte or > TypeCode.Decimal) return false;
+        }
+
+        // Read the way the converter reads a number box with no CLR type behind it.
+        return field.Type == BormFieldType.Integer
+            ? !long.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out _)
+            : !double.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out _);
     }
 
     /// <summary>
@@ -404,11 +448,19 @@ public sealed class BormState : IDisposable
 
     /// <summary>
     /// Whether a declared dependency list names <paramref name="path"/> — matched both absolutely and
-    /// relative to <paramref name="scope"/>, and by prefix, so naming a container covers everything
-    /// inside it. Unlike <see cref="ReadsPath"/> an empty list matches nothing, which is what "these
-    /// options never need reloading" means.
+    /// relative to <paramref name="scope"/>, and by prefix in both directions: naming a container covers
+    /// everything inside it, and replacing a container changes every dependency inside it. Unlike
+    /// <see cref="ReadsPath"/> an empty list matches nothing, which is what "these options never need
+    /// reloading" means.
     /// </summary>
     private static bool DeclaresPath(IList<string> dependencies, string path, string scope)
+        => CoversPath(dependencies, path, scope) || LiesWithin(dependencies, path, scope);
+
+    /// <summary>
+    /// Whether <paramref name="path"/> is at or beneath one of <paramref name="dependencies"/> — the
+    /// value named, or something inside it, was written.
+    /// </summary>
+    private static bool CoversPath(IEnumerable<string> dependencies, string path, string scope)
     {
         foreach (var dependency in dependencies)
         {
@@ -421,12 +473,30 @@ public sealed class BormState : IDisposable
     }
 
     /// <summary>
+    /// Whether one of <paramref name="dependencies"/> lies beneath <paramref name="path"/> — the object
+    /// or list holding the value named was replaced, cleared or reset as a whole. Without this,
+    /// resetting <c>Address</c> left the city's choices loaded for the country it had just put back,
+    /// and hiding a <c>Shipping</c> group left a cost computed from its country at its old figure.
+    /// </summary>
+    private static bool LiesWithin(IEnumerable<string> dependencies, string path, string scope)
+    {
+        foreach (var dependency in dependencies)
+        {
+            if (dependency.Length == 0) continue;
+            if (BormPath.IsAtOrUnder(dependency, path)) return true;
+            if (scope.Length > 0 && BormPath.IsAtOrUnder(BormPath.Combine(scope, dependency), path))
+                return true;
+        }
+        return false;
+    }
+
+    /// <summary>
     /// Turns a rejected write into a validation message. Without this the model silently keeps its
     /// previous value and the user's entry disappears on the next render with no explanation.
     /// </summary>
-    private void RecordConversionResult(string path, object? attempted)
+    private void RecordConversionResult(string path, object? attempted, bool failed)
     {
-        if (Data.LastWriteFailed)
+        if (failed)
         {
             _conversionErrors[path] = BormValueConverter.ToInvariantString(attempted);
             // Whatever else was reported about this field described a value the model never took, and
@@ -461,17 +531,18 @@ public sealed class BormState : IDisposable
 
     /// <summary>
     /// Re-attaches conversion messages after a validation pass has rebuilt the message set, so a value
-    /// the model could never accept keeps reporting itself.
+    /// the model could never accept keeps reporting itself. Pass <paramref name="under"/> when only the
+    /// messages at and beneath that path were rebuilt.
     /// </summary>
-    private void ReapplyConversionErrors(string? onlyPath = null)
+    private void ReapplyConversionErrors(string? under = null)
     {
         if (_conversionErrors.Count == 0) return;
-        if (onlyPath is not null && !_conversionErrors.ContainsKey(onlyPath)) return;
+        if (under is not null && !_conversionErrors.Keys.Any(k => BormPath.IsAtOrUnder(k, under))) return;
 
         DropHiddenConversionErrors();
         foreach (var path in _conversionErrors.Keys)
         {
-            if (onlyPath is not null && !string.Equals(path, onlyPath, StringComparison.OrdinalIgnoreCase)) continue;
+            if (under is not null && !BormPath.IsAtOrUnder(path, under)) continue;
             AddMessage(ConversionMessage(path));
         }
     }
@@ -685,21 +756,16 @@ public sealed class BormState : IDisposable
 
     /// <summary>
     /// Whether a condition reads <paramref name="path"/>. Dependencies are matched both absolutely and
-    /// relative to <paramref name="scope"/>, mirroring how the condition itself is evaluated. A
-    /// condition that declares no dependencies — a raw predicate, say — is assumed to depend on
-    /// everything, matching <see cref="IBormCondition.Dependencies"/>.
+    /// relative to <paramref name="scope"/>, mirroring how the condition itself is evaluated, and in
+    /// both directions, as <see cref="DeclaresPath"/> explains. A condition that declares no
+    /// dependencies — a raw predicate, say — is assumed to depend on everything, matching
+    /// <see cref="IBormCondition.Dependencies"/>.
     /// </summary>
     private static bool DependsOn(IBormCondition condition, string path, string scope = "")
     {
-        var any = false;
-        foreach (var dependency in condition.Dependencies)
-        {
-            any = true;
-            if (BormPath.IsAtOrUnder(path, dependency)) return true;
-            if (scope.Length > 0 && BormPath.IsAtOrUnder(path, BormPath.Combine(scope, dependency)))
-                return true;
-        }
-        return !any;
+        var dependencies = condition.Dependencies as IList<string> ?? condition.Dependencies.ToList();
+        if (dependencies.Count == 0) return true;
+        return DeclaresPath(dependencies, path, scope);
     }
 
     // ---------------------------------------------------------------- options
@@ -829,27 +895,44 @@ public sealed class BormState : IDisposable
         OptionsVersion++;
     }
 
-    private void InvalidateDependentOptions(string changedPath)
+    /// <param name="changedPath">The path whose value changed.</param>
+    /// <param name="rowsMoved">
+    /// True when <paramref name="changedPath"/> is a list whose rows were added, removed or reordered
+    /// rather than replaced. Each row's own state has already followed it (see
+    /// <see cref="RemapArrayIndices"/>), so a select inside a row that cascades off a sibling has
+    /// nothing to reload; only something depending on the list itself does.
+    /// </param>
+    private void InvalidateDependentOptions(string changedPath, bool rowsMoved = false)
     {
         if (!_hasOptionDependencies) return;
 
         // Two passes: the walk only collects, so it never sees the data change underneath it, and a
         // form where nothing depends on this path — which is almost every write — allocates nothing.
-        List<(BormFieldDefinition Field, string Path)>? targets = null;
+        List<(string Path, bool KeepValue)>? targets = null;
         foreach (var (field, path) in EnumerateFieldPaths())
         {
             if (field.OptionsProvider is null) continue;
             // Matched the same way conditions and computed dependencies are: relative to the object that
             // owns the field, so a cascading select inside a repeater row can name its sibling
             // ("Country") and still reload, and by prefix, so naming a container covers its members.
-            if (!DeclaresPath(field.OptionsDependencies, changedPath, BormPath.Parent(path))) continue;
-
-            (targets ??= []).Add((field, path));
+            var scope = BormPath.Parent(path);
+            if (CoversPath(field.OptionsDependencies, changedPath, scope))
+            {
+                (targets ??= []).Add((path, false));
+            }
+            else if (!rowsMoved && LiesWithin(field.OptionsDependencies, changedPath, scope))
+            {
+                // The container holding the dependency was replaced, so the cached choices describe a
+                // value that may be gone. The answer goes too — unless it sits in that same container,
+                // in which case it arrived (or was put back) together with its dependency and belongs
+                // to it: a prefilled address keeps the city it was saved with.
+                (targets ??= []).Add((path, BormPath.IsAtOrUnder(path, changedPath)));
+            }
         }
         if (targets is null) return;
 
         List<string>? cleared = null;
-        foreach (var (_, path) in targets)
+        foreach (var (path, keepValue) in targets)
         {
             CancelOptionsLoad(path);
             _loadedOptions.Remove(path);
@@ -860,7 +943,7 @@ public sealed class BormState : IDisposable
             // control ever rendered — a prefill, a restored draft — was still chosen for the old
             // dependency, and leaving it because no list had been fetched yet is how a city survives the
             // country it belongs to.
-            if (Data.GetValue(path) is null) continue;
+            if (keepValue || Data.GetValue(path) is null) continue;
 
             Data.SetValue(path, null);
             TrackDirty(path);
@@ -991,12 +1074,15 @@ public sealed class BormState : IDisposable
             HasValidated = true;
             return !HasErrors;
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
             // Superseded (or disposed) before a verdict was reached. Whatever messages are on record
             // describe an older run — or none at all on a form never validated — so reporting them as
             // a pass would let a submit go ahead on data nobody has checked. The run that replaced this
-            // one publishes the real verdict.
+            // one publishes the real verdict. Only when it really was this run that was cancelled: a
+            // rule throwing a cancellation of its own — a timed-out HTTP call — has failed, and fails
+            // like any other rule that throws. Swallowed here, the submit reported "invalid" with no
+            // message anywhere and the button looked as though it did nothing.
             return false;
         }
         finally
@@ -1081,9 +1167,10 @@ public sealed class BormState : IDisposable
 
             return !blocked && !messages.Any(m => m.Severity == BormValidationSeverity.Error);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
         {
-            // Superseded: the run that replaced this one decides whether the step may be left.
+            // Superseded: the run that replaced this one decides whether the step may be left. A rule's
+            // own cancellation is a failure, not a supersession — see ValidateAsync.
             return false;
         }
         finally
@@ -1138,12 +1225,15 @@ public sealed class BormState : IDisposable
 
             RemoveMessagesUnder(path);
             foreach (var m in messages) AddMessage(m);
+            // Everything under the path was just cleared, so every rejected entry under it — a child of
+            // an object or a row being revalidated as a whole — has to report itself again, not only
+            // one standing at the path itself.
             ReapplyConversionErrors(path);
             NotifyChanged();
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException) when (cts.IsCancellationRequested)
         {
-            // Superseded.
+            // Superseded. A rule's own cancellation is a failure, not a supersession — see ValidateAsync.
         }
         finally
         {
@@ -1379,6 +1469,11 @@ public sealed class BormState : IDisposable
     /// <paramref name="onValid"/> or <paramref name="onInvalid"/>. Concurrent calls are ignored while a
     /// submit is in flight, which is what stops a double-click from posting twice.
     /// </summary>
+    /// <returns>
+    /// Whether the form passed validation. A call ignored because a submit was already in flight returns
+    /// false without validating anything or raising either callback, and leaves the messages as the
+    /// earlier attempt left them; check <see cref="IsSubmitting"/> before calling to tell the two apart.
+    /// </returns>
     public async Task<bool> SubmitAsync(
         Func<BormState, Task>? onValid = null,
         Func<BormState, Task>? onInvalid = null)
@@ -1850,9 +1945,8 @@ public sealed class BormState : IDisposable
         TrackDirty(arrayPath);
         // The row was created a line ago, so every value in it is a placeholder the default may replace.
         ApplyItemDefaults(arrayField, BormPath.Combine(arrayPath, target), overwrite: true);
-        // Recompute, the ClearOnHide sweep and the cascading-options sweep all run once, together, in
-        // NotifyArrayChanged below.
-        RemoveMessagesFor(arrayPath); // the collection-size rule may now pass
+        // Recompute, the ClearOnHide sweep, the cascading-options sweep and the list's own rules (the
+        // collection-size rule may now pass) all run once, together, in NotifyArrayChanged below.
         if (notify) NotifyArrayChanged(arrayPath);
         return target;
     }
@@ -1870,15 +1964,43 @@ public sealed class BormState : IDisposable
     /// was deleted, and a select loading its choices from the list never reloaded, because emptying a
     /// repeater was the one kind of change that told only half the engine about itself.
     /// </remarks>
-    private void NotifyArrayChanged(string arrayPath)
+    private void NotifyArrayChanged(string arrayPath, bool revalidate = true)
     {
         ClearHiddenValues(arrayPath);
         RecomputeValues(arrayPath);
-        InvalidateDependentOptions(arrayPath);
+        InvalidateDependentOptions(arrayPath, rowsMoved: true);
         // A row appearing or disappearing can satisfy — or break — the condition on a wizard step.
         ClampStep();
+        if (revalidate) RevalidateArrayRules(arrayPath);
         FieldChanged?.Invoke(arrayPath);
         NotifyChanged();
+    }
+
+    /// <summary>
+    /// Re-judges the rules declared on the list itself — its size, its uniqueness — after rows were
+    /// added or removed, replacing only the messages on the list's own path.
+    /// </summary>
+    /// <remarks>
+    /// Dropping them instead erased verdicts that were still true: "items must be unique" vanished when
+    /// an unrelated row was added while the duplicates stayed, and nothing put it back before the next
+    /// submit. Rows are not judged here, so a row the user has only just added does not open covered in
+    /// errors, and a list nobody has been told anything about is left alone, exactly as
+    /// <see cref="ValidateDependentsAsync"/> leaves a field with nothing on screen to correct.
+    /// </remarks>
+    private void RevalidateArrayRules(string arrayPath)
+    {
+        if (!IsSubmitted && !IsTouched(arrayPath) && MessagesFor(arrayPath).Count == 0) return;
+        if (Definition.FindByPath(arrayPath) is not { } field) return;
+
+        // Only what can be answered now. A rule that does not finish synchronously cannot be waited for
+        // from here, and its verdict is left as it stands rather than guessed at.
+        var pending = _validator.ValidateOwnRulesAsync(field, arrayPath, Data, Services);
+        if (!pending.IsCompletedSuccessfully) return;
+
+        RemoveMessagesFor(arrayPath);
+        foreach (var m in pending.Result)
+            if (string.Equals(m.FieldPath, arrayPath, StringComparison.OrdinalIgnoreCase)) AddMessage(m);
+        if (_conversionErrors.ContainsKey(arrayPath)) AddMessage(ConversionMessage(arrayPath));
     }
 
     /// <summary>
@@ -1917,8 +2039,8 @@ public sealed class BormState : IDisposable
         }
 
         TrackDirty(arrayPath);
-        // Recompute, the ClearOnHide sweep and the cascading-options sweep all run once, together, in
-        // NotifyArrayChanged below.
+        // Recompute, the ClearOnHide sweep, the cascading-options sweep and the list's own rules all
+        // run once, together, in NotifyArrayChanged below — judged on the row holding its copy.
         NotifyArrayChanged(arrayPath);
         return target;
     }
@@ -1986,10 +2108,9 @@ public sealed class BormState : IDisposable
         // touched flags and loaded choices.
         RemapArrayIndices(arrayPath, i => i == index ? null : i > index ? i - 1 : i);
 
-        RemoveMessagesFor(arrayPath);
         TrackDirty(arrayPath);
-        // Recompute, the ClearOnHide sweep and the cascading-options sweep all run once, together, in
-        // NotifyArrayChanged below.
+        // Recompute, the ClearOnHide sweep, the cascading-options sweep and the list's own rules all
+        // run once, together, in NotifyArrayChanged below.
         NotifyArrayChanged(arrayPath);
     }
 
@@ -2012,8 +2133,9 @@ public sealed class BormState : IDisposable
         RemapArrayIndices(arrayPath, index => MapMovedIndex(index, from, to));
         TrackDirty(arrayPath);
         // Recompute, the ClearOnHide sweep and the cascading-options sweep all run once, together, in
-        // NotifyArrayChanged below.
-        NotifyArrayChanged(arrayPath);
+        // NotifyArrayChanged below. Reordering changes neither the size nor the set of values, so the
+        // list's own rules have nothing new to say.
+        NotifyArrayChanged(arrayPath, revalidate: false);
     }
 
     /// <summary>
@@ -2036,8 +2158,8 @@ public sealed class BormState : IDisposable
         RemapArrayIndices(arrayPath, index => index == first ? second : index == second ? first : index);
         TrackDirty(arrayPath);
         // Recompute, the ClearOnHide sweep and the cascading-options sweep all run once, together, in
-        // NotifyArrayChanged below.
-        NotifyArrayChanged(arrayPath);
+        // NotifyArrayChanged below. A swap is a reorder: the list's own rules have nothing new to say.
+        NotifyArrayChanged(arrayPath, revalidate: false);
     }
 
     /// <summary>
@@ -2052,10 +2174,9 @@ public sealed class BormState : IDisposable
         if (!EditList(arrayPath, list, l => l.Clear())) return;
 
         RemapArrayIndices(arrayPath, _ => null);
-        // The collection-size rule is judged against the field itself, so its own message goes too.
-        RemoveMessagesFor(arrayPath);
         TrackDirty(arrayPath);
-        // Recompute, the ClearOnHide sweep and the cascading-options sweep all run once, together, in
+        // Recompute, the ClearOnHide sweep, the cascading-options sweep and the list's own rules (the
+        // collection-size rule is judged against the field itself) all run once, together, in
         // NotifyArrayChanged below.
         NotifyArrayChanged(arrayPath);
     }
@@ -2403,7 +2524,7 @@ public sealed class BormState : IDisposable
         if (field.IsPresentational) return;
 
         if (field.DefaultValue is not null && (overwrite || Data.GetValue(path) is null))
-            Data.SetValue(path, field.DefaultValue);
+            Data.SetValue(path, CopyDefault(field.DefaultValue));
         else if (Data is BormDictionaryDataAccessor && !Data.TryGetValue(path, out _))
             // A dictionary only has the keys someone wrote, and a condition inside a row or an object
             // resolves "Kind" against that container first only when the container *has* a Kind —
@@ -2423,6 +2544,56 @@ public sealed class BormState : IDisposable
             var count = ArrayCount(path);
             for (var i = 0; i < count; i++)
                 ApplyItemDefaults(field, BormPath.Combine(path, i), overwrite: false);
+        }
+    }
+
+    /// <summary>
+    /// A private copy of a declared default that holds other values — a list, an array, an object read
+    /// from JSON. The default belongs to the schema, which is shared by every form built from it and
+    /// every row it seeds; handing out the instance itself let a repeater edit it in place, so the next
+    /// form opened with the last user's rows, and adding a nested item to one row added it to all.
+    /// </summary>
+    private static object? CopyDefault(object? value)
+    {
+        switch (value)
+        {
+            case null or string:
+                return value;
+            case IDictionary<string, object?> map:
+            {
+                var copy = BormDictionaryDataAccessor.NewObject();
+                foreach (var (key, item) in map) copy[key] = CopyDefault(item);
+                return copy;
+            }
+            case Array array:
+            {
+                var copy = (Array)array.Clone();
+                for (var i = 0; i < copy.Length; i++) copy.SetValue(CopyDefault(copy.GetValue(i)), i);
+                return copy;
+            }
+            case IList list:
+            {
+                IList copy;
+                try
+                {
+                    // The default's own collection type where it can be built empty and added to, so a
+                    // typed model is handed what it declared; anything else becomes a plain list, which
+                    // the accessor converts on the way in.
+                    copy = Activator.CreateInstance(list.GetType()) as IList is { IsFixedSize: false, IsReadOnly: false } same
+                        ? same
+                        : new List<object?>(list.Count);
+                    foreach (var item in list) copy.Add(CopyDefault(item));
+                }
+                catch (Exception ex) when (ex is MissingMethodException or MemberAccessException or TargetInvocationException
+                                               or ArgumentException or InvalidCastException or NotSupportedException)
+                {
+                    copy = new List<object?>(list.Count);
+                    foreach (var item in list) copy.Add(CopyDefault(item));
+                }
+                return copy;
+            }
+            default:
+                return value;
         }
     }
 

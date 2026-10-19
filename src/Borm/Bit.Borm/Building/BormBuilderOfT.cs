@@ -135,13 +135,14 @@ public sealed class BormBuilder<TModel> : BormBuilder where TModel : class
     /// </summary>
     /// <param name="selector">The field the computed value is written to.</param>
     /// <param name="compute">
-    /// Receives the object the field belongs to. At the top level that is the model; inside an
-    /// <see cref="Array{TItem}"/> template it is the item, so the same expression works on a repeater
-    /// row without knowing its index.
+    /// Receives the <typeparamref name="TModel"/> the selector starts from. At the top level that is the
+    /// model; inside an <see cref="Array{TItem}"/> template it is the item, so the same expression works
+    /// on a repeater row without knowing its index. A nested selector (<c>x =&gt; x.Summary.Total</c>)
+    /// still receives the model, not the <c>Summary</c> the field sits in.
     /// </param>
     /// <param name="dependsOn">
-    /// Paths whose changes trigger a recompute, named relative to the owning object. Leave null to
-    /// recompute on any change.
+    /// Paths whose changes trigger a recompute, named relative to the object that owns the field, or
+    /// from the root. Leave null to recompute on any change.
     /// </param>
     /// <param name="configure">Further configuration for the generated field.</param>
     public BormBuilder<TModel> Computed<TValue>(
@@ -149,12 +150,27 @@ public sealed class BormBuilder<TModel> : BormBuilder where TModel : class
         Func<TModel, TValue> compute,
         string[]? dependsOn = null,
         Action<BormFieldBuilder>? configure = null)
-        => Field(selector, f =>
+    {
+        // The field is owned by the object its last member sits on, but the formula is written against
+        // TModel, which sits one level above the selector's first member. Casting the field's own scope
+        // was right only for x => x.Total: for x => x.Summary.Total the scope is the Summary, the cast
+        // always failed, and default(TValue) was written in silence.
+        var levels = BormPath.Parse(ResolvePath(selector).Path).Count;
+        return Field(selector, f =>
         {
             f.ReadOnly()
-             .Computed(ctx => ctx.Scope is TModel owner ? compute(owner) : default(TValue), dependsOn ?? []);
+             .Computed(ctx => ModelOf(ctx, levels) is TModel owner ? compute(owner) : default(TValue), dependsOn ?? []);
             configure?.Invoke(f);
         });
+    }
+
+    /// <summary>The object <paramref name="levels"/> containers above the computed field.</summary>
+    private static object? ModelOf(BormComputedContext ctx, int levels)
+    {
+        var path = ctx.FieldPath;
+        for (var i = 0; i < levels && path.Length > 0; i++) path = BormPath.Parent(path);
+        return path.Length == 0 ? ctx.Data.Root : ctx.Data.GetValue(path);
+    }
 
     /// <summary>Adds a wizard step.</summary>
     public new BormBuilder<TModel> Step(string id, Action<BormStepBuilder> configure)

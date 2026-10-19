@@ -8,10 +8,26 @@ namespace Bit.Borm;
 /// anything — so size and extension are checked again here. On a text value it checks the extension
 /// of the file name the text holds, which is what <c>[FileExtensions]</c> on a string property means.
 /// </summary>
-public sealed class BormFileRule(long? maxSizeBytes = null, string? accept = null, string? message = null)
+/// <param name="maxSizeBytes">The largest file accepted, in bytes.</param>
+/// <param name="accept">The accepted extensions and media types, as the <c>accept</c> attribute lists them.</param>
+/// <param name="message">The message for either failure, unless one of the more specific ones is given.</param>
+/// <param name="sizeMessage">The message for a file that is too large.</param>
+/// <param name="typeMessage">The message for a file of a type not accepted.</param>
+public sealed class BormFileRule(
+    long? maxSizeBytes = null,
+    string? accept = null,
+    string? message = null,
+    string? sizeMessage = null,
+    string? typeMessage = null)
     : IBormValidationRule
 {
     private readonly string[] _accept = ParseAccept(accept);
+
+    /// <summary>The caller's own message for a file that is too large, if there is one.</summary>
+    internal string? SizeMessage { get; } = sizeMessage ?? message;
+
+    /// <summary>The caller's own message for a file of a type not accepted, if there is one.</summary>
+    internal string? TypeMessage { get; } = typeMessage ?? message;
 
     /// <inheritdoc />
     public string Key => "file";
@@ -26,16 +42,16 @@ public sealed class BormFileRule(long? maxSizeBytes = null, string? accept = nul
             if (name.Length == 0 || extensions.Length == 0
                 || extensions.Any(e => name.EndsWith(e, StringComparison.OrdinalIgnoreCase)))
                 return new(BormRuleResult.Success());
-            return new(BormRuleResult.Fail(message ?? ctx.Message(BormMessageKeys.FileType, string.Join(", ", extensions))));
+            return new(BormRuleResult.Fail(TypeMessage ?? ctx.Message(BormMessageKeys.FileType, string.Join(", ", extensions))));
         }
 
         foreach (var file in Enumerate(ctx.Value))
         {
             if (maxSizeBytes is { } max && file.Size > max)
-                return new(BormRuleResult.Fail(message ?? ctx.Message(BormMessageKeys.FileSize, FormatSize(max))));
+                return new(BormRuleResult.Fail(SizeMessage ?? ctx.Message(BormMessageKeys.FileSize, FormatSize(max))));
 
             if (_accept.Length > 0 && !IsAccepted(file))
-                return new(BormRuleResult.Fail(message ?? ctx.Message(BormMessageKeys.FileType, string.Join(", ", _accept))));
+                return new(BormRuleResult.Fail(TypeMessage ?? ctx.Message(BormMessageKeys.FileType, string.Join(", ", _accept))));
         }
         return new(BormRuleResult.Success());
     }
@@ -73,7 +89,11 @@ public sealed class BormFileRule(long? maxSizeBytes = null, string? accept = nul
             ? []
             : accept.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
 
-    private static string FormatSize(long bytes)
+    /// <summary>
+    /// A byte count the way people read one — <c>1.5 MB</c>. Shared with the file input's list of chosen
+    /// files, so the size a file is shown at and the limit it is told it broke are written alike.
+    /// </summary>
+    internal static string FormatSize(long bytes)
     {
         string[] units = ["B", "KB", "MB", "GB"];
         double size = bytes;

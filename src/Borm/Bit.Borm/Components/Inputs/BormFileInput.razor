@@ -32,7 +32,7 @@
             {
                 <li class="bit-borm-file__item">
                     <span class="bit-borm-file__name">@file.Name</span>
-                    <span class="bit-borm-file__size">@FormatSize(file.Size)</span>
+                    <span class="bit-borm-file__size">@BormFileRule.FormatSize(file.Size)</span>
                 </li>
             }
         </ul>
@@ -96,18 +96,5 @@
         await Context.SetValueAsync(null);
         TrackEmptied();
         RequestFocusAfterRender();
-    }
-
-    private static string FormatSize(long bytes)
-    {
-        string[] units = ["B", "KB", "MB", "GB"];
-        double size = bytes;
-        var unit = 0;
-        while (size >= 1024 && unit < units.Length - 1)
-        {
-            size /= 1024;
-            unit++;
-        }
-        return $"{size:0.#} {units[unit]}";
     }
 }

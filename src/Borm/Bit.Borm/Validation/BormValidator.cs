@@ -72,6 +72,22 @@ public sealed class BormValidator
         return messages;
     }
 
+    /// <summary>
+    /// Runs only the synchronous rules declared on the field at <paramref name="path"/> itself, without
+    /// descending into its children or rows — what a list's size and uniqueness are judged by after a
+    /// row is added or removed. A hidden field reports nothing, as it does in a full pass.
+    /// </summary>
+    internal async ValueTask<IReadOnlyList<BormValidationMessage>> ValidateOwnRulesAsync(
+        BormFieldDefinition field,
+        string path,
+        IBormDataReader data,
+        IServiceProvider? services)
+    {
+        var messages = new List<BormValidationMessage>();
+        await ValidateField(field, path, data, services, includeAsync: false, messages, CancellationToken.None, descend: false);
+        return messages;
+    }
+
     private static async ValueTask ValidateField(
         BormFieldDefinition field,
         string path,
@@ -79,7 +95,8 @@ public sealed class BormValidator
         IServiceProvider? services,
         bool includeAsync,
         List<BormValidationMessage> messages,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool descend = true)
     {
         // Presentational content holds no value, so there is nothing here to be valid or invalid.
         if (field.IsPresentational) return;
@@ -120,6 +137,7 @@ public sealed class BormValidator
         }
 
         // Recurse into composition.
+        if (!descend) return;
         if (field.Type == BormFieldType.Object)
         {
             foreach (var child in field.Children)
