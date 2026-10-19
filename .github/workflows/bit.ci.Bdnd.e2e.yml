@@ -2,7 +2,7 @@ name: bit platform CI - Bdnd E2E
 
 # The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright. It
 # takes far longer than the build-and-unit pipeline (bit.ci.Bdnd.yml), so it runs only when started by hand. See
-# src/Bdnd/Tests/Bit.Bdnd.Tests.E2E/README.md for what it proves and how to run it locally.
+# src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/README.md for what it proves and how to run it locally.
 
 on:
   workflow_dispatch:
@@ -37,20 +37,20 @@ jobs:
         node-version: 24
 
     - name: dotnet workload restore
-      run: cd src/Bdnd && dotnet workload restore
+      run: cd src/Utilities/Bdnd && dotnet workload restore
 
     - name: Build the demo and the E2E suite
       run: |
-        dotnet build src/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c Release
-        dotnet build src/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release
+        dotnet build src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj -c Release
+        dotnet build src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Bdnd/Tests/Bit.Bdnd.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/Bdnd/Tests/Bit.Bdnd.Tests.E2E &&
+        cd src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.E2E &&
         dotnet test -c Release --no-build
         --report-trx --report-trx-filename bdnd-e2e.trx
 

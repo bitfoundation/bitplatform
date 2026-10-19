@@ -2,7 +2,7 @@ name: bit platform CI - Bink E2E
 
 # The demo app in Chromium: drawing with mouse, touch and pen input, keyboard handling, display scaling and every
 # demo page, against the Release build that ships. It takes far longer than the build-and-unit pipeline
-# (bit.ci.Bink.yml), so it runs only when started by hand. See src/Bink/Tests/Bit.Bink.Tests.E2E/README.md for
+# (bit.ci.Bink.yml), so it runs only when started by hand. See src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/README.md for
 # what the browser suite proves and how to run it locally.
 
 on:
@@ -38,16 +38,16 @@ jobs:
 
     - name: Build the demo and the E2E suite
       run: |
-        dotnet build src/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj -c Release
-        dotnet build src/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj -c Release
+        dotnet build src/Utilities/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj -c Release
+        dotnet build src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Bink/Tests/Bit.Bink.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/Bink/Tests/Bit.Bink.Tests.E2E &&
+        cd src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E &&
         dotnet test -c Release --no-build
         --report-trx --report-trx-filename bink-e2e.trx
 

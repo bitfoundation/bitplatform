@@ -273,49 +273,49 @@ _book
 /src/Brouter/Bit.Brouter/Scripts/**/*.js
 /src/Brouter/Bit.Brouter/wwwroot/**/*.js
 
-/src/Bmotion/Bit.Bmotion/Scripts/**/*.js
-/src/Bmotion/Bit.Bmotion/wwwroot/**/*.js
+/src/Utilities/Bmotion/Bit.Bmotion/Scripts/**/*.js
+/src/Utilities/Bmotion/Bit.Bmotion/wwwroot/**/*.js
 
-/src/Bmage/Bit.Bmage/Scripts/**/*.js
-/src/Bmage/Bit.Bmage/wwwroot/**/*.js
+/src/Utilities/Bmage/Bit.Bmage/Scripts/**/*.js
+/src/Utilities/Bmage/Bit.Bmage/wwwroot/**/*.js
 
 # The compiled modules, plus the pinned wa-sqlite engine and VFSes the restore vendors next to them and the build
-# verifies by checksum (see src/Bsqlite/Bit.Bsqlite/engine/wa-sqlite.lock.props): none of it is committed.
-/src/Bsqlite/Bit.Bsqlite*/Scripts/**/*.js
-/src/Bsqlite/Bit.Bsqlite*/wwwroot/
+# verifies by checksum (see src/Utilities/Bsqlite/Bit.Bsqlite/engine/wa-sqlite.lock.props): none of it is committed.
+/src/Utilities/Bsqlite/Bit.Bsqlite*/Scripts/**/*.js
+/src/Utilities/Bsqlite/Bit.Bsqlite*/wwwroot/
 
-/src/Bink/Bit.Bink/Scripts/**/*.js
-/src/Bink/Bit.Bink/wwwroot/**/*.js
-/src/Bink/Bit.Bink/wwwroot/**/*.css
+/src/Utilities/Bink/Bit.Bink/Scripts/**/*.js
+/src/Utilities/Bink/Bit.Bink/wwwroot/**/*.js
+/src/Utilities/Bink/Bit.Bink/wwwroot/**/*.css
 
-/src/Balette/Bit.Balette/Scripts/**/*.js
-/src/Balette/Bit.Balette/wwwroot/**/*.js
-/src/Balette/Bit.Balette/wwwroot/**/*.css
-/src/BbScanner/Bit.BbScanner/Scripts/**/*.js
-/src/BbScanner/Bit.BbScanner/wwwroot/**/*.js
-/src/BbScanner/Bit.BbScanner/wwwroot/**/*.css
-/src/BlazeDb/Bit.BlazeDb.Browser/Scripts/**/*.js
-/src/BlazeDb/Bit.BlazeDb.Browser/wwwroot/**/*.js
+/src/Utilities/Balette/Bit.Balette/Scripts/**/*.js
+/src/Utilities/Balette/Bit.Balette/wwwroot/**/*.js
+/src/Utilities/Balette/Bit.Balette/wwwroot/**/*.css
+/src/Utilities/BbScanner/Bit.BbScanner/Scripts/**/*.js
+/src/Utilities/BbScanner/Bit.BbScanner/wwwroot/**/*.js
+/src/Utilities/BbScanner/Bit.BbScanner/wwwroot/**/*.css
+/src/Utilities/BlazeDb/Bit.BlazeDb.Browser/Scripts/**/*.js
+/src/Utilities/BlazeDb/Bit.BlazeDb.Browser/wwwroot/**/*.js
 
-/src/Bdnd/Bit.Bdnd/Scripts/**/*.js
-/src/Bdnd/Bit.Bdnd/wwwroot/**/*.js
+/src/Utilities/Bdnd/Bit.Bdnd/Scripts/**/*.js
+/src/Utilities/Bdnd/Bit.Bdnd/wwwroot/**/*.js
 
-/src/Blow/Bit.Blow/Scripts/**/*.js
-/src/Blow/Bit.Blow/wwwroot/**/*.js
-/src/Blow/Bit.Blow/wwwroot/**/*.css
+/src/Utilities/Blow/Bit.Blow/Scripts/**/*.js
+/src/Utilities/Blow/Bit.Blow/wwwroot/**/*.js
+/src/Utilities/Blow/Bit.Blow/wwwroot/**/*.css
 
-/src/Borm/Bit.Borm/wwwroot/**/*.css
+/src/Utilities/Borm/Bit.Borm/wwwroot/**/*.css
 
-/src/Blex/Bit.Blex.Blazor/Scripts/**/*.js
-/src/Blex/Bit.Blex.Blazor/wwwroot/**/*.js
+/src/Utilities/Blex/Bit.Blex.Blazor/Scripts/**/*.js
+/src/Utilities/Blex/Bit.Blex.Blazor/wwwroot/**/*.js
 
-/src/Bonboarding/Bit.Bonboarding/Scripts/**/*.js
-/src/Bonboarding/Bit.Bonboarding/wwwroot/**/*.js
-/src/Bonboarding/Bit.Bonboarding/wwwroot/**/*.css
+/src/Utilities/Bonboarding/Bit.Bonboarding/Scripts/**/*.js
+/src/Utilities/Bonboarding/Bit.Bonboarding/wwwroot/**/*.js
+/src/Utilities/Bonboarding/Bit.Bonboarding/wwwroot/**/*.css
 
-/src/Bortable/Bit.Bortable/Scripts/**/*.js
-/src/Bortable/Bit.Bortable/wwwroot/**/*.js
-/src/Bortable/Bit.Bortable/wwwroot/**/*.css
+/src/Utilities/Bortable/Bit.Bortable/Scripts/**/*.js
+/src/Utilities/Bortable/Bit.Bortable/wwwroot/**/*.js
+/src/Utilities/Bortable/Bit.Bortable/wwwroot/**/*.css
 
 /src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js

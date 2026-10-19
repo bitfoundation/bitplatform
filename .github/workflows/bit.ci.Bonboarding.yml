@@ -5,7 +5,7 @@ on:
   workflow_call:
   pull_request:
     paths:
-    - 'src/Bonboarding/**'
+    - 'src/Utilities/Bonboarding/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -46,15 +46,15 @@ jobs:
         node-version: 24
 
     - name: dotnet workload restore
-      run:  cd src/Bonboarding && dotnet workload restore
+      run:  cd src/Utilities/Bonboarding && dotnet workload restore
 
     - name: dotnet build
-      run: dotnet build src/Bonboarding/Bit.Bonboarding.slnx
+      run: dotnet build src/Utilities/Bonboarding/Bit.Bonboarding.slnx
 
     - name: dotnet test
       # Run from inside src so src/global.json's "test" runner setting applies
       # (from the repo root the SDK falls back to the unsupported VSTest path).
-      run: cd src/Bonboarding/Tests/Bit.Bonboarding.Tests && dotnet test --no-build
+      run: cd src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests && dotnet test --no-build
 
     - name: dotnet test (MCP server)
-      run: cd src/Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp && dotnet test --no-build
+      run: cd src/Utilities/Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp && dotnet test --no-build

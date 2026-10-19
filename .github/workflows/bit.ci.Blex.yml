@@ -8,7 +8,7 @@ on:
   workflow_call:
   pull_request:
     paths:
-    - 'src/Blex/**'
+    - 'src/Utilities/Blex/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -51,18 +51,18 @@ jobs:
         node-version: 24
 
     - name: dotnet build
-      run: dotnet build src/Blex/Bit.Blex.slnx
+      run: dotnet build src/Utilities/Blex/Bit.Blex.slnx
 
     - name: dotnet test (runtime, Blazor, MAUI and generated code - net8.0/net9.0/net10.0)
       # Run from inside src so src/global.json's "test" runner setting applies
       # (from the repo root the SDK falls back to the unsupported VSTest path).
-      run: cd src/Blex/Tests/Bit.Blex.Tests && dotnet test --no-build
+      run: cd src/Utilities/Blex/Tests/Bit.Blex.Tests && dotnet test --no-build
 
     - name: dotnet test (source generator)
-      run: cd src/Blex/Tests/Bit.Blex.Tests.Generators && dotnet test --no-build
+      run: cd src/Utilities/Blex/Tests/Bit.Blex.Tests.Generators && dotnet test --no-build
 
     - name: dotnet test (MCP server)
-      run: cd src/Blex/Tests/Bit.Blex.Tests.Mcp && dotnet test --no-build
+      run: cd src/Utilities/Blex/Tests/Bit.Blex.Tests.Mcp && dotnet test --no-build
 
     # Packing on every run means a broken nuspec, a missing analyzer or a stale readme path is caught
     # here rather than at release time. Each project is built in Release with GeneratePackageOnBuild
@@ -72,6 +72,6 @@ jobs:
     - name: dotnet pack
       run: |
         for project in Bit.Blex Bit.Blex.Generators Bit.Blex.Blazor Bit.Blex.Maui Bit.Blex.Testing; do
-          dotnet build src/Blex/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-          dotnet pack src/Blex/$project/$project.csproj --output ./packages --configuration Release
+          dotnet build src/Utilities/Blex/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+          dotnet pack src/Utilities/Blex/$project/$project.csproj --output ./packages --configuration Release
         done

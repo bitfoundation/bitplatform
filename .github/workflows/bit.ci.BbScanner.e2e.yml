@@ -3,7 +3,7 @@ name: bit platform CI - BbScanner E2E
 # The demo app in Chromium whose camera is a generated video file: continuous scanning of four symbologies, the
 # camera lifecycle, permissions, keyboard and layout, and every demo page, against the Release build that ships.
 # It takes far longer than the build-and-unit pipeline (bit.ci.BbScanner.yml), so it runs only when started by
-# hand. See src/BbScanner/Tests/Bit.BbScanner.Tests.E2E/README.md for what the suite proves and how to run it
+# hand. See src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/README.md for what the suite proves and how to run it
 # locally.
 
 on:
@@ -39,16 +39,16 @@ jobs:
 
     - name: Build the demo and the E2E suite
       run: |
-        dotnet build src/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release
-        dotnet build src/BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj -c Release
+        dotnet build src/Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj -c Release
+        dotnet build src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/BbScanner/Tests/Bit.BbScanner.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/BbScanner/Tests/Bit.BbScanner.Tests.E2E &&
+        cd src/Utilities/BbScanner/Tests/Bit.BbScanner.Tests.E2E &&
         dotnet test -c Release --no-build
         --report-trx --report-trx-filename bbscanner-e2e.trx
 

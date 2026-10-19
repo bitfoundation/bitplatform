@@ -7,7 +7,7 @@ on:
   workflow_call:
   pull_request:
     paths:
-    - 'src/Bortable/**'
+    - 'src/Utilities/Bortable/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -48,15 +48,15 @@ jobs:
         node-version: 24
 
     - name: dotnet workload restore
-      run:  cd src/Bortable && dotnet workload restore
+      run:  cd src/Utilities/Bortable && dotnet workload restore
 
     - name: dotnet build
-      run: dotnet build src/Bortable/Bit.Bortable.slnx
+      run: dotnet build src/Utilities/Bortable/Bit.Bortable.slnx
 
     - name: dotnet test
       # Run from inside src so src/global.json's "test" runner setting applies
       # (from the repo root the SDK falls back to the unsupported VSTest path).
-      run: cd src/Bortable/Tests/Bit.Bortable.Tests && dotnet test --no-build
+      run: cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests && dotnet test --no-build
 
     - name: dotnet test (MCP server)
-      run: cd src/Bortable/Tests/Bit.Bortable.Tests.Mcp && dotnet test --no-build
+      run: cd src/Utilities/Bortable/Tests/Bit.Bortable.Tests.Mcp && dotnet test --no-build
