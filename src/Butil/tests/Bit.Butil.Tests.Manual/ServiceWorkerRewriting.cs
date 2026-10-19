@@ -36,10 +36,12 @@ internal static class ServiceWorkerRewriting
         CheckDropEdges(checks);
         CheckUnchanged(checks);
         CheckUrlSpellings(checks);
+        CheckTrailingScript(checks);
         CheckLineEndings(checks);
         CheckVersion(checks);
         CheckRefused(checks);
         CheckServiceWorkerScript(checks);
+        CheckAssetUrls(checks);
 
         return (checks.Passed, checks.Failed);
     }
@@ -138,6 +140,26 @@ internal static class ServiceWorkerRewriting
     }
 
     /// <summary>
+    /// The list ends at the bracket that closes it, not at the last bracket in the file: a statement appended after
+    /// the object - by a build step or by the app - carries brackets of its own, and reading up to those would
+    /// swallow the end of the object and the statement into the entries and drop them from the rewrite.
+    /// </summary>
+    private static void CheckTrailingScript(ScriptBundling.Checks checks)
+    {
+        const string What = "a statement after the manifest's object is kept whole";
+        const string Trailer = "self.assetsInclude = [/\\.js$/, /\\.wasm$/];\r\n";
+
+        var original = Manifest("\r\n", (Module("cookie"), OtherHash), (Bundle, ClientHash), ("_content/Other/a]b.js", FrameworkHash)) + Trailer;
+        var update = ButilServiceWorkerManifest.Update(original, [Module("cookie")], new Dictionary<string, string> { [Bundle] = ServerHash });
+
+        if (Read(checks, What, update?.Text) is not { } result) return;
+
+        Expect(checks, What, result.Assets, [(Bundle, ServerHash), ("_content/Other/a]b.js", FrameworkHash)]);
+        checks.That(update!.Text.EndsWith("  ]\r\n};\r\n" + Trailer, StringComparison.Ordinal), $"{What} (after the object, which is closed as before)",
+            $"the file ends: {update.Text[Math.Max(0, update.Text.Length - 80)..]}");
+    }
+
+    /// <summary>
     /// The SDK writes the platform's line endings; a rewrite that mixed them would not break a parser, but it
     /// would make a file that diffs as wholly changed, and the separators it adds are where that would happen.
     /// </summary>
@@ -184,6 +206,7 @@ internal static class ServiceWorkerRewriting
             ("a script that is not a manifest", "self.addEventListener('fetch', () => { });"),
             ("a manifest with no assets", "self.assetsManifest = {\r\n  \"version\": \"Ab1+/xyZ\"\r\n};"),
             ("a manifest with no version", "self.assetsManifest = {\r\n  \"assets\": [\r\n  ]\r\n};"),
+            ("a manifest whose asset is not one flat object", "self.assetsManifest = {\r\n  \"version\": \"Ab1+/xyZ\",\r\n  \"assets\": [\r\n    { \"hash\": \"" + ClientHash + "\", \"url\": \"" + Bundle + "\", \"extra\": { } }\r\n  ]\r\n};"),
         })
         {
             checks.That(ButilServiceWorkerManifest.Update(text, [Bundle], new Dictionary<string, string> { [Bundle] = ServerHash }) is null,
@@ -208,6 +231,32 @@ internal static class ServiceWorkerRewriting
             "a service worker script carrying no version is reported rather than changed", "it was changed");
         checks.That(ButilServiceWorkerManifest.UpdateVersion(script, "Zz9-othr", "Cd2-new1") is null,
             "a service worker script carrying another manifest's version is reported rather than changed", "it was changed");
+    }
+
+    /// <summary>
+    /// The URLs the trimming's assets are matched on are computed from the SDK's path patterns, so each kind of
+    /// fingerprint token has to come out the way the manifest spells the file: an optional one dropped, a required
+    /// or preferred one filled in - from the token's own value when it carries one - and nothing of the token's
+    /// syntax left behind. A URL that keeps a stray character matches no entry, and the entry stays stale in silence.
+    /// </summary>
+    private static void CheckAssetUrls(ScriptBundling.Checks checks)
+    {
+        static string Metadata(string name) => name == "Fingerprint" ? "abc123" : string.Empty;
+
+        foreach (var (what, basePath, relativePath, expected) in new[]
+        {
+            ("an optional fingerprint is dropped", "_content/Bit.Butil", "modules/cookie#[.{fingerprint}]?.js", Module("cookie")),
+            ("a preferred fingerprint is filled in, without its '!'", "_content/Bit.Butil", "modules/cookie#[.{fingerprint}]!.js", "_content/Bit.Butil/modules/cookie.abc123.js"),
+            ("a required fingerprint is filled in", "/", "_framework/dotnet#[.{fingerprint}].js", "_framework/dotnet.abc123.js"),
+            ("a fingerprint the token carries wins over the metadata", "_content/Bit.Butil", "modules/cookie#[.{fingerprint=xyz789}]!.js", "_content/Bit.Butil/modules/cookie.xyz789.js"),
+            ("an optional fingerprint carrying a value is still dropped", "_content/Bit.Butil", "modules/cookie#[.{fingerprint=xyz789}]?.js.gz", Module("cookie") + ".gz"),
+            ("backslashes and the base path's slashes are normalized", "\\_content\\Bit.Butil\\", "\\modules\\cookie.js", Module("cookie")),
+            ("an asset at the root has no base path in its URL", "/", "index.html", "index.html"),
+        })
+        {
+            var url = ButilServiceWorkerManifest.AssetUrl(basePath, relativePath, Metadata);
+            checks.That(url == expected, $"asset URLs: {what}", $"'{relativePath}' under '{basePath}' came out as '{url}', not '{expected}'");
+        }
     }
 
     private static string Module(string name) => $"_content/Bit.Butil/modules/{name}.js";

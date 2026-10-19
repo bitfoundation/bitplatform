@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
@@ -23,12 +22,16 @@ namespace Bit.Butil.Build;
 /// is swapped, and the SDK computes integrity, endpoints and fresh <c>.br</c>/<c>.gz</c> copies from the new
 /// content.
 /// <br/>
-/// A manifest that is not in the shape the SDK writes is reported with a warning and published as it is, since
-/// the alternative - failing a publish over a file the app may not even register - is worse than a stale entry.
+/// A manifest that cannot be read, or is not in the shape the SDK writes, is reported with BUTIL003 and published
+/// as it is, since the alternative - failing a publish over a file the app may not even register - is worse than
+/// a stale entry. A service worker script that cannot be given the new version is reported with BUTIL004: the
+/// manifest is still corrected, but nothing tells an installed app to fetch it. Both are warnings with codes so a
+/// consumer can silence them, or keep them out of a warnings-as-errors policy, the way BUTIL001 and BUTIL002 are.
 /// </remarks>
 public sealed class UpdateButilServiceWorker : Task
 {
-    private static readonly Regex FingerprintToken = new(@"#\[(?<prefix>[^\]{]*)\{(?<name>[^}]+)\}\](?<optional>\?)?", RegexOptions.CultureInvariant);
+    private const string ManifestWarning = "BUTIL003";
+    private const string ScriptWarning = "BUTIL004";
 
     /// <summary>The static web assets as they stand once the trimming is done.</summary>
     [Required]
@@ -91,12 +94,17 @@ public sealed class UpdateButilServiceWorker : Task
         var candidates = new List<ITaskItem>();
         var stale = new List<ITaskItem>();
 
+        const string StaleManifest = "so it is published as it is, still listing the Bit.Butil scripts as they were before the trimming";
+        const string StaleScript = "so it is published unchanged, and a browser that already installed the app sees no new service worker to update to - it keeps the Bit.Butil scripts it cached";
+
         foreach (var manifest in manifests)
         {
-            var update = ButilServiceWorkerManifest.Update(File.ReadAllText(manifest.GetMetadata("FullPath")), removed, hashes);
+            if (ReadText(manifest, ManifestWarning, StaleManifest) is not { } text) continue;
+
+            var update = ButilServiceWorkerManifest.Update(text, removed, hashes);
             if (update is null)
             {
-                Log.LogWarning("Bit.Butil: {0} is not a service worker assets manifest it can read, so it still describes the untrimmed bit-butil.js.", manifest.GetMetadata("FullPath"));
+                Warn(ManifestWarning, $"{manifest.GetMetadata("FullPath")} is not a service worker assets manifest it can read, {StaleManifest}.");
                 continue;
             }
 
@@ -108,10 +116,15 @@ public sealed class UpdateButilServiceWorker : Task
             foreach (var script in serviceWorkerFiles.Where(a => string.Equals(a.GetMetadata("AssetTraitValue"), "ServiceWorkerJs", StringComparison.Ordinal)
                 && string.Equals(a.GetMetadata("SourceId"), manifest.GetMetadata("SourceId"), StringComparison.OrdinalIgnoreCase)))
             {
-                var updated = ButilServiceWorkerManifest.UpdateVersion(File.ReadAllText(script.GetMetadata("FullPath")), update.PreviousVersion, update.Version);
+                if (ReadText(script, ScriptWarning, StaleScript) is not { } source) continue;
+
+                var updated = ButilServiceWorkerManifest.UpdateVersion(source, update.PreviousVersion, update.Version);
                 if (updated is null)
                 {
-                    Log.LogMessage(MessageImportance.Normal, "Bit.Butil: {0} does not carry the manifest's version, so it is left as it is.", script.GetMetadata("RelativePath"));
+                    // The SDK writes the version line into every published service worker, so a script without
+                    // it is a hand-written one or an SDK that changed - either way invisible at the default
+                    // verbosity unless it is a warning, and what it costs is an installed app never updating.
+                    Warn(ScriptWarning, $"{script.GetMetadata("FullPath")} does not carry the version of the manifest it precaches from ('/* {ButilServiceWorkerManifest.VersionMarker}{update.PreviousVersion} */'), {StaleScript}.");
                     continue;
                 }
 
@@ -123,6 +136,27 @@ public sealed class UpdateButilServiceWorker : Task
         StaleAssets = [.. stale];
         return Log.HasLoggedErrors is false;
     }
+
+    /// <summary>
+    /// The text of a service worker file, or null - with a warning - when it cannot be read. A listed asset whose
+    /// file is not on disk (an SDK that defines the asset ahead of writing it, a stale entry left by an interrupted
+    /// client publish) would otherwise fail the whole publish over a file the app may not even register.
+    /// </summary>
+    private string? ReadText(ITaskItem asset, string code, string consequence)
+    {
+        var path = asset.GetMetadata("FullPath");
+        try
+        {
+            return File.ReadAllText(path);
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException)
+        {
+            Warn(code, $"{path} could not be read ({exception.Message}), {consequence}.");
+            return null;
+        }
+    }
+
+    private void Warn(string code, string message) => Log.LogWarning(null, code, null, null, 0, 0, 0, 0, "Bit.Butil: " + message);
 
     private ITaskItem Rewrite(ITaskItem original, string content, List<ITaskItem> stale)
     {
@@ -168,17 +202,6 @@ public sealed class UpdateButilServiceWorker : Task
         return stream.Read(head, 0, 3) == 3 && head[0] == 0xEF && head[1] == 0xBB && head[2] == 0xBF;
     }
 
-    /// <summary>
-    /// The URL an asset is served at, as a manifest spells it. An optional fingerprint token
-    /// (<c>#[.{fingerprint}]?</c>) names the route that carries it, not the file, so it is dropped; a required
-    /// one is filled in from the asset's metadata.
-    /// </summary>
-    private static string UrlOf(ITaskItem asset)
-    {
-        var relativePath = FingerprintToken.Replace(asset.GetMetadata("RelativePath").Replace('\\', '/'),
-            m => m.Groups["optional"].Success ? "" : m.Groups["prefix"].Value + asset.GetMetadata(m.Groups["name"].Value.Substring(0, 1).ToUpperInvariant() + m.Groups["name"].Value.Substring(1)));
-        var basePath = asset.GetMetadata("BasePath").Replace('\\', '/').Trim('/');
-        relativePath = relativePath.TrimStart('/');
-        return basePath.Length == 0 ? relativePath : basePath + "/" + relativePath;
-    }
+    /// <summary>The URL an asset is served at, as a manifest spells it - see <see cref="ButilServiceWorkerManifest.AssetUrl"/>.</summary>
+    private static string UrlOf(ITaskItem asset) => ButilServiceWorkerManifest.AssetUrl(asset.GetMetadata("BasePath"), asset.GetMetadata("RelativePath"), asset.GetMetadata);
 }

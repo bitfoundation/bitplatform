@@ -40,7 +40,11 @@ public static class ButilServiceWorkerManifest
     private static readonly Regex UrlProperty = new(@"""url""\s*:\s*""(?<value>(?:[^""\\]|\\.)*)""", RegexOptions.CultureInvariant);
     private static readonly Regex HashProperty = new(@"""hash""\s*:\s*""(?<value>(?:[^""\\]|\\.)*)""", RegexOptions.CultureInvariant);
     private static readonly Regex VersionProperty = new(@"""version""\s*:\s*""(?<value>(?:[^""\\]|\\.)*)""", RegexOptions.CultureInvariant);
-    private static readonly Regex AssetsArray = new(@"""assets""\s*:\s*\[(?<entries>.*)\]", RegexOptions.CultureInvariant | RegexOptions.Singleline);
+    // Walked one flat object at a time up to the bracket that closes them, not to the last ']' in the file:
+    // anything a build or the app appends after the object would otherwise be read as entries and lost in the
+    // rewrite. An entry that is not one flat object fails the match, so the manifest is refused, not mangled.
+    private static readonly Regex AssetsArray = new(@"""assets""\s*:\s*\[(?<entries>\s*(?:\{[^{}]*\}(?:\s*,\s*\{[^{}]*\})*)?\s*)\]", RegexOptions.CultureInvariant);
+    private static readonly Regex PathToken = new(@"#\[(?<prefix>[^\]{]*)\{(?<name>[^}=]+)(?:=(?<value>[^}]*))?\}\](?<qualifier>[?!])?", RegexOptions.CultureInvariant);
 
     /// <summary>
     /// Drops the entries of the files a publish no longer serves, gives the entries of the files it replaced the
@@ -109,6 +113,30 @@ public static class ButilServiceWorkerManifest
         var marker = VersionMarker + previousVersion;
         return serviceWorker.Contains(marker) ? serviceWorker.Replace(marker, VersionMarker + version) : null;
     }
+
+    /// <summary>
+    /// The URL a static web asset is served at, as a manifest spells it. An optional token
+    /// (<c>#[.{fingerprint}]?</c>) names a route that carries it, not the file, so it is dropped. A required
+    /// (<c>#[.{fingerprint}]</c>) or preferred (<c>#[.{fingerprint}]!</c>) one is part of the file's name -
+    /// <c>_framework/dotnet#[.{fingerprint}]!.js</c> is published as <c>dotnet.&lt;fingerprint&gt;.js</c> - so it
+    /// is filled in: from the value the token carries (<c>{fingerprint=...}</c>), or else from the asset's
+    /// metadata of that name.
+    /// </summary>
+    /// <param name="basePath">The asset's <c>BasePath</c>.</param>
+    /// <param name="relativePath">The asset's <c>RelativePath</c>, tokens and all.</param>
+    /// <param name="metadata">The asset's metadata by name, such as <c>Fingerprint</c>.</param>
+    public static string AssetUrl(string basePath, string relativePath, Func<string, string> metadata)
+    {
+        var path = PathToken.Replace(relativePath.Replace('\\', '/'), token => token.Groups["qualifier"].Value == "?"
+            ? string.Empty
+            : token.Groups["prefix"].Value + (token.Groups["value"].Success ? token.Groups["value"].Value : metadata(MetadataName(token.Groups["name"].Value))));
+        var root = basePath.Replace('\\', '/').Trim('/');
+        path = path.TrimStart('/');
+        return root.Length == 0 ? path : root + "/" + path;
+    }
+
+    /// <summary>A path token's name as the metadata it reads: <c>fingerprint</c> is <c>Fingerprint</c>.</summary>
+    private static string MetadataName(string token) => token.Substring(0, 1).ToUpperInvariant() + token.Substring(1);
 
     /// <summary>A URL as the manifest spells it: forward slashes, no leading slash.</summary>
     private static string Normalize(string url) => url.Replace('\\', '/').TrimStart('/');

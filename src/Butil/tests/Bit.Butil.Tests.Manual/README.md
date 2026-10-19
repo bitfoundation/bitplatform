@@ -169,10 +169,13 @@ its own afterwards. `ButilServiceWorkerManifest` rewrites the list to match, and
 manifests written in the SDK's shape - the cases no publish below happens to produce: a replaced bundle taking
 the new hash with every other entry untouched; dropped files leaving the list (the first, the last, all of them);
 nothing to change leaving the file byte for byte, under its own version; a URL matched however the JSON spells it
-(an escaped slash, a leading one) and only whole; line endings kept; a version that follows what is listed and
-nothing else; a file that is not a manifest refused rather than rewritten on a guess; and the service worker
-script taking the new version only where the SDK put the old one. Every result is read back with a JSON parser,
-since a manifest that no longer parses is a service worker that installs nothing.
+(an escaped slash, a leading one) and only whole; a statement appended after the object kept whole, brackets and
+all; line endings kept; a version that follows what is listed and nothing else; a file that is not a manifest -
+or lists an entry that is not one flat object - refused rather than rewritten on a guess; the service worker
+script taking the new version only where the SDK put the old one; and the URL each asset is matched on computed
+from the SDK's path pattern, whichever fingerprint token it carries (optional `?`, preferred `!`, required, or one
+with its value inline). Every result is read back with a JSON parser, since a manifest that no longer parses is a
+service worker that installs nothing.
 
 **Script scanning** ([`ScriptScanning.cs`](ScriptScanning.cs)). Everything above rests on ILLink having
 run. A consumer publishing untrimmed has no trimmed assembly, and an *untrimmed* `Bit.Butil.dll` names every
