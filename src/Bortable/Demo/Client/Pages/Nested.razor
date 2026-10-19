@@ -1,0 +1,56 @@
+﻿@page "/nested"
+
+<PageTitle>Nested - bit Bortable</PageTitle>
+
+<div class="demo-header">
+    <h3>Nested sortables</h3>
+    <p class="text-muted">
+        Each item can hold its own sortable list. All levels share the same group, so items can be dragged between
+        branches and depths - into the empty list under any item, too. An item is never dropped inside itself.
+    </p>
+</div>
+
+<DemoCode Files="NestedList.razor, NestedItem.cs" />
+
+<NestedList Items="_tree" OnTreeChanged="StateHasChanged" />
+
+<p class="demo-order"><strong>Tree:</strong> <span id="nested-order">@Describe(_tree)</span></p>
+
+@code {
+    private List<NestedItem> _tree = new()
+    {
+        new NestedItem
+        {
+            Name = "Item 1.1",
+            Children = new()
+            {
+                new NestedItem { Name = "Item 2.1" },
+                new NestedItem
+                {
+                    Name = "Item 2.2",
+                    Children = new()
+                    {
+                        new NestedItem { Name = "Item 3.1" },
+                        new NestedItem { Name = "Item 3.2" },
+                    }
+                },
+                new NestedItem { Name = "Item 2.3" },
+            }
+        },
+        new NestedItem { Name = "Item 1.2" },
+        new NestedItem
+        {
+            Name = "Item 1.3",
+            Children = new()
+            {
+                new NestedItem { Name = "Item 2.4" },
+                new NestedItem { Name = "Item 2.5" },
+            }
+        },
+        new NestedItem { Name = "Item 1.4" },
+    };
+
+    // "Item 1.1 [Item 2.1, Item 2.2 [Item 3.1, Item 3.2]], Item 1.2": every item, its children in brackets.
+    private static string Describe(List<NestedItem> items)
+        => string.Join(", ", items.Select(i => i.Children.Count == 0 ? i.Name : $"{i.Name} [{Describe(i.Children)}]"));
+}

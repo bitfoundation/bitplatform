@@ -1,0 +1,71 @@
+﻿@typeparam TItem
+@namespace Bit.Bortable
+@implements IBortableZone
+@implements IAsyncDisposable
+
+@{
+    // The drag events stop at this list only while it takes the drag in progress: an unrelated drag (a file,
+    // selected text), or one this list refuses, bubbles on to the list or the app around it. bit-bortable.js
+    // allows the drop (preventDefault) for every drag of a list, and only for those.
+    _renderedDrag = Service.Context;
+    _handlesDrag = _renderedDrag is { Finished: false } drag && HandlesDrag(drag);
+}
+<div @ref="_listElement"
+     id="@Id"
+     class="@ContainerCssClass"
+     style="@Style"
+     data-bortable-list="@Id"
+     @ondragover="OnContainerDragOver"
+     @ondragover:stopPropagation="_handlesDrag"
+     @ondrop="OnDrop"
+     @ondrop:stopPropagation="_handlesDrag">
+    @if (Items is not null)
+    {
+        for (int i = 0; i < Items.Count; i++)
+        {
+            TItem current = Items[i];
+
+            if (IsPlaceholderAt(i))
+            {
+                @Placeholder
+            }
+
+            bool canDrag = CanDrag(current);
+            <div @key="current"
+                 class="@ItemCssClass(current)"
+                 data-bortable-item="true"
+                 data-bortable-disabled="@(canDrag ? null : "true")"
+                 draggable="@(canDrag && string.IsNullOrEmpty(Handle) ? "true" : "false")"
+                 @onclick="ItemClickCallback(current)"
+                 @ondragstart="e => OnItemDragStart(current, e)"
+                 @ondragstart:stopPropagation="true"
+                 @ondragend="OnItemDragEnd"
+                 @ondragend:stopPropagation="true">
+                @if (ItemTemplate is not null)
+                {
+                    @ItemTemplate(current)
+                }
+            </div>
+        }
+
+        if (IsPlaceholderAt(Items.Count))
+        {
+            @Placeholder
+        }
+    }
+    @ChildContent
+</div>
+
+@code {
+    // Drop preview shown in a list the dragged item would be moved into. It renders
+    // the dragged item's own template, so it looks like the item will once dropped.
+    private RenderFragment Placeholder => @<div class="@PlaceholderCssClass()"
+                                                data-bortable-item="true"
+                                                data-bortable-placeholder="true"
+                                                aria-hidden="true">
+        @if (ItemTemplate is not null && Service.Context?.Item is TItem preview)
+        {
+            @ItemTemplate(preview)
+        }
+    </div>;
+}

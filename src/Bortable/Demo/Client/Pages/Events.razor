@@ -1,0 +1,66 @@
+﻿@page "/events"
+
+<PageTitle>Events - bit Bortable</PageTitle>
+
+<div class="demo-header">
+    <h3>Events</h3>
+    <p class="text-muted">
+        Every drag fires the SortableJS-style lifecycle callbacks. Drag items within and between the lists and
+        watch the log - the newest event is on top.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="demo-columns">
+    <div class="demo-col">
+        <div class="demo-col-title">events-left</div>
+        <Bortable @bind-Items="_left" TItem="string" Group="ev" Id="events-left"
+                  Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost"
+                  OnStart='e => Log("start", e)'
+                  OnEnd='e => Log("end", e)'
+                  OnAdd='e => Log("add", e)'
+                  OnRemove='e => Log("remove", e)'
+                  OnUpdate='e => Log("update", e)'>
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+    <div class="demo-col">
+        <div class="demo-col-title">events-right</div>
+        <Bortable @bind-Items="_right" TItem="string" Group="ev" Id="events-right"
+                  Class="demo-list" ItemClass="demo-item tinted" GhostClass="demo-ghost"
+                  OnStart='e => Log("start", e)'
+                  OnEnd='e => Log("end", e)'
+                  OnAdd='e => Log("add", e)'
+                  OnRemove='e => Log("remove", e)'
+                  OnUpdate='e => Log("update", e)'>
+            <ItemTemplate Context="item">@item</ItemTemplate>
+        </Bortable>
+    </div>
+</div>
+
+<p class="demo-order"><strong>Left:</strong> <span id="events-left-order">@string.Join(", ", _left)</span></p>
+<p class="demo-order"><strong>Right:</strong> <span id="events-right-order">@string.Join(", ", _right)</span></p>
+
+<div class="event-log" id="events-log">
+    @if (_log.Count == 0)
+    {
+        <div class="event-log__empty">No events yet…</div>
+    }
+    @foreach (var line in _log)
+    {
+        <div class="event-log__line">@line</div>
+    }
+</div>
+
+@code {
+    private IList<string> _left = new List<string> { "Item 1", "Item 2", "Item 3", "Item 4" };
+    private IList<string> _right = new List<string> { "Item A", "Item B" };
+    private readonly List<string> _log = new();
+
+    private void Log(string name, BortableEventArgs<string> e)
+    {
+        _log.Insert(0, $"[{name}] item='{e.Item}' {e.FromId}#{e.OldIndex} -> {e.ToId}#{e.NewIndex}");
+        if (_log.Count > 30) _log.RemoveAt(_log.Count - 1);
+    }
+}
