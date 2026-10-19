@@ -1,0 +1,601 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- +:cnd:noEmit -->
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="DialogOkText" xml:space="preserve">
+    <value>Ja</value>
+  </data>
+  <data name="DialogCancelText" xml:space="preserve">
+    <value>Nej</value>
+  </data>
+  <data name="DataGridEmptyText" xml:space="preserve">
+    <value>Inga poster att visa.</value>
+  </data>
+  <data name="DataGridLoadingText" xml:space="preserve">
+    <value>Läser in…</value>
+  </data>
+  <data name="DataGridActionsText" xml:space="preserve">
+    <value>Åtgärder</value>
+  </data>
+  <data name="DataGridAddRowText" xml:space="preserve">
+    <value>+ Lägg till</value>
+  </data>
+  <data name="DataGridClearFiltersText" xml:space="preserve">
+    <value>Rensa filter</value>
+  </data>
+  <data name="DataGridExportCsvText" xml:space="preserve">
+    <value>Exportera CSV</value>
+  </data>
+  <data name="DataGridExportExcelText" xml:space="preserve">
+    <value>Exportera Excel</value>
+  </data>
+  <data name="DataGridColumnsText" xml:space="preserve">
+    <value>Kolumner</value>
+  </data>
+  <data name="DataGridEditText" xml:space="preserve">
+    <value>Redigera</value>
+  </data>
+  <data name="DataGridDeleteText" xml:space="preserve">
+    <value>Ta bort</value>
+  </data>
+  <data name="DataGridSaveText" xml:space="preserve">
+    <value>Spara</value>
+  </data>
+  <data name="DataGridCancelText" xml:space="preserve">
+    <value>Avbryt</value>
+  </data>
+  <data name="DataGridSelectAllLabel" xml:space="preserve">
+    <value>Markera alla</value>
+  </data>
+  <data name="DataGridSelectRowLabel" xml:space="preserve">
+    <value>Markera rad</value>
+  </data>
+  <data name="DataGridSelectRowFormat" xml:space="preserve">
+    <value>Markera rad: {0}</value>
+  </data>
+  <data name="DataGridFilterPlaceholder" xml:space="preserve">
+    <value>Filtrera…</value>
+  </data>
+  <data name="DataGridFilterByFormat" xml:space="preserve">
+    <value>Filtrera efter {0}</value>
+  </data>
+  <data name="DataGridFilterAllText" xml:space="preserve">
+    <value>Alla</value>
+  </data>
+  <data name="DataGridFilterOperatorLabel" xml:space="preserve">
+    <value>Filteroperator för {0}</value>
+  </data>
+  <data name="DataGridFilterOpContains" xml:space="preserve">
+    <value>Innehåller</value>
+  </data>
+  <data name="DataGridFilterOpDoesNotContain" xml:space="preserve">
+    <value>Innehåller inte</value>
+  </data>
+  <data name="DataGridFilterOpStartsWith" xml:space="preserve">
+    <value>Börjar med</value>
+  </data>
+  <data name="DataGridFilterOpEndsWith" xml:space="preserve">
+    <value>Slutar med</value>
+  </data>
+  <data name="DataGridBooleanTrueText" xml:space="preserve">
+    <value>Sant</value>
+  </data>
+  <data name="DataGridBooleanFalseText" xml:space="preserve">
+    <value>Falskt</value>
+  </data>
+  <data name="DataGridGroupByFormat" xml:space="preserve">
+    <value>Gruppera efter {0}</value>
+  </data>
+  <data name="DataGridUngroupByFormat" xml:space="preserve">
+    <value>Ta bort gruppering efter {0}</value>
+  </data>
+  <data name="DataGridExpandGroupFormat" xml:space="preserve">
+    <value>Expandera grupp {0}: {1}</value>
+  </data>
+  <data name="DataGridCollapseGroupFormat" xml:space="preserve">
+    <value>Dölj grupp {0}: {1}</value>
+  </data>
+  <data name="DataGridPagerRangeFormat" xml:space="preserve">
+    <value>{0}–{1} av {2}</value>
+  </data>
+  <data name="DataGridPagerPageFormat" xml:space="preserve">
+    <value>Sida {0} av {1}</value>
+  </data>
+  <data name="DataGridPerPageFormat" xml:space="preserve">
+    <value>{0} / sida</value>
+  </data>
+  <data name="DataGridRowsPerPageLabel" xml:space="preserve">
+    <value>Rader per sida</value>
+  </data>
+  <data name="DataGridFirstPageLabel" xml:space="preserve">
+    <value>Första sidan</value>
+  </data>
+  <data name="DataGridPreviousPageLabel" xml:space="preserve">
+    <value>Föregående sida</value>
+  </data>
+  <data name="DataGridNextPageLabel" xml:space="preserve">
+    <value>Nästa sida</value>
+  </data>
+  <data name="DataGridLastPageLabel" xml:space="preserve">
+    <value>Sista sidan</value>
+  </data>
+  <data name="DataGridEndOfResultsText" xml:space="preserve">
+    <value>- Slut på resultaten -</value>
+  </data>
+  <data name="DataGridToggleDetailsLabel" xml:space="preserve">
+    <value>Visa/dölj detaljer</value>
+  </data>
+  <data name="DataGridToggleChildrenLabel" xml:space="preserve">
+    <value>Visa/dölj underordnade</value>
+  </data>
+  <data name="DataGridReorderRowTitle" xml:space="preserve">
+    <value>Dra för att ändra ordning, eller fokusera och använd piltangenterna för att flytta raden</value>
+  </data>
+  <data name="DataGridReorderRowLabel" xml:space="preserve">
+    <value>Ändra ordning på raden. Tryck på uppåt- eller nedåtpil för att flytta raden.</value>
+  </data>
+  <data name="DataGridInvalidValueError" xml:space="preserve">
+    <value>Ogiltigt värde för {0}.</value>
+  </data>
+  <data name="DataGridAnnouncementSortedAscending" xml:space="preserve">
+    <value>Sorterat efter {0}, stigande</value>
+  </data>
+  <data name="DataGridAnnouncementSortedDescending" xml:space="preserve">
+    <value>Sorterat efter {0}, fallande</value>
+  </data>
+  <data name="DataGridAnnouncementSortCleared" xml:space="preserve">
+    <value>Sortering efter {0} borttagen</value>
+  </data>
+  <data name="DataGridAnnouncementFiltered" xml:space="preserve">
+    <value>Filter tillämpat på {0}</value>
+  </data>
+  <data name="DataGridAnnouncementFilterCleared" xml:space="preserve">
+    <value>Filter på {0} rensat</value>
+  </data>
+  <data name="DataGridAnnouncementPage" xml:space="preserve">
+    <value>Sida {0} av {1}</value>
+  </data>
+  <data name="DataGridAnnouncementRowDeleted" xml:space="preserve">
+    <value>Raden har tagits bort</value>
+  </data>
+  <data name="DataGridAnnouncementSearched" xml:space="preserve">
+    <value>Söker efter {0}</value>
+  </data>
+  <data name="DataGridAnnouncementSearchCleared" xml:space="preserve">
+    <value>Sökningen rensad</value>
+  </data>
+  <data name="ImageEditorSelect" xml:space="preserve">
+    <value>Markera</value>
+  </data>
+  <data name="ImageEditorCrop" xml:space="preserve">
+    <value>Beskär</value>
+  </data>
+  <data name="ImageEditorDraw" xml:space="preserve">
+    <value>Rita</value>
+  </data>
+  <data name="ImageEditorArrow" xml:space="preserve">
+    <value>Pil</value>
+  </data>
+  <data name="ImageEditorLine" xml:space="preserve">
+    <value>Linje</value>
+  </data>
+  <data name="ImageEditorRectangle" xml:space="preserve">
+    <value>Rektangel</value>
+  </data>
+  <data name="ImageEditorEllipse" xml:space="preserve">
+    <value>Ellips</value>
+  </data>
+  <data name="ImageEditorText" xml:space="preserve">
+    <value>Text</value>
+  </data>
+  <data name="ImageEditorHighlight" xml:space="preserve">
+    <value>Markera med överstrykning</value>
+  </data>
+  <data name="ImageEditorRedact" xml:space="preserve">
+    <value>Maskera</value>
+  </data>
+  <data name="ImageEditorStep" xml:space="preserve">
+    <value>Stegnummer</value>
+  </data>
+  <data name="ImageEditorEraser" xml:space="preserve">
+    <value>Suddgummi</value>
+  </data>
+  <data name="ImageEditorPan" xml:space="preserve">
+    <value>Panorera</value>
+  </data>
+  <data name="ImageEditorAdjust" xml:space="preserve">
+    <value>Justera</value>
+  </data>
+  <data name="ImageEditorFilters" xml:space="preserve">
+    <value>Filter</value>
+  </data>
+  <data name="ImageEditorTransform" xml:space="preserve">
+    <value>Transformera</value>
+  </data>
+  <data name="ImageEditorLayers" xml:space="preserve">
+    <value>Lager</value>
+  </data>
+  <data name="ImageEditorHistory" xml:space="preserve">
+    <value>Historik</value>
+  </data>
+  <data name="ImageEditorExport" xml:space="preserve">
+    <value>Exportera</value>
+  </data>
+  <data name="ImageEditorTools" xml:space="preserve">
+    <value>Verktyg</value>
+  </data>
+  <data name="ImageEditorBrightness" xml:space="preserve">
+    <value>Ljusstyrka</value>
+  </data>
+  <data name="ImageEditorContrast" xml:space="preserve">
+    <value>Kontrast</value>
+  </data>
+  <data name="ImageEditorSaturation" xml:space="preserve">
+    <value>Mättnad</value>
+  </data>
+  <data name="ImageEditorExposure" xml:space="preserve">
+    <value>Exponering</value>
+  </data>
+  <data name="ImageEditorTemperature" xml:space="preserve">
+    <value>Färgtemperatur</value>
+  </data>
+  <data name="ImageEditorTint" xml:space="preserve">
+    <value>Färgton</value>
+  </data>
+  <data name="ImageEditorHue" xml:space="preserve">
+    <value>Nyans</value>
+  </data>
+  <data name="ImageEditorGamma" xml:space="preserve">
+    <value>Gamma</value>
+  </data>
+  <data name="ImageEditorVibrance" xml:space="preserve">
+    <value>Lyster</value>
+  </data>
+  <data name="ImageEditorShadows" xml:space="preserve">
+    <value>Skuggor</value>
+  </data>
+  <data name="ImageEditorHighlights" xml:space="preserve">
+    <value>Högdagrar</value>
+  </data>
+  <data name="ImageEditorSharpen" xml:space="preserve">
+    <value>Skärpa</value>
+  </data>
+  <data name="ImageEditorBlur" xml:space="preserve">
+    <value>Oskärpa</value>
+  </data>
+  <data name="ImageEditorVignette" xml:space="preserve">
+    <value>Vinjett</value>
+  </data>
+  <data name="ImageEditorNone" xml:space="preserve">
+    <value>Inget</value>
+  </data>
+  <data name="ImageEditorGrayscale" xml:space="preserve">
+    <value>Gråskala</value>
+  </data>
+  <data name="ImageEditorSepia" xml:space="preserve">
+    <value>Sepia</value>
+  </data>
+  <data name="ImageEditorInvert" xml:space="preserve">
+    <value>Invertera</value>
+  </data>
+  <data name="ImageEditorPosterize" xml:space="preserve">
+    <value>Posterisera</value>
+  </data>
+  <data name="ImageEditorThreshold" xml:space="preserve">
+    <value>Tröskel</value>
+  </data>
+  <data name="ImageEditorRotateLeft" xml:space="preserve">
+    <value>Rotera åt vänster</value>
+  </data>
+  <data name="ImageEditorRotateRight" xml:space="preserve">
+    <value>Rotera åt höger</value>
+  </data>
+  <data name="ImageEditorFlipHorizontal" xml:space="preserve">
+    <value>Vänd vågrätt</value>
+  </data>
+  <data name="ImageEditorFlipVertical" xml:space="preserve">
+    <value>Vänd lodrätt</value>
+  </data>
+  <data name="ImageEditorStraighten" xml:space="preserve">
+    <value>Räta upp</value>
+  </data>
+  <data name="ImageEditorAspectRatio" xml:space="preserve">
+    <value>Bildförhållande</value>
+  </data>
+  <data name="ImageEditorFreeform" xml:space="preserve">
+    <value>Fritt</value>
+  </data>
+  <data name="ImageEditorOriginal" xml:space="preserve">
+    <value>Original</value>
+  </data>
+  <data name="ImageEditorSquare" xml:space="preserve">
+    <value>Kvadrat</value>
+  </data>
+  <data name="ImageEditorApplyCrop" xml:space="preserve">
+    <value>Tillämpa beskärning</value>
+  </data>
+  <data name="ImageEditorCancelCrop" xml:space="preserve">
+    <value>Avbryt beskärning</value>
+  </data>
+  <data name="ImageEditorUndo" xml:space="preserve">
+    <value>Ångra</value>
+  </data>
+  <data name="ImageEditorRedo" xml:space="preserve">
+    <value>Gör om</value>
+  </data>
+  <data name="ImageEditorReset" xml:space="preserve">
+    <value>Återställ</value>
+  </data>
+  <data name="ImageEditorSave" xml:space="preserve">
+    <value>Spara</value>
+  </data>
+  <data name="ImageEditorCancel" xml:space="preserve">
+    <value>Avbryt</value>
+  </data>
+  <data name="ImageEditorDone" xml:space="preserve">
+    <value>Klar</value>
+  </data>
+  <data name="ImageEditorDelete" xml:space="preserve">
+    <value>Ta bort</value>
+  </data>
+  <data name="ImageEditorDuplicate" xml:space="preserve">
+    <value>Duplicera</value>
+  </data>
+  <data name="ImageEditorBringToFront" xml:space="preserve">
+    <value>Placera längst fram</value>
+  </data>
+  <data name="ImageEditorSendToBack" xml:space="preserve">
+    <value>Placera längst bak</value>
+  </data>
+  <data name="ImageEditorDownload" xml:space="preserve">
+    <value>Ladda ned</value>
+  </data>
+  <data name="ImageEditorCopyToClipboard" xml:space="preserve">
+    <value>Kopiera till urklipp</value>
+  </data>
+  <data name="ImageEditorZoomIn" xml:space="preserve">
+    <value>Zooma in</value>
+  </data>
+  <data name="ImageEditorZoomOut" xml:space="preserve">
+    <value>Zooma ut</value>
+  </data>
+  <data name="ImageEditorZoomToFit" xml:space="preserve">
+    <value>Anpassa till fönstret</value>
+  </data>
+  <data name="ImageEditorZoomTo100" xml:space="preserve">
+    <value>Verklig storlek</value>
+  </data>
+  <data name="ImageEditorOpenImage" xml:space="preserve">
+    <value>Öppna bild</value>
+  </data>
+  <data name="ImageEditorPasteImage" xml:space="preserve">
+    <value>Klistra in från urklipp</value>
+  </data>
+  <data name="ImageEditorColor" xml:space="preserve">
+    <value>Färg</value>
+  </data>
+  <data name="ImageEditorFillColor" xml:space="preserve">
+    <value>Fyllningsfärg</value>
+  </data>
+  <data name="ImageEditorStrokeColor" xml:space="preserve">
+    <value>Konturfärg</value>
+  </data>
+  <data name="ImageEditorStrokeWidth" xml:space="preserve">
+    <value>Linjebredd</value>
+  </data>
+  <data name="ImageEditorOpacity" xml:space="preserve">
+    <value>Opacitet</value>
+  </data>
+  <data name="ImageEditorFontSize" xml:space="preserve">
+    <value>Textstorlek</value>
+  </data>
+  <data name="ImageEditorDashed" xml:space="preserve">
+    <value>Streckad</value>
+  </data>
+  <data name="ImageEditorFilled" xml:space="preserve">
+    <value>Fylld</value>
+  </data>
+  <data name="ImageEditorRedactionStyle" xml:space="preserve">
+    <value>Maskeringsstil</value>
+  </data>
+  <data name="ImageEditorSolid" xml:space="preserve">
+    <value>Heldragen</value>
+  </data>
+  <data name="ImageEditorPixelate" xml:space="preserve">
+    <value>Pixla</value>
+  </data>
+  <data name="ImageEditorFormat" xml:space="preserve">
+    <value>Format</value>
+  </data>
+  <data name="ImageEditorQuality" xml:space="preserve">
+    <value>Kvalitet</value>
+  </data>
+  <data name="ImageEditorWidth" xml:space="preserve">
+    <value>Bredd</value>
+  </data>
+  <data name="ImageEditorHeight" xml:space="preserve">
+    <value>Höjd</value>
+  </data>
+  <data name="ImageEditorMetadata" xml:space="preserve">
+    <value>Metadata</value>
+  </data>
+  <data name="ImageEditorKeepMetadata" xml:space="preserve">
+    <value>Behåll allt</value>
+  </data>
+  <data name="ImageEditorRemoveMetadata" xml:space="preserve">
+    <value>Ta bort allt</value>
+  </data>
+  <data name="ImageEditorStripSensitiveMetadata" xml:space="preserve">
+    <value>Ta bort plats och enhet</value>
+  </data>
+  <data name="ImageEditorEstimatedSize" xml:space="preserve">
+    <value>Uppskattad storlek</value>
+  </data>
+  <data name="ImageEditorLoading" xml:space="preserve">
+    <value>Läser in bild</value>
+  </data>
+  <data name="ImageEditorProcessing" xml:space="preserve">
+    <value>Bearbetar</value>
+  </data>
+  <data name="ImageEditorNoImage" xml:space="preserve">
+    <value>Ingen bild inläst</value>
+  </data>
+  <data name="ImageEditorDropImageHere" xml:space="preserve">
+    <value>Släpp en bild här eller klicka för att välja en</value>
+  </data>
+  <data name="ImageEditorImageTooLarge" xml:space="preserve">
+    <value>Bilden är för stor för att öppnas här.</value>
+  </data>
+  <data name="ImageEditorUnsupportedFormat" xml:space="preserve">
+    <value>Filformatet stöds inte.</value>
+  </data>
+  <data name="ImageEditorLoadFailed" xml:space="preserve">
+    <value>Bilden kunde inte öppnas.</value>
+  </data>
+  <data name="ImageEditorExportFailed" xml:space="preserve">
+    <value>Bilden kunde inte exporteras.</value>
+  </data>
+  <data name="ImageEditorTextNeedsFont" xml:space="preserve">
+    <value>Text kan inte ritas förrän ett teckensnitt har registrerats i textrastreraren.</value>
+  </data>
+  <data name="ImageEditorFormatNotSupported" xml:space="preserve">
+    <value>Den här webbläsaren kan inte spara i det formatet, så ett format som stöds användes i stället.</value>
+  </data>
+  <data name="ImageEditorEditorLabel" xml:space="preserve">
+    <value>Bildredigerare</value>
+  </data>
+  <data name="ImageEditorCanvasLabel" xml:space="preserve">
+    <value>Bildyta</value>
+  </data>
+  <data name="ImageEditorToolbarLabel" xml:space="preserve">
+    <value>Redigeringsverktyg</value>
+  </data>
+  <data name="ImageEditorPanelLabel" xml:space="preserve">
+    <value>Redigeringsalternativ</value>
+  </data>
+  <data name="ImageEditorCropHandleLabel" xml:space="preserve">
+    <value>Beskärningshandtag</value>
+  </data>
+  <data name="ImageEditorSelectedAnnotation" xml:space="preserve">
+    <value>Markerad anteckning</value>
+  </data>
+  <data name="ImageEditorKeyboardHint" xml:space="preserve">
+    <value>Använd piltangenterna för att flytta markeringen och Delete för att ta bort den.</value>
+  </data>
+</root>
