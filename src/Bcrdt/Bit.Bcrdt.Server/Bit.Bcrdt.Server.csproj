@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <RootNamespace>Bit.Bcrdt.Server</RootNamespace>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsTrimmable>true</IsTrimmable>
+        <Description>The ASP.NET Core relays for bit Bcrdt: the SignalR hub the Bit.Bcrdt.SignalR transport talks to, and the WebSocket endpoint the built-in WebSocket transport talks to. Both only relay - neither decodes a message nor holds a replica.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+        <PackageTags>$(PackageTags);ASP.NET Core;CRDT;Collaboration;Realtime;SignalR;WebSockets</PackageTags>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Bcrdt\Bit.Bcrdt.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Bcrdt" />
+    </ItemGroup>
+
+</Project>

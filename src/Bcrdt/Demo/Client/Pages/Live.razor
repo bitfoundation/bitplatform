@@ -1,0 +1,179 @@
+﻿@page "/live"
+@page "/live/{Room}"
+@inject NavigationManager Navigation
+@inject LiveRelay Relay
+
+<h1>Live, across tabs</h1>
+
+<section class="prose">
+    <p>
+        Every other page in this demo keeps its replicas side by side in one tab, talking over the library's
+        in-memory transport. This one is the real thing: one replica per browser tab, meeting through the demo
+        server. Open the link below in another tab, another browser or on your phone and type in both.
+    </p>
+    <p>
+        It is also the page an application would write. The document comes from the app's own
+        <code>AddBitBcrdtServices</code> registration and is opened by <code>BcrdtCollaborationScope</code>; the
+        editor is <code>BcrdtTextArea</code> and the list of people is <code>BcrdtPresenceView</code>. The server
+        only relays: <code>BcrdtHub</code> from <code>Bit.Bcrdt.Server</code> forwards each message to the other
+        tabs on the document without decoding it, and no copy of the document lives on the server - when the last
+        tab closes, it is gone.
+    </p>
+    <p class="callout">
+        <strong>The thing worth trying.</strong> Take one tab offline, type a paragraph into it, type something
+        else into another tab, then bring the first one back. Both paragraphs survive, in the same order in every
+        tab - the handshake sends each side what the other is missing, in both directions.
+    </p>
+</section>
+
+@if (Room is null || !RendererInfo.IsInteractive)
+{
+    <p class="loading">Connecting…</p>
+}
+else
+{
+    <section class="live-bar">
+        <span class="live-label">Share this link:</span>
+        <a class="live-link" href="@ShareLink" target="_blank">@ShareLink</a>
+        <span class="live-label">Relay:</span>
+        <a class="@RelayClass(LiveRelayKind.SignalR)" href="@RelayLink(LiveRelayKind.SignalR)">SignalR hub</a>
+        <a class="@RelayClass(LiveRelayKind.WebSocket)" href="@RelayLink(LiveRelayKind.WebSocket)">WebSocket endpoint</a>
+    </section>
+
+    <BcrdtCollaborationScope DocumentId="@DocumentId" User="_me" OnOpened="Opened" Context="document">
+        <LoadingContent>
+            <p class="loading">Opening the document…</p>
+        </LoadingContent>
+        <ChildContent>
+            <section class="panel @(_online ? "" : "panel-offline")">
+                <header class="panel-head" style="background: @_me.Color">
+                    <span class="panel-name">You are @_me.Name</span>
+                    <span class="panel-client" title="The engine's per-session client identifier. Every tab has its own.">
+                        client @((document.ClientId % 100_000).ToString("D5"))
+                    </span>
+                    <ConnectionBadge Status="document.ConnectionStatus" WantsConnection="_online" />
+                    <button class="panel-toggle" @onclick="() => ToggleAsync(document)">
+                        @(_online ? "Go offline" : "Go online")
+                    </button>
+                </header>
+
+                <div class="panel-presence">
+                    <span class="presence-label">Here now:</span>
+                    <BcrdtPresenceView Presence="document.Presence" Class="presence-list" />
+                </div>
+
+                <div class="panel-body">
+                    <BcrdtTextArea Text="@document.Text(Field)"
+                                   Presence="document.Presence"
+                                   Field="@Field"
+                                   Rows="12"
+                                   Class="editor"
+                                   Placeholder="Type here, then open the link above in another tab." />
+                </div>
+
+                <footer class="panel-foot">
+                    <span class="metric">@document.Text(Field).Count characters</span>
+                    <span class="metric">@(document.Presence.Others.Count == 1 ? "1 other tab" : $"{document.Presence.Others.Count} other tabs") on this document</span>
+                    @if (!_online)
+                    {
+                        <span class="metric metric-warn">
+                            editing offline - changes are held locally until this tab reconnects
+                        </span>
+                    }
+                </footer>
+            </section>
+        </ChildContent>
+    </BcrdtCollaborationScope>
+
+    <section class="prose">
+        <h2>Two relays</h2>
+        <p>
+            The demo server maps both relays <code>Bit.Bcrdt.Server</code> ships:
+            <code>app.MapHub&lt;BcrdtHub&gt;("/hub/bcrdt")</code> for the SignalR transport of
+            <code>Bit.Bcrdt.SignalR</code>, and <code>app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}")</code> for
+            the WebSocket transport built into <code>Bit.Bcrdt</code>. Tabs only meet on the same relay, so the relay
+            is part of the link you share.
+        </p>
+    </section>
+}
+
+@code {
+    private const string Field = "body";
+
+    // Who this tab is. A random name is enough for a demo; an application publishes its signed-in user.
+    private readonly BcrdtCollaboratorInfo _me = CreateGuest();
+    private bool _online = true;
+
+    /// <summary>The room the tabs share. A visit without one is sent to a fresh room.</summary>
+    [Parameter]
+    public string? Room { get; set; }
+
+    /// <summary><c>websocket</c> to meet through the WebSocket endpoint instead of the SignalR hub.</summary>
+    [SupplyParameterFromQuery(Name = "relay")]
+    public string? RelayName { get; set; }
+
+    private LiveRelayKind Kind => string.Equals(RelayName, "websocket", StringComparison.OrdinalIgnoreCase)
+        ? LiveRelayKind.WebSocket
+        : LiveRelayKind.SignalR;
+
+    // The relay is part of the document identifier: a tab on the hub and a tab on the WebSocket endpoint can never
+    // reach each other, so they must not pretend to be editing the same document.
+    private string DocumentId => $"live-{Room}-{(Kind == LiveRelayKind.WebSocket ? "ws" : "hub")}";
+
+    private string ShareLink => RelayLink(Kind);
+
+    protected override void OnParametersSet()
+    {
+        if (!RendererInfo.IsInteractive) return;
+
+        if (Room is null || !IsValidRoom(Room))
+        {
+            Navigation.NavigateTo(RelayLink(Kind, NewRoom()), replace: true);
+            return;
+        }
+
+        // Read when the scope opens the document, which happens after this.
+        Relay.Kind = Kind;
+        _online = true;
+    }
+
+    private void Opened(BcrdtCollaborativeDocument document) => _online = true;
+
+    private async Task ToggleAsync(BcrdtCollaborativeDocument document)
+    {
+        _online = !_online;
+        if (_online)
+        {
+            await document.ConnectAsync();
+
+            // Disconnecting withdraws this tab's presence so the others see it leave at once; coming back
+            // publishes it again.
+            document.Presence.SetUser(_me);
+        }
+        else
+        {
+            await document.DisconnectAsync();
+        }
+    }
+
+    private string RelayLink(LiveRelayKind kind) => RelayLink(kind, Room ?? NewRoom());
+
+    private string RelayLink(LiveRelayKind kind, string room)
+    {
+        string path = $"live/{room}" + (kind == LiveRelayKind.WebSocket ? "?relay=websocket" : string.Empty);
+        return Navigation.ToAbsoluteUri(path).ToString();
+    }
+
+    private string RelayClass(LiveRelayKind kind) => kind == Kind ? "live-relay live-relay-active" : "live-relay";
+
+    private static bool IsValidRoom(string room) =>
+        room.Length is > 0 and <= 32 && room.All(c => c is (>= 'a' and <= 'z') or (>= '0' and <= '9') or '-');
+
+    private static string NewRoom() => Guid.NewGuid().ToString("N")[..10];
+
+    private static BcrdtCollaboratorInfo CreateGuest()
+    {
+        string id = Guid.NewGuid().ToString("N");
+        return new BcrdtCollaboratorInfo(id, $"Guest {Random.Shared.Next(100, 1000)}", BcrdtPresenceService.SuggestColor(id));
+    }
+}

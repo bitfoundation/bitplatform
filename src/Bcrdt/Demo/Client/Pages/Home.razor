@@ -1,0 +1,116 @@
+﻿@page "/"
+
+<h1>Collaboration, in C#, with no server in the middle</h1>
+
+<p class="lede">
+    bit Bcrdt is a native .NET implementation of a conflict-free replicated data type - a
+    CRDT - together with the synchronization, presence, persistence and Blazor integration that a
+    collaborative feature actually needs. There is no JavaScript CRDT library underneath it and no
+    port of one: the engine, the wire format and the merge algorithm are all C#.
+</p>
+
+<section class="prose">
+    <h2>What a CRDT gives you</h2>
+    <p>
+        Suppose two people edit the same paragraph at the same moment and neither can see the other's
+        change yet. Without a CRDT you have to pick a loser. The usual approaches are to lock the
+        document so only one person can type, to funnel every keystroke through a server that
+        rewrites everyone's edits into a single agreed order, or to save last and overwrite the other
+        person's work. All three either need a permanently reachable authority or silently destroy
+        something somebody wrote.
+    </p>
+    <p>
+        A CRDT removes the need to choose. Every edit is expressed so that applying edits in any
+        order, more than once, or after an arbitrarily long delay always produces the same result on
+        every copy. That single property has consequences that stack up quickly: no server is
+        required to arbitrate, replicas can be edited while completely disconnected and reconciled
+        later, updates are small deltas rather than whole documents, and nobody's work is thrown
+        away. What you give up is the ability to say <em>which</em> of two truly simultaneous writes
+        to the same single value wins - the answer is deterministic and identical everywhere, but it
+        is arbitrary. Where losing a write is unacceptable, you model the value as a nested
+        collaborative type instead of a scalar, and both sides survive.
+    </p>
+
+    <h2>What the smallest useful program looks like</h2>
+    <p>
+        Opening a document does everything in the right order - load from storage so the document is
+        usable immediately and offline, then connect and let the handshake reconcile whatever changed
+        while it was away. After that, editing is ordinary method calls.
+    </p>
+
+    <pre class="code"><code>// Program.cs - one registration configures transport and storage.
+builder.Services.AddBitBcrdtServices(collaboration => collaboration
+    .UseTransport(documentId =&gt; BcrdtInMemoryNetwork.Shared.CreateTransport(documentId))
+    .UseInMemoryStore());
+
+// Anywhere with the service injected.
+BcrdtCollaborativeDocument document = await collaboration.OpenAsync("my-document");
+
+document.Text("body").Insert(0, "Hello, everyone.");
+document.Map.Set("title", "Draft");
+document.Presence.SetUser(new BcrdtCollaboratorInfo("ada", "Ada", BcrdtPresenceService.SuggestColor("ada")));
+
+// That is the whole thing. The edits are already merged locally, already encoded as a delta,
+// already on their way to every other replica, and already written to storage.</code></pre>
+
+    <h2>The demos</h2>
+    <p>
+        Each page below - except the live one - shows several replicas of one document, side by side, in this single browser
+        page. They are not views onto a shared object - each panel is a genuinely separate replica
+        with its own client identifier, its own presence identity, its own local storage and its own
+        connection, talking to the others through the library's in-memory transport. That is what
+        makes the merges you see real merges rather than a shared variable being redrawn.
+    </p>
+
+    <dl class="demo-list">
+        <dt><a href="text">Collaborative text</a></dt>
+        <dd>
+            Three replicas editing one paragraph. Type in any of them and watch it appear in the
+            others. Take one offline, edit it and the others, bring it back, and watch a genuine
+            divergence be reconciled without anybody losing a word. This is the headline demo.
+        </dd>
+
+        <dt><a href="list">Collaborative list</a></dt>
+        <dd>
+            A shared to-do list: a sequence whose elements are themselves collaborative maps. Shows
+            what nesting buys you - editing an item's title merges with a concurrent tick of its
+            checkbox, because they are different keys of a real map rather than two writes of one
+            blob.
+        </dd>
+
+        <dt><a href="form">Collaborative form</a></dt>
+        <dd>
+            Several fields on a map, plus one long-text field, so the difference in merge behaviour
+            between a scalar and a text type is visible next to each other in the same form.
+        </dd>
+
+        <dt><a href="conflicts">Conflict lab</a></dt>
+        <dd>
+            The page that proves the claims. Pause each replica's sync, make specific conflicting
+            edits on purpose - concurrent insert at the same position, concurrent delete of the same
+            element, concurrent write of the same key - then resume and compare the raw state of both
+            replicas as JSON.
+        </dd>
+
+        <dt><a href="undo">Collaborative undo</a></dt>
+        <dd>
+            Undo that reverses your own last action and leaves everyone else's work alone, which is
+            what users expect and what a naïve "restore the previous state" undo gets badly wrong in
+            a shared document.
+        </dd>
+
+        <dt><a href="internals">Internals</a></dt>
+        <dd>
+            An inspector: live state vector, block count, encoded size and a log of updates as they
+            are produced. Type five hundred characters and watch the block count stay in single
+            figures - that is the run-length encoding that makes large documents affordable.
+        </dd>
+
+        <dt><a href="live">Live, across tabs</a></dt>
+        <dd>
+            The same text editor, one replica per browser tab, meeting through the demo server's
+            SignalR hub or WebSocket endpoint - which relay messages and hold no copy of the document.
+            Share the link with another tab or device and type in both.
+        </dd>
+    </dl>
+</section>

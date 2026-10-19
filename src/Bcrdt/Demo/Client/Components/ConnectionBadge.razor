@@ -1,0 +1,36 @@
+﻿@* A plain read-out of one replica's connection state. Purely presentational: it re-renders when its
+   parent does, and the parent is what subscribes to the sync provider. *@
+
+<span class="badge badge-@Tone" title="@Description">@Label</span>
+
+@code {
+    /// <summary>The connection state to display.</summary>
+    [Parameter, EditorRequired]
+    public BcrdtConnectionStatus Status { get; set; }
+
+    /// <summary>Whether the replica is meant to be connected at all.</summary>
+    [Parameter]
+    public bool WantsConnection { get; set; } = true;
+
+    private string Label => !WantsConnection ? "offline" : Status switch
+    {
+        BcrdtConnectionStatus.Synced => "synced",
+        BcrdtConnectionStatus.Handshaking => "syncing",
+        BcrdtConnectionStatus.Connecting => "connecting",
+        BcrdtConnectionStatus.Reconnecting => "reconnecting",
+        BcrdtConnectionStatus.Faulted => "faulted",
+        _ => "disconnected",
+    };
+
+    private string Tone => !WantsConnection ? "offline" : Status switch
+    {
+        BcrdtConnectionStatus.Synced => "good",
+        BcrdtConnectionStatus.Handshaking or BcrdtConnectionStatus.Connecting or BcrdtConnectionStatus.Reconnecting => "busy",
+        BcrdtConnectionStatus.Faulted => "bad",
+        _ => "offline",
+    };
+
+    private string Description => !WantsConnection
+        ? "Disconnected on purpose. Edits still work and are kept locally until this replica reconnects."
+        : $"BcrdtConnectionStatus.{Status}";
+}

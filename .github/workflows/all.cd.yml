@@ -125,6 +125,12 @@ jobs:
     uses: ./.github/workflows/borm.demo.cd.yml
     secrets: inherit
 
+  bcrdt_demo:
+    name: bcrdt demo
+    if: inputs.server
+    uses: ./.github/workflows/bcrdt.demo.cd.yml
+    secrets: inherit
+
   bonboarding_demo:
     name: bonboarding demo
     if: inputs.server

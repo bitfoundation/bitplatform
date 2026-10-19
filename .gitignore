@@ -308,6 +308,8 @@ _book
 /src/Blow/Bit.Blow/wwwroot/**/*.css
 
 /src/Borm/Bit.Borm/wwwroot/**/*.css
+/src/Bcrdt/Bit.Bcrdt.Blazor/Scripts/**/*.js
+/src/Bcrdt/Bit.Bcrdt.Blazor/wwwroot/**/*.js
 
 /src/Blex/Bit.Blex.Blazor/Scripts/**/*.js
 /src/Blex/Bit.Blex.Blazor/wwwroot/**/*.js

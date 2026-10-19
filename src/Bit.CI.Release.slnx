@@ -153,6 +153,17 @@
     <Project Path="Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj" />
     <Project Path="Borm/Tests/Bit.Borm.Tests/Bit.Borm.Tests.csproj" />
   </Folder>
+  <Folder Name="/Bcrdt/">
+    <File Path="Bcrdt/README.md" />
+    <Project Path="Bcrdt/Demo/Client/Bit.Bcrdt.Demo.Client.csproj" />
+    <Project Path="Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj" />
+    <Project Path="Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj" />
+    <Project Path="Bcrdt/Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj" />
+    <Project Path="Bcrdt/Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj" />
+    <Project Path="Bcrdt/Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj" />
+    <Project Path="Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj" />
+    <Project Path="Bcrdt/Tests/Bit.Bcrdt.Tests/Bit.Bcrdt.Tests.csproj" />
+  </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />

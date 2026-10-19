@@ -1,0 +1,122 @@
+﻿@page "/text"
+@inherits ReplicaPageBase
+
+<h1>Collaborative text</h1>
+
+<section class="prose">
+    <p>
+        Below are three independent replicas of the same document, <code>demo-text</code>. Each panel
+        has its own client identifier, its own presence identity, its own local storage and its own
+        connection to the in-memory network the other two are on. Nothing is shared between them
+        except the messages they send each other, which is why what follows is a real demonstration
+        rather than three views of one variable.
+    </p>
+    <p>
+        Type into any panel. The edit is turned into the minimal insertion or deletion you actually
+        made - not "the textarea now says this", which would replace every character and destroy
+        concurrent work - encoded as a delta of a few bytes, sent, decoded, merged, and rendered in
+        the other two. The coloured header of each panel is that replica's presence colour, and it is
+        the same colour its collaborators show next to its name in their own presence lists.
+    </p>
+    <p class="callout">
+        <strong>The thing worth trying.</strong> Take <em>Replica A</em> offline with its
+        <em>Go offline</em> button. Type a sentence into it. Now type different sentences into B and
+        into C - note that those two still see each other, because only A left. Then bring A back
+        online. All three converge on a document containing every sentence, in the same order in all
+        three panels. Nothing was locked, nothing was queued keystroke by keystroke, and nothing was
+        overwritten. Without a CRDT, the usual outcome here is that whichever replica saved last wins
+        and the other two sentences are gone.
+    </p>
+</section>
+
+@if (!Ready)
+{
+    <p class="loading">Opening three replicas…</p>
+}
+else
+{
+    <div class="panel-grid panel-grid-3">
+        @foreach (DemoReplica replica in Replicas)
+        {
+            <ReplicaPanel Replica="replica">
+                <ChildContent>
+                    @*
+                        The library's own component. It handles the two things a naïve textarea
+                        binding gets wrong: it diffs the new value back into the edit the user made,
+                        and it maps the local caret through incoming remote edits so somebody typing
+                        above you does not push your cursor along.
+                    *@
+                    <BcrdtTextArea Text="replica.Document.Text(Field)"
+                                   Presence="replica.Document.Presence"
+                                   Field="@Field"
+                                   Rows="10"
+                                   Class="editor"
+                                   Placeholder="Type here - the other panels will follow." />
+                </ChildContent>
+
+                <Footer>
+                    <span class="metric">@Length(replica) characters</span>
+                    <span class="metric" title="Blocks in the underlying store. Run-length encoding keeps this far below the character count.">
+                        @Blocks(replica) blocks
+                    </span>
+                    @if (!replica.IsOnline)
+                    {
+                        <span class="metric metric-warn">
+                            editing offline - changes are held locally until this replica reconnects
+                        </span>
+                    }
+                </Footer>
+            </ReplicaPanel>
+        }
+    </div>
+
+    <section class="prose">
+        <h2>Are they actually the same document?</h2>
+        <p>
+            Convergence is a claim that can be checked rather than asserted: two replicas that have
+            received the same updates must hold identical state. The three panels report
+            @(AllConverged ? "identical" : "differing") content right now, which is
+            @(AllConverged ? "what you should see whenever every replica is online and idle."
+                           : "exactly what you should see while a replica is offline or an update is still in flight.")
+        </p>
+        <p>
+            <button class="button" @onclick="ClearFromReplicaA">Clear the document (from Replica A)</button>
+            <span class="hint">
+                A deletion is an edit like any other, so it merges the same way. Issued from A, it
+                reaches B and C - unless one of them is offline, in which case it arrives when they
+                reconnect.
+            </span>
+        </p>
+    </section>
+}
+
+@code {
+    private const string Field = "body";
+
+    protected override string DocumentId => "demo-text";
+
+    // Three labels means three replicas. The base class asks the workspace for one full
+    // BcrdtCollaborationService per label - see DemoWorkspace.OpenReplicasAsync for why that matters.
+    protected override string[] ReplicaLabels => ["Replica A", "Replica B", "Replica C"];
+
+    private static int Length(DemoReplica replica) => replica.Document.Text(Field).Count;
+
+    private static int Blocks(DemoReplica replica) =>
+        replica.Document.Crdt.Store.Clients.Sum(entry => entry.Value.Count);
+
+    private bool AllConverged
+    {
+        get
+        {
+            if (Replicas.Count < 2) return true;
+            string first = Replicas[0].Document.Text(Field).ToString();
+            return Replicas.All(replica => replica.Document.Text(Field).ToString() == first);
+        }
+    }
+
+    private void ClearFromReplicaA()
+    {
+        BcrdtText text = Replicas[0].Document.Text(Field);
+        if (text.Count > 0) text.Delete(0, text.Count);
+    }
+}
