@@ -22,7 +22,8 @@ public partial class SignUpRequestDto : IdentityRequestDto
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        if (string.IsNullOrWhiteSpace(Email) && string.IsNullOrWhiteSpace(PhoneNumber))
+        // Exactly one: an unconfirmed second identifier lets its owner take over the account once the first is confirmed.
+        if (string.IsNullOrWhiteSpace(Email) == string.IsNullOrWhiteSpace(PhoneNumber))
             yield return new ValidationResult(errorMessage: nameof(AppStrings.EitherProvideEmailOrPhoneNumber), [nameof(Email), nameof(PhoneNumber)]);
     }
 }
