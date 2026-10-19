@@ -158,8 +158,6 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
             webAppBuilder.Services.AddBrowserlessClientServices();
         }
 
-        ConfigureTestHost(webAppBuilder);
-
         configureTestServices?.Invoke(webAppBuilder.Services);
         configureTestWebAppServices?.Invoke(webAppBuilder.Services);
         //#if (api == "Integrated")
@@ -208,8 +206,6 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
         apiAppBuilder.Services.AddSharedProjectServices(apiAppBuilder.Configuration);
         Server.Api.Program.AddServerApiProjectServices(apiAppBuilder);
         apiAppBuilder.AddTestApiProjectServices();
-
-        ConfigureTestHost(apiAppBuilder);
 
         configureTestServices?.Invoke(apiAppBuilder.Services);
         configureTestApiAppServices?.Invoke(apiAppBuilder.Services);
@@ -406,11 +402,6 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
                 await app.DisposeAsync();
             }
         }
-    }
-
-    private static void ConfigureTestHost(WebApplicationBuilder builder)
-    {
-        builder.Services.Configure<HostOptions>(options => options.ShutdownTimeout = TimeSpan.FromSeconds(1));
     }
 
     //#if (api == "Standalone")
