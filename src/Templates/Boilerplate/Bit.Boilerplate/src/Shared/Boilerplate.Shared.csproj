@@ -53,6 +53,18 @@
         <EmbeddedResource Update="Resources\IdentityStrings.*.resx">
             <DependentUpon>Resources\IdentityStrings.resx</DependentUpon>
         </EmbeddedResource>
+        <EmbeddedResource Update="Resources\BitBlazorUIStrings.resx">
+            <Generator>MSBuild:Compile</Generator>
+            <LastGenOutput>Resources\BitBlazorUIStrings.Designer.cs</LastGenOutput>
+            <StronglyTypedFileName>$(IntermediateOutputPath)\BitBlazorUIStrings.Designer.cs</StronglyTypedFileName>
+            <StronglyTypedLanguage>CSharp</StronglyTypedLanguage>
+            <StronglyTypedNamespace>Boilerplate.Shared.Resources</StronglyTypedNamespace>
+            <StronglyTypedClassName>BitBlazorUIStrings</StronglyTypedClassName>
+            <PublicClass>true</PublicClass>
+        </EmbeddedResource>
+        <EmbeddedResource Update="Resources\BitBlazorUIStrings.*.resx">
+            <DependentUpon>Resources\BitBlazorUIStrings.resx</DependentUpon>
+        </EmbeddedResource>
     </ItemGroup>
 
     <ItemGroup>

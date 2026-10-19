@@ -85,12 +85,12 @@ public class AttachmentReplacementTests
             var before = await Download(httpClient, userId);
 
             // The app's HttpClient turns a non-success response into an exception (See ExceptionDelegatingHandler); the
-            // ImageTooSmall body is plain text, so the status code is what identifies the rejection.
-            var rejected = await Assert.ThrowsExactlyAsync<HttpRequestException>(
+            // ImageTooSmall body is a plain localized message, which it carries as the exception's message.
+            var rejected = await Assert.ThrowsExactlyAsync<BadRequestException>(
                 () => Upload(httpClient, SolidImage(MagickColors.Blue, 100)),
                 "An image below the required size must be refused.");
 
-            Assert.AreEqual(HttpStatusCode.BadRequest, rejected.StatusCode);
+            Assert.Contains("100x100", rejected.Message, "The user must see the server's own explanation of the rejection.");
 
             var after = await Download(httpClient, userId);
             Assert.AreSequenceEqual(before, after, "The refused upload must not have touched the stored blob.");
@@ -129,16 +129,13 @@ public class AttachmentReplacementTests
 
             // Deterministic non-image bytes, posted with a spoofed image/png content type: the server must judge the
             // content, not the caller-controlled header. The app's HttpClient turns the non-success response into an
-            // exception (See ExceptionDelegatingHandler); the rejection body is plain text, so the status identifies it.
+            // exception (See ExceptionDelegatingHandler) of the type its status code implies.
             var garbageBytes = new byte[1024];
             Array.Fill(garbageBytes, (byte)'x');
-            var rejected = await Assert.ThrowsExactlyAsync<HttpRequestException>(
+            await Assert.ThrowsExactlyAsync<BadRequestException>(
                 () => Upload(httpClient, garbageBytes),
-                "A payload ImageMagick cannot decode must be refused as bad input.");
-
-            Assert.AreEqual(HttpStatusCode.BadRequest, rejected.StatusCode,
-                "An undecodable upload is the caller's fault: a 500 here means it reached the unknown-error handler " +
-                "and logged Critical from ordinary user input.");
+                "A payload ImageMagick cannot decode is the caller's fault and must be refused as bad input: anything " +
+                "else means it reached the unknown-error handler and logged Critical from ordinary user input.");
 
             var after = await Download(httpClient, userId);
             Assert.AreSequenceEqual(before, after, "The refused upload must not have touched the stored blob.");
