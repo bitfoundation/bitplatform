@@ -410,9 +410,20 @@ public static class {(proxyName.Length > 0 ? proxyName : "I")}HttpClientServiceC
 {string.Join(Environment.NewLine, controllers.Select(i => $"        services.TryAddTransient<{i.SymbolDisplay}, {i.ClassName}>();"))}
     }}
 
-internal class AppControllerBase
+internal class AppControllerBase : global::System.ICloneable
 {{
     AppQueryStringCollection queryString = [];
+
+    object global::System.ICloneable.Clone()
+    {{
+        var clone = (AppControllerBase)MemberwiseClone();
+        clone.queryString = [];
+        foreach (var item in queryString)
+        {{
+            clone.queryString.Add(item.Key, item.Value);
+        }}
+        return clone;
+    }}
 
     public void AddQueryString(string key, object? value)
     {{
