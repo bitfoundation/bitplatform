@@ -1,0 +1,48 @@
+@import '../../Styles/abstracts/_media-queries.scss';
+@import '../../Styles/abstracts/_bit-css-variables.scss';
+
+section {
+    width: min(44rem, calc(100vw - 2rem));
+    max-height: $bit-env-height-available;
+
+    @include lt-sm {
+        width: 100vw;
+    }
+}
+
+::deep {
+    .header-stack {
+        padding: 1rem;
+        border-block-end: 1px solid $bit-color-border-secondary;
+    }
+
+    .title {
+        flex-grow: 1;
+    }
+
+    .editor-host {
+        width: 100%;
+        height: min(60vh, 32rem);
+
+        .bmg-editor {
+            --bmg-bg: #{$bit-color-background-primary};
+            --bmg-bg-subtle: #{$bit-color-background-secondary};
+            --bmg-bg-sunken: #{$bit-color-background-tertiary};
+            --bmg-canvas-bg: #{$bit-color-background-tertiary};
+            --bmg-border: #{$bit-color-border-secondary};
+            --bmg-text: #{$bit-color-foreground-primary};
+            --bmg-text-muted: #{$bit-color-foreground-secondary};
+            --bmg-accent: #{$bit-color-primary};
+            --bmg-accent-text: #{$bit-color-primary-text};
+        }
+    }
+
+    .toolbar {
+        padding: 0.25rem 0.5rem;
+        border-block-end: 1px solid $bit-color-border-secondary;
+    }
+
+    .apply-crop {
+        margin-inline-start: auto;
+    }
+}
