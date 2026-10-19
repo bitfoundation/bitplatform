@@ -39,66 +39,6 @@ on:
         description: Brouter solution
         type: boolean
         default: true
-      bmotion:
-        description: Bmotion solution
-        type: boolean
-        default: true
-      bmage:
-        description: Bmage solution
-        type: boolean
-        default: true
-      bsqlite:
-        description: Bsqlite solution
-        type: boolean
-        default: true
-      bink:
-        description: Bink solution
-        type: boolean
-        default: true
-      balette:
-        description: Balette solution
-        type: boolean
-        default: true
-      bbscanner:
-        description: BbScanner solution
-        type: boolean
-        default: true
-      bdnd:
-        description: Bdnd solution
-        type: boolean
-        default: true
-      blazedb:
-        description: BlazeDb solution
-        type: boolean
-        default: true
-      blow:
-        description: Blow solution
-        type: boolean
-        default: true
-      blex:
-        description: Blex solution
-        type: boolean
-        default: true
-      bonboarding:
-        description: Bonboarding solution
-        type: boolean
-        default: true
-      besql:
-        description: Besql solution
-        type: boolean
-        default: true
-      blazores2019:
-        description: BlazorES2019 project
-        type: boolean
-        default: true
-      tooling:
-        description: CodeAnalyzers, Minifier, bit CLI and SourceGenerators solutions
-        type: boolean
-        default: true
-      websites:
-        description: Website solutions
-        type: boolean
-        default: true
       prerelease_packages:
         description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (the Boilerplate, BlazorEmpty and website jobs)
         type: boolean
@@ -652,11 +592,6 @@ jobs:
         dotnet build src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output ./packages --configuration Release
 
-    - name: Build and pack Bdnd
-      run: |
-        dotnet build src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj --output ./packages --configuration Release
-
     - name: Build and pack BlazeDb
       run: |
         dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -788,11 +723,6 @@ jobs:
   bbscanner:
     name: bbscanner
     uses: ./.github/workflows/bit.ci.BbScanner.yml
-
-  bdnd:
-    name: bdnd
-    if: ${{ inputs.bdnd }}
-    uses: ./.github/workflows/bit.ci.Bdnd.yml
 
   blazedb:
     name: blazedb
