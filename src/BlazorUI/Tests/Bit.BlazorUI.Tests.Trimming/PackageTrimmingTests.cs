@@ -6,7 +6,7 @@ namespace Bit.BlazorUI.Tests.Trimming;
 /// <summary>
 /// The trimming as an app gets it from nuget.org: the packages packed from this source tree into a feed of their own, and
 /// apps outside the repository referencing them - a Blazor WebAssembly app, a Blazor Web App's server, and a Blazor Web App
-/// whose server hosts a WebAssembly client - published with
+/// whose server hosts a WebAssembly client with a service worker - published with
 /// each SDK the packages support (.NET 8, 9 and 10; the targets differ between 8 and 9). This is what checks the package
 /// layout (buildTransitive\bit-assets, tasks\Bit.BlazorUI.Build.dll), the task loading from the package, and the SDK
 /// paths a ProjectReference never takes.
@@ -87,6 +87,13 @@ public sealed partial class PackageTrimmingTests
             // asked for its publish assets by the server - stands down rather than trim a copy nobody publishes.
             Assert.AreEqual(1, Regex.Count(result.Output, @"Bit\.BlazorUI: Bit\.BlazorUI/styles/bit\.blazorui\.css -> "),
                             $"The bundle was trimmed more than once - by the client as well as the server:\n{Tail(result.Output)}");
+
+            // The client's service worker manifest, written from the full bundles and the Extras' vendored files before the
+            // server trimmed, rewritten to what the server serves - on each SDK, whose static web assets differ: no
+            // integrity on a .NET 8 asset, no endpoints there either.
+            Assert.IsTrue(published.ServiceWorkerRewrite is { Dropped: > 0, Rehashed: > 0 },
+                          $"The client's service worker manifest was not rewritten to what the server serves:\n{Tail(result.Output)}");
+            published.AssertServiceWorkerListsWhatIsServed();
         }
     }
 
@@ -179,7 +186,8 @@ public sealed partial class PackageTrimmingTests
         else if (shape == "web-hosted")
         {
             // The two projects of the Blazor Web App template: the server, publishing the app and referencing the client,
-            // and the client, whose components run in WebAssembly - each referencing the packages, as the template's do.
+            // and the client, whose components run in WebAssembly - each referencing the packages, as the template's do. The
+            // client has a service worker, as a PWA's does, whose manifest it writes before the server trims.
             File.WriteAllText(Path.Combine(app, "App.csproj"), $$"""
                 <Project Sdk="Microsoft.NET.Sdk.Web">
                   <PropertyGroup>
@@ -218,13 +226,20 @@ public sealed partial class PackageTrimmingTests
                     <ImplicitUsings>enable</ImplicitUsings>
                     <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
                     <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+                    <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
                   </PropertyGroup>
+                  <ItemGroup>
+                    <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+                  </ItemGroup>
                   <ItemGroup>
                     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="{{sdk.Major}}.0.*" />
                 {{packages}}
                   </ItemGroup>
                 </Project>
                 """);
+            Directory.CreateDirectory(Path.Combine(client, "wwwroot"));
+            File.WriteAllText(Path.Combine(client, "wwwroot", "service-worker.js"), "self.addEventListener('fetch', () => { });\n");
+            File.WriteAllText(Path.Combine(client, "wwwroot", "service-worker.published.js"), "self.importScripts('./service-worker-assets.js');\nself.addEventListener('fetch', () => { });\n");
             File.WriteAllText(Path.Combine(client, "Program.cs"), """
                 using Bit.BlazorUI;
                 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;

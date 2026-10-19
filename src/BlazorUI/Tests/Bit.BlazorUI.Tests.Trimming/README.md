@@ -13,6 +13,15 @@ pieces the packages' builds wrote (`obj/bit-assets`), which a trimmed bundle is 
   of which also runs the trimmed app in Chromium, Firefox and WebKit.
 - `Bit.BlazorUI.Tests.Consumer` - a Blazor WebAssembly app, trimmed by default off what ILLink kept.
   `WebAssemblyTrimmingTests`, one of which also runs the trimmed app in Chromium, Firefox and WebKit.
+- `Bit.BlazorUI.Tests.Trimming.Hosted` - a Blazor Web App's server hosting `Bit.BlazorUI.Tests.Trimming.Hosted.Client`, a
+  WebAssembly client with a service worker. The client writes `service-worker-assets.js` from the full bundles and every
+  vendored file before the server trims, and `HostedAppTrimmingTests` checks that the server's publish rewrites it to what
+  it serves - in bundle and in lazy mode - and that the client published on its own, a standalone PWA, needs no rewrite at
+  all: every listed file published under its hash, the service worker carrying the manifest's version, every compressed
+  copy and every endpoint describing the file it serves. Each reads the rewrite's own line out of the build output and
+  asserts it either way, so a fixture that stopped producing the mismatch fails rather than pass over a manifest nobody had
+  to fix. The rewriting itself, on the shapes of manifest no publish here produces, is `BitServiceWorkerManifestTests` in
+  `Bit.BlazorUI.Tests`.
 
 `LazyScriptsTrimmingTests` publishes both apps with `BitBlazorUILazyScripts`: one module per script and the boot modules
 instead of the bundles, trimmed to what the app can reach, and - with `RUN_BROWSER_TESTS=1` - runs them (the WebAssembly
@@ -21,7 +30,7 @@ publish carries none of the lazy scripts.
 
 `PackageTrimmingTests` packs the packages into a feed of their own and publishes apps outside the repository that
 reference them, with each of the .NET 8, 9 and 10 SDKs: the package layout and the SDK paths a ProjectReference never
-takes.
+takes. Its Blazor Web App's client has a service worker too, whose manifest has to come out rewritten on every SDK.
 
 ## Running
 

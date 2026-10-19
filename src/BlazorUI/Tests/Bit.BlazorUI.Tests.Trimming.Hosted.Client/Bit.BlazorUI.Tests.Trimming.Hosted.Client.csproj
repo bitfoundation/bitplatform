@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+    <!--
+    The WebAssembly client of Bit.BlazorUI.Tests.Trimming.Hosted, and on its own a standalone PWA - see
+    HostedAppTrimmingTests in Bit.BlazorUI.Tests.Trimming, which publishes it both ways.
+
+    It owns the service worker, so it is the project that writes service-worker-assets.js, and it writes it during its own
+    publish. Published by its server, it leaves the trimming to that server and lists the packages' full bundles and the
+    Extras' vendored files (Leaflet, OpenLayers, the flags), none of which its one BitButton needs: the gap between that and
+    what the server serves is the case under test, not an accident of the fixture. Published on its own, it trims off what
+    ILLink kept, as a WebAssembly app does by default, before the SDK writes the manifest - and there is nothing to rewrite.
+
+    Not in the solution, and not a test project, for the same reasons as Bit.BlazorUI.Tests.Trimming.Fixture.
+    -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+        <ServiceWorkerAssetsManifest>service-worker-assets.js</ServiceWorkerAssetsManifest>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ServiceWorker Include="wwwroot\service-worker.js" PublishedContent="wwwroot\service-worker.published.js" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazorUI\Bit.BlazorUI.csproj" />
+        <ProjectReference Include="..\..\Bit.BlazorUI.Extras\Bit.BlazorUI.Extras.csproj" />
+    </ItemGroup>
+
+    <!-- The same hand-import as the server's. -->
+    <Import Project="..\..\Bit.BlazorUI\buildTransitive\Bit.BlazorUI.targets" />
+    <Import Project="..\..\Bit.BlazorUI.Extras\buildTransitive\Bit.BlazorUI.Extras.targets" />
+
+</Project>
