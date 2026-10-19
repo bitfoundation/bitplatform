@@ -396,7 +396,11 @@ public partial class AppTestServer(IBrowserContext? ClientBrowserContext = null)
                 await app.StopAsync();
             }
             catch (OperationCanceledException) { }
-            await app.DisposeAsync();
+            catch (AggregateException exception) when (exception.Flatten().InnerExceptions.All(inner => inner is OperationCanceledException)) { }
+            finally
+            {
+                await app.DisposeAsync();
+            }
         }
     }
 
