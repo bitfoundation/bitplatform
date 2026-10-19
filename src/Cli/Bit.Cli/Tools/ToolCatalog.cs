@@ -509,7 +509,7 @@ public static partial class ToolCatalog
 
         public override bool AppliesTo(ToolContext context) => context.Environment.IsWindows && context.Needs.Aspire;
 
-        public override string Why(ToolContext context) => "Docker Desktop runs its containers in WSL 2";
+        public override string Why(ToolContext context) => "Podman runs its containers in WSL 2";
 
         public override bool IsNeeded(ToolContext context) => context.Needs.Aspire;
 
@@ -519,33 +519,43 @@ public static partial class ToolCatalog
             return result.Succeeded ? ToolStatus.Installed() : ToolStatus.Missing();
         }
 
-        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status) => context.PackageManagers.WingetInstall(Id, "Install WSL", "Microsoft.WSL", afterInstall: "Restart Windows to finish installing WSL.") is { } winget
-            ? winget with { Commands = [EnableFeatureCommand("VirtualMachinePlatform"), .. winget.Commands] }
-            : new()
-            {
-                ToolId = Id,
-                Title = "Install WSL",
-                Elevation = Elevation.Admin,
-                AfterInstall = "Restart Windows to finish installing WSL.",
-                SuccessExitCodes = [0, 3010],
-                Commands = [new ProcessSpec { FileName = "wsl.exe", Arguments = ["--install", "--no-distribution"], Timeout = TimeSpan.FromMinutes(30) }]
-            };
+        public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
+        {
+            var action = context.PackageManagers.WingetInstall(Id, "Install WSL", "Microsoft.WSL", afterInstall: "Restart Windows to finish installing WSL.") is { } winget
+                ? winget with { Commands = [EnableFeatureCommand("VirtualMachinePlatform"), .. winget.Commands] }
+                : new()
+                {
+                    ToolId = Id,
+                    Title = "Install WSL",
+                    Elevation = Elevation.Admin,
+                    AfterInstall = "Restart Windows to finish installing WSL.",
+                    SuccessExitCodes = [0, 3010],
+                    Commands = [new ProcessSpec { FileName = "wsl.exe", Arguments = ["--install", "--no-distribution"], Timeout = TimeSpan.FromMinutes(30) }]
+                };
+
+            return action with { Optional = context.Needs.ContainersRequired is false };
+        }
 
         public override string? ManualInstructions(ToolContext context) => "https://learn.microsoft.com/windows/wsl/install";
     }
 
     private sealed class DockerTool : Tool
     {
+        private const string PodmanWithoutMachine = "Podman has no machine yet";
+
+        private const string PodmanMachineStopped = "Podman's machine isn't running";
+
         public override string Id => "docker";
 
-        public override string Name => "Docker";
+        public override string Name => "Docker or Podman";
 
         public override bool AppliesInCi(ToolContext context) => false;
 
         public override string Why(ToolContext context) => context.Needs switch
         {
             { Aspire: false } => "runs containers; this project doesn't need it without Aspire",
-            { Containers.Count: > 0 } needs => $"Aspire runs {Join(needs.Containers)} in containers",
+            { ContainersRequired: true, Containers.Count: > 0 } needs => $"Aspire runs {Join(needs.Containers)} in containers",
+            { Containers.Count: > 0 } needs => $"Aspire runs {Join(needs.Containers)} in containers; the app also runs without them",
             _ => "Aspire runs the database, Keycloak, Mailpit and other resources in containers"
         };
 
@@ -560,16 +570,32 @@ public static partial class ToolCatalog
             if (server.Succeeded && ParseVersion(server.Output) is { } version)
                 return ToolStatus.Installed(version.ToString());
 
+            if (FindPodman(context) is { } podman)
+            {
+                if ((await context.RunAsync(podman, ["container", "ls", "-n", "1"], cancellationToken, TimeSpan.FromSeconds(20))).Succeeded)
+                    return ToolStatus.Installed($"Podman {ParseVersion((await context.RunAsync(podman, ["--version"], cancellationToken)).Output)}".Trim());
+
+                if (context.Environment.IsWindows)
+                    return new ToolStatus(ToolState.NotRunning, null, (await context.RunAsync(podman, ["machine", "inspect"], cancellationToken)).Succeeded ? PodmanMachineStopped : PodmanWithoutMachine);
+            }
+
             var client = await context.RunAsync("docker", ["--version"], cancellationToken);
             return client.Succeeded ? new ToolStatus(ToolState.NotRunning, ParseVersion(client.Output)?.ToString(), "installed, but not running") : ToolStatus.Missing();
         }
 
         public override ToolAction? PlanInstall(ToolContext context, ToolStatus status)
         {
+            return Plan(context, status) is { } action ? action with { Optional = context.Needs.ContainersRequired is false } : null;
+        }
+
+        private ToolAction? Plan(ToolContext context, ToolStatus status)
+        {
             if (status.State is ToolState.NotRunning)
             {
                 return context.Environment.Os switch
                 {
+                    HostOs.Windows when status.Detail is PodmanWithoutMachine or PodmanMachineStopped && FindPodman(context) is { } podman
+                        => new ToolAction { ToolId = Id, Title = "Start Podman", Commands = PodmanMachine(podman, init: status.Detail is PodmanWithoutMachine) },
                     HostOs.Windows when FindDockerDesktop(context) is { } desktop => new ToolAction
                     {
                         ToolId = Id,
@@ -577,7 +603,11 @@ public static partial class ToolCatalog
                         Commands = [new ProcessSpec { FileName = "cmd.exe", Arguments = ["/c", "start", "", desktop] }],
                         AfterInstall = "Docker Desktop is starting; accept its terms if it asks."
                     },
-                    HostOs.MacOS => new ToolAction { ToolId = Id, Title = "Start Docker Desktop", Commands = [new ProcessSpec { FileName = "open", Arguments = ["-a", "Docker"] }] },
+                    HostOs.MacOS when context.Runner.FindExecutable("colima") is { } colima
+                        => new ToolAction { ToolId = Id, Title = "Start Colima", Commands = [new ProcessSpec { FileName = colima, Arguments = ["start"], Timeout = TimeSpan.FromMinutes(15) }] },
+                    HostOs.MacOS when Directory.Exists("/Applications/Docker.app")
+                        => new ToolAction { ToolId = Id, Title = "Start Docker Desktop", Commands = [new ProcessSpec { FileName = "open", Arguments = ["-a", "Docker"] }] },
+                    HostOs.MacOS => Colima(context),
                     HostOs.Linux => new ToolAction { ToolId = Id, Title = "Start Docker", Elevation = Elevation.Sudo, Commands = [PackageManagers.Sudo("systemctl", "start", "docker")] },
                     _ => null
                 };
@@ -585,8 +615,10 @@ public static partial class ToolCatalog
 
             return context.Environment.Os switch
             {
-                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install Docker Desktop", "Docker.DockerDesktop", afterInstall: "Start Docker Desktop once; Windows may need a restart first.", installerArguments: "install --quiet --accept-license"),
-                HostOs.MacOS => context.PackageManagers.BrewInstall(Id, "Install Docker Desktop", "docker", cask: true, afterInstall: "Open Docker Desktop once and accept its terms."),
+                HostOs.Windows => context.PackageManagers.WingetInstall(Id, "Install Podman", "Podman.CLI", admin: false) is { } winget
+                    ? winget with { Commands = [.. winget.Commands, .. PodmanMachine(PodmanInstallPath(context), init: true)] }
+                    : null,
+                HostOs.MacOS => Colima(context),
                 _ when context.PackageManagers.Apt is not null || context.PackageManagers.Dnf is not null => new ToolAction
                 {
                     ToolId = Id,
@@ -600,11 +632,57 @@ public static partial class ToolCatalog
                         PackageManagers.Sudo("systemctl", "enable", "--now", "docker")
                     ]
                 },
-                _ => context.PackageManagers.LinuxInstall(Id, "Install Docker", "docker.io", "docker", "docker")
+                _ => context.PackageManagers.LinuxInstall(Id, "Install Docker", "docker.io docker-buildx", "docker docker-buildx", "docker docker-buildx")
             };
         }
 
-        public override string? ManualInstructions(ToolContext context) => context.Environment.IsLinux ? "https://docs.docker.com/engine/install/" : "https://www.docker.com/products/docker-desktop/";
+        public override string? ManualInstructions(ToolContext context) => context.Environment.Os switch
+        {
+            HostOs.Windows => "https://podman.io/docs/installation#windows",
+            HostOs.MacOS => "https://github.com/abiosoft/colima#installation",
+            _ => "https://docs.docker.com/engine/install/"
+        };
+
+        private static IReadOnlyList<ProcessSpec> PodmanMachine(string podman, bool init)
+        {
+            var startAtSignIn = $"powershell.exe -NoProfile -WindowStyle Hidden -Command \"& '{podman.Replace("'", "''", StringComparison.Ordinal)}' machine start\"";
+
+            return
+            [
+                new ProcessSpec { FileName = podman, Arguments = init ? ["machine", "init", "--now"] : ["machine", "start"], Timeout = TimeSpan.FromMinutes(30) },
+                new ProcessSpec { FileName = "reg.exe", Arguments = ["add", @"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "/v", "Podman", "/t", "REG_SZ", "/d", startAtSignIn, "/f"] }
+            ];
+        }
+
+        private static ToolAction? Colima(ToolContext context)
+        {
+            if (context.PackageManagers.Brew is not { } brew)
+                return null;
+
+            return new ToolAction
+            {
+                ToolId = "docker",
+                Title = "Install Colima and Docker",
+                Commands =
+                [
+                    new ProcessSpec { FileName = brew, Arguments = ["install", "colima", "docker", "docker-buildx"], Timeout = TimeSpan.FromMinutes(30) },
+                    new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", "mkdir -p \"$HOME/.docker/cli-plugins\" && ln -sfn \"$(\"$0\" --prefix)/opt/docker-buildx/bin/docker-buildx\" \"$HOME/.docker/cli-plugins/docker-buildx\"", brew] },
+                    new ProcessSpec { FileName = "/bin/sh", Arguments = ["-c", "colima=\"$(dirname \"$0\")/colima\" && \"$colima\" start --cpu 4 --memory 6 --mount \"$HOME:w\" --mount /var/folders:w && \"$colima\" stop && \"$0\" services start colima", brew], Timeout = TimeSpan.FromMinutes(30) }
+                ]
+            };
+        }
+
+        private static string? FindPodman(ToolContext context)
+        {
+            if (context.Runner.FindExecutable("podman") is { } podman)
+                return podman;
+
+            var installed = PodmanInstallPath(context);
+            return context.Environment.IsWindows && File.Exists(installed) ? installed : null;
+        }
+
+        private static string PodmanInstallPath(ToolContext context)
+            => Path.Combine(context.Environment.GetVariable("LOCALAPPDATA") ?? Path.Combine(context.Environment.HomeDirectory, "AppData", "Local"), "Programs", "Podman", "podman.exe");
 
         private static string? FindDockerDesktop(ToolContext context)
         {

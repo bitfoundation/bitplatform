@@ -16,21 +16,24 @@ public class HardwareTests
         var off = new HardwareFacts { VirtualizationEnabled = false };
         var android = new HashSet<Platform> { Platform.Web, Platform.Android };
 
-        var dockerDesktop = Hardware.Evaluate(off, new ToolNeeds { Aspire = true }, HostOs.Windows).Single();
-        Assert.AreEqual("virtualization", dockerDesktop.Id);
-        StringAssert.Contains(dockerDesktop.Text, "Docker Desktop needs it");
-        Assert.AreEqual(Hardware.VirtualizationVideo, dockerDesktop.Link);
+        var containers = Hardware.Evaluate(off, new ToolNeeds { Aspire = true, ContainersRequired = true }, HostOs.Windows).Single();
+        Assert.AreEqual("virtualization", containers.Id);
+        StringAssert.Contains(containers.Text, "the containers Aspire runs need it");
+        Assert.AreEqual(Hardware.VirtualizationVideo, containers.Link);
 
-        StringAssert.Contains(Hardware.Evaluate(off, new ToolNeeds { Aspire = true, Platforms = android }, HostOs.MacOS).Single().Text, "Docker Desktop and the Android emulator");
+        StringAssert.Contains(Hardware.Evaluate(off, new ToolNeeds { Aspire = true, ContainersRequired = true, Platforms = android }, HostOs.MacOS).Single().Text, "the containers Aspire runs and the Android emulator");
         StringAssert.Contains(Hardware.Evaluate(off, new ToolNeeds { Platforms = android }, HostOs.Linux).Single().Text, "KVM");
 
         Assert.IsEmpty(Hardware.Evaluate(off, new ToolNeeds { Aspire = false }, HostOs.Windows));
-        Assert.IsEmpty(Hardware.Evaluate(off, new ToolNeeds { Aspire = true }, HostOs.Linux));
+        Assert.IsEmpty(Hardware.Evaluate(off, new ToolNeeds { Aspire = true }, HostOs.Windows), "A project that runs without its containers gets no virtualization warning.");
+        Assert.IsEmpty(Hardware.Evaluate(off, new ToolNeeds { Aspire = true, ContainersRequired = true }, HostOs.Linux));
         Assert.IsEmpty(Hardware.Evaluate(new HardwareFacts(), new ToolNeeds { Aspire = true, Platforms = android }, HostOs.Windows));
     }
 
     [TestMethod]
-    [DataRow(15.8, true, "16 GB")]
+    [DataRow(7.8, true, "8 GB")]
+    [DataRow(13.9, true, "14 GB")]
+    [DataRow(15.8, false, null)]
     [DataRow(23.4, false, null)]
     [DataRow(31.9, false, null)]
     public void LittleMemory_Should_BeReported(double gigabytes, bool reported, string? text)
@@ -42,7 +45,7 @@ public class HardwareTests
         if (text is not null)
         {
             StringAssert.Contains(warnings.Single().Text, text);
-            StringAssert.Contains(warnings.Single().Text, "24 GB");
+            StringAssert.Contains(warnings.Single().Text, "16 GB");
         }
     }
 

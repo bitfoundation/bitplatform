@@ -319,6 +319,7 @@ public class ProjectStepTests
         host.Runner.On("aspire", "doctor", 1, """{"checks":[{"category":"sdk","name":"dotnet-sdk","status":"pass"},{"category":"container","name":"docker","status":"fail","message":"Docker is running in Windows container mode","fix":"Switch Docker Desktop to Linux containers mode"}]}""");
         var project = CreateFakeProject(host, "Contoso");
         WriteAppHost(project, "serverweb");
+        NeedContainers(project);
 
         var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
 
@@ -388,12 +389,112 @@ public class ProjectStepTests
         host.Runner.On("docker", "info", 1, "Cannot connect to the Docker daemon");
         var project = CreateFakeProject(host, "Contoso");
         WriteAppHost(project, "serverweb");
+        NeedContainers(project);
 
-        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(_ => { }, CancellationToken.None);
+        var result = await new ProjectSteps(host.Services, project).AspireStartAsync(keepRunning: true, _ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Warning, result.Status);
         Assert.AreEqual("Docker isn't running", result.Detail);
         Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "aspire" && c.Arguments.FirstOrDefault() is "start"));
+    }
+
+    [TestMethod]
+    public async Task AspireStart_Should_RunWithoutDockerWhenTheProjectDoesntWaitForContainers()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.Executables["aspire"] = "aspire";
+        host.Runner.On("docker", "info", 1, "Cannot connect to the Docker daemon");
+        host.Runner.On("aspire", "start", 0, """{ "appHostPath": "AppHost.csproj", "appHostPid": 1, "cliPid": 2, "dashboardUrl": "https://localhost:2030/login?t=abc", "logFile": "start.log" }""");
+        host.Runner.On("aspire", "describe serverweb", 0, """{"resources":[{"name":"serverweb","urls":[{"name":"http","url":"http://localhost:5030","isInternal":false}]}]}""");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+        var steps = new ProjectSteps(host.Services, project);
+
+        Assert.AreEqual(StepStatus.Skipped, (await steps.AspireStartAsync(_ => { }, CancellationToken.None)).Status, "Without containers, a first start has nothing to get ready.");
+
+        var result = await steps.AspireStartAsync(keepRunning: true, _ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("without its containers", result.Detail);
+        Assert.AreEqual("https://localhost:2030/login?t=abc", steps.Running!.DashboardUrl);
+        Assert.AreEqual("http://localhost:5030", steps.Running.AppUrl);
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.Arguments.FirstOrDefault() is "stop"), "A project that keeps running isn't stopped.");
+
+        await steps.Running.StopAsync(true);
+        CollectionAssert.AreEqual(new[] { "stop", "--apphost", project.AppHostDirectory, "--non-interactive" }, host.Runner.Detached.Single().Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task DotnetRun_Should_StartServerWebAndWaitUntilItIsAlive()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.OnAsync("dotnet", "run", async (_, ct) =>
+        {
+            await Task.Delay(Timeout.Infinite, ct);
+            return new ProcessResult { ExitCode = 0 };
+        });
+        var project = CreateFakeProject(host, "Contoso");
+        WriteServerWeb(project, "http://localhost:5030;http://*:5030");
+        var probes = new List<Uri>();
+        var steps = new ProjectSteps(host.Services, project) { AliveProbe = (url, _) => { probes.Add(url); return Task.FromResult(true); } };
+
+        var result = await steps.DotnetRunAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail);
+        Assert.AreEqual("http://localhost:5030", steps.Running!.AppUrl);
+        Assert.AreEqual(new Uri("http://localhost:5030/alive"), probes.Single());
+        CollectionAssert.Contains(host.Runner.Calls.Single(c => c.FileName is "dotnet").Arguments.ToArray(), "--no-build");
+
+        await steps.Running.StopAsync(false);
+        Assert.IsTrue(steps.Running.Exited!.IsCompleted, "Stopping it ends dotnet run.");
+    }
+
+    [TestMethod]
+    public async Task DotnetRun_Should_ReportAServerThatExits()
+    {
+        using var host = new TestHost(HostOs.Linux);
+        host.Runner.On("dotnet", "run", 1, "Unhandled exception. System.InvalidOperationException: No database");
+        var project = CreateFakeProject(host, "Contoso");
+        WriteServerWeb(project, "http://localhost:5030");
+        var steps = new ProjectSteps(host.Services, project) { AliveProbe = (_, _) => Task.FromResult(false) };
+
+        var result = await steps.DotnetRunAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.IsNull(steps.Running);
+    }
+
+    [TestMethod]
+    public void TheProject_Should_KeepRunningOnlyForSomeoneAtTheTerminal()
+    {
+        using var redirected = new TestHost(HostOs.Linux);
+        Assert.AreEqual(ProjectRunMode.Once, ProjectRun.Mode(redirected.Services, aspire: true, noBuild: false, noRun: false));
+        Assert.AreEqual(ProjectRunMode.None, ProjectRun.Mode(redirected.Services, aspire: false, noBuild: false, noRun: false));
+
+        using var terminal = new TestHost(HostOs.Linux, prompter: new ScriptedPrompter());
+        Assert.AreEqual(ProjectRunMode.UntilClosed, ProjectRun.Mode(terminal.Services, aspire: true, noBuild: false, noRun: false));
+        Assert.AreEqual(ProjectRunMode.UntilClosed, ProjectRun.Mode(terminal.Services, aspire: false, noBuild: false, noRun: false));
+        Assert.AreEqual(ProjectRunMode.None, ProjectRun.Mode(terminal.Services, aspire: true, noBuild: false, noRun: true));
+        Assert.AreEqual(ProjectRunMode.None, ProjectRun.Mode(terminal.Services, aspire: true, noBuild: true, noRun: false));
+
+        using var agent = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["CLAUDECODE"] = "1" }, new ScriptedPrompter());
+        Assert.AreEqual(ProjectRunMode.Once, ProjectRun.Mode(agent.Services, aspire: true, noBuild: false, noRun: false), "A coding agent's shell would wait for ever.");
+
+        using var ci = new TestHost(HostOs.Linux, new Dictionary<string, string> { ["CI"] = "true" }, new ScriptedPrompter());
+        Assert.AreEqual(ProjectRunMode.None, ProjectRun.Mode(ci.Services, aspire: true, noBuild: false, noRun: false));
+    }
+
+    [TestMethod]
+    public void TheAppHost_Should_TellWhetherTheProjectWaitsForContainers()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        WriteAppHost(project, "serverweb");
+
+        Assert.IsFalse(ProjectContext.AppHostNeedsContainers(project.AppHostDirectory));
+
+        NeedContainers(project);
+        Assert.IsTrue(ProjectContext.AppHostNeedsContainers(project.AppHostDirectory));
     }
 
     [TestMethod]
@@ -756,6 +857,28 @@ public class ProjectStepTests
     {
         var folder = Directory.CreateDirectory(project.AppHostDirectory).FullName;
         File.WriteAllLines(Path.Combine(folder, "Program.cs"), resources.Select(r => $"builder.AddProject(\"{r}\", \"../{r}.csproj\");"));
+    }
+
+    private static void NeedContainers(ProjectContext project)
+    {
+        File.AppendAllText(Path.Combine(project.AppHostDirectory, "Program.cs"), "var postgres = builder.AddPostgres(\"postgres\");\n");
+    }
+
+    private static void WriteServerWeb(ProjectContext project, string urls)
+    {
+        var web = Directory.CreateDirectory(Path.Combine(project.Directory, "src", "Server", $"{project.Name}.Server.Web")).FullName;
+        var properties = Directory.CreateDirectory(Path.Combine(web, "Properties")).FullName;
+
+        File.WriteAllText(Path.Combine(web, $"{project.Name}.Server.Web.csproj"), $"<Project><ItemGroup><ProjectReference Include=\"..\\{project.Name}.Server.Api\\{project.Name}.Server.Api.csproj\" /></ItemGroup></Project>");
+        File.WriteAllText(Path.Combine(properties, "launchSettings.json"), $$"""
+            {
+                // the app's own
+                "profiles": {
+                    "IIS Express": { "commandName": "IISExpress" },
+                    "Web": { "commandName": "Project", "applicationUrl": "{{urls}}" },
+                }
+            }
+            """);
     }
 
     private static void WriteRecommendations(ProjectContext project, params string[] extensions)

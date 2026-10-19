@@ -49,11 +49,10 @@ public static class WebApplicationExtensions
             });
 
             // The detailed report of the health checks page: behind its feature and never cached, as it carries each
-            // failure's exception. Always 200, since the status is in the body and the client throws on a 503.
+            // failure's exception.
             HealthCheckOptions healthzOptions = new()
             {
                 Predicate = _ => true,
-                ResultStatusCodes = { [HealthStatus.Unhealthy] = StatusCodes.Status200OK },
                 ResponseWriter = WriteHealthReport
             };
 

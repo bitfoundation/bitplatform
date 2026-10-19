@@ -58,6 +58,8 @@ public sealed record NewRequest
 
     public bool NoBrowsers { get; init; }
 
+    public bool NoRun { get; init; }
+
     public IReadOnlyList<string> Properties { get; init; } = [];
 
     public string? PropertyError { get; init; }
@@ -179,6 +181,7 @@ public static class NewCommand
                 GitHubRepo = parseResult.GetValue(gitHubRepo),
                 NoUpdate = parseResult.GetValue(noUpdate),
                 NoBrowsers = skipSetup || parseResult.GetValue(shared.NoBrowsers),
+                NoRun = skipSetup || parseResult.GetValue(shared.NoRun),
                 Properties = properties,
                 PropertyError = propertyError,
                 Arguments = [.. parseResult.Tokens.Select(t => t.Value)],

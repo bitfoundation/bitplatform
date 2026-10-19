@@ -12,6 +12,17 @@ namespace Bit.Cli.Projects;
 
 public sealed record PlaywrightDriver(string Node, string Cli, string? Version);
 
+public sealed class RunningProject
+{
+    public string? DashboardUrl { get; init; }
+
+    public string? AppUrl { get; init; }
+
+    public required Func<bool, Task> StopAsync { get; init; }
+
+    public Task? Exited { get; init; }
+}
+
 public sealed partial class ProjectSteps(CliServices cli, ProjectContext project)
 {
     public const string DevelopmentCertificateSubject = "CN=AppCertificate, OU=Development";
@@ -283,9 +294,17 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return StepResult.Succeeded("Added the Initial migration", $"{project.Database}{(committed is null ? "" : ", committed")}");
     }
 
-    public async Task<StepResult> AspireStartAsync(Action<string> progress, CancellationToken cancellationToken)
+    public RunningProject? Running { get; private set; }
+
+    public Func<Uri, CancellationToken, Task<bool>> AliveProbe { get; init; } = IsAliveAsync;
+
+    private string ServerWebDirectory => Path.Combine(project.Directory, "src", "Server", $"{project.Name}.Server.Web");
+
+    public Task<StepResult> AspireStartAsync(Action<string> progress, CancellationToken cancellationToken) => AspireStartAsync(keepRunning: false, progress, cancellationToken);
+
+    public async Task<StepResult> AspireStartAsync(bool keepRunning, Action<string> progress, CancellationToken cancellationToken)
     {
-        const string skipped = "Skipped Aspire's first start";
+        var skipped = keepRunning ? "Didn't start the project" : "Skipped Aspire's first start";
         const string failed = "Couldn't start the project with Aspire";
         var followUp = $"cd {ProcessSpec.Quote(project.Directory)} && aspire start";
 
@@ -295,32 +314,203 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (Runner.FindExecutable("aspire") is null)
             return StepResult.Warning(skipped, "the Aspire CLI isn't installed", followUp);
 
-        if (await ContainerRuntimeProblemAsync(cancellationToken) is { } problem)
+        var containerProblem = await ContainerRuntimeProblemAsync(cancellationToken);
+
+        if (containerProblem is { } problem && project.NeedsContainers)
             return StepResult.Warning(skipped, problem.Detail, followUp, problem.Fix);
+
+        if (containerProblem is { } missing && keepRunning is false)
+            return StepResult.Skipped(skipped, $"there are no containers to get ready: {missing.Detail}");
 
         var startTimeout = cli.Environment.GetVariable("ASPIRE_CLI_START_TIMEOUT") is null
             ? new Dictionary<string, string?> { ["ASPIRE_CLI_START_TIMEOUT"] = "1200" }
             : null;
 
-        var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(30), cancellationToken, startTimeout);
+        var start = await Aspire(["start", "--apphost", project.AppHostDirectory, "--non-interactive", "--format", "Json"], progress, TimeSpan.FromMinutes(30), cancellationToken, startTimeout);
 
         if (start.Succeeded is false)
             return StepResult.FromProcess(start, "", failed, followUp) with { Status = StepStatus.Warning };
+
+        var stop = AspireSpec(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], _ => { }, TimeSpan.FromMinutes(5));
+        var keep = false;
 
         try
         {
             foreach (var resource in AspireResourcesToWaitFor(project.AppHostDirectory))
             {
-                if (await WaitUntilHealthyAsync(resource, progress, cancellationToken) is { } reason)
+                if (await WaitUntilHealthyAsync(resource, containerProblem is null, progress, cancellationToken) is { } reason)
                     return StepResult.Warning($"Aspire started, {resource} didn't get healthy", reason, followUp);
             }
+
+            if (keepRunning is false)
+                return StepResult.Succeeded("Started and stopped the project with Aspire", "its images and builds are ready, so the IDE starts it fast");
+
+            Running = new RunningProject
+            {
+                DashboardUrl = DashboardUrlRegex().Match(start.Output) is { Success: true } dashboard ? dashboard.Groups["url"].Value : null,
+                AppUrl = await AspireResourceUrlAsync("serverweb", cancellationToken) ?? ReadLaunchUrl(ServerWebDirectory),
+                StopAsync = async detached =>
+                {
+                    if (detached is false || Runner.StartDetached(stop) is false)
+                    {
+                        await Runner.RunAsync(stop, CancellationToken.None);
+                    }
+                }
+            };
+
+            keep = true;
+
+            return containerProblem is { } absent
+                ? StepResult.Succeeded("Started the project with Aspire", "without its containers", $"{absent.Detail}, so Keycloak, Mailpit and the other containers aren't running.{(absent.Fix is null ? "" : $" {absent.Fix}")}")
+                : StepResult.Succeeded("Started the project with Aspire");
         }
         finally
         {
-            await Aspire(["stop", "--apphost", project.AppHostDirectory, "--non-interactive"], progress, TimeSpan.FromMinutes(5), CancellationToken.None);
+            if (keep is false)
+            {
+                await Runner.RunAsync(stop with { OnOutputLine = progress }, CancellationToken.None);
+            }
+        }
+    }
+
+    public async Task<StepResult> DotnetRunAsync(Action<string> progress, CancellationToken cancellationToken)
+    {
+        const string skipped = "Didn't start the project";
+        string[] servers = project.IsApiStandalone ? [project.ServerApiDirectory, ServerWebDirectory] : [ServerWebDirectory];
+        var followUp = string.Join(" & ", servers.Select(server => $"dotnet run --project {ProcessSpec.Quote(Path.GetRelativePath(project.Directory, server))}"));
+
+        if (servers.FirstOrDefault(server => System.IO.Directory.Exists(server) is false || ReadLaunchUrl(server) is null) is { } missing)
+            return StepResult.Skipped(skipped, $"{Path.GetFileName(missing)} has no URL in its launchSettings.json");
+
+        var running = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var runs = new List<Task<ProcessResult?>>();
+
+        async Task StopAsync()
+        {
+            await running.CancelAsync();
+            await Task.WhenAny(Task.WhenAll(runs), Task.Delay(TimeSpan.FromSeconds(3), CancellationToken.None));
         }
 
-        return StepResult.Succeeded("Started and stopped the project with Aspire", "its images and builds are ready, so the IDE starts it fast");
+        foreach (var server in servers)
+        {
+            var url = ReadLaunchUrl(server)!;
+            var run = RunUntilStoppedAsync(new ProcessSpec
+            {
+                FileName = "dotnet",
+                Arguments = ["run", "--project", server, "--no-build", .. project.BuildProperties.Select(p => $"--property:{p}")],
+                WorkingDirectory = project.Directory,
+                Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1" }
+            }, running.Token);
+
+            runs.Add(run);
+
+            if (await WaitUntilAliveAsync(new Uri(url), run, progress, cancellationToken) is { } reason)
+            {
+                await StopAsync();
+                running.Dispose();
+                return StepResult.Warning($"Couldn't start {Path.GetFileName(server)}", reason, $"cd {ProcessSpec.Quote(project.Directory)} && {followUp}");
+            }
+        }
+
+        Running = new RunningProject { AppUrl = ReadLaunchUrl(ServerWebDirectory), StopAsync = _ => StopAsync(), Exited = Task.WhenAny(runs) };
+        return StepResult.Succeeded("Started the project", Running.AppUrl);
+    }
+
+    private async Task<ProcessResult?> RunUntilStoppedAsync(ProcessSpec spec, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await Runner.RunAsync(spec, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            return null;
+        }
+    }
+
+    private async Task<string?> WaitUntilAliveAsync(Uri url, Task<ProcessResult?> run, Action<string> progress, CancellationToken cancellationToken)
+    {
+        var alive = new Uri(url, "alive");
+        var deadline = DateTime.UtcNow.AddMinutes(10);
+
+        progress($"Waiting for {url}");
+
+        while (DateTime.UtcNow < deadline)
+        {
+            if (run.IsCompleted)
+                return await run is { } result ? DiagnosticCodes.FirstErrorLine(result.Output) ?? $"it exited with code {result.ExitCode}" : "it was stopped";
+
+            if (await AliveProbe(alive, cancellationToken))
+                return null;
+
+            await Task.WhenAny(run, Task.Delay(TimeSpan.FromSeconds(2), cancellationToken));
+            cancellationToken.ThrowIfCancellationRequested();
+        }
+
+        return "it didn't answer within 10 minutes";
+    }
+
+    private static async Task<bool> IsAliveAsync(Uri url, CancellationToken cancellationToken)
+    {
+        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+
+        try
+        {
+            using var response = await client.GetAsync(url, cancellationToken);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception exp) when (exp is HttpRequestException || (exp is TaskCanceledException && cancellationToken.IsCancellationRequested is false))
+        {
+            return false;
+        }
+    }
+
+    public static string? ReadLaunchUrl(string projectDirectory)
+    {
+        var path = Path.Combine(projectDirectory, "Properties", "launchSettings.json");
+
+        try
+        {
+            if (File.Exists(path) is false)
+                return null;
+
+            using var document = JsonDocument.Parse(File.ReadAllText(path), new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+
+            if (document.RootElement.TryGetProperty("profiles", out var profiles) is false || profiles.ValueKind is not JsonValueKind.Object)
+                return null;
+
+            var url = profiles.EnumerateObject()
+                .Select(profile => profile.Value)
+                .Where(profile => profile.ValueKind is JsonValueKind.Object && Text(profile, "commandName") is "Project")
+                .Select(profile => Text(profile, "applicationUrl"))
+                .FirstOrDefault(urls => string.IsNullOrWhiteSpace(urls) is false)?
+                .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+                .FirstOrDefault();
+
+            return url is null ? null : WildcardHostRegex().Replace(url, "://localhost");
+        }
+        catch (Exception exp) when (exp is IOException or JsonException or UnauthorizedAccessException)
+        {
+            return null;
+        }
+    }
+
+    private async Task<string?> AspireResourceUrlAsync(string resource, CancellationToken cancellationToken)
+    {
+        var describe = await Aspire(["describe", resource, "--format", "json", "--apphost", project.AppHostDirectory, "--non-interactive", "--nologo"], _ => { }, TimeSpan.FromMinutes(1), cancellationToken);
+
+        var urls = ReadJson(describe.Output, root => root.TryGetProperty("resources", out var all) && all.ValueKind is JsonValueKind.Array
+            ? all.EnumerateArray()
+                .Where(r => Text(r, "name") == resource || Text(r, "displayName") == resource)
+                .SelectMany(r => r.TryGetProperty("urls", out var list) && list.ValueKind is JsonValueKind.Array ? list.EnumerateArray() : Enumerable.Empty<JsonElement>())
+                .Where(u => u.TryGetProperty("isInternal", out var isInternal) is false || isInternal.ValueKind is not JsonValueKind.True)
+                .Select(u => Text(u, "url"))
+                .OfType<string>()
+                .Where(u => u.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+                .ToList()
+            : null) ?? [];
+
+        return urls.FirstOrDefault(u => u.StartsWith("https:", StringComparison.OrdinalIgnoreCase)) ?? urls.FirstOrDefault();
     }
 
     private async Task<(string Detail, string? Fix)?> ContainerRuntimeProblemAsync(CancellationToken cancellationToken)
@@ -343,7 +533,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         return (worst.Message ?? "Aspire can't use a container runtime", worst.Fix);
     }
 
-    private async Task<string?> WaitUntilHealthyAsync(string resource, Action<string> progress, CancellationToken cancellationToken)
+    private async Task<string?> WaitUntilHealthyAsync(string resource, bool containersRun, Action<string> progress, CancellationToken cancellationToken)
     {
         const int roundSeconds = 30;
         const int maxRounds = 60;
@@ -358,7 +548,7 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
             if (wait.Succeeded)
                 return null;
 
-            var resources = await DescribeAspireResourcesAsync(cancellationToken);
+            var resources = (await DescribeAspireResourcesAsync(cancellationToken)).Where(r => containersRun || r.Type is not "Container").ToList();
             var failed = resources.Where(r => r.State is "FailedToStart" || (r.State is "Exited" or "Finished" && r.ExitCode is not (null or 0))).ToList();
 
             if (failed.Count > 0)
@@ -382,12 +572,12 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private const int AspireWaitTimedOut = 17;
 
-    private async Task<IReadOnlyList<(string Name, string? State, string? HealthStatus, int? ExitCode)>> DescribeAspireResourcesAsync(CancellationToken cancellationToken)
+    private async Task<IReadOnlyList<(string Name, string? Type, string? State, string? HealthStatus, int? ExitCode)>> DescribeAspireResourcesAsync(CancellationToken cancellationToken)
     {
         var describe = await Aspire(["describe", "--format", "json", "--apphost", project.AppHostDirectory, "--non-interactive", "--nologo"], _ => { }, TimeSpan.FromMinutes(1), cancellationToken);
 
         return ReadJson(describe.Output, root => root.TryGetProperty("resources", out var all) && all.ValueKind is JsonValueKind.Array
-            ? all.EnumerateArray().Select(r => (Name: Text(r, "displayName") ?? Text(r, "name") ?? "?", State: Text(r, "state"), HealthStatus: Text(r, "healthStatus"), ExitCode: r.TryGetProperty("exitCode", out var code) && code.ValueKind is JsonValueKind.Number ? code.GetInt32() : (int?)null)).ToList()
+            ? all.EnumerateArray().Select(r => (Name: Text(r, "displayName") ?? Text(r, "name") ?? "?", Type: Text(r, "resourceType"), State: Text(r, "state"), HealthStatus: Text(r, "healthStatus"), ExitCode: r.TryGetProperty("exitCode", out var code) && code.ValueKind is JsonValueKind.Number ? code.GetInt32() : (int?)null)).ToList()
             : null) ?? [];
     }
 
@@ -433,7 +623,12 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     private Task<ProcessResult> Aspire(string[] arguments, Action<string> progress, TimeSpan timeout, CancellationToken cancellationToken, IReadOnlyDictionary<string, string?>? environment = null)
     {
-        return Runner.RunAsync(new ProcessSpec { FileName = "aspire", Arguments = arguments, WorkingDirectory = project.Directory, Environment = environment, OnOutputLine = progress, Timeout = timeout }, cancellationToken);
+        return Runner.RunAsync(AspireSpec(arguments, progress, timeout, environment), cancellationToken);
+    }
+
+    private ProcessSpec AspireSpec(string[] arguments, Action<string> progress, TimeSpan timeout, IReadOnlyDictionary<string, string?>? environment = null)
+    {
+        return new ProcessSpec { FileName = "aspire", Arguments = arguments, WorkingDirectory = project.Directory, Environment = environment, OnOutputLine = progress, Timeout = timeout };
     }
 
     public Task<StepResult> TrustAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -752,4 +947,10 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     [GeneratedRegex(@"[^A-Za-z0-9._-]+")]
     private static partial Regex GitEmailRegex();
+
+    [GeneratedRegex(@"""dashboardUrl""\s*:\s*""(?<url>[^""]+)""")]
+    private static partial Regex DashboardUrlRegex();
+
+    [GeneratedRegex(@"://(\*|\+|0\.0\.0\.0|\[::\])")]
+    private static partial Regex WildcardHostRegex();
 }

@@ -33,6 +33,8 @@ public sealed class SharedOptions
 
     public Option<bool> NoBrowsers { get; } = new("--no-browsers") { Description = "Don't install Playwright's browsers for the UI tests." };
 
+    public Option<bool> NoRun { get; } = new("--no-run") { Description = "Don't start the project at the end, or open it in the browser." };
+
     public Option<string[]> Properties { get; } = new("--property", "-p")
     {
         Description = "An MSBuild property for the restore and the build, e.g. -p:EnforceCodeStyleInBuild=true. Repeat it for more.",
@@ -41,7 +43,7 @@ public sealed class SharedOptions
 
     public void AddTo(Command command)
     {
-        foreach (var option in new Option[] { Platforms, Tools, Yes, NonInteractive, NoTools, NoWorkloads, NoRestore, NoBuild, NoBrowsers, Properties })
+        foreach (var option in new Option[] { Platforms, Tools, Yes, NonInteractive, NoTools, NoWorkloads, NoRestore, NoBuild, NoBrowsers, NoRun, Properties })
         {
             command.Options.Add(option);
         }

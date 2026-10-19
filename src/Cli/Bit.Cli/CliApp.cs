@@ -14,7 +14,7 @@ public static class CliApp
     public const int ExitUsage = 2;
     public const int ExitCheckFailed = 3;
 
-    private static readonly string[] longRunningCommands = ["new", "setup", "translate", "doctor", "clean"];
+    private static readonly string[] longRunningCommands = ["new", "setup", "diff", "translate", "doctor", "clean"];
 
     public static RootCommand BuildRootCommand(Func<CliServices> services)
     {
@@ -22,6 +22,7 @@ public static class CliApp
         {
             NewCommand.Create(services),
             SetupCommand.Create(services),
+            DiffCommand.Create(services),
             DoctorCommand.Create(services),
             TrustCommand.Create(services),
             CleanCommand.Create(services),

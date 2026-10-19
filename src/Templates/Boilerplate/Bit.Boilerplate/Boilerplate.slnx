@@ -34,6 +34,7 @@
     <File Path=".github/agents/rebrand.agent.md" />
     <File Path=".github/agents/review.agent.md" />
     <File Path=".github/agents/scaffold-entity.agent.md" />
+    <File Path=".github/agents/upgrade.agent.md" />
   </Folder>
   <Folder Name="/.SolutionItems/.docs/">
     <File Path=".docs/00- Wiki.md" />

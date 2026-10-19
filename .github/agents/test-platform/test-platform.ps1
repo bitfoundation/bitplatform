@@ -16,7 +16,7 @@
     e2e       Runs Boilerplate.Tests.E2E stage by stage, as RunTests.bat does, keeping each stage's log and TRX.
     mcp       One call to https://bitplatform.dev/mcp: tools/list, or tools/call when -Tool is given.
     devcontainer
-              Creates a project with bit new, brings bit Boilerplate's dev container up on Docker Desktop's Linux engine
+              Creates a project with bit new, brings bit Boilerplate's dev container up on a Linux Docker engine
               with the devcontainers CLI, and runs bit doctor in it. With -Sha, bit and the template come from that
               commit; without it, from nuget.org, as users get them. Removes the container, its volumes and its image
               afterwards unless -Keep is given, and keeps the logs. Exits 1 when a setup step fails or bit doctor
@@ -868,7 +868,7 @@ function Write-BitSteps([string] $log, [string] $after) {
 
 function Assert-DockerLinux {
     if ((docker version --format '{{.Server.Os}}' 2>$null) -ne 'linux') {
-        throw 'Docker Desktop must be running on its Linux engine.'
+        throw 'Docker must be running with Linux containers.'
     }
 }
 

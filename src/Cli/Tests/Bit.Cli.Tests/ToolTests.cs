@@ -88,6 +88,49 @@ public class ToolTests
     }
 
     [TestMethod]
+    public async Task Podman_Should_CountAsTheContainerRuntime()
+    {
+        using var host = new TestHost(HostOs.Windows);
+        AllInstalled(host.Runner);
+        host.Runner.NotFound("docker");
+        host.Runner.Executables["podman"] = @"C:\Podman\podman.exe";
+        host.Runner.On("podman", "--version", 0, "podman version 6.1.4");
+
+        var running = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
+        Assert.AreEqual(ToolState.Installed, running.Status.State);
+        Assert.AreEqual("Podman 6.1.4", running.Status.Version);
+
+        host.Runner.On("podman", "container ls", 125, "Cannot connect to Podman");
+        host.Runner.On("podman", "machine inspect", 125, "VM does not exist");
+        var withoutMachine = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
+        Assert.AreEqual(ToolState.NotRunning, withoutMachine.Status.State);
+        Assert.AreEqual("Start Podman", withoutMachine.Action!.Title);
+        CollectionAssert.AreEqual(new[] { "machine", "init", "--now" }, withoutMachine.Action.Commands[0].Arguments.ToArray());
+
+        host.Runner.On("podman", "machine inspect", 0, "[{}]");
+        var stopped = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
+        CollectionAssert.AreEqual(new[] { "machine", "start" }, stopped.Action!.Commands[0].Arguments.ToArray());
+    }
+
+    [TestMethod]
+    public async Task MacOS_Should_GetColimaAndTheDockerCli()
+    {
+        using var host = new TestHost(HostOs.MacOS);
+        AllInstalled(host.Runner);
+        host.Runner.Executables["brew"] = "/opt/homebrew/bin/brew";
+        host.Runner.NotFound("docker");
+
+        var install = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Action!;
+        Assert.AreEqual("Install Colima and Docker", install.Title);
+        CollectionAssert.AreEqual(new[] { "install", "colima", "docker", "docker-buildx" }, install.Commands[0].Arguments.ToArray());
+        StringAssert.Contains(install.Commands[^1].Arguments[1], "services start colima");
+
+        host.Runner.On("docker", "--version", 0, "Docker version 28.5.1");
+        host.Runner.Executables["colima"] = "/opt/homebrew/bin/colima";
+        Assert.AreEqual("Start Colima", (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Action!.Title);
+    }
+
+    [TestMethod]
     public async Task DockerAndTheAspireCli_Should_BeNeededOnlyWithAspire()
     {
         using var host = new TestHost(HostOs.Linux);
@@ -404,9 +447,14 @@ public class ToolTests
         Assert.AreEqual(Elevation.Admin, node.Elevation);
         CollectionAssert.IsSubsetOf(new[] { "install", "--id", "OpenJS.NodeJS.LTS", "--exact" }, node.Commands[0].Arguments.ToArray());
         var docker = checks.Single(c => c.Tool.Id == "docker").Action!;
-        Assert.AreEqual("Install Docker Desktop", docker.Title);
-        CollectionAssert.IsSubsetOf(new[] { "Docker.DockerDesktop", "--override", "install --quiet --accept-license" }, docker.Commands[0].Arguments.ToArray());
-        CollectionAssert.DoesNotContain(docker.Commands[0].Arguments.ToArray(), "--silent");
+        Assert.AreEqual("Install Podman", docker.Title);
+        Assert.AreEqual(Elevation.None, docker.Elevation, "Podman installs for the user, so it needs no administrator prompt of its own.");
+        CollectionAssert.IsSubsetOf(new[] { "install", "--id", "Podman.CLI", "--silent" }, docker.Commands[0].Arguments.ToArray());
+        CollectionAssert.AreEqual(new[] { "machine", "init", "--now" }, docker.Commands[1].Arguments.ToArray());
+        StringAssert.EndsWith(docker.Commands[1].FileName, @"Programs\Podman\podman.exe");
+        CollectionAssert.Contains(docker.Commands[2].Arguments.ToArray(), @"HKCU\Software\Microsoft\Windows\CurrentVersion\Run");
+        Assert.IsTrue(docker.Optional, "A project that runs without its containers doesn't fail on a missing container runtime.");
+        Assert.IsFalse((await CheckAsync(host, new ToolNeeds { Aspire = true, ContainersRequired = true })).Single(c => c.Tool.Id == "docker").Action!.Optional);
 
         host.Runner.On("dotnet", "--version", 145);
         host.Runner.Executables["dotnet"] = @"C:\Program Files\dotnet\dotnet.exe";

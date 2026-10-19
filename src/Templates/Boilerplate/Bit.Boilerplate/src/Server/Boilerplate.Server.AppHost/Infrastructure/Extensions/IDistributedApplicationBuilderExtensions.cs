@@ -267,6 +267,23 @@ public static class IDistributedApplicationBuilderExtensions
             return builder;
         }
 
+        /// <summary>Without a container runtime, a named volume never gets ready and Aspire ends the whole run, so drops them.</summary>
+        public IDistributedApplicationBuilder RunWithoutContainerRuntime()
+        {
+            if (builder.ExecutionContext.IsRunMode is false || ContainerRuntime.IsRunning(builder))
+                return builder;
+
+            foreach (var container in builder.Resources.OfType<ContainerResource>())
+            {
+                foreach (var volume in container.Annotations.OfType<ContainerMountAnnotation>().Where(mount => mount.Type is ContainerMountType.Volume).ToArray())
+                {
+                    container.Annotations.Remove(volume);
+                }
+            }
+
+            return builder;
+        }
+
         /// <summary>
         /// Keeps every container of the application model alive between runs, so that each run reuses them instead of
         /// booting them up from scratch, and stops them once the app host hasn't run for <paramref name="idleMinutes"/>.
@@ -278,7 +295,7 @@ public static class IDistributedApplicationBuilderExtensions
         /// </remarks>
         public IDistributedApplicationBuilder UsePersistentContainers(int idleMinutes = 15)
         {
-            if (ContainersKeeper.Start(builder, TimeSpan.FromMinutes(idleMinutes)) is false)
+            if (ContainerRuntime.IsRunning(builder) is false || ContainersKeeper.Start(builder, TimeSpan.FromMinutes(idleMinutes)) is false)
                 return builder;
 
             foreach (var container in builder.Resources.OfType<ContainerResource>().ToArray())

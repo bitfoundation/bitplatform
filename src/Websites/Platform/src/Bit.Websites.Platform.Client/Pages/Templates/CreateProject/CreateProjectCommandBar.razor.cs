@@ -16,7 +16,7 @@ public partial class CreateProjectCommandBar
             return;
 
         copiedCommand = command;
-        _ = RecordCreatedProject(command);
+        _ = RecordCreatedProject(Setup.ToCommand(withName: false));
     }
 
     private async Task RecordCreatedProject(string command)

@@ -10,7 +10,7 @@ public partial class UserGroupFeatureManagementUITests : AppPageTest
     // She is only ever the ACTOR here: the user-group she edits and the member who signs in are both created per run,
     // so this test never mutates anything another test - or its own next run - depends on.
     private const string StoreAdminEmail = "store-admin@bitplatform.dev";
-    private const string Password = "123456";
+    private const string Password = "12345678";
 
     // The "Manage roles" (a.k.a. "User groups") page is gated behind the Roles_Manage feature. In the role editor's
     // Features tab, each feature's leaf is labelled with its raw field name.

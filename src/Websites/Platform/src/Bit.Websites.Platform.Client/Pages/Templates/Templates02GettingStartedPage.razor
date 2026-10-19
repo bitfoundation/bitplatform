@@ -67,17 +67,22 @@ source ~/.bashrc</CodeBox>
             <CodeBox>bit new MyFirstProject --yes</CodeBox>
             <br />
             The <code>bit new</code> command checks this machine and offers to install what's missing:
-            Node.js, Git, Docker, the Aspire CLI, VS Code and more. What the project needs is checked already; the rest is up to you,
+            Node.js, Git, a container runtime, the Aspire CLI, VS Code and more. What the project needs is checked already; the rest is up to you,
             and anything that's already there isn't shown at all. When an install needs it, Windows asks once for administrator permission, and on macOS and Linux sudo asks once for your password.
             <br />
             <br />
-            It also warns, only when it's sure, if virtualization is turned off in the BIOS while Docker Desktop or the Android emulator needs it,
-            if the machine has less than 24 GB of memory, or if the project's drive is a hard disk rather than an SSD.
+            The container runtime is one that's free for commercial use: Podman on Windows, Colima with the docker CLI on macOS, and Docker Engine on Linux.
+            A Docker you already have is used as it is. A project whose database is SQLite and that has no Redis runs without it too, only without Keycloak and the test email inbox.
+            <br />
+            <br />
+            It also warns, only when it's sure, if virtualization is turned off in the BIOS while the project's containers or the Android emulator need it,
+            if the machine has less than 15 GB of memory, or if the project's drive is a hard disk rather than an SSD.
             <br />
             <br />
             Then it creates the project with a certificate of its own, initializes git with <b>develop</b> and <b>main</b>, installs the build tools the apps need,
             restores the packages, builds, installs the Chromium the UI tests run in, formats the code, adds the initial EF Core migration,
-            trusts the folder for VS Code and the AI coding tools, installs the VS Code extensions the project recommends, and opens it in VS Code.
+            trusts the folder for VS Code and the AI coding tools, installs the VS Code extensions the project recommends, starts the project, and opens it in VS Code.
+            Then it opens the Aspire dashboard and the app in your browser, and keeps the project running while that terminal is open.
             Then use any AI assistant you like: the project comes fully configured for Claude Code, GitHub Copilot, Codex, Gemini CLI and Cursor.
             A step that fails doesn't stop the rest, and the summary shows how to finish it.
             <br />
@@ -110,8 +115,8 @@ source ~/.bashrc</CodeBox>
 
     <section class="section-card">
         <div class="section-card-txt">
-            <BitAccordion Title="Docker Desktop says virtualization is turned off (Windows)">
-                Docker Desktop and the Android emulators need hardware virtualization, which is turned on in the BIOS or UEFI settings.
+            <BitAccordion Title="Virtualization is turned off (Windows)">
+                Containers and the Android emulators need hardware virtualization, which is turned on in the BIOS or UEFI settings.
                 Task Manager shows whether it's on:
                 <br />
                 <br />

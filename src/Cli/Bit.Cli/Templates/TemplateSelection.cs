@@ -14,6 +14,8 @@ public sealed class TemplateSelection(TemplateManifest manifest)
 
     public string Database => this["database"];
 
+    public bool NeedsContainers => Aspire && (Database is "SqlServer" or "PostgreSQL" or "MySql" || IsTrue("redis"));
+
     public IReadOnlyList<string> AspireContainers()
     {
         if (Aspire is false)

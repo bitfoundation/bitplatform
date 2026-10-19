@@ -146,7 +146,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    What has cost time here before:
 
    - The template tree's tests start its Aspire app host first, with every container it has (SQL Server, PostgreSQL,
-     MySQL, Keycloak, both Redis, the S3 storage, MailPit), so they need Docker Desktop and are slow to start; that
+     MySQL, Keycloak, both Redis, the S3 storage, MailPit), so they need Docker and are slow to start; that
      start once hung for over 15 minutes. A generated project starts only its own few containers.
    - Install a packed template with `--debug:custom-hive <folder>` on both `dotnet new install` and `dotnet new`, so
      the machine's own Bit.Boilerplate template stays as it is; `bit new` already uses a private hive in its home
@@ -407,7 +407,7 @@ request lines in the server's log. Stop the site and the stand-in afterwards; a 
 
 A new project's dev container is the .NET SDK image with Docker inside it. When it's created, it installs bit and runs
 `bit setup`, which does the rest the way it does on any machine: Node.js, the Aspire CLI, the build tools, the
-certificate, the packages, the build and Chromium for the UI tests. `devcontainer` checks that on Docker Desktop's Linux
+certificate, the packages, the build and Chromium for the UI tests. `devcontainer` checks that on a Linux Docker
 engine, as VS Code and Codespaces would run it: `bit new` makes a project here without setting it up, the
 devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 
@@ -417,18 +417,18 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 - `-PrereleasePackages` puts the packages of the newest Prerelease nuget packages run into that feed too, bit's
   aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
   doesn't have compiles against them.
-- It's heavy: a few GB in Docker Desktop's VM and about ten minutes, most of them for the container's image and the
+- It's heavy: a few GB in Docker's VM and about ten minutes, most of them for the container's image and the
   restore, then about half an hour for the Aspire check below. Run it on its own, after the E2E suite, never next to
   it.
 - Done means every `bit setup` step passed, `bit doctor` exits with 0, with VS Code not needed inside a container,
-  and the Aspire check below passes. `bit doctor`'s memory warning describes Docker Desktop's VM, not this machine,
+  and the Aspire check below passes. `bit doctor`'s memory warning describes Docker's VM, not this machine,
   and is expected.
 - The logs of `bit new`, of the container's start and of `bit doctor` stay in the folder the helper names. `-Keep`
   leaves the container up, to look inside it with the devcontainers CLI; bit's own logs are in its home folder there.
 
 A container that sets itself up can still fail to run the app. And the Aspire containers have to behave in there as
 step 6 shows they do on Windows: on Linux the keeper that stops them is a different process, started in a session of
-its own, and the containers run on the dev container's own Docker engine, not on Docker Desktop's. So run
+its own, and the containers run on the dev container's own Docker engine, not on the host's. So run
 `devcontainer` with `-Keep`, and once `bit doctor` has passed, do step 6's check inside the container: three
 `dotnet run`s of the app host, each until the web app answers inside the container and each ended the way closing
 its terminal does, with the same bar for the second run's reuse, the idle stop and the third run's volumes. Then
@@ -456,9 +456,9 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
   the Bit packages come from nuget.org at the version the template asks for. The project's `global.json` asks for
   the repository's SDK, which needs the workloads the template's clients build with (`wasm-tools`): an SDK that
   Visual Studio installed brings only its own.
-- It takes about half an hour, most of it the idle wait, and a few GB of Docker Desktop's memory while the app runs.
+- It takes about half an hour, most of it the idle wait, and a few GB of Docker's memory while the app runs.
   Start it in the background once the CD's deploy jobs are done, and never next to `devcontainer` or the Android
-  stage. Its containers hold that memory, and Docker Desktop's VM keeps it for a while after they stop: IIS sites
+  stage. Its containers hold that memory, and Docker's VM keeps it for a while after they stop: IIS sites
   deployed next to them took minutes to start, and one never did ("Managed server didn't initialize after 120000
   ms" in the Application log), which a CD reports as a failed health check.
 

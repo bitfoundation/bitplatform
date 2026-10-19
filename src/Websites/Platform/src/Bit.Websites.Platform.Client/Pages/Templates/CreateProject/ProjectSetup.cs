@@ -70,10 +70,10 @@ public class ProjectSetup
         Name = name;
     }
 
-    public string ToCommand()
+    public string ToCommand(bool withName = true)
     {
         var defaults = new ProjectSetup();
-        StringBuilder command = new($"bit new {Name} ");
+        StringBuilder command = new(withName ? $"bit new {Name} " : "bit new ");
 
         Choice(command, "captcha", Captcha, defaults.Captcha);
         Choice(command, "pipeline", Pipeline, defaults.Pipeline);

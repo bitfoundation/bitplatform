@@ -352,8 +352,8 @@ a container, pre-loaded from
 
 | Username | Password | Group |
 |---|---|---|
-| test | 123456 | `g-admin` |
-| store-admin | 123456 | `t-admin`, used when multi-tenancy is enabled |
+| test | 12345678 | `g-admin` |
+| store-admin | 12345678 | `t-admin`, used when multi-tenancy is enabled |
 | bob | bob | `demo` |
 | alice | alice | `demo` |
 

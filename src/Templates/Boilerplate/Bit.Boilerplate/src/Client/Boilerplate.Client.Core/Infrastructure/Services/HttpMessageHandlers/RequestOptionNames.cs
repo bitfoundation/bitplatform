@@ -13,4 +13,5 @@ public partial class RequestOptionNames
     public const string LogScopeData = nameof(LogScopeData);
     public const string IControllerType = nameof(IControllerType);
     public const string ActionParametersInfo = nameof(ActionParametersInfo);
+    public const string AllowedStatusCodes = nameof(AllowedStatusCodes);
 }

@@ -65,7 +65,7 @@ public sealed class NewWorkflow(CliServices cli)
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
         var requirements = request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
-        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
+        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), ContainersRequired = selection.NeedsContainers, NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
         var hardware = request.NoSetup ? null : ProbeHardwareAsync(cli, directory, cancellationToken);
         var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, hardware, cancellationToken);
 
@@ -127,7 +127,7 @@ public sealed class NewWorkflow(CliServices cli)
 
         if (sdkReady is false)
         {
-            steps.Add("format", StepResult.Skipped("Skipped dotnet format, the migration and Aspire's first start", "they need the project's .NET SDK"));
+            steps.Add("format", StepResult.Skipped("Skipped dotnet format, the migration and the first start", "they need the project's .NET SDK"));
         }
 
         if (sdkReady && request.NoFormat is false)
@@ -160,9 +160,11 @@ public sealed class NewWorkflow(CliServices cli)
             await RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
         }
 
-        if (sdkReady && StartsAspireOnce(cli, selection.Aspire, request.NoBuild))
+        var runMode = ProjectRun.Mode(cli, selection.Aspire, request.NoBuild, request.NoRun);
+
+        if (sdkReady && runMode is not ProjectRunMode.None)
         {
-            await RunProjectStepAsync(steps, context, "aspire-start", "Starting the project once with Aspire", projectSteps.AspireStartAsync, cancellationToken);
+            await ProjectRun.RunProjectAsync(cli, steps, context, projectSteps, runMode, selection.Aspire, cancellationToken);
         }
 
         if (ide is not IdeLocator.None)
@@ -171,7 +173,14 @@ public sealed class NewWorkflow(CliServices cli)
         }
 
         WriteSummary(cli, steps, context, selection, stopwatch.Elapsed, request.NoSetup);
-        return steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
+        var exitCode = steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
+
+        if (projectSteps.Running is { } running)
+        {
+            await ProjectRun.KeepRunningAsync(cli, running, cancellationToken);
+        }
+
+        return exitCode;
     }
 
     public static async Task<bool> RunSetupStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, bool noBrowsers, CancellationToken cancellationToken)
@@ -216,8 +225,6 @@ public sealed class NewWorkflow(CliServices cli)
 
         return true;
     }
-
-    public static bool StartsAspireOnce(CliServices cli, bool aspire, bool noBuild) => aspire && noBuild is false && cli.Environment.IsCI is false;
 
     public static async Task RunProjectStepAsync(StepRunner steps, ProjectContext context, string id, string title, Func<Action<string>, CancellationToken, Task<StepResult>> work, CancellationToken cancellationToken)
     {
@@ -403,6 +410,7 @@ public sealed class NewWorkflow(CliServices cli)
         {
             var manifest = TemplateSource.ReadManifest(package.PackagePath) ?? selection.Manifest;
             var arguments = selection.ToTemplateArguments().Concat(request.ExtraTemplateArguments).ToList();
+            context.SeedPassword = SeedPassword(manifest, selection, arguments);
             var result = await source.CreateAsync(package, manifest, context.Name, context.Directory, arguments, progress, ct);
 
             if (result.Succeeded && context.Exists is false)
@@ -418,6 +426,24 @@ public sealed class NewWorkflow(CliServices cli)
             var files = context.Exists ? Directory.EnumerateFiles(context.Directory, "*", SearchOption.AllDirectories).Count() : 0;
             return StepResult.FromProcess(result, $"Created {context.Name}", $"Couldn't create {context.Name}", null, $"bit Boilerplate{(package.Version is TemplateSource.FolderVersion ? "" : $" {package.Version}")}, {files} files");
         }, cancellationToken);
+    }
+
+    public static string? SeedPassword(TemplateManifest manifest, TemplateSelection selection, List<string> arguments)
+    {
+        if (manifest.Find("seedPassword") is null)
+            return null;
+
+        var given = arguments.FindIndex(a => string.Equals(a, "--seedPassword", StringComparison.OrdinalIgnoreCase));
+
+        if (given >= 0 && given + 1 < arguments.Count)
+            return arguments[given + 1];
+
+        if (selection.HasExplicitValue("seedPassword"))
+            return selection["seedPassword"];
+
+        var password = $"{System.Security.Cryptography.RandomNumberGenerator.GetInt32(10_000_000, 100_000_000)}";
+        arguments.AddRange(["--seedPassword", password]);
+        return password;
     }
 
     private void TagTelemetry(TemplateSelection selection, IReadOnlySet<Platform> platforms, IReadOnlyList<ToolCheck> tools, string ide, NewRequest request)
@@ -466,7 +492,7 @@ public sealed class NewWorkflow(CliServices cli)
         if (request.GitHubRepo) stepsList.Add("private GitHub repository");
         if (request.NoTrust is false) stepsList.Add("trust for VS Code and AI tools");
         if (ide is IdeLocator.VsCode) stepsList.Add("VS Code extensions");
-        if (StartsAspireOnce(cli, selection.Aspire, request.NoBuild)) stepsList.Add("a first Aspire start");
+        if (ProjectRun.Mode(cli, selection.Aspire, request.NoBuild, request.NoRun) is not ProjectRunMode.None and var runMode) stepsList.Add(ProjectRun.PlanText(runMode, selection.Aspire));
         if (ide is not IdeLocator.None) stepsList.Add($"open in {IdeLocator.Title(ide)}");
         Row("Then", string.Join(", ", stepsList));
 
@@ -519,7 +545,7 @@ public sealed class NewWorkflow(CliServices cli)
             }
 
             cli.Console.Out.MarkupLine($"  [bold]Run it[/]     cd {Markup.Escape(ProcessSpec.Quote(relative))}  [grey]then[/]  {Markup.Escape(run)}");
-            cli.Console.Out.MarkupLine("  [bold]Sign in[/]    test@bitplatform.dev / 123456  [grey]seeded accounts, remove them before you deploy[/]");
+            cli.Console.Out.MarkupLine($"  [bold]Sign in[/]    test@bitplatform.dev / {Markup.Escape(context.SeedPassword ?? "123456")}  [grey]seeded accounts, remove them before you deploy[/]");
             cli.Console.Out.MarkupLine("  [bold]Docs[/]       https://bitplatform.dev/templates");
         }
 

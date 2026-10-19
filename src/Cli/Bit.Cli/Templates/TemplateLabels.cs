@@ -25,7 +25,8 @@ public static class TemplateLabels
         ["theme"] = "Theme",
         ["apiServerUrl"] = "API server URL",
         ["webAppUrl"] = "Web app URL",
-        ["advancedTests"] = "Advanced automated tests"
+        ["advancedTests"] = "Advanced automated tests",
+        ["seedPassword"] = "Seeded accounts' password"
     };
 
     public static string For(TemplateParameter parameter)

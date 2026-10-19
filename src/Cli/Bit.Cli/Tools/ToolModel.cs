@@ -80,6 +80,8 @@ public sealed record ToolNeeds
 
     public IReadOnlyList<string> Containers { get; init; } = [];
 
+    public bool ContainersRequired { get; init; }
+
     public bool NativeWebAssembly { get; init; }
 
     public bool GitHubRepo { get; init; }

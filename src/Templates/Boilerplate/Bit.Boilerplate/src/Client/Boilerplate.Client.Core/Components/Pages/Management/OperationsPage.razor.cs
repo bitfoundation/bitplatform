@@ -1,4 +1,5 @@
 //+:cnd:noEmit
+using System.Net;
 using System.Text;
 using Boilerplate.Shared.Features.Diagnostic;
 
@@ -191,8 +192,15 @@ public partial class OperationsPage
         }
     }
 
-    private Task<HealthReportDto?> GetReport(string url) =>
-        httpClient.GetFromJsonAsync(url, JsonSerializerOptions.GetTypeInfo<HealthReportDto>(), CurrentCancellationToken);
+    private async Task<HealthReportDto?> GetReport(string url)
+    {
+        using HttpRequestMessage request = new(HttpMethod.Get, url);
+        request.Options.Set(new HttpRequestOptionsKey<HttpStatusCode[]>(RequestOptionNames.AllowedStatusCodes), [HttpStatusCode.ServiceUnavailable]);
+
+        using var response = await httpClient.SendAsync(request, CurrentCancellationToken);
+
+        return await response.Content.ReadFromJsonAsync(JsonSerializerOptions.GetTypeInfo<HealthReportDto>(), CurrentCancellationToken);
+    }
 
     //#if (api == "Standalone")
     /// <summary>

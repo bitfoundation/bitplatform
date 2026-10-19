@@ -109,7 +109,9 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             }
 
             if (succeeded)
-                return StepResult.Succeeded(done, hint: action.AfterInstall) with { Status = action.AfterInstall is null ? StepStatus.Succeeded : StepStatus.Warning, Detail = action.AfterInstall };
+                return action.AfterInstall is null || action.Optional
+                    ? StepResult.Succeeded(done, action.AfterInstall)
+                    : StepResult.Warning(done, action.AfterInstall, hint: action.AfterInstall);
 
             if (action.Partial is { } partial && last is { NotFound: false, TimedOut: false } && last.ExitCode == partial.ExitCode)
                 return StepResult.Succeeded(done, partial.Detail, partial.Hint);
@@ -265,8 +267,8 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
             }
             else if (exitCodes.TryGetValue(action.ToolId, out var exitCode) && action.SuccessExitCodes.Contains(exitCode))
             {
-                steps.Add(action.ToolId, action.AfterInstall is null
-                    ? StepResult.Succeeded(done)
+                steps.Add(action.ToolId, action.AfterInstall is null || action.Optional
+                    ? StepResult.Succeeded(done, action.AfterInstall)
                     : StepResult.Warning(done, action.AfterInstall));
             }
             else
@@ -275,7 +277,8 @@ public sealed class ToolInstaller(CliServices cli, StepRunner steps)
                     ? code switch { TimedOutCode => "it took too long and was stopped", CancelledCode => "it was cancelled", _ => $"exit code {code}" }
                     : "it didn't run";
 
-                steps.Add(action.ToolId, StepResult.Failed($"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", detail, followUp, hint: AdministratorOutput(log, action.Title)));
+                var failed = StepResult.Failed($"Couldn't {char.ToLowerInvariant(action.Title[0])}{action.Title[1..]}", detail, followUp, hint: AdministratorOutput(log, action.Title));
+                steps.Add(action.ToolId, action.Optional ? failed with { Status = StepStatus.Warning } : failed);
             }
         }
     }

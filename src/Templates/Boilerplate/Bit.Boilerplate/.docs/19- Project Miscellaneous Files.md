@@ -713,7 +713,7 @@ The `bit` command stays available in its terminal, for `bit doctor` and `bit tra
 - Isolated from your host system
 
 **How to use**:
-1. Install Docker Desktop and the "Dev Containers" extension in VS Code
+1. Install Docker (or Podman, with VS Code's `dev.containers.dockerPath` set to `podman`) and the "Dev Containers" extension in VS Code
 2. Open the project in VS Code
 3. Click "Reopen in Container" when prompted
 4. Wait for the container to build and for `bit setup` to finish; GitHub Codespaces prebuilds do both ahead of time

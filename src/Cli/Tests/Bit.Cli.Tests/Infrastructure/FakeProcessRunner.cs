@@ -4,7 +4,7 @@ namespace Bit.Cli.Tests.Infrastructure;
 
 public sealed class FakeProcessRunner : IProcessRunner
 {
-    private readonly List<(Func<ProcessSpec, bool> Match, Func<ProcessSpec, ProcessResult> Result)> rules = [];
+    private readonly List<(Func<ProcessSpec, bool> Match, Func<ProcessSpec, CancellationToken, Task<ProcessResult>> Result)> rules = [];
 
     public Dictionary<string, string> Executables { get; } = new(StringComparer.OrdinalIgnoreCase);
 
@@ -15,6 +15,11 @@ public sealed class FakeProcessRunner : IProcessRunner
     public ProcessResult Default { get; set; } = new() { ExitCode = 0 };
 
     public FakeProcessRunner On(string fileName, string argumentsStartWith, Func<ProcessSpec, ProcessResult> respond)
+    {
+        return OnAsync(fileName, argumentsStartWith, (spec, _) => Task.FromResult(respond(spec)));
+    }
+
+    public FakeProcessRunner OnAsync(string fileName, string argumentsStartWith, Func<ProcessSpec, CancellationToken, Task<ProcessResult>> respond)
     {
         rules.Add((spec => string.Equals(Path.GetFileNameWithoutExtension(spec.FileName), fileName, StringComparison.OrdinalIgnoreCase)
             && string.Join(' ', spec.Arguments).StartsWith(argumentsStartWith, StringComparison.Ordinal), respond));
@@ -43,7 +48,7 @@ public sealed class FakeProcessRunner : IProcessRunner
         foreach (var (match, result) in rules.AsEnumerable().Reverse())
         {
             if (match(spec))
-                return Task.FromResult(result(spec));
+                return result(spec, cancellationToken);
         }
 
         return Task.FromResult(Default);
