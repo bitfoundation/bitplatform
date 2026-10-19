@@ -1,0 +1,235 @@
+﻿@page "/hybrid"
+
+<PageTitle>Blazor Hybrid - bit Belemetry</PageTitle>
+
+<h1>Blazor Hybrid</h1>
+
+<p class="page-intro">
+    In MAUI, WPF and WinForms the components run in the app process and render into a WebView. Belemetry
+    instruments both: the script in the WebView records page views, clicks, web vitals and errors, and
+    <strong>relays</strong> them over JS interop to the .NET pipeline, which exports them together with the
+    app's logs, traces and metrics - and keeps them in files while the device is offline.
+</p>
+
+<div class="demo-section">
+    <h2>MAUI</h2>
+    <p>
+        Register Belemetry next to the BlazorWebView. The host kind is detected - no ASP.NET Core hosting
+        and no browser underneath means Hybrid - and with it come the Hybrid defaults: the Relay transport
+        and file persistence.
+    </p>
+    <CodeSnippet Code="@MauiProgramCode" Language="C#" Expanded="true" />
+    <p>
+        There is no server-rendered head in a Hybrid app, so there is no <code>&lt;BelemetryScript /&gt;</code>.
+        <code>&lt;BelemetryInitializer /&gt;</code> imports and starts the script once the WebView is up,
+        and connects it to .NET.
+    </p>
+    <CodeSnippet Code="@RoutesCode" Language="Razor" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Flush before the app is suspended</h2>
+    <p>
+        A mobile OS may suspend a backgrounded app and end it later without another callback, so export what
+        is queued as soon as the app goes to the background. <code>IBelemetry</code> is scoped (one per
+        BlazorWebView); the queue it flushes is the app-wide pipeline, so any scope will do.
+    </p>
+    <CodeSnippet Code="@OnSleepCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>WPF and WinForms</h2>
+    <p>
+        The same registration, on the service collection the BlazorWebView is given. A desktop app is not
+        suspended, but it does exit: flush on the way out, bounded so a missing network cannot hold the
+        window open. The repository's <code>Samples/WinForms</code> is this setup in full, and the hybrid
+        browser suite runs the same WebView core through a Windows Forms host.
+    </p>
+    <CodeSnippet Code="@WpfCode" Language="C#" Expanded="true" />
+    <CodeSnippet Code="@WinFormsCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Relay: no CORS, no credentials in the WebView</h2>
+    <p>
+        <code>options.Browser.Transport</code> defaults to <code>Auto</code>, which is <code>Relay</code> in
+        Hybrid. The script never calls an exporter itself; it hands its records to .NET, where they go through
+        the same consent, privacy rules and processors as the app's own records. That means:
+    </p>
+    <ul>
+        <li>No CORS configuration on the collector - the app process is not a web page.</li>
+        <li>Exporter headers and connection strings stay in the app process, never in the WebView.</li>
+        <li>An <code>IBelemetryProcessor</code> sees the browser's records too.</li>
+    </ul>
+    <p>
+        More on the <a href="/transport">Transport</a> page.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Offline, in files</h2>
+    <p>
+        With the <code>Persistence</code> feature granted, exports that fail with a network error or a
+        retryable status are written to files and retried every <code>RetryInterval</code>, for up to
+        <code>MaxAge</code>. The consent decision is remembered in a file too, so it survives restarts even
+        when the app never shows a page that could keep it in <code>localStorage</code>.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Option</th><th scope="col">Default</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>Persistence.Directory</code></td><td><code>{LocalApplicationData}/bit-belemetry/{service.name}</code></td></tr>
+                <tr><td><code>Persistence.MaxBytes</code></td><td>20 MB; the oldest requests are evicted past it</td></tr>
+                <tr><td><code>Persistence.MaxAge</code></td><td>48 hours</td></tr>
+                <tr><td><code>Persistence.RetryInterval</code></td><td>1 minute</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Endpoints from a device</h2>
+    <p>
+        The app process exports, so the endpoint has to be reachable from the device. The Android emulator
+        reaches the development machine's <code>localhost</code> at <code>10.0.2.2</code>. Outside the browser,
+        the standard <code>OTEL_*</code> environment variables and
+        <code>APPLICATIONINSIGHTS_CONNECTION_STRING</code> fill in what the code leaves unset
+        (<code>UseEnvironmentVariables</code>, on by default) - useful for a desktop app started by the
+        Aspire AppHost.
+    </p>
+    <CodeSnippet Code="@EmulatorCode" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="BelemetryBrowserTransport" />
+    <ApiTable TypeName="BelemetryPersistenceOptions" />
+    <ApiTable TypeName="IBelemetry" />
+</div>
+
+@code {
+    private const string MauiProgramCode = """
+        // MauiProgram.cs
+        using Bit.Belemetry;
+
+        public static MauiApp CreateMauiApp()
+        {
+            var builder = MauiApp.CreateBuilder();
+            builder.UseMauiApp<App>();
+
+            builder.Services.AddMauiBlazorWebView();
+
+            builder.Services.AddBitBelemetryServices(options =>
+            {
+                options.ServiceName = "MyApp.Maui";
+                options.AddOtlpExporter("https://otel.example.com");
+
+                options.Traces.Sources.Add("MyApp*");
+                options.Metrics.Meters.Add("MyApp");
+            });
+
+            return builder.Build();
+        }
+        """;
+
+    private const string RoutesCode = """
+        @* Routes.razor (or Main.razor) *@
+        <Router AppAssembly="typeof(MauiProgram).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+            </Found>
+        </Router>
+
+        <BelemetryInitializer />
+        """;
+
+    private const string OnSleepCode = """
+        // App.xaml.cs
+        public partial class App : Application
+        {
+            private readonly IServiceProvider _services;
+
+            public App(IServiceProvider services)
+            {
+                InitializeComponent();
+                _services = services;
+            }
+
+            protected override async void OnSleep()
+            {
+                base.OnSleep();
+
+                try
+                {
+                    await using var scope = _services.CreateAsyncScope();
+                    await scope.ServiceProvider.GetRequiredService<IBelemetry>().FlushAsync();
+                }
+                catch (Exception ex)
+                {
+                    // async void: an exception here would crash the app on its way to the background.
+                    System.Diagnostics.Debug.WriteLine($"Flushing telemetry failed: {ex}");
+                }
+            }
+        }
+        """;
+
+    private const string WpfCode = """
+        // WPF - MainWindow.xaml.cs
+        public partial class MainWindow : Window
+        {
+            private readonly ServiceProvider _services;
+
+            public MainWindow()
+            {
+                InitializeComponent();
+
+                var services = new ServiceCollection();
+                services.AddWpfBlazorWebView();
+                services.AddBitBelemetryServices(options =>
+                {
+                    options.ServiceName = "MyApp.Wpf";
+                    options.AddOtlpExporter("https://otel.example.com");
+                });
+
+                _services = services.BuildServiceProvider();
+                Resources.Add("services", _services);   // <blazor:BlazorWebView Services="{DynamicResource services}" ...>
+            }
+
+            protected override void OnClosed(EventArgs e)
+            {
+                // Run on the thread pool and wait a bounded time: the window is going away, and waiting on
+                // the UI thread for work that may want the UI thread back would never finish.
+                Task.Run(async () =>
+                {
+                    await using var scope = _services.CreateAsyncScope();
+                    await scope.ServiceProvider.GetRequiredService<IBelemetry>().FlushAsync();
+                }).Wait(TimeSpan.FromSeconds(5));
+
+                base.OnClosed(e);
+            }
+        }
+        """;
+
+    private const string WinFormsCode = """
+        // WinForms - Form1.cs
+        var services = new ServiceCollection();
+        services.AddWindowsFormsBlazorWebView();
+        services.AddBitBelemetryServices(options =>
+        {
+            options.ServiceName = "MyApp.WinForms";
+            options.AddOtlpExporter("https://otel.example.com");
+        });
+
+        blazorWebView1.HostPage = "wwwroot/index.html";
+        blazorWebView1.Services = services.BuildServiceProvider();
+        blazorWebView1.RootComponents.Add<Routes>("#app");
+        """;
+
+    private const string EmulatorCode = """
+        // The Android emulator reaches the development machine's localhost at 10.0.2.2.
+        var endpoint = OperatingSystem.IsAndroid() ? "http://10.0.2.2:4318" : "http://localhost:4318";
+        options.AddOtlpExporter(endpoint);
+        """;
+}

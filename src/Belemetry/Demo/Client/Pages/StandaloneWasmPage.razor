@@ -1,0 +1,151 @@
+﻿@page "/wasm"
+
+<PageTitle>Standalone WebAssembly - bit Belemetry</PageTitle>
+
+<h1>Standalone WebAssembly</h1>
+
+<p class="page-intro">
+    A standalone Blazor WebAssembly app has no server that renders its head, so there is no
+    <code>&lt;BelemetryScript /&gt;</code>: one registration in <code>Program.cs</code> and
+    <code>&lt;BelemetryInitializer /&gt;</code> in the root component are the whole setup. Both halves -
+    the browser script and the .NET pipeline - run in the reader's browser.
+</p>
+
+<div class="demo-section">
+    <h2>Register in Program.cs</h2>
+    <p>
+        The host kind is detected: no ASP.NET Core hosting in the container and a browser underneath means
+        WebAssembly, so the .NET pipeline runs here and exports with the browser's own <code>fetch</code>.
+        The same exporters are handed to the browser script, unless an exporter sets
+        <code>IncludeInBrowser = false</code>.
+    </p>
+    <CodeSnippet Code="@ProgramCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>The initializer in App.razor</h2>
+    <p>
+        <code>&lt;BelemetryInitializer /&gt;</code> imports the script, starts it with the configuration from
+        <code>Program.cs</code>, and connects it to .NET: consent and the session are shared, and the
+        unload flush is wired up. Place it once, next to the router.
+    </p>
+    <CodeSnippet Code="@AppRazorCode" Language="Razor" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>The optional script tag</h2>
+    <p>
+        Adding the module to <code>index.html</code> makes the browser download it in parallel with the
+        .NET runtime instead of after it, and puts <code>window.BitBelemetry</code> on the page before Blazor
+        starts. The script itself starts when <code>&lt;BelemetryInitializer /&gt;</code> hands it the
+        configuration.
+    </p>
+    <CodeSnippet Code="@IndexHtmlCode" Language="HTML" Expanded="true" />
+    <div class="callout">
+        <p>
+            Starting late costs less than it sounds: web vitals, the document-load span, resource timing and
+            long tasks are read from the browser's buffered performance entries, so the script sees them
+            whenever it starts. What it cannot see is a JavaScript error thrown before it started.
+        </p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Endpoints and CORS</h2>
+    <p>
+        Everything is exported from the page's origin to the collector's, so the receiver has to allow the
+        app's origin. For the OpenTelemetry Collector that is <code>cors.allowed_origins</code> on the OTLP
+        HTTP receiver; for the .NET Aspire dashboard, <code>DASHBOARD__OTLP__CORS__ALLOWEDORIGINS</code>.
+    </p>
+    <CodeSnippet Code="@CollectorCode" Language="YAML" />
+    <div class="callout warn">
+        <p>
+            A WebAssembly app's configuration is downloaded by every visitor, so exporter headers - API keys
+            included - are public. For a vendor that needs a key, put a collector in between that adds it.
+        </p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>What runs where</h2>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <tbody>
+                <tr><td>Browser instrumentation</td><td>The script: page views, clicks, web vitals, errors, fetch and XHR spans</td></tr>
+                <tr><td>.NET logs, traces, metrics</td><td>In the browser, exported every <code>Batch.FlushInterval</code> and <code>Metrics.ExportInterval</code>. Metrics rely on <code>System.Diagnostics.Metrics</code>, which the WebAssembly SDK turns off by default and the package turns back on (<code>MetricsSupport</code>)</td></tr>
+                <tr><td>Unload</td><td>On <code>pagehide</code> or when the tab is hidden, the script asks .NET for its pending records already serialized, and sends them with <code>fetch(..., { keepalive: true })</code> - async .NET work does not survive the page going away</td></tr>
+                <tr><td>Offline persistence</td><td><code>localStorage</code>, up to <code>Persistence.BrowserMaxBytes</code> (1 MB)</td></tr>
+                <tr><td>Consent</td><td>App-wide: one decision governs the script and the .NET pipeline alike</td></tr>
+                <tr><td><code>OTEL_*</code> variables</td><td>Ignored - there is no process environment in the browser</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        HTTP calls made with .NET's <code>HttpClient</code> are traced by the .NET pipeline (the
+        <code>System.Net.Http</code> source is on by default) and already carry a <code>traceparent</code>;
+        the script sees that header and leaves those requests alone, so each call is recorded once.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="BelemetryInitializer" />
+    <ApiTable TypeName="BelemetryOtlpExporterOptions" />
+</div>
+
+@code {
+    private const string ProgramCode = """
+        using Bit.Belemetry;
+        using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+
+        var builder = WebAssemblyHostBuilder.CreateDefault(args);
+        builder.RootComponents.Add<App>("#app");
+
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.ServiceName = "MyApp";
+            options.Environment = builder.HostEnvironment.Environment;
+
+            options.AddOtlpExporter(o =>
+            {
+                o.Endpoint = new Uri("https://otel.example.com");
+                o.Protocol = BelemetryOtlpProtocol.HttpProtobuf;
+            });
+
+            options.Traces.Sources.Add("MyApp*");
+            options.Metrics.Meters.Add("MyApp");
+        });
+
+        await builder.Build().RunAsync();
+        """;
+
+    private const string AppRazorCode = """
+        @* App.razor *@
+        <Router AppAssembly="typeof(App).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="routeData" DefaultLayout="typeof(MainLayout)" />
+            </Found>
+        </Router>
+
+        <BelemetryInitializer />
+        """;
+
+    private const string IndexHtmlCode = """
+        <!-- wwwroot/index.html -->
+        <head>
+            ...
+            <script type="module" src="_content/Bit.Belemetry/bit-belemetry.js"></script>
+        </head>
+        """;
+
+    private const string CollectorCode = """
+        receivers:
+          otlp:
+            protocols:
+              http:
+                endpoint: 0.0.0.0:4318
+                cors:
+                  allowed_origins: ["https://myapp.example.com"]
+                  allowed_headers: ["*"]
+        """;
+}

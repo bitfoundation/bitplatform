@@ -1,0 +1,160 @@
+﻿@page "/privacy"
+@inject IJSRuntime JS
+
+<PageTitle>Privacy - bit Belemetry</PageTitle>
+
+<h1>Privacy</h1>
+
+<p class="page-intro">
+    Consent decides <em>whether</em> a record is collected; the privacy rules decide <em>what is in it</em>. They run
+    before a record is queued - in the browser script and in the .NET pipeline alike - so secrets in URLs, e-mail
+    addresses in error messages and card numbers in logs are gone before anything leaves the device or the process.
+    The defaults are on; most apps only ever add to them.
+</p>
+
+<div class="demo-section">
+    <h2>See it happen</h2>
+    <p>
+        Each button below makes a real request, or throws a real error, carrying something that must not be recorded.
+        Open a record in the feed to see what was actually exported: the server received the original URL, the
+        telemetry did not.
+    </p>
+    <div class="demo-row">
+        <div class="demo-card stack">
+            <div class="demo-actions">
+                <button type="button" class="btn-bl" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(SecretsUrl))">Secrets in the query</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(PatternsUrl))">An e-mail and an IP in the query</button>
+                <button type="button" class="btn-bl-subtle" disabled="@(RendererInfo.IsInteractive is false)" @onclick="@(() => FetchAsync(FragmentUrl))">A token in the fragment</button>
+                <button type="button" class="btn-bl btn-bl-danger" disabled="@(RendererInfo.IsInteractive is false)" @onclick="ThrowAsync">An error mentioning a card</button>
+            </div>
+            <div class="doc-table-wrap">
+                <table class="doc-table">
+                    <thead><tr><th scope="col">The page used</th><th scope="col">The telemetry carries</th></tr></thead>
+                    <tbody>
+                        <tr><td><code>@SecretsUrl</code></td><td><code>.../api/demo/echo?token=REDACTED&amp;email=REDACTED&amp;q=ok</code></td></tr>
+                        <tr><td><code>@PatternsUrl</code></td><td><code>.../api/demo/echo?q=[email]&amp;from=[ip]</code></td></tr>
+                        <tr><td><code>@FragmentUrl</code></td><td><code>.../api/demo/echo</code></td></tr>
+                        <tr><td><code>@ErrorMessage</code></td><td><code>Payment failed for [email] with card [card]</code></td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <TelemetryFeedView Compact="true" Match="@IsPrivacyRecord"
+                               EmptyText="Nothing yet - press a button, then open the record and read its url.full or exception.message." />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Query parameters</h2>
+    <p>
+        The values of the parameters in <code>RedactQueryParameters</code> are replaced with <code>REDACTED</code> in
+        every URL attribute (<code>url.full</code>, <code>page.referrer</code>, ...), matched case-insensitively and
+        after URL decoding. The parameter stays, so a dashboard can still tell the requests apart. The default list:
+    </p>
+    <div class="badge-list">
+        @foreach (var name in _defaultRedacted)
+        {
+            <span class="badge">@name</span>
+        }
+    </div>
+    <p>
+        <code>StripQueryString</code> (off) drops the query entirely, for apps whose query strings are mostly
+        personal. <code>StripFragment</code> (on) drops the <code>#...</code> part, because OAuth implicit and hybrid
+        flows return tokens there; with it off, parameters in the fragment are redacted like the query's.
+    </p>
+    <CodeSnippet Code="@QueryCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Pattern scrubbing</h2>
+    <p>
+        With <code>ScrubPatterns</code> (on) these patterns are replaced wherever free text can carry them - log
+        bodies, exception messages and stack traces, span status messages and URLs. In the browser every string
+        attribute is scrubbed (the session and user ids excepted); on the .NET side, the URL attributes,
+        <code>exception.message</code>, <code>exception.stacktrace</code>, <code>url.query</code> and the log body.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead><tr><th scope="col">Pattern</th><th scope="col">Becomes</th><th scope="col">Notes</th></tr></thead>
+            <tbody>
+                <tr><td>E-mail addresses</td><td><code>[email]</code></td><td><code>name&#64;domain.tld</code></td></tr>
+                <tr><td>JSON Web Tokens</td><td><code>[jwt]</code></td><td>Three base64url segments starting with <code>eyJ</code></td></tr>
+                <tr><td>Bearer tokens</td><td><code>Bearer [token]</code></td><td><code>Bearer</code> followed by a token, case-insensitive</td></tr>
+                <tr><td>Payment card numbers</td><td><code>[card]</code></td><td>13 to 19 digits, optionally grouped with spaces or dashes, and only when the Luhn checksum holds - so order numbers and timestamps survive</td></tr>
+                <tr><td>IPv4 addresses</td><td><code>[ip]</code></td><td>Except after <code>Version=</code>, so .NET assembly versions in stack traces stay readable, and except the host of a URL and <code>server.address</code>: they name the server that was called, not the user</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Scrubbing is a safety net, not a design: a value you know is personal should never be logged in the first
+        place, and structured attributes you control are better removed by name (below) than by pattern.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Blocked attributes and the user agent</h2>
+    <p>
+        <code>BlockedAttributes</code> removes attributes by exact key from every record and span event, on both
+        sides: the browser script gets the list in its configuration, and the .NET pipeline applies it to its own
+        logs and spans, <code>IBelemetry</code> calls, and browser records relayed to it. Use a
+        <a href="/processors">processor</a> on the .NET side for anything more selective.
+    </p>
+    <p>
+        <code>CollectUserAgent</code> (on) puts the browser's user agent string in the browser resource as
+        <code>user_agent.original</code>. Turn it off to keep only the coarse <code>browser.*</code> attributes
+        (language, platform, mobile, brands). On Azure Monitor, <code>MaskIp</code> (on) keeps the ingestion service
+        from deriving a location from the client IP; Belemetry never records the client IP itself.
+    </p>
+    <CodeSnippet Code="@AttributesCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>API</h2>
+    <ApiTable TypeName="BelemetryPrivacyOptions" />
+</div>
+
+@code {
+    private const string SecretsUrl = "/api/demo/echo?token=secret&email=a@b.c&q=ok";
+    private const string PatternsUrl = "/api/demo/echo?q=jane.doe@example.com&from=203.0.113.7";
+    private const string FragmentUrl = "/api/demo/echo#access_token=abc123&token_type=bearer";
+    private const string ErrorMessage = "Payment failed for jane.doe@example.com with card 4111 1111 1111 1111";
+
+    // The library's own default, read from a fresh options object so this list cannot drift from it.
+    private static readonly string[] _defaultRedacted = [.. new BelemetryPrivacyOptions().RedactQueryParameters];
+
+    private static bool IsPrivacyRecord(TelemetryRecord r)
+        => r.Source == "browser"
+        && ((r.Scope == "bit.belemetry.http" && r.Attributes.TryGetValue("url.full", out var url) && url.Contains("/api/demo/echo", StringComparison.Ordinal))
+            || (r.Kind == "Error" && r.Scope == "bit.belemetry.errors"));
+
+    private async Task FetchAsync(string url)
+    {
+        try { await JS.InvokeVoidAsync("blDemo.fetch", url); } catch { }
+    }
+
+    private async Task ThrowAsync()
+    {
+        try { await JS.InvokeVoidAsync("blDemo.throwError", ErrorMessage); } catch { }
+    }
+
+    private const string QueryCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            // Add your own parameter names to the defaults.
+            options.Privacy.RedactQueryParameters.Add("customerId");
+            options.Privacy.RedactQueryParameters.Add("invite");
+
+            options.Privacy.StripQueryString = false;   // the default; true drops every query string
+            options.Privacy.StripFragment = true;       // the default
+        });
+        """;
+
+    private const string AttributesCode = """
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            options.Privacy.ScrubPatterns = true;                    // the default
+            options.Privacy.BlockedAttributes.Add("client.address"); // exact keys, browser and .NET
+            options.Privacy.CollectUserAgent = false;                // drop user_agent.original
+        });
+        """;
+}

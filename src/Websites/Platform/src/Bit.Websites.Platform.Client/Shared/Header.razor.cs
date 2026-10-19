@@ -36,6 +36,7 @@ public partial class Header : IDisposable
             new("Bonboarding", "Blazor-native product tours", Urls.Bonboarding, External: true),
             new("Bortable", "Blazor-native sortable lists", Urls.Bortable, External: true),
             new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
+            new("Belemetry", "OpenTelemetry for every Blazor app", Urls.Belemetry, External: true),
             new("BlazorUI", "Native Blazor UI components", Urls.BlazorUI, External: true),
         ]
     ];
