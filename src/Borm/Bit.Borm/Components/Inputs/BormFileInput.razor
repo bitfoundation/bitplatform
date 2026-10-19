@@ -1,0 +1,113 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+@using Microsoft.AspNetCore.Components.Forms
+
+@* tabindex="-1" so "take me to the first error" has somewhere to land, exactly as the radio and
+   multi-select groups do. <InputFile> is a component rather than an element, so there is no
+   ElementReference to bind to the control itself — and without one this was the single field type
+   the error summary's link and FocusFirstError silently walked past, on a form whose only problem
+   was a missing file. Focus lands on the wrapper, which carries the field's description. *@
+<div class="bit-borm-file" @ref="Element" tabindex="-1" aria-describedby="@DescribedBy">
+    @* Splat first so the renderer's own id and ARIA wiring below always wins. Keyed so that emptying
+       the field replaces the element: a file input's selection lives in the browser, where setting the
+       model to null cannot reach it, so a cleared field went on naming the old file — and choosing that
+       same file again raised no change at all, because as far as the browser knew nothing had. *@
+    <InputFile @key="_generation"
+               @attributes="ExtraAttributes"
+               id="@Context.ElementId"
+               class="@CssClass"
+               multiple="@Field.Multiple"
+               accept="@Field.Accept"
+               disabled="@DisabledOrReadOnly"
+               aria-required="@AriaRequired"
+               aria-invalid="@AriaInvalid"
+               aria-label="@AriaLabel"
+               aria-describedby="@DescribedBy"
+               OnChange="OnFilesSelected" />
+
+    @if (SelectedFiles.Count > 0)
+    {
+        <ul class="bit-borm-file__list">
+            @foreach (var file in SelectedFiles)
+            {
+                <li class="bit-borm-file__item">
+                    <span class="bit-borm-file__name">@file.Name</span>
+                    <span class="bit-borm-file__size">@FormatSize(file.Size)</span>
+                </li>
+            }
+        </ul>
+        @if (!DisabledOrReadOnly)
+        {
+            <button type="button" class="bit-borm-btn bit-borm-btn--danger bit-borm-btn--sm" @onclick="Clear">
+                @Context.Text(BormMessageKeys.FileClear)
+            </button>
+        }
+    }
+</div>
+
+@code {
+    /// <summary>
+    /// The files currently held by the field. A single-file field stores one <see cref="IBrowserFile"/>
+    /// and a multiple-file field a list, so both shapes are normalised here for display.
+    /// </summary>
+    private IReadOnlyList<IBrowserFile> SelectedFiles => Context.Value switch
+    {
+        IBrowserFile single => [single],
+        IEnumerable<IBrowserFile> many => many.ToList(),
+        _ => Array.Empty<IBrowserFile>()
+    };
+
+    private async Task OnFilesSelected(InputFileChangeEventArgs e)
+    {
+        // Browsers hand back the whole selection; the rules on the field decide what is acceptable, so
+        // no cap is imposed here beyond what the user actually picked.
+        object? value = Field.Multiple
+            ? e.GetMultipleFiles(e.FileCount).ToList()
+            : e.FileCount > 0 ? e.File : null;
+
+        await Context.SetValueAsync(value);
+        TrackEmptied();
+    }
+
+    // Bumped whenever the field goes from holding files to holding none — the clear button, a Reset(),
+    // a ResetField — so the next render puts a fresh, empty <input type="file"> in place of the old one.
+    private int _generation;
+    private bool _hadFiles;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        TrackEmptied();
+    }
+
+    private void TrackEmptied()
+    {
+        var hasFiles = SelectedFiles.Count > 0;
+        if (_hadFiles && !hasFiles) _generation++;
+        _hadFiles = hasFiles;
+    }
+
+    /// <summary>
+    /// Empties the field. Focus goes back to the field once the fresh input is in place: the button
+    /// that was pressed disappears with the files, and would otherwise leave focus on the page body.
+    /// </summary>
+    private async Task Clear()
+    {
+        await Context.SetValueAsync(null);
+        TrackEmptied();
+        RequestFocusAfterRender();
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        string[] units = ["B", "KB", "MB", "GB"];
+        double size = bytes;
+        var unit = 0;
+        while (size >= 1024 && unit < units.Length - 1)
+        {
+            size /= 1024;
+            unit++;
+        }
+        return $"{size:0.#} {units[unit]}";
+    }
+}

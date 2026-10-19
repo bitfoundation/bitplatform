@@ -105,6 +105,14 @@
     <Project Path="Blow/Bit.Blow/Bit.Blow.csproj" />
     <Project Path="Blow/Tests/Bit.Blow.Tests/Bit.Blow.Tests.csproj" />
   </Folder>
+  <Folder Name="/Borm/">
+    <File Path="Borm/README.md" />
+    <Project Path="Borm/Demo/Client/Bit.Borm.Demo.Client.csproj" />
+    <Project Path="Borm/Demo/Server/Bit.Borm.Demo.Server.csproj" />
+    <Project Path="Borm/Bit.Borm/Bit.Borm.csproj" />
+    <Project Path="Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj" />
+    <Project Path="Borm/Tests/Bit.Borm.Tests/Bit.Borm.Tests.csproj" />
+  </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Demo/Client/Bit.Bonboarding.Demo.Client.csproj" />

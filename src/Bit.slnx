@@ -191,6 +191,20 @@
     <Project Path="Blow/Tests/Bit.Blow.Tests.Mcp/Bit.Blow.Tests.Mcp.csproj" />
     <Project Path="Blow/Tests/Bit.Blow.Tests.E2E/Bit.Blow.Tests.E2E.csproj" />
   </Folder>
+  <Folder Name="/Borm/">
+    <File Path="Borm/README.md" />
+    <Project Path="Borm/Bit.Borm/Bit.Borm.csproj" />
+    <Project Path="Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj" />
+  </Folder>
+  <Folder Name="/Borm/Demo/">
+    <Project Path="Borm/Demo/Client/Bit.Borm.Demo.Client.csproj" />
+    <Project Path="Borm/Demo/Server/Bit.Borm.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Borm/Tests/">
+    <Project Path="Borm/Tests/Bit.Borm.Tests/Bit.Borm.Tests.csproj" />
+    <Project Path="Borm/Tests/Bit.Borm.Tests.Mcp/Bit.Borm.Tests.Mcp.csproj" />
+    <Project Path="Borm/Tests/Bit.Borm.Tests.E2E/Bit.Borm.Tests.E2E.csproj" />
+  </Folder>
   <Folder Name="/Bonboarding/">
     <File Path="Bonboarding/README.md" />
     <Project Path="Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj" />

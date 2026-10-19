@@ -1,0 +1,397 @@
+﻿@namespace Bit.Borm
+@implements IDisposable
+
+@* disabled only when the repeater is disabled, never because it is read-only. A disabled fieldset
+   disables every control inside it, so a read-only repeater — a review screen, a ReadOnlyWhen on a sent
+   invoice — took every row's fields out of the tab order and out of the screen reader's reach, which
+   is precisely what read-only exists not to do. Its row and add buttons are locked one by one instead.
+   The id is what an error-summary link to a message about the list as a whole lands on. *@
+@* tabindex="-1" so a message about the list as a whole — "add at least one line" — has somewhere for
+   the error summary's link, and focus-the-first-error, to put focus: on the group, where the legend and
+   the message are read out together. *@
+<fieldset class="bit-borm-array" id="@ElementId" disabled="@State.IsDisabled(Field, Path)" aria-describedby="@DescribedBy"
+          tabindex="-1" @ref="_fieldset">
+    <legend class="bit-borm-array__header">
+        <span class="bit-borm-array__title">@Title</span>
+        @if (State.IsRequired(Field, Path))
+        {
+            <span class="bit-borm-required" aria-hidden="true">*</span>
+        }
+        @if (Count > 0)
+        {
+            <span class="bit-borm-array__count">@Count</span>
+        }
+    </legend>
+
+    @if (!string.IsNullOrEmpty(Field.HelpText))
+    {
+        <p class="bit-borm-help" id="@HelpId">@Field.HelpText</p>
+    }
+
+    @if (Count == 0)
+    {
+        <p class="bit-borm-array__empty">@EmptyText</p>
+    }
+
+    @* One live region for the whole repeater, announcing the count after an add or a remove, where the
+       moved row landed after a reorder, and that the list is empty once the last row goes. Without it a
+       screen-reader user presses "Add" and hears nothing at all. *@
+    <p class="bit-borm-sr-only" aria-live="polite">@Announcement</p>
+
+    @{ var keys = BuildKeys(); }
+    @for (var index = 0; index < keys.Length; index++)
+    {
+        var i = index;
+        var itemPath = BormPath.Combine(Path, i);
+        @* Keyed by the item instance where possible so reordering moves the DOM node with its data
+           instead of rewriting every row's contents. *@
+        @* A named group, not a bare div. Every row repeats the same labels, so without one a screen
+           reader announces "Product, edit" five times over with nothing to say which line is which —
+           and the visible row number beside it is decorative. *@
+        @* The row's id is what an error-summary link to a message about the row lands on. Only a row of
+           an object has one: a row of a single value is that value's control, which already carries it. *@
+        <div class="bit-borm-array__item" @key="keys[i]" id="@(Template.Type == BormFieldType.Object ? $"{ElementId}_{i}" : null)" role="group" aria-label="@State.Text(BormMessageKeys.ArrayItemGroup, ItemNoun, i + 1)"
+             aria-describedby="@RowDescribedBy(itemPath, i)">
+            <div class="bit-borm-array__item-body">
+                <span class="bit-borm-array__item-index" aria-hidden="true">@(i + 1)</span>
+                @if (Template.Type == BormFieldType.Object)
+                {
+                    <BormFieldList State="State" Items="RowItems(itemPath)" />
+                    @* A message about the row as a whole — "this line duplicates line 2" — belongs to none
+                       of its fields. It used to be recorded and never drawn. A row of a single value
+                       needs nothing here: that value's own field shows it. *@
+                    <BormValidationMessages Messages="State.MessagesFor(itemPath)" Show="RowShowsMessages(itemPath)" Id="@RowErrorId(i)" />
+                }
+                else
+                {
+                    <BormFieldView State="State" Field="Template" Path="@itemPath" />
+                }
+            </div>
+            <div class="bit-borm-array__item-actions">
+                @{
+                    var moveUp = State.Text(BormMessageKeys.ArrayMoveUp, ItemNoun, i + 1);
+                    var moveDown = State.Text(BormMessageKeys.ArrayMoveDown, ItemNoun, i + 1);
+                    var duplicate = State.Text(BormMessageKeys.ArrayDuplicate, ItemNoun, i + 1);
+                    var remove = State.Text(BormMessageKeys.ArrayRemove, ItemNoun, i + 1);
+                }
+                @if (Reorderable)
+                {
+                    @* aria-disabled, not disabled, at the ends. A `disabled` button leaves the tab order,
+                       so moving a row to the top would take the focus of the very button that moved it
+                       there and drop it on the page body — mid-reorder, which is exactly when a keyboard
+                       user can least afford to lose their place. The click is guarded instead. A locked
+                       repeater is different: nothing is moving, so the buttons are plainly disabled. *@
+                    <button type="button" class="bit-borm-btn bit-borm-btn--icon" title="@moveUp" aria-label="@moveUp" disabled="@Locked"
+                            aria-disabled="@(i == 0 ? "true" : null)" @onclick="@(() => Move(i, i - 1))">↑</button>
+                    <button type="button" class="bit-borm-btn bit-borm-btn--icon" title="@moveDown" aria-label="@moveDown" disabled="@Locked"
+                            aria-disabled="@(i == keys.Length - 1 ? "true" : null)" @onclick="@(() => Move(i, i + 1))">↓</button>
+                }
+                @if (Duplicable)
+                {
+                    <button type="button" class="bit-borm-btn bit-borm-btn--icon" title="@duplicate" aria-label="@duplicate"
+                            disabled="@(!CanAdd)" @onclick="@(() => Duplicate(i))">⧉</button>
+                }
+                @* Short visible text, full accessible name: a screen reader needs to know *which* row
+                   the button removes, a sighted user can see it. *@
+                <button type="button" class="bit-borm-btn bit-borm-btn--danger" title="@remove" aria-label="@remove"
+                        disabled="@(!CanRemove)" @onclick="@(() => Remove(i))">@RemoveText</button>
+            </div>
+        </div>
+    }
+
+    <button type="button" class="bit-borm-btn bit-borm-btn--add" @ref="_addButton" disabled="@(!CanAdd)" @onclick="Add">
+        @State.Text(BormMessageKeys.ArrayAdd, ItemNoun)
+    </button>
+
+    <BormValidationMessages Messages="State.MessagesFor(Path)" Show="ShowMessages" Id="@ErrorId" />
+</fieldset>
+
+@code {
+    [Parameter, EditorRequired] public BormState State { get; set; } = default!;
+    [Parameter, EditorRequired] public BormFieldDefinition Field { get; set; } = default!;
+    [Parameter, EditorRequired] public string Path { get; set; } = default!;
+
+    private BormFieldDefinition Template => Field.ItemTemplate
+        ?? throw new InvalidOperationException(
+            $"Array field '{Field.Name}' has no item template. Set {nameof(BormFieldDefinition.ItemTemplate)} " +
+            "or build the field with the fluent builder's Array(...) overload, which creates one for you.");
+
+    private int Count => State.ArrayCount(Path);
+
+    private string Title => Field.Label ?? Field.Name;
+
+    private string ItemNoun => Field.Attributes.TryGetValue("itemNoun", out var n) && n is string s && s.Length > 0
+        ? s
+        : State.Text(BormMessageKeys.ArrayItem);
+
+    private string EmptyText => Field.Attributes.TryGetValue("emptyText", out var t) && t is string s && s.Length > 0
+        ? s
+        : State.Text(BormMessageKeys.ArrayEmpty, ItemNoun);
+
+    private string RemoveText => State.Text(BormMessageKeys.ArrayRemoveShort);
+
+    /// <summary>Whether the up/down buttons are offered — <c>Attr("reorderable", false)</c> hides them.</summary>
+    private bool Reorderable => Field.Attributes.TryGetValue("reorderable", out var r) ? r is not false : true;
+
+    /// <summary>Whether a "duplicate this row" button is offered — <c>Attr("duplicable", true)</c>.</summary>
+    private bool Duplicable => Field.Attributes.TryGetValue("duplicable", out var d) && d is true;
+
+    /// <summary>
+    /// What the live region says. It changes with the count, which is what makes the region announce;
+    /// an identical string would be ignored by every screen reader. A reorder leaves the count where it
+    /// was, and emptying the list leaves nothing to count, so those two say something of their own —
+    /// for as long as the count they were said at still stands.
+    /// </summary>
+    private string Announcement
+    {
+        get
+        {
+            if (_said is not null && _saidAtCount == Count) return _said;
+            return Count == 0 ? "" : State.Text(BormMessageKeys.ArrayCount, Count, ItemNoun);
+        }
+    }
+
+    private string? _said;
+    private int _saidAtCount = -1;
+
+    private const char NonBreakingSpace = (char)0xA0;
+
+    /// <summary>
+    /// Puts <paramref name="text"/> in the live region. A repeat of what is already there is made to
+    /// differ by a trailing non-breaking space, because moving a second row into the same place is news
+    /// too, and an unchanged region is never read out.
+    /// </summary>
+    private void Say(string text)
+    {
+        var current = Announcement;
+        _said = string.Equals(text, current, StringComparison.Ordinal) ? text + NonBreakingSpace : text;
+        _saidAtCount = Count;
+    }
+
+    /// <summary>Whether messages about one row as a whole are showing yet.</summary>
+    private bool RowShowsMessages(string itemPath) => State.IsTouched(itemPath) || State.IsSubmitted;
+
+    /// <summary>Id of a row's own message list — the id a field context for the row's path would give it.</summary>
+    private string RowErrorId(int index) => $"{ElementId}_{index}_error";
+
+    /// <summary>The row group's description: its own messages, when it has any showing.</summary>
+    private string? RowDescribedBy(string itemPath, int index)
+        => Template.Type == BormFieldType.Object && RowShowsMessages(itemPath) && State.MessagesFor(itemPath).Count > 0
+            ? RowErrorId(index)
+            : null;
+
+    /// <summary>
+    /// Read-only or conditionally-disabled arrays cannot be added to, removed from or reordered. Only a
+    /// disabled one disables its fields as well; a read-only one leaves them to be read.
+    /// </summary>
+    private bool Locked => State.IsDisabled(Field, Path) || _context.IsReadOnly;
+
+    private bool CanAdd => !Locked && State.CanAddArrayItem(Field, Path);
+
+    private bool CanRemove => !Locked && State.CanRemoveArrayItem(Field, Path);
+
+    private bool ShowMessages => State.IsTouched(Path) || State.IsSubmitted;
+
+    private string HelpId => ElementId + "_help";
+    private string ErrorId => ElementId + "_error";
+
+    // Derived once per (field, path) rather than per access: it is read several times each render.
+    private BormFieldContext _context = default!;
+    private string ElementId => _context.ElementId;
+
+    protected override void OnParametersSet()
+    {
+        if (_context is null || !ReferenceEquals(_context.Field, Field) || _context.Path != Path
+            || !ReferenceEquals(_context.State, State)
+            || _context.IdPrefix != BormFieldContext.SafePrefix(State.IdPrefix))
+            _context = new BormFieldContext(State, Field, Path);
+
+        // The list's own path has no control of its own; the group stands in for it (see the fieldset).
+        if (_focusRegistration is null || _registeredPath != Path || !ReferenceEquals(_registeredState, State))
+        {
+            _focusRegistration?.Dispose();
+            _registeredPath = Path;
+            _registeredState = State;
+            _focusRegistration = State.RegisterFocusTarget(Path, FocusGroupAsync);
+        }
+    }
+
+    private ElementReference _fieldset;
+    private IDisposable? _focusRegistration;
+    private string? _registeredPath;
+    private BormState? _registeredState;
+
+    private async ValueTask<bool> FocusGroupAsync()
+    {
+        try
+        {
+            await _fieldset.FocusAsync();
+            return true;
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException)
+        {
+            return false;
+        }
+    }
+
+    public void Dispose()
+    {
+        _focusRegistration?.Dispose();
+        _focusRegistration = null;
+    }
+
+    private string? DescribedBy
+    {
+        get
+        {
+            var hasHelp = !string.IsNullOrEmpty(Field.HelpText);
+            var hasErrors = ShowMessages && State.MessagesFor(Path).Count > 0;
+            return (hasHelp, hasErrors) switch
+            {
+                (true, true) => $"{HelpId} {ErrorId}",
+                (true, false) => HelpId,
+                (false, true) => ErrorId,
+                _ => null
+            };
+        }
+    }
+
+    /// <summary>The fields of one row, each with the path it binds to.</summary>
+    private IEnumerable<(BormFieldDefinition Field, string Path)> RowItems(string itemPath)
+        => Template.Children.OrderBy(c => c.Order).Select(c => (c, BormPath.Combine(itemPath, c.Name)));
+
+    /// <summary>
+    /// The render key of every row, computed once per render.
+    /// </summary>
+    /// <remarks>
+    /// The item's own identity is preferred, so reordering moves the DOM node with its data instead of
+    /// rewriting every row. Value types, strings and nulls fall back to the index — Blazor cannot tell
+    /// two equal ones apart — and so does any instance already used: a list may legitimately hold the
+    /// same object twice, and a duplicate <c>@key</c> is an exception, not a rendering quirk.
+    /// </remarks>
+    private object[] BuildKeys()
+    {
+        var count = Count;
+        var keys = new object[count];
+        var seen = new HashSet<object>(ReferenceEqualityComparer.Instance);
+
+        for (var i = 0; i < count; i++)
+        {
+            var item = State.GetValue(BormPath.Combine(Path, i));
+            keys[i] = item is null || item is string || item.GetType().IsValueType || !seen.Add(item)
+                ? i
+                : item;
+        }
+        return keys;
+    }
+
+    // ------------------------------------------------------------------ focus
+    //
+    // Pressing a button that removes the element containing it leaves focus nowhere: the browser drops
+    // it on <body>, so a keyboard user is silently returned to the top of the page and a screen-reader
+    // user loses their place entirely. Every row operation therefore says where focus should land, and
+    // the next render puts it there.
+
+    private ElementReference _addButton;
+    private int? _focusRow;
+    private bool _focusAdd;
+
+    private async Task Add()
+    {
+        var index = State.AddArrayItem(Field, Path);
+        if (index >= 0) _focusRow = index;
+        _said = null;
+        await Dependents();
+    }
+
+    /// <summary>
+    /// Revalidates whatever declared a dependency on this list. Adding a row changes the value the
+    /// field binds to as surely as typing does, so a rule elsewhere that counts the rows — "at least
+    /// one line per delivery" — has to be judged again; the input controls do this through the field
+    /// context, and a repeater has no context to go through.
+    /// </summary>
+    private ValueTask Dependents() => State.ValidateDependentsAsync(Path);
+
+    /// <summary>
+    /// Moves a row, ignoring a request that would take it past either end. The buttons at the ends are
+    /// only <c>aria-disabled</c>, so they can still be pressed; this is where that is made harmless.
+    /// The DOM node moves with the row (it is keyed by the item), so focus follows it without help.
+    /// </summary>
+    private async Task Move(int from, int to)
+    {
+        if (Locked || to < 0 || to >= Count) return;
+        State.MoveArrayItem(Path, from, to);
+        // The count has not changed, so on its own the region would say nothing: say where the row
+        // landed instead — the one thing a user who cannot see the list moving needs to know.
+        Say(State.Text(BormMessageKeys.ArrayItemGroup, ItemNoun, to + 1));
+        await Dependents();
+    }
+
+    private async Task Duplicate(int index)
+    {
+        var target = State.DuplicateArrayItem(Field, Path, index);
+        if (target >= 0) _focusRow = target;
+        _said = null;
+        await Dependents();
+    }
+
+    private async Task Remove(int index)
+    {
+        State.RemoveArrayItem(Path, index);
+
+        // The row that moved up into the gap is where the user was looking; when the list empties, the
+        // only thing left to aim at is the button that refills it — and the region, which has no count
+        // left to give, says that the list is now empty rather than falling silent.
+        if (Count == 0)
+        {
+            _focusAdd = true;
+            Say(EmptyText);
+        }
+        else
+        {
+            _focusRow = Math.Min(index, Count - 1);
+            _said = null;
+        }
+
+        await Dependents();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusRow is { } row)
+        {
+            _focusRow = null;
+            foreach (var path in RowFocusOrder(row))
+                if (await State.FocusAsync(path)) return;
+
+            // Nothing in the row would take focus — every field hidden, or all custom renderers with
+            // no focusable element. Better the add button than nowhere at all.
+            _focusAdd = true;
+        }
+
+        if (!_focusAdd) return;
+        _focusAdd = false;
+        try
+        {
+            await _addButton.FocusAsync();
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException)
+        {
+            // Static prerender, or the repeater went away between the click and the render.
+        }
+    }
+
+    /// <summary>The paths to try when focusing a row, best first.</summary>
+    private IEnumerable<string> RowFocusOrder(int row)
+    {
+        var itemPath = BormPath.Combine(Path, row);
+        if (Template.Type != BormFieldType.Object)
+        {
+            yield return itemPath;
+            yield break;
+        }
+
+        foreach (var child in Template.Children.OrderBy(c => c.Order))
+            yield return BormPath.Combine(itemPath, child.Name);
+    }
+}

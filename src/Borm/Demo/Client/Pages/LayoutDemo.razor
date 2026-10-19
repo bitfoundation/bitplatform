@@ -1,0 +1,103 @@
+﻿@page "/layout"
+
+<PageTitle>Layout &amp; field types</PageTitle>
+
+<div class="demo-intro">
+    <h1>Layout &amp; field types</h1>
+    <p>
+        Forms are not always one field per row. Set <code>Columns</code> on the definition and
+        <code>ColumnSpan</code> on individual fields to get a responsive grid that collapses to a single
+        column on small screens. This form also shows a <code>[Flags]</code> enum <em>and</em> a plain
+        <code>List&lt;TEnum&gt;</code> rendering as multi-selects, plus a typed nested object group.
+    </p>
+</div>
+
+<div class="demo-card" style="max-width:900px">
+    <BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit" SubmitText="Save profile" ShowResetButton="true" />
+</div>
+
+@if (_submitted)
+{
+    <div class="demo-result"><strong>Saved ✓</strong> <pre>@_json</pre></div>
+}
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/layout"
+
+<BormView Definition="_schema" Model="_model" OnValidSubmit="HandleSubmit"
+          SubmitText="Save profile" ShowResetButton="true" />
+
+@code {
+    private readonly Profile _model = new();
+    private BormDefinition _schema = default!;
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.For<Profile>()
+            .Title("Your profile")
+            .Columns(2)
+            .Field(x => x.FirstName, f => f.Autocomplete("given-name").Autofocus())
+            .Field(x => x.LastName, f => f.Autocomplete("family-name"))
+            .Field(x => x.Email, f => f.Autocomplete("email"))
+            .Field(x => x.Phone, f => f.Autocomplete("tel").InputMode("tel"))
+            // A [Flags] enum becomes a multi-select automatically.
+            .Field(x => x.Availability, f => f.ColumnSpan(2))
+            // …and so does a plain List<TEnum>: the answers are a closed set either way, so it is a
+            // set of tick boxes rather than a repeater of dropdowns.
+            .Field(x => x.ContactMethods, f => f.ColumnSpan(2))
+            .Object(x => x.Address, a => a
+                .Columns(2)
+                .Field(p => p.Street, f => f.ColumnSpan(2).Autocomplete("street-address"))
+                .Field(p => p.City, f => f.Autocomplete("address-level2"))
+                .Field(p => p.PostCode, f => f.Autocomplete("postal-code"))
+                .Field(p => p.Country, f => f.ColumnSpan(2).Autocomplete("country-name")),
+                f => f.ColumnSpan(2).Attr("columns", 2))
+            .Field(x => x.Bio, f => f.AsTextArea(4).ColumnSpan(2).Help("Tell us a little about yourself."))
+            .Build();
+    }
+}
+""";
+
+    private readonly Profile _model = new();
+    private BormDefinition _schema = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        _schema = BormBuilder.For<Profile>()
+            .Title("Your profile")
+            .Columns(2)
+            .Field(x => x.FirstName, f => f.Autocomplete("given-name").Autofocus())
+            .Field(x => x.LastName, f => f.Autocomplete("family-name"))
+            .Field(x => x.Email, f => f.Autocomplete("email"))
+            .Field(x => x.Phone, f => f.Autocomplete("tel").InputMode("tel"))
+            .Field(x => x.Availability, f => f.ColumnSpan(2))
+            // …and so does a plain List<TEnum>: the answers are a closed set either way, so it is a
+            // set of tick boxes rather than a repeater of dropdowns.
+            .Field(x => x.ContactMethods, f => f.ColumnSpan(2))
+            .Object(x => x.Address, a => a
+                .Columns(2)
+                .Field(p => p.Street, f => f.ColumnSpan(2).Autocomplete("street-address"))
+                .Field(p => p.City, f => f.Autocomplete("address-level2"))
+                .Field(p => p.PostCode, f => f.Autocomplete("postal-code"))
+                .Field(p => p.Country, f => f.ColumnSpan(2).Autocomplete("country-name")),
+                f => f.ColumnSpan(2).Attr("columns", 2))
+            .Field(x => x.Bio, f => f.AsTextArea(4).ColumnSpan(2).Help("Tell us a little about yourself."))
+            .Build();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
