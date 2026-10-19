@@ -214,7 +214,7 @@ internal static class BcrdtTextOperations
 
     /// <summary>An embedded value that has been validated, as distinct from text.</summary>
     /// <remarks>A string can be embedded too, which is why the two need telling apart.</remarks>
-    internal sealed record BcrdtEmbedValue(object? Value);
+    internal sealed record BcrdtEmbedValue(object Value);
 
     /// <summary>
     /// Validates text or an embedded value for insertion, without creating anything yet.
@@ -241,7 +241,7 @@ internal static class BcrdtTextOperations
             case byte[] binary:
                 return binary;
             default:
-                return new BcrdtEmbedValue(BcrdtAnyCodec.Canonicalize(content));
+                return new BcrdtEmbedValue(BcrdtAnyCodec.Canonicalize(content)!);
         }
     }
 

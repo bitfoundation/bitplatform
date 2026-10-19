@@ -690,4 +690,118 @@ public class EngineRegressionTests
         var instant = new DateTime(2024, 5, 6, 7, 8, 9, DateTimeKind.Utc);
         Assert.AreEqual(new DateTimeOffset(instant), BcrdtAnyCodec.FromObject(instant));
     }
+
+    // ---------------------------------------------------------------- integration edge cases
+
+    [TestMethod]
+    public void A_block_overlapping_content_this_replica_collected_is_reduced_to_a_clock_range()
+    {
+        using BcrdtDocument author = Doc(1);
+        BcrdtMap map = author.GetMap("m");
+        map.Set("t", new BcrdtText());
+        BcrdtText text = map.GetText("t")!;
+        text.Insert(0, "abcde");
+        byte[] firstHalf = author.EncodeStateAsUpdate();
+        text.Insert(5, "fghij");
+        byte[] whole = author.EncodeStateAsUpdate();
+
+        // This replica sees the first half; then the container is deleted and its content collected.
+        using BcrdtDocument replica = Doc(2);
+        replica.ApplyUpdate(firstHalf);
+        replica.GetMap("m").Delete("t");
+
+        // A peer still holding the ten characters as one block - one that keeps deleted content, or
+        // one the deletion has not reached - sends all of it, overlapping what was collected here.
+        replica.ApplyUpdate(whole);
+
+        Assert.AreEqual(author.Store.GetState(1), replica.Store.GetState(1));
+        Assert.IsNull(replica.GetMap("m").Get("t"));
+
+        author.ApplyUpdate(replica.EncodeStateAsUpdate());
+        Assert.AreEqual(BcrdtConvergenceHarness.Describe(author), BcrdtConvergenceHarness.Describe(replica));
+    }
+
+    [TestMethod]
+    public void An_embed_without_a_value_is_rejected_as_malformed()
+    {
+        var writer = new BcrdtBufferWriter(32);
+        try
+        {
+            writer.WriteVarUInt(1);                         // one client group
+            writer.WriteVarUInt(1);                         // one block
+            writer.WriteVarUInt(5);                         // client
+            writer.WriteVarUInt(0);                         // first clock
+            writer.WriteByte((byte)BcrdtContentRef.Embed);  // an embed with no neighbours...
+            writer.WriteByte(1);                            // ...so its parent follows: a root, by name
+            writer.WriteString("body");
+            writer.WriteByte((byte)BcrdtAnyTag.Null);       // embedding nothing
+            writer.WriteVarUInt(0);                         // empty delete set
+
+            using BcrdtDocument doc = Doc(1);
+            Assert.ThrowsExactly<BcrdtFormatException>(() => doc.ApplyUpdate(writer.ToArray()));
+            Assert.AreEqual(0, doc.Store.GetState(5));
+        }
+        finally
+        {
+            writer.Dispose();
+        }
+
+        Assert.ThrowsExactly<ArgumentNullException>(() => new BcrdtContentEmbed(null!));
+    }
+
+    [TestMethod]
+    public void An_update_applied_inside_a_local_transaction_leaves_that_transaction_local()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtText text = doc.GetText("body");
+        text.Insert(0, new string('a', 100));
+
+        using BcrdtDocument peer = Doc(2);
+        peer.ApplyUpdate(doc.EncodeStateAsUpdate());
+        peer.GetText("body").Insert(0, "R");
+        byte[] update = peer.EncodeStateAsUpdate(doc.GetStateVector());
+
+        bool? local = null;
+        doc.Updated += args => local = args.Transaction.Local;
+
+        doc.Transact(_ =>
+        {
+            text.Insert(50, "X");
+            doc.ApplyUpdate(update);
+        });
+
+        // The local edit is still the replica's own, so persistence that keeps only local changes
+        // keeps it; and the index cache it warmed was still dropped, because the update moved things.
+        Assert.IsTrue(local);
+        text.Insert(60, "Y");
+        string expected = "R" + new string('a', 50) + "X" + new string('a', 8) + "Y" + new string('a', 42);
+        Assert.AreEqual(expected, text.ToString());
+
+        // An update applied on its own is still remote.
+        peer.GetText("body").Insert(0, "S");
+        doc.ApplyUpdate(peer.EncodeStateAsUpdate(doc.GetStateVector()));
+        Assert.IsFalse(local);
+    }
+
+    [TestMethod]
+    public void A_formatted_retain_pads_the_trailing_newline_and_no_more()
+    {
+        using BcrdtDocument doc = Doc(1);
+        BcrdtText text = doc.GetText("body");
+        text.Insert(0, "abc");
+
+        // An editor that always ends a document in a newline formats that newline.
+        text.ApplyDelta([BcrdtDeltaOperation.Retain(3), BcrdtDeltaOperation.Retain(1, Attrs(("header", 1L)))]);
+        Assert.AreEqual("abc\n", text.ToString());
+
+        // Anything further describes a different text, and would have the padding allocated whole.
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            () => text.ApplyDelta([BcrdtDeltaOperation.Retain(int.MaxValue, Attrs(("bold", true)))]));
+        Assert.AreEqual("abc\n", text.ToString());
+
+        var detached = new BcrdtText();
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(
+            () => detached.ApplyDelta([BcrdtDeltaOperation.Retain(5, Attrs(("bold", true)))]));
+        Assert.AreEqual(0, detached.Count);
+    }
 }

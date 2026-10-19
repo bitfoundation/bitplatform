@@ -174,10 +174,22 @@ public sealed class BcrdtItem : BcrdtAbstractStruct
         if (offset > 0)
         {
             Id = new BcrdtItemId(Id.Client, Id.Clock + offset);
-            Left = BcrdtStructStore.GetItemCleanEnd(transaction, new BcrdtItemId(Id.Client, Id.Clock - 1));
-            Origin = Left.LastId;
+            BcrdtAbstractStruct left = BcrdtStructStore.GetStructCleanEnd(transaction, new BcrdtItemId(Id.Client, Id.Clock - 1));
+            Origin = left.LastId;
             Content = Content.Splice(offset);
             Length -= offset;
+
+            if (left is BcrdtItem leftItem)
+            {
+                Left = leftItem;
+            }
+            else
+            {
+                // The overlap was collected here, which only happens once its container is gone. The
+                // remainder lived in that same container, so it is reduced to a clock range below.
+                Left = null;
+                Parent = null;
+            }
         }
 
         if (Parent is not BcrdtAbstractType parent)

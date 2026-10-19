@@ -1030,8 +1030,8 @@ Four real defects were found by this suite during development, all of the kind e
 1. **Stale index caches after a remote update.** Sequential editing is kept cheap by caching "index *n* is at this
    block". A local edit updates those caches as it goes, because it knows where it is editing. A *remote* update
    rearranges blocks arbitrarily and cannot, so every cached position silently starts describing the wrong place. Fix:
-   drop the cache whenever a non-local transaction touches a type, and treat a transaction as non-local from the
-   moment an update is applied inside it, even one that was opened as local.
+   drop the cache whenever a transaction that integrated an update touches a type - including a transaction that was
+   opened as local and had an update applied inside it, whose own edits still count as local.
 2. **Surrogate pairs destroyed by local block splits.** Splitting a text block between the halves of a surrogate pair
    leaves two lone surrogates, which strict UTF-8 cannot represent and silently replaces with U+FFFD. The damage
    depends on *whether a given replica happened to split that block*, which differs between replicas, so two replicas

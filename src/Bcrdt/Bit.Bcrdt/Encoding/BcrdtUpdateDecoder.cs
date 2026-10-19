@@ -25,6 +25,11 @@ public static class BcrdtUpdateDecoder
     /// The payload is not a well-formed update. The whole payload is decoded before anything is
     /// integrated, so a rejected update leaves the document exactly as it was.
     /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// A well-formed block could not be integrated. That block and the later blocks from the same
+    /// author were skipped; everything else in the update, including its deletions, was applied
+    /// before this was thrown, and the inner exception says what went wrong.
+    /// </exception>
     public static void ApplyUpdate(BcrdtDocument doc, ReadOnlyMemory<byte> update, object? origin = null)
     {
         ArgumentNullException.ThrowIfNull(doc);
@@ -33,17 +38,21 @@ public static class BcrdtUpdateDecoder
         Dictionary<ulong, BcrdtClientBlocks> groups = BcrdtUpdateCodec.ReadClientBlocks(ref reader);
         BcrdtDeleteSet deleteSet = BcrdtDeleteSet.Read(ref reader);
 
+        Exception? integrationFailure = null;
+
         doc.Transact(transaction =>
         {
             // Whatever the enclosing transaction was, the content arriving here was authored
-            // elsewhere. Observers and the index caches rely on knowing that: a remote change can
-            // land anywhere, so positions cached on the assumption of purely local edits are void.
-            transaction.Local = false;
+            // elsewhere. The index caches rely on knowing that: a remote change can land anywhere, so
+            // positions cached on the assumption of purely local edits are void. Local is left alone,
+            // because an update applied inside a local transaction does not make that transaction's
+            // own edits any less local.
+            transaction.IntegratedRemoteContent = true;
 
             BcrdtStructStore store = doc.Store;
             BcrdtUpdateCodec.ResolveRoots(groups, doc);
 
-            DeferredBlocks? deferred = IntegrateBlocks(transaction, store, groups);
+            DeferredBlocks? deferred = IntegrateBlocks(transaction, store, groups, out integrationFailure);
             bool retryDeferred = MergeDeferred(store, deferred);
 
             BcrdtDeleteSet? unapplied = ApplyDeleteSet(transaction, deleteSet);
@@ -67,6 +76,14 @@ public static class BcrdtUpdateDecoder
                 ApplyUpdate(doc, pending, origin);
             }
         }, origin, local: false);
+
+        if (integrationFailure is not null)
+        {
+            throw new InvalidOperationException(
+                "A block in the update could not be integrated. It was skipped, together with the later " +
+                "blocks from the same author, and the rest of the update was applied.",
+                integrationFailure);
+        }
     }
 
     /// <summary>
@@ -132,12 +149,21 @@ public static class BcrdtUpdateDecoder
     /// would be quadratic in the number of authors, which is exactly the situation a busy document
     /// produces.
     /// </para>
+    /// <para>
+    /// A block that throws while being placed costs its author's remaining blocks in this update -
+    /// they continue it, so none of them can be placed either - but not the rest of the update.
+    /// Abandoning the walk there would also drop the deletions and the deferred blocks that follow,
+    /// leaving the replica wrong until some later full resync. The first failure is returned through
+    /// <paramref name="failure"/> for the caller to report once everything else has been applied.
+    /// </para>
     /// </remarks>
     private static DeferredBlocks? IntegrateBlocks(
         BcrdtTransaction transaction,
         BcrdtStructStore store,
-        Dictionary<ulong, BcrdtClientBlocks> groups)
+        Dictionary<ulong, BcrdtClientBlocks> groups,
+        out Exception? failure)
     {
+        failure = null;
         if (groups.Count == 0) return null;
 
         List<ulong> remainingClients = [.. groups.Keys];
@@ -193,56 +219,75 @@ public static class BcrdtUpdateDecoder
             stack.Clear();
         }
 
+        void Discard(ulong client)
+        {
+            if (groups.Remove(client, out BcrdtClientBlocks? group))
+            {
+                group.Blocks.Clear();
+                group.Position = 0;
+            }
+            remainingClients.Remove(client);
+            clockCache.Remove(client);
+        }
+
         BcrdtAbstractStruct head = currentGroup.Blocks[currentGroup.Position++];
 
         while (true)
         {
-            if (head is not BcrdtSkip)
+            try
             {
-                if (!clockCache.TryGetValue(head.Id.Client, out long localClock))
+                if (head is not BcrdtSkip)
                 {
-                    localClock = store.GetState(head.Id.Client);
-                    clockCache[head.Id.Client] = localClock;
-                }
-
-                long offset = localClock - head.Id.Clock;
-
-                if (offset < 0)
-                {
-                    // Earlier content from this same author is missing, which no amount of
-                    // rearranging within this update can fix.
-                    stack.Add(head);
-                    NoteMissing(head.Id.Client, head.Id.Clock - 1);
-                    DeferStack();
-                }
-                else
-                {
-                    ulong? dependency = head is BcrdtItem item ? item.GetMissing(transaction, store) : null;
-
-                    if (dependency is { } blockedOn)
+                    if (!clockCache.TryGetValue(head.Id.Client, out long localClock))
                     {
-                        stack.Add(head);
-                        if (groups.TryGetValue(blockedOn, out BcrdtClientBlocks? provider) && !provider.Exhausted)
-                        {
-                            head = provider.Blocks[provider.Position++];
-                            continue;
-                        }
+                        localClock = store.GetState(head.Id.Client);
+                        clockCache[head.Id.Client] = localClock;
+                    }
 
-                        NoteMissing(blockedOn, store.GetState(blockedOn));
+                    long offset = localClock - head.Id.Clock;
+
+                    if (offset < 0)
+                    {
+                        // Earlier content from this same author is missing, which no amount of
+                        // rearranging within this update can fix.
+                        stack.Add(head);
+                        NoteMissing(head.Id.Client, head.Id.Clock - 1);
                         DeferStack();
                     }
-                    else if (offset == 0 || offset < head.Length)
+                    else
                     {
-                        head.Integrate(transaction, (int)offset);
-                        clockCache[head.Id.Client] = head.Id.Clock + head.Length;
+                        ulong? dependency = head is BcrdtItem item ? item.GetMissing(transaction, store) : null;
 
-                        // Content stamped with our own identity that we did not write ourselves.
-                        if (head.Id.Client == transaction.Doc.ClientId) transaction.ReceivedOwnClientContent = true;
+                        if (dependency is { } blockedOn)
+                        {
+                            stack.Add(head);
+                            if (groups.TryGetValue(blockedOn, out BcrdtClientBlocks? provider) && !provider.Exhausted)
+                            {
+                                head = provider.Blocks[provider.Position++];
+                                continue;
+                            }
+
+                            NoteMissing(blockedOn, store.GetState(blockedOn));
+                            DeferStack();
+                        }
+                        else if (offset == 0 || offset < head.Length)
+                        {
+                            head.Integrate(transaction, (int)offset);
+                            clockCache[head.Id.Client] = head.Id.Clock + head.Length;
+
+                            // Content stamped with our own identity that we did not write ourselves.
+                            if (head.Id.Client == transaction.Doc.ClientId) transaction.ReceivedOwnClientContent = true;
+                        }
+
+                        // The remaining case - offset >= length - means we already have every unit
+                        // this block carries. Skipping it silently is the duplicate detector.
                     }
-
-                    // The remaining case - offset >= length - means we already have every unit this
-                    // block carries. Skipping it silently is the duplicate detector.
                 }
+            }
+            catch (Exception ex)
+            {
+                failure ??= ex;
+                Discard(head.Id.Client);
             }
 
             if (stack.Count > 0)

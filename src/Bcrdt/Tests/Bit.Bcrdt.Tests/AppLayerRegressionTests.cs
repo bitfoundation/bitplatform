@@ -881,6 +881,72 @@ public class AppLayerRegressionTests : IDisposable
         Assert.AreEqual("doc", doc.Id);
     }
 
+    /// <summary>A network that never answers: a captive portal, a stalled negotiate.</summary>
+    private sealed class StalledTransport : IBcrdtTransport
+    {
+        public BcrdtTransportState State => BcrdtTransportState.Disconnected;
+
+        public string Description => "stalled";
+
+        public event Action<ReadOnlyMemory<byte>>? MessageReceived { add { } remove { } }
+
+        public event Action<BcrdtTransportStateChange>? StateChanged { add { } remove { } }
+
+        public async ValueTask ConnectAsync(CancellationToken cancellationToken = default) =>
+            await Task.Delay(Timeout.Infinite, cancellationToken);
+
+        public ValueTask SendAsync(ReadOnlyMemory<byte> message, CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask DisconnectAsync(CancellationToken cancellationToken = default) => ValueTask.CompletedTask;
+
+        public ValueTask DisposeAsync() => ValueTask.CompletedTask;
+    }
+
+    private sealed class StalledTransportFactory : IBcrdtTransportFactory
+    {
+        public IBcrdtTransport Create(string documentId) => new StalledTransport();
+    }
+
+    [TestMethod]
+    public async Task Opening_a_document_does_not_wait_for_the_network()
+    {
+        var store = new BcrdtInMemoryDocumentStore();
+        using (var saved = new BcrdtDocument())
+        {
+            saved.GetText("body").Insert(0, "saved earlier");
+            await store.AppendUpdateAsync("doc", saved.EncodeStateAsUpdate());
+        }
+
+        await using var service = new BcrdtCollaborationService(
+            new BcrdtCollaborationOptions { Sync = new BcrdtSyncProviderOptions { HeartbeatInterval = TimeSpan.Zero } },
+            new StalledTransportFactory(),
+            store);
+
+        // Loaded from storage, the document is usable at once; the connection carries on behind it.
+        BcrdtCollaborativeDocument doc = await service.OpenAsync("doc").AsTask().WaitAsync(TimeSpan.FromSeconds(10));
+        Assert.AreEqual("saved earlier", doc.Text("body").ToString());
+        Assert.AreEqual(BcrdtConnectionStatus.Connecting, doc.Sync!.Status);
+    }
+
+    [TestMethod]
+    public void Republishing_a_mutated_state_dictionary_is_announced_as_a_change()
+    {
+        using var awareness = new BcrdtAwarenessStore(1);
+        int changes = 0;
+        awareness.Changed += _ => changes++;
+
+        var state = new Dictionary<string, object?> { ["x"] = 1 };
+        awareness.SetLocalState(state);
+        state["x"] = 2;
+
+        // The store kept its own copy, in the form every peer decodes it as.
+        Assert.AreEqual(1L, awareness.LocalState!["x"]);
+
+        awareness.SetLocalState(state);
+        Assert.AreEqual(2, changes);
+        Assert.AreEqual(2L, awareness.LocalState!["x"]);
+    }
+
     [TestMethod]
     public async Task One_caller_giving_up_does_not_fail_another_waiting_for_the_same_document()
     {
@@ -1155,15 +1221,15 @@ public class AppLayerRegressionTests : IDisposable
     }
 
     [TestMethod]
-    public void Resynchronizing_keeps_windows_line_endings_out_of_the_edit()
+    public void A_change_made_in_response_to_the_bindings_own_edit_is_tracked()
     {
         using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
         BcrdtText text = doc.GetText("body");
         text.Insert(0, "line1\r\nline2\r\nline3");
         using var binding = new BcrdtTextInputBinding(text);
 
-        // A subscriber that edits the text inside the binding's own change leaves the binding's
-        // positions describing a document that no longer exists - which forces its fallback.
+        // A subscriber that edits the text inside the binding's own change: its edit settles straight
+        // after the binding's, and must move positions that already include the binding's edit.
         bool trimmed = false;
         using IDisposable trimmer = text.Observe((_, _) =>
         {
@@ -1174,13 +1240,68 @@ public class AppLayerRegressionTests : IDisposable
 
         binding.ApplyInput("line1\nline2\nline3!", 18, 18);
         Assert.AreEqual("line1\r\nline2\r\n!", text.ToString());
+        Assert.IsTrue(binding.HasPendingChanges);
 
-        List<BcrdtDeltaOperation> delta = [];
-        using IDisposable recorder = text.Observe((e, _) => delta.AddRange(((BcrdtTextEvent)e).Delta));
+        // The control still shows the deleted run. Typing after it must neither bring it back nor
+        // land anywhere but after the "!".
         binding.ApplyInput("line1\nline2\nline3!?", 19, 19);
+        Assert.AreEqual("line1\r\nline2\r\n!?", text.ToString());
+    }
 
-        Assert.AreEqual("line1\r\nline2\r\nline3!?", text.ToString());
-        foreach (BcrdtDeltaOperation op in delta.Where(op => op.Kind == BcrdtDeltaKind.Delete)) Assert.AreEqual(1, op.Length);
+    [TestMethod]
+    public void Resynchronizing_keeps_windows_line_endings_out_of_the_edit()
+    {
+        using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        BcrdtText text = doc.GetText("body");
+        text.Insert(0, "line1\r\nline2\r\nline3");
+        using var binding = new BcrdtTextInputBinding(text);
+
+        // A subscriber that edits the text as the binding's own transaction opens leaves the edit
+        // aimed at a document that no longer exists - which forces the binding's fallback.
+        bool trimmed = false;
+        doc.BeforeTransaction += _ =>
+        {
+            if (trimmed) return;
+            trimmed = true;
+            text.Delete(14, 5);
+        };
+
+        Assert.ThrowsExactly<ArgumentOutOfRangeException>(() => binding.ApplyInput("line1\nline2\nline3!", 18, 18));
+
+        // The fallback made the document read what the control shows, diffing against the same
+        // normalized view the control has, so the "\r\n" pairs were left alone.
+        Assert.AreEqual("line1\r\nline2\r\nline3!", text.ToString());
+        Assert.AreEqual("line1\nline2\nline3!", binding.Value);
+        Assert.IsFalse(binding.HasPendingChanges);
+    }
+
+    [TestMethod]
+    public void Input_applied_while_a_transaction_is_open_waits_for_it_rather_than_joining_it()
+    {
+        using var doc = new BcrdtDocument(new BcrdtDocumentOptions { ClientId = 1 });
+        BcrdtText text = doc.GetText("body");
+        text.Insert(0, "hello world");
+        using var binding = new BcrdtTextInputBinding(text);
+
+        using (doc.BeginTransaction())
+        {
+            // A change already in the batch moves every position the binding tracks...
+            text.Insert(0, ">> ");
+
+            Assert.IsTrue(binding.ApplyInput("hello world!", 12, 12));
+            Assert.AreEqual(">> hello world", text.ToString());
+            Assert.AreEqual("hello world", binding.Value);
+
+            // ...and so does one made after the input.
+            text.Insert(text.Count, " <<");
+        }
+
+        Assert.AreEqual(">> hello world! <<", text.ToString());
+        Assert.AreEqual("hello world!", binding.Value);
+
+        // Positions are still exact: the next keystroke lands where the user typed it.
+        binding.ApplyInput("hello world!?", 13, 13);
+        Assert.AreEqual(">> hello world!? <<", text.ToString());
     }
 
     private sealed class SizeLimitedStore(IBcrdtDocumentStore inner, int maxRecord, int transientFailures) : IBcrdtDocumentStore

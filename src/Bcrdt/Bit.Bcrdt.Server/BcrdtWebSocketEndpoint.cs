@@ -1,5 +1,4 @@
-﻿using System.Collections.Concurrent;
-using System.Net.WebSockets;
+﻿using System.Net.WebSockets;
 using System.Threading.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -142,7 +141,7 @@ public static class BcrdtWebSocketEndpoint
         /// <summary>How long a close frame may take before the socket is abandoned.</summary>
         private static readonly TimeSpan CloseTimeout = TimeSpan.FromSeconds(2);
 
-        private readonly ConcurrentDictionary<string, Room> _rooms = new(StringComparer.Ordinal);
+        private readonly BcrdtRoomRegistry<Member> _rooms = new();
 
         public async Task HandleAsync(HttpContext context)
         {
@@ -189,7 +188,7 @@ public static class BcrdtWebSocketEndpoint
         private async Task RelayAsync(string documentId, WebSocket socket, HttpContext context)
         {
             Member member = new(socket, options.OutboundQueueCapacity, options.OutboundQueueByteLimit);
-            Room room = Join(documentId, member);
+            BcrdtRoomRegistry<Member>.Room room = _rooms.Join(documentId, member);
 
             using CancellationTokenSource shutdown = CancellationTokenSource.CreateLinkedTokenSource(context.RequestAborted);
             Task pump = member.PumpAsync(shutdown.Token);
@@ -216,6 +215,11 @@ public static class BcrdtWebSocketEndpoint
                     if (message is null) break;
                     if (message.Length == 0) continue;
 
+                    // Only the server may refuse a client, and this endpoint does so with a 403 before
+                    // the upgrade; an Auth frame from a client is a forgery that would disconnect the
+                    // whole room for good.
+                    if (!BcrdtSyncProtocol.IsRelayable(message)) continue;
+
                     Broadcast(room, member, message);
                 }
             }
@@ -231,8 +235,9 @@ public static class BcrdtWebSocketEndpoint
             finally
             {
                 // Order matters: leaving the room first means no further messages are queued for a
-                // socket that is about to go, so the pump can drain what it has and stop.
-                Leave(documentId, room, member);
+                // socket that is about to go, so the pump can drain what it has and stop. An empty
+                // room is retired, so a long-lived server does not keep one per document it has seen.
+                _rooms.Leave(documentId, room, member);
                 member.Complete();
 
                 try
@@ -311,7 +316,7 @@ public static class BcrdtWebSocketEndpoint
         /// repairs an arbitrary divergence in a single handshake. Disconnecting is the self-healing
         /// choice - which is why it must actually disconnect, not merely stop sending.
         /// </remarks>
-        private static void Broadcast(Room room, Member sender, byte[] message)
+        private static void Broadcast(BcrdtRoomRegistry<Member>.Room room, Member sender, byte[] message)
         {
             foreach (KeyValuePair<Member, byte> entry in room.Members)
             {
@@ -322,64 +327,6 @@ public static class BcrdtWebSocketEndpoint
                 if (!member.TryEnqueue(message) && !member.IsCompleted) member.Evict();
             }
         }
-
-        /// <summary>
-        /// Adds a member to its document's room, creating the room if this is the first arrival.
-        /// </summary>
-        /// <remarks>
-        /// The retry exists because a room is retired when its last member leaves. Without it, a client
-        /// arriving at the same moment could be added to a room that has just been taken out of the
-        /// dictionary, and would then sit in a room nobody else could ever find.
-        /// </remarks>
-        private Room Join(string documentId, Member member)
-        {
-            while (true)
-            {
-                Room room = _rooms.GetOrAdd(documentId, static _ => new Room());
-
-                lock (room.Gate)
-                {
-                    if (room.Abandoned) continue;
-
-                    room.Members.TryAdd(member, 0);
-                    return room;
-                }
-            }
-        }
-
-        /// <summary>
-        /// Removes a member, and the room itself once it is empty.
-        /// </summary>
-        /// <remarks>
-        /// Empty rooms are removed so that a long-lived server serving many documents does not
-        /// accumulate an entry per document identifier it has ever seen. The value-matching removal is
-        /// what keeps that safe: it cannot delete a replacement room that a new client created in the
-        /// meantime.
-        /// </remarks>
-        private void Leave(string documentId, Room room, Member member)
-        {
-            lock (room.Gate)
-            {
-                room.Members.TryRemove(member, out _);
-                if (!room.Members.IsEmpty) return;
-
-                room.Abandoned = true;
-            }
-
-            _rooms.TryRemove(new KeyValuePair<string, Room>(documentId, room));
-        }
-    }
-
-    /// <summary>The sockets currently working on one document.</summary>
-    private sealed class Room
-    {
-        public readonly ConcurrentDictionary<Member, byte> Members = new();
-
-        /// <summary>Guards the transition to <see cref="Abandoned"/> against a concurrent arrival.</summary>
-        public readonly object Gate = new();
-
-        /// <summary>Set once the room has been retired, so a joiner knows to ask for a fresh one.</summary>
-        public bool Abandoned;
     }
 
     /// <summary>

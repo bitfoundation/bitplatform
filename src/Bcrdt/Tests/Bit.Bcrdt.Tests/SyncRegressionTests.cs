@@ -703,6 +703,41 @@ public class SyncRegressionTests
     }
 
     [TestMethod]
+    public void Only_an_auth_message_is_withheld_from_relaying()
+    {
+        foreach (BcrdtSyncMessageKind kind in Enum.GetValues<BcrdtSyncMessageKind>())
+        {
+            byte[] message = [BcrdtSyncProtocol.Version, (byte)kind];
+            Assert.AreEqual(kind != BcrdtSyncMessageKind.Auth, BcrdtSyncProtocol.IsRelayable(message), kind.ToString());
+        }
+    }
+
+    [TestMethod]
+    public async Task The_relay_does_not_pass_on_a_refusal_forged_by_a_client()
+    {
+        await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.MapBitBcrdtWebSocket("/ws/{documentId}"));
+        using var forger = await ConnectRawAsync(host.WebSocketBase + "/ws/doc");
+        using var victim = await ConnectRawAsync(host.WebSocketBase + "/ws/doc");
+
+        byte[] buffer = new byte[1024];
+        Task<WebSocketReceiveResult> victimReceives = victim.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+
+        // A refusal is final, so one relayed from a member would disconnect the rest of the room for
+        // good. Repeated until the victim hears something, in case its join had not landed at first.
+        var clock = Stopwatch.StartNew();
+        while (!victimReceives.IsCompleted)
+        {
+            Assert.IsTrue(clock.Elapsed < Patience, "the victim should hear the ordinary update");
+            await forger.SendAsync(BcrdtSyncProtocol.EncodeAuth(false, "forged"), WebSocketMessageType.Binary, true, CancellationToken.None);
+            await forger.SendAsync(BcrdtSyncProtocol.EncodeUpdate([42]), WebSocketMessageType.Binary, true, CancellationToken.None);
+            await Task.WhenAny(victimReceives, Task.Delay(200));
+        }
+
+        WebSocketReceiveResult result = await victimReceives;
+        Assert.AreEqual(BcrdtSyncMessageKind.Update, BcrdtSyncProtocol.Decode(buffer.AsMemory(0, result.Count)).Kind);
+    }
+
+    [TestMethod]
     public async Task A_socket_closed_right_after_the_upgrade_is_never_left_reported_as_connected()
     {
         await using LoopbackHost host = await LoopbackHost.StartAsync(app => app.Map("/close-at-once", async (HttpContext context) =>

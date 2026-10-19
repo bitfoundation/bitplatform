@@ -89,12 +89,12 @@ public sealed class BcrdtTextEvent(BcrdtText target, BcrdtTransaction transactio
                 case BcrdtDeltaKind.Insert:
                     if (insertEmbed is not null)
                     {
-                        delta.Add(BcrdtDeltaOperation.InsertEmbed(insertEmbed, SnapshotAttributes(currentAttributes)));
+                        delta.Add(BcrdtDeltaOperation.InsertEmbed(insertEmbed, BcrdtAttributeComparer.Snapshot(currentAttributes)));
                         insertEmbed = null;
                     }
                     else if (insert.Length > 0)
                     {
-                        delta.Add(BcrdtDeltaOperation.InsertText(insert.ToString(), SnapshotAttributes(currentAttributes)));
+                        delta.Add(BcrdtDeltaOperation.InsertText(insert.ToString(), BcrdtAttributeComparer.Snapshot(currentAttributes)));
                         insert.Clear();
                     }
                     break;
@@ -147,7 +147,7 @@ public sealed class BcrdtTextEvent(BcrdtText target, BcrdtTransaction transactio
                         if (!WasDeleted(item))
                         {
                             if (action != BcrdtDeltaKind.Insert) { Emit(); action = BcrdtDeltaKind.Insert; }
-                            insert.Append(text.Text);
+                            text.AppendTo(insert);
                         }
                     }
                     else if (WasDeleted(item))
@@ -224,17 +224,5 @@ public sealed class BcrdtTextEvent(BcrdtText target, BcrdtTransaction transactio
                 BcrdtAttributeComparer.Apply(currentAttributes, format);
             }
         }
-    }
-
-    private static IReadOnlyDictionary<string, object?>? SnapshotAttributes(Dictionary<string, object?> attributes)
-    {
-        Dictionary<string, object?>? result = null;
-        foreach ((string key, object? value) in attributes)
-        {
-            if (value is null) continue;
-            result ??= new Dictionary<string, object?>(StringComparer.Ordinal);
-            result[key] = value;
-        }
-        return result;
     }
 }

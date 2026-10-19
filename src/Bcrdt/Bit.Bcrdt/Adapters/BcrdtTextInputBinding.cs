@@ -74,7 +74,8 @@ public sealed class BcrdtTextInputBinding : IDisposable
     private List<BcrdtTextSegment> _segments;
     private string _value;
     private long _sequence;
-    private bool _applying;
+    private BcrdtTransaction? _ownTransaction;
+    private (string Value, int SelectionStart, int SelectionEnd)? _deferredInput;
     private BcrdtTextControlUpdate? _outstanding;
     private long _lastUpdateId;
     private bool _dirty;
@@ -134,18 +135,42 @@ public sealed class BcrdtTextInputBinding : IDisposable
     /// Applies a new value reported by the control.
     /// </summary>
     /// <remarks>
+    /// <para>
     /// The value is taken to be an edit of <see cref="Value"/>. If an update may have reached the
     /// control without its confirmation reaching the binding, call <see cref="Resolve"/> with what the
     /// control reports first, so the edit is read against the content the control really had.
+    /// </para>
+    /// <para>
+    /// Called while a transaction is open - or while one is still being settled, from inside a
+    /// change notification - the edit is applied once the document has settled, in a transaction
+    /// of its own, rather than joining it. The tracked positions describe the document as of the
+    /// last settled change, so an edit placed inside a transaction that has already changed the text
+    /// would land in the wrong place, and one sharing a transaction with later changes could not be
+    /// told apart from them. Until then <see cref="Value"/> still reports the previous value; a later
+    /// call supersedes an input still waiting.
+    /// </para>
     /// </remarks>
     /// <param name="value">The control's whole new value.</param>
     /// <param name="selectionStart">The control's selection start after the edit.</param>
     /// <param name="selectionEnd">The control's selection end after the edit; the caret.</param>
-    /// <returns><see langword="true"/> if the document changed.</returns>
+    /// <returns>
+    /// <see langword="true"/> if the document changed - or, inside a transaction, will change once
+    /// the document has settled.
+    /// </returns>
     public bool ApplyInput(string value, int selectionStart, int selectionEnd)
     {
         ArgumentNullException.ThrowIfNull(value);
         ObjectDisposedException.ThrowIf(_disposed, this);
+
+        if (_text.Doc.HasUnsettledTransactions)
+        {
+            if (_deferredInput is null) _text.Doc.Settled += OnDocumentSettled;
+            _deferredInput = (value, selectionStart, selectionEnd);
+            return !string.Equals(value, _value, StringComparison.Ordinal);
+        }
+
+        // Whatever was waiting described an older state of the control than this does.
+        CancelDeferredInput();
 
         SetSelectionCore(value.Length, selectionStart, selectionEnd);
         if (string.Equals(value, _value, StringComparison.Ordinal)) return false;
@@ -203,36 +228,28 @@ public sealed class BcrdtTextInputBinding : IDisposable
         }
 
         bool committed = false;
-        _applying = true;
         try
         {
-            _text.Doc.Transact(_ =>
+            _text.Doc.Transact(transaction =>
             {
+                _ownTransaction = transaction;
                 for (int i = deletions.Count - 1; i >= 0; i--) _text.Delete(deletions[i].Start, deletions[i].Length);
                 if (inserted > 0) _text.Insert(insertAt, edit.Inserted);
-            }, _origin);
-            committed = true;
-        }
-        catch (AggregateException)
-        {
-            // Another subscriber threw after the edit had been committed. The edit stands.
-            committed = true;
-            throw;
-        }
-        catch
-        {
-            _applying = false;
-            Resynchronize(value, SelectionEnd);
-            throw;
-        }
-        finally
-        {
-            _applying = false;
-            if (committed)
-            {
+
+                // Committed before the transaction settles, not after Transact returns: a change an
+                // observer makes in response settles straight after this one, and its notification
+                // has to move positions that already include this edit.
                 _segments = next;
                 _value = value;
-            }
+                committed = true;
+            }, _origin);
+        }
+        catch (Exception) when (!committed)
+        {
+            // The edit failed partway. A failure once it was committed - another subscriber throwing
+            // while the transaction settled - leaves the edit standing, and is simply rethrown.
+            Resynchronize(value, SelectionEnd);
+            throw;
         }
 
         return true;
@@ -374,6 +391,7 @@ public sealed class BcrdtTextInputBinding : IDisposable
         if (_disposed) return;
         _disposed = true;
 
+        CancelDeferredInput();
         _subscription.Dispose();
         Changed = null;
     }
@@ -388,12 +406,35 @@ public sealed class BcrdtTextInputBinding : IDisposable
         IReadOnlyList<BcrdtDeltaOperation> delta = [.. (crdtEvent is BcrdtTextEvent textEvent ? textEvent.Delta : crdtEvent.Delta)];
         Log(delta);
 
-        // The binding's own edit: ApplyInput moves the positions itself.
-        if (_applying) return;
+        // The binding's own edit, which already moved the positions. Nothing else shares its
+        // transaction: input that arrives while another transaction is open or settling waits for
+        // the document to settle rather than joining it.
+        if (ReferenceEquals(transaction, _ownTransaction))
+        {
+            _ownTransaction = null;
+            return;
+        }
 
         _segments = Transform(_segments, delta);
         _dirty = true;
         _dispatch(RaiseChanged);
+    }
+
+    private void OnDocumentSettled()
+    {
+        if (_deferredInput is not { } input) return;
+        CancelDeferredInput();
+
+        // Every change notification has moved the positions by now.
+        if (!_disposed) ApplyInput(input.Value, input.SelectionStart, input.SelectionEnd);
+    }
+
+    private void CancelDeferredInput()
+    {
+        if (_deferredInput is null) return;
+
+        _text.Doc.Settled -= OnDocumentSettled;
+        _deferredInput = null;
     }
 
     private void RaiseChanged()
@@ -405,23 +446,20 @@ public sealed class BcrdtTextInputBinding : IDisposable
     {
         // Last resort: make the document read what the control shows, diffing against the same
         // normalized view the control has so a "\r\n" elsewhere does not widen the edit to most of
-        // the text. Then have the control refreshed from the document.
-        bool wasApplying = _applying;
-        _applying = true;
-        try
+        // the text. Then have the control refreshed from the document. As in ApplyInput, the positions
+        // are rebuilt inside the transaction, so the change notifications that follow it see them.
+        _text.Doc.Transact(transaction =>
         {
+            _ownTransaction = transaction;
+
             BcrdtTextProjection current = BcrdtTextProjection.Create(_text, normalizeLineEndings: true);
             BcrdtTextSynchronizer.ApplyProjected(_text, current, controlValue, _origin, caret);
-        }
-        finally
-        {
-            _applying = wasApplying;
-        }
 
-        BcrdtTextProjection projection = BcrdtTextProjection.Create(_text, normalizeLineEndings: true);
-        _segments = projection.CreateSegments();
-        _value = controlValue;
-        _dirty = !string.Equals(projection.Display, controlValue, StringComparison.Ordinal);
+            BcrdtTextProjection projection = BcrdtTextProjection.Create(_text, normalizeLineEndings: true);
+            _segments = projection.CreateSegments();
+            _value = controlValue;
+            _dirty = !string.Equals(projection.Display, controlValue, StringComparison.Ordinal);
+        }, _origin);
     }
 
     private void Log(IReadOnlyList<BcrdtDeltaOperation> delta)

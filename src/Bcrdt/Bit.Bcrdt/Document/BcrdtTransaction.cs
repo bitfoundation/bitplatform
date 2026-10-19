@@ -60,10 +60,23 @@ public sealed class BcrdtTransaction
 
     /// <summary>Whether the change originated on this replica rather than arriving from a peer.</summary>
     /// <remarks>
-    /// Applying an update clears this even inside a transaction that was opened as local, because
-    /// from that point on the transaction carries content authored elsewhere.
+    /// This is how the transaction was opened, and an update applied inside a local transaction
+    /// joins it without changing it: the transaction's own edits are still this replica's, and
+    /// anything that keeps only local changes - persistence with remote updates turned off, say -
+    /// must not lose them. Such a transaction also carries the update's content, so its
+    /// <see cref="BcrdtDocument.Updated"/> payload includes that content too.
     /// </remarks>
-    public bool Local { get; internal set; }
+    public bool Local { get; }
+
+    /// <summary>
+    /// Whether this transaction integrated content from an update, whatever it was opened as.
+    /// </summary>
+    /// <remarks>
+    /// A remote change can insert, split or delete blocks anywhere, which is what invalidates the
+    /// cached index positions; <see cref="Local"/> cannot say that once an update has joined a local
+    /// transaction.
+    /// </remarks>
+    internal bool IntegratedRemoteContent { get; set; }
 
     /// <summary>
     /// Whether this transaction integrated content carrying the document's own client identifier

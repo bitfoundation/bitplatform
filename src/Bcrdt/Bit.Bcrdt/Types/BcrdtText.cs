@@ -220,7 +220,7 @@ public sealed class BcrdtText : BcrdtAbstractType
         for (BcrdtItem? item = Start; item is not null; item = item.Right)
         {
             if (item.Deleted) continue;
-            if (item.Content is BcrdtContentString text) builder.Append(text.Text);
+            if (item.Content is BcrdtContentString text) text.AppendTo(builder);
         }
         return builder.ToString();
     }
@@ -241,7 +241,7 @@ public sealed class BcrdtText : BcrdtAbstractType
         void FlushText()
         {
             if (buffer.Length == 0) return;
-            operations.Add(BcrdtDeltaOperation.InsertText(buffer.ToString(), BcrdtSnapshot(attributes)));
+            operations.Add(BcrdtDeltaOperation.InsertText(buffer.ToString(), BcrdtAttributeComparer.Snapshot(attributes)));
             buffer.Clear();
         }
 
@@ -252,7 +252,7 @@ public sealed class BcrdtText : BcrdtAbstractType
             switch (item.Content)
             {
                 case BcrdtContentString text:
-                    buffer.Append(text.Text);
+                    text.AppendTo(buffer);
                     break;
 
                 case BcrdtContentFormat format:
@@ -262,7 +262,7 @@ public sealed class BcrdtText : BcrdtAbstractType
 
                 case BcrdtContentType or BcrdtContentEmbed or BcrdtContentBinary:
                     FlushText();
-                    operations.Add(BcrdtDeltaOperation.InsertEmbed(item.Content.GetContent()[0]!, BcrdtSnapshot(attributes)));
+                    operations.Add(BcrdtDeltaOperation.InsertEmbed(item.Content.GetContent()[0]!, BcrdtAttributeComparer.Snapshot(attributes)));
                     break;
             }
         }
@@ -284,12 +284,15 @@ public sealed class BcrdtText : BcrdtAbstractType
     /// <para>
     /// The whole delta is validated before any of it is applied. An insert of a string is text unless
     /// the step is marked <see cref="BcrdtDeltaOperation.IsEmbed"/>; an insert of anything else is an embed. A
-    /// retain that carries attributes and runs past the end
-    /// pads the text with newlines, which is what editors that always end a document in a newline
-    /// expect.
+    /// retain that carries attributes and runs one position past the end pads the text with a newline,
+    /// which is what editors that always end a document in a newline expect. Running further past
+    /// the end means the delta describes a longer text than this one, and it is rejected.
     /// </para>
     /// </remarks>
-    /// <exception cref="ArgumentOutOfRangeException">A step has a negative length.</exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// A step has a negative length, or a retain carrying attributes runs more than one position past
+    /// the end of the text.
+    /// </exception>
     /// <exception cref="NotSupportedException">An inserted or attribute value is outside the value model.</exception>
     /// <exception cref="InvalidOperationException">A nested type already belongs somewhere else.</exception>
     public void ApplyDelta(IReadOnlyList<BcrdtDeltaOperation> delta)
@@ -297,41 +300,72 @@ public sealed class BcrdtText : BcrdtAbstractType
         ArgumentNullException.ThrowIfNull(delta);
 
         List<PreparedStep> steps = PrepareDelta(delta);
+        int resultingLength = MeasureDelta(steps);
 
         if (_pending is not null)
         {
-            // Track the length the replay will produce, exactly as the attached path would change it.
-            long position = 0;
-            long length = _pendingLength;
             foreach (PreparedStep step in steps)
             {
-                switch (step.Kind)
-                {
-                    case BcrdtDeltaKind.Insert:
-                        ClaimPending(step.Content!);
-                        int inserted = BcrdtTextOperations.PreparedLength(step.Content!);
-                        length += inserted;
-                        position += inserted;
-                        break;
-                    case BcrdtDeltaKind.Retain when step.Attributes is not null:
-                        position += step.Length;
-                        length = Math.Max(length, position);
-                        break;
-                    case BcrdtDeltaKind.Retain:
-                        position = Math.Min(position + step.Length, length);
-                        break;
-                    case BcrdtDeltaKind.Delete:
-                        length -= Math.Min(step.Length, length - position);
-                        break;
-                }
+                if (step.Kind == BcrdtDeltaKind.Insert) ClaimPending(step.Content!);
             }
 
-            _pendingLength = checked((int)length);
+            _pendingLength = resultingLength;
             _pending.Add(target => target.ApplyPrepared(steps));
             return;
         }
 
         ApplyPrepared(steps);
+    }
+
+    /// <summary>
+    /// The most positions a retain carrying attributes may run past the end: the one trailing newline
+    /// an editor assumes every document ends in.
+    /// </summary>
+    /// <remarks>
+    /// The padding is allocated and inserted as real text, so without a bound a single short delta
+    /// could demand gigabytes, or fill every peer's copy with newlines.
+    /// </remarks>
+    private const int MaxRetainPadding = 1;
+
+    /// <summary>
+    /// The length the text will have once <paramref name="steps"/> are applied, tracked exactly as
+    /// applying them would change it, rejecting any step that pads by more than
+    /// <see cref="MaxRetainPadding"/>.
+    /// </summary>
+    private int MeasureDelta(List<PreparedStep> steps)
+    {
+        long position = 0;
+        long length = Count;
+
+        foreach (PreparedStep step in steps)
+        {
+            switch (step.Kind)
+            {
+                case BcrdtDeltaKind.Insert:
+                    int inserted = BcrdtTextOperations.PreparedLength(step.Content!);
+                    length += inserted;
+                    position += inserted;
+                    break;
+                case BcrdtDeltaKind.Retain when step.Attributes is not null:
+                    position += step.Length;
+                    if (position - length > MaxRetainPadding)
+                    {
+                        throw new ArgumentOutOfRangeException(
+                            "delta",
+                            $"A formatted retain runs {position - length} position(s) past the end of the text; at most {MaxRetainPadding} can be padded.");
+                    }
+                    length = Math.Max(length, position);
+                    break;
+                case BcrdtDeltaKind.Retain:
+                    position = Math.Min(position + step.Length, length);
+                    break;
+                case BcrdtDeltaKind.Delete:
+                    length -= Math.Min(step.Length, length - position);
+                    break;
+            }
+        }
+
+        return checked((int)length);
     }
 
     private void ApplyPrepared(List<PreparedStep> steps)
@@ -456,7 +490,7 @@ public sealed class BcrdtText : BcrdtAbstractType
             object? content = item.Content switch
             {
                 BcrdtContentString text => text.Text,
-                BcrdtContentEmbed embed => BcrdtTextOperations.PrepareContent(embed.Value!, asEmbed: true, owner: clone),
+                BcrdtContentEmbed embed => BcrdtTextOperations.PrepareContent(embed.Value, asEmbed: true, owner: clone),
                 BcrdtContentType nested => nested.Type.Clone(),
                 BcrdtContentBinary binary => binary.Data,
                 _ => null,
@@ -511,16 +545,4 @@ public sealed class BcrdtText : BcrdtAbstractType
     private static readonly Dictionary<string, object?> EmptyAttributes = new(StringComparer.Ordinal);
 
     private sealed record PreparedStep(BcrdtDeltaKind Kind, int Length, object? Content, Dictionary<string, object?>? Attributes);
-
-    private static IReadOnlyDictionary<string, object?>? BcrdtSnapshot(Dictionary<string, object?> attributes)
-    {
-        Dictionary<string, object?>? result = null;
-        foreach ((string key, object? value) in attributes)
-        {
-            if (value is null) continue;
-            result ??= new Dictionary<string, object?>(StringComparer.Ordinal);
-            result[key] = value;
-        }
-        return result;
-    }
 }

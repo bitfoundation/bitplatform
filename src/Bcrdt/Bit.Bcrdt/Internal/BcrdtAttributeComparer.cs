@@ -21,6 +21,22 @@ internal static class BcrdtAttributeComparer
         else current[format.Key] = format.Value;
     }
 
+    /// <summary>
+    /// A copy of the running attribute state to hand out with a delta step, without the attributes
+    /// that are cleared, or <see langword="null"/> when nothing is set.
+    /// </summary>
+    public static IReadOnlyDictionary<string, object?>? Snapshot(Dictionary<string, object?> attributes)
+    {
+        Dictionary<string, object?>? result = null;
+        foreach ((string key, object? value) in attributes)
+        {
+            if (value is null) continue;
+            result ??= new Dictionary<string, object?>(StringComparer.Ordinal);
+            result[key] = value;
+        }
+        return result;
+    }
+
     /// <summary>Whether two attribute sets describe the same formatting.</summary>
     public static bool SetsEqual(
         IReadOnlyDictionary<string, object?>? left,

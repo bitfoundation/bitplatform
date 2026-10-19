@@ -7,8 +7,6 @@
         <RootNamespace>Bit.Bcrdt</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <IsTrimmable>true</IsTrimmable>
-        <!-- BcrdtWtf8 and the buffer reader decode straight out of spans with pointer arithmetic. -->
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Description>Real-time collaborative editing for .NET and Blazor, written natively in C#: a YATA-based CRDT engine (text, arrays, maps and sets), a synchronization protocol with jittered reconnection, presence and awareness, offline-first persistence, selective undo, input bindings and the in-memory and WebSocket transports - with no JavaScript CRDT library and no interop in the engine.</Description>
         <PackageDescription>$(Description)</PackageDescription>
         <PackageTags>$(PackageTags);Blazor;CRDT;Collaboration;Realtime;YATA;Offline-first;Presence;Undo;Sync</PackageTags>

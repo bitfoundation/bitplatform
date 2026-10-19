@@ -131,7 +131,8 @@ public sealed class BcrdtAwarenessStore : IDisposable
     /// <summary>Replaces this client's published state.</summary>
     /// <param name="state">
     /// The new state, or <see langword="null"/> to go offline. Every value must belong to the
-    /// collaborative value model (see <see cref="BcrdtAnyCodec"/>).
+    /// collaborative value model (see <see cref="BcrdtAnyCodec"/>). The store keeps a copy in the form
+    /// peers decode, so changing the dictionary afterwards changes nothing until it is set again.
     /// </param>
     /// <exception cref="NotSupportedException">
     /// A value is outside the collaborative value model. Nothing is published in that case.
@@ -443,7 +444,13 @@ public sealed class BcrdtAwarenessStore : IDisposable
             ObjectDisposedException.ThrowIf(_disposed, this);
 
             _entries.TryGetValue(LocalClientId, out BcrdtAwarenessEntry? previous);
-            IReadOnlyDictionary<string, object?>? state = transform(previous?.State);
+
+            // A copy in wire form, never the caller's dictionary: a caller mutating its own instance
+            // and setting it again would otherwise compare the state with itself and announce nothing,
+            // and the local entry would hold values - an int, say - that no peer ever decodes.
+            IReadOnlyDictionary<string, object?>? state = transform(previous?.State) is { } next
+                ? (IReadOnlyDictionary<string, object?>)BcrdtAnyCodec.Canonicalize(next)!
+                : null;
 
             long clock = _localClock + 1;
             var entry = new BcrdtAwarenessEntry(LocalClientId, clock, state, _time.GetUtcNow());

@@ -191,6 +191,20 @@ public static class BcrdtSyncProtocol
         return (permitted, reader.ReadString());
     }
 
+    /// <summary>
+    /// Whether a relay may pass a message it received from one client on to the others.
+    /// </summary>
+    /// <remarks>
+    /// Everything may be relayed except <see cref="BcrdtSyncMessageKind.Auth"/>. That message is the
+    /// server's verdict on a connection, and a provider treats a refusal as final: it stops and never
+    /// reconnects. A relay that forwarded one from a client would let any member of a room forge a
+    /// refusal and permanently disconnect everybody else. Only the kind byte is inspected, so this
+    /// costs nothing on the hot path and holds whatever the rest of the message contains.
+    /// </remarks>
+    /// <param name="message">The encoded message, as a client sent it.</param>
+    public static bool IsRelayable(ReadOnlySpan<byte> message) =>
+        message.Length < 2 || message[1] != (byte)BcrdtSyncMessageKind.Auth;
+
     private static byte[] Encode(BcrdtSyncMessageKind kind, ReadOnlySpan<byte> payload)
     {
         byte[] message = new byte[2 + payload.Length];

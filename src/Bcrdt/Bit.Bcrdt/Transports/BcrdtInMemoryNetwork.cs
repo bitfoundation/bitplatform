@@ -1,6 +1,4 @@
-﻿using System.Collections.Concurrent;
-
-namespace Bit.Bcrdt;
+﻿namespace Bit.Bcrdt;
 
 /// <summary>
 /// An in-process message bus that connects replicas without touching the network.
@@ -24,7 +22,7 @@ namespace Bit.Bcrdt;
 /// </remarks>
 public sealed class BcrdtInMemoryNetwork
 {
-    private readonly ConcurrentDictionary<string, Room> _rooms = new(StringComparer.Ordinal);
+    private readonly BcrdtRoomRegistry<BcrdtInMemoryTransport> _rooms = new();
 
     /// <summary>A shared network, convenient when one process only needs one.</summary>
     public static BcrdtInMemoryNetwork Shared { get; } = new();
@@ -41,57 +39,23 @@ public sealed class BcrdtInMemoryNetwork
 
     /// <summary>How many transports are currently connected to a room.</summary>
     public int MemberCount(string room) =>
-        _rooms.TryGetValue(room, out Room? existing) ? existing.Members.Count : 0;
+        _rooms.TryGet(room, out BcrdtRoomRegistry<BcrdtInMemoryTransport>.Room? existing) ? existing.Members.Count : 0;
 
-    /// <summary>How many rooms currently have members. Empty rooms are retired.</summary>
+    /// <summary>
+    /// How many rooms currently have members. Empty rooms are retired, so a long-lived network -
+    /// <see cref="Shared"/> in particular - does not hold an entry for every room name it has seen.
+    /// </summary>
     internal int RoomCount => _rooms.Count;
 
-    /// <summary>
-    /// Adds a member to a room, creating it if this is the first arrival.
-    /// </summary>
-    /// <remarks>
-    /// The retry covers a room retired by its last member leaving at the same moment: joining it
-    /// would leave this member in a room nobody else could ever find.
-    /// </remarks>
-    internal void Join(string room, BcrdtInMemoryTransport transport)
-    {
-        while (true)
-        {
-            Room existing = _rooms.GetOrAdd(room, static _ => new Room());
-            lock (existing.Gate)
-            {
-                if (existing.Abandoned) continue;
-                existing.Members.TryAdd(transport, 0);
-                return;
-            }
-        }
-    }
+    /// <summary>Adds a member to a room, creating it if this is the first arrival.</summary>
+    internal void Join(string room, BcrdtInMemoryTransport transport) => _rooms.Join(room, transport);
 
-    /// <summary>
-    /// Removes a member, and the room itself once it is empty.
-    /// </summary>
-    /// <remarks>
-    /// Retiring empty rooms keeps a long-lived network - <see cref="Shared"/> in particular - from
-    /// holding an entry for every room name it has ever seen. The value-matching removal cannot
-    /// delete a replacement room created in the meantime.
-    /// </remarks>
-    internal void Leave(string room, BcrdtInMemoryTransport transport)
-    {
-        if (!_rooms.TryGetValue(room, out Room? existing)) return;
-
-        lock (existing.Gate)
-        {
-            existing.Members.TryRemove(transport, out _);
-            if (!existing.Members.IsEmpty) return;
-            existing.Abandoned = true;
-        }
-
-        _rooms.TryRemove(new KeyValuePair<string, Room>(room, existing));
-    }
+    /// <summary>Removes a member, and the room itself once it is empty.</summary>
+    internal void Leave(string room, BcrdtInMemoryTransport transport) => _rooms.Leave(room, transport);
 
     internal void Broadcast(string room, BcrdtInMemoryTransport sender, ReadOnlyMemory<byte> message)
     {
-        if (!_rooms.TryGetValue(room, out Room? existing)) return;
+        if (!_rooms.TryGet(room, out BcrdtRoomRegistry<BcrdtInMemoryTransport>.Room? existing)) return;
 
         MessageSent?.Invoke(room, message);
 
@@ -104,17 +68,6 @@ public sealed class BcrdtInMemoryNetwork
             if (ReferenceEquals(member.Key, sender)) continue;
             member.Key.Deliver(payload);
         }
-    }
-
-    private sealed class Room
-    {
-        public readonly ConcurrentDictionary<BcrdtInMemoryTransport, byte> Members = new();
-
-        /// <summary>Guards the transition to <see cref="Abandoned"/> against a concurrent arrival.</summary>
-        public readonly object Gate = new();
-
-        /// <summary>Set once the room has been retired, so a joiner knows to ask for a fresh one.</summary>
-        public bool Abandoned;
     }
 }
 

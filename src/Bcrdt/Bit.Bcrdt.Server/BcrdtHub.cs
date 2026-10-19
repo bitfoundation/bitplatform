@@ -139,12 +139,18 @@ public class BcrdtHub : Hub
     /// <see cref="AuthorizeAsync"/> keeps that guarantee without paying for an authorization lookup
     /// on every message.
     /// </para>
+    /// <para>
+    /// An <c>Auth</c> message is dropped rather than relayed: only the hub may tell a client it has
+    /// been refused, and a refusal is final, so one forged by a member of the room would disconnect
+    /// everyone else for good. See <see cref="BcrdtSyncProtocol.IsRelayable"/>.
+    /// </para>
     /// </remarks>
     /// <param name="documentId">The document the message belongs to.</param>
     /// <param name="message">The encoded protocol message, relayed without being interpreted.</param>
     public virtual async Task Broadcast(string documentId, byte[] message)
     {
         if (string.IsNullOrEmpty(documentId) || message is null || message.Length == 0) return;
+        if (!BcrdtSyncProtocol.IsRelayable(message)) return;
         if (!JoinedDocuments().ContainsKey(documentId)) return;
 
         await Clients.OthersInGroup(GroupName(documentId))

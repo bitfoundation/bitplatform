@@ -26,7 +26,14 @@ public sealed class BcrdtContentString : IBcrdtContent
     private BcrdtContentString(StringBuilder text) => _text = text;
 
     /// <summary>The text this block carries.</summary>
+    /// <remarks>A fresh string on every read; to collect a run of blocks, use <see cref="AppendTo"/>.</remarks>
     public string Text => _text.ToString();
+
+    /// <summary>
+    /// Appends the text this block carries, copying straight from the block rather than through an
+    /// intermediate string - reading a whole document then costs one copy of it, not two.
+    /// </summary>
+    internal void AppendTo(StringBuilder builder) => builder.Append(_text);
 
     /// <inheritdoc/>
     public int Length => _text.Length;

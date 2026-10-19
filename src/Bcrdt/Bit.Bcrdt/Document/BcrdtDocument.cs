@@ -91,6 +91,22 @@ public sealed class BcrdtDocument : IDisposable
     /// <summary>Whether a transaction is currently open.</summary>
     public bool InTransaction => _currentTransaction is not null;
 
+    /// <summary>
+    /// Whether a transaction is open or still being settled, so that a change made now would not
+    /// settle - and raise its events - before the call making it returns.
+    /// </summary>
+    /// <remarks>
+    /// Wider than <see cref="InTransaction"/>: while queued transactions are being settled none is
+    /// open, yet one opened by an observer is only settled once those ahead of it have been.
+    /// </remarks>
+    internal bool HasUnsettledTransactions => _pendingCleanups.Count > 0;
+
+    /// <summary>
+    /// Raised once every queued transaction has settled, for work that had to wait for the document
+    /// to come to rest. A change a handler makes settles before it returns.
+    /// </summary>
+    internal event Action? Settled;
+
     /// <summary>Raised once per committed transaction that changed anything.</summary>
     /// <remarks>
     /// This is the outbound edge of the whole system: a sync provider subscribes here and forwards
@@ -311,6 +327,21 @@ public sealed class BcrdtDocument : IDisposable
         }
 
         _pendingCleanups.Clear();
+
+        if (Settled is { } settled)
+        {
+            foreach (Action handler in settled.GetInvocationList().Cast<Action>())
+            {
+                try
+                {
+                    handler();
+                }
+                catch (Exception ex)
+                {
+                    (failures ??= []).Add(ex);
+                }
+            }
+        }
 
         if (failures is { Count: > 0 })
         {
@@ -587,6 +618,7 @@ public sealed class BcrdtDocument : IDisposable
         Updated = null;
         BeforeTransaction = null;
         AfterTransaction = null;
+        Settled = null;
         Destroyed = null;
     }
 }

@@ -234,7 +234,7 @@ public abstract class BcrdtAbstractType
         // index position may now be describing the wrong place. Local edits keep the cache in step
         // as they go, because they know where they are editing; an incoming update does not, and a
         // marker left pointing at a stale position silently corrupts every later index lookup.
-        if (!transaction.Local) InvalidateSearchMarkers();
+        if (!transaction.Local || transaction.IntegratedRemoteContent) InvalidateSearchMarkers();
 
         BcrdtEvent crdtEvent = CreateEvent(transaction, changedKeys);
 

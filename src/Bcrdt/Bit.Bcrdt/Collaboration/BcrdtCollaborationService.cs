@@ -90,7 +90,8 @@ public interface IBcrdtCollaborationService : IAsyncDisposable
 /// Opening a document is deliberately a single call that does everything in the right order - load
 /// from storage first so the document is usable offline and immediately, then connect and let the
 /// handshake reconcile whatever changed while it was away. Doing it in the other order would show
-/// the user an empty document until the network answered.
+/// the user an empty document until the network answered. For the same reason the open completes
+/// once the document is loaded, without waiting for the connection to be established.
 /// </para>
 /// <para>
 /// The same document identifier opened twice returns the same instance, so two components editing
@@ -272,7 +273,11 @@ public sealed class BcrdtCollaborationService : IBcrdtCollaborationService
 
                 if (options.Connect ?? _options.ConnectOnOpen)
                 {
-                    await document.Sync.ConnectAsync(abandoned);
+                    // Started, not awaited: the document is already usable from storage, and a slow or
+                    // captive network - a stalled negotiate, a connect timeout - must not hold it back.
+                    // The handshake reconciles whatever happens in the meantime, and the status shows
+                    // how far the connection has got.
+                    _ = ConnectInBackgroundAsync(document.Sync);
                 }
             }
 
@@ -292,6 +297,19 @@ public sealed class BcrdtCollaborationService : IBcrdtCollaborationService
                 // The original failure is the one worth reporting.
             }
             throw;
+        }
+    }
+
+    private static async Task ConnectInBackgroundAsync(BcrdtSyncProvider sync)
+    {
+        try
+        {
+            await sync.ConnectAsync().ConfigureAwait(false);
+        }
+        catch (Exception)
+        {
+            // A failed attempt is reported through the provider's Error event and retried on its
+            // schedule; what is left to land here is the document being closed while it connected.
         }
     }
 
