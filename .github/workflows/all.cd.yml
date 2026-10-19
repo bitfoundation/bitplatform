@@ -95,6 +95,12 @@ jobs:
     uses: ./.github/workflows/bbscanner.demo.cd.yml
     secrets: inherit
 
+  bdnd_demo:
+    name: bdnd demo
+    if: inputs.server
+    uses: ./.github/workflows/bdnd.demo.cd.yml
+    secrets: inherit
+
   blazedb_demo:
     name: blazedb demo
     if: inputs.server

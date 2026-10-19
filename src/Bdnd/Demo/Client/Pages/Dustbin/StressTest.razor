@@ -1,0 +1,125 @@
+﻿@page "/dustbin/stress-test"
+
+<PageTitle>Dustbin · Stress Test - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Dustbin - Stress Test</h3>
+    <p class="text-muted">
+        Many sources and many targets at once. Each box has a random type; each dustbin accepts
+        a random subset. Use this to gauge how the engine behaves with a lot of registered
+        handlers re-rendering on every state change.
+    </p>
+</div>
+
+<DemoCode />
+
+<div class="example-toolbar">
+    <button class="btn btn-sm btn-primary" @onclick="Shuffle">Shuffle types</button>
+    <button class="btn btn-sm btn-outline-secondary" @onclick="AddMore">Add 10 boxes</button>
+    <span class="text-muted">@_boxes.Count boxes · @_bins.Count dustbins · @_totalDrops drops</span>
+</div>
+
+<section class="demo-stage">
+    <BdndProvider>
+        <div class="row-wrap" style="margin-bottom:1.5rem;">
+            @foreach (var bin in _bins)
+            {
+                <BdndDropTarget TItem="Box" AcceptTypes="bin.Accepts" Context="t"
+                                style="display:contents"
+                                OnDrop="@(e => OnDrop(bin, e))">
+                    <div class="dustbin" style="@BinStyle(bin, t)">
+                        <div>
+                            <div>@string.Join("/", bin.Accepts.Select(ShortName))</div>
+                            <div style="font-size:0.8rem;">@bin.Count dropped</div>
+                        </div>
+                    </div>
+                </BdndDropTarget>
+            }
+        </div>
+
+        <div class="row-wrap">
+            @foreach (var box in _boxes)
+            {
+                <BdndDraggable TItem="Box" Type="@box.Type" Item="box" Context="d" @key="box.Id">
+                    <div class="box" style="@BoxStyle(box, d)">@ShortName(box.Type)#@box.Id</div>
+                </BdndDraggable>
+            }
+        </div>
+    </BdndProvider>
+</section>
+
+@code {
+    private static readonly string[] AllTypes =
+        [ItemTypes.Box, ItemTypes.Knight, ItemTypes.Card, ItemTypes.DragAroundBox];
+
+    public class Box
+    {
+        public int Id { get; init; }
+        public string Type { get; set; } = ItemTypes.Box;
+    }
+
+    public class Bin
+    {
+        public string[] Accepts { get; set; } = [];
+        public int Count { get; set; }
+        public int Hue { get; init; }
+    }
+
+    private readonly Random _rng = new(42);
+    private readonly List<Box> _boxes = [];
+    private readonly List<Bin> _bins = [];
+    private int _nextId = 1;
+    private int _totalDrops;
+
+    protected override void OnInitialized()
+    {
+        for (int i = 0; i < 30; i++) _boxes.Add(NewBox());
+        for (int i = 0; i < 6; i++)
+            _bins.Add(new Bin { Accepts = RandomTypes(), Hue = i * 60 });
+    }
+
+    private Box NewBox() => new() { Id = _nextId++, Type = AllTypes[_rng.Next(AllTypes.Length)] };
+
+    private string[] RandomTypes() =>
+        AllTypes.Where(_ => _rng.NextDouble() > 0.5).DefaultIfEmpty(ItemTypes.Box).ToArray();
+
+    private void Shuffle()
+    {
+        foreach (var b in _boxes) b.Type = AllTypes[_rng.Next(AllTypes.Length)];
+        foreach (var bin in _bins) bin.Accepts = RandomTypes();
+    }
+
+    private void AddMore()
+    {
+        for (int i = 0; i < 10; i++) _boxes.Add(NewBox());
+    }
+
+    private void OnDrop(Bin bin, BdndDropEventArgs<Box> e)
+    {
+        bin.Count++;
+        _totalDrops++;
+    }
+
+    private static string ShortName(string t) => t switch
+    {
+        ItemTypes.Box => "box",
+        ItemTypes.Knight => "knight",
+        ItemTypes.Card => "card",
+        ItemTypes.DragAroundBox => "drag",
+        _ => t,
+    };
+
+    private string BinStyle(Bin bin, BdndDropState<Box> t)
+    {
+        if (t.IsOver && t.CanDrop) return "background:#111;";
+        var c = $"hsl({bin.Hue},45%,40%)";
+        if (t.CanDrop) return $"background:{c};outline:3px dashed #fff;";
+        return $"background:{c};opacity:{(t.Monitor.IsDragging() ? "0.5" : "1")};";
+    }
+
+    private string BoxStyle(Box box, BdndDragState d)
+    {
+        var hue = Array.IndexOf(AllTypes, box.Type) * 90;
+        return $"opacity:{(d.IsDragging ? "0.4" : "1")};border-color:hsl({hue},50%,40%);";
+    }
+}

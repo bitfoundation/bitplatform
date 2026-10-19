@@ -88,6 +88,13 @@
     <Project Path="BbScanner/Tests/Bit.BbScanner.TestKit/Bit.BbScanner.TestKit.csproj" />
     <Project Path="BbScanner/Tests/Bit.BbScanner.Tests/Bit.BbScanner.Tests.csproj" />
   </Folder>
+  <Folder Name="/Bdnd/">
+    <File Path="Bdnd/README.md" />
+    <Project Path="Bdnd/Demo/Client/Bit.Bdnd.Demo.Client.csproj" />
+    <Project Path="Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj" />
+    <Project Path="Bdnd/Bit.Bdnd/Bit.Bdnd.csproj" />
+    <Project Path="Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
+  </Folder>
   <Folder Name="/BlazeDb/">
     <File Path="BlazeDb/README.md" />
     <Project Path="BlazeDb/Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />

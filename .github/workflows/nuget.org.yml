@@ -8,6 +8,7 @@ on:
     paths:
       - 'src/Balette/**'
       - 'src/BbScanner/**'
+      - 'src/Bdnd/**'
       - 'src/BlazorUI/**'
       - 'src/Bink/**'
       - 'src/BlazeDb/**'
@@ -215,6 +216,11 @@ jobs:
       run: dotnet build src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BbScanner
       run: dotnet pack src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output . --configuration Release
+
+    - name: dotnet build Bdnd
+      run: dotnet build src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bdnd
+      run: dotnet pack src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj --output . --configuration Release
 
     - name: dotnet build BlazeDb
       run: dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

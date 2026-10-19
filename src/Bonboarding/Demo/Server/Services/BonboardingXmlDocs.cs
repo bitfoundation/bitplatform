@@ -165,9 +165,10 @@ public static partial class BonboardingXmlDocs
         var arguments = target.IndexOf('(', StringComparison.Ordinal);
         if (arguments > 0) target = target[..arguments];
 
-        // Drop the arity marker of a generic type ("SomeGeneric`1").
-        var arity = target.IndexOf('`', StringComparison.Ordinal);
-        if (arity > 0) target = target[..arity];
+        // Drop the arity markers of generic types and methods ("SomeGeneric`1", "GetItem``1") wherever
+        // they sit: a member of a generic type has one in the middle of its cref, and cutting the text
+        // at the first one would drop the member and keep the namespace.
+        target = ArityRegex().Replace(target, string.Empty);
 
         var parts = target.Split('.');
 
@@ -185,4 +186,7 @@ public static partial class BonboardingXmlDocs
 
     [GeneratedRegex(@"[ \t]{2,}")]
     private static partial Regex RepeatedSpaceRegex();
+
+    [GeneratedRegex(@"`+\d+")]
+    private static partial Regex ArityRegex();
 }

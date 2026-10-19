@@ -297,6 +297,9 @@ _book
 /src/BlazeDb/Bit.BlazeDb.Browser/Scripts/**/*.js
 /src/BlazeDb/Bit.BlazeDb.Browser/wwwroot/**/*.js
 
+/src/Bdnd/Bit.Bdnd/Scripts/**/*.js
+/src/Bdnd/Bit.Bdnd/wwwroot/**/*.js
+
 /src/Blow/Bit.Blow/Scripts/**/*.js
 /src/Blow/Bit.Blow/wwwroot/**/*.js
 /src/Blow/Bit.Blow/wwwroot/**/*.css
