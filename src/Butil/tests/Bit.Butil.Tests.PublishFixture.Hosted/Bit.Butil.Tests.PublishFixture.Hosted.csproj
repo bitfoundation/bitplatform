@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <!--
+    A Blazor Web App's server project, hosting Bit.Butil.Tests.PublishFixture.Hosted.Client - the shape the
+    Boilerplate publishes - and the fixture for what a server's script trimming does to its client's service
+    worker. See ScriptPublishing.cs in Bit.Butil.Tests.Manual, the only thing that builds it.
+
+    The client writes service-worker-assets.js during its own publish; this project trims Bit.Butil's JavaScript
+    afterwards, against its own assemblies and the client's, and serves the result. It uses one Bit.Butil class
+    (Geolocation) the client does not, as the Boilerplate's server does, so what it serves is never what the client
+    listed - and the publish is right only if the manifest it ships says so.
+
+    Not in the solution, and not a test project, for the same reasons as Bit.Butil.Tests.PublishFixture.
+    -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <!-- See the same property in the client. -->
+        <TargetFramework Condition="'$(FixtureFramework)' != ''">$(FixtureFramework)</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <RootNamespace>ButilTests.PublishFixture.Hosted</RootNamespace>
+        <InvariantGlobalization>true</InvariantGlobalization>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Butil.Tests.PublishFixture.Hosted.Client\Bit.Butil.Tests.PublishFixture.Hosted.Client.csproj" />
+        <ProjectReference Include="..\..\Bit.Butil\Bit.Butil.csproj" />
+    </ItemGroup>
+
+    <!-- The same hand-import as Bit.Butil.Tests.PublishFixture, and the switch a Blazor Web App's server sets: it
+         is not a WebAssembly project, so the trimming is off here by default. -->
+    <PropertyGroup>
+        <BitButilChunksDirectory>$(MSBuildThisFileDirectory)..\..\Bit.Butil\obj\butil-js\chunks\</BitButilChunksDirectory>
+        <BitButilBuildTasksAssembly>$(MSBuildThisFileDirectory)..\..\Bit.Butil.Build\bin\$(Configuration)\netstandard2.0\Bit.Butil.Build.dll</BitButilBuildTasksAssembly>
+        <BitButilTrimScripts Condition="'$(BitButilTrimScripts)' == ''">true</BitButilTrimScripts>
+    </PropertyGroup>
+
+    <Import Project="..\..\Bit.Butil\buildTransitive\Bit.Butil.targets" />
+
+</Project>

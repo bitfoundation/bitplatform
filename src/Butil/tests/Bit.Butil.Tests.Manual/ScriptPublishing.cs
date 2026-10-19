@@ -1,4 +1,9 @@
 ﻿using System.Diagnostics;
+using System.Globalization;
+using System.IO.Compression;
+using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using Bit.Butil.Build;
 
 namespace ButilTests.Manual;
@@ -19,15 +24,35 @@ namespace ButilTests.Manual;
 /// bundle and the module files in its publish output. One <c>dotnet publish</c> each, which is why the list
 /// of scenarios is short and every one of them is a distinct claim rather than a variation.
 /// <br/>
+/// A few publish <c>Bit.Butil.Tests.PublishFixture.Hosted</c> instead, a Blazor Web App whose WebAssembly
+/// client has a service worker, or that client on its own. The trimming changes files a service worker
+/// precaches, in a project other than the one that listed them, and those scenarios check that what the
+/// service worker is told to install is what the publish serves.
+/// <br/>
+/// Every publish, of either fixture, also has its endpoints and compressed copies checked against the files
+/// on disk: the trimming swaps and removes static web assets, and an asset swapped without everything derived
+/// from it is a server answering with another file's headers, or another file altogether.
+/// <br/>
 /// Untrimmed runs only. The fixture is published by this process, so the trimmed copy of this harness would
 /// publish the very same app to the very same answers - twice the cost for nothing.
 /// </remarks>
 internal static class ScriptPublishing
 {
-    private const string FixtureProject = "Bit.Butil.Tests.PublishFixture.csproj";
+    private const string Fixture = "Bit.Butil.Tests.PublishFixture";
+
+    private const string FixtureProject = Fixture + ".csproj";
+
+    /// <summary>The Blazor Web App's server project, which publishes its client along with it.</summary>
+    private const string HostedFixture = "Bit.Butil.Tests.PublishFixture.Hosted";
+
+    /// <summary>The same client published on its own, as a standalone PWA.</summary>
+    private const string HostedClientFixture = "Bit.Butil.Tests.PublishFixture.Hosted.Client";
 
     /// <summary>Where the fixture's JavaScript lands, under the publish directory.</summary>
     private const string ContentPath = "wwwroot/_content/Bit.Butil";
+
+    /// <summary>The bundle's URL, as a service worker manifest lists it.</summary>
+    private const string BundleUrl = "_content/Bit.Butil/bit-butil.js";
 
     /// <summary>
     /// A publish is slow enough that a hung one has to be cut off rather than waited on: a build server that
@@ -43,6 +68,8 @@ internal static class ScriptPublishing
     /// <param name="BundleIsMinimum">The bundle must hold at least <paramref name="Bundle"/>; more is allowed.</param>
     /// <param name="Modules">The per-module files that must be published, or null for "none of them".</param>
     /// <param name="Error">A fragment of the build error the publish must fail with, when it must fail.</param>
+    /// <param name="Project">The fixture published: a folder under tests/ holding the csproj of the same name.</param>
+    /// <param name="ServiceWorker">For a fixture with a service worker, what the publish had to do to the manifest its client wrote; null for one without.</param>
     private sealed record Scenario(
         string Name,
         string[] Properties,
@@ -50,7 +77,22 @@ internal static class ScriptPublishing
         bool FullBundle = false,
         bool BundleIsMinimum = false,
         string[]? Modules = null,
-        string? Error = null);
+        string? Error = null,
+        string Project = Fixture,
+        ServiceWorkerRewrite? ServiceWorker = null);
+
+    /// <summary>What a publish has to do to a service worker manifest written before the trimming ran.</summary>
+    private enum ServiceWorkerRewrite
+    {
+        /// <summary>Nothing: everything it lists is served as it lists it.</summary>
+        None,
+
+        /// <summary>Give the bundle's entry the hash of the bundle the trimming served in its place.</summary>
+        Rehash,
+
+        /// <summary>Drop the entries of the module files the trimming stopped publishing.</summary>
+        Drop,
+    }
 
     /// <summary>
     /// The modules the fixture's own two classes need, and the two that every bundle carries: <c>butil</c> is
@@ -58,6 +100,15 @@ internal static class ScriptPublishing
     /// Spelled out rather than computed, so a change in what the fixture calls has to be stated here too.
     /// </summary>
     private static readonly string[] Scanned = ["butil", "utils", "clipboard", "geolocation"];
+
+    /// <summary>
+    /// What the hosted fixture's client reaches (Clipboard), and what its server does: the client's assembly and
+    /// its own Geolocation. One module apart on purpose - the server's bundle is then never the one the client's
+    /// manifest describes, and in lazy mode the server publishes a module the client never listed.
+    /// </summary>
+    private static readonly string[] HostedClientModules = ["butil", "utils", "clipboard"];
+
+    private static readonly string[] HostedServerModules = [.. HostedClientModules, "geolocation"];
 
     private static Scenario[] Scenarios =>
     [
@@ -164,6 +215,52 @@ internal static class ScriptPublishing
         new("a scan mode that is not one of the three fails the publish",
             ["BitButilScriptScan=TypeRefs"],
             Error: "not a value of <BitButilScriptScan>"),
+
+        // A Blazor Web App, the way the Boilerplate ships one. The client writes service-worker-assets.js during
+        // its own publish, from its own trimmed bundle; the server trims again, to one more module, and serves
+        // that. Left alone the manifest lists bit-butil.js under the client's hash (#13926) - and an installed
+        // PWA keeps a cached file for as long as its listed hash stays the same, so it never sees a new bundle.
+        new("a Blazor Web App's service worker lists the bundle its server trimmed, under that bundle's hash",
+            [],
+            Bundle: HostedServerModules,
+            Project: HostedFixture,
+            ServiceWorker: ServiceWorkerRewrite.Rehash),
+
+        // The same on .NET 8, which the SDK fingerprints and compresses differently: no content fingerprint in
+        // an asset's path, and the identity file's hash on a compressed endpoint as a weak ETag instead.
+        new("a .NET 8 Blazor Web App's service worker lists the bundle its server trimmed, under that bundle's hash",
+            ["FixtureFramework=net8.0"],
+            Bundle: HostedServerModules,
+            Project: HostedFixture,
+            ServiceWorker: ServiceWorkerRewrite.Rehash),
+
+        // Lazy scripts, with a client that does not trim: it lists every module file, and the server publishes
+        // four of them. A service worker that is still told about the rest requests each one and gets a 404 -
+        // which fails the install of Blazor's own template service worker outright.
+        new("a lazy-scripts Blazor Web App's service worker stops listing the module files its server dropped",
+            ["BitButilLazyScripts=true", "FixtureClientTrimScripts=false"],
+            Modules: HostedServerModules,
+            Project: HostedFixture,
+            ServiceWorker: ServiceWorkerRewrite.Drop),
+
+        // Lazy scripts trimmed on both sides, which is what the default gives: the server keeps a superset of
+        // the client's modules, so everything listed is served as listed and the manifest is not touched. The
+        // module only the server's code calls is not precached - it is fetched when the server's code calls it,
+        // and that code does not run offline.
+        new("a lazy-scripts Blazor Web App trimmed on both sides publishes its client's manifest as it is",
+            ["BitButilLazyScripts=true"],
+            Modules: HostedServerModules,
+            Project: HostedFixture,
+            ServiceWorker: ServiceWorkerRewrite.None),
+
+        // The client on its own, a standalone PWA. The SDK writes its manifest after the trimming, from the
+        // trimmed files, so there is nothing to rewrite. Here so that an SDK moving the manifest ahead of the
+        // trimming - or a change moving the trimming after it - shows up as a manifest that is wrong again.
+        new("a standalone PWA's service worker lists its own trimmed bundle, with nothing to rewrite",
+            [],
+            Bundle: HostedClientModules,
+            Project: HostedClientFixture,
+            ServiceWorker: ServiceWorkerRewrite.None),
     ];
 
     public static (int Passed, int Failed) Run(bool trimmed, List<string> failures)
@@ -172,7 +269,7 @@ internal static class ScriptPublishing
         if (trimmed) return (0, 0);
 
         var butilRoot = ScriptTrimming.LocateButilProject();
-        var fixtureProject = butilRoot is null ? null : Path.Combine(butilRoot, "..", "tests", "Bit.Butil.Tests.PublishFixture", FixtureProject);
+        var fixtureProject = butilRoot is null ? null : Path.Combine(butilRoot, "..", "tests", Fixture, FixtureProject);
         var manifestPath = butilRoot is null ? null : Path.Combine(butilRoot, "obj", "butil-js", "chunks", "manifest.txt");
 
         if (fixtureProject is null || File.Exists(fixtureProject) is false || manifestPath is null || File.Exists(manifestPath) is false)
@@ -189,7 +286,8 @@ internal static class ScriptPublishing
         foreach (var candidate in Scenarios)
         {
             var output = Path.Combine(workspace, $"publish-{++scenario}");
-            if (Publish(checks, fixtureProject, output, candidate, out var log) is false) continue;
+            var project = Path.Combine(butilRoot!, "..", "tests", candidate.Project, candidate.Project + ".csproj");
+            if (Publish(checks, project, output, candidate, out var log) is false) continue;
 
             if (candidate.Error is not null)
             {
@@ -202,6 +300,14 @@ internal static class ScriptPublishing
 
             CheckBundle(checks, candidate, Path.Combine(output, ContentPath, "bit-butil.js"), expectedBundle, manifest);
             CheckModules(checks, candidate, Path.Combine(output, ContentPath, "modules"), manifest);
+            CheckEndpoints(checks, candidate, output);
+
+            var butilFiles = Directory.Exists(Path.Combine(output, ContentPath))
+                ? Directory.GetFiles(Path.Combine(output, ContentPath), "*.js", SearchOption.AllDirectories)
+                : [];
+            CheckCompressedCopies(checks, $"{candidate.Name} (the compressed copies of Bit.Butil's files are those files)", output, butilFiles);
+
+            if (candidate.ServiceWorker is { } rewrite) CheckServiceWorker(checks, candidate, rewrite, output, log);
         }
 
         CheckReferencedPublishStage(checks, fixtureProject);
@@ -377,11 +483,222 @@ internal static class ScriptPublishing
         return true;
     }
 
+    /// <summary>
+    /// The precache list a service worker installs from, against the files the publish serves: every URL listed
+    /// is published under the hash listed - a service worker caches by that hash, and one that checks integrity
+    /// rejects any other - and the script carries the list's version, the change a browser installs an update over.
+    /// </summary>
+    /// <remarks>
+    /// Whether the publish rewrote the manifest is read off the task's own line in the build log, and asserted
+    /// either way. Positively, so that a scenario which stopped exercising the mismatch it was written for - a
+    /// fixture change leaving the client and the server trimming to the same set - fails rather than passing over
+    /// a manifest nobody had to touch; negatively, so that a manifest with nothing wrong in it is not rewritten
+    /// into a new version that makes every installed app download its precache again.
+    /// </remarks>
+    private static void CheckServiceWorker(ScriptBundling.Checks checks, Scenario scenario, ServiceWorkerRewrite expected, string output, string log)
+    {
+        var webRoot = Path.Combine(output, "wwwroot");
+        var manifestPath = Path.Combine(webRoot, "service-worker-assets.js");
+        var scriptPath = Path.Combine(webRoot, "service-worker.js");
+
+        var rewrite = Regex.Match(log, @"Bit\.Butil: \S+ lists (?<dropped>\d+) fewer assets and (?<rehashed>\d+) trimmed hashes");
+        var dropped = rewrite.Success ? int.Parse(rewrite.Groups["dropped"].Value, CultureInfo.InvariantCulture) : 0;
+        var rehashed = rewrite.Success ? int.Parse(rewrite.Groups["rehashed"].Value, CultureInfo.InvariantCulture) : 0;
+
+        switch (expected)
+        {
+            case ServiceWorkerRewrite.None:
+                checks.That(rewrite.Success is false, $"{scenario.Name} (and publishes the manifest its client wrote, untouched)", $"it was rewritten: {rewrite.Value}");
+                break;
+            case ServiceWorkerRewrite.Rehash:
+                checks.That(rehashed > 0 && dropped == 0, $"{scenario.Name} (by giving the bundle's entry a new hash)",
+                    rewrite.Success ? $"the rewrite was: {rewrite.Value}" : "the manifest was never rewritten - either the rewrite did not run, or the client and the server now trim alike and the fixture no longer tests a mismatch");
+                break;
+            case ServiceWorkerRewrite.Drop:
+                checks.That(dropped > 0 && rehashed == 0, $"{scenario.Name} (by dropping entries)",
+                    rewrite.Success ? $"the rewrite was: {rewrite.Value}" : "the manifest was never rewritten - either the rewrite did not run, or the client now lists only what the server publishes and the fixture no longer tests a mismatch");
+                break;
+        }
+
+        if (File.Exists(manifestPath) is false || File.Exists(scriptPath) is false)
+        {
+            checks.That(false, $"{scenario.Name} (and publishes a service worker)", "service-worker-assets.js or service-worker.js is missing from the publish output");
+            return;
+        }
+
+        var text = File.ReadAllText(manifestPath);
+        string? version;
+        var listed = new List<string>();
+        var wrong = new List<string>();
+
+        try
+        {
+            using var manifest = JsonDocument.Parse(text[text.IndexOf('{')..(text.LastIndexOf('}') + 1)]);
+            version = manifest.RootElement.GetProperty("version").GetString();
+
+            foreach (var asset in manifest.RootElement.GetProperty("assets").EnumerateArray())
+            {
+                var url = asset.GetProperty("url").GetString()!;
+                var path = Path.Combine(webRoot, url.Replace('/', Path.DirectorySeparatorChar));
+                listed.Add(url);
+
+                if (File.Exists(path) is false) wrong.Add($"{url} is listed but not published");
+                else if ($"sha256-{Sha256(path)}" != asset.GetProperty("hash").GetString()) wrong.Add($"{url} is listed under another file's hash");
+            }
+        }
+        catch (Exception exception) when (exception is JsonException or KeyNotFoundException or ArgumentOutOfRangeException)
+        {
+            checks.That(false, $"{scenario.Name} (and publishes a manifest that parses)", exception.Message);
+            return;
+        }
+
+        if (scenario.Bundle is not null && listed.Contains(BundleUrl) is false) wrong.Add("bit-butil.js is not listed at all");
+
+        checks.That(wrong.Count == 0, $"{scenario.Name} (every file listed is published, under its own hash)", Summarize(wrong));
+        checks.That(File.ReadAllText(scriptPath).Contains($"{ButilServiceWorkerManifest.VersionMarker}{version}", StringComparison.Ordinal),
+            $"{scenario.Name} (and service-worker.js carries the manifest's version)", $"it does not name version {version}, so a browser has no new service worker to install");
+
+        // The script's own copies only where the publish rewrote it. The .br/.gz copies the SDK itself publishes of
+        // service-worker.js lack the version line it writes into the file (the 10.0.402 SDK's do, in a clean
+        // standalone publish with no Bit.Butil involved), which is not this feature's to fix; a script Bit.Butil
+        // rewrote is compressed afresh from the rewritten file, and that much is checked.
+        string[] compressed = [manifestPath, .. listed.Select(url => Path.Combine(webRoot, url.Replace('/', Path.DirectorySeparatorChar))), .. rewrite.Success ? [scriptPath] : Array.Empty<string>()];
+        CheckCompressedCopies(checks, $"{scenario.Name} (the compressed copies of the manifest and of what it lists are those files)", output, compressed);
+    }
+
+    /// <summary>
+    /// Every endpoint the published app serves names a file that was published, and describes that file: its
+    /// length, its ETag, its integrity. MapStaticAssets answers straight off this manifest - those headers are
+    /// written into it at publish time, not read off the file - so an asset swapped without its endpoints is a
+    /// response with another file's Content-Length (a truncated or padded download) or integrity (a script the
+    /// browser refuses to run).
+    /// </summary>
+    /// <remarks>
+    /// A compressed response describes two files, and each value is checked against the right one: Content-Length
+    /// and the strong ETag are the compressed file's, while the integrity and the weak ETag the .NET 8 SDK adds are
+    /// those of the file it decompresses to - the identity file the same route serves without compression.
+    /// </remarks>
+    private static void CheckEndpoints(ScriptBundling.Checks checks, Scenario scenario, string output)
+    {
+        var what = $"{scenario.Name} (every endpoint describes the file it serves)";
+        var manifests = Directory.GetFiles(output, "*.staticwebassets.endpoints.json");
+
+        if (manifests.Length != 1)
+        {
+            checks.That(false, what, $"{manifests.Length} endpoint manifests were published, where one was expected");
+            return;
+        }
+
+        var webRoot = Path.Combine(output, "wwwroot");
+        var wrong = new List<string>();
+
+        using var json = JsonDocument.Parse(File.ReadAllBytes(manifests[0]));
+        foreach (var endpoint in json.RootElement.GetProperty("Endpoints").EnumerateArray())
+        {
+            var route = endpoint.GetProperty("Route").GetString();
+            var assetFile = endpoint.GetProperty("AssetFile").GetString()!;
+            var path = Path.Combine(webRoot, assetFile.Replace('/', Path.DirectorySeparatorChar));
+
+            if (File.Exists(path) is false)
+            {
+                wrong.Add($"{route} is served from {assetFile}, which was not published");
+                continue;
+            }
+
+            var encoded = endpoint.TryGetProperty("Selectors", out var selectors)
+                && selectors.EnumerateArray().Any(selector => selector.GetProperty("Name").GetString() == "Content-Encoding");
+            var identity = encoded ? path[..^Path.GetExtension(path).Length] : path;
+
+            if (File.Exists(identity) is false)
+            {
+                wrong.Add($"{route} serves {assetFile} compressed, and the file it decompresses to was not published");
+                continue;
+            }
+
+            foreach (var header in endpoint.GetProperty("ResponseHeaders").EnumerateArray())
+            {
+                var name = header.GetProperty("Name").GetString();
+                var value = header.GetProperty("Value").GetString()!;
+
+                if (name == "Content-Length" && value != new FileInfo(path).Length.ToString(CultureInfo.InvariantCulture))
+                {
+                    wrong.Add($"{route} ({assetFile}) answers with Content-Length {value} for a {new FileInfo(path).Length:N0}-byte file");
+                }
+                else if (name == "ETag")
+                {
+                    var weak = value.StartsWith("W/", StringComparison.Ordinal);
+                    if ((weak ? value[2..] : value) != $"\"{Sha256(weak ? identity : path)}\"") wrong.Add($"{route} ({assetFile}) answers with another file's {(weak ? "weak " : string.Empty)}ETag");
+                }
+            }
+
+            if (endpoint.TryGetProperty("EndpointProperties", out var properties))
+            {
+                foreach (var property in properties.EnumerateArray())
+                {
+                    if (property.GetProperty("Name").GetString() == "integrity" && property.GetProperty("Value").GetString() != $"sha256-{Sha256(identity)}")
+                    {
+                        wrong.Add($"{route} ({assetFile}) carries another file's integrity");
+                    }
+                }
+            }
+        }
+
+        checks.That(wrong.Count == 0, what, Summarize(wrong));
+    }
+
+    /// <summary>
+    /// The .br and .gz copies published next to each of <paramref name="files"/> decompress to that file. The
+    /// server picks a copy by the request's Accept-Encoding, so a copy left over from the file a publish replaced
+    /// is the old file served to every browser that accepts compression - which is every browser.
+    /// </summary>
+    private static void CheckCompressedCopies(ScriptBundling.Checks checks, string what, string output, IEnumerable<string> files)
+    {
+        var wrong = new List<string>();
+
+        foreach (var file in files.Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            foreach (var (extension, decompress) in new (string, Func<Stream, Stream>)[]
+            {
+                (".gz", stream => new GZipStream(stream, CompressionMode.Decompress)),
+                (".br", stream => new BrotliStream(stream, CompressionMode.Decompress)),
+            })
+            {
+                var copy = file + extension;
+                if (File.Exists(copy) is false) continue;
+
+                using var content = new MemoryStream();
+                using (var stream = decompress(File.OpenRead(copy))) stream.CopyTo(content);
+
+                if (content.ToArray().AsSpan().SequenceEqual(File.ReadAllBytes(file)) is false)
+                {
+                    wrong.Add($"{Path.GetRelativePath(output, copy).Replace('\\', '/')} is not {Path.GetFileName(file)} compressed");
+                }
+            }
+        }
+
+        checks.That(wrong.Count == 0, what, Summarize(wrong));
+    }
+
+    private static readonly Dictionary<string, string> Hashes = new(StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>A file's SHA-256 in base64, the form integrity, ETags and service worker manifests all use.</summary>
+    private static string Sha256(string path)
+    {
+        var key = $"{path}|{File.GetLastWriteTimeUtc(path).Ticks}";
+        if (Hashes.TryGetValue(key, out var hash) is false) Hashes[key] = hash = Convert.ToBase64String(SHA256.HashData(File.ReadAllBytes(path)));
+        return hash;
+    }
+
+    /// <summary>The first few of a list of problems, which is enough to act on, and how many there were.</summary>
+    private static string Summarize(List<string> wrong) =>
+        string.Join("; ", wrong.Take(5)) + (wrong.Count > 5 ? $"; and {wrong.Count - 5} more" : string.Empty);
+
     private static bool Publish(ScriptBundling.Checks checks, string project, string output, Scenario scenario, out string log)
     {
+        // Normal verbosity where the service worker checks read the rewrite's own line out of the log.
         string[] arguments =
         [
-            "publish", project, "-c", "Debug", "--nologo", "-v", "quiet", "-tl:off", "-o", output,
+            "publish", project, "-c", "Debug", "--nologo", "-v", scenario.ServiceWorker is null ? "quiet" : "normal", "-tl:off", "-o", output,
             .. scenario.Properties.Select(property => $"-p:{property}"),
         ];
 
@@ -404,10 +721,15 @@ internal static class ScriptPublishing
         return checks.That(failed is false, $"{scenario.Name} was not checked", $"the publish failed: {FirstError(log)}");
     }
 
-    /// <summary>The first error line of a build log, which is the one that says what went wrong.</summary>
+    /// <summary>
+    /// The first error line of a build log, which is the one that says what went wrong. An MSBuild diagnostic
+    /// first, since a log at normal verbosity also carries compiler command lines with "/errorreport" in them.
+    /// </summary>
     private static string FirstError(string log)
     {
-        var line = log.Split('\n').FirstOrDefault(candidate => candidate.Contains("error", StringComparison.OrdinalIgnoreCase))?.Trim();
+        var lines = log.Split('\n');
+        var line = (lines.FirstOrDefault(candidate => candidate.Contains(": error ", StringComparison.Ordinal))
+            ?? lines.FirstOrDefault(candidate => candidate.Contains("error", StringComparison.OrdinalIgnoreCase)))?.Trim();
 
         return string.IsNullOrEmpty(line) ? "no error line in the build log" : (line.Length > 300 ? line[..300] + "..." : line);
     }
