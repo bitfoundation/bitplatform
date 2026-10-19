@@ -1,0 +1,38 @@
+﻿@page "/dustbin/iframe"
+
+<PageTitle>Dustbin · Within an iframe - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Dustbin - Within an iframe</h3>
+    <p class="text-muted">
+        The HTML5 backend works inside an iframe because Bdnd listens to the native drag
+        events of whatever document it runs in. Below, a self-contained dustbin demo is hosted
+        in its own iframe document - dragging works entirely within it.
+    </p>
+</div>
+
+<DemoCode />
+
+@* The iframe is rendered only once this page runs in the browser. A prerendered one is replaced, together with the
+   rest of the prerendered markup, when WebAssembly takes the page over: the page inside it would be loaded twice,
+   its first boot aborted halfway. *@
+@if (RendererInfo.IsInteractive)
+{
+    <iframe src="dustbin/single" title="Dustbin inside an iframe" style="@FrameStyle"></iframe>
+}
+else
+{
+    <div style="@FrameStyle"></div>
+}
+
+<p class="text-muted" style="margin-top:1rem;">
+    Note: a single <code>BdndProvider</code> (and its <code>BdndDragDropManager</code>) lives in one
+    document, so dragging <em>across</em> the iframe boundary into the parent page is not
+    supported by the HTML5 backend - the same limitation React DnD has without a
+    cross-window backend setup.
+</p>
+
+@code {
+    private const string FrameStyle =
+        "display:block;width:100%;height:520px;border:1px solid var(--demo-border);border-radius:var(--demo-radius);background:var(--demo-surface);";
+}

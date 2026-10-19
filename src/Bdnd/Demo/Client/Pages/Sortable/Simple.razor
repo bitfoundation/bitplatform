@@ -1,0 +1,48 @@
+﻿@page "/sortable/simple"
+
+<PageTitle>Sortable · Simple - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Sortable - Simple</h3>
+    <p class="text-muted">
+        Each card is <em>both</em> a <code>BdndDraggable</code> and a <code>BdndDropTarget</code>. While
+        dragging, the <code>OnHover</code> handler compares the pointer against each card's
+        midpoint and reorders the list live. Reordering happens during hover, not on drop.
+    </p>
+</div>
+
+<DemoCode />
+
+<section class="demo-stage">
+    <BdndProvider>
+        @* the list accepts cards too, so the gaps between cards are not "no-drop" zones *@
+        <BdndDropTarget TItem="SortableCard.DragItem" Accept="@ItemTypes.Card" style="max-width:24rem;">
+            @foreach (var (card, index) in _cards.Select((c, i) => (c, i)))
+            {
+                <SortableCard Card="card" Index="index" OnMove="Move" @key="card.Id" />
+            }
+        </BdndDropTarget>
+    </BdndProvider>
+
+    <p class="text-muted sortable-order" style="margin-top:1rem;">Order: @string.Join(", ", _cards.Select(c => c.Text))</p>
+</section>
+
+@code {
+    private readonly List<SortableCard.CardModel> _cards =
+    [
+        new(1, "Write the docs"),
+        new(2, "Review the PR"),
+        new(3, "Ship the release"),
+        new(4, "Celebrate"),
+        new(5, "Sleep"),
+    ];
+
+    private void Move((int From, int To) move)
+    {
+        var (from, to) = move;
+        if (from < 0 || from >= _cards.Count || to < 0 || to >= _cards.Count) return;
+        var card = _cards[from];
+        _cards.RemoveAt(from);
+        _cards.Insert(to, card);
+    }
+}

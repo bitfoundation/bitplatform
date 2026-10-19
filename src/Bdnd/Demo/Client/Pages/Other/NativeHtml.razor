@@ -1,0 +1,65 @@
+﻿@page "/other/native-html"
+
+<PageTitle>Other · Native HTML - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Other - Native HTML, Text &amp; URLs</h3>
+    <p class="text-muted">
+        The target below accepts <code>BdndNativeTypes.Html</code>, <code>BdndNativeTypes.Text</code> and
+        <code>BdndNativeTypes.Url</code>. Select some text on another page (or in the box on the right)
+        and drag it here, or drag a link / image - the dropped HTML, plain text and any URLs
+        are read from the native <code>DataTransfer</code>.
+    </p>
+</div>
+
+<DemoCode />
+
+<section class="demo-stage">
+    <BdndProvider>
+        <div class="row-wrap" style="align-items:flex-start;">
+            <BdndDropTarget TItem="object" Context="t" style="display:contents"
+                            AcceptTypes="_accepted" OnNativeDrop="HandleNativeDrop">
+                <div class="dustbin"
+                     style="@($"width:24rem;height:10rem;background:{(t.IsOver ? "#6a1b9a" : "#333")};")">
+                    @(t.IsOver ? $"Release ({t.ItemType})" : "Drag selected text / a link here")
+                </div>
+            </BdndDropTarget>
+
+            <div style="border:1px dashed #aaa;padding:1rem;max-width:18rem;">
+                <p>Try selecting and dragging <b>this rich text</b> with a
+                    <a href="https://react-dnd.github.io/react-dnd" target="_blank" rel="noopener">link inside</a>.</p>
+            </div>
+        </div>
+    </BdndProvider>
+
+    @if (_last is not null)
+    {
+        <div class="native-drop-result" style="margin-top:1.5rem;max-width:42rem;">
+            <h4>Last native drop - <code>@_last.ItemType</code></h4>
+            @if (string.IsNullOrEmpty(_last.Text) is false)
+            {
+                <p><b>Text:</b> @_last.Text</p>
+            }
+            @if (_last.Urls.Count > 0)
+            {
+                <p><b>URLs:</b> @string.Join(", ", _last.Urls)</p>
+            }
+            @if (string.IsNullOrEmpty(_last.Html) is false)
+            {
+                <div>
+                    <b>HTML (raw):</b>
+                    <pre style="white-space:pre-wrap;background:#f1f2f4;padding:0.5rem;border-radius:6px;">@_last.Html</pre>
+                </div>
+            }
+        </div>
+    }
+</section>
+
+@code {
+    private readonly string[] _accepted =
+        [BdndNativeTypes.Html, BdndNativeTypes.Text, BdndNativeTypes.Url];
+
+    private BdndNativeDropEventArgs? _last;
+
+    private void HandleNativeDrop(BdndNativeDropEventArgs e) => _last = e;
+}

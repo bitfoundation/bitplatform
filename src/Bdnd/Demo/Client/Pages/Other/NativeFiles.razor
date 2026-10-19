@@ -1,0 +1,68 @@
+﻿@page "/other/native-files"
+
+<PageTitle>Other · Native Files - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Other - Native Files</h3>
+    <p class="text-muted">
+        A drop target can accept OS-level drags by listing a <code>BdndNativeTypes</code> value. Here
+        the target accepts <code>BdndNativeTypes.File</code>; drag files from your file explorer onto
+        it and the <code>OnNativeDrop</code> callback receives the file list.
+    </p>
+</div>
+
+<DemoCode />
+
+<section class="demo-stage">
+    <BdndProvider>
+        <BdndDropTarget TItem="object" Accept="@BdndNativeTypes.File" Context="t"
+                        style="display:contents" OnNativeDrop="HandleNativeDrop">
+            <div class="dustbin"
+                 style="@($"width:100%;max-width:34rem;height:8rem;background:{(t.IsOver ? "#1565c0" : "#333")};")">
+                @(t.IsOver ? "Release to drop the files" : "Drag files here from your OS")
+            </div>
+        </BdndDropTarget>
+    </BdndProvider>
+
+    @if (_files.Count > 0)
+    {
+        <h4 style="margin-top:1.5rem;">Dropped files (@_files.Count)</h4>
+        <table class="demo-table" style="max-width:34rem;">
+            <thead><tr><th>Name</th><th>Type</th><th>Size</th></tr></thead>
+            <tbody>
+                @foreach (var f in _files)
+                {
+                    <tr>
+                        <td>@f.Name</td>
+                        <td>@(string.IsNullOrEmpty(f.Type) ? "-" : f.Type)</td>
+                        <td>@FormatSize(f.Size)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    <p class="text-muted" style="margin-top:1rem;">
+        Only file metadata (name, size, MIME type) is exposed by the browser during a drop;
+        reading contents would use an additional file API.
+    </p>
+</section>
+
+@code {
+    private readonly List<BdndNativeFile> _files = [];
+
+    private void HandleNativeDrop(BdndNativeDropEventArgs e)
+    {
+        _files.Clear();
+        _files.AddRange(e.Files);
+    }
+
+    private static string FormatSize(long bytes)
+    {
+        string[] units = ["B", "KB", "MB", "GB"];
+        double size = bytes;
+        int u = 0;
+        while (size >= 1024 && u < units.Length - 1) { size /= 1024; u++; }
+        return $"{size:0.#} {units[u]}";
+    }
+}

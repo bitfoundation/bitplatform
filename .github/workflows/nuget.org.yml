@@ -8,6 +8,7 @@ on:
     paths:
       - 'src/Balette/**'
       - 'src/BbScanner/**'
+      - 'src/Bdnd/**'
       - 'src/BlazorUI/**'
       - 'src/Bink/**'
       - 'src/BlazeDb/**'
@@ -18,6 +19,7 @@ on:
       - 'src/Bsqlite/**'
       - 'src/Bmotion/**'
       - 'src/Bonboarding/**'
+      - 'src/Bortable/**'
       - 'src/Brouter/**'
       - 'src/Bswup/**'
       - 'src/Butil/**'
@@ -216,6 +218,11 @@ jobs:
     - name: dotnet pack BbScanner
       run: dotnet pack src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output . --configuration Release
 
+    - name: dotnet build Bdnd
+      run: dotnet build src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bdnd
+      run: dotnet pack src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj --output . --configuration Release
+
     - name: dotnet build BlazeDb
       run: dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazeDb
@@ -280,6 +287,11 @@ jobs:
       run: dotnet build src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bonboarding
       run: dotnet pack src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj --output . --configuration Release
+
+    - name: dotnet build Bortable
+      run: dotnet build src/Bortable/Bit.Bortable/Bit.Bortable.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bortable
+      run: dotnet pack src/Bortable/Bit.Bortable/Bit.Bortable.csproj --output . --configuration Release
 
     - name: dotnet build CodeAnalyzers
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

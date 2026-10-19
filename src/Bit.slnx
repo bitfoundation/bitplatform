@@ -161,6 +161,19 @@
     <Project Path="BbScanner/Tests/Bit.BbScanner.Tests.E2E/Bit.BbScanner.Tests.E2E.csproj" />
     <Project Path="BbScanner/Tests/Bit.BbScanner.Benchmarks/Bit.BbScanner.Benchmarks.csproj" />
   </Folder>
+  <Folder Name="/Bdnd/">
+    <File Path="Bdnd/README.md" />
+    <Project Path="Bdnd/Bit.Bdnd/Bit.Bdnd.csproj" />
+  </Folder>
+  <Folder Name="/Bdnd/Demo/">
+    <Project Path="Bdnd/Demo/Client/Bit.Bdnd.Demo.Client.csproj" />
+    <Project Path="Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bdnd/Tests/">
+    <Project Path="Bdnd/Tests/Bit.Bdnd.Tests/Bit.Bdnd.Tests.csproj" />
+    <Project Path="Bdnd/Tests/Bit.Bdnd.Tests.Mcp/Bit.Bdnd.Tests.Mcp.csproj" />
+    <Project Path="Bdnd/Tests/Bit.Bdnd.Tests.E2E/Bit.Bdnd.Tests.E2E.csproj" />
+  </Folder>
   <Folder Name="/BlazeDb/">
     <File Path="BlazeDb/README.md" />
     <Project Path="BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj" />
@@ -216,6 +229,19 @@
   <Folder Name="/Bonboarding/Tests/">
     <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
     <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp/Bit.Bonboarding.Tests.Mcp.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/">
+    <File Path="Bortable/README.md" />
+    <Project Path="Bortable/Bit.Bortable/Bit.Bortable.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/Demo/">
+    <Project Path="Bortable/Demo/Client/Bit.Bortable.Demo.Client.csproj" />
+    <Project Path="Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/Tests/">
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests/Bit.Bortable.Tests.csproj" />
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests.Mcp/Bit.Bortable.Tests.Mcp.csproj" />
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj" />
   </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
