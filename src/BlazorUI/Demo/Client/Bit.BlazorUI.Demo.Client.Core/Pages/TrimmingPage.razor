@@ -529,7 +529,7 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                     <li>The trimmed bundle keeps the package asset's base and relative path, so it is served where the full one was and the tags stay as they are.</li>
                     <li>Its fingerprint and integrity are computed from the trimmed content, and its compressed <code>.br</code> / <code>.gz</code> copies are derived from it - the full bundle's leave with it.</li>
                     <li>On .NET 9 and later its endpoints carry the label <code>_content/Bit.BlazorUI/...</code>, so <code>@@Assets["_content/Bit.BlazorUI/scripts/bit.blazorui.js"]</code> and <code>&lt;ImportMap /&gt;</code> resolve to the trimmed file; the publish fails rather than leave a lookup pointing nowhere.</li>
-                    <li>Service-worker asset manifests are computed after the swap, so an offline-capable app caches the trimmed files.</li>
+                    <li>A standalone WebAssembly app computes its service-worker asset manifest after the swap, and the trimming leaves it to the SDK. A Blazor Web App's client writes its own before the server trims - under its own base path, if it has one - so the server rewrites it: the files the publish leaves out drop off the list, the trimmed bundles' hashes replace the full ones', and a new manifest version in the service worker script makes an installed app update to the trimmed files.</li>
                     <li>The cache busting of <BitLink Href="/getting-started#cache-busting">Getting started</BitLink> works unchanged.</li>
                 </ul>
             </DocSection>
@@ -558,7 +558,8 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                         Description="What a publish says about the trimming, and what stops it.">
 
                 <BitText Element="p">
-                    Each trimmed file is one line at normal verbosity: the pieces kept and the bytes saved. At detailed
+                    Each trimmed file is one line at normal verbosity: the pieces kept and the bytes saved - and a service
+                    worker manifest the server rewrote, the entries it dropped and the hashes it replaced. At detailed
                     verbosity (<code>-v:d</code>) the publish also lists the scripts, stylesheets and icons it kept, and
                     the assemblies the scan read.
                 </BitText>
@@ -583,6 +584,14 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                             <tr>
                                 <th scope="row"><code>BITBLAZORUI003</code></th>
                                 <td><code>&lt;BitBlazorUIIcon&gt;</code> items are given, but the app does not reference Bit.BlazorUI.Icons.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><code>BITBLAZORUI004</code></th>
+                                <td>A Blazor Web App's <code>service-worker-assets.js</code> could not be read, or is not in the shape the SDK writes, so it is published as the client wrote it - still listing the full bundles and the files the trimming left out.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><code>BITBLAZORUI005</code></th>
+                                <td>The manifest was rewritten, but the service worker script does not carry the manifest's version (<code>/* Manifest version: ... */</code>, which the SDK writes into a <code>&lt;ServiceWorker&gt;</code> item's published content), so an installed app is not told to update.</td>
                             </tr>
                         </tbody>
                     </table>

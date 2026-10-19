@@ -3,9 +3,10 @@
     <!--
     The publish-time trimming of the packages' scripts and stylesheets, checked the only way it can be: by publishing real
     apps and reading what came out. Each test publishes Bit.BlazorUI.Tests.Trimming.Fixture (a Blazor Web App's server,
-    which the trimming reads through its scan) or Bit.BlazorUI.Tests.Consumer (a Blazor WebAssembly app, trimmed off
-    ILLink's answer) with a set of properties, and compares the bundles of the publish with the pieces the packages'
-    builds wrote (obj/bit-assets).
+    which the trimming reads through its scan), Bit.BlazorUI.Tests.Consumer (a Blazor WebAssembly app, trimmed off
+    ILLink's answer) or Bit.BlazorUI.Tests.Trimming.Hosted (a Blazor Web App whose WebAssembly client has a service worker)
+    with a set of properties, and compares the bundles of the publish with the pieces the packages' builds wrote
+    (obj/bit-assets).
 
     Run it with `dotnet run` (see README.md): a publish takes seconds to minutes, so it is not one of the projects the
     unit test run covers. The browser check of a trimmed WebAssembly app runs with RUN_BROWSER_TESTS=1, the check of the
