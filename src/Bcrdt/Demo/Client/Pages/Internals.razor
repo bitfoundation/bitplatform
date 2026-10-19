@@ -1,0 +1,246 @@
+﻿@page "/internals"
+@inherits ReplicaPageBase
+
+<h1>Inside the engine</h1>
+
+<section class="prose">
+    <p>
+        This page shows the machinery the other pages hide: what a replica knows, how much it is
+        storing, and what actually goes over the wire. It is the page to open when you want to check
+        that the efficiency claims are true rather than take them on faith.
+    </p>
+    <p>
+        The <strong>state vector</strong> is a replica's complete summary of what it has seen - one
+        entry per author, a few bytes each. It is the whole of what a peer needs in order to compute
+        the exact delta this replica is missing, which is why reconnecting after a long absence costs
+        one small message rather than a full document transfer.
+    </p>
+    <p>
+        <strong>Blocks</strong> are the engine's internal unit of storage. Watch the ratio between
+        characters and blocks as you type: a run of consecutive typing collapses into a single block,
+        so a long document typically holds a few dozen blocks rather than one per character. That
+        collapse is the single most important reason collaborative text is affordable at all.
+    </p>
+</section>
+
+@if (!Ready)
+{
+    <p class="loading">Opening two replicas…</p>
+}
+else
+{
+    <div class="panel-grid panel-grid-2">
+        @foreach (DemoReplica replica in Replicas)
+        {
+            <ReplicaPanel Replica="replica" ShowPresence="false">
+                <ChildContent>
+                    <BcrdtTextArea Text="replica.Document.Text(Field)"
+                                   Presence="replica.Document.Presence"
+                                   Field="@Field"
+                                   Rows="6"
+                                   Class="editor"
+                                   Placeholder="Type here and watch the numbers below." />
+
+                    <div class="toolbar">
+                        <button class="button" @onclick="() => TypeBurst(replica, 500)">
+                            Type 500 characters
+                        </button>
+                        <button class="button button-quiet" @onclick="() => Scatter(replica, 200)">
+                            Make 200 scattered edits
+                        </button>
+                    </div>
+
+                    <dl class="stats">
+                        <dt>Characters</dt>
+                        <dd>@replica.Document.Text(Field).Count.ToString("N0")</dd>
+
+                        <dt title="One per contiguous run of content. Far fewer than the character count is the point.">
+                            Blocks
+                        </dt>
+                        <dd>@BlockCount(replica).ToString("N0")</dd>
+
+                        <dt title="Characters per block. Higher means run-length encoding is working harder for you.">
+                            Characters per block
+                        </dt>
+                        <dd>@Ratio(replica)</dd>
+
+                        <dt title="What a peer sends to ask for exactly what it is missing.">
+                            State vector
+                        </dt>
+                        <dd>@replica.Document.Crdt.GetStateVector().Encode().Length bytes</dd>
+
+                        <dt title="The whole document, encoded. What a brand-new peer would receive.">
+                            Full document
+                        </dt>
+                        <dd>@FullSize(replica).ToString("N0") bytes</dd>
+
+                        <dt title="What this replica would send to a peer that is already up to date.">
+                            Delta for an up-to-date peer
+                        </dt>
+                        <dd>@NoOpSize(replica).ToString("N0") bytes</dd>
+                    </dl>
+                </ChildContent>
+
+                <Footer>
+                    <span class="metric">clients known: @replica.Document.Crdt.GetStateVector().Count</span>
+                </Footer>
+            </ReplicaPanel>
+        }
+    </div>
+
+    <section class="prose">
+        <h2>Updates as they happen</h2>
+        <p>
+            Every committed change produces exactly one update, whatever it contained - this is why a
+            paste of five hundred rows is one network message rather than five hundred. The most
+            recent are listed newest first, with the replica that produced them.
+        </p>
+        @if (_updates.Count == 0)
+        {
+            <p class="hint">Nothing yet. Type into a panel above.</p>
+        }
+        else
+        {
+            <table class="log-table">
+                <thead>
+                    <tr><th>Replica</th><th>Size</th><th>Origin</th><th>Content</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (UpdateRecord record in _updates)
+                    {
+                        <tr>
+                            <td><span class="swatch" style="background: @record.Color"></span>@record.Label</td>
+                            <td>@record.Size bytes</td>
+                            <td>@record.Origin</td>
+                            <td class="mono">@record.Preview</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        <p>
+            <button class="button button-quiet" @onclick="() => _updates.Clear()">Clear the log</button>
+        </p>
+    </section>
+
+    <section class="prose">
+        <h2>Full projection</h2>
+        <div class="panel-grid panel-grid-2">
+            @foreach (DemoReplica replica in Replicas)
+            {
+                <div>
+                    <h3 class="json-title" style="border-color: @replica.Color">@replica.Label</h3>
+                    <pre class="json">@DemoJson.Format(replica.Document.ToJson())</pre>
+                </div>
+            }
+        </div>
+    </section>
+}
+
+@code {
+    private const string Field = "body";
+    private const int MaxLoggedUpdates = 25;
+
+    private readonly List<UpdateRecord> _updates = [];
+
+    protected override string DocumentId => "demo-internals";
+
+    protected override string[] ReplicaLabels => ["Replica A", "Replica B"];
+
+    private sealed record UpdateRecord(string Label, string Color, int Size, string Origin, string Preview);
+
+    protected override void OnReplicasOpened()
+    {
+        foreach (DemoReplica replica in Replicas)
+        {
+            DemoReplica captured = replica;
+            void Handler(BcrdtUpdateEventArgs args) => Record(captured, args);
+
+            captured.Document.Changed += Handler;
+            TrackDisposable(new Unsubscribe(() => captured.Document.Changed -= Handler));
+        }
+    }
+
+    /// <summary>
+    /// Notes one update for display, newest first.
+    /// </summary>
+    /// <remarks>
+    /// The origin column is worth watching: updates this replica produced itself are local and
+    /// untagged - the editor's keystrokes and the buttons below alike, which is what lets a default
+    /// undo stack capture them - while updates it received carry the sync provider as their origin. That tag is how the
+    /// provider avoids echoing a peer's own change back to it, and how the undo stack knows to leave
+    /// remote edits alone.
+    /// </remarks>
+    private void Record(DemoReplica replica, BcrdtUpdateEventArgs args)
+    {
+        string origin = args.Origin switch
+        {
+            null => "local edit",
+            BcrdtSyncProvider => "received from a peer",
+            _ => args.Origin.GetType().Name,
+        };
+
+        _updates.Insert(0, new UpdateRecord(
+            replica.Label,
+            replica.Color,
+            args.Update.Length,
+            origin,
+            Preview(args.Update)));
+
+        if (_updates.Count > MaxLoggedUpdates) _updates.RemoveRange(MaxLoggedUpdates, _updates.Count - MaxLoggedUpdates);
+        RequestRender();
+    }
+
+    private static string Preview(byte[] update)
+    {
+        const int shown = 12;
+        string hex = Convert.ToHexString(update.AsSpan(0, Math.Min(shown, update.Length))).ToLowerInvariant();
+        return update.Length > shown ? hex + "…" : hex;
+    }
+
+    private static int BlockCount(DemoReplica replica) =>
+        replica.Document.Crdt.Store.Clients.Sum(entry => entry.Value.Count);
+
+    private static int FullSize(DemoReplica replica) => replica.Document.Crdt.EncodeStateAsUpdate().Length;
+
+    // What a peer that is already up to date would be sent. It is not zero, because the delete set
+    // always travels - a deletion does not advance a state vector, so re-sending the set is the only
+    // way a lost deletion ever gets repaired.
+    private static int NoOpSize(DemoReplica replica) =>
+        replica.Document.Crdt.EncodeStateAsUpdate(replica.Document.Crdt.GetStateVector()).Length;
+
+    private static string Ratio(DemoReplica replica)
+    {
+        int blocks = BlockCount(replica);
+        int characters = replica.Document.Text(Field).Count;
+        return blocks == 0 ? "-" : (characters / (double)blocks).ToString("N1");
+    }
+
+    /// <summary>Types a run of characters, as a person typing steadily would.</summary>
+    /// <remarks>
+    /// Deliberately one insertion at a time rather than one bulk insert, so the block count reflects
+    /// blocks <i>merging back together</i> after the fact rather than never having been split.
+    /// </remarks>
+    private static void TypeBurst(DemoReplica replica, int count)
+    {
+        BcrdtText text = replica.Document.Text(Field);
+        for (int i = 0; i < count; i++) text.Insert(text.Count, "x");
+    }
+
+    /// <summary>Makes edits at random positions, which is the case run-length encoding cannot help.</summary>
+    private static void Scatter(DemoReplica replica, int count)
+    {
+        BcrdtText text = replica.Document.Text(Field);
+        var random = new Random(7);
+
+        for (int i = 0; i < count; i++)
+        {
+            text.Insert(text.Count == 0 ? 0 : random.Next(text.Count), "*");
+        }
+    }
+
+    private sealed class Unsubscribe(Action action) : IDisposable
+    {
+        public void Dispose() => action();
+    }
+}

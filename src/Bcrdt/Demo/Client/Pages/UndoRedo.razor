@@ -1,0 +1,147 @@
+﻿@page "/undo"
+@inherits ReplicaPageBase
+
+<h1>Collaborative undo</h1>
+
+<section class="prose">
+    <p>
+        Undo in a single-user editor means "put the document back how it was". In a collaborative
+        document that would be a disaster: restoring an earlier state would throw away everything
+        your collaborators did in the meantime, and they would watch their work vanish because
+        somebody else pressed a key.
+    </p>
+    <p>
+        What users actually expect is <em>selective</em> undo - reverse my last action, leave
+        everybody else's alone - and that is what these two replicas implement. Each has its own undo
+        stack tracking only its own edits.
+    </p>
+    <p class="callout">
+        <strong>The thing worth trying.</strong> Type a sentence into A and wait for it to appear in
+        B. Then type a different sentence into B. Now press <em>Undo</em> on A. A's sentence
+        disappears from <em>both</em> panels - because undo is an ordinary edit that synchronizes
+        like any other - while B's sentence is untouched, even though it came later. A's undo stack
+        never contained it.
+    </p>
+    <p>
+        Note also that consecutive keystrokes collapse into one undo step, so undo removes a word or
+        a phrase rather than a single character. A remote edit arriving between two of your
+        keystrokes ends the current step, which is what keeps the boundaries sensible when several
+        people are working at once.
+    </p>
+</section>
+
+@if (!Ready)
+{
+    <p class="loading">Opening two replicas…</p>
+}
+else
+{
+    <div class="panel-grid panel-grid-2">
+        @foreach (DemoReplica replica in Replicas)
+        {
+            <ReplicaPanel Replica="replica">
+                <ChildContent>
+                    <BcrdtTextArea Text="replica.Document.Text(Field)"
+                                   Presence="replica.Document.Presence"
+                                   Field="@Field"
+                                   Rows="8"
+                                   Class="editor"
+                                   Placeholder="Type here, then undo it." />
+
+                    <div class="toolbar">
+                        <button class="button"
+                                @onclick="() => Undo(replica)"
+                                disabled="@(!CanUndo(replica))">
+                            Undo
+                        </button>
+                        <button class="button"
+                                @onclick="() => Redo(replica)"
+                                disabled="@(!CanRedo(replica))">
+                            Redo
+                        </button>
+                        <button class="button button-quiet" @onclick="() => Break(replica)">
+                            End the current step
+                        </button>
+                    </div>
+                </ChildContent>
+
+                <Footer>
+                    <span class="metric">@Stack(replica).UndoCount undoable step(s)</span>
+                    <span class="metric">@Stack(replica).RedoCount redoable step(s)</span>
+                </Footer>
+            </ReplicaPanel>
+        }
+    </div>
+
+    <section class="prose">
+        <h2>Why this is not a rewind</h2>
+        <p>
+            An undo here does not restore a previous state. It creates <em>new</em> operations that
+            delete what the action inserted and re-insert what it deleted, and those operations
+            travel to peers exactly like a keystroke. That is why the effect appears on the other
+            replica, why it merges rather than clobbering, and why it can itself be undone.
+        </p>
+        <p>
+            It is also why an undo can survive a disconnection: take a replica offline, undo
+            something, bring it back, and the undo reaches its peer whenever the connection returns.
+        </p>
+    </section>
+}
+
+@code {
+    private const string Field = "body";
+
+    private readonly Dictionary<DemoReplica, BcrdtUndoManager> _stacks = [];
+
+    protected override string DocumentId => "demo-undo";
+
+    protected override string[] ReplicaLabels => ["Replica A", "Replica B"];
+
+    /// <summary>
+    /// Gives each replica an undo stack scoped to the text it edits.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Scoping matters. A stack over the whole document would happily undo an edit the user made in
+    /// an unrelated field several minutes ago, which is not what anyone means by "undo". One stack
+    /// per editing surface is the rule.
+    /// </para>
+    /// <para>
+    /// Origins matter too. A stack captures only transactions whose origin it tracks - untagged
+    /// local edits by default - so the editing component's own type is tracked as well. Whichever
+    /// way the textarea tags its edits, typing lands on this stack; edits arriving from the peer
+    /// carry the sync provider as their origin and stay out of it.
+    /// </para>
+    /// </remarks>
+    protected override void OnReplicasOpened()
+    {
+        foreach (DemoReplica replica in Replicas)
+        {
+            var stack = new BcrdtUndoManager(replica.Document.Text(Field), new BcrdtUndoManagerOptions
+            {
+                // Adds to the default set, which already tracks untagged (null-origin) edits.
+                TrackedOrigins = { typeof(BcrdtTextArea) },
+            });
+            _stacks[replica] = stack;
+
+            // The buttons enable and disable as the stacks change, so the page has to re-render when
+            // they do rather than only when the document does.
+            stack.StackItemAdded += _ => RequestRender();
+            stack.StackItemPopped += _ => RequestRender();
+
+            TrackDisposable(stack);
+        }
+    }
+
+    private BcrdtUndoManager Stack(DemoReplica replica) => _stacks[replica];
+
+    private bool CanUndo(DemoReplica replica) => _stacks.TryGetValue(replica, out BcrdtUndoManager? s) && s.CanUndo;
+
+    private bool CanRedo(DemoReplica replica) => _stacks.TryGetValue(replica, out BcrdtUndoManager? s) && s.CanRedo;
+
+    private void Undo(DemoReplica replica) => Stack(replica).Undo();
+
+    private void Redo(DemoReplica replica) => Stack(replica).Redo();
+
+    private void Break(DemoReplica replica) => Stack(replica).StopCapturing();
+}

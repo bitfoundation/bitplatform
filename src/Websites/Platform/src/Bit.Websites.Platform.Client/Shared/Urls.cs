@@ -30,6 +30,7 @@ public static class Urls
     public const string BbScanner = "https://bbscanner.bitplatform.dev/";
     public const string BlazeDb = "https://blazedb.bitplatform.dev/";
     public const string Blow = "https://blow.bitplatform.dev/";
+    public const string Bcrdt = "https://bcrdt.bitplatform.dev/";
     public const string Bonboarding = "https://bonboarding.bitplatform.dev/";
     public const string Blex = "https://blex.bitplatform.dev/";
 

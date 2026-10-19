@@ -31,6 +31,7 @@ public partial class Header : IDisposable
             new("BbScanner", "Blazor-native barcode scanner", Urls.BbScanner, External: true),
             new("BlazeDb", "Memory-first database for Blazor", Urls.BlazeDb, External: true),
             new("Blow", "Blazor-native node-based editors", Urls.Blow, External: true),
+            new("Bcrdt", "Real-time collaborative editing for Blazor", Urls.Bcrdt, External: true),
             new("Bonboarding", "Blazor-native product tours", Urls.Bonboarding, External: true),
             new("Blex", "Reactive state management for Blazor and MAUI", Urls.Blex, External: true),
             new("BlazorUI", "Native Blazor UI components", Urls.BlazorUI, External: true),

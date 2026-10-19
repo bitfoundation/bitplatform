@@ -294,6 +294,26 @@
         },
         new()
         {
+            Title = "Editing that merges",
+            Subtitle = "bit Bcrdt · real-time collaboration for Blazor",
+            LinkUrl = Urls.Bcrdt,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bcrdt lets several people edit the same text, list or form at once - online or offline - and never
+                    lose anyone's work: a CRDT engine, a sync protocol, presence and cursors, offline-first persistence and
+                    selective undo, all written in C#, over SignalR, WebSockets or any transport.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BcrdtCollaborationScope DocumentId="notes-42" User="me" Context="doc">
+    &lt;BcrdtPresenceView Presence="doc.Presence" />
+    &lt;BcrdtTextArea Text="@@doc.Text("body")" Presence="doc.Presence" />
+&lt;/BcrdtCollaborationScope></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Onboarding that guides",
             Subtitle = "bit Bonboarding · Blazor-native product tours",
             LinkUrl = Urls.Bonboarding,

@@ -1,0 +1,82 @@
+﻿@inherits BcrdtComponentBase
+
+@*
+    One replica, framed. The header bar is painted with the replica's presence colour - the same
+    colour its collaborators see next to its name in their own presence lists - so a panel and a name
+    in a list can be matched up by eye.
+
+    This component subscribes to presence and to the connection itself rather than relying on the
+    page to re-render it, because the two things the header shows are exactly those two things.
+*@
+
+<section class="panel @(Replica.IsOnline ? "" : "panel-offline")">
+    <header class="panel-head" style="background: @Replica.Color">
+        <span class="panel-name">@Replica.Label</span>
+        <span class="panel-client" title="The engine's per-session client identifier. Every replica has its own.">
+            client @Replica.ShortClientId
+        </span>
+        <ConnectionBadge Status="Replica.Status" WantsConnection="Replica.IsOnline" />
+        @if (ShowConnectionToggle)
+        {
+            <button class="panel-toggle" @onclick="ToggleAsync">
+                @(Replica.IsOnline ? "Go offline" : "Go online")
+            </button>
+        }
+    </header>
+
+    @if (ShowPresence)
+    {
+        <div class="panel-presence">
+            <span class="presence-label">Also here:</span>
+            <BcrdtPresenceView Presence="Replica.Document.Presence" IncludeSelf="false" Class="presence-list" />
+            @if (Replica.Document.Presence.Others.Count == 0)
+            {
+                <span class="presence-empty">nobody - this replica cannot see any peers</span>
+            }
+        </div>
+    }
+
+    <div class="panel-body">
+        @ChildContent
+    </div>
+
+    @if (Footer is not null)
+    {
+        <footer class="panel-foot">@Footer</footer>
+    }
+</section>
+
+@code {
+    private DemoReplica? _tracked;
+
+    /// <summary>The replica this panel represents.</summary>
+    [Parameter, EditorRequired]
+    public DemoReplica Replica { get; set; } = default!;
+
+    /// <summary>The editing surface for this replica.</summary>
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+
+    /// <summary>Extra content below the body, such as a state read-out.</summary>
+    [Parameter]
+    public RenderFragment? Footer { get; set; }
+
+    /// <summary>Whether to show the presence list.</summary>
+    [Parameter]
+    public bool ShowPresence { get; set; } = true;
+
+    /// <summary>Whether to show the offline/online button.</summary>
+    [Parameter]
+    public bool ShowConnectionToggle { get; set; } = true;
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_tracked, Replica)) return;
+        _tracked = Replica;
+
+        Track(Replica.Document.Presence);
+        if (Replica.Document.Sync is not null) Track(Replica.Document.Sync);
+    }
+
+    private Task ToggleAsync() => Replica.ToggleConnectionAsync();
+}

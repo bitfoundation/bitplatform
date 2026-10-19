@@ -218,6 +218,31 @@ jobs:
     - name: dotnet pack Blow
       run: dotnet pack src/Blow/Bit.Blow/Bit.Blow.csproj --output . --configuration Release
 
+    - name: dotnet build Bcrdt
+      run: dotnet build src/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt
+      run: dotnet pack src/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj --output . --configuration Release
+
+    - name: dotnet build Bcrdt.Blazor
+      run: dotnet build src/Bcrdt/Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt.Blazor
+      run: dotnet pack src/Bcrdt/Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj --output . --configuration Release
+
+    - name: dotnet build Bcrdt.SignalR
+      run: dotnet build src/Bcrdt/Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt.SignalR
+      run: dotnet pack src/Bcrdt/Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj --output . --configuration Release
+
+    - name: dotnet build Bcrdt.Server
+      run: dotnet build src/Bcrdt/Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt.Server
+      run: dotnet pack src/Bcrdt/Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj --output . --configuration Release
+
+    - name: dotnet build Bcrdt.Testing
+      run: dotnet build src/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Bcrdt.Testing
+      run: dotnet pack src/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj --output . --configuration Release
+
     - name: dotnet build Blex
       run: dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blex
