@@ -1,0 +1,118 @@
+﻿@namespace Bit.Blow
+<svg class="bit-blow-background @Class"
+     style="position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;@Style">
+    @if (BgColor is not null)
+    {
+        <rect width="100%" height="100%" fill="@BgColor" />
+    }
+    <defs>
+        <pattern id="@_patternId" x="@Inv(PatternOffsetX)" y="@Inv(PatternOffsetY)"
+                 width="@Inv(ScaledGapX)" height="@Inv(ScaledGapY)"
+                 patternUnits="userSpaceOnUse">
+            @switch (Variant)
+            {
+                case BlowBackgroundVariant.Dots:
+                    <circle class="@PatternClass" cx="@Inv(ScaledGapX / 2)" cy="@Inv(ScaledGapY / 2)"
+                            r="@Inv(DotRadius)" fill="@PatternColor" />
+                    break;
+                case BlowBackgroundVariant.Cross:
+                    <path class="@PatternClass" d="@CrossPath" stroke="@PatternColor" stroke-width="@Inv(ScaledLineWidth)" />
+                    break;
+                default: // Lines
+                    <path class="@PatternClass" d="@LinePath" stroke="@PatternColor"
+                          stroke-width="@Inv(ScaledLineWidth)" fill="none" />
+                    break;
+            }
+        </pattern>
+    </defs>
+    <rect width="100%" height="100%" fill="url(#@_patternId)" />
+</svg>
+
+@code {
+    [CascadingParameter] private IBlowContext Flow { get; set; } = default!;
+
+    /// <summary>Pattern style: dots, lines or cross.</summary>
+    [Parameter] public BlowBackgroundVariant Variant { get; set; } = BlowBackgroundVariant.Dots;
+
+    /// <summary>Spacing between pattern repetitions in flow units.</summary>
+    [Parameter] public double Gap { get; set; } = 20;
+
+    /// <summary>Horizontal spacing override. Falls back to <see cref="Gap"/> when null.</summary>
+    [Parameter] public double? GapX { get; set; }
+
+    /// <summary>Vertical spacing override. Falls back to <see cref="Gap"/> when null.</summary>
+    [Parameter] public double? GapY { get; set; }
+
+    /// <summary>
+    /// Dot diameter / cross arm length in flow units. Defaults to 1 for dots and 6 for crosses,
+    /// matching React Flow.
+    /// </summary>
+    [Parameter] public double? Size { get; set; }
+
+    /// <summary>Extra pattern offset in flow units, on top of the viewport translation.</summary>
+    [Parameter] public double OffsetX { get; set; }
+
+    /// <summary>Extra pattern offset in flow units, on top of the viewport translation.</summary>
+    [Parameter] public double OffsetY { get; set; }
+
+    /// <summary>Stroke width for the line and cross variants, in flow units.</summary>
+    [Parameter] public double LineWidth { get; set; } = 1;
+
+    /// <summary>Pattern color. Falls back to the theme default (which follows the colour mode) when null.</summary>
+    [Parameter] public string? Color { get; set; }
+
+    /// <summary>Solid color painted behind the pattern. Transparent when null.</summary>
+    [Parameter] public string? BgColor { get; set; }
+
+    /// <summary>CSS class applied to the pattern shape.</summary>
+    [Parameter] public string? PatternClass { get; set; }
+
+    /// <summary>CSS class applied to the background container.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>Inline style appended to the background container.</summary>
+    [Parameter] public string? Style { get; set; }
+
+    private readonly string _patternId = $"bit-blow-bg-{Guid.NewGuid():N}";
+
+    /// <summary>
+    /// The viewport the pattern follows. Outside a canvas there is none, and the identity is drawn
+    /// rather than bringing the page down with a null reference.
+    /// </summary>
+    private BlowViewport View => Flow?.Viewport ?? BlowViewport.Identity;
+
+    private double Zoom => View.Zoom;
+
+    private string PatternColor => Color ?? "var(--bit-blow-background-pattern)";
+
+    private double EffectiveSize => Size ?? (Variant == BlowBackgroundVariant.Cross ? 6 : 1);
+
+    // A gap of zero would collapse the pattern tile and produce NaN offsets, so clamp it.
+    private double ScaledGapX => Math.Max(1, (GapX ?? Gap) * Zoom);
+    private double ScaledGapY => Math.Max(1, (GapY ?? Gap) * Zoom);
+
+    private double PatternOffsetX => (View.X + OffsetX * Zoom) % ScaledGapX;
+    private double PatternOffsetY => (View.Y + OffsetY * Zoom) % ScaledGapY;
+
+    private double DotRadius => Math.Max(0.5, EffectiveSize * Zoom / 2);
+    private double ScaledLineWidth => Math.Max(0.5, LineWidth * Zoom);
+
+    // Through the middle of the tile, as React Flow draws it: a line on the tile's edge has half
+    // its stroke outside the tile, where the pattern clips it, and renders at half its width.
+    private string LinePath => string.Create(CultureInfo.InvariantCulture,
+        $"M{ScaledGapX / 2} 0 V{ScaledGapY} M0 {ScaledGapY / 2} H{ScaledGapX}");
+
+    private string CrossPath
+    {
+        get
+        {
+            var cx = ScaledGapX / 2;
+            var cy = ScaledGapY / 2;
+            var a = EffectiveSize * Zoom / 2;
+            return string.Create(CultureInfo.InvariantCulture,
+                $"M{cx - a} {cy} h{a * 2} M{cx} {cy - a} v{a * 2}");
+        }
+    }
+
+    private static string Inv(double v) => v.ToString(CultureInfo.InvariantCulture);
+}

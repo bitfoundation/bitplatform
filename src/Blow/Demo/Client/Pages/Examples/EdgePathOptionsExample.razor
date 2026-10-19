@@ -1,0 +1,97 @@
+﻿@page "/examples/edge-path-options"
+
+<PageTitle>Edge Path Options - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Edge Path Options"
+                 Summary="Every built-in path algorithm can be tuned per edge. Drag the sliders to reshape the bezier curvature, the smooth-step corner radius, how far the route leaves a handle, and where along the route the bend sits.">
+    <Toolbar>
+        @* The values are written invariantly: a range input reads "0,25" as no value at all. *@
+        <label>Curvature @_curvature.ToString("0.00")
+            <input type="range" min="0" max="1.5" step="0.05" value="@Inv(_curvature)"
+                   @oninput="@(e => Set(ref _curvature, e.Value, 0.25))" />
+        </label>
+        <label>Corner radius @_borderRadius.ToString("0")
+            <input type="range" min="0" max="30" step="1" value="@Inv(_borderRadius)"
+                   @oninput="@(e => Set(ref _borderRadius, e.Value, 5))" />
+        </label>
+        <label>Offset @_offset.ToString("0")
+            <input type="range" min="0" max="80" step="2" value="@Inv(_offset)"
+                   @oninput="@(e => Set(ref _offset, e.Value, 20))" />
+        </label>
+        <label>Bend @_stepPosition.ToString("0.00")
+            <input type="range" min="0" max="1" step="0.05" value="@Inv(_stepPosition)"
+                   @oninput="@(e => Set(ref _stepPosition, e.Value, 0.5))" />
+        </label>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private double _curvature = 0.25;
+    private double _borderRadius = 5;
+    private double _offset = 20;
+    private double _stepPosition = 0.5;
+
+    private readonly List<BlowNode> _nodes =
+    [
+        new() { Id = "a1", Type = "input",  Label = "Bezier",        Position = new(0, 0) },
+        new() { Id = "a2", Type = "output", Label = "…",             Position = new(300, 60) },
+        new() { Id = "b1", Type = "input",  Label = "Simple bezier", Position = new(0, 140) },
+        new() { Id = "b2", Type = "output", Label = "…",             Position = new(300, 200) },
+        new() { Id = "c1", Type = "input",  Label = "Smooth step",   Position = new(0, 280) },
+        new() { Id = "c2", Type = "output", Label = "…",             Position = new(300, 340) },
+        new() { Id = "d1", Type = "input",  Label = "Step",          Position = new(0, 420) },
+        new() { Id = "d2", Type = "output", Label = "…",             Position = new(300, 480) },
+    ];
+
+    // Each edge keeps its own options object, retuned in place by ApplyOptions.
+    private readonly BlowEdgePathOptions _bezier = new();
+    private readonly BlowEdgePathOptions _smooth = new();
+    private readonly BlowEdgePathOptions _step = new();
+
+    // Built once: the canvas edits this list in place as the user connects, selects and deletes,
+    // so a list rebuilt on every render would throw those edits away at the next slider move.
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _edges =
+        [
+            new() { Id = "bezier", Source = "a1", Target = "a2", Label = "curvature", Type = BlowEdgeType.Bezier, PathOptions = _bezier },
+            new() { Id = "simple", Source = "b1", Target = "b2", Label = "flat", Type = BlowEdgeType.SimpleBezier },
+            new() { Id = "smooth", Source = "c1", Target = "c2", Label = "radius + offset + bend", Type = BlowEdgeType.SmoothStep, PathOptions = _smooth },
+            new() { Id = "step", Source = "d1", Target = "d2", Label = "offset + bend", Type = BlowEdgeType.Step, PathOptions = _step },
+        ];
+
+        ApplyOptions();
+    }
+
+    private void Set(ref double field, object? raw, double fallback)
+    {
+        field = double.TryParse(raw?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out var parsed)
+            ? parsed
+            : fallback;
+        ApplyOptions();
+    }
+
+    // The geometry cache compares the option values, not the object, so changing them in place
+    // is enough to reroute the edges.
+    private void ApplyOptions()
+    {
+        _bezier.Curvature = _curvature;
+
+        _smooth.BorderRadius = _borderRadius;
+        _smooth.Offset = _offset;
+        _smooth.StepPosition = _stepPosition;
+
+        _step.Offset = _offset;
+        _step.StepPosition = _stepPosition;
+    }
+
+    private static string Inv(double value) => value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}

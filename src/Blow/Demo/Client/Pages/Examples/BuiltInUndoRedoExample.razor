@@ -1,0 +1,113 @@
+﻿@page "/examples/built-in-undo-redo"
+<PageTitle>Built-in Undo &amp; Redo - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Built-in Undo &amp; Redo"
+                 Summary="Set HistoryEnabled and the canvas keeps its own undo stack, recording a step at each point a user would recognise as one - a drag finished, an edge connected, something deleted, pasted, resized, aligned or nudged - and binding Ctrl/Cmd+Z and Ctrl/Cmd+Shift+Z. Selecting and panning are not edits, so they are not steps.">
+    <Toolbar>
+        <button class="btn" disabled="@(!_state.CanUndo)" @onclick="Undo">↶ Undo</button>
+        <button class="btn" disabled="@(!_state.CanRedo)" @onclick="Redo">↷ Redo</button>
+
+        <span class="group-label">Make an edit</span>
+        <button class="btn" @onclick="AddNode">Add node</button>
+        <button class="btn" @onclick="DeleteSelection">Delete selection</button>
+        <button class="btn" @onclick="AlignLeft">Align left</button>
+
+        <span class="depth">@_state.UndoDepth back · @_state.RedoDepth forward</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas @ref="_flow"
+                    Nodes="_nodes"
+                    Edges="_edges"
+                    HistoryEnabled="true"
+                    HistoryCapacity="50"
+                    OnHistoryChanged="OnHistoryChanged"
+                    ClipboardShortcutsEnabled="true"
+                    FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="20" />
+            <BlowControls />
+            <BlowPanel Anchor="BlowPanelPosition.TopRight">
+                <div class="hint">
+                    <div><kbd>Ctrl</kbd>+<kbd>Z</kbd> back, <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Z</kbd> forward.</div>
+                    <div>Undo keeps the viewport where you left it - coming back from an edit
+                         should not also throw away where you had scrolled to.</div>
+                    <div>Editing after undoing ends the redo branch, as in every editor.</div>
+                </div>
+            </BlowPanel>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .group-label { font-size: 11px; text-transform: uppercase; letter-spacing: .04em; color: #6b7280; margin-left: .75rem; }
+    .depth { margin-left: auto; font-size: 12px; color: #6b7280; }
+    .hint {
+        max-width: 250px;
+        padding: 8px 10px;
+        font-size: 11px;
+        line-height: 1.5;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+    }
+    .hint div + div { margin-top: 6px; }
+    .hint kbd {
+        padding: 0 3px;
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 3px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+</style>
+
+@code {
+    private BlowCanvas _flow = default!;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowHistoryState _state;
+    private int _added;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "read", Type = "input", Label = "Read", Position = new(60, 40) },
+            new BlowNode { Id = "clean", Label = "Clean", Position = new(60, 170) },
+            new BlowNode { Id = "score", Label = "Score", Position = new(300, 170) },
+            new BlowNode { Id = "write", Type = "output", Label = "Write", Position = new(180, 300) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "read-clean", Source = "read", Target = "clean" },
+            new BlowEdge { Id = "clean-score", Source = "clean", Target = "score" },
+            new BlowEdge { Id = "score-write", Source = "score", Target = "write" },
+        ];
+    }
+
+    private void OnHistoryChanged(BlowHistoryState state) => _state = state;
+
+    private Task Undo() => _flow.UndoAsync();
+
+    private Task Redo() => _flow.RedoAsync();
+
+    private void AddNode()
+    {
+        // Adding through the API is an undo step of its own, as deleting through it is: AddNodes
+        // records it, so there is nothing to capture here. CaptureHistory is for edits the canvas
+        // cannot see - a node changed by hand in your own code, say.
+        _flow.AddNodes(new BlowNode
+        {
+            Id = $"added-{++_added}",
+            Label = $"Added {_added}",
+            Position = new(340 + _added * 20, 40 + _added * 20),
+        });
+    }
+
+    private Task DeleteSelection()
+    {
+        var selected = _nodes.Where(n => n.Selected).ToList();
+        return selected.Count == 0 ? Task.CompletedTask : _flow.DeleteElementsAsync(selected);
+    }
+
+    private Task AlignLeft() => _flow.AlignSelectionAsync(BlowAlignEdge.Left);
+}

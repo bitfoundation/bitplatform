@@ -1,0 +1,97 @@
+﻿@page "/examples/interaction-guards"
+
+<PageTitle>Interaction Guards - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Interaction Guards"
+                 Summary="Three CSS classes carve interactivity back out of the canvas. Drag the slider or select the text in the top node: neither moves it, because they sit in a 'nodrag' area. Scroll the list in the second node and the list scrolls instead of the canvas zooming, because it is marked 'nowheel'. The panel top-right is marked 'nopan', so dragging it does not pan.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <NodeTemplate Context="node">
+            @if (node.Id == "controls")
+            {
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="guard-title">Drag me by my title</div>
+
+                @* Everything below opts out of dragging, so the widgets behave normally. *@
+                <div class="nodrag guard-body">
+                    <input type="range" min="0" max="100" @bind="_volume" @bind:event="oninput" />
+                    <div class="guard-value">@_volume</div>
+                    <p class="guard-hint">Select this text - the node stays put.</p>
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            }
+            else
+            {
+                <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Top" />
+                <div class="guard-title">Scrollable log</div>
+
+                @* nowheel keeps the wheel event for this element instead of zooming the flow. *@
+                <div class="nowheel guard-log">
+                    @foreach (var line in _log)
+                    {
+                        <div>@line</div>
+                    }
+                </div>
+                <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Bottom" />
+            }
+        </NodeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+
+            @* Panel already stops pointer events itself; the class is what a plain
+               overlay of your own would use to opt out of panning. *@
+            <BlowPanel Anchor="BlowPanelPosition.TopRight" Class="nopan">
+                <div class="guard-panel">
+                    <strong>nopan</strong>
+                    <div>Dragging here does not pan the canvas.</div>
+                </div>
+            </BlowPanel>
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .guard-title { padding: 4px 2px; font-weight: 600; cursor: grab; }
+    .guard-body { padding: 4px 2px; cursor: default; }
+    .guard-body input { width: 100%; }
+    .guard-value { font-variant-numeric: tabular-nums; }
+    .guard-hint { margin: 6px 0 0; font-size: 11px; color: #6b7280; user-select: text; }
+    .guard-log {
+        max-height: 70px;
+        overflow-y: auto;
+        text-align: left;
+        font-size: 11px;
+        line-height: 1.6;
+        border: 1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 4px 6px;
+    }
+    .guard-panel {
+        padding: 6px 10px;
+        font-size: 12px;
+        background: var(--bit-blow-surface);
+        color: var(--bit-blow-text);
+        border: 1px solid var(--bit-blow-border);
+        border-radius: 6px;
+        cursor: default;
+    }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private int _volume = 40;
+
+    private readonly string[] _log = Enumerable.Range(1, 20).Select(i => $"line {i:00}").ToArray();
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "controls", Position = new(120, 40), Width = 220 },
+            new BlowNode { Id = "log", Position = new(120, 260), Width = 220 },
+        ];
+
+        _edges = [new BlowEdge { Id = "e", Source = "controls", Target = "log" }];
+    }
+}

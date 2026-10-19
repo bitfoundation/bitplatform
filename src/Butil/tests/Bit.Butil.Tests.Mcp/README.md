@@ -1,6 +1,6 @@
 ﻿# Bit.Butil MCP server tests
 
-MSTest suite for the Butil MCP server (`Bit.Butil.Demo/Server/Controllers/McpController.cs` and the
+MSTest suite for the Butil MCP server (`Demo/Server/Controllers/McpController.cs` and the
 catalogs behind it). It boots the demo server as a child process and drives `/mcp` with a **real
 MCP client**  the same `ModelContextProtocol` SDK an editor or an agent host uses  plus plain
 HTTP for the endpoints an MCP client never sees. Uses the **Microsoft.Testing.Platform** runner

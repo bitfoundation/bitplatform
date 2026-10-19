@@ -59,7 +59,7 @@ for the oldest supported SDK:
 | `Microsoft.CodeAnalysis.Analyzers` | 3.3.3 | `Bit.BlazorUI.SourceGenerators`, `Bit.SourceGenerators` |
 | `Microsoft.CodeAnalysis.CSharp.Workspaces` | 4.3.1 | `Bit.BlazorUI.SourceGenerators`, `Bit.SourceGenerators` |
 | `Microsoft.CodeAnalysis.Workspaces.Common` | 4.3.1 | `Bit.CodeAnalyzers` |
-| `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.Brouter.Generators`, `Bit.Blex.Generators` + their test projects, and `Bit.Blex.Demo.Server` (runs the Blex generator for its MCP server) (must match) |
+| `Microsoft.CodeAnalysis.CSharp` | 4.8.0 | `Bit.Brouter.Generators`, `Bit.Blex.Generators`, `Bit.BlazeDb.Generators` + their test projects, and `Bit.Blex.Demo.Server` and `Bit.BlazeDb.Demo.Server` (run their generators for their MCP servers) (must match) |
 | `Microsoft.CodeAnalysis.CSharp` | 4.14.0 | `Bit.CodeAnalyzers` |
 | `Microsoft.Build.Utilities.Core` | 17.7.2 | `Bit.Butil.Build`, `Bit.BlazorUI.Build` |
 | `System.Reflection.Metadata` | 1.6.0 | `Bit.BlazorUI.Build` |
@@ -90,9 +90,9 @@ higher-numbered lines exist there.
 **TypeScript is held at 5.9.3 in the libraries.** 7.x is the Go rewrite
 (`microsoft/typescript-go`), not an incremental release. `Boilerplate.Client.Core` is the canary and
 is already on 7.0.2 — if a bump is wanted, move one library project, build it, and only then the
-rest. Do not move all sixteen at once.
+rest. Do not move all twenty-two at once.
 
-**Vitest is held at `^3`** in `src/Bmotion/Tests/bit-bmotion-js` and `src/Bswup/Tests/bit-bswup-js`.
+**Vitest is held at `^3`** in `src/Bmotion/Tests/bit-bmotion-js`, `src/Bswup/Tests/bit-bswup-js` and `src/Bsqlite/Tests/bit-bsqlite-js`.
 
 **`devops-actions/variable-substitution` is held at v1.2** (`ae7b1f36…`). v2.0.0 committed 31
 symlinks into its vendored `node_modules`; the runner cannot stage them and every job dies before

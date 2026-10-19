@@ -1,0 +1,49 @@
+﻿@page "/examples/edge-renderer"
+
+<PageTitle>Edge Renderer - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Edge Renderer"
+                 Summary="A custom edge that renders an interactive HTML button at its midpoint using the edge label layer (React Flow's EdgeLabelRenderer). Click the × to delete the edge.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" DefaultEdgeType="BlowEdgeType.Bezier">
+        <EdgeLabelTemplate Context="ctx">
+            <button class="edge-button" title="Remove edge" @onclick="() => Remove(ctx.Edge)">×</button>
+        </EdgeLabelTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .edge-button {
+        width: 20px; height: 20px; border-radius: 50%;
+        border: 1px solid #ddd; background: #fff; cursor: pointer;
+        line-height: 1; font-size: 14px; color: #555;
+        display: inline-flex; align-items: center; justify-content: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+    }
+    .edge-button:hover { background: #fee2e2; color: #b91c1c; border-color: #fca5a5; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Node A", Position = new(250, 20) },
+            new BlowNode { Id = "2", Label = "Node B", Position = new(120, 170) },
+            new BlowNode { Id = "3", Label = "Node C", Position = new(380, 170) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+        ];
+    }
+
+    private void Remove(BlowEdge edge) => _edges.RemoveAll(e => e.Id == edge.Id);
+}

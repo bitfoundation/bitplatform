@@ -1,0 +1,41 @@
+﻿@page "/examples/reconnect-edge"
+
+<PageTitle>Reconnect Edge - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Reconnect Edge"
+                 Summary="Select an edge, then drag either endpoint (the small circles) onto a different handle to rewire it. The log shows reconnect events.">
+    <Toolbar>
+        <span class="text-muted">@_log</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                    EdgesReconnectable="true" OnReconnect="OnReconnect">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string _log = "Select an edge to reveal its draggable endpoints.";
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "A", Position = new(120, 20) },
+            new BlowNode { Id = "2", Label = "B", Position = new(120, 140) },
+            new BlowNode { Id = "3", Label = "C", Position = new(360, 80) },
+            new BlowNode { Id = "4", Type = "output", Label = "D", Position = new(360, 220) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2", Reconnectable = true },
+        ];
+    }
+
+    private void OnReconnect(BlowEdgeReconnect r) =>
+        _log = $"Reconnected {r.Edge.Id}: {r.Connection.Source} → {r.Connection.Target}";
+}

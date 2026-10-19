@@ -71,12 +71,19 @@ public abstract partial class RealtimeProfileTestsBase : AppTestBase
         var fileChooser = await page.RunAndWaitForFileChooserAsync(async () =>
             await page.GetByText(AppStrings.UploadNewImage, new() { Exact = true }).ClickAsync());
 
-        var upload = await page.RunAndWaitForResponseAsync(async () => await fileChooser.SetFilesAsync(new FilePayload
+        await fileChooser.SetFilesAsync(new FilePayload
         {
             Name = "e2e-profile.png",
             MimeType = "image/png",
             Buffer = TestImages.ProfilePicturePng()
-        }), response => response.Url.Contains("/api/v1/Attachment/UploadUserProfilePicture", StringComparison.OrdinalIgnoreCase));
+        });
+
+        var imageEditor = page.Locator(".image-editor");
+        var save = imageEditor.GetByRole(AriaRole.Button, new() { Name = AppStrings.Save, Exact = true });
+        await Expect(save).ToBeEnabledAsync(new() { Timeout = 60_000 });
+
+        var upload = await page.RunAndWaitForResponseAsync(async () => await save.ClickAsync(),
+            response => response.Url.Contains("/api/v1/Attachment/UploadUserProfilePicture", StringComparison.OrdinalIgnoreCase));
 
         // 204: UploadUserProfilePicture answers with no content.
         Assert.IsTrue(upload.Ok, $"The profile picture upload answered {upload.Status}: {await upload.TextAsync()}");

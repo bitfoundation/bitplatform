@@ -2213,4 +2213,34 @@ Après avoir atteint {0}, les connexions supplémentaires auront des fonctions r
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>Nous avons envoyé un code à {0} et {1}.</value>
   </data>
+    <data name="EditImage" xml:space="preserve">
+    <value>Modifier l'image</value>
+  </data>
+    <data name="Crop" xml:space="preserve">
+    <value>Rogner</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>Appliquer le rognage</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>Faire pivoter à gauche</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>Faire pivoter à droite</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>Défaire</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>Rétablir</value>
+  </data>
+    <data name="ImageEditorCropHint" xml:space="preserve">
+    <value>Faites glisser sur l'image pour délimiter la partie à conserver.</value>
+  </data>
+    <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
+    <value>Cette image ne peut pas être ouverte ici pour être modifiée. Vous pouvez quand même l'envoyer telle quelle.</value>
+  </data>
+    <data name="UploadImageAsIs" xml:space="preserve">
+    <value>Envoyer telle quelle</value>
+  </data>
 </root>

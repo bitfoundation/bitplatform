@@ -1,0 +1,64 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+    <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bit.BbScanner\Bit.BbScanner.csproj" />
+    <!-- The decode lab (Services/BbScannerDecodeLab.cs) renders the symbol it decodes with the same
+         encoders the tests and the demo's sample page use. -->
+    <ProjectReference Include="..\..\Tests\Bit.BbScanner.TestKit\Bit.BbScanner.TestKit.csproj" />
+    <ProjectReference Include="..\Client\Bit.BbScanner.Demo.Client.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Bit.BbScanner" />
+    <Using Include="Microsoft.AspNetCore.Mvc" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The MCP tests boot this very app: WebApplicationFactory needs its entry point type, which
+         top-level statements declare as internal. -->
+    <InternalsVisibleTo Include="Bit.BbScanner.Tests.Mcp" />
+  </ItemGroup>
+
+  <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+       working from a published deployment, where none of these files exist next to the app.
+       LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+  <ItemGroup>
+    <EmbeddedResource Include="..\..\README.md" LogicalName="BbScannerDocs/README.md" />
+
+    <!-- The stylesheet as written, comments included: the search index reads its classes and custom
+         properties, and the comments that say why each rule exists, out of it. -->
+    <EmbeddedResource Include="..\..\Bit.BbScanner\Styles\bit-bbscanner.css" LogicalName="BbScannerSource/Library/Styles/bit-bbscanner.css" />
+
+    <!-- Every demo page - each one is a working scanner - plus the components they share and the
+         client half of the hosting. The MCP page describes this server rather than the library, and
+         the not-found page teaches nothing about scanning. -->
+    <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
+                      Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+      <LogicalName>BbScannerSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+
+    <EmbeddedResource Include="Program.cs" LogicalName="BbScannerSource/Demo/Server/Program.cs" />
+
+    <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**' matched.
+         Error.razor is the template's own error page and says nothing about scanning. -->
+    <EmbeddedResource Include="Components\**\*.razor" Exclude="Components\Pages\Error.razor">
+      <LogicalName>BbScannerSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+</Project>

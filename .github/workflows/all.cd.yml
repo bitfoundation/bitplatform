@@ -71,6 +71,12 @@ jobs:
     uses: ./.github/workflows/bmage.demo.cd.yml
     secrets: inherit
 
+  bsqlite_demo:
+    name: bsqlite demo
+    if: inputs.server
+    uses: ./.github/workflows/bsqlite.demo.cd.yml
+    secrets: inherit
+
   bink_demo:
     name: bink demo
     if: inputs.server
@@ -81,6 +87,24 @@ jobs:
     name: balette demo
     if: inputs.server
     uses: ./.github/workflows/balette.demo.cd.yml
+    secrets: inherit
+
+  bbscanner_demo:
+    name: bbscanner demo
+    if: inputs.server
+    uses: ./.github/workflows/bbscanner.demo.cd.yml
+    secrets: inherit
+
+  blazedb_demo:
+    name: blazedb demo
+    if: inputs.server
+    uses: ./.github/workflows/blazedb.demo.cd.yml
+    secrets: inherit
+
+  blow_demo:
+    name: blow demo
+    if: inputs.server
+    uses: ./.github/workflows/blow.demo.cd.yml
     secrets: inherit
 
   bonboarding_demo:
