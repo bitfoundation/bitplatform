@@ -106,25 +106,48 @@ internal sealed class RingBuffer<T>
         }
     }
 
-    /// <summary>Atomically replaces an item identified by key.</summary>
-    public bool TryReplaceByKey(Func<T, long> key, long value, Func<T, T> replace)
+    /// <summary>
+    /// Finds an item by key in O(1) when the buffer holds a contiguous run of ascending keys ending at
+    /// <paramref name="newestKey"/>. Only valid for callers that assign keys and insert under one lock of their own.
+    /// </summary>
+    public T? FindByContiguousKey(Func<T, long> key, long newestKey, long value)
     {
         lock (_lock)
         {
-            for (var i = _count - 1; i >= 0; i--)
+            var index = IndexOfContiguousKey(key, newestKey, value);
+            return index < 0 ? default : _items[index];
+        }
+    }
+
+    /// <summary>Atomically replaces an item identified by key; see <see cref="FindByContiguousKey"/>.</summary>
+    public bool TryReplaceByContiguousKey(Func<T, long> key, long newestKey, long value, Func<T, T> replace)
+    {
+        lock (_lock)
+        {
+            var index = IndexOfContiguousKey(key, newestKey, value);
+            if (index < 0)
             {
-                var index = (_head + i) % _items.Length;
-                var item = _items[index];
-                if (key(item) == value)
-                {
-                    _items[index] = replace(item);
-                    _version++;
-                    return true;
-                }
+                return false;
             }
 
-            return false;
+            _items[index] = replace(_items[index]);
+            _version++;
+            return true;
         }
+    }
+
+    private int IndexOfContiguousKey(Func<T, long> key, long newestKey, long value)
+    {
+        var offset = newestKey - value;
+        if (offset < 0 || offset >= _count)
+        {
+            return -1;
+        }
+
+        var index = (int)((_head + _count - 1 - offset) % _items.Length);
+
+        // The key check guards against an item whose key was changed after insertion.
+        return key(_items[index]) == value ? index : -1;
     }
 
     /// <summary>Finds the newest item matching a predicate without allocating.</summary>

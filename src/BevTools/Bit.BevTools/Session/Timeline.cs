@@ -43,7 +43,8 @@ internal sealed class Timeline : IBevToolsTimeline
         long id;
         lock (_idLock)
         {
-            // id assignment and insertion happen together so the buffer stays ordered by id under concurrent writers.
+            // id assignment and insertion happen together so the buffer always holds a contiguous run of ids ending at
+            // _nextId, even under concurrent writers. Find and Update rely on that to locate an event by index.
             id = ++_nextId;
             bevToolsEvent.Id = id;
             _events.Add(bevToolsEvent);
@@ -72,12 +73,23 @@ internal sealed class Timeline : IBevToolsTimeline
 
     internal bool Update(long eventId, Action<BevToolsEvent> update, bool cloneData = false)
     {
-        if (eventId <= 0 || !_events.TryReplaceByKey(static e => e.Id, eventId, current =>
+        if (eventId <= 0)
+        {
+            return false;
+        }
+
+        bool replaced;
+        lock (_idLock)
+        {
+            replaced = _events.TryReplaceByContiguousKey(static e => e.Id, _nextId, eventId, current =>
             {
                 var copy = Clone(current, cloneData);
                 update(copy);
                 return copy;
-            }))
+            });
+        }
+
+        if (!replaced)
         {
             return false;
         }
@@ -117,7 +129,11 @@ internal sealed class Timeline : IBevToolsTimeline
             return null;
         }
 
-        return _events.FindByKey(static e => e.Id, id);
+        // Holding the id lock keeps _nextId in step with the newest buffered event.
+        lock (_idLock)
+        {
+            return _events.FindByContiguousKey(static e => e.Id, _nextId, id);
+        }
     }
 
     public BevToolsEvent[] Snapshot() => _events.ToArray();
