@@ -59,5 +59,5 @@ and a merge inspector that runs the real engine.
 
 The full guide - choosing a data type, documents and transactions, input bindings, presence, offline and
 reconnection, persistence, undo, hosting models, transports and relays, extending the library and the architecture -
-is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Bcrdt). See it running at
+is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bcrdt). See it running at
 [bcrdt.bitplatform.dev](https://bcrdt.bitplatform.dev).

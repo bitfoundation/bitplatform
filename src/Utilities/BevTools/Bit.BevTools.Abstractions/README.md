@@ -1,6 +1,6 @@
 ﻿# Bit.BevTools.Abstractions
 
-The public integration contract of [bit BevTools](https://github.com/bitfoundation/bitplatform/tree/develop/src/BevTools),
+The public integration contract of [bit BevTools](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BevTools),
 the in-app developer tools for Blazor. It has no Blazor dependency, so a library can describe itself to BevTools without
 referencing the tool:
 

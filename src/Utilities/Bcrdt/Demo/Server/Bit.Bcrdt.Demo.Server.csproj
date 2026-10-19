@@ -68,7 +68,7 @@
     </ItemGroup>
 
     <Target Name="VerifyBcrdtReleaseVersionLiteral" BeforeTargets="BeforeBuild">
-        <XmlPeek XmlInputPath="$(MSBuildThisFileDirectory)..\..\..\Bit.Build.props" Query="/Project/PropertyGroup/ReleaseVersion/text()">
+        <XmlPeek XmlInputPath="$(MSBuildThisFileDirectory)..\..\..\..\Bit.Build.props" Query="/Project/PropertyGroup/ReleaseVersion/text()">
             <Output TaskParameter="Result" PropertyName="_BcrdtReleaseVersion" />
         </XmlPeek>
         <PropertyGroup>

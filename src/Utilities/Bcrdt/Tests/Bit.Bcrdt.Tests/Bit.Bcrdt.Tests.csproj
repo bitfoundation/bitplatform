@@ -13,7 +13,7 @@
         <!-- Signed with the repository key: Bit.Bcrdt exposes its internals (the search marker cache, the WebSocket
              transport's live socket) to this assembly by its public key. -->
         <SignAssembly>true</SignAssembly>
-        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+        <AssemblyOriginatorKeyFile>..\..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup>

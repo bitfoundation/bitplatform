@@ -45,7 +45,7 @@ every later edit unapplied, and the test would otherwise time out pointing at th
 
 ## Running locally
 
-From `src/Bcrdt` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
+From `src/Utilities/Bcrdt` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
 # The suite runs the demo server's build output: build it first, in the configuration the tests run in.
@@ -68,10 +68,10 @@ than the build-and-unit pipeline in `bit.ci.Bcrdt.yml`, which runs the build, th
 and the pack:
 
 ```bash
-dotnet build src/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
-dotnet build src/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
-pwsh src/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
-cd src/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bcrdt-e2e.trx
+dotnet build src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
+dotnet build src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
+pwsh src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bcrdt-e2e.trx
 ```
 
 Without PowerShell 7, the browser can be installed with Windows PowerShell

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="../../Bit.Build.props" />
+    <Import Project="../../../Bit.Build.props" />
 
     <!-- Entity Framework Core spans for Bit.Belemetry: a DbCommandInterceptor that starts an Activity around every
          command, on the Bit.Belemetry.EntityFrameworkCore source the core collects by default. A separate package

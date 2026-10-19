@@ -59,4 +59,4 @@ foreach (byte[] corrupted in BcrdtUpdateCorrupter.Truncations(update))
 }
 ```
 
-The full guide is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Bcrdt).
+The full guide is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bcrdt).

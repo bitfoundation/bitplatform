@@ -10,7 +10,7 @@
         <EnableMSTestRunner>true</EnableMSTestRunner>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SignAssembly>true</SignAssembly>
-        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+        <AssemblyOriginatorKeyFile>..\..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
         <!-- The options-binding tests bind BelemetryOptions the way a trimmed or AOT app does: through the
              configuration binder's source generator, which runs in the app that calls Bind, never in the library. -->
         <EnableConfigurationBindingGenerator>true</EnableConfigurationBindingGenerator>

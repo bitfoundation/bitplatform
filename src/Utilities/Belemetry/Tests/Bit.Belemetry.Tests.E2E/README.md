@@ -71,7 +71,7 @@ finds its own records in a receiver shared with other tests.
 ## Running locally
 
 ```bash
-cd src/Belemetry
+cd src/Utilities/Belemetry
 
 # HTTP-level suite, all target frameworks
 dotnet test Tests/Bit.Belemetry.Tests.Hosting/Bit.Belemetry.Tests.Hosting.csproj

@@ -44,5 +44,5 @@ Works in Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid
 
 ## Documentation
 
-The full guide is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Bcrdt). See it
+The full guide is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bcrdt). See it
 running at [bcrdt.bitplatform.dev](https://bcrdt.bitplatform.dev).

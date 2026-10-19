@@ -19,7 +19,7 @@
              key, so a benchmark can time an internal code path directly when the public entry point would add
              noise to the measurement. -->
         <SignAssembly>true</SignAssembly>
-        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+        <AssemblyOriginatorKeyFile>..\..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup>

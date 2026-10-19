@@ -1,7 +1,7 @@
 ﻿# Bit.BevTools.Server
 
 Blazor Server (interactive server / circuits) instrumentation for
-[bit BevTools](https://github.com/bitfoundation/bitplatform/tree/develop/src/BevTools): circuit lifecycle, connection
+[bit BevTools](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BevTools): circuit lifecycle, connection
 state, inbound message processing, reconnect attempts, an active circuit overview, and the diagnostic rules that read
 them (an unstable or blocked circuit).
 

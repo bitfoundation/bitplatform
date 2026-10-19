@@ -40,7 +40,7 @@ builder.Services.AddMcpServer(options =>
         Title = "Bit.Bcrdt",
         Version = BcrdtServerInstructions.BcrdtVersion,
         Description = "Documentation, public API, setup guides, a merge lab running the real CRDT engine and an update decoder for the Bit.Bcrdt real-time collaboration library for .NET and Blazor.",
-        WebsiteUrl = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Bcrdt"
+        WebsiteUrl = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bcrdt"
     };
 
     // Returned from `initialize` and put in front of the model before it has called anything.

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="../../Bit.Build.props" />
+    <Import Project="../../../Bit.Build.props" />
 
     <!-- Hangfire spans for Bit.Belemetry: a job filter that carries the trace context of the enqueue into the job's
          parameters and starts an Activity around each execution, on the Bit.Belemetry.Hangfire source the core

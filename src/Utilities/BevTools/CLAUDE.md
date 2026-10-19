@@ -72,9 +72,9 @@ instead of relying on whichever test ran before it.
 
 | Suite | Run |
 | --- | --- |
-| .NET (all target frameworks) | `cd src/BevTools/Tests/Bit.BevTools.Tests && dotnet test` - from inside `src`, so `global.json`'s Microsoft.Testing.Platform runner applies |
-| Browser bridge | `cd src/BevTools/Tests/bit-bevtools-js && npm ci && npm test`, after building `Bit.BevTools` |
-| Demo | `dotnet run --project src/BevTools/Demo/Server`, then open `/problems` |
+| .NET (all target frameworks) | `cd src/Utilities/BevTools/Tests/Bit.BevTools.Tests && dotnet test` - from inside `src`, so `global.json`'s Microsoft.Testing.Platform runner applies |
+| Browser bridge | `cd src/Utilities/BevTools/Tests/bit-bevtools-js && npm ci && npm test`, after building `Bit.BevTools` |
+| Demo | `dotnet run --project src/Utilities/BevTools/Demo/Server`, then open `/problems` |
 
 ## Reporting a problem
 

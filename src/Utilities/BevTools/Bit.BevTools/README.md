@@ -30,4 +30,4 @@ server project instead, which adds circuit diagnostics. In Blazor WebAssembly ad
 to the project to get render-diff and lifecycle timings.
 
 Targets .NET 8, 9 and 10; the UI-event render causes and the framework timings need .NET 10, and the About panel says
-which capabilities this app has and why. Full guide: https://github.com/bitfoundation/bitplatform/tree/develop/src/BevTools
+which capabilities this app has and why. Full guide: https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BevTools

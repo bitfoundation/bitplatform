@@ -28,4 +28,4 @@ The optional `configure` argument is applied to each connection's builder, for a
 protocol. Leave SignalR's own automatic reconnect off: bit Bcrdt's sync provider owns reconnection, and needs to see
 the drop to re-run the handshake.
 
-The full guide is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Bcrdt).
+The full guide is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bcrdt).

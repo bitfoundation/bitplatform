@@ -27,4 +27,4 @@ app.MapBitBcrdtWebSocket("/ws/bcrdt/{documentId}");
   a broker behind a load balancer. Every WebSocket client gets its own bounded outbound queue, so one slow client
   cannot hold up the others.
 
-The full guide is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Bcrdt).
+The full guide is in the [Bcrdt README](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bcrdt).

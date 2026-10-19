@@ -1,9 +1,9 @@
 ﻿<Solution>
   <Folder Name="/.Solution Items/">
-    <File Path="../../.gitignore" />
-    <File Path="../.editorconfig" />
-    <File Path="../Bit.Build.props" />
-    <File Path="../global.json" />
+    <File Path="../../../.gitignore" />
+    <File Path="../../.editorconfig" />
+    <File Path="../../Bit.Build.props" />
+    <File Path="../../global.json" />
     <File Path="CLAUDE.md" />
     <File Path="README.md" />
   </Folder>

@@ -1101,12 +1101,12 @@ called without input. Every tool is read-only, and every one is also a plain HTT
 ## Build and test
 
 ```bash
-dotnet build src/Bcrdt/Bit.Bcrdt.slnx
-cd src/Bcrdt/Tests/Bit.Bcrdt.Tests && dotnet test
-cd src/Bcrdt/Tests/Bit.Bcrdt.Tests.Mcp && dotnet test
-cd src/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E && dotnet test       # needs Playwright Chromium, see its README
-dotnet run --project src/Bcrdt/Demo/Server                    # the demo, at http://localhost:5560
-dotnet run -c Release --project src/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*Text*"
+dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.slnx
+cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests && dotnet test
+cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.Mcp && dotnet test
+cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E && dotnet test       # needs Playwright Chromium, see its README
+dotnet run --project src/Utilities/Bcrdt/Demo/Server                    # the demo, at http://localhost:5560
+dotnet run -c Release --project src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*Text*"
 ```
 
 Run `dotnet test` from inside `src` so `src/global.json`'s Microsoft.Testing.Platform runner setting applies.

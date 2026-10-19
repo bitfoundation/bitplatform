@@ -20,20 +20,20 @@ unoptimized assembly, and it is right to.
 
 ```bash
 # One class.
-dotnet run -c Release --project src/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*Text*"
+dotnet run -c Release --project src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*Text*"
 
 # Several classes.
-dotnet run -c Release --project src/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*Merge*" "*Serialization*"
+dotnet run -c Release --project src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*Merge*" "*Serialization*"
 
 # Everything. Takes a while: the 100 000-character and 50-replica cases are not cheap, and
 # `ConcurrencyBenchmarks.ConvergeAllToAll` at 50 replicas is by some margin the longest single case.
-dotnet run -c Release --project src/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*"
+dotnet run -c Release --project src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*"
 
 # Prove the harness works without paying for statistics: one warmup, one measurement, no analysis.
-dotnet run -c Release --project src/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*DataType*" --job Dry
+dotnet run -c Release --project src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --filter "*DataType*" --job Dry
 
 # What is available.
-dotnet run -c Release --project src/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --list flat
+dotnet run -c Release --project src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Benchmarks -- --list flat
 ```
 
 Results land in `BenchmarkDotNet.Artifacts/results/` as Markdown, CSV and HTML alongside the console

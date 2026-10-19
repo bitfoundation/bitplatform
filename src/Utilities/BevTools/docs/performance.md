@@ -7,7 +7,7 @@ measured fact rather than a claim.
 ## Reproducing
 
 ```
-dotnet run -c Release --project src/BevTools/Tests/Bit.BevTools.Benchmarks
+dotnet run -c Release --project src/Utilities/BevTools/Tests/Bit.BevTools.Benchmarks
 ```
 
 The harness drives a real `Renderer` with a component that re-renders 21 components per batch, 20 000 times. Every

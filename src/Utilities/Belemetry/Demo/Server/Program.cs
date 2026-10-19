@@ -64,7 +64,7 @@ builder.Services.AddMcpServer(options =>
         Title = "Bit.Belemetry",
         Version = McpController.BelemetryVersion.Split('+')[0],
         Description = "Setup guides, public API, configuration generation and review, and the semantic conventions of the Bit.Belemetry telemetry SDK for Blazor.",
-        WebsiteUrl = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Belemetry"
+        WebsiteUrl = "https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Belemetry"
     };
 })
     .WithHttpTransport()

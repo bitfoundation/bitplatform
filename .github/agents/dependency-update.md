@@ -93,7 +93,7 @@ is already on 7.0.2 — if a bump is wanted, move one library project, build it,
 rest. Do not move all twenty-four at once.
 
 **Vitest is held at `^3`** in `src/Utilities/Bmotion/Tests/bit-bmotion-js`, `src/Bswup/Tests/bit-bswup-js`,
-`src/Utilities/Bsqlite/Tests/bit-bsqlite-js` and `src/BevTools/Tests/bit-bevtools-js`.
+`src/Utilities/Bsqlite/Tests/bit-bsqlite-js` and `src/Utilities/BevTools/Tests/bit-bevtools-js`.
 
 **`devops-actions/variable-substitution` is held at v1.2** (`ae7b1f36…`). v2.0.0 committed 31
 symlinks into its vendored `node_modules`; the runner cannot stage them and every job dies before

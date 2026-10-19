@@ -186,11 +186,11 @@ Tests/Bit.BevTools.Benchmarks reproducible overhead measurement (dotnet run -c R
 docs/                         capability matrix, architecture, performance
 ```
 
-Run the demo with `dotnet run --project src/BevTools/Demo/Server`, then open `/problems`. The tests:
+Run the demo with `dotnet run --project src/Utilities/BevTools/Demo/Server`, then open `/problems`. The tests:
 
 ```bash
-cd src/BevTools/Tests/Bit.BevTools.Tests && dotnet test     # run from inside src, so global.json's test runner applies
-cd src/BevTools/Tests/bit-bevtools-js && npm ci && npm test # after a build of Bit.BevTools, which produces bit-bevtools.js
+cd src/Utilities/BevTools/Tests/Bit.BevTools.Tests && dotnet test     # run from inside src, so global.json's test runner applies
+cd src/Utilities/BevTools/Tests/bit-bevtools-js && npm ci && npm test # after a build of Bit.BevTools, which produces bit-bevtools.js
 ```
 
 See [CLAUDE.md](CLAUDE.md) for the principles every change has to respect.

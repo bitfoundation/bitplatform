@@ -12,7 +12,7 @@
         <EnableMSTestRunner>true</EnableMSTestRunner>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <SignAssembly>true</SignAssembly>
-        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+        <AssemblyOriginatorKeyFile>..\..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
 
     <ItemGroup>

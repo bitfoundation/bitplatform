@@ -61,7 +61,7 @@ public partial class McpSurfaceTests
         Assert.AreEqual("bit-bcrdt", info.Name);
         Assert.AreEqual("Bit.Bcrdt", info.Title);
         Assert.AreEqual(BcrdtServerInstructions.BcrdtVersion, info.Version);
-        Assert.AreEqual("https://github.com/bitfoundation/bitplatform/tree/develop/src/Bcrdt", info.WebsiteUrl);
+        Assert.AreEqual("https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bcrdt", info.WebsiteUrl);
     }
 
     [TestMethod]
