@@ -18,6 +18,9 @@
 
             <!-- You can override the configuration from appsettings.json for tests here. -->
             <DOTNET_SYSTEM_GLOBALIZATION_INVARIANT>false</DOTNET_SYSTEM_GLOBALIZATION_INVARIANT>
+
+            <!-- Test servers stop in 1 second instead of waiting 30 for open Blazor circuits. -->
+            <ASPNETCORE_SHUTDOWNTIMEOUTSECONDS>1</ASPNETCORE_SHUTDOWNTIMEOUTSECONDS>
         </EnvironmentVariables>
     </RunConfiguration>
 

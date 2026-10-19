@@ -1,0 +1,50 @@
+﻿/* Bit.Bmage Demo - the bridge from the site's theme to the editor's.
+
+   Bit.Bmage.Editor is themed entirely through custom properties on .bmg-editor (see
+   _content/Bit.Bmage.Editor/bit-bmage-editor.css), and out of the box it follows the operating
+   system's prefers-color-scheme. This site has a theme switch of its own in the header, so an
+   editor left on the defaults would be dark on a light page whenever the two disagree. This file
+   is the fix a real host would write too: it points the editor's tokens at the site's semantic
+   tokens, which already follow data-theme on <html>.
+
+   It is also the demonstration of the editor's theming contract - nothing below reaches for a
+   class inside the component, only for the variables the component publishes.
+
+   Two scopes:
+
+     * :root, so the drop zone and the selects the scenario pages use outside an editor
+       (BmageDropZone, .bmg-select, .bmg-color) pick the tokens up by inheritance.
+     * .bmg-editor without a forced theme. The editor declares its defaults on itself, so
+       inheritance from :root cannot reach inside it; this selector outranks both its defaults and
+       its prefers-color-scheme block (two classes against three), while an editor given
+       bmg-theme-light or bmg-theme-dark - as the editor page's theme chips do - keeps the
+       component's own palette, which is the point of those classes. */
+
+:root,
+.bmg-editor:not(.bmg-theme-light):not(.bmg-theme-dark) {
+    --bmg-bg: var(--bmd-clr-bg-1);
+    --bmg-bg-subtle: var(--bmd-clr-bg-2);
+    --bmg-bg-sunken: var(--bmd-clr-bg-4);
+    --bmg-canvas-bg: var(--bmd-clr-stage);
+    --bmg-border: var(--bmd-clr-stroke-1);
+
+    --bmg-text: var(--bmd-clr-fg-1);
+    --bmg-text-muted: var(--bmd-clr-fg-3);
+
+    --bmg-accent: var(--bmd-clr-brand-accent);
+    --bmg-accent-text: var(--bmd-clr-brand-accent-contrast);
+    --bmg-accent-subtle: var(--bmd-clr-brand-wash);
+    --bmg-danger: var(--bmd-clr-danger);
+
+    --bmg-radius: var(--bmd-crn-large);
+    --bmg-radius-sm: var(--bmd-crn-medium);
+    --bmg-focus-ring: var(--bmd-strk-thick) solid var(--bmd-clr-stroke-focus);
+    --bmg-shadow: var(--bmd-shdw-4);
+    --bmg-transition: var(--bmd-dur-faster) var(--bmd-crv-easy-ease);
+}
+
+/* The editor sets its own system font stack; the site's is the same family of faces, named so the
+   component and the page around it render their labels identically on every platform. */
+.bmg-editor {
+    font-family: var(--bmd-fnt-family-base);
+}

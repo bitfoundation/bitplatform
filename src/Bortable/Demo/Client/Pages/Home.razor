@@ -1,0 +1,27 @@
+﻿@page "/"
+
+<PageTitle>Simple list - bit Bortable</PageTitle>
+
+<div class="demo-header">
+    <h3>Simple list</h3>
+    <p class="text-muted">
+        Drag the items to reorder them. Reordering happens live as you drag, and the bound list updates with
+        <code>@@bind-Items</code>.
+    </p>
+</div>
+
+<DemoCode />
+
+<Bortable @bind-Items="_items" TItem="string" Id="simple-list"
+          Class="demo-list" ItemClass="demo-item" GhostClass="demo-ghost">
+    <ItemTemplate Context="item">@item</ItemTemplate>
+</Bortable>
+
+<p class="demo-order"><strong>Order:</strong> <span id="simple-order">@string.Join(", ", _items)</span></p>
+
+@code {
+    private IList<string> _items = new List<string>
+    {
+        "Item 1", "Item 2", "Item 3", "Item 4", "Item 5", "Item 6"
+    };
+}

@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- The host owns the launch profile: this project is never started on its own. -->
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <!-- Publishes this project's static web assets at the app root (not under _content/), the
+         way a Blazor Web App's client project is expected to contribute them. -->
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+    <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Bit.BbScanner\Bit.BbScanner.csproj" />
+    <!-- The sample barcodes are drawn with the test kit's encoders: the library only reads symbols,
+         and the demo generates its own rather than shipping images, so a sample can never drift
+         from what the decoder expects. -->
+    <ProjectReference Include="..\..\Tests\Bit.BbScanner.TestKit\Bit.BbScanner.TestKit.csproj" />
+  </ItemGroup>
+
+</Project>

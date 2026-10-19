@@ -1,0 +1,290 @@
+﻿@page "/formats"
+@implements IDisposable
+@inject ImageExporter Exporter
+@inject IImageCapabilityProvider Capabilities
+
+@* What decodes and encodes where, and how to choose. The live part encodes one image in every format
+   this browser offers and reports the sizes side by side - and, for a format the probe says it
+   cannot write, shows the exception the exporter throws instead of a silently substituted PNG. *@
+
+<PageTitle>Formats - Bit.Bmage</PageTitle>
+
+<h1>Formats</h1>
+
+<p class="page-intro">
+    PNG, JPEG, BMP and GIF are decoded by C# that runs anywhere; WebP and AVIF come from the browser's
+    own codecs. Support varies by browser, version and platform, so Bmage <strong>probes instead of
+    assuming</strong> - and refuses to pass off a substitute as the format you asked for.
+</p>
+
+<div class="demo-section">
+    <h2>Encode one image every way</h2>
+    <p>
+        The same 1200 &times; 800 scene, encoded at quality 0.82 in each format. A format this browser
+        cannot write is attempted anyway, to show what the exporter does about it.
+    </p>
+    <div class="sample-row">
+        <button type="button" class="btn btn-accent" disabled="@(_busy || IsHydrating)" @onclick="RunAsync">
+            <Icon Path="@Icons.Play" />
+            Encode the sample
+        </button>
+        @if (_busy)
+        {
+            <span class="working" role="status">Encoding&hellip;</span>
+        }
+    </div>
+
+    @if (_rows.Count > 0)
+    {
+        <div class="table-scroll formats-results" tabindex="0" role="region" aria-label="Encoding results">
+            <table class="data">
+                <thead>
+                    <tr>
+                        <th scope="col">Format</th>
+                        <th scope="col">Outcome</th>
+                        <th scope="col" class="num">Size</th>
+                        <th scope="col" class="num">Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in _rows)
+                    {
+                        <tr>
+                            <th scope="row">@row.Format.ToString().ToUpperInvariant()</th>
+                            <td>
+                                @if (row.Error is null)
+                                {
+                                    <span class="badge badge-yes">@row.MimeType</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-no">refused</span>
+                                    <span class="small muted formats-error">@row.Error</span>
+                                }
+                            </td>
+                            <td class="num">@(row.Bytes is { } b ? Display.Bytes(b) : "—")</td>
+                            <td class="num">@row.Elapsed.TotalMilliseconds.ToString("0") ms</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>What decodes and encodes where</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Format support">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Format</th><th scope="col">Managed decode</th><th scope="col">Managed encode</th><th scope="col">Browser decode</th><th scope="col">Browser encode</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">PNG</th><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+                <tr><th scope="row">JPEG</th><td>yes</td><td>yes</td><td>yes</td><td>yes</td></tr>
+                <tr><th scope="row">BMP</th><td>yes</td><td>yes</td><td>yes</td><td>via managed</td></tr>
+                <tr><th scope="row">GIF</th><td>first frame</td><td>no</td><td>first frame</td><td>no</td></tr>
+                <tr><th scope="row">WebP</th><td>no</td><td>no</td><td>yes</td><td>usually</td></tr>
+                <tr><th scope="row">AVIF</th><td>no</td><td>no</td><td>usually</td><td>rarely</td></tr>
+                <tr><th scope="row">SVG</th><td>refused</td><td>no</td><td>refused</td><td>no</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        "Managed" means pure C#, working anywhere including a server. "Browser" means the platform's
+        own codecs, the only way to reach WebP and AVIF in a browser. When both are available the
+        browser codec wins, because it is hardware accelerated and covers more formats; the managed
+        codecs remain the fallback, which is what makes prerendering and server-side use work. The
+        <a href="/capabilities">Capabilities</a> page shows the probe's answer for this browser.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Never assume, always probe</h2>
+    <p>
+        Asked to encode a format they cannot write, browsers silently produce a PNG instead. Bmage
+        probes by actually encoding a pixel and checking what came back, and detects the substitution
+        at export time too.
+    </p>
+    <CodeSnippet Code="@ProbeSnippet" Language="C#" Expanded="true" />
+    <p>If you would rather degrade than handle an exception, ask for a preference order:</p>
+    <CodeSnippet Code="@FallbackSnippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Choosing a format</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Choosing a format">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Situation</th><th scope="col">Choose</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">Photographs, broad compatibility</th><td>JPEG at 0.8 to 0.85</td></tr>
+                <tr><th scope="row">Photographs, modern browsers</th><td>WebP at 0.8, roughly 25 to 35% smaller than JPEG at similar quality</td></tr>
+                <tr><th scope="row">Anything needing transparency</th><td>WebP, or PNG for lossless</td></tr>
+                <tr><th scope="row">Screenshots, diagrams, flat colour</th><td>PNG</td></tr>
+                <tr><th scope="row">Smallest possible, where supported</th><td>AVIF, but always with a fallback</td></tr>
+                <tr><th scope="row">Clipboard</th><td>PNG; most browsers accept nothing else</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Circular avatars need transparency, so prefer WebP or PNG there - a lossy opaque format shows
+        the corners. The <a href="/avatar">Avatar</a> page switches its fallback for exactly that reason.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Quality and size budgets</h2>
+    <CodeSnippet Code="@BudgetSnippet" Language="C#" Expanded="true" />
+    <p>
+        <code>MaxFileSize</code> bisects on quality first, down to <code>MinQuality</code>, then shrinks
+        the dimensions if the strategy allows it. The quality actually used is reported on the result,
+        so you can show it. When the target is impossible you get an <code>ImageEncodeException</code>
+        explaining what the smallest attempt produced, rather than a silently oversized file.
+    </p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Size budget strategies">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Strategy</th><th scope="col">Behaviour</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>QualityThenDimensions</code></th><td>Lower quality first, then shrink. The default.</td></tr>
+                <tr><th scope="row"><code>QualityOnly</code></th><td>Never change dimensions; throw if the budget cannot be met.</td></tr>
+                <tr><th scope="row"><code>DimensionsOnly</code></th><td>Keep quality fixed and shrink.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Transparency without an alpha channel</h2>
+    <p>
+        JPEG has no alpha channel. Exporting a transparent image as JPEG composites it over
+        <code>ImageExportOptions.Background</code>, which defaults to white - without it, browsers
+        composite over black, which is rarely what anyone wants. Set it explicitly when white is wrong
+        for your page.
+    </p>
+    <CodeSnippet Code="new ImageExportOptions { Format = ImageFormat.Jpeg, Background = new Rgba32(18, 18, 20) }" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Format detection</h2>
+    <p>
+        Content is trusted over file names and content types, because both can be wrong or hostile.
+        <code>ImageProcessor.Identify</code> reads dimensions from the header without decoding any
+        pixels, which is how an oversized upload is rejected before anything is allocated.
+        <code>DisplaySize</code> accounts for EXIF orientation, so a portrait photo from a phone
+        reports portrait dimensions even though its stored pixels are landscape.
+    </p>
+    <CodeSnippet Code="@DetectSnippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>GIF and SVG</h2>
+    <p>
+        GIF decodes its first frame, with palettes, interlacing and transparency; animation is out of
+        scope, and GIF encoding is supported by no browser canvas and is not implemented - use WebP or
+        PNG.
+    </p>
+    <p>
+        SVG is refused with an explanatory error rather than rasterised. Rendering untrusted SVG can
+        execute embedded scripts and fetch remote resources, and a library cannot make that safe on the
+        caller's behalf. If you control the SVG, rasterise it yourself and pass the pixels.
+    </p>
+</div>
+
+@code {
+    private sealed record Row(ImageFormat Format, string? MimeType, long? Bytes, TimeSpan Elapsed, string? Error);
+
+    private static readonly ImageFormat[] Candidates = [ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif, ImageFormat.Bmp];
+
+    private readonly List<Row> _rows = [];
+    private ImageBuffer? _sample;
+    private bool _busy;
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    private const string ProbeSnippet = """
+        var capabilities = await capabilityProvider.GetAsync();
+
+        if (capabilities.CanEncode(ImageFormat.Avif)) { /* ... */ }
+        if (capabilities.SupportsWebP) { /* ... */ }
+
+        try
+        {
+            var avif = await exporter.EncodeAsync(image, ImageExportOptions.Avif);
+        }
+        catch (ImageCapabilityException ex)
+        {
+            // "This browser cannot encode Avif; it produced image/png instead. Check
+            //  ImageCapabilities.CanEncode before exporting and fall back to a supported format."
+        }
+        """;
+
+    private const string FallbackSnippet = """
+        var encoded = await exporter.EncodeWithFallbackAsync(
+            image,
+            [ImageFormat.Avif, ImageFormat.WebP, ImageFormat.Jpeg],
+            new ImageExportOptions { Quality = 0.82 });
+
+        Console.WriteLine(encoded.Format);   // whichever one this browser can actually write
+        """;
+
+    private const string BudgetSnippet = """
+        var encoded = await exporter.EncodeAsync(image, new ImageExportOptions
+        {
+            Format      = ImageFormat.WebP,
+            Quality     = 0.9,
+            MaxFileSize = 100 * 1024,
+            MinQuality  = 0.5,
+            MaxFileSizeStrategy = MaxFileSizeStrategy.QualityThenDimensions,
+        });
+
+        Console.WriteLine($"{encoded.Length} bytes at quality {encoded.Quality}");
+        """;
+
+    private const string DetectSnippet = """
+        var format = ImageFormats.Detect(bytes);              // magic bytes
+        var byName = ImageFormats.FromFileName("photo.JPG");  // convenience only
+        var byMime = ImageFormats.FromMimeType("image/webp"); // convenience only
+
+        var info = processor.Identify(bytes);
+        if (info is null) return Error("Not a supported image.");
+        if ((long)info.Width * info.Height > 40_000_000) return Error("Too large.");
+        Console.WriteLine($"{info.Width}×{info.Height} {info.Format}, displays as {info.DisplaySize}");
+        """;
+
+    private async Task RunAsync()
+    {
+        _busy = true;
+        _rows.Clear();
+        StateHasChanged();
+        await Task.Yield();
+
+        _sample ??= SampleImages.Landscape();
+        await Capabilities.GetAsync();
+
+        foreach (var format in Candidates)
+        {
+            var started = System.Diagnostics.Stopwatch.StartNew();
+            try
+            {
+                // Deliberately not checked against the capabilities first: a format this browser
+                // cannot write is what shows the exporter refusing a substitute.
+                var encoded = await Exporter.EncodeAsync(_sample, new ImageExportOptions { Format = format, Quality = 0.82 });
+                _rows.Add(new Row(format, encoded.MimeType, encoded.Length, started.Elapsed, null));
+            }
+            catch (Exception ex) when (ex is ImageCapabilityException or ImageEncodeException)
+            {
+                _rows.Add(new Row(format, null, null, started.Elapsed, ex.Message));
+            }
+            StateHasChanged();
+            await Task.Yield();
+        }
+
+        _busy = false;
+    }
+
+    public void Dispose() => _sample?.Dispose();
+}

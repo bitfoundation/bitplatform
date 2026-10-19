@@ -1,0 +1,114 @@
+﻿@page "/mcp-server"
+
+@* Describes the MCP server this demo's host maps at /mcp. Its route differs from the endpoint's on
+   purpose: two literal endpoints on /mcp would make a GET of it ambiguous. *@
+
+<PageTitle>MCP server - bit Bortable</PageTitle>
+
+<div class="demo-header">
+    <h3>MCP server</h3>
+    <p class="text-muted">
+        This site hosts a Model Context Protocol server at <code>/mcp</code>, so an AI agent writing sortable-list,
+        kanban and drag-and-drop code with Bit.Bortable reads the library itself - its compiled API documentation,
+        its guide, its stylesheet and these demo pages - instead of guessing at an API it half remembers, or
+        borrowing one from SortableJS. Every tool is read-only.
+    </p>
+</div>
+
+<section class="mcp-panel">
+    <h4>Connect a client</h4>
+
+    <p>
+        The endpoint is plain Streamable HTTP, so any MCP client connects with a URL and nothing else. The same tools
+        are also served, version by version, through the bit platform's own server at
+        <code>https://bitplatform.dev/mcp</code>, next to the other bit libraries.
+    </p>
+
+    <pre class="mcp-output"><code>@ClientConfig</code></pre>
+</section>
+
+<section class="mcp-panel">
+    <h4>Tools</h4>
+
+    <table class="mcp-table">
+        <thead>
+            <tr><th>Tool</th><th>What it answers</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var tool in Tools)
+            {
+                <tr>
+                    <td><code>@tool.Name</code></td>
+                    <td>@((MarkupString)tool.Description)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <p>
+        The guide, the API, the theme, a sample drag and the sources are also exposed as <code>bortable://</code>
+        resources, and three prompts - <code>add-bortable-to-app</code>, <code>implement-bortable-feature</code> and
+        <code>debug-bortable-drag</code> - walk an agent through the common jobs in the right order.
+    </p>
+</section>
+
+<section class="mcp-panel">
+    <h4>The same tools over plain HTTP</h4>
+
+    <p>
+        Every tool is also a <code>GET</code> under <code>/api/mcp/...</code>: open one in a browser tab to read
+        exactly what an agent is handed.
+    </p>
+
+    <ul>
+        @foreach (var (href, text) in HttpExamples)
+        {
+            <li><a href="@href" target="_blank" rel="noopener">@text</a></li>
+        }
+    </ul>
+</section>
+
+@code {
+    private const string ClientConfig = """
+        // .mcp.json (Claude Code, VS Code, and anything else reading this shape)
+        {
+          "mcpServers": {
+            "bortable": {
+              "type": "http",
+              "url": "https://bortable.bitplatform.dev/mcp"
+            }
+          }
+        }
+        """;
+
+    // The server's tools, in the order an agent usually needs them. The one place to change when a tool is
+    // added, renamed or retired; the description is markup.
+    private static readonly (string Name, string Description)[] Tools =
+    [
+        ("SearchBortable",
+            "Everything at once - the guide, every public type and member, the setup guides, the stylesheet's custom properties and classes and the demo's pages - each hit with the exact follow-up call."),
+        ("GetBortableSetupGuide",
+            "The complete wiring for one render mode: server, wasm, auto, standalone-wasm or hybrid - <code>AddBitBortableServices()</code> in every project that renders a list, the stylesheet link and an interactive render mode."),
+        ("GetBortableGuideSection",
+            "One section of the reference guide, or the index of sections."),
+        ("GetBortableApi",
+            "One public type - <code>Bortable&lt;TItem&gt;</code>, <code>BortableEventArgs&lt;TItem&gt;</code>, <code>BortablePull</code>, <code>BortableDirection</code>, <code>BitBortable</code> - with every parameter, property, method or value, its real default and its documentation, or the index of types."),
+        ("GetBortableTheme",
+            "The <code>--bit-bortable-*</code> custom properties - the accent and opacities declared on <code>:root</code>, and the colours the state rules read with a fallback - with their defaults and what each one paints, and the drag-state classes (<code>bit-bortable-ghost</code>, <code>bit-bortable-chosen</code>, <code>bit-bortable-hidden</code>, <code>bit-bortable-swap-highlight</code>, <code>bit-bortable-selected</code> and the rest) with the parameter that replaces each."),
+        ("GetBortableSourceFile",
+            "One demo page, the library's component or its stylesheet verbatim - every page here is a working list, and a page's route works as its path - or the index of files."),
+        ("InspectBortableDrag",
+            "Renders a real <code>Bortable&lt;string&gt;</code> for each list you describe as JSON, performs one drag through its own handlers - within a list, across lists, a clone, a swap or a multi-drag - and reports whether each step was accepted and why not, the lists before and after, and every event raised, in order, with its arguments."),
+    ];
+
+    private static readonly (string Href, string Text)[] HttpExamples =
+    [
+        ("/api/mcp/SearchBortable?query=drag%20handle", "/api/mcp/SearchBortable?query=drag handle"),
+        ("/api/mcp/GetBortableApi?typeName=Bortable", "/api/mcp/GetBortableApi?typeName=Bortable"),
+        ("/api/mcp/GetBortableTheme?name=bit-bortable-ghost", "/api/mcp/GetBortableTheme?name=bit-bortable-ghost"),
+        ("/api/mcp/InspectBortableDrag", "/api/mcp/InspectBortableDrag (runs the sample drag)"),
+        ("/api/mcp/InspectBortableDrag?json=%7B%22lists%22%3A%5B%7B%22id%22%3A%22todo%22%2C%22group%22%3A%22board%22%2C%22items%22%3A%5B%22Spec%22%2C%22Review%22%5D%7D%2C%7B%22id%22%3A%22done%22%2C%22group%22%3A%22board%22%2C%22put%22%3Afalse%2C%22items%22%3A%5B%5D%7D%5D%2C%22drag%22%3A%7B%22item%22%3A%22Review%22%2C%22to%22%3A%22done%22%7D%7D",
+            "/api/mcp/InspectBortableDrag?json={ ... \"put\": false ... } (a refused drop, explained)"),
+        ("/api/mcp/GetBortableSourceFile?path=Demo/Client/Pages/Shared.razor", "/api/mcp/GetBortableSourceFile?path=Demo/Client/Pages/Shared.razor"),
+    ];
+}

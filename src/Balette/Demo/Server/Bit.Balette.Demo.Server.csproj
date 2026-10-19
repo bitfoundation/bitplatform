@@ -1,0 +1,73 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <BlazorDisableThrowNavigationException>true</BlazorDisableThrowNavigationException>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <!-- Serves the client's _framework payload and enables WebAssembly debugging from this host. -->
+        <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="10.0.13" />
+        <!-- The MCP server (see Controllers/McpController.cs), mapped at /mcp. -->
+        <PackageReference Include="ModelContextProtocol.AspNetCore" Version="2.2.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.Balette\Bit.Balette.csproj" />
+        <ProjectReference Include="..\Client\Bit.Balette.Demo.Client.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Bit.Balette" />
+        <Using Include="Microsoft.AspNetCore.Mvc" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The MCP tests boot this very app: WebApplicationFactory needs its entry point type, which
+             top-level statements declare as internal. -->
+        <InternalsVisibleTo Include="Bit.Balette.Tests.Mcp" />
+    </ItemGroup>
+
+    <!-- Text the MCP server hands out. It is embedded rather than read from disk so the tools keep
+         working from a published deployment, where none of these files exist next to the app.
+         LogicalName is set explicitly because the resource name IS the path an MCP client asks for. -->
+    <ItemGroup>
+        <EmbeddedResource Include="..\..\README.md" LogicalName="BaletteDocs/README.md" />
+
+        <!-- The stylesheet as written, comments included: the theme tool reads its variables, the groups
+             they are filed under and their dark values out of it, and the search index its classes. -->
+        <EmbeddedResource Include="..\..\Bit.Balette\Styles\bit-balette.css" LogicalName="BaletteSource/Library/Styles/bit-balette.css" />
+
+        <!-- The markup of the four components that render something: the elements, classes and
+             data-balette attributes an unstyled palette or an ItemTemplate is styled by are read out of
+             them, so the theme tool cannot name a hook the palette no longer renders. -->
+        <EmbeddedResource Include="..\..\Bit.Balette\Components\Balette.razor;..\..\Bit.Balette\Components\BaletteTrigger.razor;..\..\Bit.Balette\Components\BaletteShortcutHint.razor;..\..\Bit.Balette\Components\BaletteHighlightedText.razor">
+            <LogicalName>BaletteSource/Library/Components/%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <!-- The palette's code-behind, read by the theme tool only: some of what the markup binds - the
+             list's inline style - is computed there. It is not served as a source file, being longer than
+             any answer is allowed to be; GetBaletteApi describes the same component in far fewer characters. -->
+        <EmbeddedResource Include="..\..\Bit.Balette\Components\Balette.razor.cs" LogicalName="BaletteInternal/Balette.razor.cs" />
+
+        <!-- Every demo page - each one is a working palette feature - plus the commands, state and
+             sources they share and the client half of the hosting. The MCP page describes this server
+             rather than the library, and the not-found page teaches nothing about palettes. -->
+        <EmbeddedResource Include="..\Client\**\*.razor;..\Client\**\*.cs"
+                          Exclude="..\Client\bin\**;..\Client\obj\**;..\Client\Pages\McpServer.razor;..\Client\Pages\NotFound.razor">
+            <LogicalName>BaletteSource/Demo/Client/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+
+        <EmbeddedResource Include="Program.cs" LogicalName="BaletteSource/Demo/Server/Program.cs" />
+
+        <!-- The Components\ prefix is written out: %(RecursiveDir) only captures what the '**' matched.
+             Error.razor is the template's own error page and says nothing about palettes. -->
+        <EmbeddedResource Include="Components\**\*.razor" Exclude="Components\Pages\Error.razor">
+            <LogicalName>BaletteSource/Demo/Server/Components/%(RecursiveDir)%(Filename)%(Extension)</LogicalName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+</Project>

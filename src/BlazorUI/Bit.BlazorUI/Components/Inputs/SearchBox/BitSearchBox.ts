@@ -182,3 +182,5 @@
         }
     }
 }
+
+// bit-lazy: teardown SearchBox.unregisterShortcut

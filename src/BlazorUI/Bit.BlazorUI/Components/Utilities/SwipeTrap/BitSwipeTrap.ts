@@ -534,3 +534,5 @@
     }
 
 }
+
+// bit-lazy: teardown SwipeTrap.dispose

@@ -1,0 +1,270 @@
+﻿@page "/search"
+@using System.Diagnostics
+@using System.Globalization
+@implements IDisposable
+@inject IBaletteService Palette
+@inject BaletteOptions Options
+@inject BaletteRanker Ranker
+@inject BaletteHistory History
+@inject DemoState State
+
+<PageTitle>Search and ranking - bit Balette</PageTitle>
+
+<h1>Search &amp; ranking</h1>
+<p class="page-intro">
+    Every keystroke runs two public pieces of the library: a matcher that scores each command and says which
+    characters to highlight, and a ranker that folds in priority and how often and how recently a command was used.
+    The lab below runs exactly those two over this app's registry, so the numbers are the ones the palette sorts by.
+</p>
+
+<div class="panel">
+    <div class="toolbar" role="toolbar" aria-label="Search lab">
+        <label class="field grow">
+            Query
+            <input type="text" class="grow" value="@_query" @oninput="OnQueryInput" placeholder="Type to search the registry…"
+                   aria-label="Query" autocomplete="off" spellcheck="false" />
+        </label>
+        <label class="field">
+            Matcher
+            <select value="@_matcherName" @onchange="OnMatcherChanged" aria-label="Matcher">
+                <option value="fuzzy">Fuzzy, smart case</option>
+                <option value="ignore-case">Fuzzy, ignore case</option>
+                <option value="substring">Substring</option>
+            </select>
+        </label>
+        <button type="button" class="btn" @onclick="() => Palette.OpenAsync(_query)">Open the palette with it</button>
+    </div>
+
+    <table class="lab">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Command</th>
+                <th>Matched on</th>
+                <th class="num">Score</th>
+                <th class="num">Priority</th>
+                <th class="num">Frecency</th>
+                <th class="num">Rank</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (_results.Count == 0)
+            {
+                <tr><td colspan="7" class="muted">No command matches. The palette would still list the always-shown feedback row.</td></tr>
+            }
+            @foreach (var (match, index) in _results.Take(MaxRows).Select((m, i) => (m, i)))
+            {
+                <tr>
+                    <td class="muted">@(index + 1)</td>
+                    <td>
+                        <BaletteHighlightedText Text="@match.Command.Title" Positions="@match.TitlePositions" />
+                        @if (match.Command.Subtitle is not null)
+                        {
+                            <div class="muted small"><BaletteHighlightedText Text="@match.Command.Subtitle" Positions="@match.SubtitlePositions" /></div>
+                        }
+                    </td>
+                    <td>@MatchedOn(match)</td>
+                    <td class="num">@Format(match.Score)</td>
+                    <td class="num">@match.Command.Priority</td>
+                    <td class="num">@Format(match.Frecency)</td>
+                    <td class="num"><strong>@Format(match.Rank)</strong></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="statusbar" role="status">
+        <span><strong>@_candidates</strong> root commands</span>
+        <span><strong>@_results.Count</strong> matched</span>
+        <span>matched and ranked in <strong>@_elapsed.TotalMilliseconds.ToString("0.00", CultureInfo.InvariantCulture) ms</strong></span>
+        @if (!History.IsLoaded)
+        {
+            <span>frecency loads once the page is interactive</span>
+        }
+    </div>
+</div>
+
+<h2 id="operators">Operators</h2>
+<p>
+    A query is split on spaces and every term has to match (AND), each against whichever field scores it best. A term
+    can carry an fzf operator; the rest are fuzzy.
+</p>
+<table>
+    <thead>
+        <tr><th>Query</th><th>Means</th><th></th></tr>
+    </thead>
+    <tbody>
+        @foreach (var example in Examples)
+        {
+            <tr>
+                <td><code>@example.Query</code></td>
+                <td>@example.Meaning</td>
+                <td><button type="button" class="btn" @onclick="() => SetQuery(example.Query)">Try</button></td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<h2>How a score is made</h2>
+<div class="split">
+    <div>
+        <p>
+            The fuzzy matcher is fzf's algorithm: a dynamic programme that finds the best alignment of the term inside
+            the text, rewarding matches at word starts, camel humps and consecutive runs, and the first character most,
+            while gaps cost. A lower-case term ignores case; a term with a capital letter respects it.
+        </p>
+        <p>
+            Each field's score is multiplied by its weight, so a hit in the title beats the same hit in a keyword,
+            which beats one in the subtitle. These are this app's weights, from <code>BaletteOptions.Weights</code>:
+        </p>
+    </div>
+    <table>
+        <thead>
+            <tr><th>Field</th><th class="num">Weight</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Title</td><td class="num">@Format(Options.Weights.Title)</td></tr>
+            <tr><td>Keywords</td><td class="num">@Format(Options.Weights.Keyword)</td></tr>
+            <tr><td>Subtitle</td><td class="num">@Format(Options.Weights.Subtitle)</td></tr>
+            <tr><td>Group</td><td class="num">@Format(Options.Weights.Group)</td></tr>
+            <tr><td>Description</td><td class="num">@Format(Options.Weights.Description)</td></tr>
+            <tr><td>Tags</td><td class="num">@Format(Options.Weights.Tag)</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<h2>Priority and frecency</h2>
+<p>With a query, the match decides and the rest only nudges it:</p>
+<pre><code>rank = score + priority × @Format(Options.PriorityWeight) + ln(1 + frecency) × @Format(Options.FrecencyWeight)</code></pre>
+<p>
+    On the empty query there is nothing to match, so priority leads and frecency orders what is left
+    (<code>priority × 1000 + frecency</code>), inside each group. Frecency is Firefox's idea: a capped use count weighted
+    by how recent the last use was. Run a command a few times from the palette and watch its row climb in the lab -
+    the history is kept in <code>localStorage</code>, so it survives a reload.
+</p>
+
+<h2>In the palette</h2>
+<div class="panel settings">
+    <label class="setting">
+        <span>Highlight matched characters</span>
+        <input type="checkbox" checked="@State.HighlightMatches" @onchange="() => State.SetHighlightMatches(!State.HighlightMatches)" />
+    </label>
+    <label class="setting">
+        <span>Keep group headings while searching (off: one flat ranked list)</span>
+        <input type="checkbox" checked="@State.GroupWhenSearching" @onchange="() => State.SetGroupWhenSearching(!State.GroupWhenSearching)" />
+    </label>
+</div>
+
+<div class="note">
+    The matcher is an interface: <code>options.Matcher = BaletteSubstringMatcher.Default</code> trades typo tolerance for
+    speed, and any <code>IBaletteMatcher</code> can replace both. Matching runs over the fields of the command only;
+    asynchronous sources opt into it with <code>ApplyMatcher</code>, or keep their own order.
+</div>
+
+@code {
+    private const int MaxRows = 15;
+
+    private static readonly (string Query, string Meaning)[] Examples =
+    [
+        ("rc", "Fuzzy: R and C in order, anywhere - word starts score highest."),
+        ("wrap word", "Two terms, both required, in any order."),
+        ("'export", "Exact: the substring itself, no gaps."),
+        ("^set", "Prefix: the field starts with it."),
+        ("project$", "Suffix: the field ends with it."),
+        ("show !minimap", "Negation: drops every command that contains the term."),
+        ("mcp", "Smart case, all lower case: case is ignored, so it matches MCP server."),
+        ("Mcp", "Smart case, with a capital: case now counts, so MCP server drops out."),
+    ];
+
+    private string _query = "rc";
+    private string _matcherName = "fuzzy";
+    private IBaletteMatcher _matcher = BaletteFuzzyMatcher.Default;
+    private List<BaletteMatch> _results = [];
+    private int _candidates;
+    private TimeSpan _elapsed;
+
+    protected override void OnInitialized()
+    {
+        Palette.CommandsChanged += OnChanged;
+        History.Changed += OnChanged;
+        Run();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The history lives in localStorage, which is only reachable once the page runs in the browser.
+        if (firstRender && RendererInfo.IsInteractive && !History.IsLoaded)
+        {
+            await History.EnsureLoadedAsync();
+            Run();
+            StateHasChanged();
+        }
+    }
+
+    private void Run()
+    {
+        var started = Stopwatch.GetTimestamp();
+
+        // What the palette lists on its root page: commands without a parent that are currently visible.
+        var candidates = Palette.Commands.Where(c => c.Parent is null && c.IsVisible?.Invoke() != false).ToList();
+        var matches = new List<BaletteMatch>(candidates.Count);
+        foreach (var command in candidates)
+        {
+            if (_matcher.Match(command, _query, Options.Weights) is { } match)
+            {
+                matches.Add(match);
+            }
+        }
+
+        _results = Ranker.Rank(matches, _query.Trim().Length > 0, id => History.IsLoaded ? History.Frecency(id) : 0);
+        _elapsed = Stopwatch.GetElapsedTime(started);
+        _candidates = candidates.Count;
+    }
+
+    private void OnQueryInput(ChangeEventArgs e)
+    {
+        _query = e.Value?.ToString() ?? string.Empty;
+        Run();
+    }
+
+    private void OnMatcherChanged(ChangeEventArgs e)
+    {
+        _matcherName = e.Value?.ToString() ?? "fuzzy";
+        _matcher = _matcherName switch
+        {
+            "ignore-case" => new BaletteFuzzyMatcher { IgnoreCase = true },
+            "substring" => BaletteSubstringMatcher.Default,
+            _ => BaletteFuzzyMatcher.Default,
+        };
+        Run();
+    }
+
+    private void SetQuery(string query)
+    {
+        _query = query;
+        Run();
+    }
+
+    private void OnChanged() => _ = InvokeAsync(() =>
+    {
+        Run();
+        StateHasChanged();
+    });
+
+    private static string MatchedOn(BaletteMatch match) => match switch
+    {
+        { TitlePositions.Length: > 0 } => "title",
+        { SubtitlePositions.Length: > 0 } => "subtitle",
+        { MatchedKeyword: { } keyword } => $"keyword “{keyword}”",
+        _ when match.Score == 0 => "-",
+        _ => "group, description or tag",
+    };
+
+    private static string Format(double value) => double.IsNegativeInfinity(value) ? "-∞" : value.ToString("0.##", CultureInfo.InvariantCulture);
+
+    public void Dispose()
+    {
+        Palette.CommandsChanged -= OnChanged;
+        History.Changed -= OnChanged;
+    }
+}

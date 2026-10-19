@@ -22,6 +22,20 @@
 
     </Target>
 
+    <!-- The rewritten service worker manifest and script (see _BitButilRewriteServiceWorker). Not fingerprinted:
+         the SDK gives the client's originals no fingerprinted route either, and a browser finds both by name. -->
+    <Target Name="_BitButilDefineServiceWorkerWithEndpoints" AfterTargets="_BitButilRewriteServiceWorker"
+            Condition="'@(_BitButilServiceWorkerCandidate)' != ''">
+        <DefineStaticWebAssets CandidateAssets="@(_BitButilServiceWorkerCandidate)">
+            <Output TaskParameter="Assets" ItemName="_BitButilServiceWorkerAsset" />
+        </DefineStaticWebAssets>
+        <DefineStaticWebAssetEndpoints CandidateAssets="@(_BitButilServiceWorkerAsset)"
+                                       ExistingEndpoints="@(StaticWebAssetEndpoint)"
+                                       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+            <Output TaskParameter="Endpoints" ItemName="_BitButilServiceWorkerEndpoint" />
+        </DefineStaticWebAssetEndpoints>
+    </Target>
+
     <!--
     Restores the label a consumer's lookups go through.
 

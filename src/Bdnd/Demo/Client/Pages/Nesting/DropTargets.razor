@@ -1,0 +1,74 @@
+﻿@page "/nesting/drop-targets"
+
+<PageTitle>Nesting · Drop Targets - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Nesting - Drop Targets</h3>
+    <p class="text-muted">
+        Drop targets can be nested. <code>IsOver</code> is true for every target under the
+        pointer, while <code>IsOverShallow</code> (React DnD's <code>isOver({ shallow: true })</code>)
+        is true only for the innermost one. Drag the box over the nested squares to see the
+        difference.
+    </p>
+</div>
+
+<DemoCode />
+
+<section class="demo-stage">
+    <BdndProvider>
+        <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("payload")" Context="d">
+            <div class="box" style="margin-bottom:1.5rem;opacity:@(d.IsDragging ? "0.4" : "1")">
+                Drag me into the nest
+            </div>
+        </BdndDraggable>
+
+        @RenderNest(0)
+    </BdndProvider>
+
+    <p style="margin-top:1rem;">
+        <span style="display:inline-block;width:14px;height:14px;background:#ffeb3b;border:1px solid #999;"></span>
+        = shallow hover (innermost) &nbsp;
+        <span style="display:inline-block;width:14px;height:14px;background:rgba(255,235,59,0.25);border:1px solid #999;"></span>
+        = also over (ancestor)
+    </p>
+</section>
+
+@code {
+    private const int Depth = 3;
+
+    private RenderFragment RenderNest(int level) => builder =>
+    {
+        // recursive nested drop targets
+        var seq = 0;
+        builder.OpenComponent<BdndDropTarget<string>>(seq++);
+        builder.AddAttribute(seq++, "Accept", ItemTypes.Box);
+        builder.AddAttribute(seq++, "style", "display:contents");
+        builder.AddAttribute(seq++, "ChildContent",
+            (RenderFragment<BdndDropState<string>>)(t => childBuilder =>
+            {
+                childBuilder.OpenElement(0, "div");
+                childBuilder.AddAttribute(1, "class", "nest-box");
+                childBuilder.AddAttribute(2, "data-level", level);
+                childBuilder.AddAttribute(3, "style", NestStyle(level, t));
+                childBuilder.AddContent(4, $"level {level}");
+                if (level < Depth)
+                {
+                    childBuilder.AddContent(5, RenderNest(level + 1));
+                }
+                childBuilder.CloseElement();
+            }));
+        builder.CloseComponent();
+    };
+
+    private static string NestStyle(int level, BdndDropState<string> t)
+    {
+        // base colour gets darker as we nest
+        var shade = 200 - level * 45;
+        var baseColor = $"rgb({shade},{shade + 20},{shade + 40})";
+        var bg = baseColor;
+        if (t.IsOverShallow) bg = "#ffeb3b";
+        else if (t.IsOver) bg = "rgba(255,235,59,0.25)";
+        var margin = level == 0 ? "" : "margin-top:0.75rem;";
+        return $"background:{bg};{margin}color:#222;";
+    }
+}

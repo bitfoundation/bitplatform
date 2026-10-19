@@ -11,14 +11,8 @@ $mq-xl-min: 1920px;
 $mq-xl-max: 2559px;
 $mq-xxl-min: 2560px;
 
-:root {
-    --bit-bp-xs: 0;
-    --bit-bp-sm: #{$mq-sm-min};
-    --bit-bp-md: #{$mq-md-min};
-    --bit-bp-lg: #{$mq-lg-min};
-    --bit-bp-xl: #{$mq-xl-min};
-    --bit-bp-xxl: #{$mq-xxl-min};
-}
+// Mixins and variables only: this file writes no CSS, since every component stylesheet using a mixin imports it. The
+// --bit-bp-* custom properties built from the values above are declared once, in general.scss.
 
 // media devices
 @mixin xs {

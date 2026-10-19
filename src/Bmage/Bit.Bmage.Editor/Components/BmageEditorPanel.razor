@@ -1,0 +1,398 @@
+﻿@using Bit.Bmage.Editor.Tools
+@using Bit.Bmage.Operations.Adjustments
+@using Bit.Bmage.Operations.Filters
+
+@*
+    The default options panel: adjustments, filters, style controls for the active tool, the annotation list and the
+    history. Each section is a plain form, so a host that wants a different layout can copy the calls it needs.
+*@
+
+<aside class="bmg-panel" aria-label="@Context.Strings.PanelLabel">
+    <div class="bmg-panel-tabs" role="tablist" aria-label="@Context.Strings.PanelLabel">
+        @foreach (var tab in Tabs)
+        {
+            <button type="button"
+                    role="tab"
+                    id="@($"{_id}-tab-{tab.Key}")"
+                    class="bmg-panel-tab @(_activeTab == tab.Key ? "bmg-panel-tab-active" : null)"
+                    aria-selected="@(_activeTab == tab.Key ? "true" : "false")"
+                    aria-controls="@($"{_id}-panel-{tab.Key}")"
+                    tabindex="@(_activeTab == tab.Key ? 0 : -1)"
+                    @onclick="() => _activeTab = tab.Key"
+                    @onkeydown="e => OnTabKeyDown(e, tab.Key)">
+                @tab.Label
+            </button>
+        }
+    </div>
+
+    <div class="bmg-panel-body"
+         role="tabpanel"
+         id="@($"{_id}-panel-{_activeTab}")"
+         aria-labelledby="@($"{_id}-tab-{_activeTab}")"
+         tabindex="0">
+
+        @switch (_activeTab)
+        {
+            case PanelTab.Adjust:
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
+                    <legend class="bmg-visually-hidden">@Context.Strings.Adjust</legend>
+                    @RenderSlider(Context.Strings.Brightness, GetValue<BrightnessAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BrightnessAdjustment((float)v), Context.Strings.Brightness, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BrightnessAdjustment>(), Context.Strings.Brightness))
+                    @RenderSlider(Context.Strings.Contrast, GetValue<ContrastAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new ContrastAdjustment((float)v), Context.Strings.Contrast, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<ContrastAdjustment>(), Context.Strings.Contrast))
+                    @RenderSlider(Context.Strings.Saturation, GetValue<SaturationAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new SaturationAdjustment((float)v), Context.Strings.Saturation, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<SaturationAdjustment>(), Context.Strings.Saturation))
+                    @RenderSlider(Context.Strings.Exposure, GetValue<ExposureAdjustment>(a => a.Ev), -3, 3, 0.05,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new ExposureAdjustment((float)v), Context.Strings.Exposure, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<ExposureAdjustment>(), Context.Strings.Exposure))
+                    @RenderSlider(Context.Strings.Temperature, GetValue<TemperatureAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new TemperatureAdjustment((float)v), Context.Strings.Temperature, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<TemperatureAdjustment>(), Context.Strings.Temperature))
+                    @RenderSlider(Context.Strings.Vibrance, GetValue<VibranceAdjustment>(a => a.Amount), -1, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new VibranceAdjustment((float)v), Context.Strings.Vibrance, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<VibranceAdjustment>(), Context.Strings.Vibrance))
+                    @RenderSlider(Context.Strings.Shadows, GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), -1, 1, 0.01,
+                        v => SetShadowsHighlights((float)v, GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), true),
+                        () => SetShadowsHighlights(GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), false))
+                    @RenderSlider(Context.Strings.Highlights, GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), -1, 1, 0.01,
+                        v => SetShadowsHighlights(GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), (float)v, true),
+                        () => SetShadowsHighlights(GetValue<ShadowsHighlightsAdjustment>(a => a.Shadows), GetValue<ShadowsHighlightsAdjustment>(a => a.Highlights), false))
+                    @RenderSlider(Context.Strings.Sharpen, GetValue<SharpenFilter>(a => a.Amount), 0, 2, 0.05,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new SharpenFilter((float)v), Context.Strings.Sharpen, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<SharpenFilter>(), Context.Strings.Sharpen))
+                    @RenderSlider(Context.Strings.Blur, GetValue<BlurFilter>(a => a.Radius), 0, 20, 0.5,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new BlurFilter((float)v), Context.Strings.Blur, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<BlurFilter>(), Context.Strings.Blur))
+                    @RenderSlider(Context.Strings.Vignette, GetValue<VignetteFilter>(a => a.Amount), 0, 1, 0.01,
+                        v => Context.SetAdjustmentAsync(v == 0 ? null : new VignetteFilter((float)v), Context.Strings.Vignette, true),
+                        () => Context.SetAdjustmentAsync(Context.FindAdjustment<VignetteFilter>(), Context.Strings.Vignette))
+                </fieldset>
+                break;
+
+            case PanelTab.Filters:
+                <div class="bmg-filter-grid" role="group" aria-label="@Context.Strings.Filters">
+                    @foreach (var filter in FilterPresets)
+                    {
+                        <button type="button"
+                                class="bmg-filter @(IsFilterActive(filter.Key) ? "bmg-filter-active" : null)"
+                                disabled="@(!Context.HasImage || Context.IsBusy)"
+                                aria-pressed="@(IsFilterActive(filter.Key) ? "true" : "false")"
+                                @onclick="() => ApplyFilterAsync(filter.Key)">
+                            @filter.Label
+                        </button>
+                    }
+                </div>
+                break;
+
+            case PanelTab.Style:
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
+                    <legend class="bmg-visually-hidden">@Context.Strings.Tools</legend>
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.StrokeColor</span>
+                        <input type="color" class="bmg-color"
+                               value="@Context.Settings.StrokeColor.ToHex(false)"
+                               @onchange="e => UpdateColor(e, true)" />
+                    </label>
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.FillColor</span>
+                        <input type="color" class="bmg-color"
+                               value="@Context.Settings.FillColor.ToHex(false)"
+                               @onchange="e => UpdateColor(e, false)" />
+                    </label>
+                    <label class="bmg-field bmg-field-inline">
+                        <input type="checkbox" checked="@Context.Settings.Filled"
+                               @onchange="e => Context.UpdateSettings(s => s with { Filled = (bool)(e.Value ?? false) })" />
+                        <span class="bmg-field-label">@Context.Strings.Filled</span>
+                    </label>
+                    <label class="bmg-field bmg-field-inline">
+                        <input type="checkbox" checked="@Context.Settings.Dashed"
+                               @onchange="e => Context.UpdateSettings(s => s with { Dashed = (bool)(e.Value ?? false) })" />
+                        <span class="bmg-field-label">@Context.Strings.Dashed</span>
+                    </label>
+                    @RenderSlider(Context.Strings.StrokeWidth, Context.Settings.StrokeWidth, 1, 40, 1,
+                        v => { Context.UpdateSettings(s => s with { StrokeWidth = (float)v }); return Task.CompletedTask; }, null)
+                    @RenderSlider(Context.Strings.Opacity, Context.Settings.Opacity, 0.05, 1, 0.05,
+                        v => { Context.UpdateSettings(s => s with { Opacity = (float)v }); return Task.CompletedTask; }, null)
+                    @RenderSlider(Context.Strings.FontSize, Context.Settings.FontSize, 8, 200, 1,
+                        v => { Context.UpdateSettings(s => s with { FontSize = (float)v }); return Task.CompletedTask; }, null)
+
+                    @if (Context.Tool == EditorToolKind.Redact)
+                    {
+                        <label class="bmg-field">
+                            <span class="bmg-field-label">@Context.Strings.RedactionStyle</span>
+                            <select class="bmg-select" @onchange="OnRedactionModeChanged">
+                                <option value="@nameof(RedactionMode.Solid)" selected="@(Context.Settings.RedactionMode == RedactionMode.Solid)">@Context.Strings.Solid</option>
+                                <option value="@nameof(RedactionMode.Pixelate)" selected="@(Context.Settings.RedactionMode == RedactionMode.Pixelate)">@Context.Strings.Pixelate</option>
+                                <option value="@nameof(RedactionMode.Blur)" selected="@(Context.Settings.RedactionMode == RedactionMode.Blur)">@Context.Strings.Blur</option>
+                            </select>
+                        </label>
+                    }
+                </fieldset>
+                break;
+
+            case PanelTab.Layers:
+                @if (Context.Annotations.Count == 0)
+                {
+                    <p class="bmg-empty">@Context.Strings.None</p>
+                }
+                else
+                {
+                    <ul class="bmg-layer-list" role="listbox" aria-label="@Context.Strings.Layers">
+                        @foreach (var annotation in Context.Annotations.Reverse())
+                        {
+                            <li class="bmg-layer @(Context.SelectedAnnotationId == annotation.Id ? "bmg-layer-selected" : null)"
+                                role="option"
+                                aria-selected="@(Context.SelectedAnnotationId == annotation.Id ? "true" : "false")">
+                                <button type="button" class="bmg-layer-name" @onclick="() => Context.SelectAnnotation(annotation.Id)">
+                                    @annotation.Kind
+                                </button>
+                                <button type="button" class="bmg-icon-button" title="@Context.Strings.Delete" aria-label="@($"{Context.Strings.Delete}: {annotation.Kind}")"
+                                        @onclick="() => Context.DeleteAnnotationAsync(annotation.Id)">
+                                    @((MarkupString)Icons.Delete)
+                                </button>
+                            </li>
+                        }
+                    </ul>
+                }
+                break;
+
+            case PanelTab.History:
+                <ol class="bmg-history-list" aria-label="@Context.Strings.History">
+                    @for (var i = 0; i < Context.History.Count; i++)
+                    {
+                        var index = i;
+                        var entry = Context.History[i];
+                        <li class="bmg-history-entry @(index == Context.HistoryPosition ? "bmg-history-current" : null) @(index > Context.HistoryPosition ? "bmg-history-future" : null)">
+                            <button type="button" class="bmg-history-button" @onclick="() => GoToHistory(index)">
+                                @entry.Label
+                            </button>
+                        </li>
+                    }
+                </ol>
+                break;
+
+            case PanelTab.Export:
+                <fieldset class="bmg-fieldset" disabled="@(!Context.HasImage)">
+                    <legend class="bmg-visually-hidden">@Context.Strings.Export</legend>
+                    <p class="bmg-readout">
+                        @Context.Strings.FormatDimensions(Context.OutputSize.Width, Context.OutputSize.Height)
+                        @if (Context.UsesProxy)
+                        {
+                            <span class="bmg-note">@($" ({Context.Strings.FormatDimensions(Context.SourceSize.Width, Context.SourceSize.Height)})")</span>
+                        }
+                    </p>
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.Format</span>
+                        <select class="bmg-select" @onchange="OnFormatChanged">
+                            @foreach (var format in AvailableFormats)
+                            {
+                                <option value="@format" selected="@(_exportFormat == format)">@format.ToString().ToUpperInvariant()</option>
+                            }
+                        </select>
+                    </label>
+                    @if (_exportFormat.IsLossy())
+                    {
+                        @RenderSlider(Context.Strings.Quality, _exportQuality, 0.1, 1, 0.01,
+                            v => { _exportQuality = v; return Task.CompletedTask; }, null)
+                    }
+                    <label class="bmg-field">
+                        <span class="bmg-field-label">@Context.Strings.Metadata</span>
+                        <select class="bmg-select" @onchange="OnMetadataChanged">
+                            <option value="@nameof(MetadataPolicy.Remove)" selected="@(_metadataPolicy == MetadataPolicy.Remove)">@Context.Strings.RemoveMetadata</option>
+                            <option value="@nameof(MetadataPolicy.StripSensitive)" selected="@(_metadataPolicy == MetadataPolicy.StripSensitive)">@Context.Strings.StripSensitiveMetadata</option>
+                            <option value="@nameof(MetadataPolicy.Preserve)" selected="@(_metadataPolicy == MetadataPolicy.Preserve)">@Context.Strings.KeepMetadata</option>
+                        </select>
+                    </label>
+                    <div class="bmg-field-actions">
+                        <button type="button" class="bmg-button bmg-button-primary" disabled="@Context.IsBusy" @onclick="DownloadAsync">
+                            @Context.Strings.Download
+                        </button>
+                        @if (Context.Capabilities?.SupportsClipboardWrite == true)
+                        {
+                            <button type="button" class="bmg-button" disabled="@Context.IsBusy" @onclick="Context.CopyToClipboardAsync">
+                                @Context.Strings.CopyToClipboard
+                            </button>
+                        }
+                    </div>
+                </fieldset>
+                break;
+        }
+    </div>
+</aside>
+
+@code {
+    private readonly string _id = $"bmg-panel-{Guid.NewGuid():N}";
+    private PanelTab _activeTab = PanelTab.Adjust;
+    private ImageFormat _exportFormat = ImageFormat.Png;
+    private double _exportQuality = 0.85;
+    private MetadataPolicy _metadataPolicy = MetadataPolicy.Remove;
+
+    /// <summary>The editor context supplying state and actions.</summary>
+    [Parameter, EditorRequired] public BmageEditorContext Context { get; set; } = default!;
+
+    /// <summary>File name used by the download button.</summary>
+    [Parameter] public string DownloadFileName { get; set; } = "image";
+
+    private enum PanelTab { Adjust, Filters, Style, Layers, History, Export }
+
+    private (PanelTab Key, string Label)[] Tabs =>
+    [
+        (PanelTab.Adjust, Context.Strings.Adjust),
+        (PanelTab.Filters, Context.Strings.Filters),
+        (PanelTab.Style, Context.Strings.Tools),
+        (PanelTab.Layers, Context.Strings.Layers),
+        (PanelTab.History, Context.Strings.History),
+        (PanelTab.Export, Context.Strings.Export),
+    ];
+
+    private (string Key, string Label)[] FilterPresets =>
+    [
+        ("none", Context.Strings.None),
+        ("grayscale", Context.Strings.Grayscale),
+        ("sepia", Context.Strings.Sepia),
+        ("invert", Context.Strings.Invert),
+        ("posterize", Context.Strings.Posterize),
+        ("threshold", Context.Strings.Threshold),
+    ];
+
+    private IEnumerable<ImageFormat> AvailableFormats
+    {
+        get
+        {
+            var capabilities = Context.Capabilities;
+            var candidates = new[] { ImageFormat.Png, ImageFormat.Jpeg, ImageFormat.WebP, ImageFormat.Avif };
+            return capabilities is null ? candidates.Take(2) : candidates.Where(capabilities.CanEncode);
+        }
+    }
+
+    private void OnTabKeyDown(KeyboardEventArgs e, PanelTab current)
+    {
+        // Arrow key navigation between tabs, as expected for a tablist.
+        var tabs = Tabs;
+        var index = Array.FindIndex(tabs, t => t.Key == current);
+        var next = e.Key switch
+        {
+            "ArrowRight" or "ArrowDown" => (index + 1) % tabs.Length,
+            "ArrowLeft" or "ArrowUp" => (index - 1 + tabs.Length) % tabs.Length,
+            "Home" => 0,
+            "End" => tabs.Length - 1,
+            _ => -1,
+        };
+        if (next >= 0) _activeTab = tabs[next].Key;
+    }
+
+    private float GetValue<TOperation>(Func<TOperation, float> read) where TOperation : class, IImageOperation
+        => Context.FindAdjustment<TOperation>() is { } op ? read(op) : 0f;
+
+    private Task SetShadowsHighlights(float shadows, float highlights, bool transient)
+    {
+        var operation = shadows == 0 && highlights == 0 ? null : new ShadowsHighlightsAdjustment(shadows, highlights);
+        return Context.SetAdjustmentAsync(operation, Context.Strings.Shadows, transient);
+    }
+
+    private void UpdateColor(ChangeEventArgs e, bool stroke)
+    {
+        if (e.Value is not string hex || !Rgba32.TryParseHex(hex, out var color)) return;
+        Context.UpdateSettings(s => stroke
+            ? s with { StrokeColor = color }
+            : s with { FillColor = color.WithAlpha(s.FillColor.A) });
+    }
+
+    private void OnRedactionModeChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<RedactionMode>(value, out var mode))
+            Context.UpdateSettings(s => s with { RedactionMode = mode });
+    }
+
+    private void OnFormatChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<ImageFormat>(value, out var format)) _exportFormat = format;
+    }
+
+    private void OnMetadataChanged(ChangeEventArgs e)
+    {
+        if (e.Value is string value && Enum.TryParse<MetadataPolicy>(value, out var policy)) _metadataPolicy = policy;
+    }
+
+    private bool IsFilterActive(string key) => key switch
+    {
+        "grayscale" => Context.FindAdjustment<GrayscaleFilter>() is not null,
+        "sepia" => Context.FindAdjustment<SepiaFilter>() is not null,
+        "invert" => Context.FindAdjustment<InvertFilter>() is not null,
+        "posterize" => Context.FindAdjustment<PosterizeFilter>() is not null,
+        "threshold" => Context.FindAdjustment<ThresholdFilter>() is not null,
+        "none" => Context.FindAdjustment<GrayscaleFilter>() is null && Context.FindAdjustment<SepiaFilter>() is null
+                  && Context.FindAdjustment<InvertFilter>() is null && Context.FindAdjustment<PosterizeFilter>() is null
+                  && Context.FindAdjustment<ThresholdFilter>() is null,
+        _ => false,
+    };
+
+    private async Task ApplyFilterAsync(string key)
+    {
+        // Filters are mutually exclusive in this panel, so clear the others first.
+        await Context.SetAdjustmentAsync<GrayscaleFilter>(null, Context.Strings.Filters);
+        await Context.SetAdjustmentAsync<SepiaFilter>(null, Context.Strings.Filters);
+        await Context.SetAdjustmentAsync<InvertFilter>(null, Context.Strings.Filters);
+        await Context.SetAdjustmentAsync<PosterizeFilter>(null, Context.Strings.Filters);
+        await Context.SetAdjustmentAsync<ThresholdFilter>(null, Context.Strings.Filters);
+        switch (key)
+        {
+            case "grayscale": await Context.SetAdjustmentAsync(new GrayscaleFilter(), Context.Strings.Grayscale); break;
+            case "sepia": await Context.SetAdjustmentAsync(new SepiaFilter(), Context.Strings.Sepia); break;
+            case "invert": await Context.SetAdjustmentAsync(new InvertFilter(), Context.Strings.Invert); break;
+            case "posterize": await Context.SetAdjustmentAsync(new PosterizeFilter(6), Context.Strings.Posterize); break;
+            case "threshold": await Context.SetAdjustmentAsync(new ThresholdFilter(), Context.Strings.Threshold); break;
+        }
+    }
+
+    private Task GoToHistory(int index) => Context.GoToHistoryAsync(index);
+
+    private Task DownloadAsync() => Context.DownloadAsync(DownloadFileName, new ImageExportOptions
+    {
+        Format = _exportFormat,
+        Quality = _exportQuality,
+        Metadata = _metadataPolicy,
+    });
+
+    private RenderFragment RenderSlider(string label, double value, double min, double max, double step, Func<double, Task> onInput, Func<Task>? onCommit) => builder =>
+    {
+        var id = $"{_id}-{label.GetHashCode(StringComparison.Ordinal):x}";
+        builder.OpenElement(0, "div");
+        builder.AddAttribute(1, "class", "bmg-field");
+
+        builder.OpenElement(2, "label");
+        builder.AddAttribute(3, "class", "bmg-field-label");
+        builder.AddAttribute(4, "for", id);
+        builder.AddContent(5, label);
+        builder.OpenElement(6, "output");
+        builder.AddAttribute(7, "class", "bmg-field-value");
+        builder.AddContent(8, value.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture));
+        builder.CloseElement();
+        builder.CloseElement();
+
+        builder.OpenElement(9, "input");
+        builder.AddAttribute(10, "type", "range");
+        builder.AddAttribute(11, "class", "bmg-slider");
+        builder.AddAttribute(12, "id", id);
+        builder.AddAttribute(13, "min", min.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        builder.AddAttribute(14, "max", max.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        builder.AddAttribute(15, "step", step.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        builder.AddAttribute(16, "value", value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        builder.AddAttribute(17, "aria-valuetext", $"{label} {value:0.##}");
+        builder.AddAttribute(18, "oninput", EventCallback.Factory.Create<ChangeEventArgs>(this, async e =>
+        {
+            if (double.TryParse(e.Value?.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v))
+                await onInput(v);
+        }));
+        if (onCommit is not null)
+        {
+            // Commit on release so the history gets one entry per interaction, not one per pixel of slider travel.
+            builder.AddAttribute(19, "onchange", EventCallback.Factory.Create<ChangeEventArgs>(this, async _ => await onCommit()));
+        }
+        builder.CloseElement();
+        builder.CloseElement();
+    };
+}

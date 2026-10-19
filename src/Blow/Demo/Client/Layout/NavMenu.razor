@@ -1,0 +1,73 @@
+﻿<div class="nav-top">
+    <a class="brand" href="">
+        <span class="brand-mark">@((MarkupString)LogoSvg)</span>
+        <span class="brand-text">bit Blow</span>
+    </a>
+    <button class="nav-toggle" title="Toggle navigation" @onclick="ToggleNavMenu">
+        <span></span><span></span><span></span>
+    </button>
+</div>
+
+<nav class="@NavMenuCssClass">
+    <NavLink class="nav-link" href="" Match="NavLinkMatch.All" @onclick="CollapseNavMenu">
+        <span class="nav-icon">●</span> Basic Flow
+    </NavLink>
+    <NavLink class="nav-link" href="custom-nodes" @onclick="CollapseNavMenu">
+        <span class="nav-icon">◆</span> Custom Nodes
+    </NavLink>
+    <NavLink class="nav-link" href="edge-types" @onclick="CollapseNavMenu">
+        <span class="nav-icon">↳</span> Edge Types
+    </NavLink>
+    <NavLink class="nav-link" href="custom-edges" @onclick="CollapseNavMenu">
+        <span class="nav-icon">⤳</span> Custom Edges
+    </NavLink>
+    <NavLink class="nav-link" href="interactions" @onclick="CollapseNavMenu">
+        <span class="nav-icon">⊹</span> Interactions
+    </NavLink>
+    <NavLink class="nav-link" href="labels-handles" @onclick="CollapseNavMenu">
+        <span class="nav-icon">⛶</span> Labels &amp; Handles
+    </NavLink>
+    <NavLink class="nav-link" href="extras" @onclick="CollapseNavMenu">
+        <span class="nav-icon">✦</span> Theming &amp; Extras
+    </NavLink>
+    <NavLink class="nav-link" href="advanced" @onclick="CollapseNavMenu">
+        <span class="nav-icon">▣</span> Groups &amp; Resizing
+    </NavLink>
+    <NavLink class="nav-link" href="connection-line" @onclick="CollapseNavMenu">
+        <span class="nav-icon">⤿</span> Connection Lines
+    </NavLink>
+    <NavLink class="nav-link" href="add-node-on-drop" @onclick="CollapseNavMenu">
+        <span class="nav-icon">＋</span> Add Node on Drop
+    </NavLink>
+    <NavLink class="nav-link" href="floating-edges" @onclick="CollapseNavMenu">
+        <span class="nav-icon">◌</span> Floating Edges
+    </NavLink>
+    <NavLink class="nav-link" href="minimap" @onclick="CollapseNavMenu">
+        <span class="nav-icon">▦</span> MiniMap
+    </NavLink>
+    <NavLink class="nav-link" href="drag-threshold" @onclick="CollapseNavMenu">
+        <span class="nav-icon">⇆</span> Drag Threshold
+    </NavLink>
+    <NavLink class="nav-link" href="mcp-server" @onclick="CollapseNavMenu">
+        <span class="nav-icon">⌘</span> MCP Server
+    </NavLink>
+</nav>
+
+@code {
+    private bool collapseNavMenu = true;
+
+    private string? NavMenuCssClass => collapseNavMenu ? "nav-menu collapse" : "nav-menu";
+
+    private const string LogoSvg =
+        "<svg width='22' height='22' viewBox='0 0 24 24' fill='none' xmlns='http://www.w3.org/2000/svg'>" +
+        "<rect x='2' y='3' width='7' height='5' rx='1.5' fill='#a5b4fc'/>" +
+        "<rect x='15' y='16' width='7' height='5' rx='1.5' fill='#818cf8'/>" +
+        "<rect x='15' y='3' width='7' height='5' rx='1.5' fill='#c7d2fe'/>" +
+        "<path d='M9 5.5h2.5a2 2 0 0 1 2 2v9a2 2 0 0 0 2 2H15' stroke='#e0e7ff' stroke-width='1.5' fill='none'/>" +
+        "<path d='M9 5.5h9' stroke='#e0e7ff' stroke-width='1.5'/>" +
+        "</svg>";
+
+    private void ToggleNavMenu() => collapseNavMenu = !collapseNavMenu;
+
+    private void CollapseNavMenu() => collapseNavMenu = true;
+}

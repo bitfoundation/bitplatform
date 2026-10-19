@@ -1,0 +1,15 @@
+﻿{
+    "$schema": "http://json.schemastore.org/launchsettings.json",
+    "profiles": {
+        "Bit.Bdnd.Demo.Server": {
+            "commandName": "Project",
+            "dotnetRunMessages": true,
+            "launchBrowser": true,
+            "inspectUri": "{wsProtocol}://{url.hostname}:{url.port}/_framework/debug/ws-proxy?browser={browserInspectUri}",
+            "applicationUrl": "https://localhost:5561;http://localhost:5560",
+            "environmentVariables": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
+        }
+    }
+}

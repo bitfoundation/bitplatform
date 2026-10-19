@@ -384,3 +384,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Footers.dispose

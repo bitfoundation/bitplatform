@@ -1,0 +1,198 @@
+﻿/* Layout shell (mirrors MainLayout so the examples section stands on its own). */
+.page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.sidebar {
+    background: linear-gradient(180deg, #1e1b4b 0%, #312e81 100%);
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+}
+
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    height: 3.5rem;
+    padding: 0 1.5rem;
+    background: var(--demo-surface);
+    border-bottom: 1px solid var(--demo-border);
+}
+
+    .top-row ::deep a {
+        color: var(--demo-muted);
+        font-weight: 500;
+        font-size: 0.9rem;
+        white-space: nowrap;
+    }
+
+    .top-row a:hover {
+        color: var(--demo-text);
+        text-decoration: none;
+    }
+
+.content {
+    flex: 1;
+    padding: 1.75rem 2rem;
+    min-width: 0;
+}
+
+/* Sidebar header / brand */
+.nav-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 3.5rem;
+    padding: 0 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    flex-shrink: 0;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.05rem;
+}
+
+.brand:hover {
+    text-decoration: none;
+}
+
+.brand-mark {
+    display: inline-flex;
+    align-items: center;
+}
+
+.nav-toggle {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 4px;
+    width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    background: rgba(255, 255, 255, 0.08);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+    .nav-toggle span {
+        display: block;
+        height: 2px;
+        background: #fff;
+        border-radius: 2px;
+    }
+
+/* Example links */
+.ex-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 0.75rem;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.ex-group {
+    margin: 0.7rem 0 0.2rem;
+    padding: 0 0.75rem;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: rgba(165, 180, 252, 0.8);
+}
+
+.ex-nav ::deep .ex-link {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.45rem 0.75rem;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.86rem;
+    font-weight: 400;
+    border-radius: 8px;
+}
+
+.ex-nav ::deep .ex-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    text-decoration: none;
+}
+
+.ex-nav ::deep .ex-link.active {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+}
+
+.ex-nav ::deep .ex-link--all {
+    font-weight: 600;
+    font-size: 0.92rem;
+    color: #fff;
+}
+
+.nav-icon {
+    display: inline-flex;
+    width: 1.1rem;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: #a5b4fc;
+}
+
+@media (max-width: 640.98px) {
+    .top-row {
+        justify-content: center;
+    }
+
+    .content {
+        padding: 1.25rem;
+    }
+
+    .ex-nav.collapse {
+        display: none;
+    }
+}
+
+@media (min-width: 641px) {
+    .page {
+        flex-direction: row;
+    }
+
+    .sidebar {
+        width: 260px;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        flex-shrink: 0;
+    }
+
+    .top-row {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+    }
+
+    .nav-toggle {
+        display: none;
+    }
+
+    .ex-nav.collapse {
+        display: flex;
+    }
+}

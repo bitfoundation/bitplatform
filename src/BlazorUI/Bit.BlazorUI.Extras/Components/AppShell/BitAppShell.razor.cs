@@ -799,6 +799,10 @@ public partial class BitAppShell : BitComponentBase
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        // What the script does on the page's keys and pointer it does as it loads, called by nothing: with the lazy scripts
+        // on (BitBlazorUIScripts), the shell loads it before anything else of it is called.
+        if (firstRender) await _js.EnsureScriptAsync("Bit.BlazorUI.Extras", "BitAppShell");
+
         if (firstRender)
         {
             // The container element does not exist while the first render is being built, so the cascade of

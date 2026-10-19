@@ -1,0 +1,25 @@
+﻿@namespace Bit.Bdnd
+
+<CascadingValue Value="_manager" IsFixed="true">
+    @ChildContent
+</CascadingValue>
+
+@code {
+    /// <summary>Optional externally-owned manager. When omitted, one is created for this subtree.</summary>
+    [Parameter] public BdndDragDropManager? Manager { get; set; }
+
+    /// <summary>The drag-and-drop content: the draggables, drop targets and drag layers of this context.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private BdndDragDropManager? _manager;
+
+    protected override void OnParametersSet()
+    {
+        var manager = Manager ?? _manager ?? new BdndDragDropManager();
+        // the cascade is fixed: descendants keep the manager they were initialized with
+        if (_manager is not null && ReferenceEquals(manager, _manager) is false)
+            throw new InvalidOperationException(
+                $"The {nameof(Manager)} of a {nameof(BdndProvider)} cannot be changed after it has been set.");
+        _manager = manager;
+    }
+}

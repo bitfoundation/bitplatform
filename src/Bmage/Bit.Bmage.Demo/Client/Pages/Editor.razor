@@ -1,0 +1,424 @@
+﻿@page "/editor"
+
+@* The editor component, whole: the built-in toolbar and panel, a theme forced or left to follow the
+   site, a direction, and two example translations. Under it, the document the editor is editing,
+   printed live from OnDocumentChanged - the clearest way to show that an edit here is a value (a
+   pipeline and a list of annotations) rather than a mutated bitmap. The rest of the page is the
+   component's reference. *@
+
+<PageTitle>The editor - Bit.Bmage</PageTitle>
+
+<h1>The editor</h1>
+
+<p class="page-intro">
+    Everything in one component: crop, rotate, adjustments, filters, drawing, annotations, layers,
+    history and export. Drop an image on it, or open one from its own drop zone - then try the
+    <strong>theme</strong>, <strong>direction</strong> and <strong>language</strong> switches.
+</p>
+
+<div class="demo-section">
+    <h2>Try it</h2>
+
+    <div class="toolbar-row">
+        <div class="toolbar-group" role="group" aria-labelledby="editor-theme-label">
+            <span class="toolbar-label" id="editor-theme-label">Theme</span>
+            @foreach (var theme in new[] { "site", "light", "dark" })
+            {
+                <button type="button" class="chip" aria-pressed="@(_theme == theme ? "true" : "false")" @onclick="() => _theme = theme">@theme</button>
+            }
+        </div>
+        <div class="toolbar-group" role="group" aria-labelledby="editor-direction-label">
+            <span class="toolbar-label" id="editor-direction-label">Direction</span>
+            @foreach (var dir in new[] { "ltr", "rtl" })
+            {
+                <button type="button" class="chip" aria-pressed="@(_direction == dir ? "true" : "false")" @onclick="() => _direction = dir">@dir</button>
+            }
+        </div>
+        <div class="toolbar-group" role="group" aria-labelledby="editor-language-label">
+            <span class="toolbar-label" id="editor-language-label">Language</span>
+            @foreach (var lang in Languages)
+            {
+                <button type="button" class="chip" lang="@lang.Value.Tag" aria-pressed="@(_language == lang.Key ? "true" : "false")" @onclick="() => SetLanguage(lang.Key)">@lang.Key</button>
+            }
+        </div>
+    </div>
+
+    <div class="editor-frame">
+        <BmageEditor @ref="_editor"
+                     Class="@ThemeClass"
+                     Direction="@_direction"
+                     Strings="_strings"
+                     ExportOptions="ExportOptions"
+                     OnDocumentChanged="OnDocumentChanged"
+                     OnImageLoaded="_ => StateHasChanged()" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>The document behind the editor</h2>
+    <p>
+        This is the whole edit: a list of pixel operations and a list of annotation objects. It is a
+        value, so it can be stored, sent to a server, replayed on the original file, or applied to a
+        different image entirely. It updates as you work.
+    </p>
+    @if (_document is null)
+    {
+        <p class="small muted">Load an image into the editor above to see its document here.</p>
+    }
+    else
+    {
+        <pre class="code">@DocumentText</pre>
+    }
+</div>
+
+<div class="demo-section">
+    <h2>Using it</h2>
+    <p>
+        The simple path stays simple: the editor fills its container, so give it a height, and
+        everything else has a working default. The advanced path is the same component with more
+        parameters.
+    </p>
+    <CodeSnippet Code="@Snippet" Expanded="true" />
+    <div class="callout">
+        <p>
+            The editor needs the stylesheet <code>_content/Bit.Bmage.Editor/bit-bmage-editor.css</code>
+            linked from <code>App.razor</code> or <code>index.html</code> - see
+            <a href="/getting-started">Getting started</a>.
+        </p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Parameters</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Editor parameters">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Parameter</th><th scope="col">Purpose</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>Image</code></th><td>The image to edit. Setting it replaces the session and its history. The editor works on a copy, so your buffer stays yours.</td></tr>
+                <tr><th scope="row"><code>Strings</code></th><td>Every user-visible label - see <a href="/editor#localisation">Localisation</a>.</td></tr>
+                <tr><th scope="row"><code>Direction</code></th><td><code>"ltr"</code> or <code>"rtl"</code>. The layout uses logical CSS properties, so it mirrors correctly.</td></tr>
+                <tr><th scope="row"><code>Class</code>, <code>Style</code></th><td>Applied to the root element. <code>bmg-theme-dark</code> or <code>bmg-theme-light</code> force a theme.</td></tr>
+                <tr><th scope="row"><code>ShowToolbar</code>, <code>ShowPanel</code></th><td>Hide the built-in chrome without replacing it.</td></tr>
+                <tr><th scope="row"><code>Toolbar</code>, <code>Panel</code>, <code>Footer</code></th><td>Replace the chrome entirely; each receives a <code>BmageEditorContext</code>.</td></tr>
+                <tr><th scope="row"><code>EmptyState</code></th><td>Replace the "drop an image here" view.</td></tr>
+                <tr><th scope="row"><code>MaxProxyDimension</code></th><td>Longest edge used for interactive editing. Falls back to <code>BitBmageOptions.MaxInteractiveDimension</code>, then 2048. <code>0</code> always edits at full resolution.</td></tr>
+                <tr><th scope="row"><code>MaxHistoryDepth</code></th><td>Undo steps kept. Default 100.</td></tr>
+                <tr><th scope="row"><code>ExportOptions</code></th><td>Settings used by the built-in save action.</td></tr>
+                <tr><th scope="row"><code>OnDocumentChanged</code>, <code>OnExported</code>, <code>OnImageLoaded</code>, <code>OnError</code></th><td>Callbacks. <code>OnImageLoaded</code> matters more than it looks: the editor can load an image through its own drop zone while your <code>Image</code> is still null, so a page whose buttons depend on an image should re-render from it.</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Driving it from code</h2>
+    <p>
+        Everything the built-in toolbar can do is a public method, and the same surface is handed to
+        custom chrome through <code>BmageEditorContext</code> - so a toolbar you write can do
+        everything the built-in one does.
+    </p>
+    <CodeSnippet Code="@CodeSnippetText" Language="Razor" Expanded="true" />
+    <p>
+        For an adjustment driven by your own slider, pass <code>transient: true</code> while dragging
+        and commit once when the interaction ends, so the history gets one entry rather than hundreds.
+    </p>
+    <CodeSnippet Code="@TransientSnippet" Language="C#" />
+</div>
+
+<div class="demo-section">
+    <h2>Replacing the chrome</h2>
+    <p>
+        <code>Toolbar</code>, <code>Panel</code> and <code>Footer</code> take a render fragment with a
+        <code>BmageEditorContext</code>: the current tool and settings, the document, the annotations,
+        the history and its position, the detected capabilities, the output size, and every action -
+        tool selection, crop, rotate, flip, adjustments, annotations, undo, redo, reset, zoom, load,
+        paste, export, download and clipboard copy.
+    </p>
+    <CodeSnippet Code="@ToolbarSnippet" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Theming</h2>
+    <p>
+        Every colour and metric is a CSS custom property on <code>.bmg-editor</code>. Override the
+        ones you care about - this site does exactly that to make the editor follow the theme switch
+        in the header rather than the operating system (the <strong>site</strong> theme above), while
+        <strong>light</strong> and <strong>dark</strong> show the component's own palettes.
+    </p>
+    <CodeSnippet Code="@ThemeSnippet" Language="CSS" Expanded="true" />
+    <p>
+        Dark mode follows <code>prefers-color-scheme</code> unless forced with
+        <code>bmg-theme-light</code> or <code>bmg-theme-dark</code>. High contrast mode and
+        <code>prefers-reduced-motion</code> are honoured.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2 id="localisation">Localisation</h2>
+    <p>
+        <code>BmageEditorStrings</code> is a record with a property for every label, so a translation
+        is an object rather than a resource file - and you can override only the words you care
+        about. Number and size formatting are functions on the same record. For a right-to-left
+        language set <code>Direction="rtl"</code>: the panel, the crop handles and the toolbar all
+        mirror. The Persian chip above switches both at once.
+    </p>
+    <CodeSnippet Code="@LocalisationSnippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Tools and keyboard</h2>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Editor tools">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Tool</th><th scope="col">Behaviour</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">Select</th><td>Click to select an annotation, drag to move it, arrow keys to nudge, Delete to remove.</td></tr>
+                <tr><th scope="row">Pan</th><td>Drag to move the view.</td></tr>
+                <tr><th scope="row">Crop</th><td>Drag a rectangle, adjust it with eight handles, apply from the toolbar.</td></tr>
+                <tr><th scope="row">Draw</th><td>Freehand, smoothed so fast strokes do not look polygonal.</td></tr>
+                <tr><th scope="row">Line, Arrow</th><td>Drag from start to end; hold Shift to snap to 15&deg; increments.</td></tr>
+                <tr><th scope="row">Rectangle, Ellipse</th><td>Drag to size; hold Shift for a square or a circle.</td></tr>
+                <tr><th scope="row">Highlight</th><td>A translucent block, like a marker pen.</td></tr>
+                <tr><th scope="row">Redact</th><td>Solid, pixelate or blur; replaces the pixels underneath.</td></tr>
+                <tr><th scope="row">Text</th><td>Places a label you then edit.</td></tr>
+                <tr><th scope="row">Step</th><td>Auto-numbered markers for tutorials and bug reports.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Editor keyboard shortcuts">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Keys</th><th scope="col">Action</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><kbd class="kbd">Ctrl</kbd> / <kbd class="kbd">&#8984;</kbd> + <kbd class="kbd">Z</kbd></th><td>Undo</td></tr>
+                <tr><th scope="row"><kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">Shift</kbd> + <kbd class="kbd">Z</kbd>, <kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">Y</kbd></th><td>Redo</td></tr>
+                <tr><th scope="row"><kbd class="kbd">Delete</kbd>, <kbd class="kbd">Backspace</kbd></th><td>Delete the selected annotation</td></tr>
+                <tr><th scope="row">Arrow keys</th><td>Nudge the selection by 1px, or 10px with Shift</td></tr>
+                <tr><th scope="row"><kbd class="kbd">Esc</kbd></th><td>Clear the selection, or cancel a pending crop</td></tr>
+                <tr><th scope="row"><kbd class="kbd">+</kbd>, <kbd class="kbd">-</kbd></th><td>Zoom</td></tr>
+                <tr><th scope="row"><kbd class="kbd">Ctrl</kbd> + <kbd class="kbd">0</kbd></th><td>Fit to window</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        The canvas is a focusable <code>application</code> region with a described keyboard hint. The
+        toolbar is a <code>toolbar</code> of labelled buttons carrying <code>aria-pressed</code>, the
+        panel is a <code>tablist</code> with arrow-key navigation, crop handles are focusable buttons
+        with 24px hit targets, and status messages use live regions. On touch screens the canvas
+        claims the drag (so drawing does not scroll the page) and the panel moves below the canvas.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Large images</h2>
+    <p>
+        By default the editor edits through a proxy no larger than 2048px on its longest edge and
+        replays the edit at full resolution on export - for a 24 megapixel photo, a 25&times; cut in
+        the pixels each preview touches. Because every operation rescales itself, the preview and the
+        export are one edit at two resolutions rather than two code paths that could disagree.
+        <code>ImageEditSession.UsesProxy</code> and <code>ProxyScale</code> say when it is happening;
+        set <code>MaxProxyDimension="0"</code> to always edit at full resolution, or
+        <code>MaxInteractiveDimension</code> on <code>BitBmageOptions</code> to change the default for
+        every editor in the app.
+    </p>
+    <p>
+        History stores descriptions, not pixels: a hundred undo steps on a 6000 &times; 4000 image
+        stay under a megabyte.
+    </p>
+</div>
+
+@code {
+    private BmageEditor? _editor;
+    private ImageDocument? _document;
+    private string _theme = "site";
+    private string _direction = "ltr";
+    private string _language = "English";
+    private BmageEditorStrings _strings = BmageEditorStrings.Default;
+
+    private static readonly ImageExportOptions ExportOptions = new()
+    {
+        Format = ImageFormat.Png,
+        Metadata = MetadataPolicy.StripSensitive,
+    };
+
+    // "site" leaves the class off, which is what lets editor-theme.css point the editor at the
+    // site's own tokens; the other two force the component's built-in palettes.
+    private string ThemeClass => _theme switch
+    {
+        "light" => "bmg-theme-light",
+        "dark" => "bmg-theme-dark",
+        _ => string.Empty,
+    };
+
+    /// <summary>
+    /// Two example translations. Every label is a property on a record, so a translation is an object, not a resource
+    /// file, and a host can override just the few words it cares about.
+    /// </summary>
+    private static readonly Dictionary<string, (string Tag, BmageEditorStrings Strings)> Languages = new()
+    {
+        ["English"] = ("en", BmageEditorStrings.Default),
+        ["Deutsch"] = ("de", BmageEditorStrings.Default with
+        {
+            Select = "Auswählen", Crop = "Zuschneiden", Draw = "Zeichnen", Arrow = "Pfeil", Line = "Linie",
+            Rectangle = "Rechteck", Ellipse = "Ellipse", Text = "Text", Highlight = "Markieren", Redact = "Schwärzen",
+            Adjust = "Anpassen", Filters = "Filter", Layers = "Ebenen", History = "Verlauf", Export = "Exportieren",
+            Undo = "Rückgängig", Redo = "Wiederholen", Reset = "Zurücksetzen", Download = "Herunterladen",
+            Brightness = "Helligkeit", Contrast = "Kontrast", Saturation = "Sättigung", Tools = "Werkzeuge",
+            DropImageHere = "Bild hier ablegen oder klicken zum Auswählen",
+        }),
+        ["فارسی"] = ("fa", BmageEditorStrings.Default with
+        {
+            Select = "انتخاب", Crop = "برش", Draw = "رسم", Arrow = "پیکان", Line = "خط",
+            Rectangle = "مستطیل", Ellipse = "بیضی", Text = "متن", Highlight = "هایلایت", Redact = "پنهان‌سازی",
+            Adjust = "تنظیم", Filters = "فیلترها", Layers = "لایه‌ها", History = "تاریخچه", Export = "خروجی",
+            Undo = "واگرد", Redo = "ازنو", Reset = "بازنشانی", Download = "دانلود",
+            Brightness = "روشنایی", Contrast = "کنتراست", Saturation = "اشباع", Tools = "ابزارها",
+            DropImageHere = "تصویر را اینجا رها کنید یا برای انتخاب کلیک کنید",
+        }),
+    };
+
+    private const string Snippet = """
+        @* The simple path stays simple. *@
+        <div style="height: 70vh">
+            <BmageEditor @ref="editor" />
+        </div>
+        <button @onclick='() => editor.DownloadAsync("edited")'>Save</button>
+
+        @* And the advanced path is the same component. *@
+        <BmageEditor Strings="german" Class="bmg-theme-dark"
+                     MaxProxyDimension="3000"
+                     OnDocumentChanged="doc => Persist(doc)">
+            <Toolbar Context="editor">
+                <button @onclick="() => editor.SetTool(EditorToolKind.Crop)">Crop</button>
+                <button disabled="@(!editor.CanUndo)" @onclick="editor.Undo">Undo</button>
+            </Toolbar>
+        </BmageEditor>
+        """;
+
+    private const string CodeSnippetText = """
+        @code {
+            private BmageEditor? _editor;
+
+            void Crop16x9()
+            {
+                _editor!.SetTool(EditorToolKind.Crop);
+                _editor.SetCropAspect(AspectRatio.Ratio16x9);
+            }
+
+            async Task Save() => await _editor!.DownloadAsync("edited",
+                new ImageExportOptions { Format = ImageFormat.WebP, Quality = 0.9 });
+
+            async Task AddCallout() => await _editor!.AddAnnotationAsync(new ArrowAnnotation
+            {
+                Start = new Vector2(100, 400),
+                End   = new Vector2(300, 200),
+                Style = ShapeStyle.Default with { Stroke = new StrokeStyle { Width = 6 } },
+            });
+        }
+        """;
+
+    private const string TransientSnippet = """
+        async Task OnBrightnessInput(double value)
+            => await context.SetAdjustmentAsync(new BrightnessAdjustment((float)value), "Brightness", transient: true);
+
+        async Task OnBrightnessCommit()
+            => await context.SetAdjustmentAsync(context.FindAdjustment<BrightnessAdjustment>(), "Brightness");
+        """;
+
+    private const string ToolbarSnippet = """
+        <BmageEditor ExportOptions="_options">
+            <Toolbar Context="editor">
+                <div class="my-toolbar">
+                    <button class="@(editor.Tool == EditorToolKind.Crop ? "on" : null)"
+                            @onclick="() => editor.SetTool(EditorToolKind.Crop)">
+                        Crop
+                    </button>
+                    <button disabled="@(!editor.CanUndo)" @onclick="editor.Undo">Undo</button>
+                    <button disabled="@(!editor.CanRedo)" @onclick="editor.Redo">Redo</button>
+                    <span>@editor.OutputSize.Width × @editor.OutputSize.Height</span>
+                    <button @onclick='() => editor.DownloadAsync("image")'>Save</button>
+                </div>
+            </Toolbar>
+        </BmageEditor>
+        """;
+
+    private const string ThemeSnippet = """
+        .my-editor {
+            --bmg-accent: #7c3aed;
+            --bmg-accent-text: #ffffff;
+            --bmg-bg: #0f0f12;
+            --bmg-bg-subtle: #17171c;
+            --bmg-canvas-bg: #202027;
+            --bmg-border: #2a2a33;
+            --bmg-text: #eeeef2;
+            --bmg-radius: 4px;
+            --bmg-panel-width: 320px;
+        }
+
+        /* <BmageEditor Class="my-editor" /> */
+        """;
+
+    private const string LocalisationSnippet = """
+        var german = BmageEditorStrings.Default with
+        {
+            Crop = "Zuschneiden",
+            Undo = "Rückgängig",
+            Redo = "Wiederholen",
+            Download = "Herunterladen",
+            DropImageHere = "Bild hier ablegen oder klicken zum Auswählen",
+        };
+
+        // Formatting is replaceable too, because it is a function on the same record.
+        var strings = BmageEditorStrings.Default with
+        {
+            FormatFileSize = bytes => $"{bytes / 1024.0:0.#} Ko",
+            FormatDimensions = (w, h) => $"{w}×{h} px",
+        };
+
+        // <BmageEditor Strings="german" Direction="ltr" />
+        """;
+
+    private string DocumentText
+    {
+        get
+        {
+            if (_document is null) return string.Empty;
+            var lines = new List<string>
+            {
+                $"Source      {_document.SourceSize.Width} × {_document.SourceSize.Height}",
+                $"Output      {_document.OutputSize.Width} × {_document.OutputSize.Height}",
+                "",
+                $"Pipeline ({_document.Pipeline.Count})",
+            };
+            if (_document.Pipeline.Count == 0) lines.Add("  (none)");
+            foreach (var operation in _document.Pipeline) lines.Add($"  {operation}");
+            lines.Add("");
+            lines.Add($"Annotations ({_document.Annotations.Count})");
+            if (_document.Annotations.Count == 0) lines.Add("  (none)");
+            foreach (var annotation in _document.Annotations)
+            {
+                var b = annotation.GetBounds();
+                lines.Add($"  {annotation.Kind,-10} at ({b.X:0},{b.Y:0}) {b.Width:0}×{b.Height:0}");
+            }
+            return string.Join('\n', lines);
+        }
+    }
+
+    private void SetLanguage(string language)
+    {
+        _language = language;
+        _strings = Languages[language].Strings;
+        // Persian reads right to left, so switching the language switches the layout too, and back again.
+        _direction = language == "فارسی" ? "rtl" : "ltr";
+    }
+
+    private void OnDocumentChanged(ImageDocument document)
+    {
+        _document = document;
+        StateHasChanged();
+    }
+}

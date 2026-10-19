@@ -1,0 +1,18 @@
+﻿@page "/Error"
+
+@* Target of app.UseExceptionHandler("/Error") in the host's Program.cs. It lives in the client
+   project on purpose: Routes.razor binds the router to this assembly only, so a page placed in
+   the host project would never be matched and the re-executed request would end in a 404. *@
+
+<PageTitle>Error · Bsqlite</PageTitle>
+
+<header class="page-head">
+    <p class="eyebrow">500</p>
+    <h1>Something went wrong</h1>
+    <p class="lead" role="alert">
+        An error occurred while processing your request. Reloading usually clears it; if it does
+        not, the repository is the place to tell us about it.
+    </p>
+</header>
+<a class="btn" href="">Back to the overview <Icon Name="arrow-right" /></a>
+<a class="btn secondary" href="@SiteLinks.Issues" target="_blank" rel="noopener">Report an issue</a>

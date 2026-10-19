@@ -398,3 +398,5 @@
         }
     }
 }
+
+// bit-lazy: teardown MediaQuery.dispose

@@ -1,0 +1,39 @@
+﻿@page "/examples/edges"
+
+<PageTitle>Edges - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Edges"
+                 Summary="The built-in edge path types - bezier, straight, step and smooth-step - shown side by side, including animated, labelled and arrow-headed variants.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+    </BlowCanvas>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "b1", Label = "bezier", Position = new(20, 20) },
+            new BlowNode { Id = "b2", Label = "", Position = new(20, 180) },
+            new BlowNode { Id = "s1", Label = "straight", Position = new(220, 20) },
+            new BlowNode { Id = "s2", Label = "", Position = new(220, 180) },
+            new BlowNode { Id = "t1", Label = "step", Position = new(420, 20) },
+            new BlowNode { Id = "t2", Label = "", Position = new(420, 180) },
+            new BlowNode { Id = "ss1", Label = "smoothstep", Position = new(620, 20) },
+            new BlowNode { Id = "ss2", Label = "", Position = new(620, 180) },
+        ];
+
+        _edges =
+        [
+            new BlowEdge { Id = "e-b", Source = "b1", Target = "b2", Type = BlowEdgeType.Bezier, Label = "bezier" },
+            new BlowEdge { Id = "e-s", Source = "s1", Target = "s2", Type = BlowEdgeType.Straight, Label = "straight" },
+            new BlowEdge { Id = "e-t", Source = "t1", Target = "t2", Type = BlowEdgeType.Step, Label = "step", Animated = true },
+            new BlowEdge { Id = "e-ss", Source = "ss1", Target = "ss2", Type = BlowEdgeType.SmoothStep, Label = "smoothstep", MarkerType = BlowMarkerType.ArrowClosed },
+        ];
+    }
+}

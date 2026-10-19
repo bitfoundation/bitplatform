@@ -1,0 +1,517 @@
+﻿@page "/pipelines"
+@implements IDisposable
+
+@* The pipeline is the library's central idea, so the page opens with one to build: pick a geometry
+   step and some adjustments, and it prints the pipeline as the library describes it, the output
+   size it computes without touching a pixel, the pipeline the optimiser actually runs, and the
+   result. Everything below is the reference for the operations those choices stand for. *@
+
+<PageTitle>Pipelines - Bit.Bmage</PageTitle>
+
+<h1>Pipelines</h1>
+
+<p class="page-intro">
+    An <code>ImagePipeline</code> is an <strong>immutable, ordered list of operations</strong>.
+    Building one does no work: it is a description of an edit that you can inspect, store, reuse
+    across images and threads, and execute when you are ready.
+</p>
+
+<div class="demo-section">
+    <h2>Build one</h2>
+    <p>
+        Every choice below is a builder call. Each returns a new pipeline and leaves the old one as it
+        was - which is what makes a pipeline safe to keep in a static field and reuse for every upload.
+    </p>
+
+    @if (_error is not null)
+    {
+        <div class="alert alert-error" role="alert">@_error</div>
+    }
+
+    <div class="split">
+        <div>
+            @if (_preview is null)
+            {
+                <div class="sample-row">
+                    <button type="button" class="btn btn-accent" disabled="@(_busy || IsHydrating)" @onclick="StartAsync">
+                        <Icon Path="@Icons.Play" />
+                        Run on a sample image
+                    </button>
+                    <span class="small muted">A generated 1200 &times; 800 scene; every change re-runs the pipeline.</span>
+                </div>
+            }
+            else
+            {
+                <ImagePreview Image="_preview" Version="_previewVersion" Alt="The sample scene, processed by the pipeline" Class="pipeline-preview" />
+            }
+
+            <p class="card-title playground-label">
+                Pipeline
+                @if (_busy)
+                {
+                    <span class="working" role="status">Running&hellip;</span>
+                }
+            </p>
+            <pre class="code">@PipelineText</pre>
+
+            <div class="stat-grid playground-stats">
+                <div class="stat">
+                    <span class="stat-label">Output size</span>
+                    <span class="stat-value">@OutputSizeText</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Steps run</span>
+                    <span class="stat-value">@Optimized.Count of @Pipeline.Count</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Took</span>
+                    <span class="stat-value">@(_elapsed is { } e ? $"{e.TotalMilliseconds:0} ms" : "—")</span>
+                </div>
+            </div>
+
+            <p class="card-title playground-label">After the optimiser</p>
+            <pre class="code">@OptimizedText</pre>
+        </div>
+
+        <div class="card">
+            <p class="card-title">Geometry</p>
+            <div class="field" role="group" aria-label="Geometry">
+                <div class="chip-row">
+                    @foreach (var option in GeometryOptions)
+                    {
+                        <button type="button" class="chip" aria-pressed="@(_geometry == option ? "true" : "false")" @onclick="() => SetGeometry(option)">@option</button>
+                    }
+                </div>
+            </div>
+
+            <hr class="divider" />
+            <p class="card-title">Adjustments and filters</p>
+            @foreach (var step in Steps)
+            {
+                <div class="field field-inline">
+                    <input id="@($"step-{step.Id}")" type="checkbox" checked="@_enabled.Contains(step.Id)" @onchange="e => Toggle(step.Id, e)" />
+                    <label class="field-label" for="@($"step-{step.Id}")">@step.Label</label>
+                </div>
+            }
+
+            <hr class="divider" />
+            <div class="field field-inline">
+                <input id="step-noop" type="checkbox" checked="@_noOps" @onchange="e => { _noOps = (bool)(e.Value ?? false); Schedule(); }" />
+                <label class="field-label" for="step-noop">Add identity steps</label>
+            </div>
+            <span class="field-hint">
+                <code>Brightness(0)</code> and <code>Contrast(0)</code> do nothing, and the optimiser
+                drops them - watch the step count.
+            </span>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>Building and inspecting</h2>
+    <CodeSnippet Code="@InspectSnippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Executing</h2>
+    <CodeSnippet Code="@ExecuteSnippet" Language="C#" Expanded="true" />
+    <p>
+        The source is never modified, and the returned buffer is yours to dispose.
+        <code>ExecuteAsync</code> yields to the scheduler between operations so a single-threaded
+        WebAssembly UI can repaint; <code>Execute</code> is the synchronous form, for use off the UI
+        thread or on small images.
+    </p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Execution options">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Option</th><th scope="col">Meaning</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>Allocator</code></th><td>Where intermediate buffers come from. Defaults to the shared pool.</td></tr>
+                <tr><th scope="row"><code>Limits</code></th><td>Safety limits applied to every buffer allocated during the run.</td></tr>
+                <tr><th scope="row"><code>CancellationToken</code></th><td>Checked between operations and periodically inside them, typically every few rows.</td></tr>
+                <tr><th scope="row"><code>Progress</code></th><td>Receives 0 to 1 across the whole run, with each operation's own progress mapped into its slice.</td></tr>
+                <tr><th scope="row"><code>Optimize</code></th><td>Run the optimiser first. Default true.</td></tr>
+                <tr><th scope="row"><code>YieldBetweenOperations</code></th><td>Yield to the scheduler between steps. Default true.</td></tr>
+                <tr><th scope="row"><code>YieldCallback</code></th><td>How to yield, if the default <code>Task.Yield</code> is not right for your host.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Failures are wrapped with context rather than surfacing bare - an
+        <code>ImageException</code> names the operation and its step, such as
+        <em>Operation 'Crop' (step 2 of 4) failed: Crop rectangle ... does not intersect the image
+        (800x600)</em>.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Geometry</h2>
+    <CodeSnippet Code="@GeometrySnippet" Language="C#" Expanded="true" />
+    <p>
+        <code>AutoOrient</code> is almost always the first thing you want. Phones record rotation in
+        EXIF rather than rotating the pixels, so an image that looks right in a photo viewer will
+        appear sideways on a canvas unless it is applied. The browser decoder applies it during
+        decoding; <code>AutoOrient</code> handles the cases where it has not been.
+    </p>
+    <h3>The six resize modes</h3>
+    <p>For a 1000 &times; 500 source asked to fit 400 &times; 400:</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Resize modes">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Mode</th><th scope="col" class="num">Result</th><th scope="col">Behaviour</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>Fit</code></th><td class="num">400 &times; 200</td><td>Scale proportionally to fit inside. The default.</td></tr>
+                <tr><th scope="row"><code>Contain</code></th><td class="num">400 &times; 400</td><td>Like <code>Fit</code>, then pad to exactly the target with <code>background</code>.</td></tr>
+                <tr><th scope="row"><code>Cover</code></th><td class="num">400 &times; 400</td><td>Scale to fill, then crop the overflow according to <code>anchor</code>.</td></tr>
+                <tr><th scope="row"><code>Stretch</code></th><td class="num">400 &times; 400</td><td>Ignore the aspect ratio.</td></tr>
+                <tr><th scope="row"><code>Max</code></th><td class="num">400 &times; 200</td><td>Like <code>Fit</code>, but never enlarge a smaller image - the right choice for an upload cap.</td></tr>
+                <tr><th scope="row"><code>Min</code></th><td class="num">800 &times; 400</td><td>Scale so both dimensions are at least the target.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <h3>Resampling filters</h3>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Resampling filters">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Filter</th><th scope="col">Use it for</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row"><code>Auto</code></th><td>The default. Lanczos3 for downscaling, bicubic for upscaling.</td></tr>
+                <tr><th scope="row"><code>Box</code></th><td>Fast area averaging; excellent for large reductions.</td></tr>
+                <tr><th scope="row"><code>Bilinear</code></th><td>Fast, moderate quality.</td></tr>
+                <tr><th scope="row"><code>Bicubic</code></th><td>Good general purpose quality.</td></tr>
+                <tr><th scope="row"><code>Lanczos3</code></th><td>Sharpest downscaling, slowest.</td></tr>
+                <tr><th scope="row"><code>NearestNeighbor</code></th><td>Pixel art, or wherever hard edges must survive.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        Large reductions automatically get an exact integer box prepass before the chosen filter,
+        which is why a 24 megapixel thumbnail takes 52 ms rather than 368 ms. It is transparent and
+        quality-neutral.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Smart cropping</h2>
+    <p>
+        A fixed anchor is wrong most of the time: centre-cropping a portrait to a square routinely cuts
+        off the top of a head. <code>SmartCrop</code> scores candidate positions on a small downscaled
+        copy using local detail, colour saturation and skin-like hue, then picks the best. It is a
+        heuristic, not face recognition - when you do have a detector, hand it the rectangle. The
+        <a href="/avatar">Avatar</a> page compares it with the fixed anchors.
+    </p>
+    <CodeSnippet Code="@SmartCropSnippet" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Adjustments and filters</h2>
+    <CodeSnippet Code="@AdjustSnippet" Language="C#" Expanded="true" />
+    <p>
+        Amounts are consistently in [-1, 1] with 0 meaning no change, except where another unit is
+        natural: <code>Exposure</code> is in stops, <code>Hue</code> in degrees, <code>Gamma</code> is
+        a positive multiplier and <code>Blur</code> a radius in pixels. Filters that take a region only
+        touch that region, which is how redaction works.
+    </p>
+    <p>
+        <code>AutoLevels</code> stretches the tonal range - the most useful single fix - ignoring the
+        darkest and brightest 0.5% by default, so one hot pixel cannot define the white point, and it
+        leaves a flat histogram alone rather than amplifying it into noise.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>The optimiser</h2>
+    <p>It runs by default, and every rewrite is exact.</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Optimiser rules">
+        <table class="ref">
+            <thead>
+                <tr><th scope="col">Rule</th><th scope="col">Effect</th></tr>
+            </thead>
+            <tbody>
+                <tr><th scope="row">Drop identities</th><td><code>Brightness(0)</code> and friends disappear.</td></tr>
+                <tr><th scope="row">Merge crops</th><td>Two crops become one.</td></tr>
+                <tr><th scope="row">Merge orientations</th><td>Rotate 90 twice becomes rotate 180; two horizontal flips vanish entirely.</td></tr>
+                <tr><th scope="row">Fuse resize with a following crop</th><td>One resample that computes only the surviving region, 2.4&times; faster.</td></tr>
+                <tr><th scope="row">Fuse per-pixel runs</th><td>One pass over the pixels instead of one per adjustment.</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <CodeSnippet Code="@OptimizerSnippet" Language="C#" Expanded="true" />
+    <p>
+        Fusing per-pixel operations removes the intermediate 8-bit rounding that separate execution
+        performs, so a fused chain is <em>more</em> accurate, not merely faster. Turn the optimiser off
+        with <code>new PipelineExecutionOptions { Optimize = false }</code> if you are comparing
+        behaviour, but there is no reason to in production.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Previewing at another resolution</h2>
+    <p>
+        <code>ForScale</code> rescales every operation - crop rectangles, blur radii, pixelation block
+        sizes, stroke widths, font sizes. This is how the editor previews full-resolution edits on a
+        proxy and gets the same picture, and why there is one rendering path rather than a fast one and
+        an accurate one that drift apart.
+    </p>
+    <CodeSnippet Code="var preview = pipeline.ForScale(0.25);" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Custom operations</h2>
+    <p>
+        Implement <code>IImageOperation</code>, or derive from <code>PointOperation</code> if your
+        operation maps each pixel independently - then it joins the single-pass run with the
+        adjustments around it for free.
+    </p>
+    <CodeSnippet Code="@CustomSnippet" Language="C#" />
+</div>
+
+@code {
+    private sealed record Step(string Id, string Label, Func<ImagePipeline, ImagePipeline> Apply);
+
+    private static readonly string[] GeometryOptions = ["None", "MaxSize 600", "Cover 400×400", "SmartCrop 1:1", "Rotate 12°", "Flip"];
+
+    private static readonly Step[] Steps =
+    [
+        new("levels", "Auto levels", p => p.AutoLevels()),
+        new("vibrance", "Vibrance +0.4", p => p.Vibrance(0.4f)),
+        new("contrast", "Contrast +0.2", p => p.Contrast(0.2f)),
+        new("sepia", "Sepia", p => p.Sepia(0.8f)),
+        new("grayscale", "Grayscale", p => p.Grayscale()),
+        new("blur", "Blur 3px", p => p.Blur(3f)),
+        new("sharpen", "Sharpen", p => p.Sharpen(0.4f)),
+        new("vignette", "Vignette", p => p.Vignette(0.4f)),
+    ];
+
+    // The scene is generated once, at the size the docs talk about, and every pipeline runs against it.
+    private static readonly System.Drawing.Size SourceSize = new(1200, 800);
+
+    private ImageBuffer? _source;
+    private ImageBuffer? _preview;
+    private long _previewVersion;
+    private string _geometry = "MaxSize 600";
+    private readonly HashSet<string> _enabled = ["vibrance", "sharpen"];
+    private bool _noOps;
+    private bool _busy;
+    private string? _error;
+    private TimeSpan? _elapsed;
+    private int _run;
+    private readonly Debouncer _debounce = new(150);
+
+    private bool IsHydrating => RendererInfo.IsInteractive is false;
+
+    private ImagePipeline Pipeline
+    {
+        get
+        {
+            var pipeline = ImagePipeline.Create().AutoOrient();
+            if (_noOps) pipeline = pipeline.Brightness(0);
+            pipeline = _geometry switch
+            {
+                "MaxSize 600" => pipeline.MaxSize(600, 600),
+                "Cover 400×400" => pipeline.Cover(400, 400),
+                "SmartCrop 1:1" => pipeline.SmartCrop(AspectRatio.Square).MaxSize(400, 400),
+                "Rotate 12°" => pipeline.MaxSize(600, 600).Rotate(12, Rgba32.Transparent),
+                "Flip" => pipeline.MaxSize(600, 600).FlipHorizontal(),
+                _ => pipeline,
+            };
+            foreach (var step in Steps)
+            {
+                if (_enabled.Contains(step.Id)) pipeline = step.Apply(pipeline);
+            }
+            if (_noOps) pipeline = pipeline.Contrast(0);
+            return pipeline;
+        }
+    }
+
+    private ImagePipeline Optimized => Pipeline.Optimize(SourceSize);
+
+    private string PipelineText => Pipeline.ToString() ?? "";
+
+    private string OptimizedText => Optimized.ToString() ?? "";
+
+    private string OutputSizeText => Pipeline.TryGetOutputSize(SourceSize, out var size)
+        ? $"{size.Width} × {size.Height}"
+        : "after a run";
+
+    private const string InspectSnippet = """
+        var pipeline = ImagePipeline.Create()
+            .AutoOrient()
+            .MaxSize(1920, 1920)
+            .Sharpen(0.3f);
+
+        Console.WriteLine(pipeline);
+        // Auto orient → Resize(1920x1920, Max) → Sharpen
+
+        Console.WriteLine(pipeline.GetOutputSize(new Size(4000, 3000)));
+        // {Width=1920, Height=1440}   ← computed without touching a single pixel
+        """;
+
+    private const string ExecuteSnippet = """
+        using var result = await pipeline.ExecuteAsync(source, new PipelineExecutionOptions
+        {
+            CancellationToken = token,
+            Progress = new Progress<double>(p => _percent = p),
+        });
+        """;
+
+    private const string GeometrySnippet = """
+        pipeline.AutoOrient()                       // apply the EXIF rotation so the image is upright
+                .Crop(x, y, width, height)
+                .CropToAspect(AspectRatio.Ratio16x9, Anchor.Center)
+                .Resize(width, height, mode, filter, anchor, background)
+                .MaxSize(1920, 1080)                // shrink to fit, never enlarge
+                .Cover(512, 512, Anchor.Top)        // fill exactly, cropping the overflow
+                .Rotate(12.5, background)           // arbitrary angle, canvas expands
+                .Orient(Orientation.Rotate90)       // lossless, no resampling
+                .FlipHorizontal()
+                .Skew(10, 0);
+        """;
+
+    private const string SmartCropSnippet = """
+        pipeline.SmartCrop(AspectRatio.Square);
+
+        // With a face detector of your own:
+        var crop = SmartCrop.FindCrop(image, AspectRatio.Square, mustInclude: faceRectangle);
+        pipeline.Crop(crop.Rectangle);
+        """;
+
+    private const string AdjustSnippet = """
+        pipeline.Brightness(0.1f).Contrast(0.15f).Saturation(-0.2f).Hue(15)
+                .Exposure(0.5f).Gamma(1.2f).Temperature(0.2f).Tint(-0.1f)
+                .Vibrance(0.3f).ShadowsHighlights(0.2f, -0.15f).Opacity(0.9f)
+                .Grayscale().Sepia(0.8f).Invert().Posterize(6).Threshold(0.5f)
+                .Blur(4f).Sharpen(0.5f).Pixelate(12).Noise(0.05f)
+                .DenoiseMedian(1).Vignette(0.4f)
+                .ColorMatrix(myMatrix);
+
+        pipeline.AutoLevels();                    // stretch the tonal range
+        pipeline.AutoLevels(perChannel: true);    // also neutralise a colour cast
+        pipeline.AutoContrast(targetMean: 0.5f);  // gentler: move the mean luminance towards a target
+
+        // A region confines a filter - this is how redaction works.
+        pipeline.Pixelate(14, new Rectangle(40, 120, 300, 40));
+        """;
+
+    private const string OptimizerSnippet = """
+        // Three no-ops and two crops.
+        var pipeline = ImagePipeline.Create()
+            .Brightness(0)
+            .Crop(10, 10, 200, 200)
+            .Crop(5, 5, 100, 100)
+            .Contrast(0);
+
+        pipeline.Optimize(new Size(400, 400));
+        // Crop(15,15,100,100)
+        """;
+
+    private const string CustomSnippet = """
+        public sealed class DuotoneOperation : PointOperation
+        {
+            private readonly Vector4 _shadow;
+            private readonly Vector4 _highlight;
+
+            public DuotoneOperation(Rgba32 shadow, Rgba32 highlight)
+            {
+                _shadow = new Vector4(shadow.R, shadow.G, shadow.B, 0) / 255f;
+                _highlight = new Vector4(highlight.R, highlight.G, highlight.B, 0) / 255f;
+            }
+
+            public override string Name => "Duotone";
+
+            public override void ProcessRow(Span<Vector4> pixels)
+            {
+                var weights = new Vector4(0.2126f, 0.7152f, 0.0722f, 0f);
+                for (var i = 0; i < pixels.Length; i++)
+                {
+                    var alpha = pixels[i].W;
+                    var luminance = Math.Clamp(Vector4.Dot(pixels[i], weights), 0f, 1f);
+                    pixels[i] = Vector4.Lerp(_shadow, _highlight, luminance) with { W = alpha };
+                }
+            }
+        }
+
+        pipeline.Apply(new DuotoneOperation(navy, cream));
+        """;
+
+    private async Task StartAsync()
+    {
+        _busy = true;
+        StateHasChanged();
+        await Task.Yield();
+        _source ??= SampleImages.Landscape(SourceSize.Width, SourceSize.Height);
+        await RunAsync();
+    }
+
+    private void SetGeometry(string option)
+    {
+        _geometry = option;
+        Schedule();
+    }
+
+    private void Toggle(string id, ChangeEventArgs e)
+    {
+        if ((bool)(e.Value ?? false)) _enabled.Add(id);
+        else _enabled.Remove(id);
+        Schedule();
+    }
+
+    // The text readouts follow every change at once - they cost nothing - while the pixels wait
+    // for the reader to stop clicking.
+    private void Schedule()
+    {
+        if (_source is null) return;
+        _debounce.Schedule(async _ => await RunAsync());
+    }
+
+    private async Task RunAsync()
+    {
+        if (_source is not { } source) return;
+        var run = ++_run;
+        _busy = true;
+        _error = null;
+        StateHasChanged();
+        try
+        {
+            var started = System.Diagnostics.Stopwatch.StartNew();
+            var result = await Pipeline.ExecuteAsync(source);
+            started.Stop();
+            if (run != _run)
+            {
+                result.Dispose();
+                return;
+            }
+            _preview?.Dispose();
+            _preview = result;
+            _previewVersion++;
+            _elapsed = started.Elapsed;
+        }
+        catch (Exception ex) when (run == _run)
+        {
+            _error = ex.Message;
+        }
+        catch (Exception)
+        {
+            // Superseded: the newer run reports its own outcome.
+        }
+        finally
+        {
+            if (run == _run)
+            {
+                _busy = false;
+                StateHasChanged();
+            }
+        }
+    }
+
+    public void Dispose()
+    {
+        _run++;
+        _debounce.Dispose();
+        _preview?.Dispose();
+        _source?.Dispose();
+    }
+}

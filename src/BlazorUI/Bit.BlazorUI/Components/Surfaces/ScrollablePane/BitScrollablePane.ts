@@ -1707,8 +1707,11 @@
         // exists - so the compensation is only ever made where there is none already. Which PANE it is
         // made on is readAnchoring's answer: an engine that supports anchoring is not the same as a pane
         // that is anchored by it.
+        // bit-trim: on-demand
         private static _supportsScrollAnchoring = typeof CSS !== 'undefined'
             && typeof CSS.supports === 'function'
             && CSS.supports('overflow-anchor', 'auto');
     }
 }
+
+// bit-lazy: teardown ScrollablePane.dispose

@@ -1,0 +1,86 @@
+﻿@inject NavigationManager Nav
+@implements IDisposable
+
+@* The documentation sidebar. Blazor's own NavLink only toggles a CSS class; a screen reader needs
+   aria-current="page" to announce which entry is the one you are on, so the active state is
+   computed here and drives both. *@
+
+<nav id="site-nav" class="sidebar" data-open="@(Open ? "true" : "false")" aria-label="Documentation">
+    @foreach (var group in SiteMap.Sections)
+    {
+        <div class="nav-group">
+            <h2 class="nav-group-title">@group.Title</h2>
+            <ul class="nav-list">
+                @foreach (var entry in group.Pages)
+                {
+                    <li>
+                        <a class="nav-link" href="@entry.Href"
+                           aria-current="@(IsCurrent(entry.Href) ? "page" : null)"
+                           @onclick="OnNavigate">
+                            <Icon Name="@entry.Icon" />
+                            <span>@entry.Title</span>
+                        </a>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+
+    <div class="nav-group">
+        <h2 class="nav-group-title">Project</h2>
+        <ul class="nav-list">
+            <li>
+                <a class="nav-link" href="@SiteLinks.Readme" target="_blank" rel="noopener">
+                    <Icon Name="book" />
+                    <span>Readme</span>
+                    <span class="nav-external"><Icon Name="external" /></span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" href="@SiteLinks.Repository" target="_blank" rel="noopener">
+                    <Icon Name="github" />
+                    <span>Source</span>
+                    <span class="nav-external"><Icon Name="external" /></span>
+                </a>
+            </li>
+            <li>
+                <a class="nav-link" href="@SiteLinks.NuGet" target="_blank" rel="noopener">
+                    <Icon Name="package" />
+                    <span>NuGet</span>
+                    <span class="nav-external"><Icon Name="external" /></span>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+@code {
+    /// <summary>Drives the off-canvas drawer under 1024px. Ignored by the desktop layout.</summary>
+    [Parameter]
+    public bool Open { get; set; }
+
+    /// <summary>Raised on every in-site link so the layout can close that drawer.</summary>
+    [Parameter]
+    public EventCallback OnNavigate { get; set; }
+
+    protected override void OnInitialized()
+        => Nav.LocationChanged += OnLocationChanged;
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+        => StateHasChanged();
+
+    private bool IsCurrent(string href)
+    {
+        var path = Nav.ToBaseRelativePath(Nav.Uri);
+        var cut = path.IndexOfAny(['?', '#']);
+        if (cut >= 0)
+        {
+            path = path[..cut];
+        }
+
+        return string.Equals(path.Trim('/'), href.Trim('/'), StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void Dispose()
+        => Nav.LocationChanged -= OnLocationChanged;
+}

@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>true</InvariantGlobalization>
+    <!-- The host owns the launch profile: this project is never started on its own. -->
+    <NoDefaultLaunchSettingsFile>true</NoDefaultLaunchSettingsFile>
+    <!-- Publishes this project's static web assets at the app root (not under _content/), the
+         way a Blazor Web App's client project is expected to contribute them. -->
+    <StaticWebAssetProjectMode>Default</StaticWebAssetProjectMode>
+  </PropertyGroup>
+
+  <!-- Every pixel loop in Bmage is C#, and on Blazor's IL interpreter those loops run 10 to 35 times
+       slower than compiled code (src/Bmage/docs/performance.md has the measurements). The deployed
+       site is therefore compiled ahead of time - but only on a Release publish, which is the one
+       place AOT applies anyway: it needs the wasm-tools workload and adds minutes to the build, so
+       turning it on for every Release build would make `dotnet build -c Release` fail on a machine
+       without the workload while buying nothing.
+
+       "Publishing" is detected two ways. _IsPublishing covers `dotnet publish` of this project
+       itself. The CD workflow publishes the Server project instead (after
+       `dotnet workload install wasm-tools`), and the SDK does not pass _IsPublishing on to a
+       referenced client - but it compiles the client's WebAssembly in a nested publish of this
+       project that carries WasmBuildingForNestedPublish=true, and that nested publish is the step
+       AOT happens in. Pass -p:RunAOTCompilation=false to publish without it. -->
+  <PropertyGroup Condition="'$(RunAOTCompilation)' == '' and '$(Configuration)' == 'Release' and ('$(_IsPublishing)' == 'true' or '$(WasmBuildingForNestedPublish)' == 'true')">
+    <RunAOTCompilation>true</RunAOTCompilation>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.13" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Brings Bit.Bmage and Bit.Bmage.Core with it: the editor is the top of the package stack. -->
+    <ProjectReference Include="..\..\Bit.Bmage.Editor\Bit.Bmage.Editor.csproj" />
+  </ItemGroup>
+
+</Project>

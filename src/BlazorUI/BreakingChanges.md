@@ -13,6 +13,23 @@ inline turns it off. `ReportRefusal` takes it as an optional `showNotice`, `true
 as before, and an assembly compiled against the earlier one has to be compiled again. **An app that sets
 `RefusalReporter` itself** takes the second argument: `(refusal, showNotice) => ...`.
 
+### A published WebAssembly app gets the scripts and stylesheets of the components it uses ([#13876](https://github.com/bitfoundation/bitplatform/issues/13876))
+
+The packages' bundles (`bit.blazorui.js`, `bit.blazorui.css` and its Fluent variants, the Extras' and the Legacy
+package's) are put back together at publish from only the pieces an app can use - the components ILLink kept, the
+scripts they call - and the vendored libraries nothing loads (pdf.js, quill, chart.js, marked, Leaflet, OpenLayers, the
+flags) are left out of the publish. A standalone Blazor WebAssembly app gets this by default; a build, `dotnet run` and
+`dotnet watch` are unchanged. **An app that renders a component the code never names** (by reflection, through a
+`DynamicComponent` built from a type name), **uses a component's classes in markup of its own without the component**,
+**or calls `BitBlazorUI.*` from JavaScript the publish cannot read** (loaded from a CDN, built outside the app's
+projects - the `.js` and `.html` files of those are read) can lose what it needs in production only: name it with
+`<BitBlazorUIComponent Include="..." />` or `<BitBlazorUIAsset Include="..." />` in the csproj, or turn the trimming off
+with `<BitBlazorUITrimAssets>false</BitBlazorUITrimAssets>`. A Blazor Web App or Blazor Server app is unchanged until it
+turns the trimming on - or publishes with `PublishTrimmed`, which turns it on the way it does in a WebAssembly app (a
+server hosting a WebAssembly client excepted, whose trimmer knows the server alone).
+
+The packages no longer ship source maps (`.css.map`): they pointed at stylesheet sources the packages do not carry.
+
 ### The item type of the item-based components keeps its public properties in a trimmed app
 
 `BitDropdown`, `BitChoiceGroup`, `BitButtonGroup`, `BitMenuButton`, `BitNav`, `BitNavBar`, `BitNavPanel`,

@@ -1,0 +1,62 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* Splat first so the renderer's own attributes below always win. *@
+<select @attributes="ExtraAttributes"
+        id="@Context.ElementId"
+        @ref="Element"
+        class="@CssClass"
+        disabled="@(DisabledOrReadOnly || Context.IsLoadingOptions)"
+        value="@Context.StringValue"
+        autocomplete="@Field.Autocomplete"
+        aria-required="@AriaRequired"
+        aria-invalid="@AriaInvalid"
+        aria-label="@AriaLabel"
+        aria-busy="@(Context.IsLoadingOptions ? "true" : null)"
+        aria-describedby="@DescribedBy"
+        @onchange="OnSelectionChanged"
+        @onblur="OnBlur">
+    @* A required select must not offer "-- Select --" back as an answer. It stays in the list because
+       it is what an empty field displays, but it cannot be chosen again. *@
+    <option value="" disabled="@Context.IsRequired">@PlaceholderText</option>
+    @foreach (var group in Grouped)
+    {
+        @if (group.Key is null)
+        {
+            @foreach (var opt in group)
+            {
+                <option value="@opt.Value" disabled="@opt.Disabled" selected="@(opt.Value == Context.StringValue)">@opt.Label</option>
+            }
+        }
+        else
+        {
+            <optgroup label="@group.Key">
+                @foreach (var opt in group)
+                {
+                    <option value="@opt.Value" disabled="@opt.Disabled" selected="@(opt.Value == Context.StringValue)">@opt.Label</option>
+                }
+            </optgroup>
+        }
+    }
+</select>
+
+@code {
+    // Options may come from an async provider, so ask for them on first render and again whenever a
+    // dependency change has invalidated the cache.
+    protected override Task OnParametersSetAsync() => LoadOptionsAsync();
+
+    // A select fires `change` when the user picks, never `input`, so it always writes on change
+    // regardless of the field's update trigger — "as you type" has no meaning for a dropdown.
+    private Task OnSelectionChanged(ChangeEventArgs e) => Context.SetFromStringAsync(e.Value?.ToString());
+
+    // A provider that failed leaves an empty list behind. Saying so beats an empty dropdown the user
+    // is left to interpret as "there is nothing to choose".
+    private string PlaceholderText => Context.IsLoadingOptions
+        ? Context.Text(BormMessageKeys.SelectLoading)
+        : Context.OptionsFailed
+            ? Context.Text(BormMessageKeys.SelectError)
+            : Field.Placeholder ?? Context.Text(BormMessageKeys.SelectPlaceholder);
+
+    private IEnumerable<IGrouping<string?, BormSelectOption>> Grouped
+        => Context.Options.GroupBy(o => o.Group);
+}

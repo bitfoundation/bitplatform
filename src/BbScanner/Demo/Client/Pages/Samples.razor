@@ -1,0 +1,145 @@
+﻿@page "/samples"
+
+<PageTitle>Sample barcodes - bit BbScanner</PageTitle>
+
+<h1>Sample barcodes</h1>
+<p class="lede">
+    One scannable example of every supported symbology, generated in the browser and drawn as
+    SVG. Point a phone at the screen, or open this page on a second device and scan it with the
+    <a href="scan">playground</a>.
+</p>
+
+<div class="note">
+    These are rendered by encoders that live in the test project, not in the library. The library
+    itself only reads barcodes; the encoders exist so that the decoders can be validated by round
+    trip and so that this page has something real to show.
+</div>
+
+<div class="note note--warning">
+    The PDF417 sample is drawn with the library's <em>placeholder</em> symbol character table. It
+    round trips here, which is what validates the detector, the GF(929) error correction and the
+    compaction modes, but it is not a conforming PDF417 symbol and no other scanner will read it.
+    See the PDF417 section of the README for why the real table cannot be derived.
+</div>
+
+<h2>Two dimensional</h2>
+<div class="grid grid--3">
+    @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbBarcodeFormat.AllMatrix) != 0))
+    {
+        <BarcodeSvg Matrix="sample.Matrix" Caption="@sample.Caption" Value="@sample.Value" Size="200" />
+    }
+</div>
+
+<h2>Linear</h2>
+<div class="grid grid--2">
+    @foreach (var sample in SampleCatalog.All.Where(s => (s.Format & BbBarcodeFormat.AllLinear) != 0))
+    {
+        @* Two CSS pixels per module, so the bars survive rasterisation on a 1x display and a
+           phone camera can read them off the screen. *@
+        <BarcodeSvg Modules="sample.Modules"
+                    Caption="@sample.Caption"
+                    Value="@sample.Value"
+                    Size="@Math.Clamp((sample.Modules!.Length + 24) * 2, 300, 720)"
+                    LinearHeight="26"
+                    QuietZone="12" />
+    }
+</div>
+
+<h2>Decode them right here</h2>
+<p>
+    The same symbols, decoded in place without a camera: each one is rasterised into a grayscale
+    buffer and pushed through <code>BbBarcodeDecoder</code>, exactly as a camera frame would be.
+</p>
+
+<button class="button button--primary" type="button" @onclick="RunSelfTest" disabled="@_running">
+    @(_running ? "Decoding..." : "Decode every sample")
+</button>
+
+@if (_selfTest.Count > 0)
+{
+    <table style="margin-block-start:1rem;">
+        <thead>
+            <tr><th>Sample</th><th>Expected</th><th>Decoded</th><th>Time</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var row in _selfTest)
+            {
+                <tr>
+                    <td>@row.Caption</td>
+                    <td class="mono">@row.Expected</td>
+                    <td class="mono">@(row.Actual ?? "-")</td>
+                    <td class="mono">@row.Milliseconds.ToString("0.00") ms</td>
+                    <td>
+                        @if (row.Ok)
+                        {
+                            <span class="pill pill--success">match</span>
+                        }
+                        else
+                        {
+                            <span class="pill pill--danger">miss</span>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="field__hint">
+        @_selfTest.Count(r => r.Ok) of @_selfTest.Count samples decoded in
+        @_selfTest.Sum(r => r.Milliseconds).ToString("0.0") ms total.
+    </p>
+}
+
+@code {
+    private sealed record SelfTestRow(string Caption, string Expected, string? Actual, double Milliseconds, bool Ok);
+
+    private readonly List<SelfTestRow> _selfTest = [];
+    private bool _running;
+
+    private async Task RunSelfTest()
+    {
+        _running = true;
+        _selfTest.Clear();
+        StateHasChanged();
+        await Task.Yield();
+
+        foreach (var sample in SampleCatalog.All)
+        {
+            using var image = sample.Matrix is not null
+                ? Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(sample.Matrix, scale: 6)
+                : Bit.BbScanner.TestKit.SyntheticImage.FromLinear(sample.Modules!, scale: 3, height: 90);
+
+            var start = System.Diagnostics.Stopwatch.GetTimestamp();
+            string? text;
+
+            if (sample.Format == BbBarcodeFormat.Pdf417)
+            {
+                // The pipeline deliberately leaves PDF417 disabled while the symbol table is a
+                // placeholder, so this sample goes straight to the reader to show that everything
+                // apart from that table works.
+                using var binary = new BbHybridBinarizer().GetBlackMatrix(image.View);
+                text = binary is null
+                    ? null
+                    : new BbPdf417Reader()
+                        .Decode(binary, BbMatrixDecodeOptions.Thorough)?.Payload.Text;
+            }
+            else
+            {
+                using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+                {
+                    Formats = BbBarcodeFormat.All,
+                    DuplicateSuppressionWindow = TimeSpan.Zero,
+                    MaxScanLines = 30,
+                });
+
+                text = decoder.Decode(image.View, suppressDuplicates: false)?.Text;
+            }
+
+            var elapsed = System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+
+            _selfTest.Add(new SelfTestRow(sample.Caption, sample.Value, text, elapsed, text == sample.Value));
+        }
+
+        _running = false;
+        StateHasChanged();
+    }
+}

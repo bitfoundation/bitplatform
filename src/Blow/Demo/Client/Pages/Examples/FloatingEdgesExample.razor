@@ -1,0 +1,80 @@
+﻿@page "/examples/floating-edges"
+
+<PageTitle>Floating Edges - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Floating Edges"
+                 Summary="Edges attach to the point on each node's border that faces the other node, recomputed live as you drag. The custom EdgeTemplate uses BlowGraphUtils.GetFloatingEdgeParams.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionMode="BlowConnectionMode.Loose">
+        <NodeTemplate Context="node">
+            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Top" Class="floating-handle" />
+            <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Bottom" Class="floating-handle" />
+            <div class="floating-node">@node.Label</div>
+        </NodeTemplate>
+        <EdgeTemplate Context="ctx">
+            @{
+                var path = FloatingPath(ctx.Edge);
+            }
+            <BlowBaseEdge Path="@path" StrokeWidth="2" />
+        </EdgeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    /* The node element keeps the library's default chrome - padding, border, white background,
+       an 80px minimum width - unless told otherwise; this node draws its own, edge to edge. */
+    .bit-blow-node.floating-shell { padding:0; border:0; background:none; min-width:0; box-shadow:none; border-radius:12px; }
+    .bit-blow-node.floating-shell.selected { box-shadow:0 0 0 2px var(--bit-blow-node-selected); }
+
+    /* A rounded square rather than a circle: GetFloatingEdgeParams meets the node's bounding box,
+       so a circle would leave the edges stopping short of it on the diagonals. */
+    .floating-node {
+        display:flex; align-items:center; justify-content:center;
+        width:100%; height:100%; box-sizing:border-box; border-radius:12px;
+        background:#fff; border:2px solid #6366f1; font-weight:600; font-size:12px;
+    }
+    .floating-handle { opacity:0; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+
+    protected override void OnInitialized()
+    {
+        var positions = new (double x, double y)[]
+        {
+            (0, 0), (250, -120), (250, 120), (500, 0), (250, 0),
+        };
+        _nodes = positions.Select((p, i) => new BlowNode
+        {
+            Id = (i + 1).ToString(),
+            Label = $"N{i + 1}",
+            Position = new(p.x, p.y),
+            Width = 60,
+            Height = 60,
+            Class = "floating-shell",
+        }).ToList();
+
+        _edges =
+        [
+            new BlowEdge { Id = "e5-1", Source = "5", Target = "1" },
+            new BlowEdge { Id = "e5-2", Source = "5", Target = "2" },
+            new BlowEdge { Id = "e5-3", Source = "5", Target = "3" },
+            new BlowEdge { Id = "e5-4", Source = "5", Target = "4" },
+        ];
+    }
+
+    private string FloatingPath(BlowEdge edge)
+    {
+        var s = _nodes.FirstOrDefault(n => n.Id == edge.Source);
+        var t = _nodes.FirstOrDefault(n => n.Id == edge.Target);
+        if (s is null || t is null) return string.Empty;
+
+        var (src, srcPos, tgt, tgtPos) = BlowGraphUtils.GetFloatingEdgeParams(s, t);
+        return BlowEdgePath.Compute(BlowEdgeType.Bezier, src.X, src.Y, srcPos, tgt.X, tgt.Y, tgtPos).Path;
+    }
+}

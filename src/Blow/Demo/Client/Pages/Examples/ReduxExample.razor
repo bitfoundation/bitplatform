@@ -1,0 +1,69 @@
+﻿@page "/examples/redux"
+@implements IDisposable
+
+<PageTitle>External Store - bit Blow</PageTitle>
+
+<ExampleScaffold Title="External Store"
+                 Summary="Both the canvas and an external toolbar read and mutate a single shared store object (the Redux/Zustand pattern). Dispatching an action updates the store and re-renders the flow.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="@(() => _store.Dispatch(StoreAction.AddNode))">Add node</button>
+        <button class="btn btn-sm" @onclick="@(() => _store.Dispatch(StoreAction.ConnectRandom))">Connect random</button>
+        <button class="btn btn-sm" @onclick="@(() => _store.Dispatch(StoreAction.Reset))">Reset</button>
+        <span class="text-muted">store: @_store.Nodes.Count nodes, @_store.Edges.Count edges</span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_store.Nodes" Edges="_store.Edges" FitViewOnInit="true"
+                    NodesChanged="@(_ => _store.Notify())"
+                    EdgesChanged="@(_ => _store.Notify())">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private readonly FlowStore _store = new();
+
+    protected override void OnInitialized()
+    {
+        _store.Changed += StateHasChanged;
+        _store.Dispatch(StoreAction.Reset);
+    }
+
+    public void Dispose() => _store.Changed -= StateHasChanged;
+
+    public enum StoreAction { Reset, AddNode, ConnectRandom }
+
+    public sealed class FlowStore
+    {
+        public List<BlowNode> Nodes { get; private set; } = [];
+        public List<BlowEdge> Edges { get; private set; } = [];
+        public event Action? Changed;
+        private int _id;
+
+        public void Notify() => Changed?.Invoke();
+
+        public void Dispatch(StoreAction action)
+        {
+            switch (action)
+            {
+                case StoreAction.Reset:
+                    _id = 1;
+                    Nodes = [ new BlowNode { Id = "1", Type = "input", Label = "Store root", Position = new(200, 40) } ];
+                    Edges = [];
+                    break;
+                case StoreAction.AddNode:
+                    _id++;
+                    Nodes.Add(new BlowNode { Id = _id.ToString(), Label = $"Node {_id}", Position = new(Random.Shared.Next(40, 400), Random.Shared.Next(60, 300)) });
+                    break;
+                case StoreAction.ConnectRandom when Nodes.Count >= 2:
+                    var a = Nodes[Random.Shared.Next(Nodes.Count)];
+                    var b = Nodes[Random.Shared.Next(Nodes.Count)];
+                    if (a.Id != b.Id)
+                        Edges.Add(new BlowEdge { Id = $"e{a.Id}-{b.Id}-{Guid.NewGuid():N}", Source = a.Id, Target = b.Id });
+                    break;
+            }
+            Changed?.Invoke();
+        }
+    }
+}

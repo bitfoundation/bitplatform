@@ -17,6 +17,7 @@
         <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.3" PrivateAssets="all" />
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.3.1" PrivateAssets="all" />
         <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
+        <None Include="buildTransitive\Bit.SourceGenerators.props" Pack="true" PackagePath="buildTransitive\;build\" />
     </ItemGroup>
 
     <ItemGroup>

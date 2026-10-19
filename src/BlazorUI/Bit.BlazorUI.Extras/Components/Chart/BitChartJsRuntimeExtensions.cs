@@ -10,7 +10,7 @@ internal static class BitChartJsRuntimeExtensions
                                                                      DotNetObjectReference<BitChart> dotnetObj,
                                                                      bool responsive)
     {
-        return jsRuntime.InvokeAsync<IJSObjectReference>("BitBlazorUI.BitChart.observe", element, dotnetObj, responsive);
+        return jsRuntime.InvokeScriptAsync<IJSObjectReference>("BitBlazorUI.BitChart.observe", element, dotnetObj, responsive);
     }
 
     // The zoom payload is only ever constructed (never read) from C#, so without this hint the
@@ -22,30 +22,30 @@ internal static class BitChartJsRuntimeExtensions
                                                                       DotNetObjectReference<BitChart> dotnetObj,
                                                                       BitChartZoomPayload options)
     {
-        return jsRuntime.InvokeAsync<IJSObjectReference>("BitBlazorUI.BitChart.register", element, dotnetObj, options);
+        return jsRuntime.InvokeScriptAsync<IJSObjectReference>("BitBlazorUI.BitChart.register", element, dotnetObj, options);
     }
 
     public static ValueTask<bool> BitChartExportSvg(this IJSRuntime jsRuntime, ElementReference element,
                                                    string fileName, string? background)
     {
-        return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.exportSvg", element, fileName, background);
+        return jsRuntime.InvokeScriptAsync<bool>("BitBlazorUI.BitChart.exportSvg", element, fileName, background);
     }
 
     public static ValueTask<bool> BitChartExportPng(this IJSRuntime jsRuntime, ElementReference element,
                                                    string fileName, double scale, string? background)
     {
-        return jsRuntime.InvokeAsync<bool>("BitBlazorUI.BitChart.exportPng", element, fileName, scale, background);
+        return jsRuntime.InvokeScriptAsync<bool>("BitBlazorUI.BitChart.exportPng", element, fileName, scale, background);
     }
 
     public static async ValueTask<string?> BitChartToSvgString(this IJSRuntime jsRuntime, ElementReference element, string? background)
     {
-        return await ReadText(await jsRuntime.InvokeAsync<IJSStreamReference?>("BitBlazorUI.BitChart.toSvgString", element, background));
+        return await ReadText(await jsRuntime.InvokeScriptAsync<IJSStreamReference?>("BitBlazorUI.BitChart.toSvgString", element, background));
     }
 
     public static async ValueTask<string?> BitChartToDataUrl(this IJSRuntime jsRuntime, ElementReference element,
                                                             string mimeType, double scale, string? background)
     {
-        return await ReadText(await jsRuntime.InvokeAsync<IJSStreamReference?>("BitBlazorUI.BitChart.toDataUrl", element, mimeType, scale, background));
+        return await ReadText(await jsRuntime.InvokeScriptAsync<IJSStreamReference?>("BitBlazorUI.BitChart.toDataUrl", element, mimeType, scale, background));
     }
 
     // The markup and the data URL of a chart come back as the UTF-8 bytes of the text, read in chunks: a sizeable chart's
@@ -68,6 +68,6 @@ internal static class BitChartJsRuntimeExtensions
 
     public static ValueTask BitChartDownloadText(this IJSRuntime jsRuntime, string fileName, string content, string mimeType)
     {
-        return jsRuntime.InvokeVoidAsync("BitBlazorUI.BitChart.downloadText", fileName, content, mimeType);
+        return jsRuntime.InvokeScriptVoidAsync("BitBlazorUI.BitChart.downloadText", fileName, content, mimeType);
     }
 }

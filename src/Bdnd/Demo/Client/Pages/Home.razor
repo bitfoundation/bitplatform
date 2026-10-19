@@ -1,0 +1,57 @@
+﻿@page "/"
+
+<PageTitle>bit Bdnd - drag and drop for Blazor</PageTitle>
+
+<div class="demo-header">
+    <h3>bit Bdnd</h3>
+    <p class="text-muted">
+        A declarative drag-and-drop library for Blazor inspired by
+        <a href="https://react-dnd.github.io/react-dnd" target="_blank" rel="noopener">React DnD</a>.
+        It brings the same data-driven model - items, types, monitors and an HTML5 drag-and-drop
+        backend - to Blazor as composable components. Try it: drag a box onto the dustbin.
+    </p>
+</div>
+
+<DemoCode />
+
+<section class="demo-stage">
+    <BdndProvider>
+        <div class="row-wrap">
+            @foreach (var name in _boxes)
+            {
+                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="name" Context="drag">
+                    <div class="box" style="opacity:@(drag.IsDragging ? "0.4" : "1")">@name</div>
+                </BdndDraggable>
+            }
+        </div>
+
+        <BdndDropTarget TItem="string" Accept="@ItemTypes.Box" OnDrop="HandleDrop" Context="drop" style="display:contents">
+            <div class="dustbin" style="margin-top:1.5rem;background:@(drop.IsOver ? "#15803d" : "#1f2430")">
+                @(drop.IsOver ? "Release to drop" : _label)
+            </div>
+        </BdndDropTarget>
+    </BdndProvider>
+</section>
+
+<section class="demo-notes">
+    <h4>Core concepts</h4>
+    <ul>
+        <li><strong>Items &amp; types</strong> - you drag <em>data</em> (an item object) of a certain <em>type</em> (a string), not a view.</li>
+        <li><strong>Monitor</strong> (<code>IBdndMonitor</code>) - exposes live drag state: <code>IsDragging</code>, <code>IsOver</code>, <code>CanDrop</code>, offsets, the item, and more.</li>
+        <li><strong>Components</strong> - <code>&lt;BdndProvider&gt;</code>, <code>&lt;BdndDraggable&gt;</code>, <code>&lt;BdndDropTarget&gt;</code>, <code>&lt;BdndDragLayer&gt;</code> and <code>&lt;BdndDragHandle&gt;</code> map to React DnD's provider and hooks.</li>
+        <li><strong>Backend</strong> - built on the browser's native HTML5 drag events, so native OS drags of files, text and links work too.</li>
+    </ul>
+
+    <h4>Quick start</h4>
+    <p>Register the service in <code>Program.cs</code>:</p>
+    <pre><code>builder.Services.AddBitBdndServices();</code></pre>
+    <p>Then wrap a region in a <code>BdndProvider</code> and declare sources and targets - "View code" above shows this very page.</p>
+    <p>Pick an example from the sidebar to see more.</p>
+</section>
+
+@code {
+    private readonly string[] _boxes = ["Glass", "Banana", "Paper"];
+    private string _label = "Drag a box here";
+
+    private void HandleDrop(BdndDropEventArgs<string> e) => _label = $"Dropped: {e.Item}";
+}

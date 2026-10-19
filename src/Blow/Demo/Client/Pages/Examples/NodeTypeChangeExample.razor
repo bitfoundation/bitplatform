@@ -1,0 +1,46 @@
+﻿@page "/examples/node-type-change"
+
+<PageTitle>Node Type Change - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Node Type Change"
+                 Summary="Change a node's type at runtime. The renderer and handle layout update immediately when the type cycles between input, default and output.">
+    <Toolbar>
+        <button class="btn btn-sm btn-primary" @onclick="CycleType">Cycle node 2 type</button>
+        <span class="text-muted">node 2 is currently: <strong>@_node2.Type</strong></span>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true">
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowNode _node2 = default!;
+    private static readonly string[] Types = ["default", "input", "output"];
+
+    protected override void OnInitialized()
+    {
+        _node2 = new BlowNode { Id = "2", Type = "default", Label = "I can change", Position = new(250, 150) };
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "Input", Position = new(250, 20) },
+            _node2,
+            new BlowNode { Id = "3", Type = "output", Label = "Output", Position = new(250, 300) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e2-3", Source = "2", Target = "3" },
+        ];
+    }
+
+    private void CycleType()
+    {
+        var idx = Array.IndexOf(Types, _node2.Type);
+        _node2.Type = Types[(idx + 1) % Types.Length];
+    }
+}

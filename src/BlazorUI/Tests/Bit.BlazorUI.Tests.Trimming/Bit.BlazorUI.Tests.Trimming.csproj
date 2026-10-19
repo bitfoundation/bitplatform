@@ -1,0 +1,47 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!--
+    The publish-time trimming of the packages' scripts and stylesheets, checked the only way it can be: by publishing real
+    apps and reading what came out. Each test publishes Bit.BlazorUI.Tests.Trimming.Fixture (a Blazor Web App's server,
+    which the trimming reads through its scan) or Bit.BlazorUI.Tests.Consumer (a Blazor WebAssembly app, trimmed off
+    ILLink's answer) with a set of properties, and compares the bundles of the publish with the pieces the packages'
+    builds wrote (obj/bit-assets).
+
+    Run it with `dotnet run` (see README.md): a publish takes seconds to minutes, so it is not one of the projects the
+    unit test run covers. The browser check of a trimmed WebAssembly app runs with RUN_BROWSER_TESTS=1, the check of the
+    packed packages under the .NET 8, 9 and 10 SDKs with RUN_PACKAGE_TESTS=1.
+    -->
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <LangVersion>14.0</LangVersion>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <!-- The repo's global.json mandates the Microsoft.Testing.Platform runner, which EnableMSTestRunner builds into
+             the assembly; it only generates the entry point for an executable project. -->
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+        <PackageReference Include="MSTest" Version="4.5.1" />
+        <!-- The plain Playwright package, as Bit.BlazorUI.Tests.Performance uses it: Microsoft.Playwright.MSTest is built
+             against MSTest 2, whose attributes MSTest 4 cannot load. -->
+        <PackageReference Include="Microsoft.Playwright" Version="1.63.0" />
+    </ItemGroup>
+
+    <!-- The manifests and pieces are read through the task's own reader, so what a test calls "the pieces of a bundle" is
+         what the trimming reads too. Nothing else of the packages is referenced: the apps under test are published by a
+         child dotnet, which builds them and the packages as an app would. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BlazorUI.Build\Bit.BlazorUI.Build.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="Microsoft.VisualStudio.TestTools.UnitTesting" />
+    </ItemGroup>
+
+</Project>

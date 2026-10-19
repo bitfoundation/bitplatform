@@ -1,0 +1,34 @@
+﻿@namespace Bit.Bdnd
+
+<div @attributes="AdditionalAttributes"
+     style="@StyleWithCursor"
+     draggable="@(IsActive ? "true" : null)"
+     data-bit-bdnd-handle="">
+    @ChildContent
+</div>
+
+@code {
+    [CascadingParameter] private IBdndDragHandleController? Controller { get; set; }
+
+    /// <summary>The handle's content, e.g. a grip icon.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Inline style of the handle element; a <c>cursor: move</c> is prepended while the draggable can be dragged.</summary>
+    [Parameter] public string? Style { get; set; }
+
+    /// <summary>Any other attribute, applied to the handle element.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    private bool IsActive => Controller is { RequiresHandle: true, CanDrag: true };
+
+    private string? StyleWithCursor
+    {
+        get
+        {
+            var cursor = Controller?.CanDrag == true ? "cursor: move;" : null;
+            if (string.IsNullOrEmpty(Style)) return cursor;
+            return cursor is null ? Style : $"{cursor} {Style}";
+        }
+    }
+}

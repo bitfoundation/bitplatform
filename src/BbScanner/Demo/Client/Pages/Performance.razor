@@ -1,0 +1,337 @@
+﻿@page "/performance"
+
+<PageTitle>Performance - bit BbScanner</PageTitle>
+
+<h1>Performance</h1>
+<p class="lede">
+    The decoder runs on the same thread as the UI, so the only number that matters is how long a
+    frame takes. Everything below measures that in this browser, on this device, right now.
+</p>
+
+<h2>Decoder benchmark</h2>
+<p>
+    Decodes generated symbols in a loop with no camera involved, so the result isolates the
+    managed pipeline from capture and compositing.
+</p>
+
+<div class="card">
+    <div class="grid grid--3">
+        <div class="field">
+            <label class="field__label" for="bench-size">Frame size</label>
+            <select id="bench-size" value="@_benchSize" @onchange="e => _benchSize = ToInt(e, 640)">
+                <option value="320">320 × 240</option>
+                <option value="640">640 × 480</option>
+                <option value="960">960 × 720</option>
+                <option value="1280">1280 × 960</option>
+            </select>
+        </div>
+        <div class="field">
+            <label class="field__label" for="bench-iterations">Iterations</label>
+            <select id="bench-iterations" value="@_iterations" @onchange="e => _iterations = ToInt(e, 30)">
+                <option value="10">10</option>
+                <option value="30">30</option>
+                <option value="100">100</option>
+            </select>
+        </div>
+        <div class="field">
+            <label class="field__label" for="bench-formats">Enabled formats</label>
+            <select id="bench-formats" value="@_benchFormats" @onchange="OnBenchFormatsChanged">
+                <option value="@BbBarcodeFormat.All">All</option>
+                <option value="@BbBarcodeFormat.AllMatrix">Matrix only</option>
+                <option value="@BbBarcodeFormat.AllLinear">Linear only</option>
+                <option value="@BbBarcodeFormat.QrCode">QR only</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="button-row">
+        <button class="button button--primary" type="button" @onclick="RunBenchmark" disabled="@_running">
+            @(_running ? "Running..." : "Run benchmark")
+        </button>
+        <button class="button" type="button" @onclick="() => _benchmarks.Clear()" disabled="@(_benchmarks.Count == 0)">Clear</button>
+    </div>
+
+    @if (_benchmarks.Count > 0)
+    {
+        <table style="margin-block-start:1rem;">
+            <thead>
+                <tr>
+                    <th>Case</th>
+                    <th>Median</th>
+                    <th>Best</th>
+                    <th>Worst</th>
+                    <th>Throughput</th>
+                    <th>Found</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in _benchmarks)
+                {
+                    <tr>
+                        <td>@row.Name</td>
+                        <td class="mono">@row.Median.ToString("0.00") ms</td>
+                        <td class="mono">@row.Best.ToString("0.00") ms</td>
+                        <td class="mono">@row.Worst.ToString("0.00") ms</td>
+                        <td class="mono">@((1000 / Math.Max(row.Median, 0.001)).ToString("0")) fps</td>
+                        <td>
+                            @if (row.Found)
+                            {
+                                <span class="pill pill--success">yes</span>
+                            }
+                            else if (row.ExpectedFound)
+                            {
+                                <span class="pill pill--danger">not found</span>
+                            }
+                            else
+                            {
+                                <span class="pill pill--muted">empty frame</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+</div>
+
+<h2>Live camera cost</h2>
+<div class="split">
+    <div>
+        <BbScanner @ref="_scanner"
+                   Formats="_liveFormats"
+                   TargetFrameRate="_frameRate"
+                   MaxProcessingSize="_processingSize"
+                   Region="_region"
+                   DuplicateSuppressionWindow="TimeSpan.Zero"
+                   OnDiagnostics="OnDiagnostics" />
+    </div>
+    <div class="stack">
+        <DiagnosticsPanel Diagnostics="_diagnostics"
+                          FramesDecoded="_scanner?.FramesDecoded ?? 0"
+                          FramesWithSymbol="_scanner?.FramesWithSymbol ?? 0" />
+
+        <div class="card">
+            <h3 style="margin-block-start:0;">Knobs</h3>
+
+            <div class="field">
+                <label class="field__label">Processing size: @_processingSize px</label>
+                <input type="range" min="240" max="1280" step="40" value="@_processingSize"
+                       @onchange="e => _processingSize = ToInt(e, 640)" />
+                <span class="field__hint">Cost scales with area, so halving this quarters most of the pipeline.</span>
+            </div>
+
+            <div class="field">
+                <label class="field__label">Frame rate: @_frameRate fps</label>
+                <input type="range" min="1" max="30" step="1" value="@_frameRate"
+                       @onchange="e => _frameRate = ToInt(e, 15)" />
+            </div>
+
+            <div class="field">
+                <label class="field__label">Region: @((_regionFraction * 100).ToString("0"))%</label>
+                <input type="range" min="20" max="100" step="10" value="@(_regionFraction * 100)"
+                       @onchange="OnRegionChanged" />
+            </div>
+
+            <div class="field">
+                <label class="field__label">Formats</label>
+                <select value="@_liveFormats" @onchange="OnLiveFormatsChanged">
+                    <option value="@BbBarcodeFormat.All">All</option>
+                    <option value="@BbBarcodeFormat.AllMatrix">Matrix only</option>
+                    <option value="@BbBarcodeFormat.AllLinear">Linear only</option>
+                    <option value="@BbBarcodeFormat.QrCode">QR only</option>
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+<h2>What costs what</h2>
+<table>
+    <thead>
+        <tr><th>Setting</th><th>Effect</th><th>When to change it</th></tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>MaxProcessingSize</code></td>
+            <td>Quadratic. The dominant control.</td>
+            <td>Lower until the smallest symbol you care about stops decoding, then go one step back.</td>
+        </tr>
+        <tr>
+            <td><code>Formats</code></td>
+            <td>Linear in the number of decoders that run.</td>
+            <td>Always. Most applications need one or two symbologies.</td>
+        </tr>
+        <tr>
+            <td><code>Region</code></td>
+            <td>Proportional to the area kept.</td>
+            <td>Whenever the interface asks the user to aim.</td>
+        </tr>
+        <tr>
+            <td><code>MaxScanLines</code></td>
+            <td>Linear, and only for linear symbologies.</td>
+            <td>Lower for aimed scanning, raise for hands-off scanning.</td>
+        </tr>
+        <tr>
+            <td><code>TryHarder</code></td>
+            <td>Roughly triples matrix detection cost.</td>
+            <td>Still images only; it is off for live frames by design.</td>
+        </tr>
+        <tr>
+            <td><code>AllowInverted</code></td>
+            <td>Doubles the cost of frames that find nothing.</td>
+            <td>Only when white-on-black symbols are expected.</td>
+        </tr>
+        <tr>
+            <td><code>DownsampleFactor</code></td>
+            <td>Quadratic, applied inside the grayscale pass.</td>
+            <td>When frames arrive larger than you asked for and you cannot change the source.</td>
+        </tr>
+    </tbody>
+</table>
+
+@code {
+    private sealed record BenchmarkRow(string Name, double Median, double Best, double Worst, bool Found, bool ExpectedFound);
+
+    private readonly List<BenchmarkRow> _benchmarks = [];
+
+    private BbScanDiagnostics _diagnostics;
+    private BbScanner? _scanner;
+
+    private int _benchSize = 640;
+    private int _iterations = 30;
+    private BbBarcodeFormat _benchFormats = BbBarcodeFormat.All;
+    private bool _running;
+
+    private int _processingSize = 640;
+    private int _frameRate = 15;
+    private double _regionFraction = 1.0;
+    private BbScanRegion _region = BbScanRegion.Full;
+    private BbBarcodeFormat _liveFormats = BbBarcodeFormat.All;
+
+    private void OnDiagnostics(BbScanDiagnostics diagnostics)
+    {
+        _diagnostics = diagnostics;
+
+        StateHasChanged();
+    }
+
+    private async Task RunBenchmark()
+    {
+        _running = true;
+        _benchmarks.Clear();
+        StateHasChanged();
+        await Task.Yield();
+
+        var height = _benchSize * 3 / 4;
+
+        foreach (var sample in SampleCatalog.All.Take(6))
+        {
+            _benchmarks.Add(Measure(sample.Caption, BuildFrame(sample, _benchSize, height), _benchSize, height, true));
+            await Task.Yield();
+        }
+
+        var empty = new byte[_benchSize * height];
+        Array.Fill(empty, (byte)235);
+        _benchmarks.Add(Measure("Empty frame", empty, _benchSize, height, false));
+
+        _running = false;
+        StateHasChanged();
+    }
+
+    private BenchmarkRow Measure(string name, byte[] gray, int width, int height, bool expectFound)
+    {
+        using var decoder = new BbBarcodeDecoder(new BbScannerOptions
+        {
+            Formats = _benchFormats,
+            DuplicateSuppressionWindow = TimeSpan.Zero,
+        });
+
+        // One warm-up pass so that the measurement is not dominated by first-call JIT work.
+        var found = decoder.Decode(gray, width, height, BbPixelFormat.Gray8, false) is not null;
+
+        var timings = new double[_iterations];
+        for (var i = 0; i < _iterations; i++)
+        {
+            var start = System.Diagnostics.Stopwatch.GetTimestamp();
+            decoder.Decode(gray, width, height, BbPixelFormat.Gray8, false);
+            timings[i] = System.Diagnostics.Stopwatch.GetElapsedTime(start).TotalMilliseconds;
+        }
+
+        Array.Sort(timings);
+        return new BenchmarkRow(
+            name,
+            timings[timings.Length / 2],
+            timings[0],
+            timings[^1],
+            found,
+            expectFound);
+    }
+
+    /// <summary>
+    /// Renders a sample into a full size grayscale frame, centred, as a camera would see it.
+    /// </summary>
+    /// <remarks>
+    /// The scale is chosen so the whole symbol fits: a symbol cropped by the edge of the frame
+    /// cannot decode, and timing the failure path would measure the wrong thing.
+    /// </remarks>
+    private static byte[] BuildFrame(BarcodeSample sample, int width, int height)
+    {
+        using var symbol = sample.Matrix is not null
+            ? Bit.BbScanner.TestKit.SyntheticImage.FromMatrix(sample.Matrix, scale: MatrixScale(sample, width, height))
+            : Bit.BbScanner.TestKit.SyntheticImage.FromLinear(sample.Modules!, scale: LinearScale(sample, width), height: 80);
+
+        var frame = new byte[width * height];
+        Array.Fill(frame, (byte)235);
+
+        var offsetX = Math.Max(0, (width - symbol.Width) / 2);
+        var offsetY = Math.Max(0, (height - symbol.Height) / 2);
+        var copyWidth = Math.Min(symbol.Width, width);
+        var copyHeight = Math.Min(symbol.Height, height);
+
+        for (var y = 0; y < copyHeight; y++)
+        {
+            symbol.Pixels.Slice(y * symbol.Width, copyWidth)
+                .CopyTo(frame.AsSpan(((offsetY + y) * width) + offsetX, copyWidth));
+        }
+
+        return frame;
+    }
+
+    private static int MatrixScale(BarcodeSample sample, int width, int height)
+    {
+        var modules = sample.Matrix!.Width + 8;
+        var limit = Math.Min(width, height);
+        return Math.Clamp(limit / modules, 1, 4);
+    }
+
+    private static int LinearScale(BarcodeSample sample, int width)
+    {
+        var modules = sample.Modules!.Length + 24;
+        return Math.Clamp(width / modules, 1, 3);
+    }
+
+    private void OnRegionChanged(ChangeEventArgs args)
+    {
+        _regionFraction = Math.Clamp(ToInt(args, 100) / 100.0, 0.2, 1.0);
+        _region = _regionFraction >= 0.999 ? BbScanRegion.Full : BbScanRegion.CenteredSquare(_regionFraction);
+    }
+
+    private void OnBenchFormatsChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<BbBarcodeFormat>(args.Value?.ToString(), out var formats))
+        {
+            _benchFormats = formats;
+        }
+    }
+
+    private void OnLiveFormatsChanged(ChangeEventArgs args)
+    {
+        if (Enum.TryParse<BbBarcodeFormat>(args.Value?.ToString(), out var formats))
+        {
+            _liveFormats = formats;
+        }
+    }
+
+    private static int ToInt(ChangeEventArgs args, int fallback) =>
+        int.TryParse(args.Value?.ToString(), out var value) ? value : fallback;
+}
