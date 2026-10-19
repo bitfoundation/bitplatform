@@ -1,0 +1,90 @@
+﻿@page "/fluent-validation"
+@inject global::FluentValidation.IValidator<JobApplication> Validator
+
+<PageTitle>FluentValidation</PageTitle>
+
+<div class="demo-intro">
+    <h1>FluentValidation</h1>
+    <p>Reuse your existing <code>AbstractValidator&lt;T&gt;</code>. Borm runs it against the bound model and maps each failure onto its field by property path — including cross-field rules. Try entering 5+ years of experience and leaving the motivation short.</p>
+</div>
+
+<div class="demo-card">
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Apply" />
+</div>
+
+@if (_submitted)
+{
+    <div class="demo-result"><strong>Application received ✓</strong> <pre>@_json</pre></div>
+}
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/fluent-validation"
+@inject global::FluentValidation.IValidator<JobApplication> Validator
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Apply" />
+
+@code {
+    private readonly JobApplication _model = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<JobApplication>()
+            .Title("Job application")
+            .Field(x => x.FirstName, f => f.Label("First name"))
+            .Field(x => x.LastName, f => f.Label("Last name"))
+            .Field(x => x.Email)
+            .Field(x => x.YearsExperience, f => f.Label("Years of experience"))
+            .Field(x => x.DesiredSalary, f => f.Label("Desired salary"))
+            .Field(x => x.Motivation, f => f.AsTextArea(4).Label("Why do you want this role?"))
+            .Build();
+
+        // Validation comes entirely from the FluentValidation validator.
+        _state = new BormState(schema, new BormModelDataAccessor(_model))
+            .UseFluentValidation(Validator);
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
+""";
+
+    private readonly JobApplication _model = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<JobApplication>()
+            .Title("Job application")
+            .Field(x => x.FirstName, f => f.Label("First name"))
+            .Field(x => x.LastName, f => f.Label("Last name"))
+            .Field(x => x.Email)
+            .Field(x => x.YearsExperience, f => f.Label("Years of experience"))
+            .Field(x => x.DesiredSalary, f => f.Label("Desired salary"))
+            .Field(x => x.Motivation, f => f.AsTextArea(4).Label("Why do you want this role?"))
+            .Build();
+
+        // Validation comes entirely from the FluentValidation validator.
+        _state = new BormState(schema, new BormModelDataAccessor(_model))
+            .UseFluentValidation(Validator);
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

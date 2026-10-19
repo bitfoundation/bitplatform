@@ -95,6 +95,12 @@ jobs:
     uses: ./.github/workflows/bbscanner.demo.cd.yml
     secrets: inherit
 
+  bdnd_demo:
+    name: bdnd demo
+    if: inputs.server
+    uses: ./.github/workflows/bdnd.demo.cd.yml
+    secrets: inherit
+
   blazedb_demo:
     name: blazedb demo
     if: inputs.server
@@ -107,10 +113,22 @@ jobs:
     uses: ./.github/workflows/blow.demo.cd.yml
     secrets: inherit
 
+  borm_demo:
+    name: borm demo
+    if: inputs.server
+    uses: ./.github/workflows/borm.demo.cd.yml
+    secrets: inherit
+
   bonboarding_demo:
     name: bonboarding demo
     if: inputs.server
     uses: ./.github/workflows/bonboarding.demo.cd.yml
+    secrets: inherit
+
+  bortable_demo:
+    name: bortable demo
+    if: inputs.server
+    uses: ./.github/workflows/bortable.demo.cd.yml
     secrets: inherit
 
   brouter_demo:

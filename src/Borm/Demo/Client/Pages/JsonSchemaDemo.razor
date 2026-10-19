@@ -1,0 +1,225 @@
+﻿@page "/json-schema"
+
+<PageTitle>JSON Schema</PageTitle>
+
+<div class="demo-intro">
+    <h1>JSON Schema</h1>
+    <p>
+        Edit the JSON Schema on the left and the form regenerates on the right — no compiled model
+        required. Alongside the standard keywords (<code>$ref</code>, <code>allOf</code>,
+        <code>if</code>/<code>then</code>, <code>dependentRequired</code>, <code>enum</code>,
+        <code>format</code>…), Borm reads a small set of <code>x-</code> extensions for the UI
+        intent JSON Schema cannot express: widgets, layout, conditional visibility and wizard steps.
+        <strong>Export (round-trip)</strong> writes the whole thing back out, conditions and steps included.
+    </p>
+</div>
+
+<div class="demo-split">
+    <div>
+        <textarea @bind="_json" @bind:event="oninput" spellcheck="false" aria-label="JSON Schema"></textarea>
+        <div style="margin-top:.75rem; display:flex; gap:.5rem; flex-wrap:wrap">
+            <button class="bit-borm-btn bit-borm-btn--primary" @onclick="Rebuild">Apply schema</button>
+            <button class="bit-borm-btn" @onclick="ExportRoundTrip">Export (round-trip)</button>
+            <button class="bit-borm-btn" @onclick="LoadConditional">Load conditional example</button>
+            <button class="bit-borm-btn" @onclick="LoadWizard">Load wizard example</button>
+        </div>
+        @if (_error is not null)
+        {
+            <p style="color:#dc2626; font-size:.85rem" role="alert">@_error</p>
+        }
+    </div>
+
+    <div class="demo-card">
+        @if (_schema is not null)
+        {
+            <BormView @key="_version" Definition="_schema" Data="_data"
+                      OnValidSubmit="HandleSubmit" SubmitText="Submit" ShowErrorSummary="true" />
+        }
+    </div>
+</div>
+
+@if (_submitted)
+{
+    <div class="demo-result"><strong>Submitted values ✓</strong> <pre>@_resultJson</pre></div>
+}
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+""""
+@page "/json-schema"
+
+<textarea @bind="_json" @bind:event="oninput"></textarea>
+<button @onclick="Rebuild">Apply schema</button>
+<button @onclick="ExportRoundTrip">Export (round-trip)</button>
+
+@if (_schema is not null)
+{
+    <BormView @key="_version" Definition="_schema" Data="_data"
+              OnValidSubmit="HandleSubmit" SubmitText="Submit" ShowErrorSummary="true" />
+}
+
+@code {
+    private BormDefinition? _schema;
+    private Dictionary<string, object?> _data = new();
+    private int _version;
+    private string? _error;
+
+    private void Rebuild()
+    {
+        // TryImport reports a malformed document instead of throwing — the shape you want behind
+        // a "paste your schema here" editor.
+        if (BormJsonSchemaImporter.TryImport(_json, out var schema, out _error))
+        {
+            _schema = schema;
+            _data = new Dictionary<string, object?>();
+            _version++;
+        }
+    }
+
+    private void ExportRoundTrip()
+    {
+        if (_schema is null) return;
+        // Conditions, wizard steps, layout and widget choices all survive the round-trip.
+        _json = BormJsonSchemaExporter.Export(_schema);
+    }
+}
+"""";
+
+    private const string BasicSchema = """
+    {
+      "title": "Event registration",
+      "type": "object",
+      "required": ["name", "email", "ticket"],
+      "properties": {
+        "name":    { "type": "string", "title": "Full name", "minLength": 2, "x-autocomplete": "name" },
+        "email":   { "type": "string", "format": "email", "title": "Email" },
+        "ticket":  { "type": "string", "title": "Ticket", "enum": ["standard", "vip"], "enumNames": ["Standard", "VIP"] },
+        "guests":  { "type": "integer", "title": "Guests", "minimum": 0, "maximum": 5 },
+        "notes":   { "type": "string", "title": "Dietary notes", "x-widget": "textarea" },
+        "subscribe": { "type": "boolean", "title": "Email me about future events" }
+      }
+    }
+    """;
+
+    // Shows $defs/$ref, if/then, dependentRequired and the x-visibleWhen extension side by side.
+    private const string ConditionalSchema = """
+    {
+      "title": "Order",
+      "type": "object",
+      "x-columns": 2,
+      "required": ["kind", "email"],
+      "properties": {
+        "kind": {
+          "type": "string", "title": "Customer type",
+          "enum": ["personal", "business"], "enumNames": ["Personal", "Business"],
+          "x-widget": "radio", "x-colSpan": 2
+        },
+        "email": { "type": "string", "format": "email", "title": "Email", "x-colSpan": 2 },
+        "companyName": {
+          "type": "string", "title": "Company name", "x-colSpan": 2,
+          "x-visibleWhen":  { "field": "kind", "op": "Equals", "value": "business" },
+          "x-requiredWhen": { "field": "kind", "op": "Equals", "value": "business" },
+          "x-clearOnHide": true
+        },
+        "vatNumber": {
+          "type": "string", "title": "VAT number", "pattern": "^[A-Z]{2}[0-9]{8,12}$",
+          "x-visibleWhen": { "field": "kind", "op": "Equals", "value": "business" },
+          "x-clearOnHide": true
+        },
+        "billing": { "$ref": "#/$defs/address" },
+        "creditCard": { "type": "string", "title": "Card number" },
+        "billingReference": { "type": "string", "title": "Billing reference" }
+      },
+      "dependentRequired": { "creditCard": ["billingReference"] },
+      "$defs": {
+        "address": {
+          "type": "object", "title": "Billing address",
+          "required": ["city"],
+          "properties": {
+            "street": { "type": "string", "title": "Street" },
+            "city":   { "type": "string", "title": "City" }
+          }
+        }
+      }
+    }
+    """;
+
+    private const string WizardSchema = """
+    {
+      "title": "Sign up",
+      "type": "object",
+      "required": ["email", "kind"],
+      "properties": {
+        "email":       { "type": "string", "format": "email", "title": "Email" },
+        "kind":        { "type": "string", "title": "Account type", "enum": ["personal", "business"], "x-widget": "radio" },
+        "companyName": { "type": "string", "title": "Company name" },
+        "accept":      { "type": "boolean", "title": "I accept the terms" }
+      },
+      "if":   { "properties": { "kind": { "const": "business" } } },
+      "then": { "required": ["companyName"] },
+      "x-steps": [
+        { "id": "contact", "title": "Contact", "fields": ["email"] },
+        { "id": "type",    "title": "Type",    "fields": ["kind"] },
+        { "id": "company", "title": "Company", "fields": ["companyName"],
+          "visibleWhen": { "field": "kind", "op": "Equals", "value": "business" } },
+        { "id": "confirm", "title": "Confirm", "fields": ["accept"] }
+      ]
+    }
+    """;
+
+    private BormDefinition? _schema;
+    private Dictionary<string, object?> _data = new();
+    private int _version;
+    private string? _error;
+    private bool _submitted;
+    private string _resultJson = "";
+    private string _json = BasicSchema;
+
+    protected override void OnInitialized() => Rebuild();
+
+    private void Rebuild()
+    {
+        if (BormJsonSchemaImporter.TryImport(_json, out var schema, out var error))
+        {
+            _schema = schema;
+            _data = new Dictionary<string, object?>();
+            _version++;
+            _error = null;
+            _submitted = false;
+        }
+        else
+        {
+            _error = "Invalid JSON Schema: " + error;
+        }
+    }
+
+    private void ExportRoundTrip()
+    {
+        if (_schema is null) return;
+        _json = BormJsonSchemaExporter.Export(_schema);
+    }
+
+    private void LoadConditional()
+    {
+        _json = ConditionalSchema;
+        Rebuild();
+    }
+
+    private void LoadWizard()
+    {
+        _json = WizardSchema;
+        Rebuild();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _resultJson = System.Text.Json.JsonSerializer.Serialize(_data,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

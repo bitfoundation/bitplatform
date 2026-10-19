@@ -1,0 +1,125 @@
+﻿@page "/settled-answers"
+@implements IDisposable
+@using Bit.Borm.Demo.Client.Forms
+
+<PageTitle>Locked fields, tidy values &amp; date windows</PageTitle>
+
+<div class="demo-intro">
+    <h1>Locked fields, tidy values &amp; date windows</h1>
+    <p>
+        Three things a form needs once it survives its first submit. <code>ReadOnlyWhen</code> locks an
+        answer that has been settled without hiding it from a keyboard or a screen reader.
+        <code>Trim()</code> and <code>Normalize(…)</code> fix the value rather than complaining about it.
+        A date or time <code>Range(…)</code> is enforced, not merely offered to the picker.
+    </p>
+</div>
+
+<div class="demo-split">
+    <div class="demo-card">
+        <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save booking" />
+    </div>
+
+    <div class="demo-card">
+        <h2 style="margin-top:0;font-size:1.05rem;">What the model holds</h2>
+        <p style="color:#64748b;font-size:.85rem;">
+            Tick <em>confirmed</em> and the reference and arrival lock — still readable, still copyable,
+            still in the tab order. Type spaces around the email, or a lower-case reference, then leave
+            the field.
+        </p>
+        <pre style="background:#0f172a;color:#e2e8f0;border-radius:10px;padding:1rem;font-size:.82rem;overflow-x:auto;">@Dump</pre>
+
+        @if (_state.IsSubmitSuccessful)
+        {
+            <p style="color:#059669;font-weight:600;margin-bottom:0;">Saved ✓</p>
+        }
+    </div>
+</div>
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+var schema = BormBuilder.For<BookingRequest>()
+    .Title("Booking")
+
+    .Field(x => x.Reference, f => f
+        // Fix the value, do not complain about it: on blur the reference is folded to upper case
+        // and its stray spaces are dropped, so the model never stores " ab-12 ".
+        .Normalize(v => v is string s ? s.Trim().ToUpperInvariant() : v)
+        // Settled, not inapplicable. DisabledWhen would take this out of the tab order and stop a
+        // screen reader announcing it at all — for a value the user still needs to read off.
+        .ReadOnlyWhen(nameof(BookingRequest.Confirmed), BormConditionOperator.IsTrue))
+
+    .Field(x => x.ContactEmail, f => f
+        .AsEmail().Required()
+        .Trim())                     // a rule that rejects " a@b.com " for its spaces helps nobody
+
+    .Field(x => x.Arrival, f => f
+        .As(BormFieldType.Date)
+        // Rendered as the input's own min/max *and* enforced by the same rule, so a date typed past
+        // the picker is reported rather than quietly accepted.
+        .Range(DateTime.Today, DateTime.Today.AddMonths(6))
+        .ReadOnlyWhen(nameof(BookingRequest.Confirmed), BormConditionOperator.IsTrue))
+
+    .Field(x => x.CheckIn, f => f
+        .As(BormFieldType.Time)
+        .Range(new TimeOnly(14, 0), new TimeOnly(22, 0)))
+
+    .Field(x => x.Confirmed, f => f.AsSwitch())
+    .Build();
+
+// A "Saved." banner belongs to the save, not to the absence of errors.
+if (state.IsSubmitSuccessful) { /* … */ }
+""";
+
+    private readonly BookingRequest _model = new() { Reference = "bk-1024" };
+    private BormState _state = default!;
+
+    private string Dump => System.Text.Json.JsonSerializer.Serialize(_model,
+        new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<BookingRequest>()
+            .Title("Booking")
+            .Field(x => x.Reference, f => f
+                .Normalize(v => v is string s ? s.Trim().ToUpperInvariant() : v)
+                .Help("Folded to upper case when you leave the field.")
+                .ReadOnlyWhen(nameof(BookingRequest.Confirmed), BormConditionOperator.IsTrue))
+            .Field(x => x.ContactEmail, f => f
+                .AsEmail()
+                .Required()
+                .Trim()
+                .Help("Surrounding spaces are trimmed rather than reported."))
+            .Field(x => x.Arrival, f => f
+                .As(BormFieldType.Date)
+                .Range(DateTime.Today, DateTime.Today.AddMonths(6))
+                .Help("Today up to six months out — enforced, not just offered to the picker.")
+                .ReadOnlyWhen(nameof(BookingRequest.Confirmed), BormConditionOperator.IsTrue))
+            .Field(x => x.CheckIn, f => f
+                .As(BormFieldType.Time)
+                .Range(new TimeOnly(14, 0), new TimeOnly(22, 0))
+                .Help("Reception is staffed between 14:00 and 22:00."))
+            .Field(x => x.Confirmed, f => f.AsSwitch())
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private Task HandleSubmit(BormState state) => Task.CompletedTask;
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}

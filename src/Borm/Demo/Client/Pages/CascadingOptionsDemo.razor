@@ -1,0 +1,123 @@
+﻿@page "/cascading"
+@implements IDisposable
+@inject DemoDirectory Directory
+
+<PageTitle>Async &amp; cascading options</PageTitle>
+
+<div class="demo-intro">
+    <h1>Async &amp; cascading options</h1>
+    <p>
+        Options do not have to be baked into the schema. <code>OptionsFrom</code> loads them on demand and
+        declares which fields they depend on — pick a country and the city list reloads (dropping any
+        selection that no longer exists). The company field below is <em>conditionally required</em> and
+        clears itself when it is hidden, so an abandoned branch never reaches your model.
+    </p>
+</div>
+
+<div class="demo-card">
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save address" />
+</div>
+
+@if (_submitted)
+{
+    <div class="demo-result"><strong>Saved ✓</strong> <pre>@_json</pre></div>
+}
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/cascading"
+@inject DemoDirectory Directory
+
+<BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Save address" />
+
+@code {
+    private readonly DeliveryAddress _model = new();
+    private BormState _state = default!;
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<DeliveryAddress>()
+            .Title("Where should we deliver?")
+            .Field(x => x.Country, f => f
+                .Required()
+                .Options(DemoDirectory.Countries.ToArray())
+                .Autocomplete("country"))
+            .Field(x => x.City, f => f
+                .Required()
+                // Loaded on demand, and reloaded whenever Country changes.
+                .OptionsFrom(
+                    load: async ctx => await Directory.GetCitiesAsync(ctx.Value("Country") as string, ctx.CancellationToken),
+                    value: city => city,
+                    label: city => city,
+                    dependsOn: nameof(DeliveryAddress.Country))
+                .Placeholder("Pick a country first"))
+            .Field(x => x.IsBusiness)
+            .Field(x => x.CompanyName, f => f
+                .VisibleWhen(nameof(DeliveryAddress.IsBusiness), BormConditionOperator.IsTrue)
+                .RequiredWhen(nameof(DeliveryAddress.IsBusiness), BormConditionOperator.IsTrue)
+                .ClearOnHide())
+            .Field(x => x.Notes, f => f.AsTextArea(2))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+}
+""";
+
+    private readonly DeliveryAddress _model = new();
+    private BormState _state = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<DeliveryAddress>()
+            .Title("Where should we deliver?")
+            .Field(x => x.Country, f => f
+                .Required()
+                .Options(DemoDirectory.Countries.ToArray())
+                .Autocomplete("country"))
+            .Field(x => x.City, f => f
+                .Required()
+                .OptionsFrom(
+                    load: async ctx => await Directory.GetCitiesAsync(ctx.Value("Country") as string, ctx.CancellationToken),
+                    value: city => city,
+                    label: city => city,
+                    dependsOn: nameof(DeliveryAddress.Country))
+                .Placeholder("Pick a country first"))
+            .Field(x => x.IsBusiness)
+            .Field(x => x.CompanyName, f => f
+                .VisibleWhen(nameof(DeliveryAddress.IsBusiness), BormConditionOperator.IsTrue)
+                .RequiredWhen(nameof(DeliveryAddress.IsBusiness), BormConditionOperator.IsTrue)
+                .ClearOnHide())
+            .Field(x => x.Notes, f => f.AsTextArea(2))
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}

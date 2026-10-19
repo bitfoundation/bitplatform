@@ -1,0 +1,40 @@
+﻿@page "/sortable/stress-test"
+
+<PageTitle>Sortable · Stress Test - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Sortable - Stress Test</h3>
+    <p class="text-muted">
+        A long sortable list (@_cards.Count items). Reordering still runs the per-item midpoint
+        hit-test on every hover. Handy for spotting performance regressions.
+    </p>
+</div>
+
+<DemoCode />
+
+<section class="demo-stage">
+    <BdndProvider>
+        @* the list accepts cards too, so the gaps between cards are not "no-drop" zones *@
+        <BdndDropTarget TItem="SortableCard.DragItem" Accept="@ItemTypes.Card"
+                        style="max-width:24rem;max-height:480px;overflow-y:auto;border:1px solid var(--demo-border);border-radius:8px;padding:0.5rem;">
+            @foreach (var (card, index) in _cards.Select((c, i) => (c, i)))
+            {
+                <SortableCard Card="card" Index="index" OnMove="Move" @key="card.Id" />
+            }
+        </BdndDropTarget>
+    </BdndProvider>
+</section>
+
+@code {
+    private readonly List<SortableCard.CardModel> _cards =
+        Enumerable.Range(1, 100).Select(i => new SortableCard.CardModel(i, $"Item #{i}")).ToList();
+
+    private void Move((int From, int To) move)
+    {
+        var (from, to) = move;
+        if (from < 0 || from >= _cards.Count || to < 0 || to >= _cards.Count) return;
+        var card = _cards[from];
+        _cards.RemoveAt(from);
+        _cards.Insert(to, card);
+    }
+}

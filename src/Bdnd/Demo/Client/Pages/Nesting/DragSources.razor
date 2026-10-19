@@ -1,0 +1,45 @@
+﻿@page "/nesting/drag-sources"
+
+<PageTitle>Nesting · Drag Sources - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Nesting - Drag Sources</h3>
+    <p class="text-muted">
+        Drag sources can be nested. Grabbing an inner box drags <em>that</em> box, not its parent,
+        because the inner <code>BdndDraggable</code> stops the <code>dragstart</code> from bubbling.
+        Drop any of them on the bin to see which item was actually dragged.
+    </p>
+</div>
+
+<DemoCode />
+
+<section class="demo-stage">
+    <BdndProvider>
+        <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("OUTER")" Context="o">
+            <div class="nest-box" style="@($"background:#1565c0;opacity:{(o.IsDragging ? "0.4" : "1")};padding:2rem;")">
+                outer (drag the margin)
+                <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("MIDDLE")" Context="m">
+                    <div class="nest-box" style="@($"background:#2e7d32;opacity:{(m.IsDragging ? "0.4" : "1")};padding:2rem;margin-top:1rem;")">
+                        middle
+                        <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("INNER")" Context="i">
+                            <div class="nest-box" style="@($"background:#6a1b9a;opacity:{(i.IsDragging ? "0.4" : "1")};margin-top:1rem;")">
+                                inner
+                            </div>
+                        </BdndDraggable>
+                    </div>
+                </BdndDraggable>
+            </div>
+        </BdndDraggable>
+
+        <BdndDropTarget TItem="string" Accept="@ItemTypes.Box" Context="t"
+                        style="display:contents" OnDrop="@(e => _last = e.Item)">
+            <div class="dustbin" style="@($"margin-top:1.5rem;width:16rem;background:{(t.IsOver ? "darkgreen" : "#333")};")">
+                @(string.IsNullOrEmpty(_last) ? "Drop a box here" : $"You dragged: {_last}")
+            </div>
+        </BdndDropTarget>
+    </BdndProvider>
+</section>
+
+@code {
+    private string? _last;
+}

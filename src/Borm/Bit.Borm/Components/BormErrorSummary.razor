@@ -1,0 +1,215 @@
+﻿@namespace Bit.Borm
+@* Resolved optionally rather than injected: a host rendering outside a router — the static
+   HtmlRenderer, an email or PDF of the form — has no NavigationManager, and a summary that demanded one
+   threw where it used to render. *@
+@inject IServiceProvider Services
+
+@if (Messages.Count > 0)
+{
+    @* A summary at the top of the form is the standard way to make a long form's errors reachable:
+       it is announced when it appears, takes focus after a failed submit, and each entry links
+       straight to the control that needs fixing. *@
+    @* role="alert" only when the summary does not take focus itself. Moving focus to a live region
+       makes a screen reader announce it twice — once because the region changed and once because
+       focus arrived — and some read it more than that. Focus alone already reads the summary out, so
+       the role is what has to go; with AutoFocus off, nothing else would say anything, so it stays. *@
+    <div class="bit-borm-summary" role="@(AutoFocus ? null : "alert")" tabindex="-1" @ref="_element">
+        <p class="bit-borm-summary__title">@(Title ?? DefaultTitle)</p>
+        <ul class="bit-borm-summary__list">
+            @foreach (var message in Messages)
+            {
+                <li>
+                    @if (AnchorFor(message.FieldPath) is { } anchor)
+                    {
+                        @* A real href, so the link behaves like one (middle-click, copy, right-click),
+                           plus a click handler that moves focus for real — a fragment jump scrolls the
+                           control into view but does not always put the caret in it.
+
+                           The href names this page in full, and a plain click is kept from following it.
+                           A bare "#id" resolves against the document's <base href>, not the page: with
+                           the template's <base href="/">, on any form not at the root it pointed at the
+                           home page, and Blazor's router went there — taking the user, and everything
+                           they had typed, away from the form they were trying to fix. *@
+                        <a href="@anchor" @onclick="@(() => FocusField(message.FieldPath))" @onclick:preventDefault="true">@Describe(message)</a>
+                    }
+                    else
+                    {
+                        @Describe(message)
+                    }
+                </li>
+            }
+        </ul>
+    </div>
+}
+
+@code {
+    /// <summary>The form whose messages are summarised.</summary>
+    [Parameter, EditorRequired] public BormState State { get; set; } = default!;
+
+    /// <summary>Heading text. Defaults to a count-aware English sentence.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>When true (the default), the summary stays hidden until the first submit attempt.</summary>
+    [Parameter] public bool ShowOnlyAfterSubmit { get; set; } = true;
+
+    /// <summary>When true, each entry is prefixed with its field's label.</summary>
+    [Parameter] public bool ShowFieldNames { get; set; } = true;
+
+    /// <summary>
+    /// Moves focus to the summary the first time it appears after a failed submit, so a keyboard or
+    /// screen-reader user lands on the errors instead of having to hunt for them.
+    /// </summary>
+    [Parameter] public bool AutoFocus { get; set; } = true;
+
+    private ElementReference _element;
+    private int _focusedForSubmitCount;
+    private IReadOnlyList<BormValidationMessage> _messages = Array.Empty<BormValidationMessage>();
+
+    // Ordering walks the whole schema, and the list is read several times per render (the guard, the
+    // heading, the loop), so it is computed once when parameters change.
+    private IReadOnlyList<BormValidationMessage> Messages => _messages;
+
+    private BormState? _state;
+
+    protected override void OnParametersSet()
+    {
+        // A view handed a new model builds a new state and keeps this component. What was remembered
+        // about the old one — which submit was already focused — means nothing for the new one, whose
+        // count starts again from zero: kept, it swallowed the new form's first failed submit.
+        if (!ReferenceEquals(_state, State))
+        {
+            _state = State;
+            _focusedForSubmitCount = 0;
+            _focusAfterRender = null;
+        }
+
+        _messages = ShowOnlyAfterSubmit && !State.IsSubmitted
+            ? Array.Empty<BormValidationMessage>()
+            : State.OrderedMessages().Where(m => m.Severity == BormValidationSeverity.Error).ToList();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // A link whose control was on another wizard step: the step is showing now, so the control is
+        // rendered and can take focus.
+        if (_focusAfterRender is { } pending)
+        {
+            _focusAfterRender = null;
+            await State.FocusAsync(pending);
+            return;
+        }
+
+        // Once per submit attempt: re-focusing on every keystroke would trap the user in the summary.
+        if (!AutoFocus || _focusedForSubmitCount == State.SubmitCount) return;
+
+        // The attempt has not reached its verdict yet. Judged now, the messages on screen are the ones
+        // from before it, or none at all while an async rule is still running.
+        if (State.IsSubmitting || State.IsValidating) return;
+
+        // Recorded whether or not anything is shown. A submit that passed is an attempt handled too:
+        // left unrecorded, the next edit that made the form invalid again found an attempt it took for
+        // unanswered and pulled the focus out of the field the user was typing in.
+        _focusedForSubmitCount = State.SubmitCount;
+        if (Messages.Count == 0) return;
+
+        try
+        {
+            await _element.FocusAsync();
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException)
+        {
+            // No interactive circuit yet (static prerender), or no longer one — nothing to focus.
+        }
+    }
+
+    private string DefaultTitle => Messages.Count == 1
+        ? State.Text(BormMessageKeys.SummaryTitleOne)
+        : State.Text(BormMessageKeys.SummaryTitleMany, Messages.Count);
+
+    private string? _focusAfterRender;
+
+    private async Task FocusField(string path)
+    {
+        if (await State.FocusAsync(path)) return;
+
+        // On a wizard the control may be on a step that is not showing, and so not rendered at all.
+        // The link would otherwise do nothing: show that step, and focus the control once it is there.
+        var step = State.VisibleStepContaining(path);
+        if (step < 0 || step == State.CurrentStepIndex) return;
+
+        _focusAfterRender = path;
+        State.GoToStep(step);
+    }
+
+    private string Describe(BormValidationMessage message)
+    {
+        if (!ShowFieldNames) return message.Message;
+
+        var field = State.Definition.FindByPath(message.FieldPath);
+        // A hand-built schema need not label every field, and "This field is required." on its own
+        // names nothing — which is the one thing a summary entry exists to do. The field's name is a
+        // worse title than a label and a far better one than no title at all.
+        var label = string.IsNullOrEmpty(field?.Label) ? field?.Name : field.Label;
+        if (string.IsNullOrEmpty(label)) return message.Message;
+
+        // Every row of a repeater shares one field definition, so five identical "Product is required"
+        // entries would be indistinguishable. The row number is what tells the user which one to fix.
+        var row = RowNumber(message.FieldPath);
+        return row is null
+            ? $"{label}: {message.Message}"
+            : $"{label} ({row}): {message.Message}";
+    }
+
+    /// <summary>
+    /// The 1-based position of the repeater row a path points into, or null when the path is not inside
+    /// one. The innermost index wins, because that is the row the field actually belongs to.
+    /// </summary>
+    private static int? RowNumber(string path)
+    {
+        var close = path.LastIndexOf(']');
+        if (close < 0) return null;
+        var open = path.LastIndexOf('[', close);
+        if (open < 0) return null;
+
+        return int.TryParse(path.AsSpan(open + 1, close - open - 1),
+            System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var i)
+            ? i + 1
+            : null;
+    }
+
+    /// <summary>
+    /// A link to the offending control on this page. Returns null for form-level messages, which have
+    /// no single control to jump to.
+    /// </summary>
+    private string? AnchorFor(string fieldPath)
+    {
+        if (string.IsNullOrEmpty(fieldPath)) return null;
+        var field = State.Definition.FindByPath(fieldPath);
+        if (field is null) return null;
+        return PageUri + "#" + new BormFieldContext(State, field, fieldPath).ElementId;
+    }
+
+    /// <summary>
+    /// The current page's address without its fragment — what a fragment link has to be built on for
+    /// it to stay on this page whatever the document's <c>&lt;base href&gt;</c> says. Empty when there
+    /// is no address to be had, which leaves a bare fragment rather than no link.
+    /// </summary>
+    private string PageUri
+    {
+        get
+        {
+            if (Services.GetService(typeof(NavigationManager)) is not NavigationManager navigation) return "";
+            try
+            {
+                var uri = navigation.Uri;
+                var hash = uri.IndexOf('#', StringComparison.Ordinal);
+                return hash < 0 ? uri : uri[..hash];
+            }
+            catch (InvalidOperationException)
+            {
+                // A host whose NavigationManager was never initialised.
+                return "";
+            }
+        }
+    }
+}
