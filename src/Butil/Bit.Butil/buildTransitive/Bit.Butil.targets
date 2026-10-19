@@ -185,9 +185,10 @@
              that needs it, and first in the list on purpose: MSBuild evaluates a target's own Condition
              before it builds that target's DependsOnTargets, so a gate the dependency sets would be read
              while it is still unset. Listed here, it has run by the time either target is reached. -->
-        <!-- BitButilSelectPublishScriptAssets first of the four: it drops the shape of the JavaScript this app
-             does not use, and the two trimming targets after it only ever narrow what is left. -->
-        <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);_BitButilResolveScriptTrimming;BitButilSelectPublishScriptAssets;BitButilTrimScriptBundle;BitButilTrimScriptModules</ResolvePublishStaticWebAssetsDependsOn>
+        <!-- BitButilSelectPublishScriptAssets first of the Butil targets: it drops the shape of the JavaScript
+             this app does not use, and the two trimming targets after it only ever narrow what is left.
+             BitButilUpdateServiceWorker last, since it describes what the other three left. -->
+        <ResolvePublishStaticWebAssetsDependsOn>$(ResolvePublishStaticWebAssetsDependsOn);_BitButilResolveScriptTrimming;BitButilSelectPublishScriptAssets;BitButilTrimScriptBundle;BitButilTrimScriptModules;BitButilUpdateServiceWorker</ResolvePublishStaticWebAssetsDependsOn>
 
         <!-- Same appending trick, for the stage that gathers the assets themselves (see
              BitButilSelectScriptAssets). The SDK collects them from three places in a fixed order - the
@@ -245,6 +246,7 @@
     </Target>
 
     <UsingTask TaskName="Bit.Butil.Build.TrimButilScripts" AssemblyFile="$(BitButilBuildTasksAssembly)" />
+    <UsingTask TaskName="Bit.Butil.Build.UpdateButilServiceWorker" AssemblyFile="$(BitButilBuildTasksAssembly)" />
 
     <!--
     Drops the shape of the JavaScript the app does not use from its static web assets, so a bundle-mode app
@@ -639,6 +641,7 @@
             <StaticWebAsset Remove="@(_BitButilStaleAsset)" />
             <StaticWebAsset Include="@(_BitButilTrimmedBundleAsset)" />
             <StaticWebAssetEndpoint Include="@(_BitButilTrimmedBundleEndpoint)" />
+            <_BitButilServiceWorkerTrimmed Include="@(_BitButilTrimmedBundleAsset)" />
             <FileWrites Include="$(_BitButilTrimmedBundle)" />
         </ItemGroup>
 
@@ -709,6 +712,7 @@
             </_BitButilRemovedModuleEndpointKey>
 
             <StaticWebAsset Remove="@(_BitButilRemovedModule)" />
+            <_BitButilServiceWorkerDropped Include="@(_BitButilRemovedModule)" />
             <StaticWebAssetEndpoint Remove="@(_BitButilRemovedModuleEndpointKey)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" Condition="'@(StaticWebAssetEndpoint)' != ''" />
         </ItemGroup>
 
@@ -719,6 +723,67 @@
             <_BitButilModuleCandidate Remove="@(_BitButilModuleCandidate)" />
             <_BitButilRemovedModule Remove="@(_BitButilRemovedModule)" />
             <_BitButilRemovedModuleEndpointKey Remove="@(_BitButilRemovedModuleEndpointKey)" />
+        </ItemGroup>
+    </Target>
+
+    <!--
+    Keeps a service worker's precache list true to what the trimming publishes. The manifest
+    (service-worker-assets.js) is written by the project that owns the service worker, during that project's own
+    publish: in a standalone WebAssembly app that is this project, after this stage, from the trimmed files - and
+    there is nothing for these targets to do. In a Blazor Web App it is the WebAssembly client, which hands the
+    server a manifest written from the client's own copy of the JavaScript: trimmed against the client's
+    assemblies, or not at all. The server then trims against its own assemblies and the client's together, and
+    serves a bundle the manifest describes with another file's hash, without module files the manifest still lists.
+    An installed app keeps a cached file for as long as its listed hash stays the same, so that is an app left on
+    an old bundle - or, under a service worker that checks integrity, one that never installs.
+
+    So the manifest is rewritten here - the dropped files out of the list, the trimmed bundle under its own hash,
+    a new version - and so is the service worker script that names that version, which is what makes the browser
+    install the update. The new files are defined as fresh assets in place of the client's, exactly as the trimmed
+    bundle is, so integrity, endpoints and the compressed copies are all computed from the rewritten content.
+    Three targets for the same reason as the bundle's: the .NET 9+ definition is in Bit.Butil.Endpoints.targets.
+
+      _BitButilRewriteServiceWorker      rewrites the files (UpdateButilServiceWorker) and lists what they replace
+      _BitButilDefineServiceWorker       defines the new assets (plain form here, with endpoints in the 9+ file)
+      BitButilUpdateServiceWorker        swaps the assets and endpoints in the static web asset lists
+    -->
+    <Target Name="_BitButilRewriteServiceWorker" DependsOnTargets="BitButilTrimScriptBundle;BitButilTrimScriptModules" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
+        <UpdateButilServiceWorker StaticWebAssets="@(StaticWebAsset)"
+                                  RemovedAssets="@(_BitButilServiceWorkerDropped)"
+                                  TrimmedAssets="@(_BitButilServiceWorkerTrimmed)"
+                                  OutputDirectory="$([MSBuild]::NormalizeDirectory('$(MSBuildProjectDirectory)', '$(IntermediateOutputPath)', 'bit-butil-service-worker'))">
+            <Output TaskParameter="CandidateAssets" ItemName="_BitButilServiceWorkerCandidate" />
+            <Output TaskParameter="StaleAssets" ItemName="_BitButilServiceWorkerStale" />
+        </UpdateButilServiceWorker>
+
+        <ItemGroup>
+            <_BitButilServiceWorkerDropped Remove="@(_BitButilServiceWorkerDropped)" />
+            <_BitButilServiceWorkerTrimmed Remove="@(_BitButilServiceWorkerTrimmed)" />
+        </ItemGroup>
+    </Target>
+
+    <!-- .NET 8 SDK: no endpoints. The .NET 9+ counterpart is in Bit.Butil.Endpoints.targets. -->
+    <Target Name="_BitButilDefineServiceWorker" AfterTargets="_BitButilRewriteServiceWorker"
+            Condition="'$(_BitButilSdkHasEndpoints)' != 'true' and '@(_BitButilServiceWorkerCandidate)' != ''">
+        <DefineStaticWebAssets CandidateAssets="@(_BitButilServiceWorkerCandidate)">
+            <Output TaskParameter="Assets" ItemName="_BitButilServiceWorkerAsset" />
+        </DefineStaticWebAssets>
+    </Target>
+
+    <Target Name="BitButilUpdateServiceWorker" DependsOnTargets="_BitButilRewriteServiceWorker" Condition="'$(_BitButilTrimAnyEnabled)' == 'true'">
+        <ItemGroup Condition="'@(_BitButilServiceWorkerAsset)' != ''">
+            <StaticWebAssetEndpoint Remove="@(_BitButilServiceWorkerStale)" MatchOnMetadata="AssetFile" MatchOnMetadataOptions="PathLike" Condition="'@(StaticWebAssetEndpoint)' != ''" />
+            <StaticWebAsset Remove="@(_BitButilServiceWorkerStale)" />
+            <StaticWebAsset Include="@(_BitButilServiceWorkerAsset)" />
+            <StaticWebAssetEndpoint Include="@(_BitButilServiceWorkerEndpoint)" />
+            <FileWrites Include="@(_BitButilServiceWorkerCandidate)" />
+        </ItemGroup>
+
+        <ItemGroup>
+            <_BitButilServiceWorkerCandidate Remove="@(_BitButilServiceWorkerCandidate)" />
+            <_BitButilServiceWorkerStale Remove="@(_BitButilServiceWorkerStale)" />
+            <_BitButilServiceWorkerAsset Remove="@(_BitButilServiceWorkerAsset)" />
+            <_BitButilServiceWorkerEndpoint Remove="@(_BitButilServiceWorkerEndpoint)" />
         </ItemGroup>
     </Target>
 
