@@ -42,7 +42,7 @@ jobs:
                 }
               }`, { org: context.repo.owner });
 
-            const project = organization.projectsV2.nodes.find(p => p.title.toLowerCase().startsWith('support tracking'));
+            const project = organization.projectsV2.nodes.find(p => p.title.toLowerCase() === 'support tracking');
             if (!project) throw new Error('The Support Tracking project was not found.');
 
             const investigating = project.field?.options.find(o => o.name.toLowerCase() === 'investigating');
