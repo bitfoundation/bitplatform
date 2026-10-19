@@ -1,0 +1,32 @@
+﻿@* Root component of every harness host. Each element a test drives or reads carries an id, and the status line
+   reports how and where the tree is being rendered and whether Belemetry's interactive bridge is up. *@
+
+<div class="harness">
+    <HarnessStatus BridgeReady="_bridgeReady" />
+
+    <nav class="harness-nav">
+        <a id="nav-home" href="">home</a>
+        <a id="nav-second" href="second">second</a>
+        <a id="nav-third" href="third">third</a>
+    </nav>
+
+    <main>
+        <Router AppAssembly="typeof(HarnessApp).Assembly">
+            <Found Context="routeData">
+                <RouteView RouteData="routeData" />
+            </Found>
+            <NotFound>
+                <p id="not-found">not found</p>
+            </NotFound>
+        </Router>
+    </main>
+
+    @* Renders nothing; once interactive it starts the script if <BelemetryScript /> has not and connects it to .NET. *@
+    <BelemetryInitializer OnReady="OnBelemetryReady" />
+</div>
+
+@code {
+    private bool _bridgeReady;
+
+    private void OnBelemetryReady() => _bridgeReady = true;
+}

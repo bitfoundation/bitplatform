@@ -320,6 +320,9 @@ _book
 /src/Bortable/Bit.Bortable/wwwroot/**/*.js
 /src/Bortable/Bit.Bortable/wwwroot/**/*.css
 
+/src/Belemetry/Bit.Belemetry/Scripts/**/*.js
+/src/Belemetry/Bit.Belemetry/wwwroot/**/*.js
+
 /src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/BitFileUploaderFiles/*.*
 /src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/wwwroot/scripts/app.js
 

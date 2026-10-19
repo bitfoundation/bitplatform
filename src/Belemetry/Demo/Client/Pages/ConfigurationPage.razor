@@ -1,0 +1,307 @@
+﻿@page "/configuration"
+
+<PageTitle>Configuration - bit Belemetry</PageTitle>
+
+<h1>Configuration</h1>
+
+<p class="page-intro">
+    Everything Belemetry does is set on one <code>BelemetryOptions</code>, passed to
+    <code>AddBitBelemetryServices</code>. The tables on this page are reflected from the shipped assembly - names,
+    types, the defaults a fresh options object really has, and the XML documentation you see in IntelliSense - so
+    they cannot describe an option that does not exist.
+</p>
+
+<div class="demo-section">
+    <h2>One registration</h2>
+    <p>
+        <code>AddBitBelemetryServices</code> follows the Options pattern and is idempotent: call it in every project
+        that hosts Blazor, and every configure callback passed across calls runs, in order, on the same
+        <code>BelemetryOptions</code>. A shared method called from both the server and the client project keeps the
+        two in step, and each project adds what is its own on top. Every line below sets an option to something
+        other than its default, or spells a default out where it is a decision worth reading in code.
+    </p>
+    <CodeSnippet Code="@FullCode" Language="C#" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>From appsettings</h2>
+    <p>
+        Every option can come from configuration instead. Bind the section the way a trimmed or AOT app binds any
+        options: the configuration binder's source generator (<code>EnableConfigurationBindingGenerator</code> in the
+        app's project) handles <code>BelemetryOptions</code> without reflection, and Belemetry takes no dependency on
+        the binder. What only code can add - custom exporters, processors, a token provider - goes on top.
+    </p>
+    <CodeSnippet Code="@BindCode" Language="C#" Expanded="true" />
+    <CodeSnippet Code="@AppsettingsCode" Language="JSON" />
+    <p>
+        Two binder rules worth knowing: a bound list adds to the option's defaults
+        (<code>Privacy.RedactQueryParameters</code> keeps its built-in names and gains yours), and a bound array
+        replaces nothing either, which is why <code>Metrics.HistogramBoundaries</code> is empty by default and means
+        the OpenTelemetry defaults until you set it. Enums and flags bind by name
+        (<code>"Features": "Errors, Logs, Traces"</code>), <code>TimeSpan</code>s by <code>hh:mm:ss</code>.
+    </p>
+</div>
+
+<div class="demo-section">
+    <h2>Per-category log levels</h2>
+    <p>
+        <code>Logs.MinimumLevel</code> is the floor: nothing below it is collected, whatever a category says.
+        Above it, per-category levels use the standard logging configuration, under the <code>Belemetry</code>
+        provider alias, so they can differ from what the console logger shows.
+    </p>
+    <CodeSnippet Code="@LoggingCode" Language="JSON" Expanded="true" />
+</div>
+
+<div class="demo-section">
+    <h2>Environment variables</h2>
+    <p>
+        Outside the browser, with <code>options.UseEnvironmentVariables</code> (on by default), the standard
+        variables fill in what the code leaves unset - this is how the .NET Aspire AppHost and most container
+        platforms wire telemetry in. Explicit options always win.
+    </p>
+    <div class="doc-table-wrap">
+        <table class="doc-table">
+            <thead>
+                <tr><th scope="col">Variable</th><th scope="col">Effect</th></tr>
+            </thead>
+            <tbody>
+                <tr><td><code>OTEL_SERVICE_NAME</code></td><td><code>service.name</code></td></tr>
+                <tr><td><code>OTEL_RESOURCE_ATTRIBUTES</code></td><td>Extra resource attributes (<code>k=v,k2=v2</code>)</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_ENDPOINT</code></td><td>Adds an OTLP exporter when none is configured, and fills unset endpoints</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_TRACES_ENDPOINT</code>, <code>_LOGS_ENDPOINT</code>, <code>_METRICS_ENDPOINT</code></td><td>Per-signal endpoints; any of them adds the exporter too</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_HEADERS</code></td><td>OTLP headers (<code>k=v,k2=v2</code>)</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_PROTOCOL</code></td><td><code>http/protobuf</code>, <code>http/json</code> or <code>grpc</code>, unless <code>Protocol</code> is set in code</td></tr>
+                <tr><td><code>OTEL_EXPORTER_OTLP_COMPRESSION</code>, <code>OTEL_EXPORTER_OTLP_TIMEOUT</code></td><td><code>gzip</code>/<code>none</code> and the timeout in milliseconds, unless set in code</td></tr>
+                <tr><td><code>APPLICATIONINSIGHTS_CONNECTION_STRING</code></td><td>Adds an Azure Monitor exporter when none is configured</td></tr>
+                <tr><td><code>WEBSITE_*</code>, <code>REGION_NAME</code>, <code>CONTAINER_APP_*</code></td><td>The Azure App Service, Functions or Container Apps resource attributes and instance id of a server</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="callout">
+        <p>
+            The browser has no environment. In a Blazor Web App the browser script gets its configuration from the
+            <em>server's</em> options through <code>&lt;BelemetryScript /&gt;</code>, so variables set on the server reach
+            it. A standalone WebAssembly app has to set everything in code.
+        </p>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryOptions</h2>
+    <ApiTable TypeName="BelemetryOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryConsentOptions</h2>
+    <p><code>options.Consent</code> - see <a href="/consent">Consent and GDPR</a>.</p>
+    <ApiTable TypeName="BelemetryConsentOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryPrivacyOptions</h2>
+    <p><code>options.Privacy</code> - see <a href="/privacy">Privacy</a>.</p>
+    <ApiTable TypeName="BelemetryPrivacyOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryBrowserOptions</h2>
+    <p><code>options.Browser</code> - see <a href="/browser">Browser instrumentation</a> and <a href="/transport">Transport</a>.</p>
+    <ApiTable TypeName="BelemetryBrowserOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryLoggingOptions</h2>
+    <p><code>options.Logs</code> - see <a href="/dotnet">.NET instrumentation</a>.</p>
+    <ApiTable TypeName="BelemetryLoggingOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryTracingOptions</h2>
+    <p><code>options.Traces</code>.</p>
+    <ApiTable TypeName="BelemetryTracingOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryMetricsOptions</h2>
+    <p><code>options.Metrics</code>.</p>
+    <ApiTable TypeName="BelemetryMetricsOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryBatchOptions</h2>
+    <p><code>options.Batch</code> - the .NET pipeline. The browser script batches with <code>options.Browser.FlushInterval</code>, <code>MaxBatchSize</code> and <code>MaxQueueSize</code>.</p>
+    <ApiTable TypeName="BelemetryBatchOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryPersistenceOptions</h2>
+    <p><code>options.Persistence</code> - see <a href="/persistence">Offline persistence</a>.</p>
+    <ApiTable TypeName="BelemetryPersistenceOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryServerOptions</h2>
+    <p><code>options.Server</code> - see <a href="/server-pipeline">Server pipeline</a>.</p>
+    <ApiTable TypeName="BelemetryServerOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryOtlpExporterOptions</h2>
+    <p>Configured by <code>options.AddOtlpExporter(...)</code> - see <a href="/otlp">OTLP</a>.</p>
+    <ApiTable TypeName="BelemetryOtlpExporterOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryAzureMonitorExporterOptions</h2>
+    <p>Configured by <code>options.AddAzureMonitorExporter(...)</code> - see <a href="/azure-monitor">Azure Monitor</a>.</p>
+    <ApiTable TypeName="BelemetryAzureMonitorExporterOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryConsoleExporterOptions</h2>
+    <p>Configured by <code>options.AddConsoleExporter(...)</code> - see <a href="/exporters">Console, in-memory and custom</a>.</p>
+    <ApiTable TypeName="BelemetryConsoleExporterOptions" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryFeatures</h2>
+    <ApiTable TypeName="BelemetryFeatures" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryHostKind</h2>
+    <ApiTable TypeName="BelemetryHostKind" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryBrowserTransport</h2>
+    <ApiTable TypeName="BelemetryBrowserTransport" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryOtlpProtocol</h2>
+    <ApiTable TypeName="BelemetryOtlpProtocol" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryCompression</h2>
+    <ApiTable TypeName="BelemetryCompression" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetrySignals</h2>
+    <ApiTable TypeName="BelemetrySignals" />
+</div>
+
+<div class="demo-section">
+    <h2>BelemetryMetricTemporality</h2>
+    <ApiTable TypeName="BelemetryMetricTemporality" />
+</div>
+
+@code {
+    private const string BindCode = """
+        // Program.cs - the binder's source generator (EnableConfigurationBindingGenerator) makes this trim- and AOT-safe.
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            builder.Configuration.GetSection("Belemetry").Bind(options);
+            options.AddExporter(new MyExporter());   // what only code can add: custom exporters, processors, token providers
+        });
+        """;
+
+    private const string AppsettingsCode = """
+        {
+          "Belemetry": {
+            "ServiceName": "MyApp",
+            "Environment": "Production",
+            "Consent": { "Default": "Errors" },
+            "Browser": { "TrackPageVisitTime": true },
+            "Traces": { "Sources": [ "MyApp.*" ], "IgnoredActivityNames": [ "Microsoft.AspNetCore.Components.HandleEvent" ] },
+            "Server": { "CollectDotnetTelemetry": true, "IgnoredRequestPaths": [ "/health", "/alive" ] },
+            "OtlpExporters": [ { "Endpoint": "https://otel.example.com", "Protocol": "HttpProtobuf", "Headers": { "x-api-key": "..." } } ],
+            "AzureMonitorExporters": [ { "ConnectionString": "InstrumentationKey=...", "MinimumLogLevel": "Warning" } ]
+          }
+        }
+        """;
+
+    private const string FullCode = """
+        using Bit.Belemetry;
+        using Microsoft.Extensions.Logging;
+
+        builder.Services.AddBitBelemetryServices(options =>
+        {
+            // The resource: who is sending. service.name is what every backend groups by.
+            options.ServiceName = "MyShop";
+            options.ServiceNamespace = "contoso";
+            options.Environment = builder.Environment.EnvironmentName;
+            options.ResourceAttributes["deployment.region"] = "westeurope";
+
+            // What may be collected at all. A feature is sent only when it is here AND the user granted it.
+            options.Features = BelemetryFeatures.All & ~BelemetryFeatures.Interactions;
+
+            // Consent: opt-in, so nothing is sent before the user decides - except error reports,
+            // which this app covers by legitimate interest.
+            options.Consent.Default = BelemetryFeatures.Errors;
+            options.Consent.Persist = true;
+            options.Consent.HonorGlobalPrivacyControl = true;
+
+            // Privacy rules, applied on both sides before anything is queued.
+            options.Privacy.RedactQueryParameters.Add("voucher");
+            options.Privacy.BlockedAttributes.Add("user_agent.original");
+
+            // The browser script.
+            options.Browser.Transport = BelemetryBrowserTransport.Auto;      // Relay in Hybrid, Direct elsewhere
+            options.Browser.ResourceTiming = true;
+            options.Browser.PropagateTraceContextTo.Add(@"^https://api\.contoso\.com/");
+            options.Browser.IgnoreUrls.Add("/health");
+            options.Browser.SessionSampleRatio = 0.5;
+
+            // The .NET collectors.
+            options.Logs.MinimumLevel = LogLevel.Information;
+            options.Traces.Sources.Add("MyShop*");
+            options.Traces.SamplingRatio = 0.25;
+            options.Metrics.Meters.Add("MyShop*");
+            options.Metrics.ExportInterval = TimeSpan.FromSeconds(30);
+
+            // Delivery.
+            options.Batch.FlushInterval = TimeSpan.FromSeconds(5);
+            options.Persistence.MaxAge = TimeSpan.FromHours(24);
+
+            // The server's own telemetry (ASP.NET Core hosts only), governed by Server.Features.
+            options.Server.CollectDotnetTelemetry = true;
+
+            // Exporters: any number, combined.
+            options.AddOtlpExporter("http://otel-collector:4318", otlp =>
+            {
+                otlp.Protocol = BelemetryOtlpProtocol.HttpProtobuf;
+                otlp.BrowserEndpoint = new Uri("https://otel.contoso.com");  // public, CORS-enabled
+                otlp.Compression = BelemetryCompression.Gzip;
+            });
+
+            options.AddAzureMonitorExporter(builder.Configuration["ApplicationInsights:ConnectionString"]!, azure =>
+            {
+                azure.Signals = BelemetrySignals.Traces | BelemetrySignals.Logs;
+            });
+
+            if (builder.Environment.IsDevelopment())
+            {
+                options.AddConsoleExporter();
+                options.Debug = true;
+                options.Browser.Debug = true;
+            }
+        });
+        """;
+
+    private const string LoggingCode = """
+        {
+          "Logging": {
+            "Belemetry": {
+              "LogLevel": {
+                "Default": "Information",
+                "Microsoft.AspNetCore": "Warning",
+                "MyShop.Polling": "Warning"
+              }
+            }
+          }
+        }
+        """;
+}
