@@ -273,6 +273,25 @@ public class BitDialogParamsTests : BunitTestContext
     }
 
     [TestMethod]
+    public void BitDialogOwnAutoFocusSelectorShouldNotBeReplacedByACascadedAutoFocusButton()
+    {
+        // A button the dialog names itself wins over its selector, but a cascaded one is an app-wide default: the
+        // dialog that names the field to start on has made its own choice of where the focus lands.
+        var @params = new BitDialogParams { AutoFocusButton = BitDialogButton.Cancel };
+
+        var component = RenderWithParams(@params, RenderDialog(builder =>
+        {
+            builder.AddAttribute(10, nameof(BitDialog.AutoFocusSelector), ".my-field");
+        }));
+
+        var dialog = component.FindComponent<BitDialog>();
+
+        Assert.IsNull(dialog.Instance.AutoFocusButton);
+        var invocation = Context.JSInterop.Invocations["BitBlazorUI.Utils.focusFirstElement"][0];
+        Assert.AreEqual(".my-field", invocation.Arguments[1]);
+    }
+
+    [TestMethod]
     public void BitDialogCascadedDisabledShouldDisableTheButtons()
     {
         var @params = new BitDialogParams { Disabled = true };

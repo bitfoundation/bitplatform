@@ -137,7 +137,7 @@ public partial class BitDialog : BitComponentBase
     /// being shown is ignored, and the focus falls back to <see cref="AutoFocusSelector"/> or to the first
     /// focusable element.
     /// </remarks>
-    [Parameter] public BitDialogButton? AutoFocusButton { get; set; }
+    [Parameter, Outranks(nameof(AutoFocusSelector))] public BitDialogButton? AutoFocusButton { get; set; }
 
     /// <summary>
     /// The CSS selector of the element inside the Dialog that <see cref="AutoFocus"/> lands on, instead of
@@ -148,7 +148,9 @@ public partial class BitDialog : BitComponentBase
     /// a link or a segmented control above the field the user came to fill in. The selector is matched
     /// inside the Dialog only, and a selector that matches nothing visible falls back to the first focusable
     /// element - so a Dialog whose content varies never opens with the focus nowhere.
-    /// <see cref="AutoFocusButton"/> takes precedence over this when both are set.
+    /// <see cref="AutoFocusButton"/> takes precedence over this when both are set on the Dialog, while one a
+    /// <see cref="BitParams"/> ancestor supplies does not: a Dialog that names the field to start on keeps it
+    /// when an app makes the Cancel button every Dialog's default.
     /// <br />
     /// An element inside the Dialog carrying a <c>data-autofocus</c> attribute is picked up without a
     /// selector at all, which is the one to reach for when what should be focused is decided by the content
