@@ -56,8 +56,9 @@ internal sealed class BdndJsRegistration<TOptions> : IAsyncDisposable where TOpt
         {
             if (Equals(options, _options) is false)
             {
-                _options = options;
                 await _reference.InvokeVoidAsync("update", options);
+                // only once JS has them: after a failed update the next sync sends them again
+                _options = options;
             }
             return;
         }

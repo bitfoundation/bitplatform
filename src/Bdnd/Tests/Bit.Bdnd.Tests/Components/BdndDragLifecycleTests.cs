@@ -12,6 +12,9 @@ namespace Bit.Bdnd.Tests.Components;
 [TestClass]
 public class BdndDragLifecycleTests : BdndComponentTestBase
 {
+    /// <summary>How long a test waits for a drop or an end it unblocked, so a regression fails instead of hanging.</summary>
+    private static readonly TimeSpan WaitLimit = TimeSpan.FromSeconds(10);
+
     private readonly List<string> _log = [];
     private readonly StateLog<BdndDragState> _sourceStates = new();
     private readonly StateLog<BdndDropState<string>> _binStates = new();
@@ -375,7 +378,7 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
     }
 
     [TestMethod]
-    public async Task AnAsyncOnDropStillCountsAsADropWhenTheDragEndsFirst()
+    public async Task OnEndWaitsForAnAsyncOnDropAndGetsTheResultItSetsAfterAnAwait()
     {
         var gate = new TaskCompletionSource();
         var cut = RenderDustbin(onDrop: async e =>
@@ -387,12 +390,83 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
 
         var drop = DropAsync(Bin(cut));
         Assert.IsTrue(Manager.DidDrop(), "marked before the handler completes");
-        await EndDragAsync(Source(cut));
+        // on WebAssembly the browser fires dragend right after drop, while the handler still awaits
+        var end = EndDragAsync(Source(cut));
+        Assert.IsTrue(Manager.IsDragging(), "the drag lasts until the async OnDrop has completed");
+        Assert.AreEqual("begin:crate", _log[^1]);
+
         gate.SetResult();
-        await drop;
+        await drop.WaitAsync(WaitLimit);
+        await end.WaitAsync(WaitLimit);
+
+        Assert.AreEqual("end:crate:True:late", _log[^1]);
+        Assert.IsFalse(Manager.IsDragging());
+    }
+
+    [TestMethod]
+    public async Task AnOuterResultStillWinsOverTheResultAnInnerAsyncOnDropSetsLater()
+    {
+        var gate = new TaskCompletionSource();
+        BdndDragEndContext<string>? end = null;
+        var cut = RenderProvider(p => p
+            .AddChildContent<BdndDraggable<string>>(d => d
+                .Add(x => x.Type, "box")
+                .Add(x => x.Item, "crate")
+                .Add(x => x.OnEnd, e => end = e))
+            .AddChildContent<BdndDropTarget<string>>(outer => outer
+                .Add(x => x.Accept, "box")
+                .Add(x => x.OnDrop, e =>
+                {
+                    _log.Add($"outer:{e.Monitor.DidDrop()}");
+                    e.Result = "outer";
+                })
+                .Add<BdndDropTarget<string>, BdndDropState<string>>(x => x.ChildContent, _ => inner => inner
+                    .Add(x => x.Accept, "box")
+                    .AddUnmatched("id", "inner")
+                    .Add(x => x.OnDrop, async e =>
+                    {
+                        await gate.Task;
+                        e.Result = "inner";
+                    }))));
+        await StartDragAsync(Source(cut));
+
+        var drop = DropAsync(cut.Find("#inner"));
+        var ended = EndDragAsync(Source(cut));
+        gate.SetResult();
+        await drop.WaitAsync(WaitLimit);
+        await ended.WaitAsync(WaitLimit);
+
+        Assert.AreSequenceEqual(new[] { "outer:True" }, _log);
+        Assert.IsNotNull(end);
+        Assert.AreEqual("outer", end.DropResult);
+    }
+
+    [TestMethod]
+    public async Task AFailingAsyncOnDropDoesNotKeepTheDragGoing()
+    {
+        var gate = new TaskCompletionSource();
+        var cut = RenderDustbin(onDrop: async _ =>
+        {
+            await gate.Task;
+            throw new InvalidOperationException("save failed");
+        });
+        await StartDragAsync(Source(cut));
+
+        var drop = DropAsync(Bin(cut));
+        var end = EndDragAsync(Source(cut));
+        gate.SetResult();
+        try
+        {
+            await drop.WaitAsync(WaitLimit);
+        }
+        catch (InvalidOperationException)
+        {
+            // the handler's own failure, reported by the drop event
+        }
+        await end.WaitAsync(WaitLimit);
 
         Assert.AreEqual("end:crate:True:", _log[^1]);
-        Assert.IsNull(Manager.GetDropResult(), "the late result belongs to a drag that already ended");
+        Assert.IsFalse(Manager.IsDragging());
     }
 
     [TestMethod]
@@ -532,6 +606,55 @@ public class BdndDragLifecycleTests : BdndComponentTestBase
         Assert.IsFalse(first.Last.IsDragging);
         Assert.IsTrue(second.Last.IsDragging);
         Assert.IsTrue(first.Last.Monitor.IsDragging());
+    }
+
+    [TestMethod]
+    public async Task AHoverChangeReRendersOnlyTheTargetsWhoseStateItChanged()
+    {
+        var sourceStates = new StateLog<BdndDragState>();
+        var hoveredStates = new StateLog<BdndDropState<string>>();
+        var otherStates = new StateLog<BdndDropState<string>>();
+        var cut = RenderProvider(p => p
+            .AddChildContent<BdndDraggable<string>>(d => d.Add(x => x.Type, "box").Add(x => x.ChildContent, sourceStates.Content()))
+            .AddChildContent<BdndDropTarget<string>>(t => t.Add(x => x.Accept, "box").Add(x => x.ChildContent, hoveredStates.Content()))
+            .AddChildContent<BdndDropTarget<string>>(t => t.Add(x => x.Accept, "box").Add(x => x.ChildContent, otherStates.Content())));
+        var targets = cut.FindComponents<BdndDropTarget<string>>();
+        await StartDragAsync(Source(cut));
+        var (sourceRenders, hoveredRenders, otherRenders) = (sourceStates.Count, hoveredStates.Count, otherStates.Count);
+
+        await HoverAsync(targets[0]);
+        await HoverAsync(targets[0], isOver: false);
+
+        Assert.AreEqual(hoveredRenders + 2, hoveredStates.Count, "the hovered target renders its enter and its leave");
+        Assert.AreEqual(otherRenders, otherStates.Count, "nothing the other target shows changed");
+        Assert.AreEqual(sourceRenders, sourceStates.Count, "nor anything the draggable shows");
+
+        await EndDragAsync(Source(cut));
+
+        Assert.AreEqual(otherRenders + 1, otherStates.Count, "every target renders the end of the drag");
+        Assert.AreEqual(sourceRenders + 1, sourceStates.Count);
+    }
+
+    [TestMethod]
+    public async Task PointerMovesAreOnlyTrackedWhileADragLayerFollowsThem()
+    {
+        var withLayer = false;
+        var layer = Fragment<BdndDragLayer<string>>(
+            ("ChildContent", (RenderFragment<BdndDragLayerState<string>>)(_ => _ => { })));
+        var cut = RenderProvider(p => p
+            .AddChildContent<BdndDraggable<string>>(d => d.Add(x => x.Type, "box").Add(x => x.Item, "crate"))
+            .AddChildContent(builder =>
+            {
+                if (withLayer) builder.AddContent(0, layer);
+            }));
+        Assert.IsFalse(Assert.ContainsSingle(SourceRegistrations).TrackPointer);
+
+        // a layer added after the draggable rendered: the draggable picks it up when the drag starts
+        withLayer = true;
+        cut.Render();
+        await StartDragAsync(Source(cut));
+
+        Assert.IsTrue(SourceUpdates[^1].TrackPointer, "the drag started with a layer listening");
     }
 
     [TestMethod]

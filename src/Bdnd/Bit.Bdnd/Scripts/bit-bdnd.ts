@@ -28,6 +28,8 @@ interface DragSourceOptions {
     useHandle?: boolean;
     useEmptyPreview?: boolean;
     effectAllowed?: DataTransfer['effectAllowed'];
+    /** Whether .NET follows the pointer during a drag (a drag layer); otherwise moves are not sent. */
+    trackPointer?: boolean;
 }
 
 /** Mirrors BdndDropTargetOptions. */
@@ -77,6 +79,9 @@ const SOURCE_TYPE_PREFIX = 'application/x-bit-bdnd-';
 const HANDLE_ATTRIBUTE = 'data-bit-bdnd-handle';
 const EMPTY_IMAGE_SRC =
     'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
+// The DataTransfer types a text field can take, and the <input> types that take text.
+const TEXT_DRAG_TYPES = ['text/plain', 'text/uri-list', 'text/html'];
+const TEXT_INPUT_TYPES = ['text', 'search', 'url', 'tel', 'email', 'password', 'number'];
 
 // Firefox can raise a mousemove right as a drag starts, so mouse movement is only taken as
 // "the drag is over" after this delay (the same approach as React DnD's HTML5 backend).
@@ -230,7 +235,8 @@ function beginSession(source: DragSource, startEvent: DragEvent): void {
         onDragOver: (e: DragEvent) => {
             s.x = e.clientX;
             s.y = e.clientY;
-            if (!s.frame) {
+            // on Blazor Server every move is a message over the circuit: send them only when followed
+            if (!s.frame && source.options.trackPointer) {
                 s.frame = requestAnimationFrame(() => {
                     s.frame = 0;
                     if (session !== s || (s.x === s.sentX && s.y === s.sentY)) return;
@@ -273,14 +279,23 @@ function endSession(notify: boolean): void {
 
 // ---- drop targets -------------------------------------------------------------------------
 
-// Native drags over a text field or editable content are left to the browser, so text can still
-// be dropped into inputs placed inside a drop target.
-function isNativeDragOverEditable(e: DragEvent): boolean {
+// Native text drags (text, links, HTML) over a text field or editable content are left to the
+// browser, so text can still be dropped into inputs placed inside a drop target. A field cannot take
+// a file: a drag carrying files stays the target's, or the browser would open the dropped file.
+function isNativeTextDragOverEditable(e: DragEvent): boolean {
     if (isInAppDrag(e.dataTransfer)) return false;
+    const types = typesOf(e.dataTransfer);
+    if (types.includes('Files') || !types.some((t) => TEXT_DRAG_TYPES.includes(t))) return false;
     let node = e.target as Node | null;
     if (node && node.nodeType !== Node.ELEMENT_NODE) node = node.parentElement;
-    const el = node as HTMLElement | null;
-    return !!el && (el.isContentEditable || el.tagName === 'INPUT' || el.tagName === 'TEXTAREA');
+    return !!node && acceptsText(node as HTMLElement);
+}
+
+function acceptsText(el: HTMLElement): boolean {
+    if (el.isContentEditable) return true;
+    if (el instanceof HTMLTextAreaElement) return !el.disabled && !el.readOnly;
+    // checkboxes, buttons, file and range inputs take no text
+    return el instanceof HTMLInputElement && TEXT_INPUT_TYPES.includes(el.type) && !el.disabled && !el.readOnly;
 }
 
 // dragenter/dragover bubble through nested drop targets. The innermost target that can drop
@@ -291,7 +306,7 @@ function applyDropEffect(e: DragEvent, canDrop: boolean): void {
     let state = dropEffectStates.get(e);
     if (!state) dropEffectStates.set(e, (state = { accepted: false, rejected: false }));
     if (state.accepted) return;
-    if (isNativeDragOverEditable(e)) {
+    if (isNativeTextDragOverEditable(e)) {
         state.accepted = true; // the editable element handles it, untouched
         return;
     }
@@ -373,7 +388,7 @@ export function registerDropTarget(element: HTMLElement | null, dotNetRef: DotNe
         // No dragleave follows a drop. Reset silently: managed OnDrop handlers may still query
         // IsOver, and the managed state is reset when the drag ends.
         target.reset();
-        if (isNativeDragOverEditable(e)) {
+        if (isNativeTextDragOverEditable(e)) {
             // The field takes the drop and no HandleNativeDrop follows, so nothing else would clear
             // the native hover reported for this target: report the leave.
             if (wasOver) invoke(dotNetRef, 'HandleHoverChanged', false, typesOf(dataTransfer));
@@ -383,22 +398,23 @@ export function registerDropTarget(element: HTMLElement | null, dotNetRef: DotNe
         // in-app drops are handled by the managed ondrop handler
         if (!dataTransfer || isInAppDrag(dataTransfer) || !canDrop(dataTransfer)) return;
 
-        // getData only works during the drop event, hence it is read here
+        // getData only works during the drop event, hence it is read here. Only what the target
+        // accepts is sent: a page's text/html can be far larger than a Blazor Server circuit
+        // message may be, and a target taking text or links has no use for it.
         const types = typesOf(dataTransfer);
+        const accepted = target.options.nativeTypes || [];
         const data: Record<string, string> = {};
         for (const t of types) {
-            if (t === 'Files') continue;
+            if (t === 'Files' || !accepted.includes(t)) continue;
             try {
                 data[t] = dataTransfer.getData(t);
             } catch {
                 /* ignore */
             }
         }
-        const files = Array.from(dataTransfer.files || [], (f) => ({
-            name: f.name,
-            size: f.size,
-            type: f.type,
-        }));
+        const files = accepted.includes('Files')
+            ? Array.from(dataTransfer.files || [], (f) => ({ name: f.name, size: f.size, type: f.type }))
+            : [];
         invoke(dotNetRef, 'HandleNativeDrop', { types, data, files });
     };
 

@@ -147,7 +147,7 @@ public static partial class BdndDropLab
 
     // ---- Reading the scenario ---------------------------------------------------------
 
-    private sealed record Scenario(BdndDropHost.Drag Drag, string RawType, List<Target> Roots, List<Target> All, List<Target> HoverChain, bool HoverGiven);
+    private sealed record Scenario(BdndDropHost.Drag Drag, string RawType, List<Target> Roots, List<Target> All, List<Target> HoverChain);
 
     /// <summary>Reads the scenario, or says - with the JSON path - what is wrong with it.</summary>
     private static string? ReadScenario(JsonElement root, List<string> readingNotes, out Scenario? scenario)
@@ -221,20 +221,21 @@ public static partial class BdndDropLab
 
         scenario = new Scenario(
             new BdndDropHost.Drag(resolvedType, native?.Token, canDrag, dropEffect),
-            rawType, roots, all, chain, hoverGiven);
+            rawType, roots, all, chain);
 
         return null;
     }
 
     private static string? ReadTargets(JsonElement array, string path, Target? parent, int depth, List<Target> all, List<Target> siblings, List<string> readingNotes)
     {
-        if (depth >= MaxDepth) return $"{path} nests targets {depth + 1} deep; this tool runs scenarios nested up to {MaxDepth} deep.";
-
         var position = 0;
 
         foreach (var element in array.EnumerateArray())
         {
             var at = $"{path}[{position++}]";
+
+            // Only a target that is there nests: an empty children array at the deepest level is fine.
+            if (depth >= MaxDepth) return $"{at} nests targets {depth + 1} deep; this tool runs scenarios nested up to {MaxDepth} deep.";
 
             if (element.ValueKind != JsonValueKind.Object) return $"{at} is not a drop target: a target is an object, {{ \"id\": \"...\", \"accept\": [...] }}.";
 
@@ -655,8 +656,10 @@ public static partial class BdndDropLab
 
         if (lit.Length > 1)
         {
-            notes.Add($"While a native drag hovers, every hovered target that accepts it reports IsOver, IsOverShallow and CanDrop as true ({List(lit)}): " +
-                      "there is no shallow distinction for native drags.");
+            var shallow = chain.Where(target => report[target].IsOverShallow).Select(target => target.Id).ToArray();
+
+            notes.Add($"While a native drag hovers, every hovered target that accepts it reports IsOver and CanDrop as true ({List(lit)}), IsOverShallow only on " +
+                      $"{List(shallow)} - the innermost of them, as for an in-app drag.");
         }
 
         var waiting = scenario.All.Where(target => chain.Contains(target) is false && target.Accept.Contains(native.Constant, StringComparer.Ordinal)).Select(target => target.Id).ToArray();

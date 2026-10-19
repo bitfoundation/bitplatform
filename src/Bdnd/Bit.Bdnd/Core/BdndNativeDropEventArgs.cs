@@ -9,7 +9,11 @@ public sealed class BdndNativeDropEventArgs
     /// <summary>Files for a <see cref="BdndNativeTypes.File"/> drop.</summary>
     public IReadOnlyList<BdndNativeFile> Files { get; init; } = [];
 
-    /// <summary>Raw data keyed by DataTransfer type (e.g. <c>text/plain</c>, <c>text/html</c>).</summary>
+    /// <summary>
+    /// Raw data keyed by DataTransfer type (e.g. <c>text/plain</c>, <c>text/html</c>). Only the types the
+    /// target accepts are read: a target accepting <see cref="BdndNativeTypes.Text"/> alone gets the
+    /// <c>text/plain</c> of a drag and not its (possibly large) <c>text/html</c>.
+    /// </summary>
     public IReadOnlyDictionary<string, string> Data { get; init; } =
         new Dictionary<string, string>();
 

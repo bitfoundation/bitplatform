@@ -77,6 +77,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
     private BdndJsRegistration<BdndDragSourceOptions>? _registration;
     private DotNetObjectReference<BdndDraggable<TItem>>? _selfRef;
     private ElementReference _element;
+    private Collected _collected;
     private bool _canDrag;
     private TItem? _draggingItem;
     private bool _disposed;
@@ -98,20 +99,35 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
 
     private bool EffectiveCanDrag => CanDragPredicate?.Invoke() ?? CanDrag;
 
-    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+    // Like React DnD's collect: a drag state change re-renders only the draggables whose collected
+    // state it changed - and every draggable when a drag begins or ends - not each one on every hover.
+    private void OnStateChanged()
+    {
+        if (Collect() != _collected) InvokeAsync(StateHasChanged);
+    }
 
     // Drag events must not trigger the automatic re-render ComponentBase performs after every
     // event (e.g. while dragstart is still being dispatched); the manager drives re-renders.
     Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg) => callback.InvokeAsync(arg);
 
+    private Collected Collect()
+    {
+        var monitor = Manager!.Monitor;
+        return new(
+            monitor.IsDragging(),
+            IsDraggingOverride?.Invoke(monitor) ?? monitor.IsDragging(_handlerId),
+            EffectiveCanDrag);
+    }
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         var monitor = Manager!.Monitor;
-        _canDrag = EffectiveCanDrag;
+        _collected = Collect();
+        _canDrag = _collected.CanDrag;
         var state = new BdndDragState
         {
             Monitor = monitor,
-            IsDragging = IsDraggingOverride?.Invoke(monitor) ?? monitor.IsDragging(_handlerId),
+            IsDragging = _collected.IsDragging,
             CanDrag = _canDrag,
         };
 
@@ -136,10 +152,15 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         builder.CloseElement();
     }
 
-    protected override Task OnAfterRenderAsync(bool firstRender) =>
+    protected override Task OnAfterRenderAsync(bool firstRender) => SyncRegistrationAsync();
+
+    // Pointer moves are reported only while something follows them (a drag layer): on Blazor
+    // Server each one is a message over the circuit.
+    private Task SyncRegistrationAsync() =>
         _registration!.SyncAsync(_element, new BdndDragSourceOptions(
             _handlerId, _canDrag, UseHandle, UseCustomDragLayer,
-            string.IsNullOrWhiteSpace(DropEffect) ? "move" : DropEffect));
+            string.IsNullOrWhiteSpace(DropEffect) ? "move" : DropEffect,
+            Manager!.HasOffsetListeners));
 
     private ValueTask<IJSObjectReference?> RegisterAsync(ElementReference element, BdndDragSourceOptions options)
     {
@@ -185,6 +206,8 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         // apply re-renders synchronously, so publish the drag only after dispatch has finished.
         if (OperatingSystem.IsBrowser()) await Task.Delay(1);
         await manager.FlushBeginAsync();
+        // a drag layer added since the last render needs the pointer moves of this drag
+        var sync = SyncRegistrationAsync();
 
         if (rect is null && _registration!.Reference is { } registration)
         {
@@ -192,6 +215,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
             if (rect is not null && manager.IsDragging(_handlerId))
                 manager.SetInitialSourceClientOffset(new BdndXYCoord(rect.Left, rect.Top));
         }
+        await sync;
     }
 
     // The synchronous read works only in-process (Blazor WebAssembly); elsewhere it answers null.
@@ -228,8 +252,11 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         try
         {
             if (manager.IsDragging(_handlerId) is false) return;
+            var dragId = manager.DragId;
             await manager.FlushBeginAsync();
-            if (manager.IsDragging(_handlerId) is false) return;
+            // OnEnd gets the results async OnDrop handlers publish after an await
+            await manager.WhenDropsCompletedAsync();
+            if (manager.IsDragging(_handlerId) is false || manager.DragId != dragId) return;
 
             var context = new BdndDragEndContext<TItem>
             {
@@ -285,4 +312,7 @@ public sealed class BdndDraggable<TItem> : ComponentBase, IHandleEvent, IAsyncDi
         public bool RequiresHandle => _owner.UseHandle;
         public bool CanDrag => _owner._canDrag;
     }
+
+    /// <summary>The state a render hands the content, besides the monitor.</summary>
+    private readonly record struct Collected(bool AnyDragging, bool IsDragging, bool CanDrag);
 }

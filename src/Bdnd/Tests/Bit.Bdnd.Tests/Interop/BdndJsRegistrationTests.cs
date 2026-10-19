@@ -81,6 +81,22 @@ public class BdndJsRegistrationTests
     }
 
     [TestMethod]
+    public async Task OptionsAFailedUpdateDidNotDeliverArePushedAgain()
+    {
+        var reference = new FakeJSObjectReference();
+        var registration = new BdndJsRegistration<Options>(new Registrar(reference).Register);
+        await registration.SyncAsync(Element, new Options(1));
+        reference.Fails("update", new JSException("update failed"));
+
+        await Assert.ThrowsExactlyAsync<JSException>(() => registration.SyncAsync(Element, new Options(2)));
+        reference.Succeeds("update");
+        await registration.SyncAsync(Element, new Options(2));
+
+        Assert.AreSequenceEqual(new object?[] { new Options(2), new Options(2) },
+            reference.CallsTo("update").Select(args => args![0]));
+    }
+
+    [TestMethod]
     public async Task ARecreatedElementIsRegisteredAgainAndTheOldRegistrationReleased()
     {
         var first = new FakeJSObjectReference();

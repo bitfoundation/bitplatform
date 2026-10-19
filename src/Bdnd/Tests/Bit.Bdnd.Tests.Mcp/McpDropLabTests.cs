@@ -231,9 +231,11 @@ public class McpDropLabTests
         foreach (var id in new[] { "page", "zone" })
         {
             Assert.IsTrue(Target(report, id).IsOver, id);
-            Assert.IsTrue(Target(report, id).IsOverShallow, $"{id}: a native drag has no shallow distinction.");
             Assert.IsTrue(Target(report, id).CanDrop, id);
         }
+
+        Assert.IsTrue(Target(report, "zone").IsOverShallow, "the innermost hovered target that accepts the drag");
+        Assert.IsFalse(Target(report, "page").IsOverShallow, "an accepting target nested in it is hovered");
 
         Assert.IsFalse(Target(report, "other").CanDrop);
         Assert.IsTrue(report.Notes.Any(note => note.Contains("OnNativeDrop, never OnDrop", StringComparison.Ordinal)));
@@ -368,6 +370,27 @@ public class McpDropLabTests
 
         Assert.IsFalse(report.Valid);
         Assert.Contains($"nested up to {BdndDropLab.MaxDepth} deep", report.Error!);
+    }
+
+    [TestMethod]
+    public async Task Targets_nested_to_the_limit_run_even_when_the_innermost_has_an_empty_children_array()
+    {
+        var root = Target("t0", ["card"]);
+        var current = root;
+
+        for (var depth = 1; depth < BdndDropLab.MaxDepth; depth++)
+        {
+            var child = Target($"t{depth}", ["card"]);
+            current["children"] = new JsonArray(child);
+            current = child;
+        }
+
+        current["children"] = new JsonArray();
+
+        var report = await InspectAsync(Scenario("card", $"t{BdndDropLab.MaxDepth - 1}", root));
+
+        Assert.IsTrue(report.Valid, report.Error);
+        Assert.HasCount(BdndDropLab.MaxDepth, report.Targets!);
     }
 
     internal static Task<BdndDropReportDto> InspectAsync(string? json)

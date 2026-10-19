@@ -61,11 +61,9 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
     private ElementReference _element;
     private BdndJsRegistration<BdndDropTargetOptions>? _registration;
     private DotNetObjectReference<BdndDropTarget<TItem>>? _selfRef;
+    private Collected _collected;
     private bool _canDropInApp;
     private bool _disposed;
-
-    // native (OS) drag local state - the manager only tracks in-app drags
-    private string? _nativeItemType;
 
     public BdndDropTarget()
     {
@@ -116,10 +114,15 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
         return Interop.RegisterDropTargetAsync(element, _selfRef, options);
     }
 
-    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+    // Like React DnD's collect: a hover change anywhere in the provider re-renders only the targets
+    // whose collected state it changed.
+    private void OnStateChanged()
+    {
+        if (Collect() != _collected) InvokeAsync(StateHasChanged);
+    }
 
     // Drag events must not trigger the automatic re-render ComponentBase performs after every
-    // event (dragover fires continuously); the manager and the native hover state drive renders.
+    // event (dragover fires continuously); the manager's state changes drive renders.
     Task IHandleEvent.HandleEventAsync(EventCallbackWorkItem callback, object? arg) => callback.InvokeAsync(arg);
 
     private static TItem? Cast(object? item) => item is TItem t ? t : default;
@@ -127,20 +130,37 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
     private bool Accepts() =>
         Manager!.Monitor.GetItemType() is { } type && _accept.Contains(type);
 
+    private Collected Collect()
+    {
+        var manager = Manager!;
+        if (manager.IsDragging() is false && manager.GetNativeItemType(_handlerId) is { } nativeType)
+        {
+            // a native drag only reaches a target that accepts it, and only while it hovers it
+            return new(false, true, manager.IsNativeOver(_handlerId, shallow: true), true, nativeType, default);
+        }
+        return new(
+            manager.IsDragging(),
+            manager.IsOver(_handlerId),
+            manager.IsOver(_handlerId, shallow: true),
+            manager.CanDrop(_handlerId),
+            manager.GetItemType(),
+            Cast(manager.GetItem()));
+    }
+
     protected override void BuildRenderTree(RenderTreeBuilder builder)
     {
         var monitor = Manager!.Monitor;
-        var native = monitor.IsDragging() is false && _nativeItemType is not null;
-        _canDropInApp = monitor.CanDrop(_handlerId);
+        _collected = Collect();
+        _canDropInApp = _collected.IsDragging && _collected.CanDrop;
 
         var state = new BdndDropState<TItem>
         {
             Monitor = monitor,
-            IsOver = native || monitor.IsOver(_handlerId),
-            IsOverShallow = native || monitor.IsOver(_handlerId, shallow: true),
-            CanDrop = native || _canDropInApp,
-            ItemType = native ? _nativeItemType : monitor.GetItemType(),
-            Item = Cast(monitor.GetItem()),
+            IsOver = _collected.IsOver,
+            IsOverShallow = _collected.IsOverShallow,
+            CanDrop = _collected.CanDrop,
+            ItemType = _collected.ItemType,
+            Item = _collected.Item,
         };
 
         // Hover tracking, drop-effect feedback (preventDefault/dropEffect) and native drops are
@@ -180,12 +200,8 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
     private static bool IsInAppDrag(IEnumerable<string>? types) =>
         types?.Any(t => t.StartsWith(BdndInterop.SourceTypePrefix, StringComparison.Ordinal)) == true;
 
-    private void SetNativeItemType(string? nativeType)
-    {
-        if (_nativeItemType == nativeType) return;
-        _nativeItemType = nativeType;
-        StateHasChanged();
-    }
+    // native (OS) drags are no drags of the manager: it only keeps their hover per target
+    private void SetNativeItemType(string? nativeType) => Manager!.SetNativeOver(_handlerId, nativeType);
 
     private async Task HandleDragOverAsync(DragEventArgs e)
     {
@@ -216,11 +232,22 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
             Item = Cast(manager.GetItem()),
         };
         var onDrop = OnDrop.InvokeAsync(args);
-        // An async handler may still run when the source's dragend arrives: mark the drop as
-        // handled right away so OnEnd sees DidDrop; the result is recorded once it completes.
-        if (onDrop.IsCompleted is false) manager.RecordDrop(dragId, null);
+        if (onDrop.IsCompleted is false)
+        {
+            // An async handler may still run when the source's dragend arrives: the drop counts right
+            // away (outer targets see DidDrop), and OnEnd waits for the result the handler publishes.
+            manager.RecordPendingDrop(dragId, ResultAsync(onDrop, args));
+            await onDrop;
+            return;
+        }
         await onDrop;
         manager.RecordDrop(dragId, args.Result);
+    }
+
+    private static async Task<object?> ResultAsync(Task onDrop, BdndDropEventArgs<TItem> args)
+    {
+        await onDrop;
+        return args.Result;
     }
 
     /// <summary>Invoked from JS when the pointer enters or leaves this target during any drag.</summary>
@@ -270,4 +297,8 @@ public sealed class BdndDropTarget<TItem> : ComponentBase, IHandleEvent, IAsyncD
         if (_registration is not null) await _registration.DisposeAsync();
         _selfRef?.Dispose();
     }
+
+    /// <summary>The state a render hands the content, besides the monitor.</summary>
+    private readonly record struct Collected(
+        bool IsDragging, bool IsOver, bool IsOverShallow, bool CanDrop, string? ItemType, TItem? Item);
 }

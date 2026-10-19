@@ -13,4 +13,7 @@ internal sealed class BdndDropTargetEntry
 
     /// <summary>True while the pointer is over the target and the target accepts the item type.</summary>
     public bool IsOver { get; set; }
+
+    /// <summary>The native type matched by the native (OS) drag hovering the target, or null.</summary>
+    public string? NativeItemType { get; set; }
 }

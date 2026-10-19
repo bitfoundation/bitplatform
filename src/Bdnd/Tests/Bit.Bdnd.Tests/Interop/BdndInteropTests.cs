@@ -76,7 +76,7 @@ public class BdndInteropTests
         var interop = new BdndInterop(new FakeJSRuntime().NextImport(module));
         var element = new ElementReference("source");
         var callbacks = new object();
-        var options = new BdndDragSourceOptions("id", true, false, true, "copy");
+        var options = new BdndDragSourceOptions("id", true, false, true, "copy", false);
 
         var result = await interop.RegisterDragSourceAsync(element, callbacks, options);
 
@@ -113,7 +113,7 @@ public class BdndInteropTests
         var js = new FakeJSRuntime().NextImport(module);
         var interop = new BdndInterop(js);
 
-        await interop.RegisterDragSourceAsync(default, new object(), new BdndDragSourceOptions("a", true, false, false, "move"));
+        await interop.RegisterDragSourceAsync(default, new object(), new BdndDragSourceOptions("a", true, false, false, "move", false));
         await interop.RegisterDropTargetAsync(default, new object(), new BdndDropTargetOptions(false, []));
         await interop.GetBoundingClientRectAsync(default);
 

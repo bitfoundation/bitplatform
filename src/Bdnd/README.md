@@ -374,8 +374,12 @@ the user picks with a modifier key (<kbd>Ctrl</kbd>, or <kbd>⌥</kbd> on macOS)
 ### Host element and attributes
 
 `Tag` picks the host element (`li`, `tr`, `span`...). The host is a real element, so a draggable inside a flex or
-grid container is a flex or grid item; give it `style="display:contents"` to take it out of the layout and let its
-child be the item instead.
+grid container is a flex or grid item: style the host itself as the item - `class` and `style` go onto it - rather
+than wrapping the item in it. Do not give a draggable `style="display:contents"`: the host is the element the
+browser drags and the one Bdnd measures and pictures as the drag image, and an element without a box of its own
+measures as an empty rectangle at `0,0` (a drag layer's preview then starts in the corner of the viewport), makes an
+empty drag image, and may not start a drag at all. A drop target, which is never measured, can take
+`display:contents`, as the sortable list below does.
 
 ### Custom isDragging
 
@@ -441,6 +445,12 @@ Set `args.Result` in `OnDrop` to tell the source what happened. The source reads
 (or `Monitor.GetDropResult<T>()`). With nested targets every accepting target's `OnDrop` runs, innermost first, and
 a non-null result set by an outer target overrides an inner one - React DnD's rule. An outer target can check
 `args.Monitor.DidDrop()` to see whether an inner one already handled the drop.
+
+An async `OnDrop` may set `args.Result` after an `await`. The drop counts as soon as the handler starts - an outer
+target's `DidDrop()` is true while the inner handler is still running - and the drag ends, running `OnEnd` with the
+result, only once every async `OnDrop` of the drop has completed. Until then the drag is still in progress and the
+targets keep their hover state, so keep slow work (a confirmation dialog, a long save) out of `OnDrop` - or start it
+without awaiting it - when the source does not need its outcome.
 
 ### Hovering
 
@@ -575,21 +585,27 @@ DnD's algorithm, which avoids flicker:
         var rect = await Interop.GetBoundingClientRectAsync(_element);
         if (rect is null || e.Monitor.GetClientOffset() is not { } pointer) return;
 
+        // read both indices before moving: the move re-renders the list, and this card's Index with it
+        var (dragIndex, hoverIndex) = (item.Index, Index);
+        if (dragIndex == hoverIndex) return;
+
         var middle = rect.Height / 2;
         var y = pointer.Y - rect.Top;
-        if (item.Index < Index && y < middle) return;
-        if (item.Index > Index && y > middle) return;
+        if (dragIndex < hoverIndex && y < middle) return;
+        if (dragIndex > hoverIndex && y > middle) return;
 
-        await OnMove.InvokeAsync((item.Index, Index));
-        item.Index = Index; // the dragged item now sits here
+        await OnMove.InvokeAsync((dragIndex, hoverIndex));
+        item.Index = hoverIndex; // the dragged item now sits where this card was
     }
 }
 ```
 
-Three details matter:
+Four details matter:
 
 - Render the cards with `@key`, so a reorder moves elements instead of re-binding them.
 - Mutate the dragged item's index after a move, as the code above does: the next hover compares against it.
+- Read the indices into locals before `OnMove`. The move re-renders the list synchronously, so after the `await`
+  this card's `Index` is already its new position, and assigning it would put the dragged item's old index back.
 - Make the list itself a drop target that accepts the card type as well. Then the gaps between cards are not no-drop
   zones, and a drop in a gap still counts as a drop (`DidDrop` is true), which is what "cancel on drop outside" -
   reverting the order in `OnEnd` when `DidDrop` is false - relies on.
@@ -609,8 +625,9 @@ A drop target can accept drags that start outside the application by listing one
 
 Native drops arrive through `OnNativeDrop`, not `OnDrop`, with a `BdndNativeDropEventArgs`: the matched `ItemType`,
 the `Files`, the raw `Data` keyed by DataTransfer type, and the `Text`, `Html`, `Url` and `Urls` shortcuts. While a
-native drag hovers, the target's state reports `IsOver`, `IsOverShallow` and `CanDrop` as true and `ItemType` as the
-matched native type. Use `TItem="object"` on a target that only takes native drags.
+native drag hovers, the target's state reports `IsOver` and `CanDrop` as true and `ItemType` as the matched native
+type; `IsOverShallow` is true on the innermost hovered target that accepts the drag, as for in-app drags. Use
+`TItem="object"` on a target that only takes native drags.
 
 Native drops have no `DidDrop`: when drop targets that accept the same native type are nested, each of them
 receives `OnNativeDrop`, innermost first, and an outer one cannot tell that an inner one already took the drop. Give
@@ -642,14 +659,21 @@ contents, use an `InputFile` (for instance an invisible one layered over the dro
                 OnNativeDrop="@(e => _last = e)">
 ```
 
-The first accepted type found in the drag decides `ItemType`, in the order the target lists them; `Data` holds every
-string the drag carried, whichever matched.
+The first accepted type found in the drag decides `ItemType`, in the order the target lists them; `Data` holds the
+strings of every accepted type the drag carried, whichever matched. Types the target does not accept are not read:
+a target accepting `BdndNativeTypes.Text` gets the `text/plain` of a selection dragged from another page, not its
+`text/html`. On Blazor Server the strings travel over the circuit, and a page's HTML easily outgrows SignalR's
+default 32 KB `MaximumReceiveMessageSize`, which disconnects the circuit; a target accepting `BdndNativeTypes.Html`
+there needs a larger limit (`AddHubOptions(o => o.MaximumReceiveMessageSize = ...)` on
+`AddInteractiveServerComponents()`).
 
 ### Editable fields inside a target
 
-A native drag over a text input, a textarea or a `contenteditable` element inside a drop target is left to the
-browser, so text can still be dropped into the field. A drop anywhere else on a target is never handed to the
-browser, which would otherwise open or navigate to the dropped file or link.
+A native text, link or HTML drag over a text input, a textarea or a `contenteditable` element inside a drop target
+is left to the browser, so text can still be dropped into the field. A drag carrying files always stays the
+target's, as does a drag over an input that takes no text (a checkbox, a button) or a disabled or read-only field. A
+drop anywhere else on a target is never handed to the browser, which would otherwise open or navigate to the dropped
+file or link.
 
 ## The monitor
 
@@ -702,7 +726,9 @@ Works the same, with three differences that come from the circuit: drag callback
 native events; a drag `ItemFactory` cancels cannot be stopped in the browser any more, so it goes on as an inert
 drag that no target accepts; and a custom drag layer starts from an estimated source position that is corrected as
 soon as the measured one arrives. Prefer `OnHover` only where you need it - it is the one callback that fires
-continuously.
+continuously; pointer moves are only sent while a `BdndDragLayer` follows them. A target accepting
+`BdndNativeTypes.Html` receives the dropped page's HTML over the circuit, which may need a larger
+`MaximumReceiveMessageSize` (see [text, links and HTML](#text-links-and-html)).
 
 ### Blazor Web App
 
@@ -751,6 +777,9 @@ bit-bdnd.js  (one registration per draggable and per drop target)
 `BdndDragDropManager` owns the authoritative state - the item, its type, the source, the offsets, every target's
 accept list and hover flag, the drop result. Components read it through `IBdndMonitor` when they render, and
 re-render when the manager raises `StateChanged` (begin, end, hover changes) or, for drag layers, `OffsetChanged`.
+Like React DnD's `collect`, a draggable or drop target re-renders on `StateChanged` only when the state it hands its
+content changed - every one of them when a drag begins or ends, and on a hover change just the targets whose
+`IsOver`, `IsOverShallow` or `CanDrop` it flipped - so a long list does not re-render as the pointer crosses it.
 Draggables and drop targets suppress the automatic re-render `ComponentBase` performs after each event, so a
 `dragover` storm does not re-render the page; the manager decides when something changed.
 
@@ -762,8 +791,8 @@ event is being dispatched. The script module covers exactly that gap:
 1. At `dragstart`, it decides which source a drag belongs to (the innermost registered one, and only from a handle
    when `UseHandle` is set), tags the drag with a `DataTransfer` type carrying the source's handler id, sets
    `effectAllowed` and the drag image, and measures the source.
-2. During the drag, it follows the pointer from `dragover` (Firefox reports `0,0` in `drag` events) and reports it
-   once per animation frame.
+2. During the drag, it follows the pointer from `dragover` (Firefox reports `0,0` in `drag` events) and, while a
+   drag layer listens, reports it once per animation frame.
 3. It reports the end of a drag from the source element's own `dragend` listener, which still fires after the
    element was removed from the DOM - and, because some browsers never raise `dragend` for a removed source, also
    after a drop or the next mouse move.

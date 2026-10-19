@@ -33,6 +33,13 @@ internal sealed class FakeJSObjectReference : IJSObjectReference
         return this;
     }
 
+    /// <summary>Calls to <paramref name="identifier"/> no longer fail.</summary>
+    public FakeJSObjectReference Succeeds(string identifier)
+    {
+        _failures.Remove(identifier);
+        return this;
+    }
+
     /// <summary>Calls to <paramref name="identifier"/> complete only once <paramref name="gate"/> does.</summary>
     public FakeJSObjectReference WaitsFor(string identifier, Task gate)
     {

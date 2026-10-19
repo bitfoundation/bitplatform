@@ -23,6 +23,9 @@ public sealed class BdndDragDropManager : IBdndMonitor
     private BdndXYCoord? _initialSourceClientOffset;
     private BdndXYCoord? _clientOffset;
     private Func<Task>? _pendingBegin;
+    private List<Task>? _pendingDrops;
+    private int _dropCount; // drops of the current drag, in drop order (innermost target first)
+    private int _dropResultPlace; // the place in that order of the drop _dropResult came from
 
     /// <summary>Raised on structural changes (begin/end/enter/leave).</summary>
     public event Action? StateChanged;
@@ -38,6 +41,12 @@ public sealed class BdndDragDropManager : IBdndMonitor
 
     /// <summary>Identifies the current drag; changes with every <see cref="BeginDrag"/>.</summary>
     internal long DragId => _dragId;
+
+    /// <summary>
+    /// Whether anything follows <see cref="OffsetChanged"/> (a <see cref="BdndDragLayer{TItem}"/>, for one):
+    /// only then does the dragged source report every pointer move.
+    /// </summary>
+    internal bool HasOffsetListeners => OffsetChanged is not null;
 
     // ---- registration ------------------------------------------------------------
 
@@ -59,7 +68,7 @@ public sealed class BdndDragDropManager : IBdndMonitor
     internal void UnregisterTarget(string id)
     {
         // a hovered target going away changes the shallow IsOver of its ancestors
-        if (_targets.Remove(id, out var entry) && entry.IsOver && _isDragging)
+        if (_targets.Remove(id, out var entry) && ((entry.IsOver && _isDragging) || entry.NativeItemType is not null))
             NotifyStateChanged();
     }
 
@@ -84,6 +93,9 @@ public sealed class BdndDragDropManager : IBdndMonitor
         _initialClientOffset = initialClientOffset;
         _initialSourceClientOffset = initialSourceClientOffset;
         _clientOffset = initialClientOffset;
+        _pendingDrops = null;
+        _dropCount = 0;
+        _dropResultPlace = 0;
         foreach (var t in _targets.Values) t.IsOver = false;
         _pendingBegin = onBegun ?? (() => Task.CompletedTask);
     }
@@ -138,7 +150,81 @@ public sealed class BdndDragDropManager : IBdndMonitor
     {
         if (_isDragging is false || dragId != _dragId) return;
         _didDrop = true;
-        if (result is not null) _dropResult = result;
+        SetDropResult(++_dropCount, result);
+    }
+
+    /// <summary>
+    /// Records a drop of drag <paramref name="dragId"/> whose result is still being computed by an async
+    /// <c>OnDrop</c> handler. The drop counts right away; the result takes the drop's place in the drop order
+    /// once <paramref name="result"/> completes, so an outer target's result still overrides it, and
+    /// <see cref="WhenDropsCompletedAsync"/> lets the drag source wait for it.
+    /// </summary>
+    internal void RecordPendingDrop(long dragId, Task<object?> result)
+    {
+        if (_isDragging is false || dragId != _dragId) return;
+        _didDrop = true;
+        var place = ++_dropCount;
+        (_pendingDrops ??= []).Add(CompleteAsync());
+
+        async Task CompleteAsync()
+        {
+            object? value;
+            try
+            {
+                value = await result;
+            }
+            catch (Exception)
+            {
+                return; // surfaced by the drop event that ran the handler
+            }
+            if (_isDragging && dragId == _dragId) SetDropResult(place, value);
+        }
+    }
+
+    /// <summary>Completes once the results of the current drag's pending drops (<see cref="RecordPendingDrop"/>) are in.</summary>
+    internal async Task WhenDropsCompletedAsync()
+    {
+        while (_pendingDrops is { Count: > 0 } drops)
+        {
+            _pendingDrops = null;
+            await Task.WhenAll(drops);
+        }
+    }
+
+    // a later (outer) drop's non-null result wins, whatever order the results arrive in
+    private void SetDropResult(int place, object? result)
+    {
+        if (result is null || place < _dropResultPlace) return;
+        _dropResult = result;
+        _dropResultPlace = place;
+    }
+
+    // ---- native drags --------------------------------------------------------------
+
+    /// <summary>
+    /// Records which native type (one of <see cref="BdndNativeTypes"/>), if any, the native drag hovering
+    /// target <paramref name="id"/> matched. Native drags are not drags of this manager; this only lets
+    /// targets work out whether a nested target is hovered (shallow <c>IsOver</c>).
+    /// </summary>
+    internal void SetNativeOver(string id, string? nativeItemType)
+    {
+        if (_targets.TryGetValue(id, out var entry) is false || entry.NativeItemType == nativeItemType) return;
+        entry.NativeItemType = nativeItemType;
+        NotifyStateChanged();
+    }
+
+    /// <summary>The native type the native drag hovering target <paramref name="id"/> matched, or null.</summary>
+    internal string? GetNativeItemType(string id) =>
+        _targets.TryGetValue(id, out var entry) ? entry.NativeItemType : null;
+
+    /// <summary>
+    /// Whether a native drag that target <paramref name="id"/> accepts hovers it - with
+    /// <paramref name="shallow"/>, and no accepting target nested in it.
+    /// </summary>
+    internal bool IsNativeOver(string id, bool shallow = false)
+    {
+        if (_targets.TryGetValue(id, out var entry) is false || entry.NativeItemType is null) return false;
+        return shallow is false || HasHoveredDescendant(entry, static t => t.NativeItemType is not null) is false;
     }
 
     internal void EndDrag()
@@ -146,6 +232,9 @@ public sealed class BdndDragDropManager : IBdndMonitor
         if (_isDragging is false) return;
         _isDragging = false;
         _pendingBegin = null;
+        _pendingDrops = null;
+        _dropCount = 0;
+        _dropResultPlace = 0;
         _item = null;
         _itemType = null;
         _sourceId = null;
@@ -194,13 +283,17 @@ public sealed class BdndDragDropManager : IBdndMonitor
     public bool IsOver(string handlerId, bool shallow = false)
     {
         if (_isDragging is false || _targets.TryGetValue(handlerId, out var entry) is false || entry.IsOver is false) return false;
-        if (shallow is false) return true;
         // shallow: no hovered target is nested inside this one
+        return shallow is false || HasHoveredDescendant(entry, static t => t.IsOver) is false;
+    }
+
+    private bool HasHoveredDescendant(BdndDropTargetEntry entry, Func<BdndDropTargetEntry, bool> isHovered)
+    {
         foreach (var other in _targets.Values)
         {
-            if (other.IsOver && ReferenceEquals(other, entry) is false && IsNestedIn(other, handlerId)) return false;
+            if (isHovered(other) && ReferenceEquals(other, entry) is false && IsNestedIn(other, entry.Id)) return true;
         }
-        return true;
+        return false;
     }
 
     private bool IsNestedIn(BdndDropTargetEntry entry, string ancestorId)

@@ -90,13 +90,13 @@ public class BdndDraggableTests : BdndComponentTestBase
             .Add(x => x.Tag, "li")
             .AddUnmatched("id", "card-1")
             .AddUnmatched("class", "card")
-            .AddUnmatched("style", "display:contents")
+            .AddUnmatched("style", "display:flex")
             .AddUnmatched("data-index", "3"));
 
         var host = cut.Find("li");
         Assert.AreEqual("card-1", host.Id);
         Assert.AreEqual("card", host.ClassName);
-        Assert.AreEqual("display:contents", host.GetAttribute("style"));
+        Assert.AreEqual("display:flex", host.GetAttribute("style"));
         Assert.AreEqual("3", host.GetAttribute("data-index"));
         Assert.AreEqual("true", host.GetAttribute("draggable"));
     }
@@ -117,6 +117,7 @@ public class BdndDraggableTests : BdndComponentTestBase
         Assert.IsFalse(options.UseHandle);
         Assert.IsFalse(options.UseEmptyPreview);
         Assert.AreEqual("move", options.EffectAllowed);
+        Assert.IsFalse(options.TrackPointer, "no drag layer follows the pointer");
     }
 
     [TestMethod]
@@ -129,7 +130,7 @@ public class BdndDraggableTests : BdndComponentTestBase
             .Add(x => x.DropEffect, "copyMove"));
 
         var options = Assert.ContainsSingle(SourceRegistrations);
-        Assert.AreEqual(new BdndDragSourceOptions(SourceIdOf(cut.Instance), false, true, true, "copyMove"), options);
+        Assert.AreEqual(new BdndDragSourceOptions(SourceIdOf(cut.Instance), false, true, true, "copyMove", false), options);
     }
 
     [TestMethod]
@@ -167,7 +168,7 @@ public class BdndDraggableTests : BdndComponentTestBase
 
         Assert.ContainsSingle(SourceRegistrations);
         Assert.AreSequenceEqual(
-            new[] { new BdndDragSourceOptions(id, false, false, false, "move"), new BdndDragSourceOptions(id, false, false, false, "copy") },
+            new[] { new BdndDragSourceOptions(id, false, false, false, "move", false), new BdndDragSourceOptions(id, false, false, false, "copy", false) },
             SourceUpdates);
     }
 

@@ -53,6 +53,52 @@ public class BdndNativeDragTests : BdndComponentTestBase
     }
 
     [TestMethod]
+    public async Task OnlyTheInnermostHoveredTargetAcceptingANativeDragIsOverShallow()
+    {
+        var outerLog = new StateLog<BdndDropState<object>>();
+        var innerLog = new StateLog<BdndDropState<object>>();
+        var inner = Fragment<BdndDropTarget<object>>(
+            ("AcceptTypes", new[] { BdndNativeTypes.File }), ("ChildContent", innerLog.Content()));
+        var cut = Render<BdndProvider>(p => p
+            .Add(x => x.Manager, Manager)
+            .AddChildContent<BdndDropTarget<object>>(t => t
+                .Add(x => x.AcceptTypes, [BdndNativeTypes.File])
+                .Add(x => x.ChildContent, outerLog.Content(_ => inner))));
+        var targets = cut.FindComponents<BdndDropTarget<object>>();
+
+        await HoverAsync(targets[0], true, "Files");
+        Assert.IsTrue(outerLog.Last.IsOverShallow);
+
+        await HoverAsync(targets[1], true, "Files");
+        Assert.IsTrue(outerLog.Last.IsOver);
+        Assert.IsFalse(outerLog.Last.IsOverShallow, "the nested target is the one under the pointer");
+        Assert.IsTrue(innerLog.Last.IsOver);
+        Assert.IsTrue(innerLog.Last.IsOverShallow);
+
+        await HoverAsync(targets[1], false, "Files");
+        Assert.IsTrue(outerLog.Last.IsOverShallow);
+        Assert.IsFalse(innerLog.Last.IsOver);
+    }
+
+    [TestMethod]
+    public async Task ANestedTargetThatDoesNotAcceptTheNativeDragLeavesTheShallowHoverToItsParent()
+    {
+        var outerLog = new StateLog<BdndDropState<object>>();
+        var inner = Fragment<BdndDropTarget<object>>(("AcceptTypes", new[] { BdndNativeTypes.Text }));
+        var cut = Render<BdndProvider>(p => p
+            .Add(x => x.Manager, Manager)
+            .AddChildContent<BdndDropTarget<object>>(t => t
+                .Add(x => x.AcceptTypes, [BdndNativeTypes.File])
+                .Add(x => x.ChildContent, outerLog.Content(_ => inner))));
+        var targets = cut.FindComponents<BdndDropTarget<object>>();
+
+        await HoverAsync(targets[0], true, "Files");
+        await HoverAsync(targets[1], true, "Files");
+
+        Assert.IsTrue(outerLog.Last.IsOverShallow);
+    }
+
+    [TestMethod]
     public async Task ANativeDragOfAnotherTypeIsIgnored()
     {
         var log = new StateLog<BdndDropState<object>>();

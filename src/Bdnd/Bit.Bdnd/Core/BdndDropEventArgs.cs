@@ -15,7 +15,9 @@ public sealed class BdndDropEventArgs<TItem>
 
     /// <summary>
     /// Set this inside an <c>OnDrop</c> handler to publish a drop result. It becomes available
-    /// to the drag source via <c>monitor.GetDropResult()</c> in its <c>OnEnd</c> callback.
+    /// to the drag source via <c>monitor.GetDropResult()</c> in its <c>OnEnd</c> callback. An async
+    /// handler may set it after an <c>await</c>: the drag ends - and <c>OnEnd</c> runs - once the async
+    /// <c>OnDrop</c> handlers of the drop have completed.
     /// </summary>
     public object? Result { get; set; }
 }
