@@ -29,7 +29,7 @@ public static class BitPdfTextExtractor
             {
                 ops = new BitPdfContentParser(content).Parse();
             }
-            catch
+            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
             {
                 return;
             }
@@ -98,7 +98,7 @@ public static class BitPdfTextExtractor
                             {
                                 Run(BitPdfStreamDecoder.Decode(xs), xs.Dict.Get("Resources") as BitPdfDict ?? resources, depth + 1);
                             }
-                            catch
+                            catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
                             {
                                 // ignore malformed form content
                             }
@@ -117,7 +117,7 @@ public static class BitPdfTextExtractor
         {
             content = page.GetContentBytes();
         }
-        catch
+        catch (Exception sourceException) when (BitPdfByteSourceErrors.IsContentError(sourceException))
         {
             return string.Empty;
         }

@@ -104,6 +104,7 @@ public sealed class BitPdfPage
     /// </summary>
     public byte[] GetContentBytes()
     {
+        (_xref as BitPdfXRef)?.ThrowIfSourceDisposed();
         object? contents = Dict.Get("Contents");
         using var output = new MemoryStream();
 
@@ -137,5 +138,9 @@ public sealed class BitPdfPage
     /// Extracts the page's visible text (for search or copy) without producing
     /// HTML. Positioning is approximated, so this is not a layout-faithful dump.
     /// </summary>
-    public string ExtractText() => BitPdfTextExtractor.Extract(this, _xref);
+    public string ExtractText()
+    {
+        (_xref as BitPdfXRef)?.ThrowIfSourceDisposed();
+        return BitPdfTextExtractor.Extract(this, _xref);
+    }
 }
