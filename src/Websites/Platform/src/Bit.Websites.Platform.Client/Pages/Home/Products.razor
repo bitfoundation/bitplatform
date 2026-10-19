@@ -331,6 +331,25 @@
         },
         new()
         {
+            Title = "Lists that reorder",
+            Subtitle = "bit Bortable · Blazor-native sortable lists",
+            LinkUrl = Urls.Bortable,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bortable is a Blazor-native drag-and-drop sortable list inspired by SortableJS - reorder items or drag
+                    them between lists that share a group, with live reordering, cloning, drag handles, nested lists, swap
+                    mode and multi-drag, all decided in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;Bortable @@bind-Items="todo" TItem="string" Group="board">
+    &lt;ItemTemplate Context="item">@@item&lt;/ItemTemplate>
+&lt;/Bortable></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "State that stays in sync",
             Subtitle = "bit Blex · reactive state management for Blazor and .NET MAUI",
             LinkUrl = Urls.Blex,

@@ -46,6 +46,7 @@ bit new MyApp
 - [***Bmage***](src/Bmage/README.md) (`Bit.Bmage`): Browser-side image processing for Blazor. Load, crop, resize, adjust, annotate and export images on the user's device from strongly typed C#, with a full image editor component (`Bit.Bmage.Editor`) and a browser-independent engine (`Bit.Bmage.Core`).
 - [***Bmotion***](src/Bmotion/README.md) (`Bit.Bmotion`): A Blazor-native animation library inspired by Motion (Framer Motion), with springs, gestures, keyframes, variants, drag, layout (FLIP) and exit animations. The animation math runs in C#, so there's no JavaScript to wire up.
 - [***Bonboarding***](src/Bonboarding/README.md) (`Bit.Bonboarding`): A Blazor-native onboarding and product tour library, with spotlights, collision-aware placement, branching and multi-page tours, persistence and built-in accessibility. Every decision is made in C#; the browser layer only measures and observes.
+- [***Bortable***](src/Bortable/README.md) (`Bit.Bortable`): A Blazor-native drag-and-drop sortable list inspired by SortableJS - reorder items within a list or drag them between lists that share a group, with live reordering, FLIP animations, clone and move pull modes, swap thresholds, drag handles, filters, nested lists, swap mode and multi-drag. The sorting engine runs in C# on the browser's native drag events; the browser only hit-tests and animates.
 
 ## App infrastructure
 

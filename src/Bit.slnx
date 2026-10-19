@@ -216,6 +216,19 @@
     <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests/Bit.Bonboarding.Tests.csproj" />
     <Project Path="Bonboarding/Tests/Bit.Bonboarding.Tests.Mcp/Bit.Bonboarding.Tests.Mcp.csproj" />
   </Folder>
+  <Folder Name="/Bortable/">
+    <File Path="Bortable/README.md" />
+    <Project Path="Bortable/Bit.Bortable/Bit.Bortable.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/Demo/">
+    <Project Path="Bortable/Demo/Client/Bit.Bortable.Demo.Client.csproj" />
+    <Project Path="Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Bortable/Tests/">
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests/Bit.Bortable.Tests.csproj" />
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests.Mcp/Bit.Bortable.Tests.Mcp.csproj" />
+    <Project Path="Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj" />
+  </Folder>
   <Folder Name="/BlazorES2019/">
     <Project Path="BlazorES2019/Bit.BlazorES2019/Bit.BlazorES2019.csproj" />
   </Folder>
