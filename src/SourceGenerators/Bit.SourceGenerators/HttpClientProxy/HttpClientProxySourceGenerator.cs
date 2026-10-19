@@ -7,6 +7,7 @@ using System.Threading;
 using System.Web;
 using DoLess.UriTemplates;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 
@@ -21,6 +22,14 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
     private const char ParamSep = '\x1D';    // GS – between parameters inside one action record
     private const char SubFieldSep = '\x1C'; // FS – between sub-fields inside one parameter entry
 
+    private static readonly DiagnosticDescriptor InvalidProxyNameError = new(
+        id: "BITGEN002",
+        title: "BitHttpClientProxyName is not a valid C# identifier",
+        messageFormat: "BitHttpClientProxyName '{0}' is not a valid C# identifier. Set it to a name such as Access, which generates AddAccessTypedHttpClients, or leave it empty.",
+        category: "Bit.SourceGenerators",
+        DiagnosticSeverity.Error,
+        isEnabledByDefault: true);
+
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var controllerProvider = context.SyntaxProvider
@@ -32,7 +41,10 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
             .Where(static c => c is not null)
             .Select(static (c, _) => c!.Value);
 
-        context.RegisterSourceOutput(controllerProvider.Collect(), static (spc, controllers) => Execute(spc, controllers));
+        var proxyNameProvider = context.AnalyzerConfigOptionsProvider
+            .Select(static (options, _) => options.GlobalOptions.TryGetValue("build_property.BitHttpClientProxyName", out var name) ? name.Trim() : string.Empty);
+
+        context.RegisterSourceOutput(controllerProvider.Collect().Combine(proxyNameProvider), static (spc, input) => Execute(spc, input.Left, input.Right));
     }
 
     // ── Transform ─────────────────────────────────────────────────────────────
@@ -243,9 +255,15 @@ public class HttpClientProxySourceGenerator : IIncrementalGenerator
 
     // ── Code generation ───────────────────────────────────────────────────────
 
-    private static void Execute(SourceProductionContext spc, ImmutableArray<ControllerEntry> controllers)
+    private static void Execute(SourceProductionContext spc, ImmutableArray<ControllerEntry> controllers, string proxyName)
     {
         if (controllers.IsEmpty) return;
+
+        if (proxyName.Length > 0 && SyntaxFacts.IsValidIdentifier(proxyName) is false)
+        {
+            spc.ReportDiagnostic(Diagnostic.Create(InvalidProxyNameError, Location.None, proxyName));
+            return;
+        }
 
         StringBuilder generatedClasses = new();
 
@@ -385,9 +403,9 @@ namespace Microsoft.Extensions.DependencyInjection;
 [global::System.CodeDom.Compiler.GeneratedCode(""Bit.SourceGenerators"",""{BitSourceGeneratorUtil.GetPackageVersion()}"")]
 [global::System.Diagnostics.DebuggerNonUserCode]
 [global::System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverage]
-public static class IHttpClientServiceCollectionExtensions
+public static class {(proxyName.Length > 0 ? proxyName : "I")}HttpClientServiceCollectionExtensions
 {{
-    public static void AddTypedHttpClients(this IServiceCollection services)
+    public static void Add{proxyName}TypedHttpClients(this IServiceCollection services)
     {{
 {string.Join(Environment.NewLine, controllers.Select(i => $"        services.TryAddTransient<{i.SymbolDisplay}, {i.ClassName}>();"))}
     }}
