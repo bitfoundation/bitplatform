@@ -20,12 +20,12 @@ public class PlainTextErrorTests
     public TestContext TestContext { get; set; } = default!;
 
     [TestMethod]
-    [DataRow(HttpStatusCode.BadRequest, typeof(BadRequestException))]
-    [DataRow(HttpStatusCode.NotFound, typeof(ResourceNotFoundException))]
-    [DataRow(HttpStatusCode.Conflict, typeof(ConflictException))]
-    [DataRow(HttpStatusCode.UnprocessableEntity, typeof(RestException))]
-    [DataRow(HttpStatusCode.InternalServerError, typeof(RestException))]
-    public async Task APlainTextErrorWrittenByOurServer_Should_ReachTheUser_WhateverItsStatusCode(HttpStatusCode statusCode, Type expectedExceptionType)
+    [DataRow(HttpStatusCode.BadRequest)]
+    [DataRow(HttpStatusCode.NotFound)]
+    [DataRow(HttpStatusCode.Conflict)]
+    [DataRow(HttpStatusCode.UnprocessableEntity)]
+    [DataRow(HttpStatusCode.InternalServerError)]
+    public async Task APlainTextErrorWrittenByOurServer_Should_ReachTheUser_WhateverItsStatusCode(HttpStatusCode statusCode)
     {
         await using var server = await StartServer();
         await using var client = server.CreateAppClient();
@@ -34,9 +34,8 @@ public class PlainTextErrorTests
 
         using var httpClient = CreateHttpClient(client, statusCode, message, requestId: Guid.NewGuid().ToString());
 
-        var exception = await Assert.ThrowsAsync<Exception>(() => httpClient.GetAsync("api/v1/Test", TestContext.CancellationToken));
+        var exception = await Assert.ThrowsExactlyAsync<BadRequestException>(() => httpClient.GetAsync("api/v1/Test", TestContext.CancellationToken));
 
-        Assert.AreEqual(expectedExceptionType, exception.GetType(), exception.ToString());
         Assert.AreEqual(message, exception.Message);
     }
 
