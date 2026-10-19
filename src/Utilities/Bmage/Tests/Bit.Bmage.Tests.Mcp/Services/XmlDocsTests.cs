@@ -1,7 +1,7 @@
 ﻿namespace Bit.Bmage.Tests.Mcp.Services;
 
 /// <summary>
-/// The XML documentation of all three packages, flattened into the prose an agent reads. A file that
+/// The XML documentation of both packages, flattened into the prose an agent reads. A file that
 /// is not next to the assembly - the publish dropped it, the build stopped emitting it - would leave
 /// every summary empty without failing anything, so its presence is a test of its own.
 /// </summary>
@@ -9,7 +9,7 @@
 public class XmlDocsTests
 {
     [TestMethod]
-    public void TheDocumentationOfAllThreePackages_IsLoaded()
+    public void TheDocumentationOfBothPackages_IsLoaded()
     {
         foreach (var name in BmageXmlDocs.AssemblyNames)
         {
@@ -18,8 +18,8 @@ public class XmlDocsTests
 
         Assert.IsGreaterThan(500, BmageXmlDocs.Count);
 
-        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.Pipeline.ImagePipeline"), "Bit.Bmage.Core's documentation is missing.");
-        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.Output.ImageExporter"), "Bit.Bmage's documentation is missing.");
+        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.Pipeline.ImagePipeline"), "The engine's documentation is missing.");
+        Assert.IsNotNull(BmageXmlDocs.GetSummary("T:Bit.Bmage.Output.ImageExporter"), "The browser integration's documentation is missing.");
         Assert.IsNotNull(BmageXmlDocs.GetSummary("P:Bit.Bmage.Editor.Components.BmageEditor.Image"), "Bit.Bmage.Editor's documentation is missing.");
     }
 

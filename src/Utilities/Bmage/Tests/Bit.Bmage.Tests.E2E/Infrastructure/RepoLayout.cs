@@ -8,7 +8,7 @@ public static class RepoLayout
 {
     public const string ServerName = "Bit.Bmage.Demo.Server";
 
-    public static string ServerProject() => FindUpward(Path.Combine("Bit.Bmage.Demo", "Server", $"{ServerName}.csproj"));
+    public static string ServerProject() => FindUpward(Path.Combine("Demo", "Server", $"{ServerName}.csproj"));
 
     public static string ServerDirectory() => Path.GetDirectoryName(ServerProject())!;
 

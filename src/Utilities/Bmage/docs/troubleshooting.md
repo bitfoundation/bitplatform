@@ -195,7 +195,7 @@ instantiation needs. That is why `TrimMode=full` is not the Blazor default, and 
 *Optimizing assemblies for size may change the behavior of the app* when you enable it.
 
 **Use the default trimming that `dotnet publish -c Release` already applies.** It trims these packages well: on a
-minimal application the three assemblies go from 631 KB to 458 KB, about 155 KB compressed with Brotli, with the
+minimal application the Bmage assemblies go from 631 KB to 458 KB, about 155 KB compressed with Brotli, with the
 editor rendering and processing images normally.
 
 Rooting the assembly with `<TrimmerRootAssembly Include="Bit.Bmage.Editor" />` does not help. It keeps the assembly

@@ -38,7 +38,7 @@ jobs:
 
     - name: Build the demo and the E2E suite
       run: |
-        dotnet build src/Utilities/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj -c Release
+        dotnet build src/Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj -c Release
         dotnet build src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium

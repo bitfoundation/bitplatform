@@ -28,13 +28,13 @@ public static class BmageServerInstructions
 
     public static readonly string Text = $"""
         Bit.Bmage is image processing for Blazor, written in C#: load, crop, resize, adjust, filter, draw, annotate,
-        redact and export images on the user's device, or headlessly on a server. Three packages: Bit.Bmage.Core (the
-        engine - pixels, pipelines, managed PNG/JPEG/BMP/GIF codecs, metadata, drawing; no Blazor dependency),
-        Bit.Bmage (browser integration - ImageLoader, ImageExporter, the browser's WebP/AVIF codecs, capability probing)
-        and Bit.Bmage.Editor (the BmageEditor component).
+        redact and export images on the user's device, or headlessly on a server. Two packages: Bit.Bmage (the engine -
+        pixels, pipelines, managed PNG/JPEG/BMP/GIF codecs, metadata, drawing - and the browser integration -
+        ImageLoader, ImageExporter, the browser's WebP/AVIF codecs, capability probing) and Bit.Bmage.Editor (the
+        BmageEditor component).
 
         Every answer here is read out of Bit.Bmage {BmageVersion} as loaded in this server - the XML documentation of the
-        three assemblies, the README and docs/ guides, the demo's sources - or measured by running its engine. Where what
+        two assemblies, the README and docs/ guides, the demo's sources - or measured by running its engine. Where what
         you remember and what these tools say disagree, the tools describe the build in front of you.
 
         Working rules:
@@ -53,7 +53,7 @@ public static class BmageServerInstructions
         - Dispose every `ImageBuffer` you are handed (`using var`): they are pooled, and large.
         - WebP and AVIF are browser codecs: export them with `EncodeWithFallbackAsync`, and never on a server.
         - Metadata is removed by default. `MetadataPolicy.Preserve` keeps GPS; use `StripSensitive` to keep camera data.
-        - Look up a type with `GetBmageApiDetails` before using it - namespaces are spread over the three packages.
+        - Look up a type with `GetBmageApiDetails` before using it - namespaces are spread over the two packages.
         - Choose formats, qualities and size budgets with `RunBmagePipeline`, which measures them on the real engine,
           and run `ReviewBmageCode` on what you wrote: its rules catch the mistakes that compile cleanly.
 

@@ -24,7 +24,7 @@ public record BmageDocumentDto
     public required int Lines { get; init; }
 }
 
-/// <summary>A public type of one of the three Bit.Bmage assemblies.</summary>
+/// <summary>A public type of one of the two Bit.Bmage assemblies.</summary>
 public record BmageApiTypeDto
 {
     public required string Name { get; init; }
@@ -32,7 +32,7 @@ public record BmageApiTypeDto
     /// <summary>The namespace to import, e.g. "Bit.Bmage.Pipeline".</summary>
     public required string Namespace { get; init; }
 
-    /// <summary>The NuGet package that ships it: Bit.Bmage.Core, Bit.Bmage or Bit.Bmage.Editor.</summary>
+    /// <summary>The NuGet package that ships it: Bit.Bmage or Bit.Bmage.Editor.</summary>
     public required string Package { get; init; }
 
     /// <summary>Component, Interface, Enum, Attribute, Delegate, Static class, Class, Struct or Record.</summary>

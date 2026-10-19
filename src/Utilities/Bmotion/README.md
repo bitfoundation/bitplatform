@@ -1015,8 +1015,8 @@ is measured in microseconds:
 
 Start with the `SearchBmotion` tool, or read `GetBmotionOverview` once for the rules that are not
 visible in any signature. See
-[McpController](Bit.Bmotion.Demo/Server/Controllers/McpController.cs) and
-[BmotionMotionLab](Bit.Bmotion.Demo/Server/Services/BmotionMotionLab.cs).
+[McpController](Demo/Server/Controllers/McpController.cs) and
+[BmotionMotionLab](Demo/Server/Services/BmotionMotionLab.cs).
 
 ---
 

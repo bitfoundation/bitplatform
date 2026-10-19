@@ -6,7 +6,7 @@ namespace Bit.Bmage.Demo.Server.Services;
 
 /// <summary>
 /// One searchable index over everything this MCP server knows: every section of every guide, the
-/// setup guides, every public type and member of the three packages, the recipes, the review rules,
+/// setup guides, every public type and member of the two packages, the recipes, the review rules,
 /// the demo pages and their sources.
 /// <para>
 /// Without it an agent has to guess which corpus holds the answer and what it is called there.

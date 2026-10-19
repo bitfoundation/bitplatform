@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Brings Bit.Bmage and Bit.Bmage.Core with it: the editor is the top of the package stack. -->
+    <!-- Brings Bit.Bmage with it: the editor is the top of the package stack. -->
     <ProjectReference Include="..\..\Bit.Bmage.Editor\Bit.Bmage.Editor.csproj" />
   </ItemGroup>
 

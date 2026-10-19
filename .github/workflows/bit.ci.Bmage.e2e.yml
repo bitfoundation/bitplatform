@@ -38,7 +38,7 @@ jobs:
         node-version: 24
 
     - name: Build the demo website
-      run: dotnet build src/Utilities/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release
+      run: dotnet build src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release
 
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release

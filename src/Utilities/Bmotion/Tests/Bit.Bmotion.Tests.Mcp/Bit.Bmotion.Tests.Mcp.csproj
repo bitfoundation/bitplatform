@@ -27,7 +27,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.Bmotion.Demo\Server\Bit.Bmotion.Demo.Server.csproj" />
+        <ProjectReference Include="..\..\Demo\Server\Bit.Bmotion.Demo.Server.csproj" />
     </ItemGroup>
 
 </Project>

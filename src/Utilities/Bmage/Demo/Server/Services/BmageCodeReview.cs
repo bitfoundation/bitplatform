@@ -990,7 +990,7 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"\b[Ss]ervices\s*\.\s*(?<name>Add\w+)\s*\(")]
     private static partial Regex ServiceAddRegex();
 
-    [GeneratedRegex(@"Include\s*=\s*""Bit\.Bmage(?:\.Editor|\.Core)?""|Bit\.Bmage(?:\.Editor|\.Core)?\.csproj")]
+    [GeneratedRegex(@"Include\s*=\s*""Bit\.Bmage(?:\.Editor)?""|Bit\.Bmage(?:\.Editor)?\.csproj")]
     private static partial Regex BmageReferenceRegex();
 
     [GeneratedRegex(@"<RunAOTCompilation>\s*false\s*</RunAOTCompilation>", RegexOptions.IgnoreCase)]

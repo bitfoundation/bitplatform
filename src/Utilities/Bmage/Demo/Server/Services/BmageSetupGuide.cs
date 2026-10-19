@@ -75,13 +75,12 @@ public static class BmageSetupGuide
     private const string Install = """
         ## 1. Install
 
-        Pick the package for what you need; each one brings the ones below it.
+        Pick the package for what you need; the editor brings `Bit.Bmage` with it.
 
         | Package | Use it when | Namespace roots |
         |---|---|---|
         | `Bit.Bmage.Editor` | You want the `BmageEditor` / `BmageDropZone` components | `Bit.Bmage.Editor.Components`, `Bit.Bmage.Editor.Tools` |
-        | `Bit.Bmage` | Browser codecs, loading and export, your own UI | `Bit.Bmage`, `Bit.Bmage.Input`, `Bit.Bmage.Output` |
-        | `Bit.Bmage.Core` | The engine with no Blazor dependency at all | `Bit.Bmage.Pipeline`, `Bit.Bmage.Codecs`, ... |
+        | `Bit.Bmage` | The engine, browser codecs, loading and export, your own UI | `Bit.Bmage`, `Bit.Bmage.Pipeline`, `Bit.Bmage.Codecs`, `Bit.Bmage.Input`, `Bit.Bmage.Output`, ... |
 
         ```bash
         dotnet add package Bit.Bmage.Editor
@@ -522,9 +521,7 @@ public static class BmageSetupGuide
         ## 1. Install
 
         ```bash
-        dotnet add package Bit.Bmage        # for AddBitBmageHeadlessServices
-        # or, with no ASP.NET Core dependency at all:
-        dotnet add package Bit.Bmage.Core   # then construct ImageProcessor yourself
+        dotnet add package Bit.Bmage   # register AddBitBmageHeadlessServices, or construct ImageProcessor yourself
         ```
         """;
 

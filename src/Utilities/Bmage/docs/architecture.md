@@ -5,16 +5,15 @@
 ```
 Bit.Bmage.Editor      Components, tools, theming, localisation
         │
-Bit.Bmage      Browser codecs, capabilities, loading, export, one JS module
-        │
-Bit.Bmage.Core        Pixels, geometry, colour, operations, pipelines, drawing,
-                        text, annotations, documents, history, managed codecs
+Bit.Bmage             Browser: codecs, capabilities, loading, export, one JS module
+                      Engine:  pixels, geometry, colour, operations, pipelines, drawing,
+                               text, annotations, documents, history, managed codecs
 ```
 
-`Core` has no dependency on Blazor, ASP.NET Core or JavaScript. It is the engine, and it runs anywhere .NET runs.
-`Blazor` adds the browser: the codecs only a browser has, capability probing, and the plumbing for files, clipboard,
-camera and downloads. `Editor` is the user interface, and it is optional in the strong sense that nothing below it knows
-it exists.
+The engine has no dependency on Blazor, ASP.NET Core or JavaScript, and it runs anywhere .NET runs. The browser layer,
+shipped in the same package, adds the codecs only a browser has, capability probing, and the plumbing for files,
+clipboard, camera and downloads; nothing in the engine calls into it. `Editor` is the user interface, and it is optional
+in the strong sense that nothing below it knows it exists.
 
 An application that only needs to shrink an upload installs `Bit.Bmage` and never pays for the editor.
 

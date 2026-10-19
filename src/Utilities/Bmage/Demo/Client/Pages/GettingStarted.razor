@@ -18,7 +18,7 @@
 
 <div class="demo-section">
     <h2>Pick a package</h2>
-    <p>Each package includes the ones below it, so install the top one you need.</p>
+    <p>The editor includes <code>Bit.Bmage</code>, so install the one you need.</p>
     <div class="table-scroll" tabindex="0" role="region" aria-label="Packages">
         <table class="ref">
             <thead>
@@ -26,14 +26,13 @@
             </thead>
             <tbody>
                 <tr><th scope="row"><code>Bit.Bmage.Editor</code></th><td>You want the <code>BmageEditor</code> component</td><td><code>Bit.Bmage</code></td></tr>
-                <tr><th scope="row"><code>Bit.Bmage</code></th><td>You want browser codecs, loading and export, but your own UI</td><td><code>Bit.Bmage.Core</code></td></tr>
-                <tr><th scope="row"><code>Bit.Bmage.Core</code></th><td>You want the engine with no Blazor dependency at all</td><td>nothing</td></tr>
+                <tr><th scope="row"><code>Bit.Bmage</code></th><td>You want the engine, browser codecs, loading and export, but your own UI - or headless processing on a server</td><td>nothing</td></tr>
             </tbody>
         </table>
     </div>
     <CodeSnippet Code="dotnet add package Bit.Bmage.Editor" Language="Shell" Expanded="true" />
     <p>
-        All three target .NET 8, 9 and 10. Everything works on Blazor WebAssembly and on Interactive
+        Both target .NET 8, 9 and 10. Everything works on Blazor WebAssembly and on Interactive
         Auto once interactive; Interactive Server works too, with pixel data crossing the circuit.
         <a href="/hosting">Hosting models</a> covers each.
     </p>

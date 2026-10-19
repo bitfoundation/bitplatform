@@ -69,13 +69,12 @@
   </Folder>
   <Folder Name="/Utilities/Bmage/">
     <File Path="Utilities/Bmage/README.md" />
-    <Project Path="Utilities/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj" />
     <Project Path="Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj" />
     <Project Path="Utilities/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj" />
   </Folder>
-  <Folder Name="/Utilities/Bmage/Bit.Bmage.Demo/">
-    <Project Path="Utilities/Bmage/Bit.Bmage.Demo/Client/Bit.Bmage.Demo.Client.csproj" />
-    <Project Path="Utilities/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj" />
+  <Folder Name="/Utilities/Bmage/Demo/">
+    <Project Path="Utilities/Bmage/Demo/Client/Bit.Bmage.Demo.Client.csproj" />
+    <Project Path="Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bmage/Tests/">
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Benchmarks/Bit.Bmage.Benchmarks.csproj" />
@@ -106,9 +105,9 @@
     <File Path="Utilities/Bmotion/README.md" />
     <Project Path="Utilities/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj" />
   </Folder>
-  <Folder Name="/Utilities/Bmotion/Bit.Bmotion.Demo/">
-    <Project Path="Utilities/Bmotion/Bit.Bmotion.Demo/Client/Bit.Bmotion.Demo.Client.csproj" />
-    <Project Path="Utilities/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj" />
+  <Folder Name="/Utilities/Bmotion/Demo/">
+    <Project Path="Utilities/Bmotion/Demo/Client/Bit.Bmotion.Demo.Client.csproj" />
+    <Project Path="Utilities/Bmotion/Demo/Server/Bit.Bmotion.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bmotion/Tests/">
     <Project Path="Utilities/Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
@@ -123,9 +122,9 @@
     <File Path="Utilities/Bink/README.md" />
     <Project Path="Utilities/Bink/Bit.Bink/Bit.Bink.csproj" />
   </Folder>
-  <Folder Name="/Utilities/Bink/Bit.Bink.Demo/">
-    <Project Path="Utilities/Bink/Bit.Bink.Demo/Client/Bit.Bink.Demo.Client.csproj" />
-    <Project Path="Utilities/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj" />
+  <Folder Name="/Utilities/Bink/Demo/">
+    <Project Path="Utilities/Bink/Demo/Client/Bit.Bink.Demo.Client.csproj" />
+    <Project Path="Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bink/Tests/">
     <Project Path="Utilities/Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />

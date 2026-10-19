@@ -143,7 +143,7 @@ public class McpControllerTests
 
         Assert.IsNotNull(type);
         Assert.AreEqual("Bit.Bmage.Codecs", type.Namespace);
-        Assert.AreEqual("Bit.Bmage.Core", type.Package);
+        Assert.AreEqual("Bit.Bmage", type.Package);
 
         var member = _controller.GetBmageApiDetails("ImagePipeline.Cover").Details;
 

@@ -26,7 +26,7 @@
     <ItemGroup>
         <!-- Only for the upload every test uses: a deterministic gradient PNG built with the library's
              own managed encoder, so the bytes a test drops on a page are the same on every machine. -->
-        <ProjectReference Include="..\..\Bit.Bmage.Core\Bit.Bmage.Core.csproj" />
+        <ProjectReference Include="..\..\Bit.Bmage\Bit.Bmage.csproj" />
     </ItemGroup>
 
     <!-- Deliberately no ProjectReference to the demo: it is a separate process the suite boots (or an

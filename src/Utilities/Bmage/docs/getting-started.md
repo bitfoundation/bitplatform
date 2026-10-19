@@ -2,13 +2,12 @@
 
 ## Install
 
-Pick the package that matches what you need. Each one includes the ones below it.
+Pick the package that matches what you need. The editor includes `Bit.Bmage`.
 
 | Package | Use it when | Depends on |
 | --- | --- | --- |
 | `Bit.Bmage.Editor` | You want the editor component | `Bit.Bmage` |
-| `Bit.Bmage` | You want browser codecs, loading and export, but your own UI | `Bit.Bmage.Core` |
-| `Bit.Bmage.Core` | You want the engine with no Blazor dependency at all | nothing |
+| `Bit.Bmage` | You want the engine, browser codecs, loading and export, but your own UI - or headless processing on a server | nothing |
 
 ```bash
 dotnet add package Bit.Bmage.Editor

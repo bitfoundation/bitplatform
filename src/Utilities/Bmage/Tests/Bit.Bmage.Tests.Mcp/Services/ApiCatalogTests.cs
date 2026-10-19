@@ -1,7 +1,7 @@
 ﻿namespace Bit.Bmage.Tests.Mcp.Services;
 
 /// <summary>
-/// The reflected API reference: all three packages, every type with the namespace and package an
+/// The reflected API reference: both packages, every type with the namespace and package an
 /// agent needs to use it, and the defaults read off real instances - because for an options record
 /// the defaults are the behaviour.
 /// </summary>
@@ -9,18 +9,18 @@
 public class ApiCatalogTests
 {
     [TestMethod]
-    public void Types_ComeFromAllThreePackages()
+    public void Types_ComeFromBothPackages()
     {
         var packages = BmageApiCatalog.Types.Select(type => type.Package).Distinct().Order().ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Bit.Bmage", "Bit.Bmage.Core", "Bit.Bmage.Editor" }, packages);
+        CollectionAssert.AreEqual(new[] { "Bit.Bmage", "Bit.Bmage.Editor" }, packages);
 
         foreach (var (name, package, ns) in new[]
         {
-            ("ImagePipeline", "Bit.Bmage.Core", "Bit.Bmage.Pipeline"),
-            ("ImageBuffer", "Bit.Bmage.Core", "Bit.Bmage"),
-            ("ImageExportOptions", "Bit.Bmage.Core", "Bit.Bmage.Codecs"),
-            ("RedactionAnnotation", "Bit.Bmage.Core", "Bit.Bmage.Annotations"),
+            ("ImagePipeline", "Bit.Bmage", "Bit.Bmage.Pipeline"),
+            ("ImageBuffer", "Bit.Bmage", "Bit.Bmage"),
+            ("ImageExportOptions", "Bit.Bmage", "Bit.Bmage.Codecs"),
+            ("RedactionAnnotation", "Bit.Bmage", "Bit.Bmage.Annotations"),
             ("ImageLoader", "Bit.Bmage", "Bit.Bmage.Input"),
             ("ImageExporter", "Bit.Bmage", "Bit.Bmage.Output"),
             ("BitBmage", "Bit.Bmage", "Bit.Bmage"),

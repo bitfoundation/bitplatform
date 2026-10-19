@@ -1,6 +1,6 @@
 ﻿# Bit.Bmage end-to-end tests
 
-MSTest + Microsoft.Playwright suite that drives the Bmage demo site (`src/Utilities/Bmage/Bit.Bmage.Demo`) in a real
+MSTest + Microsoft.Playwright suite that drives the Bmage demo site (`src/Utilities/Bmage/Demo`) in a real
 Chromium. It covers what the unit tests in `Bit.Bmage.Tests` cannot: the `bit-bmage.js` browser bridge, the
 browser's own codecs, canvas rendering, pointer and keyboard input on the editor, and the demo pages as a reader
 uses them. Uses the **Microsoft.Testing.Platform** runner (mandated by the repo `global.json`) via

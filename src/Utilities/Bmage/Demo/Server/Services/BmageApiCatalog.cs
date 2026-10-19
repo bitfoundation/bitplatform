@@ -9,16 +9,16 @@ using Microsoft.AspNetCore.Components;
 namespace Bit.Bmage.Demo.Server.Services;
 
 /// <summary>
-/// Builds the API reference the MCP tools serve, by reflecting over the public surface of the three
-/// Bit.Bmage assemblies - the engine (Bit.Bmage.Core), the browser integration (Bit.Bmage) and the
-/// editor (Bit.Bmage.Editor) - and pairing every type and member with its XML documentation.
+/// Builds the API reference the MCP tools serve, by reflecting over the public surface of the two
+/// Bit.Bmage assemblies - the engine and browser integration (Bit.Bmage) and the editor
+/// (Bit.Bmage.Editor) - and pairing every type and member with its XML documentation.
 /// <para>
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the shipped
 /// library - a new pipeline method shows up the moment it is written, with its real parameter list
 /// and defaults instead of ones someone remembered to copy into a document. That matters here
-/// because Bmage's types are spread over a dozen namespaces across three packages: an agent that
-/// guesses <c>using Bit.Bmage.Codecs</c> for <c>ImagePipeline</c>, or installs <c>Bit.Bmage.Core</c>
-/// for <c>ImageLoader</c>, writes code that does not compile - so every type carries its namespace
+/// because Bmage's types are spread over a dozen namespaces across two packages: an agent that
+/// guesses <c>using Bit.Bmage.Codecs</c> for <c>ImagePipeline</c>, or installs <c>Bit.Bmage</c>
+/// for <c>BmageEditor</c>, writes code that does not compile - so every type carries its namespace
 /// and its package.
 /// </para>
 /// </summary>
@@ -26,10 +26,9 @@ public static class BmageApiCatalog
 {
     private const BindingFlags Declared = BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
-    /// <summary>The three packages, engine first: the order their types are listed in.</summary>
+    /// <summary>The two packages, engine first: the order their types are listed in.</summary>
     public static readonly Assembly[] Assemblies =
     [
-        typeof(ImageBuffer).Assembly,
         typeof(BitBmage).Assembly,
         typeof(BmageEditor).Assembly,
     ];

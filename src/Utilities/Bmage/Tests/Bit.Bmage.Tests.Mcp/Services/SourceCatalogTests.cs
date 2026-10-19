@@ -100,7 +100,7 @@ public class SourceCatalogTests
         Assert.IsNull(BmageSourceCatalog.GetSourceFile("Demo/Client/Pages/Nowhere.razor"));
 
         var avatar = BmageSourceCatalog.SourceFiles.Single(file => file.Path == "Demo/Client/Pages/Avatar.razor");
-        var lines = File.ReadAllLines(Path.Combine(BmageRoot, "Bit.Bmage.Demo", "Client", "Pages", "Avatar.razor")).Length;
+        var lines = File.ReadAllLines(Path.Combine(BmageRoot, "Demo", "Client", "Pages", "Avatar.razor")).Length;
 
         Assert.AreEqual(lines, avatar.Lines);
     }

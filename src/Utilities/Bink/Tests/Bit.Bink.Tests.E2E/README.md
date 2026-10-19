@@ -35,7 +35,7 @@ From `src/Utilities/Bink` (inside `src`, so `src/global.json` selects the Micros
 
 ```bash
 # The suite runs the demo server's build output: build it first, in the configuration the tests run in.
-dotnet build Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj
+dotnet build Demo/Server/Bit.Bink.Demo.Server.csproj
 dotnet build Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj
 
 # Once per machine (and after a Playwright update): the browser Playwright drives.
@@ -51,7 +51,7 @@ dotnet test --filter "FullyQualifiedName~Drawing_with_the_mouse"
 CI does the same in Release (`.github/workflows/bit.ci.Bink.e2e.yml`):
 
 ```bash
-dotnet build src/Utilities/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj -c Release
+dotnet build src/Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj -c Release
 dotnet build src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/Bit.Bink.Tests.E2E.csproj -c Release
 pwsh src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 cd src/Utilities/Bink/Tests/Bit.Bink.Tests.E2E && dotnet test -c Release --no-build --report-trx --report-trx-filename bink-e2e.trx

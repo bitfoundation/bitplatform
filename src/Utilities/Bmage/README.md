@@ -28,8 +28,8 @@ stripped, and the result is a WebP that fits the size budget you asked for.
 > **Interactive Server** works too, with pixel data crossing the circuit. Prerendering, ASP.NET Core and console hosts
 > get the headless API with the managed codecs.
 
-Bmage's documentation website lives in [`Bit.Bmage.Demo`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Bit.Bmage.Demo/) - run the
-`Bit.Bmage.Demo/Server` project, or visit [bmage.bitplatform.dev](https://bmage.bitplatform.dev).
+Bmage's documentation website lives in [`Demo`](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bmage/Demo/) - run the
+`Demo/Server` project, or visit [bmage.bitplatform.dev](https://bmage.bitplatform.dev).
 
 ---
 
@@ -74,15 +74,13 @@ Blazor-native image processing platform where the engine itself is C#.
 | Package | Use it when | Depends on |
 | --- | --- | --- |
 | `Bit.Bmage.Editor` | You want the `BmageEditor` component | `Bit.Bmage` |
-| `Bit.Bmage` | You want browser codecs, loading and export, but your own UI | `Bit.Bmage.Core` |
-| `Bit.Bmage.Core` | You want the engine with no Blazor dependency at all | nothing |
+| `Bit.Bmage` | You want the engine, browser codecs, loading and export, but your own UI - or headless processing on a server | nothing |
 
 ## Installation
 
 ```bash
-dotnet add package Bit.Bmage          # browser integration: codecs, capabilities, loading, export
+dotnet add package Bit.Bmage          # engine and browser integration: codecs, capabilities, loading, export
 dotnet add package Bit.Bmage.Editor   # the editor component (pulls in Bit.Bmage)
-dotnet add package Bit.Bmage.Core     # engine only, no Blazor dependency
 ```
 
 Register the services in `Program.cs`:

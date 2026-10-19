@@ -18,7 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.Bmage.Core\Bit.Bmage.Core.csproj" />
+        <ProjectReference Include="..\..\Bit.Bmage\Bit.Bmage.csproj" />
     </ItemGroup>
 
     <ItemGroup>

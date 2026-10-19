@@ -377,7 +377,10 @@ public sealed class ImageEditSession : IDisposable
     private void DisposeWhenIdle(ImageBuffer? first, ImageBuffer? second)
     {
         if (first is null && second is null) return;
+        // A zero timeout only tries the lock and never blocks, so it is safe on the browser's single thread.
+#pragma warning disable CA1416
         if (_renderLock.Wait(0))
+#pragma warning restore CA1416
         {
             try { first?.Dispose(); second?.Dispose(); }
             finally { _renderLock.Release(); }

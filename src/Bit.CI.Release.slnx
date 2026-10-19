@@ -40,9 +40,8 @@
   </Folder>
   <Folder Name="/Utilities/Bmage/">
     <File Path="Utilities/Bmage/README.md" />
-    <Project Path="Utilities/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj" />
-    <Project Path="Utilities/Bmage/Bit.Bmage.Demo/Client/Bit.Bmage.Demo.Client.csproj" />
-    <Project Path="Utilities/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj" />
+    <Project Path="Utilities/Bmage/Demo/Client/Bit.Bmage.Demo.Client.csproj" />
+    <Project Path="Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj" />
     <Project Path="Utilities/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj" />
     <Project Path="Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
@@ -62,15 +61,15 @@
   </Folder>
   <Folder Name="/Utilities/Bmotion/">
     <File Path="Utilities/Bmotion/README.md" />
-    <Project Path="Utilities/Bmotion/Bit.Bmotion.Demo/Client/Bit.Bmotion.Demo.Client.csproj" />
-    <Project Path="Utilities/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj" />
+    <Project Path="Utilities/Bmotion/Demo/Client/Bit.Bmotion.Demo.Client.csproj" />
+    <Project Path="Utilities/Bmotion/Demo/Server/Bit.Bmotion.Demo.Server.csproj" />
     <Project Path="Utilities/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj" />
     <Project Path="Utilities/Bmotion/Tests/Bit.Bmotion.Tests/Bit.Bmotion.Tests.csproj" />
   </Folder>
   <Folder Name="/Utilities/Bink/">
     <File Path="Utilities/Bink/README.md" />
-    <Project Path="Utilities/Bink/Bit.Bink.Demo/Client/Bit.Bink.Demo.Client.csproj" />
-    <Project Path="Utilities/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj" />
+    <Project Path="Utilities/Bink/Demo/Client/Bit.Bink.Demo.Client.csproj" />
+    <Project Path="Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj" />
     <Project Path="Utilities/Bink/Bit.Bink/Bit.Bink.csproj" />
     <Project Path="Utilities/Bink/Tests/Bit.Bink.Tests/Bit.Bink.Tests.csproj" />
   </Folder>

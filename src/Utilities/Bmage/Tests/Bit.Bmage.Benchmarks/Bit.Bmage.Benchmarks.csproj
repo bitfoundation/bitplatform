@@ -15,7 +15,7 @@
         <Optimize>true</Optimize>
         <ServerGarbageCollection>false</ServerGarbageCollection>
         <NoWarn>$(NoWarn);CS1591</NoWarn>
-        <!-- Bit.Bmage.Core grants InternalsVisibleTo to this assembly by its strong-name public key. -->
+        <!-- Bit.Bmage grants InternalsVisibleTo to this assembly by its strong-name public key. -->
         <SignAssembly>true</SignAssembly>
         <AssemblyOriginatorKeyFile>..\..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
     </PropertyGroup>
@@ -25,7 +25,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\Bit.Bmage.Core\Bit.Bmage.Core.csproj" />
+        <ProjectReference Include="..\..\Bit.Bmage\Bit.Bmage.csproj" />
     </ItemGroup>
 
 </Project>
