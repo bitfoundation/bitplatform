@@ -729,7 +729,7 @@ See [event arguments](#event-arguments).
 
 ## Troubleshooting
 
-**"Cannot provide a value for property 'Service' on type 'Bit.Bortable.Bortable`1[...]'. There is no registered
+**"Cannot provide a value for property 'Service' on type 'Bit.Bortable.Bortable\`1[...]'. There is no registered
 service of type 'Bit.Bortable.BortableService'."** - the services are not registered. Call `builder.Services.AddBitBortableServices()`, in both projects of a Blazor Web App.
 
 **The items render, but nothing can be dragged** - the page is not interactive. Give it, or the app, an interactive
