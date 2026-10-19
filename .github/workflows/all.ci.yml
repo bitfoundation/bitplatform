@@ -3,10 +3,6 @@ name: All CI
 on:
   workflow_dispatch:
     inputs:
-      boilerplate:
-        description: Boilerplate solution (bit.ci.Templates.yml)
-        type: boolean
-        default: true
       boilerplate_postgres:
         description: Boilerplate tests with PostgreSQL
         type: boolean
@@ -21,10 +17,6 @@ on:
         default: true
       boilerplate_configurations:
         description: Boilerplate configurations
-        type: boolean
-        default: true
-      blazorempty:
-        description: BlazorEmpty configurations
         type: boolean
         default: true
       nuget_packages:
@@ -47,30 +39,6 @@ on:
         description: Brouter solution
         type: boolean
         default: true
-      bmotion:
-        description: Bmotion solution
-        type: boolean
-        default: true
-      belemetry:
-        description: Belemetry solution
-        type: boolean
-        default: true
-      besql:
-        description: Besql solution
-        type: boolean
-        default: true
-      blazores2019:
-        description: BlazorES2019 project
-        type: boolean
-        default: true
-      tooling:
-        description: CodeAnalyzers, Minifier, bit CLI and SourceGenerators solutions
-        type: boolean
-        default: true
-      websites:
-        description: Website solutions
-        type: boolean
-        default: true
       prerelease_packages:
         description: Bit packages of the latest Prerelease nuget packages run instead of nuget.org (the Boilerplate, BlazorEmpty and website jobs)
         type: boolean
@@ -88,7 +56,6 @@ jobs:
 
   boilerplate:
     name: boilerplate
-    if: ${{ inputs.boilerplate }}
     uses: ./.github/workflows/bit.ci.Templates.yml
     with:
       prerelease_packages: ${{ inputs.prerelease_packages }}
@@ -412,7 +379,6 @@ jobs:
 
   build_blazorempty_configurations:
     name: build blazorempty based projects
-    if: ${{ inputs.blazorempty }}
     runs-on: ubuntu-24.04
 
     steps:
@@ -571,20 +537,115 @@ jobs:
         dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output ./packages --configuration Release
 
-    - name: Build and pack Belemetry
+    - name: Build and pack Bmage.Core
       run: |
-        dotnet build src/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj --output ./packages --configuration Release
+        dotnet build src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj --output ./packages --configuration Release
 
-    - name: Build and pack Belemetry.EntityFrameworkCore
+    - name: Build and pack Bmage
       run: |
-        dotnet build src/Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj --output ./packages --configuration Release
+        dotnet build src/Bmage/Bit.Bmage/Bit.Bmage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bmage/Bit.Bmage/Bit.Bmage.csproj --output ./packages --configuration Release
 
-    - name: Build and pack Belemetry.Hangfire
+    - name: Build and pack Bmage.Editor
       run: |
-        dotnet build src/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj --output ./packages --configuration Release
+        dotnet build src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bsqlite
+      run: |
+        dotnet build src/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bsqlite.Storage.Opfs
+      run: |
+        dotnet build src/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bsqlite.Storage.IndexedDb
+      run: |
+        dotnet build src/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bsqlite.Storage.CacheStorage
+      run: |
+        dotnet build src/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bsqlite.Testing
+      run: |
+        dotnet build src/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bink
+      run: |
+        dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Balette
+      run: |
+        dotnet build src/Balette/Bit.Balette/Bit.Balette.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Balette/Bit.Balette/Bit.Balette.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BbScanner
+      run: |
+        dotnet build src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb.Generators
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb.Browser
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj --output ./packages --configuration Release
+
+    - name: Build and pack BlazeDb.EntityFrameworkCore
+      run: |
+        dotnet build src/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Blow
+      run: |
+        dotnet build src/Blow/Bit.Blow/Bit.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blow/Bit.Blow/Bit.Blow.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Blex
+      run: |
+        dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blex/Bit.Blex/Bit.Blex.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Blex.Generators
+      run: |
+        dotnet build src/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Blex.Blazor
+      run: |
+        dotnet build src/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Blex.Maui
+      run: |
+        dotnet build src/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Blex.Testing
+      run: |
+        dotnet build src/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj --output ./packages --configuration Release
+
+    - name: Build and pack Bonboarding
+      run: |
+        dotnet build src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj --output ./packages --configuration Release
 
     - name: Build and pack CodeAnalyzers
       run: |
@@ -641,47 +702,70 @@ jobs:
 
   bmotion:
     name: bmotion
-    if: ${{ inputs.bmotion }}
     uses: ./.github/workflows/bit.ci.Bmotion.yml
 
-  belemetry:
-    name: belemetry
-    if: ${{ inputs.belemetry }}
-    uses: ./.github/workflows/bit.ci.Belemetry.yml
+  bmage:
+    name: bmage
+    uses: ./.github/workflows/bit.ci.Bmage.yml
+
+  bsqlite:
+    name: bsqlite
+    uses: ./.github/workflows/bit.ci.Bsqlite.yml
+
+  bink:
+    name: bink
+    uses: ./.github/workflows/bit.ci.Bink.yml
+
+  balette:
+    name: balette
+    uses: ./.github/workflows/bit.ci.Balette.yml
+
+  bbscanner:
+    name: bbscanner
+    uses: ./.github/workflows/bit.ci.BbScanner.yml
+
+  blazedb:
+    name: blazedb
+    uses: ./.github/workflows/bit.ci.BlazeDb.yml
+
+  blow:
+    name: blow
+    uses: ./.github/workflows/bit.ci.Blow.yml
+
+  blex:
+    name: blex
+    uses: ./.github/workflows/bit.ci.Blex.yml
+
+  bonboarding:
+    name: bonboarding
+    uses: ./.github/workflows/bit.ci.Bonboarding.yml
 
   besql:
     name: besql
-    if: ${{ inputs.besql }}
     uses: ./.github/workflows/bit.ci.Besql.yml
 
   blazores2019:
     name: blazores2019
-    if: ${{ inputs.blazores2019 }}
     uses: ./.github/workflows/bit.ci.BlazorES2019.yml
 
   codeanalyzers:
     name: codeanalyzers
-    if: ${{ inputs.tooling }}
     uses: ./.github/workflows/bit.ci.CodeAnalyzers.yml
 
   minifier:
     name: minifier
-    if: ${{ inputs.tooling }}
     uses: ./.github/workflows/bit.ci.Minifier.yml
 
   cli:
     name: cli
-    if: ${{ inputs.tooling }}
     uses: ./.github/workflows/bit.ci.Cli.yml
 
   sourcegenerators:
     name: sourcegenerators
-    if: ${{ inputs.tooling }}
     uses: ./.github/workflows/bit.ci.SourceGenerators.yml
 
   websites:
     name: websites
-    if: ${{ inputs.websites }}
     uses: ./.github/workflows/bit.ci.Websites.yml
     with:
       prerelease_packages: ${{ inputs.prerelease_packages }}
