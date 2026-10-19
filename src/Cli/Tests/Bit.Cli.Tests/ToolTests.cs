@@ -93,7 +93,7 @@ public class ToolTests
         using var host = new TestHost(HostOs.Windows);
         AllInstalled(host.Runner);
         host.Runner.NotFound("docker");
-        host.Runner.Executables["podman"] = @"C:\Podman\podman.exe";
+        host.Runner.Executables["podman"] = "podman";
         host.Runner.On("podman", "--version", 0, "podman version 6.1.4");
 
         var running = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
