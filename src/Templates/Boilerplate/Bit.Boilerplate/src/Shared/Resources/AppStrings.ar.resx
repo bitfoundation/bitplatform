@@ -2213,4 +2213,34 @@
     <data name="ElevatedAccessSentToMany" xml:space="preserve">
     <value>أرسلنا رمزًا إلى {0} و{1}.</value>
   </data>
+    <data name="EditImage" xml:space="preserve">
+    <value>تعديل الصورة</value>
+  </data>
+    <data name="Crop" xml:space="preserve">
+    <value>اقتصاص</value>
+  </data>
+    <data name="ApplyCrop" xml:space="preserve">
+    <value>تطبيق الاقتصاص</value>
+  </data>
+    <data name="RotateLeft" xml:space="preserve">
+    <value>تدوير لليسار</value>
+  </data>
+    <data name="RotateRight" xml:space="preserve">
+    <value>تدوير لليمين</value>
+  </data>
+    <data name="Undo" xml:space="preserve">
+    <value>تراجع</value>
+  </data>
+    <data name="Redo" xml:space="preserve">
+    <value>إعادة</value>
+  </data>
+    <data name="ImageEditorCropHint" xml:space="preserve">
+    <value>اسحب فوق الصورة لتحديد الجزء الذي تريد الاحتفاظ به.</value>
+  </data>
+    <data name="ImageEditorCouldNotOpenImage" xml:space="preserve">
+    <value>لا يمكن فتح هذه الصورة للتعديل هنا. لا يزال بإمكانك رفعها كما هي.</value>
+  </data>
+    <data name="UploadImageAsIs" xml:space="preserve">
+    <value>رفع كما هي</value>
+  </data>
 </root>

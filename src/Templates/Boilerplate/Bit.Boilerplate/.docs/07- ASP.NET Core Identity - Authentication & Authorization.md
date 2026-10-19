@@ -231,7 +231,8 @@ An entity opts in by implementing
 [`ITenantAware`](/src/Server/Boilerplate.Server.Api/Features/Tenants/ITenantAware.cs) (a `TenantId` plus a `Tenant`
 navigation). `AppDbContext.OnModelCreating` then applies the same global query filter - and the same
 `OnDelete(NoAction)` relationship - to every such entity by reflection. You never write the filter yourself, and
-there is no other global filter in the model to compose with.
+there is no other global filter in the model to compose with. A foreign key between two such entities also gets
+`TenantId` added to both of its sides, so the database rejects a row that references another tenant's row.
 
 Two limits matter more than anything else in this section:
 

@@ -35,38 +35,14 @@
         }
     }
 
-    .time-zone-list {
-        height: min(50vh, 25rem);
-
-        @include lt-sm {
-            height: calc(100vh - 9rem);
-            height: calc(100dvh - 9rem);
-        }
+    .time-zone-row {
+        width: 100%;
+        padding-inline-start: 8px;
     }
 
-    .time-zone-item {
-        height: 44px;
-        flex-shrink: 0;
-        padding: 0 0.5rem;
-    }
-
-    .time-zone-item-text {
-        overflow: hidden;
-        direction: ltr;
-        text-align: start;
-        -webkit-line-clamp: 2;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
-        font-size: $bit-typography-body2-font-size;
-        line-height: 1.25rem;
-
-        &.selected {
-            font-weight: bold;
-        }
-    }
-
-    .time-zone-empty {
-        padding: 1rem 0.5rem;
+    .time-zone-picker {
+        min-width: 0;
+        flex-grow: 1;
     }
 
     .push-blocked-hint {
