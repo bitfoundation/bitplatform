@@ -1,0 +1,329 @@
+﻿/* The demo site's own palette. Prefixed --demo-, not --bit-blow-: the library defines its theme tokens
+   under that prefix (on .bit-blow), and a page-level token of the same name with a different
+   meaning - a whole box-shadow where the library expects a colour - breaks whatever reads it. */
+:root {
+    --demo-bg: #f7f8fa;
+    --demo-surface: #ffffff;
+    --demo-border: #e3e6ea;
+    --demo-text: #1f2430;
+    --demo-muted: #6b7280;
+    --demo-primary: #6366f1;
+    --demo-primary-hover: #4f46e5;
+    --demo-primary-contrast: #ffffff;
+    --demo-radius: 10px;
+    --demo-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 8px 24px rgba(16, 24, 40, 0.06);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    color: var(--demo-text);
+    background: var(--demo-bg);
+    -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
+}
+
+/* Page headings take focus on navigation (FocusOnNavigate in App.razor) so a screen reader
+   starts reading at the new page; that focus is not something to draw a ring around. */
+h3:focus {
+    outline: none;
+}
+
+a {
+    color: var(--demo-primary);
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+kbd {
+    display: inline-block;
+    padding: 1px 6px;
+    font-size: 0.78em;
+    font-family: inherit;
+    color: var(--demo-text);
+    background: #f1f2f4;
+    border: 1px solid var(--demo-border);
+    border-bottom-width: 2px;
+    border-radius: 5px;
+}
+
+code {
+    color: #c02d76;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+.text-muted {
+    color: var(--demo-muted);
+}
+
+/* Buttons */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font: inherit;
+    font-weight: 500;
+    line-height: 1;
+    padding: 8px 14px;
+    border: 1px solid var(--demo-border);
+    border-radius: 8px;
+    background: var(--demo-surface);
+    color: var(--demo-text);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.05s ease;
+}
+
+.btn:hover {
+    background: #f1f2f4;
+}
+
+.btn:active {
+    transform: translateY(1px);
+}
+
+.btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+}
+
+.btn-sm {
+    padding: 6px 10px;
+    font-size: 0.85rem;
+    border-radius: 7px;
+}
+
+.btn-primary {
+    background: var(--demo-primary);
+    border-color: var(--demo-primary);
+    color: var(--demo-primary-contrast);
+}
+
+.btn-primary:hover {
+    background: var(--demo-primary-hover);
+    border-color: var(--demo-primary-hover);
+}
+
+/* A quieter secondary action: no fill, muted text until hovered. */
+.btn-outline-secondary {
+    background: transparent;
+    color: var(--demo-muted);
+}
+
+.btn-outline-secondary:hover {
+    background: #f1f2f4;
+    color: var(--demo-text);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn:disabled:active {
+    transform: none;
+}
+
+/* Blazor framework UI */
+#blazor-error-ui {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.blazor-error-boundary {
+    background: #b32121;
+    padding: 1rem;
+    color: white;
+    border-radius: var(--demo-radius);
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred.";
+    }
+
+.loading-progress {
+    position: absolute;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    inset: 20vh 0 auto 0;
+    margin: 0 auto 0 auto;
+}
+
+    .loading-progress circle {
+        fill: none;
+        stroke: #e0e0e0;
+        stroke-width: 0.6rem;
+        transform-origin: 50% 50%;
+        transform: rotate(-90deg);
+    }
+
+        .loading-progress circle:last-child {
+            stroke: var(--demo-primary);
+            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+            transition: stroke-dasharray 0.05s ease-in-out;
+        }
+
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+}
+
+    .loading-progress-text:after {
+        content: var(--blazor-load-percentage-text, "Loading");
+    }
+
+/* Demo page helpers */
+.demo-header {
+    margin-bottom: 1.1rem;
+}
+
+    .demo-header h3 {
+        margin: 0 0 0.4rem;
+        font-size: 1.4rem;
+    }
+
+    .demo-header p {
+        margin: 0;
+        max-width: 70ch;
+        line-height: 1.55;
+    }
+
+.demo-canvas {
+    height: calc(100vh - 230px);
+    min-height: 420px;
+    border: 1px solid var(--demo-border);
+    border-radius: var(--demo-radius);
+    background: var(--demo-surface);
+    box-shadow: var(--demo-shadow);
+    overflow: hidden;
+}
+
+/* Example pages: toolbar above the canvas */
+.example-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem 1rem;
+    align-items: center;
+    margin-bottom: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--demo-border);
+    border-radius: var(--demo-radius);
+    background: var(--demo-surface);
+    font-size: 0.88rem;
+}
+
+.example-toolbar label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.example-toolbar select,
+.example-toolbar input[type="text"],
+.example-toolbar input:not([type]) {
+    padding: 4px 6px;
+    border: 1px solid var(--demo-border);
+    border-radius: 6px;
+    font: inherit;
+}
+
+/* "View code" toggle + source panel */
+.demo-code {
+    margin-top: 1rem;
+}
+
+.demo-code__toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font: inherit;
+    font-weight: 500;
+    font-size: 0.88rem;
+    padding: 6px 12px;
+    border: 1px solid var(--demo-border);
+    border-radius: 8px;
+    background: var(--demo-surface);
+    color: var(--demo-text);
+    cursor: pointer;
+    transition: background-color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.demo-code__toggle:hover {
+    background: #f1f2f4;
+    border-color: var(--demo-primary);
+}
+
+.demo-code__toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.35);
+}
+
+.demo-code__caret {
+    font-size: 0.8em;
+    color: var(--demo-muted);
+}
+
+.demo-code__glyph {
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    color: var(--demo-primary);
+    font-weight: 600;
+}
+
+.demo-code__pre {
+    margin: 0.7rem 0 0;
+    padding: 1rem 1.1rem;
+    max-height: 520px;
+    overflow: auto;
+    border: 1px solid var(--demo-border);
+    border-radius: var(--demo-radius);
+    background: #1e2430;
+    box-shadow: var(--demo-shadow);
+}
+
+.demo-code__code {
+    display: block;
+    color: #e6e9ef;
+    background: none;
+    font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+    font-size: 0.82rem;
+    line-height: 1.55;
+    white-space: pre;
+    tab-size: 4;
+}
+
+.demo-code__empty {
+    margin-top: 0.7rem;
+    font-size: 0.88rem;
+    color: var(--demo-muted);
+}

@@ -1,0 +1,263 @@
+﻿@page "/collaboration"
+@using System.Numerics
+@implements IAsyncDisposable
+
+<PageTitle>Collaboration - bit Bink</PageTitle>
+
+<h1>Collaboration</h1>
+<p class="page-intro">
+    Two independent canvases with two independent documents, synchronized by exchanging operations. Draw on
+    either side and the stroke appears on the other, with the other person's cursor and their stroke in progress
+    shown live. This runs entirely in the browser over an in-memory transport; a real application implements the
+    same interface over SignalR or WebSockets.
+</p>
+
+<div class="toolbar panel" style="border-radius:10px 10px 0 0;border-bottom:none">
+    <label class="field">
+        Latency
+        <input type="range" min="0" max="400" step="25" value="@_latency" aria-label="Simulated latency"
+               @onchange="OnLatencyChanged" />
+        <span style="min-width:6ch">@_latency ms</span>
+    </label>
+    <div class="toolbar-separator"></div>
+    @for (int index = 0; index < 2; index++)
+    {
+        int i = index;
+        <label class="field">
+            <input type="checkbox" checked="@_online[i]" @onchange="e => SetOnlineAsync(i, e.Value is true)" />
+            @Participants[i].Name online
+        </label>
+    }
+    <div class="toolbar-spacer"></div>
+    <span class="field">Queued while offline: <strong>@(_sessions[0]?.PendingCount ?? 0)</strong> / <strong>@(_sessions[1]?.PendingCount ?? 0)</strong></span>
+    <span class="badge @(Converged ? "on" : null)" role="status">@(Converged ? "replicas identical" : "replicas differ")</span>
+</div>
+
+<div class="split" style="gap:1rem">
+    @for (int index = 0; index < 2; index++)
+    {
+        int i = index;
+        <div class="panel">
+            <div class="toolbar">
+                <strong style="color:@Participants[i].Color">@Participants[i].Name</strong>
+                <div class="toolbar-separator"></div>
+                <ColorSwatches Colors="Palette" Value="@_colors[i]" ValueChanged="color => SetColor(i, color)"
+                               Label="@($"{Participants[i].Name}'s colour")" Prefix="@Participants[i].Name" />
+                <div class="toolbar-spacer"></div>
+                <button type="button" class="btn" disabled="@(_canvases[i] is not { History.CanUndo: true })" @onclick="() => _canvases[i]?.Undo()">Undo</button>
+                <button type="button" class="btn" disabled="@(_canvases[i] is not { History.CanRedo: true })" @onclick="() => _canvases[i]?.Redo()">Redo</button>
+                <button type="button" class="btn danger" disabled="@_documents[i].IsEmpty" @onclick="() => _canvases[i]?.Clear()">Clear</button>
+            </div>
+
+            <PointerTracker Moved="(position, pressed) => OnPointerMoved(i, position, pressed)" Left="() => OnPointerLeft(i)">
+                <BinkCanvas @ref="_canvases[i]" HistoryChanged="() => StateHasChanged()"
+                           EnableTouchGestures="true"
+                           Document="_documents[i]"
+                           Height="380px"
+                           Brush="_brushes[i]"
+                           AriaLabel="@($"{Participants[i].Name}'s canvas")"
+                           StrokeCompleted="() => OnStrokeCompleted(i)"
+                           DocumentChanged="() => StateHasChanged()"
+                           Ready="() => StateHasChanged()" />
+                <PresenceOverlay Session="_sessions[i]" Canvas="_canvases[i]" />
+            </PointerTracker>
+
+            <div class="statusbar">
+                <span><strong>@_documents[i].ElementCount</strong> elements</span>
+                <span>sent <strong>@(_transports[i]?.SentCount ?? 0)</strong> messages, <strong>@FormatBytes(_transports[i]?.SentBytes ?? 0)</strong></span>
+                @if (_transports[i]?.InboxCount is > 0 and var waiting)
+                {
+                    <span><strong>@waiting</strong> waiting on the server</span>
+                }
+                <span class="badge @(_online[i] ? "on" : null)">@(_online[i] ? "connected" : "offline")</span>
+            </div>
+        </div>
+    }
+</div>
+
+<h2>What travels on the wire</h2>
+<p class="page-intro">
+    Drawing a stroke sends that stroke once, as a single operation. Nothing else is transmitted: not the other
+    strokes, not the document. While the pen is down, the stroke in progress travels as presence, throttled, so
+    the other side sees it being drawn. The most recent operation is shown below exactly as it was sent.
+</p>
+<pre class="output"><code>@(_lastMessage ?? "Draw on one of the canvases to see the operation that is sent.")</code></pre>
+
+<div class="note">
+    Conflicts are resolved by last-writer-wins on each element's version, with the participant id breaking ties so
+    every replica reaches the same result. Two people drawing at once never conflict, because each stroke is a new
+    element with its own id. Take a participant offline and draw on both sides: the offline side queues what it
+    sends, the server keeps what is sent to it, and on reconnect both catch up until the replicas are identical.
+</div>
+
+@code {
+    private sealed record Participant(string Id, string Name, string Color);
+
+    private static readonly Participant[] Participants =
+    [
+        new("alex", "Alex", "#2563eb"),
+        new("sam", "Sam", "#16a34a"),
+    ];
+
+    private static readonly string[] Palette = ["#2563eb", "#16a34a", "#dc2626", "#111827"];
+
+    /// <summary>Longest stroke in progress sent as presence; enough to show it, small enough to send often.</summary>
+    private const int MaxLivePoints = 400;
+
+    private readonly LoopbackHub _hub = new();
+    private readonly BinkCanvas?[] _canvases = new BinkCanvas?[2];
+    private readonly BinkDocument[] _documents = new BinkDocument[2];
+    private readonly BinkCollaborationSession?[] _sessions = new BinkCollaborationSession?[2];
+    private readonly LoopbackTransport?[] _transports = new LoopbackTransport?[2];
+    private readonly BinkBrush[] _brushes = new BinkBrush[2];
+    private readonly string[] _colors = ["#2563eb", "#16a34a"];
+    private readonly bool[] _online = [true, true];
+    private readonly List<Vector2>?[] _live = new List<Vector2>?[2];
+    private readonly CancellationTokenSource _stop = new();
+    private string? _lastMessage;
+    private int _latency;
+
+    /// <summary>True when both documents hold the same elements at the same versions.</summary>
+    private bool Converged
+    {
+        get
+        {
+            var left = _documents[0].AllElements.ToDictionary(e => e.Id, e => e.Version);
+            var right = _documents[1].AllElements.ToDictionary(e => e.Id, e => e.Version);
+            return left.Count == right.Count && left.All(pair => right.TryGetValue(pair.Key, out int version) && version == pair.Value);
+        }
+    }
+
+    protected override void OnInitialized()
+    {
+        // Both participants must edit the same document, including its layer ids, or operations would not line
+        // up. That is exactly what joining a session does in a real application: load a snapshot.
+        _documents[0] = new BinkDocument(new BinkDocumentSettings { Width = 600, Height = 380, Background = BinkColor.White });
+        _documents[1] = BinkSerializer.Deserialize(BinkSerializer.Serialize(_documents[0]));
+
+        for (int i = 0; i < 2; i++)
+        {
+            _brushes[i] = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse(_colors[i]) };
+        }
+
+        for (int i = 0; i < 2; i++)
+        {
+            LoopbackTransport transport = _hub.CreateClient();
+            _transports[i] = transport;
+            var session = new BinkCollaborationSession(_documents[i], transport, Participants[i].Id);
+            session.RemoteOperationRejected += reason => { _lastMessage = "Rejected: " + reason; InvokeAsync(StateHasChanged); };
+            _sessions[i] = session;
+        }
+
+        // Prerendering only produces markup: nobody can move a pointer yet, so there is no presence to flush.
+        if (RendererInfo.IsInteractive) _ = FlushPresenceLoopAsync(_stop.Token);
+    }
+
+    /// <summary>
+    /// Presence is throttled, so the last position of a fast movement can be held back. Flushing on a timer makes
+    /// sure the other side always ends up seeing where the pointer actually stopped.
+    /// </summary>
+    private async Task FlushPresenceLoopAsync(CancellationToken cancellationToken)
+    {
+        using var timer = new PeriodicTimer(TimeSpan.FromMilliseconds(60));
+        try
+        {
+            while (await timer.WaitForNextTickAsync(cancellationToken))
+            {
+                foreach (BinkCollaborationSession? session in _sessions)
+                {
+                    if (session is not null && _online[Array.IndexOf(_sessions, session)]) await session.FlushPresenceAsync(cancellationToken);
+                }
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            // The page was closed.
+        }
+    }
+
+    private void OnPointerMoved(int index, Vector2 viewPosition, bool pressed)
+    {
+        if (_canvases[index] is not { } canvas || _sessions[index] is not { } session || !_online[index]) return;
+        Vector2 position = canvas.CurrentViewport.ToDocument(viewPosition);
+
+        if (pressed)
+        {
+            List<Vector2> live = _live[index] ??= [];
+            if (live.Count < MaxLivePoints) live.Add(position);
+        }
+        else
+        {
+            _live[index] = null;
+        }
+        _ = session.UpdatePresenceAsync(CreatePresence(index, position));
+    }
+
+    private void OnPointerLeft(int index)
+    {
+        _live[index] = null;
+        if (_sessions[index] is { } session && _online[index]) _ = session.UpdatePresenceAsync(CreatePresence(index, null));
+    }
+
+    private BinkPresenceState CreatePresence(int index, Vector2? cursor) => new()
+    {
+        ParticipantId = Participants[index].Id,
+        Name = Participants[index].Name,
+        Color = Participants[index].Color,
+        Cursor = cursor,
+        // The list is copied: the session keeps the state it is given until it is sent.
+        LiveStroke = _live[index]?.ToArray(),
+        LiveStrokeColor = _colors[index],
+        LiveStrokeWidth = 4f,
+    };
+
+    private void SetColor(int index, string color)
+    {
+        _colors[index] = color;
+        _brushes[index] = new BinkPenBrush { Width = 4f, Color = BinkColor.Parse(color) };
+    }
+
+    private async Task SetOnlineAsync(int index, bool online)
+    {
+        _online[index] = online;
+        if (_transports[index] is { } transport) await transport.SetConnectedAsync(online);
+        // The session flushes its queue when the transport reports the connection; let that finish first.
+        if (online && _sessions[index] is { } session) await session.FlushAsync();
+        StateHasChanged();
+    }
+
+    private void OnLatencyChanged(ChangeEventArgs e)
+    {
+        if (int.TryParse(e.Value?.ToString(), out int value))
+        {
+            _latency = value;
+            _hub.LatencyMilliseconds = value;
+        }
+    }
+
+    private void OnStrokeCompleted(int index)
+    {
+        _live[index] = null;
+
+        // Show the exact payload that was sent for the last stroke.
+        if (_documents[index].Layers[0].Elements.Count == 0) return;
+        BinkElement last = _documents[index].Layers[0].Elements[^1];
+        var operation = new BinkAddElementOperation(_documents[index].Layers[0].Id, last);
+        string json = BinkOperationCodec.Serialize(operation);
+        _lastMessage = $"{Participants[index].Name} sent {json.Length} bytes:\n{json}";
+        StateHasChanged();
+    }
+
+    private static string FormatBytes(long bytes)
+        => bytes < 1024 ? $"{bytes} B" : $"{bytes / 1024.0:0.#} KB";
+
+    public async ValueTask DisposeAsync()
+    {
+        _stop.Cancel();
+        foreach (BinkCollaborationSession? session in _sessions)
+        {
+            if (session is not null) await session.DisposeAsync();
+        }
+        _stop.Dispose();
+    }
+}

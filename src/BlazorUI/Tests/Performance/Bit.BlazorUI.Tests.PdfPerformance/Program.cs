@@ -5,6 +5,8 @@ using System.Text;
 using System.Text.Json;
 using Bit.BlazorUI;
 
+if (args.FirstOrDefault() == "--source") return PdfSourceBenchmark.Run(args);
+
 if (args.Length < 3 || !int.TryParse(args[0], out int iterations) || iterations <= 0
     || !int.TryParse(args[1], out int warmups) || warmups < 0)
 {

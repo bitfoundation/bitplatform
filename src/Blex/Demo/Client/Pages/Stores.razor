@@ -1,0 +1,268 @@
+﻿@page "/stores"
+@using System.Text.Json
+@inherits BlexComponentBase
+@inject CounterStore Counter
+@inject EqualityDemoStore Equality
+
+<DocPage Href="stores" Title="Stores & state"
+         Lead="A store is a partial class that owns a slice of state. The generator turns its fields into reactive properties and gives it a JSON identity.">
+
+    <h2>The [BlexStore] attribute</h2>
+    <p>
+        Mark a <code>partial class</code> with <code>[BlexStore]</code> and the generator makes it derive
+        from <code>BlexStoreBase</code>, emits the reactive members and implements the snapshot methods.
+    </p>
+
+    <CodeBlock Code="@StoreDecl" />
+
+    <ApiTable Title="[BlexStore] properties" Rows="@StoreAttrRows" MemberHeader="Property" />
+
+    <Callout Kind="Callout.CalloutKind.Note" Title="Name is the slice key">
+        <p style="margin-bottom:0">
+            <code>Name</code> is what identifies the store in the global state tree, in DevTools, in
+            action labels (<code>counter/Increment</code>) and in persistence keys. Changing it
+            changes the persistence key, which strands previously saved data - bump
+            <code>options.Version</code> and migrate if you rename a persisted store.
+        </p>
+    </Callout>
+
+    <h2>Shape requirements</h2>
+    <p>The generator writes a flat, top-level partial declaration, so the class must be one it can extend:</p>
+    <ul>
+        <li>declared <code>partial</code> - otherwise <code>BLEX001</code>;</li>
+        <li>a plain class, not a <code>record</code> - <code>BLEX015</code>. Records get value equality and a synthesized clone that fight a mutable reactive container;</li>
+        <li>top-level, non-generic and non-static - <code>BLEX006</code>;</li>
+        <li>with no other base class, since the generated partial adds <code>: Bit.Blex.BlexStoreBase</code> - <code>BLEX016</code>.</li>
+    </ul>
+    <p>
+        Constructors, interfaces, ordinary members and dependency injection all work normally. A
+        store is just a service, so it can take an <code>HttpClient</code> or a repository in its
+        constructor.
+    </p>
+
+    <CodeBlock Code="@DiSample" Title="A store with dependencies" />
+
+    <h2>[BlexState] fields</h2>
+    <p>
+        Each <code>[BlexState]</code> field becomes a public property whose setter runs through the
+        dispatch pipeline: it compares, assigns, invalidates computed values, notifies subscribers
+        and records the change for time-travel.
+    </p>
+
+    <CodeBlock Code="@StateSample" />
+
+    <p>The property name is derived by trimming a leading underscore and capitalizing:</p>
+    <div class="table-scroll">
+        <table>
+            <thead><tr><th>Field</th><th>Property</th></tr></thead>
+            <tbody>
+                <tr><td><code>_count</code></td><td><code>Count</code></td></tr>
+                <tr><td><code>count</code></td><td><code>Count</code></td></tr>
+                <tr><td><code>_isLoggedIn</code></td><td><code>IsLoggedIn</code></td></tr>
+                <tr><td><code>Count</code></td><td class="check-no">error <code>BLEX012</code> - the field and property would collide</td></tr>
+            </tbody>
+        </table>
+    </div>
+    <p>
+        A <code>[BlexState]</code> field must be a writable instance field: <code>static</code>,
+        <code>const</code> and <code>readonly</code> are rejected with <code>BLEX008</code>.
+    </p>
+
+    <h2 id="change-detection">Change detection</h2>
+    <p>
+        Setters compare with <code>EqualityComparer&lt;T&gt;.Default</code>. For value types and
+        records that is structural equality, which is what you want. For a <code>List&lt;T&gt;</code>,
+        an array or any class that does not override equality, it is <strong>reference</strong>
+        equality - so mutating a collection in place changes nothing as far as Blex is concerned.
+    </p>
+
+    <DemoCard Title="In-place mutation vs. assignment"
+              Description="Both buttons add an item. Only one of them notifies anybody - watch the rendered count and the Inspector's action feed."
+              Source="@EqualitySource">
+        <div class="readout">
+            <div class="readout__item">
+                <span class="readout__label">Rendered count</span>
+                <span class="readout__value readout__value--accent">@Equality.Count</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Actual list length</span>
+                <span class="readout__value">@Equality.Items.Count</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Items</span>
+                <span class="readout__value" style="font-size:0.85rem">@string.Join(", ", Equality.Items)</span>
+            </div>
+        </div>
+        <div class="row" style="margin-top:0.9rem">
+            <button class="btn btn-danger" @onclick="Equality.MutateInPlace">Items.Add(…) - in place</button>
+            <button class="btn btn-primary" @onclick="Equality.AssignNew">Items = [.. Items, …] - new instance</button>
+            <button class="btn btn-ghost" @onclick="Equality.Reset">Reset</button>
+        </div>
+        <p class="small muted" style="margin-top:0.7rem;margin-bottom:0">
+            After clicking the red button the two numbers disagree: the list really did grow, but no
+            notification fired, so the UI still shows the stale computed value. Click the blue one
+            and both catch up.
+        </p>
+    </DemoCard>
+
+    <Callout Kind="Callout.CalloutKind.Tip" Title="Treat state as immutable">
+        <p style="margin-bottom:0">
+            Always assign a new instance: <code>Items = [.. Items, newItem]</code>. Besides making
+            change detection work, immutable slices are what let time-travel, undo/redo and
+            persistence snapshot state safely. For collections that change often, use the
+            <a href="entities">entity adapter</a>, which is immutable by construction.
+        </p>
+    </Callout>
+
+    <h2>Serialization</h2>
+    <p>
+        Every store gets generated <code>SerializeState()</code> and <code>DeserializeState()</code>
+        methods keyed by the <em>property</em> names. This is the identity used for DevTools, undo/redo
+        and persistence. Values round-trip through <code>System.Text.Json</code> with
+        <code>BlexJson.Options</code> (web defaults, case-insensitive, enums as strings).
+    </p>
+
+    <DemoCard Title="Live snapshot" Description="SerializeState() on the counter store, re-read on every change.">
+        <CodeBlock Code="@CounterJson" Language="json" ShowChrome="false" Compact="true" />
+        <div class="row">
+            <button class="btn btn-sm" @onclick="Counter.Increment">Increment</button>
+            <button class="btn btn-sm" @onclick="() => Counter.SetStep(Counter.Step + 1)">Step + 1</button>
+            <button class="btn btn-sm btn-ghost" @onclick="Counter.ResetState">ResetState()</button>
+        </div>
+    </DemoCard>
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="Present-but-null vs. missing">
+        <p style="margin-bottom:0">
+            On restore, a property that is <em>present</em> but JSON-null resets the field to
+            <code>default</code>; a <em>missing</em> property leaves the current value untouched.
+            That is what lets you add a new <code>[BlexState]</code> field without invalidating payloads
+            saved by an older build.
+        </p>
+    </Callout>
+
+    <h2>BlexStoreBase API</h2>
+    <p>
+        Your store inherits these. The <code>public</code> members are meant for callers; the
+        <code>protected</code> ones are what the generated code calls, and are available if you hand-write
+        a store.
+    </p>
+
+    <ApiTable Title="Public" Rows="@PublicRows" />
+    <ApiTable Title="Protected" Rows="@ProtectedRows" />
+
+    <h2>The IBlexStore interface</h2>
+    <p>
+        Everything the manager needs from a store. Implement it directly only if you want a store
+        outside the generator's conventions - you then also give up batching and action recording
+        unless you call the <code>BlexStoreBase</code> helpers yourself.
+    </p>
+    <CodeBlock Code="@IStoreSample" />
+
+    <h2>Lifetime</h2>
+    <p>
+        <code>AddBitBlexStore&lt;T&gt;</code> registers the store as <strong>scoped</strong>. In Blazor
+        WebAssembly there is one scope for the whole app, so a store is effectively a singleton. In
+        Blazor Server each circuit gets its own scope, so every user has an independent copy of the
+        state - which is what you want. The same applies to <code>BlexManager</code>,
+        <code>BlexStatePersistor</code> and <code>BlexHistory</code>.
+    </p>
+
+</DocPage>
+
+@code {
+    private static readonly JsonSerializerOptions Indented = new() { WriteIndented = true };
+
+    protected override void OnInitialized() => Subscribe(Counter, Equality);
+
+    private string CounterJson => Counter.SerializeState().ToJsonString(Indented);
+
+    private static readonly IReadOnlyList<ApiTable.Row> StoreAttrRows =
+    [
+        new("Name", "Display name and slice key. Defaults to the class name. Used in the state tree, DevTools, qualified action names and persistence keys."),
+        new("Persist", "When <code>true</code>, the store is rehydrated on startup and saved after every action - provided a persistence provider is registered. See <a href=\"persistence\">Persistence</a>."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> PublicRows =
+    [
+        new("string Name", "The store's slice key."),
+        new("bool Persist", "Whether the store opts in to durable persistence."),
+        new("event Action? StateChanged", "Raised after state changes so views can re-render. Fires once per action, not once per field."),
+        new("JsonObject SerializeState()", "Captures the current state as JSON. Generated."),
+        new("void DeserializeState(JsonObject)", "Raw field writes from a snapshot, without notification. Generated. Prefer <code>RestoreState</code>."),
+        new("void RestoreState(JsonObject)", "The safe public way to hydrate a store by hand: applies the snapshot, invalidates computed values and raises <code>StateChanged</code> exactly once, without recording an action."),
+        new("void Batch(string, Action)", "Groups ad-hoc mutations into one named action - one notification, one history entry, one middleware pass. The equivalent of Pinia's <code>$patch</code>."),
+        new("void ResetState()", "Restores the state the store had when it was first registered, recorded as a normal, vetoable <code>ResetState</code> action. No-op if the store was never registered."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ProtectedRows =
+    [
+        new("bool IsRestoring", "True while the manager is applying a time-travel or restore snapshot. Use it to skip side-effects that should not run during a rewind."),
+        new("bool IsObserved", "Whether anything (middleware, DevTools, subscribers) is watching. Generated wrappers use it to skip argument capture when nobody is listening."),
+        new("void SetState&lt;T&gt;(ref T, T, string?)", "The generated property setter. Compares, assigns, invalidates, notifies, and records a standalone <code>Set X</code> action when called outside a dispatch."),
+        new("void SetEffectState&lt;T&gt;(ref T, T)", "Assigns a transient effect field (loading/error). Notifies, but never records a time-travel action."),
+        new("void BeginEffect(ref int) / EndEffect(ref int)", "Reference-count an effect's in-flight runs so <code>IsLoading</code> stays true until the last one finishes."),
+        new("void Dispatch(string, Action, BlexActionArg[]?)", "Runs a mutation as one named, batched, recorded action."),
+        new("Task DispatchAsync(string, Func&lt;Task&gt;, BlexActionArg[]?)", "The async variant: state changes render as they happen, but the whole operation records as one action."),
+        new("void InvalidateComputed()", "Generated override that marks every memoized computed value stale."),
+        new("void NotifyRestored()", "Invalidates computed values and raises <code>StateChanged</code> - for hand-written stores that restore state out of band."),
+    ];
+
+    private const string StoreDecl = """
+        [BlexStore(Name = "counter", Persist = true)]
+        public partial class CounterStore
+        {
+            // ...
+        }
+        """;
+
+    private const string DiSample = """
+        [BlexStore(Name = "weather")]
+        public partial class WeatherStore
+        {
+            private readonly HttpClient _http;
+
+            // Constructor injection works exactly as it does for any other scoped service.
+            public WeatherStore(HttpClient http) => _http = http;
+
+            [BlexState] private Forecast[]? _forecasts;
+
+            [BlexEffect]
+            private async Task OnLoad(CancellationToken ct)
+                => Forecasts = await _http.GetFromJsonAsync<Forecast[]>("forecasts.json", ct);
+        }
+        """;
+
+    private const string StateSample = """
+        [BlexState] private int _count;                       // -> public int Count
+        [BlexState] private string _name = "";                // -> public string Name
+        [BlexState] private IReadOnlyList<Todo> _todos = [];   // -> public IReadOnlyList<Todo> Todos
+        [BlexState] private Filter _filter = Filter.All;       // -> public Filter Filter (enum, stored as a string)
+        """;
+
+    private const string EqualitySource = """
+        [BlexStore(Name = "equalityDemo")]
+        public partial class EqualityDemoStore
+        {
+            [BlexState] private List<string> _items = ["alpha"];
+
+            [BlexComputed] private int ComputeCount() => Items.Count;
+
+            // The trap: contents change, the reference does not -- nothing notifies.
+            [BlexAction] private void OnMutateInPlace() => Items.Add($"item {_next++}");
+
+            // The fix: a new instance, so the reference differs and change detection fires.
+            [BlexAction] private void OnAssignNew() => Items = [.. Items, $"item {_next++}"];
+        }
+        """;
+
+    private const string IStoreSample = """
+        public interface IBlexStore
+        {
+            string Name { get; }
+            bool Persist { get; }
+            event Action? StateChanged;
+            JsonObject SerializeState();
+            void DeserializeState(JsonObject state);
+        }
+        """;
+}

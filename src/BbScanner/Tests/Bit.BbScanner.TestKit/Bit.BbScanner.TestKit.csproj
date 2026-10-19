@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Encoders and image transforms that render real symbols in memory: QR Code, Data Matrix, PDF417 and the
+         linear symbologies, plus the rotation, perspective, blur, noise and lighting a camera adds to them. The
+         unit tests and the benchmarks decode what this renders, and the demo draws its sample barcodes with it,
+         so it targets every framework those projects do. It is test tooling, not part of the package. -->
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Bit.BbScanner\Bit.BbScanner.csproj" />
+    </ItemGroup>
+
+</Project>

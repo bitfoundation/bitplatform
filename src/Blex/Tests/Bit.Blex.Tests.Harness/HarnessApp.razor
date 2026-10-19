@@ -1,0 +1,24 @@
+﻿@* Root component of every harness host. <BlexProvider> wraps everything, exactly as an app is told to:
+   it registers the stores, hands the prerendered state to the interactive render, rehydrates persisted
+   stores, starts the history and connects the DevTools bridge. Each element a test drives or reads
+   carries an id, and the status line reports how and where the tree is being rendered. *@
+
+<BlexProvider>
+    <div class="harness">
+        <HarnessStatus />
+
+        <nav class="harness-nav">
+            <a id="nav-home" href="">home</a>
+            <a id="nav-selector" href="selector">selector</a>
+            <a id="nav-effects" href="effects">effects</a>
+        </nav>
+
+        <main>
+            <Router AppAssembly="typeof(HarnessApp).Assembly">
+                <Found Context="routeData">
+                    <RouteView RouteData="routeData" />
+                </Found>
+            </Router>
+        </main>
+    </div>
+</BlexProvider>

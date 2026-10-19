@@ -1,0 +1,28 @@
+﻿@namespace Bit.Balette
+@implements IDisposable
+@inject IBaletteService Palette
+
+@code {
+    private IDisposable? _registration;
+    private IEnumerable<BaletteCommand>? _last;
+
+    /// <summary>
+    /// Commands registered while this component is rendered (page-scoped commands, like kbar's <c>useRegisterActions</c>).
+    /// </summary>
+    [Parameter, EditorRequired] public IEnumerable<BaletteCommand>? Commands { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        if (ReferenceEquals(_last, Commands))
+        {
+            return;
+        }
+
+        _registration?.Dispose();
+        _last = Commands;
+        _registration = Commands is null ? null : Palette.Register(Commands);
+    }
+
+    /// <summary>Removes the registered commands.</summary>
+    public void Dispose() => _registration?.Dispose();
+}

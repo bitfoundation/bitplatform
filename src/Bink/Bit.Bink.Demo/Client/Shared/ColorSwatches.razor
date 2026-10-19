@@ -1,0 +1,56 @@
+﻿@* A colour picker made of real toggle buttons, so the choice is announced by name and reachable by keyboard. *@
+
+<div class="toolbar-group" role="group" aria-label="@Label">
+    @foreach (string color in Colors)
+    {
+        bool active = string.Equals(color, Value, StringComparison.OrdinalIgnoreCase);
+        <button type="button"
+                class="swatch @(active ? "active" : null)"
+                style="background:@color"
+                title="@NameOf(color)"
+                aria-label="@(Prefix is null ? NameOf(color) : $"{Prefix} {NameOf(color)}")"
+                aria-pressed="@(active ? "true" : "false")"
+                @onclick="() => ValueChanged.InvokeAsync(color)"></button>
+    }
+</div>
+
+@code {
+    /// <summary>The colours offered, as CSS hex strings.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<string> Colors { get; set; } = [];
+
+    /// <summary>The selected colour.</summary>
+    [Parameter] public string? Value { get; set; }
+
+    [Parameter] public EventCallback<string> ValueChanged { get; set; }
+
+    /// <summary>Accessible name of the group.</summary>
+    [Parameter] public string Label { get; set; } = "Colour";
+
+    /// <summary>Optional word placed before each colour's name, such as a participant's name.</summary>
+    [Parameter] public string? Prefix { get; set; }
+
+    private static readonly Dictionary<string, string> Names = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["#111827"] = "Black",
+        ["#0f172a"] = "Black",
+        ["#1f2933"] = "Black",
+        ["#dc2626"] = "Red",
+        ["#b91c1c"] = "Dark red",
+        ["#ea580c"] = "Orange",
+        ["#ca8a04"] = "Yellow",
+        ["#a16207"] = "Amber",
+        ["#16a34a"] = "Green",
+        ["#15803d"] = "Dark green",
+        ["#2563eb"] = "Blue",
+        ["#1d4ed8"] = "Dark blue",
+        ["#7c3aed"] = "Purple",
+        ["#db2777"] = "Pink",
+        ["#fde047"] = "Yellow",
+        ["#86efac"] = "Green",
+        ["#93c5fd"] = "Blue",
+        ["#fca5a5"] = "Red",
+    };
+
+    /// <summary>A human name for a palette colour, falling back to the hex value.</summary>
+    public static string NameOf(string color) => Names.TryGetValue(color, out string? name) ? name : color;
+}

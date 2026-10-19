@@ -144,12 +144,12 @@ public partial class BitFcTimelineEventBlock
             // re-registration of the already-bound handle on the next render.
             if (!_startResizeInitialized)
             {
-                await JS.InvokeVoidAsync("BitBlazorUI.FullCalendar.initResizeHorizontal", _dotNetRef, _startHandleId, "start");
+                await JS.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.initResizeHorizontal", _dotNetRef, _startHandleId, "start");
                 _startResizeInitialized = true;
             }
             if (!_endResizeInitialized)
             {
-                await JS.InvokeVoidAsync("BitBlazorUI.FullCalendar.initResizeHorizontal", _dotNetRef, _endHandleId, "end");
+                await JS.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.initResizeHorizontal", _dotNetRef, _endHandleId, "end");
                 _endResizeInitialized = true;
             }
         }

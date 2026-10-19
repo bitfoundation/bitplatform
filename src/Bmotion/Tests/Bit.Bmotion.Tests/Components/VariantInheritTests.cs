@@ -82,18 +82,38 @@ public class VariantInheritTests
     public void NonInheriting_Child_StillAnimatesItsOwnAnimateTarget()
     {
         using var ctx = new BmotionTestContext();
-        ctx.Render<Bmotion>(ps => ps
-            .Add(p => p.Id, "solo")
-            .Add(p => p.Inherit, false)
-            .Add(p => p.Animate, Bm.To(opacity: 1))
-            .Add(p => p.ChildContent, (RenderFragment)(b =>
+        // The same orchestrating parent as the other tests, but the opted-out child carries its own
+        // Animate target - one the parent's variants could never produce (opacity 0.5).
+        ctx.Render(b =>
+        {
+            b.OpenComponent<Bmotion>(0);
+            b.AddComponentParameter(1, nameof(Bmotion.Id), "parent");
+            b.AddComponentParameter(2, nameof(Bmotion.Variants), _states);
+            b.AddComponentParameter(3, nameof(Bmotion.State), "visible");
+            b.AddComponentParameter(4, nameof(Bmotion.ChildContent), (RenderFragment)(inner =>
             {
-                b.OpenElement(0, "div");
-                b.CloseElement();
-            })));
+                inner.OpenElement(0, "div");
+                inner.OpenComponent<Bmotion>(1);
+                inner.AddComponentParameter(2, nameof(Bmotion.Id), "solo");
+                inner.AddComponentParameter(3, nameof(Bmotion.Inherit), false);
+                inner.AddComponentParameter(4, nameof(Bmotion.Animate), (BmTarget?)Bm.To(opacity: 0.5));
+                inner.AddComponentParameter(5, nameof(Bmotion.ChildContent), (RenderFragment)(leaf =>
+                {
+                    leaf.OpenElement(0, "div");
+                    leaf.CloseElement();
+                }));
+                inner.CloseComponent();
+                inner.CloseElement();
+            }));
+            b.CloseComponent();
+        });
 
-        // Cutting the inherited link must not disable the element's own animation.
-        Assert.IsTrue(ctx.Interop.WasCalled("registerElement"));
+        // Cutting the inherited link must not disable the element's own animation: exactly one
+        // compositor animation for it, heading for its own target rather than the parent's variant.
+        var calls = ctx.Interop.Calls.Where(c => c.Method == "playWaapiAnimation" && (string?)c.Args[0] == "solo").ToArray();
+        Assert.AreEqual(1, calls.Length);
+        var keyframes = (Dictionary<string, object>[])calls[0].Args[2]!;
+        Assert.AreEqual("0.5", keyframes[^1]["opacity"]);
     }
 
     [TestMethod]

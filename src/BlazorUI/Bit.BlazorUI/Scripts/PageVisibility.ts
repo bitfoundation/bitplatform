@@ -51,3 +51,5 @@
         }
     }
 }
+
+// bit-lazy: teardown PageVisibility.dispose

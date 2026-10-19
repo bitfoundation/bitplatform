@@ -1,0 +1,68 @@
+﻿@inject IJSRuntime Js
+
+<div class="code-block @(Compact ? "code-block--compact" : null)">
+    @if (!string.IsNullOrEmpty(Title) || ShowChrome)
+    {
+        <div class="code-block__bar">
+            <span class="code-block__title">@(Title ?? LanguageLabel)</span>
+            <div class="code-block__actions">
+                @if (!string.IsNullOrEmpty(FileName))
+                {
+                    <span class="code-block__file">@FileName</span>
+                }
+                <button type="button" class="code-block__copy" @onclick="CopyAsync" title="Copy to clipboard">
+                    @(_copied ? "Copied" : "Copy")
+                </button>
+            </div>
+        </div>
+    }
+    <pre class="code-block__pre"><code class="language-@Language">@CodeHighlighter.Highlight(Code.TrimEnd(), Language)</code></pre>
+</div>
+
+@code {
+    private bool _copied;
+
+    /// <summary>The snippet to render. Trailing whitespace is trimmed.</summary>
+    [Parameter, EditorRequired] public string Code { get; set; } = "";
+
+    /// <summary>Language token understood by <see cref="CodeHighlighter"/>.</summary>
+    [Parameter] public string Language { get; set; } = "csharp";
+
+    /// <summary>Optional heading shown in the title bar.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Optional file name shown on the right of the title bar.</summary>
+    [Parameter] public string? FileName { get; set; }
+
+    /// <summary>Whether to render the title bar even when no title is set.</summary>
+    [Parameter] public bool ShowChrome { get; set; } = true;
+
+    /// <summary>Tightens the padding, for snippets embedded inside demo cards.</summary>
+    [Parameter] public bool Compact { get; set; }
+
+    private string LanguageLabel => Language.ToLowerInvariant() switch
+    {
+        "csharp" or "cs" => "C#",
+        "razor" or "cshtml" => "Razor",
+        "xml" or "csproj" => "XML",
+        "json" => "JSON",
+        "bash" or "sh" or "shell" => "Shell",
+        _ => Language,
+    };
+
+    private async Task CopyAsync()
+    {
+        try
+        {
+            await Js.InvokeVoidAsync("blexDocs.copy", Code.TrimEnd());
+            _copied = true;
+            StateHasChanged();
+            await Task.Delay(1400);
+            _copied = false;
+        }
+        catch (JSException)
+        {
+            // Clipboard access can be denied; the snippet is still selectable by hand.
+        }
+    }
+}

@@ -87,6 +87,13 @@ public interface IBmotionInterop : IAsyncDisposable
     ValueTask<bool> PlayWaapiAnimationAsync(string elementId, int token, object keyframes, object timing);
     ValueTask CancelWaapiAnimationAsync(string elementId, int token, bool commit);
 
+    /// <summary>
+    /// Sets the playback rate of every compositor animation playing on the element (1 = realtime,
+    /// 0 = paused) - what <c>Pause</c>/<c>SetSpeed</c> do to the animations the browser plays.
+    /// Defaults to a no-op for interop implementations without a browser.
+    /// </summary>
+    ValueTask SetWaapiPlaybackRateAsync(string elementId, double rate) => ValueTask.CompletedTask;
+
     // ── Scroll-driven timelines ───────────────────────────────────────────────
     /// <summary>
     /// Plays a pre-sampled animation progressed by scroll position. <c>true</c> = a native

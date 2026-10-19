@@ -1,0 +1,22 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../.gitignore" />
+    <File Path="../.editorconfig" />
+    <File Path="../Bit.Build.props" />
+    <File Path="../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Bit.Bmage.Demo/">
+    <Project Path="Bit.Bmage.Demo/Client/Bit.Bmage.Demo.Client.csproj" />
+    <Project Path="Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Bmage.Benchmarks/Bit.Bmage.Benchmarks.csproj" />
+    <Project Path="Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
+    <Project Path="Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.Bmage.Tests.Mcp/Bit.Bmage.Tests.Mcp.csproj" />
+  </Folder>
+  <Project Path="Bit.Bmage.Core/Bit.Bmage.Core.csproj" />
+  <Project Path="Bit.Bmage/Bit.Bmage.csproj" />
+  <Project Path="Bit.Bmage.Editor/Bit.Bmage.Editor.csproj" />
+</Solution>

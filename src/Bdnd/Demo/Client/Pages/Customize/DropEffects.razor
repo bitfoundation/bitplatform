@@ -1,0 +1,53 @@
+﻿@page "/customize/drop-effects"
+
+<PageTitle>Customize · Drop Effects - bit Bdnd</PageTitle>
+
+<div class="demo-header">
+    <h3>Customize - Drop Effects</h3>
+    <p class="text-muted">
+        A drag source can advertise a drop effect through <code>DropEffect</code>, which sets the
+        native <code>dataTransfer.effectAllowed</code>. Drag the two boxes below and watch the
+        cursor: the <em>copy</em> box shows a “+” badge, the <em>move</em> box does not.
+    </p>
+</div>
+
+<DemoCode />
+
+<section class="demo-stage">
+    <BdndProvider>
+        <div class="row-wrap">
+            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("copy")"
+                           DropEffect="copy" Context="d">
+                <div class="box" style="width:11rem;opacity:@(d.IsDragging ? "0.4" : "1")">
+                    Copy me (effect = copy)
+                </div>
+            </BdndDraggable>
+
+            <BdndDraggable TItem="string" Type="@ItemTypes.Box" Item="@("move")"
+                           DropEffect="move" Context="d">
+                <div class="box" style="width:11rem;opacity:@(d.IsDragging ? "0.4" : "1")">
+                    Move me (effect = move)
+                </div>
+            </BdndDraggable>
+        </div>
+
+        <BdndDropTarget TItem="string" Accept="@ItemTypes.Box" Context="t"
+                        style="display:contents" OnDrop="HandleDrop">
+            <div class="dustbin" style="@($"margin-top:1.5rem;width:18rem;background:{(t.IsOver ? "darkgreen" : "#333")};")">
+                @(string.IsNullOrEmpty(_last) ? "Drop here" : $"Last drop used: {_last}")
+            </div>
+        </BdndDropTarget>
+    </BdndProvider>
+
+    <p class="text-muted" style="margin-top:1rem;">
+        Tip: the browser only offers the effects a source allows. With <code>DropEffect="copyMove"</code>
+        the user can switch to copying by holding <kbd>Ctrl</kbd> (<kbd>⌥</kbd> on macOS) during the drag;
+        the boxes above allow a single effect each, so modifier keys do not change them.
+    </p>
+</section>
+
+@code {
+    private string? _last;
+
+    private void HandleDrop(BdndDropEventArgs<string> e) => _last = e.Item;
+}

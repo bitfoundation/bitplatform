@@ -1,0 +1,485 @@
+﻿@page "/testing"
+
+<DocPage Href="testing" Title="Testing"
+         Lead="Stores are plain objects, so they test like plain objects - and Bit.Blex.Testing adds a harness for asserting on the dispatch pipeline itself.">
+
+    <h2>The simplest test</h2>
+    <p>
+        A store needs no host, no DI container and no Blazor. Construct it, call an action, assert on
+        a property.
+    </p>
+    <CodeBlock Code="@Plain" FileName="CounterTests.cs" />
+
+    <p>
+        That covers state. What it does not cover is whether the <em>right action</em> was dispatched,
+        with the right payload, exactly once. That is what the harness is for.
+    </p>
+
+    <h2>The harness</h2>
+    <p>
+        <code>BlexTestHarness&lt;TStore&gt;</code> creates a fresh <code>BlexManager</code>,
+        registers your store with it, and starts recording every action.
+    </p>
+    <CodeBlock Code="@Harness" />
+    <ApiTable Title="BlexTestHarness&lt;TStore&gt;" Rows="@HarnessRows" />
+
+    <h2>The action log</h2>
+    <p>
+        <code>BlexActionLog</code> records each dispatch with its name, sequence, arguments and the global
+        state immediately afterwards.
+    </p>
+    <CodeBlock Code="@Log" />
+    <ApiTable Title="BlexActionLog" Rows="@LogRows" />
+    <ApiTable Title="BlexRecordedAction" Rows="@RecordedRows" />
+
+    <h2>Asserting on payloads</h2>
+    <p>Action arguments are captured automatically, so you can assert on exactly what was dispatched.</p>
+    <CodeBlock Code="@Payload" />
+
+    <h2>Testing effects</h2>
+    <p>
+        Awaiting the effect wrapper is usually enough. When you need to observe an intermediate state
+        - a loading flag, say - <code>WaitForAsync</code> beats sprinkling <code>Task.Delay</code>
+        through the test: it re-evaluates the condition on every store change and throws
+        <code>TimeoutException</code> if it never becomes true.
+    </p>
+    <CodeBlock Code="@Effects" />
+
+    <h3>Errors and cancellation</h3>
+    <CodeBlock Code="@EffectErrors" />
+
+    <h2>Asserting on batching</h2>
+    <p>
+        <code>CountNotifications</code> counts how many times a store raised
+        <code>StateChanged</code> while an action ran - the direct way to prove that a multi-field
+        action really does render once.
+    </p>
+    <CodeBlock Code="@Notifications" />
+
+    <h2>Testing middleware</h2>
+    <p>
+        A store is rarely alone in production - a veto filter, an audit logger or a metrics recorder
+        usually wraps it, and those guard rails deserve tests too.
+        <code>BlexTestHarness.WithFilter</code> and <code>WithMiddleware</code> give you the same
+        zero-setup harness with the pipeline attached.
+    </p>
+    <CodeBlock Code="@MiddlewareTest" />
+
+    <p>
+        Reach for a hand-built <code>BlexManager</code> only when the test needs a manager configured
+        before any store is registered.
+    </p>
+
+    <h2>More than one store</h2>
+    <p>
+        Cross-store coordination is exactly the kind of thing worth testing, and abandoning the
+        harness to hand-wire a manager for it defeats the point. <code>harness.Register(store)</code>
+        brings a second store onto the same manager: its actions land in the same log and its slice
+        in the same <code>State</code> tree, and it is disposed with the harness.
+    </p>
+    <CodeBlock Code="@MultiStore" />
+
+    <p>
+        For a condition that spans stores - or one the store you are driving will not report -
+        <code>manager.WaitForAsync</code> re-checks after every action <em>and</em> every restore in
+        the application, where <code>store.WaitForAsync</code> only watches one store.
+    </p>
+
+    <h2>Asserting on failures</h2>
+    <p>
+        An effect captures its exception into <code>XxxError</code> instead of propagating it, so a
+        test that only watches for a throw sees nothing at all. <code>harness.Failures</code> records
+        every action whose body threw, with the arguments it was called with.
+    </p>
+    <CodeBlock Code="@FailureTest" />
+
+    <h2>Testing persistence</h2>
+    <p>
+        <code>IBlexStorage</code> is a three-method interface, so an in-memory fake is trivial.
+        Remember to <code>FlushAsync</code> when the persistor is debounced.
+    </p>
+    <CodeBlock Code="@PersistenceTest" />
+
+    <h2>Testing undo/redo</h2>
+    <CodeBlock Code="@HistoryTest" />
+
+    <h2>Extension methods</h2>
+    <ApiTable Title="BlexTestExtensions" Rows="@ExtensionRows" />
+
+    <Callout Kind="Callout.CalloutKind.Tip" Title="Snapshots make good assertions">
+        <p style="margin-bottom:0">
+            <code>harness.Snapshot()</code> and <code>harness.State</code> return the same JSON the
+            library uses for persistence and time-travel. Asserting against a snapshot checks the
+            whole store at once, and it fails loudly when a field you forgot about changes.
+        </p>
+    </Callout>
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="Dispose the harness">
+        <p style="margin-bottom:0">
+            The harness holds a live subscription on its manager. Use <code>using var</code> - or
+            <code>Dispose()</code> - so a long test class does not accumulate recorders. The
+            harness's manager is its own, so tests never interfere with each other.
+        </p>
+    </Callout>
+
+    <h2>Testing components</h2>
+    <p>
+        For component-level tests with bUnit, register the store the same way the app does and let
+        the component subscribe. There is nothing Blex-specific to mock.
+    </p>
+    <CodeBlock Code="@Bunit" />
+
+</DocPage>
+
+@code {
+    private static readonly IReadOnlyList<ApiTable.Row> HarnessRows =
+    [
+        new("BlexTestHarness.For&lt;TStore&gt;()", "Creates a harness for a store with a parameterless constructor."),
+        new("BlexTestHarness.For(store)", "Creates a harness around an already-constructed store - use this when the store has dependencies."),
+        new("BlexTestHarness.WithFilter&lt;TStore&gt;(predicate)", "A harness whose manager vetoes any action the predicate rejects. The shorthand for testing a store together with its guard rails."),
+        new("BlexTestHarness.WithMiddleware&lt;TStore&gt;(…)", "A harness whose manager runs the given middleware. Also accepts an already-constructed store."),
+        new("TStore Store", "The store under test."),
+        new("BlexManager Manager", "The manager backing the harness. Use it to add middleware assertions or extra subscriptions."),
+        new("BlexActionLog Log", "Records every dispatch."),
+        new("JsonObject State", "The current global state tree."),
+        new("JsonObject Snapshot()", "The current snapshot of the store under test."),
+        new("TOther Register&lt;TOther&gt;(TOther store)", "Adds another store to the harness's manager, for cross-store tests. Returns it, so it can be captured inline."),
+        new("IReadOnlyList&lt;BlexActionErrorContext&gt; Failures", "Every action whose body threw - including effect failures, which are otherwise hidden inside <code>XxxError</code>."),
+        new("void Dispose()", "Detaches the log and disposes every registered store, cancelling effects still in flight."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> LogRows =
+    [
+        new("IReadOnlyList&lt;BlexRecordedAction&gt; Actions", "Everything recorded, in dispatch order."),
+        new("BlexRecordedAction? Last", "The most recent action, or <code>null</code>."),
+        new("int Count", "Number of recorded actions."),
+        new("IReadOnlyList&lt;string&gt; Names", "The bare action names in order."),
+        new("IReadOnlyList&lt;string&gt; QualifiedNames", "The qualified names in order."),
+        new("bool Contains(string)", "Whether an action with that bare or qualified name was recorded."),
+        new("int CountOf(string)", "How many times it was recorded."),
+        new("void Clear()", "Empties the log - handy between arrange and act."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> RecordedRows =
+    [
+        new("IBlexStore Store", "The originating store."),
+        new("string ActionName / QualifiedName", "<code>\"Increment\"</code> and <code>\"counter/Increment\"</code>."),
+        new("int Sequence", "The monotonic dispatch number."),
+        new("JsonObject State", "The global state tree right after this action."),
+        new("IReadOnlyList&lt;BlexActionArg&gt; Args", "The captured arguments."),
+    ];
+
+    private static readonly IReadOnlyList<ApiTable.Row> ExtensionRows =
+    [
+        new("manager.RecordActions()", "Starts recording on any manager and returns the <code>BlexActionLog</code>. Dispose to stop."),
+        new("store.Snapshot()", "Alias for <code>SerializeState()</code>."),
+        new("store.WaitForAsync(Func&lt;bool&gt;, TimeSpan?)", "Waits until the condition holds, re-checking on every store change. Throws <code>TimeoutException</code> after the timeout (default 5 s)."),
+        new("manager.WaitForAsync(Func&lt;bool&gt;, TimeSpan?)", "The same, for a condition spanning stores - re-checked after every action and every restore in the application."),
+        new("store.CountNotifications(Action)", "Counts <code>StateChanged</code> notifications raised while the delegate runs."),
+    ];
+
+    private const string Plain = """
+        [Fact]
+        public void Increment_adds_the_step()
+        {
+            var store = new CounterStore();
+
+            store.SetStep(5);
+            store.Increment();
+
+            Assert.Equal(5, store.Count);
+            Assert.Equal(10, store.DoubleCount);
+        }
+        """;
+
+    private const string Harness = """
+        using Bit.Blex.Testing;
+
+        [Fact]
+        public void Increment_dispatches_one_action()
+        {
+            using var harness = BlexTestHarness.For<CounterStore>();
+
+            harness.Store.Increment();
+
+            Assert.Equal(["Increment"], harness.Log.Names);
+            Assert.Equal(1, harness.Snapshot()["Count"]!.GetValue<int>());
+        }
+
+        // For a store with dependencies, construct it yourself:
+        using var harness = BlexTestHarness.For(new WeatherStore(httpClient));
+        """;
+
+    private const string Log = """
+        using var harness = BlexTestHarness.For<CounterStore>();
+
+        harness.Store.Increment();
+        harness.Store.Increment();
+        harness.Store.SetStep(3);
+
+        Assert.Equal(3, harness.Log.Count);
+        Assert.Equal(2, harness.Log.CountOf("Increment"));
+        Assert.True(harness.Log.Contains("counter/SetStep"));
+        Assert.Equal("SetStep", harness.Log.Last!.ActionName);
+
+        // The state captured immediately after a specific action:
+        var afterFirst = harness.Log.Actions[0].State;
+        Assert.Equal(1, afterFirst["counter"]!["Count"]!.GetValue<int>());
+        """;
+
+    private const string Payload = """
+        harness.Store.SetStep(5);
+
+        var action = harness.Log.Last!;
+        Assert.Equal("SetStep", action.ActionName);
+        Assert.Single(action.Args);
+        Assert.Equal("step", action.Args[0].Name);
+        Assert.Equal(5, action.Args[0].Value);
+
+        // A direct assignment records as "Set X", carrying the assigned value.
+        harness.Store.Count = 42;
+        Assert.Equal("Set Count", harness.Log.Last!.ActionName);
+        Assert.Equal(42, harness.Log.Last!.Args[0].Value);
+        """;
+
+    private const string Effects = """
+        [Fact]
+        public async Task LoadUser_populates_the_user()
+        {
+            using var harness = BlexTestHarness.For(new UserStore(new FakeApi()));
+
+            await harness.Store.LoadUser(42);
+
+            Assert.False(harness.Store.LoadUserIsLoading);
+            Assert.Null(harness.Store.LoadUserError);
+            Assert.Equal("Ada", harness.Store.User!.Name);
+        }
+
+        [Fact]
+        public async Task LoadUser_reports_loading_while_in_flight()
+        {
+            using var harness = BlexTestHarness.For(new UserStore(new SlowApi()));
+
+            var pending = harness.Store.LoadUser(42);          // do not await yet
+            Assert.True(harness.Store.LoadUserIsLoading);
+
+            await pending;
+            await harness.Store.WaitForAsync(() => !harness.Store.LoadUserIsLoading);
+        }
+        """;
+
+    private const string EffectErrors = """
+        [Fact]
+        public async Task A_failing_effect_captures_the_exception()
+        {
+            using var harness = BlexTestHarness.For(new UserStore(new ThrowingApi()));
+
+            await harness.Store.LoadUser(42);   // never throws
+
+            Assert.IsType<HttpRequestException>(harness.Store.LoadUserError);
+        }
+
+        [Fact]
+        public async Task Cancelling_is_not_an_error()
+        {
+            using var harness = BlexTestHarness.For(new UserStore(new SlowApi()));
+
+            var pending = harness.Store.LoadUser(42);
+            harness.Store.CancelLoadUser();
+            await pending;
+
+            Assert.Null(harness.Store.LoadUserError);   // our own cancellation is a normal outcome
+        }
+        """;
+
+    private const string Notifications = """
+        [Fact]
+        public void An_action_notifies_once_however_many_fields_it_touches()
+        {
+            var store = new CounterStore();
+
+            // OnApplyPreset assigns both Count and Step.
+            var notifications = store.CountNotifications(() => store.ApplyPreset(10, 5));
+
+            Assert.Equal(1, notifications);
+        }
+        """;
+
+    private const string MiddlewareTest = """
+        [Fact]
+        public void A_filter_vetoes_the_action()
+        {
+            using var harness = BlexTestHarness.WithFilter<CounterStore>(_ => false);
+
+            harness.Store.Increment();
+
+            Assert.Equal(0, harness.Store.Count);   // the mutation never ran
+            Assert.Empty(harness.Log.Actions);      // and nothing was recorded
+        }
+
+        [Fact]
+        public void The_audit_middleware_sees_every_action()
+        {
+            var audit = new AuditMiddleware();
+            using var harness = BlexTestHarness.WithMiddleware<CounterStore>(audit);
+
+            harness.Store.Increment();
+
+            Assert.Equal(["counter/Increment"], audit.Entries);
+        }
+
+        // More than one store, or a manager configured up front: build it yourself.
+        [Fact]
+        public void Two_stores_share_one_filter()
+        {
+            var manager = new BlexManager([new BlexFilterMiddleware(ctx => ctx.Store.Name != "cart")]);
+            manager.Register(new CartStore());
+            manager.Register(new ProfileStore());
+            using var log = manager.RecordActions();
+            ...
+        }
+        """;
+
+    private const string MultiStore = """
+        [Fact]
+        public void PlacingAnOrder_NotifiesTheUser()
+        {
+            using var harness = BlexTestHarness.For<OrdersStore>();
+            var notifications = harness.Register(new NotificationsStore());
+
+            using var wiring = harness.Manager.SubscribeTo<OrdersStore>(
+                ctx => notifications.Push($"order: {ctx.ActionName}"));
+
+            harness.Store.Place("Widget", 2);
+
+            // One log, both stores:
+            Assert.Equal(
+                new[] { "orders/Place", "notifications/Push" },
+                harness.Log.QualifiedNames);
+
+            Assert.Equal(1, notifications.Unread);
+        }
+
+        [Fact]
+        public async Task CheckoutSettlesAcrossStores()
+        {
+            using var harness = BlexTestHarness.For<CartStore>();
+            var orders = harness.Register(new OrdersStore());
+
+            var checkout = harness.Store.Checkout();
+
+            await harness.Manager.WaitForAsync(
+                () => !harness.Store.CheckoutIsLoading && orders.Count == 1);
+
+            await checkout;
+        }
+        """;
+
+    private const string FailureTest = """
+        [Fact]
+        public async Task AFailingLoad_IsReportedWithItsArguments()
+        {
+            using var harness = BlexTestHarness.For<DataStore>();
+            harness.Store.ShouldThrow = true;
+
+            // The effect wrapper captures the exception, so there is nothing to Assert.Throws on.
+            await harness.Store.Load("orders");
+
+            Assert.NotNull(harness.Store.LoadError);
+
+            var failure = Assert.Single(harness.Failures);
+            Assert.Equal("data/Load", failure.QualifiedName);
+            Assert.Equal("orders", failure.Args[0].Value);
+        }
+        """;
+
+    private const string PersistenceTest = """
+        private sealed class MemoryStorage : IBlexStorage
+        {
+            public Dictionary<string, string> Values { get; } = [];
+
+            public ValueTask<string?> GetAsync(string key, CancellationToken ct = default)
+                => new(Values.TryGetValue(key, out var v) ? v : null);
+
+            public ValueTask SetAsync(string key, string value, CancellationToken ct = default)
+            {
+                Values[key] = value;
+                return ValueTask.CompletedTask;
+            }
+
+            public ValueTask RemoveAsync(string key, CancellationToken ct = default)
+            {
+                Values.Remove(key);
+                return ValueTask.CompletedTask;
+            }
+        }
+
+        [Fact]
+        public async Task State_round_trips_through_storage()
+        {
+            var storage = new MemoryStorage();
+            var manager = new BlexManager();
+            var store = new SettingsStore();
+            manager.Register(store);
+
+            await using var persistor = new BlexStatePersistor(manager, storage);
+            await persistor.StartAsync();
+
+            store.SetAccent("teal");
+            await persistor.FlushAsync();
+
+            Assert.Contains("teal", storage.Values["blex:settings"]);
+
+            // A fresh store rehydrates from the same storage.
+            var manager2 = new BlexManager();
+            var store2 = new SettingsStore();
+            manager2.Register(store2);
+            await using var persistor2 = new BlexStatePersistor(manager2, storage);
+            await persistor2.StartAsync();
+
+            Assert.Equal("teal", store2.Accent);
+        }
+        """;
+
+    private const string HistoryTest = """
+        [Fact]
+        public void Undo_restores_the_previous_state()
+        {
+            var manager = new BlexManager();
+            var store = new CounterStore();
+            manager.Register(store);
+
+            using var history = new BlexHistory(manager);
+            history.Start();
+
+            store.Increment();
+            store.Increment();
+            Assert.Equal(2, store.Count);
+
+            history.Undo();
+            Assert.Equal(1, store.Count);
+            Assert.True(history.CanRedo);
+
+            history.Redo();
+            Assert.Equal(2, store.Count);
+        }
+        """;
+
+    private const string Bunit = """
+        [Fact]
+        public void The_component_renders_the_current_count()
+        {
+            using var ctx = new Bunit.TestContext();
+            ctx.Services.AddBitBlexServices();
+            ctx.Services.AddBitBlexStore<CounterStore>();
+
+            var component = ctx.RenderComponent<Counter>();
+            var store = ctx.Services.GetRequiredService<CounterStore>();
+
+            component.Find("button.increment").Click();
+
+            Assert.Equal(1, store.Count);
+            component.MarkupMatches("<p>Count: 1</p>*");
+        }
+        """;
+}

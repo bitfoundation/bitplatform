@@ -180,6 +180,13 @@ internal static class Program
         Console.WriteLine($"  {bundlingPassed} checks passed, {bundlingFailed} failed");
         Console.WriteLine();
 
+        // What the trimming does to a service worker's precache list once it has changed the files a publish
+        // serves - the rewriting itself, on the shapes of manifest no publish here happens to produce.
+        Console.WriteLine("--- service worker manifest ---");
+        var (serviceWorkerPassed, serviceWorkerFailed) = ServiceWorkerRewriting.Run(failures);
+        Console.WriteLine($"  {serviceWorkerPassed} checks passed, {serviceWorkerFailed} failed");
+        Console.WriteLine();
+
         // The other two signals a publish can trim on, which stand in for ILLink when it never runs: the
         // class-to-module map, and the scan of a consumer's own assemblies that uses it. Checked against the
         // very set trimming produces for the very same code, so the three cannot drift apart.

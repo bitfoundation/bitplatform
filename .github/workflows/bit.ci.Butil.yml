@@ -1,7 +1,7 @@
 name: bit platform CI - Butil
 
-# Build plus the MCP and hosting tests. The browser E2E suites and the trimmed/AOT publish gate are in
-# bit.ci.Butil.e2e.yml and run on demand only.
+# Build, MCP and hosting tests. The browser, hybrid and publish-gate suites live in bit.ci.Butil.e2e.yml and run
+# on demand only.
 
 on:
   workflow_dispatch:
@@ -18,6 +18,7 @@ permissions:
 
 jobs:
 
+  # Its `if:` skips the job on Release/Prerelease/Version PRs.
   build-Butil:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Butil
@@ -60,7 +61,7 @@ jobs:
     # solution build above already compiled both projects; this only redirects the server's output.
     - name: Build the demo server the MCP suite boots
       run: >
-        dotnet build src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj
+        dotnet build src/Butil/Demo/Server/Bit.Butil.Demo.Server.csproj
         --artifacts-path ${{ runner.temp }}/bit-butil-mcp-tests
 
     # Run from inside src/ so global.json is in scope: dotnet test resolves it from the working
@@ -84,7 +85,8 @@ jobs:
         if-no-files-found: ignore
 
     # Every render mode of the Blazor Web App harness host over HTTP, on net8.0/net9.0/net10.0: the prerendered
-    # pages, the served scripts, and every member of every service called during a static render.
+    # pages, the served scripts, and every member of every service called during a static render. Browser, hybrid
+    # and trimmed/AOT publish coverage is in bit.ci.Butil.e2e.yml.
     - name: Hosting tests
       run: >
         cd src/Butil/tests/Bit.Butil.Tests.Hosting &&

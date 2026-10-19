@@ -1,0 +1,62 @@
+﻿@page "/inview"
+
+@* WhileInView and the viewport callbacks: an element visible at load, elements far below the fold (plain, Once,
+   Amount="all") and one observed against a scroll container instead of the page. *@
+
+<HarnessHeader Title="In view" Ready="Ready" OnLog="BindLog" />
+
+<Bmotion Initial="Bm.To(opacity: 0.2)"
+         WhileInView="Bm.To(opacity: 1)"
+         Transition="Bm.Tween(0.1)"
+         OnViewportEnter='() => Log("visible:enter")'
+         OnViewportLeave='() => Log("visible:leave")'>
+    <div id="visible" class="small"></div>
+</Bmotion>
+
+<div class="scroller" id="scroller">
+    <div class="inner">
+        <div style="height: 600px"></div>
+        <Bmotion Initial="Bm.To(opacity: 0.2)"
+                 WhileInView="Bm.To(opacity: 1)"
+                 Viewport='new BmViewport { Root = "#scroller" }'
+                 Transition="Bm.Tween(0.1)"
+                 OnViewportEnter='() => Log("rooted:enter")'
+                 OnViewportLeave='() => Log("rooted:leave")'>
+            <div id="rooted" class="small"></div>
+        </Bmotion>
+    </div>
+</div>
+
+<div class="spacer"></div>
+
+<Bmotion Initial="Bm.To(opacity: 0.2, x: -50)"
+         WhileInView="Bm.To(opacity: 1, x: 0)"
+         Transition="Bm.Tween(0.1)"
+         OnViewportEnter='() => Log("below:enter")'
+         OnViewportLeave='() => Log("below:leave")'>
+    <div id="below" class="box"></div>
+</Bmotion>
+
+<div style="height: 400px"></div>
+
+<Bmotion Initial="Bm.To(opacity: 0.2)"
+         WhileInView="Bm.To(opacity: 1)"
+         Once="true"
+         Transition="Bm.Tween(0.1)"
+         OnViewportEnter='() => Log("once:enter")'
+         OnViewportLeave='() => Log("once:leave")'>
+    <div id="once" class="box"></div>
+</Bmotion>
+
+<div style="height: 400px"></div>
+
+@* 300px tall in a 720px viewport: "all" needs every pixel of it inside. *@
+<Bmotion Initial="Bm.To(opacity: 0.2)"
+         WhileInView="Bm.To(opacity: 1)"
+         Viewport='new BmViewport { Amount = "all" }'
+         Transition="Bm.Tween(0.1)"
+         OnViewportEnter='() => Log("all:enter")'>
+    <div id="all" style="width: 60px; height: 300px; background: #999"></div>
+</Bmotion>
+
+<div class="spacer"></div>

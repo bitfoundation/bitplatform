@@ -11,7 +11,7 @@ internal static class BitFcTimelineScrollInterop
     {
         try
         {
-            return await js.InvokeAsync<bool>(
+            return await js.InvokeScriptAsync<bool>(
                 "BitBlazorUI.FullCalendar.scrollTimelineToTarget",
                 cancellationToken,
                 scrollContainerId);

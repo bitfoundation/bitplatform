@@ -1,0 +1,21 @@
+﻿@* An ordinary component - default event handling, unlike HarnessPage - whose Bmotion callbacks re-render it the
+   way a consumer's would. ComponentBase re-renders after every callback, and rendering off the renderer's
+   dispatcher throws, so any callback the library raised from a thread-pool continuation (an interop result, a
+   timer) instead of the dispatcher takes the page down here and the test sees it. *@
+
+<button id="probe-btn" @onclick="() => _moved = !_moved">probe</button>
+<Bmotion Animate="Bm.To(x: _moved ? 80 : 0, opacity: _moved ? 0.5 : 1)"
+         Transition="Bm.Tween(0.2)"
+         OnAnimationStart="_ => _starts++"
+         OnAnimationComplete="_ => _completes++"
+         OnHoverStart="() => _hovers++">
+    <div id="probe" class="small"></div>
+</Bmotion>
+<output id="probe-counts">@_starts/@_completes/@_hovers</output>
+
+@code {
+    private bool _moved;
+    private int _starts;
+    private int _completes;
+    private int _hovers;
+}

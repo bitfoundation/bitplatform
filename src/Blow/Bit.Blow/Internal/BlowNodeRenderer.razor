@@ -1,0 +1,161 @@
+﻿@namespace Bit.Blow
+@using Microsoft.AspNetCore.Components.Rendering
+
+<div class="@CssClass"
+     data-id="@Node.Id"
+     style="@StyleString"
+     tabindex="@TabIndex"
+     role="group"
+     aria-roledescription="@AriaLabels.NodeRoleDescription"
+     aria-label="@AriaLabel"
+     @onkeydown="OnKeyDown"
+     @onfocus="OnFocus"
+     @onpointerdown="OnPointerDown"
+     @onpointerdown:stopPropagation="true"
+     @onclick="OnClick"
+     @onclick:stopPropagation="true"
+     @ondblclick="OnDoubleClick"
+     @ondblclick:stopPropagation="true"
+     @oncontextmenu="OnContextMenu"
+     @oncontextmenu:stopPropagation="true"
+     @oncontextmenu:preventDefault="@OnContextMenu.HasDelegate"
+     @onmouseenter="OnMouseEnter"
+     @onmousemove="MouseMoveHandler"
+     @onmouseleave="OnMouseLeave">
+    <CascadingValue Value="_nodeContext" IsFixed="true">
+        @if (Template is not null)
+        {
+            @Template(Node)
+        }
+        else
+        {
+            <BlowDefaultNode Node="Node" />
+        }
+    </CascadingValue>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public BlowNode Node { get; set; } = default!;
+    [Parameter] public RenderFragment<BlowNode>? Template { get; set; }
+    [Parameter] public EventCallback<PointerEventArgs> OnDragStart { get; set; }
+
+    /// <summary>Raised when the node is activated from the keyboard; the flag is "additive".</summary>
+    [Parameter] public EventCallback<bool> OnActivate { get; set; }
+
+    /// <summary>
+    /// Raised when the node element takes focus. Left empty by the canvas unless something is
+    /// listening, so no focus listener is attached per node in the ordinary case.
+    /// </summary>
+    [Parameter] public EventCallback<FocusEventArgs> OnFocus { get; set; }
+
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnDoubleClick { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnContextMenu { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnMouseEnter { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnMouseMove { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnMouseLeave { get; set; }
+
+    /// <summary>When false, suppresses the node's tab order (set by the canvas a11y flag).</summary>
+    [Parameter] public bool Focusable { get; set; } = true;
+
+    /// <summary>Raises the node above its peers while selected.</summary>
+    [Parameter] public bool Elevate { get; set; }
+
+    /// <summary>
+    /// Raises the node while it is being dragged, so it is never lost behind the nodes it is
+    /// being pulled across. Off only in manual z-index mode, where nothing is lifted for you.
+    /// </summary>
+    [Parameter] public bool ElevateWhileDragging { get; set; } = true;
+
+    /// <summary>The canvas's accessible-name strings, so a localized flow labels its nodes too.</summary>
+    [Parameter] public BlowAriaLabels AriaLabels { get; set; } = BlowAriaLabels.Default;
+
+    /// <summary>
+    /// Effective stacking order: an explicit <c>BlowNode.ZIndex</c> always wins, otherwise a
+    /// selected or dragged node is lifted above the rest so it isn't hidden behind them.
+    /// </summary>
+    private int? ZIndex
+    {
+        get
+        {
+            if (Node.ZIndex is { } explicitZ) return explicitZ;
+            if (ElevateWhileDragging && Node.Dragging) return ElevatedZIndex + 1;
+            if (Elevate && Node.Selected) return ElevatedZIndex;
+            return null;
+        }
+    }
+
+    private const int ElevatedZIndex = 1000;
+
+    // Only attach the high-frequency move listener when someone is listening for it;
+    // an empty EventCallback makes the renderer omit the attribute entirely.
+    private EventCallback<MouseEventArgs> MouseMoveHandler =>
+        OnMouseMove.HasDelegate ? OnMouseMove : default;
+
+    private string? TabIndex => (Focusable && Node.Focusable) ? "0" : null;
+    private string AriaLabel => AriaLabels.NodeLabel(Node.AriaLabel ?? Node.Label ?? $"Node {Node.Id}");
+
+    private string CssClass
+    {
+        get
+        {
+            var sb = new System.Text.StringBuilder("bit-blow-node bit-blow-node-");
+            sb.Append(Node.Type);
+            if (Node.Selected) sb.Append(" selected");
+            if (Node.Dragging) sb.Append(" dragging");
+            if (Node.Resizing) sb.Append(" resizing");
+            // Not "nodrag": that is the canvas's escape-hatch class, and the guard behind it
+            // swallows every press inside the element - selecting the node and its handles too.
+            if (!Node.Draggable) sb.Append(" undraggable");
+            if (!string.IsNullOrEmpty(Node.Class)) sb.Append(' ').Append(Node.Class);
+            return sb.ToString();
+        }
+    }
+
+    private BlowNodeContext _nodeContext = default!;
+
+    protected override void OnParametersSet()
+    {
+        // The context is cascaded as fixed, so content only ever sees the first instance. A new
+        // Node under the same id (restored, undone) is pointed at in place; replacing the context
+        // would leave handles and drag handles acting on a node no longer in the graph.
+        if (_nodeContext is null) _nodeContext = new BlowNodeContext { Node = Node };
+        else _nodeContext.Node = Node;
+    }
+
+    private string StyleString
+    {
+        get
+        {
+            var s = string.Create(CultureInfo.InvariantCulture,
+                $"transform:translate({Node.AbsolutePosition.X}px,{Node.AbsolutePosition.Y}px);");
+            // An explicit size is the size: the stylesheet's minimum for auto-sized nodes must not
+            // quietly overrule it, or the box on screen and the one every hit-test uses disagree.
+            if (Node.Width is { } w)
+                s += string.Create(CultureInfo.InvariantCulture, $"width:{w}px;min-width:0;");
+            if (Node.Height is { } h)
+                s += string.Create(CultureInfo.InvariantCulture, $"height:{h}px;min-height:0;");
+            // Invariant: some cultures write a negative number with U+2212, which CSS rejects.
+            if (ZIndex is { } z)
+                s += string.Create(CultureInfo.InvariantCulture, $"z-index:{z};");
+            if (!string.IsNullOrEmpty(Node.Style))
+                s += Node.Style;
+            return s;
+        }
+    }
+
+    // Note: this fires regardless of Node.Draggable - the canvas uses it for selection too,
+    // and a non-draggable node must still be selectable.
+    private async Task OnPointerDown(PointerEventArgs e)
+    {
+        if (e.Button == 0)
+            await OnDragStart.InvokeAsync(e);
+    }
+
+    /// <summary>
+    /// Enter/Space selects the focused node. Arrow keys are deliberately left to bubble up to
+    /// the pane, which moves the whole selection.
+    /// </summary>
+    private Task OnKeyDown(KeyboardEventArgs e) =>
+        e.Key is "Enter" or " " ? OnActivate.InvokeAsync(e.ShiftKey) : Task.CompletedTask;
+}

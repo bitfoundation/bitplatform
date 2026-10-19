@@ -1,0 +1,239 @@
+﻿@page "/commands"
+@implements IDisposable
+@inject IBaletteService Palette
+@inject DemoState State
+
+<PageTitle>Registering commands - bit Balette</PageTitle>
+
+<h1>Registering commands</h1>
+<p class="page-intro">
+    A command is an immutable record: a title, where it is listed, what it matches and what it does. There are three
+    ways to hand one to the palette, and this app uses all of them at once - the palette merges them into one list and
+    nothing in it says where a row came from.
+</p>
+
+@* Exists only while this page is rendered: leave the page and the three counter commands are gone from the
+   palette, shortcuts included (kbar calls this useRegisterActions). *@
+<BaletteCommands Commands="_pageCommands" />
+
+<div class="split">
+    <section class="panel padded">
+        <h2>Page-scoped commands</h2>
+        <p class="counter" aria-live="polite">Counter: <strong>@_count</strong></p>
+        <p>
+            Open the palette and look for <em>Increment counter</em> and <em>Decrement counter</em> under "This page",
+            or press <kbd>Ctrl</kbd> <kbd>↑</kbd> / <kbd>Ctrl</kbd> <kbd>↓</kbd> with the palette closed. Both keep the
+            palette open, so the value can be stepped from inside it.
+        </p>
+        <div class="actions">
+            <button type="button" class="btn" @onclick='() => Palette.OpenAsync("counter")'>Search "counter"</button>
+            <button type="button" class="btn" @onclick="() => _count++">+1 from the page</button>
+        </div>
+    </section>
+
+    <section class="panel padded">
+        <h2>The programmatic API</h2>
+        <p>
+            <code>IBaletteService</code> is the palette's remote control: register, update, find, open, close and execute
+            from anywhere that can inject it.
+        </p>
+        <div class="stack">
+            <button type="button" class="btn" @onclick='() => Palette.ExecuteAsync("toggle:wordwrap")'>Execute "Word wrap" without opening</button>
+            <button type="button" class="btn" @onclick='() => Palette.OpenAsync("!delete")'>Open with a negated query: <code>!delete</code></button>
+            <button type="button" class="btn" @onclick='() => Palette.OpenAsync(pageCommandId: "actions.set-labels")'>Open on the "Set labels…" page</button>
+        </div>
+        <p class="muted" role="status">
+            Executed this visit: <strong>@_executed</strong> · Last: <strong>@(_lastExecuted ?? "nothing yet")</strong>
+            · The palette is <strong>@(Palette.IsOpen ? "open" : "closed")</strong>
+            · The registry holds <strong>@Palette.Commands.Count</strong> commands
+        </p>
+    </section>
+</div>
+
+<h2>The fluent builder</h2>
+<p>
+    Every command in this app's <em>Navigation</em>, <em>Actions</em>, <em>Preferences</em>, <em>Danger zone</em> and
+    <em>Help</em> groups is built in <code>Services/DemoCommands.cs</code> and registered once, from the layout.
+    <code>BaletteCmd</code> is the entry point; a builder converts to a command on its own, so a list of them needs no
+    <code>Build()</code> calls.
+</p>
+<pre><code>@BuilderExample</code></pre>
+
+<h2>Declarative markup</h2>
+<p>
+    Commands can live in markup next to the component that owns them. A <code>BaletteItem</code> inside a
+    <code>BaletteItem</code> turns the outer one into a page, and a <code>BaletteGroup</code> hands its heading and
+    priority to every item in it. The <em>Quick create</em> group of this app is declared like this in
+    <code>Layout/MainLayout.razor</code>:
+</p>
+<pre><code>@MarkupExample</code></pre>
+<div class="actions">
+    <button type="button" class="btn" @onclick='() => Palette.OpenAsync("new")'>Search "new"</button>
+</div>
+
+<h2>Scoped to a page</h2>
+<p>
+    <code>BaletteCommands</code> registers its list when it renders and removes it when it is disposed, and hands a
+    new registration over when it is passed a different list. <code>IBaletteService.Register</code> does the same from
+    code and returns the handle to dispose.
+</p>
+<pre><code>@ScopedExample</code></pre>
+
+<h2 id="settings">Settings that stay in sync</h2>
+<p>
+    These values are what the palette's <em>Preferences</em> commands change. Change one here and open the palette:
+    the toggle shows it. Change it there and this page shows it. The layout rebuilds its command list from
+    <code>DemoState</code> whenever it changes, so a toggle's switch is never stale.
+</p>
+
+<div class="panel settings">
+    <label class="setting">
+        <span>Theme</span>
+        <select value="@State.Theme" @onchange="OnThemeChanged" aria-label="Theme">
+            <option value="auto">Auto</option>
+            <option value="light">Light</option>
+            <option value="dark">Dark</option>
+        </select>
+    </label>
+    <label class="setting">
+        <span>Word wrap <BaletteShortcutHint Shortcut="WordWrapShortcut" IsMac="Palette.IsMac" /></span>
+        <input type="checkbox" checked="@State.WordWrap" @onchange="State.ToggleWordWrap" />
+    </label>
+    <label class="setting">
+        <span>Desktop notifications</span>
+        <input type="checkbox" checked="@State.Notifications" @onchange="State.ToggleNotifications" />
+    </label>
+    <label class="setting">
+        <span>Show minimap</span>
+        <input type="checkbox" checked="@State.ShowMinimap" @onchange="State.ToggleMinimap" />
+    </label>
+</div>
+
+<div class="note">
+    Rebuilding the whole list is the simplest way to keep it current, and cheap: it is a few dozen records.
+    <code>IBaletteService.Update(command)</code> replaces a single command by id instead, which suits a registry
+    too large to rebuild on every change.
+</div>
+
+@code {
+    private const string BuilderExample = """
+        BaletteCmd.Navigate("Settings", "/commands#settings")
+            .Group("Navigation")
+            .Shortcut("G S")
+            .Keywords("preferences", "options", "config"),
+
+        BaletteCmd.New("Word wrap")
+            .Id("toggle:wordwrap")
+            .Group("Preferences")
+            .Shortcut("Alt+Z")
+            .Checked(state.WordWrap)
+            .Handler(_ =>
+            {
+                state.ToggleWordWrap();
+                return Task.FromResult(BaletteCommandResult.KeepOpen);
+            }),
+        """;
+
+    private const string MarkupExample = """
+        <Balette>
+            <BaletteGroup Heading="Quick create" Priority="20">
+                <BaletteItem Title="New issue" Shortcut="C" IconCss="demo-plus"
+                             OnExecute='_ => State.Record("New issue dialog opened")' />
+                <BaletteItem Title="New…" ChildrenPlaceholder="What do you want to create?">
+                    <BaletteItem Title="Project" OnExecute='_ => State.Record("New project")' />
+                    <BaletteItem Title="Document" OnExecute='_ => State.Record("New document")' />
+                    <BaletteItem Title="Team" Badge="Beta" OnExecute='_ => State.Record("New team")' />
+                </BaletteItem>
+            </BaletteGroup>
+        </Balette>
+        """;
+
+    private const string ScopedExample = """
+        <BaletteCommands Commands="_pageCommands" />
+
+        @code {
+            private int _count;
+            private List<BaletteCommand> _pageCommands = [];
+
+            protected override void OnInitialized() => _pageCommands =
+            [
+                BaletteCmd.New("Increment counter")
+                    .Group("This page")
+                    .Shortcut("Ctrl+Up")
+                    .Handler(_ =>
+                    {
+                        _count++;
+                        StateHasChanged();
+                        return Task.FromResult(BaletteCommandResult.KeepOpen);
+                    }),
+            ];
+        }
+        """;
+
+    private static readonly BaletteKeyboardShortcut WordWrapShortcut = "Alt+Z";
+
+    private int _count;
+    private int _executed;
+    private string? _lastExecuted;
+    private List<BaletteCommand> _pageCommands = [];
+
+    protected override void OnInitialized()
+    {
+        _pageCommands =
+        [
+            BaletteCmd.New("Increment counter").Group("This page").Shortcut("Ctrl+Up").Keywords("plus", "add")
+                .Description("Registered by Pages/Commands.razor; gone when you leave the page.")
+                .Handler(_ => Step(+1)),
+            BaletteCmd.New("Decrement counter").Group("This page").Shortcut("Ctrl+Down").Keywords("minus", "subtract")
+                .Description("Registered by Pages/Commands.razor; gone when you leave the page.")
+                .Handler(_ => Step(-1)),
+            BaletteCmd.New("Reset counter").Group("This page").Keywords("zero", "clear")
+                .Destructive("Reset the counter to zero?")
+                .Handler(_ =>
+                {
+                    _count = 0;
+                    Changed();
+                    return Task.FromResult(BaletteCommandResult.Close);
+                }),
+        ];
+
+        State.Changed += Refresh;
+        Palette.CommandExecuted += OnExecuted;
+        Palette.CommandsChanged += Refresh;
+        Palette.Opened += Refresh;
+        Palette.Closed += Refresh;
+    }
+
+    private Task<BaletteCommandResult> Step(int delta)
+    {
+        _count += delta;
+        Changed();
+        return Task.FromResult(BaletteCommandResult.KeepOpen);
+    }
+
+    private void Changed()
+    {
+        State.Record($"Counter is now {_count}");
+        Refresh();
+    }
+
+    private void OnExecuted(object? sender, BaletteCommandExecutedEventArgs e)
+    {
+        _executed++;
+        _lastExecuted = e.Command.Title;
+        Refresh();
+    }
+
+    private void Refresh() => _ = InvokeAsync(StateHasChanged);
+
+    private Task OnThemeChanged(ChangeEventArgs e) => State.SetThemeAsync(e.Value?.ToString() ?? "auto");
+
+    public void Dispose()
+    {
+        State.Changed -= Refresh;
+        Palette.CommandExecuted -= OnExecuted;
+        Palette.CommandsChanged -= Refresh;
+        Palette.Opened -= Refresh;
+        Palette.Closed -= Refresh;
+    }
+}

@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Bsqlite benchmarks</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 2rem; }
+    pre { background: #f4f4f4; padding: .75rem; }
+  </style>
+</head>
+<body>
+  <h1>Bsqlite benchmarks</h1>
+  <p>Manual. Open the console, then:</p>
+  <pre>await run('memory')
+await run('opfs')
+await run('indexeddb')
+await run('cache')</pre>
+  <p>Each run reports, in milliseconds: cold open, a 100-row insert batch, 1 000 repeated parameterised
+  inserts (statement cache), a 1 000-row read on the binary path and on the tagged path, and an
+  indexed point read.</p>
+  <script type="module">
+    import { open, encodeBatchBinary, decodeReplyBinary } from '/_content/Bit.Bsqlite/bit-bsqlite-host.js';
+
+    const backends = {
+      memory: { requiredBuild: 'synchronous' },
+      opfs: {
+        requiredBuild: 'synchronous',
+        vfs: { moduleUrl: '/_content/Bit.Bsqlite.Storage.Opfs/bit-bsqlite-opfs-vfs.js', registerExport: 'register' },
+      },
+      indexeddb: {
+        requiredBuild: 'asyncCapable',
+        vfs: { moduleUrl: '/_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-vfs.js', registerExport: 'register' },
+      },
+      cache: {
+        requiredBuild: 'asyncCapable',
+        vfs: { moduleUrl: '/_content/Bit.Bsqlite.Storage.CacheStorage/bit-bsqlite-cache-register.js', registerExport: 'register' },
+      },
+    };
+
+    const text = value => ({ name: '@v', type: 3, value });
+    const nonQuery = (commandText, parameters = []) => ({ commandText, resultKind: 'nonQuery', parameters });
+    const reader = commandText => ({ commandText, resultKind: 'reader', parameters: [] });
+
+    async function time(fn) {
+      const t0 = performance.now();
+      await fn();
+      return (performance.now() - t0).toFixed(1);
+    }
+
+    globalThis.run = async function run(backend) {
+      const options = backends[backend];
+      const name = `bench-${backend}-${Date.now()}`;
+      let host;
+      const row = { backend };
+
+      row.openMs = await time(async () => {
+        host = await open({ databaseName: name, ...options });
+      });
+
+      const binary = async batch => decodeReplyBinary(await host.executeBinary(encodeBatchBinary(batch)));
+
+      await binary([nonQuery('CREATE TABLE t (id INTEGER PRIMARY KEY, v TEXT, n REAL)')]);
+
+      row.insert100BatchMs = await time(() => binary(
+        Array.from({ length: 100 }, (_, i) => nonQuery('INSERT INTO t (v, n) VALUES (@v, 1.5)', [text(`row-${i}`)]))));
+
+      row.insert1000RepeatedMs = await time(async () => {
+        await binary([nonQuery('BEGIN')]);
+        for (let i = 0; i < 1000; i++) {
+          await binary([nonQuery('INSERT INTO t (v, n) VALUES (@v, 2.5)', [text(`r${i}`)])]);
+        }
+        await binary([nonQuery('COMMIT')]);
+      });
+
+      row.read1000BinaryMs = await time(() => binary([reader('SELECT id, v, n FROM t LIMIT 1000')]));
+      row.read1000TaggedMs = await time(() => host.execute([reader('SELECT id, v, n FROM t LIMIT 1000')]));
+      row.pointReadMs = await time(() => binary([{ commandText: 'SELECT v FROM t WHERE id = 500', resultKind: 'scalar', parameters: [] }]));
+
+      host.dispose();
+      console.table([row]);
+      return row;
+    };
+  </script>
+</body>
+</html>

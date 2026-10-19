@@ -1,0 +1,67 @@
+﻿@*
+    Standard shell for every documentation page: title metadata, the heading block, the body,
+    and previous/next links derived from DocsNav so the reading order is never hand-maintained.
+*@
+<PageTitle>@Title · Blex</PageTitle>
+
+<article class="doc">
+    <header class="doc__header">
+        @if (Section is not null)
+        {
+            <p class="doc__eyebrow">@Section.Title</p>
+        }
+        <h1>@Title</h1>
+        @if (!string.IsNullOrEmpty(Lead))
+        {
+            <p class="doc__lead">@Lead</p>
+        }
+    </header>
+
+    @ChildContent
+
+    <nav class="doc__pager">
+        @if (Previous is not null)
+        {
+            <a class="pager pager--prev" href="@Previous.Href">
+                <span class="pager__dir">Previous</span>
+                <span class="pager__title">@Previous.Title</span>
+            </a>
+        }
+        else
+        {
+            <span></span>
+        }
+
+        @if (Next is not null)
+        {
+            <a class="pager pager--next" href="@Next.Href">
+                <span class="pager__dir">Next</span>
+                <span class="pager__title">@Next.Title</span>
+            </a>
+        }
+    </nav>
+</article>
+
+@code {
+    /// <summary>Route of this page (without a leading slash) so the pager can locate it.</summary>
+    [Parameter, EditorRequired] public string Href { get; set; } = "";
+
+    /// <summary>Page heading.</summary>
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+
+    /// <summary>Introductory paragraph under the heading.</summary>
+    [Parameter] public string? Lead { get; set; }
+
+    /// <summary>Page body.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    private DocSection? Section { get; set; }
+    private DocEntry? Previous { get; set; }
+    private DocEntry? Next { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        Section = DocsNav.SectionOf(Href);
+        (Previous, Next) = DocsNav.Neighbours(Href);
+    }
+}

@@ -1,0 +1,100 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager Nav
+@inject IJSRuntime Js
+@implements IDisposable
+
+@* Two shells, one layout. The overview is a landing page and runs full-bleed with no sidebar;
+   every other route is documentation and gets the docs shell: sidebar, session bar, content. *@
+
+<a class="skip-link" href="#main">Skip to content</a>
+
+<TopBar NavOpen="_navOpen" OnToggleNav="ToggleNavAsync" />
+
+@* data-interactive says whether the page runs in the browser yet - prerendered markup is on screen long before
+   anything listens to it - which is what the E2E suite waits for before it touches a page. *@
+
+@if (IsLanding)
+{
+    <main id="main" data-interactive="@Interactive">
+        <ErrorBoundary @ref="_boundary">
+            <ChildContent>@Body</ChildContent>
+            <ErrorContent Context="exception">
+                <div class="container"><UnhandledExceptionView Exception="exception" /></div>
+            </ErrorContent>
+        </ErrorBoundary>
+    </main>
+}
+else
+{
+    <div class="layout">
+        <button type="button" class="nav-scrim" data-open="@(_navOpen ? "true" : "false")"
+                tabindex="@(_navOpen ? 0 : -1)" aria-label="Close navigation" @onclick="CloseNavAsync"></button>
+
+        <AppNav Open="_navOpen" OnNavigate="CloseNavAsync" />
+
+        <main id="main" class="content" data-interactive="@Interactive">
+            <StorageSwitcher />
+            <ErrorBoundary @ref="_boundary">
+                <ChildContent>@Body</ChildContent>
+                <ErrorContent Context="exception">
+                    <UnhandledExceptionView Exception="exception" />
+                </ErrorContent>
+            </ErrorBoundary>
+        </main>
+    </div>
+}
+
+<footer class="site-footer">
+    <div class="footer-inner">
+        <p>
+            bit Bsqlite @SiteLinks.Version &middot; MIT &middot; EF Core on .NET 8, 9 and 10.
+            Everything on this site runs in your browser.
+        </p>
+        <nav class="footer-links" aria-label="Project links">
+            <a href="@SiteLinks.Repository" target="_blank" rel="noopener">GitHub</a>
+            <a href="@SiteLinks.NuGet" target="_blank" rel="noopener">NuGet</a>
+            <a href="@SiteLinks.Issues" target="_blank" rel="noopener">Issues</a>
+            <a href="@SiteLinks.License" target="_blank" rel="noopener">License</a>
+        </nav>
+    </div>
+</footer>
+
+@code {
+    private ErrorBoundary? _boundary;
+    private bool _navOpen;
+
+    private string Interactive => RendererInfo.IsInteractive ? "true" : "false";
+
+    private bool IsLanding => Nav.ToBaseRelativePath(Nav.Uri).Trim('/').Length == 0;
+
+    protected override void OnInitialized()
+        => Nav.LocationChanged += OnLocationChanged;
+
+    protected override void OnParametersSet()
+        => _boundary?.Recover();
+
+    private void OnLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+        => StateHasChanged();
+
+    private Task ToggleNavAsync() => SetNavAsync(!_navOpen);
+
+    private Task CloseNavAsync() => _navOpen ? SetNavAsync(false) : Task.CompletedTask;
+
+    private async Task SetNavAsync(bool open)
+    {
+        _navOpen = open;
+        try
+        {
+            // The drawer covers the viewport under 1024px; letting the page behind it scroll is
+            // the classic mobile-drawer bug.
+            await Js.InvokeVoidAsync("bsqliteDemo.lockScroll", open);
+        }
+        catch (Exception ex)
+        {
+            SampleLog.Exception(ex);
+        }
+    }
+
+    public void Dispose()
+        => Nav.LocationChanged -= OnLocationChanged;
+}

@@ -57,8 +57,9 @@ jobs:
 
     - name: dotnet test (C# engine + component tests)
       # Run from inside src so src/global.json's "test" runner setting applies
-      # (from the repo root the SDK falls back to the unsupported VSTest path).
-      run: cd src/Bmotion/Tests/Bit.Bmotion.Tests && dotnet test -f net10.0 --no-build
+      # (from the repo root the SDK falls back to the unsupported VSTest path). Every target framework the
+      # library ships for: .NET 8, 9 and 10 each get their own run of the suite.
+      run: cd src/Bmotion/Tests/Bit.Bmotion.Tests && dotnet test --no-build
 
     - name: dotnet test (MCP server)
       run: cd src/Bmotion/Tests/Bit.Bmotion.Tests.Mcp && dotnet test -f net10.0 --no-build
@@ -68,3 +69,4 @@ jobs:
         cd src/Bmotion/Tests/bit-bmotion-js
         npm ci || npm install
         npm test
+

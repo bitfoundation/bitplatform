@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="../../Bit.Build.props" />
+
+    <PropertyGroup>
+        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <IsTrimmable>true</IsTrimmable>
+        <PackageTags>$(PackageTags);State management;Testing</PackageTags>
+        <Description>Testing helpers for Bit.Blex: an action-recording harness and assertions for stores and the manager.</Description>
+        <PackageDescription>$(Description)</PackageDescription>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Bit.Blex\Bit.Blex.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <Using Include="System" />
+        <Using Include="System.Linq" />
+        <Using Include="System.Threading" />
+        <Using Include="System.Threading.Tasks" />
+        <Using Include="System.Collections.Generic" />
+    </ItemGroup>
+
+</Project>

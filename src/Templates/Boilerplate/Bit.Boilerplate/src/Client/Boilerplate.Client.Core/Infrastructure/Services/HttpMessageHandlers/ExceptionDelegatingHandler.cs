@@ -45,6 +45,15 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
                     throw problemDetails;
                 }
 
+                if (isInternalRequest &&
+                    response.IsSuccessStatusCode is false &&
+                    string.IsNullOrWhiteSpace(requestIdValue) is false && /* Written by our own server (See UseRequestIdHeader), not by IIS, a reverse proxy or a CDN in front of it. */
+                    response.Content.Headers.ContentType?.MediaType is "text/plain")
+                {
+                    // A plain localized message, such as AttachmentController's image validation errors
+                    throw new BadRequestException(await response.Content.ReadAsStringAsync(cancellationToken));
+                }
+
                 if (response.StatusCode is HttpStatusCode.Unauthorized)
                 {
                     throw new UnauthorizedException(localizer[nameof(AppStrings.YouNeedToSignIn)]);

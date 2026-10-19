@@ -181,3 +181,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Message.dispose

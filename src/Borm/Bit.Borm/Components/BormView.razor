@@ -1,0 +1,686 @@
+﻿@namespace Bit.Borm
+@implements IDisposable
+@inject IServiceProvider ServiceProvider
+
+@* novalidate: Borm owns validation. Without it the browser would also enforce `pattern` and
+   `maxlength` using JavaScript regex semantics, silently blocking submit with a bubble the app cannot
+   style, translate or read. *@
+@* The splat comes first, exactly as it does in every input renderer: Blazor lets the last duplicate
+   attribute win, so the form's own class and submit handler override whatever the caller splatted.
+   Without that, a stray `class` would erase `bit-borm-form` and a stray `onsubmit` would unhook validation. *@
+<form @attributes="AdditionalAttributes"
+      class="bit-borm-form @(Class)" novalidate aria-busy="@(Working ? "true" : null)"
+      @onsubmit="OnFormSubmitted" @onsubmit:preventDefault="true">
+    @* role="heading" rather than a fixed <h2>, for the same reason the Static field carries one: the
+       form is rendered inside a page whose outline the library cannot know, and a form dropped under
+       an <h3> would otherwise skip a level. Set TitleLevel to place it. *@
+    @if (!string.IsNullOrEmpty(FormState.Definition.Title))
+    {
+        <div class="bit-borm-form__title" role="heading" aria-level="@TitleHeadingLevel">@FormState.Definition.Title</div>
+    }
+    @if (!string.IsNullOrEmpty(FormState.Definition.Description))
+    {
+        <p class="bit-borm-form__description">@FormState.Definition.Description</p>
+    }
+
+    @Header
+
+    @if (ShowErrorSummary)
+    {
+        <BormErrorSummary State="FormState" />
+    }
+
+    @* Messages from form-level rules belong to no single field, so they would be invisible without
+       somewhere of their own to live — unless the summary is already showing, which lists them first. *@
+    @if (FormLevelMessages.Count > 0 && !ShowErrorSummary)
+    {
+        <BormValidationMessages Messages="FormLevelMessages" Show="FormState.IsSubmitted"
+                                Id="@BormFieldContext.FormElementId(FormState, "form_errors")" />
+    }
+
+    @* Silent unless nothing else reports the outcome — see SubmitAnnouncement. Always in the page, and
+       only its text changes: a live region inserted together with its content is not reliably read out
+       at all, so rendering the region only once there was something to say made the one announcement
+       it exists for the one most likely to be lost. *@
+    <p class="bit-borm-sr-only" role="status">@SubmitAnnouncement</p>
+
+    @if (FormState.Definition.IsWizard)
+    {
+        @* A landmark with a name, so a screen reader can jump straight to "where am I in this form".
+           The count is announced politely, because it changes when a conditional step appears. *@
+        <nav class="bit-borm-stepper-nav" aria-label="@StepperLabelText">
+        <p class="bit-borm-sr-only" aria-live="polite">@StepAnnouncement</p>
+        <ol class="bit-borm-stepper">
+            @{ var number = 0; }
+            @for (var s = 0; s < FormState.Definition.Steps.Count; s++)
+            {
+                var step = FormState.Definition.Steps[s];
+                if (!FormState.IsStepVisible(step)) { continue; }
+                var index = s;
+                number++;
+                var displayNumber = number;
+                <li class="bit-borm-stepper__step @(index == FormState.CurrentStepIndex ? "is-active" : "") @(index != FormState.CurrentStepIndex && index <= FormState.FurthestStepIndex ? "is-done" : "")"
+                    aria-current="@(index == FormState.CurrentStepIndex ? "step" : null)">
+                    @if (AllowStepNavigation && index != FormState.CurrentStepIndex && FormState.IsStepReachable(index))
+                    {
+                        @* Any step the user has already reached is clickable, forwards as well as back:
+                           each was validated on the way past, and making someone who came back to fix
+                           one answer press Next through the rest is the classic wizard annoyance. A
+                           step never reached stays inert, because jumping to it would skip the
+                           validation that gates it. *@
+                        @* Through GoTo, not GoToStep: jumping back from the stepper replaces everything
+                           below it, and without moving focus a keyboard or screen-reader user is left
+                           standing in the stepper with no indication that the step changed — the same
+                           reason Back and Next move it. *@
+                        <button type="button" class="bit-borm-stepper__link" @onclick="@(() => GoTo(index))">
+                            <span class="bit-borm-stepper__num">@displayNumber</span>
+                            <span class="bit-borm-stepper__label">@(step.Title ?? step.Id)</span>
+                        </button>
+                    }
+                    else
+                    {
+                        <span class="bit-borm-stepper__num">@displayNumber</span>
+                        <span class="bit-borm-stepper__label">@(step.Title ?? step.Id)</span>
+                    }
+                </li>
+            }
+        </ol>
+        </nav>
+
+        var current = FormState.CurrentStep!;
+        @* tabindex="-1" so changing step can put focus here. Nothing else on the page moves when the
+           step does, so without it a keyboard or screen-reader user is left standing on the Next
+           button with no indication that the content beneath it was replaced. *@
+        <div class="bit-borm-step-body @GridClass" style="@GridStyle" tabindex="-1" @ref="_stepBody">
+            @if (!string.IsNullOrEmpty(current.Description))
+            {
+                <p class="bit-borm-form__description">@current.Description</p>
+            }
+            <BormFieldList State="FormState" Items="StepItems(current)" />
+        </div>
+
+        <div class="bit-borm-form__actions">
+            @if (Actions is not null)
+            {
+                @Actions(FormState)
+            }
+            else
+            {
+                @* A read-only wizard keeps Back and Next — paging through a form to read it is not
+                   editing it, and a review screen that strands the user on step 1 of 4 is useless —
+                   but loses Submit and Reset, which are the two buttons that would change something.
+                   The single-page branch below has always hidden its buttons for the same reason. *@
+                <button type="button" class="bit-borm-btn" disabled="@(FormState.IsFirstStep || Busy)" @onclick="Previous">@BackLabel</button>
+                @if (!FormState.IsLastStep)
+                {
+                    @* A submit button, so it is the form's default button. Without one the browser only
+                       submits on Enter when the form holds a single text box, so Enter advanced a
+                       one-question step and did nothing on any step with two. Enter in a text box now
+                       clicks this button, the click advances, and preventDefault keeps that click from
+                       also submitting the form. *@
+                    <button type="submit" class="bit-borm-btn bit-borm-btn--primary" disabled="@Busy" @onclick="Next" @onclick:preventDefault="true">@NextLabel</button>
+                }
+                else if (!FormState.ReadOnly && ShowSubmitButton)
+                {
+                    <button type="submit" class="bit-borm-btn bit-borm-btn--primary" disabled="@Busy">@SubmitLabel</button>
+                }
+                @if (ShowResetButton && !FormState.ReadOnly)
+                {
+                    <button type="button" class="bit-borm-btn bit-borm-btn--ghost" disabled="@Busy" @onclick="Reset">@ResetLabel</button>
+                }
+            }
+        </div>
+    }
+    else
+    {
+        <div class="bit-borm-form__body @GridClass" style="@GridStyle">
+            <BormFieldList State="FormState" Items="RootItems" />
+        </div>
+
+        @if (Actions is not null)
+        {
+            <div class="bit-borm-form__actions">@Actions(FormState)</div>
+        }
+        else if (!FormState.ReadOnly && (ShowSubmitButton || ShowResetButton))
+        {
+            <div class="bit-borm-form__actions">
+                @if (ShowSubmitButton)
+                {
+                    <button type="submit" class="bit-borm-btn bit-borm-btn--primary" disabled="@Busy">@SubmitLabel</button>
+                }
+                @if (ShowResetButton)
+                {
+                    <button type="button" class="bit-borm-btn bit-borm-btn--ghost" disabled="@Busy" @onclick="Reset">@ResetLabel</button>
+                }
+            </div>
+        }
+    }
+
+    @ChildContent
+    @Footer
+</form>
+
+@code {
+    /// <summary>The schema to render. Required unless <see cref="State"/> is supplied.</summary>
+    [Parameter] public BormDefinition? Definition { get; set; }
+
+    /// <summary>Optional typed model to bind to. When omitted, a dictionary store is used.</summary>
+    [Parameter] public object? Model { get; set; }
+
+    /// <summary>Optional dictionary backing store (used when <see cref="Model"/> is null).</summary>
+    [Parameter] public IDictionary<string, object?>? Data { get; set; }
+
+    /// <summary>Provide a pre-configured state (e.g. with FluentValidation wired up).</summary>
+    [Parameter] public BormState? State { get; set; }
+
+    /// <summary>
+    /// Runs against the state this view builds from <see cref="Definition"/>, before it is rendered —
+    /// the place to set <see cref="BormState.ValidationTrigger"/>, call
+    /// <c>UseFluentValidation()</c> or subscribe to <see cref="BormState.OptionsLoadFailed"/>.
+    /// </summary>
+    /// <remarks>
+    /// Wanting one line of configuration otherwise meant giving up the <see cref="Definition"/> +
+    /// <see cref="Model"/> shorthand entirely and constructing, holding and disposing a
+    /// <see cref="BormState"/> by hand — which is a lot of ceremony to say "validate on blur".
+    /// Ignored when <see cref="State"/> is supplied, because that state is already the caller's to
+    /// configure. Called once per state, not once per render.
+    /// </remarks>
+    [Parameter] public Action<BormState>? ConfigureState { get; set; }
+
+    /// <summary>Raised with the state after a successful (valid) submit.</summary>
+    [Parameter] public EventCallback<BormState> OnValidSubmit { get; set; }
+
+    /// <summary>Raised after a submit that failed validation.</summary>
+    [Parameter] public EventCallback<BormState> OnInvalidSubmit { get; set; }
+
+    /// <summary>Raised with the path of a field whose value changed.</summary>
+    [Parameter] public EventCallback<string> OnFieldChanged { get; set; }
+
+    /// <summary>
+    /// Renders every field read-only — a review or "view record" mode that needs no second schema.
+    /// The submit and reset buttons are hidden while it is set. Leave it unset (null) to let a
+    /// caller-supplied state manage its own <see cref="BormState.ReadOnly"/> flag.
+    /// </summary>
+    [Parameter] public bool? ReadOnly { get; set; }
+
+    /// <summary>
+    /// Disables every control and every button — while a save is in flight, or while the record is
+    /// locked. Unlike <see cref="ReadOnly"/> the fields cannot be tabbed through or read out, so reach
+    /// for it only when the form is genuinely inoperable. Leave it unset (null) to let a
+    /// caller-supplied state manage its own <see cref="BormState.Disabled"/> flag.
+    /// </summary>
+    [Parameter] public bool? Disabled { get; set; }
+
+    [Parameter] public bool ShowSubmitButton { get; set; } = true;
+
+    /// <summary>
+    /// The heading level of the form's title, 1-6 (default 2). A form is rendered inside a page whose
+    /// outline the library cannot know, so where the title sits in it has to be the caller's choice —
+    /// a form under an <c>&lt;h3&gt;</c> whose title insisted on being an <c>&lt;h2&gt;</c> makes the
+    /// page's structure wrong for everyone navigating it by headings.
+    /// </summary>
+    [Parameter] public int TitleLevel { get; set; } = 2;
+
+    /// <summary>
+    /// Button labels. Leave them unset and the text comes from the registered
+    /// <see cref="IBormMessageProvider"/>, so a localised app does not have to pass four strings
+    /// to every form it renders.
+    /// </summary>
+    [Parameter] public string? SubmitText { get; set; }
+
+    /// <summary>
+    /// What the submit button says while validation or the submit handler is running. Leave it unset
+    /// and the text comes from the registered <see cref="IBormMessageProvider"/>.
+    /// </summary>
+    [Parameter] public string? SubmittingText { get; set; }
+
+    /// <summary>Renders a button that restores the form to the values it started with.</summary>
+    [Parameter] public bool ShowResetButton { get; set; }
+
+    /// <inheritdoc cref="SubmitText" />
+    [Parameter] public string? ResetText { get; set; }
+
+    /// <inheritdoc cref="SubmitText" />
+    [Parameter] public string? BackText { get; set; }
+
+    /// <inheritdoc cref="SubmitText" />
+    [Parameter] public string? NextText { get; set; }
+
+    /// <summary>Renders a list of every error above the form, each linking to its field.</summary>
+    [Parameter] public bool ShowErrorSummary { get; set; }
+
+    /// <summary>
+    /// Moves focus to the first field with an error after a failed submit, so a keyboard or
+    /// screen-reader user is taken to the problem instead of having to hunt for it. Suppressed while
+    /// <see cref="ShowErrorSummary"/> is on, because the summary takes focus itself and two components
+    /// competing for it would leave the user wherever the race happened to land.
+    /// </summary>
+    [Parameter] public bool FocusFirstError { get; set; } = true;
+
+    /// <summary>Lets the user click back to an already-completed wizard step.</summary>
+    [Parameter] public bool AllowStepNavigation { get; set; } = true;
+
+    /// <summary>Content rendered above the fields (below the title).</summary>
+    [Parameter] public RenderFragment? Header { get; set; }
+
+    /// <summary>Content rendered below everything else, inside the form element.</summary>
+    [Parameter] public RenderFragment? Footer { get; set; }
+
+    /// <summary>Replaces the built-in button row entirely.</summary>
+    [Parameter] public RenderFragment<BormState>? Actions { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Extra CSS classes for the form element.</summary>
+    [Parameter] public string? Class { get; set; }
+
+    /// <summary>
+    /// What every DOM id in this form starts with (<c>borm_</c> by default). Ids are derived from field
+    /// paths, so two forms on one page that share field names — or render the same schema twice — also
+    /// share ids, and a label, an <c>aria-describedby</c> or an error-summary link in one of them then
+    /// points into the other. Give each form its own prefix. Leave it unset (null) to keep whatever the
+    /// state already has, so a caller-supplied state can own it.
+    /// </summary>
+    [Parameter] public string? IdPrefix { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    /// <summary>
+    /// The state this view is bound to — either the one passed in <see cref="State"/> or the one it
+    /// built from <see cref="Definition"/>. Capture the component with <c>@ref</c> to reach it, for
+    /// example to call <c>Reset()</c> or read <c>IsFormDirty</c> from outside the form.
+    /// </summary>
+    public BormState Form => FormState;
+
+    private BormState FormState { get; set; } = default!;
+
+    // Only a state this component created is disposed by it; a caller-supplied state stays the
+    // caller's responsibility.
+    private BormState? _owned;
+    private BormDefinition? _builtFrom;
+    private object? _builtModel;
+    private IDictionary<string, object?>? _builtData;
+
+    /// <summary>True while the form is actually doing something — what <c>aria-busy</c> reports.</summary>
+    private bool Working => FormState.IsValidating || FormState.IsSubmitting;
+
+    // What every button reads. A disabled form has no working buttons either, or "Submit" would stay
+    // live above a set of controls nobody can fill in. It is not, however, busy.
+    private bool Busy => Working || FormState.Disabled;
+
+    private int TitleHeadingLevel => Math.Clamp(TitleLevel, 1, 6);
+
+    /// <summary>Messages a form-level rule reported without naming a field.</summary>
+    private IReadOnlyList<BormValidationMessage> FormLevelMessages => FormState.MessagesFor(string.Empty);
+
+    /// <summary>
+    /// What a polite live region says after a failed submit, or null when it should stay silent.
+    /// </summary>
+    /// <remarks>
+    /// Only when nothing else is already telling the user: the error summary announces itself and
+    /// takes focus, and focus-the-first-error lands on a control whose message is read out through
+    /// <c>aria-describedby</c>. With both turned off, a screen-reader user presses Submit, the page
+    /// does not move, and nothing at all is said — which reads as a button that does nothing. The same
+    /// is true when focus-the-first-error is on but found nothing to land on — every error belongs to
+    /// an object, a row or a hidden field, none of which has a control of its own — so that submit is
+    /// announced too.
+    /// </remarks>
+    private string? SubmitAnnouncement
+    {
+        get
+        {
+            var focusMissed = _focusMissedForSubmit != 0 && _focusMissedForSubmit == FormState.SubmitCount;
+            if (ShowErrorSummary || (FocusFirstError && !focusMissed)) return null;
+            if (!FormState.IsSubmitted || FormState.IsValidating || !FormState.HasErrors) return null;
+
+            var count = FormState.OrderedMessages().Count(m => m.Severity == BormValidationSeverity.Error);
+            return count == 1
+                ? FormState.Text(BormMessageKeys.SummaryTitleOne)
+                : FormState.Text(BormMessageKeys.SummaryTitleMany, count);
+        }
+    }
+
+    /// <summary>The top-level fields, each with the path it binds to.</summary>
+    private IEnumerable<(BormFieldDefinition Field, string Path)> RootItems
+        => FormState.Definition.OrderedFields().Select(f => (f, f.Name));
+
+    /// <summary>
+    /// A step's fields, resolved from the paths it names. A step that lists a field the schema does not
+    /// have renders nothing rather than throwing — <c>Definition.Validate()</c> is where that is reported.
+    /// </summary>
+    private IEnumerable<(BormFieldDefinition Field, string Path)> StepItems(BormStep step)
+        => step.Fields
+            .Select(name => (Field: FormState.Definition.FindByPath(name), Path: name))
+            .Where(x => x.Field is not null)
+            .Select(x => (x.Field!, x.Path));
+
+    private string GridClass => FormState.Definition.Columns > 1 ? "bit-borm-grid" : "";
+
+    private string? GridStyle => FormState.Definition.Columns > 1
+        ? $"grid-template-columns: repeat({FormState.Definition.Columns}, minmax(0, 1fr));"
+        : null;
+
+    protected override void OnParametersSet()
+    {
+        if (State is not null)
+        {
+            DisposeOwned();
+            Attach(State);
+            ApplyReadOnly();
+            return;
+        }
+
+        if (Definition is null)
+            throw new InvalidOperationException($"{nameof(BormView)} requires either a {nameof(Definition)} or a {nameof(State)}.");
+
+        // Rebuild when the inputs the state was derived from change, so swapping the schema or the
+        // bound model actually re-renders against the new one instead of silently keeping the old.
+        var stale = _owned is null
+            || !ReferenceEquals(_builtFrom, Definition)
+            || !ReferenceEquals(_builtModel, Model)
+            || !ReferenceEquals(_builtData, Data);
+
+        if (!stale)
+        {
+            ApplyReadOnly();
+            return;
+        }
+
+        DisposeOwned();
+
+        IBormDataAccessor accessor = Model is not null
+            ? new BormModelDataAccessor(Model)
+            : new BormDictionaryDataAccessor(Data);
+
+        _owned = new BormState(Definition, accessor, ServiceProvider);
+        _builtFrom = Definition;
+        _builtModel = Model;
+        _builtData = Data;
+        // Before Attach, so a handler the callback subscribes to cannot fire a re-render into a view
+        // that is not yet bound to the state raising it.
+        ConfigureState?.Invoke(_owned);
+        Attach(_owned);
+        ApplyReadOnly();
+    }
+
+    // Pushed in both directions when the parameter is set, so toggling it off works; left alone when
+    // it is null, so a caller-supplied state can own the flag itself. The id prefix rides along for the
+    // same reason, and is applied before anything renders an id from it.
+    private void ApplyReadOnly()
+    {
+        if (IdPrefix is not null) FormState.IdPrefix = IdPrefix;
+        if (ReadOnly is { } value) FormState.ReadOnly = value;
+        if (Disabled is { } disabled) FormState.Disabled = disabled;
+    }
+
+    private void Attach(BormState state)
+    {
+        if (ReferenceEquals(FormState, state)) return;
+        Detach();
+        FormState = state;
+        // Counted in the old state's submits, which mean nothing in the new one.
+        _focusMissedForSubmit = 0;
+        FormState.StateChanged += OnStateChanged;
+        FormState.FieldChanged += OnFieldChangedInternal;
+    }
+
+    private void Detach()
+    {
+        if (FormState is null) return;
+        FormState.StateChanged -= OnStateChanged;
+        FormState.FieldChanged -= OnFieldChangedInternal;
+    }
+
+    private void DisposeOwned()
+    {
+        if (_owned is null) return;
+        if (ReferenceEquals(FormState, _owned)) Detach();
+        _owned.Dispose();
+        _owned = null;
+        _builtFrom = null;
+        _builtModel = null;
+        _builtData = null;
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    /// <summary>
+    /// Relays a field change to <see cref="OnFieldChanged"/>. A handler that fails is reported the way any
+    /// failing event handler is — through the renderer, to an error boundary or the circuit's log.
+    /// </summary>
+    /// <remarks>
+    /// The state raises the event in the middle of a write, so the handler cannot simply be awaited
+    /// here. It used to be started and forgotten: an async handler that threw (an autosave whose request
+    /// failed, say) faulted a task nobody looked at, and the failure vanished without a trace. A handler
+    /// that threw synchronously was worse, escaping into the write itself and abandoning it half-done.
+    /// </remarks>
+    private void OnFieldChangedInternal(string path)
+    {
+        if (!OnFieldChanged.HasDelegate) return;
+        _ = InvokeAsync(async () =>
+        {
+            try
+            {
+                await OnFieldChanged.InvokeAsync(path);
+            }
+            catch (Exception ex)
+            {
+                await DispatchExceptionAsync(ex);
+            }
+        });
+    }
+
+    /// <summary>Accessible name of the stepper landmark. Defaults to the message provider's text.</summary>
+    [Parameter] public string? StepperLabel { get; set; }
+
+    private string StepperLabelText => StepperLabel ?? FormState.Text(BormMessageKeys.Progress);
+
+    /// <summary>
+    /// "Step 2 of 4", announced when the position changes. Counted over the visible steps, so a skipped
+    /// conditional step does not make the total jump around.
+    /// </summary>
+    private string StepAnnouncement
+        => FormState.Text(BormMessageKeys.StepOf, FormState.CurrentStepNumber, FormState.VisibleSteps.Count);
+
+    /// <summary>
+    /// What the submit button says. While the form is working it says so, rather than only going grey
+    /// — a disabled button with an unchanged label reads as broken rather than busy, and tells a
+    /// screen-reader user nothing at all about why pressing it did not appear to do anything.
+    /// </summary>
+    private string SubmitLabel => Working
+        ? SubmittingText ?? FormState.Text(BormMessageKeys.Submitting)
+        : SubmitText ?? FormState.Text(BormMessageKeys.Submit);
+    private string ResetLabel => ResetText ?? FormState.Text(BormMessageKeys.Reset);
+    private string BackLabel => BackText ?? FormState.Text(BormMessageKeys.Back);
+    private string NextLabel => NextText ?? FormState.Text(BormMessageKeys.Next);
+
+    private ElementReference _stepBody;
+    private bool _focusStepBody;
+    private bool _focusStepErrors;
+
+    private async Task Next()
+    {
+        var moved = await FormState.NextStepAsync();
+        // Advancing means new content; staying put means the step has errors worth being taken to.
+        if (moved) _focusStepBody = true;
+        else _focusStepErrors = true;
+    }
+
+    private void Previous()
+    {
+        FormState.PreviousStep();
+        _focusStepBody = true;
+    }
+
+    private void GoTo(int index)
+    {
+        if (index == FormState.CurrentStepIndex) return;
+        FormState.GoToStep(index);
+        _focusStepBody = true;
+    }
+
+    /// <summary>Restores the values the form started with. Same as <c>Form.Reset()</c>.</summary>
+    public void Reset() => FormState.Reset();
+
+    /// <summary>
+    /// Runs the same submit cycle the built-in button does — validate, then raise
+    /// <see cref="OnValidSubmit"/> or <see cref="OnInvalidSubmit"/>. Call it from a custom
+    /// <see cref="Actions"/> row, or from a button somewhere else on the page, so replacing the button
+    /// does not mean reimplementing the pipeline behind it.
+    /// </summary>
+    /// <returns>
+    /// True when the form passed validation and <see cref="OnValidSubmit"/> ran. False when it did not —
+    /// including when a submit was already in flight, in which case nothing was validated or raised;
+    /// check <see cref="BormState.IsSubmitting"/> before calling to tell the two apart.
+    /// </returns>
+    public Task<bool> SubmitAsync() => HandleSubmit();
+
+    /// <summary>
+    /// What the <c>&lt;form&gt;</c>'s own submit event does — which is not always "submit the form".
+    /// </summary>
+    /// <remarks>
+    /// Pressing Enter in a text box submits the form it belongs to; the browser does this whether or
+    /// not a submit button is on the page. On a wizard step that is not the last one, the user pressing
+    /// Enter meant "next" — they are halfway through — and letting it finish the form instead ran a
+    /// validation pass over steps they had not reached and answered with a wall of errors about
+    /// questions they had not been asked yet. Enter advances, exactly as the Next button does; the
+    /// public <see cref="SubmitAsync"/> still submits, because a caller asking for that has said so.
+    /// </remarks>
+    private async Task OnFormSubmitted()
+    {
+        if (FormState.Definition.IsWizard && !FormState.IsLastStep)
+        {
+            // A read-only wizard has no Next of its own to press, but paging through it is still
+            // reading rather than editing, so Enter moves on rather than doing nothing at all.
+            await Next();
+            return;
+        }
+
+        // A read-only or disabled form has no submit button, and pressing Enter in one of its boxes is
+        // not a request to submit it: the browser submits a form with a single text box on Enter
+        // whether or not it has a button, and that used to run OnValidSubmit from a review screen. The
+        // public SubmitAsync still submits — a caller asking for that has said so — and so does a submit
+        // button the caller rendered themselves: a "review and confirm" screen is read-only on purpose
+        // and still has to be confirmable. The event cannot say whether Enter or a button raised it, so
+        // the guard applies only where the only buttons are the view's own, which it already hides.
+        if ((FormState.ReadOnly || FormState.Disabled) && !RendersCallerContent) return;
+
+        await HandleSubmit();
+    }
+
+    /// <summary>Whether the caller rendered anything inside the form that could hold a submit button.</summary>
+    private bool RendersCallerContent => Actions is not null || ChildContent is not null || Footer is not null || Header is not null;
+
+    private async Task<bool> HandleSubmit()
+    {
+        // A submit already in flight is answered with false before anything is judged. What is on record
+        // then describes the previous attempt, and treating it as this one's verdict moved the wizard to
+        // a step and pulled focus while the first submit was still saving.
+        if (FormState.IsSubmitting) return false;
+
+        var valid = await FormState.SubmitAsync(
+            onValid: state => OnValidSubmit.InvokeAsync(state),
+            onInvalid: state => OnInvalidSubmit.InvokeAsync(state));
+
+        if (!valid)
+        {
+            ShowStepWithFirstError();
+            _focusErrorForSubmit = FormState.SubmitCount;
+        }
+        return valid;
+    }
+
+    /// <summary>
+    /// After a failed submit on a wizard, moves to the earliest step with something to fix — unless the
+    /// step the user is on has something already.
+    /// </summary>
+    /// <remarks>
+    /// Submit validates every step, and the field at fault need not be on this one: going back to change
+    /// an answer can break a rule on a step that was passed earlier. Submit then did nothing anyone could
+    /// see — focus cannot reach a control that is not rendered, and the summary is off by default — so
+    /// the form looked like it was ignoring the button.
+    /// </remarks>
+    private void ShowStepWithFirstError()
+    {
+        if (FormState.CurrentStep is not { } current) return;
+
+        var earliest = -1;
+        foreach (var message in FormState.AllMessages)
+        {
+            if (message.Severity != BormValidationSeverity.Error || message.FieldPath.Length == 0) continue;
+            if (BormState.StepContains(current, message.FieldPath)) return;
+
+            var step = FormState.VisibleStepContaining(message.FieldPath);
+            if (step >= 0 && (earliest < 0 || step < earliest)) earliest = step;
+        }
+
+        if (earliest >= 0) FormState.GoToStep(earliest);
+    }
+
+    private int _focusErrorForSubmit;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_focusStepBody)
+        {
+            _focusStepBody = false;
+            await FocusStepBody();
+            return;
+        }
+
+        var forSubmit = _focusErrorForSubmit;
+        var wantsErrorFocus = _focusStepErrors || forSubmit != 0;
+        _focusStepErrors = false;
+        _focusErrorForSubmit = 0;
+
+        // The summary owns focus when it is showing; two components pulling at it would be a race.
+        if (!wantsErrorFocus || !FocusFirstError || ShowErrorSummary) return;
+
+        // Nothing took focus — the errors all belong to objects, rows or hidden fields, which have no
+        // control of their own. The submit then has to be announced instead, or it reads as a button
+        // that does nothing at all (see SubmitAnnouncement).
+        if (!await FocusFirstErrorField() && forSubmit != 0 && forSubmit == FormState.SubmitCount)
+        {
+            _focusMissedForSubmit = forSubmit;
+            StateHasChanged();
+        }
+    }
+
+    // The submit attempt whose errors focus could not reach, so SubmitAnnouncement speaks for it.
+    private int _focusMissedForSubmit;
+
+    private async Task FocusStepBody()
+    {
+        try
+        {
+            await _stepBody.FocusAsync();
+        }
+        catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or ObjectDisposedException)
+        {
+            // Static prerender: nothing to focus, and nothing to fix either.
+        }
+    }
+
+    /// <summary>
+    /// Focuses the first field reporting an error, walking the list until one actually accepts focus —
+    /// the first offender may be on a step that is not showing, or be a control with no focusable
+    /// element of its own.
+    /// </summary>
+    private async Task<bool> FocusFirstErrorField()
+    {
+        foreach (var message in FormState.OrderedMessages())
+        {
+            if (message.Severity != BormValidationSeverity.Error) continue;
+            if (string.IsNullOrEmpty(message.FieldPath)) continue;
+            if (await FormState.FocusAsync(message.FieldPath)) return true;
+        }
+        return false;
+    }
+
+    public void Dispose()
+    {
+        Detach();
+        _owned?.Dispose();
+        _owned = null;
+    }
+}

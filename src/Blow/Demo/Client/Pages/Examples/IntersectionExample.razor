@@ -1,0 +1,73 @@
+﻿@page "/examples/intersection"
+
+<PageTitle>Intersection - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Intersection"
+                 Summary="Drag the highlighted node around. Any node it overlaps is detected with GetIntersectingNodes and turns orange in real time.">
+    <BlowCanvas @ref="_flow" Nodes="_nodes" Edges="_edges" FitViewOnInit="true"
+                OnNodeDrag="OnNodeDrag" OnNodeDragStop="OnNodeDragStop">
+        <NodeTemplate Context="node">
+            <div class="@NodeClass(node)">@node.Label</div>
+        </NodeTemplate>
+        <ChildContent>
+            <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+            <BlowControls />
+        </ChildContent>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    /* The node element keeps the library's default chrome unless told otherwise; this node draws
+       its own box, filling the node so what you see is exactly the rectangle that is tested. */
+    .bit-blow-node.ix-shell { padding:0; border:0; background:none; min-width:0; box-shadow:none; border-radius:8px; }
+    .bit-blow-node.ix-shell.selected { box-shadow:0 0 0 2px var(--bit-blow-node-selected); }
+    .ix-node {
+        display:flex; align-items:center; justify-content:center; width:100%; height:100%; box-sizing:border-box;
+        border:1px solid #bbb; border-radius:8px; background:#fff; font-weight:600;
+    }
+    .ix-node.dragging { border-color:#6366f1; background:#eef2ff; }
+    .ix-node.intersecting { border-color:#ea580c; background:#ffedd5; }
+</style>
+
+@code {
+    private BlowCanvas? _flow;
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private readonly HashSet<string> _intersecting = [];
+    private string? _draggingId;
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "drag", Label = "Drag me", Position = new(40, 40), Width = 110, Height = 60, Class = "ix-shell" },
+            new BlowNode { Id = "a", Label = "A", Position = new(260, 30), Width = 110, Height = 60, Class = "ix-shell" },
+            new BlowNode { Id = "b", Label = "B", Position = new(260, 160), Width = 110, Height = 60, Class = "ix-shell" },
+            new BlowNode { Id = "c", Label = "C", Position = new(440, 90), Width = 110, Height = 60, Class = "ix-shell" },
+        ];
+        _edges = [];
+    }
+
+    private string NodeClass(BlowNode node)
+    {
+        var cls = "ix-node";
+        if (node.Id == _draggingId) cls += " dragging";
+        if (_intersecting.Contains(node.Id)) cls += " intersecting";
+        return cls;
+    }
+
+    private void OnNodeDrag(BlowNode node)
+    {
+        _draggingId = node.Id;
+        _intersecting.Clear();
+        if (_flow is not null)
+            foreach (var n in _flow.GetIntersectingNodes(node))
+                _intersecting.Add(n.Id);
+    }
+
+    private void OnNodeDragStop(BlowNode node)
+    {
+        _draggingId = null;
+        _intersecting.Clear();
+    }
+}

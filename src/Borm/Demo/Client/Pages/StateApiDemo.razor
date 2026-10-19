@@ -1,0 +1,224 @@
+﻿@page "/state-api"
+@implements IDisposable
+@using Bit.Borm.Demo.Client.Forms
+
+<PageTitle>Editing an existing record</PageTitle>
+
+<div class="demo-intro">
+    <h1>Editing an existing record</h1>
+    <p>
+        A form that opens blank and is submitted once needs almost none of this. A form that loads a
+        record, is saved, reloads what the server actually stored and carries on being edited needs all
+        of it: rebasing onto new data so "unsaved changes" means something, checking one answer without
+        judging the whole form, reordering rows without walking them past each other, and reading a
+        single field's state in one go.
+    </p>
+</div>
+
+<div class="demo-card">
+    <div class="demo-toolbar">
+        <button type="button" class="bit-borm-btn" @onclick="LoadRecord">Load record from server</button>
+        <button type="button" class="bit-borm-btn" @onclick="SaveRoundTrip" disabled="@(!_state.IsFormDirty)">Save &amp; rebase</button>
+        <button type="button" class="bit-borm-btn" @onclick="SwapFirstTwoLines" disabled="@(LineCount < 2)">Swap first two lines</button>
+        <button type="button" class="bit-borm-btn bit-borm-btn--danger" @onclick="ClearLines" disabled="@(LineCount == 0)">Clear all lines</button>
+        <button type="button" class="bit-borm-btn" @onclick="CheckCustomer">Check just the customer</button>
+        <button type="button" class="bit-borm-btn" @onclick="StashDraft">Stash a draft</button>
+        <button type="button" class="bit-borm-btn" @onclick="RestoreDraft" disabled="@(_draft is null)">Restore the draft</button>
+        <label class="demo-toggle"><input type="checkbox" checked="@_reviewMode" @onchange="ToggleReview" /> Review mode</label>
+        <label class="demo-toggle"><input type="checkbox" checked="@_state.SingleErrorPerField" @onchange="ToggleSingleError" /> One error per field</label>
+    </div>
+
+    <BormView State="_state" OnValidSubmit="HandleSubmit" SubmitText="Submit order" TitleLevel="2" />
+</div>
+
+<div class="demo-result" style="background:#eef2ff; border-color:#c7d2fe;">
+    <strong>State</strong>
+    <pre>@StateReadout</pre>
+</div>
+
+@if (_saved)
+{
+    <div class="demo-result"><strong>Saved ✓</strong> The stored record is now the baseline — the form is clean again.</div>
+}
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+<style>
+    .demo-toolbar { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; margin-bottom: 1.5rem; }
+    .demo-toggle { display: inline-flex; align-items: center; gap: .35rem; font-size: .85rem; color: #475569; }
+</style>
+
+@code {
+    private const string Source =
+"""
+// --- Rebasing onto what the server actually stored -----------------------------------------
+// Reset() puts back the values the form was *constructed* with, which after a save are the wrong
+// ones. Reset(values) writes the new ones and makes them the baseline, so IsFormDirty, an "unsaved
+// changes" prompt and an undo button all mean what they say again. React Hook Form spells it
+// reset(values).
+state.Reset(new Dictionary<string, object?>
+{
+    ["Customer"] = stored.Customer,
+    ["Lines[0].Description"] = stored.Lines[0].Description,
+    // ... every field the round-trip came back with
+});
+
+// --- Checking one answer, not the whole form -----------------------------------------------
+// The path is enough; the schema resolves the definition. Returns false when nothing in the schema
+// has that path, so a typo does not silently pass. React Hook Form spells it trigger(name).
+await state.ValidateFieldAsync("Customer");
+
+// --- Everything known about one field, in one read ------------------------------------------
+var field = state.GetFieldState("Customer");
+// field.IsTouched, field.IsDirty, field.IsInvalid, field.Error, field.Messages
+
+// --- Saving a draft ---------------------------------------------------------------------------
+// Snapshot() maps every path the schema binds to onto its value — including one entry per repeater
+// row — and Reset(values) takes exactly that shape back. Together they are a complete
+// save-and-restore: stash it in session storage while the user is halfway through, hand it back
+// when they return.
+var draft = state.Snapshot();
+// … later …
+state.Reset(draft);
+
+// --- Repeater operations ---------------------------------------------------------------------
+// Swap exchanges two rows and leaves every other row exactly where it was — which is what a
+// drag-and-drop reorder means. Move shuffles everything in between along by one.
+state.SwapArrayItems("Lines", 0, 1);
+
+// Clear empties the list in one change, taking every row's messages and touched/dirty state with
+// it, instead of costing a re-render and a re-index per row.
+state.ClearArrayItems("Lines");
+
+// --- One error at a time -----------------------------------------------------------------------
+// A password that is too short, has no digit and has no symbol otherwise stacks three complaints
+// under one box. Every rule still runs — this is about what the user reads, not what is checked.
+state.SingleErrorPerField = true;
+
+// --- Review mode ------------------------------------------------------------------------------
+// A read-only wizard keeps Back and Next (reading a form is not editing it) and loses Submit and
+// Reset.
+state.ReadOnly = true;
+""";
+
+    private readonly Invoice _model = new();
+    private BormState _state = default!;
+    private bool _reviewMode;
+    private bool _saved;
+    private int _loadCount;
+
+    private int LineCount => _state.ArrayCount("Lines");
+
+    protected override void OnInitialized()
+    {
+        var schema = BormBuilder.For<Invoice>()
+            .Title("Purchase order")
+            .Field(x => x.Customer, f => f
+                .Required("A purchase order needs a customer.")
+                .MinLength(3, "Use the customer's full registered name.")
+                .Pattern("^[A-Z]", "Start with a capital letter."))
+            .Array(x => x.Lines, line => line
+                    .Field(l => l.Description, f => f.Required())
+                    .Field(l => l.Quantity, f => f.Range(1, 9999).Default(1))
+                    .Field(l => l.UnitPrice, f => f.Range(0, 1_000_000).Prefix("€"))
+                    .Computed(l => l.LineTotal, l => l.Quantity * l.UnitPrice,
+                        dependsOn: [nameof(InvoiceLine.Quantity), nameof(InvoiceLine.UnitPrice)]),
+                f => f.Attr("itemNoun", "line").Attr("duplicable", true))
+            .Computed(x => x.Total, m => m.Lines.Sum(l => l.Quantity * l.UnitPrice),
+                dependsOn: [nameof(Invoice.Lines)])
+            .Build();
+
+        _state = new BormState(schema, new BormModelDataAccessor(_model));
+        _state.StateChanged += OnStateChanged;
+    }
+
+    /// <summary>
+    /// Stands in for the round-trip: the record comes back from the server and the form is rebased
+    /// onto it, so nothing is reported as an unsaved change.
+    /// </summary>
+    private void LoadRecord()
+    {
+        _loadCount++;
+        _saved = false;
+
+        // The rows have to exist before their fields can be written to.
+        var lines = _state.Definition.FindField("Lines")!;
+        _state.ClearArrayItems("Lines");
+        _state.AddArrayItem(lines, "Lines");
+        _state.AddArrayItem(lines, "Lines");
+
+        _state.Reset(new Dictionary<string, object?>
+        {
+            ["Customer"] = $"Northwind Traders",
+            ["Lines[0].Description"] = "Chai (24 boxes)",
+            ["Lines[0].Quantity"] = 3,
+            ["Lines[0].UnitPrice"] = 18.00m,
+            ["Lines[1].Description"] = "Chang (12 bottles)",
+            ["Lines[1].Quantity"] = 5,
+            ["Lines[1].UnitPrice"] = 19.50m
+        });
+    }
+
+    private void SaveRoundTrip()
+    {
+        // What a real save does: post, then rebase onto the stored record so the form is clean again.
+        _saved = true;
+        _state.Reset(_state.DirtyFields.ToDictionary(path => path, _state.GetValue));
+    }
+
+    private void SwapFirstTwoLines() => _state.SwapArrayItems("Lines", 0, 1);
+
+    private void ClearLines() => _state.ClearArrayItems("Lines");
+
+    private Task CheckCustomer() => _state.ValidateFieldAsync("Customer").AsTask();
+
+    /// <summary>
+    /// Snapshot and Reset(values) are the two halves of a draft: stash what the user has so far —
+    /// to session storage, to the server, wherever — and hand it back when they return.
+    /// </summary>
+    private void StashDraft() => _draft = _state.Snapshot();
+
+    private void RestoreDraft()
+    {
+        if (_draft is not null) _state.Reset(_draft);
+    }
+
+    private IReadOnlyDictionary<string, object?>? _draft;
+
+    private void ToggleReview(ChangeEventArgs e)
+    {
+        _reviewMode = e.Value is true;
+        _state.ReadOnly = _reviewMode;
+    }
+
+    private void ToggleSingleError(ChangeEventArgs e) => _state.SingleErrorPerField = e.Value is true;
+
+    private string StateReadout
+    {
+        get
+        {
+            var customer = _state.GetFieldState("Customer");
+            return $"""
+                    Form      dirty={_state.IsFormDirty}  submits={_state.SubmitCount}  validated={_state.HasValidated}  valid={_state.IsValid}
+                    Customer  touched={customer.IsTouched}  dirty={customer.IsDirty}  invalid={customer.IsInvalid}  messages={customer.Messages.Count}
+                              first error: {customer.Error?.Message ?? "—"}
+                    Lines     {LineCount}   total: €{_model.Total:0.00}   (loaded {_loadCount}x)
+                    """;
+        }
+    }
+
+    private void OnStateChanged() => InvokeAsync(StateHasChanged);
+
+    private void HandleSubmit(BormState state) => _saved = false;
+
+    public void Dispose()
+    {
+        _state.StateChanged -= OnStateChanged;
+        // The page created the state, so the page disposes it: an options load or async rule still in
+        // flight is cancelled instead of finishing against a form nobody is looking at.
+        _state.Dispose();
+    }
+}

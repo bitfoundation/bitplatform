@@ -1,0 +1,73 @@
+@using Bit.Bmage.Editor.Components
+@using Bit.Bmage.Editor.Tools
+@inherits AppComponentBase
+
+<link rel="stylesheet" href="_content/Bit.Bmage.Editor/bit-bmage-editor.css" />
+
+<section class="image-editor">
+    <BitStack Gap="0">
+        <BitStack Horizontal Gap="0.75rem" AutoHeight VerticalAlign="BitAlignment.Center" Class="header-stack">
+            <BitText Id="image-editor-title" Typography="BitTypography.Subtitle1" Weight="BitFontWeight.Semibold" Class="title">
+                @Localizer[nameof(AppStrings.EditImage)]
+            </BitText>
+
+            <BitButton IconOnly
+                       Variant="BitVariant.Text"
+                       Color="BitColor.Tertiary"
+                       IconName="@BitIconName.ChromeClose"
+                       OnClick="Cancel"
+                       Title="@Localizer[nameof(AppStrings.Cancel)]"
+                       AriaLabel="@Localizer[nameof(AppStrings.Cancel)]" />
+        </BitStack>
+
+        @if (couldNotOpenImage)
+        {
+            <BitStack Gap="1.25rem" Padding="1.25rem 1rem">
+                <BitText Typography="BitTypography.Body1">@Localizer[nameof(AppStrings.ImageEditorCouldNotOpenImage)]</BitText>
+
+                <BitStack Horizontal Wrap Gap="0.5rem" AutoHeight HorizontalAlign="BitAlignment.End">
+                    <BitButton Variant="BitVariant.Text" ButtonType="BitButtonType.Button" OnClick="Cancel">
+                        @Localizer[nameof(AppStrings.Cancel)]
+                    </BitButton>
+                    <BitButton ButtonType="BitButtonType.Button" OnClick="KeepOriginal">
+                        @Localizer[nameof(AppStrings.UploadImageAsIs)]
+                    </BitButton>
+                </BitStack>
+            </BitStack>
+        }
+        else
+        {
+            <div class="editor-host">
+                <BmageEditor @ref="editor"
+                             Strings="editorStrings"
+                             MaxProxyDimension="1024"
+                             Direction="@(CurrentDir is BitDir.Rtl ? "rtl" : "ltr")"
+                             AriaLabel="@Localizer[nameof(AppStrings.EditImage)]"
+                             OnError="HandleEditorError" />
+            </div>
+
+            <BitStack Gap="0.75rem" Padding="0.75rem 1rem 1rem">
+                @if (errorMessage is not null)
+                {
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.Error" role="alert">@errorMessage</BitText>
+                }
+                else if (editor?.Tool is EditorToolKind.Crop)
+                {
+                    <BitText Typography="BitTypography.Body2" Color="BitColor.SecondaryForeground">@Localizer[nameof(AppStrings.ImageEditorCropHint)]</BitText>
+                }
+
+                <BitStack Horizontal Wrap Gap="0.5rem" AutoHeight HorizontalAlign="BitAlignment.End">
+                    <BitButton Variant="BitVariant.Text" ButtonType="BitButtonType.Button" OnClick="Cancel">
+                        @Localizer[nameof(AppStrings.Cancel)]
+                    </BitButton>
+                    <BitButton IsLoading="isSaving"
+                               ButtonType="BitButtonType.Button"
+                               Disabled="@(editor?.Session is null)"
+                               OnClick="WrapHandled(Save)">
+                        @Localizer[nameof(AppStrings.Save)]
+                    </BitButton>
+                </BitStack>
+            </BitStack>
+        }
+    </BitStack>
+</section>

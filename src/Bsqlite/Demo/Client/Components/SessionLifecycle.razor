@@ -1,0 +1,62 @@
+﻿@inject BrowserDatabase Database
+@implements IAsyncDisposable
+
+@ChildContent
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    [Parameter]
+    public EventCallback OnReady { get; set; }
+
+    [Parameter]
+    public EventCallback OnTearDown { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Every page is prerendered on the server first, where there is no browser to open a database in.
+        // The page renders its static content there; the database opens once it runs in the browser.
+        if (RendererInfo.IsInteractive is false)
+        {
+            return;
+        }
+
+        Database.BeforeSessionReset += TearDownAsync;
+        Database.AfterSessionReset += ReadyAsync;
+
+        // Opening raises AfterSessionReset, which runs ReadyAsync once for every subscriber; only
+        // an already-open database needs the explicit call.
+        if (Database.Database.IsOpen)
+        {
+            await ReadyAsync();
+        }
+        else
+        {
+            await Database.EnsureSessionAsync();
+        }
+    }
+
+    private async Task TearDownAsync()
+    {
+        if (OnTearDown.HasDelegate)
+        {
+            await OnTearDown.InvokeAsync();
+        }
+    }
+
+    private async Task ReadyAsync()
+    {
+        if (OnReady.HasDelegate)
+        {
+            await OnReady.InvokeAsync();
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Database.BeforeSessionReset -= TearDownAsync;
+        Database.AfterSessionReset -= ReadyAsync;
+        await TearDownAsync();
+    }
+}

@@ -1,0 +1,65 @@
+﻿@page "/examples/use-node-connections"
+
+<PageTitle>Use Node Connections - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Use Node Connections"
+                 Summary="Click a node to list the edges connected to it, along with its incoming and outgoing neighbours, computed with BlowGraphUtils.">
+    <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" OnNodeClick="Select">
+        <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+        <BlowControls />
+        <BlowPanel Position="top-right">
+            <div class="conn-panel">
+                @if (_selected is null)
+                {
+                    <span class="text-muted">click a node</span>
+                }
+                else
+                {
+                    <div><strong>Node @_selected.Id</strong></div>
+                    <div>connected edges: @_connected.Count</div>
+                    <div>incomers: @string.Join(", ", _incomers.Select(n => n.Id))</div>
+                    <div>outgoers: @string.Join(", ", _outgoers.Select(n => n.Id))</div>
+                }
+            </div>
+        </BlowPanel>
+    </BlowCanvas>
+</ExampleScaffold>
+
+<style>
+    .conn-panel { background:var(--bit-blow-surface); color:var(--bit-blow-text); border:1px solid var(--bit-blow-border); border-radius:8px; padding:8px 10px; font-size:12px; min-width:180px; box-shadow:0 2px 6px var(--bit-blow-shadow); }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private BlowNode? _selected;
+    private List<BlowEdge> _connected = [];
+    private List<BlowNode> _incomers = [];
+    private List<BlowNode> _outgoers = [];
+
+    protected override void OnInitialized()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "1", Type = "input", Label = "1", Position = new(250, 20) },
+            new BlowNode { Id = "2", Label = "2", Position = new(120, 140) },
+            new BlowNode { Id = "3", Label = "3", Position = new(380, 140) },
+            new BlowNode { Id = "4", Type = "output", Label = "4", Position = new(250, 280) },
+        ];
+        _edges =
+        [
+            new BlowEdge { Id = "e1-2", Source = "1", Target = "2" },
+            new BlowEdge { Id = "e1-3", Source = "1", Target = "3" },
+            new BlowEdge { Id = "e2-4", Source = "2", Target = "4" },
+            new BlowEdge { Id = "e3-4", Source = "3", Target = "4" },
+        ];
+    }
+
+    private void Select(BlowNode node)
+    {
+        _selected = node;
+        _connected = BlowGraphUtils.GetConnectedEdges([node], _edges);
+        _incomers = BlowGraphUtils.GetIncomers(node, _nodes, _edges);
+        _outgoers = BlowGraphUtils.GetOutgoers(node, _nodes, _edges);
+    }
+}

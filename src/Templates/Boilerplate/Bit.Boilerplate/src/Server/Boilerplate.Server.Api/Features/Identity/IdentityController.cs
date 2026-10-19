@@ -53,6 +53,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
             if (await userConfirmation.IsConfirmedAsync(userManager, existingUser) is false)
             {
+                await SetUnconfirmedAccountPassword(existingUser, request.Password, cancellationToken);
                 await SendConfirmationToken(existingUser, request.ReturnUrl, cancellationToken);
                 throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", existingUser.Id);
             }
@@ -126,6 +127,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (signInResult.IsNotAllowed && await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {
+            await SetUnconfirmedAccountPassword(user, isOtpSignIn ? null : request.Password, cancellationToken);
             try
             {
                 await SendConfirmationToken(user, request.ReturnUrl, cancellationToken);
@@ -450,6 +452,7 @@ public partial class IdentityController : AppControllerBase, IIdentityController
 
         if (await userConfirmation.IsConfirmedAsync(userManager, user) is false)
         {
+            await SetUnconfirmedAccountPassword(user, password: null, cancellationToken);
             await SendConfirmationToken(user, request.ReturnUrl ?? returnUrl, cancellationToken);
             throw new BadRequestException(Localizer[nameof(AppStrings.UserIsNotConfirmed)]).WithData("UserId", user.Id);
         }
@@ -610,5 +613,30 @@ public partial class IdentityController : AppControllerBase, IIdentityController
         {
             await SendConfirmPhoneToken(user, cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Whoever last asks an unconfirmed account for its confirmation decides its password: the one they typed, or none.
+    /// Set through the store, so the security stamp and the confirmation code already sent stay valid.
+    /// </summary>
+    private async Task SetUnconfirmedAccountPassword(User user, string? password, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(password) is false)
+        {
+            foreach (var passwordValidator in userManager.PasswordValidators)
+            {
+                var validationResult = await passwordValidator.ValidateAsync(userManager, user, password);
+
+                if (validationResult.Succeeded is false)
+                    throw new ResourceValidationException(validationResult.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
+            }
+        }
+
+        await ((IUserPasswordStore<User>)userStore).SetPasswordHashAsync(user, string.IsNullOrEmpty(password) ? null : userManager.PasswordHasher.HashPassword(user, password), cancellationToken);
+
+        var result = await userManager.UpdateAsync(user);
+
+        if (result.Succeeded is false)
+            throw new ResourceValidationException(result.Errors.Select(e => new LocalizedString(e.Code, e.Description)).ToArray()).WithData("UserId", user.Id);
     }
 }

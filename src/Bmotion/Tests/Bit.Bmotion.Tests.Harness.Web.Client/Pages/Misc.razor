@@ -1,0 +1,83 @@
+﻿@page "/misc"
+@implements IDisposable
+@inject BmotionAnimateService Motion
+@inject BmotionViewTransition ViewTransition
+
+@* Motion values bound to elements (numbers, derived values, a spring follower, a string template), the View
+   Transitions wrapper, and the inspector overlay. *@
+
+<HarnessHeader Title="Misc" Ready="Ready" OnLog="BindLog" />
+
+<h2>Motion values</h2>
+<section class="row">
+    <button id="mv-set" @onclick="() => _x.SetSync(100)">set 100</button>
+    <button id="mv-animate" @onclick="AnimateValueAsync">animate to 200</button>
+    <button id="mv-blur" @onclick="() => _blur.SetSync(4)">blur 4</button>
+
+    <Bmotion Values='new() { ["x"] = _x }'>
+        <div id="mv-x" class="small"></div>
+    </Bmotion>
+    <Bmotion Values='new() { ["opacity"] = _opacity }'>
+        <div id="mv-opacity" class="small"></div>
+    </Bmotion>
+    <Bmotion Values='new() { ["x"] = _spring }'>
+        <div id="mv-spring" class="small"></div>
+    </Bmotion>
+    <Bmotion StringValues='new() { ["filter"] = _filter }'>
+        <div id="mv-filter" class="small"></div>
+    </Bmotion>
+    <Readout @ref="_value" Id="mv-value" Initial="0" />
+    <Readout @ref="_label" Id="mv-label" Initial="" />
+</section>
+
+<h2>View transition</h2>
+<section class="row">
+    <button id="vt" @onclick="StartViewTransitionAsync">transition</button>
+    <div id="vt-target">@(_vtAfter ? "after" : "before")</div>
+</section>
+
+<h2>Inspector</h2>
+<BmotionInspector />
+
+@code {
+    private readonly BmValue<double> _x = Bm.Value(0.0);
+    private readonly BmValue<double> _blur = Bm.Value(0.0);
+    private BmValue<double> _opacity = default!;
+    private BmValue<double> _spring = default!;
+    private BmValue<string> _filter = default!;
+    private BmValue<string> _labelValue = default!;
+    private IDisposable? _subscription;
+    private Readout _value = default!;
+    private Readout _label = default!;
+    private bool _vtAfter;
+
+    protected override void OnInitialized()
+    {
+        // 0..200 maps to 0.2..1 opacity; a spring trails the value; a template composes a CSS string.
+        _opacity = _x.Transform([0, 200], [0.2, 1]);
+        _spring = Motion.Spring(_x, Bm.Spring(stiffness: 120, damping: 8));
+        _filter = Bm.Template(() => $"blur({_blur.Value}px)", _blur);
+        _labelValue = _x.Transform(v => $"{v:0}px");
+        _subscription = _x.Subscribe(v => _value.Set(v));
+        _labelValue.Subscribe(v => _label.Set(v));
+    }
+
+    private async Task AnimateValueAsync()
+    {
+        await Motion.AnimateAsync(_x, 200, Bm.Tween(0.5, BmEase.Linear));
+        Log("mv:animated");
+    }
+
+    private async Task StartViewTransitionAsync()
+    {
+        var native = await ViewTransition.StartAsync(() => Change(() => _vtAfter = true));
+        Log($"vt:{(native ? "native" : "fallback")}");
+    }
+
+    public void Dispose()
+    {
+        _subscription?.Dispose();
+        _x.Dispose();
+        _blur.Dispose();
+    }
+}

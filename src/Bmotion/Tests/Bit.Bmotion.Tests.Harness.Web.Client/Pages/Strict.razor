@@ -1,0 +1,42 @@
+﻿@page "/strict"
+
+@* Driven against hosts started with non-default library options (see HarnessProfile in the suite): the global
+   prerender mode, the global reduced-motion mode and CSS safe mode. *@
+
+<HarnessHeader Title="Strict options" Ready="Ready" OnLog="BindLog" />
+
+@* No Prerender parameter: the global option decides. *@
+<Bmotion Initial="Bm.To(opacity: 0)" Animate="Bm.To(opacity: 1)" Transition="Bm.Tween(2, BmEase.Linear)"
+         OnAnimationStart='_ => Log("global:start")'>
+    <div id="global" class="small"></div>
+</Bmotion>
+
+@* Outside any BmotionConfig: only a global ReducedMotion of User consults the OS. *@
+<button id="go" @onclick="() => Change(() => _go = true)">go</button>
+<Bmotion Animate="Bm.To(x: _go ? 100 : 0)" Transition="Bm.Tween(1, BmEase.Linear)">
+    <div id="unconfigured" class="small"></div>
+</Bmotion>
+
+<button id="unsafe" @onclick='() => TryAnimateAsync("rgb(0, 128, 0) /* injected */")'>unsafe</button>
+<button id="safe" @onclick='() => TryAnimateAsync("rgb(0, 0, 255)")'>safe</button>
+<Bmotion @ref="_box" Animate="Bm.To(opacity: 1)">
+    <div id="css-target" class="small"></div>
+</Bmotion>
+
+@code {
+    private bool _go;
+    private Bmotion _box = default!;
+
+    private async Task TryAnimateAsync(string color)
+    {
+        try
+        {
+            await _box.AnimateAsync(Bm.To(backgroundColor: color), Bm.Tween(0.01));
+            Log("css:applied");
+        }
+        catch (InvalidOperationException)
+        {
+            Log("css:rejected");
+        }
+    }
+}

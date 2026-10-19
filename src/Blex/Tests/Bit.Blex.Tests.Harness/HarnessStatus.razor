@@ -1,0 +1,27 @@
+﻿@* data-interactive only flips after the first interactive render, so a test can wait for it before
+   driving anything that needs event handlers. *@
+<p id="status"
+   data-interactive="@(_interactive ? "true" : "false")"
+   data-renderer="@RendererName"
+   data-platform="@HarnessRuntime.Platform">
+    @RendererName | @(_interactive ? "interactive" : "static") | @HarnessRuntime.Platform
+</p>
+
+@code {
+    private bool _interactive;
+
+#if NET9_0_OR_GREATER
+    private string RendererName => RendererInfo.Name;
+#else
+    // RendererInfo arrived in .NET 9; the suites fall back to data-platform on net8.0.
+    private string RendererName => "unknown";
+#endif
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender is false) return;
+
+        _interactive = true;
+        StateHasChanged();
+    }
+}

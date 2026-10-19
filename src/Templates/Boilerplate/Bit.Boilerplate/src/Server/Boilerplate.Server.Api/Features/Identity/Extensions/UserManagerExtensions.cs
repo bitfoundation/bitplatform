@@ -46,6 +46,10 @@ public static partial class UserManagerExtensions
             if (string.IsNullOrWhiteSpace(request.Email) && string.IsNullOrWhiteSpace(request.PhoneNumber))
                 throw new ResourceNotFoundException(nameof(AppStrings.UserNotFound));
 
+            // See SignUpRequestDto.Validate
+            if (string.IsNullOrWhiteSpace(request.Email) is false && string.IsNullOrWhiteSpace(request.PhoneNumber) is false)
+                throw new BadRequestException(nameof(AppStrings.EitherProvideEmailOrPhoneNumber));
+
             return await userManager.CreateUserWithDemoRole(new User
             {
                 Email = request.Email,

@@ -1,7 +1,9 @@
 name: bit platform CI - Butil E2E
 
-# On demand only (Actions > bit platform CI - Butil E2E > Run workflow). The regular build and test pipeline is
-# bit.ci.Butil.yml. Every job runs the same suite against a different host (BUTIL_E2E_HOST); see
+# The cross-host suites: the standalone WebAssembly sample and every Blazor Web App render mode in Chromium (on
+# net10.0/net9.0/net8.0 where the runtime is what differs), Blazor Hybrid in WebView2, and trimmed/AOT publishes.
+# They take far longer than the build, MCP and hosting pipeline (bit.ci.Butil.yml), so they run only when started
+# by hand. Every job runs the same suite against a different host (BUTIL_E2E_HOST); see
 # src/Butil/tests/Bit.Butil.Tests.E2E/README.md for what each host proves and how to run the same thing locally.
 
 on:

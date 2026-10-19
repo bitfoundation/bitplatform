@@ -1,0 +1,50 @@
+﻿@namespace Bit.Blow
+@* Renders an edge label (text on an optional rounded plate) at a point in flow space.
+   Intended for use inside an EdgeTemplate / BlowBaseEdge. *@
+
+<g transform="@Transform" class="bit-blow-edge-text @Class">
+    @if (ShowBg)
+    {
+        <rect class="bit-blow-edge-label-bg"
+              x="@Inv(-HalfWidth)" y="@Inv(-HalfHeight)"
+              width="@Inv(HalfWidth * 2)" height="@Inv(HalfHeight * 2)"
+              rx="@Inv(BorderRadius)"
+              style="@BgStyle" />
+    }
+    <text class="bit-blow-edge-label" x="0" y="0"
+          dominant-baseline="central" text-anchor="middle"
+          style="@Style">@Label</text>
+</g>
+
+@code {
+    [Parameter] public double X { get; set; }
+    [Parameter] public double Y { get; set; }
+    [Parameter] public string? Label { get; set; }
+
+    /// <summary>Draw the rounded plate behind the text.</summary>
+    [Parameter] public bool ShowBg { get; set; } = true;
+
+    /// <summary>Inline style for the label text.</summary>
+    [Parameter] public string? Style { get; set; }
+
+    /// <summary>Inline style for the plate behind the text.</summary>
+    [Parameter] public string? BgStyle { get; set; }
+
+    /// <summary>Horizontal space between the text and the edge of the plate.</summary>
+    [Parameter] public double PaddingX { get; set; } = 4;
+
+    /// <summary>Vertical space between the text and the edge of the plate.</summary>
+    [Parameter] public double PaddingY { get; set; } = 2;
+
+    /// <summary>Corner radius of the plate.</summary>
+    [Parameter] public double BorderRadius { get; set; } = 3;
+
+    [Parameter] public string? Class { get; set; }
+
+    // The plate is sized from an estimate; see BlowTextMetrics for why it cannot be measured here.
+    private double HalfWidth => Math.Max(6, BlowTextMetrics.EstimateWidth(Label) / 2 + PaddingX);
+    private double HalfHeight => BlowTextMetrics.DefaultLabelFontSize / 2 + PaddingY + 2;
+
+    private string Transform => string.Create(CultureInfo.InvariantCulture, $"translate({X},{Y})");
+    private static string Inv(double v) => v.ToString(CultureInfo.InvariantCulture);
+}

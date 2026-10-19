@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <IsPackable>false</IsPackable>
+        <IsTestProject>true</IsTestProject>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
+        <EnableMSTestRunner>true</EnableMSTestRunner>
+        <GenerateDocumentationFile>false</GenerateDocumentationFile>
+        <SignAssembly>true</SignAssembly>
+        <AssemblyOriginatorKeyFile>..\..\..\AssemblyOriginatorKeyFile.snk</AssemblyOriginatorKeyFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="MSTest" Version="4.5.1" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- Plain assembly reference: tests instantiate the generator directly and drive it with
+             CSharpGeneratorDriver rather than consuming it as an analyzer. -->
+        <ProjectReference Include="..\..\Bit.Blex.Generators\Bit.Blex.Generators.csproj" />
+        <!-- Bit.Blex provides the attribute/runtime types the test compilations reference. -->
+        <ProjectReference Include="..\..\Bit.Blex\Bit.Blex.csproj" />
+    </ItemGroup>
+
+</Project>

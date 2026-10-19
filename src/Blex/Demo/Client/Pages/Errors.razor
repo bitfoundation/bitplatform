@@ -1,0 +1,234 @@
+﻿@page "/errors"
+@inherits BlexComponentBase
+@inject BlexManager Manager
+@inject CounterStore Counter
+@inject ErrorLog Log
+
+<DocPage Href="errors" Title="Error isolation"
+         Lead="Blex refuses to let a misbehaving observer break dispatch. Everything it swallows is handed to you instead.">
+
+    <h2>The problem</h2>
+    <p>
+        A dispatch fans out to middleware, the DevTools bridge, persistence, history and every
+        subscriber. If any one of them throws and the exception escapes, the observers registered
+        after it never run - persistence silently stops saving because an unrelated analytics handler
+        had a bad day. Blex isolates each of those call sites and routes the failure to a single
+        sink.
+    </p>
+
+    <CodeBlock Code="@Setup" FileName="Program.cs" />
+
+    <p>
+        Without a handler, isolated errors are written to <code>Console.Error</code> - visible in the
+        browser console, but easy to miss. Setting <code>OnError</code> is the first thing to do in
+        any real app.
+    </p>
+
+    <h2>BlexError</h2>
+    <CodeBlock Code="@Record" />
+    <ApiTable Rows="@ErrorRows" />
+
+    <h2>What gets reported</h2>
+    <div class="table-scroll">
+        <table>
+            <thead><tr><th>Source</th><th>Raised when</th></tr></thead>
+            <tbody>
+                <tr><td><code>subscriber</code></td><td>A handler passed to <code>Subscribe</code> / <code>SubscribeTo</code> / <code>SubscribeToAction</code> threw. <code>Detail</code> is the qualified action name.</td></tr>
+                <tr><td><code>async reactor</code></td><td>A <code>SubscribeAsync</code> handler's task faulted.</td></tr>
+                <tr><td><code>middleware</code></td><td>A middleware's <code>BeforeAction</code> or <code>OnAction</code> threw. The pipeline continues with the next middleware.</td></tr>
+                <tr><td><code>persistence</code></td><td>Rehydrating, applying, serializing, scheduling or writing a persisted slice failed. <code>Detail</code> names the store or key.</td></tr>
+                <tr><td><code>restore</code></td><td>A store's slice could not be deserialized during <code>RestoreGlobalState</code>. That store is skipped; the others still restore.</td></tr>
+                <tr><td><code>devtools</code></td><td>A time-travel snapshot from the extension was malformed, a sanitizer threw, or the JS bridge failed to load or send.</td></tr>
+                <tr><td><code>history</code></td><td>A <code>BlexHistory.Changed</code> handler threw while recording or after an external restore, or a history filter threw.</td></tr>
+                <tr><td><code>reset</code></td><td>A store failed to reset during <code>BlexManager.ResetAll()</code>. That store is skipped; the rest still reset.</td></tr>
+                <tr><td><code>register</code></td><td>Two stores were registered under the same name, so their state slices, DevTools entries and storage keys collide.</td></tr>
+                <tr><td><code>prerender</code></td><td>Handing a store's state across the prerender-to-interactive boundary failed. The store simply renders from its own state instead - the worst case is rendering twice.</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <DemoCard Title="Break a subscriber on purpose"
+              Description="This registers a subscriber that throws on the next counter/Increment. The action still applies, the other observers still run, and the failure lands in the log below - and in the Inspector's Errors tab."
+              Source="@DemoSource">
+        <div class="row">
+            <button class="btn btn-danger" @onclick="BreakSubscriber">Arm a throwing subscriber, then increment</button>
+            <button class="btn" @onclick="Counter.Increment">Plain increment</button>
+            <button class="btn btn-ghost" @onclick="Log.Clear">Clear log</button>
+        </div>
+
+        <div class="readout" style="margin-top:0.8rem">
+            <div class="readout__item">
+                <span class="readout__label">Count</span>
+                <span class="readout__value readout__value--accent">@Counter.Count</span>
+            </div>
+            <div class="readout__item">
+                <span class="readout__label">Errors captured</span>
+                <span class="readout__value">@Log.Errors.Count</span>
+            </div>
+        </div>
+
+        @if (Log.Errors.Count > 0)
+        {
+            <ul class="err-list" style="margin-top:0.8rem">
+                @foreach (var error in Log.Errors)
+                {
+                    <li>
+                        <span class="err-list__source">@error.Source</span>
+                        <span class="err-list__detail">@error.Detail</span>
+                        <span class="err-list__msg">@error.Exception.Message</span>
+                    </li>
+                }
+            </ul>
+        }
+        <p class="small muted" style="margin-top:0.7rem;margin-bottom:0">
+            Note that <code>Count</code> still went up. The mutation had already been applied when the
+            subscriber ran - isolation protects the pipeline, it does not roll anything back.
+        </p>
+    </DemoCard>
+
+    <h2>Guarantees</h2>
+    <ul>
+        <li>
+            <strong>The mutation is recorded even if a subscriber throws.</strong> A standalone
+            <code>Set X</code> whose <code>StateChanged</code> handler throws is still recorded,
+            because the state genuinely changed - skipping the record would leave persistence,
+            history and DevTools out of sync with reality.
+        </li>
+        <li>
+            <strong>Sanitizers fail closed.</strong> If your DevTools state sanitizer throws, Blex
+            sends an <em>empty</em> tree rather than the unsanitized one, so a bug in redaction
+            cannot leak the data it was meant to hide. A failing action sanitizer sends
+            <code>&lt;sanitizer-error&gt;</code>.
+        </li>
+        <li>
+            <strong>Corrupt persisted data never blocks startup.</strong> An unreadable payload is
+            reported, discarded and removed from storage; the app starts with defaults.
+        </li>
+        <li>
+            <strong>The handler itself is guarded.</strong> If your <code>OnError</code> throws, that
+            exception is swallowed - it is the last line of defence, and there is nowhere left to
+            report to.
+        </li>
+    </ul>
+
+    <h2>A realistic handler</h2>
+    <CodeBlock Code="@Logging" />
+
+    <Callout Kind="Callout.CalloutKind.Gotcha" Title="OnError is captured on the singleton options">
+        <p style="margin-bottom:0">
+            <code>BlexOptions</code> is registered as a singleton, and the delegate you assign is
+            copied onto each scoped <code>BlexManager</code> as it is created. Do not close over a
+            scoped service in it - under Blazor Server that would capture one circuit's dependency
+            and share it with all of them. Close over something process-wide (an
+            <code>ILoggerFactory</code>, a metrics client), or assign
+            <code>manager.OnError</code> per scope instead.
+        </p>
+    </Callout>
+
+    <h2>Setting it per scope</h2>
+    <p>
+        <code>OnError</code> is also a settable property on <code>BlexManager</code>, so a scoped
+        component or service can install its own handler where a scoped dependency is genuinely
+        needed.
+    </p>
+    <CodeBlock Code="@PerScope" />
+
+    <Callout Kind="Callout.CalloutKind.Warning" Title="Errors inside an action body are not isolated">
+        <p style="margin-bottom:0">
+            This is about the <em>observers</em> of an action. An exception thrown by your own
+            <code>[BlexAction]</code> method body propagates to the caller as usual - only
+            <code>[BlexEffect]</code> bodies capture their exception, into the generated
+            <code>XxxError</code> property.
+        </p>
+    </Callout>
+
+</DocPage>
+
+@code {
+    protected override void OnInitialized()
+    {
+        Subscribe(Counter);
+        Log.Changed += OnLogChanged;
+    }
+
+    private void OnLogChanged() => _ = InvokeAsync(StateHasChanged);
+
+    private void BreakSubscriber()
+    {
+        // A one-shot subscriber that throws. The manager catches it, reports it through
+        // options.OnError, and carries on with the remaining observers.
+        IDisposable? token = null;
+        token = Manager.SubscribeToAction("counter/Increment", _ =>
+        {
+            token?.Dispose();
+            throw new InvalidOperationException("This subscriber is deliberately broken.");
+        });
+
+        Counter.Increment();
+    }
+
+    protected override void Dispose(bool disposing) => Log.Changed -= OnLogChanged;
+
+    private static readonly IReadOnlyList<ApiTable.Row> ErrorRows =
+    [
+        new("string Source", "Which part of the pipeline failed: <code>subscriber</code>, <code>async reactor</code>, <code>middleware</code>, <code>persistence</code>, <code>restore</code>, <code>devtools</code>, <code>history</code>, <code>reset</code>, <code>register</code> or <code>prerender</code>."),
+        new("Exception Exception", "The captured exception."),
+        new("string? Detail", "Context - usually the store name, storage key or qualified action name."),
+    ];
+
+    private const string Setup = """
+        builder.Services.AddBitBlexServices(options =>
+        {
+            options.OnError = error => logger.LogWarning(
+                error.Exception,
+                "[blex:{Source}] {Detail}",
+                error.Source,
+                error.Detail);
+        });
+        """;
+
+    private const string Record = """
+        public readonly record struct BlexError(
+            string Source,
+            Exception Exception,
+            string? Detail = null);
+        """;
+
+    private const string DemoSource = """
+        IDisposable? token = null;
+        token = Manager.SubscribeToAction("counter/Increment", _ =>
+        {
+            token?.Dispose();
+            throw new InvalidOperationException("This subscriber is deliberately broken.");
+        });
+
+        Counter.Increment();
+        // -> the action applies, other observers still run,
+        //    and options.OnError receives BlexError("subscriber", ex, "counter/Increment").
+        """;
+
+    private const string Logging = """
+        builder.Services.AddBitBlexServices(options =>
+        {
+            options.OnError = error =>
+            {
+                // Persistence and restore failures are worth alerting on; a broken
+                // analytics subscriber usually is not.
+                var level = error.Source is "persistence" or "restore"
+                    ? LogLevel.Error
+                    : LogLevel.Warning;
+
+                logger.Log(level, error.Exception,
+                    "Blex {Source} failed ({Detail})", error.Source, error.Detail);
+            };
+        });
+        """;
+
+    private const string PerScope = """
+        [Inject] private BlexManager Manager { get; set; } = default!;
+        [Inject] private IToastService Toasts { get; set; } = default!;   // scoped
+
+        protected override void OnInitialized()
+            => Manager.OnError = error => Toasts.ShowWarning($"{error.Source}: {error.Exception.Message}");
+        """;
+}

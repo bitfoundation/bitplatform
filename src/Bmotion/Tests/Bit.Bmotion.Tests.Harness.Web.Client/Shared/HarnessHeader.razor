@@ -1,0 +1,35 @@
+﻿@* What every harness page shows above its fixtures: whether it is interactive yet (#status), what the runtime
+   behind it can do (#caps - the tests adapt their expectations to data-frame-loop, since Blazor Server has no
+   per-frame loop and Auto may land on either runtime), and the event log. *@
+
+<h1>@Title</h1>
+<div id="status">@(Ready ? "ready" : "loading")</div>
+<div id="caps"
+     data-frame-loop="@(Caps.SupportsFrameLoop ? "true" : "false")"
+     data-prerendering="@(Caps.IsPrerendering ? "true" : "false")"
+     data-renderer="@RendererName"
+     data-interactive="@Interactive"></div>
+<EventLog @ref="EventsRef" />
+
+@code {
+    [Inject] private BmotionCapabilities Caps { get; set; } = default!;
+
+    [Parameter, EditorRequired] public string Title { get; set; } = default!;
+
+    [Parameter] public bool Ready { get; set; }
+
+    /// <summary>Hands the log back to the page; HarnessPage.Log writes to it.</summary>
+    [Parameter] public Action<EventLog>? OnLog { get; set; }
+
+    private EventLog EventsRef { set => OnLog?.Invoke(value); }
+
+#if NET9_0_OR_GREATER
+    private string RendererName => RendererInfo.Name;
+
+    private string Interactive => RendererInfo.IsInteractive ? "true" : "false";
+#else
+    private string RendererName => OperatingSystem.IsBrowser() ? "WebAssembly" : "Server";
+
+    private string Interactive => Ready ? "true" : "false";
+#endif
+}

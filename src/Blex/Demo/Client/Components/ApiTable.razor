@@ -1,0 +1,44 @@
+﻿<div class="api-table">
+    @if (!string.IsNullOrEmpty(Title))
+    {
+        <h3 class="api-table__title">@Title</h3>
+    }
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th class="api-table__member">@MemberHeader</th>
+                    <th>@DescriptionHeader</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Rows)
+                {
+                    <tr>
+                        <td><code>@row.Member</code></td>
+                        <td>@((MarkupString)row.Description)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    /// <summary>One documented member.</summary>
+    /// <param name="Member">Signature or name, rendered as code.</param>
+    /// <param name="Description">Description; may contain inline HTML such as <c>&lt;code&gt;</c>.</param>
+    public sealed record Row(string Member, string Description);
+
+    /// <summary>Optional heading above the table.</summary>
+    [Parameter] public string? Title { get; set; }
+
+    /// <summary>Header for the first column.</summary>
+    [Parameter] public string MemberHeader { get; set; } = "Member";
+
+    /// <summary>Header for the second column.</summary>
+    [Parameter] public string DescriptionHeader { get; set; } = "Description";
+
+    /// <summary>The documented members.</summary>
+    [Parameter, EditorRequired] public IReadOnlyList<Row> Rows { get; set; } = [];
+}

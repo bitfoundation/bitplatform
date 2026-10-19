@@ -1,0 +1,24 @@
+﻿@* A value a harness page exposes to the tests (a motion value, a list order, a scroll progress) as
+   <output id="..."> text. Like EventLog it re-renders only itself, so publishing a value every frame does not
+   re-render the animated elements next to it. *@
+
+<output id="@Id">@_value</output>
+
+@code {
+    private string _value = string.Empty;
+
+    [Parameter, EditorRequired] public string Id { get; set; } = default!;
+
+    [Parameter] public string? Initial { get; set; }
+
+    protected override void OnInitialized() => _value = Initial ?? string.Empty;
+
+    public void Set(string value) => _ = InvokeAsync(() =>
+    {
+        if (value == _value) return;
+        _value = value;
+        StateHasChanged();
+    });
+
+    public void Set(double value) => Set(value.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture));
+}

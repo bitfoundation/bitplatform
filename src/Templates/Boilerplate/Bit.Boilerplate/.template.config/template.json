@@ -874,6 +874,7 @@
                         "src/Tests/Features/Identity/RefreshTokenRotationTests.cs",
                         "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
                         "src/Tests/Features/Identity/OneTimeTokenTests.cs",
+                        "src/Tests/Features/Identity/UnconfirmedAccountPasswordTests.cs",
                         "src/Tests/Features/Identity/AccountSelfServiceSecurityTests.cs",
                         "src/Tests/Features/Identity/TrustedSessionTests.cs",
                         "src/Tests/Features/Identity/IdentityEmailDeliveryTests.cs",
@@ -1030,7 +1031,8 @@
                         "src/Tests/Features/Products/ProductImageLifecycleTests.cs",
                         "src/Tests/Features/Caching/ProductImageCacheInvalidationTests.cs",
                         "src/Tests/Features/Categories/CategoryDeleteGuardTests.cs",
-                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs"
+                        "src/Tests/Features/Products/AddOrEditProductPageTests.cs",
+                        "src/Tests/Features/Tenants/CrossTenantReferenceTests.cs"
                     ]
                 },
                 {

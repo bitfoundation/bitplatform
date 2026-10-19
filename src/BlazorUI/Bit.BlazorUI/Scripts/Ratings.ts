@@ -64,3 +64,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Ratings.dispose

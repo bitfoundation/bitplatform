@@ -1,0 +1,81 @@
+﻿@page "/quickstart"
+
+<PageTitle>From a C# type</PageTitle>
+
+<div class="demo-intro">
+    <h1>From a C# type</h1>
+    <p>
+        One line generates a complete form from any POCO. Labels, field types, options and validation
+        come from the type and its DataAnnotations — and fields inherited from a base class come first,
+        in the order the class reads.
+    </p>
+</div>
+
+<div class="demo-card">
+    @* ConfigureState settles the state the view builds for you, so wanting one setting does not mean
+   constructing, holding and disposing a BormState by hand. *@
+<BormView Definition="_schema" Model="_model"
+          ConfigureState="s => s.ValidationTrigger = BormValidationTrigger.OnBlur"
+          OnValidSubmit="HandleSubmit" SubmitText="Create account" />
+</div>
+
+@if (_submitted)
+{
+    <div class="demo-result">
+        <strong>Submitted ✓</strong>
+        <pre>@_json</pre>
+    </div>
+}
+
+<details class="demo-source">
+    <summary>View source</summary>
+    <pre><code>@Source</code></pre>
+</details>
+
+@code {
+    private const string Source =
+"""
+@page "/quickstart"
+
+@* ConfigureState settles the state the view builds for you, so wanting one setting does not mean
+   constructing, holding and disposing a BormState by hand. *@
+<BormView Definition="_schema" Model="_model"
+          ConfigureState="s => s.ValidationTrigger = BormValidationTrigger.OnBlur"
+          OnValidSubmit="HandleSubmit" SubmitText="Create account" />
+
+@code {
+    private readonly AccountSignup _model = new();
+    private BormDefinition _schema = default!;
+
+    protected override void OnInitialized()
+    {
+        // Zero-config: generate the whole form from the type.
+        _schema = BormSchemaGenerator.Generate<AccountSignup>();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        var json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}
+""";
+
+    private readonly AccountSignup _model = new();
+    private BormDefinition _schema = default!;
+    private bool _submitted;
+    private string _json = "";
+
+    protected override void OnInitialized()
+    {
+        // Zero-config: generate the whole form from the type.
+        _schema = BormSchemaGenerator.Generate<AccountSignup>();
+    }
+
+    private void HandleSubmit(BormState state)
+    {
+        _submitted = true;
+        _json = System.Text.Json.JsonSerializer.Serialize(_model,
+            new System.Text.Json.JsonSerializerOptions { WriteIndented = true });
+    }
+}

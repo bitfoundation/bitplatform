@@ -457,6 +457,18 @@ private readonly BitPdfViewerParams[] pdfViewerParams =
 ];";
 
     private readonly string example18RazorCode = @"
+<BitPdfViewer Source=""streamSource"" />";
+    private readonly string example18CsharpCode = @"
+// Keep a stable source in a field. Open a fresh stream each time, without using:
+// the viewer owns it, including a separate stream for server prerendering.
+private readonly BitPdfSource streamSource = BitPdfSource.FromStreamFactory(
+    cancellationToken =>
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return Task.FromResult<Stream>(File.OpenRead(""document.pdf""));
+    }, ""document.pdf"");";
+
+    private readonly string example19RazorCode = @"
 <style>
     .custom-class {
         box-shadow: 0 0 1rem tomato;
@@ -478,7 +490,7 @@ private readonly BitPdfViewerParams[] pdfViewerParams =
                                 ToolbarButton = ""color:var(--bit-clr-pri-text)"" })"" />
 
 <BitPdfViewer Source=""styleSource"" Height=""300px"" Style=""@cssVariablesStyle"" />";
-    private readonly string example18CsharpCode = @"
+    private readonly string example19CsharpCode = @"
 private BitPdfSource? styleSource;
 
 // The same variables set on :root restyle every viewer of the app.
@@ -492,11 +504,11 @@ private const string cssVariablesStyle = ""--bit-PdfViewer-border-radius:1rem;""
                                          ""--bit-PdfViewer-page-filter:invert(1) hue-rotate(180deg);"" +
                                          ""--bit-PdfViewer-search-match-background:gold;"";";
 
-    private readonly string example19RazorCode = @"
+    private readonly string example20RazorCode = @"
 <BitButton Disabled=""rtlSource is not null""
            OnClick='() => rtlSource = BitPdfSource.FromUrl(""url-to-the-pdf-file.pdf"", ""file-name.pdf"")'>Load document</BitButton>
 
 <BitPdfViewer Dir=""BitDir.Rtl"" Source=""rtlSource"" Height=""400px"" />";
-    private readonly string example19CsharpCode = @"
+    private readonly string example20CsharpCode = @"
 private BitPdfSource? rtlSource;";
 }

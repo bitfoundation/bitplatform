@@ -1,0 +1,21 @@
+﻿<nav class="nav">
+    @foreach (var group in SiteMap.Groups)
+    {
+        <div class="nav-group">
+            <div class="nav-group-label">@group</div>
+            @foreach (var item in SiteMap.InGroup(group))
+            {
+                <NavLink class="nav-link" href="@item.Path"
+                         Match="@(item.Path.Length == 0 ? NavLinkMatch.All : NavLinkMatch.Prefix)"
+                         @onclick="OnNavigate">
+                    <Icon Name="@item.Icon" />
+                    <span>@item.Title</span>
+                </NavLink>
+            }
+        </div>
+    }
+</nav>
+
+@code {
+    [Parameter] public EventCallback OnNavigate { get; set; }
+}

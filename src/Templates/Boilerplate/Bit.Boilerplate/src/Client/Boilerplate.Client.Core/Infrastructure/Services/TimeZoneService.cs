@@ -49,8 +49,8 @@ public partial class TimeZoneService
     /// The same site runs on two id families: Windows ids on a Windows-hosted Blazor Server circuit, IANA ids in the
     /// browser's WebAssembly runtime - and Blazor Auto walks a visitor through both. A preference stored under the
     /// other family's id resolves (FindSystemTimeZoneById converts), but keeps the REQUESTED id on the returned zone,
-    /// which then matches nothing in AppMenu's list of this runtime's own zones. Converting the id first keeps the
-    /// stored preference working on whichever runtime reads it.
+    /// which then matches none of this runtime's own zones. Converting the id first keeps the stored preference
+    /// working on whichever runtime reads it.
     /// </summary>
     private static string NormalizeToPlatformId(string timeZoneId)
     {

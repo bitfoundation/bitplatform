@@ -1,0 +1,46 @@
+﻿@* The docs navigation. A sticky column beside the content on wide screens and a drawer over it on
+   narrow ones - the switch is entirely in CSS, so the same markup and the same state serve both.
+   The groups and their order come from NavItem, so a page is filed once. *@
+
+<nav id="nav-panel" class="nav-panel @(IsOpen ? "open" : null)" aria-label="Documentation">
+    <ul class="nav-panel-list nav-panel-home">
+        <li>
+            <NavLink href="/" Match="NavLinkMatch.All">
+                <Icon Path="@Icons.Play" />
+                Overview
+            </NavLink>
+        </li>
+    </ul>
+
+    @foreach (var group in NavItem.Groups)
+    {
+        <div class="nav-group">
+            <p class="nav-group-title" id="@GroupId(group.Category)">
+                <Icon Path="@group.Icon" />
+                @group.Category
+            </p>
+
+            <ul class="nav-panel-list" aria-labelledby="@GroupId(group.Category)">
+                @foreach (var item in group.Items)
+                {
+                    <li>
+                        @* Prefix matching, so the multi-page tour's entry stays lit on its second
+                           page, workspace/settings. NavLink only matches a prefix up to a path
+                           separator, so "flows" can never light up for a "flowsomething". *@
+                        <NavLink href="@item.Href" Match="NavLinkMatch.Prefix">
+                            @item.Title
+                        </NavLink>
+                    </li>
+                }
+            </ul>
+        </div>
+    }
+</nav>
+
+@code {
+    /// <summary>Whether the drawer is open. Ignored above the breakpoint, where the panel is always in place.</summary>
+    [Parameter] public bool IsOpen { get; set; }
+
+    private static string GroupId(string category)
+        => $"nav-group-{category.ToLowerInvariant().Replace(' ', '-')}";
+}

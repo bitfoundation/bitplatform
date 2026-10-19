@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -107,6 +108,40 @@ public class BitPdfViewerPrerenderTests : BunitTestContext
         Assert.IsNull(document.QuerySelector("[role='dialog']"));
         Assert.IsNull(document.QuerySelector(".bit-pdv-error"));
         Assert.AreEqual(0, errors.Count);
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("wrong")]
+    public async Task BitPdfViewerShouldPrerenderTheLoadingStateOfAnEncryptedStreamInsteadOfWaitingForAPassword(string? password)
+    {
+        var errors = new List<string?>();
+        var input = new PdfTrackingStream(TestPdf.Encrypted("hunter2"));
+        int factories = 0;
+        var source = BitPdfSource.FromStreamFactory(_ =>
+        {
+            factories++;
+            return Task.FromResult<Stream>(input);
+        }).WithPassword(password);
+
+        // Missing and incorrect passwords both defer the dialog until the viewer becomes interactive.
+        var render = Prerenderer.RenderAsync<BitPdfViewer>(new Dictionary<string, object?>
+        {
+            [nameof(BitPdfViewer.Source)] = source,
+            [nameof(BitPdfViewer.OnError)] = EventCallback.Factory.Create<string?>(this, errors.Add),
+        });
+
+        var finished = await Task.WhenAny(render, Task.Delay(TimeSpan.FromSeconds(10)));
+        Assert.AreSame(render, finished, "The stream prerender waited for a password nobody can enter.");
+
+        var document = Parse(await render);
+
+        Assert.IsNotNull(document.QuerySelector(".bit-pdv-page-loading"));
+        Assert.IsNull(document.QuerySelector("[role='dialog']"));
+        Assert.IsNull(document.QuerySelector(".bit-pdv-error"));
+        Assert.AreEqual(0, errors.Count);
+        Assert.AreEqual(1, factories);
+        Assert.AreEqual(1, input.DisposeCount);
     }
 
     [TestMethod]

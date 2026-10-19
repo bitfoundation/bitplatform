@@ -55,6 +55,50 @@ public class ViewTransitionTests
     }
 
     [TestMethod]
+    public async Task StartAsync_AThrowingUpdate_PropagatesToTheCaller_AndReleasesTheGuard()
+    {
+        var interop = new FakeBmotionInterop { SupportsViewTransitions = true };
+        await using var vt = new BmotionViewTransition(interop);
+
+        // The DOM update failing is the caller's error to see - swallowing it would leave the page
+        // half-updated with no signal.
+        var thrown = await Assert.ThrowsExactlyAsync<InvalidOperationException>(async () =>
+            await vt.StartAsync((Func<Task>)(() => throw new InvalidOperationException("update failed"))));
+        Assert.AreEqual("update failed", thrown.Message);
+
+        // And the in-progress guard must not stay latched by the failure.
+        var ran = false;
+        await vt.StartAsync(() => ran = true);
+        Assert.IsTrue(ran);
+    }
+
+    [TestMethod]
+    public async Task StartAsync_HandsJsACallbackItCanActuallyInvoke()
+    {
+        var interop = new FakeBmotionInterop();
+        await using var vt = new BmotionViewTransition(interop);
+
+        await vt.StartAsync(() => { });
+
+        // The bridge invokes the callback by its [JSInvokable] identifier through the reference it
+        // was given; the fake resolves it exactly that way, so reaching here proves the pairing.
+        Assert.AreEqual("RunUpdateAsync", interop.ArgsOf("startViewTransition").Single()[0]);
+        Assert.AreSame(vt, ((Microsoft.JSInterop.DotNetObjectReference<BmotionViewTransition>)interop.ViewTransitionReference!).Value);
+    }
+
+    [TestMethod]
+    public async Task DisposeAsync_ReleasesTheReferenceJsHeld()
+    {
+        var interop = new FakeBmotionInterop();
+        var vt = new BmotionViewTransition(interop);
+        await vt.StartAsync(() => { });
+
+        await vt.DisposeAsync();
+
+        Assert.IsTrue(FakeBmotionInterop.IsDisposed(interop.ViewTransitionReference!));
+    }
+
+    [TestMethod]
     public async Task StartAsync_AfterCompletion_CanStartAgain()
     {
         var interop = new FakeBmotionInterop { SupportsViewTransitions = true };

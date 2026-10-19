@@ -1,0 +1,157 @@
+﻿@page "/handwriting"
+
+<PageTitle>Handwriting - bit Bink</PageTitle>
+
+<h1>Handwriting</h1>
+<p class="page-intro">
+    A note-taking surface tuned for writing rather than sketching: tight point spacing, light smoothing so fast
+    corners stay sharp, and a pressure curve with a wide dynamic range. Draw with a stylus to see real pressure
+    and tilt; with a mouse or finger, width is derived from writing speed instead.
+</p>
+
+<div class="panel">
+    <div class="toolbar" role="toolbar" aria-label="Writing tools">
+        <div class="toolbar-group" role="group" aria-label="Instrument">
+            @foreach ((string id, string label) in Instruments)
+            {
+                <button type="button" class="btn @(_instrument == id ? "active" : null)"
+                        aria-pressed="@(_instrument == id ? "true" : "false")"
+                        @onclick="() => SetInstrument(id)">@label</button>
+            }
+        </div>
+        <div class="toolbar-separator"></div>
+        <ColorSwatches Colors="Palette" Value="@_color" ValueChanged="SetColor" Label="Ink colour" />
+        <div class="toolbar-separator"></div>
+        <label class="field">
+            Size
+            <input type="range" min="1" max="24" step="0.5" value="@_width" aria-label="Nib size" @onchange="OnWidthChanged" />
+            <span style="min-width:3ch">@_width.ToString("0.#")</span>
+        </label>
+        <label class="field">
+            <input type="checkbox" checked="@_ruled" @onchange="OnRuledChanged" aria-label="Show ruled lines" />
+            Ruled
+        </label>
+        <div class="toolbar-spacer"></div>
+        <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanUndo)" @onclick="() => _canvas?.Undo()">Undo</button>
+        <button type="button" class="btn" disabled="@(_canvas is null || !_canvas.History.CanRedo)" @onclick="() => _canvas?.Redo()">Redo</button>
+        <button type="button" class="btn danger" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="() => _canvas?.Clear()">Clear</button>
+        <button type="button" class="btn" disabled="@(_canvas is null || _canvas.CurrentDocument.IsEmpty)" @onclick="DownloadPngAsync">Download PNG</button>
+    </div>
+
+    <div style="@(_ruled ? RuledBackground : null)">
+        <BinkCanvas @ref="_canvas" HistoryChanged="() => StateHasChanged()"
+                   EnableTouchGestures="true"
+                   Height="420px"
+                   Brush="_brush"
+                   Tool="_tool"
+                   AriaLabel="Handwriting area"
+                   RejectTouchWhilePen="true"
+                   StrokeCompleted="OnStrokeCompleted"
+                   DocumentChanged="() => StateHasChanged()"
+                   Ready="() => StateHasChanged()" />
+    </div>
+
+    <CanvasStatus Canvas="_canvas">
+        @if (_lastStrokeInfo is not null)
+        {
+            <span>@_lastStrokeInfo</span>
+        }
+    </CanvasStatus>
+</div>
+
+<div class="note">
+    Palm rejection is on: while a pen is in contact, touch contacts are ignored, so a hand resting on a tablet
+    does not draw. Turn it off with <code>RejectTouchWhilePen="false"</code> when the surface is finger-first.
+</div>
+
+@code {
+    private BinkCanvas? _canvas;
+    private IBinkTool _tool = new BinkDrawTool { SimplifyTolerance = 0.08f };
+    private string _instrument = "pen";
+    private string _color = "#111827";
+    private float _width = 3f;
+    private bool _ruled = true;
+    private string? _lastStrokeInfo;
+
+    private static readonly (string Id, string Label)[] Instruments =
+    [
+        ("pen", "Pen"),
+        ("pencil", "Pencil"),
+        ("marker", "Marker"),
+        ("highlighter", "Highlighter"),
+        ("eraser", "Eraser"),
+    ];
+
+    private static readonly string[] Palette = ["#111827", "#1d4ed8", "#b91c1c", "#15803d"];
+
+    private const string RuledBackground =
+        "background-image:repeating-linear-gradient(transparent,transparent 35px,var(--border) 35px,var(--border) 36px);" +
+        "background-position:0 12px";
+
+    private BinkBrush _brush = new BinkPenBrush
+    {
+        Width = 3f,
+        Color = BinkColor.Parse("#111827"),
+        // Writing benefits from keeping detail: less smoothing and closer point spacing than a sketching brush.
+        Smoothing = 0.35f,
+        Spacing = 0.12f,
+        TaperEnd = 5f,
+    };
+
+    private void SetInstrument(string id)
+    {
+        _instrument = id;
+        _brush = id switch
+        {
+            "pencil" => new BinkPencilBrush { Width = _width, Color = BinkColor.Parse(_color) },
+            "marker" => new BinkMarkerBrush { Width = MathF.Max(_width * 2f, 6f), Color = BinkColor.Parse(_color) },
+            "highlighter" => new BinkHighlighterBrush { Width = MathF.Max(_width * 5f, 16f) },
+            "eraser" => new BinkPixelEraserBrush { Width = MathF.Max(_width * 5f, 16f) },
+            _ => new BinkPenBrush { Width = _width, Color = BinkColor.Parse(_color), Smoothing = 0.35f, Spacing = 0.12f, TaperEnd = 5f },
+        };
+
+        // The stroke eraser is a separate tool; the pixel eraser is just a brush.
+        _tool = id == "eraser"
+            ? new BinkEraserTool { Mode = BinkEraserMode.Segment, Radius = MathF.Max(_width * 2.5f, 8f) }
+            : new BinkDrawTool { SimplifyTolerance = 0.08f };
+    }
+
+    private void SetColor(string color)
+    {
+        _color = color;
+        SetInstrument(_instrument);
+    }
+
+    private void OnWidthChanged(ChangeEventArgs e)
+    {
+        if (float.TryParse(e.Value?.ToString(), System.Globalization.CultureInfo.InvariantCulture, out float value))
+        {
+            _width = value;
+            SetInstrument(_instrument);
+        }
+    }
+
+    private void OnRuledChanged(ChangeEventArgs e) => _ruled = e.Value is true;
+
+    private Task DownloadPngAsync()
+        => _canvas?.SavePngAsync("notes.png", new BinkPngExportOptions { Region = BinkExportRegion.Content, Padding = 16f, Scale = 2f }) ?? Task.CompletedTask;
+
+    private void OnStrokeCompleted(BinkStrokeEventArgs args)
+    {
+        if (args.Stroke is not { } stroke) return;
+        string device = args.Device switch
+        {
+            BinkPointerKind.Pen => stroke.Input.HasRealPressure ? "pen with pressure" : "pen",
+            BinkPointerKind.Touch => "touch",
+            BinkPointerKind.Mouse => "mouse",
+            _ => "unknown device",
+        };
+        float min = 1f, max = 0f;
+        foreach (float p in stroke.Points.Pressure)
+        {
+            min = MathF.Min(min, p);
+            max = MathF.Max(max, p);
+        }
+        _lastStrokeInfo = $"Last stroke: {stroke.Points.Count} points, {stroke.Points.Length:0} units, {stroke.Points.Duration:0} ms, pressure {min:0.00}-{max:0.00}, {device}";
+    }
+}

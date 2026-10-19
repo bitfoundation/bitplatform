@@ -1,5 +1,9 @@
 ﻿/* BitFullCalendar */
 
+// bit-trim: owners BitFullCalendar BitFc*
+// The views, dialogs and blocks the calendar is drawn with are components of their own (BitFc*), rendered by it and
+// styled here: any of them an app can reach keeps this stylesheet, as the calendar itself does.
+
 @import "../../../Bit.BlazorUI/Styles/functions.scss";
 
 // The public custom properties of the calendar. Each is read below with a fallback and never declared, so it

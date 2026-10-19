@@ -1,0 +1,66 @@
+﻿@* Inline SVG icon set. No icon font, no sprite sheet, no network request. *@
+
+<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="@StrokeWidth"
+     stroke-linecap="round" stroke-linejoin="round" width="@Size" height="@Size" aria-hidden="true">@Body</svg>
+
+@code {
+    [Parameter, EditorRequired] public string Name { get; set; } = "dot";
+
+    [Parameter] public int? Size { get; set; }
+
+    [Parameter] public string StrokeWidth { get; set; } = "1.7";
+
+    private MarkupString Body =>
+        (MarkupString)(Paths.TryGetValue(Name, out var path) ? path : Paths["dot"]);
+
+    private static readonly Dictionary<string, string> Paths = new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["dot"] = """<circle cx="12" cy="12" r="3.5" />""",
+        ["flame"] = """<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5Z" />""",
+        ["overview"] = """<path d="M3 12h4l3 8 4-16 3 8h4" />""",
+        ["database"] = """<ellipse cx="12" cy="5.5" rx="8" ry="3" /><path d="M20 5.5v6c0 1.66-3.58 3-8 3s-8-1.34-8-3v-6" /><path d="M20 11.5v7c0 1.66-3.58 3-8 3s-8-1.34-8-3v-7" />""",
+        ["list"] = """<path d="M8 6h13M8 12h13M8 18h13" /><path d="M3.5 6h.01M3.5 12h.01M3.5 18h.01" />""",
+        ["schema"] = """<path d="m12 2.5 9 4.5-9 4.5-9-4.5 9-4.5Z" /><path d="m3 12 9 4.5 9-4.5" /><path d="m3 16.5 9 4.5 9-4.5" />""",
+        ["index"] = """<path d="M4 9h16M4 15h16M10 3.5 8 20.5M16.5 3.5l-2 17" />""",
+        ["query"] = """<circle cx="10.5" cy="10.5" r="6.5" /><path d="m20.5 20.5-5.4-5.4" />""",
+        ["txn"] = """<circle cx="6" cy="5.5" r="2.5" /><circle cx="6" cy="18.5" r="2.5" /><path d="M6 8v8" /><circle cx="18" cy="5.5" r="2.5" /><path d="M18 8v2a4 4 0 0 1-4 4H9" />""",
+        ["shield"] = """<path d="M12 2.5 4.5 5.4v6c0 4.7 3.2 8.9 7.5 10.1 4.3-1.2 7.5-5.4 7.5-10.1v-6L12 2.5Z" /><path d="m9 12 2.2 2.2L15.5 10" />""",
+        ["disk"] = """<path d="M2.5 13h19" /><path d="M5 5h14l2.5 8v5a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-5L5 5Z" /><path d="M6.5 17h.01M10 17h.01" />""",
+        ["binary"] = """<rect x="3.5" y="3.5" width="6" height="7.5" rx="1.4" /><rect x="14.5" y="13" width="6" height="7.5" rx="1.4" /><path d="M14.5 3.5h3V11M3.5 13h3v7.5" />""",
+        ["alert"] = """<path d="M10.3 3.9 2 18a2 2 0 0 0 1.7 3h16.6a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" /><path d="M12 9v4.5M12 17.2h.01" />""",
+        ["gauge"] = """<path d="M3.5 18.5a9 9 0 1 1 17 0" /><path d="m12 14 3.8-4.4" /><circle cx="12" cy="15" r="1.6" />""",
+        ["map"] = """<path d="M9 3.5 3 5.5v15l6-2 6 2 6-2v-15l-6 2-6-2Z" /><path d="M9 3.5v15M15 5.5v15" />""",
+        ["sun"] = """<circle cx="12" cy="12" r="4" /><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.1 5.1l1.4 1.4M17.5 17.5l1.4 1.4M5.1 18.9l1.4-1.4M17.5 6.5l1.4-1.4" />""",
+        ["moon"] = """<path d="M20.5 13.2A8.5 8.5 0 1 1 10.8 3.5a6.6 6.6 0 0 0 9.7 9.7Z" />""",
+        ["copy"] = """<rect x="9" y="9" width="11.5" height="11.5" rx="2" /><path d="M5.5 15H4.5a2 2 0 0 1-2-2V5.5a2 2 0 0 1 2-2H12a2 2 0 0 1 2 2v1" />""",
+        ["check"] = """<path d="m20 6.5-11 11-5-5" />""",
+        ["play"] = """<path d="M7 4.5 19.5 12 7 19.5V4.5Z" />""",
+        ["plus"] = """<path d="M12 5v14M5 12h14" />""",
+        ["trash"] = """<path d="M3.5 6.5h17M9 6.5V4h6v2.5" /><path d="m5.5 6.5 1 13.5h11l1-13.5" /><path d="M10.5 10.5v6M13.5 10.5v6" />""",
+        ["refresh"] = """<path d="M20.5 12a8.5 8.5 0 1 1-2.8-6.3" /><path d="M20.5 3.5v6h-6" />""",
+        ["bolt"] = """<path d="M13.5 2.5 4 14h6.5l-1 7.5L19.5 10H13l.5-7.5Z" />""",
+        ["clock"] = """<circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3.5 2" />""",
+        ["file"] = """<path d="M14 2.5H7a2 2 0 0 0-2 2v15a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7.5l-5-5Z" /><path d="M14 2.5v5h5" />""",
+        ["code"] = """<path d="m8.5 6-6 6 6 6M15.5 6l6 6-6 6" />""",
+        ["chevron"] = """<path d="m9.5 5.5 6.5 6.5-6.5 6.5" />""",
+        ["arrow-right"] = """<path d="M4.5 12h15M13.5 6l6 6-6 6" />""",
+        ["arrow-down"] = """<path d="M12 4.5v15M6 13.5l6 6 6-6" />""",
+        ["menu"] = """<path d="M3.5 6.5h17M3.5 12h17M3.5 17.5h17" />""",
+        ["close"] = """<path d="m6 6 12 12M18 6 6 18" />""",
+        ["external"] = """<path d="M14 3.5h6.5V10" /><path d="M20.5 3.5 11 13" /><path d="M18.5 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7.5a2 2 0 0 1 2-2h5" />""",
+        ["info"] = """<circle cx="12" cy="12" r="8.5" /><path d="M12 11v5.5M12 7.8h.01" />""",
+        ["search"] = """<circle cx="10.5" cy="10.5" r="6.5" /><path d="m20.5 20.5-5.4-5.4" />""",
+        ["filter"] = """<path d="M3.5 5.5h17l-6.5 8v6l-4-2v-4l-6.5-8Z" />""",
+        ["sort"] = """<path d="M7 4.5v15M7 19.5 4 16.5M7 19.5l3-3" /><path d="M17 19.5v-15M17 4.5l-3 3M17 4.5l3 3" />""",
+        ["layers"] = """<path d="m12 2.5 9 4.5-9 4.5-9-4.5 9-4.5Z" /><path d="m3 12 9 4.5 9-4.5" />""",
+        ["lock"] = """<rect x="4.5" y="10.5" width="15" height="10" rx="2" /><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5" />""",
+        ["unlock"] = """<rect x="4.5" y="10.5" width="15" height="10" rx="2" /><path d="M8 10.5V7a4 4 0 0 1 7.5-2" />""",
+        ["cpu"] = """<rect x="6.5" y="6.5" width="11" height="11" rx="2" /><path d="M10 2.5v4M14 2.5v4M10 17.5v4M14 17.5v4M2.5 10h4M2.5 14h4M17.5 10h4M17.5 14h4" />""",
+        ["key"] = """<circle cx="8" cy="16" r="4" /><path d="m10.8 13.2 8.7-8.7M17 7l2.5 2.5M14.5 9.5 17 12" />""",
+        ["tag"] = """<path d="M12.6 3.5H20v7.4l-9 9-7.4-7.4 9-9Z" /><path d="M16.5 7.5h.01" />""",
+        ["rocket"] = """<path d="M5 14.5c-1.5 1.5-2 6-2 6s4.5-.5 6-2c.9-.9.9-2.4 0-3.3a2.3 2.3 0 0 0-4 0" /><path d="M9.5 16 8 14.5C8 8.5 12 3.5 20.5 3.5c0 8.5-5 12.5-11 12.5Z" /><path d="M13.5 10.5h.01" />""",
+        ["download"] = """<path d="M12 3.5v12M7 10.5l5 5 5-5" /><path d="M3.5 20.5h17" />""",
+        ["history"] = """<path d="M3.5 12a8.5 8.5 0 1 0 2.8-6.3" /><path d="M3.5 3.5v6h6" /><path d="M12 8v4.5l3 1.8" />""",
+        ["stop"] = """<rect x="5.5" y="5.5" width="13" height="13" rx="2" />""",
+    };
+}

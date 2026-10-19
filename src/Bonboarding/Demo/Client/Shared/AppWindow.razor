@@ -1,0 +1,53 @@
+﻿@* A small fake product UI, used as the target surface for the demo tours. Every element that a
+   tour points at simply carries a data-bonboarding-anchor attribute; nothing else is needed. *@
+
+<div class="app-window">
+    <div class="app-toolbar">
+        <button type="button" class="btn btn-primary" data-bonboarding-anchor="new-project">New project</button>
+        <button type="button" class="btn" data-bonboarding-anchor="import">Import</button>
+        <input type="text" placeholder="Search projects" aria-label="Search projects" data-bonboarding-anchor="search" />
+        <span class="spacer"></span>
+        <button type="button" class="btn" data-bonboarding-anchor="settings" @onclick="OnSettingsClick">Settings</button>
+        <button type="button" class="btn" data-bonboarding-anchor="account" aria-label="Account">@Initials</button>
+    </div>
+
+    <div class="app-body">
+        <nav class="app-side" data-bonboarding-anchor="sidebar">
+            <span class="sel">Overview</span>
+            <span>Projects</span>
+            <span>Members</span>
+            <span data-bonboarding-anchor="billing">Billing</span>
+            <span>Integrations</span>
+        </nav>
+
+        <div class="app-main">
+            <div class="app-metrics" data-bonboarding-anchor="metrics">
+                <div class="tile">
+                    <div class="tile-title">Active projects</div>
+                    <div class="tile-value">12</div>
+                </div>
+                <div class="tile" data-bonboarding-anchor="usage">
+                    <div class="tile-title">Usage this month</div>
+                    <div class="tile-value">68%</div>
+                </div>
+                <div class="tile">
+                    <div class="tile-title">Team members</div>
+                    <div class="tile-value">7</div>
+                </div>
+            </div>
+
+            @ChildContent
+        </div>
+    </div>
+</div>
+
+@code {
+    /// <summary>Extra content rendered inside the fake application body.</summary>
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Initials shown on the account button.</summary>
+    [Parameter] public string Initials { get; set; } = "AM";
+
+    /// <summary>Raised when the settings button is pressed.</summary>
+    [Parameter] public EventCallback OnSettingsClick { get; set; }
+}

@@ -24,7 +24,7 @@ internal static class BitFcDialogInterop
         // leaving the dialog without focus trapping.
         try
         {
-            await js.InvokeVoidAsync("BitBlazorUI.FullCalendar.setupDialog", container, key);
+            await js.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.setupDialog", container, key);
         }
         catch (JSDisconnectedException) { }
         catch (OperationCanceledException) { }
@@ -34,7 +34,7 @@ internal static class BitFcDialogInterop
     {
         try
         {
-            await js.InvokeVoidAsync("BitBlazorUI.FullCalendar.teardownDialog", key);
+            await js.InvokeScriptVoidAsync("BitBlazorUI.FullCalendar.teardownDialog", key);
         }
         catch (JSDisconnectedException) { }
         catch (OperationCanceledException) { }

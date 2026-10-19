@@ -1,0 +1,16 @@
+﻿<Project>
+
+  <!--
+    The pinned OPFSCoopSyncVFS. Fetched at restore, checksummed, then rewritten so its
+    FacadeVFS / VFS imports resolve against the core package rather than a sibling path
+    that only exists in the wa-sqlite repo.
+  -->
+
+  <PropertyGroup>
+    <WaSqliteVersion>v1.1.2</WaSqliteVersion>
+    <WaSqliteRepository>https://raw.githubusercontent.com/rhashimoto/wa-sqlite</WaSqliteRepository>
+    <OpfsVfsSourcePath>src/examples/OPFSCoopSyncVFS.js</OpfsVfsSourcePath>
+    <OpfsVfsSha256>0D733FF90D684E1884C2B14C701C13B6F849C4E4548A5C64F2DA4BF12B4FD101</OpfsVfsSha256>
+  </PropertyGroup>
+
+</Project>

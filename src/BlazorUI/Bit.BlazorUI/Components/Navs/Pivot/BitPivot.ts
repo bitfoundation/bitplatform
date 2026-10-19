@@ -525,3 +525,5 @@
         }
     }
 }
+
+// bit-lazy: teardown Pivot.dispose Pivot.disposeKeys

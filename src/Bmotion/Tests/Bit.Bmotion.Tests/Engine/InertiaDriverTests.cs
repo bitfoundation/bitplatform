@@ -142,15 +142,21 @@ public class InertiaDriverTests
             TimeConstant = 700,
             InertiaRestDelta = 0.5,
         };
-        var driver = new BmotionInertiaDriver(0, config, v => lastValue = v);
+        int emitted = 0;
+        var driver = new BmotionInertiaDriver(0, config, v => { lastValue = v; emitted++; });
 
         driver.Tick(0);
+        int emittedAfterFirstTick = emitted;
+        double valueAtCancel = lastValue;
         driver.Cancel();
         bool done = driver.Tick(16);
 
         // Cancel() freezes in place rather than snapping to the projected target;
         // only completion is guaranteed.
         Assert.IsTrue(done);
+        // A cancelled Tick must exit before applying, so the frozen value is never overwritten.
+        Assert.AreEqual(emittedAfterFirstTick, emitted);
+        Assert.AreEqual(valueAtCancel, lastValue);
     }
 
     // ── ModifyTarget (snap-to-grid) ───────────────────────────────────────────

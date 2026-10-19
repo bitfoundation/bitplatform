@@ -1,0 +1,93 @@
+﻿@page "/examples/handle-rules"
+
+<PageTitle>Handle Rules - bit Blow</PageTitle>
+
+<ExampleScaffold Title="Handle Rules"
+                 Summary="Validation can live on the handle it belongs to rather than in one canvas-wide predicate. The 'number' input only accepts the number output, the 'text' input only the text output, and each input announces what arrived. Both ends of a prospective connection get a say, so a rule sits wherever it reads best.">
+    <Toolbar>
+        <span class="rules-log">@(_lastConnected ?? "No connection made yet.")</span>
+        <button class="btn btn-sm btn-outline-secondary" @onclick="Reset">Reset</button>
+    </Toolbar>
+    <ChildContent>
+        <BlowCanvas Nodes="_nodes" Edges="_edges" FitViewOnInit="true" ConnectionRadius="30">
+            <NodeTemplate Context="node">
+                @switch (node.Id)
+                {
+                    case "producer":
+                        <div class="rules-title">Producer</div>
+                        @* Each handle sits inside its row, so the stylesheet's top:50% centres it
+                           on that row's label rather than on the node. *@
+                        <div class="rules-port">
+                            number
+                            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="number" Class="port-number" />
+                        </div>
+                        <div class="rules-port">
+                            text
+                            <BlowHandle Type="BlowHandleType.Source" Position="BlowPosition.Right" Id="text" Class="port-text" />
+                        </div>
+                        break;
+
+                    case "adder":
+                        @* The rule lives on the handle: only the number output may land here. *@
+                        <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" Id="value"
+                                Class="port-number"
+                                IsValidConnection="@(c => c.SourceHandle == "number")"
+                                OnConnect="@(c => Note("adder", c))" />
+                        <div class="rules-title">Adder</div>
+                        <div class="rules-sub">accepts numbers</div>
+                        break;
+
+                    default:
+                        <BlowHandle Type="BlowHandleType.Target" Position="BlowPosition.Left" Id="value"
+                                Class="port-text"
+                                IsValidConnection="@(c => c.SourceHandle == "text")"
+                                OnConnect="@(c => Note("formatter", c))" />
+                        <div class="rules-title">Formatter</div>
+                        <div class="rules-sub">accepts text</div>
+                        break;
+                }
+            </NodeTemplate>
+            <ChildContent>
+                <BlowBackground Variant="BlowBackgroundVariant.Dots" Gap="16" />
+                <BlowControls />
+            </ChildContent>
+        </BlowCanvas>
+    </ChildContent>
+</ExampleScaffold>
+
+<style>
+    .rules-title { font-weight: 600; }
+    .rules-sub { font-size: 11px; color: #6b7280; }
+    /* The negative margin carries each row out over the node's 14px side padding, so a handle
+       pinned to the row's right edge lands on the node's edge like any other handle. */
+    .rules-port { position: relative; font-size: 11px; text-align: right; margin-right: -14px; padding-right: 20px; }
+    .rules-log { font-size: 12px; color: #374151; margin-right: 0.75rem; }
+    /* Set through the handle's own colour token rather than a background with !important, so the
+       live valid/invalid highlight still shows while a connection is being dragged. */
+    .port-number { --bit-blow-handle-bg: #2563eb; }
+    .port-text { --bit-blow-handle-bg: #9333ea; }
+</style>
+
+@code {
+    private List<BlowNode> _nodes = [];
+    private List<BlowEdge> _edges = [];
+    private string? _lastConnected;
+
+    protected override void OnInitialized() => Reset();
+
+    private void Reset()
+    {
+        _nodes =
+        [
+            new BlowNode { Id = "producer", Position = new(40, 120), Width = 150, Height = 90 },
+            new BlowNode { Id = "adder", Position = new(340, 60), Width = 160 },
+            new BlowNode { Id = "formatter", Position = new(340, 200), Width = 160 },
+        ];
+        _edges = [];
+        _lastConnected = null;
+    }
+
+    // Raised by the handle the connection landed on, for drags and click-to-connect alike.
+    private void Note(string target, BlowConnection c) =>
+        _lastConnected = $"{c.SourceHandle} output connected to {target}.";
+}
