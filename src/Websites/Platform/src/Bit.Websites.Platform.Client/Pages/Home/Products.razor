@@ -257,6 +257,24 @@
         },
         new()
         {
+            Title = "Drag, drop, done",
+            Subtitle = "bit Bdnd · declarative drag and drop for Blazor",
+            LinkUrl = Urls.Bdnd,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Bdnd is a declarative drag-and-drop library for Blazor, inspired by React DnD: typed items matched to
+                    drop targets by type, custom drag previews, drag handles, sortable lists, nesting and native file drops,
+                    with the drag state kept in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BdndDraggable TItem="Card" Type="card" Item="card" />
+&lt;BdndDropTarget TItem="Card" Accept="card" OnDrop="HandleDrop" /></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Data that stays in the browser",
             Subtitle = "bit BlazeDb · memory-first database for Blazor",
             LinkUrl = Urls.BlazeDb,

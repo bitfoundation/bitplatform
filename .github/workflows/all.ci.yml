@@ -71,6 +71,10 @@ on:
         description: BbScanner solution
         type: boolean
         default: true
+      bdnd:
+        description: Bdnd solution
+        type: boolean
+        default: true
       blazedb:
         description: BlazeDb solution
         type: boolean
@@ -658,6 +662,11 @@ jobs:
         dotnet build src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output ./packages --configuration Release
 
+    - name: Build and pack Bdnd
+      run: |
+        dotnet build src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+        dotnet pack src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj --output ./packages --configuration Release
+
     - name: Build and pack BlazeDb
       run: |
         dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -795,6 +804,11 @@ jobs:
     name: bbscanner
     if: ${{ inputs.bbscanner }}
     uses: ./.github/workflows/bit.ci.BbScanner.yml
+
+  bdnd:
+    name: bdnd
+    if: ${{ inputs.bdnd }}
+    uses: ./.github/workflows/bit.ci.Bdnd.yml
 
   blazedb:
     name: blazedb

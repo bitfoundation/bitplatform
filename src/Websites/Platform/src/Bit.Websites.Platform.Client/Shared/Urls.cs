@@ -28,6 +28,7 @@ public static class Urls
     public const string Bink = "https://bink.bitplatform.dev/";
     public const string Balette = "https://balette.bitplatform.dev/";
     public const string BbScanner = "https://bbscanner.bitplatform.dev/";
+    public const string Bdnd = "https://bdnd.bitplatform.dev/";
     public const string BlazeDb = "https://blazedb.bitplatform.dev/";
     public const string Blow = "https://blow.bitplatform.dev/";
     public const string Bonboarding = "https://bonboarding.bitplatform.dev/";

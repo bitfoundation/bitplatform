@@ -29,6 +29,7 @@ public partial class Header : IDisposable
             new("Bink", "Blazor-native drawing and ink", Urls.Bink, External: true),
             new("Balette", "Blazor-native command palette", Urls.Balette, External: true),
             new("BbScanner", "Blazor-native barcode scanner", Urls.BbScanner, External: true),
+            new("Bdnd", "Declarative drag and drop for Blazor", Urls.Bdnd, External: true),
             new("BlazeDb", "Memory-first database for Blazor", Urls.BlazeDb, External: true),
             new("Blow", "Blazor-native node-based editors", Urls.Blow, External: true),
             new("Bonboarding", "Blazor-native product tours", Urls.Bonboarding, External: true),
