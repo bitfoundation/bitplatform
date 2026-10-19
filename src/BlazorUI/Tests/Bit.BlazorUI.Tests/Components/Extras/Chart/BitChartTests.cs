@@ -1620,6 +1620,39 @@ public class BitChartTests : BunitTestContext
     }
 
     [TestMethod]
+    [DataRow(BitChartType.Bar, null)]
+    [DataRow(BitChartType.Line, BitChartType.Bar)]
+    public void ALegendBoxOfABarShouldBeOutlinedInItsFill(BitChartType chartType, BitChartType? datasetType)
+    {
+        // A bar with no border color of its own is drawn in its fill alone, so its legend box is too, rather
+        // than outlined in the next color of the palette.
+        var data = new BitChartData
+        {
+            Labels = { "Jan", "Feb" },
+            Datasets = { new BitChartDataset { Label = "Alpha", Type = datasetType, Data = { 1, 2 }, BackgroundColor = "red" } }
+        };
+
+        var component = RenderChart(chartType, data);
+
+        StringAssert.Contains(component.Find(".bit-cht-lgd-box").GetAttribute("style"), "border-color:red;");
+    }
+
+    [TestMethod]
+    public void ALegendBoxOfALineShouldBeOutlinedInTheColorOfItsLine()
+    {
+        // A line with no border color of its own is drawn in the palette's color, whatever its area is filled with.
+        var data = new BitChartData
+        {
+            Labels = { "Jan", "Feb" },
+            Datasets = { new BitChartDataset { Label = "Alpha", Data = { 1, 2 }, BackgroundColor = "red" } }
+        };
+
+        var component = RenderChart(BitChartType.Line, data);
+
+        StringAssert.Contains(component.Find(".bit-cht-lgd-box").GetAttribute("style"), "border-color:var(--bit-Chart-series-color-1");
+    }
+
+    [TestMethod]
     public void AnAreaOfAThemedSeriesShouldStayTranslucent()
     {
         var data = new BitChartData

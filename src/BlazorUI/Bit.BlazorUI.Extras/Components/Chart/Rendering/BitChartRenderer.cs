@@ -351,7 +351,8 @@ public sealed partial class BitChartRenderer
                 {
                     Text = ds.Label ?? _texts.DatasetLabel(i, _options.Culture),
                     Color = ResolveBackground(ds, i, 0, false),
-                    StrokeColor = ResolveBorder(ds, i, 0, false),
+                    // Outlined the way the dataset's own elements are: a bar with no border color takes its fill.
+                    StrokeColor = ResolveBorder(ds, i, 0, false, fallbackToBackground: EffectiveType(ds) == BitChartType.Bar),
                     Hidden = _state.IsDatasetHidden(i) || ds.Hidden,
                     Index = i,
                     UsePointStyle = lo.Labels.UsePointStyle,
