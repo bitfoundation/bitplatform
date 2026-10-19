@@ -113,6 +113,12 @@ jobs:
     uses: ./.github/workflows/blow.demo.cd.yml
     secrets: inherit
 
+  borm_demo:
+    name: borm demo
+    if: inputs.server
+    uses: ./.github/workflows/borm.demo.cd.yml
+    secrets: inherit
+
   bonboarding_demo:
     name: bonboarding demo
     if: inputs.server

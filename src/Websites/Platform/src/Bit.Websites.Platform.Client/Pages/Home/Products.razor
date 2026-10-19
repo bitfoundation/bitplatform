@@ -312,6 +312,24 @@
         },
         new()
         {
+            Title = "Forms that describe themselves",
+            Subtitle = "bit Borm · Schema-driven forms for Blazor",
+            LinkUrl = Urls.Borm,
+            External = true,
+            Body = @<text>
+                <BitText Typography="BitTypography.Subtitle1" Gutter>
+                    bit Borm is a schema-driven form engine for Blazor: describe a form once, from a C# type, a fluent builder or
+                    a JSON Schema document, and it renders, validates and tracks it - conditions, computed values, cascading
+                    options, wizards and repeaters included, all decided in C#.
+                </BitText>
+                <div>
+                    <CodeBox HideCopyButton>&lt;BormView Definition="BormSchemaGenerator.Generate&lt;Contact>()"
+          Model="contact" OnValidSubmit="Save" /></CodeBox>
+                </div>
+            </text>
+        },
+        new()
+        {
             Title = "Onboarding that guides",
             Subtitle = "bit Bonboarding · Blazor-native product tours",
             LinkUrl = Urls.Bonboarding,

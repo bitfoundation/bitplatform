@@ -304,6 +304,8 @@ _book
 /src/Blow/Bit.Blow/wwwroot/**/*.js
 /src/Blow/Bit.Blow/wwwroot/**/*.css
 
+/src/Borm/Bit.Borm/wwwroot/**/*.css
+
 /src/Blex/Bit.Blex.Blazor/Scripts/**/*.js
 /src/Blex/Bit.Blex.Blazor/wwwroot/**/*.js
 

@@ -1,0 +1,30 @@
+﻿@page "/"
+
+<PageTitle>bit Borm</PageTitle>
+
+<div class="demo-intro">
+    <h1>Borm</h1>
+    <p>A schema-driven form engine for Blazor. Define a form once — from a C# type or JSON Schema — and Borm renders it, validates it, and manages its state.</p>
+</div>
+
+<div class="demo-card">
+    <h2 style="margin-top:0">What's in the box</h2>
+    <ul style="line-height:1.9; color:#334155">
+        <li><strong>Schema from C# types</strong> — zero-config generation via reflection + DataAnnotations.</li>
+        <li><strong>Schema from JSON Schema</strong> — <code>$ref</code>, <code>allOf</code>, <code>if</code>/<code>then</code> and <code>dependentRequired</code> included; export any form back to JSON, conditions and steps intact.</li>
+        <li><strong>Fluent builder</strong> — type-safe, expression-based field configuration, including nested members, object groups and arrays.</li>
+        <li><strong>Validation</strong> — built-in rules, custom sync/async rules, cross-field and form-level rules, <code>IValidatableObject</code>, and FluentValidation through the <code>Bit.Borm.FluentValidation</code> package.</li>
+        <li><strong>Validation modes</strong> — decide when fields revalidate, before and after the first submit.</li>
+        <li><strong>Conditional behaviour</strong> — show, hide, disable or conditionally require fields, and clear hidden values.</li>
+        <li><strong>Async &amp; cascading options</strong> — load choices from a service and reload them when a dependency changes.</li>
+        <li><strong>Multi-step wizards</strong> — per-step validation, conditional steps and a clickable stepper.</li>
+        <li><strong>Array / repeater fields</strong> — add, insert, remove and reorder, with errors that follow their item.</li>
+        <li><strong>File upload</strong> — <code>IBrowserFile</code> binding with size and type rules.</li>
+        <li><strong>Accessible by default</strong> — labelled controls, <code>aria-*</code> wiring, and an error summary that takes focus and links to each field.</li>
+        <li><strong>Pluggable renderers</strong> — dependency-free HTML by default; register your own widgets.</li>
+    </ul>
+    <p style="color:#475569">
+        Install it with <code>dotnet add package Bit.Borm</code>, call <code>builder.Services.AddBorm()</code> and link
+        <code>_content/Bit.Borm/bit-borm.css</code> - then pick a demo from the sidebar to see each capability in action.
+    </p>
+</div>

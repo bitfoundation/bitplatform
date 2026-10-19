@@ -31,6 +31,7 @@ public static class Urls
     public const string Bdnd = "https://bdnd.bitplatform.dev/";
     public const string BlazeDb = "https://blazedb.bitplatform.dev/";
     public const string Blow = "https://blow.bitplatform.dev/";
+    public const string Borm = "https://borm.bitplatform.dev/";
     public const string Bonboarding = "https://bonboarding.bitplatform.dev/";
     public const string Bortable = "https://bortable.bitplatform.dev/";
     public const string Blex = "https://blex.bitplatform.dev/";

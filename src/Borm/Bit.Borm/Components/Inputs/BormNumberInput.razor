@@ -1,0 +1,56 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@if (HasAffix)
+{
+    <div class="bit-borm-affixed @(Context.HasError && Context.ShowMessages ? "bit-borm-affixed--invalid" : "")">
+        @if (!string.IsNullOrEmpty(Field.Prefix))
+        {
+            <span class="bit-borm-affix bit-borm-affix--prefix" aria-hidden="true">@Field.Prefix</span>
+        }
+        @Control
+        @if (!string.IsNullOrEmpty(Field.Suffix))
+        {
+            <span class="bit-borm-affix bit-borm-affix--suffix" aria-hidden="true">@Field.Suffix</span>
+        }
+    </div>
+}
+else
+{
+    @Control
+}
+
+@code {
+    // Splat first: Blazor lets the last duplicate attribute win, so the renderer's own id and aria
+    // wiring below always overrides what the schema supplied.
+    private RenderFragment Control => @<input @attributes="ExtraAttributes"
+                                              id="@Context.ElementId"
+                                              @ref="Element"
+                                              class="@CssClass"
+                                              type="number"
+                                              value="@Context.StringValue"
+                                              placeholder="@Field.Placeholder"
+                                              disabled="@Disabled"
+                                              readonly="@ReadOnly"
+                                              min="@MinAttribute"
+                                              max="@MaxAttribute"
+                                              step="@Step"
+                                              autocomplete="@Field.Autocomplete"
+                                              inputmode="@InputMode"
+                                              aria-required="@AriaRequired"
+                                              aria-invalid="@AriaInvalid"
+                                              aria-label="@AriaLabel"
+                                              aria-describedby="@DescribedBy"
+                                              @onchange="OnChange"
+                                              @oninput="InputHandler"
+                                              @onblur="OnBlur" />
+    ;
+
+    // "any" lets the browser accept decimals; without it a step of 1 is assumed and 1.5 is rejected.
+    private string Step => BormNumber.ToAttribute(Field.NumericStep)
+        ?? (Field.Type == BormFieldType.Integer ? "1" : "any");
+
+    private string InputMode => Field.InputMode ?? (Field.Type == BormFieldType.Integer ? "numeric" : "decimal");
+
+    private bool HasAffix => !string.IsNullOrEmpty(Field.Prefix) || !string.IsNullOrEmpty(Field.Suffix);
+}

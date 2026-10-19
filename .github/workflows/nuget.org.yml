@@ -13,6 +13,7 @@ on:
       - 'src/Bink/**'
       - 'src/BlazeDb/**'
       - 'src/Blow/**'
+      - 'src/Borm/**'
       - 'src/Blex/**'
       - 'src/Bmage/**'
       - 'src/Bsqlite/**'
@@ -246,6 +247,16 @@ jobs:
       run: dotnet build src/Blow/Bit.Blow/Bit.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blow
       run: dotnet pack src/Blow/Bit.Blow/Bit.Blow.csproj --output . --configuration Release
+
+    - name: dotnet build Borm
+      run: dotnet build src/Borm/Bit.Borm/Bit.Borm.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Borm
+      run: dotnet pack src/Borm/Bit.Borm/Bit.Borm.csproj --output . --configuration Release
+
+    - name: dotnet build Borm.FluentValidation
+      run: dotnet build src/Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+    - name: dotnet pack Borm.FluentValidation
+      run: dotnet pack src/Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj --output . --configuration Release
 
     - name: dotnet build Blex
       run: dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

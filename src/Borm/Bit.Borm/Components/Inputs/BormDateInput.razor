@@ -1,0 +1,56 @@
+﻿@namespace Bit.Borm
+@inherits BormInputBase
+
+@* Splat first: Blazor lets the last duplicate attribute win, so everything below overrides the
+   schema's extras and the id/aria wiring can never be replaced by accident. *@
+<input @attributes="ExtraAttributes"
+       id="@Context.ElementId"
+       @ref="Element"
+       class="@CssClass"
+       type="@HtmlType"
+       value="@Context.StringValue"
+       disabled="@Disabled"
+       readonly="@ReadOnly"
+       min="@Bound(Field.Min)"
+       max="@Bound(Field.Max)"
+       step="@Step"
+       autocomplete="@Field.Autocomplete"
+       aria-required="@AriaRequired"
+       aria-invalid="@AriaInvalid"
+       aria-label="@AriaLabel"
+       aria-describedby="@DescribedBy"
+       @onchange="OnChange"
+       @oninput="InputHandler"
+       @onblur="OnBlur" />
+
+@code {
+    private string HtmlType => Field.Type switch
+    {
+        BormFieldType.Date => "date",
+        BormFieldType.Time => "time",
+        _ => "datetime-local"
+    };
+
+    /// <summary>
+    /// The <c>step</c> attribute, in seconds for time-bearing inputs. Omitted unless the schema asks
+    /// for one — a bare time input steps by a minute, which is what a form almost always wants, and
+    /// declaring "60" explicitly would only differ by making seconds unreachable in some browsers.
+    /// </summary>
+    private string? Step => BormNumber.ToAttribute(Field.NumericStep);
+
+    // Date bounds arrive as OLE automation dates when they come from [Range(typeof(DateTime), …)].
+    // Anything that does not convert cleanly is omitted rather than emitted as a value the browser
+    // cannot parse.
+    private string? Bound(double? value)
+    {
+        if (value is not { } d) return null;
+        try
+        {
+            return BormValueConverter.ToInputString(DateTime.FromOADate(d), Field.Type);
+        }
+        catch (ArgumentException)
+        {
+            return null;
+        }
+    }
+}
