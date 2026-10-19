@@ -21,24 +21,28 @@ namespace Boilerplate.Shared.Infrastructure.Services.Contracts
 
             public TAppController WithQuery(string key, object? value)
             {
-                controller.AddQueryString(key, value);
-                return controller;
+                var copy = Copy(controller);
+                copy.AddQueryString(key, value);
+                return copy;
             }
 
             public TAppController WithQuery(Dictionary<string, object?> queryString)
             {
-                controller.AddQueryStrings(queryString);
-                return controller;
+                var copy = Copy(controller);
+                copy.AddQueryStrings(queryString);
+                return copy;
             }
 
             public TAppController WithQueryIf(bool condition, string key, object? value)
             {
-                if (condition)
-                {
-                    controller.WithQuery(key, value);
-                }
-                return controller;
+                return condition ? controller.WithQuery(key, value) : controller;
             }
+        }
+
+        private static TAppController Copy<TAppController>(TAppController controller)
+            where TAppController : IAppController
+        {
+            return controller is ICloneable cloneable ? (TAppController)cloneable.Clone() : controller;
         }
     }
 }
