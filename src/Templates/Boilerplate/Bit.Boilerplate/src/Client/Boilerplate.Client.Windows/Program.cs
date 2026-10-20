@@ -43,10 +43,20 @@ public partial class Program
         services.AddClientWindowsProjectServices(configuration);
         Services = services.BuildServiceProvider();
 
+        //#if (framework == 'net11.0')
         foreach (var startupValidator in Services.GetServices<IAsyncStartupValidator>())
         {
             startupValidator.ValidateAsync().GetAwaiter().GetResult();
         }
+        //#else
+        //#if (IsInsideProjectTemplate == true)
+        /*
+        //#endif
+        Services.GetService<IStartupValidator>()?.Validate();
+        //#if (IsInsideProjectTemplate == true)
+        */
+        //#endif
+        //#endif
 
         if (CultureInfoManager.InvariantGlobalization is false)
         {

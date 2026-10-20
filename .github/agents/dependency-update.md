@@ -120,7 +120,10 @@ drop shadow (their `<filter>`) until that issue is fixed.
 **bit Boilerplate builds for .NET 10 and .NET 11.** Its `framework` option picks one; the template's own tree is
 the .NET 11 project. In its `Directory.Packages.props`, a package whose 11.x build has no `net10.0` assets has a
 version in each of the two framework groups at the end of the file: the 11.x one, and a 10.x one that moves within
-10.x. Every other package takes one version for both. The few literals that differ per framework are switch
+10.x. So do the `Microsoft.Extensions.*` packages, although their 11.x builds have `net10.0` assets: they bring
+`Microsoft.Extensions.Logging.Abstractions` 11 into the .NET 10 server projects, whose targets file then overrides
+the one `Microsoft.Extensions.Telemetry.Abstractions` turns the framework's logging generator off with, depending
+on import order, and the build fails with CS0757. Every other package takes one version for both. The few literals that differ per framework are switch
 symbols in `template.json` (the SDK and its `rollForward`, the dev container image, the `dotnet-ef` version, the
 runner image), so they move together with the files they replace.
 
