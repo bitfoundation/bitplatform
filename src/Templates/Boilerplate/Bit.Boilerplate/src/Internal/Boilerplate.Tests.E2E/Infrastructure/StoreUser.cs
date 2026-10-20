@@ -7,5 +7,5 @@ namespace Boilerplate.Tests.E2E.Infrastructure;
 public static class StoreUser
 {
     public const string Email = "store-user@bitplatform.dev";
-    public const string Password = "123456";
+    public const string Password = "12345678";
 }

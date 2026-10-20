@@ -450,7 +450,7 @@ public partial class Templates04CreateProjectPage
             Key = "multitenant",
             Label = "Many organizations (multi-tenancy)",
             Question = "Will several companies or teams use it, each seeing only their own data?",
-            Help = "This is known as multi-tenancy. Try it in the admin panel demo: sign in as store-user@bitplatform.dev with password 123456.",
+            Help = "This is known as multi-tenancy. Try it in the admin panel demo: sign in as store-user@bitplatform.dev with password 12345678.",
             Groups =
             [
                 new()

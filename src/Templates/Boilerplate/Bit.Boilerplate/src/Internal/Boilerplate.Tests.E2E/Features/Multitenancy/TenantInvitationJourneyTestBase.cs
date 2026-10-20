@@ -11,7 +11,7 @@ namespace Boilerplate.Tests.E2E.Features.Multitenancy;
 public abstract class TenantInvitationJourneyTestBase : AppTestBase
 {
     private static readonly Uri adminPanelAppUrl = new(DeployedApps.AdminPanel);
-    private const string password = "123456";
+    private const string password = "12345678";
     private const string e2eTenantFallback = "e2e";
 
     /// <summary>
