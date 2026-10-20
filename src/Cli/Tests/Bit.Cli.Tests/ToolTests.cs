@@ -299,6 +299,20 @@ public class ToolTests
     }
 
     [TestMethod]
+    public void TheSdk_Should_FollowTheChosenFramework()
+    {
+        var net10 = new TemplateSelection(TemplateManifest.Embedded);
+        var net11 = new TemplateSelection(TemplateManifest.Embedded);
+        Assert.IsNull(net10.Set("framework", "net10.0"));
+        Assert.IsNull(net11.Set("framework", "net11.0"));
+
+        Assert.AreEqual(TemplateRequirements.Embedded.Sdk, TemplateRequirements.Embedded.For(net11).Sdk);
+        Assert.AreEqual("10.0", TemplateRequirements.Embedded.For(net10).Sdk?.Channel);
+        Assert.IsFalse(TemplateRequirements.Embedded.For(net10).Sdk?.Pinned);
+        Assert.AreEqual(TemplateRequirements.Embedded.For(net10).Sdk, TemplateRequirements.Embedded.For(new TemplateSelection(TemplateManifest.Embedded)).Sdk);
+    }
+
+    [TestMethod]
     public async Task TheSdk_Should_InstallItsExactVersionOnMacOSAndLinux()
     {
         var sdk = new SdkRequirement("11.0.100-rc.1.26425.128", "disable");

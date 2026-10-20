@@ -1,14 +1,18 @@
 //+:cnd:noEmit
 using Boilerplate.Client.Core;
+//#if (framework == 'net11.0')
 using Boilerplate.Client.Windows.Infrastructure.Services;
+//#endif
 
 namespace Boilerplate.Client.Windows;
 
 public class ClientWindowsSettings : ClientCoreSettings
 {
     public WindowsUpdateOptions? WindowsUpdate { get; set; }
+    //#if (framework == 'net11.0')
 
     public KioskOptions? Kiosk { get; set; }
+    //#endif
 
     public override IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
@@ -18,11 +22,13 @@ public class ClientWindowsSettings : ClientCoreSettings
         {
             Validator.TryValidateObject(WindowsUpdate, new ValidationContext(WindowsUpdate), validationResults, true);
         }
+        //#if (framework == 'net11.0')
 
         if (Kiosk is not null)
         {
             Validator.TryValidateObject(Kiosk, new ValidationContext(Kiosk), validationResults, true);
         }
+        //#endif
 
         return validationResults;
     }
@@ -34,6 +40,7 @@ public partial class WindowsUpdateOptions
 
     public string? FilesUrl { get; set; }
 }
+//#if (framework == 'net11.0')
 
 /// <summary>
 /// Options of the .NET 11 <see cref="System.Windows.Forms.KioskModeManager"/> and of <see cref="WindowsKioskGuard"/>.
@@ -52,3 +59,4 @@ public partial class KioskOptions
     /// </summary>
     public bool PreventSleep { get; set; }
 }
+//#endif

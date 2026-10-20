@@ -46,6 +46,7 @@ public partial class HomePage
             ["@graph"] = new JsonArray(organization, webSite)
         }.ToJsonString();
     }
+    //#if (framework == 'net11.0')
 
     /// <summary>
     /// The demo Windows app ships with kiosk mode on, so the page offers the way out that the lockdown takes away.
@@ -54,6 +55,7 @@ public partial class HomePage
 
     /// <summary>Nothing else closes a kiosk window: the close button is gone and WM_CLOSE is refused.</summary>
     private void ExitApp() => Environment.Exit(0);
+    //#endif
 
 
     //#if(module != "Sales")

@@ -113,9 +113,16 @@ calls a SkiaSharp overload missing from the SkiaSharp next to it, so any SVG it 
 the build with `MAUIR0001` / `MissingMethodException: SKImageFilter.CreateMatrixConvolution`
 ([dotnet/maui#38319](https://github.com/dotnet/maui/issues/38319)). develop holds MAUI at 10.0.100 for it. On
 this branch MAUI can't stay behind: a MAUI built for an older preview doesn't compile against the newer
-preview's Android workload (CS1705 on `Java.Interop`). So MAUI follows the SDK here, and the app icons of the
-Boilerplate and the BlazorUI demo carry no drop shadow (their `<filter>`) until that issue is fixed; the Todo CD
-strips it from the icon it takes from the `TODO_ICON` variable.
+preview's Android workload (CS1705 on `Java.Interop`). So MAUI follows the SDK here for .NET 11, while a .NET 10
+Boilerplate project keeps develop's 10.0.100, and the app icons of the Boilerplate and the BlazorUI demo carry no
+drop shadow (their `<filter>`) until that issue is fixed.
+
+**bit Boilerplate builds for .NET 10 and .NET 11.** Its `framework` option picks one; the template's own tree is
+the .NET 11 project. In its `Directory.Packages.props`, a package whose 11.x build has no `net10.0` assets has a
+version in each of the two framework groups at the end of the file: the 11.x one, and a 10.x one that moves within
+10.x. Every other package takes one version for both. The few literals that differ per framework are switch
+symbols in `template.json` (the SDK and its `rollForward`, the dev container image, the `dotnet-ef` version, the
+runner image), so they move together with the files they replace.
 
 **`Xamarin.Firebase.Messaging` is held at 125.1.1.** 125.1.2 pulls `Xamarin.AndroidX.Fragment` 1.9.0
 (through `GooglePlayServices.Base` 118.10.1), which absorbed the ktx classes, while the rest of the
@@ -137,7 +144,8 @@ rest of ASP.NET Core moves on. A NU1608 on Npgsql in a restore means this was mi
 defaults to JDK 25 (`(default)` in the image readme's Java table), which .NET for Android accepts from .NET 11
 RC2 on (`LatestSupportedJavaVersion` 25.0.99 in `Xamarin.Android.Common.props.in`). develop stays on
 `ubuntu-24.04`, since .NET for Android 10 accepts up to 21, so a runner pin that comes over from develop moves
-to `ubuntu-26.04` here.
+to `ubuntu-26.04` here, except in the jobs that build a .NET 10 Boilerplate project (the Todo and Sales CDs), which
+keep develop's runners.
 
 When a held pin's rationale no longer holds — the oldest supported SDK moved, TS 7 was adopted
 repo-wide — say so in the report rather than acting on it.
@@ -255,7 +263,8 @@ There are no `.config/dotnet-tools.json` manifests any more: every tool is run w
 <package>@<version>`, so the pins live in the workflow and doc lines that call them (`grep -rn "dnx
 .*@"`). `vpk` must equal the `Velopack` PackageReference version in the same project — Velopack
 requires the CLI and the library to match, and this has drifted before. `dotnet-ef` should equal the
-EF Core package version. Likewise the `npx playwright@<version>` command in the Boilerplate's two
+EF Core package version of the project it runs on: the .NET 11 one in the template's files, the .NET 10 one in
+`template.json`'s `efToolVersion` and in the Todo CD. Likewise the `npx playwright@<version>` command in the Boilerplate's two
 `.runsettings` (`src/Tests` and `src/Internal/Boilerplate.Tests.E2E`) must equal
 `Microsoft.Playwright.MSTest.v4`: a remote Playwright server of any other version refuses the client, and
 every test that runs on it fails at connect.
@@ -263,7 +272,7 @@ every test that runs on it fails at connect.
 `src/global.json` is `rollForward: disable` and tracks the newest SDK. While .NET 11 is a release
 candidate, the two template `global.json` files pin the same RC SDK, also `rollForward: disable`, and
 move with it. Once .NET 11 ships they go back to `11.0.100` + `latestFeature`, so they accept any
-11.0.x on a consumer's machine.
+11.0.x on a consumer's machine. A .NET 10 project gets `10.0.100` + `latestFeature` from `template.json`.
 
 ### Container images
 

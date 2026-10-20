@@ -144,7 +144,17 @@ public partial class SignInPanel
             {
                 CleanModel();
 
+                //#if (framework == 'net11.0')
                 if (validatorRef is not null && await validatorRef.EditContext.ValidateAsync(CurrentCancellationToken) is false) return;
+                //#else
+                //#if (IsInsideProjectTemplate == true)
+                /*
+                //#endif
+                if (validatorRef?.EditContext.Validate() is false) return;
+                //#if (IsInsideProjectTemplate == true)
+                */
+                //#endif
+                //#endif
 
                 if (isNewUser is false)
                 {

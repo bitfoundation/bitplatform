@@ -47,6 +47,19 @@ public static partial class Program
             app.UseExceptionHandler();
             //#endif
 
+            //#if (framework == 'net10.0')
+            //#if (IsInsideProjectTemplate == true)
+            /*
+            //#endif
+            if (env.IsDevelopment())
+            {
+                app.UseWebAssemblyDebugging();
+            }
+
+            //#if (IsInsideProjectTemplate == true)
+            */
+            //#endif
+            //#endif
             if (env.IsDevelopment() is false)
             {
                 app.UseHttpsRedirection();
@@ -235,9 +248,6 @@ public static partial class Program
             app.UseSiteMap();
 
             // Handle the rest of requests with blazor
-            // blazor.web.js is endpoint-served from .NET 9 on, and this has to precede AddInteractiveWebAssemblyRenderMode.
-            app.MapStaticAssets();
-
             var blazorApp = app.MapRazorComponents<Components.App>()
                 .CacheOutput("AppResponseCachePolicy")
                 .AddInteractiveServerRenderMode()
