@@ -134,8 +134,9 @@ input, and does not use `eval` or `innerHTML`. Bytes cross as streams with a siz
 (`BrowserImageInterop.MaxStreamBytes`, 512 MB by default) so a hostile or buggy page cannot stream unbounded data into
 the .NET heap.
 
-The library adds no `<script>` tag to your page and requires no relaxation of your Content Security Policy beyond
-allowing your own scripts, since the module is served from your origin.
+The library adds no `<script>` tag to your page, and its module is served from your origin. Your Content Security Policy
+needs one more thing: `blob:` in `img-src`. An image that `createImageBitmap` can't decode, such as an SVG, is decoded
+through an `<img>` element with a `blob:` URL, and a policy without it blocks that image.
 
 ## Server-side use
 
