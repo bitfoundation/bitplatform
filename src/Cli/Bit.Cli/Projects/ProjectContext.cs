@@ -34,6 +34,14 @@ public sealed partial class ProjectContext
 
     public string? Database => Template?.Database ?? ReadDatabaseFromProject();
 
+    public bool NeedsContainers => Template?.NeedsContainers ?? AppHostNeedsContainers(AppHostDirectory);
+
+    public bool IsApiStandalone => Template is not null
+        ? string.Equals(Template["api"], "Standalone", StringComparison.OrdinalIgnoreCase)
+        : System.IO.Directory.Exists(ServerApiDirectory) && ServerWebReferencesServerApi() is false;
+
+    public string? SeedPassword { get; set; }
+
     public string TargetFrameworkVersion
     {
         get
@@ -106,6 +114,35 @@ public sealed partial class ProjectContext
         }
     }
 
+    private bool ServerWebReferencesServerApi()
+    {
+        var web = Path.Combine(Directory, "src", "Server", $"{Name}.Server.Web", $"{Name}.Server.Web.csproj");
+
+        try
+        {
+            return File.Exists(web) is false || File.ReadAllText(web).Contains($"{Name}.Server.Api.csproj", StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return true;
+        }
+    }
+
+    public static bool AppHostNeedsContainers(string appHostDirectory)
+    {
+        try
+        {
+            return System.IO.Directory.Exists(appHostDirectory)
+                && System.IO.Directory.EnumerateFiles(appHostDirectory, "*.cs", SearchOption.AllDirectories)
+                    .Where(file => file.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}", StringComparison.Ordinal) is false && file.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.Ordinal) is false)
+                    .Any(file => ContainerServerRegex().IsMatch(File.ReadAllText(file)));
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return true;
+        }
+    }
+
     public static bool UsesNativeWebAssembly(string directory)
     {
         try
@@ -124,4 +161,7 @@ public sealed partial class ProjectContext
 
     [GeneratedRegex(@"<WasmBuildNative[^>]*>\s*true\s*</WasmBuildNative>", RegexOptions.IgnoreCase)]
     private static partial Regex NativeWebAssemblyRegex();
+
+    [GeneratedRegex(@"\.Add(Azure)?(SqlServer|Postgres\w*|PostgreSQL|MySql|ManagedRedis|Redis\w*)\(")]
+    private static partial Regex ContainerServerRegex();
 }

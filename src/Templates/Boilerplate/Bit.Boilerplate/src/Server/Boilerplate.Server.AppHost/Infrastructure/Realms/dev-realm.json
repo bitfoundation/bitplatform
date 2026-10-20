@@ -78,7 +78,7 @@
             "credentials": [
                 {
                     "type": "password",
-                    "value": "123456"
+                    "value": "12345678"
                 }
             ],
             "disableableCredentialTypes": [],
@@ -102,7 +102,7 @@
             "credentials": [
                 {
                     "type": "password",
-                    "value": "123456"
+                    "value": "12345678"
                 }
             ],
             "disableableCredentialTypes": [],

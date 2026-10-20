@@ -303,8 +303,8 @@ The project includes **health check endpoints** to monitor application health.
 2. **`/alive`** - liveness. Runs only the checks tagged `"live"`, which today is the disk-space check alone.
 3. **`/healthz`** - the detailed report behind the **Operations** page (Management menu). It keeps the HealthChecks UI
    format and adds each check's failure status, timeout and full exception, plus the time of the report. It needs the
-   `AppFeatures.System.Operations_View` feature, which only global admins have, and it always answers 200: the status is
-   in the body.
+   `AppFeatures.System.Operations_View` feature, which only global admins have. Like `/health`, it answers 503 when a
+   check reports Unhealthy, so a monitor can go by the status code, and the report is in the body either way.
 
 `/health` and `/alive` are mapped in **every** environment and are **anonymous**, and they answer with one word.
 `/healthz`, which names every dependency and carries each failure's exception (possibly a connection string), is

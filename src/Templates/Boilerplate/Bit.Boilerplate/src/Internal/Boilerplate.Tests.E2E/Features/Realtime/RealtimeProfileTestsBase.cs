@@ -14,7 +14,7 @@ namespace Boilerplate.Tests.E2E.Features.Realtime;
 /// </summary>
 public abstract partial class RealtimeProfileTestsBase : AppTestBase
 {
-    protected const string password = "123456";
+    protected const string password = "12345678";
 
     /// <summary>
     /// <paramref name="theAppUploads"/> says which of the two sessions posts the picture. Every head does both: CDP

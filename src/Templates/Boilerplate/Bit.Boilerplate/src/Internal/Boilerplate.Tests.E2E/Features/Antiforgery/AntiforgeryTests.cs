@@ -18,7 +18,7 @@ namespace Boilerplate.Tests.E2E.Features.Antiforgery;
 [TestClass, TestCategory(TestCategories.Api), Retry(2)]
 public partial class AntiforgeryTests
 {
-    private const string password = "123456";
+    private const string password = "12345678";
 
     /// <summary>AutoCsrfProtectionFilter's own refusal.</summary>
     private const string refusal = "Anti-forgery token validation failed";

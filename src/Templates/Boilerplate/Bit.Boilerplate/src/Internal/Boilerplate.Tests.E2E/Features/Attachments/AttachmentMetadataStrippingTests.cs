@@ -20,7 +20,7 @@ namespace Boilerplate.Tests.E2E.Features.Attachments;
 [TestClass, TestCategory(TestCategories.Api), Retry(2)]
 public class AttachmentMetadataStrippingTests
 {
-    private const string password = "123456";
+    private const string password = "12345678";
 
     private readonly List<Func<Task>> cleanups = [];
 

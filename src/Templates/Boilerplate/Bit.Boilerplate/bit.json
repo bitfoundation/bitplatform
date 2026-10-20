@@ -1,0 +1,27 @@
+{
+    "template": "bit-bp",
+    "version": "10.7.0-pre-02",
+    "name": "Boilerplate",
+    "options": {
+        "database": "bit-option-database",
+        "filesStorage": "bit-option-filesStorage",
+        "api": "bit-option-api",
+        "pipeline": "bit-option-pipeline",
+        "module": "bit-option-module",
+        "multitenant": "bit-option-multitenant",
+        "captcha": "bit-option-captcha",
+        "aspire": "bit-option-aspire",
+        "redis": "bit-option-redis",
+        "notification": "bit-option-notification",
+        "sample": "bit-option-sample",
+        "sentry": "bit-option-sentry",
+        "appInsights": "bit-option-appInsights",
+        "signalR": "bit-option-signalR",
+        "offlineDb": "bit-option-offlineDb",
+        "cloudflare": "bit-option-cloudflare",
+        "ads": "bit-option-ads",
+        "brouter": "bit-option-brouter",
+        "theme": "bit-option-theme",
+        "advancedTests": "bit-option-advancedTests"
+    }
+}

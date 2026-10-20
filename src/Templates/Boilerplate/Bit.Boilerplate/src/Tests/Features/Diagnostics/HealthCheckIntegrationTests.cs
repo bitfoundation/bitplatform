@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Boilerplate.Shared.Features.Diagnostic;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 //#if (cloudflare == true)
 using System.Text;
 using System.Text.Json.Nodes;
@@ -54,8 +55,8 @@ public partial class HealthCheckIntegrationTests
     }
 
     /// <summary>
-    /// <c>/healthz</c> needs <see cref="AppFeatures.System.Operations_View"/>, is never cached, and answers 200 even
-    /// when a check is Unhealthy.
+    /// <c>/healthz</c> needs <see cref="AppFeatures.System.Operations_View"/>, is never cached, and answers 503 when a
+    /// check is Unhealthy, with the report in the body all the same.
     /// </summary>
     [TestMethod]
     public async Task DetailedReport_Should_NeedTheFeature_AndDescribeEveryCheck()
@@ -91,9 +92,9 @@ public partial class HealthCheckIntegrationTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await adminClient.HttpClient.GetAsync(healthzUrl, TestContext.CancellationToken);
+        using var response = await GetReport(adminClient.HttpClient, healthzUrl);
 
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, "An Unhealthy report still answers 200.");
+        Assert.AreEqual(HttpStatusCode.ServiceUnavailable, response.StatusCode, "An Unhealthy report answers 503, the way /health does.");
         Assert.IsNotNull(response.Headers.CacheControl);
         Assert.IsTrue(response.Headers.CacheControl.NoStore, "The report must not be cached anywhere.");
 
@@ -115,6 +116,14 @@ public partial class HealthCheckIntegrationTests
         Assert.AreEqual(HealthCheckStatus.Degraded, smtp.FailureStatus);
         Assert.AreEqual(TimeSpan.FromSeconds(10), smtp.Timeout);
         Assert.IsTrue(smtp.Data.ContainsKey("CheckedAt"), "A cached check says when it really ran.");
+    }
+
+    private async Task<HttpResponseMessage> GetReport(HttpClient httpClient, Uri url)
+    {
+        using HttpRequestMessage request = new(HttpMethod.Get, url);
+        request.Options.Set(new HttpRequestOptionsKey<HttpStatusCode[]>(RequestOptionNames.AllowedStatusCodes), [HttpStatusCode.ServiceUnavailable]);
+
+        return await httpClient.SendAsync(request, TestContext.CancellationToken);
     }
 
     /// <summary>
@@ -142,9 +151,7 @@ public partial class HealthCheckIntegrationTests
             Password = TestData.DefaultTestPassword
         }, TestContext.CancellationToken);
 
-        using var response = await adminClient.HttpClient.GetAsync(healthzUrl, TestContext.CancellationToken);
-
-        Assert.AreEqual(HttpStatusCode.OK, response.StatusCode);
+        using var response = await GetReport(adminClient.HttpClient, healthzUrl);
 
         var report = await response.Content.ReadFromJsonAsync(
             adminClient.Services.GetRequiredService<JsonSerializerOptions>().GetTypeInfo<HealthReportDto>(), TestContext.CancellationToken);

@@ -21,7 +21,7 @@ public static partial class Hardware
 
     private const long Gibibyte = 1024L * 1024 * 1024;
 
-    private const long RecommendedMemoryBytes = 24 * Gibibyte;
+    private const long RecommendedMemoryBytes = 16 * Gibibyte;
 
     private const long ReportedMemoryShortfall = Gibibyte;
 
@@ -49,14 +49,14 @@ public static partial class Hardware
     {
         var warnings = new List<HardwareWarning>();
         var emulator = needs.Platforms.Contains(Platform.Android);
-        var dockerDesktop = needs.Aspire && os is not HostOs.Linux;
+        var containers = needs.ContainersRequired && os is not HostOs.Linux;
 
-        if (facts.VirtualizationEnabled is false && (emulator || dockerDesktop))
+        if (facts.VirtualizationEnabled is false && (emulator || containers))
         {
-            var users = (dockerDesktop, emulator) switch
+            var users = (containers, emulator) switch
             {
-                (true, true) => "Docker Desktop and the Android emulator need it",
-                (true, false) => "Docker Desktop needs it",
+                (true, true) => "the containers Aspire runs and the Android emulator need it",
+                (true, false) => "the containers Aspire runs need it",
                 _ => "the Android emulator needs it"
             };
 
@@ -67,7 +67,7 @@ public static partial class Hardware
 
         if (facts.MemoryBytes is { } memory && memory < RecommendedMemoryBytes - ReportedMemoryShortfall)
         {
-            warnings.Add(new("memory", $"This machine has {Math.Round((double)memory / Gibibyte)} GB of memory. With Aspire's containers, the IDE, a browser and an emulator running, 24 GB or more keeps things smooth."));
+            warnings.Add(new("memory", $"This machine has {Math.Round((double)memory / Gibibyte)} GB of memory. With Aspire's containers, the IDE, a browser and an emulator running, 16 GB or more keeps things smooth."));
         }
 
         if (facts.OnHardDisk is true)

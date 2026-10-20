@@ -128,6 +128,9 @@ if (builder.ExecutionContext.IsRunMode) // The following project is only added f
             .WithExplicitStart();
     }
 
+    // Without Docker or Podman the projects still run, only the containers are missing. See `.docs/20- .NET Aspire.md`.
+    builder.RunWithoutContainerRuntime();
+
     // Keeps the containers alive between runs and stops them once the app host hasn't run for 15 minutes. See `.docs/20- .NET Aspire.md`.
     builder.UsePersistentContainers();
 

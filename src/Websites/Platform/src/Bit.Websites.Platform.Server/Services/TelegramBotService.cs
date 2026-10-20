@@ -34,12 +34,15 @@ public partial class TelegramBotService
     [GeneratedRegex(@"[_*`\[]")]
     private static partial Regex MarkdownSpecialCharacters();
 
+    [GeneratedRegex(@"^bit\s+new\s+(?!-)\S+\s*")]
+    private static partial Regex ProjectNameInCommand();
+
     public async Task SendProjectCreatedMessage(string command, CancellationToken cancellationToken)
     {
         var messageBuilder = new StringBuilder();
 
         messageBuilder.AppendLine("🚀 *A project is being created*");
-        messageBuilder.AppendLine($"`{command.Replace("`", "", StringComparison.Ordinal).Trim()}`");
+        messageBuilder.AppendLine($"`{ProjectNameInCommand().Replace(command.Replace("`", "", StringComparison.Ordinal).Trim(), "bit new ")}`");
 
         await telegramBotApiClient.SendMessageAsync(messageBuilder.ToString(), cancellationToken);
     }

@@ -25,7 +25,7 @@ namespace Boilerplate.Tests.E2E.Features.Gdpr;
 [TestClass, TestCategory(TestCategories.Api), Retry(2)]
 public partial class PersonalDataJourneyTests
 {
-    private const string password = "123456";
+    private const string password = "12345678";
 
     /// <summary>
     /// The sources Sales registers, in the order <c>IPersonalDataSource.Order</c> puts them. No <c>todoItems</c>: that

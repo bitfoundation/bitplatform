@@ -9,9 +9,9 @@ public partial class SignUpRequestDto : IdentityRequestDto
     [Display(Name = nameof(AppStrings.UserName))]
     public override string? UserName { get; set; }
 
-    /// <example>"123456"</example>
+    /// <example>"12345678"</example>
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [MinLength(6, ErrorMessage = nameof(AppStrings.MinLengthAttribute_ValidationError))]
+    [MinLength(8, ErrorMessage = nameof(AppStrings.MinLengthAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.Password))]
     public string? Password { get; set; }
 

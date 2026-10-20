@@ -32,7 +32,7 @@ public partial class AiChatPanelHistoryUITests : AiChatPanelTestBase
     private const string PersianCulture = "fa-IR";
 
     private const string StoreAdminEmail = "store-admin@bitplatform.dev";
-    private const string StoreAdminPassword = "123456";
+    private const string StoreAdminPassword = "12345678";
 
     [TestMethod]
     public async Task ASignedInUsersConversation_Should_SurviveTheSoftRestartOfACultureChange()

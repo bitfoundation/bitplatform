@@ -14,7 +14,7 @@ public partial class Templates04CreateProjectPage
     private static readonly Faq[] finalFaqs =
     [
         new("What does bit new install on my machine?",
-            "It checks this machine and installs what's missing, such as the .NET SDK, Node.js, Git, Docker when Aspire needs it and VS Code. Then it creates the project, sets up git, builds it, adds the first database migration, installs the recommended editor extensions and opens the project. A step that fails doesn't stop the others."),
+            "It checks this machine and installs what's missing, such as the .NET SDK, Node.js, Git, a container runtime that's free for commercial use when Aspire needs one, and VS Code. Then it creates the project, sets up git, builds it, adds the first database migration, installs the recommended editor extensions, opens the project, and starts it in your browser. A step that fails doesn't stop the others."),
         new("How do I run my new project?",
             "If you use an AI assistant, just ask it to run the project. Otherwise, follow the [Run project](/templates/run-project) page.")
     ];
@@ -121,6 +121,9 @@ public partial class Templates04CreateProjectPage
 
     private void Choose(ChoiceGroup group, Answer answer)
     {
+        if (answer.IsLocked)
+            return;
+
         answer.Choose();
 
         foreach (var key in group.Keys)
@@ -447,7 +450,7 @@ public partial class Templates04CreateProjectPage
             Key = "multitenant",
             Label = "Many organizations (multi-tenancy)",
             Question = "Will several companies or teams use it, each seeing only their own data?",
-            Help = "This is known as multi-tenancy. Try it in the admin panel demo: sign in as store-user@bitplatform.dev with password 123456.",
+            Help = "This is known as multi-tenancy. Try it in the admin panel demo: sign in as store-user@bitplatform.dev with password 12345678.",
             Groups =
             [
                 new()
@@ -474,7 +477,7 @@ public partial class Templates04CreateProjectPage
             Key = "database",
             Label = "Data",
             Question = "Where should it keep its data?",
-            Help = "While you develop, PostgreSQL, SQL Server and MySQL run in a container for you. bit new offers to install Docker if it's missing.",
+            Help = "While you develop, PostgreSQL, SQL Server and MySQL run in a container for you. bit new installs a free container runtime if it's missing: Podman on Windows, Colima on macOS, Docker Engine on Linux.",
             Groups =
             [
                 new()
@@ -808,17 +811,11 @@ public partial class Templates04CreateProjectPage
                     [
                         new()
                         {
-                            Text = "Just the web app",
-                            Hint = "Quickest to set up.",
-                            IsNone = true,
-                            IsChosen = () => (setup.Android || setup.Ios || setup.MacOS || setup.Windows) is false,
-                            Choose = () =>
-                            {
-                                setup.Android = false;
-                                setup.Ios = false;
-                                setup.MacOS = false;
-                                setup.Windows = false;
-                            }
+                            Text = "Web",
+                            Hint = "Always set up, and the quickest one.",
+                            IsLocked = true,
+                            IsChosen = () => true,
+                            Choose = () => { }
                         },
                         Platform("Android", "Builds the Android app now.", () => setup.Android, v => setup.Android = v),
                         Platform("iOS", "Builds the iOS app now.", () => setup.Ios, v => setup.Ios = v),
@@ -854,6 +851,7 @@ public partial class Templates04CreateProjectPage
         public string? Hint { get; init; }
         public string? Summary { get; init; }
         public bool IsNone { get; init; }
+        public bool IsLocked { get; init; }
         public required Func<bool> IsChosen { get; init; }
         public required Action Choose { get; init; }
         public Func<bool> IsRecommended { get; init; } = () => false;

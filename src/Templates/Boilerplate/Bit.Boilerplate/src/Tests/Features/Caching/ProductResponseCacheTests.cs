@@ -14,7 +14,7 @@ public partial class ProductResponseCacheTests
     // Seeded members of the default (fallback) store tenant. See UserConfiguration and TenantUserConfiguration.
     private const string TenantAdminEmail = "store-admin@bitplatform.dev";
     private const string TenantUserEmail = "store-user@bitplatform.dev";
-    private const string Password = "123456";
+    private const string Password = "12345678";
 
     public TestContext TestContext { get; set; } = default!;
 

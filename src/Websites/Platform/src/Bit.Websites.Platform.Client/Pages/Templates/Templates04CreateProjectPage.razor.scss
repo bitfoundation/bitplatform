@@ -217,6 +217,22 @@
     box-shadow: inset 0 0 0 rem2(3px) $bit-color-background-secondary;
 }
 
+.answer.locked {
+    cursor: default;
+
+    &:hover {
+        border-color: $bit-color-primary;
+    }
+
+    .answer-hit {
+        cursor: default;
+    }
+
+    .answer-mark {
+        opacity: 0.6;
+    }
+}
+
 .answer.chosen .answer-mark.square {
     box-shadow: none;
 

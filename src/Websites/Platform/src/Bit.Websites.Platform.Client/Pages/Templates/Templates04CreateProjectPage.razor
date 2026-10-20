@@ -82,11 +82,12 @@
                         @foreach (var answer in group.Answers)
                         {
                             var chosen = answer.IsChosen();
-                            <div class="answer @(chosen ? "chosen" : null)">
+                            <div class="answer @(chosen ? "chosen" : null) @(answer.IsLocked ? "locked" : null)">
                                 <button type="button"
                                         class="answer-hit"
                                         role="@(group.Multiple ? "checkbox" : "radio")"
                                         aria-checked="@(chosen ? "true" : "false")"
+                                        disabled="@answer.IsLocked"
                                         aria-label="@answer.Text"
                                         aria-describedby="@(answer.Hint is null ? null : answer.HintId)"
                                         @onclick="WrapHandled(() => Choose(group, answer))"></button>

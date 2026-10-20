@@ -131,11 +131,7 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
             // A new keeper starts with an empty list; containers that outlived a killed keeper are recorded again by the run that adopts them.
             File.Delete(Path.Combine(stateDirectory, "containers"));
 
-            // Same lookup order as Aspire. The full path, because the Windows keeper doesn't inherit the app host's PATH.
-            var containerRuntime = FindExecutable(builder.Configuration["DcpPublisher:ContainerRuntime"]
-                ?? builder.Configuration["ASPIRE_CONTAINER_RUNTIME"]
-                ?? builder.Configuration["DOTNET_ASPIRE_CONTAINER_RUNTIME"]
-                ?? "docker");
+            var containerRuntime = ContainerRuntime.Find(builder);
 
             var processId = OperatingSystem.IsWindows()
                 ? StartWindowsKeeper(stateDirectory, (int)idleTimeout.TotalSeconds, containerRuntime)
@@ -260,11 +256,6 @@ internal sealed class ContainersKeeper(string stateDirectory, ResourceNotificati
 
         File.Delete(stoppingPath);
     }
-
-    private static string FindExecutable(string name)
-        => (Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries)
-            .Select(directory => Path.Combine(directory, OperatingSystem.IsWindows() ? $"{name}.exe" : name))
-            .FirstOrDefault(File.Exists) ?? name;
 
     // Same lookup order as Aspire's own DcpOptions.
     private static string? GetDcpPath(IDistributedApplicationBuilder builder)

@@ -16,8 +16,6 @@ public partial class ImageEditorModal
 
     [Parameter] public string FileName { get; set; } = default!;
 
-    [Parameter] public string? ContentType { get; set; }
-
     [Parameter] public double? CropAspectRatio { get; set; }
 
     [Parameter] public int MinWidth { get; set; }
@@ -190,14 +188,9 @@ public partial class ImageEditorModal
                 await editor.ApplyCropAsync();
             }
 
-            var exportOptions = ContentType is "image/jpeg" ? ImageExportOptions.Jpeg with { Quality = 0.92 } : ImageExportOptions.Png;
+            var format = editor.BrowserCapabilities?.ChooseEncodableFormat([ImageFormat.WebP]) ?? ImageFormat.Jpeg;
 
-            var image = await editor.ExportAsync(exportOptions);
-
-            if (image is not null && image.Length > MaxFileSize && image.Format is not ImageFormat.Jpeg)
-            {
-                image = await editor.ExportAsync(ImageExportOptions.Jpeg with { Quality = 0.92, MaxFileSize = MaxFileSize });
-            }
+            var image = await editor.ExportAsync(new ImageExportOptions { Format = format, Quality = 0.92, MaxFileSize = MaxFileSize });
 
             if (image is null) return;
 

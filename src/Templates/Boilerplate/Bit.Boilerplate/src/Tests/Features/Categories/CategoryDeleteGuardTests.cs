@@ -30,7 +30,7 @@ public partial class CategoryDeleteGuardTests
 {
     // Seeded tenant-admin of the default (fallback) tenant; holds ProductCatalog_Manage. See UserConfiguration.
     private const string TenantAdminEmail = "store-admin@bitplatform.dev";
-    private const string Password = "123456";
+    private const string Password = "12345678";
 
     public TestContext TestContext { get; set; } = default!;
 

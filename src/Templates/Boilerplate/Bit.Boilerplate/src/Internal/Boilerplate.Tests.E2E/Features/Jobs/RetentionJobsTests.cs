@@ -27,7 +27,7 @@ namespace Boilerplate.Tests.E2E.Features.Jobs;
 [TestClass, TestCategory(TestCategories.Api), Retry(2)]
 public partial class RetentionJobsTests
 {
-    private const string password = "123456";
+    private const string password = "12345678";
 
     /// <summary>
     /// AdminPanelApi, because this one runs the jobs rather than only looking at them. All three deployments share a

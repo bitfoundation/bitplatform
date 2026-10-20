@@ -112,7 +112,7 @@ public partial class AddOrEditProductPage
 
         if (files.FirstOrDefault(file => file.Status is BitFileUploadStatus.Pending) is not { PreviewUrl: not null } file) return;
 
-        var result = await imageEditorService.Edit(file.PreviewUrl, file.Name, file.ContentType, cropAspectRatio: null, minWidth: 512, minHeight: 512);
+        var result = await imageEditorService.Edit(file.PreviewUrl, file.Name, cropAspectRatio: null, minWidth: 512, minHeight: 512);
 
         if (result.Outcome is ImageEditorOutcome.KeepOriginal)
         {

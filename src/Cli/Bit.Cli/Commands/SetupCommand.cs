@@ -58,9 +58,9 @@ public static class SetupCommand
             }
 
             var context = new ProjectContext { Name = name, Directory = directory, Platforms = platforms, BuildProperties = properties };
-            var aspire = Directory.Exists(Path.Combine(directory, "src", "Server", $"{name}.Server.AppHost"));
+            var aspire = Directory.Exists(context.AppHostDirectory);
             var requirements = TemplateRequirements.FromProject(directory, name);
-            var needs = new ToolNeeds { Aspire = aspire, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
+            var needs = new ToolNeeds { Aspire = aspire, ContainersRequired = aspire && context.NeedsContainers, NativeWebAssembly = ProjectContext.UsesNativeWebAssembly(directory), Platforms = platforms, Ide = IdeLocator.None, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
             var hardware = NewWorkflow.ProbeHardwareAsync(cli, directory, cancellationToken);
             var tools = parseResult.GetValue(shared.NoTools)
                 ? []
@@ -90,9 +90,11 @@ public static class SetupCommand
                 await NewWorkflow.RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
             }
 
-            if (sdkReady && NewWorkflow.StartsAspireOnce(cli, aspire, parseResult.GetValue(shared.NoBuild)))
+            var runMode = ProjectRun.Mode(cli, aspire, parseResult.GetValue(shared.NoBuild), parseResult.GetValue(shared.NoRun));
+
+            if (sdkReady && runMode is not ProjectRunMode.None)
             {
-                await NewWorkflow.RunProjectStepAsync(steps, context, "aspire-start", "Starting the project once with Aspire", projectSteps.AspireStartAsync, cancellationToken);
+                await ProjectRun.RunProjectAsync(cli, steps, context, projectSteps, runMode, aspire, cancellationToken);
             }
 
             cli.Console.Out.WriteLine();
@@ -103,6 +105,11 @@ public static class SetupCommand
             foreach (var followUp in steps.Reports.Select(r => r.Result).Where(r => r.FollowUp is not null && r.Status is StepStatus.Failed or StepStatus.Warning))
             {
                 cli.Console.Out.MarkupLine($"    {Markup.Escape(followUp.FollowUp!)}");
+            }
+
+            if (projectSteps.Running is { } running)
+            {
+                await ProjectRun.KeepRunningAsync(cli, running, cancellationToken);
             }
 
             return steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;

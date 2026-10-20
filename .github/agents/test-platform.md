@@ -1,6 +1,6 @@
 ---
 name: test-platform
-description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit and runs the app, and check that its Aspire containers are reused from one run to the next and stopped once it sits idle, on Windows and inside the dev container. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
+description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit and runs the app, check that its Aspire containers are reused from one run to the next and stopped once it sits idle, on Windows and inside the dev container, and check that bit diff compares two bit Boilerplate versions. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
 ---
 
 # Test the platform
@@ -55,7 +55,8 @@ answer, and repeat the plan back before starting:
    checkout of that branch, pulled first: the helper takes the suite, its stages and the CD workflows from the
    checkout it runs in.
 2. **The tests**: any of the CI run (step 1), the CD rollout and its versions check (step 2), the E2E suite (step 3,
-   every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5) and the Aspire containers (step 6).
+   every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5), the Aspire containers (step 6)
+   and `bit diff` (step 7).
 3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
    latter needs a successful prerelease run on the branch under test first. It publishes the branch's version to
    nuget.org only when nuget.org doesn't have it yet, so at a version that is already there it builds packages and
@@ -65,7 +66,7 @@ answer, and repeat the plan back before starting:
    or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
    (`gh run list -R bitfoundation/bitplatform -w all.cd.yml -L 1`): it is often another branch than the one under test.
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
-7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
+7. **Steps 5, 6 and 7**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
    come from nuget.org at the template's version; when nuget.org's build of that version is older than the commit's
    libraries, `-PrereleasePackages` takes them from the newest Prerelease nuget packages run instead.
 
@@ -79,6 +80,7 @@ until the report. Then go in this order:
    its jobs and all default to on; `-f <job>=false` leaves one out.
 3. While they run: step 1 as CI jobs fail.
 4. Once CD is done: step 2, then steps 3 and 4, with step 6 in the background next to the web stages of step 3.
+   Step 7 needs no CD and is light: do it while CI and CD run.
 5. Step 5 last, on its own.
 
 Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows that version everywhere: as
@@ -146,7 +148,7 @@ websites - is checked. Every command prints what it checked and exits non-zero o
    What has cost time here before:
 
    - The template tree's tests start its Aspire app host first, with every container it has (SQL Server, PostgreSQL,
-     MySQL, Keycloak, both Redis, the S3 storage, MailPit), so they need Docker Desktop and are slow to start; that
+     MySQL, Keycloak, both Redis, the S3 storage, MailPit), so they need Docker and are slow to start; that
      start once hung for over 15 minutes. A generated project starts only its own few containers.
    - Install a packed template with `--debug:custom-hive <folder>` on both `dotnet new install` and `dotnet new`, so
      the machine's own Bit.Boilerplate template stays as it is; `bit new` already uses a private hive in its home
@@ -407,7 +409,7 @@ request lines in the server's log. Stop the site and the stand-in afterwards; a 
 
 A new project's dev container is the .NET SDK image with Docker inside it. When it's created, it installs bit and runs
 `bit setup`, which does the rest the way it does on any machine: Node.js, the Aspire CLI, the build tools, the
-certificate, the packages, the build and Chromium for the UI tests. `devcontainer` checks that on Docker Desktop's Linux
+certificate, the packages, the build and Chromium for the UI tests. `devcontainer` checks that on a Linux Docker
 engine, as VS Code and Codespaces would run it: `bit new` makes a project here without setting it up, the
 devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 
@@ -417,18 +419,18 @@ devcontainers CLI brings its container up, and `bit doctor` runs inside it.
 - `-PrereleasePackages` puts the packages of the newest Prerelease nuget packages run into that feed too, bit's
   aside, and maps every `Bit.*` to it: a template that already uses library changes nuget.org's build of its version
   doesn't have compiles against them.
-- It's heavy: a few GB in Docker Desktop's VM and about ten minutes, most of them for the container's image and the
+- It's heavy: a few GB in Docker's VM and about ten minutes, most of them for the container's image and the
   restore, then about half an hour for the Aspire check below. Run it on its own, after the E2E suite, never next to
   it.
 - Done means every `bit setup` step passed, `bit doctor` exits with 0, with VS Code not needed inside a container,
-  and the Aspire check below passes. `bit doctor`'s memory warning describes Docker Desktop's VM, not this machine,
+  and the Aspire check below passes. `bit doctor`'s memory warning describes Docker's VM, not this machine,
   and is expected.
 - The logs of `bit new`, of the container's start and of `bit doctor` stay in the folder the helper names. `-Keep`
   leaves the container up, to look inside it with the devcontainers CLI; bit's own logs are in its home folder there.
 
 A container that sets itself up can still fail to run the app. And the Aspire containers have to behave in there as
 step 6 shows they do on Windows: on Linux the keeper that stops them is a different process, started in a session of
-its own, and the containers run on the dev container's own Docker engine, not on Docker Desktop's. So run
+its own, and the containers run on the dev container's own Docker engine, not on the host's. So run
 `devcontainer` with `-Keep`, and once `bit doctor` has passed, do step 6's check inside the container: three
 `dotnet run`s of the app host, each until the web app answers inside the container and each ended the way closing
 its terminal does, with the same bar for the second run's reuse, the idle stop and the third run's volumes. Then
@@ -456,9 +458,9 @@ alive for its idle time. `aspire` checks that the way a developer meets it:
   the Bit packages come from nuget.org at the version the template asks for. The project's `global.json` asks for
   the repository's SDK, which needs the workloads the template's clients build with (`wasm-tools`): an SDK that
   Visual Studio installed brings only its own.
-- It takes about half an hour, most of it the idle wait, and a few GB of Docker Desktop's memory while the app runs.
+- It takes about half an hour, most of it the idle wait, and a few GB of Docker's memory while the app runs.
   Start it in the background once the CD's deploy jobs are done, and never next to `devcontainer` or the Android
-  stage. Its containers hold that memory, and Docker Desktop's VM keeps it for a while after they stop: IIS sites
+  stage. Its containers hold that memory, and Docker's VM keeps it for a while after they stop: IIS sites
   deployed next to them took minutes to start, and one never did ("Managed server didn't initialize after 120000
   ms" in the Application log), which a CD reports as a failed health check.
 
@@ -469,7 +471,27 @@ the next Aspire run removes and the idle stop doesn't touch.
 
 A failure is fixed in the template like a CI failure, and the next `aspire -Sha` on the fix proves it.
 
-## 7. Report
+## 7. bit diff
+
+`bit diff` creates a project with two bit Boilerplate versions into one git repository in the temp folder, so its
+second commit is the upgrade, and the template's `upgrade` skill applies that to a project. The helper has no command
+for it, so check it by hand, with bit and the template of the commit under test, or nuget.org's:
+
+- In a lab folder outside the repository and the scratchpad, with `BIT_CLI_HOME` pointing into it, create a project
+  from the previous release with `bit new --template-version`, skipping the run, the IDE and trust. Then run `bit diff`
+  in it, against the template folder of the checkout under test (`--template-package`) or the version under test.
+- Run a bit built from the commit with `dotnet` on its `bit.dll`. `dotnet run --project` from a folder whose SDK is
+  another one hands its MSBuild variables to every build bit starts, which then fail, and leave hundreds of MSBuild
+  processes behind.
+- Done means: the name, version and options come from the project's `bit.json`; there are two commits named after
+  the versions and a patch file in the diff's folder; the project itself is unchanged; and the differences are the
+  template's own changes plus only what the template picks at random on every run (ports, GUIDs, dates, the seeded
+  accounts' password). An option the older version doesn't have is reported, not passed to it.
+- `bit remove` deletes the diff's folder and the lab afterwards.
+
+A failure is fixed in bit like a CI failure.
+
+## 8. Report
 
 Lead with the verdict, then:
 
@@ -483,7 +505,9 @@ Lead with the verdict, then:
    exit code, the Aspire check inside it as in item 6, and per failure its cause and fix.
 6. **Aspire containers**: the commit or the nuget.org version tested, how soon each run was up, whether the second run
    reused every container, how long after the last run they stopped, and per failure its cause and fix.
-7. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
+7. **bit diff**: the versions compared, the size of the change, whether `bit.json`'s values were read, any
+   difference that is neither an upgrade nor random per run, and per failure its cause and fix.
+8. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
    through `prerelease_packages` before its release.
 
 Anything that looks like a defect in a bit platform library or in the `bit-bp` template itself: say so, and offer to

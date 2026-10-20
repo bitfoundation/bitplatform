@@ -7,7 +7,7 @@ public partial class TenantInvitationUITests : AppPageTest
 {
     // The seeded store tenant admin. She's a t-admin (not a global admin), See UserConfiguration.
     private const string StoreAdminEmail = "store-admin@bitplatform.dev";
-    private const string StoreAdminPassword = "123456";
+    private const string StoreAdminPassword = "12345678";
 
     /// <summary>
     /// End-to-end multi-tenant invitation journey across two isolated browsers:

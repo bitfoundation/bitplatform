@@ -33,7 +33,7 @@ public class AddOrEditProductPageTests
     // Seeded tenant-admin of the fallback tenant; holds PRIVILEGED_ACCESS, a selected tenant and ProductCatalog_Manage,
     // which is exactly what ProductController and CategoryController demand. See UserConfiguration.
     private const string TenantAdminEmail = "store-admin@bitplatform.dev";
-    private const string Password = "123456";
+    private const string Password = "12345678";
 
     /// <summary>
     /// BP-518. Asserts the observable consequence - a rendered message - rather than the presence of a particular

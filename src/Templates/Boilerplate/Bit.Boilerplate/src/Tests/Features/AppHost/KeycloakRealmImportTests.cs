@@ -5,7 +5,7 @@ using Aspire.Hosting.ApplicationModel;
 namespace Boilerplate.Tests.Features.AppHost;
 
 /// <summary>
-/// <c>dev-realm.json</c> seeds accounts with well-known passwords - <c>test</c> / <c>123456</c> is in <c>g-admin</c>,
+/// <c>dev-realm.json</c> seeds accounts with well-known passwords - <c>test</c> / <c>12345678</c> is in <c>g-admin</c>,
 /// which <c>AppJwtSecureDataFormat</c> expands into every <see cref="Boilerplate.Shared.Infrastructure.Services.AppFeatures"/>
 /// value - and an OAuth client whose secret is committed in this repository. It is a development fixture.
 /// <para>

@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Boilerplate.Shared.Features.Diagnostic;
+using Boilerplate.Client.Core.Infrastructure.Services.HttpMessageHandlers;
 
 namespace Boilerplate.Tests.E2E.Features.HealthChecks;
 
@@ -115,9 +116,14 @@ public partial class HealthCheckTests
 
             foreach (var host in hosts)
             {
-                var report = await apiClient.HttpClient.GetFromJsonAsync<HealthReportDto>(new Uri(new Uri(host), "healthz"), JsonSerializerOptions.Web, TestContext.CancellationToken);
+                using HttpRequestMessage request = new(HttpMethod.Get, new Uri(new Uri(host), "healthz"));
+                request.Options.Set(new HttpRequestOptionsKey<HttpStatusCode[]>(RequestOptionNames.AllowedStatusCodes), [HttpStatusCode.ServiceUnavailable]);
+
+                using var response = await apiClient.HttpClient.SendAsync(request, TestContext.CancellationToken);
+                var report = await response.Content.ReadFromJsonAsync<HealthReportDto>(JsonSerializerOptions.Web, TestContext.CancellationToken);
 
                 Assert.IsNotNull(report, $"{host}healthz returned no report.");
+                Assert.Contains("binStorage", report.Entries.Keys, $"{host}healthz answered {(int)response.StatusCode} without the checks a report has.");
 
                 failures.AddRange(report.Entries
                     .Where(entry => entry.Value.Status is not HealthCheckStatus.Healthy

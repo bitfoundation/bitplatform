@@ -8,7 +8,7 @@ using Spectre.Console;
 
 namespace Bit.Cli.Projects;
 
-public sealed class NewWorkflow(CliServices cli)
+public sealed partial class NewWorkflow(CliServices cli)
 {
     private const string CreateProjectPage = "https://bitplatform.dev/templates/create-project";
 
@@ -65,7 +65,7 @@ public sealed class NewWorkflow(CliServices cli)
 
         var ide = request.NoOpen ? IdeLocator.None : request.Ide;
         var requirements = request.TemplatePackage is null ? TemplateRequirements.Embedded : TemplateRequirements.FromPackage(Path.GetFullPath(request.TemplatePackage, cli.Environment.CurrentDirectory));
-        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
+        var needs = new ToolNeeds { Aspire = selection.Aspire, Containers = selection.AspireContainers(), ContainersRequired = selection.NeedsContainers, NativeWebAssembly = selection.IsTrue("offlineDb"), GitHubRepo = request.GitHubRepo, Platforms = platforms, Ide = ide, Sdk = requirements.Sdk, NodeMajor = requirements.NodeMajor, AspireVersion = requirements.Aspire };
         var hardware = request.NoSetup ? null : ProbeHardwareAsync(cli, directory, cancellationToken);
         var selectedTools = request.NoTools ? [] : await ChooseToolsAsync(cli, needs, request.Tools, request.ToolsGiven, interactive, hardware, cancellationToken);
 
@@ -127,7 +127,7 @@ public sealed class NewWorkflow(CliServices cli)
 
         if (sdkReady is false)
         {
-            steps.Add("format", StepResult.Skipped("Skipped dotnet format, the migration and Aspire's first start", "they need the project's .NET SDK"));
+            steps.Add("format", StepResult.Skipped("Skipped dotnet format, the migration and the first start", "they need the project's .NET SDK"));
         }
 
         if (sdkReady && request.NoFormat is false)
@@ -160,9 +160,11 @@ public sealed class NewWorkflow(CliServices cli)
             await RunProjectStepAsync(steps, context, "vscode-extensions", "Installing VS Code extensions", projectSteps.VsCodeExtensionsAsync, cancellationToken);
         }
 
-        if (sdkReady && StartsAspireOnce(cli, selection.Aspire, request.NoBuild))
+        var runMode = ProjectRun.Mode(cli, selection.Aspire, request.NoBuild, request.NoRun);
+
+        if (sdkReady && runMode is not ProjectRunMode.None)
         {
-            await RunProjectStepAsync(steps, context, "aspire-start", "Starting the project once with Aspire", projectSteps.AspireStartAsync, cancellationToken);
+            await ProjectRun.RunProjectAsync(cli, steps, context, projectSteps, runMode, selection.Aspire, cancellationToken);
         }
 
         if (ide is not IdeLocator.None)
@@ -171,7 +173,14 @@ public sealed class NewWorkflow(CliServices cli)
         }
 
         WriteSummary(cli, steps, context, selection, stopwatch.Elapsed, request.NoSetup);
-        return steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
+        var exitCode = steps.AnyFailed ? CliApp.ExitFailed : CliApp.ExitOk;
+
+        if (projectSteps.Running is { } running)
+        {
+            await ProjectRun.KeepRunningAsync(cli, running, cancellationToken);
+        }
+
+        return exitCode;
     }
 
     public static async Task<bool> RunSetupStepsAsync(CliServices cli, StepRunner steps, ProjectContext context, ProjectSteps projectSteps, bool noWorkloads, bool noRestore, bool noBuild, bool noBrowsers, CancellationToken cancellationToken)
@@ -216,8 +225,6 @@ public sealed class NewWorkflow(CliServices cli)
 
         return true;
     }
-
-    public static bool StartsAspireOnce(CliServices cli, bool aspire, bool noBuild) => aspire && noBuild is false && cli.Environment.IsCI is false;
 
     public static async Task RunProjectStepAsync(StepRunner steps, ProjectContext context, string id, string title, Func<Action<string>, CancellationToken, Task<StepResult>> work, CancellationToken cancellationToken)
     {
@@ -409,6 +416,8 @@ public sealed class NewWorkflow(CliServices cli)
                 return StepResult.Failed($"Couldn't create {context.Name}", "dotnet new finished without creating the solution", hint: DiagnosticCodes.FirstErrorLine(result.Output));
 
             var legacySolution = Path.ChangeExtension(context.Solution, ".sln");
+            var readme = Path.Combine(context.Directory, "README.md");
+            context.SeedPassword = File.Exists(readme) ? ReadSeedPassword(File.ReadAllText(readme)) : null;
 
             if (result.Succeeded && File.Exists(context.Solution) && File.Exists(legacySolution))
             {
@@ -466,7 +475,7 @@ public sealed class NewWorkflow(CliServices cli)
         if (request.GitHubRepo) stepsList.Add("private GitHub repository");
         if (request.NoTrust is false) stepsList.Add("trust for VS Code and AI tools");
         if (ide is IdeLocator.VsCode) stepsList.Add("VS Code extensions");
-        if (StartsAspireOnce(cli, selection.Aspire, request.NoBuild)) stepsList.Add("a first Aspire start");
+        if (ProjectRun.Mode(cli, selection.Aspire, request.NoBuild, request.NoRun) is not ProjectRunMode.None and var runMode) stepsList.Add(ProjectRun.PlanText(runMode, selection.Aspire));
         if (ide is not IdeLocator.None) stepsList.Add($"open in {IdeLocator.Title(ide)}");
         Row("Then", string.Join(", ", stepsList));
 
@@ -519,7 +528,7 @@ public sealed class NewWorkflow(CliServices cli)
             }
 
             cli.Console.Out.MarkupLine($"  [bold]Run it[/]     cd {Markup.Escape(ProcessSpec.Quote(relative))}  [grey]then[/]  {Markup.Escape(run)}");
-            cli.Console.Out.MarkupLine("  [bold]Sign in[/]    test@bitplatform.dev / 123456  [grey]seeded accounts, remove them before you deploy[/]");
+            cli.Console.Out.MarkupLine($"  [bold]Sign in[/]    test@bitplatform.dev / {Markup.Escape(context.SeedPassword ?? "123456")}  [grey]seeded accounts, remove them before you deploy[/]");
             cli.Console.Out.MarkupLine("  [bold]Docs[/]       https://bitplatform.dev/templates");
         }
 
@@ -559,4 +568,9 @@ public sealed class NewWorkflow(CliServices cli)
         cli.Console.Fail(message);
         return CliApp.ExitUsage;
     }
+
+    public static string? ReadSeedPassword(string readme) => SeedPasswordRegex().Match(readme) is { Success: true } match ? match.Groups["password"].Value : null;
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"password is \*\*`(?<password>[^`]+)`\*\*", System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
+    private static partial System.Text.RegularExpressions.Regex SeedPasswordRegex();
 }

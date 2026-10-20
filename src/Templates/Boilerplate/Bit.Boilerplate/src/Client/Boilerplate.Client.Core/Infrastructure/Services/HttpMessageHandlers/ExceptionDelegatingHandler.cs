@@ -35,6 +35,13 @@ public partial class ExceptionDelegatingHandler(PubSubService pubSubService,
 
                 serverCommunicationSuccess = true;
 
+                // The caller reads these responses itself, e.g. /healthz's report that comes with a 503.
+                if (request.Options.TryGetValue(new HttpRequestOptionsKey<HttpStatusCode[]>(RequestOptionNames.AllowedStatusCodes), out var allowedStatusCodes)
+                    && allowedStatusCodes.Contains(response.StatusCode))
+                {
+                    return response;
+                }
+
                 if (isInternalRequest && /* The following exception handling mechanism applies exclusively to responses from our own server. */
                     response.IsSuccessStatusCode is false &&
                     string.IsNullOrWhiteSpace(requestIdValue) is false &&

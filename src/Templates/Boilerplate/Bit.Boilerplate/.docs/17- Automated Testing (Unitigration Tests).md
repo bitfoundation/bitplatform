@@ -223,7 +223,7 @@ var authManager = client.AuthManager;
 ### TestData Constants
 ```csharp
 public const string DefaultTestEmail = "test@bitplatform.dev";
-public const string DefaultTestPassword = "123456";
+public const string DefaultTestPassword = "12345678";
 ```
 - Centralized test data in [`TestData.cs`](/src/Tests/Features/Identity/TestData.cs)
 - Seeds are created in `AppDbContext.OnModelCreating()` for development/testing
