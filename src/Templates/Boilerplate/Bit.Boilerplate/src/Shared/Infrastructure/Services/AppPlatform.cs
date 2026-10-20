@@ -38,6 +38,8 @@ public static partial class AppPlatform
     [SupportedOSPlatformGuard("ios")]
     public static bool IsIosOnMacOS { get; set; }
 
+    public static bool IsAot => AppContext.TryGetSwitch("Boilerplate.IsAot", out var isAot) && isAot;
+
     public static AppPlatformType Type =>
         IsAndroid ? AppPlatformType.Android :
         IsIos ? AppPlatformType.Ios :
