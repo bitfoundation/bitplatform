@@ -105,7 +105,7 @@
     </Target>
 
     <ItemGroup Condition=" '$(RunAOTCompilation)' == 'true' OR '$(PublishAot)' == 'true' ">
-        <RuntimeHostConfigurationOption Include="Boilerplate.IsAot" Value="true" Trimmable="true" />
+        <RuntimeHostConfigurationOption Include="Boilerplate.IsAot" Value="true" Trim="true" />
     </ItemGroup>
 
     <!-- When the CD sets ShowBuildProvenance, the About page shows the GitHub Actions run, the commit and the attestations. -->
