@@ -8,7 +8,7 @@ using Spectre.Console;
 
 namespace Bit.Cli.Projects;
 
-public sealed class NewWorkflow(CliServices cli)
+public sealed partial class NewWorkflow(CliServices cli)
 {
     private const string CreateProjectPage = "https://bitplatform.dev/templates/create-project";
 
@@ -417,7 +417,7 @@ public sealed class NewWorkflow(CliServices cli)
 
             var legacySolution = Path.ChangeExtension(context.Solution, ".sln");
             var readme = Path.Combine(context.Directory, "README.md");
-            context.SeedPassword = File.Exists(readme) ? TemplateDiff.ReadReadme(File.ReadAllText(readme)).SeedPassword : null;
+            context.SeedPassword = File.Exists(readme) ? ReadSeedPassword(File.ReadAllText(readme)) : null;
 
             if (result.Succeeded && File.Exists(context.Solution) && File.Exists(legacySolution))
             {
@@ -568,4 +568,9 @@ public sealed class NewWorkflow(CliServices cli)
         cli.Console.Fail(message);
         return CliApp.ExitUsage;
     }
+
+    public static string? ReadSeedPassword(string readme) => SeedPasswordRegex().Match(readme) is { Success: true } match ? match.Groups["password"].Value : null;
+
+    [System.Text.RegularExpressions.GeneratedRegex(@"password is \*\*`(?<password>[^`]+)`\*\*", System.Text.RegularExpressions.RegexOptions.IgnoreCase)]
+    private static partial System.Text.RegularExpressions.Regex SeedPasswordRegex();
 }

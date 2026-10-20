@@ -113,7 +113,7 @@ bit diff --template-package ../bitplatform/src/Templates/Boilerplate/Bit.Boilerp
 ```
 
 - It creates the project with each version, the old one first, into one git repository in the temp folder, so the second commit is exactly the upgrade, and writes it as `bit-diff.patch` in that repository too. Your project isn't touched.
-- In a project, it takes the name, the version and the options from the project's `bit.json`, where the template records them; a project created before `bit.json` has them in its `README.md`. Pass `from`, `to`, `--name` or any option of `bit new` to change them. `to` defaults to this bit's own version.
+- In a project, it takes the name, the version and the options from the project's `bit.json`, where the template records them. Pass `from`, `to`, `--name` or any option of `bit new` to change them. `to` defaults to this bit's own version.
 - An option a version doesn't have is left out for that version, and said so.
 - What the template picks at random on every run, like ports, GUIDs, dates and the seeded accounts' password, differs between the two, and so does what `bit new` adds after creating a project.
 - The repository goes to `<temp>/bit-diff/<name>-<from>-<to>`, or `-o <folder>`. Delete it with `bit remove <folder> --yes` when you're done.

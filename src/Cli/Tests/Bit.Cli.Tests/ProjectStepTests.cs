@@ -646,48 +646,55 @@ public class ProjectStepTests
     public async Task ExtensionsVsCodeBuildsIn_Should_CountAsInstalled()
     {
         using var host = new TestHost(HostOs.Linux);
-        var code = typeof(ProjectStepTests).Assembly.Location;
-        var name = Path.GetFileNameWithoutExtension(code);
-        host.Runner.Executables["code"] = code;
-        var project = CreateFakeProject(host, "Contoso");
+        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csdevkit");
         WriteRecommendations(project, "Anthropic.claude-code", "vscode.git");
-        host.Runner.On(name, "--list-extensions", 0, "ms-dotnettools.csdevkit\n");
-        host.Runner.On(name, "--install-extension Anthropic.claude-code", 0);
-        host.Runner.On(name, "--install-extension Anthropic.claude-code --install-extension vscode.git", 1,
-            "Error while installing extension vscode.git: Extension 'vscode.git' is a built-in extension with version '1.112.0' and cannot be downgraded to version '1.0.0'.\nFailed Installing Extensions: vscode.git");
+        host.Runner.On(vsCode.Name, "--install-extension", spec =>
+        {
+            vsCode.Installed.Add("anthropic.claude-code");
+            return new ProcessResult { ExitCode = 1, Output = "Error while installing extension vscode.git: Extension 'vscode.git' is a built-in extension with version '1.112.0' and cannot be downgraded to version '1.0.0'.\nFailed Installing Extensions: vscode.git" };
+        });
 
         var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual(StepStatus.Succeeded, result.Status, result.Detail + result.FollowUp);
         Assert.AreEqual("Installed 1 VS Code extension", result.Title);
-        CollectionAssert.AreEqual(new[] { "--install-extension", "Anthropic.claude-code" }, host.Runner.Calls.Last().Arguments.ToArray());
+        Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "--install-extension"));
     }
 
     [TestMethod]
-    public async Task AFailedExtensionInstall_Should_PointAtVsCodesOwnPath()
+    public async Task AFailedExtensionInstall_Should_BeRetriedOnceAndNamed()
     {
         using var host = new TestHost(HostOs.Linux);
-        var code = typeof(ProjectStepTests).Assembly.Location;
-        host.Runner.Executables["code"] = code;
-        var project = CreateFakeProject(host, "Contoso");
-        WriteRecommendations(project, "Anthropic.claude-code");
-        host.Runner.On(Path.GetFileNameWithoutExtension(code), "--install-extension", 1, "error: the marketplace can't be reached");
+        var (project, vsCode) = FakeVsCode(host);
+        WriteRecommendations(project, "Anthropic.claude-code", "EditorConfig.EditorConfig");
+        var attempts = 0;
+        host.Runner.On(vsCode.Name, "--install-extension", spec =>
+        {
+            vsCode.Installed.Add("editorconfig.editorconfig");
+            return new ProcessResult { ExitCode = 1, Output = ++attempts == 1 ? "error: the marketplace can't be reached" : "Failed Installing Extensions: anthropic.claude-code" };
+        });
 
         var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
 
-        Assert.AreEqual(StepStatus.Failed, result.Status);
-        Assert.AreEqual($"{ProcessSpec.Quote(code)} --install-extension Anthropic.claude-code", result.FollowUp);
+        Assert.AreEqual(StepStatus.Warning, result.Status, "An extension that won't install is a note, not a failed run.");
+        Assert.AreEqual("Couldn't install 1 VS Code extension", result.Title);
+        Assert.AreEqual("claude-code", result.Detail);
+        Assert.AreEqual($"{ProcessSpec.Quote(vsCode.Path)} --install-extension Anthropic.claude-code", result.FollowUp);
+        Assert.AreEqual(2, attempts);
+        CollectionAssert.AreEqual(new[] { "--install-extension", "Anthropic.claude-code" }, host.Runner.Calls.Where(c => c.Arguments.FirstOrDefault() is "--install-extension").Last().Arguments.ToArray());
     }
 
     [TestMethod]
     public async Task VsCode_Should_GetOnlyTheExtensionsItLacks()
     {
         using var host = new TestHost(HostOs.Linux);
-        var code = typeof(ProjectStepTests).Assembly.Location;
-        host.Runner.Executables["code"] = code;
-        var project = CreateFakeProject(host, "Contoso");
+        var (project, vsCode) = FakeVsCode(host, "ms-dotnettools.csharp", "ms-dotnettools.csdevkit");
         WriteRecommendations(project, "ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.csharp");
-        host.Runner.On(Path.GetFileNameWithoutExtension(code), "--list-extensions", 0, "ms-dotnettools.csharp\nms-dotnettools.csdevkit\n");
+        host.Runner.On(vsCode.Name, "--install-extension", spec =>
+        {
+            vsCode.Installed.UnionWith(spec.Arguments.Where(a => a.StartsWith('-') is false));
+            return new ProcessResult { ExitCode = 0 };
+        });
 
         var result = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
 
@@ -696,11 +703,21 @@ public class ProjectStepTests
         var install = host.Runner.Calls.Single(c => c.Arguments.FirstOrDefault() is "--install-extension");
         CollectionAssert.AreEqual(new[] { "--install-extension", "Anthropic.claude-code" }, install.Arguments.ToArray());
 
-        host.Runner.On(Path.GetFileNameWithoutExtension(code), "--list-extensions", 0, "anthropic.claude-code\nms-dotnettools.csharp\nms-dotnettools.csdevkit\n");
         var done = await new ProjectSteps(host.Services, project).VsCodeExtensionsAsync(_ => { }, CancellationToken.None);
 
         Assert.AreEqual("Extensions already installed", done.Title);
         Assert.AreEqual(1, host.Runner.Calls.Count(c => c.Arguments.FirstOrDefault() is "--install-extension"));
+    }
+
+    private sealed record FakeVsCodeInstall(string Path, string Name, HashSet<string> Installed);
+
+    private static (ProjectContext Project, FakeVsCodeInstall VsCode) FakeVsCode(TestHost host, params string[] installed)
+    {
+        var code = typeof(ProjectStepTests).Assembly.Location;
+        var vsCode = new FakeVsCodeInstall(code, Path.GetFileNameWithoutExtension(code), new HashSet<string>(installed, StringComparer.OrdinalIgnoreCase));
+        host.Runner.Executables["code"] = code;
+        host.Runner.On(vsCode.Name, "--list-extensions", _ => new ProcessResult { ExitCode = 0, Output = string.Join('\n', vsCode.Installed) });
+        return (CreateFakeProject(host, "Contoso"), vsCode);
     }
 
     [TestMethod]
@@ -843,6 +860,40 @@ public class ProjectStepTests
         Assert.AreEqual(StepStatus.Succeeded, result.Status);
         CollectionAssert.AreEqual(new[] { "auth setup-git --hostname github.com --force", "auth login --web --git-protocol https --hostname github.com" },
             host.Runner.Calls.Where(c => c.FileName is "gh").Select(c => string.Join(' ', c.Arguments)).ToArray());
+    }
+
+    [TestMethod]
+    public async Task GitHubSignIn_Should_ShowTheCodeAndLetEscSkipIt()
+    {
+        using var host = new TestHost();
+        var project = CreateFakeProject(host, "Contoso");
+        host.Runner.Executables["gh"] = "/usr/bin/gh";
+        var stopped = false;
+        host.Runner.OnAsync("gh", "auth login", async (spec, ct) =>
+        {
+            spec.OnOutputLine?.Invoke("! One-time code (AB12-CD34) copied to clipboard");
+            spec.OnOutputLine?.Invoke("Open this URL to continue in your web browser: https://github.com/login/device");
+
+            try
+            {
+                await Task.Delay(Timeout.Infinite, ct);
+            }
+            finally
+            {
+                stopped = true;
+            }
+
+            return new ProcessResult { ExitCode = 0 };
+        });
+
+        var result = await new ProjectSteps(host.Services, project) { SkipRequested = _ => Task.CompletedTask }.GitHubSignInAsync(_ => { }, CancellationToken.None);
+
+        Assert.AreEqual(StepStatus.Warning, result.Status);
+        Assert.AreEqual("Skipped signing in to GitHub", result.Title);
+        Assert.IsTrue(stopped, "Skipping stops gh's sign-in.");
+        StringAssert.Contains(host.FlatOutput, "Enter AB12-CD34");
+        StringAssert.Contains(host.FlatOutput, "Press Esc to skip");
+        CollectionAssert.AreEqual(new[] { "https://github.com/login/device" }, host.Runner.Detached.SelectMany(d => d.Arguments).Where(a => a.StartsWith("https", StringComparison.Ordinal)).ToArray());
     }
 
     [TestMethod]

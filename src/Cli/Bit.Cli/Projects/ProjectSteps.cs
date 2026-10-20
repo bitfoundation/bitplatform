@@ -7,6 +7,7 @@ using Bit.Cli.Telemetry;
 using Bit.Cli.Templates;
 using Bit.Cli.Tools;
 using Bit.Cli.Trust;
+using Spectre.Console;
 
 namespace Bit.Cli.Projects;
 
@@ -724,35 +725,46 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
         if (IdeLocator.FindVsCode(cli.Environment, Runner) is not { } code)
             return StepResult.Skipped("Skipped VS Code extensions", "VS Code isn't installed");
 
-        var listed = await Runner.RunAsync(new ProcessSpec { FileName = code.Executable, Arguments = ["--list-extensions"], Timeout = TimeSpan.FromMinutes(2) }, cancellationToken);
-        var installed = listed.Succeeded ? listed.OutputLines.Select(l => l.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase) : [];
-        var missing = recommended.Where(id => installed.Contains(id) is false).ToList();
+        var installed = await ListExtensionsAsync(code, cancellationToken);
+        var wanted = recommended.Where(id => installed?.Contains(id) is not true).ToList();
 
-        if (listed.Succeeded && missing.Count == 0)
+        if (installed is not null && wanted.Count == 0)
             return StepResult.Succeeded("Extensions already installed", $"{recommended.Count} recommended for VS Code");
 
-        string[] arguments = [.. missing.SelectMany(id => new[] { "--install-extension", id })];
-        var install = new ProcessSpec { FileName = code.Executable, Arguments = arguments, OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(15) };
-        var result = await Runner.RunAsync(install, cancellationToken);
-        var builtIn = BuiltInExtensionRegex().Matches(result.Output).Select(m => m.Groups["id"].Value).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var missing = wanted;
+        var builtIn = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        ProcessResult? last = null;
 
-        if (result.Succeeded is false && builtIn.Count > 0)
+        for (var attempt = 0; attempt < 2 && missing.Count > 0; attempt++)
         {
-            missing = [.. missing.Where(id => builtIn.Contains(id) is false)];
+            last = await Runner.RunAsync(new ProcessSpec { FileName = code.Executable, Arguments = InstallArguments(missing), OnOutputLine = progress, Timeout = TimeSpan.FromMinutes(15) }, cancellationToken);
+            builtIn.UnionWith(BuiltInExtensionRegex().Matches(last.Output).Select(m => m.Groups["id"].Value));
 
-            if (missing.Count == 0)
-                return StepResult.Succeeded("Extensions already installed", $"{recommended.Count} recommended for VS Code");
-
-            arguments = [.. missing.SelectMany(id => new[] { "--install-extension", id })];
-            install = install with { Arguments = arguments };
-            result = await Runner.RunAsync(install, cancellationToken);
+            var now = await ListExtensionsAsync(code, cancellationToken) ?? [];
+            missing = [.. missing.Where(id => now.Contains(id) is false && builtIn.Contains(id) is false)];
         }
 
-        var names = string.Join(", ", missing.Take(3).Select(id => id[(id.IndexOf('.') + 1)..])) + (missing.Count > 3 ? $" and {missing.Count - 3} more" : "");
+        var added = wanted.Where(id => builtIn.Contains(id) is false && missing.Contains(id) is false).ToList();
 
-        return StepResult.FromProcess(result, $"Installed {missing.Count} VS Code extension{(missing.Count == 1 ? "" : "s")}", "Couldn't install the VS Code extensions",
-            $"{ProcessSpec.Quote(code.Executable)} {string.Join(' ', arguments)}", names);
+        if (missing.Count > 0)
+            return StepResult.Warning($"Couldn't install {missing.Count} VS Code extension{(missing.Count == 1 ? "" : "s")}", ExtensionNames(missing),
+                $"{ProcessSpec.Quote(code.Executable)} {string.Join(' ', InstallArguments(missing))}", last is null ? null : DiagnosticCodes.FirstErrorLine(last.Output));
+
+        return added.Count == 0
+            ? StepResult.Succeeded("Extensions already installed", $"{recommended.Count} recommended for VS Code")
+            : StepResult.Succeeded($"Installed {added.Count} VS Code extension{(added.Count == 1 ? "" : "s")}", ExtensionNames(added));
     }
+
+    private async Task<HashSet<string>?> ListExtensionsAsync(Ide code, CancellationToken cancellationToken)
+    {
+        var listed = await Runner.RunAsync(new ProcessSpec { FileName = code.Executable, Arguments = ["--list-extensions"], Timeout = TimeSpan.FromMinutes(2) }, cancellationToken);
+        return listed.Succeeded ? listed.OutputLines.Select(l => l.Trim()).ToHashSet(StringComparer.OrdinalIgnoreCase) : null;
+    }
+
+    private static string[] InstallArguments(IEnumerable<string> extensions) => [.. extensions.SelectMany(id => new[] { "--install-extension", id })];
+
+    private static string ExtensionNames(IReadOnlyList<string> extensions)
+        => string.Join(", ", extensions.Take(3).Select(id => id[(id.IndexOf('.') + 1)..])) + (extensions.Count > 3 ? $" and {extensions.Count - 3} more" : "");
 
     private static readonly string[] visualStudioLicensedExtensions = ["ms-dotnettools.csdevkit", "ms-dotnettools.dotnet-maui"];
 
@@ -860,18 +872,60 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
     {
         await Gh(["auth", "setup-git", "--hostname", "github.com", "--force"], cancellationToken);
 
-        var login = await Runner.RunAsync(new ProcessSpec
+        using var signIn = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var codeShown = 0;
+
+        var login = Runner.RunAsync(new ProcessSpec
         {
             FileName = "gh",
             Arguments = ["auth", "login", "--web", "--git-protocol", "https", "--hostname", "github.com"],
             WorkingDirectory = project.Directory,
-            Interactive = true,
-            Timeout = TimeSpan.FromMinutes(15)
-        }, cancellationToken);
+            Timeout = TimeSpan.FromMinutes(15),
+            OnOutputLine = line =>
+            {
+                if (OneTimeCodeRegex().Match(line) is not { Success: true } code || Interlocked.Exchange(ref codeShown, 1) is 1)
+                    return;
 
-        return login.Succeeded
-            ? StepResult.Succeeded("Signed in to GitHub")
-            : StepResult.Warning("Not signed in to GitHub", "the sign-in didn't finish", "gh auth login --web");
+                cli.Console.Out.MarkupLine($"    Enter [bold]{code.Value}[/] [grey](copied to the clipboard)[/] at {GitHubDevicePage}, which opens in your browser.");
+                cli.Console.Out.MarkupLine("    [grey]Press Esc to skip signing in; bit goes on without the GitHub repo.[/]");
+                ProjectRun.OpenInBrowser(cli, GitHubDevicePage);
+            }
+        }, signIn.Token);
+
+        var skip = SkipRequested(signIn.Token);
+        var skipped = await Task.WhenAny(login, skip) == skip && skip.IsCompletedSuccessfully;
+
+        await signIn.CancelAsync();
+
+        try
+        {
+            var result = await login;
+
+            if (skipped is false)
+                return result.Succeeded
+                    ? StepResult.Succeeded("Signed in to GitHub")
+                    : StepResult.Warning("Not signed in to GitHub", "the sign-in didn't finish", "gh auth login --web");
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested is false)
+        {
+        }
+
+        return StepResult.Warning("Skipped signing in to GitHub", "you pressed Esc", "gh auth login --web");
+    }
+
+    private const string GitHubDevicePage = "https://github.com/login/device";
+
+    public Func<CancellationToken, Task> SkipRequested { get; init; } = WaitForEscapeAsync;
+
+    private static async Task WaitForEscapeAsync(CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            if (Console.IsInputRedirected is false && Console.KeyAvailable && Console.ReadKey(intercept: true).Key is ConsoleKey.Escape)
+                return;
+
+            await Task.Delay(TimeSpan.FromMilliseconds(100), cancellationToken);
+        }
     }
 
     public async Task<StepResult> GitHubRepositoryAsync(Action<string> progress, CancellationToken cancellationToken)
@@ -961,6 +1015,9 @@ public sealed partial class ProjectSteps(CliServices cli, ProjectContext project
 
     [GeneratedRegex(@"[^A-Za-z0-9._-]+")]
     private static partial Regex GitEmailRegex();
+
+    [GeneratedRegex(@"\b[A-Z0-9]{4}-[A-Z0-9]{4}\b")]
+    private static partial Regex OneTimeCodeRegex();
 
     [GeneratedRegex(@"""dashboardUrl""\s*:\s*""(?<url>[^""]+)""")]
     private static partial Regex DashboardUrlRegex();
