@@ -28,7 +28,7 @@ public record BlexApiTypeDto
     /// <summary>Component, Interface, Enum, Attribute, Delegate, Static class, Class, Struct or Record.</summary>
     public required string Kind { get; init; }
 
-    /// <summary>The package the type ships in: Bit.Blex, Bit.Blex.Blazor, Bit.Blex.Maui or Bit.Blex.Testing.</summary>
+    /// <summary>The package the type ships in: Bit.Blex, Bit.Blex.Maui or Bit.Blex.Testing.</summary>
     public required string Package { get; init; }
 
     public string? Summary { get; init; }

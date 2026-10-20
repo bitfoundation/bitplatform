@@ -78,7 +78,7 @@ public sealed class CacheStorageTests : BsqliteTest
         await Page.EvaluateAsync(
             """
             async name => {
-              const admin = await import('/_content/Bit.Bsqlite.Storage.CacheStorage/bit-bsqlite-cache-admin.js');
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-cache-admin.js');
               const image = await admin.exportDatabase(name);
               await admin.deleteDatabase(name);
               const besql = await caches.open('bit-Besql');
@@ -106,7 +106,7 @@ public sealed class CacheStorageTests : BsqliteTest
         var outcome = await Page.EvaluateAsync<JsonElement>(
             """
             async ({ name, image }) => {
-              const admin = await import('/_content/Bit.Bsqlite.Storage.CacheStorage/bit-bsqlite-cache-admin.js');
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-cache-admin.js');
               await admin.importDatabase(name, new Uint8Array(image));
               const exported = Array.from(await admin.exportDatabase(name));
               const listed = await admin.list();

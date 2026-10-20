@@ -17,7 +17,6 @@
     <Project Path="Tests/Bit.BlazeDb.Benchmarks/Bit.BlazeDb.Benchmarks.csproj" />
   </Folder>
   <Project Path="Bit.BlazeDb/Bit.BlazeDb.csproj" />
-  <Project Path="Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj" />
   <Project Path="Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj" />
   <Project Path="Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj" />
 </Solution>

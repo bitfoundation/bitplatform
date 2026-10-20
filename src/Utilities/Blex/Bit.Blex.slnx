@@ -27,7 +27,6 @@
     <Project Path="Tests/Bit.Blex.Tests.Harness.Hybrid/Bit.Blex.Tests.Harness.Hybrid.csproj" />
   </Folder>
   <Project Path="Bit.Blex/Bit.Blex.csproj" />
-  <Project Path="Bit.Blex.Blazor/Bit.Blex.Blazor.csproj" />
   <Project Path="Bit.Blex.Generators/Bit.Blex.Generators.csproj" />
   <Project Path="Bit.Blex.Maui/Bit.Blex.Maui.csproj" />
   <Project Path="Bit.Blex.Testing/Bit.Blex.Testing.csproj" />

@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Reflection;
 using System.Collections.Concurrent;
-using Bit.Blex.Blazor;
 using Bit.Blex.Maui;
 using Bit.Blex.Testing;
 using Bit.Blex.Demo.Server.Dtos;
@@ -10,14 +9,15 @@ using Microsoft.AspNetCore.Components;
 namespace Bit.Blex.Demo.Server.Services;
 
 /// <summary>
-/// Builds the API reference the MCP tools serve, by reflecting over the public surface of the four
+/// Builds the API reference the MCP tools serve, by reflecting over the public surface of the three
 /// Bit.Blex runtime assemblies and pairing every type and member with its XML documentation.
 /// <para>
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the shipped
 /// library - a new option shows up the moment it is written, with the default value it actually has
 /// (read off a freshly constructed instance) instead of one someone remembered to copy into a document.
 /// The source generator is not in this list: it has no public API, only the attributes it reads (which
-/// live in Bit.Blex) and the diagnostics it reports (GetBlexDiagnostics).
+/// live in Bit.Blex) and the diagnostics it reports (GetBlexDiagnostics). The Blazor integration is: its
+/// types (namespace Bit.Blex.Blazor) are part of the Bit.Blex assembly.
 /// </para>
 /// </summary>
 public static class BlexApiCatalog
@@ -28,7 +28,6 @@ public static class BlexApiCatalog
     public static readonly Assembly[] Assemblies =
     [
         typeof(BlexStoreBase).Assembly,
-        typeof(BlexProvider).Assembly,
         typeof(BitBlexMaui).Assembly,
         typeof(BlexTestHarness).Assembly,
     ];

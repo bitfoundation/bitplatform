@@ -75,15 +75,15 @@ public static class BmageSetupGuide
     private const string Install = """
         ## 1. Install
 
-        Pick the package for what you need; the editor brings `Bit.Bmage` with it.
+        One package holds everything:
 
-        | Package | Use it when | Namespace roots |
-        |---|---|---|
-        | `Bit.Bmage.Editor` | You want the `BmageEditor` / `BmageDropZone` components | `Bit.Bmage.Editor.Components`, `Bit.Bmage.Editor.Tools` |
-        | `Bit.Bmage` | The engine, browser codecs, loading and export, your own UI | `Bit.Bmage`, `Bit.Bmage.Pipeline`, `Bit.Bmage.Codecs`, `Bit.Bmage.Input`, `Bit.Bmage.Output`, ... |
+        | What you need | Namespace roots |
+        |---|---|
+        | The `BmageEditor` / `BmageDropZone` components | `Bit.Bmage.Editor.Components`, `Bit.Bmage.Editor.Tools` |
+        | The engine, browser codecs, loading and export, your own UI | `Bit.Bmage`, `Bit.Bmage.Pipeline`, `Bit.Bmage.Codecs`, `Bit.Bmage.Input`, `Bit.Bmage.Output`, ... |
 
         ```bash
-        dotnet add package Bit.Bmage.Editor
+        dotnet add package Bit.Bmage
         ```
 
         Install it in the project that runs in the browser - in a Blazor Web App, the **.Client** project.
@@ -112,12 +112,12 @@ public static class BmageSetupGuide
     private const string Stylesheet = """
         ## 3. Link the editor's stylesheet
 
-        Only for `Bit.Bmage.Editor`. In `Components/App.razor` of the server project:
+        Only when the page uses the editor components. In `Components/App.razor` of the server project:
 
         ```razor
         <head>
             ...
-            <link rel="stylesheet" href="_content/Bit.Bmage.Editor/bit-bmage-editor.css" />
+            <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
             <HeadOutlet @rendermode="InteractiveWebAssembly" />
         </head>
         ```
@@ -130,12 +130,12 @@ public static class BmageSetupGuide
     private const string StandaloneStylesheet = """
         ## 3. Link the editor's stylesheet
 
-        Only for `Bit.Bmage.Editor`. In `wwwroot/index.html`:
+        Only when the page uses the editor components. In `wwwroot/index.html`:
 
         ```html
         <head>
             ...
-            <link rel="stylesheet" href="_content/Bit.Bmage.Editor/bit-bmage-editor.css" />
+            <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
         </head>
         ```
 

@@ -161,11 +161,6 @@ jobs:
     - name: dotnet pack Besql
       run: dotnet pack src/Besql/Bit.Besql/Bit.Besql.csproj --output . --configuration Release
 
-    - name: dotnet build BevTools.Abstractions
-      run: dotnet build src/Utilities/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack BevTools.Abstractions
-      run: dotnet pack src/Utilities/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj --output . --configuration Release
-
     - name: dotnet build BevTools
       run: dotnet build src/Utilities/BevTools/Bit.BevTools/Bit.BevTools.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BevTools
@@ -186,30 +181,10 @@ jobs:
     - name: dotnet pack Bmage
       run: dotnet pack src/Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj --output . --configuration Release
 
-    - name: dotnet build Bmage.Editor
-      run: dotnet build src/Utilities/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bmage.Editor
-      run: dotnet pack src/Utilities/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj --output . --configuration Release
-
     - name: dotnet build Bsqlite
       run: dotnet build src/Utilities/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bsqlite
       run: dotnet pack src/Utilities/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj --output . --configuration Release
-
-    - name: dotnet build Bsqlite.Storage.Opfs
-      run: dotnet build src/Utilities/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bsqlite.Storage.Opfs
-      run: dotnet pack src/Utilities/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj --output . --configuration Release
-
-    - name: dotnet build Bsqlite.Storage.IndexedDb
-      run: dotnet build src/Utilities/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bsqlite.Storage.IndexedDb
-      run: dotnet pack src/Utilities/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj --output . --configuration Release
-
-    - name: dotnet build Bsqlite.Storage.CacheStorage
-      run: dotnet build src/Utilities/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bsqlite.Storage.CacheStorage
-      run: dotnet pack src/Utilities/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj --output . --configuration Release
 
     - name: dotnet build Bsqlite.Testing
       run: dotnet build src/Utilities/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -241,16 +216,6 @@ jobs:
     - name: dotnet pack BlazeDb
       run: dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj --output . --configuration Release
 
-    - name: dotnet build BlazeDb.Generators
-      run: dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack BlazeDb.Generators
-      run: dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj --output . --configuration Release
-
-    - name: dotnet build BlazeDb.Browser
-      run: dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack BlazeDb.Browser
-      run: dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj --output . --configuration Release
-
     - name: dotnet build BlazeDb.EntityFrameworkCore
       run: dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazeDb.EntityFrameworkCore
@@ -276,11 +241,6 @@ jobs:
     - name: dotnet pack Bcrdt
       run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj --output . --configuration Release
 
-    - name: dotnet build Bcrdt.Blazor
-      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bcrdt.Blazor
-      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj --output . --configuration Release
-
     - name: dotnet build Bcrdt.SignalR
       run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bcrdt.SignalR
@@ -300,16 +260,6 @@ jobs:
       run: dotnet build src/Utilities/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blex
       run: dotnet pack src/Utilities/Blex/Bit.Blex/Bit.Blex.csproj --output . --configuration Release
-
-    - name: dotnet build Blex.Generators
-      run: dotnet build src/Utilities/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Blex.Generators
-      run: dotnet pack src/Utilities/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj --output . --configuration Release
-
-    - name: dotnet build Blex.Blazor
-      run: dotnet build src/Utilities/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Blex.Blazor
-      run: dotnet pack src/Utilities/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj --output . --configuration Release
 
     - name: dotnet build Blex.Maui
       run: dotnet build src/Utilities/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

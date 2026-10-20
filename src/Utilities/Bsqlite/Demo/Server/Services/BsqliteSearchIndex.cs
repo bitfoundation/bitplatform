@@ -4,7 +4,7 @@ namespace Bit.Bsqlite.Demo.Server.Services;
 
 /// <summary>
 /// One searchable index over everything this MCP server knows: every section of every document, every
-/// public type and member of the five packages, the storage backends, the setup guides, the two labs
+/// public type and member of the two packages, the storage backends, the setup guides, the two labs
 /// and the demo's source files.
 /// <para>
 /// Without it an agent has to guess which corpus holds the answer and what it is called there - "keep

@@ -212,9 +212,8 @@
 
     private static readonly Project[] Projects =
     [
-        new("Bit.BlazeDb", "The engine: tables, indexes, transactions, WAL and snapshots, storage abstraction. No browser dependency.", "shipped"),
-        new("Bit.BlazeDb.Generators", "Incremental generator for serializers, key extractors and index definitions.", "shipped"),
-        new("Bit.BlazeDb.Browser", "OPFS and IndexedDB backends, Web Locks election, WebCrypto, cross-tab sync.", "shipped"),
+        new("Bit.BlazeDb", "The engine: tables, indexes, transactions, WAL and snapshots, storage abstraction - and, browser-only, the OPFS and IndexedDB backends, Web Locks election, WebCrypto and cross-tab sync.", "shipped"),
+        new("Bit.BlazeDb.Generators", "Incremental generator for serializers, key extractors and index definitions, shipped inside the Bit.BlazeDb package.", "shipped"),
         new("Bit.BlazeDb.EntityFrameworkCore", "The non-relational EF Core provider.", "shipped"),
         new("Bit.BlazeDb.Demo", "This site: the WebAssembly client and the host that serves it, together with the MCP server at /mcp.", "shipped"),
         new("Bit.BlazeDb.Tests", "Engine and EF Core provider tests, including crash recovery, torn writes, tracking and query plans.", "shipped"),

@@ -90,7 +90,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBlazeDbApi), Title = "Public API reference", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the public API of Bit.BlazeDb as Markdown, read out of the shipped assemblies (Bit.BlazeDb, Bit.BlazeDb.Browser, Bit.BlazeDb.EntityFrameworkCore): one type with every property, method, event or enum value it has - each with its C# type, its real default value and its documentation. Omit the type name for the index of every public type. Call it before using a member you are unsure about, e.g. 'BlazeDbDatabase', 'BlazeDbDatabaseOptions', 'BlazeDbTable', 'BlazeDbQuery', 'BlazeDbOpfsStorage', 'BlazeDbIndexedDbStorage', 'BlazeDbEncryptedStorage', 'BlazeDbTabSync', 'BlazeDbIndexAttribute', 'BlazeDbDbContextOptionsExtensions'.")]
+    [Description("Gets the public API of Bit.BlazeDb as Markdown, read out of the shipped assemblies (Bit.BlazeDb, browser backends included, and Bit.BlazeDb.EntityFrameworkCore): one type with every property, method, event or enum value it has - each with its C# type, its real default value and its documentation. Omit the type name for the index of every public type. Call it before using a member you are unsure about, e.g. 'BlazeDbDatabase', 'BlazeDbDatabaseOptions', 'BlazeDbTable', 'BlazeDbQuery', 'BlazeDbOpfsStorage', 'BlazeDbIndexedDbStorage', 'BlazeDbEncryptedStorage', 'BlazeDbTabSync', 'BlazeDbIndexAttribute', 'BlazeDbDbContextOptionsExtensions'.")]
     public string GetBlazeDbApi(
         [Description("The type's name without its namespace, e.g. 'BlazeDbTable' or 'BlazeDbDatabaseOptions'. Omit it for the index of types.")] string? typeName = null)
     {

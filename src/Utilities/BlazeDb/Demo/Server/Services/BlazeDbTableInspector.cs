@@ -17,7 +17,7 @@ namespace Bit.BlazeDb.Demo.Server.Services;
 /// it generates - partial, one key, supported types, indexable members, valid index names - are easy to
 /// get slightly wrong in ways that only show up as a build error, or worse, as a field number nobody
 /// meant to depend on. So instead of describing the rules, the server applies them: the verdict is the
-/// generator's own, from the same assembly the Bit.BlazeDb.Generators package ships.
+/// generator's own, from the same assembly the Bit.BlazeDb package ships as its analyzer.
 /// </para>
 /// <para>
 /// The submitted source is compiled and never run: everything reported is read off the compilation and

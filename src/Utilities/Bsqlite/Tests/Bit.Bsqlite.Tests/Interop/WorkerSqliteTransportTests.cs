@@ -173,7 +173,7 @@ public sealed class WorkerSqliteTransportTests
         var options = new BsqliteWorkerTransportOptions
         {
             RequiredBuild = BsqliteEngineBuild.AsyncCapable,
-            Vfs = new BsqliteJsModule("./_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-vfs.js"),
+            Vfs = new BsqliteJsModule("./_content/Bit.Bsqlite/bit-bsqlite-idb-vfs.js"),
             ExtensionModules = [new BsqliteJsModule("./functions.js", "install")],
         };
 
@@ -183,7 +183,7 @@ public sealed class WorkerSqliteTransportTests
         var open = OpenRequest(js);
         var vfs = Read(open, "vfs")!;
         Assert.AreEqual("asyncCapable", Read(open, "requiredBuild"));
-        Assert.AreEqual("./_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-vfs.js", Read(vfs, "moduleUrl"));
+        Assert.AreEqual("./_content/Bit.Bsqlite/bit-bsqlite-idb-vfs.js", Read(vfs, "moduleUrl"));
         Assert.AreEqual("register", Read(vfs, "registerExport"));
 
         var extension = Assert.ContainsSingle((object?[])Read(open, "extensions")!)!;

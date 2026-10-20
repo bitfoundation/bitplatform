@@ -11,7 +11,7 @@
      1. Ramps      --bmd-brand-10..160, --bmd-grey-*.  Raw colour. Never used outside this file.
      2. Semantic   --bmd-clr-*, --bmd-fnt-*, --bmd-crn-*, --bmd-shdw-*, --bmd-dur-*, --bmd-crv-*.
                    What a token is *for*. This is the layer to write CSS against.
-     3. Bridges    the --bmg-* custom properties of the Bit.Bmage.Editor stylesheet, set in
+     3. Bridges    the --bmg-* custom properties of the bit-bmage-editor.css stylesheet, set in
                    editor-theme.css from the semantic layer, so the editor component and the page
                    around it are painted from one palette.
 

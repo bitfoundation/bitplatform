@@ -33,7 +33,7 @@ public class DevToolsConnectorTests
 
         await connector.ConnectAsync(manager, "My App");
 
-        Assert.AreEqual("./_content/Bit.Blex.Blazor/bit-blex-devtools.js", Assert.ContainsSingle(js.Imports));
+        Assert.AreEqual("./_content/Bit.Blex/bit-blex-devtools.js", Assert.ContainsSingle(js.Imports));
         Assert.AreEqual("My App", js.Module.ArgsOf("connect")![1]);
 
         var init = js.Module.ArgsOf("init");

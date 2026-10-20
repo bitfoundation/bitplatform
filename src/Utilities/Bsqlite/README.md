@@ -69,19 +69,25 @@ Bsqlite's documentation website lives in [`Demo`](https://github.com/bitfoundati
 
 | Package | Role |
 | --- | --- |
-| `Bit.Bsqlite` | `AddBitBsqliteServices`, `AddBitBsqliteDbContext`, `UseBitBsqlite(connection)`, ADO.NET and live queries, the worker transport, storage selection and migration, the storage provider contract, the in-memory backend, and the browser assets (engine, worker, host) under `_content/Bit.Bsqlite` |
-| `Bit.Bsqlite.Storage.Opfs` | Persistent, synchronous engine build, several connections |
-| `Bit.Bsqlite.Storage.IndexedDb` | Persistent, JSPI or Asyncify engine build, widest reach |
-| `Bit.Bsqlite.Storage.CacheStorage` | Persistent, and the migration path off `Bit.Besql` |
+| `Bit.Bsqlite` | `AddBitBsqliteServices`, `AddBitBsqliteDbContext`, `UseBitBsqlite(connection)`, ADO.NET and live queries, the worker transport, storage selection and migration, the storage provider contract, the storage backends, and the browser assets (engine, worker, host, VFSes) under `_content/Bit.Bsqlite` |
 | `Bit.Bsqlite.Testing` | An in-process transport for browser-free unit tests, plus the MSTest conformance kit every storage provider must pass |
+
+The storage backends, each in its own namespace and each registered with `AddStorageProvider<T>()`:
+
+| Backend | Provider (namespace) | Role |
+| --- | --- | --- |
+| `opfs` | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite.Storage.Opfs`) | Persistent, synchronous engine build (the smallest download), several connections |
+| `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | Persistent, JSPI or Asyncify engine build, widest reach |
+| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Persistent, and the migration path off `Bit.Besql` |
+| `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | Volatile: tests, demos, and a declared last resort |
 
 ## Installation
 
 ```bash
 dotnet add package Bit.Bsqlite
-dotnet add package Bit.Bsqlite.Storage.Opfs
-dotnet add package Bit.Bsqlite.Storage.IndexedDb
 ```
+
+That is the whole install - every backend is in it. Browser-free unit tests add `Bit.Bsqlite.Testing` to the test project.
 
 Register the services in the project that runs on WebAssembly - and, in a Blazor Web App whose pages are prerendered,
 in the server project too, so the prerender pass can resolve what the pages inject:
@@ -105,8 +111,9 @@ builder.Services.AddBitBsqliteServices(sqlite => sqlite
 builder.Services.AddBitBsqliteDbContext<AppDbContext>();
 ```
 
-The engine (`.wasm`), the worker and the VFSes are static web assets under `_content/Bit.Bsqlite*/`. Nothing needs to be
-added to the host page.
+The engine (`.wasm`), the worker and the VFSes are static web assets under `_content/Bit.Bsqlite/`, each imported on
+demand: registering a backend costs nothing until it is selected, and a session downloads one engine build and the VFS of
+the backend it selected. Nothing needs to be added to the host page.
 
 ## Composition without dependency injection
 
@@ -166,9 +173,9 @@ from those queries in the browser as from the stock provider on its server.
 ## Moving off Bit.Besql
 
 [Bit.Besql](https://github.com/bitfoundation/bitplatform/tree/develop/src/Besql) keeps a whole SQLite file in Cache Storage
-and syncs it from Blazor's in-memory file system. `Bit.Bsqlite.Storage.CacheStorage` reads that file: a database
-Bit.Besql left in its `bit-Besql` cache is imported losslessly into Bsqlite's own page layout the first time it is
-opened, so an application that switches keeps its users' data.
+and syncs it from Blazor's in-memory file system. The `cache-storage` backend (`BsqliteCacheStorageProvider`) reads that
+file: a database Bit.Besql left in its `bit-Besql` cache is imported losslessly into Bsqlite's own page layout the first
+time it is opened, so an application that switches keeps its users' data.
 
 ## MCP server (for AI agents)
 
@@ -179,8 +186,8 @@ the demo's source, and plan a storage setup. See the MCP server page of the demo
 
 ## Tests
 
-The wa-sqlite engine and the upstream VFS files are vendored at restore, verified against the checksums in the
-`*.lock.props` files, and git-ignored, so restore before building.
+The wa-sqlite engine and the upstream VFS files are vendored at restore, verified against the checksums in
+`Bit.Bsqlite/engine/wa-sqlite.lock.props`, and git-ignored, so restore before building.
 
 ```bash
 cd src/Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests && dotnet test        # ADO.NET, EF Core and storage selection, every target framework

@@ -114,13 +114,14 @@ public class McpControllerTests
     }
 
     [TestMethod]
-    public void ApiList_FiltersByPackageKindNamespaceAndName()
+    public void ApiList_FiltersByKindNamespaceAndName()
     {
         var all = _controller.GetBmageApiList();
 
+        // No type lives in Bit.Bmage.Editor itself, so it matches as a part of a namespace: every editor namespace.
         var editor = _controller.GetBmageApiList("Bit.Bmage.Editor");
-        Assert.IsTrue(editor.All(type => type.Package == "Bit.Bmage.Editor"));
-        Assert.IsTrue(editor.Any(type => type.Name == "BmageEditor"));
+        Assert.IsTrue(editor.All(type => type.Namespace.StartsWith("Bit.Bmage.Editor.", StringComparison.Ordinal)));
+        Assert.IsTrue(editor.Any(type => type.Name == "BmageEditor") && editor.Any(type => type.Name == "EditorToolKind"));
 
         var enums = _controller.GetBmageApiList("enum");
         Assert.IsTrue(enums.All(type => type.Kind == "Enum"));

@@ -29,5 +29,11 @@ For Blazor Server and Interactive Auto apps add `Bit.BevTools.Server` and call `
 server project instead, which adds circuit diagnostics. In Blazor WebAssembly add `<MetricsSupport>true</MetricsSupport>`
 to the project to get render-diff and lifecycle timings.
 
+Libraries integrate through the extension contracts in this package: implement `IBevToolsExtension` to contribute
+panels, state providers (`IBevStateProvider`), diagnostic rules (`IBevDiagnosticRule`), commands (`IBevToolsCommand`)
+and value formatters, write events with `IBevToolsTimeline`, and mark members with `[BevToolsSensitive]` /
+`[BevToolsIgnore]`. The application registers an extension with
+`services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()))`.
+
 Targets .NET 8, 9 and 10; the UI-event render causes and the framework timings need .NET 10, and the About panel says
 which capabilities this app has and why. Full guide: https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/BevTools

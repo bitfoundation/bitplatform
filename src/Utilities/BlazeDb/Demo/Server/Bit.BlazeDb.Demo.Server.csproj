@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The client brings the engine, the browser backends and the EF Core provider: the public surface
+    <!-- The client brings the engine (browser backends included) and the EF Core provider: the public surface
          GetBlazeDbApi reflects over. -->
     <ProjectReference Include="..\Client\Bit.BlazeDb.Demo.Client.csproj" />
     <!-- A plain assembly reference, not an analyzer: InspectBlazeDbTable runs the generator on demand,

@@ -46,30 +46,10 @@ jobs:
         dotnet build src/Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj --output ./packages --configuration Release
 
-    - name: Build and pack Bmage.Editor
-      run: |
-        dotnet build src/Utilities/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Utilities/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj --output ./packages --configuration Release
-
     - name: Build and pack Bsqlite
       run: |
         dotnet build src/Utilities/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Utilities/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj --output ./packages --configuration Release
-
-    - name: Build and pack Bsqlite.Storage.Opfs
-      run: |
-        dotnet build src/Utilities/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Utilities/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj --output ./packages --configuration Release
-
-    - name: Build and pack Bsqlite.Storage.IndexedDb
-      run: |
-        dotnet build src/Utilities/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Utilities/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj --output ./packages --configuration Release
-
-    - name: Build and pack Bsqlite.Storage.CacheStorage
-      run: |
-        dotnet build src/Utilities/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Utilities/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj --output ./packages --configuration Release
 
     - name: Build and pack Bsqlite.Testing
       run: |
@@ -96,16 +76,6 @@ jobs:
         dotnet build src/Utilities/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj --output ./packages --configuration Release
 
-    - name: Build and pack BlazeDb.Generators
-      run: |
-        dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj --output ./packages --configuration Release
-
-    - name: Build and pack BlazeDb.Browser
-      run: |
-        dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj --output ./packages --configuration Release
-
     - name: Build and pack BlazeDb.EntityFrameworkCore
       run: |
         dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
@@ -120,11 +90,6 @@ jobs:
       run: |
         dotnet build src/Utilities/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj --output ./packages --configuration Release
-
-    - name: Build and pack Bcrdt.Blazor
-      run: |
-        dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj --output ./packages --configuration Release
 
     - name: Build and pack Bcrdt.SignalR
       run: |
@@ -145,16 +110,6 @@ jobs:
       run: |
         dotnet build src/Utilities/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Utilities/Blex/Bit.Blex/Bit.Blex.csproj --output ./packages --configuration Release
-
-    - name: Build and pack Blex.Generators
-      run: |
-        dotnet build src/Utilities/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Utilities/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj --output ./packages --configuration Release
-
-    - name: Build and pack Blex.Blazor
-      run: |
-        dotnet build src/Utilities/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Utilities/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj --output ./packages --configuration Release
 
     - name: Build and pack Blex.Maui
       run: |
@@ -205,11 +160,6 @@ jobs:
       run: |
         dotnet build src/Utilities/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
         dotnet pack src/Utilities/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj --output ./packages --configuration Release
-
-    - name: Build and pack BevTools.Abstractions
-      run: |
-        dotnet build src/Utilities/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-        dotnet pack src/Utilities/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj --output ./packages --configuration Release
 
     - name: Build and pack BevTools
       run: |

@@ -34,7 +34,7 @@ public static class McpResources
         => BsqliteSourceCatalog.GetDocument(name) ?? $"There is no Bit.Bsqlite document called '{name}'.";
 
     [McpServerResource(UriTemplate = "bsqlite://api", Name = "bsqlite-api", Title = "Bit.Bsqlite public API", MimeType = "text/markdown")]
-    [Description("Every public type of the five Bit.Bsqlite packages with its kind, namespace and summary.")]
+    [Description("Every public type of the two Bit.Bsqlite packages with its kind, namespace and summary.")]
     public static string ApiList() => BsqliteApiCatalog.RenderIndex();
 
     [McpServerResource(UriTemplate = "bsqlite://api/{typeName}", Name = "bsqlite-api-type", Title = "Type reference", MimeType = "text/markdown")]

@@ -29,8 +29,8 @@ public static class BlazeDbServerInstructions
     public static readonly string Text = $"""
         Bit.BlazeDb is a memory-first, SQL-free embedded database for .NET, built for Blazor WebAssembly: rows live in
         managed memory as the objects you declared, reads are method calls into hash and ordered indexes, and commits are
-        appended to a write-ahead log flushed in the background to OPFS, IndexedDB or files. A source generator (the
-        Bit.BlazeDb.Generators package) turns a `partial` class marked [BlazeDbTable] into its table descriptor, and
+        appended to a write-ahead log flushed in the background to OPFS, IndexedDB or files. A source generator (shipped
+        inside the Bit.BlazeDb package) turns a `partial` class marked [BlazeDbTable] into its table descriptor, and
         Bit.BlazeDb.EntityFrameworkCore puts EF Core and LINQ on top.
 
         Every answer here is read out of Bit.BlazeDb {BlazeDbVersion} as it is loaded in this server - its compiled XML

@@ -23,8 +23,8 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.BlazeDb\Bit.BlazeDb.csproj" />
         <ProjectReference Include="..\..\Bit.BlazeDb.EntityFrameworkCore\Bit.BlazeDb.EntityFrameworkCore.csproj" />
-        <!-- The generator runs as an analyzer, as it does for a consumer of the Bit.BlazeDb.Generators
-             package: the tests exercise the code it emits for the models below. -->
+        <!-- The generator runs as an analyzer, as it does for a consumer of the Bit.BlazeDb package,
+             which carries it: the tests exercise the code it emits for the models below. -->
         <ProjectReference Include="..\..\Bit.BlazeDb.Generators\Bit.BlazeDb.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 

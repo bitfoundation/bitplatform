@@ -113,8 +113,8 @@ public static class BitBlex
 
     /// <summary>
     /// Enables automatic persistence for stores marked <c>[BlexStoreAttribute(Persist = true)]</c>. Requires an
-    /// <see cref="IBlexStorage"/> to be registered (for Blazor use <c>AddBitBlexLocalStoragePersistence</c>
-    /// or <c>AddBitBlexSessionStoragePersistence</c> from <c>Bit.Blex.Blazor</c>).
+    /// <see cref="IBlexStorage"/> to be registered (for Blazor use <see cref="Blazor.BitBlexBlazor.AddBitBlexLocalStoragePersistence"/>
+    /// or <see cref="Blazor.BitBlexBlazor.AddBitBlexSessionStoragePersistence"/>).
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configure">Configures <see cref="BlexPersistenceOptions"/>.</param>

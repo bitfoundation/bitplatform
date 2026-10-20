@@ -52,7 +52,7 @@ public sealed record NavItem(
             "home landing overview introduction start",
             "Home.razor"),
         new("Getting started", "getting-started", GettingStarted,
-            "Pick a package, register the services, add the editor stylesheet and process your first image.",
+            "Install the package, register the services, add the editor stylesheet and process your first image.",
             "install package nuget dotnet add register services addbitbmageservices stylesheet first image dispose object url",
             "GettingStarted.razor"),
         new("Hosting models", "hosting", GettingStarted,

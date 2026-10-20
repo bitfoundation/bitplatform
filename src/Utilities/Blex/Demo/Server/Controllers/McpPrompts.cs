@@ -31,8 +31,8 @@ public static class McpPrompts
             1. If the hosting model is 'unknown', determine it from the project first: look for MauiProgram.cs and
                BlazorWebView (MAUI), for AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in
                Program.cs and for a separate .Client project (Blazor Web App), then continue with what you find.
-            2. Call `GetBlexSetupGuide` with that hosting model and follow it. Add BOTH `Bit.Blex` and
-               `Bit.Blex.Generators` - without the generator a store compiles to nothing.
+            2. Call `GetBlexSetupGuide` with that hosting model and follow it. Reference `Bit.Blex` directly from every
+               project that declares stores - it carries the source generator, and without it a store compiles to nothing.
             3. Register Blex in every DI container that renders components. A Blazor Web App with an interactive
                client has two; registering in only one fails during prerendering, not at compile time.
             4. Wrap the router in `<BlexProvider>` once, inside the interactive render boundary (or call `UseBitBlex()`

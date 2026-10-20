@@ -4,8 +4,8 @@ namespace Bit.Blex;
 
 /// <summary>
 /// Storage-agnostic, asynchronous key/value sink used to persist store state. Implementations
-/// might wrap browser <c>localStorage</c>/<c>sessionStorage</c>, a file, a database, etc. The
-/// core library ships only this abstraction; concrete browser storage lives in <c>Bit.Blex.Blazor</c>.
+/// might wrap browser <c>localStorage</c>/<c>sessionStorage</c>, a file, a database, etc. Browser
+/// storage ships as <see cref="Blazor.BlexBrowserStorage"/>; <c>Bit.Blex.Maui</c> adds a <c>Preferences</c>-backed one.
 /// </summary>
 public interface IBlexStorage
 {

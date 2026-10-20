@@ -31,7 +31,6 @@
     <Project Path="Utilities/Blex/Demo/Client/Bit.Blex.Demo.Client.csproj" />
     <Project Path="Utilities/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj" />
     <Project Path="Utilities/Blex/Bit.Blex/Bit.Blex.csproj" />
-    <Project Path="Utilities/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj" />
     <Project Path="Utilities/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj" />
     <Project Path="Utilities/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj" />
     <Project Path="Utilities/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj" />
@@ -42,7 +41,6 @@
     <File Path="Utilities/Bmage/README.md" />
     <Project Path="Utilities/Bmage/Demo/Client/Bit.Bmage.Demo.Client.csproj" />
     <Project Path="Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj" />
-    <Project Path="Utilities/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj" />
     <Project Path="Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj" />
     <Project Path="Utilities/Bmage/Tests/Bit.Bmage.Tests/Bit.Bmage.Tests.csproj" />
   </Folder>
@@ -52,9 +50,6 @@
     <Project Path="Utilities/Bsqlite/Demo/Data/Bit.Bsqlite.Demo.Data.csproj" />
     <Project Path="Utilities/Bsqlite/Demo/Domain/Bit.Bsqlite.Demo.Domain.csproj" />
     <Project Path="Utilities/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj" />
-    <Project Path="Utilities/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj" />
-    <Project Path="Utilities/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj" />
-    <Project Path="Utilities/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj" />
     <Project Path="Utilities/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj" />
     <Project Path="Utilities/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj" />
     <Project Path="Utilities/Bsqlite/Tests/Bit.Bsqlite.Tests/Bit.Bsqlite.Tests.csproj" />
@@ -100,7 +95,6 @@
     <Project Path="Utilities/BlazeDb/Demo/Client/Bit.BlazeDb.Demo.Client.csproj" />
     <Project Path="Utilities/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj" />
     <Project Path="Utilities/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj" />
-    <Project Path="Utilities/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj" />
     <Project Path="Utilities/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj" />
     <Project Path="Utilities/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj" />
     <Project Path="Utilities/BlazeDb/Tests/Bit.BlazeDb.Tests/Bit.BlazeDb.Tests.csproj" />
@@ -125,7 +119,6 @@
     <Project Path="Utilities/Bcrdt/Demo/Client/Bit.Bcrdt.Demo.Client.csproj" />
     <Project Path="Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj" />
     <Project Path="Utilities/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj" />
-    <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj" />
     <Project Path="Utilities/Bcrdt/Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj" />
     <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj" />
     <Project Path="Utilities/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj" />
@@ -172,7 +165,6 @@
   <Folder Name="/Utilities/BevTools/">
     <File Path="Utilities/BevTools/README.md" />
     <Project Path="Utilities/BevTools/Bit.BevTools/Bit.BevTools.csproj" />
-    <Project Path="Utilities/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj" />
     <Project Path="Utilities/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj" />
     <Project Path="Utilities/BevTools/Demo/Client/Bit.BevTools.Demo.Client.csproj" />
     <Project Path="Utilities/BevTools/Demo/Server/Bit.BevTools.Demo.Server.csproj" />

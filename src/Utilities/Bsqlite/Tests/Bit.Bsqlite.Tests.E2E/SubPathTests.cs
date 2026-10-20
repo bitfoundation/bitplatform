@@ -15,11 +15,11 @@ namespace Bit.Bsqlite.Tests.E2E;
 public sealed class SubPathTests : BsqliteTest
 {
     [TestMethod]
-    [DataRow("opfs", "opfs-coop-sync", "synchronous", "./_content/Bit.Bsqlite.Storage.Opfs/bit-bsqlite-opfs-vfs.js",
+    [DataRow("opfs", "opfs-coop-sync", "synchronous", "./_content/Bit.Bsqlite/bit-bsqlite-opfs-vfs.js",
         DisplayName = "opfs opens through a document-relative module URL")]
-    [DataRow("indexeddb", "idb-batch-atomic", "asyncCapable", "./_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-vfs.js",
+    [DataRow("indexeddb", "idb-batch-atomic", "asyncCapable", "./_content/Bit.Bsqlite/bit-bsqlite-idb-vfs.js",
         DisplayName = "indexeddb opens through a document-relative module URL")]
-    [DataRow("cache-storage", "cache-storage", "asyncCapable", "./_content/Bit.Bsqlite.Storage.CacheStorage/bit-bsqlite-cache-register.js",
+    [DataRow("cache-storage", "cache-storage", "asyncCapable", "./_content/Bit.Bsqlite/bit-bsqlite-cache-register.js",
         DisplayName = "cache-storage opens through a document-relative module URL")]
     public async Task Opens_through_a_document_relative_module_URL(string name, string vfsName, string requiredBuild, string moduleUrl)
     {

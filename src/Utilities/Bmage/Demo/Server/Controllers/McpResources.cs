@@ -51,7 +51,7 @@ public static class McpResources
     }
 
     [McpServerResource(UriTemplate = "bmage://api", Name = "Bit.Bmage public API", MimeType = "text/markdown")]
-    [Description("Every public type of the two Bit.Bmage packages, grouped by namespace, with its kind and summary.")]
+    [Description("Every public type of Bit.Bmage, grouped by namespace, with its kind and summary.")]
     public static string ApiList()
     {
         var builder = new StringBuilder("# Bit.Bmage public API\n");

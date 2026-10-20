@@ -152,7 +152,7 @@ public sealed class IndexedDbTests : BsqliteTest
         var outcome = await Page.EvaluateAsync<JsonElement>(
             """
             async ({ name, image }) => {
-              const admin = await import('/_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-admin.js');
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-idb-admin.js');
               await admin.importDatabase(name, new Uint8Array(image));
               const exported = Array.from(await admin.exportDatabase(name));
               const listed = await admin.list();
@@ -191,7 +191,7 @@ public sealed class IndexedDbTests : BsqliteTest
         var header = await Page.EvaluateAsync<string>(
             """
             async name => {
-              const admin = await import('/_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-admin.js');
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-idb-admin.js');
               const bytes = await admin.exportDatabase(name);
               return String.fromCharCode(...bytes.subarray(0, 15));
             }
@@ -224,7 +224,7 @@ public sealed class IndexedDbTests : BsqliteTest
         var outcome = await Page.EvaluateAsync<JsonElement>(
             """
             async name => {
-              const admin = await import('/_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-admin.js');
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-idb-admin.js');
               const committed = Array.from(await admin.exportDatabase(name));
 
               // What the VFS leaves when its tab dies between writing a transaction's pages and
@@ -274,7 +274,7 @@ public sealed class IndexedDbTests : BsqliteTest
         var probe = await Page.EvaluateAsync<JsonElement>(
             """
             async () => {
-              const admin = await import('/_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-admin.js');
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-idb-admin.js');
               return await admin.probe();
             }
             """);

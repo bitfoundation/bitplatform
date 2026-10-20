@@ -26,10 +26,12 @@
              Condition="'@(_WaSqliteMissing)' != ''"
              Text="Fetching wa-sqlite $(WaSqliteVersion) (@(_WaSqliteMissing->Count()) artifacts)." />
 
+    <!-- An artifact named with a folder (examples/...) lands in that folder: DownloadFile creates only
+         the destination folder, so the folder goes there rather than into the file name. -->
     <DownloadFile Condition="'@(_WaSqliteMissing)' != ''"
                   SourceUrl="$(WaSqliteRepository)/$(WaSqliteVersion)/%(_WaSqliteMissing.SourcePath)"
-                  DestinationFolder="$(WaSqliteEngineDirectory)"
-                  DestinationFileName="%(_WaSqliteMissing.Identity)"
+                  DestinationFolder="$(WaSqliteEngineDirectory)%(_WaSqliteMissing.RelativeDir)"
+                  DestinationFileName="%(_WaSqliteMissing.Filename)%(_WaSqliteMissing.Extension)"
                   Retries="3"
                   SkipUnchangedFiles="false" />
   </Target>

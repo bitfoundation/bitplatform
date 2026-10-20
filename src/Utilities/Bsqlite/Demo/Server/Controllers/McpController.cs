@@ -12,7 +12,7 @@ namespace Bit.Bsqlite.Demo.Server.Controllers;
 /// Bit.Bsqlite without guessing at its API - or at where its data will end up.
 /// <para>
 /// Every tool answers from the shipped library or from this site's own content - the XML documentation
-/// compiled into the five packages, the README and the guides, the storage providers' declared
+/// compiled into the two packages, the README and the guides, the storage providers' declared
 /// capabilities, the library's own selection and SQL guards, and the demo's source files - so an agent
 /// gets what the current version actually does rather than a snapshot someone wrote down. The same
 /// methods are exposed as plain HTTP GET endpoints under /api/mcp/..., which makes each of them
@@ -50,7 +50,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBsqlite), Title = "Search everything about Bit.Bsqlite", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Searches everything known about Bit.Bsqlite at once - the README and every guide, every public type and member of its five packages, the storage backends, the setup guides, the two labs and the demo's source files - and returns the best matches, each with the exact follow-up call that returns its full text. Call it first whenever you do not already know which document or type holds the answer, then call the hit's tool verbatim. Example queries: 'live query', 'opfs fallback indexeddb', 'prerendering', 'migrate to another backend', 'unit test without a browser', 'attach'.")]
+    [Description("Searches everything known about Bit.Bsqlite at once - the README and every guide, every public type and member of its two packages, the storage backends, the setup guides, the two labs and the demo's source files - and returns the best matches, each with the exact follow-up call that returns its full text. Call it first whenever you do not already know which document or type holds the answer, then call the hit's tool verbatim. Example queries: 'live query', 'opfs fallback indexeddb', 'prerendering', 'migrate to another backend', 'unit test without a browser', 'attach'.")]
     public BsqliteSearchResultDto SearchBsqlite(
         [Description("What you are looking for, in the words you would use for it - a feature, a symptom, or a member name. A few words rank better than a whole sentence.")] string query,
         [Description("How many hits to return. Clamped to 1..50.")] int limit = 12)
@@ -76,7 +76,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBsqliteDocument), Title = "Read a document or one of its sections", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets one Bit.Bsqlite document as Markdown, or one section of it, with its code samples: the README ('readme'), a guide ('getting-started', 'storage', 'live-queries', 'architecture', 'limits', 'extending') or a package's own README ('Bit.Bsqlite.Testing', 'Bit.Bsqlite.Storage.Opfs', ...). Sub-sections are included, and name and heading matching ignore case and punctuation. Omit the name for the index of documents with their sections and sizes; omit the section for the whole document.")]
+    [Description("Gets one Bit.Bsqlite document as Markdown, or one section of it, with its code samples: the README ('readme'), a guide ('getting-started', 'storage', 'live-queries', 'architecture', 'limits', 'extending') or a package's own README ('Bit.Bsqlite', 'Bit.Bsqlite.Testing'). Sub-sections are included, and name and heading matching ignore case and punctuation. Omit the name for the index of documents with their sections and sizes; omit the section for the whole document.")]
     public string GetBsqliteDocument(
         [Description("The document's name, e.g. 'storage', 'readme' or 'Bit.Bsqlite.Testing'. Omit it for the index of documents.")] string? name = null,
         [Description("One heading of that document, e.g. 'Selection' or 'First-party backends'; a heading a document uses twice is told apart as 'Parent > Heading', as the index shows. Omit it for the whole document.")] string? section = null)

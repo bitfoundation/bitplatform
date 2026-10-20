@@ -6,8 +6,8 @@ using System.Text.RegularExpressions;
 namespace Bit.Bmage.Demo.Server.Services;
 
 /// <summary>
-/// Reads the XML documentation the two Bit.Bmage builds emit next to their assemblies -
-/// Bit.Bmage and Bit.Bmage.Editor - and flattens each entry into plain text:
+/// Reads the XML documentation the Bit.Bmage build emits next to its assembly - the engine, the
+/// browser integration and the editor components - and flattens each entry into plain text:
 /// <c>&lt;see cref="T:Bit.Bmage.Pipeline.ImagePipeline"/&gt;</c> becomes <c>ImagePipeline</c>,
 /// <c>&lt;c&gt;</c> spans become their content, and paragraphs become blank lines. That text is the
 /// same prose a developer reads in IntelliSense, which makes it the most accurate answer an MCP
@@ -20,10 +20,10 @@ public static partial class BmageXmlDocs
     private static readonly Lazy<FrozenDictionary<string, XElement>> _members = new(Load);
     private static readonly Lazy<FrozenDictionary<string, XElement>> _overloads = new(BuildOverloads);
 
-    /// <summary>The documentation files read, by assembly name - one per package.</summary>
+    /// <summary>The documentation files read, by assembly name - one per assembly the catalog lists.</summary>
     public static IEnumerable<string> AssemblyNames => BmageApiCatalog.Assemblies.Select(assembly => assembly.GetName().Name!);
 
-    /// <summary>How many documented members were loaded, across both files.</summary>
+    /// <summary>How many documented members were loaded, across every file.</summary>
     public static int Count => _members.Value.Count;
 
     /// <summary>The flattened &lt;summary&gt; of a documented member, or null.</summary>
@@ -68,8 +68,8 @@ public static partial class BmageXmlDocs
     {
         var members = new Dictionary<string, XElement>(StringComparer.Ordinal);
 
-        // Two packages, two files. A member id is fully qualified, so the files cannot collide;
-        // the first one wins anyway rather than letting a duplicate throw.
+        // One file per assembly. A member id is fully qualified, so files cannot collide; the first
+        // one wins anyway rather than letting a duplicate throw.
         foreach (var name in AssemblyNames)
         {
             var path = Path.Combine(AppContext.BaseDirectory, $"{name}.xml");
@@ -90,7 +90,7 @@ public static partial class BmageXmlDocs
             catch (Exception)
             {
                 // Documentation is a nicety: a malformed or half-written file must not take the tools
-                // down, nor the other two files with it.
+                // down, nor any other file with it.
             }
         }
 

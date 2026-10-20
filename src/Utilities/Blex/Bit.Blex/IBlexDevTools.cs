@@ -3,8 +3,8 @@
 namespace Bit.Blex;
 
 /// <summary>
-/// Abstraction over a DevTools sink. The core library depends only on this interface; the concrete
-/// Redux DevTools bridge lives in <c>Bit.Blex.Blazor</c> so the core has no JS dependency.
+/// Abstraction over a DevTools sink. The manager depends only on this interface; the concrete Redux
+/// DevTools bridge, <see cref="Blazor.BlexReduxDevToolsConnector"/>, is the only part that talks to JavaScript.
 /// </summary>
 public interface IBlexDevTools
 {

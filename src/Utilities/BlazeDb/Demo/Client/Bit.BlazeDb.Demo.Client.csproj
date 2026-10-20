@@ -19,10 +19,11 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- The engine, browser backends included. -->
     <ProjectReference Include="..\..\Bit.BlazeDb\Bit.BlazeDb.csproj" />
-    <ProjectReference Include="..\..\Bit.BlazeDb.Browser\Bit.BlazeDb.Browser.csproj" />
     <ProjectReference Include="..\..\Bit.BlazeDb.EntityFrameworkCore\Bit.BlazeDb.EntityFrameworkCore.csproj" />
-    <!-- The generator as an analyzer, which is what the Bit.BlazeDb.Generators package adds to a consumer. -->
+    <!-- The generator as an analyzer, which is what the Bit.BlazeDb package adds to a consumer: a project reference
+         to Bit.BlazeDb does not bring it, since the package carries it only as packed analyzer output. -->
     <ProjectReference Include="..\..\Bit.BlazeDb.Generators\Bit.BlazeDb.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 

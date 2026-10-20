@@ -51,8 +51,6 @@
 
     <ItemGroup>
         <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.wasm" />
-        <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.Core.wasm" />
-        <BlazorWebAssemblyLazyLoad Include="Bit.Bmage.Editor.wasm" />
     </ItemGroup>
 
     <Target Name="BeforeBuildTasks" BeforeTargets="ResolveScopedCssInputs" Condition=" '$(DesignTimeBuild)' != 'true' ">

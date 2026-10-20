@@ -36,9 +36,9 @@ public static partial class BmageCodeReview
         new() { Id = "editor-owns-loaded-buffer", Severity = "Error", Source = "troubleshooting",
                 Catches = "A buffer handed to BmageEditor.LoadImageAsync (which takes ownership by default) that is also disposed by the caller." },
         new() { Id = "editor-stylesheet-missing", Severity = "Warning", Source = "getting-started",
-                Catches = "A page head with the editor in use but no _content/Bit.Bmage.Editor/bit-bmage-editor.css link: the editor renders unstyled." },
+                Catches = "A page head with the editor in use but no _content/Bit.Bmage/bit-bmage-editor.css link: the editor renders unstyled." },
         new() { Id = "editor-stylesheet-wrong-path", Severity = "Error", Source = "getting-started",
-                Catches = "A Bmage stylesheet link whose path is not _content/Bit.Bmage.Editor/bit-bmage-editor.css - a 404 and an unstyled editor." },
+                Catches = "A Bmage stylesheet link whose path is not _content/Bit.Bmage/bit-bmage-editor.css - a 404 and an unstyled editor." },
         new() { Id = "bridge-script-tag", Severity = "Warning", Source = "getting-started",
                 Catches = "A <script> tag for bit-bmage.js: the library imports its ES module on demand, and as a classic script it is a syntax error." },
         new() { Id = "editor-without-height", Severity = "Suggestion", Source = "troubleshooting",
@@ -350,7 +350,7 @@ public static partial class BmageCodeReview
                 var href = match.Groups["href"].Value.TrimStart('~', '/');
                 if (href.StartsWith("./", StringComparison.Ordinal)) href = href[2..];
 
-                if (href == "_content/Bit.Bmage.Editor/bit-bmage-editor.css") continue;
+                if (href == "_content/Bit.Bmage/bit-bmage-editor.css") continue;
 
                 findings.Add(new BmageReviewFindingDto
                 {
@@ -359,8 +359,8 @@ public static partial class BmageCodeReview
                     Line = i + 1,
                     Message = $"'{match.Groups["href"].Value}' is not where the editor's stylesheet is served. The request 404s, and " +
                               "the editor renders unstyled with nothing in the build to say so.",
-                    Fix = "<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/bit-bmage-editor.css\" /> - the package is " +
-                          "Bit.Bmage.Editor and the file is bit-bmage-editor.css."
+                    Fix = "<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage-editor.css\" /> - the package is " +
+                          "Bit.Bmage and the file is bit-bmage-editor.css."
                 });
             }
         }
@@ -380,7 +380,7 @@ public static partial class BmageCodeReview
             Line = head + 1,
             Message = "The editor is used, and this page head does not link its stylesheet. The component renders anyway - as a " +
                       "toolbar of bare buttons with no canvas frame - and nothing in the build or the console says why.",
-            Fix = "Add <link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/bit-bmage-editor.css\" /> to the head of App.razor " +
+            Fix = "Add <link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage-editor.css\" /> to the head of App.razor " +
                   "(Blazor Web App) or wwwroot/index.html (standalone WebAssembly)."
         });
     }
@@ -990,7 +990,7 @@ public static partial class BmageCodeReview
     [GeneratedRegex(@"\b[Ss]ervices\s*\.\s*(?<name>Add\w+)\s*\(")]
     private static partial Regex ServiceAddRegex();
 
-    [GeneratedRegex(@"Include\s*=\s*""Bit\.Bmage(?:\.Editor)?""|Bit\.Bmage(?:\.Editor)?\.csproj")]
+    [GeneratedRegex(@"Include\s*=\s*""Bit\.Bmage""|Bit\.Bmage\.csproj")]
     private static partial Regex BmageReferenceRegex();
 
     [GeneratedRegex(@"<RunAOTCompilation>\s*false\s*</RunAOTCompilation>", RegexOptions.IgnoreCase)]

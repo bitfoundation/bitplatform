@@ -18,8 +18,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.Blex\Bit.Blex.csproj" />
-        <ProjectReference Include="..\..\Bit.Blex.Blazor\Bit.Blex.Blazor.csproj" />
-        <!-- A package consumer references Bit.Blex.Generators; inside the repo it is the analyzer project. -->
+        <!-- The Bit.Blex package carries the generator as an analyzer; inside the repo it is the analyzer project. -->
         <ProjectReference Include="..\..\Bit.Blex.Generators\Bit.Blex.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
     </ItemGroup>
 

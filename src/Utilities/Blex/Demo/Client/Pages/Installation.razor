@@ -1,16 +1,17 @@
 ﻿@page "/installation"
 
 <DocPage Href="installation" Title="Installation"
-         Lead="Three packages, one DI call per store, and one component wrapped around your router.">
+         Lead="One package, one DI call per store, and one component wrapped around your router.">
 
     <h2>Packages</h2>
     <p>
-        Reference <code>Bit.Blex</code> for the runtime, <code>Bit.Blex.Generators</code> for the
-        source generator that turns your <code>[BlexStore]</code> classes into reactive stores, and
-        <code>Bit.Blex.Blazor</code> for the Blazor integration. The generator package ships as an
-        analyzer only (under <code>analyzers/dotnet/cs</code>), so it adds nothing to your app's
-        output. Every runtime package targets <code>net8.0</code>, <code>net9.0</code> and
-        <code>net10.0</code>.
+        Reference <code>Bit.Blex</code>. It carries the runtime, the source generator that turns your
+        <code>[BlexStore]</code> classes into reactive stores, and the Blazor integration (the
+        <code>Bit.Blex.Blazor</code> namespace). The generator ships inside the package as an analyzer
+        (under <code>analyzers/dotnet/cs</code>), so it adds nothing to your app's output - but NuGet
+        does not flow analyzers to projects that only get a package transitively, so reference
+        <code>Bit.Blex</code> directly from every project that declares stores. Every runtime package
+        targets <code>net8.0</code>, <code>net9.0</code> and <code>net10.0</code>.
     </p>
 
     <CodeBlock Code="@Install" Language="bash" Title="Add the packages" />
@@ -63,7 +64,8 @@
 
     <h2>Without Blazor</h2>
     <p>
-        The core package has no JS or Blazor dependency. In a console app, worker or test, resolve
+        Stores, the manager and persistence never touch Blazor or JavaScript - only the
+        <code>Bit.Blex.Blazor</code> namespace does. In a console app, worker or test, resolve
         the stores from DI (which registers them with the manager) and drive them directly. For
         persistence, implement <code>IBlexStorage</code> over a file or database and call
         <code>AddBitBlexPersistence()</code>.
@@ -92,7 +94,7 @@
 
     <h2>Requirements</h2>
     <ul>
-        <li><strong>.NET 10</strong> for <code>Bit.Blex</code>, <code>Bit.Blex.Blazor</code> and <code>Bit.Blex.Testing</code>.</li>
+        <li><strong>.NET 10</strong> for <code>Bit.Blex</code> and <code>Bit.Blex.Testing</code>.</li>
         <li><strong>netstandard2.0</strong> for the generator, as Roslyn analyzers require.</li>
         <li>Nullable reference types are supported and expected; generated code is annotated.</li>
     </ul>
@@ -119,8 +121,6 @@
 
     private const string Install = """
         dotnet add package Bit.Blex
-        dotnet add package Bit.Blex.Generators
-        dotnet add package Bit.Blex.Blazor
 
         # optional, for unit tests
         dotnet add package Bit.Blex.Testing
@@ -129,8 +129,6 @@
     private const string CsprojSample = """
         <ItemGroup>
           <PackageReference Include="Bit.Blex" Version="10.7.0" />
-          <PackageReference Include="Bit.Blex.Generators" Version="10.7.0" PrivateAssets="all" />
-          <PackageReference Include="Bit.Blex.Blazor" Version="10.7.0" />
         </ItemGroup>
         """;
 

@@ -57,16 +57,21 @@ instead of guessing at it - or at Fluxor's. Point an MCP client at `https://blex
 ## Install
 
 ```bash
-dotnet add package Bit.Blex             # runtime
-dotnet add package Bit.Blex.Generators  # source generator (analyzer only)
-dotnet add package Bit.Blex.Blazor      # Blazor integration (BlexProvider, DevTools bridge)
+dotnet add package Bit.Blex             # runtime, source generator and Blazor integration (BlexProvider, DevTools bridge)
 dotnet add package Bit.Blex.Maui        # .NET MAUI integration (XAML binding, Preferences persistence)
 dotnet add package Bit.Blex.Testing     # optional, for unit tests
 ```
 
-The runtime packages target **net8.0, net9.0 and net10.0**. `Bit.Blex.Generators` is the Roslyn
-generator that writes the store plumbing; it ships under `analyzers/dotnet/cs` only, so it adds
-nothing to your app's output. Reference it from every project that declares `[BlexStore]` classes.
+The runtime packages target **net8.0, net9.0 and net10.0**. `Bit.Blex` is all a Blazor app needs:
+
+- **The source generator** that writes the store plumbing ships inside it, under `analyzers/dotnet/cs`, so it
+  adds nothing to your app's output and there is no separate generator package to install. NuGet does not
+  flow a package's analyzers to projects that only get it transitively, so reference `Bit.Blex` directly
+  from every project that declares `[BlexStore]` classes.
+- **The Blazor integration** - `<BlexProvider>`, `BlexComponentBase`, browser-storage persistence and the
+  Redux DevTools bridge - lives in the `Bit.Blex.Blazor` namespace of the same assembly. Its two small JS
+  modules are static web assets served from `_content/Bit.Blex/`, imported on demand by browser-storage
+  persistence and the DevTools bridge.
 
 ## The whole store
 
@@ -711,7 +716,7 @@ compiles cleanly and silently generates nothing at all · `BLEX019` negative
 3. Every action streams in with its argument payload and the resulting state tree.
 4. Use the slider / jump buttons to rewind and replay your application state live.
 
-Under the hood the `Bit.Blex.Blazor` JS bridge talks to `window.__REDUX_DEVTOOLS_EXTENSION__`,
+Under the hood the JS bridge (`_content/Bit.Blex/bit-blex-devtools.js`) talks to `window.__REDUX_DEVTOOLS_EXTENSION__`,
 sends each action via `send(action, state)`, and applies `JUMP_TO_STATE` / `JUMP_TO_ACTION` /
 `ROLLBACK` / `RESET` / `COMMIT` / `IMPORT_STATE` messages back onto the stores.
 
@@ -747,7 +752,7 @@ involved on the library side.
 
 ### Blazor Hybrid
 
-MAUI Blazor Hybrid apps use `Bit.Blex` + `Bit.Blex.Blazor` exactly like any Blazor app: `AddBitBlexServices(...)` in
+MAUI Blazor Hybrid apps use `Bit.Blex` exactly like any Blazor app: `AddBitBlexServices(...)` in
 `MauiProgram.cs` and `<BlexProvider>` wrapping the root component inside the `BlazorWebView`.
 There is no browser extension inside a WebView, so the DevTools bridge detects its absence and
 disables itself; set `<BlexProvider EnableDevTools="false">` to skip loading it entirely.
@@ -821,9 +826,8 @@ If the startup initializer cannot resolve its services (typically a lifetime mis
 
 | Project | Description |
 |---|---|
-| `Bit.Blex` | Core runtime (no JS dependency): `BlexStoreBase`, attributes, dispatch, middleware, persistence, entity adapter, undo/redo, the `BlexManager` cross-store manager. |
-| `Bit.Blex.Generators` | Roslyn incremental source generator. |
-| `Bit.Blex.Blazor` | Blazor integration: `BlexComponentBase`, `<BlexProvider>`, browser-storage persistence, Redux DevTools bridge (TypeScript in `Scripts/`, compiled into `wwwroot/` on build). |
+| `Bit.Blex` | The main package. Core runtime: `BlexStoreBase`, attributes, dispatch, middleware, persistence, entity adapter, undo/redo, the `BlexManager` cross-store manager. Blazor integration under `Blazor/` (namespace `Bit.Blex.Blazor`): `BlexComponentBase`, `<BlexProvider>`, browser-storage persistence, Redux DevTools bridge (TypeScript in `Scripts/`, compiled into `wwwroot/` on build). Packs the generator below under `analyzers/dotnet/cs`. |
+| `Bit.Blex.Generators` | Roslyn incremental source generator (netstandard2.0). Not a package of its own: it ships inside `Bit.Blex`. |
 | `Bit.Blex.Maui` | .NET MAUI integration: `UseBitBlex()` startup initializer, `Preferences`-backed persistence, XAML-bindable stores. |
 | `Bit.Blex.Testing` | Test harness and assertions (`BlexTestHarness`, `BlexActionLog`). |
 | `Demo` | Documentation website (`Client` + prerendering `Server` host): every feature explained with a live, runnable demo. |
@@ -835,7 +839,8 @@ If the startup initializer cannot resolve its services (typically a lifetime mis
 | `Tests/Bit.Blex.Benchmarks` | BenchmarkDotNet suites (dispatch, fan-out, serialization, entity adapter). |
 
 Inside this repository the demo, sample, tests and benchmarks reference the generator project
-directly as an analyzer (`OutputItemType="Analyzer" ReferenceOutputAssembly="false"`).
+directly as an analyzer (`OutputItemType="Analyzer" ReferenceOutputAssembly="false"`): a
+`ProjectReference` to `Bit.Blex` brings the runtime only, while the package brings the generator too.
 
 ## Build & test
 

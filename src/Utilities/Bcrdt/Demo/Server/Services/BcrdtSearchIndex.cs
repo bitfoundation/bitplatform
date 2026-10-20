@@ -4,7 +4,7 @@ namespace Bit.Bcrdt.Demo.Server.Services;
 
 /// <summary>
 /// One searchable index over everything this MCP server knows: the reference guide, every public
-/// type and member of the five packages, the setup guides, the two labs and the demo's source files.
+/// type and member of the four packages, the setup guides, the two labs and the demo's source files.
 /// <para>
 /// Without it an agent has to guess which corpus holds the answer and what it is called there -
 /// "keep both edits to a description field" is a guide section, a map method, a text type and a

@@ -199,9 +199,9 @@
 
     <h2>Under the hood</h2>
     <p>
-        The core package has no JS dependency - it only knows the <code>IBlexDevTools</code>
-        interface. <code>Bit.Blex.Blazor</code> supplies <code>BlexReduxDevToolsConnector</code>, which
-        loads a small ES module and talks to
+        The manager has no JS dependency - it only knows the <code>IBlexDevTools</code>
+        interface. <code>BlexReduxDevToolsConnector</code>, in the <code>Bit.Blex.Blazor</code> namespace,
+        implements it: it loads a small ES module (<code>_content/Bit.Blex/bit-blex-devtools.js</code>) and talks to
         <code>window.__REDUX_DEVTOOLS_EXTENSION__</code>.
     </p>
 

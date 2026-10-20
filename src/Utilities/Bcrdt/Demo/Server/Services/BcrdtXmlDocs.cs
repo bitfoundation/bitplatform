@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 namespace Bit.Bcrdt.Demo.Server.Services;
 
 /// <summary>
-/// Reads the XML documentation the five Bit.Bcrdt builds emit next to their assemblies and flattens
+/// Reads the XML documentation the four Bit.Bcrdt builds emit next to their assemblies and flattens
 /// each entry into plain text: <c>&lt;see cref="T:Bit.Bcrdt.BcrdtDocument"/&gt;</c> becomes
 /// <c>BcrdtDocument</c>, <c>&lt;c&gt;</c> spans become their content, and paragraphs become blank
 /// lines. That text is the same prose a developer reads in IntelliSense, which makes it the most

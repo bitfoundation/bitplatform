@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 namespace Bit.Bsqlite.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// Serves the libraries' static assets the way a Blazor application does - each package's wwwroot under
+/// Serves the library's static assets the way a Blazor application does - the package's wwwroot under
 /// <c>_content/&lt;package&gt;/</c> - next to the test pages, so the tests exercise the same URLs and MIME
 /// types production uses. Kestrel in this process, on a free loopback port, for the whole run.
 /// </summary>
@@ -43,7 +43,7 @@ public sealed class AssetHost : IAsyncDisposable
             var root = RepoLayout.WebRoot(package);
             if (Directory.Exists(root) is false || Directory.EnumerateFiles(root, "*.js").Any() is false)
                 throw new DirectoryNotFoundException(
-                    $"{root} holds no compiled modules. Build the libraries first (building this test project does), " +
+                    $"{root} holds no compiled modules. Build the library first (building this test project does), " +
                     "after a restore that vendored the wa-sqlite engine.");
         }
 

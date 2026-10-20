@@ -23,7 +23,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.Bcrdt\Bit.Bcrdt.csproj" />
-        <ProjectReference Include="..\..\Bit.Bcrdt.Blazor\Bit.Bcrdt.Blazor.csproj" />
         <ProjectReference Include="..\..\Bit.Bcrdt.SignalR\Bit.Bcrdt.SignalR.csproj" />
         <ProjectReference Include="..\..\Bit.Bcrdt.Server\Bit.Bcrdt.Server.csproj" />
         <ProjectReference Include="..\..\Bit.Bcrdt.Testing\Bit.Bcrdt.Testing.csproj" />

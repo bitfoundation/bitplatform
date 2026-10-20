@@ -1,9 +1,9 @@
 ﻿# Bit.Bcrdt
 
-Real-time collaborative editing for .NET, written natively in C#: a CRDT engine, a synchronization protocol, presence,
-offline-first persistence and selective undo. There is no JavaScript CRDT library underneath and no port of one - the
-engine, the wire format and the merge algorithm are all C#, and none of it needs JavaScript interop, so it runs the
-same in Blazor WebAssembly, Server and Hybrid, in a worker or in a console app.
+Real-time collaborative editing for .NET and Blazor, written natively in C#: a CRDT engine, a synchronization protocol,
+presence, offline-first persistence, selective undo and Blazor components. There is no JavaScript CRDT library
+underneath and no port of one - the engine, the wire format and the merge algorithm are all C#, and none of it needs
+JavaScript interop, so it runs the same in Blazor WebAssembly, Server and Hybrid, in a worker or in a console app.
 
 ## Quick start
 
@@ -31,8 +31,36 @@ using (var transaction = document.BeginTransaction())
 ```
 
 Two people running that against the same document identifier both end up with the same document, whether they were
-online at the time or not. For Blazor components add `Bit.Bcrdt.Blazor`; for the SignalR transport add
-`Bit.Bcrdt.SignalR`; for the relay a server maps, add `Bit.Bcrdt.Server`.
+online at the time or not. For the SignalR transport add `Bit.Bcrdt.SignalR`; for the relay a server maps, add
+`Bit.Bcrdt.Server`.
+
+## Blazor
+
+```razor
+@using Bit.Bcrdt
+@using Bit.Bcrdt.Blazor
+
+<BcrdtCollaborationScope DocumentId="notes-42" User="_me" Context="document">
+    <BcrdtPresenceView Presence="document.Presence" />
+    <BcrdtTextArea Text="@document.Text("body")" Presence="document.Presence" />
+</BcrdtCollaborationScope>
+
+@code {
+    private readonly BcrdtCollaboratorInfo _me = new("u-1", "Ada", BcrdtPresenceService.SuggestColor("u-1"));
+}
+```
+
+That is a working collaborative editor with live presence, automatic reconnection and offline support.
+
+- `BcrdtCollaborationScope` opens a document for its content, cascades it, and closes it again.
+- `BcrdtTextArea` edits a `BcrdtText`: what the user types becomes the minimal CRDT edit, remote edits arrive without
+  moving the caret or overwriting keystrokes still in flight, and the caret is published through presence.
+- `BcrdtPresenceView` lists the people on a document.
+- `BcrdtComponentBase` marshals change notifications onto the renderer and coalesces them onto a frame budget, and
+  disposes its subscriptions with the component - the base for your own collaborative components.
+
+No stylesheet to reference and no script to add: the one small module `BcrdtTextArea` needs is imported on demand.
+Works in Blazor WebAssembly, Server, Web App (including prerendering) and Hybrid.
 
 ## Features
 

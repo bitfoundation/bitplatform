@@ -72,13 +72,12 @@ public static class McpPrompts
             1. If the hosting model is 'unknown', determine it from the project first: look for
                AddInteractiveServerComponents / AddInteractiveWebAssemblyComponents in Program.cs, a separate .Client
                project, or no Blazor at all. Continue with what you find.
-            2. Call `GetBmageSetupGuide` with that hosting model and follow it: the package (Bit.Bmage.Editor when the
-               editor is needed, Bit.Bmage otherwise, in the project that runs in the browser), the registration, and the
-               namespaces for _Imports.razor.
+            2. Call `GetBmageSetupGuide` with that hosting model and follow it: the package (Bit.Bmage, in the project that
+               runs in the browser), the registration, and the namespaces for _Imports.razor.
             3. Register in the right containers. A Blazor Web App registers AddBitBmageServices in BOTH the server and the
                client project, through one shared extension method - the prerender pass needs it on the server. A server,
                console app or worker registers AddBitBmageHeadlessServices instead.
-            4. If the editor is used, link `_content/Bit.Bmage.Editor/bit-bmage-editor.css` from App.razor or index.html,
+            4. If the editor is used, link `_content/Bit.Bmage/bit-bmage-editor.css` from App.razor or index.html,
                and do not add a script tag for bit-bmage.js.
             5. If any project runs on WebAssembly, enable RunAOTCompilation for publishing in that project.
             6. Add the `thumbnail` recipe from `GetBmageRecipe` (or `headless-upload-endpoint` for a server) to prove the

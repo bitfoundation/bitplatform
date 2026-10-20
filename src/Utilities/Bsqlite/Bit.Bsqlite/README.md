@@ -3,9 +3,9 @@
 EF Core on SQLite-WASM for Blazor WebAssembly. The same entities and the same migrations on the
 client as on the server.
 
-This package is everything you need except a persistent backend: the EF Core integration, the
-ADO.NET surface with live queries, the worker transport, the storage provider contract, a volatile
-in-memory backend, and the browser assets (SQLite engine builds, worker host, JavaScript API) served
+This package is everything you need: the EF Core integration, the ADO.NET surface with live queries,
+the worker transport, the storage provider contract, the storage backends - OPFS, IndexedDB, Cache
+Storage and in-memory - and the browser assets (SQLite engine builds, worker host, VFSes) served
 under `_content/Bit.Bsqlite`.
 
 **Runtime:** .NET 8, 9 and 10, each with its EF Core. **License:** MIT (bundles [wa-sqlite](https://github.com/rhashimoto/wa-sqlite), also MIT).
@@ -16,14 +16,22 @@ under `_content/Bit.Bsqlite`.
 dotnet add package Bit.Bsqlite
 ```
 
-Add a persistent backend — without one you get the in-memory provider, which does not survive a
-reload:
+## Storage backends
 
-| Package | Notes |
-|---|---|
-| `Bit.Bsqlite.Storage.Opfs` | Sync engine (smallest download), multi-connection, worker-only |
-| `Bit.Bsqlite.Storage.IndexedDb` | Widest browser reach, runs anywhere, JSPI/Asyncify |
-| `Bit.Bsqlite.Storage.CacheStorage` | Imports a database left behind by [Bit.Besql](https://github.com/bitfoundation/bitplatform/tree/develop/src/Besql) |
+Register the ones you want with `AddStorageProvider<T>()`. Registering one costs the browser nothing
+until it is selected: the worker imports only the selected backend's VFS, and the one engine build it
+needs.
+
+| Provider (namespace) | Name | Engine build | Notes |
+|---|---|---|---|
+| `BsqliteOpfsStorageProvider` (`Bit.Bsqlite.Storage.Opfs`) | `opfs` | Synchronous — the smallest download | Persistent, real files in the origin private file system, several connections, worker-only, no COOP/COEP headers. Pick it when you can. |
+| `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | `indexeddb` | JSPI where available, Asyncify otherwise | Persistent, the widest browser reach and the fallback behind OPFS. Fixed page size; readers serialize. |
+| `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | `cache-storage` | JSPI where available, Asyncify otherwise | Persistent. Imports a database left behind by [Bit.Besql](https://github.com/bitfoundation/bitplatform/tree/develop/src/Besql) losslessly on first open - the migration path off Besql. |
+| `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | `in-memory` | Synchronous | Volatile: gone on reload. Tests, demos, and a declared last resort. |
+
+The three persistent providers take an optional `IJSRuntime` and report themselves unavailable without
+one, so selection also runs - and explains itself - in desktop tests. The capabilities each one declares, and what the
+core does with them, are in the [storage guide](https://github.com/bitfoundation/bitplatform/blob/develop/src/Utilities/Bsqlite/docs/storage.md).
 
 ## Register
 
@@ -100,5 +108,5 @@ revalidates.
 
 - [Documentation and source](https://github.com/bitfoundation/bitplatform/tree/develop/src/Utilities/Bsqlite), and the demo website at [bsqlite.bitplatform.dev](https://bsqlite.bitplatform.dev)
 - [Issues](https://github.com/bitfoundation/bitplatform/issues)
-- Writing your own storage backend: implement `IBsqliteStorageProvider` and inherit the
-  conformance kit from `Bit.Bsqlite.Testing`.
+- Writing your own storage backend: implement `IBsqliteStorageProvider` - the same public contract
+  the backends above are built on - and inherit the conformance kit from `Bit.Bsqlite.Testing`.

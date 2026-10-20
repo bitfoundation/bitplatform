@@ -238,7 +238,7 @@ public partial class McpSnippetTests
 
     private static MetadataReference[] LoadReferences()
     {
-        // Everything the test host runs on - the shared frameworks and the demo's packages, the five Bit.Bcrdt
+        // Everything the test host runs on - the shared frameworks and the demo's packages, the four Bit.Bcrdt
         // ones among them - by simple name, so no assembly is referenced twice.
         var platform = ((string)AppContext.GetData("TRUSTED_PLATFORM_ASSEMBLIES")!).Split(Path.PathSeparator);
         var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

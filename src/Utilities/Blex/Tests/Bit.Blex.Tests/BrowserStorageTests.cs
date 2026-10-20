@@ -24,7 +24,7 @@ public class BrowserStorageTests
         await storage.RemoveAsync("blex:settings");
 
         Assert.AreEqual("stored", read);
-        Assert.AreEqual("./_content/Bit.Blex.Blazor/bit-blex-storage.js", Assert.ContainsSingle(js.Imports));
+        Assert.AreEqual("./_content/Bit.Blex/bit-blex-storage.js", Assert.ContainsSingle(js.Imports));
         Assert.AreSequenceEqual(["session", "blex:settings"], js.Module.ArgsOf("get"));
         Assert.AreSequenceEqual(["session", "blex:settings", "{}"], js.Module.ArgsOf("set"));
         Assert.AreSequenceEqual(["session", "blex:settings"], js.Module.ArgsOf("remove"));

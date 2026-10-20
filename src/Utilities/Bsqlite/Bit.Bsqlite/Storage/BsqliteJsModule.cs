@@ -6,14 +6,15 @@
 /// </summary>
 /// <remarks>
 /// A backend is a two-sided artifact. The .NET side declares capabilities and answers probes; the
-/// VFS itself is JavaScript, served from the provider package's own static assets, which is what
-/// keeps VFS code out of the core.
+/// VFS itself is JavaScript, served as a static asset - the first-party providers' by this package,
+/// a third-party provider's by its own - and imported by the worker only once its provider is
+/// selected, so the VFS of a backend that is not in use is never downloaded.
 /// </remarks>
 public sealed record BsqliteJsModule
 {
     /// <param name="moduleUrl">
     /// URL of the ES module, normally an RCL static asset path such as
-    /// <c>./_content/Bit.Bsqlite.Storage.Opfs/bit-bsqlite-opfs-vfs.js</c>.
+    /// <c>./_content/Bit.Bsqlite/bit-bsqlite-opfs-vfs.js</c>.
     /// </param>
     /// <param name="registerExport">Name of the exported registration function.</param>
     public BsqliteJsModule(string moduleUrl, string registerExport = "register")

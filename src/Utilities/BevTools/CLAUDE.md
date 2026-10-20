@@ -9,8 +9,8 @@ measured overhead - keep all of them accurate when behaviour changes.
 
 | Path | What it is |
 | --- | --- |
-| `Bit.BevTools.Abstractions/` | The integration contract (`IBevToolsExtension`, `IBevStateProvider`, `IBevDiagnosticRule`, `IBevToolsCommand`, `IBevToolsTimeline`, `BevToolsEvent`, the attributes). No Blazor dependency: additions only, never removals or signature changes |
 | `Bit.BevTools/` | Instrumentation, session stores, inspection, diagnostics, export and the UI (`BevToolsPanel` and the panels), plus `BitBevTools.AddBitBevToolsServices` |
+| `Bit.BevTools/Abstractions/` | The integration contract (`IBevToolsExtension`, `IBevStateProvider`, `IBevDiagnosticRule`, `IBevToolsCommand`, `IBevToolsTimeline`, `BevToolsEvent`, the attributes). Additions only, never removals or signature changes. It uses no Blazor types, so it can move back into a package of its own (with `[TypeForwardedTo]`) if a Blazor-free consumer appears; keep it that way |
 | `Bit.BevTools/Scripts/bit-bevtools.ts` | The browser bridge, compiled by MSBuild to `wwwroot/bit-bevtools.js` (generated, git-ignored; minified in Release) |
 | `Bit.BevTools.Server/` | Circuit instrumentation and the Circuit panel, itself written as a BevTools extension |
 | `Demo/` | Blazor Web App (Interactive Auto, `Server` + `Client`) whose `/problems` page lists real, deliberately planted problems to diagnose |
@@ -43,7 +43,7 @@ measured overhead - keep all of them accurate when behaviour changes.
 Follow the `.editorconfig` at the root of `src` (every new `.cs`, `.razor`, `.ts`, `.md`, `.csproj` and `.slnx` file
 starts with a BOM). Comments explain *why* a thing is shaped the way it is, not what the next line does.
 
-- **One namespace**: everything in the three packages is in `Bit.BevTools`, whatever folder it sits in; razor files
+- **One namespace**: everything in both packages is in `Bit.BevTools`, whatever folder it sits in; razor files
   declare `@namespace Bit.BevTools`. Tests use `Bit.BevTools.Tests`, the demo `Bit.BevTools.Demo.Client` / `.Server`.
 - **Prefixed public types**: `BevTools*` for the types that are the tool itself (`BevToolsSession`, `BevToolsPanel`,
   `IBevToolsExtension`), `Bev*` for the rest (`BevComponentRecord`, `BevDiagnostic`, `BevFmt`), and razor components

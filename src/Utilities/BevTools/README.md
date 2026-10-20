@@ -160,8 +160,17 @@ public sealed class MyLibraryBevTools : IBevToolsExtension
 services.AddBitBevToolsServices(o => o.Extensions.Add(new MyLibraryBevTools()));
 ```
 
-A library that only wants to expose itself to BevTools references `Bit.BevTools.Abstractions`, which has no Blazor
-dependency. Application code can also emit timeline events through `IBevToolsTimeline`, expose state with
+A library that wants to expose itself to BevTools references `Bit.BevTools`, which carries the extension contracts:
+
+- `IBevToolsExtension` / `IBevToolsExtensionBuilder` - contribute panels, state providers, diagnostic rules, commands
+  and value formatters, or hide internal components.
+- `IBevStateProvider` - expose a state container to the State panel, with snapshots, change history and diffs.
+- `IBevDiagnosticRule` - turn symptoms into findings with evidence.
+- `IBevToolsCommand` - add commands to the command palette.
+- `IBevToolsTimeline` / `BevToolsEvent` - write your own events into the activity timeline.
+- `[BevToolsSensitive]` / `[BevToolsIgnore]` - redact members, or hide members and whole components.
+
+Application code can also emit timeline events through `IBevToolsTimeline`, expose state with
 `IBevStateProvider` (or `services.AddBevToolsStateProvider<T>()`), attribute background work with
 `session.UseAmbient()`, pause and resume capture (`session.PauseCapture()` / `ResumeCapture()`) and export everything
 with `BevSessionExporter`. Commands get `CopyTextAsync` / `DownloadTextAsync` on their context to hand text to the
@@ -172,9 +181,9 @@ browser. The `Bit.BevTools.Server` package is itself an extension (Circuit panel
 ## Project layout
 
 ```
-Bit.BevTools.Abstractions     public integration API (events, state providers, rules, commands, panels, capabilities)
 Bit.BevTools                  instrumentation, session stores, diagnostics, inspection, export, BevTools UI (Razor
                               class library) and the browser bridge (Scripts/bit-bevtools.ts -> wwwroot/bit-bevtools.js)
+  Abstractions/               public integration API (events, state providers, rules, commands, panels, capabilities)
 Bit.BevTools.Server           circuit handler, circuit registry, Circuit panel (reference extension)
 Demo                          Blazor Web App (Interactive Auto, Server + Client) with a "Problems to diagnose" index
 Tests/Bit.BevTools.Tests      MSTest + bUnit on net8.0/net9.0/net10.0: instrumentation, tree, rendering, timeline,

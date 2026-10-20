@@ -158,9 +158,14 @@ public partial class McpOracleTests
     public void The_api_covers_every_package_and_the_entry_points()
     {
         CollectionAssert.AreEquivalent(
-            new[] { typeof(BsqliteConnection), typeof(BsqliteOpfsStorageProvider), typeof(BsqliteIndexedDbStorageProvider), typeof(BsqliteCacheStorageProvider), typeof(BsqliteInProcessTransport) }
-                .Select(type => type.Assembly).ToArray(),
+            new[] { typeof(BsqliteConnection), typeof(BsqliteInProcessTransport) }.Select(type => type.Assembly).ToArray(),
             BsqliteApiCatalog.Assemblies);
+
+        // The first-party backends ship in the library package rather than packages of their own.
+        foreach (var provider in _firstParty)
+        {
+            Assert.AreEqual(typeof(BsqliteConnection).Assembly, provider.GetType().Assembly, provider.Name);
+        }
 
         var entryPoints = BsqliteApiCatalog.GetTypeDetails("BitBsqlite")!;
 
@@ -188,7 +193,7 @@ public partial class McpOracleTests
     [TestMethod]
     public void The_sections_cover_every_heading_of_every_document()
     {
-        Assert.IsGreaterThanOrEqualTo(12, BsqliteSourceCatalog.Documents.Length, "The README, six guides and five package READMEs are embedded.");
+        Assert.IsGreaterThanOrEqualTo(9, BsqliteSourceCatalog.Documents.Length, "The README, six guides and two package READMEs are embedded.");
 
         foreach (var document in BsqliteSourceCatalog.Documents)
         {

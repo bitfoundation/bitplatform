@@ -18,8 +18,5 @@
     <Project Path="Tests/Bit.Bsqlite.Tests.Mcp/Bit.Bsqlite.Tests.Mcp.csproj" />
   </Folder>
   <Project Path="Bit.Bsqlite/Bit.Bsqlite.csproj" />
-  <Project Path="Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj" />
-  <Project Path="Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj" />
-  <Project Path="Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj" />
   <Project Path="Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj" />
 </Solution>

@@ -98,7 +98,7 @@ public class DemoPageTests : BlazeDbTest
 
         foreach (var module in BrowserModules.All)
         {
-            using var response = await http.GetAsync($"{BaseUrl}/_content/Bit.BlazeDb.Browser/{module}.js");
+            using var response = await http.GetAsync($"{BaseUrl}/_content/Bit.BlazeDb/{module}.js");
 
             Assert.AreEqual(HttpStatusCode.OK, response.StatusCode, module);
             Assert.Contains("javascript", response.Content.Headers.ContentType?.MediaType ?? string.Empty, module);

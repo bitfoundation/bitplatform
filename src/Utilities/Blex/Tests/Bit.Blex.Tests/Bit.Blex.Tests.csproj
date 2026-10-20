@@ -22,7 +22,6 @@
 
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.Blex\Bit.Blex.csproj" />
-        <ProjectReference Include="..\..\Bit.Blex.Blazor\Bit.Blex.Blazor.csproj" />
         <ProjectReference Include="..\..\Bit.Blex.Maui\Bit.Blex.Maui.csproj" />
         <ProjectReference Include="..\..\Bit.Blex.Testing\Bit.Blex.Testing.csproj" />
         <ProjectReference Include="..\..\Bit.Blex.Generators\Bit.Blex.Generators.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />

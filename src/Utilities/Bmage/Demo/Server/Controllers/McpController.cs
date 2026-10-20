@@ -16,7 +16,7 @@ namespace Bit.Bmage.Demo.Server.Controllers;
 /// quality 0.8, whether PNG or JPEG is smaller for a screenshot, or whether an <c>AutoOrient()</c> in
 /// front of a resize stops the optimiser fusing it with the crop after it. Those facts live in the
 /// engine, not in prose. So the tools here fall into two halves: the ones that answer from this
-/// build's own text - the guides, the XML documentation compiled into the two assemblies, the
+/// build's own text - the guides, the XML documentation compiled into the assembly, the
 /// demo's sources - and the ones that answer by <b>running the real engine on this server</b> and
 /// reporting what it did.
 /// </para>
@@ -40,7 +40,7 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmageOverview), Title = "What Bit.Bmage is and how to use it",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Explains what Bit.Bmage is, which of its two packages to install, how to register it, and the rules that are not visible in any signature - prerendering, disposal, codecs per host, metadata. Worth reading once per session; for a specific question, call SearchBmage instead.")]
+    [Description("Explains what Bit.Bmage is, how to install and register it, and the rules that are not visible in any signature - prerendering, disposal, codecs per host, metadata. Worth reading once per session; for a specific question, call SearchBmage instead.")]
     public string GetBmageOverview()
     {
         var builder = new StringBuilder();
@@ -95,7 +95,7 @@ public class McpController : ControllerBase
               together so the optimiser fuses them into one pass.
             - **AOT the browser project.** `<RunAOTCompilation>true</RunAOTCompilation>`: the interpreter runs the pixel
               loops 10 to 35 times slower.
-            - **The editor** needs `_content/Bit.Bmage.Editor/bit-bmage-editor.css` in the page head and a container
+            - **The editor** needs `_content/Bit.Bmage/bit-bmage-editor.css` in the page head and a container
               with a height.
             """);
 
@@ -105,7 +105,7 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBmage), Title = "Search everything about Bit.Bmage",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Start here. Searches everything known about Bit.Bmage at once - every guide section, every public type and member of the two packages, the setup guides, the ready-made recipes, the code-review rules and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Call it whenever you do not already know which guide, type or recipe holds the answer. Example queries: 'avatar under 100 KB', 'strip gps from uploads', 'paste a screenshot and redact it', 'why is the editor unstyled', 'thumbnail on the server'.")]
+    [Description("Start here. Searches everything known about Bit.Bmage at once - every guide section, every public type and member of the package, the setup guides, the ready-made recipes, the code-review rules and the demo's source files - and returns the best matches, each with the exact follow-up tool call that returns its full text. Call it whenever you do not already know which guide, type or recipe holds the answer. Example queries: 'avatar under 100 KB', 'strip gps from uploads', 'paste a screenshot and redact it', 'why is the editor unstyled', 'thumbnail on the server'.")]
     public BmageSearchHitDto[] SearchBmage(
         [Description("What you are trying to do or what went wrong, in your own words, e.g. 'crop an avatar to a circle' or 'WebP export fails on Safari'.")] string query,
         [Description("How many hits to return, 1 to 50. Default 12.")] int limit = 12)
@@ -195,9 +195,9 @@ public class McpController : ControllerBase
     [HttpGet]
     [McpServerTool(Name = nameof(GetBmageApiList), Title = "List the public types",
                    ReadOnly = true, Destructive = false, Idempotent = true, OpenWorld = false)]
-    [Description("Lists the public types of the two Bit.Bmage packages - pipelines, operations, codecs, options, metadata, drawing, annotations, editing, the browser services and the editor components - with the namespace to import, the package that ships each, its kind and a one-line summary. Narrow it with 'filter' (a package, a namespace, a kind or any part of a name) rather than reading all of it, then pass a name to GetBmageApiDetails.")]
+    [Description("Lists the public types of Bit.Bmage - pipelines, operations, codecs, options, metadata, drawing, annotations, editing, the browser services and the editor components - with the namespace to import, its kind and a one-line summary. Narrow it with 'filter' (a namespace, a kind or any part of a name) rather than reading all of it, then pass a name to GetBmageApiDetails.")]
     public BmageApiTypeDto[] GetBmageApiList(
-        [Description("Optional. A package ('Bit.Bmage', 'Bit.Bmage.Editor'), a namespace ('Bit.Bmage.Annotations'), a kind ('Enum', 'Component', 'Record', 'Exception') or any substring of a type name ('Export'). Omitted, every type is returned.")] string? filter = null)
+        [Description("Optional. A namespace ('Bit.Bmage.Annotations', or 'Bit.Bmage.Editor' for every editor namespace), a kind ('Enum', 'Component', 'Record', 'Exception') or any substring of a type name ('Export'). Omitted, every type is returned.")] string? filter = null)
     {
         var types = BmageApiCatalog.TypeSummaries;
 

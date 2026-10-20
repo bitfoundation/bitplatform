@@ -86,7 +86,7 @@ public static partial class BlexSetupGuide
 
         builder.AppendLine("## The files, from a working project").AppendLine();
         builder.AppendLine("Everything below compiles as-is; rename the projects and namespaces to your own. Inside this repository the ")
-               .AppendLine("projects reference the generator as an analyzer project reference - from NuGet it is the `Bit.Blex.Generators` package.")
+               .AppendLine("projects reference the generator as an analyzer project reference - from NuGet the `Bit.Blex` package brings it.")
                .AppendLine();
 
         foreach (var path in paths)
@@ -291,9 +291,9 @@ public static partial class BlexSetupGuide
     private const string Checklist = """
         ## Checklist
 
-        1. `dotnet add package Bit.Blex` and `dotnet add package Bit.Blex.Generators` - the generator is what turns a
-           `[BlexStore]` class into a store; without it a store compiles to nothing and every generated member is missing.
-           Add `Bit.Blex.Blazor` for Blazor, `Bit.Blex.Maui` for MAUI.
+        1. `dotnet add package Bit.Blex` in every project that declares stores - it carries the source generator, which is
+           what turns a `[BlexStore]` class into a store (NuGet does not flow it to projects that get Bit.Blex only
+           transitively), and the Blazor integration. Add `Bit.Blex.Maui` for MAUI.
         2. Declare each store as a `partial class` marked `[BlexStore]` - state in `[BlexState]` fields, actions in
            `[BlexAction] OnXxx` methods. Check it with `InspectBlexStore` before building on it.
         3. Call `AddBitBlexServices(...)` and `AddBitBlexStore<T>()` for every store in EVERY DI container that renders

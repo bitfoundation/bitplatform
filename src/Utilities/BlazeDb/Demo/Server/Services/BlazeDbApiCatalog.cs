@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Reflection;
 using System.Collections.Concurrent;
-using Bit.BlazeDb.Browser;
 using Bit.BlazeDb.Demo.Server.Dtos;
 using Microsoft.AspNetCore.Components;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Bit.BlazeDb.Demo.Server.Services;
 
 /// <summary>
-/// Builds the API reference the MCP tools serve, by reflecting over the public surface of the three
+/// Builds the API reference the MCP tools serve, by reflecting over the public surface of the two
 /// Bit.BlazeDb runtime assemblies and pairing every type and member with its XML documentation.
 /// <para>
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the
@@ -28,7 +27,6 @@ public static class BlazeDbApiCatalog
     public static readonly Assembly[] Assemblies =
     [
         typeof(BlazeDbDatabase).Assembly,
-        typeof(BlazeDbOpfsStorage).Assembly,
         typeof(BlazeDbDbContextOptionsExtensions).Assembly,
     ];
 

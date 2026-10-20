@@ -77,11 +77,11 @@ public class McpToolTests
     // ---- API ---------------------------------------------------------------
 
     [TestMethod]
-    public async Task The_api_index_lists_the_public_types_of_all_five_packages_by_package()
+    public async Task The_api_index_lists_the_public_types_of_all_four_packages_by_package()
     {
         var index = await McpCall.TextAsync("GetBcrdtApi");
 
-        foreach (var package in new[] { "Bit.Bcrdt", "Bit.Bcrdt.Blazor", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Server", "Bit.Bcrdt.Testing" })
+        foreach (var package in new[] { "Bit.Bcrdt", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Server", "Bit.Bcrdt.Testing" })
         {
             Assert.Contains($"## {package}\n", index.ReplaceLineEndings("\n"));
         }
@@ -103,7 +103,7 @@ public class McpToolTests
         var reference = await McpCall.TextAsync("GetBcrdtApi", new() { ["typeName"] = "BcrdtTextArea" });
 
         Assert.StartsWith("# BcrdtTextArea (Component)", reference);
-        Assert.Contains("package `Bit.Bcrdt.Blazor`", reference);
+        Assert.Contains("package `Bit.Bcrdt`", reference);
         Assert.Contains("## Parameter", reference);
         Assert.Contains("**Field** : `string` = `\"body\"`", reference);
         Assert.Contains("**Rows** : `int` = `10`", reference);
@@ -239,7 +239,7 @@ public class McpToolTests
         {
             var guide = await McpCall.TextAsync("GetBcrdtSetupGuide", new() { ["hostingModel"] = model });
 
-            Assert.Contains("dotnet add package Bit.Bcrdt.Blazor", guide, model);
+            Assert.Contains("`dotnet add package Bit.Bcrdt`", guide, model);
             Assert.Contains("AddBitBcrdtServices", guide, model);
             Assert.Contains("ABSOLUTE", guide, model);
             Assert.Contains("AddBitBcrdtHub", guide, model);

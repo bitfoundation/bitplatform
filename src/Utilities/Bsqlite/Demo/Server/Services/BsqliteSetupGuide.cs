@@ -139,10 +139,11 @@ public static partial class BsqliteSetupGuide
         "storage" => new Scenario(
             "Choosing and adding storage backends",
             """
-            Every backend is a package plus one registration line, and the preference order is yours to set. Two rules
-            decide more than the order does: existing data outranks preference - a database stays on the backend that
-            holds it - and nothing is substituted silently, so a non-persistent fallback needs an explicit opt-in. The
-            table below is read off the provider types themselves.
+            Every backend ships in Bit.Bsqlite and takes one registration line - the browser downloads a backend's VFS
+            only once it is selected - and the preference order is yours to set. Two rules decide more than the order
+            does: existing data outranks preference - a database stays on the backend that holds it - and nothing is
+            substituted silently, so a non-persistent fallback needs an explicit opt-in. The table below is read off the
+            provider types themselves.
             """,
             StorageChecklist,
             StorageTable() + "\n" + StorageCode,
@@ -166,7 +167,7 @@ public static partial class BsqliteSetupGuide
             BesqlChecklist,
             BesqlCode,
             [],
-            [("readme", "Moving off Bit.Besql"), ("Bit.Bsqlite.Storage.CacheStorage", "Capabilities")],
+            [("readme", "Moving off Bit.Besql"), ("storage", "Cache Storage")],
             "`GetBsqliteStorageProviders(provider: \"cache-storage\")` has the backend in full; for the page lifecycle " +
             "under prerendering, `GetBsqliteSetupGuide(scenario: \"wasm\")`."),
 
@@ -253,11 +254,12 @@ public static partial class BsqliteSetupGuide
     private const string HostingChecklist = """
         ## Checklist
 
-        1. `dotnet add package Bit.Bsqlite` plus at least one persistent backend - `Bit.Bsqlite.Storage.Opfs` first and
-           `Bit.Bsqlite.Storage.IndexedDb` as its fallback. In a Blazor Web App, add them to the .Client project.
+        1. `dotnet add package Bit.Bsqlite` - one package, every storage backend included. In a Blazor Web App, add it to
+           the .Client project.
         2. Register with `AddBitBsqliteServices` (namespace `Microsoft.Extensions.DependencyInjection`): each backend with
-           `AddStorageProvider<T>()`, the preference order with `UseStorage(s => s.Prefer(...).Fallback(...))` - required,
-           selection never guesses - and the database with `AddDatabase("app.db")`.
+           `AddStorageProvider<T>()` - at least one persistent one, OPFS first and IndexedDB as its fallback - the
+           preference order with `UseStorage(s => s.Prefer(...).Fallback(...))` - required, selection never guesses - and
+           the database with `AddDatabase("app.db")`.
         3. Register the context with `AddBitBsqliteDbContext<AppDbContext>()`. Migrations run once per session by default
            (`BsqliteSchemaStrategy.Migrate`); seed through `OnFirstUse`. Do not also call `AddDbContext` or `UseSqlite`:
            the factory binds every context to the one shared browser database.
@@ -267,7 +269,7 @@ public static partial class BsqliteSetupGuide
            `BsqliteSynchronousApiNotSupportedException` naming the async overload - the engine runs in a worker the main
            thread cannot wait on.
         6. Nothing goes into the host page: the engine, the worker and the VFS modules are static web assets under
-           `_content/Bit.Bsqlite*/`, imported on demand.
+           `_content/Bit.Bsqlite/`, imported on demand - a session downloads the VFS of the backend it selected and no other.
         7. Keep the model in a project that references only EF Core Relational, as the demo's Data project does, and
            scaffold migrations with `dotnet ef` against the stock SQLite provider: the same migrations apply in the browser.
         """;
@@ -310,13 +312,14 @@ public static partial class BsqliteSetupGuide
     private const string StorageChecklist = """
         ## Checklist
 
-        1. OPFS first (`Bit.Bsqlite.Storage.Opfs`): the only persistent backend on the synchronous engine build - the
-           smallest download - and the fastest storage the web has.
-        2. IndexedDB as its fallback (`Bit.Bsqlite.Storage.IndexedDb`): the widest reach, where OPFS is missing.
-        3. In-memory (`Bit.Bsqlite.Storage.InMemory`, in the core package) only as a declared last resort - with
-           `AllowNonPersistentFallback()` - or for demos and tests. Data written to it is gone on reload.
-        4. Cache Storage (`Bit.Bsqlite.Storage.CacheStorage`) when moving off Bit.Besql - see that scenario - and otherwise
-           not: it exists for the import.
+        1. OPFS first (`BsqliteOpfsStorageProvider`, namespace `Bit.Bsqlite.Storage.Opfs`): the only persistent backend on
+           the synchronous engine build - the smallest download - and the fastest storage the web has.
+        2. IndexedDB as its fallback (`BsqliteIndexedDbStorageProvider`, namespace `Bit.Bsqlite.Storage.IndexedDb`): the
+           widest reach, where OPFS is missing.
+        3. In-memory (`BsqliteInMemoryStorageProvider`, namespace `Bit.Bsqlite.Storage.InMemory`) only as a declared last
+           resort - with `AllowNonPersistentFallback()` - or for demos and tests. Data written to it is gone on reload.
+        4. Cache Storage (`BsqliteCacheStorageProvider`, namespace `Bit.Bsqlite.Storage.CacheStorage`) when moving off
+           Bit.Besql - see that scenario - and otherwise not: it exists for the import.
         5. Leave the migration mode at `KeepExisting` unless moving a user's database without asking is acceptable.
            `AutomaticOnOpen` copies, verifies and only then flips the binding; `Manual` reports
            `Resolution.BetterProviderAvailable` for the app to act on.
@@ -327,8 +330,8 @@ public static partial class BsqliteSetupGuide
     private const string BesqlChecklist = """
         ## Checklist
 
-        1. `dotnet remove package Bit.Besql`, then `dotnet add package Bit.Bsqlite` and
-           `dotnet add package Bit.Bsqlite.Storage.CacheStorage`.
+        1. `dotnet remove package Bit.Besql`, then `dotnet add package Bit.Bsqlite` - the `cache-storage` backend that
+           reads Besql's file ships in it.
         2. Remove `<script src="_content/Bit.Besql/bit-besql.js"></script>` from the host page; Bsqlite needs nothing there.
         3. Replace `AddBesqlDbContextFactory<TContext>(...)` with `AddBitBsqliteServices` and
            `AddBitBsqliteDbContext<TContext>`, naming the database exactly as Besql's `Data Source` - the import looks for
@@ -811,14 +814,14 @@ public static partial class BsqliteSetupGuide
         var builder = new StringBuilder();
 
         builder.AppendLine("## The backends").AppendLine()
-               .AppendLine("| Name | Package | Engine build | Persistent | Concurrent reads | ATTACH | PRAGMA page_size |")
+               .AppendLine("| Name | Namespace | Engine build | Persistent | Concurrent reads | ATTACH | PRAGMA page_size |")
                .AppendLine("| --- | --- | --- | --- | --- | --- | --- |");
 
         foreach (var provider in BsqliteStorageCatalog.Providers)
         {
             string Value(string name) => provider.Capabilities.First(capability => capability.Name == name).Value;
 
-            builder.AppendLine($"| `{provider.Name}` | `{provider.Package}` | {Value("RequiredBuild")} | {Value("IsPersistent")} | " +
+            builder.AppendLine($"| `{provider.Name}` | `{provider.Namespace}` | {Value("RequiredBuild")} | {Value("IsPersistent")} | " +
                                $"{Value("SupportsConcurrentReads")} | {Allowed(provider, "ATTACH")} | {Allowed(provider, "page_size")} |");
         }
 

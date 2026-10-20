@@ -284,8 +284,8 @@ _book
 
 # The compiled modules, plus the pinned wa-sqlite engine and VFSes the restore vendors next to them and the build
 # verifies by checksum (see src/Utilities/Bsqlite/Bit.Bsqlite/engine/wa-sqlite.lock.props): none of it is committed.
-/src/Utilities/Bsqlite/Bit.Bsqlite*/Scripts/**/*.js
-/src/Utilities/Bsqlite/Bit.Bsqlite*/wwwroot/
+/src/Utilities/Bsqlite/Bit.Bsqlite/Scripts/**/*.js
+/src/Utilities/Bsqlite/Bit.Bsqlite/wwwroot/
 
 /src/Utilities/Bink/Bit.Bink/Scripts/**/*.js
 /src/Utilities/Bink/Bit.Bink/wwwroot/**/*.js
@@ -297,8 +297,8 @@ _book
 /src/Utilities/BbScanner/Bit.BbScanner/Scripts/**/*.js
 /src/Utilities/BbScanner/Bit.BbScanner/wwwroot/**/*.js
 /src/Utilities/BbScanner/Bit.BbScanner/wwwroot/**/*.css
-/src/Utilities/BlazeDb/Bit.BlazeDb.Browser/Scripts/**/*.js
-/src/Utilities/BlazeDb/Bit.BlazeDb.Browser/wwwroot/**/*.js
+/src/Utilities/BlazeDb/Bit.BlazeDb/Scripts/**/*.js
+/src/Utilities/BlazeDb/Bit.BlazeDb/wwwroot/**/*.js
 
 /src/Utilities/Bdnd/Bit.Bdnd/Scripts/**/*.js
 /src/Utilities/Bdnd/Bit.Bdnd/wwwroot/**/*.js
@@ -308,11 +308,11 @@ _book
 /src/Utilities/Blow/Bit.Blow/wwwroot/**/*.css
 
 /src/Utilities/Borm/Bit.Borm/wwwroot/**/*.css
-/src/Utilities/Bcrdt/Bit.Bcrdt.Blazor/Scripts/**/*.js
-/src/Utilities/Bcrdt/Bit.Bcrdt.Blazor/wwwroot/**/*.js
+/src/Utilities/Bcrdt/Bit.Bcrdt/Scripts/**/*.js
+/src/Utilities/Bcrdt/Bit.Bcrdt/wwwroot/**/*.js
 
-/src/Utilities/Blex/Bit.Blex.Blazor/Scripts/**/*.js
-/src/Utilities/Blex/Bit.Blex.Blazor/wwwroot/**/*.js
+/src/Utilities/Blex/Bit.Blex/Scripts/**/*.js
+/src/Utilities/Blex/Bit.Blex/wwwroot/**/*.js
 
 /src/Utilities/Bonboarding/Bit.Bonboarding/Scripts/**/*.js
 /src/Utilities/Bonboarding/Bit.Bonboarding/wwwroot/**/*.js

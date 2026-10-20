@@ -21,15 +21,12 @@
     <ProjectReference Include="..\Client\Bit.Bsqlite.Demo.Client.csproj" />
     <ProjectReference Include="..\Data\Bit.Bsqlite.Demo.Data.csproj" />
 
-    <!-- Every package the MCP server describes, referenced directly rather than through the client: the API
+    <!-- Both packages the MCP server describes, referenced directly rather than through the client: the API
          reference reflects over each of them and reads the XML documentation each build writes next to it,
          and the storage tools read the providers' declared capabilities and run the library's own selection.
          Bit.Bsqlite.Testing is here for its public surface only - nothing on this server constructs its
          in-process transport or runs its conformance kit. -->
     <ProjectReference Include="..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" />
-    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.Opfs\Bit.Bsqlite.Storage.Opfs.csproj" />
-    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.IndexedDb\Bit.Bsqlite.Storage.IndexedDb.csproj" />
-    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.CacheStorage\Bit.Bsqlite.Storage.CacheStorage.csproj" />
     <ProjectReference Include="..\..\Bit.Bsqlite.Testing\Bit.Bsqlite.Testing.csproj" />
   </ItemGroup>
 
@@ -66,12 +63,9 @@
       <LogicalName>BsqliteDocs/docs/%(Filename)%(Extension)</LogicalName>
     </EmbeddedResource>
 
-    <!-- The package READMEs: the capability tables of the storage backends and the only description of the
-         testing kit live there, not in docs\. Named after the package, which is the name a caller knows. -->
+    <!-- The package READMEs: the only description of the testing kit lives there, not in docs\. Named after
+         the package, which is the name a caller knows. -->
     <EmbeddedResource Include="..\..\Bit.Bsqlite\README.md" LogicalName="BsqliteDocs/packages/Bit.Bsqlite.md" />
-    <EmbeddedResource Include="..\..\Bit.Bsqlite.Storage.Opfs\README.md" LogicalName="BsqliteDocs/packages/Bit.Bsqlite.Storage.Opfs.md" />
-    <EmbeddedResource Include="..\..\Bit.Bsqlite.Storage.IndexedDb\README.md" LogicalName="BsqliteDocs/packages/Bit.Bsqlite.Storage.IndexedDb.md" />
-    <EmbeddedResource Include="..\..\Bit.Bsqlite.Storage.CacheStorage\README.md" LogicalName="BsqliteDocs/packages/Bit.Bsqlite.Storage.CacheStorage.md" />
     <EmbeddedResource Include="..\..\Bit.Bsqlite.Testing\README.md" LogicalName="BsqliteDocs/packages/Bit.Bsqlite.Testing.md" />
 
     <!-- Every demo page - each one runs real queries against a database in the browser - plus the components

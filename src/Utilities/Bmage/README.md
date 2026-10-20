@@ -71,16 +71,17 @@ Blazor-native image processing platform where the engine itself is C#.
 
 ## Packages
 
-| Package | Use it when | Depends on |
+| Package | What it contains | Depends on |
 | --- | --- | --- |
-| `Bit.Bmage.Editor` | You want the `BmageEditor` component | `Bit.Bmage` |
-| `Bit.Bmage` | You want the engine, browser codecs, loading and export, but your own UI - or headless processing on a server | nothing |
+| `Bit.Bmage` | The engine, browser codecs, capabilities, loading and export, headless processing on a server, and the `BmageEditor` / `BmageDropZone` components | `Microsoft.AspNetCore.Components.Web` |
+
+Everything ships in the one package. The editor's stylesheet is opt-in, so an app that brings its own UI or only
+processes images headlessly never loads it.
 
 ## Installation
 
 ```bash
-dotnet add package Bit.Bmage          # engine and browser integration: codecs, capabilities, loading, export
-dotnet add package Bit.Bmage.Editor   # the editor component (pulls in Bit.Bmage)
+dotnet add package Bit.Bmage
 ```
 
 Register the services in `Program.cs`:
@@ -96,7 +97,7 @@ For server-side or console use, without any browser integration, register `AddBi
 Add the stylesheet if you use the editor:
 
 ```html
-<link rel="stylesheet" href="_content/Bit.Bmage.Editor/bit-bmage-editor.css" />
+<link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
 ```
 
 In the browser, enable AOT compilation in the project that runs on WebAssembly. Pixel loops run 10 to 35× slower on the

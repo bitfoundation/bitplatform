@@ -36,7 +36,7 @@ The editor fills its container, and a container with no height collapses.
 The stylesheet is not referenced:
 
 ```html
-<link rel="stylesheet" href="_content/Bit.Bmage.Editor/bit-bmage-editor.css" />
+<link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
 ```
 
 ## Photos appear sideways
@@ -194,11 +194,11 @@ the same way under `-p:TrimMode=full`, because full trimming removes members tha
 instantiation needs. That is why `TrimMode=full` is not the Blazor default, and the SDK prints
 *Optimizing assemblies for size may change the behavior of the app* when you enable it.
 
-**Use the default trimming that `dotnet publish -c Release` already applies.** It trims these packages well: on a
-minimal application the Bmage assemblies go from 631 KB to 458 KB, about 155 KB compressed with Brotli, with the
+**Use the default trimming that `dotnet publish -c Release` already applies.** It trims this package well: on a
+minimal application the Bmage code goes from 631 KB to 458 KB, about 155 KB compressed with Brotli, with the
 editor rendering and processing images normally.
 
-Rooting the assembly with `<TrimmerRootAssembly Include="Bit.Bmage.Editor" />` does not help. It keeps the assembly
+Rooting the assembly with `<TrimmerRootAssembly Include="Bit.Bmage" />` does not help. It keeps the assembly
 in the output, but the application still fails the same way, for the same reason.
 
 ## Still stuck

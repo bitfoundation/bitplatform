@@ -2,7 +2,7 @@
 @implements IAsyncDisposable
 @inject ImageExporter Exporter
 
-@* The first page of the docs: which package, how to register it, the one stylesheet, and the first
+@* The first page of the docs: the package, how to register it, the one stylesheet, and the first
    image - with that first-image snippet runnable right here against the generated sample, so the
    page ends on something the reader has seen work rather than on something they have to trust. *@
 
@@ -12,27 +12,20 @@
 
 <p class="page-intro">
     Bmage is <strong>browser-side image processing for Blazor</strong>: load, transform, annotate and
-    export images on the user's device from strongly typed C#. Pick a package, register the
+    export images on the user's device from strongly typed C#. Install the package, register the
     services, and an image is three calls away.
 </p>
 
 <div class="demo-section">
-    <h2>Pick a package</h2>
-    <p>The editor includes <code>Bit.Bmage</code>, so install the one you need.</p>
-    <div class="table-scroll" tabindex="0" role="region" aria-label="Packages">
-        <table class="ref">
-            <thead>
-                <tr><th scope="col">Package</th><th scope="col">Use it when</th><th scope="col">Depends on</th></tr>
-            </thead>
-            <tbody>
-                <tr><th scope="row"><code>Bit.Bmage.Editor</code></th><td>You want the <code>BmageEditor</code> component</td><td><code>Bit.Bmage</code></td></tr>
-                <tr><th scope="row"><code>Bit.Bmage</code></th><td>You want the engine, browser codecs, loading and export, but your own UI - or headless processing on a server</td><td>nothing</td></tr>
-            </tbody>
-        </table>
-    </div>
-    <CodeSnippet Code="dotnet add package Bit.Bmage.Editor" Language="Shell" Expanded="true" />
+    <h2>Install the package</h2>
     <p>
-        Both target .NET 8, 9 and 10. Everything works on Blazor WebAssembly and on Interactive
+        One package holds everything: the engine, the browser codecs, loading and export, headless
+        processing on a server, and the <code>BmageEditor</code> component. It depends only on
+        <code>Microsoft.AspNetCore.Components.Web</code>.
+    </p>
+    <CodeSnippet Code="dotnet add package Bit.Bmage" Language="Shell" Expanded="true" />
+    <p>
+        It targets .NET 8, 9 and 10. Everything works on Blazor WebAssembly and on Interactive
         Auto once interactive; Interactive Server works too, with pixel data crossing the circuit.
         <a href="/hosting">Hosting models</a> covers each.
     </p>
@@ -63,7 +56,7 @@
 <div class="demo-section">
     <h2>Add the stylesheet</h2>
     <p>
-        Only <code>Bit.Bmage.Editor</code> needs one. Link it from <code>App.razor</code> in a Blazor
+        Only the editor components need one. Link it from <code>App.razor</code> in a Blazor
         Web App, or from <code>wwwroot/index.html</code> in a standalone WebAssembly app. The browser
         bridge script is imported on demand by the library - there is no script tag to add.
     </p>
@@ -213,7 +206,7 @@
         """;
 
     private const string StylesheetSnippet = """
-        <link rel="stylesheet" href="_content/Bit.Bmage.Editor/bit-bmage-editor.css" />
+        <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
         """;
 
     private const string FirstImageSnippet = """

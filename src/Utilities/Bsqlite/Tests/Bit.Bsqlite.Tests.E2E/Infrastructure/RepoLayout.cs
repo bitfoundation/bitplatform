@@ -1,20 +1,20 @@
 ﻿namespace Bit.Bsqlite.Tests.E2E.Infrastructure;
 
 /// <summary>
-/// Finds the libraries and the demo server from the test binary's location by walking up, so a run does not
+/// Finds the library and the demo server from the test binary's location by walking up, so a run does not
 /// depend on the working directory the shell, the IDE or the test runner picked.
 /// </summary>
 public static class RepoLayout
 {
     public const string DemoServerName = "Bit.Bsqlite.Demo.Server";
 
-    /// <summary>The packages whose wwwroot is served under <c>_content/&lt;package&gt;/</c>, as a Blazor app maps them.</summary>
+    /// <summary>
+    /// The packages whose wwwroot is served under <c>_content/&lt;package&gt;/</c>, as a Blazor app maps them: the one
+    /// library package, which ships the engine and every first-party VFS.
+    /// </summary>
     public static readonly string[] Packages =
     [
         "Bit.Bsqlite",
-        "Bit.Bsqlite.Storage.Opfs",
-        "Bit.Bsqlite.Storage.IndexedDb",
-        "Bit.Bsqlite.Storage.CacheStorage",
     ];
 
     /// <summary>The src/Utilities/Bsqlite folder.</summary>

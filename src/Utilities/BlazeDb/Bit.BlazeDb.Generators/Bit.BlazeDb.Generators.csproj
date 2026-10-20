@@ -8,18 +8,16 @@
              -p:TargetFrameworks=net10.0 would otherwise retarget an analyzer that only ever runs inside the
              compiler. TreatAsLocalProperty above is what lets this win. -->
         <TargetFrameworks></TargetFrameworks>
-        <!-- Roslyn source generator: the assembly ships as an analyzer, not a lib reference. -->
+        <!-- Roslyn source generator. It is not a package of its own: Bit.BlazeDb.csproj packs this assembly into
+             the Bit.BlazeDb package under analyzers/dotnet/cs, so installing the engine brings the generator. -->
         <IsRoslynComponent>true</IsRoslynComponent>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
-        <IncludeBuildOutput>false</IncludeBuildOutput>
-        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <IsPackable>false</IsPackable>
         <!-- netstandard2.0 has no nullable annotations in the BCL; keep nullable on for our own code
              but don't warn about the BCL's unannotated surface. -->
         <NoWarn>$(NoWarn);nullable</NoWarn>
         <IsAotCompatible>false</IsAotCompatible>
-        <PackageTags>$(PackageTags);Blazor;Database;Source generator</PackageTags>
         <Description>The Roslyn source generator for Bit.BlazeDb: turns [BlazeDbTable] types into table descriptors with binary row and key serializers, key extractors and typed index definitions, with no runtime reflection.</Description>
-        <PackageDescription>$(Description)</PackageDescription>
     </PropertyGroup>
 
     <ItemGroup>
@@ -31,11 +29,6 @@
         <!-- Release tracking for the diagnostics this generator reports (RS2008). -->
         <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
         <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <!-- Pack as an analyzer so `dotnet add package Bit.BlazeDb.Generators` just works. -->
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
 </Project>

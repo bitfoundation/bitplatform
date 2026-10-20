@@ -45,17 +45,21 @@ BlazeDb eliminates all three:
 ## Install
 
 ```bash
-dotnet add package Bit.BlazeDb                     # the engine
-dotnet add package Bit.BlazeDb.Generators          # the source generator for [BlazeDbTable] types
-dotnet add package Bit.BlazeDb.Browser             # OPFS, IndexedDB, WebCrypto, tabs
+dotnet add package Bit.BlazeDb                     # the engine, the source generator and the browser backends
 dotnet add package Bit.BlazeDb.EntityFrameworkCore # UseBlazeDb()
 ```
 
-`Bit.BlazeDb.Generators` is what turns a `[BlazeDbTable]` class into a table: it emits the `Table`
-descriptor and the `Indexes` class the rest of this guide uses. Add it to every project that declares
-table types - a `PackageReference` to the engine alone compiles the attributes, but generates nothing,
-and `TodoItem.Table` then does not exist. The generator ships as an analyzer, so it adds nothing to the
-application's output.
+Installing `Bit.BlazeDb` is enough: there is no separate generator or browser package to add. It
+carries the source generator that turns a `[BlazeDbTable]` class into a table - it emits the `Table`
+descriptor and the `Indexes` class the rest of this guide uses - as an analyzer, so the generator adds
+nothing to the application's output. Reference the package directly
+from every project that declares table types: analyzers do not flow transitively, so a project that gets
+the engine only through another project, or only through `Bit.BlazeDb.EntityFrameworkCore`, compiles the
+attributes but generates nothing, and `TodoItem.Table` then does not exist.
+
+The browser backends (OPFS, IndexedDB, WebCrypto, tabs) ship in the same package, under the
+`Bit.BlazeDb.Browser` namespace. They are marked `[SupportedOSPlatform("browser")]` - the rest of the
+engine is not - so on the server, the desktop or MAUI they are simply left unused.
 
 Add the namespaces you use to `_Imports.razor` or a global using:
 
@@ -77,9 +81,7 @@ global using Bit.BlazeDb.Querying;  // BlazeDbQuery, BlazeDbBound
 
 | Package | Purpose |
 | --- | --- |
-| `Bit.BlazeDb` | The engine: tables, indexes, transactions, WAL/snapshot persistence, the storage abstraction with in-memory, file and encrypted backends. No browser dependency. |
-| `Bit.BlazeDb.Generators` | The Roslyn incremental source generator: binary serializers, key extractors and typed index definitions for `[BlazeDbTable]` types. |
-| `Bit.BlazeDb.Browser` | OPFS and IndexedDB storage backends (`[JSImport]` ES modules), Web Locks single-writer election, a WebCrypto cipher and cross-tab sync. |
+| `Bit.BlazeDb` | The engine: tables, indexes, transactions, WAL/snapshot persistence, the storage abstraction with in-memory, file and encrypted backends. It also carries the Roslyn incremental source generator (binary serializers, key extractors and typed index definitions for `[BlazeDbTable]` types) as an analyzer, and - in `Bit.BlazeDb.Browser`, browser-only - the OPFS and IndexedDB storage backends (`[JSImport]` ES modules), Web Locks single-writer election, a WebCrypto cipher and cross-tab sync. |
 | `Bit.BlazeDb.EntityFrameworkCore` | The EF Core provider: `UseBlazeDb`, change tracking over live rows, LINQ translated to query plans. |
 
 Everything public is prefixed `BlazeDb` (`BlazeDbDatabase`, `BlazeDbTable<TKey, TRow>`,
@@ -245,7 +247,7 @@ queries, the EF Core provider - is the same wherever it runs.
 ### Blazor WebAssembly
 
 The model the engine is designed for. The database lives in the tab, in managed memory, and persists to
-OPFS through `Bit.BlazeDb.Browser` (or to IndexedDB where OPFS cannot be written - see
+OPFS through `BlazeDbOpfsStorage` (or to IndexedDB where OPFS cannot be written - see
 [Multiple tabs](#multiple-tabs)). Open it once per tab and share it: register a singleton service that
 opens the database on first use, the way the demo's `DemoDbService` does, rather than opening one per
 component. WebAssembly has one thread, so the threading model holds by construction.
@@ -280,12 +282,16 @@ the writer lock for the next tab. `CreateAsync` throws `BlazeDbDatabaseLockedExc
 already holds it - open a read-only replica there instead, or fall back to `BlazeDbInMemoryStorage` the
 way the demo does.
 
+There is no script tag to add: each browser backend imports its ES module the first time it is used,
+from `_content/Bit.BlazeDb/` resolved against the document's `<base href>`. Every `CreateAsync` takes a
+`moduleUrl` for an app that serves the modules from somewhere else.
+
 ### Blazor Web App
 
 The database still lives in the browser, so the code that opens it belongs in the `.Client` project and
 runs under `InteractiveWebAssembly`. What changes is prerendering: a prerendered component runs on the
-server first, where there is no OPFS, no IndexedDB and no Web Locks - `Bit.BlazeDb.Browser` is
-`[SupportedOSPlatform("browser")]` and its backends throw outside the browser. Either turn prerendering
+server first, where there is no OPFS, no IndexedDB and no Web Locks - the backends in `Bit.BlazeDb.Browser`
+are `[SupportedOSPlatform("browser")]` and throw outside the browser. Either turn prerendering
 off for the pages that use the database (`@rendermode="new InteractiveWebAssemblyRenderMode(prerender: false)"`,
 which is what the demo does for the whole app, since every one of its pages opens the database), or keep
 it and open the database only once the component runs in the browser - in `OnAfterRenderAsync`, or behind
@@ -530,7 +536,7 @@ generated code fail to compile or the index throw on its first insert.
 
 ## Compile-time diagnostics
 
-`Bit.BlazeDb.Generators` reports every table shape it cannot generate as a build diagnostic on the type
+The source generator in `Bit.BlazeDb` reports every table shape it cannot generate as a build diagnostic on the type
 or property at fault, rather than emitting code that fails to compile or a descriptor that throws at
 runtime. A type with an error gets no generated partial at all, so its own diagnostic arrives together
 with "does not contain a definition for 'Table'" errors wherever the type is used - fix the `BLZ` one first.

@@ -10,7 +10,7 @@ namespace Bit.Bcrdt.Tests.Mcp;
 
 /// <summary>
 /// The server's claims put to the things they describe: the merge lab against the engine it runs, the
-/// update inspector against the encoder that made the bytes, the API index against the five assemblies,
+/// update inspector against the encoder that made the bytes, the API index against the four assemblies,
 /// the guide index against the README, and the HTTP mirror against the protocol it mirrors. No expected
 /// answers are written down here - the library, its files and the protocol are the expectations.
 /// </summary>
@@ -277,7 +277,7 @@ public partial class McpOracleTests
         var indexed = BcrdtApiCatalog.Types.Select(type => type.Name).ToHashSet(StringComparer.Ordinal);
 
         CollectionAssert.AreEquivalent(exported.ToArray(), indexed.ToArray());
-        CollectionAssert.AreEquivalent(new[] { "Bit.Bcrdt", "Bit.Bcrdt.Blazor", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Server", "Bit.Bcrdt.Testing" },
+        CollectionAssert.AreEquivalent(new[] { "Bit.Bcrdt", "Bit.Bcrdt.SignalR", "Bit.Bcrdt.Server", "Bit.Bcrdt.Testing" },
             BcrdtApiCatalog.Types.Select(type => type.Package).Distinct().ToArray());
     }
 
@@ -305,7 +305,7 @@ public partial class McpOracleTests
     {
         // The XML documentation files have to reach the server's output folder for any of this to work;
         // a build that stops copying them leaves every summary empty without failing anything else. Every
-        // public type of the five packages carries one, so a type that has none is a gap in what an agent
+        // public type of the four packages carries one, so a type that has none is a gap in what an agent
         // is told, and is named here.
         var withoutSummary = BcrdtApiCatalog.Types.Where(type => type.Summary is null).Select(type => $"{type.Package}: {type.Name}").ToArray();
 

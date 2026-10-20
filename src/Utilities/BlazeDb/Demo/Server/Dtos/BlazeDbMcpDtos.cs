@@ -34,7 +34,7 @@ public record BlazeDbApiTypeDto
     /// <summary>Component, Interface, Enum, Attribute, Delegate, Static class, Class, Struct or Record.</summary>
     public required string Kind { get; init; }
 
-    /// <summary>The package the type ships in: Bit.BlazeDb, Bit.BlazeDb.Browser or Bit.BlazeDb.EntityFrameworkCore.</summary>
+    /// <summary>The package the type ships in: Bit.BlazeDb or Bit.BlazeDb.EntityFrameworkCore.</summary>
     public required string Package { get; init; }
 
     public string? Summary { get; init; }

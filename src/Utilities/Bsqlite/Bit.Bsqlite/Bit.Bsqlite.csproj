@@ -8,9 +8,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <!-- Static assets only; no Razor components, so no need to scan for them. -->
         <AddRazorSupportForMvc>false</AddRazorSupportForMvc>
-        <Description>bit Bsqlite: SQLite in the browser for Blazor, with EF Core on top. The ADO.NET surface with live queries, the worker transport (storage selection, engine-build negotiation, binary framing, batching, lifecycle), the storage provider contract, the in-memory backend, the EF Core integration (UseBitBsqlite() on the stock SQLite provider), and the browser half - worker host, wa-sqlite engine builds and the JavaScript API storage providers' VFSes extend.</Description>
+        <Description>bit Bsqlite: SQLite in the browser for Blazor, with EF Core on top. The ADO.NET surface with live queries, the worker transport (storage selection, engine-build negotiation, binary framing, batching, lifecycle), the storage provider contract, the EF Core integration (UseBitBsqlite() on the stock SQLite provider), the storage backends - OPFS (OPFSCoopSyncVFS), IndexedDB (IDBBatchAtomicVFS), Cache Storage (which imports a database Bit.Besql left behind) and in-memory - and the browser half: worker host, wa-sqlite engine builds and VFSes, each downloaded only when the backend that needs it is selected.</Description>
         <PackageDescription>$(Description)</PackageDescription>
-        <PackageTags>Bit;Bsqlite;Blazor;WebAssembly;SQLite;EF Core;Entity Framework Core;ADO.NET;Offline;Live query</PackageTags>
+        <PackageTags>Bit;Bsqlite;Blazor;WebAssembly;SQLite;EF Core;Entity Framework Core;ADO.NET;Offline;Live query;OPFS;Origin private file system;IndexedDB;Cache Storage;Besql;Storage;Migration</PackageTags>
     </PropertyGroup>
 
     <ItemGroup>
@@ -95,8 +95,8 @@
     <!-- Runs BuildBsqliteJavaScript through the MSBuild task with TargetFramework removed, so every per-TFM
          build asks for the same project configuration: MSBuild keeps one result per project and global
          properties, so the first request runs npm/tsc/esbuild and concurrent ones wait for it. A
-         ProjectReference (each storage package references this project once per target framework, in
-         parallel) builds the inner builds directly without the outer build, so calling the compile from
+         ProjectReference (a multi-targeted test project references this project once per target framework,
+         in parallel) builds the inner builds directly without the outer build, so calling the compile from
          each of them would race on node_modules and the wwwroot output. -->
     <Target Name="BuildBsqliteJavaScriptOnce">
         <MSBuild Projects="$(MSBuildProjectFullPath)"

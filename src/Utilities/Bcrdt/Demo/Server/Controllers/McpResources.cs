@@ -34,7 +34,7 @@ public static class McpResources
         => BcrdtSourceCatalog.GetGuideSection(heading) ?? $"The guide has no section called '{heading}'.";
 
     [McpServerResource(UriTemplate = "bcrdt://api", Name = "bcrdt-api", Title = "Bit.Bcrdt public API", MimeType = "text/markdown")]
-    [Description("Every public type of the five Bit.Bcrdt packages with its kind and summary, by package.")]
+    [Description("Every public type of the four Bit.Bcrdt packages with its kind and summary, by package.")]
     public static string ApiList() => BcrdtApiCatalog.RenderIndex();
 
     [McpServerResource(UriTemplate = "bcrdt://api/{typeName}", Name = "bcrdt-api-type", Title = "Type reference", MimeType = "text/markdown")]

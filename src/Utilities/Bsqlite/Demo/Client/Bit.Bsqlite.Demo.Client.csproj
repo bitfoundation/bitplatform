@@ -18,11 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- The library and every first-party storage backend: the demo moves its database between all four. -->
+    <!-- The library, with every first-party storage backend: the demo moves its database between all four. -->
     <ProjectReference Include="..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" />
-    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.Opfs\Bit.Bsqlite.Storage.Opfs.csproj" />
-    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.IndexedDb\Bit.Bsqlite.Storage.IndexedDb.csproj" />
-    <ProjectReference Include="..\..\Bit.Bsqlite.Storage.CacheStorage\Bit.Bsqlite.Storage.CacheStorage.csproj" />
 
     <!-- The one AppDbContext and migration set the server runs too. -->
     <ProjectReference Include="..\Data\Bit.Bsqlite.Demo.Data.csproj" />

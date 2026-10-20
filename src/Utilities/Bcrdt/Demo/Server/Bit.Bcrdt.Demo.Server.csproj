@@ -18,8 +18,8 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.Bcrdt\Bit.Bcrdt.csproj" />
         <ProjectReference Include="..\..\Bit.Bcrdt.Server\Bit.Bcrdt.Server.csproj" />
-        <!-- Nothing here runs it: it is referenced so GetBcrdtApi reflects all five packages. The client brings
-             Bit.Bcrdt.Blazor and Bit.Bcrdt.SignalR. -->
+        <!-- Nothing here runs it: it is referenced so GetBcrdtApi reflects all four packages. The client brings
+             Bit.Bcrdt.SignalR. -->
         <ProjectReference Include="..\..\Bit.Bcrdt.Testing\Bit.Bcrdt.Testing.csproj" />
         <ProjectReference Include="..\Client\Bit.Bcrdt.Demo.Client.csproj" />
     </ItemGroup>

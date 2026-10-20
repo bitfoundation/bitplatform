@@ -236,8 +236,9 @@
 
     <h2>Custom storage</h2>
     <p>
-        The core package ships only the abstraction; <code>Bit.Blex.Blazor</code> supplies the browser
-        implementation. Anything else - a file, IndexedDB, a server round-trip - is one small class.
+        <code>IBlexStorage</code> is the whole contract; <code>BlexBrowserStorage</code>, in the
+        <code>Bit.Blex.Blazor</code> namespace, is the browser implementation. Anything else - a file,
+        IndexedDB, a server round-trip - is one small class.
     </p>
     <CodeBlock Code="@CustomStorage" />
 

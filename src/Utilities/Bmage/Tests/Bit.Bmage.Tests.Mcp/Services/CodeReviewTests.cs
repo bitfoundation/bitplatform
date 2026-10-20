@@ -189,14 +189,15 @@ public class CodeReviewTests
     [TestMethod]
     public void Stylesheet_TheRightLink_IsFine_AndAWrongPathIsAnError()
     {
-        None(Review("<head>\n<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/bit-bmage-editor.css\" />\n</head>\n<BmageEditor />"), "editor-stylesheet-missing");
-        None(Review("<link rel=\"stylesheet\" href=\"/_content/Bit.Bmage.Editor/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path");
+        None(Review("<head>\n<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage-editor.css\" />\n</head>\n<BmageEditor />"), "editor-stylesheet-missing");
+        None(Review("<link rel=\"stylesheet\" href=\"/_content/Bit.Bmage/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path");
 
         // The demo's own stylesheets are not the editor's, and must not be mistaken for a wrong path to it.
         None(Review("<link rel=\"stylesheet\" href=\"css/bmage-samples.css\" />"), "editor-stylesheet-wrong-path");
 
-        Assert.AreEqual("Error", Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path").Severity);
-        Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/bit-bmage.css\" />"), "editor-stylesheet-wrong-path");
+        // The editor ships inside Bit.Bmage: there is no Bit.Bmage.Editor package, so no _content folder of that name.
+        Assert.AreEqual("Error", Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage.Editor/bit-bmage-editor.css\" />"), "editor-stylesheet-wrong-path").Severity);
+        Single(Review("<link rel=\"stylesheet\" href=\"_content/Bit.Bmage/bit-bmage.css\" />"), "editor-stylesheet-wrong-path");
     }
 
     [TestMethod]
@@ -296,7 +297,7 @@ public class CodeReviewTests
         var review = Review("""
             <Project Sdk="Microsoft.NET.Sdk.BlazorWebAssembly">
               <ItemGroup>
-                <PackageReference Include="Bit.Bmage.Editor" Version="10.0.0" />
+                <PackageReference Include="Bit.Bmage" Version="10.0.0" />
               </ItemGroup>
             </Project>
             """);

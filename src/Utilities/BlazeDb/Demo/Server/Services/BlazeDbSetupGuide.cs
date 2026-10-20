@@ -149,7 +149,7 @@ public static partial class BlazeDbSetupGuide
         {
             builder.AppendLine("## The files, from this demo").AppendLine();
             builder.AppendLine("Everything below compiles as-is; rename the projects and namespaces to your own. Inside this repository the ")
-                   .AppendLine("client references the generator as an analyzer project reference - from NuGet it is the `Bit.BlazeDb.Generators` package.")
+                   .AppendLine("client references the generator as an analyzer project reference - from NuGet it comes inside the `Bit.BlazeDb` package.")
                    .AppendLine();
 
             foreach (var path in _demoFiles)
@@ -181,15 +181,17 @@ public static partial class BlazeDbSetupGuide
     private const string BrowserChecklist = """
         ## Checklist
 
-        1. `dotnet add package Bit.BlazeDb`, `Bit.BlazeDb.Generators` and `Bit.BlazeDb.Browser` - plus
-           `Bit.BlazeDb.EntityFrameworkCore` for `UseBlazeDb()`. In a Blazor Web App, add them to the .Client project.
-           Without `Bit.BlazeDb.Generators` a `[BlazeDbTable]` type compiles but gets no `Table` and no `Indexes`.
+        1. `dotnet add package Bit.BlazeDb` - plus `Bit.BlazeDb.EntityFrameworkCore` for `UseBlazeDb()`. In a Blazor
+           Web App, add them to the .Client project. The package brings the source generator and the browser backends
+           (`Bit.BlazeDb.Browser`). Reference it directly from the project that declares the tables: the generator does
+           not flow transitively (through a project reference or the EF Core package), and without it a `[BlazeDbTable]`
+           type compiles but gets no `Table` and no `Indexes`.
         2. Declare each table as a top-level `partial` type marked `[BlazeDbTable("name")]` with one `[BlazeDbKey]`
            property, and check it with `InspectBlazeDbTable`.
         3. Open the database ONCE per tab, in a singleton service, and share it - not per component or per page. The
            storage (`BlazeDbOpfsStorage.CreateAsync`) takes the tab's writer lock; dispose it after the database.
         4. Never open a browser backend outside the browser: not during prerendering, not in an InteractiveServer or
-           InteractiveAuto server render. `Bit.BlazeDb.Browser` is `[SupportedOSPlatform("browser")]`.
+           InteractiveAuto server render. Every type in `Bit.BlazeDb.Browser` is `[SupportedOSPlatform("browser")]`.
         5. Handle the second tab: `CreateAsync` throws `BlazeDbDatabaseLockedException` when another tab is the writer -
            open a read-only replica there (`CreateReadOnlyAsync` + `ReadOnly = true`), or fall back to in-memory storage.
         6. Where OPFS cannot be written (Firefox private windows, Safari before 26), use `BlazeDbIndexedDbStorage`;
@@ -201,8 +203,9 @@ public static partial class BlazeDbSetupGuide
     private const string ServerChecklist = """
         ## Checklist
 
-        1. `dotnet add package Bit.BlazeDb` and `Bit.BlazeDb.Generators` - plus `Bit.BlazeDb.EntityFrameworkCore` for
-           `UseBlazeDb()`. `Bit.BlazeDb.Browser` does not apply here: its backends exist only on WebAssembly.
+        1. `dotnet add package Bit.BlazeDb` - plus `Bit.BlazeDb.EntityFrameworkCore` for `UseBlazeDb()`. The package
+           brings the source generator; reference it directly from the project that declares the `[BlazeDbTable]` types.
+           `Bit.BlazeDb.Browser` does not apply here: its backends ship in the same package but exist only on WebAssembly.
         2. Declare each table as a top-level `partial` type marked `[BlazeDbTable("name")]` with one `[BlazeDbKey]`
            property, and check it with `InspectBlazeDbTable`.
         3. Open each database once and keep it for the process's lifetime. `BlazeDbFileStorage` takes an exclusive lock on
@@ -229,8 +232,6 @@ public static partial class BlazeDbSetupGuide
           <ItemGroup>
             <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.*" />
             <PackageReference Include="Bit.BlazeDb" Version="*" />
-            <PackageReference Include="Bit.BlazeDb.Generators" Version="*" PrivateAssets="all" />
-            <PackageReference Include="Bit.BlazeDb.Browser" Version="*" />
           </ItemGroup>
         </Project>
         ```
@@ -349,7 +350,7 @@ public static partial class BlazeDbSetupGuide
         ```
 
         There is no script tag to add to `wwwroot/index.html`: the browser backends load their ES modules from
-        `_content/Bit.BlazeDb.Browser/` themselves, resolved against the document's `<base href>`.
+        `_content/Bit.BlazeDb/` themselves, resolved against the document's `<base href>`.
         """;
 
     private const string ServerFiles = """

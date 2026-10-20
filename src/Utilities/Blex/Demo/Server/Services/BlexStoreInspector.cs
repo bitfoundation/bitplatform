@@ -15,7 +15,7 @@ namespace Bit.Blex.Demo.Server.Services;
 /// generates - partial, naming prefixes, return types, member shapes - are easy to get slightly wrong
 /// in ways that only show up as a build error, or worse, as a generated member under a name nobody
 /// expected. So instead of describing the rules, the server applies them: the verdict is the
-/// generator's own, from the same assembly the Bit.Blex.Generators package ships.
+/// generator's own, from the same assembly the Bit.Blex package ships as its analyzer.
 /// </para>
 /// </summary>
 public static class BlexStoreInspector

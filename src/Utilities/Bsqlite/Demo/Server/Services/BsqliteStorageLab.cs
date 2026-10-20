@@ -412,7 +412,7 @@ public static class BsqliteStorageLab
         foreach (var missing in plan.Candidates.Where(candidate => candidate.Rank is not null && candidate.Registered is false))
         {
             yield return missing.FirstParty
-                ? $"'{missing.Name}' is a candidate but not registered: add AddStorageProvider<{BsqliteStorageCatalog.Find(missing.Name)?.TypeName}>() and a reference to its package, {BsqliteStorageCatalog.Find(missing.Name)?.Package}."
+                ? $"'{missing.Name}' is a candidate but not registered: add AddStorageProvider<{BsqliteStorageCatalog.Find(missing.Name)?.TypeName}>() (namespace {BsqliteStorageCatalog.Find(missing.Name)?.Namespace})."
                 : $"'{missing.Name}' is a candidate but no provider of that name is registered: register your IBsqliteStorageProvider with AddStorageProvider.";
         }
 

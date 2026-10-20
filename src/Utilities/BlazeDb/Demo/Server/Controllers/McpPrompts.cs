@@ -38,8 +38,10 @@ public static class McpPrompts
                continue with what you find.
             2. Call `GetBlazeDbSetupGuide` with that hosting model and follow it. In a Blazor Web App the database lives in
                the browser, so the packages and the code that opens it belong in the .Client project.
-            3. Add `Bit.BlazeDb.Generators` next to `Bit.BlazeDb` - without it a [BlazeDbTable] type compiles but has no
-               `Table` and no `Indexes`. Add `Bit.BlazeDb.Browser` only where the database runs in the browser.
+            3. Reference `Bit.BlazeDb` directly from the project that declares the tables: it brings the source generator,
+               which does not flow transitively (through a project reference or the EF Core package), and without it a
+               [BlazeDbTable] type compiles but has no `Table` and no `Indexes`. Use the `Bit.BlazeDb.Browser` backends
+               only where the database runs in the browser.
             4. Declare the tables, then run each one through `InspectBlazeDbTable` and fix every BLZ diagnostic it reports.
                Pin field numbers with [BlazeDbField(n)] before the app stores real data.
             5. Open the database once and share it (a singleton service), and never open a browser backend during
@@ -96,7 +98,8 @@ public static class McpPrompts
 
             1. If the problem is a build error, run the table type through `InspectBlazeDbTable` and read every BLZ
                diagnostic with `GetBlazeDbDiagnostics` - a rejected table gets no `Table` member at all, so "does not contain
-               a definition for 'Table'" is the symptom of a BLZ error, or of a missing `Bit.BlazeDb.Generators` package.
+               a definition for 'Table'" is the symptom of a BLZ error, or of a project that gets `Bit.BlazeDb` only
+               transitively (through a project reference or the EF Core package), where its source generator does not run.
             2. Check the setup against `GetBlazeDbSetupGuide` for this hosting model: the browser backends only in the
                browser and never while prerendering; one database per tab, opened once; storage disposed after the
                database; no concurrent reads and writes on a server.

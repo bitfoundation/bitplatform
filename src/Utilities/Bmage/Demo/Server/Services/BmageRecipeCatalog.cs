@@ -455,7 +455,7 @@ public static class BmageRecipeCatalog
             RunsIn = "Browser",
             SeeAlso = "/editor",
             Code = """
-                @* App.razor / index.html: <link rel="stylesheet" href="_content/Bit.Bmage.Editor/bit-bmage-editor.css" /> *@
+                @* App.razor / index.html: <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" /> *@
 
                 <div style="height: 70vh">
                     <BmageEditor @ref="_editor"

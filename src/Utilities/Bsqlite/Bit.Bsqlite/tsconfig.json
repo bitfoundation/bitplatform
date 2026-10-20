@@ -6,9 +6,10 @@
         // Locks) already runs ES2022.
         "target": "ES2022",
         // Every module is loaded through `import()` - by the interop, by the host, by the worker and by the
-        // storage packages - and its functions are called as named exports, so the output MUST stay an ES
-        // module: `module: ESNext` with `rootDir`/`outDir` emits each Scripts/*.ts straight to wwwroot/*.js
-        // with its `export`s and its relative `import()` specifiers intact.
+        // storage providers, whose VFS and admin modules are fetched only for the backend in use - and its
+        // functions are called as named exports, so the output MUST stay an ES module: `module: ESNext` with
+        // `rootDir`/`outDir` emits each Scripts/*.ts straight to wwwroot/*.js with its `export`s and its
+        // relative `import()` specifiers intact.
         "module": "ESNext",
         "moduleResolution": "Bundler",
         "lib": [ "DOM", "DOM.Iterable", "ESNext" ],

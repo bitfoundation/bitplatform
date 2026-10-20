@@ -58,8 +58,7 @@ public partial class BsqliteServiceTests
         Assert.AreEqual("live-queries", BsqliteSourceCatalog.ResolveDocumentName("docs\\live-queries.md"));
         Assert.AreEqual("live-queries", BsqliteSourceCatalog.ResolveDocumentName("Live Queries"));
         Assert.AreEqual(BsqliteSourceCatalog.ReadmeName, BsqliteSourceCatalog.ResolveDocumentName("README.md"));
-        Assert.AreEqual("Bit.Bsqlite.Storage.IndexedDb", BsqliteSourceCatalog.ResolveDocumentName("indexeddb"));
-        Assert.AreEqual("Bit.Bsqlite.Storage.CacheStorage", BsqliteSourceCatalog.ResolveDocumentName("Storage.CacheStorage"));
+        Assert.AreEqual("Bit.Bsqlite", BsqliteSourceCatalog.ResolveDocumentName("Bit.Bsqlite.md"));
         Assert.AreEqual("Bit.Bsqlite.Testing", BsqliteSourceCatalog.ResolveDocumentName("Testing"));
         Assert.IsNull(BsqliteSourceCatalog.ResolveDocumentName("changelog"));
         Assert.IsNull(BsqliteSourceCatalog.ResolveDocumentName("   "));

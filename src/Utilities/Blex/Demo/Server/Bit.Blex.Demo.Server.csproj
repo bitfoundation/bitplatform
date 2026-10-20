@@ -21,7 +21,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Client\Bit.Blex.Demo.Client.csproj" />
-        <!-- The rest of the public surface GetBlexApi reflects over; the client already brings Bit.Blex and Bit.Blex.Blazor. -->
+        <!-- The rest of the public surface GetBlexApi reflects over; the client already brings Bit.Blex. -->
         <ProjectReference Include="..\..\Bit.Blex.Maui\Bit.Blex.Maui.csproj" />
         <ProjectReference Include="..\..\Bit.Blex.Testing\Bit.Blex.Testing.csproj" />
         <!-- A plain assembly reference, not an analyzer: InspectBlexStore runs the generator on demand,

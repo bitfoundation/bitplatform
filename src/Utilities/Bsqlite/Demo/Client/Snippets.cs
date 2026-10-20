@@ -11,9 +11,6 @@ internal static class Snippets
         public const string Install =
             """
             dotnet add package Bit.Bsqlite
-            dotnet add package Bit.Bsqlite.Storage.Opfs
-            dotnet add package Bit.Bsqlite.Storage.IndexedDb
-            dotnet add package Bit.Bsqlite.Storage.CacheStorage
             """;
 
         public const string Registration =

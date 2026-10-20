@@ -24,7 +24,7 @@ public static class BlexServerInstructions
         ?? "unknown").Split('+')[0];
 
     public static readonly string Text = $"""
-        Bit.Blex is reactive state management for Blazor and .NET MAUI. A source generator (the Bit.Blex.Generators
+        Bit.Blex is reactive state management for Blazor and .NET MAUI. A source generator (shipped inside the Bit.Blex
         package) turns a `partial class` marked [BlexStore] - state in [BlexState] fields, actions in [BlexAction] OnXxx
         methods, derived values in [BlexComputed] ComputeXxx methods, async work in [BlexEffect] methods - into an
         observable store with middleware, persistence, undo/redo and Redux DevTools time-travel.

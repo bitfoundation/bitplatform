@@ -45,8 +45,8 @@
                 </div>
 
                 <p class="hero-note">
-                    Five packages: the core, three storage backends, and a test kit. Register only
-                    the backends you ship.
+                    One package with every storage backend, plus a test kit. Register only the
+                    backends you ship; the browser downloads only the one it uses.
                 </p>
             </div>
 
@@ -226,13 +226,13 @@
                 <div class="step">
                     <span class="step-num" aria-hidden="true"></span>
                     <div class="step-body">
-                        <h3>Install the packages you will ship</h3>
+                        <h3>Install the package</h3>
                         <p>
-                            The core package carries the engine, the worker, and the storage contract.
-                            Each persistent backend is a separate package, so an app pays only for the
-                            ones it registers.
+                            One package carries the engine, the worker, the storage contract and every
+                            backend. Each backend's JavaScript is loaded only once it is selected, so a
+                            session pays only for the storage it actually uses.
                         </p>
-                        <CodeBlock Title="Packages" Language="shell" Code="@Snippets.Setup.Install" />
+                        <CodeBlock Title="Package" Language="shell" Code="@Snippets.Setup.Install" />
                     </div>
                 </div>
 
@@ -294,7 +294,7 @@
                     <thead>
                     <tr>
                         <th>Backend</th>
-                        <th>Package</th>
+                        <th>Namespace</th>
                         <th>Persists</th>
                         <th>Concurrent readers</th>
                         <th>Use it when</th>
@@ -324,7 +324,7 @@
                     </tr>
                     <tr>
                         <td><span class="storage-dot" data-name="in-memory"></span> In-memory</td>
-                        <td class="mono">Bit.Bsqlite</td>
+                        <td class="mono">Storage.InMemory</td>
                         <td><span class="pill muted">no</span></td>
                         <td>yes</td>
                         <td>Trying the engine, or tests. Gone when the tab closes.</td>

@@ -28,7 +28,7 @@ public record BcrdtGuideSectionDto
     public required int Lines { get; init; }
 }
 
-/// <summary>A public type of one of the five Bit.Bcrdt packages.</summary>
+/// <summary>A public type of one of the four Bit.Bcrdt packages.</summary>
 public record BcrdtApiTypeDto
 {
     public required string Name { get; init; }
@@ -36,7 +36,7 @@ public record BcrdtApiTypeDto
     /// <summary>Component, Interface, Enum, Attribute, Delegate, Static class, Class, Struct or Record.</summary>
     public required string Kind { get; init; }
 
-    /// <summary>The package (assembly) the type ships in, e.g. "Bit.Bcrdt.Blazor".</summary>
+    /// <summary>The package (assembly) the type ships in, e.g. "Bit.Bcrdt.SignalR".</summary>
     public required string Package { get; init; }
 
     public string? Summary { get; init; }

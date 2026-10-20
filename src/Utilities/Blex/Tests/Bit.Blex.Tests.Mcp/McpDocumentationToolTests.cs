@@ -82,7 +82,7 @@ public class McpDocumentationToolTests
 
             StringAssert.StartsWith(guide, "# Setting Blex up");
             StringAssert.Contains(guide, "## Checklist", $"The '{model}' guide has no checklist.");
-            StringAssert.Contains(guide, "Bit.Blex.Generators", $"The '{model}' guide never tells the reader to add the generator.");
+            StringAssert.Contains(guide, "`dotnet add package Bit.Blex` in every project that declares stores", $"The '{model}' guide never tells the reader to add the package that carries the generator.");
             StringAssert.Contains(guide, "```", $"The '{model}' guide shows no code.");
         }
     }

@@ -16,7 +16,7 @@ public class McpToolTests
     {
         var index = await McpCall.TextAsync("GetBsqliteDocument");
 
-        foreach (var name in new[] { "readme", "getting-started", "storage", "live-queries", "architecture", "limits", "extending", "Bit.Bsqlite.Testing", "Bit.Bsqlite.Storage.Opfs" })
+        foreach (var name in new[] { "readme", "getting-started", "storage", "live-queries", "architecture", "limits", "extending", "Bit.Bsqlite", "Bit.Bsqlite.Testing" })
         {
             Assert.Contains($"- **{name}** - ", index);
         }
@@ -51,7 +51,6 @@ public class McpToolTests
 
         // A package README by the part of its name that says something.
         Assert.StartsWith("# Bit.Bsqlite.Testing", await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "testing" }));
-        Assert.StartsWith("# Bit.Bsqlite.Storage.Opfs", await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "opfs" }));
         Assert.StartsWith("# bit Bsqlite", await McpCall.TextAsync("GetBsqliteDocument", new() { ["name"] = "README" }));
     }
 
@@ -102,9 +101,14 @@ public class McpToolTests
     {
         var index = await McpCall.TextAsync("GetBsqliteApi");
 
-        foreach (var package in new[] { "Bit.Bsqlite", "Bit.Bsqlite.Storage.Opfs", "Bit.Bsqlite.Storage.IndexedDb", "Bit.Bsqlite.Storage.CacheStorage", "Bit.Bsqlite.Testing" })
+        foreach (var package in new[] { "Bit.Bsqlite", "Bit.Bsqlite.Testing" })
         {
             Assert.Contains($"## Package {package}", index);
+        }
+
+        foreach (var ns in new[] { "Bit.Bsqlite.Storage.Opfs", "Bit.Bsqlite.Storage.IndexedDb", "Bit.Bsqlite.Storage.CacheStorage" })
+        {
+            Assert.Contains($"### `using {ns};`", index, "The storage backends ship in the library package, each in its own namespace.");
         }
 
         Assert.Contains("### `using Microsoft.Extensions.DependencyInjection;`", index, "The DI entry points live in Microsoft's namespace.");
@@ -126,7 +130,7 @@ public class McpToolTests
         var reference = await McpCall.TextAsync("GetBsqliteApi", new() { ["typeName"] = "BsqliteOpfsStorageProvider" });
 
         Assert.StartsWith("# BsqliteOpfsStorageProvider (Class)", reference);
-        Assert.Contains("package `Bit.Bsqlite.Storage.Opfs`", reference);
+        Assert.Contains("package `Bit.Bsqlite`", reference);
         Assert.Contains("`using Bit.Bsqlite.Storage.Opfs;`", reference);
         Assert.Contains("implements `IBsqliteStorageProvider`", reference);
         Assert.Contains("**ProviderName** : `string` = `\"opfs\"`", reference, "A constant reads as its real value.");
@@ -234,6 +238,7 @@ public class McpToolTests
         Assert.Contains("`PRAGMA page_size = 8192` - accepted", opfs);
         Assert.Contains("bit-bsqlite-opfs-vfs.js", opfs);
         Assert.Contains("`opfs-coop-sync`", opfs, "The VFS name is read off the provider's own constant.");
+        Assert.Contains("GetBsqliteDocument(name: \"storage\", section: \"OPFS\")", opfs, "A backend points at its section of the storage guide.");
 
         var memory = await McpCall.TextAsync("GetBsqliteStorageProviders", new() { ["provider"] = "in-memory" });
 

@@ -28,12 +28,12 @@
     <link rel="stylesheet" href="css/theme.css" />
     <link rel="stylesheet" href="css/app.css" />
     <link rel="stylesheet" href="css/bmage-samples.css" />
-    @* The editor component's own stylesheet. It is the one thing Bit.Bmage.Editor asks of its
-       host; the browser bridge script (bit-bmage.js) is imported on demand by the library and
+    @* The editor component's own stylesheet. It is the one thing the editor asks of its host,
+       and only a host that uses the editor links it; the browser bridge script (bit-bmage.js) is imported on demand by the library and
        needs no tag of its own. editor-theme.css comes after it on purpose: it points the editor's
        --bmg-* custom properties at this site's theme, so the editor follows the header's theme
        switch instead of the operating system's. *@
-    <link rel="stylesheet" href="_content/Bit.Bmage.Editor/bit-bmage-editor.css" />
+    <link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
     <link rel="stylesheet" href="css/editor-theme.css" />
 
     @* The theme is applied here, in the head, rather than from js/demo.js at the end of the body:

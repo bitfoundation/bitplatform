@@ -2,15 +2,11 @@
 
 ## Install
 
-Pick the package that matches what you need. The editor includes `Bit.Bmage`.
-
-| Package | Use it when | Depends on |
-| --- | --- | --- |
-| `Bit.Bmage.Editor` | You want the editor component | `Bit.Bmage` |
-| `Bit.Bmage` | You want the engine, browser codecs, loading and export, but your own UI - or headless processing on a server | nothing |
+One package holds everything: the engine, the browser codecs, loading and export, headless processing on a server, and
+the editor component. It depends only on `Microsoft.AspNetCore.Components.Web`.
 
 ```bash
-dotnet add package Bit.Bmage.Editor
+dotnet add package Bit.Bmage
 ```
 
 ## Register the services
@@ -60,10 +56,10 @@ scope per circuit, so browser state is never shared between users.
 
 ## Add the stylesheet
 
-Only needed for `Bit.Bmage.Editor`. Put it in `index.html` or `App.razor`:
+Only needed for the editor component (`BmageEditor`, `BmageDropZone`). Put it in `index.html` or `App.razor`:
 
 ```html
-<link rel="stylesheet" href="_content/Bit.Bmage.Editor/bit-bmage-editor.css" />
+<link rel="stylesheet" href="_content/Bit.Bmage/bit-bmage-editor.css" />
 ```
 
 The browser bridge script is loaded on demand by the library. You do not add a script tag for it.

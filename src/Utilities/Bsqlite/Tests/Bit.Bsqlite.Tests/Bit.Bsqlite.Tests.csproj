@@ -30,9 +30,6 @@
     <ItemGroup>
         <ProjectReference Include="..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" />
         <ProjectReference Include="..\..\Bit.Bsqlite.Testing\Bit.Bsqlite.Testing.csproj" />
-        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.Opfs\Bit.Bsqlite.Storage.Opfs.csproj" />
-        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.IndexedDb\Bit.Bsqlite.Storage.IndexedDb.csproj" />
-        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.CacheStorage\Bit.Bsqlite.Storage.CacheStorage.csproj" />
     </ItemGroup>
 
     <!-- The demo's model and migrations are the proof that one AppDbContext and one migration set run on both

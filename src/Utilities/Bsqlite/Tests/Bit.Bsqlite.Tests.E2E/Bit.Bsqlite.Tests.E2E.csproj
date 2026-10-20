@@ -30,14 +30,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- Built, not referenced: what the suite tests is the JavaScript the libraries compile into their
-             wwwroot (and the wa-sqlite engine and VFSes their restore vendors next to it), which the asset
-             host serves straight from those folders. Building them here keeps a test run from serving
+        <!-- Built, not referenced: what the suite tests is the JavaScript the library compiles into its
+             wwwroot (and the wa-sqlite engine and VFSes its restore vendors next to it), which the asset
+             host serves straight from that folder. Building it here keeps a test run from serving
              modules a TypeScript change has already made stale. -->
         <ProjectReference Include="..\..\Bit.Bsqlite\Bit.Bsqlite.csproj" ReferenceOutputAssembly="false" />
-        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.Opfs\Bit.Bsqlite.Storage.Opfs.csproj" ReferenceOutputAssembly="false" />
-        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.IndexedDb\Bit.Bsqlite.Storage.IndexedDb.csproj" ReferenceOutputAssembly="false" />
-        <ProjectReference Include="..\..\Bit.Bsqlite.Storage.CacheStorage\Bit.Bsqlite.Storage.CacheStorage.csproj" ReferenceOutputAssembly="false" />
     </ItemGroup>
 
     <!-- Deliberately no ProjectReference to the demo. The suite boots Bit.Bsqlite.Demo.Server from its build

@@ -89,16 +89,16 @@ understanding what it will decide. See [Choosing a data type](#choosing-a-data-t
 
 | Package | Contents |
 |---|---|
-| `Bit.Bcrdt` | The engine and everything that needs no web framework: identity, clocks and state vectors, the YATA engine with `BcrdtText`, `BcrdtArray`, `BcrdtMap` and `BcrdtSet`, updates, snapshots and selective undo; presence and awareness; the store abstraction with in-memory and file-system stores; the sync protocol and `BcrdtSyncProvider`; `IBcrdtCollaborationService` and `AddBitBcrdtServices`; the text-input and object bindings; and the in-memory and WebSocket client transports. |
-| `Bit.Bcrdt.Blazor` | `BcrdtComponentBase`, `BcrdtCollaborationScope`, `BcrdtTextArea` and `BcrdtPresenceView`. |
+| `Bit.Bcrdt` | The engine: identity, clocks and state vectors, the YATA engine with `BcrdtText`, `BcrdtArray`, `BcrdtMap` and `BcrdtSet`, updates, snapshots and selective undo; presence and awareness; the store abstraction with in-memory and file-system stores; the sync protocol and `BcrdtSyncProvider`; `IBcrdtCollaborationService` and `AddBitBcrdtServices`; the text-input and object bindings; and the in-memory and WebSocket client transports. And the Blazor components, in the `Bit.Bcrdt.Blazor` namespace: `BcrdtComponentBase`, `BcrdtCollaborationScope`, `BcrdtTextArea` and `BcrdtPresenceView`. |
 | `Bit.Bcrdt.SignalR` | The SignalR client transport. No ASP.NET Core server dependency, so it runs in WebAssembly and Hybrid apps. |
 | `Bit.Bcrdt.Server` | The ASP.NET Core relays: `BcrdtHub` for the SignalR transport and `MapBitBcrdtWebSocket` for the WebSocket transport. |
 | `Bit.Bcrdt.Testing` | A deterministic, seeded network simulator (loss, duplication, reordering, partitions, offline peers), random operation generators, a convergence harness and an update corrupter for fuzzing. |
 
-Dependencies point strictly downward. The engine knows nothing about transports, storage or Blazor; the Blazor package
-knows nothing about transports; the relays never decode a message.
+Dependencies point strictly downward. The engine knows nothing about transports, storage or Blazor - nothing in it
+touches the components that ship beside it; the components know nothing about transports; the relays never decode a
+message.
 
-All five target .NET 8, 9 and 10.
+All four target .NET 8, 9 and 10.
 
 ---
 
@@ -107,7 +107,7 @@ All five target .NET 8, 9 and 10.
 ### Install
 
 ```bash
-dotnet add package Bit.Bcrdt.Blazor
+dotnet add package Bit.Bcrdt          # the engine and the Blazor components
 dotnet add package Bit.Bcrdt.SignalR   # or use the WebSocket transport built into Bit.Bcrdt, or none
 ```
 
@@ -179,7 +179,8 @@ Everything after that is `IBcrdtCollaborationService`.
 
 That is a working collaborative editor with live presence, automatic reconnection and offline support. The textarea
 also publishes its caret through presence, anchored to content rather than to an index, so an application can draw
-collaborators' cursors; nothing in the library draws them for you.
+collaborators' cursors; nothing in the library draws them for you. There is no stylesheet to reference and no script
+tag to add: the one small module `BcrdtTextArea` needs (`_content/Bit.Bcrdt/bit-bcrdt.js`) is imported on demand.
 
 - `BcrdtCollaborationScope` opens the document, renders its content with the document as context (and cascades it),
   shows `LoadingContent` while it opens, follows `DocumentId` when it changes, and releases the document when it goes
@@ -1087,8 +1088,7 @@ called without input. Every tool is read-only, and every one is also a plain HTT
 
 | Project | Description |
 |---|---|
-| `Bit.Bcrdt` | The engine, presence, persistence, sync, collaboration service, bindings and the in-memory and WebSocket client transports. No web-framework dependency. |
-| `Bit.Bcrdt.Blazor` | Blazor components and `BcrdtComponentBase` (TypeScript in `Scripts/`, compiled into `wwwroot/` on build). |
+| `Bit.Bcrdt` | The engine, presence, persistence, sync, collaboration service, bindings and the in-memory and WebSocket client transports; the Blazor components and `BcrdtComponentBase` in `Blazor/` (TypeScript in `Scripts/`, compiled into `wwwroot/` on build). |
 | `Bit.Bcrdt.SignalR` | The SignalR client transport. |
 | `Bit.Bcrdt.Server` | The ASP.NET Core relays: the SignalR hub and the WebSocket endpoint. |
 | `Bit.Bcrdt.Testing` | The network simulator, operation generators, convergence harness and update corrupter. |

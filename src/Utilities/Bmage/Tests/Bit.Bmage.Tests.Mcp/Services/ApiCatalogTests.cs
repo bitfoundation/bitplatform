@@ -1,7 +1,7 @@
 ﻿namespace Bit.Bmage.Tests.Mcp.Services;
 
 /// <summary>
-/// The reflected API reference: both packages, every type with the namespace and package an
+/// The reflected API reference: the whole package, every type with the namespace and package an
 /// agent needs to use it, and the defaults read off real instances - because for an options record
 /// the defaults are the behaviour.
 /// </summary>
@@ -9,11 +9,11 @@
 public class ApiCatalogTests
 {
     [TestMethod]
-    public void Types_ComeFromBothPackages()
+    public void Types_ComeFromTheOnePackage_EditorIncluded()
     {
         var packages = BmageApiCatalog.Types.Select(type => type.Package).Distinct().Order().ToArray();
 
-        CollectionAssert.AreEqual(new[] { "Bit.Bmage", "Bit.Bmage.Editor" }, packages);
+        CollectionAssert.AreEqual(new[] { "Bit.Bmage" }, packages);
 
         foreach (var (name, package, ns) in new[]
         {
@@ -24,8 +24,8 @@ public class ApiCatalogTests
             ("ImageLoader", "Bit.Bmage", "Bit.Bmage.Input"),
             ("ImageExporter", "Bit.Bmage", "Bit.Bmage.Output"),
             ("BitBmage", "Bit.Bmage", "Bit.Bmage"),
-            ("BmageEditor", "Bit.Bmage.Editor", "Bit.Bmage.Editor.Components"),
-            ("BmageEditorStrings", "Bit.Bmage.Editor", "Bit.Bmage.Editor.Localization"),
+            ("BmageEditor", "Bit.Bmage", "Bit.Bmage.Editor.Components"),
+            ("BmageEditorStrings", "Bit.Bmage", "Bit.Bmage.Editor.Localization"),
         })
         {
             var type = BmageApiCatalog.Types.SingleOrDefault(entry => entry.Name == name);

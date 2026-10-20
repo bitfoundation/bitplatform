@@ -3,7 +3,7 @@
 namespace Bit.Blex.Tests.Mcp;
 
 /// <summary>
-/// GetBlexApi: the public surface of the four runtime packages, read out of the shipped assemblies and
+/// GetBlexApi: the public surface of the three runtime packages, read out of the shipped assemblies and
 /// their XML documentation.
 /// </summary>
 [TestClass]
@@ -21,10 +21,13 @@ public class McpApiToolTests
     {
         var index = await McpCall.TextAsync("GetBlexApi");
 
-        foreach (var package in new[] { "## Bit.Blex", "## Bit.Blex.Blazor", "## Bit.Blex.Maui", "## Bit.Blex.Testing" })
+        foreach (var package in new[] { "## Bit.Blex", "## Bit.Blex.Maui", "## Bit.Blex.Testing" })
         {
             StringAssert.Contains(index, package, $"The API index has no '{package}' group.");
         }
+
+        // The Blazor integration ships inside Bit.Blex, so its types are listed in that group.
+        Assert.IsFalse(index.Contains("## Bit.Blex.Blazor", StringComparison.Ordinal), "The API index lists a Bit.Blex.Blazor package that no longer exists.");
 
         StringAssert.Contains(index, "**BlexStoreBase**");
         StringAssert.Contains(index, "**BlexProvider** (Component)");

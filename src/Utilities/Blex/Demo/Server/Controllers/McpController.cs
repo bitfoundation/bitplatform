@@ -104,7 +104,7 @@ public class McpController(HtmlRenderer htmlRenderer) : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBlexApi), Title = "Public API reference", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the public API of Bit.Blex as Markdown, read out of the shipped assemblies (Bit.Blex, Bit.Blex.Blazor, Bit.Blex.Maui, Bit.Blex.Testing): one type with every parameter, property, method, event or enum value it has - each with its C# type, its real default value and its documentation. Omit the type name for the index of every public type. Call it before using a member you are unsure about, e.g. 'BlexStoreBase', 'BlexOptions', 'BitBlex', 'BlexEffectAttribute', 'BlexProvider', 'BlexEntityAdapter'.")]
+    [Description("Gets the public API of Bit.Blex as Markdown, read out of the shipped assemblies (Bit.Blex, Bit.Blex.Maui, Bit.Blex.Testing): one type with every parameter, property, method, event or enum value it has - each with its C# type, its real default value and its documentation. Omit the type name for the index of every public type. Call it before using a member you are unsure about, e.g. 'BlexStoreBase', 'BlexOptions', 'BitBlex', 'BlexEffectAttribute', 'BlexProvider', 'BlexEntityAdapter'.")]
     public string GetBlexApi(
         [Description("The type's name without its namespace, e.g. 'BlexOptions' or 'BlexEntityAdapter'. Omit it for the index of types.")] string? typeName = null)
     {

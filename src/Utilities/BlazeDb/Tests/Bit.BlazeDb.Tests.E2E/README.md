@@ -3,7 +3,7 @@
 The engine and EF Core tests in `Bit.BlazeDb.Tests` run the database without a browser, over the in-memory
 and file backends. That covers the engine well and leaves out everything that only exists in a real browser:
 
-- `Bit.BlazeDb.Browser`'s ES modules never execute, so nothing proves that OPFS writes are atomic and appends
+- the browser backends' ES modules (`Bit.BlazeDb.Browser`) never execute, so nothing proves that OPFS writes are atomic and appends
   are appends, that IndexedDB's read-modify-write appends and its no-create open work, that WebCrypto seals
   and opens a frame, or that a checkpoint announcement reaches the other tabs;
 - there is no Web Locks election, so nothing proves that a second tab of the same origin loses it, or that a

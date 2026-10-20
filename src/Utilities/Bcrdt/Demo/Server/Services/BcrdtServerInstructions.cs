@@ -14,7 +14,7 @@ public static class BcrdtServerInstructions
 {
     /// <summary>
     /// The release the answers come from, so the text names it rather than claiming to be timeless:
-    /// the version the five packages ship as on NuGet. It is written down here because no assembly
+    /// the version the four packages ship as on NuGet. It is written down here because no assembly
     /// carries it - a Debug build stamps 1.0.0, a Release build the four-part 10.7.0.02 for 10.7.0-pre-02 -
     /// and the build checks it against ReleaseVersion in Bit.Build.props (see the ReleaseVersionLiteral
     /// item in the .csproj), so a release cannot forget it.
@@ -27,7 +27,7 @@ public static class BcrdtServerInstructions
         in-memory), presence, offline-first persistence, selective undo and Blazor components - no JavaScript CRDT library.
 
         Every answer here is read out of Bit.Bcrdt {BcrdtVersion} as it is loaded in this server - the compiled XML
-        documentation of its five packages, its README, its real engine and decoders, and the demo's source files. Where
+        documentation of its four packages, its README, its real engine and decoders, and the demo's source files. Where
         what you remember (of Yjs, say) and what these tools say disagree, the tools are describing the build in front of you.
 
         Working rules:

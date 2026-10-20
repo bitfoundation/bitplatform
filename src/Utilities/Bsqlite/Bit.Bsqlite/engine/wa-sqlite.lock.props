@@ -39,8 +39,8 @@
   <!--
     The build-independent JavaScript API. Flat on purpose: every one of these imports its siblings by
     relative path, so they must land in a single directory to resolve. VFS.js, FacadeVFS.js, and
-    WebLocksMixin.js are the base classes a storage provider's VFS extends, and they live here rather
-    than in each provider package so that all providers share one copy against one engine.
+    WebLocksMixin.js are the base classes a storage provider's VFS extends - the first-party ones and
+    any third-party provider's alike - so that every provider shares one copy against one engine.
   -->
   <ItemGroup Label="JavaScript API">
     <WaSqliteArtifact Include="sqlite-api.js" SourcePath="src/sqlite-api.js"
@@ -53,6 +53,19 @@
                       Sha256="6DE41EEE28F7D4279D409E275B3E25FD5E7837163386E4E8F2C379CD9F72A60C" />
     <WaSqliteArtifact Include="WebLocksMixin.js" SourcePath="src/WebLocksMixin.js"
                       Sha256="0EE2F39F43B3A8D70E94C0E5A2BAC97F2C55416830183D4810CAF28B2CEC7375" />
+  </ItemGroup>
+
+  <!--
+    The VFSes the OPFS and IndexedDB providers register. They keep upstream's layout - examples/ one
+    folder below the base classes - so their '../FacadeVFS.js' imports resolve as written and the bytes
+    served are exactly the bytes pinned here. Each is downloaded only by a session whose selected
+    provider imports it.
+  -->
+  <ItemGroup Label="Storage VFSes">
+    <WaSqliteArtifact Include="examples/OPFSCoopSyncVFS.js" SourcePath="src/examples/OPFSCoopSyncVFS.js"
+                      Sha256="0D733FF90D684E1884C2B14C701C13B6F849C4E4548A5C64F2DA4BF12B4FD101" />
+    <WaSqliteArtifact Include="examples/IDBBatchAtomicVFS.js" SourcePath="src/examples/IDBBatchAtomicVFS.js"
+                      Sha256="809018E8976A8001BFAC6062B1FAA2A75333BD004885C8918F926C9E596E9CC6" />
   </ItemGroup>
 
   <!-- Shipped so the MIT terms travel with the bytes they cover. -->

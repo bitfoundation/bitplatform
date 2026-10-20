@@ -238,9 +238,10 @@ public static partial class BcrdtSetupGuide
     private const string UiChecklist = """
         ## Checklist
 
-        1. `dotnet add package Bit.Bcrdt.Blazor` (it brings `Bit.Bcrdt`) to the project with the collaborative components -
-           the .Client project of a Blazor Web App - and a transport: `Bit.Bcrdt.SignalR`, or the WebSocket transport built
-           into `Bit.Bcrdt`, or none at all for a purely local document. The relay is `Bit.Bcrdt.Server`, on the server.
+        1. `dotnet add package Bit.Bcrdt` (the engine and the Blazor components) to the project with the collaborative
+           components - the .Client project of a Blazor Web App - and a transport: `Bit.Bcrdt.SignalR`, or the WebSocket
+           transport built into `Bit.Bcrdt`, or none at all for a purely local document. The relay is `Bit.Bcrdt.Server`,
+           on the server.
         2. Call `builder.Services.AddBitBcrdtServices(...)` in EVERY DI container that renders collaborative components - a
            Blazor Web App has two - through one shared extension method so both get the same configuration. It registers
            `IBcrdtCollaborationService` scoped: one replica per circuit in Blazor Server, one per app in WebAssembly. Never
@@ -258,14 +259,15 @@ public static partial class BcrdtSetupGuide
            `OnAfterRenderAsync` on .NET 8.
         7. Derive your own collaborative components from `BcrdtComponentBase` and `Track` what they render, so a change from
            anyone re-renders them, coalesced onto a frame. There is no script tag to add: `BcrdtTextArea` imports its small
-           caret module from `_content/Bit.Bcrdt.Blazor/bit-bcrdt.js` itself.
+           caret module from `_content/Bit.Bcrdt/bit-bcrdt.js` itself.
         """;
 
     private const string ConsoleChecklist = """
         ## Checklist
 
-        1. `dotnet add package Bit.Bcrdt` - the engine, the protocol and the in-memory and WebSocket transports, with no web
-           framework. Add `Bit.Bcrdt.SignalR` to talk to a `BcrdtHub` instead.
+        1. `dotnet add package Bit.Bcrdt` - the engine, the protocol and the in-memory and WebSocket transports, none of
+           which needs a web framework (the Blazor components it also carries just go unused). Add `Bit.Bcrdt.SignalR` to
+           talk to a `BcrdtHub` instead.
         2. Give every session its own `BcrdtDocument`: a client id identifies one session, never a user or a machine, and two
            live replicas sharing one corrupt each other's history.
         3. Touch the document from one thread. Queue transport events onto the loop that owns it, as below, or construct

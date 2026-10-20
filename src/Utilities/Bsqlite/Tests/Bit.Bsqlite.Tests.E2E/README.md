@@ -32,8 +32,8 @@ its pages.
 | `SoakTests` (category `Soak`) | Per storage, a worker killed mid-transaction a thousand times, and four then eight tabs committing at once, each ending on `PRAGMA integrity_check`. Opt-in: minutes, not seconds. |
 | `BenchmarkTests` (category `Benchmark`) | Runs `TestPages/benchmarks.html` per backend and prints its numbers. Opt-in, and never a gate. |
 
-The test pages are served by an in-process Kestrel host (`Infrastructure/AssetHost.cs`) that maps each library's
-`wwwroot` under `_content/<package>/` the way a Blazor app does, and the whole layout again under `/nested/`. It sends no
+The test pages are served by an in-process Kestrel host (`Infrastructure/AssetHost.cs`) that maps the library's
+`wwwroot` under `_content/Bit.Bsqlite/` the way a Blazor app does, and the whole layout again under `/nested/`. It sends no
 COOP/COEP headers on purpose: the library must work without cross-origin isolation.
 
 ## Running locally
@@ -41,7 +41,7 @@ COOP/COEP headers on purpose: the library must work without cross-origin isolati
 From `src/Utilities/Bsqlite` (inside `src`, so `src/global.json` selects the Microsoft.Testing.Platform runner):
 
 ```bash
-# Building the suite builds the libraries too: it serves their compiled modules and the engine their restore vendored.
+# Building the suite builds the library too: it serves its compiled modules and the engine and VFSes its restore vendored.
 # The demo tests run the demo server's build output, so build that first, in the configuration the tests run in.
 dotnet build Demo/Server/Bit.Bsqlite.Demo.Server.csproj
 dotnet build Tests/Bit.Bsqlite.Tests.E2E/Bit.Bsqlite.Tests.E2E.csproj

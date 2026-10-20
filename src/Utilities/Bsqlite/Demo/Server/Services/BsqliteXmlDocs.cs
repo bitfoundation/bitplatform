@@ -6,8 +6,8 @@ using System.Text.RegularExpressions;
 namespace Bit.Bsqlite.Demo.Server.Services;
 
 /// <summary>
-/// Reads the XML documentation the Bit.Bsqlite builds emit next to their assemblies - the core, the
-/// three storage packages and the testing kit - and flattens each entry into plain text:
+/// Reads the XML documentation the Bit.Bsqlite builds emit next to their assemblies - the library and
+/// the testing kit - and flattens each entry into plain text:
 /// <c>&lt;see cref="T:Bit.Bsqlite.Storage.IBsqliteStorageProvider"/&gt;</c> becomes
 /// <c>IBsqliteStorageProvider</c>, <c>&lt;c&gt;</c> spans become their content, and paragraphs become
 /// blank lines. That text is the same prose a developer reads in IntelliSense, which makes it the most

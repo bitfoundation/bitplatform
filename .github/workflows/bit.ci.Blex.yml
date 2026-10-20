@@ -71,7 +71,7 @@ jobs:
     # fails with NU5026 (the pack-on-build step runs before every TFM's assembly is on disk).
     - name: dotnet pack
       run: |
-        for project in Bit.Blex Bit.Blex.Generators Bit.Blex.Blazor Bit.Blex.Maui Bit.Blex.Testing; do
+        for project in Bit.Blex Bit.Blex.Maui Bit.Blex.Testing; do
           dotnet build src/Utilities/Blex/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
           dotnet pack src/Utilities/Blex/$project/$project.csproj --output ./packages --configuration Release
         done

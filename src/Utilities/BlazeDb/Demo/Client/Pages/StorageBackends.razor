@@ -44,7 +44,7 @@
         <div class="table-wrap">
             <table class="data">
                 <thead>
-                    <tr><th>Type</th><th>Package</th><th>Construction</th><th>Where it fits</th></tr>
+                    <tr><th>Type</th><th>Namespace</th><th>Construction</th><th>Where it fits</th></tr>
                 </thead>
                 <tbody>
                     <tr>
@@ -55,13 +55,13 @@
                     </tr>
                     <tr>
                         <td class="mono strong">BlazeDbFileStorage</td>
-                        <td class="mono">BlazeDb</td>
+                        <td class="mono">Bit.BlazeDb.Storage</td>
                         <td class="mono">new BlazeDbFileStorage(directory)</td>
                         <td>Desktop, server and integration tests. Atomic writes via temp file plus rename.</td>
                     </tr>
                     <tr>
                         <td class="mono strong">BlazeDbInMemoryStorage</td>
-                        <td class="mono">BlazeDb</td>
+                        <td class="mono">Bit.BlazeDb.Storage</td>
                         <td class="mono">new BlazeDbInMemoryStorage()</td>
                         <td>Unit tests and the failure injection on the durability page. Exposes <code>GetFile</code>/<code>SetFile</code> so you can corrupt bytes deliberately.</td>
                     </tr>
@@ -225,7 +225,7 @@
 <Section Title="The JavaScript surface" IconName="code"
          Lead="One small ES module per concern - OPFS, IndexedDB, WebCrypto, BroadcastChannel - shipped as static web assets inside the package. This is the OPFS one.">
     <div class="grid grid-2">
-        <CodeBlock Title="_content/Bit.BlazeDb.Browser/bit-blazedb-opfs.js" Code="@JsSnippet" Language="text" />
+        <CodeBlock Title="_content/Bit.BlazeDb/bit-blazedb-opfs.js" Code="@JsSnippet" Language="text" />
         <div class="flex-col gap-lg">
             <Panel Title="Why so little JavaScript" IconName="bolt">
                 <p class="small">

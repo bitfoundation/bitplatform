@@ -107,8 +107,8 @@ public abstract class InteractiveHarnessTests : HarnessTest
 
         var requests = await PollAsync(BlexModuleRequestsAsync, found => found.Any(r => r.Url.Contains("bit-blex-storage.js", StringComparison.Ordinal)));
 
-        var storage = requests.FirstOrDefault(r => r.Url.Contains("/_content/Bit.Blex.Blazor/bit-blex-storage.js", StringComparison.Ordinal));
-        Assert.IsNotNull(storage, $"bit-blex-storage.js was never requested from _content/Bit.Blex.Blazor: {string.Join(", ", requests.Select(r => r.Url))}");
+        var storage = requests.FirstOrDefault(r => r.Url.Contains("/_content/Bit.Blex/bit-blex-storage.js", StringComparison.Ordinal));
+        Assert.IsNotNull(storage, $"bit-blex-storage.js was never requested from _content/Bit.Blex: {string.Join(", ", requests.Select(r => r.Url))}");
 
         // 0 is what a host that serves the asset from memory (BlazorWebView) reports.
         Assert.IsTrue(storage.Status is 200 or 0, $"bit-blex-storage.js answered {storage.Status}.");

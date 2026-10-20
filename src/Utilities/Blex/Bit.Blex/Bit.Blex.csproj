@@ -1,14 +1,18 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
         <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
         <IsTrimmable>true</IsTrimmable>
-        <PackageTags>$(PackageTags);Blazor;MAUI;State management;Redux;Flux;DevTools</PackageTags>
-        <Description>Lightweight, source-generator-powered reactive state management for Blazor and .NET MAUI, with computed state, effects, middleware, persistence, undo/redo and Redux DevTools time-travel. Add Bit.Blex.Generators next to it for the source generator.</Description>
+        <PackageTags>$(PackageTags);Blazor;MAUI;State management;Redux;Flux;DevTools;Source generator</PackageTags>
+        <Description>Lightweight, source-generator-powered reactive state management for Blazor and .NET MAUI, with computed state, effects, middleware, persistence, undo/redo and Redux DevTools time-travel. Ships the Roslyn source generator that turns [BlexStore] classes into reactive stores, and the Blazor integration: the BlexComponentBase base class, &lt;BlexProvider&gt;, browser-storage persistence and the Redux DevTools bridge.</Description>
         <PackageDescription>$(Description)</PackageDescription>
     </PropertyGroup>
+
+    <ItemGroup>
+        <SupportedPlatform Include="browser" />
+    </ItemGroup>
 
     <ItemGroup>
         <!-- Floating low-bound ranges so consumers can pin to any servicing release of their TFM's band;
@@ -16,6 +20,18 @@
         <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[8.0.0,9.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[9.0.0,10.0.0)" />
         <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="[10.0.0,11.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net8.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[8.0.0,9.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net9.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[9.0.0,10.0.0)" />
+        <PackageReference Condition="'$(TargetFramework)' == 'net10.0'" Include="Microsoft.AspNetCore.Components.Web" Version="[10.0.0,11.0.0)" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <!-- The source generator ships inside this package, under analyzers/dotnet/cs, so `dotnet add package Bit.Blex`
+             is all a consumer needs. The reference only makes the generator build first: its assembly is not referenced,
+             it does not run over this project (which declares no [BlexStore] classes), and PrivateAssets keeps it out of
+             the package's dependencies. The path is the generator's own $(OutputPath); it is always netstandard2.0. -->
+        <ProjectReference Include="..\Bit.Blex.Generators\Bit.Blex.Generators.csproj" ReferenceOutputAssembly="false" PrivateAssets="all" />
+        <None Include="..\Bit.Blex.Generators\bin\$(Configuration)\netstandard2.0\Bit.Blex.Generators.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
     <ItemGroup>
@@ -27,11 +43,78 @@
     </ItemGroup>
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Bit.Blex.Blazor" PublicKey="00240000048000009400000006020000002400005253413100040000010001008D726FE8F1BED8CA2A003848640C872C6A5F2191C81EDA677B249A6E34BD9134EBA9FF7251582A5020CB3EEE83A61E7034CE712F5873D60F7C3C61F48592B256C560D7B3384E9889E4F81E4D406BC2B639915A4062D60751193AE66028D7BD4B9A3BF0823F1E38ABE5EADC3CD9615C6FF811974A9F6F89297DC2A722BF23D0BB" />
-        <InternalsVisibleTo Include="Bit.Blex.Blazor" PublicKey="002400000480000094000000060200000024000052534131000400000100010081a58360c43da697fbbc3b729e3565c1e4ef444878d7764f2e187ff0ca054413b6ad2b2eba16f4f1ad6da8e8be445bb410c43930195696e7f2317dd80164fed318366a83af39ab4c135349f75b3f2b9ad5875fad68025c9e1c4e8d16469addd506f3e1ed13461dd17a8f23f3faeb2cbd933cef6ebead4e50197943798f638aa9" />
         <InternalsVisibleTo Include="Bit.Blex.Maui" PublicKey="00240000048000009400000006020000002400005253413100040000010001008D726FE8F1BED8CA2A003848640C872C6A5F2191C81EDA677B249A6E34BD9134EBA9FF7251582A5020CB3EEE83A61E7034CE712F5873D60F7C3C61F48592B256C560D7B3384E9889E4F81E4D406BC2B639915A4062D60751193AE66028D7BD4B9A3BF0823F1E38ABE5EADC3CD9615C6FF811974A9F6F89297DC2A722BF23D0BB" />
         <InternalsVisibleTo Include="Bit.Blex.Maui" PublicKey="002400000480000094000000060200000024000052534131000400000100010081a58360c43da697fbbc3b729e3565c1e4ef444878d7764f2e187ff0ca054413b6ad2b2eba16f4f1ad6da8e8be445bb410c43930195696e7f2317dd80164fed318366a83af39ab4c135349f75b3f2b9ad5875fad68025c9e1c4e8d16469addd506f3e1ed13461dd17a8f23f3faeb2cbd933cef6ebead4e50197943798f638aa9" />
         <InternalsVisibleTo Include="Bit.Blex.Tests" PublicKey="00240000048000009400000006020000002400005253413100040000010001008D726FE8F1BED8CA2A003848640C872C6A5F2191C81EDA677B249A6E34BD9134EBA9FF7251582A5020CB3EEE83A61E7034CE712F5873D60F7C3C61F48592B256C560D7B3384E9889E4F81E4D406BC2B639915A4062D60751193AE66028D7BD4B9A3BF0823F1E38ABE5EADC3CD9615C6FF811974A9F6F89297DC2A722BF23D0BB" />
     </ItemGroup>
+
+    <ItemGroup>
+        <Content Remove="package*.json" />
+        <Content Remove="tsconfig.json" />
+        <None Include="package*.json" />
+        <None Include="tsconfig.json" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <TypeScriptFiles Include="Scripts\**\*.ts" />
+    </ItemGroup>
+
+    <!-- Restores npm packages then compiles the TypeScript into wwwroot. Both sub-targets are
+         incremental via their Inputs/Outputs, so this is a no-op when nothing changed. -->
+    <Target Name="BuildBlexJavaScript" DependsOnTargets="InstallNodejsDependencies;BuildJavaScript" />
+
+    <!-- The outputs (wwwroot/bit-blex-*.js) are generated, git-ignored files. On a clean build they do
+         not exist when the default "wwwroot/**" Content glob is evaluated, so the static web asset
+         discovery in ResolveProjectStaticWebAssets would miss them and consumers get a 404 for
+         _content/Bit.Blex/bit-blex-storage.js. Hooking BeforeTargets="ResolveProjectStaticWebAssets"
+         guarantees the files are generated first and then explicitly added to @(Content); the
+         Remove-before-Include keeps them to a single Content entry each. -->
+    <Target Name="IncludeBlexJavaScriptAsStaticWebAsset"
+            BeforeTargets="ResolveProjectStaticWebAssets"
+            DependsOnTargets="BuildBlexJavaScriptOnce">
+        <ItemGroup>
+            <Content Remove="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js" />
+            <Content Include="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js" />
+        </ItemGroup>
+    </Target>
+
+    <!-- Runs BuildBlexJavaScript through the MSBuild task with TargetFramework removed, so every
+         per-TFM build asks for the same project configuration and MSBuild runs tsc/esbuild once:
+         a ProjectReference builds this project's inner builds directly (one per referencing target
+         framework, in parallel) without the outer build, so calling the target from each inner
+         build would race on the same wwwroot files ("EBUSY: resource busy or locked"). -->
+    <Target Name="BuildBlexJavaScriptOnce">
+        <MSBuild Projects="$(MSBuildProjectFullPath)"
+                 Targets="BuildBlexJavaScript"
+                 RemoveProperties="TargetFramework;RuntimeIdentifier;SelfContained" />
+    </Target>
+
+    <!-- In a multi-targeted build, produce the outputs exactly once in the outer (cross-targeting)
+         build, before the per-TFM inner builds are dispatched. -->
+    <Target Name="BuildBlexJavaScriptOnCrossTargeting"
+            BeforeTargets="DispatchToInnerBuilds"
+            Condition="'$(IsCrossTargetingBuild)' == 'true'"
+            DependsOnTargets="BuildBlexJavaScript" />
+
+    <Target Name="InstallNodejsDependencies" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+        <Exec Command="npm install" StandardOutputImportance="high" StandardErrorImportance="high" />
+    </Target>
+
+    <!-- Release minifies into the same files Debug writes unminified, so a per-configuration stamp in
+         obj/ makes switching configurations invalidate the up-to-date check; the other configuration's
+         stamp is deleted so switching back rebuilds too. Each file is minified to a temp file and moved
+         into place, so an interrupted run cannot leave a half-written output that looks up to date. -->
+    <Target Name="BuildJavaScript" Inputs="@(TypeScriptFiles);tsconfig.json" Outputs="wwwroot/bit-blex-storage.js;wwwroot/bit-blex-devtools.js;obj/bit-blex-$(Configuration).stamp">
+        <ItemGroup>
+            <_BlexStaleJsStamps Include="obj\bit-blex-*.stamp" Exclude="obj\bit-blex-$(Configuration).stamp" />
+            <_BlexJsOutputs Include="wwwroot\bit-blex-storage.js;wwwroot\bit-blex-devtools.js" />
+        </ItemGroup>
+        <Delete Files="@(_BlexStaleJsStamps)" />
+        <Exec Command="node_modules/.bin/tsc" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Exec Condition=" '$(Configuration)' == 'Release' " Command="node_modules/.bin/esbuild %(_BlexJsOutputs.Identity) --minify --format=esm --outfile=%(_BlexJsOutputs.RelativeDir)%(_BlexJsOutputs.Filename).min.js" StandardOutputImportance="high" StandardErrorImportance="high" />
+        <Move Condition=" '$(Configuration)' == 'Release' " SourceFiles="@(_BlexJsOutputs->'%(RelativeDir)%(Filename).min.js')" DestinationFiles="@(_BlexJsOutputs)" OverwriteReadOnlyFiles="true" />
+        <MakeDir Directories="obj" />
+        <Touch Files="obj/bit-blex-$(Configuration).stamp" AlwaysCreate="true" />
+    </Target>
 
 </Project>

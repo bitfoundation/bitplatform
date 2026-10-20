@@ -21,6 +21,5 @@
     <Project Path="Tests/Bit.BevTools.Tests/Bit.BevTools.Tests.csproj" />
   </Folder>
   <Project Path="Bit.BevTools/Bit.BevTools.csproj" />
-  <Project Path="Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj" />
   <Project Path="Bit.BevTools.Server/Bit.BevTools.Server.csproj" />
 </Solution>

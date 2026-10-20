@@ -17,7 +17,6 @@
     <Project Path="Tests/Bit.Bcrdt.Benchmarks/Bit.Bcrdt.Benchmarks.csproj" />
   </Folder>
   <Project Path="Bit.Bcrdt/Bit.Bcrdt.csproj" />
-  <Project Path="Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj" />
   <Project Path="Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj" />
   <Project Path="Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj" />
   <Project Path="Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj" />

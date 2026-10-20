@@ -1,17 +1,59 @@
 ﻿# Storage
 
-A storage backend is a `IBsqliteStorageProvider`: a .NET half that declares capabilities and answers probes, and a JavaScript VFS the worker registers with the engine. The contract is public; the core consumes nothing else.
+A storage backend is a `IBsqliteStorageProvider`: a .NET half that declares capabilities and answers probes, and a JavaScript VFS the worker registers with the engine. The contract is public; the core consumes nothing else - the first-party backends implement it exactly as a backend of your own would.
 
 ## First-party backends
 
-| Name | Package | Engine build | Persistent | Notes |
+All four ship in the `Bit.Bsqlite` package, each in a namespace of its own.
+
+| Name | Provider (namespace) | Engine build | Persistent | Notes |
 |---|---|---|---|---|
-| `opfs` | `Bit.Bsqlite.Storage.Opfs` | Synchronous | Yes | `OPFSCoopSyncVFS`. Fastest. Several connections and tabs, coordinated through Web Locks. No `ATTACH`. Worker-only, no COOP/COEP needed. |
-| `indexeddb` | `Bit.Bsqlite.Storage.IndexedDb` | Async-capable | Yes | `IDBBatchAtomicVFS`. Works where OPFS does not (older Safari, some embedded views). Page size fixed at 4096. `cache_size` raised to 8 MiB so batch-atomic commits skip the journal. |
-| `cache-storage` | `Bit.Bsqlite.Storage.CacheStorage` | Async-capable | Yes | 4096-byte pages in the Cache API. Imports a database left by [Bit.Besql](https://github.com/bitfoundation/bitplatform/tree/develop/src/Besql) on first open. |
-| `in-memory` | `Bit.Bsqlite` (namespace `Bit.Bsqlite.Storage.InMemory`) | Synchronous | No | The engine's own memory VFS. Tests, demos, and a declared last resort. |
+| `opfs` | `BsqliteOpfsStorageProvider` (`Bit.Bsqlite.Storage.Opfs`) | Synchronous | Yes | `OPFSCoopSyncVFS`. Fastest. Several connections and tabs, coordinated through Web Locks. No `ATTACH`. Worker-only, no COOP/COEP needed. |
+| `indexeddb` | `BsqliteIndexedDbStorageProvider` (`Bit.Bsqlite.Storage.IndexedDb`) | Async-capable | Yes | `IDBBatchAtomicVFS`. Works where OPFS does not (older Safari, some embedded views). Page size fixed at 4096. `cache_size` raised to 8 MiB so batch-atomic commits skip the journal. |
+| `cache-storage` | `BsqliteCacheStorageProvider` (`Bit.Bsqlite.Storage.CacheStorage`) | Async-capable | Yes | 4096-byte pages in the Cache API. Imports a database left by [Bit.Besql](https://github.com/bitfoundation/bitplatform/tree/develop/src/Besql) on first open. |
+| `in-memory` | `BsqliteInMemoryStorageProvider` (`Bit.Bsqlite.Storage.InMemory`) | Synchronous | No | The engine's own memory VFS. Tests, demos, and a declared last resort. |
 
 The engine build matters: a VFS that suspends to read storage (IndexedDB, Cache Storage) needs the JSPI build where the browser has it (Chrome 137+) and the Asyncify build otherwise. The synchronous build is the smallest and serves OPFS and in-memory. Exactly one is downloaded per session.
+
+Registering a backend costs the browser nothing until it is used. Each one's JavaScript - its VFS module with the wa-sqlite VFS it wraps, and its probe and admin module - is a static web asset under `_content/Bit.Bsqlite/`, imported on demand: the worker imports the VFS of the selected backend only, and a backend's admin module loads only when it is probed or administered.
+
+What each one declares - the core enforces every capability generically, never by a backend's name:
+
+| | `opfs` | `indexeddb` | `cache-storage` | `in-memory` |
+|---|---|---|---|---|
+| Persistent | Yes | Yes | Yes | No |
+| Multiple connections | Yes | Yes | Yes | No |
+| Concurrent reads | No | No | Yes | No |
+| Relaxed durability | No | Yes | No | No |
+| `ATTACH` (multi-database transactions) | No | Yes | Yes | Yes |
+| `PRAGMA page_size` | Yes | No | No | Yes |
+| Execution contexts | Dedicated worker | Any | Any | Any |
+
+### OPFS
+
+The one to pick when you can: the only persistent backend on the synchronous engine build, which is the smallest of the three and needs neither JSPI nor Asyncify. Databases live in the origin private file system as real files.
+
+It registers `OPFSCoopSyncVFS`, chosen over `AccessHandlePoolVFS` because more than one connection may be open and the `.db` stays a real file - exporting is just a read. Access handles are worker-only, so the engine stays in a dedicated worker; probe and admin use the async file API and run on the window, so availability checks and import/export work from component code. No COOP/COEP headers are required.
+
+### IndexedDB
+
+The backend that reaches browsers OPFS does not, and the only persistent one that can run outside a dedicated worker. Use it as the fallback behind OPFS, or on its own when reach matters more than download size. It registers `IDBBatchAtomicVFS`.
+
+- **Page size** is fixed. The limit is declared, not documented and hoped for: the core reads `Capabilities` and rejects a `PRAGMA page_size` the backend cannot honour rather than letting it be silently ignored.
+- **Concurrent reads:** `IDBBatchAtomicVFS` can support them, but `bit-bsqlite-idb-vfs.js` registers it without a lock policy, so `WebLocksMixin` applies its `exclusive` default and a read takes the same lock a write does. Readers queue behind each other, and the capability says so. Several connections are still supported - they serialize rather than run in parallel.
+- **Download size:** the engine build is picked at runtime from the selected provider plus a JSPI probe. JSPI costs about 0.9% over the synchronous build; Asyncify costs about 107%. Browsers with JSPI pay almost nothing for this backend.
+
+### Cache Storage
+
+Databases are stored as 4096-byte pages in the Cache Storage API, committed through a journal. Batch-atomic writes are not offered, because the Cache API cannot commit several entries as one operation; durability comes from the journal instead.
+
+Its reason to exist is migration: **a database left behind by [Bit.Besql](https://github.com/bitfoundation/bitplatform/tree/develop/src/Besql) - in its `bit-Besql` cache - is imported losslessly on first open**, so an application moving off Bit.Besql keeps its users' data. If you are not migrating from Bit.Besql, prefer OPFS or IndexedDB.
+
+Nothing in selection, the transport or the worker knows it exists: it is built on the public storage contract alone, which is the proof that the contract is usable from outside the library - a backend of your own gets exactly what this one gets.
+
+### In-memory
+
+SQLite's own memory VFS: no JavaScript to load and nothing persisted. Every connection is its own worker with its own heap, so a second connection to the "same" database would be a different, empty one, and the backend declares no multiple connections. Use it for tests and demos, and as a last resort only behind `AllowNonPersistentFallback()`. Its `Admin` sees only images handed to it directly, not what a connection wrote.
 
 ## Selection
 
@@ -56,7 +98,7 @@ For a backup of a database that stays open, use `connection.ExportAsync()` inste
 ## Writing a provider
 
 1. Implement `IBsqliteStorageProvider`: a stable `Name`, `Capabilities` (which engine build the VFS needs, whether data persists, and the rest), `VfsModule` pointing at an ES module, `Admin`, and `ProbeAsync` that reports unavailability rather than throwing.
-2. Write the VFS against the base classes served from `_content/Bit.Bsqlite/engine/` (`VFS.js`, `FacadeVFS.js`, `WebLocksMixin.js`), imported relatively - `../Bit.Bsqlite/engine/VFS.js` from your package's own `_content` folder - so the application can be served under a sub-path. Export `register({ module, sqlite3, databaseName })` returning `{ vfsName, onOpenSql? }`.
+2. Write the VFS against the base classes served from `_content/Bit.Bsqlite/engine/` (`VFS.js`, `FacadeVFS.js`, `WebLocksMixin.js`), imported relatively - `../Bit.Bsqlite/engine/VFS.js` from your package's own `_content` folder - so the application can be served under a sub-path. Export `register({ module, sqlite3, databaseName })` returning `{ vfsName, onOpenSql? }`. Ship it as a static web asset of your package: like the first-party VFSes, it is imported only once your backend is selected.
 3. Inherit `BsqliteStorageProviderConformanceTests` and `BsqliteStorageEngineConformanceTests` (namespace `Bit.Bsqlite.Storage.ConformanceTests`, package `Bit.Bsqlite.Testing`) in your MSTest project, with `[TestClass]` on each derived class. They check that the declared capabilities are coherent and that the admin surface behaves the way migration assumes.
 
 Capability flags the core enforces for you: `SupportsMultiDatabaseTransactions` gates `ATTACH`, `CanChangePageSize` gates `PRAGMA page_size`, `IsPersistent` gates fallback. Declare the least capable answer when unsure.

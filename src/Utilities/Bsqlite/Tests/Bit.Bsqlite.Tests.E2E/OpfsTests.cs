@@ -119,7 +119,7 @@ public sealed class OpfsTests : BsqliteTest
         var outcome = await Page.EvaluateAsync<JsonElement>(
             """
             async ({ name, image }) => {
-              const admin = await import('/_content/Bit.Bsqlite.Storage.Opfs/bit-bsqlite-opfs-admin.js');
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-opfs-admin.js');
               await admin.importDatabase(name, new Uint8Array(image));
               const exported = Array.from(await admin.exportDatabase(name));
               const listed = await admin.list();
@@ -150,7 +150,7 @@ public sealed class OpfsTests : BsqliteTest
         var probe = await Page.EvaluateAsync<JsonElement>(
             """
             async () => {
-              const admin = await import('/_content/Bit.Bsqlite.Storage.Opfs/bit-bsqlite-opfs-admin.js');
+              const admin = await import('/_content/Bit.Bsqlite/bit-bsqlite-opfs-admin.js');
               return await admin.probe();
             }
             """);

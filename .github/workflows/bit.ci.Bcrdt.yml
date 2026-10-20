@@ -71,7 +71,7 @@ jobs:
     # on disk).
     - name: dotnet pack
       run: |
-        for project in Bit.Bcrdt Bit.Bcrdt.Blazor Bit.Bcrdt.SignalR Bit.Bcrdt.Server Bit.Bcrdt.Testing; do
+        for project in Bit.Bcrdt Bit.Bcrdt.SignalR Bit.Bcrdt.Server Bit.Bcrdt.Testing; do
           dotnet build src/Utilities/Bcrdt/$project/$project.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
           dotnet pack src/Utilities/Bcrdt/$project/$project.csproj --output ./packages --configuration Release
         done

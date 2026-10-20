@@ -1,7 +1,6 @@
 ﻿using System.Text;
 using System.Reflection;
 using System.Collections.Concurrent;
-using Bit.Bcrdt.Blazor;
 using Bit.Bcrdt.Server;
 using Bit.Bcrdt.SignalR;
 using Bit.Bcrdt.Testing;
@@ -11,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 namespace Bit.Bcrdt.Demo.Server.Services;
 
 /// <summary>
-/// Builds the API reference the MCP tools serve, by reflecting over the public surface of the five
+/// Builds the API reference the MCP tools serve, by reflecting over the public surface of the four
 /// Bit.Bcrdt packages and pairing every type and member with its XML documentation.
 /// <para>
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the
@@ -36,7 +35,6 @@ public static class BcrdtApiCatalog
     public static readonly Assembly[] Assemblies =
     [
         typeof(BcrdtDocument).Assembly,
-        typeof(BcrdtComponentBase).Assembly,
         typeof(BcrdtSignalRTransport).Assembly,
         typeof(BcrdtHub).Assembly,
         typeof(BcrdtSimulatedNetwork).Assembly,

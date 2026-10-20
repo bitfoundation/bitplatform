@@ -58,7 +58,7 @@ public record BsqliteApiTypeDto
     /// <summary>The namespace to import - Bsqlite spreads its types over several, and the DI entry points live in Microsoft's.</summary>
     public required string Namespace { get; init; }
 
-    /// <summary>The package that ships the type, e.g. "Bit.Bsqlite" or "Bit.Bsqlite.Storage.Opfs".</summary>
+    /// <summary>The package that ships the type, e.g. "Bit.Bsqlite" or "Bit.Bsqlite.Testing".</summary>
     public required string Package { get; init; }
 
     /// <summary>Interface, Enum, Exception, Delegate, Static class, Class, Struct or Record.</summary>

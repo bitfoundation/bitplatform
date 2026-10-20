@@ -61,7 +61,7 @@ public static class BsqliteStorageCatalog
     public static IBsqliteStorageProvider? Instance(string? name)
         => _instances.Value.FirstOrDefault(provider => string.Equals(provider.Name, name?.Trim(), StringComparison.OrdinalIgnoreCase));
 
-    /// <summary>One backend by its name ("opfs"), its type name ("BsqliteOpfsStorageProvider") or its package, or null.</summary>
+    /// <summary>One backend by its name ("opfs"), its type name ("BsqliteOpfsStorageProvider") or its namespace, or null.</summary>
     public static BsqliteStorageProviderDto? Find(string? key)
     {
         if (string.IsNullOrWhiteSpace(key)) return null;
@@ -71,7 +71,7 @@ public static class BsqliteStorageCatalog
 
         return Providers.FirstOrDefault(provider => string.Equals(provider.Name, text, StringComparison.OrdinalIgnoreCase))
             ?? Providers.FirstOrDefault(provider => string.Equals(provider.TypeName, text, StringComparison.OrdinalIgnoreCase))
-            ?? Providers.FirstOrDefault(provider => string.Equals(provider.Package, text, StringComparison.OrdinalIgnoreCase))
+            ?? Providers.FirstOrDefault(provider => string.Equals(provider.Namespace, text, StringComparison.OrdinalIgnoreCase))
             // "IndexedDB", "Cache Storage", "inmemory": the backend as a person spells it.
             ?? Providers.FirstOrDefault(provider => Squash(provider.Name) == squashed)
             ?? Providers.FirstOrDefault(provider => Squash(provider.TypeName) == $"bsqlite{squashed}storageprovider");
@@ -86,10 +86,10 @@ public static class BsqliteStorageCatalog
         builder.AppendLine("# Bit.Bsqlite storage backends").AppendLine();
         builder.AppendLine("The four first-party backends, each with the capabilities its provider type really declares - what selection, ")
                .AppendLine("the SQL guards and the migrator act on. Call `GetBsqliteStorageProviders(provider: \"...\")` for one of them in full, ")
-               .AppendLine("with its package, its modules and what each capability means.")
+               .AppendLine("with its namespace, its modules and what each capability means. All four ship in the `Bit.Bsqlite` package.")
                .AppendLine();
 
-        builder.Append("| Name | Package |");
+        builder.Append("| Name | Namespace |");
         foreach (var property in capabilities) builder.Append($" {property.Name} |");
         builder.AppendLine();
 
@@ -99,7 +99,7 @@ public static class BsqliteStorageCatalog
 
         foreach (var provider in Providers)
         {
-            builder.Append($"| `{provider.Name}` | `{provider.Package}` |");
+            builder.Append($"| `{provider.Name}` | `{provider.Namespace}` |");
             foreach (var capability in provider.Capabilities) builder.Append($" {capability.Value} |");
             builder.AppendLine();
         }
@@ -169,8 +169,8 @@ public static class BsqliteStorageCatalog
         if (provider.AdminModule is not null) builder.AppendLine($"- Probe and admin module, imported on the main thread: `{provider.AdminModule}`");
 
         builder.AppendLine()
-               .AppendLine("Both are static web assets of the package, named relative to the document so an app served under a sub-path still finds them; ")
-               .AppendLine("nothing needs adding to the host page.")
+               .AppendLine("Both are static web assets of the package, named relative to the document so an app served under a sub-path still finds them, ")
+               .AppendLine("and imported only once this backend is selected or probed; nothing needs adding to the host page.")
                .AppendLine()
                .AppendLine("## Registration").AppendLine()
                .AppendLine("```csharp")
@@ -182,8 +182,9 @@ public static class BsqliteStorageCatalog
                .AppendLine("    .AddDatabase(\"app.db\"));")
                .AppendLine("```");
 
-        var readme = BsqliteSourceCatalog.ResolveDocumentName(provider.Package);
-        if (readme is not null) builder.AppendLine().AppendLine($"The package's own notes: `GetBsqliteDocument(name: \"{readme}\")`.");
+        // The storage guide gives every first-party backend a section headed with its name.
+        var notes = BsqliteSourceCatalog.GetSections("storage").FirstOrDefault(section => Squash(section.Heading) == Squash(provider.Name));
+        if (notes is not null) builder.AppendLine().AppendLine($"More on this backend: `GetBsqliteDocument(name: \"storage\", section: \"{notes.Key}\")`.");
 
         return builder.ToString();
     }

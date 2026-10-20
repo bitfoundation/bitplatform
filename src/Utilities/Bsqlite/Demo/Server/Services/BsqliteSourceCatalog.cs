@@ -125,7 +125,7 @@ public static partial class BsqliteSourceCatalog
     /// <summary>
     /// The document a caller means, or null. Case and punctuation are ignored, an extension or a docs/
     /// prefix is dropped, and a package README can be named without the package's common prefix:
-    /// "storage.md", "README", "Testing" and "opfs" all find their document.
+    /// "storage.md", "README" and "Testing" all find their document.
     /// </summary>
     public static string? ResolveDocumentName(string? name)
     {
@@ -145,7 +145,6 @@ public static partial class BsqliteSourceCatalog
 
         return (documents.FirstOrDefault(document => Squash(document.Dto.Name) == wanted)
                 ?? documents.FirstOrDefault(document => document.Dto.Kind == "Package" && Squash(document.Dto.Name) == $"bitbsqlite{wanted}")
-                ?? documents.FirstOrDefault(document => document.Dto.Kind == "Package" && Squash(document.Dto.Name) == $"bitbsqlitestorage{wanted}")
                 ?? documents.FirstOrDefault(document => Squash(document.Dto.Title) == wanted))?.Dto.Name;
     }
 

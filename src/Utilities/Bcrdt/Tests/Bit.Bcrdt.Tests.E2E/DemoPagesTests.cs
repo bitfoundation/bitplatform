@@ -47,7 +47,7 @@ public sealed class DemoPagesTests : BcrdtTest
         {
             await page.WaitForFunctionAsync(
                 // The import map points the module at its fingerprinted file, bit-bcrdt.<hash>.js, in some builds.
-                @"() => performance.getEntriesByType('resource').some(e => /^\/_content\/Bit\.Bcrdt\.Blazor\/bit-bcrdt(\.\w+)?\.js$/.test(new URL(e.name).pathname))",
+                @"() => performance.getEntriesByType('resource').some(e => /^\/_content\/Bit\.Bcrdt\/bit-bcrdt(\.\w+)?\.js$/.test(new URL(e.name).pathname))",
                 null, new PageWaitForFunctionOptions { Timeout = 20_000 });
         }
 

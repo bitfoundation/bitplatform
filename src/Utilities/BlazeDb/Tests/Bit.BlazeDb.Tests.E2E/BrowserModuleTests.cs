@@ -3,7 +3,7 @@ using Microsoft.Playwright;
 
 namespace Bit.BlazeDb.Tests.E2E;
 
-/// <summary>The ES modules Bit.BlazeDb.Browser ships under _content/Bit.BlazeDb.Browser/.</summary>
+/// <summary>The ES modules Bit.BlazeDb ships for its browser backends, under _content/Bit.BlazeDb/.</summary>
 internal static class BrowserModules
 {
     public static readonly string[] All = ["bit-blazedb-opfs", "bit-blazedb-idb", "bit-blazedb-crypto", "bit-blazedb-tabs"];
@@ -27,7 +27,7 @@ public class BrowserModuleTests : BlazeDbTest
         var result = await page.EvaluateAsync<string[]>(
             """
             async () => {
-              const idb = await import('./_content/Bit.BlazeDb.Browser/bit-blazedb-idb.js');
+              const idb = await import('./_content/Bit.BlazeDb/bit-blazedb-idb.js');
               const name = 'e2e-' + crypto.randomUUID();
               const text = bytes => bytes === null ? 'null' : new TextDecoder().decode(bytes);
 
@@ -60,7 +60,7 @@ public class BrowserModuleTests : BlazeDbTest
         var result = await page.EvaluateAsync<string[]>(
             """
             async () => {
-              const opfs = await import('./_content/Bit.BlazeDb.Browser/bit-blazedb-opfs.js');
+              const opfs = await import('./_content/Bit.BlazeDb/bit-blazedb-opfs.js');
               const name = 'e2e-' + crypto.randomUUID();
               const text = bytes => bytes === null ? 'null' : new TextDecoder().decode(bytes);
 
@@ -94,7 +94,7 @@ public class BrowserModuleTests : BlazeDbTest
         var second = await context.NewPageAsync();
         await GotoAsync(second, "/mcp-server");
 
-        const string Import = "await import('./_content/Bit.BlazeDb.Browser/bit-blazedb-opfs.js')";
+        const string Import = "await import('./_content/Bit.BlazeDb/bit-blazedb-opfs.js')";
         var lockName = $"e2e-lock-{Guid.NewGuid():N}";
 
         Assert.IsTrue(await first.EvaluateAsync<bool>($"async name => ({Import}).acquireLock(name, false)", lockName));
@@ -119,7 +119,7 @@ public class BrowserModuleTests : BlazeDbTest
         var result = await page.EvaluateAsync<string[]>(
             """
             async () => {
-              const aes = await import('./_content/Bit.BlazeDb.Browser/bit-blazedb-crypto.js');
+              const aes = await import('./_content/Bit.BlazeDb/bit-blazedb-crypto.js');
               const key = await aes.importKey(crypto.getRandomValues(new Uint8Array(32)));
               const nonce = crypto.getRandomValues(new Uint8Array(12));
               const ad = new TextEncoder().encode('wal-1.blz');
@@ -162,19 +162,19 @@ public class BrowserModuleTests : BlazeDbTest
             await page.EvaluateAsync(
                 """
                 async channel => {
-                  const tabs = await import('./_content/Bit.BlazeDb.Browser/bit-blazedb-tabs.js');
+                  const tabs = await import('./_content/Bit.BlazeDb/bit-blazedb-tabs.js');
                   window.__heard = [];
                   tabs.open('e2e', channel, generation => window.__heard.push(generation));
                 }
                 """, channel);
         }
 
-        await writer.EvaluateAsync("async () => (await import('./_content/Bit.BlazeDb.Browser/bit-blazedb-tabs.js')).post('e2e', 7)");
+        await writer.EvaluateAsync("async () => (await import('./_content/Bit.BlazeDb/bit-blazedb-tabs.js')).post('e2e', 7)");
 
         await replica.WaitForFunctionAsync("() => window.__heard.length > 0", null, new PageWaitForFunctionOptions { Timeout = 10_000 });
 
         CollectionAssert.AreEqual(new[] { 7 }, await replica.EvaluateAsync<int[]>("() => window.__heard"));
         CollectionAssert.AreEqual(Array.Empty<int>(), await writer.EvaluateAsync<int[]>("() => window.__heard"));
-        Assert.IsTrue(await writer.EvaluateAsync<bool>("async () => (await import('./_content/Bit.BlazeDb.Browser/bit-blazedb-tabs.js')).isSupported()"));
+        Assert.IsTrue(await writer.EvaluateAsync<bool>("async () => (await import('./_content/Bit.BlazeDb/bit-blazedb-tabs.js')).isSupported()"));
     }
 }

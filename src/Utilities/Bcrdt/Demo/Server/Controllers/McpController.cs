@@ -11,7 +11,7 @@ namespace Bit.Bcrdt.Demo.Server.Controllers;
 /// without guessing at its API - or at what its merge will decide.
 /// <para>
 /// Every tool answers from the shipped library or from this site's own content - the XML
-/// documentation compiled into the five packages, the README, the library's own engine and decoders,
+/// documentation compiled into the four packages, the README, the library's own engine and decoders,
 /// and the demo's source files - so an agent gets what the current version actually does rather than a
 /// snapshot someone wrote down. The same methods are exposed as plain HTTP GET endpoints under
 /// /api/mcp/..., which makes each of them inspectable from a browser.
@@ -48,7 +48,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(SearchBcrdt), Title = "Search everything about Bit.Bcrdt", ReadOnly = true, OpenWorld = false, UseStructuredContent = true)]
-    [Description("Searches everything known about Bit.Bcrdt at once - the reference guide, every public type and member of its five packages, the setup guides and the demo's source files - and returns the best matches, each with the exact follow-up call that returns its full text. Call it first whenever you do not already know which section or type holds the answer, then call the hit's tool verbatim. Example queries: 'concurrent map writes', 'presence cursor', 'offline reconnect', 'signalr hub absolute url', 'undo only my edits', 'custom transport'.")]
+    [Description("Searches everything known about Bit.Bcrdt at once - the reference guide, every public type and member of its four packages, the setup guides and the demo's source files - and returns the best matches, each with the exact follow-up call that returns its full text. Call it first whenever you do not already know which section or type holds the answer, then call the hit's tool verbatim. Example queries: 'concurrent map writes', 'presence cursor', 'offline reconnect', 'signalr hub absolute url', 'undo only my edits', 'custom transport'.")]
     public BcrdtSearchResultDto SearchBcrdt(
         [Description("What you are looking for, in the words you would use for it - a feature, a symptom, or a member name. A few words rank better than a whole sentence.")] string query,
         [Description("How many hits to return. Clamped to 1..50.")] int limit = 12)
@@ -98,7 +98,7 @@ public class McpController : ControllerBase
 
     [HttpGet]
     [McpServerTool(Name = nameof(GetBcrdtApi), Title = "Public API reference", ReadOnly = true, OpenWorld = false)]
-    [Description("Gets the public API of Bit.Bcrdt as Markdown, read out of the five shipped assemblies: one type with its constructors, Blazor parameters, properties, methods, events or enum values - each with its C# type, its real default value and its documentation, protected members of the types you derive from included. Omit the type name for the index of every public type, by package. Call it before using a member you are unsure about, e.g. 'IBcrdtCollaborationService', 'BcrdtCollaborativeDocument', 'BcrdtDocument', 'BcrdtText', 'BcrdtMap', 'BcrdtCollaborationOptions', 'BcrdtCollaborationScope', 'BcrdtComponentBase', 'BcrdtSyncProvider', 'BcrdtHub', 'BcrdtSimulatedNetwork'.")]
+    [Description("Gets the public API of Bit.Bcrdt as Markdown, read out of the four shipped assemblies: one type with its constructors, Blazor parameters, properties, methods, events or enum values - each with its C# type, its real default value and its documentation, protected members of the types you derive from included. Omit the type name for the index of every public type, by package. Call it before using a member you are unsure about, e.g. 'IBcrdtCollaborationService', 'BcrdtCollaborativeDocument', 'BcrdtDocument', 'BcrdtText', 'BcrdtMap', 'BcrdtCollaborationOptions', 'BcrdtCollaborationScope', 'BcrdtComponentBase', 'BcrdtSyncProvider', 'BcrdtHub', 'BcrdtSimulatedNetwork'.")]
     public string GetBcrdtApi(
         [Description("The type's name without its namespace, e.g. 'BcrdtCollaborativeDocument' or 'BcrdtCollaborationOptions'. Omit it for the index of types.")] string? typeName = null)
     {

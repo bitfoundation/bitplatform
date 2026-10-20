@@ -4,16 +4,13 @@ using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using Bit.Bsqlite.Data;
 using Bit.Bsqlite.Testing;
-using Bit.Bsqlite.Storage.Opfs;
 using Bit.Bsqlite.Demo.Server.Dtos;
-using Bit.Bsqlite.Storage.IndexedDb;
-using Bit.Bsqlite.Storage.CacheStorage;
 
 namespace Bit.Bsqlite.Demo.Server.Services;
 
 /// <summary>
-/// Builds the API reference the MCP tools serve, by reflecting over the public surface of the five
-/// Bit.Bsqlite packages - the core, the three storage backends and the testing kit - and pairing
+/// Builds the API reference the MCP tools serve, by reflecting over the public surface of the two
+/// Bit.Bsqlite packages - the library, storage backends included, and the testing kit - and pairing
 /// every type and member with its XML documentation.
 /// <para>
 /// Reflection rather than a hand-maintained table: the reference then cannot drift from the shipped
@@ -28,13 +25,10 @@ public static class BsqliteApiCatalog
 {
     private const BindingFlags Declared = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static | BindingFlags.DeclaredOnly;
 
-    /// <summary>The five packages, core first: the order their types are listed in.</summary>
+    /// <summary>The two packages, the library first: the order their types are listed in.</summary>
     public static readonly Assembly[] Assemblies =
     [
         typeof(BsqliteConnection).Assembly,
-        typeof(BsqliteOpfsStorageProvider).Assembly,
-        typeof(BsqliteIndexedDbStorageProvider).Assembly,
-        typeof(BsqliteCacheStorageProvider).Assembly,
         typeof(BsqliteInProcessTransport).Assembly,
     ];
 

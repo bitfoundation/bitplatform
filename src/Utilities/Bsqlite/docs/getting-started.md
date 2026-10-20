@@ -2,15 +2,13 @@
 
 ## Install
 
-Reference `Bit.Bsqlite` - the ADO.NET surface, the EF Core integration, the worker transport, and the in-memory backend in one package - plus the storage packages you want. Every storage package is optional; register at least one.
+Reference `Bit.Bsqlite` - the ADO.NET surface, the EF Core integration, the worker transport, and every storage backend (OPFS, IndexedDB, Cache Storage and in-memory) in one package.
 
 ```
 dotnet add package Bit.Bsqlite
-dotnet add package Bit.Bsqlite.Storage.Opfs
-dotnet add package Bit.Bsqlite.Storage.IndexedDb
 ```
 
-The engine (`.wasm` and the worker) is served as static web assets under `_content/Bit.Bsqlite/`. Nothing needs to be added to the host page.
+The engine (`.wasm` and the worker) and the backends' VFSes are served as static web assets under `_content/Bit.Bsqlite/`, each imported on demand: a session downloads one engine build and the VFS of the backend it selected, never the others. Nothing needs to be added to the host page.
 
 Bit.Bsqlite targets .NET 8, 9 and 10, each with the EF Core of the same major version.
 

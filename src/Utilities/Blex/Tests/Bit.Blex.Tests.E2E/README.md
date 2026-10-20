@@ -30,7 +30,7 @@ the hybrid app from `BlexBrowserStorage.DisposeAsync`.
 |---|---|---|---|
 | Actions update a store and re-render its subscribers | yes | yes | trimmed + AOT |
 | Persisted store written to `localStorage` and rehydrated after a reload | yes | yes | yes |
-| `bit-blex-storage.js` served from `_content/Bit.Blex.Blazor/` | yes | yes | yes |
+| `bit-blex-storage.js` served from `_content/Bit.Blex/` | yes | yes | yes |
 | A change in another tab reaches this one (`SyncAcrossTabs`) | yes | single window - inconclusive | yes |
 | Undo / redo through `BlexHistory` | yes | yes | yes |
 | A selector subscription ignores state it does not read | yes | yes | yes |

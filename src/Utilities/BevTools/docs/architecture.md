@@ -8,17 +8,21 @@
    plus one timeline event, no string formatting on the hot path), lazy inspection, a polling UI that re-renders only
    when a version counter changed, and its own cost measured and reported. See [performance.md](performance.md).
 4. **Session isolation**: one `BevToolsSession` per circuit (Server), per app (WebAssembly), per request (static SSR).
-5. **Extensible**: panels, state providers, rules, commands and formatters through `Bit.BevTools.Abstractions`.
+5. **Extensible**: panels, state providers, rules, commands and formatters through the contracts in
+   `Bit.BevTools/Abstractions`.
 
 ## Layers
 
 ```
-Bit.BevTools.Abstractions        public contracts, no Blazor dependency
-Bit.BevTools                     runtime instrumentation · session stores · inspection · diagnostics · UI
+Bit.BevTools                     public contracts (Abstractions/) · runtime instrumentation · session stores ·
+                                 inspection · diagnostics · UI
 Bit.BevTools.Server              circuit instrumentation (reference extension)
 ```
 
-All three packages share the `Bit.BevTools` namespace, the way every bit platform product keeps one namespace per
+The contracts use no Blazor types, so they can move back into a package of their own (with `[TypeForwardedTo]`) if a
+consumer that cannot take a Blazor dependency appears; until then a library integrates by referencing `Bit.BevTools`.
+
+Both packages share the `Bit.BevTools` namespace, the way every bit platform product keeps one namespace per
 product; the folders below organise the source, not the API. Every public type carries the product name - `BevTools*`
 for the types that are the tool itself, a short `Bev` prefix for the rest - so importing `Bit.BevTools` never brings a
 bare `Diagnostic` or `CommandPalette` into an application's scope.
@@ -172,7 +176,7 @@ Three tiers, because a developer tool that breaks its integrators is not infrast
 
 | Tier | What | Promise |
 |---|---|---|
-| **Contract** — `Bit.BevTools.Abstractions` | `IBevToolsExtension`, `IBevDiagnosticRule`, `IBevToolsCommand`, `IBevStateProvider`, `IBevToolsTimeline`, `BevToolsEvent`, `BevDiagnostic`, `BevComponentSnapshot`, the attributes. No Blazor dependency. | Treated as versioned public API. Additions are additive; removals are breaking changes. |
+| **Contract** — `Bit.BevTools/Abstractions` | `IBevToolsExtension`, `IBevDiagnosticRule`, `IBevToolsCommand`, `IBevStateProvider`, `IBevToolsTimeline`, `BevToolsEvent`, `BevDiagnostic`, `BevComponentSnapshot`, the attributes. No Blazor types. | Treated as versioned public API. Additions are additive; removals are breaking changes. |
 | **Setup** | `AddBitBevToolsServices`, `AddBitBevToolsServerServices`, `BitBevToolsOptions`, `<BevToolsPanel />`. | Stable. Options gain properties; defaults change only with a reason stated in the release notes. |
 | **Read models** — the `Model/` and `Session/` types, `BevObjectInspector`, `BevSessionExporter`, `BevFmt`, `BevValueTree` | What the built-in panels read and render. Public so an extension panel can present the same data the same way. | Usable, but shaped by the UI's needs; expect additive change and occasional refinement. The JSON export format is versioned (`format` field) so readers can tell versions apart. |
 

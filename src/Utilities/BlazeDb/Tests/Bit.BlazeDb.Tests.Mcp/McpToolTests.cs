@@ -68,7 +68,7 @@ public class McpToolTests
     {
         var index = await McpCall.TextAsync("GetBlazeDbApi");
 
-        foreach (var package in new[] { "## Bit.BlazeDb", "## Bit.BlazeDb.Browser", "## Bit.BlazeDb.EntityFrameworkCore" })
+        foreach (var package in new[] { "## Bit.BlazeDb", "## Bit.BlazeDb.EntityFrameworkCore" })
         {
             Assert.Contains(package, index);
         }
@@ -199,14 +199,14 @@ public class McpToolTests
             var guide = await McpCall.TextAsync("GetBlazeDbSetupGuide", new() { ["hostingModel"] = model });
 
             Assert.Contains("dotnet add package Bit.BlazeDb", guide, model);
-            Assert.Contains("Bit.BlazeDb.Generators", guide, model);
+            Assert.Contains("source generator", guide, model);
             Assert.Contains("## Checklist", guide, model);
             Assert.Contains("## From the guide", guide, model);
         }
     }
 
     [TestMethod]
-    public async Task Only_the_browser_models_bring_in_the_browser_package()
+    public async Task Only_the_browser_models_use_the_browser_backends()
     {
         foreach (var model in new[] { "wasm", "standalone-wasm", "auto" })
         {

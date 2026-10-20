@@ -25,15 +25,15 @@ await run('cache')</pre>
       memory: { requiredBuild: 'synchronous' },
       opfs: {
         requiredBuild: 'synchronous',
-        vfs: { moduleUrl: '/_content/Bit.Bsqlite.Storage.Opfs/bit-bsqlite-opfs-vfs.js', registerExport: 'register' },
+        vfs: { moduleUrl: '/_content/Bit.Bsqlite/bit-bsqlite-opfs-vfs.js', registerExport: 'register' },
       },
       indexeddb: {
         requiredBuild: 'asyncCapable',
-        vfs: { moduleUrl: '/_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-vfs.js', registerExport: 'register' },
+        vfs: { moduleUrl: '/_content/Bit.Bsqlite/bit-bsqlite-idb-vfs.js', registerExport: 'register' },
       },
       cache: {
         requiredBuild: 'asyncCapable',
-        vfs: { moduleUrl: '/_content/Bit.Bsqlite.Storage.CacheStorage/bit-bsqlite-cache-register.js', registerExport: 'register' },
+        vfs: { moduleUrl: '/_content/Bit.Bsqlite/bit-bsqlite-cache-register.js', registerExport: 'register' },
       },
     };
 

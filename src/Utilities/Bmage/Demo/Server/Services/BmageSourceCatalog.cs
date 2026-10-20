@@ -336,7 +336,7 @@ public static partial class BmageSourceCatalog
     {
         if (path.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase))
         {
-            return "The WebAssembly client's project file: the Bit.Bmage.Editor reference, and RunAOTCompilation switched on for a Release publish.";
+            return "The WebAssembly client's project file: the Bit.Bmage reference, and RunAOTCompilation switched on for a Release publish.";
         }
 
         var leadingComment = LeadingRazorCommentRegex().Match(content);

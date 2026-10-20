@@ -64,13 +64,13 @@ public sealed record StorageLimits(bool SupportsMultiDatabaseTransactions, bool 
 /// <summary>The first-party storages, as each .NET provider describes itself to the worker.</summary>
 public static class Storages
 {
-    public static readonly JsModule OpfsVfs = new("/_content/Bit.Bsqlite.Storage.Opfs/bit-bsqlite-opfs-vfs.js");
+    public static readonly JsModule OpfsVfs = new("/_content/Bit.Bsqlite/bit-bsqlite-opfs-vfs.js");
     public static readonly StorageLimits OpfsLimits = new(SupportsMultiDatabaseTransactions: false, CanChangePageSize: true);
 
-    public static readonly JsModule IndexedDbVfs = new("/_content/Bit.Bsqlite.Storage.IndexedDb/bit-bsqlite-idb-vfs.js");
+    public static readonly JsModule IndexedDbVfs = new("/_content/Bit.Bsqlite/bit-bsqlite-idb-vfs.js");
     public static readonly StorageLimits IndexedDbLimits = new(SupportsMultiDatabaseTransactions: true, CanChangePageSize: false);
 
-    public static readonly JsModule CacheStorageVfs = new("/_content/Bit.Bsqlite.Storage.CacheStorage/bit-bsqlite-cache-register.js");
+    public static readonly JsModule CacheStorageVfs = new("/_content/Bit.Bsqlite/bit-bsqlite-cache-register.js");
     public static readonly StorageLimits CacheStorageLimits = new(SupportsMultiDatabaseTransactions: true, CanChangePageSize: false);
 
     public static HostOptions Opfs(string databaseName) => new()
