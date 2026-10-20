@@ -118,7 +118,8 @@ jobs:
         ApplicationInsights.ConnectionString: ${{ secrets.APPLICATION_INSIGHTS_CONNECTION_STRING }}
 
     - name: Publish Server API
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Api/TodoSample.Server.Api.csproj -c Release -o server-api -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
+      working-directory: TodoSample
+      run: dotnet publish src/Server/TodoSample.Server.Api/TodoSample.Server.Api.csproj -c Release -o ../server-api -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess
 
     # Server-owned; C:\inetpub keeps its own copies. Also keeps them out of the artifact.
     - name: Strip server-owned files from bundle
@@ -199,7 +200,8 @@ jobs:
       
       
     - name: Publish Server Web
-      run: dotnet publish TodoSample/src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      working-directory: TodoSample
+      run: dotnet publish src/Server/TodoSample.Server.Web/TodoSample.Server.Web.csproj -c Release -o ../server-web -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
     # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
     # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
@@ -327,10 +329,12 @@ jobs:
 
       
     - name: Collect the AOT profile
-      run: bit aot-profile TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -o todo.aotprofile --origin https://todo-aot.bitplatform.cc --step "click:.menu-chevron" --step "click:button[role=switch][aria-label*=theme i]" --include TodoSample.Client.Core --include TodoSample.Client.Web -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true
+      working-directory: TodoSample
+      run: bit aot-profile src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -o ../todo.aotprofile --origin https://todo-aot.bitplatform.cc --step "click:.menu-chevron" --step "click:button[role=switch][aria-label*=theme i]" --include TodoSample.Client.Core --include TodoSample.Client.Web -p:Version="${{ vars.APP_VERSION}}" -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true
 
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map" -p:WasmAotProfilePath="${{ github.workspace }}/todo.aotprofile"
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ../client -p:Version="${{ vars.APP_VERSION}}" -p:RunAOTCompilation=true -p:InvariantGlobalization=true -p:WasmEnableSIMD=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map" -p:WasmAotProfilePath="${{ github.workspace }}/todo.aotprofile"
 
     # what the stack traces this client logs are read back through: see the note in the server web job
     - name: Upload minifier map artifact
@@ -393,7 +397,8 @@ jobs:
           cd TodoSample/src/Server/TodoSample.Server.Web && dotnet build -c Release && dnx dotnet-ef@10.0.13 -- dbcontext optimize --context AppOfflineDbContext --output-dir Infrastructure/Data/CompiledModel --namespace TodoSample.Client.Core.Infrastructure.Data --project ../../Client/TodoSample.Client.Core/TodoSample.Client.Core.csproj --verbose
 
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ../client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true
 
     - name: Upload to asw
       run: |
@@ -440,7 +445,8 @@ jobs:
         GoogleRecaptchaSiteKey: ${{ secrets.GOOGLE_RECAPTCHA_SITE_KEY }}
 
     - name: Publish
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Web/TodoSample.Client.Web.csproj -c Release -o ../client -p:Version="${{ vars.APP_VERSION}}" -p:WasmEnableSIMD=true -p:InvariantGlobalization=true -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
     # what the stack traces this client logs are read back through: see the note in the server web job
     - name: Upload minifier map artifact
@@ -644,7 +650,8 @@ jobs:
 
   
     - name: Publish aab
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-android
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -c Release -p:AndroidPackageFormats=aab%3Bapk -p:AndroidKeyStore=true -p:AndroidSigningKeyStore="TodoSample.keystore" -p:AndroidSigningKeyAlias=bitplatform -p:AndroidSigningKeyPass="${{ secrets.ANDROID_RELEASE_KEYSTORE_PASSWORD }}" -p:AndroidSigningStorePass="${{ secrets.ANDROID_RELEASE_SIGNING_PASSWORD }}" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="TodoSample" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-android
 
     - name: Upload artifact
       id: artifact
@@ -760,7 +767,8 @@ jobs:
 
   
     - name: Build ipa
-      run: dotnet publish TodoSample/src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-ios
+      working-directory: TodoSample
+      run: dotnet publish src/Client/TodoSample.Client.Maui/TodoSample.Client.Maui.csproj -p:RuntimeIdentifier=ios-arm64 -c Release -p:ArchiveOnBuild=true -p:CodesignKey="iPhone Distribution" -p:CodesignProvision="TodoTemplate" -p:Version="${{ vars.APP_VERSION }}" -p:ApplicationTitle="Todo" -p:ApplicationId="${{ env.APP_BUNDLE_ID }}" -f net10.0-ios
 
     - name: Locate ipa
       id: ipa

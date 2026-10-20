@@ -100,7 +100,8 @@ jobs:
           sed -i 's/IsEmbeddingEnabled = false/IsEmbeddingEnabled = true/' SalesModule/src/Server/SalesModule.Server.Api/Infrastructure/Data/AppDbContext.cs
 
     - name: Publish
-      run: dotnet publish SalesModule/src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      working-directory: SalesModule
+      run: dotnet publish src/Server/SalesModule.Server.Web/SalesModule.Server.Web.csproj -c Release -o ../server -p:Version="${{ vars.APP_VERSION}}" -p:AspNetCoreHostingModel=OutOfProcess -p:BitMinifyAggressive=true -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
     # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
     # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
