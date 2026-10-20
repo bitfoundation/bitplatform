@@ -50,9 +50,29 @@ public static class CleanCommand
                 Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1", ["MSBUILDTERMINALLOGGER"] = "off" }
             };
 
-            var result = await steps.RunAsync("clean", $"Running {script}", async (progress, token) =>
+            Task<StepResult> RunScriptAsync(string id, string title) => steps.RunAsync(id, title, async (progress, token) =>
                 StepResult.FromProcess(await cli.Runner.RunAsync(spec with { OnOutputLine = progress }, token), "Cleaned the project", $"{script} failed",
                     "Close the IDEs and apps that use the project, then run bit clean again."), cancellationToken);
+
+            var result = await RunScriptAsync("clean", $"Running {script}");
+
+            if (cli.Environment.IsWindows && ProjectRenamer.FindBuildFolders(folder) is { Count: > 0 } left)
+            {
+                var freed = ProjectProcesses.Free(cli, left);
+
+                if (freed.Stopped.Count > 0)
+                {
+                    result = await RunScriptAsync("clean-again", $"Running {script} again after stopping {string.Join(", ", freed.Stopped)}");
+                    left = ProjectRenamer.FindBuildFolders(folder);
+                    freed = left.Count > 0 ? ProjectProcesses.Free(cli, left, stopBuildProcesses: false) : FreedFiles.None;
+                }
+
+                if (left.Count > 0 && result.Status is not StepStatus.Failed)
+                {
+                    var shown = string.Join('\n', left.Take(5)) + (freed.InUseBy is { } holders ? $"\n{holders}" : "");
+                    steps.Add("clean-left", StepResult.Warning("Some build folders are still there", $"{left.Count} folder{(left.Count == 1 ? "" : "s")}", hint: shown));
+                }
+            }
 
             if (result.Status is StepStatus.Failed && result.FollowUp is not null)
             {

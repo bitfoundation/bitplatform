@@ -87,6 +87,18 @@ public sealed class ProjectRenamer
         return builder is null ? text : builder.Append(text, copied, text.Length - copied).ToString();
     }
 
+    public static IReadOnlyList<string> FindBuildFolders(string root)
+    {
+        try
+        {
+            return [.. BuildFolders(new DirectoryInfo(root)).Select(folder => folder.FullName)];
+        }
+        catch (Exception exp) when (exp is IOException or UnauthorizedAccessException)
+        {
+            return [];
+        }
+    }
+
     public static (int Deleted, IReadOnlyList<PathFailure> Failures) DeleteBuildFolders(string root)
     {
         var deleted = 0;
