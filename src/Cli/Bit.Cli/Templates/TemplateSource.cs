@@ -67,7 +67,7 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
         {
             FileName = "dotnet",
             Arguments = ["new", manifest.ShortName, "--name", name, "--output", outputDirectory, "--debug:custom-hive", package.HiveDirectory, .. templateArguments],
-            WorkingDirectory = environment.CurrentDirectory,
+            WorkingDirectory = package.HiveDirectory,
             OnOutputLine = onOutput,
             Timeout = TimeSpan.FromMinutes(10)
         }, cancellationToken);
@@ -154,7 +154,7 @@ public sealed class TemplateSource(CliEnvironment environment, IProcessRunner ru
         {
             FileName = "dotnet",
             Arguments = ["new", "install", package, "--debug:custom-hive", hive, "--force"],
-            WorkingDirectory = environment.CurrentDirectory,
+            WorkingDirectory = hive,
             OnOutputLine = onOutput,
             Timeout = TimeSpan.FromMinutes(5)
         }, cancellationToken);
