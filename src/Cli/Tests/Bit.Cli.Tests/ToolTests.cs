@@ -105,11 +105,11 @@ public class ToolTests
         var withoutMachine = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
         Assert.AreEqual(ToolState.NotRunning, withoutMachine.Status.State);
         Assert.AreEqual("Start Podman", withoutMachine.Action!.Title);
-        CollectionAssert.AreEqual(new[] { "machine", "init", "--now" }, withoutMachine.Action.Commands[0].Arguments.ToArray());
+        CollectionAssert.AreEqual(new[] { "machine", "init", "--now" }, withoutMachine.Action.Commands[^1].Arguments.ToArray());
 
         host.Runner.On("podman", "machine inspect", 0, "[{}]");
         var stopped = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker");
-        CollectionAssert.AreEqual(new[] { "machine", "start" }, stopped.Action!.Commands[0].Arguments.ToArray());
+        CollectionAssert.AreEqual(new[] { "machine", "start" }, stopped.Action!.Commands[^1].Arguments.ToArray());
     }
 
     [TestMethod]
@@ -450,9 +450,16 @@ public class ToolTests
         Assert.AreEqual("Install Podman", docker.Title);
         Assert.AreEqual(Elevation.None, docker.Elevation, "Podman installs for the user, so it needs no administrator prompt of its own.");
         CollectionAssert.IsSubsetOf(new[] { "install", "--id", "Podman.CLI", "--silent" }, docker.Commands[0].Arguments.ToArray());
-        CollectionAssert.AreEqual(new[] { "machine", "init", "--now" }, docker.Commands[1].Arguments.ToArray());
-        StringAssert.EndsWith(docker.Commands[1].FileName, @"Programs\Podman\podman.exe");
-        CollectionAssert.Contains(docker.Commands[2].Arguments.ToArray(), @"HKCU\Software\Microsoft\Windows\CurrentVersion\Run");
+        CollectionAssert.Contains(docker.Commands[1].Arguments.ToArray(), @"HKCU\Software\Microsoft\Windows\CurrentVersion\Run");
+        StringAssert.Contains(docker.Commands[1].Arguments[^2], "machine init --now", "Signing in creates the machine when there is none yet.");
+        CollectionAssert.AreEqual(new[] { "machine", "init", "--now" }, docker.Commands[2].Arguments.ToArray());
+        StringAssert.EndsWith(docker.Commands[2].FileName, @"Programs\Podman\podman.exe");
+
+        host.Runner.On("wsl", "--status", 1);
+        var afterWsl = (await CheckAsync(host, new ToolNeeds { Aspire = true })).Single(c => c.Tool.Id == "docker").Action!;
+        Assert.IsFalse(afterWsl.Commands.Any(c => c.Arguments.FirstOrDefault() is "machine"), "WSL needs a restart before Podman can create its machine.");
+        StringAssert.Contains(afterWsl.AfterInstall, "next sign in");
+        host.Runner.On("wsl", "--status", 0);
         Assert.IsTrue(docker.Optional, "A project that runs without its containers doesn't fail on a missing container runtime.");
         Assert.IsFalse((await CheckAsync(host, new ToolNeeds { Aspire = true, ContainersRequired = true })).Single(c => c.Tool.Id == "docker").Action!.Optional);
 

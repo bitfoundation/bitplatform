@@ -49,6 +49,11 @@ public static partial class ToolCatalog
         var dockerMissing = checks.Any(c => c.Tool is DockerTool && c.Status.State is ToolState.Missing);
         checks.RemoveAll(c => c.Tool is WslTool && dockerMissing is false);
 
+        if (checks.Any(c => c.Tool is WslTool && c.Status.IsSatisfied is false) && checks.FindIndex(c => c.Tool is DockerTool && c.Action is not null) is var docker and >= 0)
+        {
+            checks[docker] = checks[docker] with { Action = DockerTool.AfterWslRestart(checks[docker].Action!) };
+        }
+
         var brewNeeded = checks.Any(c => c.Status.IsSatisfied is false && c.Tool is not HomebrewTool && c.Action is null && context.Environment.IsMacOS && context.PackageManagers.Brew is null && c.Tool is NodeTool or GitTool or DockerTool or VsCodeTool);
         checks.RemoveAll(c => c.Tool is HomebrewTool && (c.Status.IsSatisfied || brewNeeded is false));
 
@@ -645,14 +650,21 @@ public static partial class ToolCatalog
 
         private static IReadOnlyList<ProcessSpec> PodmanMachine(string podman, bool init)
         {
-            var startAtSignIn = $"powershell.exe -NoProfile -WindowStyle Hidden -Command \"& '{podman.Replace("'", "''", StringComparison.Ordinal)}' machine start\"";
+            var quoted = podman.Replace("'", "''", StringComparison.Ordinal);
+            var atSignIn = $"powershell.exe -NoProfile -WindowStyle Hidden -Command \"& '{quoted}' machine inspect *> $null; if ($LASTEXITCODE -ne 0) {{ & '{quoted}' machine init --now }} else {{ & '{quoted}' machine start }}\"";
 
             return
             [
-                new ProcessSpec { FileName = podman, Arguments = init ? ["machine", "init", "--now"] : ["machine", "start"], Timeout = TimeSpan.FromMinutes(30) },
-                new ProcessSpec { FileName = "reg.exe", Arguments = ["add", @"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "/v", "Podman", "/t", "REG_SZ", "/d", startAtSignIn, "/f"] }
+                new ProcessSpec { FileName = "reg.exe", Arguments = ["add", @"HKCU\Software\Microsoft\Windows\CurrentVersion\Run", "/v", "Podman", "/t", "REG_SZ", "/d", atSignIn, "/f"] },
+                new ProcessSpec { FileName = podman, Arguments = init ? ["machine", "init", "--now"] : ["machine", "start"], Timeout = TimeSpan.FromMinutes(30) }
             ];
         }
+
+        public static ToolAction AfterWslRestart(ToolAction action) => action with
+        {
+            Commands = [.. action.Commands.Where(command => command.Arguments.FirstOrDefault() is not "machine")],
+            AfterInstall = "Podman sets up its machine when you next sign in, after the restart WSL needs."
+        };
 
         private static ToolAction? Colima(ToolContext context)
         {

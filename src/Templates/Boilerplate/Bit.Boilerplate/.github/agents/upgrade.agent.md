@@ -11,7 +11,7 @@ The work is yours to judge. Ask the user only what the code can't answer and wha
 
 ## 1. Know where the project stands
 
-- `bit.json` records the bit Boilerplate version the project comes from, its name and the value of every option it was created with. The MCP server configurations (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`, `.junie/mcp/mcp.json`, `.gemini/settings.json`) pin the bit platform MCP server to a version too. When they disagree, the project may have been upgraded before without updating them; the package versions of the bit platform libraries in `src/Directory.Packages.props` tell which one is right.
+- `bit.json` records the bit Boilerplate version the project comes from, its name and the value of every option it was created with. The MCP server configurations (`.mcp.json`, `.vscode/mcp.json`, `.cursor/mcp.json`, `.junie/mcp/mcp.json`, `.gemini/settings.json`) pin the bit platform MCP server to a version too. `bit.json` is the one to go by: a team may move those, or the bit platform packages, without upgrading the template.
 - Check the recorded options against the code. The team may have turned something off after creation, switched the database provider, or removed a module, and the diff should be made with the options the project has today.
 - The target is the version the user names. Without one, it's the newest stable bit Boilerplate; take a prerelease only when the user asks. The release notes on GitHub for every version in between say why things changed, and the bit platform MCP server answers questions about any of them.
 - Start from a clean working tree on a new branch, so the whole upgrade can be reviewed as one change. If there are uncommitted changes, ask the user whether to commit or stash them first.
@@ -45,7 +45,7 @@ Some changes need more than the text of the diff:
 
 - In `bit.json`, the version, so the next upgrade starts from here; keep the options the project really has.
 - The version in the bit platform MCP server URL in every MCP configuration listed above, and in any other agent configuration that pins it.
-- Search the project for the old version string and update every place that names the template or bit platform version, such as the package versions of the bit platform libraries. Leave other packages that happen to share the number alone.
+- Search the project for the old version string and update every place that names the template or bit platform version, such as the package versions of the bit platform libraries. Leave a package the team pinned on purpose, and other packages that happen to share the number, alone.
 
 ## 5. Prove it
 

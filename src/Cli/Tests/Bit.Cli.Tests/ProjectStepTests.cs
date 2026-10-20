@@ -865,7 +865,7 @@ public class ProjectStepTests
     [TestMethod]
     public async Task GitHubSignIn_Should_ShowTheCodeAndLetEscSkipIt()
     {
-        using var host = new TestHost();
+        using var host = new TestHost(HostOs.Windows);
         var project = CreateFakeProject(host, "Contoso");
         host.Runner.Executables["gh"] = "/usr/bin/gh";
         var stopped = false;

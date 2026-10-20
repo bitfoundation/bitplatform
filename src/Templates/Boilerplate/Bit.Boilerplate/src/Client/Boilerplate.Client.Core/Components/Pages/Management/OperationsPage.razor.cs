@@ -198,8 +198,12 @@ public partial class OperationsPage
         request.Options.Set(new HttpRequestOptionsKey<HttpStatusCode[]>(RequestOptionNames.AllowedStatusCodes), [HttpStatusCode.ServiceUnavailable]);
 
         using var response = await httpClient.SendAsync(request, CurrentCancellationToken);
+        var report = await response.Content.ReadFromJsonAsync(JsonSerializerOptions.GetTypeInfo<HealthReportDto>(), CurrentCancellationToken);
 
-        return await response.Content.ReadFromJsonAsync(JsonSerializerOptions.GetTypeInfo<HealthReportDto>(), CurrentCancellationToken);
+        if (response.IsSuccessStatusCode is false && report?.Entries is not { Count: > 0 })
+            throw new HttpRequestException($"{url} answered {(int)response.StatusCode} without a health report.", null, response.StatusCode);
+
+        return report;
     }
 
     //#if (api == "Standalone")

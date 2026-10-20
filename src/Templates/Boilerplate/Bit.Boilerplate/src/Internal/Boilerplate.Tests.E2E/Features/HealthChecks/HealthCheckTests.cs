@@ -123,6 +123,7 @@ public partial class HealthCheckTests
                 var report = await response.Content.ReadFromJsonAsync<HealthReportDto>(JsonSerializerOptions.Web, TestContext.CancellationToken);
 
                 Assert.IsNotNull(report, $"{host}healthz returned no report.");
+                Assert.Contains("binStorage", report.Entries.Keys, $"{host}healthz answered {(int)response.StatusCode} without the checks a report has.");
 
                 failures.AddRange(report.Entries
                     .Where(entry => entry.Value.Status is not HealthCheckStatus.Healthy
