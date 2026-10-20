@@ -110,6 +110,25 @@
                 ]
             }
         },
+        "xcodeVersion": {
+            "type": "generated",
+            "generator": "switch",
+            "replaces": "xcode-version: '27.0'",
+            "parameters": {
+                "evaluator": "C++",
+                "datatype": "string",
+                "cases": [
+                    {
+                        "condition": "(framework == 'net10.0')",
+                        "value": "xcode-version: '27.1'"
+                    },
+                    {
+                        "condition": "",
+                        "value": "xcode-version: '27.0'"
+                    }
+                ]
+            }
+        },
         "runnerImage": {
             "type": "generated",
             "generator": "switch",
