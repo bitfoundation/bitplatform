@@ -50,9 +50,16 @@
 
     function copy(text) {
         if (navigator.clipboard && window.isSecureContext) {
-            return navigator.clipboard.writeText(text);
+            // The browser can still refuse the permission (a policy, an embedding frame, an automated
+            // session); a refusal falls back to the legacy path rather than surfacing as an unhandled
+            // rejection on the page.
+            return navigator.clipboard.writeText(text).catch(function () { return copyLegacy(text); });
         }
-        // Fallback for non-secure contexts.
+        return copyLegacy(text);
+    }
+
+    // Fallback for non-secure contexts, and for a clipboard API that refused.
+    function copyLegacy(text) {
         var area = document.createElement('textarea');
         area.value = text;
         area.style.position = 'fixed';

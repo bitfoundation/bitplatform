@@ -110,6 +110,10 @@
     background: var(--bmg-bg-subtle);
     border-bottom: 1px solid var(--bmg-border);
     flex-wrap: wrap;
+    /* The explicit min-height replaces the automatic minimum a flex item gets, so in an editor of
+       fixed height the column would squeeze a toolbar that has wrapped onto a second row and hide
+       half of its tools. The body below is what gives way instead. */
+    flex-shrink: 0;
 }
 
 .bmg-toolgroup {

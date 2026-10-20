@@ -1,4 +1,5 @@
-﻿using System.Linq.Expressions;
+﻿using System.Collections;
+using System.Linq.Expressions;
 using System.Reflection;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Rendering;
@@ -81,6 +82,20 @@ internal static class BlazorReflection
                 var renderer = Expression.Parameter(typeof(Renderer), "r");
                 GetIsBatchInProgress = Expression.Lambda<Func<Renderer, bool>>(Expression.Field(renderer, batchInProgressField), renderer).Compile();
             }
+
+            // The renders the renderer was asked for and has not started: RenderBatchBuilder.ComponentRenderQueue, a
+            // queue of RenderQueueEntry structs whose ComponentState field names the component.
+            var queueProperty = batchBuilderField?.FieldType.GetProperty("ComponentRenderQueue", Instance);
+            var entryType = queueProperty?.PropertyType is { IsGenericType: true } queueType ? queueType.GetGenericArguments()[0] : null;
+            var entryStateField = entryType?.GetField("ComponentState", Instance);
+            if (batchBuilderField is not null && queueProperty is not null && typeof(IEnumerable).IsAssignableFrom(queueProperty.PropertyType)
+                && entryStateField is not null && entryStateField.FieldType == typeof(ComponentState))
+            {
+                var renderer = Expression.Parameter(typeof(Renderer), "r");
+                GetRenderQueue = Expression.Lambda<Func<Renderer, IEnumerable>>(Expression.Property(Expression.Field(renderer, batchBuilderField), queueProperty), renderer).Compile();
+                var entry = Expression.Parameter(typeof(object), "e");
+                GetQueueEntryState = Expression.Lambda<Func<object, ComponentState>>(Expression.Field(Expression.Convert(entry, entryType!), entryStateField), entry).Compile();
+            }
         }
         catch (Exception ex)
         {
@@ -116,6 +131,10 @@ internal static class BlazorReflection
 
     public static Func<Renderer, bool>? GetIsBatchInProgress { get; }
 
+    public static Func<Renderer, IEnumerable>? GetRenderQueue { get; }
+
+    public static Func<object, ComponentState>? GetQueueEntryState { get; }
+
     public static Exception? InitializationError { get; }
 
     public static bool CanWrapRenderFragment => RenderFragmentField is not null && GetRenderFragment is not null;
@@ -125,6 +144,32 @@ internal static class BlazorReflection
     public static bool CanResolveHierarchy => CanResolveRenderer && TryGetComponentState is not null;
 
     public static bool CanDetectBatches => GetUpdatedDiffCount is not null;
+
+    public static bool CanReadRenderQueue => GetRenderQueue is not null && GetQueueEntryState is not null;
+
+    /// <summary>The components whose render is queued but not started, in queue order; null when the queue cannot be read.</summary>
+    public static IComponent[]? QueuedComponents(Renderer renderer)
+    {
+        if (GetRenderQueue is null || GetQueueEntryState is null)
+        {
+            return null;
+        }
+
+        try
+        {
+            List<IComponent>? components = null;
+            foreach (var entry in GetRenderQueue(renderer))
+            {
+                (components ??= []).Add(GetQueueEntryState(entry!).Component);
+            }
+
+            return components?.ToArray() ?? [];
+        }
+        catch
+        {
+            return null;
+        }
+    }
 
     /// <summary>Replaces the component's render fragment. Works on the readonly field through FieldInfo (allowed by the runtime for instance fields).</summary>
     public static bool TrySetRenderFragment(ComponentBase component, RenderFragment fragment)

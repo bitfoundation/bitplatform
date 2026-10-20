@@ -206,6 +206,10 @@
 .bb-header-scrim {
     position: fixed;
     inset: var(--bb-header-height) 0 0;
+    /* Fixed, but inside the header - whose backdrop-filter makes it the containing block - so the
+       height is spelled out rather than taken from a bottom edge that would be the bar's own. */
+    bottom: auto;
+    height: calc(100vh - var(--bb-header-height));
     background: var(--bb-scrim);
     animation: bb-fade-in var(--bb-motion-duration) var(--bb-motion-easing) both;
 }

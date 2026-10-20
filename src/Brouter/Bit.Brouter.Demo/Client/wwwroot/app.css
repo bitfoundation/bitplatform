@@ -377,22 +377,23 @@ svg {
 
 /* One focus indicator for the whole site, drawn the Fluent 2 way: a hairline in the surface
    color hugging the control, and a heavier neutral stroke outside it. Written as an outline plus
-   a ring shadow so it follows the control's own corner radius and never displaces layout. */
-:focus-visible {
+   a ring shadow so it follows the control's own corner radius and never displaces layout.
+
+   Not on elements with tabindex="-1": those are focused by script, never by Tab. The page heading
+   the router moves focus to after every navigation (o.FocusOnNavigateSelector = "h1"), so
+   assistive technology announces the new page, is one; the <main> the skip link lands on is
+   another; a library's own dialog or popover container is a third. A ring there would say "you are
+   on a control", which none of them is - and on a library's container the ring's shadow would
+   also replace the elevation the library draws. :where() keeps the exclusion from adding
+   specificity, so a field's own focus style (section 7b) still wins over this one. */
+:focus-visible:where(:not([tabindex="-1"])) {
     outline: 2px solid var(--fl-stroke-focus-outer);
     outline-offset: 1px;
     box-shadow: 0 0 0 1px var(--fl-stroke-focus-inner);
 }
 
-/* ...except on the things the ROUTER focuses. Brouter moves focus to the page heading after every
-   navigation (o.FocusOnNavigateSelector = "h1") so assistive technology announces the new page,
-   and it makes the heading focusable with tabindex="-1" to do it - the same trick the skip link
-   uses on <main>. A ring there would say "you are on a control", which none of these are: the
-   reader did not focus it, and there is nothing to activate. Interactive elements never carry
-   tabindex="-1", so nothing that IS a control loses its ring here. */
-:is(h1, h2, h3, h4, main, article, section, div)[tabindex="-1"]:focus-visible {
+[tabindex="-1"]:focus-visible:where(h1, h2, h3, h4, h5, h6, main, article, section) {
     outline: none;
-    box-shadow: none;
 }
 
 /* The first thing in the tab order: a keyboard reader lands on it before the nav and can jump
@@ -410,14 +411,16 @@ svg {
     color: var(--bb-primary-text);
     font-size: var(--fl-font-size-200);
     font-weight: var(--fl-weight-semibold);
-    box-shadow: var(--bb-shadow-flyout);
     transition: transform var(--bb-motion-duration) var(--bb-motion-enter);
 }
 
+/* The elevation is only drawn once the link is on screen: parked above the viewport, its shadow
+   would still reach a few pixels down into the corner of the header. */
 .bb-skip-link:focus-visible {
     transform: translateY(0);
     color: var(--bb-primary-text);
     text-decoration: none;
+    box-shadow: var(--bb-shadow-flyout);
 }
 
 /* ============================================================================================
@@ -485,11 +488,14 @@ b {
     font-weight: var(--fl-weight-semibold);
 }
 
+/* No ligatures: Cascadia Code would draw `=>` and `!=` as single glyphs, and code on this site is
+   read in order to be typed - the reader should see the characters they will type. */
 code,
 kbd,
 pre,
 samp {
     font-family: var(--bb-mono);
+    font-variant-ligatures: none;
 }
 
 /* Inline code. Quieter than the old brand-tinted pill: in a docs paragraph half the nouns are
@@ -704,8 +710,10 @@ button.btn-outline:hover {
     border-color: var(--bb-primary);
 }
 
-/* Large - the landing page's calls to action. */
-.bb-btn-lg {
+/* Large - the landing page's calls to action. Restated for <button>: `button.btn` above outranks a
+   lone class, and would otherwise keep a large button at the medium size. */
+.bb-btn-lg,
+button.bb-btn-lg {
     min-height: 2.75rem;
     padding: .625rem 1.25rem;
     font-size: var(--fl-font-size-300);
@@ -756,12 +764,19 @@ button.btn-outline:hover {
    the rest of the border stays put. Applied to the elements themselves rather than to a class,
    because the demo pages render plain inputs - a design system that only reaches markup written
    for it is not a design system.
+
+   Only the inputs a reader TYPES into are fields. A slider, a color well, a file picker or a
+   checkbox is not, and dressing one up as a text box changes its size as it gains and loses focus
+   - which moves everything below it.
+
+   Every selector here is wrapped in :where(), so the resting look has no specificity at all and the
+   states carry only their pseudo-class: a library that draws its own fields (a forms library, a
+   canvas text editor, a palette's search box) wins with a single class, at rest, on hover and on
+   focus, and a demo restyles a field the same way. The focus rule still outranks the site-wide
+   focus ring in section 3, by coming after it at the same weight.
    ============================================================================================ */
 
-input:not([type="checkbox"]):not([type="radio"]),
-textarea,
-select,
-.form-control {
+:where(input:not([type]), input[type="text"], input[type="search"], input[type="email"], input[type="url"], input[type="tel"], input[type="password"], input[type="number"], input[type="date"], input[type="datetime-local"], input[type="time"], input[type="month"], input[type="week"], textarea, select, .form-control) {
     width: auto;
     max-width: 100%;
     min-height: 2rem;
@@ -777,30 +792,24 @@ select,
     transition: border-color var(--bb-motion-duration-short) var(--bb-motion-easing);
 }
 
-textarea {
+:where(textarea) {
     width: 100%;
     padding: .5rem .625rem;
     line-height: 1.6;
     resize: vertical;
 }
 
-input::placeholder,
-textarea::placeholder {
+:where(input, textarea)::placeholder {
     color: var(--bb-text-soft);
 }
 
-input:hover:not(:disabled),
-textarea:hover:not(:disabled),
-select:hover:not(:disabled) {
+:where(input:not([type]), input[type="text"], input[type="search"], input[type="email"], input[type="url"], input[type="tel"], input[type="password"], input[type="number"], input[type="date"], input[type="datetime-local"], input[type="time"], input[type="month"], input[type="week"], textarea, select, .form-control):hover:where(:not(:disabled)) {
     border-color: var(--bb-text-soft);
 }
 
 /* Focus: the brand underline, and no ring - the moving line IS the indicator here, which is what
    Fluent 2 does for a field. Everything else on the site keeps the neutral double ring. */
-input:focus-visible,
-textarea:focus-visible,
-select:focus-visible,
-.form-control:focus-visible {
+:where(input:not([type]), input[type="text"], input[type="search"], input[type="email"], input[type="url"], input[type="tel"], input[type="password"], input[type="number"], input[type="date"], input[type="datetime-local"], input[type="time"], input[type="month"], input[type="week"], textarea, select, .form-control):focus-visible {
     outline: none;
     box-shadow: none;
     border-color: var(--bb-border-strong);
@@ -809,13 +818,11 @@ select:focus-visible,
     padding-bottom: calc(.3125rem - 1px);
 }
 
-textarea:focus-visible {
+:where(textarea):focus-visible {
     padding-bottom: calc(.5rem - 1px);
 }
 
-input:disabled,
-textarea:disabled,
-select:disabled {
+:where(input:not([type]), input[type="text"], input[type="search"], input[type="email"], input[type="url"], input[type="tel"], input[type="password"], input[type="number"], input[type="date"], input[type="datetime-local"], input[type="time"], input[type="month"], input[type="week"], textarea, select, .form-control):disabled {
     color: var(--bb-text-soft);
     background: var(--bb-surface-sunken);
     cursor: not-allowed;
@@ -855,10 +862,14 @@ input[type="search"]::-webkit-search-cancel-button {
     color: var(--bb-text-muted);
 }
 
+/* `anywhere` lets one long identifier in a heading (a type name, say) break rather than push a
+   phone-width page sideways: it lowers the title text's min-content width, which is what a flex
+   item is not allowed to shrink below. A title that fits never breaks. */
 .bb-card-title {
     display: flex;
     align-items: center;
     gap: .5rem;
+    overflow-wrap: anywhere;
     font-size: var(--fl-font-size-300);
     font-weight: var(--fl-weight-semibold);
     line-height: 1.5;
@@ -1874,7 +1885,7 @@ article [id] {
         background: LinkText;
     }
 
-    :focus-visible {
+    :focus-visible:where(:not([tabindex="-1"])) {
         outline: 2px solid CanvasText;
     }
 }

@@ -184,6 +184,58 @@ public class LayoutProjectionTests
         Assert.IsTrue(ctx.Interop.CountOf("getBoundingRect") > before);
     }
 
+    // ── What the after-render measurement sees ────────────────────────────────
+
+    // In both tests something above the element grows by 12px whenever it reports an animation
+    // starting - a log of its callbacks, say. That moves the element, but its render didn't: the
+    // update raising the callback runs after the render, so the render's layout must be measured first.
+
+    [TestMethod]
+    public void AReRenderThatOnlyChangesTheTarget_PlaysNoFlip_WhateverItsCallbacksMove()
+    {
+        using var ctx = new BmotionTestContext();
+        double pushedDown = 0;
+        ctx.Interop.BoundingRectProvider = _ => new BmotionBoundingRect { Top = pushedDown, Width = 100, Height = 100 };
+        bool started = false;
+        var cut = ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Animate, Bm.To(x: 0))
+            .Add(p => p.OnAnimationStart, EventCallback.Factory.Create<BmProps?>(this, _ => pushedDown += 12))
+            .Add(p => p.OnLayoutAnimationStart, EventCallback.Factory.Create(this, () => started = true))
+            .Add(p => p.ChildContent, Div));
+
+        cut.Render(ps => ps.Add(p => p.Animate, Bm.To(x: -50)));
+
+        Assert.IsFalse(started, "the render changed no layout: its own x animating is no layout animation");
+        Assert.IsFalse(ctx.Interop.WasCalled("playWaapiFlip"));
+    }
+
+    [TestMethod]
+    public void TheFlip_ProjectsTheLayoutChangeOfTheRenderOnly()
+    {
+        using var ctx = new BmotionTestContext();
+        double pushedDown = 0;
+        int measurements = 0;
+        // The render moves the box 100px right: the snapshot sees it at 0, every measurement after at 100.
+        ctx.Interop.BoundingRectProvider = _ => new BmotionBoundingRect
+        {
+            Left = measurements++ == 0 ? 0 : 100, Top = pushedDown, Width = 100, Height = 100,
+        };
+        var cut = ctx.Render<Bmotion>(ps => ps
+            .Add(p => p.Id, "box")
+            .Add(p => p.Layout, BmLayout.Full)
+            .Add(p => p.Animate, Bm.To(x: 0))
+            .Add(p => p.OnAnimationStart, EventCallback.Factory.Create<BmProps?>(this, _ => pushedDown += 12))
+            .Add(p => p.ChildContent, Div));
+
+        cut.Render(ps => ps.Add(p => p.Animate, Bm.To(x: -50)));
+
+        var call = LastFlip(ctx)!;
+        Assert.AreEqual(-100, (double)call.Args[1]!, 1e-9, "it starts where the render moved it from");
+        Assert.AreEqual(0, (double)call.Args[2]!, 1e-9, "and not 12px lower, where its callback pushed it after the render");
+    }
+
     // ── Layout animation callbacks ────────────────────────────────────────────
 
     [TestMethod]

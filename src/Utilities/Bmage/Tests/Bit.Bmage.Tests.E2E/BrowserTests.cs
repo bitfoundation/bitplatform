@@ -203,6 +203,34 @@ public class EditorTests : DemoTest
     }
 
     [TestMethod]
+    public async Task AWrappedToolbarKeepsItsFullHeightInAnEditorOfFixedHeight()
+    {
+        var page = await OpenEditorWithImageAsync();
+
+        // A host that fixes the editor's size and is narrower than the tools, so the toolbar wraps onto
+        // a second row. The editor is a column, and the toolbar must not be the part of it that gives way.
+        var heights = await page.EvaluateAsync<JsonElement>("""
+            async () => {
+                const host = document.querySelector('.bmg-editor').parentElement;
+                host.style.width = '420px';
+                host.style.height = '360px';
+                await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+                const toolbar = document.querySelector('.bmg-toolbar');
+                const tools = [...toolbar.querySelectorAll('.bmg-tool')];
+                return {
+                    toolbar: toolbar.getBoundingClientRect().height,
+                    content: toolbar.scrollHeight,
+                    rows: new Set(tools.map(t => Math.round(t.getBoundingClientRect().top))).size
+                };
+            }
+            """);
+
+        Assert.IsGreaterThan(1, heights.GetProperty("rows").GetInt32(), "The toolbar did not wrap, so the test proves nothing.");
+        Assert.IsGreaterThanOrEqualTo(heights.GetProperty("content").GetDouble() - 1, heights.GetProperty("toolbar").GetDouble(),
+            "The wrapped toolbar was squeezed below its content, hiding part of its tools.");
+    }
+
+    [TestMethod]
     public async Task AnnotationsAppearInTheLayerListAndOnThePixels()
     {
         var page = await OpenEditorWithImageAsync();

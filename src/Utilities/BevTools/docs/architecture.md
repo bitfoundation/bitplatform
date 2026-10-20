@@ -49,7 +49,14 @@ A render sample's cause is decided in this order, and the label says which rule 
 2. An ancestor rendered earlier **in the same batch** → *Parent re-rendered (parameters re-applied)*. This is exactly
    what the renderer does: the parent's diff calls `SetParametersAsync` on the child, which queues the child in the same
    batch.
-3. A `HandleEvent`/`Navigate` activity is current on the session → *Event: onclick → Type.Method* / *Navigation*.
+3. A `HandleEvent`/`Navigate` activity is running on the session, or it has stopped and this batch renders what it had
+   queued → *Event: onclick → Type.Method* / *Navigation*. The second half exists because the framework stops a
+   synchronous handler's activity before it renders the components the handler queued; `ActivityObserver` reads the
+   renderer's queue (`RenderBatchBuilder.ComponentRenderQueue`) when the activity stops, and the trigger keeps the one
+   batch - the one in progress or the next - that renders one of them. Nothing else counts once the activity stopped:
+   `Activity.Current` flows with the execution context, so a timer, background loop or fire-and-forget task started
+   inside an event or navigation still carries its activity long after it ended, and what that work renders, requests
+   or logs is not the trigger's.
 4. Otherwise → *StateHasChanged outside an event*: timer, async continuation, state-container notification or explicit
    call. BevTools does not walk the stack to name the caller; the timeline's *Just before* section shows the surrounding
    activity instead.

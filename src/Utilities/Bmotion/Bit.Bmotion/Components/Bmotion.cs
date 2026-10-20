@@ -358,7 +358,7 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
     private BmotionVariantContext? _ownVariantCtx;
     private string? _prevInheritedVariant;
     private int _variantChildIndex = -1;
-    private BmotionBoundingRect? _layoutSnapshot;
+    private Task<BmotionBoundingRect?>? _layoutSnapshot;
     // The style string most recently injected into the render tree, and the one we've reconciled
     // with the engine. When these diverge after init (the consumer authored a dynamic style that
     // changed), Blazor has rewritten the element's inline style, so we re-flush the engine's live
@@ -840,15 +840,19 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         }
         else if (_initialized)
         {
+            // FLIP: measure where this render put the element first. The update below starts the
+            // element's own animations and raises OnAnimationStart; whatever moves the element after
+            // that (a consumer reacting by re-rendering something above it, say) is no layout change
+            // of this render's, and measured afterwards it would play as one.
+            var snapshot = _layoutSnapshot;
+            _layoutSnapshot = null;
+            var measured = snapshot is null ? null : Interop.GetBoundingRectAsync(_id, MeasureOptions).AsTask();
+
             await HandleParameterUpdateAsync();
 
             // FLIP: play layout animation after DOM settles
-            if (_layoutSnapshot != null)
-            {
-                var snap = _layoutSnapshot;
-                _layoutSnapshot = null;
-                await PlayFlipAsync(snap);
-            }
+            if (snapshot is not null && measured is not null)
+                await PlayFlipAsync(snapshot, measured);
 
             // If a re-render rewrote the inline style attribute (the consumer authored a dynamic
             // style on the animated element), Blazor will have wiped the engine's live
@@ -895,9 +899,13 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
         // consumer restrict it to the renders where the layout can actually have changed.
         // Evaluated unconditionally so the first render establishes the baseline: otherwise the
         // first render that could measure would always see "no previous value" and measure anyway.
+        // Not awaited, so the snapshot is in hand for this very render's after-render pass: awaiting
+        // it would defer the FLIP to the extra render ComponentBase makes once it resolves, after
+        // this render's update has already run (see OnAfterRenderAsync). One still pending from an
+        // earlier render this one follows holds the older layout, so it is kept.
         bool dependencyChanged = LayoutDependencyChanged();
         if (_initialized && Layout.Enabled && !_isExiting && dependencyChanged)
-            _layoutSnapshot = await Interop.GetBoundingRectAsync(_id, MeasureOptions);
+            _layoutSnapshot ??= Interop.GetBoundingRectAsync(_id, MeasureOptions).AsTask();
     }
 
     // Null (the default) means "no dependency declared": measure on every render, as before.
@@ -1186,10 +1194,11 @@ public sealed class Bmotion : ComponentBase, IAsyncDisposable
             await Engine.AnimateToAsync(_id, restore, BuildEffectiveTransition());
     }
 
-    private async Task PlayFlipAsync(BmotionBoundingRect snap)
+    private async Task PlayFlipAsync(Task<BmotionBoundingRect?> snapshot, Task<BmotionBoundingRect?> measured)
     {
-        var cur = await Interop.GetBoundingRectAsync(_id, MeasureOptions);
-        if (cur == null) return;
+        var snap = await snapshot;
+        var cur = await measured;
+        if (snap == null || cur == null) return;
         await PlayFlipFromAsync(snap, cur);
     }
 

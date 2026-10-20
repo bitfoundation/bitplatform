@@ -13,7 +13,7 @@
 </div>
 
 <ProblemCard Id="problem-1" Title="1. The whole dashboard re-renders twice a second" Symptom="Dashboard feels busy; Profiler shows StatsCard, UserProfile and RecentOrders rendering constantly." Href="/dashboard">
-    <li>Open the dashboard with a fresh page load (reload it if you came through a link: the clock's ticks are otherwise attributed to that navigation), then tick "clock re-renders whole dashboard".</li>
+    <li>On the dashboard, tick "clock re-renders whole dashboard".</li>
     <li>BevTools → Profiler: sort by renders. <code>Dashboard</code> and every child climb together.</li>
     <li>Select the Revenue <code>StatsCard</code>: "Why did it render?" says <em>Parent Dashboard re-rendered (parameters re-applied)</em>. Keep it selected for a few ticks: the render list marks each one <em>forced</em> because no observable parameter value changed (compare with the Visitors card, whose <code>Value</code> does change), and <em>Forced re-renders</em> counts them.</li>
     <li>Select <code>Dashboard</code>: cause is <em>StateHasChanged outside an event</em>; the Timeline shows it right after each <code>LiveClock</code> render.</li>

@@ -557,14 +557,6 @@ div.preview-image[aria-busy="true"] {
     scroll-margin-top: calc(var(--bb-header-height) + 1rem);
 }
 
-/* The editor's toolbar wraps onto a second row when the frame is narrower than its tools, and the
-   component gives it an explicit min-height, which (unlike the automatic one) lets the column
-   shrink it under that second row inside a frame of fixed height. The host's frame is what fixes
-   the height, so the host is what keeps the toolbar whole. */
-.editor-frame .bmg-toolbar {
-    flex-shrink: 0;
-}
-
 @media (max-width: 47.9375rem) {
     /* Below the editor's own breakpoint its panel moves under the canvas, so the frame needs the
        height of both. */
