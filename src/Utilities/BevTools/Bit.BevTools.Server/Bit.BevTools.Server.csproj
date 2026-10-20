@@ -3,7 +3,7 @@
     <Import Project="../../../Bit.Build.props" />
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <RootNamespace>Bit.BevTools</RootNamespace>
         <ImplicitUsings>enable</ImplicitUsings>
         <!-- Builds on Bit.BevTools, which is not trim-safe (see Bit.BevTools.csproj). -->

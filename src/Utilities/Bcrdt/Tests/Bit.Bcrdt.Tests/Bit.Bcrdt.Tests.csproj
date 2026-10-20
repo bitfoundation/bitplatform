@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net10.0;net9.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net11.0;net10.0;net9.0;net8.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <LangVersion>preview</LangVersion>
@@ -28,13 +28,13 @@
         <ProjectReference Include="..\..\Bit.Bcrdt.Testing\Bit.Bcrdt.Testing.csproj" />
     </ItemGroup>
 
-    <!-- The demo client is a Blazor WebAssembly app and only targets net10.0, so the tests of its replica
+    <!-- The demo client is a Blazor WebAssembly app and only targets net11.0, so the tests of its replica
          plumbing and conflict lab run on that target framework alone. -->
-    <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
+    <ItemGroup Condition=" '$(TargetFramework)' == 'net11.0' ">
         <ProjectReference Include="..\..\Demo\Client\Bit.Bcrdt.Demo.Client.csproj" />
     </ItemGroup>
 
-    <ItemGroup Condition=" '$(TargetFramework)' != 'net10.0' ">
+    <ItemGroup Condition=" '$(TargetFramework)' != 'net11.0' ">
         <Compile Remove="DemoTests.cs" />
     </ItemGroup>
 
