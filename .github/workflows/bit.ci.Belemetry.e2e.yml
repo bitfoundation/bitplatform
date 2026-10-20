@@ -19,11 +19,11 @@ jobs:
   # each runtime the library ships for.
   e2e-web:
     name: Belemetry E2E - web render modes (${{ matrix.framework }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
-        framework: [ net10.0, net9.0, net8.0 ]
+        framework: [ net11.0, net10.0, net9.0, net8.0 ]
 
     steps:
     - name: Checkout source code
@@ -31,10 +31,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -57,7 +62,7 @@ jobs:
       run: dotnet build src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       env:
@@ -90,7 +95,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -119,7 +124,7 @@ jobs:
 
     # The hybrid app exports to the receiver of the static SSR web host, which the suite starts from this build output.
     - name: Build the web harness host
-      run: dotnet build src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Harness.Web/Bit.Belemetry.Tests.Harness.Web.csproj -c Release -f net10.0
+      run: dotnet build src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Harness.Web/Bit.Belemetry.Tests.Harness.Web.csproj -c Release -f net11.0
 
     - name: Build the E2E suite
       run: dotnet build src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj -c Release
@@ -149,7 +154,7 @@ jobs:
   # in a Debug build.
   publish-gate:
     name: Belemetry publish gate (${{ matrix.name }})
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     strategy:
       fail-fast: false
       matrix:
@@ -165,7 +170,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -185,7 +190,7 @@ jobs:
       run: dotnet build src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.E2E/Bit.Belemetry.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests against the published host
       env:

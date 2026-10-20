@@ -20,7 +20,7 @@ jobs:
   build-Belemetry:
     if: startsWith(github.event.pull_request.title, 'Prerelease') != true && startsWith(github.event.pull_request.title, 'Release') != true && startsWith(github.event.pull_request.title, 'Version') != true
     name: build Bit.Belemetry
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
 
@@ -29,10 +29,15 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
+
+    - name: Setup .NET 10.0
+      uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
+      with:
+        dotnet-version: 10.0.x
 
     - name: Setup .NET 9.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
@@ -59,10 +64,10 @@ jobs:
     - name: dotnet test
       run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests && dotnet test --no-build
 
-    - name: dotnet test (Entity Framework Core instrumentation, net8.0/net9.0/net10.0)
+    - name: dotnet test (Entity Framework Core instrumentation, net8.0/net9.0/net10.0/net11.0)
       run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.EntityFrameworkCore && dotnet test --no-build
 
-    - name: dotnet test (Hangfire instrumentation, net8.0/net9.0/net10.0)
+    - name: dotnet test (Hangfire instrumentation, net8.0/net9.0/net10.0/net11.0)
       run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Hangfire && dotnet test --no-build
 
     - name: npm test (browser script)
@@ -71,5 +76,5 @@ jobs:
     - name: dotnet test (MCP server and OTLP receiver)
       run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Mcp && dotnet test --no-build
 
-    - name: dotnet test (hosting - every render mode over HTTP, net8.0/net9.0/net10.0)
+    - name: dotnet test (hosting - every render mode over HTTP, net8.0/net9.0/net10.0/net11.0)
       run: cd src/Utilities/Belemetry/Tests/Bit.Belemetry.Tests.Hosting && dotnet test --no-build

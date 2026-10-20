@@ -17,7 +17,7 @@ jobs:
 
   e2e:
     name: Bortable E2E (Chromium)
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
 
     steps:
@@ -27,7 +27,7 @@ jobs:
       with:
           persist-credentials: false
 
-    - name: Setup .NET 10.0
+    - name: Setup .NET 11.0
       uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68 # v6.0.0
       with:
         global-json-file: src/global.json
@@ -45,7 +45,7 @@ jobs:
         dotnet build src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/Bit.Bortable.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Bortable/Tests/Bit.Bortable.Tests.E2E/bin/Release/net11.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
