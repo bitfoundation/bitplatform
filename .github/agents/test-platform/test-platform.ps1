@@ -678,14 +678,36 @@ function Invoke-E2EStages {
     }
 
     Push-Location $e2eProject
+    $nugetPackages = $env:NUGET_PACKAGES
 
     try {
         $results = Join-Path $e2eProject 'TestResults'
         New-Item -ItemType Directory -Force $results | Out-Null
+        $buildArguments = @()
+
+        if ($PrereleasePackages) {
+            $lab = Join-Path ([IO.Path]::GetTempPath()) 'test-platform-e2e'
+            $feed = Join-Path $lab 'feed'
+            $env:NUGET_PACKAGES = Join-Path $lab 'packages'
+            Remove-Item $feed -Recurse -Force -ErrorAction SilentlyContinue
+            Get-ChildItem $env:NUGET_PACKAGES -Directory -Filter 'bit.*' -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force
+            New-Item -ItemType Directory -Force $feed | Out-Null
+            Add-PrereleasePackages $feed
+            Set-BitUnderTestFeed $lab $feed
+
+            dotnet restore --nologo -v q --configfile (Join-Path $lab 'nuget.config') > (Join-Path $results 'restore.log')
+
+            if ($LASTEXITCODE -ne 0) {
+                Select-String -Path (Join-Path $results 'restore.log') -Pattern ': error ' | ForEach-Object Line | Select-Object -Unique | Write-Host
+                throw 'Boilerplate.Tests.E2E does not restore with the prerelease packages.'
+            }
+
+            $buildArguments = @('--no-restore')
+        }
 
         # Into a file: a warm build's warnings run to hundreds of lines.
         Write-Host 'Building Boilerplate.Tests.E2E...'
-        dotnet build --nologo -v q -p:UseSharedCompilation=false > (Join-Path $results 'build.log')
+        dotnet build --nologo -v q -p:UseSharedCompilation=false @buildArguments > (Join-Path $results 'build.log')
 
         if ($LASTEXITCODE -ne 0) {
             Select-String -Path (Join-Path $results 'build.log') -Pattern ': error ' | ForEach-Object Line | Select-Object -Unique | Write-Host
@@ -776,6 +798,7 @@ function Invoke-E2EStages {
         }
     }
     finally {
+        $env:NUGET_PACKAGES = $nugetPackages
         Pop-Location
     }
 }
