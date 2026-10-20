@@ -79,10 +79,6 @@
         {
             "id": "advancedTests",
             "isVisible": false
-        },
-        {
-            "id": "seedPassword",
-            "isVisible": false
         }
     ]
 }

@@ -45,7 +45,7 @@ public static class DoctorCommand
             var needs = new ToolNeeds
             {
                 Aspire = aspire,
-                ContainersRequired = aspire && (projectName is null || ProjectContext.AppHostNeedsContainers(Path.Combine(cli.Environment.CurrentDirectory, "src", "Server", $"{projectName}.Server.AppHost"))),
+                ContainersRequired = aspire && projectName is not null && ProjectContext.AppHostNeedsContainers(Path.Combine(cli.Environment.CurrentDirectory, "src", "Server", $"{projectName}.Server.AppHost")),
                 NativeWebAssembly = projectName is not null && ProjectContext.UsesNativeWebAssembly(cli.Environment.CurrentDirectory),
                 Platforms = platforms,
                 Ide = IdeLocator.FindAll(cli.Environment, cli.Runner).FirstOrDefault()?.Id,

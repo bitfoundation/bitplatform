@@ -1,6 +1,6 @@
 ---
 name: test-platform
-description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit and runs the app, and check that its Aspire containers are reused from one run to the next and stopped once it sits idle, on Windows and inside the dev container. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
+description: Test one build of bitplatform end to end on the demo host - fix what its All CI run failed on, start an All CD run at a new APP_VERSION when asked to, roll its web, Android and Windows apps out to APP_VERSION, run the Boilerplate E2E suite against the deployed demos, check that bitplatform.dev/mcp answers each release from that release's own code, check that a new bit Boilerplate project's dev container sets itself up with bit and runs the app, check that its Aspire containers are reused from one run to the next and stopped once it sits idle, on Windows and inside the dev container, and check that bit diff compares two bit Boilerplate versions. It first asks which of these to do and how. Use when asked to test the platform or to start the e2e tests, or when handed an All CI and/or All CD run link.
 ---
 
 # Test the platform
@@ -55,7 +55,8 @@ answer, and repeat the plan back before starting:
    checkout of that branch, pulled first: the helper takes the suite, its stages and the CD workflows from the
    checkout it runs in.
 2. **The tests**: any of the CI run (step 1), the CD rollout and its versions check (step 2), the E2E suite (step 3,
-   every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5) and the Aspire containers (step 6).
+   every stage or some), bitplatform.dev/mcp (step 4), the dev container (step 5), the Aspire containers (step 6)
+   and `bit diff` (step 7).
 3. **The Bit packages**: nuget.org's, or the build of a Prerelease nuget packages run (`prerelease_packages`). The
    latter needs a successful prerelease run on the branch under test first. It publishes the branch's version to
    nuget.org only when nuget.org doesn't have it yet, so at a version that is already there it builds packages and
@@ -65,7 +66,7 @@ answer, and repeat the plan back before starting:
    or none, which tests what is deployed now. Say which branch and `APP_VERSION` that is, from the last All CD run
    (`gh run list -R bitfoundation/bitplatform -w all.cd.yml -L 1`): it is often another branch than the one under test.
 6. **`APP_VERSION`**, for a new CD run: raise it, and to which version, or keep it.
-7. **Steps 5 and 6**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
+7. **Steps 5, 6 and 7**: from the commit under test (`-Sha`) or from nuget.org. With `-Sha` the other Bit packages still
    come from nuget.org at the template's version; when nuget.org's build of that version is older than the commit's
    libraries, `-PrereleasePackages` takes them from the newest Prerelease nuget packages run instead.
 
@@ -79,6 +80,7 @@ until the report. Then go in this order:
    its jobs and all default to on; `-f <job>=false` leaves one out.
 3. While they run: step 1 as CI jobs fail.
 4. Once CD is done: step 2, then steps 3 and 4, with step 6 in the background next to the web stages of step 3.
+   Step 7 needs no CD and is light: do it while CI and CD run.
 5. Step 5 last, on its own.
 
 Every CD job builds with `-p:Version=$APP_VERSION`, so a complete rollout shows that version everywhere: as
@@ -469,7 +471,27 @@ the next Aspire run removes and the idle stop doesn't touch.
 
 A failure is fixed in the template like a CI failure, and the next `aspire -Sha` on the fix proves it.
 
-## 7. Report
+## 7. bit diff
+
+`bit diff` creates a project with two bit Boilerplate versions into one git repository in the temp folder, so its
+second commit is the upgrade, and the template's `upgrade` skill applies that to a project. The helper has no command
+for it, so check it by hand, with bit and the template of the commit under test, or nuget.org's:
+
+- In a lab folder outside the repository and the scratchpad, with `BIT_CLI_HOME` pointing into it, create a project
+  from the previous release with `bit new --template-version`, skipping the run, the IDE and trust. Then run `bit diff`
+  in it, against the template folder of the checkout under test (`--template-package`) or the version under test.
+- Run a bit built from the commit with `dotnet` on its `bit.dll`. `dotnet run --project` from a folder whose SDK is
+  another one hands its MSBuild variables to every build bit starts, which then fail, and leave hundreds of MSBuild
+  processes behind.
+- Done means: the name, version and options come from the project's `README.md`; there are two commits named after
+  the versions and a patch file in the diff's folder; the project itself is unchanged; and the differences are the
+  template's own changes plus only what the template picks at random on every run (ports, GUIDs, dates, the seeded
+  accounts' password). An option the older version doesn't have is reported, not passed to it.
+- `bit remove` deletes the diff's folder and the lab afterwards.
+
+A failure is fixed in bit like a CI failure.
+
+## 8. Report
 
 Lead with the verdict, then:
 
@@ -483,7 +505,9 @@ Lead with the verdict, then:
    exit code, the Aspire check inside it as in item 6, and per failure its cause and fix.
 6. **Aspire containers**: the commit or the nuget.org version tested, how soon each run was up, whether the second run
    reused every container, how long after the last run they stopped, and per failure its cause and fix.
-7. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
+7. **bit diff**: the versions compared, the size of the change, whether the README's values were read, any
+   difference that is neither an upgrade nor random per run, and per failure its cause and fix.
+8. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
    through `prerelease_packages` before its release.
 
 Anything that looks like a defect in a bit platform library or in the `bit-bp` template itself: say so, and offer to

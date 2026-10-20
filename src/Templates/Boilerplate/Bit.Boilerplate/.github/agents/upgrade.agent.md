@@ -19,8 +19,8 @@ The work is yours to judge. Ask the user only what the code can't answer and wha
 
 ## 2. Get the upstream changes
 
-- Run `bit diff` in the project folder, with the from and to versions when they aren't the defaults and with any option whose recorded value no longer matches the project. It creates the project with each version into one git repository, so its second commit is exactly what the template changed for a project with this name and these options, and it writes that commit as a patch file. Its output says where both are.
-- Both versions are created with this project's name and its seeded accounts' password, so those don't show up as changes. Some differences are still not upgrades and stay as they are in the project: the ports, GUIDs and dates the template picks on every run, the app certificate, the formatting `bit new` applies, and EF Core migrations, which neither version has.
+- Run `bit diff` from the project folder, with the from and to versions when they aren't the defaults and with any option whose recorded value no longer matches the project. It only reads the project's `README.md`; it creates the project with each version in a temporary folder of its own, into one git repository, so the second commit is exactly what the template changed for a project with this name and these options, and it writes that commit as a patch file there too. Its output says where.
+- Some differences come from generating a project, not from the upgrade, and stay as they are in this project: everything the template picks at random on every run, such as ports, GUIDs like the user secrets id, dates and the seeded accounts' password, plus the app certificate, the formatting `bit new` applies, and EF Core migrations, which neither version has.
 - Read the whole change set before touching anything: which areas it touches, which files are new, deleted or renamed, and which changes belong together, such as a package bump and the code that needs it.
 
 ## 3. Bring each change in
@@ -63,3 +63,5 @@ Tell the user, briefly:
 - what was left out and why;
 - the decisions that are theirs, and the migrations, settings and secrets that need their attention;
 - that nothing is merged or pushed until they say so.
+
+Delete the diff's folder when you're done, with `bit remove` and the folder `bit diff` named, so it doesn't take up space.

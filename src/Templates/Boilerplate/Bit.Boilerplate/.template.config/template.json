@@ -40,26 +40,12 @@
                 "format": "yyyy-MM-dd"
             }
         },
-        "seedPassword": {
-            "displayName": "Seeded accounts' password",
-            "type": "parameter",
-            "datatype": "string",
-            "description": "The password of test@bitplatform.dev and the other accounts the database starts with. Default: a random 8 digit number."
-        },
-        "seedPasswordRandom": {
+        "SeedPassword": {
             "type": "generated",
             "generator": "random",
             "parameters": {
                 "low": 10000000,
                 "high": 99999999
-            }
-        },
-        "seedPasswordValue": {
-            "type": "generated",
-            "generator": "coalesce",
-            "parameters": {
-                "sourceVariableName": "seedPassword",
-                "fallbackVariableName": "seedPasswordRandom"
             },
             "replaces": "12345678"
         },

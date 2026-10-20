@@ -410,13 +410,14 @@ public sealed class NewWorkflow(CliServices cli)
         {
             var manifest = TemplateSource.ReadManifest(package.PackagePath) ?? selection.Manifest;
             var arguments = selection.ToTemplateArguments().Concat(request.ExtraTemplateArguments).ToList();
-            context.SeedPassword = SeedPassword(manifest, selection, arguments);
             var result = await source.CreateAsync(package, manifest, context.Name, context.Directory, arguments, progress, ct);
 
             if (result.Succeeded && context.Exists is false)
                 return StepResult.Failed($"Couldn't create {context.Name}", "dotnet new finished without creating the solution", hint: DiagnosticCodes.FirstErrorLine(result.Output));
 
             var legacySolution = Path.ChangeExtension(context.Solution, ".sln");
+            var readme = Path.Combine(context.Directory, "README.md");
+            context.SeedPassword = File.Exists(readme) ? TemplateDiff.ReadReadme(File.ReadAllText(readme)).SeedPassword : null;
 
             if (result.Succeeded && File.Exists(context.Solution) && File.Exists(legacySolution))
             {
@@ -426,24 +427,6 @@ public sealed class NewWorkflow(CliServices cli)
             var files = context.Exists ? Directory.EnumerateFiles(context.Directory, "*", SearchOption.AllDirectories).Count() : 0;
             return StepResult.FromProcess(result, $"Created {context.Name}", $"Couldn't create {context.Name}", null, $"bit Boilerplate{(package.Version is TemplateSource.FolderVersion ? "" : $" {package.Version}")}, {files} files");
         }, cancellationToken);
-    }
-
-    public static string? SeedPassword(TemplateManifest manifest, TemplateSelection selection, List<string> arguments)
-    {
-        if (manifest.Find("seedPassword") is null)
-            return null;
-
-        var given = arguments.FindIndex(a => string.Equals(a, "--seedPassword", StringComparison.OrdinalIgnoreCase));
-
-        if (given >= 0 && given + 1 < arguments.Count)
-            return arguments[given + 1];
-
-        if (selection.HasExplicitValue("seedPassword"))
-            return selection["seedPassword"];
-
-        var password = $"{System.Security.Cryptography.RandomNumberGenerator.GetInt32(10_000_000, 100_000_000)}";
-        arguments.AddRange(["--seedPassword", password]);
-        return password;
     }
 
     private void TagTelemetry(TemplateSelection selection, IReadOnlySet<Platform> platforms, IReadOnlyList<ToolCheck> tools, string ide, NewRequest request)

@@ -52,32 +52,9 @@ public class DiffTests
     {
         var options = new Dictionary<string, string> { ["database"] = "postgresql", ["madeUp"] = "true", ["module"] = "Nope" };
 
-        var (arguments, unknown) = TemplateDiff.TemplateArguments(TemplateManifest.Embedded, options, "40817263");
+        var (arguments, unknown) = TemplateDiff.TemplateArguments(TemplateManifest.Embedded, options);
 
-        CollectionAssert.AreEqual(new[] { "--database", "PostgreSQL", "--seedPassword", "40817263" }, arguments);
+        CollectionAssert.AreEqual(new[] { "--database", "PostgreSQL" }, arguments);
         CollectionAssert.AreEquivalent(new[] { "--madeUp true", "--module Nope" }, unknown);
-
-        var older = TemplateManifest.Parse("""{ "identity": "Bit.Boilerplate", "shortName": "bit-bp", "sourceName": "Boilerplate", "symbols": { "database": { "type": "parameter", "datatype": "choice", "defaultValue": "Sqlite", "choices": [ { "choice": "Sqlite" }, { "choice": "PostgreSQL" } ] } } }""");
-        CollectionAssert.AreEqual(new[] { "--database", "PostgreSQL" }, TemplateDiff.TemplateArguments(older, options, "40817263").Arguments, "A version without the seeded accounts' password option has 123456 written into it.");
-    }
-
-    [TestMethod]
-    public void TheSeedPassword_Should_BeRandomUnlessGiven()
-    {
-        var manifest = TemplateManifest.Embedded;
-        var arguments = new List<string>();
-
-        var password = NewWorkflow.SeedPassword(manifest, new TemplateSelection(manifest), arguments);
-
-        Assert.IsNotNull(password);
-        StringAssert.Matches(password, new System.Text.RegularExpressions.Regex(@"^\d{8}$"));
-        CollectionAssert.AreEqual(new[] { "--seedPassword", password }, arguments);
-
-        var selection = new TemplateSelection(manifest);
-        selection.Set("seedPassword", "11112222");
-        var given = new List<string>(selection.ToTemplateArguments());
-
-        Assert.AreEqual("11112222", NewWorkflow.SeedPassword(manifest, selection, given));
-        Assert.AreEqual(1, given.Count(a => a is "--seedPassword"));
     }
 }

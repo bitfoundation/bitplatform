@@ -178,14 +178,14 @@ Everything lives in the one skill file; it brings no scripts or tools of its own
 
 **Canonical file**: `.github/agents/upgrade.agent.md`
 
-**What it does**: Brings a newer bit Boilerplate version into the project. `bit diff` creates the project with the version it came from and with the newer one into one git repository, so the second commit is exactly what the template changed for a project with this name and these options. The skill carries each of those changes into the codebase, keeping what the team changed, adds the database migrations the changes need, and updates the version `README.md` and the MCP server configurations record.
+**What it does**: Brings a newer bit Boilerplate version into the project. `bit diff` creates the project with the version it came from and with the newer one into one git repository in a temporary folder, so the second commit is exactly what the template changed for a project with this name and these options. The skill carries each of those changes into the codebase, keeping what the team changed, adds the database migrations the changes need, and updates the version `README.md` and the MCP server configurations record.
 
 **When to use it**: When a newer bit Boilerplate is out and the project should get its fixes, features and dependency updates.
 
 **Key capabilities**:
 - Reads the project's version and options from `README.md`, and checks them against the code before diffing
 - Treats the old version as the common ancestor: takes files the team never changed, merges files both changed, and leaves out what no longer has anything to attach to
-- Knows which differences are artifacts of generating a project (ports, GUIDs, dates, the app certificate) rather than upgrades
+- Knows which differences come from generating a project (ports, GUIDs, dates, the seeded accounts' password, the app certificate) rather than from the upgrade
 - Adds a migration for every database context whose model changed, instead of editing existing ones
 - Asks only about decisions that change how the app behaves
 - Proves the result: build, formatting, tests, and the app running

@@ -56,8 +56,7 @@ public sealed partial class TemplateDiff(CliServices cli)
             options[option] = value;
         }
 
-        var seedPassword = options.Remove("seedPassword", out var given) ? given : record.SeedPassword;
-        var output = Path.GetFullPath(request.Output ?? Path.Combine(cli.Environment.BitDirectory, "diffs", $"{name}-{from}-{to}"), cli.Environment.CurrentDirectory);
+        var output = Path.GetFullPath(request.Output ?? Path.Combine(Path.GetTempPath(), "bit-diff", $"{name}-{from}-{to}"), cli.Environment.CurrentDirectory);
 
         if (Directory.Exists(output) && Directory.EnumerateFileSystemEntries(output).Any())
         {
@@ -90,7 +89,7 @@ public sealed partial class TemplateDiff(CliServices cli)
 
         if (steps.AnyFailed is false)
         {
-            await SnapshotAsync(steps, "from", source, from, null, name, output, options, seedPassword, cancellationToken);
+            await SnapshotAsync(steps, "from", source, from, null, name, output, options, cancellationToken);
         }
 
         if (steps.AnyFailed is false)
@@ -107,14 +106,15 @@ public sealed partial class TemplateDiff(CliServices cli)
 
         if (steps.AnyFailed is false)
         {
-            await SnapshotAsync(steps, "to", source, to, request.TemplatePackage, name, output, options, seedPassword, cancellationToken);
+            await SnapshotAsync(steps, "to", source, to, request.TemplatePackage, name, output, options, cancellationToken);
         }
 
         if (steps.AnyFailed)
             return CliApp.ExitFailed;
 
-        var patch = output.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + ".patch";
+        var patch = Path.Combine(output, "bit-diff.patch");
         await Git(output, ["diff", "--binary", $"--output={patch}", "HEAD~1", "HEAD"], cancellationToken);
+        File.AppendAllText(Path.Combine(output, ".git", "info", "exclude"), "\n/bit-diff.patch\n");
         var stat = (await Git(output, ["diff", "--shortstat", "HEAD~1", "HEAD"], cancellationToken)).Output.Trim();
 
         cli.Console.Out.WriteLine();
@@ -124,13 +124,14 @@ public sealed partial class TemplateDiff(CliServices cli)
         cli.Console.Out.MarkupLine($"  [bold]Patch[/]       {Markup.Escape(patch)}");
         cli.Console.Out.MarkupLine($"  [bold]Files[/]       git -C {Markup.Escape(ProcessSpec.Quote(output))} diff --stat HEAD~1");
         cli.Console.Out.WriteLine();
-        cli.Console.Out.MarkupLine("  [grey]Both were created with the same name, options and seeded accounts' password. The ports, GUIDs and dates the template picks on every run, and the app certificate bit new replaces, still differ between them.[/]");
+        cli.Console.Out.MarkupLine("  [grey]Both have the same name and options. What the template picks at random on every run, such as ports, GUIDs, dates and the seeded accounts' password, differs between them, and so does what bit new adds.[/]");
+        cli.Console.Out.MarkupLine($"  [grey]Delete it when you're done: bit remove {Markup.Escape(ProcessSpec.Quote(output))} --yes[/]");
         cli.Console.Out.WriteLine();
 
         return CliApp.ExitOk;
     }
 
-    private async Task SnapshotAsync(StepRunner steps, string id, TemplateSource source, string version, string? packagePath, string name, string output, IReadOnlyDictionary<string, string> options, string? seedPassword, CancellationToken cancellationToken)
+    private async Task SnapshotAsync(StepRunner steps, string id, TemplateSource source, string version, string? packagePath, string name, string output, IReadOnlyDictionary<string, string> options, CancellationToken cancellationToken)
     {
         await steps.RunAsync($"create-{id}", $"Creating {name} with bit Boilerplate {version}", async (progress, ct) =>
         {
@@ -140,7 +141,7 @@ public sealed partial class TemplateDiff(CliServices cli)
                 return StepResult.FromProcess(installed.Succeeded ? installed with { ExitCode = 1 } : installed, "", $"Couldn't get bit Boilerplate {version}", packagePath is null ? $"dotnet new install Bit.Boilerplate::{version}" : null);
 
             var manifest = TemplateSource.ReadManifest(package.PackagePath) ?? TemplateManifest.Embedded;
-            var (arguments, unknown) = TemplateArguments(manifest, options, seedPassword);
+            var (arguments, unknown) = TemplateArguments(manifest, options);
             var created = await source.CreateAsync(package, manifest, name, output, arguments, progress, ct);
 
             if (created.Succeeded is false)
@@ -162,7 +163,7 @@ public sealed partial class TemplateDiff(CliServices cli)
         }, cancellationToken);
     }
 
-    public static (List<string> Arguments, List<string> Unknown) TemplateArguments(TemplateManifest manifest, IReadOnlyDictionary<string, string> options, string? seedPassword)
+    public static (List<string> Arguments, List<string> Unknown) TemplateArguments(TemplateManifest manifest, IReadOnlyDictionary<string, string> options)
     {
         var arguments = new List<string>();
         var unknown = new List<string>();
@@ -176,11 +177,6 @@ public sealed partial class TemplateDiff(CliServices cli)
             }
 
             arguments.AddRange([$"--{parameter.Name}", normalized]);
-        }
-
-        if (seedPassword is not null && manifest.Find("seedPassword") is not null)
-        {
-            arguments.AddRange(["--seedPassword", seedPassword]);
         }
 
         return (arguments, unknown);
