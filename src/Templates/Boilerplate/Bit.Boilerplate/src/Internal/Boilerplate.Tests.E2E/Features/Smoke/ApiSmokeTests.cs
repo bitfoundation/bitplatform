@@ -11,7 +11,7 @@ public partial class ApiSmokeTests
 {
     /// <summary>The seeded non-admin member of the default store tenant; see UserConfiguration.</summary>
     private const string storeUserEmail = "store-user@bitplatform.dev";
-    private const string storeUserPassword = "12345678";
+    private const string storeUserPassword = "123456";
 
     public TestContext TestContext { get; set; } = default!;
 
