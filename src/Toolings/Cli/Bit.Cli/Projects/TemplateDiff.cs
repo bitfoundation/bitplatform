@@ -48,17 +48,32 @@ public sealed class TemplateDiff(CliServices cli)
                 return cli.UsageError("not-a-version", $"'{version}' isn't a bit Boilerplate version, such as {BuildInfo.Version}.");
         }
 
-        if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase) && request.TemplatePackage is null)
-        {
-            cli.Console.Out.MarkupLine($"  [green]{Markup.Escape(name)} is already on bit Boilerplate {Markup.Escape(to)}.[/]");
-            return CliApp.ExitOk;
-        }
-
         var options = new Dictionary<string, string>(record.Options, StringComparer.OrdinalIgnoreCase);
 
         foreach (var (option, value) in request.TemplateValues)
         {
             options[option] = value;
+        }
+
+        var fromOptions = new Dictionary<string, string>(options, StringComparer.OrdinalIgnoreCase);
+
+        if (Directory.Exists(directory) && ProjectContext.ReadTargetFramework(directory, name) is { } framework)
+        {
+            fromOptions["framework"] = framework;
+
+            if (request.TemplateValues.ContainsKey("framework") is false)
+            {
+                options["framework"] = framework;
+            }
+        }
+
+        var frameworkChanges = fromOptions.TryGetValue("framework", out var fromFramework) && options.TryGetValue("framework", out var toFramework)
+            && string.Equals(fromFramework, toFramework, StringComparison.OrdinalIgnoreCase) is false;
+
+        if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase) && request.TemplatePackage is null && frameworkChanges is false)
+        {
+            cli.Console.Out.MarkupLine($"  [green]{Markup.Escape(name)} is already on bit Boilerplate {Markup.Escape(to)}.[/]");
+            return CliApp.ExitOk;
         }
 
         var output = Path.GetFullPath(request.Output ?? Path.Combine(cli.Environment.BitDirectory, "diff", $"{name}-{from}-{to}"), cli.Environment.CurrentDirectory);
@@ -75,6 +90,11 @@ public sealed class TemplateDiff(CliServices cli)
 
         cli.Console.Out.MarkupLine($"  Comparing bit Boilerplate [bold]{Markup.Escape(from)}[/] with [bold]{Markup.Escape(to)}[/] for [bold]{Markup.Escape(name)}[/]");
         cli.Console.Out.MarkupLine($"  [grey]{(options.Count == 0 ? "the template's default options" : string.Join(" ", options.Select(o => o.Value is "true" ? $"--{o.Key}" : $"--{o.Key} {o.Value}")))}[/]");
+
+        if (frameworkChanges)
+        {
+            cli.Console.Out.MarkupLine($"  [grey]from {Markup.Escape(fromOptions["framework"])} to {Markup.Escape(options["framework"])}[/]");
+        }
         cli.Console.Out.WriteLine();
 
         var steps = new StepRunner(cli);
@@ -94,7 +114,7 @@ public sealed class TemplateDiff(CliServices cli)
 
         if (steps.AnyFailed is false)
         {
-            await SnapshotAsync(steps, "from", source, from, null, name, output, options, cancellationToken);
+            await SnapshotAsync(steps, "from", source, from, null, name, output, fromOptions, cancellationToken);
         }
 
         if (steps.AnyFailed is false)
@@ -129,7 +149,7 @@ public sealed class TemplateDiff(CliServices cli)
         cli.Console.Out.MarkupLine($"  [bold]Patch[/]       {Markup.Escape(patch)}");
         cli.Console.Out.MarkupLine($"  [bold]Files[/]       git -C {Markup.Escape(ProcessSpec.Quote(output))} diff --stat HEAD~1");
         cli.Console.Out.WriteLine();
-        cli.Console.Out.MarkupLine("  [grey]Both have the same name and options. What the template picks at random on every run, such as ports, GUIDs, dates and the seeded accounts' password, differs between them, and so does what bit new adds.[/]");
+        cli.Console.Out.MarkupLine($"  [grey]Both have the same name and options{(frameworkChanges ? ", apart from the .NET version" : "")}. What the template picks at random on every run, such as ports, GUIDs, dates and the seeded accounts' password, differs between them, and so does what bit new adds.[/]");
         cli.Console.Out.MarkupLine($"  [grey]Delete it when you're done: bit remove {Markup.Escape(ProcessSpec.Quote(output))} --yes[/]");
         cli.Console.Out.WriteLine();
 
