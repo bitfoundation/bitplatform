@@ -11,7 +11,7 @@ public static class DiffCommand
     {
         var fromArgument = new Argument<string?>("from") { Description = "The bit Boilerplate version the project comes from. Default: the one its README.md names.", Arity = ArgumentArity.ZeroOrOne };
         var toArgument = new Argument<string?>("to") { Description = $"The version to compare it with. Default: this bit's own, {BuildInfo.Version}.", Arity = ArgumentArity.ZeroOrOne };
-        var projectOption = new Option<string?>("--project") { Description = "The project whose README.md gives the name, version and options. Default: the current folder. It isn't changed." };
+        var projectOption = new Option<string?>("--project") { Description = "The project whose bit.json gives the name, version and options. Default: the current folder. It isn't changed." };
         var nameOption = new Option<string?>("--name") { Description = "The name to create both versions with. Default: the project's own." };
         var outputOption = new Option<string?>("--output", "-o") { Description = "The folder of the git repository both versions are committed to. Default: <temp>/bit-diff/<name>-<from>-<to>." };
         var templatePackageOption = new Option<string?>("--template-package") { Description = "Compare with a local Bit.Boilerplate .nupkg, or the template's folder in a bitplatform checkout." };
@@ -33,7 +33,7 @@ public static class DiffCommand
             var option = new Option<string?>($"--{parameter.Name}")
             {
                 Arity = ArgumentArity.ZeroOrOne,
-                Description = $"{TemplateLabels.For(parameter)}. Default: what the project's README.md records."
+                Description = $"{TemplateLabels.For(parameter)}. Default: what the project's bit.json records."
             };
 
             templateOptions[parameter.Name] = option;

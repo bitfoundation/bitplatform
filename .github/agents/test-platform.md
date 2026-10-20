@@ -483,7 +483,7 @@ for it, so check it by hand, with bit and the template of the commit under test,
 - Run a bit built from the commit with `dotnet` on its `bit.dll`. `dotnet run --project` from a folder whose SDK is
   another one hands its MSBuild variables to every build bit starts, which then fail, and leave hundreds of MSBuild
   processes behind.
-- Done means: the name, version and options come from the project's `README.md`; there are two commits named after
+- Done means: the name, version and options come from the project's `bit.json`; there are two commits named after
   the versions and a patch file in the diff's folder; the project itself is unchanged; and the differences are the
   template's own changes plus only what the template picks at random on every run (ports, GUIDs, dates, the seeded
   accounts' password). An option the older version doesn't have is reported, not passed to it.
@@ -505,7 +505,7 @@ Lead with the verdict, then:
    exit code, the Aspire check inside it as in item 6, and per failure its cause and fix.
 6. **Aspire containers**: the commit or the nuget.org version tested, how soon each run was up, whether the second run
    reused every container, how long after the last run they stopped, and per failure its cause and fix.
-7. **bit diff**: the versions compared, the size of the change, whether the README's values were read, any
+7. **bit diff**: the versions compared, the size of the change, whether `bit.json`'s values were read, any
    difference that is neither an upgrade nor random per run, and per failure its cause and fix.
 8. **Waiting for a CD**: every fix that only the next CD can prove, and for a library fix whether it can be tried
    through `prerelease_packages` before its release.

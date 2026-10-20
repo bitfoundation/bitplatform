@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text.Json;
+using System.Text.RegularExpressions;
 using Bit.Cli.Infrastructure;
 using Bit.Cli.Templates;
 using Spectre.Console;
@@ -31,8 +32,7 @@ public sealed partial class TemplateDiff(CliServices cli)
         NewWorkflow.WriteHeader(cli);
 
         var directory = Path.GetFullPath(request.Project ?? ".", cli.Environment.CurrentDirectory);
-        var readme = Path.Combine(directory, "README.md");
-        var record = File.Exists(readme) ? ReadReadme(File.ReadAllText(readme)) : new ProjectRecord(null, null, new Dictionary<string, string>(), null);
+        var record = ReadProject(directory);
         var name = request.Name ?? (Directory.Exists(directory) ? ProjectContext.FindProjectName(directory) : null) ?? record.Name;
         var from = request.From ?? record.Version;
         var to = request.To ?? (request.TemplatePackage is null ? BuildInfo.Version : TemplateSource.FolderVersion);
@@ -41,7 +41,7 @@ public sealed partial class TemplateDiff(CliServices cli)
             return UsageError($"{directory} isn't a bit Boilerplate project. Run bit diff in the project's folder, or pass --name.");
 
         if (from is null)
-            return UsageError($"{readme} doesn't say which bit Boilerplate version made the project. Pass it: bit diff <from> [to].");
+            return UsageError($"{directory} has no bit.json that says which bit Boilerplate version made the project. Pass it: bit diff <from> [to].");
 
         if (string.Equals(from, to, StringComparison.OrdinalIgnoreCase) && request.TemplatePackage is null)
         {
@@ -180,6 +180,50 @@ public sealed partial class TemplateDiff(CliServices cli)
         }
 
         return (arguments, unknown);
+    }
+
+    public static ProjectRecord ReadProject(string directory)
+    {
+        var bitJson = Path.Combine(directory, "bit.json");
+
+        if (File.Exists(bitJson) && ReadBitJson(File.ReadAllText(bitJson)) is { } record)
+            return record;
+
+        var readme = Path.Combine(directory, "README.md");
+        return File.Exists(readme) ? ReadReadme(File.ReadAllText(readme)) : new ProjectRecord(null, null, new Dictionary<string, string>(), null);
+    }
+
+    public static ProjectRecord? ReadBitJson(string json)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(json, new JsonDocumentOptions { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true });
+            var root = document.RootElement;
+
+            if (root.ValueKind is not JsonValueKind.Object)
+                return null;
+
+            string? Text(string name) => root.TryGetProperty(name, out var value) && value.ValueKind is JsonValueKind.String ? value.GetString() : null;
+
+            var options = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            if (root.TryGetProperty("options", out var values) && values.ValueKind is JsonValueKind.Object)
+            {
+                foreach (var option in values.EnumerateObject())
+                {
+                    if (option.Value.ValueKind is JsonValueKind.String or JsonValueKind.True or JsonValueKind.False)
+                    {
+                        options[option.Name] = option.Value.ValueKind is JsonValueKind.String ? option.Value.GetString()! : option.Value.GetBoolean() ? "true" : "false";
+                    }
+                }
+            }
+
+            return new ProjectRecord(Text("version"), Text("name"), options, null);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
     }
 
     public static ProjectRecord ReadReadme(string readme)
