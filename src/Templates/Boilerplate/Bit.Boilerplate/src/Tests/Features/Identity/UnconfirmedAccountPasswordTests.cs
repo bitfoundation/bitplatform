@@ -13,8 +13,8 @@ namespace Boilerplate.Tests.Features.Identity;
 [TestClass, TestCategory("IntegrationTest")]
 public class UnconfirmedAccountPasswordTests
 {
-    private const string AttackerPassword = "hack123";
-    private const string OwnerPassword = "ali456";
+    private const string AttackerPassword = "hack1234";
+    private const string OwnerPassword = "alice456";
 
     public TestContext TestContext { get; set; } = default!;
 
