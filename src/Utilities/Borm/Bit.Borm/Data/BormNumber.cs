@@ -79,7 +79,7 @@ internal static class BormNumber
             case double or float:
                 var d = Convert.ToDouble(value, CultureInfo.InvariantCulture);
                 if (!double.IsFinite(d) || Math.Abs(d) >= 7.9e28) return d.ToString("R", CultureInfo.InvariantCulture);
-                m = (decimal)d;
+                m = FromDouble(d);
                 // Too small for decimal to hold: keep it apart from a genuine zero.
                 if (m == 0 && d != 0) return d.ToString("R", CultureInfo.InvariantCulture);
                 break;
@@ -90,6 +90,9 @@ internal static class BormNumber
         // Dividing by one with the maximum scale normalises the scale away: 1.0m becomes 1m.
         return (m / 1.0000000000000000000000000000m).ToString(CultureInfo.InvariantCulture);
     }
+
+    public static decimal FromDouble(double value) =>
+        decimal.Parse(value.ToString("G15", CultureInfo.InvariantCulture), NumberStyles.Float, CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Widens a date, time or timestamp to the same OLE automation number the schema stores bounds as,

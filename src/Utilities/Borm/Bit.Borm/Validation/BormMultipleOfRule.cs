@@ -65,7 +65,7 @@ public sealed class BormMultipleOfRule(double factor, string? message = null) : 
 
         if (Math.Abs(asDouble) < DecimalLimit)
         {
-            result = (decimal)asDouble;
+            result = BormNumber.FromDouble(asDouble);
             // Too small for decimal's scale to hold: not something to judge by its rounding to zero.
             return result != 0 || asDouble == 0;
         }
