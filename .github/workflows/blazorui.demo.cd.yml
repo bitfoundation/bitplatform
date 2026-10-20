@@ -85,7 +85,7 @@ jobs:
       run:  sed -i 's/public static readonly bool PrerenderEnabled = false;/public static readonly bool PrerenderEnabled = true;/g' src/BlazorUI/Demo/Client/Bit.BlazorUI.Demo.Client.Core/Services/AppRenderMode.cs
 
     - name: Publish
-      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:Version="${{ vars.APP_VERSION}}" -o server
+      run: dotnet publish src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -p:Version="${{ vars.APP_VERSION}}" -o server
 
     # Server-owned; C:\inetpub keeps its own copies.
     - name: Strip server-owned files from bundle

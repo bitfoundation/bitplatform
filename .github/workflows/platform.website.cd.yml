@@ -48,7 +48,7 @@ jobs:
       run:  cd src && dotnet workload install wasm-tools
       
     - name: Publish
-      run: dotnet publish src/Websites/Platform/src/Bit.Websites.Platform.Server/Bit.Websites.Platform.Server.csproj -c Release -o server -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
+      run: dotnet publish src/Websites/Platform/src/Bit.Websites.Platform.Server/Bit.Websites.Platform.Server.csproj -c Release -p:AspNetCoreHostingModel=OutOfProcess -o server -p:Version="${{ vars.APP_VERSION}}" -p:BitMinifyMapOutputPath="${{ github.workspace }}/bit-minifier.map"
 
     # Every publish renames afresh, so this map reads the stack traces of this release and of no other. It lives in
     # obj, which this checkout throws away - kept here, and never next to the client, which would serve it.
