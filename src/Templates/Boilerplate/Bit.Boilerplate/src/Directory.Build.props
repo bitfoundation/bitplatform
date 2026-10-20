@@ -104,6 +104,10 @@
         <Delete Files="@(ResidualRazorCssFiles)" />
     </Target>
 
+    <ItemGroup Condition=" '$(RunAOTCompilation)' == 'true' OR '$(PublishAot)' == 'true' ">
+        <RuntimeHostConfigurationOption Include="Boilerplate.IsAot" Value="true" Trim="true" />
+    </ItemGroup>
+
     <!-- When the CD sets ShowBuildProvenance, the About page shows the GitHub Actions run, the commit and the attestations. -->
     <ItemGroup Condition="'$(GITHUB_ACTIONS)' == 'true' AND '$(ShowBuildProvenance)' == 'true'">
         <AssemblyMetadata Include="SourceRepositoryUrl" Value="$(GITHUB_SERVER_URL)/$(GITHUB_REPOSITORY)" />
