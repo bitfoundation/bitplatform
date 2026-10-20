@@ -107,6 +107,7 @@ public static partial class MauiProgram
 
         var mauiApp = builder.Build();
 
+        //+:cnd:noEmit
         //#if (framework == 'net11.0')
         foreach (var startupValidator in mauiApp.Services.GetServices<IAsyncStartupValidator>())
         {
@@ -121,6 +122,7 @@ public static partial class MauiProgram
         */
         //#endif
         //#endif
+        //-:cnd:noEmit
 
         mauiApp.Services.GetRequiredService<PubSubService>()
             .Subscribe(ClientAppMessages.PAGE_DATA_CHANGED, async (args) =>
