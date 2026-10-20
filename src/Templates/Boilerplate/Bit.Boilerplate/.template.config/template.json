@@ -25,11 +25,11 @@
             "choices": [
                 {
                     "choice": "net10.0",
-                    "description": ".NET 10, the current long term support release"
+                    "description": ".NET 10 (LTS)"
                 },
                 {
                     "choice": "net11.0",
-                    "description": ".NET 11, which adds the Windows app's kiosk mode"
+                    "description": ".NET 11"
                 }
             ],
             "description": "The .NET version the project targets."
