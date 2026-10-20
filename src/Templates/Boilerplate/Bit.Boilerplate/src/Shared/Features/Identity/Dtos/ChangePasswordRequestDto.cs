@@ -4,7 +4,6 @@ namespace Boilerplate.Shared.Features.Identity.Dtos;
 public partial class ChangePasswordRequestDto
 {
     [Required(ErrorMessage = nameof(AppStrings.RequiredAttribute_ValidationError))]
-    [MinLength(8, ErrorMessage = nameof(AppStrings.MinLengthAttribute_ValidationError))]
     [Display(Name = nameof(AppStrings.OldPassword))]
     public string? OldPassword { get; set; }
 

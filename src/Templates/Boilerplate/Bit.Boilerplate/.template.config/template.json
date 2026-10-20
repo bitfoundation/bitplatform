@@ -904,6 +904,7 @@
                         "src/Tests/Features/Identity/ReturnUrlHardeningTests.cs",
                         "src/Tests/Features/Identity/OneTimeTokenTests.cs",
                         "src/Tests/Features/Identity/UnconfirmedAccountPasswordTests.cs",
+                        "src/Tests/Features/Identity/ChangePasswordTests.cs",
                         "src/Tests/Features/Identity/AccountSelfServiceSecurityTests.cs",
                         "src/Tests/Features/Identity/TrustedSessionTests.cs",
                         "src/Tests/Features/Identity/IdentityEmailDeliveryTests.cs",
