@@ -26,7 +26,7 @@
         <PackageReference Condition=" '$(offlineDb)' == 'true' OR '$(offlineDb)' == ''" Include="Microsoft.EntityFrameworkCore.Sqlite" />
         <!--/-:msbuild-conditional:noEmit -->
         <PackageReference Include="Bit.BlazorUI.Extras" />
-        <PackageReference Include="Bit.Bmage" />
+        <PackageReference Include="Bit.Bmage.Editor" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" />
         <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />

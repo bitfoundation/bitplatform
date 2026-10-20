@@ -12,7 +12,7 @@ public partial class ImageEditorService
 
     public async Task<ImageEditorResult> Edit(string imageUrl, string fileName, string? contentType, double? cropAspectRatio, int minWidth, int minHeight)
     {
-        await lazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.wasm"]);
+        await lazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.Core.wasm", "Bit.Bmage.wasm", "Bit.Bmage.Editor.wasm"]);
 
         return await ShowEditor(imageUrl, fileName, contentType, cropAspectRatio, minWidth, minHeight);
     }
