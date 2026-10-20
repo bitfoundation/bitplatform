@@ -173,7 +173,9 @@ websites - is checked. Every command prints what it checked and exits non-zero o
      from a background loop, and take a `dotnet-gcdump` of a `dotnet` process past a few GB, then kill it so the
      failed-step upload still runs. `dotnet-gcdump` stops at ten million objects, so a heap that looks small next to
      the process is a cut-off count, not native memory. The Boilerplate's test process is known to keep finished test
-     servers alive; look for the open issue before calling such growth new. One lucky pass of the job alone on a
+     servers alive; look for the open issue before calling such growth new. When the dump can't name what grows, run
+     the UI tests and the rest in two `dotnet test` calls on a branch of your own: both halves passing while the
+     whole doesn't is growth that adds up over the run, not one test's. One lucky pass of the job alone on a
      runner proves nothing; compare a step's duration with an earlier run's instead.
    - Afterwards remove the containers, volumes and leftover `dcp` processes the repro left, never another
      project's containers.
@@ -274,7 +276,8 @@ Run `e2e` in the background. Its stages run from the suite's build output, so do
 change the branch it was built from, until it is done. It builds once, gives each stage its own time limit (`-TimeoutMinutes`, 120 by
 default), and keeps each stage's console log and TRX as `TestResults\<stage>-<time>.log` and `.trx` - the suite
 itself writes every stage to the same `TestResults.trx`, and a re-run must not replace the full run's evidence. Look in every few minutes; a test process that sits near 0% CPU
-for long is hung, not slow.
+for long is hung, not slow. Several stages go to `-Stage` as a list, which `pwsh -File` hands over as one string the
+parameter refuses: call the helper through `pwsh -Command` for that.
 
 The suite builds the template's own client code. When the template already uses library changes that nuget.org's
 build of their version doesn't have, it builds only with the packages CI and CD took with `prerelease_packages`: run
@@ -329,7 +332,9 @@ Triage every failure:
    ```
 
 3. Name it: a test bug, a product bug, the infrastructure (the mac, the emulator, an outside service's outage), or
-   flaky. Fix the first two at their cause, as in step 1.
+   flaky. Fix the first two at their cause, as in step 1. In the Android and Windows stages, a request the app makes
+   through its own HttpClient runs in .NET, not in the WebView, so it never shows in the page's network events: a
+   test that waits for one there times out although the request went through, and has to wait on the page instead.
 
 A download size that grew is broken down by file before it is called growth. The published `.br` of each file sits
 next to it in `C:\inetpub\<site>\wwwroot`, and that is what has to arrive: a response larger than it, or chunked with
