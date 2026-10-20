@@ -48,7 +48,7 @@ public class RemoveTests
 
         Assert.IsFalse(Directory.Exists(folder));
         Assert.IsTrue(Directory.Exists(host.WorkingDirectory));
-        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName is "dotnet" && string.Join(' ', c.Arguments) is "build-server shutdown"));
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "dotnet" && c.Arguments.FirstOrDefault() is "build-server"));
         StringAssert.Contains(host.FlatOutput, "Removed Contoso");
     }
 
@@ -129,6 +129,83 @@ public class RemoveTests
                 terminal.Kill();
                 terminal.WaitForExit();
             }
+        }
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_StopOnlyTheBuildProcessThatHoldsAFile()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var buildProcess = Path.Combine(Directory.CreateDirectory(Path.Combine(host.WorkingDirectory, "sdk")).FullName, "dotnet.exe");
+        File.Copy(Path.Combine(Environment.SystemDirectory, "cmd.exe"), buildProcess);
+
+        using var holder = HoldFile(buildProcess, Path.Combine(folder, "src", "Client", "Contoso.Client.Core", "obj", "held.txt"));
+
+        try
+        {
+            Assert.AreEqual(0, await host.RunAsync("remove", folder, "--yes"), host.Output);
+
+            Assert.IsFalse(Directory.Exists(folder));
+            Assert.IsTrue(holder.WaitForExit(TimeSpan.FromSeconds(10)));
+            StringAssert.Contains(host.FlatOutput, $"after stopping dotnet ({holder.Id})");
+        }
+        finally
+        {
+            Stop(holder);
+        }
+    }
+
+    [TestMethod]
+    public async Task Remove_Should_NameTheAppThatHoldsAFileAndLeaveItRunning()
+    {
+        if (OperatingSystem.IsWindows() is false)
+            return;
+
+        using var host = new TestHost(HostOs.Windows);
+        var folder = CreateProject(host);
+        host.Runner.On("git", "rev-parse", 128, "fatal: not a git repository");
+        var held = Path.Combine(folder, "src", "Client", "Contoso.Client.Core", "held.txt");
+
+        using var holder = HoldFile(Path.Combine(Environment.SystemDirectory, "cmd.exe"), held);
+
+        try
+        {
+            Assert.AreEqual(CliApp.ExitFailed, await host.RunAsync("remove", folder, "--yes"));
+
+            Assert.IsTrue(File.Exists(held));
+            Assert.IsFalse(holder.HasExited);
+            StringAssert.Contains(host.FlatOutput, $"In use by cmd ({holder.Id})");
+        }
+        finally
+        {
+            Stop(holder);
+        }
+    }
+
+    private static Process HoldFile(string shell, string file)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+        var process = Process.Start(new ProcessStartInfo(shell, $"/c pause > \"{file}\"") { UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, CreateNoWindow = true })!;
+
+        for (var i = 0; i < 50 && File.Exists(file) is false; i++)
+        {
+            Thread.Sleep(100);
+        }
+
+        return process;
+    }
+
+    private static void Stop(Process process)
+    {
+        if (process.HasExited is false)
+        {
+            process.Kill();
+            process.WaitForExit();
         }
     }
 

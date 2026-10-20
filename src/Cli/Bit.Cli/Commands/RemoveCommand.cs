@@ -14,7 +14,7 @@ public static class RemoveCommand
         var pathArgument = new Argument<string?>("path") { Description = "The project folder. Default: the current folder.", Arity = ArgumentArity.ZeroOrOne };
         var yesOption = new Option<bool>("--yes", "-y") { Description = "Delete it without asking." };
 
-        var command = new Command("remove", "Delete a bit Boilerplate project folder for good, after stopping the apps and build servers that keep its files in use.")
+        var command = new Command("remove", "Delete a bit Boilerplate project folder for good, after stopping the apps that keep its files in use.")
         {
             pathArgument,
             yesOption
@@ -67,6 +67,18 @@ public static class RemoveCommand
             var result = await steps.RunAsync("remove", "Deleting the project folder", (_, token) => Task.Run(() =>
             {
                 var (failures, emptyFoldersLeft) = FolderRemover.Delete(folder);
+                var freed = FreedFiles.None;
+
+                if (failures.Count > 0)
+                {
+                    freed = ProjectProcesses.Free(cli, failures.Select(f => f.Path));
+
+                    if (freed.Stopped.Count > 0)
+                    {
+                        (failures, emptyFoldersLeft) = FolderRemover.Delete(folder);
+                    }
+                }
+
                 onlyEmptyFoldersLeft = emptyFoldersLeft;
 
                 foreach (var failure in failures)
@@ -78,12 +90,15 @@ public static class RemoveCommand
                 {
                     var shown = string.Join('\n', failures.Take(ShownFailures).Select(f => f.Path));
                     var more = failures.Count > ShownFailures ? $"\nand {failures.Count - ShownFailures} more" : "";
-                    return StepResult.Failed("Couldn't delete everything", $"{failures.Count} item{(failures.Count == 1 ? "" : "s")} left", hint: shown + more);
+                    var inUseBy = freed.InUseBy is { } holders ? $"\n{holders}" : "";
+                    return StepResult.Failed("Couldn't delete everything", $"{failures.Count} item{(failures.Count == 1 ? "" : "s")} left", hint: shown + more + inUseBy);
                 }
+
+                var after = freed.Stopped.Count > 0 ? $"after stopping {string.Join(", ", freed.Stopped)}" : null;
 
                 return emptyFoldersLeft
                     ? StepResult.Warning("Deleted everything in the folder", "a terminal is still in it")
-                    : StepResult.Succeeded("Deleted the project folder");
+                    : StepResult.Succeeded("Deleted the project folder", after);
             }, token), cancellationToken);
 
             cli.Console.Out.WriteLine();

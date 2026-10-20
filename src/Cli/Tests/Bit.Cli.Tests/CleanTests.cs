@@ -9,19 +9,19 @@ namespace Bit.Cli.Tests;
 public class CleanTests
 {
     [TestMethod]
-    public async Task Clean_Should_StopTheBuildServersThenRunTheProjectsScript()
+    public async Task Clean_Should_RunTheProjectsScriptAndLeaveTheBuildServersAlone()
     {
         using var windows = new TestHost(HostOs.Windows);
         var windowsProject = CreateProject(windows, "Clean.bat");
 
         Assert.AreEqual(0, await windows.RunAsync("clean", windowsProject), windows.Output);
-        AssertRanInOrder(windows, windowsProject, "cmd.exe", "/c Clean.bat");
+        AssertRanOnlyTheScript(windows, windowsProject, "cmd.exe", "/c Clean.bat");
 
         using var linux = new TestHost(HostOs.Linux);
         var linuxProject = CreateProject(linux, "Clean.sh");
 
         Assert.AreEqual(0, await linux.RunAsync("clean", linuxProject), linux.Output);
-        AssertRanInOrder(linux, linuxProject, "bash", "Clean.sh");
+        AssertRanOnlyTheScript(linux, linuxProject, "bash", "Clean.sh");
     }
 
     [TestMethod]
@@ -93,14 +93,13 @@ public class CleanTests
         Assert.IsFalse(ProjectProcesses.IsUnder("/home/me/Shopping/bin/Shop", "/home/me/Shop"));
     }
 
-    private static void AssertRanInOrder(TestHost host, string folder, string fileName, string arguments)
+    private static void AssertRanOnlyTheScript(TestHost host, string folder, string fileName, string arguments)
     {
-        var shutdown = host.Runner.Calls.FindIndex(c => c.FileName is "dotnet" && string.Join(' ', c.Arguments) is "build-server shutdown");
-        var script = host.Runner.Calls.FindIndex(c => c.FileName == fileName && string.Join(' ', c.Arguments) == arguments);
+        var call = host.Runner.Calls.Single();
 
-        Assert.IsTrue(shutdown >= 0 && script > shutdown, host.Output);
-        Assert.AreEqual(folder, host.Runner.Calls[script].WorkingDirectory);
-        Assert.AreEqual(script + 1, host.Runner.Calls.Count);
+        Assert.AreEqual(fileName, call.FileName, host.Output);
+        Assert.AreEqual(arguments, string.Join(' ', call.Arguments));
+        Assert.AreEqual(folder, call.WorkingDirectory);
     }
 
     private static string CreateProject(TestHost host, string script)

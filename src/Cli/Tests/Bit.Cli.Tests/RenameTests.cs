@@ -49,7 +49,7 @@ public class RenameTests
         CollectionAssert.AreEqual(png, File.ReadAllBytes(Path.Combine(api, "wwwroot", "Contoso.Shop.png")));
         CollectionAssert.AreEqual(blob, File.ReadAllBytes(Path.Combine(api, "Contoso.Shop.dat")));
 
-        Assert.IsTrue(host.Runner.Calls.Any(c => c.FileName is "dotnet" && string.Join(' ', c.Arguments) is "build-server shutdown"));
+        Assert.IsFalse(host.Runner.Calls.Any(c => c.FileName is "dotnet" && c.Arguments.FirstOrDefault() is "build-server"));
         StringAssert.Contains(host.FlatOutput, "Old is now Contoso.Shop");
         StringAssert.Contains(host.FlatOutput, "git diff");
         StringAssert.Contains(host.FlatOutput, "bit setup");

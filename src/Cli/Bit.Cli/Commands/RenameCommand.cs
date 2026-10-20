@@ -89,11 +89,24 @@ public static class RenameCommand
             await steps.RunAsync("rename-clean", "Deleting bin, obj and .vs folders", (_, token) => Task.Run(() =>
             {
                 var (deleted, failures) = ProjectRenamer.DeleteBuildFolders(folder);
+                var freed = FreedFiles.None;
+
+                if (failures.Count > 0)
+                {
+                    freed = ProjectProcesses.Free(cli, failures.Select(f => f.Path));
+
+                    if (freed.Stopped.Count > 0)
+                    {
+                        (var deletedAfter, failures) = ProjectRenamer.DeleteBuildFolders(folder);
+                        deleted += deletedAfter;
+                    }
+                }
+
                 Log(cli, failures);
 
                 return failures.Count == 0
-                    ? StepResult.Succeeded("Deleted bin, obj and .vs folders", Count(deleted, "folder"))
-                    : StepResult.Warning("Couldn't delete every bin, obj and .vs folder", $"{Count(failures.Count, "folder")} left", hint: Describe(failures[0]));
+                    ? StepResult.Succeeded("Deleted bin, obj and .vs folders", freed.Stopped.Count > 0 ? $"{Count(deleted, "folder")}, after stopping {string.Join(", ", freed.Stopped)}" : Count(deleted, "folder"))
+                    : StepResult.Warning("Couldn't delete every bin, obj and .vs folder", $"{Count(failures.Count, "folder")} left", hint: Hint(failures, freed));
             }, token), cancellationToken);
 
             var contents = await steps.RunAsync("rename-contents", "Replacing the name in files", (_, token) => Task.Run(() =>
@@ -104,7 +117,7 @@ public static class RenameCommand
 
                 return failures.Count == 0
                     ? StepResult.Succeeded("Replaced the name in files", Count(changed, "file"))
-                    : StepResult.Failed("Couldn't replace the name in every file", $"{Count(failures.Count, "file")} failed", hint: Describe(failures[0]));
+                    : StepResult.Failed("Couldn't replace the name in every file", $"{Count(failures.Count, "file")} failed", hint: Hint(failures, ProjectProcesses.Free(cli, failures.Select(f => f.Path), stopBuildProcesses: false)));
             }, token), cancellationToken);
 
             if (contents.Status is StepStatus.Failed)
@@ -122,7 +135,7 @@ public static class RenameCommand
 
                     return failures.Count == 0
                         ? StepResult.Succeeded("Renamed files and folders", $"{Count(files, "file")}, {Count(folders, "folder")}")
-                        : StepResult.Failed("Couldn't rename every file and folder", $"{Count(failures.Count, "item")} failed", hint: Describe(failures[0]));
+                        : StepResult.Failed("Couldn't rename every file and folder", $"{Count(failures.Count, "item")} failed", hint: Hint(failures, ProjectProcesses.Free(cli, failures.Select(f => f.Path), stopBuildProcesses: false)));
                 }, token), cancellationToken);
             }
 
@@ -155,6 +168,8 @@ public static class RenameCommand
     private static string Count(int count, string noun) => $"{count} {noun}{(count == 1 ? "" : "s")}";
 
     private static string Describe(PathFailure failure) => $"{failure.Path}: {failure.Reason}";
+
+    private static string Hint(IReadOnlyList<PathFailure> failures, FreedFiles freed) => freed.InUseBy is { } holders ? $"{Describe(failures[0])}\n{holders}" : Describe(failures[0]);
 
     private static void Log(CliServices cli, IReadOnlyList<PathFailure> failures)
     {

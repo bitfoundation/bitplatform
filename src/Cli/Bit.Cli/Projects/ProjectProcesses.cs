@@ -4,27 +4,19 @@ using Bit.Cli.Infrastructure;
 
 namespace Bit.Cli.Projects;
 
+public sealed record FreedFiles(IReadOnlyList<string> Stopped, IReadOnlyList<string> Holders)
+{
+    public static FreedFiles None { get; } = new([], []);
+
+    public string? InUseBy => Holders.Count == 0 ? null : $"In use by {string.Join(", ", Holders)}";
+}
+
 public static class ProjectProcesses
 {
+    private static readonly HashSet<string> buildProcesses = new(["dotnet", "MSBuild", "VBCSCompiler"], StringComparer.OrdinalIgnoreCase);
+
     public static async Task StopAsync(CliServices cli, StepRunner steps, string folder, CancellationToken cancellationToken)
     {
-        await steps.RunAsync("build-server-shutdown", "Stopping the .NET build servers", async (progress, token) =>
-        {
-            var result = await cli.Runner.RunAsync(new ProcessSpec
-            {
-                FileName = "dotnet",
-                Arguments = ["build-server", "shutdown"],
-                WorkingDirectory = folder,
-                OnOutputLine = progress,
-                Timeout = TimeSpan.FromMinutes(2),
-                Environment = new Dictionary<string, string?> { ["DOTNET_NOLOGO"] = "1" }
-            }, token);
-
-            return result.Succeeded
-                ? StepResult.Succeeded("Stopped the .NET build servers")
-                : StepResult.Warning("Couldn't stop the .NET build servers", result.NotFound ? "dotnet wasn't found" : result.TimedOut ? "it took too long" : $"exit code {result.ExitCode}");
-        }, cancellationToken);
-
         if (cli.Environment.IsWindows is false)
             return;
 
@@ -40,6 +32,40 @@ public static class ProjectProcesses
                 steps.Add("stop-process", result);
             }
         }
+    }
+
+    public static FreedFiles Free(CliServices cli, IEnumerable<string> paths, bool stopBuildProcesses = true)
+    {
+        if (cli.Environment.IsWindows is false)
+            return FreedFiles.None;
+
+        var stopped = new List<string>();
+        var holders = new List<string>();
+        IReadOnlyList<int> ids = OperatingSystem.IsWindows() ? FileHolders.Find(paths) : [];
+
+        foreach (var id in ids)
+        {
+            if (id == Environment.ProcessId || TryGetProcess(id) is not { } process)
+                continue;
+
+            using (process)
+            {
+                if (TryGetName(process) is not { } name)
+                    continue;
+
+                if (stopBuildProcesses && buildProcesses.Contains(name) && Stop(process, name, id) is { Status: StepStatus.Succeeded })
+                {
+                    cli.Log.Write($"stop {name} ({id}): it held the project's files");
+                    stopped.Add($"{name} ({id})");
+                }
+                else
+                {
+                    holders.Add($"{name} ({id})");
+                }
+            }
+        }
+
+        return new(stopped, holders);
     }
 
     public static bool IsUnder(string path, string folder)
@@ -83,6 +109,18 @@ public static class ProjectProcesses
         catch (Exception exp) when (exp is Win32Exception or InvalidOperationException or NotSupportedException or UnauthorizedAccessException or IOException)
         {
             return false;
+        }
+    }
+
+    private static Process? TryGetProcess(int id)
+    {
+        try
+        {
+            return Process.GetProcessById(id);
+        }
+        catch (Exception exp) when (exp is ArgumentException or InvalidOperationException)
+        {
+            return null;
         }
     }
 
