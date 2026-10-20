@@ -6,12 +6,12 @@ namespace Boilerplate.Server.Api.Features.Identity.Configurations;
 
 public partial class UserConfiguration : IEntityTypeConfiguration<User>
 {
-    private static readonly string seedPasswordHash = HashSeedPassword("12345678");
+    private static readonly string seedPasswordHash = HashSeedPassword("12345678", Guid.Parse("AC87AA5B-4B37-4E52-8468-2D5DF24AF256"));
 
-    /// <summary>Identity's V3 format with a fixed salt, so the model stays the same on every run.</summary>
-    private static string HashSeedPassword(string password)
+    /// <summary>Identity's V3 format, salted with the project's own GUID, so the model stays the same on every run.</summary>
+    private static string HashSeedPassword(string password, Guid projectId)
     {
-        var salt = SHA256.HashData(Encoding.UTF8.GetBytes(password))[..16];
+        var salt = projectId.ToByteArray();
         var subkey = Rfc2898DeriveBytes.Pbkdf2(password, salt, 100_000, HashAlgorithmName.SHA512, 32);
         var hash = new byte[13 + salt.Length + subkey.Length];
 

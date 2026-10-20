@@ -631,6 +631,18 @@ public class ProjectStepTests
     }
 
     [TestMethod]
+    public void CSharpDevKitAndMaui_Should_StayRecommendedButNotBeInstalled()
+    {
+        CollectionAssert.AreEqual(new[] { "ms-dotnettools.csharp", "Anthropic.claude-code" },
+            ProjectSteps.ExtensionsToInstall(["ms-dotnettools.csdevkit", "Anthropic.claude-code", "ms-dotnettools.dotnet-maui"]).ToArray());
+
+        CollectionAssert.AreEqual(new[] { "Anthropic.claude-code", "ms-dotnettools.csharp" },
+            ProjectSteps.ExtensionsToInstall(["Anthropic.claude-code", "ms-dotnettools.csharp", "ms-dotnettools.csdevkit"]).ToArray());
+
+        CollectionAssert.AreEqual(new[] { "Anthropic.claude-code" }, ProjectSteps.ExtensionsToInstall(["Anthropic.claude-code"]).ToArray());
+    }
+
+    [TestMethod]
     public async Task ExtensionsVsCodeBuildsIn_Should_CountAsInstalled()
     {
         using var host = new TestHost(HostOs.Linux);
