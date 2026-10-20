@@ -179,7 +179,7 @@ Bit.BlazorUI: _content/Bit.BlazorUI.Legacy/pdf.js/ -> left out (2 files): nothin
                             <tr>
                                 <th scope="row"><code>BitBlazorUITrimIcons</code></th>
                                 <td><code>false</code>, whatever the others say</td>
-                                <td><code>bit.blazorui.icons.css</code>, down to the glyphs the code names.</td>
+                                <td><code>bit.blazorui.icons.css</code> and its font, down to the glyphs the code names. The font is cut down through <code>npx</code>, so the publish needs Node.js.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -592,6 +592,10 @@ var lazy = BitBlazorUIScripts.LazyScriptsEnabled;</CodeBox>
                             <tr>
                                 <th scope="row"><code>BITBLAZORUI005</code></th>
                                 <td>The manifest was rewritten, but the service worker script does not carry the manifest's version (<code>/* Manifest version: ... */</code>, which the SDK writes into a <code>&lt;ServiceWorker&gt;</code> item's published content), so an installed app is not told to update.</td>
+                            </tr>
+                            <tr>
+                                <th scope="row"><code>BITBLAZORUI006</code></th>
+                                <td>The icon font could not be cut down to the icons kept (no Node.js, or <code>npx</code> could not download <code>@@web-alchemy/fonttools</code>), so it is published whole.</td>
                             </tr>
                         </tbody>
                     </table>

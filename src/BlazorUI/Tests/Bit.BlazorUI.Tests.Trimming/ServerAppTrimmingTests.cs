@@ -1,4 +1,6 @@
-﻿using Bit.BlazorUI.Tests.Trimming.Infrastructure;
+﻿using System.Text;
+using System.Text.Json;
+using Bit.BlazorUI.Tests.Trimming.Infrastructure;
 
 namespace Bit.BlazorUI.Tests.Trimming;
 
@@ -95,6 +97,11 @@ public sealed class ServerAppTrimmingTests
         StringAssert.Contains(css, ".bit-icon--Add::before");
         Assert.IsFalse(css.Contains(".bit-icon--Delete::before"), "A glyph nothing names was kept.");
         StringAssert.Contains(css, "@font-face");
+
+        var font = File.ReadAllBytes(Trimmed.GetAssetPath(Icons, "fonts/FabMDL2.4.66.woff2"));
+        var fullFont = new FileInfo(Path.Combine(Publisher.Root, "Bit.BlazorUI.Icons", "wwwroot", "fonts", "FabMDL2.4.66.woff2")).Length;
+        Assert.AreEqual("wOF2", Encoding.ASCII.GetString(font, 0, 4), "The published icon font is not a WOFF2.");
+        Assert.IsLessThan(fullFont / 10, font.LongLength, $"The published icon font is {font.Length:N0} of the full {fullFont:N0} bytes: it was not cut down to the icons kept.");
 
         // A name the code does not carry - read out of data - is kept by naming it in the csproj.
         var named = Publisher.Publish(Publisher.Fixture, "BitBlazorUITrimAssets=true", "BitBlazorUITrimIcons=true", "FixtureIcons=Delete");
@@ -244,6 +251,13 @@ public sealed class ServerAppTrimmingTests
             return content;
         }");
         Assert.IsFalse(add is "none" or "normal" or "" or "\"\"", $"The Add glyph the code names is not drawn: {add}");
+
+        var fontStatus = await page.EvaluateAsync<string[]>(@"async glyph => {
+            try { await document.fonts.load('16px ""Fabric MDL2""', glyph); } catch { }
+            return [...document.fonts].filter(f => f.family.replace(/""/g, '') === 'Fabric MDL2').map(f => f.status);
+        }", JsonSerializer.Deserialize<string>(add));
+        CollectionAssert.Contains(fontStatus, "loaded", $"The icon font did not load in {engine}: {string.Join(", ", fontStatus)}");
+        CollectionAssert.DoesNotContain(fontStatus, "error", $"The icon font failed to load in {engine}.");
 
         session.AssertNoErrors($"The trimmed server app in {engine}");
     }

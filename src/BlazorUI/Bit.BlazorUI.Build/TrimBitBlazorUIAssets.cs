@@ -131,6 +131,7 @@ public sealed class TrimBitBlazorUIAssets : Task
     private const string UnresolvedExternalCode = "BITBLAZORUI001";
     private const string NothingScannedCode = "BITBLAZORUI002";
     private const string IconsWithoutPackageCode = "BITBLAZORUI003";
+    private const string IconFontNotSubsetCode = "BITBLAZORUI006";
 
     private static readonly string[] ScanModes = ["None", "TypeReferences", "TypeNames"];
 
@@ -323,7 +324,11 @@ public sealed class TrimBitBlazorUIAssets : Task
             if (TrimScriptModules) outputs.AddRange(AssetComposer.ComposeBoot(package, selection, OutputDirectory));
             if (TrimStyles) outputs.AddRange(AssetComposer.ComposeStyles(package, selection, OutputDirectory));
         }
-        foreach (var (package, set, glyphs) in iconSets) outputs.Add(AssetComposer.ComposeIcons(package, set, glyphs, selection, OutputDirectory));
+        foreach (var (package, set, glyphs) in iconSets)
+        {
+            outputs.Add(AssetComposer.ComposeIcons(package, set, glyphs, selection, OutputDirectory));
+            if (SubsetIconFont(package, set, glyphs, selection) is { } font) outputs.Add(font);
+        }
 
         Report(packages, selection, outputs);
 
@@ -393,6 +398,28 @@ public sealed class TrimBitBlazorUIAssets : Task
         }
 
         return removed;
+    }
+
+    private AssetComposer.Output? SubsetIconFont(PackageAssets package, IconSet set, AssetComposer.IconGlyphs glyphs, AssetSelection selection)
+    {
+        if (set.Font is null) return null;
+
+        var suffix = "/" + set.Font;
+        var font = StaticWebAssets.FirstOrDefault(a => string.Equals(a.GetMetadata("SourceId"), package.PackageId, StringComparison.OrdinalIgnoreCase)
+            && string.Equals(a.GetMetadata("AssetRole"), "Primary", StringComparison.OrdinalIgnoreCase)
+            && Normalize(a.GetMetadata("FullPath")).EndsWith(suffix, StringComparison.OrdinalIgnoreCase));
+        if (font is null) return null;
+
+        var output = IconFontSubsetter.Subset(package, set, glyphs, selection, font.GetMetadata("FullPath"), OutputDirectory, out var error);
+
+        if (error is not null)
+        {
+            Log.LogWarning(null, IconFontNotSubsetCode, null, null, 0, 0, 0, 0,
+                "Bit.BlazorUI: {0}/{1} is published whole, since it could not be cut down to the icons kept ({2}). It takes Node.js and npx, which download {3}.",
+                package.PackageId, set.Font, error, IconFontSubsetter.Tool);
+        }
+
+        return output;
     }
 
     private bool StandDown(string? why, MessageImportance importance = MessageImportance.Normal)

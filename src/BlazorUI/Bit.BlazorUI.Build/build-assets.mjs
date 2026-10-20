@@ -897,7 +897,10 @@ function buildIconSet(sass, compileOptions, bundle, outDir) {
     const file = `styles/${name}.icons.json`;
     writeJson(path.join(outDir, file), { prefix, suffix, glyphs: Object.fromEntries(glyphs.map(g => [g[1], g[0]])) });
 
-    return { bundle: bundle.output, file, classPrefix: prefixClass, count: glyphs.length };
+    const fonts = [...prefix.matchAll(/url\((['"]?)([^'")?#]+\.woff2)\1\)/g)].map(m => path.posix.normalize(path.posix.join(path.posix.dirname(bundle.output), m[2])));
+    const font = fonts.length === 1 ? { font: fonts[0] } : {};
+
+    return { bundle: bundle.output, file, classPrefix: prefixClass, ...font, count: glyphs.length };
 }
 
 function escapeRegExp(text) {

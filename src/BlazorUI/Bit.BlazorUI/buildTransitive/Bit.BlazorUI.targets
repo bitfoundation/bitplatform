@@ -62,7 +62,8 @@
                                  of the app's own that links one. They are never downloaded unless asked for, so this
                                  is the size of the publish, not of a page. Default: BitBlazorUITrimAssets.
       BitBlazorUITrimIcons       Trim bit.blazorui.icons.css (Bit.BlazorUI.Icons) down to the glyphs whose names appear
-                                 in the app's code. Default: false, whatever the switches above say - an app that reads
+                                 in the app's code, and its font with them through npx (Node.js) and @web-alchemy/fonttools.
+                                 Default: false, whatever the switches above say - an app that reads
                                  icon names out of data (a menu from a database, a user's choice) names them nowhere in
                                  its code. Turn it on where every icon is named in code, and list the others with
                                  <BitBlazorUIIcon>.
@@ -133,8 +134,9 @@
     uses a function of another package that no package of the app exports - the packages are of different versions),
     BITBLAZORUI002 (the scan read no assembly referencing the packages, so it kept everything), BITBLAZORUI003
     (<BitBlazorUIIcon> items without Bit.BlazorUI.Icons), BITBLAZORUI004 (a service worker assets manifest the trimming
-    could not read, published as it was) and BITBLAZORUI005 (a service worker script that does not carry its manifest's
-    version, so an installed app is not told to update - see BitBlazorUIUpdateServiceWorker).
+    could not read, published as it was), BITBLAZORUI005 (a service worker script that does not carry its manifest's
+    version, so an installed app is not told to update - see BitBlazorUIUpdateServiceWorker) and BITBLAZORUI006 (an icon
+    font npx could not cut down, published whole).
 
     Where these go. On the project that publishes the app - the Blazor WebAssembly project, or the server project of a
     Blazor Web App - and not in a shared Directory.Build.props: from there they would also reach the Razor class
