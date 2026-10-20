@@ -9,7 +9,7 @@ public static class DiffCommand
 {
     public static Command Create(Func<CliServices> services)
     {
-        var fromArgument = new Argument<string?>("from") { Description = "The bit Boilerplate version the project comes from. Default: the one its README.md names.", Arity = ArgumentArity.ZeroOrOne };
+        var fromArgument = new Argument<string?>("from") { Description = "The bit Boilerplate version the project comes from. Default: the one the project's bit.json records.", Arity = ArgumentArity.ZeroOrOne };
         var toArgument = new Argument<string?>("to") { Description = $"The version to compare it with. Default: this bit's own, {BuildInfo.Version}.", Arity = ArgumentArity.ZeroOrOne };
         var projectOption = new Option<string?>("--project") { Description = "The project whose bit.json gives the name, version and options. Default: the current folder. It isn't changed." };
         var nameOption = new Option<string?>("--name") { Description = "The name to create both versions with. Default: the project's own." };
