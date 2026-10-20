@@ -13,6 +13,7 @@
 
 <section>
     <BitStack Alignment="BitAlignment.Center" Gap="2rem" Class="root-stack">
+        @*#if (framework == 'net11.0')*@
         @if (IsKiosk)
         {
             <BitMessage Multiline Color="BitColor.Warning" Title="@Localizer[nameof(AppStrings.KioskTitle)]">
@@ -26,6 +27,7 @@
                 </Actions>
             </BitMessage>
         }
+        @*#endif*@
 
         <BitText Typography="BitTypography.H4" Align="BitTextAlign.Center">
             @Localizer[nameof(AppStrings.HomePanelTitle)]

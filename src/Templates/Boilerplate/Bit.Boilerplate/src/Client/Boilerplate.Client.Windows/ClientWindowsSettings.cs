@@ -1,15 +1,19 @@
 //+:cnd:noEmit
 using Boilerplate.Client.Core;
 using Microsoft.Extensions.Options;
+//#if (framework == 'net11.0')
 using Boilerplate.Client.Windows.Infrastructure.Services;
+//#endif
 
 namespace Boilerplate.Client.Windows;
 
 public class ClientWindowsSettings : ClientCoreSettings
 {
     public WindowsUpdateOptions? WindowsUpdate { get; set; }
+    //#if (framework == 'net11.0')
 
     public KioskOptions? Kiosk { get; set; }
+    //#endif
 }
 
 [OptionsValidator]
@@ -23,6 +27,7 @@ public partial class WindowsUpdateOptions
 
     public string? FilesUrl { get; set; }
 }
+//#if (framework == 'net11.0')
 
 /// <summary>
 /// Options of the .NET 11 <see cref="System.Windows.Forms.KioskModeManager"/> and of <see cref="WindowsKioskGuard"/>.
@@ -41,3 +46,4 @@ public partial class KioskOptions
     /// </summary>
     public bool PreventSleep { get; set; }
 }
+//#endif

@@ -23,6 +23,14 @@
         <NoWarn>$(NoWarn);ClassWithoutModifierAnalyzer</NoWarn>
     </PropertyGroup>
 
+    <!--/+:msbuild-conditional:noEmit -->
+    <PropertyGroup Condition=" '$(framework)' == 'net10.0' ">
+        <!--/-:msbuild-conditional:noEmit -->
+        <UseInterpreter Condition="'$(Environment)' == 'Development'">True</UseInterpreter>
+        <!--/+:msbuild-conditional:noEmit -->
+    </PropertyGroup>
+    <!--/-:msbuild-conditional:noEmit -->
+
     <PropertyGroup>
         <CompressionEnabled>false</CompressionEnabled>
         <!-- Enabling compression generates `.br` and `.gz` files for static assets.
@@ -57,13 +65,23 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-android')) and '$(Environment)' != 'Development'">
         <AndroidLinkTool>r8</AndroidLinkTool>
         <AndroidUseAapt2>True</AndroidUseAapt2>
+        <!--/+:msbuild-conditional:noEmit -->
+        <UseMonoRuntime Condition=" '$(framework)' == 'net10.0' ">false</UseMonoRuntime>
+        <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' == 'Development'">
+        <!--/+:msbuild-conditional:noEmit -->
+        <EnableSGenConc Condition=" '$(framework)' == 'net10.0' ">True</EnableSGenConc>
+        <!--/-:msbuild-conditional:noEmit -->
         <CodesignEntitlements>Platforms/iOS/Entitlements.Development.plist</CodesignEntitlements>
     </PropertyGroup>
 
     <PropertyGroup Condition="$(TargetFramework.Contains('-ios')) and '$(Environment)' != 'Development'">
+        <!--/+:msbuild-conditional:noEmit -->
+        <EnableSGenConc Condition=" '$(framework)' == 'net10.0' ">True</EnableSGenConc>
+        <MtouchInterpreter Condition=" '$(framework)' == 'net10.0' ">-all</MtouchInterpreter>
+        <!--/-:msbuild-conditional:noEmit -->
         <CodesignEntitlements>Platforms/iOS/Entitlements.Production.plist</CodesignEntitlements>
     </PropertyGroup>
 
@@ -76,6 +94,9 @@
     <PropertyGroup Condition="$(TargetFramework.Contains('-maccatalyst')) and '$(Environment)' != 'Development'">
         <CodesignEntitlements>Platforms/MacCatalyst/Entitlements.Production.plist</CodesignEntitlements>
         <UseHardenedRuntime>true</UseHardenedRuntime>
+        <!--/+:msbuild-conditional:noEmit -->
+        <MtouchInterpreter Condition=" '$(framework)' == 'net10.0' ">-all</MtouchInterpreter>
+        <!--/-:msbuild-conditional:noEmit -->
     </PropertyGroup>
 
     <ItemGroup Condition="$(TargetFramework.Contains('-android'))">

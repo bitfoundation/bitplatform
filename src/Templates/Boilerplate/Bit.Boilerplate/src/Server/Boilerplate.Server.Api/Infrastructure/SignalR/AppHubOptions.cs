@@ -8,6 +8,7 @@ public static class AppHubOptions
     public static void Configure(HttpConnectionDispatcherOptions options)
     {
         options.AllowStatefulReconnects = true;
+        //#if (framework == 'net11.0')
 
         options.EnableAuthenticationRefresh = true;
         options.CloseOnAuthenticationExpiration = true;
@@ -23,5 +24,6 @@ public static class AppHubOptions
             return Task.FromResult(previous.GetUserId() == refreshed.GetUserId() &&
                                    previous.GetSessionId() == refreshed.GetSessionId());
         };
+        //#endif
     }
 }
