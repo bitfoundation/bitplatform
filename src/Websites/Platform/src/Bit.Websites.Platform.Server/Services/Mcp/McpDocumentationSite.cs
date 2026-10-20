@@ -134,6 +134,17 @@ internal sealed partial class McpDocumentationSite : IDisposable
         // way, since no https port is configured and none is bound.
         // The content root of an app run out of its build output is the working directory, as with dotnet run.
         var startInfo = ProcessRunner.For("dotnet", [assemblyPath!], Path.GetDirectoryName(projectFilePath));
+
+        // A child inherits this site's environment, and what IIS gives this site there is this site's, not its
+        // own: an https port above all, which UseHttpsRedirection would find and answer every proxied call with
+        // a redirect off the loopback port it was reached on. Dropped rather than blanked: the middleware parses
+        // what is there.
+        foreach (var inherited in startInfo.Environment.Keys.Where(name => name.StartsWith("ASPNETCORE_", StringComparison.OrdinalIgnoreCase)
+            || name.Equals("HTTPS_PORT", StringComparison.OrdinalIgnoreCase) || name.Equals("ANCM_HTTPS_PORT", StringComparison.OrdinalIgnoreCase)).ToArray())
+        {
+            startInfo.Environment.Remove(inherited);
+        }
+
         // Port 0, and the port it bound read back off its own startup line: reserving one here and handing it
         // over would lose the race against anything else on the machine taking it in between.
         startInfo.Environment["ASPNETCORE_URLS"] = "http://127.0.0.1:0";
@@ -141,13 +152,6 @@ internal sealed partial class McpDocumentationSite : IDisposable
         startInfo.Environment["DOTNET_ENVIRONMENT"] = "Production";
         startInfo.Environment["Logging__LogLevel__Microsoft.Hosting.Lifetime"] = "Information";
 
-        // A child inherits this site's environment, and these carry an https port that is this site's, not its
-        // own. UseHttpsRedirection would find one and answer every proxied call with a redirect off the loopback
-        // port it was reached on. Dropped rather than blanked: the middleware parses what is there.
-        foreach (var inherited in (string[])["ASPNETCORE_HTTPS_PORT", "HTTPS_PORT", "ASPNETCORE_HTTPS_PORTS", "ASPNETCORE_HTTP_PORTS", "ASPNETCORE_PORT"])
-        {
-            startInfo.Environment.Remove(inherited);
-        }
         startInfo.RedirectStandardOutput = true;
         startInfo.RedirectStandardError = true;
         startInfo.UseShellExecute = false;
