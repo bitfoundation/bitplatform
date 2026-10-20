@@ -20,6 +20,7 @@ public partial class ProductEmbeddingService
     [AutoInject] private IHostEnvironment env = default!;
     [AutoInject] private AppDbContext dbContext = default!;
     [AutoInject] private IEmbeddingGenerator<string, Embedding<float>> embeddingGenerator = default!;
+    [AutoInject] private IStringLocalizer<AppStrings> localizer = default!;
 
     public async Task<IQueryable<Product>> SearchProducts(string searchQuery, CancellationToken cancellationToken)
     {
@@ -67,9 +68,11 @@ public partial class ProductEmbeddingService
 
         List<(string text, float weight)> inputs = [];
 
-        await dbContext.Entry(product)
-            .Reference(p => p.Category)
-            .LoadAsync(cancellationToken);
+        var categoryName = await dbContext.Categories
+            .Where(c => c.Id == product.CategoryId)
+            .Select(c => c.Name)
+            .FirstOrDefaultAsync(cancellationToken)
+            ?? throw new ResourceNotFoundException(localizer[nameof(AppStrings.CategoryCouldNotBeFound)]);
 
         inputs.Add(($"Id: {product.ShortId}", 0.9f));
         inputs.Add(($"Name: {product.Name}", 0.9f));
@@ -81,7 +84,7 @@ public partial class ProductEmbeddingService
         {
             inputs.Add((product.PrimaryImageAltText, 0.5f));
         }
-        inputs.Add((product.Category!.Name!, 0.9f));
+        inputs.Add((categoryName, 0.9f));
 
         var texts = inputs.Select(i => i.text).ToArray();
 
