@@ -10,11 +10,11 @@ public partial class ImageEditorService
     [AutoInject] private BitModalService modalService = default!;
     [AutoInject] private LazyAssemblyLoader lazyAssemblyLoader = default!;
 
-    public async Task<ImageEditorResult> Edit(string imageUrl, string fileName, string? contentType, double? cropAspectRatio, int minWidth, int minHeight)
+    public async Task<ImageEditorResult> Edit(string imageUrl, string fileName, double? cropAspectRatio, int minWidth, int minHeight)
     {
         await lazyAssemblyLoader.LoadAssembliesAsync(["Bit.Bmage.Core.wasm", "Bit.Bmage.wasm", "Bit.Bmage.Editor.wasm"]);
 
-        return await ShowEditor(imageUrl, fileName, contentType, cropAspectRatio, minWidth, minHeight);
+        return await ShowEditor(imageUrl, fileName, cropAspectRatio, minWidth, minHeight);
     }
 
     public async Task<string?> Upload(ImageEditorResult result, string uploadUrl, CancellationToken cancellationToken)
@@ -31,7 +31,7 @@ public partial class ImageEditorService
         return string.IsNullOrEmpty(responseText) ? null : responseText;
     }
 
-    private async Task<ImageEditorResult> ShowEditor(string imageUrl, string fileName, string? contentType, double? cropAspectRatio, int minWidth, int minHeight)
+    private async Task<ImageEditorResult> ShowEditor(string imageUrl, string fileName, double? cropAspectRatio, int minWidth, int minHeight)
     {
         TaskCompletionSource<ImageEditorResult> tcs = new();
         BitModalReference? modalReference = null;
@@ -46,7 +46,6 @@ public partial class ImageEditorService
         {
             { nameof(ImageEditorModal.ImageUrl), imageUrl },
             { nameof(ImageEditorModal.FileName), fileName },
-            { nameof(ImageEditorModal.ContentType), contentType ?? string.Empty },
             { nameof(ImageEditorModal.MinWidth), minWidth },
             { nameof(ImageEditorModal.MinHeight), minHeight },
             { nameof(ImageEditorModal.OnResult), (Action<ImageEditorResult>)Complete }

@@ -86,7 +86,7 @@ public partial class ProfileSection
 
         if (files.FirstOrDefault(file => file.Status is BitFileUploadStatus.Pending) is not { PreviewUrl: not null } file) return;
 
-        var result = await imageEditorService.Edit(file.PreviewUrl, file.Name, file.ContentType, cropAspectRatio: 1, minWidth: 256, minHeight: 256);
+        var result = await imageEditorService.Edit(file.PreviewUrl, file.Name, cropAspectRatio: 1, minWidth: 256, minHeight: 256);
 
         if (result.Outcome is ImageEditorOutcome.KeepOriginal)
         {
