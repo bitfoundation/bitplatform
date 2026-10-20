@@ -8,7 +8,8 @@ public partial class WebBlazorUIAssetTrimmingTests
         ("_content/Bit.BlazorUI/scripts/bit.blazorui.js", ["Callouts"], ["Splitter", "Ratings", "CircularTimePicker"]),
         ("_content/Bit.BlazorUI/styles/bit.blazorui.css", [".bit-btn"], [".bit-spl", ".bit-rtg", ".bit-ctp"]),
         ("_content/Bit.BlazorUI.Extras/scripts/bit.blazorui.extras.js", ["AppShell"], ["FullCalendar"]),
-        ("_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css", [".bit-ash"], [".bit-bfc"])
+        ("_content/Bit.BlazorUI.Extras/styles/bit.blazorui.extras.css", [".bit-ash"], [".bit-bfc"]),
+        ("_content/Bit.BlazorUI.Icons/styles/bit.blazorui.icons.css", [".bit-icon--ClearNight::before"], [".bit-icon--12PointStar::before", ".bit-icon--Snowflake::before"])
     ];
 
     public TestContext TestContext { get; set; } = default!;
