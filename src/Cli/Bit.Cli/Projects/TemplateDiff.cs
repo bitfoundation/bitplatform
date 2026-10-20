@@ -184,10 +184,16 @@ public sealed class TemplateDiff(CliServices cli)
     public static ProjectRecord ReadProject(string directory)
     {
         var bitJson = Path.Combine(directory, "bit.json");
-
-        return File.Exists(bitJson) && ReadBitJson(File.ReadAllText(bitJson)) is { } record
-            ? record
+        var record = File.Exists(bitJson) && ReadBitJson(File.ReadAllText(bitJson)) is { } read
+            ? read
             : new ProjectRecord(null, null, new Dictionary<string, string>());
+
+        if (record.Options.ContainsKey("framework") || Directory.Exists(directory) is false
+            || (record.Name ?? ProjectContext.FindProjectName(directory)) is not { } name
+            || ProjectContext.ReadTargetFramework(directory, name) is not { } framework)
+            return record;
+
+        return record with { Options = new Dictionary<string, string>(record.Options, StringComparer.OrdinalIgnoreCase) { ["framework"] = framework } };
     }
 
     public static ProjectRecord? ReadBitJson(string json)

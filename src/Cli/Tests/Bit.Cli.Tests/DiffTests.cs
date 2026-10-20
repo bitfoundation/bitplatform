@@ -33,6 +33,23 @@ public class DiffTests
     }
 
     [TestMethod]
+    public void AProjectFromBeforeTheFrameworkOption_Should_KeepItsOwnFramework()
+    {
+        using var host = new Infrastructure.TestHost();
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "bit.json"), """{ "version": "11.0.0-pre-09", "name": "Contoso", "options": { "database": "PostgreSQL" } }""");
+        var core = Path.Combine(host.WorkingDirectory, "src", "Client", "Contoso.Client.Core");
+        Directory.CreateDirectory(core);
+        File.WriteAllText(Path.Combine(core, "Contoso.Client.Core.csproj"), "<Project><PropertyGroup><TargetFramework>net11.0</TargetFramework></PropertyGroup></Project>");
+
+        Assert.AreEqual("net11.0", TemplateDiff.ReadProject(host.WorkingDirectory).Options["framework"]);
+
+        File.Delete(Path.Combine(host.WorkingDirectory, "bit.json"));
+        File.WriteAllText(Path.Combine(host.WorkingDirectory, "Contoso.slnx"), "<Solution />");
+
+        Assert.AreEqual("net11.0", TemplateDiff.ReadProject(host.WorkingDirectory).Options["framework"]);
+    }
+
+    [TestMethod]
     public void TheSummary_Should_ShowThePasswordTheReadmeNames()
     {
         Assert.AreEqual("40817263", NewWorkflow.ReadSeedPassword("pre-confirmed accounts whose password is **`40817263`**:"));
