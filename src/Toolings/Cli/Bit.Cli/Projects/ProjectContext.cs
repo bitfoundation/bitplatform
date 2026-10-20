@@ -42,23 +42,22 @@ public sealed partial class ProjectContext
 
     public string? SeedPassword { get; set; }
 
-    public string TargetFrameworkVersion
+    public string TargetFrameworkVersion => ReadTargetFramework(Directory, Name) ?? $"net{Environment.Version.Major}.0";
+
+    public static string? ReadTargetFramework(string directory, string name)
     {
-        get
+        var core = Path.Combine(directory, "src", "Client", $"{name}.Client.Core", $"{name}.Client.Core.csproj");
+
+        try
         {
-            var core = Path.Combine(Directory, "src", "Client", $"{Name}.Client.Core", $"{Name}.Client.Core.csproj");
-
-            try
-            {
-                if (File.Exists(core) && TargetFrameworkRegex().Match(File.ReadAllText(core)) is { Success: true } match)
-                    return match.Groups["tfm"].Value;
-            }
-            catch (IOException)
-            {
-            }
-
-            return $"net{Environment.Version.Major}.0";
+            if (File.Exists(core) && TargetFrameworkRegex().Match(File.ReadAllText(core)) is { Success: true } match)
+                return match.Groups["tfm"].Value;
         }
+        catch (IOException)
+        {
+        }
+
+        return null;
     }
 
     public string? PackageVersion(string packageId)
