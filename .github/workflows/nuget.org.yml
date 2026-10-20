@@ -6,23 +6,23 @@ on:
     branches:
       - 'main'
     paths:
-      - 'src/Balette/**'
-      - 'src/BbScanner/**'
-      - 'src/Bdnd/**'
-      - 'src/BevTools/**'
-      - 'src/Belemetry/**'
+      - 'src/Utilities/Balette/**'
+      - 'src/Utilities/BbScanner/**'
+      - 'src/Utilities/Bdnd/**'
+      - 'src/Utilities/BevTools/**'
+      - 'src/Utilities/Belemetry/**'
       - 'src/BlazorUI/**'
-      - 'src/Bink/**'
-      - 'src/BlazeDb/**'
-      - 'src/Blow/**'
-      - 'src/Borm/**'
-      - 'src/Bcrdt/**'
-      - 'src/Blex/**'
-      - 'src/Bmage/**'
-      - 'src/Bsqlite/**'
-      - 'src/Bmotion/**'
-      - 'src/Bonboarding/**'
-      - 'src/Bortable/**'
+      - 'src/Utilities/Bink/**'
+      - 'src/Utilities/BlazeDb/**'
+      - 'src/Utilities/Blow/**'
+      - 'src/Utilities/Borm/**'
+      - 'src/Utilities/Bcrdt/**'
+      - 'src/Utilities/Blex/**'
+      - 'src/Utilities/Bmage/**'
+      - 'src/Utilities/Bsqlite/**'
+      - 'src/Utilities/Bmotion/**'
+      - 'src/Utilities/Bonboarding/**'
+      - 'src/Utilities/Bortable/**'
       - 'src/Brouter/**'
       - 'src/Bswup/**'
       - 'src/Butil/**'
@@ -161,195 +161,140 @@ jobs:
     - name: dotnet pack Besql
       run: dotnet pack src/Besql/Bit.Besql/Bit.Besql.csproj --output . --configuration Release
 
-    - name: dotnet build BevTools.Abstractions
-      run: dotnet build src/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack BevTools.Abstractions
-      run: dotnet pack src/BevTools/Bit.BevTools.Abstractions/Bit.BevTools.Abstractions.csproj --output . --configuration Release
-
     - name: dotnet build BevTools
-      run: dotnet build src/BevTools/Bit.BevTools/Bit.BevTools.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/BevTools/Bit.BevTools/Bit.BevTools.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BevTools
-      run: dotnet pack src/BevTools/Bit.BevTools/Bit.BevTools.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/BevTools/Bit.BevTools/Bit.BevTools.csproj --output . --configuration Release
 
     - name: dotnet build BevTools.Server
-      run: dotnet build src/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BevTools.Server
-      run: dotnet pack src/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/BevTools/Bit.BevTools.Server/Bit.BevTools.Server.csproj --output . --configuration Release
 
     - name: dotnet build Bmotion
-      run: dotnet build src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bmotion
-      run: dotnet pack src/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output . --configuration Release
-
-    - name: dotnet build Bmage.Core
-      run: dotnet build src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bmage.Core
-      run: dotnet pack src/Bmage/Bit.Bmage.Core/Bit.Bmage.Core.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bmotion/Bit.Bmotion/Bit.Bmotion.csproj --output . --configuration Release
 
     - name: dotnet build Bmage
-      run: dotnet build src/Bmage/Bit.Bmage/Bit.Bmage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bmage
-      run: dotnet pack src/Bmage/Bit.Bmage/Bit.Bmage.csproj --output . --configuration Release
-
-    - name: dotnet build Bmage.Editor
-      run: dotnet build src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bmage.Editor
-      run: dotnet pack src/Bmage/Bit.Bmage.Editor/Bit.Bmage.Editor.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bmage/Bit.Bmage/Bit.Bmage.csproj --output . --configuration Release
 
     - name: dotnet build Bsqlite
-      run: dotnet build src/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bsqlite
-      run: dotnet pack src/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj --output . --configuration Release
-
-    - name: dotnet build Bsqlite.Storage.Opfs
-      run: dotnet build src/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bsqlite.Storage.Opfs
-      run: dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.Opfs/Bit.Bsqlite.Storage.Opfs.csproj --output . --configuration Release
-
-    - name: dotnet build Bsqlite.Storage.IndexedDb
-      run: dotnet build src/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bsqlite.Storage.IndexedDb
-      run: dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.IndexedDb/Bit.Bsqlite.Storage.IndexedDb.csproj --output . --configuration Release
-
-    - name: dotnet build Bsqlite.Storage.CacheStorage
-      run: dotnet build src/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bsqlite.Storage.CacheStorage
-      run: dotnet pack src/Bsqlite/Bit.Bsqlite.Storage.CacheStorage/Bit.Bsqlite.Storage.CacheStorage.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bsqlite/Bit.Bsqlite/Bit.Bsqlite.csproj --output . --configuration Release
 
     - name: dotnet build Bsqlite.Testing
-      run: dotnet build src/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bsqlite.Testing
-      run: dotnet pack src/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bsqlite/Bit.Bsqlite.Testing/Bit.Bsqlite.Testing.csproj --output . --configuration Release
 
     - name: dotnet build Bink
-      run: dotnet build src/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bink/Bit.Bink/Bit.Bink.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bink
-      run: dotnet pack src/Bink/Bit.Bink/Bit.Bink.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bink/Bit.Bink/Bit.Bink.csproj --output . --configuration Release
 
     - name: dotnet build Balette
-      run: dotnet build src/Balette/Bit.Balette/Bit.Balette.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Balette/Bit.Balette/Bit.Balette.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Balette
-      run: dotnet pack src/Balette/Bit.Balette/Bit.Balette.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Balette/Bit.Balette/Bit.Balette.csproj --output . --configuration Release
 
     - name: dotnet build BbScanner
-      run: dotnet build src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BbScanner
-      run: dotnet pack src/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/BbScanner/Bit.BbScanner/Bit.BbScanner.csproj --output . --configuration Release
 
     - name: dotnet build Bdnd
-      run: dotnet build src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bdnd
-      run: dotnet pack src/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bdnd/Bit.Bdnd/Bit.Bdnd.csproj --output . --configuration Release
 
     - name: dotnet build BlazeDb
-      run: dotnet build src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazeDb
-      run: dotnet pack src/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj --output . --configuration Release
-
-    - name: dotnet build BlazeDb.Generators
-      run: dotnet build src/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack BlazeDb.Generators
-      run: dotnet pack src/BlazeDb/Bit.BlazeDb.Generators/Bit.BlazeDb.Generators.csproj --output . --configuration Release
-
-    - name: dotnet build BlazeDb.Browser
-      run: dotnet build src/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack BlazeDb.Browser
-      run: dotnet pack src/BlazeDb/Bit.BlazeDb.Browser/Bit.BlazeDb.Browser.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb/Bit.BlazeDb.csproj --output . --configuration Release
 
     - name: dotnet build BlazeDb.EntityFrameworkCore
-      run: dotnet build src/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack BlazeDb.EntityFrameworkCore
-      run: dotnet pack src/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/BlazeDb/Bit.BlazeDb.EntityFrameworkCore/Bit.BlazeDb.EntityFrameworkCore.csproj --output . --configuration Release
 
     - name: dotnet build Blow
-      run: dotnet build src/Blow/Bit.Blow/Bit.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Blow/Bit.Blow/Bit.Blow.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blow
-      run: dotnet pack src/Blow/Bit.Blow/Bit.Blow.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Blow/Bit.Blow/Bit.Blow.csproj --output . --configuration Release
 
     - name: dotnet build Borm
-      run: dotnet build src/Borm/Bit.Borm/Bit.Borm.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Borm/Bit.Borm/Bit.Borm.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Borm
-      run: dotnet pack src/Borm/Bit.Borm/Bit.Borm.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Borm/Bit.Borm/Bit.Borm.csproj --output . --configuration Release
 
     - name: dotnet build Borm.FluentValidation
-      run: dotnet build src/Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Borm.FluentValidation
-      run: dotnet pack src/Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Borm/Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj --output . --configuration Release
 
     - name: dotnet build Bcrdt
-      run: dotnet build src/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bcrdt
-      run: dotnet pack src/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj --output . --configuration Release
-
-    - name: dotnet build Bcrdt.Blazor
-      run: dotnet build src/Bcrdt/Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Bcrdt.Blazor
-      run: dotnet pack src/Bcrdt/Bit.Bcrdt.Blazor/Bit.Bcrdt.Blazor.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt/Bit.Bcrdt.csproj --output . --configuration Release
 
     - name: dotnet build Bcrdt.SignalR
-      run: dotnet build src/Bcrdt/Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bcrdt.SignalR
-      run: dotnet pack src/Bcrdt/Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj --output . --configuration Release
 
     - name: dotnet build Bcrdt.Server
-      run: dotnet build src/Bcrdt/Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bcrdt.Server
-      run: dotnet pack src/Bcrdt/Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj --output . --configuration Release
 
     - name: dotnet build Bcrdt.Testing
-      run: dotnet build src/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bcrdt.Testing
-      run: dotnet pack src/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bcrdt/Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj --output . --configuration Release
 
     - name: dotnet build Blex
-      run: dotnet build src/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Blex/Bit.Blex/Bit.Blex.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blex
-      run: dotnet pack src/Blex/Bit.Blex/Bit.Blex.csproj --output . --configuration Release
-
-    - name: dotnet build Blex.Generators
-      run: dotnet build src/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Blex.Generators
-      run: dotnet pack src/Blex/Bit.Blex.Generators/Bit.Blex.Generators.csproj --output . --configuration Release
-
-    - name: dotnet build Blex.Blazor
-      run: dotnet build src/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
-    - name: dotnet pack Blex.Blazor
-      run: dotnet pack src/Blex/Bit.Blex.Blazor/Bit.Blex.Blazor.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Blex/Bit.Blex/Bit.Blex.csproj --output . --configuration Release
 
     - name: dotnet build Blex.Maui
-      run: dotnet build src/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blex.Maui
-      run: dotnet pack src/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Blex/Bit.Blex.Maui/Bit.Blex.Maui.csproj --output . --configuration Release
 
     - name: dotnet build Blex.Testing
-      run: dotnet build src/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Blex.Testing
-      run: dotnet pack src/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Blex/Bit.Blex.Testing/Bit.Blex.Testing.csproj --output . --configuration Release
 
     - name: dotnet build Bonboarding
-      run: dotnet build src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bonboarding
-      run: dotnet pack src/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bonboarding/Bit.Bonboarding/Bit.Bonboarding.csproj --output . --configuration Release
 
     - name: dotnet build Bortable
-      run: dotnet build src/Bortable/Bit.Bortable/Bit.Bortable.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Bortable/Bit.Bortable/Bit.Bortable.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Bortable
-      run: dotnet pack src/Bortable/Bit.Bortable/Bit.Bortable.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Bortable/Bit.Bortable/Bit.Bortable.csproj --output . --configuration Release
 
     - name: dotnet build Belemetry
-      run: dotnet build src/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Belemetry
-      run: dotnet pack src/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Belemetry/Bit.Belemetry/Bit.Belemetry.csproj --output . --configuration Release
 
     - name: dotnet build Belemetry.EntityFrameworkCore
-      run: dotnet build src/Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Belemetry.EntityFrameworkCore
-      run: dotnet pack src/Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Belemetry/Bit.Belemetry.EntityFrameworkCore/Bit.Belemetry.EntityFrameworkCore.csproj --output . --configuration Release
 
     - name: dotnet build Belemetry.Hangfire
-      run: dotnet build src/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
+      run: dotnet build src/Utilities/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false
     - name: dotnet pack Belemetry.Hangfire
-      run: dotnet pack src/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj --output . --configuration Release
+      run: dotnet pack src/Utilities/Belemetry/Bit.Belemetry.Hangfire/Bit.Belemetry.Hangfire.csproj --output . --configuration Release
 
     - name: dotnet build CodeAnalyzers
       run: dotnet build src/CodeAnalyzers/Bit.CodeAnalyzers/Bit.CodeAnalyzers.csproj -c Release -p:GeneratePackageOnBuild=false -p:WarningLevel=0 -p:RunCodeAnalysis=false

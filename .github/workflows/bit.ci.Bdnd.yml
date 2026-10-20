@@ -7,7 +7,7 @@ on:
   workflow_call:
   pull_request:
     paths:
-    - 'src/Bdnd/**'
+    - 'src/Utilities/Bdnd/**'
 
 env:
   DOTNET_SYSTEM_CONSOLE_ALLOW_ANSI_COLOR_REDIRECTION: true
@@ -48,15 +48,15 @@ jobs:
         node-version: 24
 
     - name: dotnet workload restore
-      run:  cd src/Bdnd && dotnet workload restore
+      run:  cd src/Utilities/Bdnd && dotnet workload restore
 
     - name: dotnet build
-      run: dotnet build src/Bdnd/Bit.Bdnd.slnx
+      run: dotnet build src/Utilities/Bdnd/Bit.Bdnd.slnx
 
     - name: dotnet test
       # Run from inside src so src/global.json's "test" runner setting applies
       # (from the repo root the SDK falls back to the unsupported VSTest path).
-      run: cd src/Bdnd/Tests/Bit.Bdnd.Tests && dotnet test --no-build
+      run: cd src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests && dotnet test --no-build
 
     - name: dotnet test (MCP server)
-      run: cd src/Bdnd/Tests/Bit.Bdnd.Tests.Mcp && dotnet test --no-build
+      run: cd src/Utilities/Bdnd/Tests/Bit.Bdnd.Tests.Mcp && dotnet test --no-build

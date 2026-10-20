@@ -1,7 +1,7 @@
 name: bit platform CI - Bmage E2E
 
 # The demo website driven in Chromium. It takes far longer than the build-and-unit pipeline (bit.ci.Bmage.yml), so
-# it runs only when started by hand. See src/Bmage/Tests/Bit.Bmage.Tests.E2E/README.md for what the suite covers and
+# it runs only when started by hand. See src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/README.md for what the suite covers and
 # how to run it locally.
 
 on:
@@ -38,13 +38,13 @@ jobs:
         node-version: 24
 
     - name: Build the demo website
-      run: dotnet build src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release
+      run: dotnet build src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj -c Release
 
     - name: Build the E2E suite
-      run: dotnet build src/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
+      run: dotnet build src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/Bit.Bmage.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       env:
@@ -52,7 +52,7 @@ jobs:
         BMAGE_E2E_SKIP_BUILD: 1
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/Bmage/Tests/Bit.Bmage.Tests.E2E &&
+        cd src/Utilities/Bmage/Tests/Bit.Bmage.Tests.E2E &&
         dotnet test -c Release --no-build
         --report-trx --report-trx-filename bmage-e2e.trx
 

@@ -2,7 +2,7 @@ name: bit platform CI - Blex E2E
 
 # The cross-host suites: every web render mode in Chromium on net10.0/net9.0/net8.0, Blazor Hybrid in WebView2,
 # and trimmed/AOT publishes. They take far longer than the build-and-unit pipeline (bit.ci.Blex.yml), so they
-# run only when started by hand. See src/Blex/Tests/Bit.Blex.Tests.E2E/README.md for what each job proves and
+# run only when started by hand. See src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E/README.md for what each job proves and
 # how to run it locally.
 
 on:
@@ -52,13 +52,13 @@ jobs:
         node-version: 24
 
     - name: Build the web harness host
-      run: dotnet build src/Blex/Tests/Bit.Blex.Tests.Harness.Web/Bit.Blex.Tests.Harness.Web.csproj -c Release -f ${{ matrix.framework }}
+      run: dotnet build src/Utilities/Blex/Tests/Bit.Blex.Tests.Harness.Web/Bit.Blex.Tests.Harness.Web.csproj -c Release -f ${{ matrix.framework }}
 
     - name: Build the E2E suite
-      run: dotnet build src/Blex/Tests/Bit.Blex.Tests.E2E/Bit.Blex.Tests.E2E.csproj -c Release
+      run: dotnet build src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E/Bit.Blex.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Blex/Tests/Bit.Blex.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       env:
@@ -67,7 +67,7 @@ jobs:
         BLEX_E2E_SKIP_BUILD: 1
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/Blex/Tests/Bit.Blex.Tests.E2E &&
+        cd src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E &&
         dotnet test -c Release --no-build
         --filter "FullyQualifiedName!~HybridModeTests"
         --report-trx --report-trx-filename blex-e2e-web-${{ matrix.framework }}.trx
@@ -117,10 +117,10 @@ jobs:
         Write-Host "WebView2 Runtime $version"
 
     - name: Build the hybrid harness host
-      run: dotnet build src/Blex/Tests/Bit.Blex.Tests.Harness.Hybrid/Bit.Blex.Tests.Harness.Hybrid.csproj -c Release
+      run: dotnet build src/Utilities/Blex/Tests/Bit.Blex.Tests.Harness.Hybrid/Bit.Blex.Tests.Harness.Hybrid.csproj -c Release
 
     - name: Build the E2E suite
-      run: dotnet build src/Blex/Tests/Bit.Blex.Tests.E2E/Bit.Blex.Tests.E2E.csproj -c Release
+      run: dotnet build src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E/Bit.Blex.Tests.E2E.csproj -c Release
 
     # No Playwright browser download: it attaches to the WebView2 Runtime installed above.
     - name: Run hybrid E2E tests
@@ -128,7 +128,7 @@ jobs:
         BLEX_E2E_CONFIGURATION: Release
         BLEX_E2E_SKIP_BUILD: 1
       run: >
-        cd src/Blex/Tests/Bit.Blex.Tests.E2E &&
+        cd src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E &&
         dotnet test -c Release --no-build
         --filter "FullyQualifiedName~HybridModeTests"
         --report-trx --report-trx-filename blex-e2e-hybrid.trx
@@ -177,19 +177,19 @@ jobs:
       run: dotnet workload install wasm-tools
 
     - name: Publish the web harness host (fails on trim/AOT warnings from Bit.Blex)
-      run: bash src/Blex/Tests/Bit.Blex.Tests.E2E/publish-gate.sh ${{ github.workspace }}/artifacts/harness-${{ matrix.name }} ${{ matrix.properties }}
+      run: bash src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E/publish-gate.sh ${{ github.workspace }}/artifacts/harness-${{ matrix.name }} ${{ matrix.properties }}
 
     - name: Build the E2E suite
-      run: dotnet build src/Blex/Tests/Bit.Blex.Tests.E2E/Bit.Blex.Tests.E2E.csproj -c Release
+      run: dotnet build src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E/Bit.Blex.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Blex/Tests/Bit.Blex.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests against the published host
       env:
         BLEX_E2E_PUBLISHED_HOST: ${{ github.workspace }}/artifacts/harness-${{ matrix.name }}
       run: >
-        cd src/Blex/Tests/Bit.Blex.Tests.E2E &&
+        cd src/Utilities/Blex/Tests/Bit.Blex.Tests.E2E &&
         dotnet test -c Release --no-build
         --filter "FullyQualifiedName!~HybridModeTests"
         --report-trx --report-trx-filename blex-publish-${{ matrix.name }}.trx

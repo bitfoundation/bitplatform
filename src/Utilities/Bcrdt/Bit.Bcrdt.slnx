@@ -1,0 +1,23 @@
+﻿<Solution>
+  <Folder Name="/.Solution Items/">
+    <File Path="../../../.gitignore" />
+    <File Path="../../.editorconfig" />
+    <File Path="../../Bit.Build.props" />
+    <File Path="../../global.json" />
+    <File Path="README.md" />
+  </Folder>
+  <Folder Name="/Demo/">
+    <Project Path="Demo/Client/Bit.Bcrdt.Demo.Client.csproj" />
+    <Project Path="Demo/Server/Bit.Bcrdt.Demo.Server.csproj" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="Tests/Bit.Bcrdt.Tests/Bit.Bcrdt.Tests.csproj" />
+    <Project Path="Tests/Bit.Bcrdt.Tests.Mcp/Bit.Bcrdt.Tests.Mcp.csproj" />
+    <Project Path="Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj" />
+    <Project Path="Tests/Bit.Bcrdt.Benchmarks/Bit.Bcrdt.Benchmarks.csproj" />
+  </Folder>
+  <Project Path="Bit.Bcrdt/Bit.Bcrdt.csproj" />
+  <Project Path="Bit.Bcrdt.SignalR/Bit.Bcrdt.SignalR.csproj" />
+  <Project Path="Bit.Bcrdt.Server/Bit.Bcrdt.Server.csproj" />
+  <Project Path="Bit.Bcrdt.Testing/Bit.Bcrdt.Testing.csproj" />
+</Solution>

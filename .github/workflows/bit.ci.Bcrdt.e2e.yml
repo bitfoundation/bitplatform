@@ -3,7 +3,7 @@ name: bit platform CI - Bcrdt E2E
 # The browser suite: the demo (prerendered, then running on WebAssembly) driven in Chromium with Playwright - the
 # side-by-side replicas of every demo page merging in one tab, and two browser contexts meeting on the live page
 # through the demo server's SignalR hub and WebSocket endpoint. It takes far longer than the build-and-unit pipeline
-# (bit.ci.Bcrdt.yml), so it runs only when started by hand. See src/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/README.md for
+# (bit.ci.Bcrdt.yml), so it runs only when started by hand. See src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/README.md for
 # what it proves and how to run it locally.
 
 on:
@@ -34,26 +34,26 @@ jobs:
       with:
         global-json-file: src/global.json
 
-    # Bit.Bcrdt.Blazor compiles its TypeScript (bit-bcrdt.ts) with npm-installed tsc and esbuild as part of its build.
+    # Bit.Bcrdt compiles its TypeScript (bit-bcrdt.ts) with npm-installed tsc and esbuild as part of its build.
     - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
       with:
         node-version: 24
 
     - name: dotnet workload restore
-      run: cd src/Bcrdt && dotnet workload restore
+      run: cd src/Utilities/Bcrdt && dotnet workload restore
 
     - name: Build the demo and the E2E suite
       run: |
-        dotnet build src/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
-        dotnet build src/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
+        dotnet build src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj -c Release
+        dotnet build src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/Bit.Bcrdt.Tests.E2E.csproj -c Release
 
     - name: Install Playwright Chromium
-      run: pwsh src/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
+      run: pwsh src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E/bin/Release/net10.0/playwright.ps1 install --with-deps chromium
 
     - name: Run E2E tests
       # Run from inside src so src/global.json's Microsoft.Testing.Platform runner setting applies.
       run: >
-        cd src/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E &&
+        cd src/Utilities/Bcrdt/Tests/Bit.Bcrdt.Tests.E2E &&
         dotnet test -c Release --no-build
         --report-trx --report-trx-filename bcrdt-e2e.trx
 

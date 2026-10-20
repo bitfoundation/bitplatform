@@ -1,0 +1,20 @@
+﻿<Solution>
+    <Folder Name="/.Solution Items/">
+        <File Path="../../../.gitignore" />
+        <File Path="../../.editorconfig" />
+        <File Path="../../Bit.Build.props" />
+        <File Path="../../global.json" />
+        <File Path="README.md" />
+    </Folder>
+    <Folder Name="/Demo/">
+        <Project Path="Demo/Client/Bit.Borm.Demo.Client.csproj" />
+        <Project Path="Demo/Server/Bit.Borm.Demo.Server.csproj" />
+    </Folder>
+    <Folder Name="/Tests/">
+        <Project Path="Tests/Bit.Borm.Tests/Bit.Borm.Tests.csproj" />
+        <Project Path="Tests/Bit.Borm.Tests.Mcp/Bit.Borm.Tests.Mcp.csproj" />
+        <Project Path="Tests/Bit.Borm.Tests.E2E/Bit.Borm.Tests.E2E.csproj" />
+    </Folder>
+    <Project Path="Bit.Borm/Bit.Borm.csproj" />
+    <Project Path="Bit.Borm.FluentValidation/Bit.Borm.FluentValidation.csproj" />
+</Solution>

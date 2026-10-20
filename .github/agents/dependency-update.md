@@ -90,10 +90,10 @@ higher-numbered lines exist there.
 **TypeScript is held at 5.9.3 in the libraries.** 7.x is the Go rewrite
 (`microsoft/typescript-go`), not an incremental release. `Boilerplate.Client.Core` is the canary and
 is already on 7.0.2 — if a bump is wanted, move one library project, build it, and only then the
-rest. Do not move all twenty-four at once.
+rest. Do not move all twenty-one at once.
 
-**Vitest is held at `^3`** in `src/Bmotion/Tests/bit-bmotion-js`, `src/Bswup/Tests/bit-bswup-js`,
-`src/Bsqlite/Tests/bit-bsqlite-js` and `src/BevTools/Tests/bit-bevtools-js`.
+**Vitest is held at `^3`** in `src/Utilities/Bmotion/Tests/bit-bmotion-js`, `src/Bswup/Tests/bit-bswup-js`,
+`src/Utilities/Bsqlite/Tests/bit-bsqlite-js` and `src/Utilities/BevTools/Tests/bit-bevtools-js`.
 
 **`devops-actions/variable-substitution` is held at v1.2** (`ae7b1f36…`). v2.0.0 committed 31
 symlinks into its vendored `node_modules`; the runner cannot stage them and every job dies before
@@ -311,11 +311,14 @@ Finish every sweep with an issue, a PR and a full CI run. `upstream` is `bitfoun
 4. PR from `<fork-owner>:<n>` into `upstream/develop`, title `Update project dependencies (#<n>)`.
    The body starts with `closes #<n>` and carries the report: Changed, Breaking or important,
    Held back, Missed / drifted, Not verified.
-5. Run `all.ci.yml` on the fork against the branch and give its URL with the PR link:
+5. Run `all.ci.yml` and `all.ci.utilities.yml` on the fork against the branch and give both URLs
+   with the PR link:
 
    ```bash
    gh workflow run all.ci.yml --repo <fork-owner>/bitplatform --ref <n>
+   gh workflow run all.ci.utilities.yml --repo <fork-owner>/bitplatform --ref <n>
    gh run list --repo <fork-owner>/bitplatform --workflow all.ci.yml --branch <n> --limit 1 --json url --jq '.[0].url'
+   gh run list --repo <fork-owner>/bitplatform --workflow all.ci.utilities.yml --branch <n> --limit 1 --json url --jq '.[0].url'
    ```
 
    A red job goes into the PR as a comment, with the failing step and its first error line.

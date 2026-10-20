@@ -22,24 +22,24 @@ internal sealed partial class McpDocumentationSite : IDisposable
     public static readonly (string UpstreamName, string[] ProjectPaths)[] Projects =
     [
         ("bitBlazorUI", ["src/BlazorUI/Demo/Bit.BlazorUI.Demo.Server/Bit.BlazorUI.Demo.Server.csproj"]),
-        ("bitBink", ["src/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj"]),
-        ("bitBalette", ["src/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj"]),
-        ("bitBbScanner", ["src/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj"]),
-        ("bitBdnd", ["src/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj"]),
-        ("bitBlazeDb", ["src/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj"]),
-        ("bitBlow", ["src/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj"]),
-        ("bitBorm", ["src/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj"]),
-        ("bitBcrdt", ["src/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj"]),
-        ("bitBlex", ["src/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj"]),
-        ("bitBmage", ["src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj"]),
-        ("bitBonboarding", ["src/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj"]),
-        ("bitBortable", ["src/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj"]),
-        ("bitBsqlite", ["src/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj"]),
+        ("bitBink", ["src/Utilities/Bink/Demo/Server/Bit.Bink.Demo.Server.csproj", "src/Bink/Bit.Bink.Demo/Server/Bit.Bink.Demo.Server.csproj"]),
+        ("bitBalette", ["src/Utilities/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj", "src/Balette/Demo/Server/Bit.Balette.Demo.Server.csproj"]),
+        ("bitBbScanner", ["src/Utilities/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj", "src/BbScanner/Demo/Server/Bit.BbScanner.Demo.Server.csproj"]),
+        ("bitBdnd", ["src/Utilities/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj", "src/Bdnd/Demo/Server/Bit.Bdnd.Demo.Server.csproj"]),
+        ("bitBlazeDb", ["src/Utilities/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj", "src/BlazeDb/Demo/Server/Bit.BlazeDb.Demo.Server.csproj"]),
+        ("bitBlow", ["src/Utilities/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj", "src/Blow/Demo/Server/Bit.Blow.Demo.Server.csproj"]),
+        ("bitBorm", ["src/Utilities/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj", "src/Borm/Demo/Server/Bit.Borm.Demo.Server.csproj"]),
+        ("bitBcrdt", ["src/Utilities/Bcrdt/Demo/Server/Bit.Bcrdt.Demo.Server.csproj"]),
+        ("bitBlex", ["src/Utilities/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj", "src/Blex/Demo/Server/Bit.Blex.Demo.Server.csproj"]),
+        ("bitBmage", ["src/Utilities/Bmage/Demo/Server/Bit.Bmage.Demo.Server.csproj", "src/Bmage/Bit.Bmage.Demo/Server/Bit.Bmage.Demo.Server.csproj"]),
+        ("bitBonboarding", ["src/Utilities/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj", "src/Bonboarding/Demo/Server/Bit.Bonboarding.Demo.Server.csproj"]),
+        ("bitBortable", ["src/Utilities/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj", "src/Bortable/Demo/Server/Bit.Bortable.Demo.Server.csproj"]),
+        ("bitBsqlite", ["src/Utilities/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj", "src/Bsqlite/Demo/Server/Bit.Bsqlite.Demo.Server.csproj"]),
         ("bitBrouter", ["src/Brouter/Bit.Brouter.Demo/Server/Bit.Brouter.Demo.Server.csproj"]),
         ("bitBswup", ["src/Bswup/Bit.Bswup.Demo/Server/Bit.Bswup.Demo.Server.csproj"]),
         ("bitButil", ["src/Butil/Demo/Server/Bit.Butil.Demo.Server.csproj", "src/Butil/Bit.Butil.Demo/Server/Bit.Butil.Demo.Server.csproj"]),
-        ("bitMotion", ["src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj"]),
-        ("bitBelemetry", ["src/Belemetry/Demo/Server/Bit.Belemetry.Demo.Server.csproj"])
+        ("bitMotion", ["src/Utilities/Bmotion/Demo/Server/Bit.Bmotion.Demo.Server.csproj", "src/Bmotion/Bit.Bmotion.Demo/Server/Bit.Bmotion.Demo.Server.csproj"]),
+        ("bitBelemetry", ["src/Utilities/Belemetry/Demo/Server/Bit.Belemetry.Demo.Server.csproj"])
     ];
 
     private static readonly TimeSpan buildTimeout = TimeSpan.FromMinutes(30);

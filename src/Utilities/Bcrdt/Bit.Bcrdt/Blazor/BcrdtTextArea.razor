@@ -1,0 +1,322 @@
+﻿@namespace Bit.Bcrdt.Blazor
+@inherits BcrdtComponentBase
+
+@*
+    The value is rendered once per text field; after that the textarea's content is kept in step by
+    the module, which can refuse an update the user has already typed past. Re-rendering a value
+    attribute would overwrite keystrokes still on their way to the server.
+*@
+<textarea @ref="_element"
+          class="@Class"
+          rows="@Rows"
+          placeholder="@Placeholder"
+          disabled="@(!Enabled)"
+          spellcheck="@Spellcheck"
+          value="@_initialValue"
+          @attributes="AdditionalAttributes"></textarea>
+
+@code {
+    // How long to wait before retrying an update the user typed past. Their input is processed first;
+    // the update is then rebuilt from the result.
+    private static readonly TimeSpan RetryAfterTyping = TimeSpan.FromMilliseconds(100);
+
+    private ElementReference _element;
+    private IJSObjectReference? _module;
+    private DotNetObjectReference<BcrdtTextArea>? _self;
+    private BcrdtTextInputBinding? _binding;
+    private BcrdtText? _bound;
+    private string _initialValue = string.Empty;
+    private int _generation;
+    private int _attachedGeneration = -1;
+    private Task? _initialization;
+    private bool _pushing;
+    private bool _isDisposed;
+
+    /// <summary>The collaborative text field this control edits.</summary>
+    /// <remarks>
+    /// May change: the control then rebinds to the new field and shows its content. Edits are made
+    /// with an untagged origin, so a default <c>BcrdtUndoManager</c> scoped to the field captures them.
+    /// </remarks>
+    [Parameter, EditorRequired]
+    public BcrdtText Text { get; set; } = default!;
+
+    /// <summary>Presence to publish the local caret and selection to, so collaborators can see it.</summary>
+    [Parameter]
+    public BcrdtPresenceService? Presence { get; set; }
+
+    /// <summary>The field name published alongside the caret. Must match what collaborators read.</summary>
+    [Parameter]
+    public string Field { get; set; } = "body";
+
+    /// <summary>CSS classes for the underlying textarea.</summary>
+    [Parameter]
+    public string? Class { get; set; }
+
+    /// <summary>Placeholder text.</summary>
+    [Parameter]
+    public string? Placeholder { get; set; }
+
+    /// <summary>Visible rows.</summary>
+    [Parameter]
+    public int Rows { get; set; } = 10;
+
+    /// <summary>Whether editing is permitted.</summary>
+    [Parameter]
+    public bool Enabled { get; set; } = true;
+
+    /// <summary>Whether the browser spell checks the content.</summary>
+    [Parameter]
+    public bool Spellcheck { get; set; } = true;
+
+    /// <summary>Any other attributes to splat onto the textarea.</summary>
+    [Parameter(CaptureUnmatchedValues = true)]
+    public IReadOnlyDictionary<string, object>? AdditionalAttributes { get; set; }
+
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    protected override void OnParametersSet()
+    {
+        if (Text is null) throw new InvalidOperationException($"{nameof(BcrdtTextArea)} requires a {nameof(Text)}.");
+        if (ReferenceEquals(_bound, Text)) return;
+
+        // A different field. Start over with a binding to it; input still in flight for the previous
+        // field carries the previous generation and is ignored rather than applied to this one.
+        _binding?.Dispose();
+        _bound = Text;
+        _generation++;
+        _binding = new BcrdtTextInputBinding(Text, Dispatch);
+        _binding.Changed += SchedulePush;
+        _initialValue = _binding.Value;
+    }
+
+    // The binding keeps its positions in step with the document inside each change notification;
+    // what it tells this component - that the textarea needs an update - is moved onto the
+    // renderer's context before any of the component's own state is touched.
+    private void Dispatch(Action work) => _ = InvokeAsync(work);
+
+    protected override Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_isDisposed || _binding is null) return Task.CompletedTask;
+
+        // One initialization at a time. A render that lands while the module is being imported or the
+        // control attached must not start another: that would import the module twice, create a second
+        // .NET reference, and attach with a value that may already be stale. The running pass loops
+        // until the latest field is attached, so nothing a later render needed is lost.
+        if (_initialization is { IsCompleted: false }) return _initialization;
+
+        _initialization = InitializeAsync();
+        return _initialization;
+    }
+
+    private async Task InitializeAsync()
+    {
+        try
+        {
+            if (_module is null)
+            {
+                IJSObjectReference module = await JS.InvokeAsync<IJSObjectReference>(
+                    "import", "./_content/Bit.Bcrdt/bit-bcrdt.js");
+
+                if (_isDisposed)
+                {
+                    // Disposed while the import was in flight: nobody else will release it.
+                    await module.DisposeAsync();
+                    return;
+                }
+
+                _module = module;
+                _self = DotNetObjectReference.Create(this);
+            }
+
+            while (!_isDisposed && _binding is { } binding && _attachedGeneration != _generation)
+            {
+                int generation = _generation;
+                string value = binding.Value;
+
+                // Attaching keeps whatever the textarea holds: if the user typed between the render and
+                // now, the module reports it as input rather than overwriting it. Rebinding to another
+                // field replaces the content outright.
+                if (_attachedGeneration < 0)
+                {
+                    await _module.InvokeVoidAsync("attach", _element, _self, generation, value);
+                }
+                else
+                {
+                    await _module.InvokeVoidAsync("reset", _element, generation, value);
+                }
+
+                // If the field changed again meanwhile, the loop goes round for the newer one.
+                _attachedGeneration = generation;
+            }
+
+            if (!_isDisposed && _binding is { HasPendingChanges: true }) SchedulePush();
+        }
+        catch (JSDisconnectedException)
+        {
+            // The circuit is gone; there is nothing left to update.
+        }
+    }
+
+    /// <summary>Applies a new value the user produced. Called by the module.</summary>
+    /// <param name="generation">Which text field the control was bound to when the input happened.</param>
+    /// <param name="value">The control's whole new value.</param>
+    /// <param name="selectionStart">The selection start after the edit.</param>
+    /// <param name="selectionEnd">The selection end after the edit.</param>
+    /// <param name="backward">Whether the selection was made backwards.</param>
+    /// <param name="appliedUpdate">The last update the control applied, so a lost confirmation can be recovered.</param>
+    [JSInvokable]
+    public void OnControlInput(int generation, string value, int selectionStart, int selectionEnd, bool backward, long appliedUpdate)
+    {
+        if (_isDisposed || generation != _generation || _binding is null) return;
+
+        // Settle an update whose answer never arrived before reading the edit, so the edit is read
+        // against the content the control really had.
+        _binding.Resolve(appliedUpdate);
+        _binding.ApplyInput(value ?? string.Empty, selectionStart, selectionEnd);
+        PublishSelection(backward);
+
+        if (_binding.HasPendingChanges) SchedulePush();
+    }
+
+    /// <summary>Records a selection change. Called by the module.</summary>
+    [JSInvokable]
+    public void OnControlSelectionChanged(int generation, int selectionStart, int selectionEnd, bool backward, long appliedUpdate)
+    {
+        if (_isDisposed || generation != _generation || _binding is null) return;
+
+        _binding.Resolve(appliedUpdate);
+        _binding.SetSelection(selectionStart, selectionEnd);
+        PublishSelection(backward);
+    }
+
+    /// <summary>Withdraws the published caret when the control loses focus. Called by the module.</summary>
+    [JSInvokable]
+    public void OnControlBlur(int generation)
+    {
+        if (_isDisposed || generation != _generation) return;
+        Presence?.ClearSelection();
+    }
+
+    private void SchedulePush()
+    {
+        if (_pushing || _isDisposed || _module is null || _attachedGeneration != _generation) return;
+        _ = PushAsync();
+    }
+
+    /// <summary>
+    /// Brings the textarea up to date with changes it does not show yet, one update at a time.
+    /// </summary>
+    /// <remarks>
+    /// Each update names the content it expects to replace. If the user has typed since, or is in the
+    /// middle of composing with an input method, the module refuses it; that input is applied first,
+    /// and the update is rebuilt from the result. Nothing the user typed is ever overwritten. If an
+    /// answer is lost, the control's record of the last update it applied settles it later.
+    /// </remarks>
+    private async Task PushAsync()
+    {
+        _pushing = true;
+        bool rebound = false;
+        try
+        {
+            bool refused = false;
+            while (!_isDisposed && _module is not null && _binding is { HasPendingChanges: true } binding)
+            {
+                // Coalesce a burst of remote changes into one update of the control.
+                if (refused) await Task.Delay(RetryAfterTyping);
+                else if (RenderInterval > TimeSpan.Zero) await Task.Delay(RenderInterval);
+                else await Task.Yield();
+
+                if (_isDisposed) break;
+                if (!ReferenceEquals(binding, _binding) || _attachedGeneration != _generation)
+                {
+                    rebound = true;
+                    break;
+                }
+                if (!binding.HasPendingChanges) break;
+
+                if (binding.HasOutstandingUpdate)
+                {
+                    // An earlier answer was lost - a timed-out call. Ask the control which update it
+                    // last applied before building another one on top of a guess.
+                    long appliedId = await _module.InvokeAsync<long>("appliedUpdate", _element, _generation);
+                    if (_isDisposed) break;
+                    if (!ReferenceEquals(binding, _binding))
+                    {
+                        rebound = true;
+                        break;
+                    }
+
+                    binding.Resolve(appliedId);
+                    continue;
+                }
+
+                BcrdtTextControlUpdate update = binding.CreateUpdate();
+                bool applied = await _module.InvokeAsync<bool>(
+                    "setValue", _element, _generation, update.Expected, update.Value, update.SelectionStart, update.SelectionEnd, update.Id);
+
+                if (_isDisposed) break;
+                if (!ReferenceEquals(binding, _binding))
+                {
+                    rebound = true;
+                    break;
+                }
+
+                if (applied) binding.Acknowledge(update);
+                else binding.Reject(update);
+                refused = !applied;
+            }
+        }
+        catch (Exception ex) when (ex is JSDisconnectedException or JSException or TaskCanceledException or ObjectDisposedException)
+        {
+            // The circuit, the component or the element went away; the next attach starts afresh.
+        }
+        finally
+        {
+            _pushing = false;
+        }
+
+        // The control was rebound to another field while this loop served the previous one; the new
+        // field's changes still need delivering once it is attached.
+        if (rebound) SchedulePush();
+    }
+
+    private void PublishSelection(bool backward)
+    {
+        if (Presence is null || _binding is null) return;
+
+        // Anchored to the characters rather than to indices, so a collaborator's view of this cursor
+        // stays on the word it was on no matter what anyone types elsewhere.
+        int start = Math.Clamp(_binding.ToDocumentIndex(_binding.SelectionStart), 0, Text.Count);
+        int end = Math.Clamp(_binding.ToDocumentIndex(_binding.SelectionEnd), 0, Text.Count);
+
+        if (start == end) Presence.SetCaret(Field, Text, start);
+        else if (backward) Presence.SetSelection(Field, Text, end, start);
+        else Presence.SetSelection(Field, Text, start, end);
+    }
+
+    public override async ValueTask DisposeAsync()
+    {
+        if (_isDisposed) return;
+        _isDisposed = true;
+
+        await base.DisposeAsync();
+
+        _binding?.Dispose();
+        _binding = null;
+
+        if (_module is not null)
+        {
+            try
+            {
+                await _module.InvokeVoidAsync("detach", _element);
+                await _module.DisposeAsync();
+            }
+            catch (Exception ex) when (ex is JSDisconnectedException or JSException or TaskCanceledException)
+            {
+                // The circuit or the element is already gone; there is nothing left to release.
+            }
+        }
+
+        _self?.Dispose();
+    }
+}
