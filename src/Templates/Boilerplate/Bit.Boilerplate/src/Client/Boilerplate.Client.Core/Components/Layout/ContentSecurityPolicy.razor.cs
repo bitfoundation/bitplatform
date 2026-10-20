@@ -24,7 +24,7 @@ public partial class ContentSecurityPolicy
             ownOrigins.Add(webAppUrl);
 
         // 2. Service Specific Origins
-        var connectSrc = new HashSet<string>(ownOrigins);
+        var connectSrc = new HashSet<string>(ownOrigins) { "blob:" };
         var imgSrc = new HashSet<string>(ownOrigins) { "data:", "blob:" };
         var scriptSrc = new HashSet<string>(ownOrigins) { "'unsafe-inline'", "'wasm-unsafe-eval'", "'unsafe-hashes'" };
         var styleSrc = new HashSet<string>(ownOrigins) { "'unsafe-inline'" };

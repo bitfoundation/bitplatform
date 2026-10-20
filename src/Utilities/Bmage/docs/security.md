@@ -135,8 +135,9 @@ input, and does not use `eval` or `innerHTML`. Bytes cross as streams with a siz
 the .NET heap.
 
 The library adds no `<script>` tag to your page, and its module is served from your origin. Your Content Security Policy
-needs one more thing: `blob:` in `img-src`. An image that `createImageBitmap` can't decode, such as an SVG, is decoded
-through an `<img>` element with a `blob:` URL, and a policy without it blocks that image.
+needs `blob:` in two places. In `img-src`, because an image that `createImageBitmap` can't decode, such as an SVG, is
+decoded through an `<img>` element with a `blob:` URL. In `connect-src`, when you hand the editor a `blob:` URL, such as
+the preview URL of a file the user picked, since the library fetches it.
 
 ## Server-side use
 
